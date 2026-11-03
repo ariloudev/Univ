@@ -12,3 +12,6 @@ workspace = true
 [dependencies]
 serde = { version = "1.0.229", features = ["derive"] }
 thiserror = "2.0.21"
+
+[dev-dependencies]
+serde_norway = "0.9.42"

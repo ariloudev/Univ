@@ -6,6 +6,7 @@
 
 pub mod cosmology;
 pub mod distance;
+pub mod entry;
 pub mod geometry;
 pub mod ids;
 pub mod position;
