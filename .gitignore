@@ -1,3 +1,5 @@
 /target
 /.cache
 /.claude/worktrees/
+/node_modules/
+/.wrangler/

@@ -1,0 +1,8 @@
+{
+  "name": "univ-server-tooling",
+  "private": true,
+  "description": "Node tooling of the Rust workspace: Wrangler, which Univ Ingest runs to write local D1 and R2.",
+  "devDependencies": {
+    "wrangler": "4.156.2"
+  }
+}
