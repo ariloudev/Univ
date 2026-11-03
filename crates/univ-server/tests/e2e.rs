@@ -185,3 +185,36 @@ fn structures_are_listed_in_pages_and_read_with_their_citations() {
     let missing = get("/v1/structures/nowhere");
     assert_eq!(missing.status(), StatusCode::NOT_FOUND);
 }
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn a_source_gives_its_primary_reference_and_coverage_from_schema_v3() {
+    let source = json(get("/v1/sources/hipparcos-2007"));
+    assert_eq!(source["reference"]["bibcode"], "2007A&A...474..653V");
+    let sky = &source["coverage"]["sky"];
+    assert_eq!(sky["order"], 5);
+    assert_ne!(sky["cells"], Value::Array(Vec::new()), "no cells");
+    let radial = source["coverage"]["radial"].as_array().unwrap();
+    assert!(
+        radial.iter().any(|r| r["measure"] == "parallax"),
+        "{radial:?}"
+    );
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn a_size_published_under_h0_50_is_served_beside_its_rescaled_value() {
+    let bootes = json(get("/v1/structures/bootes-void"));
+    let radius = bootes["rescaled"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["native"]["value"] == 63.0)
+        .unwrap_or_else(|| panic!("no rescaled 63 Mpc: {}", bootes["rescaled"]));
+    assert_eq!(radius["native"]["hubble_constant"], 50.0);
+    assert_eq!(radius["method"], "hubble_ratio");
+    let rescaled = radius["rescaled"]["value"].as_f64().unwrap();
+    assert!((rescaled - 63.0 * 50.0 / 67.66).abs() < 1e-6, "{rescaled}");
+    assert!(bootes["shape"].is_object());
+    assert!(bootes["derivation"]["from"].is_array());
+}
