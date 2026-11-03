@@ -15,6 +15,7 @@ pub mod ledger;
 pub mod object;
 pub mod position;
 pub mod redshift;
+pub mod release;
 pub mod tile;
 pub mod units;
 pub mod value;
