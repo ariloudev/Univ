@@ -10,3 +10,26 @@ versions:
     title: "W0 Workspace and gate"
     goal: "The workspace builds, and cargo xtask check runs every gate green on empty crates (stage/ingest-w0)"
     status: active
+  - key: 01a19f50-f5e0-7670-8dea-1bf88e4822b0
+    at: 2026-11-03T02:50:45Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W0 Workspace and gate"
+    goal: "The workspace builds, and cargo xtask check runs every gate green on empty crates (stage/ingest-w0)"
+    status: done
+blocks:
+  - key: 01a19f50-f5e0-7670-8dea-1bf7be1b4192
+    id: wave-0-merged
+    kind: note
+    versions:
+      - key: 01a19f50-f5e0-7670-8dea-1bf99124cef4
+        at: 2026-11-03T02:50:45Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "W0 merged"
+        markdown: "`stage/ingest-w0` was merged as `93973d7`. The gate has 10 steps, quick ones first, and its review findings are fixed. Follow-ups are in the plan file."
+        tone: success

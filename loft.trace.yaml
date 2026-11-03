@@ -1,1 +1,38 @@
 format: loft-trace/2
+links:
+  - node: 01a19f22-2ad9-716e-876f-186064637cbc
+    reviewed: 45088d301500263f3d8ddf925252261bbac6057644125800cebe93b857fc49d0
+    tests:
+      - file: "crates/univ-model/src/position.rs"
+        name: "the_hipparcos_rotation_is_orthonormal"
+        body: 31d61a1d246c5c3b794b180a1b6372c8eed67662c5f203c87a26e4833a66c9ad
+      - file: "crates/univ-model/src/position.rs"
+        name: "the_galactic_centre_and_pole_land_where_hipparcos_puts_them"
+        body: 19e6e8250f89a5cb479877f497728a1137c29929e82af73a75b520b80ec9b4a1
+      - file: "crates/univ-model/src/position.rs"
+        name: "m31_matches_astropy_in_every_frame"
+        body: 51d6ac97a5edc85b0b6fe72a717db7cdba23a4cee7e27465e646a898766c82a9
+  - node: 01a19f22-2ad9-716e-876f-18610047a726
+    reviewed: 8d1059018ea0ccc9f9db37c3cfd24bc457f7b44ce026c27f427025c03adab502
+    tests:
+      - file: "crates/univ-model/src/position.rs"
+        name: "the_supergalactic_pole_and_origin_follow_lahav_2000"
+        body: f38f4cec46cc3936737f200507370af5f50f8bafabda72969409df9564b95950
+      - file: "crates/univ-model/src/position.rs"
+        name: "m31_matches_astropy_in_every_frame"
+        body: 51d6ac97a5edc85b0b6fe72a717db7cdba23a4cee7e27465e646a898766c82a9
+  - node: 01a19f22-2ad9-716e-876f-187151a4aac5
+    reviewed: 48167278d174524fd54b495a737e01d2ec207a3ec35123013d4ab8b8b1c6240e
+    tests:
+      - file: "crates/univ-model/src/redshift.rs"
+        name: "the_planck_2018_dipole_is_used_and_its_apex_matches_astropy_in_icrs"
+        body: d3e2426e67e55900ba85e212e1dbd3732d79aeeb23bc54772fd8444635495f36
+      - file: "crates/univ-model/src/redshift.rs"
+        name: "cz_rises_toward_the_apex_falls_away_from_it_and_holds_across_it"
+        body: b185e1662b0fab81b18525463bcb7cc4be558d0b7786910ed97786a3ae53993e
+  - node: 01a19f22-2ad9-716e-876f-1872f4143cd2
+    reviewed: d37d639e1b12bfd5cc622733b099b998b2e2d53367e579e0ca9bbd2e66ea6cc7
+    tests:
+      - file: "crates/univ-model/src/redshift.rs"
+        name: "the_derivation_keeps_the_measured_redshift_and_the_dipole"
+        body: f70ef7868b9330718c90a986de39c658bad89c63a66a630bf3da3db1cc79bb64
