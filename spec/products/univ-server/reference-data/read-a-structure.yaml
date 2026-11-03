@@ -1,0 +1,52 @@
+key: 01a19f1e-d177-716d-b124-3d3019ad55e7
+slug: read-a-structure
+name: "Read a structure"
+body: "Reading a void, wall, filament, supercluster, group, cluster or basin of attraction with its geometry and the citation of each of its numbers."
+tags:
+  - release-scoped
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+requirements:
+  - key: 01a19f1e-d177-716d-b124-3d31c98e6361
+    statement:
+      form: event_driven
+      when: "a client requests a structure"
+      system: "Univ Server"
+      shall: "return its geometry, members, kind of value and the citation of each of its numbers."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d325ae1db12
+        name: "The geometry is one of the geometry kinds univ-model defines, in a named frame."
+      - key: 01a19f1e-d177-716d-b124-3d3396424fcd
+        name: "Each number cites its source and the table, figure or sentence it was taken from."
+      - key: 01a19f1e-d177-716d-b124-3d34432eb4b3
+        name: "A structure outlined from a reconstruction has the kind of value reconstructed."
+      - key: 01a19f1e-d177-716d-b124-3d359cc582f4
+        name: "A number digitised from a figure has the kind of value estimated."
+      - key: 01a19f1e-d177-716d-b124-3d3618ffc2c2
+        name: "Each member is given as an object id or as a tracer with its own position and kind, such as a quasar or an absorber."
+      - key: 01a19f1e-d177-716d-b124-3d3742c0d34b
+        name: "A structure outlined from a volume grid names the grid, the threshold that outlined it and the test that admitted it."
+      - key: 01a19f1e-d177-716d-b124-3d381a2a11dd
+        name: "Each size published for another Hubble constant gives its native value beside the value rescaled to the release cosmology."
+  - key: 01a19f1e-d177-716d-b124-3d3909afed21
+    statement:
+      form: event_driven
+      when: "a client lists structures"
+      system: "Univ Server"
+      shall: "return the structures of the release, filtered by the kinds and scale domains the client names."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d3a3c4e7f9d
+        name: "Each listed structure gives its id, name, kind, scale domain and the centre of its geometry."
+      - key: 01a19f1e-d177-716d-b124-3d3b527de35f
+        name: "The listing is paginated with at most 500 structures per page and a cursor to the next page."
+  - key: 01a19f1e-d177-716d-b124-3d3c531de76d
+    statement:
+      form: unwanted
+      if: "no structure has the requested id"
+      system: "Univ Server"
+      shall: "answer that the structure was not found."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d3de5813ad2
+        name: "The response status is 404 with problem details that name the requested id."

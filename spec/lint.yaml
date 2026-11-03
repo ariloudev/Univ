@@ -1,0 +1,6 @@
+rules:
+  - rule: V2-008
+    properNames:
+      - "Univ Server"
+      - "Univ Ingest"
+      - "univ-model"

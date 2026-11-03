@@ -1,0 +1,29 @@
+key: 01a19f20-8e6c-7039-b16f-abf06331899f
+slug: read-anonymously
+name: "Read anonymously"
+body: "Reading reference data and public layers from any client, including a web page on another origin, with no credentials."
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce29baa34ab
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cffdfae1655
+requirements:
+  - key: 01a19f20-8e6c-7039-b16f-abf10762fc10
+    statement:
+      form: ubiquitous
+      system: "Univ Server"
+      shall: "serve every read of reference data and of public layers without credentials."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-abf26c9701c7
+        name: "A read with no Authorization header succeeds."
+      - key: 01a19f20-8e6c-7039-b16f-abf3d55f1698
+        name: "A read of reference data with a valid API key returns the same data as the same read without one."
+  - key: 01a19f20-8e6c-7039-b16f-abf43d1165a6
+    statement:
+      form: ubiquitous
+      system: "Univ Server"
+      shall: "allow cross-origin reads from any origin."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-abf520a82854
+        name: "Every read response allows any origin in its CORS headers."
+      - key: 01a19f20-8e6c-7039-b16f-abf64b1ee438
+        name: "A CORS preflight for a read is answered without credentials."

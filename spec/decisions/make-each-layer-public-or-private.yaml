@@ -1,0 +1,64 @@
+key: 01a19f25-5955-701e-b3cf-ddd6c363d1fe
+slug: make-each-layer-public-or-private
+title: "Make each layer public or private to its owning key"
+context: "Clients may want to draft a layer before showing it, but sharing lists would add access control to every read."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddd9a7bb2653
+  outcome: "Each layer is public or readable only with its owning key, and a private layer looks absent to everyone else."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddd77b5d2a39
+    kind: local
+    label: "Drafting"
+    statement: "A layer can be kept from the public."
+  - key: 01a19f25-5955-701e-b3cf-ddd869b265ef
+    kind: local
+    label: "Simple access"
+    statement: "One flag decides who reads."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddd9a7bb2653
+    title: "Public or private"
+    description: "One visibility flag per layer."
+  - key: 01a19f25-5955-701e-b3cf-ddda7f8ba4a3
+    title: "Always public"
+    description: "Every layer is public."
+  - key: 01a19f25-5955-701e-b3cf-dddba4396048
+    title: "Shared per key"
+    description: "Private layers can be shared with chosen keys."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddd9a7bb2653
+    driver: 01a19f25-5955-701e-b3cf-ddd77b5d2a39
+    rating: supports
+    rationale: "a private layer is hidden"
+  - option: 01a19f25-5955-701e-b3cf-ddd9a7bb2653
+    driver: 01a19f25-5955-701e-b3cf-ddd869b265ef
+    rating: supports
+    rationale: "one flag"
+  - option: 01a19f25-5955-701e-b3cf-ddda7f8ba4a3
+    driver: 01a19f25-5955-701e-b3cf-ddd77b5d2a39
+    rating: conflicts
+    rationale: "nothing can be drafted"
+  - option: 01a19f25-5955-701e-b3cf-ddda7f8ba4a3
+    driver: 01a19f25-5955-701e-b3cf-ddd869b265ef
+    rating: supports
+    rationale: "no flag at all"
+  - option: 01a19f25-5955-701e-b3cf-dddba4396048
+    driver: 01a19f25-5955-701e-b3cf-ddd77b5d2a39
+    rating: supports
+    rationale: "drafts can be shared"
+  - option: 01a19f25-5955-701e-b3cf-dddba4396048
+    driver: 01a19f25-5955-701e-b3cf-ddd869b265ef
+    rating: conflicts
+    rationale: "access lists on every read"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dddceed5ac5b
+    kind: cost
+    statement: "Two client applications cannot share a private layer."
+  - key: 01a19f25-5955-701e-b3cf-dddd43130c83
+    kind: obligation
+    statement: "Reads of a private layer without its key answer exactly as for a missing layer."
+subjects:
+  - role: affected
+    node: 01a19f20-1cb3-7721-97a0-4f46c62a0358
+  - role: outcome
+    node: 01a19f20-1cb3-7721-97a0-4f182eae0369

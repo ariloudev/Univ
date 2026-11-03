@@ -1,0 +1,96 @@
+key: 01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00
+slug: query-a-bounded-volume
+name: "Query a bounded volume"
+body: |
+  Asking what the server knows inside a volume of space: the named objects, structures and layer
+  items it holds there, and the tiles that carry its bulk points. Each request has a bounded cost:
+  results come in capped pages, and bulk points come back as tiles to fetch, never as rows.
+tags:
+  - release-scoped
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfd642f3747
+requirements:
+  - key: 01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b
+    statement:
+      form: event_driven
+      when: "a client queries a bounded volume"
+      system: "Univ Server"
+      shall: "return the objects, structures and layer items whose positions or geometries intersect the volume."
+    criteria:
+      - key: 01a19f1f-9fd7-7209-b7cb-5d0ef2d0a80a
+        name: "The volume is a box, a sphere, or a cone with a distance range."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d0f00fe2fe8
+        name: "The volume names its frame, which is ICRS, galactic or supergalactic, and its unit."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d104c3238b3
+        name: "An object matches by its derived position under the release cosmology."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d11ceeb957a
+        name: "A structure or layer item matches when its geometry intersects the volume, even if its centre lies outside it."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d12d67f0253
+        name: "Items of a private layer match only for a request that carries the layer's owning key."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d13540b5b8f
+        name: "Results can be narrowed to the kinds, sources, scale domains and layers the client names."
+  - key: 01a19f1f-9fd7-7209-b7cb-5d14df84914b
+    statement:
+      form: ubiquitous
+      system: "Univ Server"
+      shall: "return at most 1,000 results per page and at most 10,000 results per bounded volume query."
+    criteria:
+      - key: 01a19f1f-9fd7-7209-b7cb-5d15532c9c3a
+        name: "Each page carries a cursor to the next page while results remain."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d164b16f644
+        name: "Results come in a stable order, so paging a query whose layers have not changed returns the same pages."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d174e903e62
+        name: "A query that matches more than 10,000 results returns the first 10,000 and states that the result was truncated."
+      - key: 01a19f2c-ae0d-773f-9bf7-22c8f33720f3
+        name: "Each cursor records the release the query reads and the change sequence of each layer whose items it reads."
+  - key: 01a19f2c-ae0d-773f-9bf7-22c9f72e887f
+    statement:
+      form: unwanted
+      if: "a layer that a cursor records has changed since the cursor's first page"
+      system: "Univ Server"
+      shall: "refuse the next page and name the layers that changed."
+    criteria:
+      - key: 01a19f2c-ae0d-773f-9bf7-22ca5dbce89f
+        name: "The response status is 409 with problem details that list each changed layer with its current change sequence."
+      - key: 01a19f2c-ae0d-773f-9bf7-22cbf2d197a5
+        name: "No page is returned that skips or repeats a result because a layer changed between pages."
+  - key: 01a19f1f-9fd7-7209-b7cb-5d18140f9506
+    statement:
+      form: event_driven
+      when: "a client queries a bounded volume"
+      system: "Univ Server"
+      shall: "return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain."
+    criteria:
+      - key: 01a19f1f-9fd7-7209-b7cb-5d19cdceaeab
+        name: "The nodes of a scale domain are given at the deepest level, no deeper than the client asks for, at which no more than 4,096 nodes intersect the volume."
+      - key: 01a19f2c-ae0d-773f-9bf7-22cc0ddcee28
+        name: "The response names the level it chose for each scale domain."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d1a86501cb8
+        name: "Each node address can be fetched as a tile without further lookup."
+  - key: 01a19f1f-9fd7-7209-b7cb-5d1b5a00f7dd
+    statement:
+      form: unwanted
+      if: "the volume is malformed"
+      system: "Univ Server"
+      shall: "refuse the query and name what is malformed."
+    criteria:
+      - key: 01a19f1f-9fd7-7209-b7cb-5d1c374609bf
+        name: "A negative or zero size, an unknown frame, an unknown unit or a cone wider than 180 degrees is refused."
+      - key: 01a19f1f-9fd7-7209-b7cb-5d1dc8111c5f
+        name: "The response status is 400 with problem details that point at the malformed field."
+qualityAttributes:
+  - key: 01a19f1f-9fd7-7209-b7cb-5d1eda7c8eb5
+    name: "Univ Server shall answer the first page of a bounded volume query within 500 milliseconds at the 95th percentile."
+    qaKind: latency
+    qualityTarget:
+      metric: "query.volume.latency"
+      band:
+        kind: at_most
+        upper: "500"
+      unit: "ms"
+      aggregation: p95
+      scenario: "Spheres of 50 Mpc radius centred at random points 100 Mpc from the Solar System, over the first full release"
+      environment: "wrangler dev with local D1 on the owner's laptop"
+    verificationFate: sampled

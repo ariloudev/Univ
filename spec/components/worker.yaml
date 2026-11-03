@@ -1,0 +1,22 @@
+key: 01a19f1e-d177-716d-b124-3cfaf93d595b
+slug: worker
+name: "Worker"
+body: "The Cloudflare Worker that answers every request to Univ Server."
+scopedTo:
+  - 01a19f1a-685d-7357-b67e-d65e20557892
+components:
+  - key: 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+    name: "HTTP API"
+    body: "Routing, request validation, responses, problem details and the OpenAPI document, under `/v1`."
+  - key: 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+    name: "Reference reader"
+    body: "Reads objects, structures, sources, releases, tile manifests, tiles and volume grids of a release from D1 and R2."
+  - key: 01a19f1e-d177-716d-b124-3cfd642f3747
+    name: "Spatial query engine"
+    body: "Answers bounded volume and time queries from the release's cell index and the layers."
+  - key: 01a19f1e-d177-716d-b124-3cfeda1fea21
+    name: "Layer store"
+    body: "Keeps layers, items, item versions and change sequences in D1."
+  - key: 01a19f1e-d177-716d-b124-3cffdfae1655
+    name: "Access control"
+    body: "Authenticates API keys and the owner secret, and enforces visibility, quotas and rate limits."

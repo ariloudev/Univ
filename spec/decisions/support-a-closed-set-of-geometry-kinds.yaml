@@ -1,0 +1,55 @@
+key: 01a19f25-5955-701e-b3cf-de0aff64ecd9
+slug: support-a-closed-set-of-geometry-kinds
+title: "Support a closed set of geometry kinds, without meshes"
+context: "Structures and layer items need shapes, and each kind needs a schema, validation, a bounding volume and an encoding."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-de0d3be916b7
+  outcome: "univ-model defines eight geometry kinds, and a mesh is refused."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-de0ba2f23dcd
+    kind: local
+    label: "Coverage"
+    statement: "The shapes the earlier work drew can all be expressed."
+  - key: 01a19f25-5955-701e-b3cf-de0c2980a5c2
+    kind: local
+    label: "Validation"
+    statement: "Every shape can be checked and indexed."
+options:
+  - key: 01a19f25-5955-701e-b3cf-de0d3be916b7
+    title: "Closed set without meshes"
+    description: "Points, rays, ranges, primitives, paths, member lists, sky regions and volume grids."
+  - key: 01a19f25-5955-701e-b3cf-de0e1af86ad0
+    title: "Closed set with meshes"
+    description: "The same, plus arbitrary triangle meshes."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-de0d3be916b7
+    driver: 01a19f25-5955-701e-b3cf-de0ba2f23dcd
+    rating: supports
+    rationale: "the newsroom's and the atlas's shapes all fit"
+  - option: 01a19f25-5955-701e-b3cf-de0d3be916b7
+    driver: 01a19f25-5955-701e-b3cf-de0c2980a5c2
+    rating: supports
+    rationale: "each kind has a bounding volume"
+  - option: 01a19f25-5955-701e-b3cf-de0e1af86ad0
+    driver: 01a19f25-5955-701e-b3cf-de0ba2f23dcd
+    rating: supports
+    rationale: "any shape fits"
+  - option: 01a19f25-5955-701e-b3cf-de0e1af86ad0
+    driver: 01a19f25-5955-701e-b3cf-de0c2980a5c2
+    rating: conflicts
+    rationale: "meshes are heavy to validate and index"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-de0f22dac134
+    kind: cost
+    statement: "Iso-surfaces are served as volume grids, not as meshes."
+  - key: 01a19f25-5955-701e-b3cf-de1013538f92
+    kind: obligation
+    statement: "Every geometry kind has a bounding volume for the cell index."
+subjects:
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3d3019ad55e7
+  - role: affected
+    node: 01a19f20-1cb3-7721-97a0-4f33a250acbb
+  - role: outcome
+    node: 01a19f1e-d177-716d-b124-3cf3def064d0

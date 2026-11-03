@@ -1,0 +1,43 @@
+key: 01a19f20-8e6c-7039-b16f-ac05a289fbdb
+slug: read-the-openapi-document
+name: "Read the OpenAPI document"
+body: "Building a typed client, such as a TypeScript one, from a description that is generated from the same Rust types the server uses."
+realizes:
+  - 01a19f1e-d177-716d-b124-3cf3def064d0
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+requirements:
+  - key: 01a19f20-8e6c-7039-b16f-ac066aa825d3
+    statement:
+      form: event_driven
+      when: "a client requests the API description"
+      system: "Univ Server"
+      shall: "return an OpenAPI 3.1 document of every route it serves."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-ac0782b8bf64
+        name: "The document is served at /v1/openapi.json."
+      - key: 01a19f20-8e6c-7039-b16f-ac087a3ea07a
+        name: "The document's schemas are generated from univ-model's Rust types."
+      - key: 01a19f20-8e6c-7039-b16f-ac09bec61527
+        name: "Every route the Worker serves appears in the document, and no route it does not serve."
+      - key: 01a19f20-8e6c-7039-b16f-ac0af2d4fa5d
+        name: "Each refusal a route can give is described with its status and problem type."
+  - key: 01a19f20-8e6c-7039-b16f-ac0b05a62900
+    statement:
+      form: ubiquitous
+      system: "Univ Server"
+      shall: "answer every refused or failed request with an RFC 9457 problem details document."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-ac0c9f071903
+        name: "The response's content type is application/problem+json."
+      - key: 01a19f20-8e6c-7039-b16f-ac0d10549d0c
+        name: "The problem type is a URI that names the kind of refusal and is listed in the OpenAPI document."
+  - key: 01a19f20-8e6c-7039-b16f-ac0e1429d17f
+    statement:
+      form: ubiquitous
+      system: "Univ Server"
+      shall: "keep every route of an API version compatible with the clients of that version for as long as it serves that version."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-ac0f65af0df8
+        name: "Every route lives under the path of its API version, starting with /v1."
+      - key: 01a19f20-8e6c-7039-b16f-ac103a292bb7
+        name: "A change that removes or renames a field, a route or a value of an enumeration is made only in a new API version."

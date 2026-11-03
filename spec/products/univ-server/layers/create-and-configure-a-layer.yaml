@@ -1,0 +1,60 @@
+key: 01a19f20-1cb3-7721-97a0-4f182eae0369
+slug: create-and-configure-a-layer
+name: "Create and configure a layer"
+body: |
+  Starting a layer, such as a newsroom of cosmic events, and setting its title, description and
+  visibility. A public layer is readable by anyone; a private one only with its owning key.
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfeda1fea21
+  - 01a19f1e-d177-716d-b124-3cffdfae1655
+requirements:
+  - key: 01a19f20-1cb3-7721-97a0-4f195dcd3fbe
+    statement:
+      form: event_driven
+      when: "a client with an API key creates a layer"
+      system: "Univ Server"
+      shall: "create the layer with that key as its owning key."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f1a626d07c6
+        name: "The layer has an id, a title, a description, a visibility, an owning key and a creation time."
+      - key: 01a19f20-1cb3-7721-97a0-4f1b2c8665d2
+        name: "A layer is private unless the client creates it public."
+      - key: 01a19f20-1cb3-7721-97a0-4f1c8a7b7514
+        name: "The layer's change sequence starts at zero."
+  - key: 01a19f20-1cb3-7721-97a0-4f1db7723a99
+    statement:
+      form: event_driven
+      when: "the owning key changes a layer's title, description or visibility"
+      system: "Univ Server"
+      shall: "apply the change and record it in the layer's change sequence."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f1eef8352de
+        name: "The change advances the layer's change sequence by one."
+      - key: 01a19f20-1cb3-7721-97a0-4f1fdb9e5511
+        name: "A layer made private stops appearing in anonymous reads, listings and query results from the next request."
+  - key: 01a19f20-1cb3-7721-97a0-4f204ccf5beb
+    statement:
+      form: event_driven
+      when: "the owning key retires a layer"
+      system: "Univ Server"
+      shall: "stop serving the layer and its items."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f21a598c53b
+        name: "A read of a retired layer by a caller allowed to read it answers 410 with problem details that give the retirement time."
+      - key: 01a19f2c-e7d7-7285-bdfa-6f3ba9446790
+        name: "A read of a retired private layer without its owning key answers 404, exactly as a layer that does not exist."
+      - key: 01a19f20-1cb3-7721-97a0-4f23c530f226
+        name: "A retired layer no longer counts toward its key's quota of layers."
+  - key: 01a19f20-1cb3-7721-97a0-4f2449c53c62
+    statement:
+      form: unwanted
+      if: "a request to change or retire a layer carries a key other than its owning key"
+      system: "Univ Server"
+      shall: "refuse the request and leave the layer unchanged."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f2523d32f02
+        name: "A public layer answers 403."
+      - key: 01a19f20-1cb3-7721-97a0-4f2613527c69
+        name: "A private layer answers 404, exactly as a layer that does not exist."

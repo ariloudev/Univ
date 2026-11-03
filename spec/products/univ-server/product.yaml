@@ -1,0 +1,68 @@
+key: 01a19f1a-685d-7357-b67e-d65e20557892
+slug: univ-server
+name: "Univ Server"
+body: |
+  The server that supplies real, normalized astronomical and cosmological data to clients, such as
+  a TypeScript web application, and lets clients author their own layers on top of it.
+
+  It serves what Univ Ingest published: objects identified across catalogues, the structures and
+  fields of the large-scale universe, the sources every value came from, and bulk points as tiles.
+  Every position names its frame, epoch and cosmology, and keeps the measured value beside the
+  derived one. Reference data is read anonymously; layers are written with an API key.
+
+  The first version runs locally under `wrangler dev`. Solar System ephemerides, live transient
+  alerts, end-user accounts, sharing lists for private layers and mesh geometry are outside it.
+featureGroups:
+  - key: 01a19f1a-685d-7357-b67e-d65f1c690202
+    slug: reference-data
+    name: "Reference data"
+    body: "Reading the objects, structures, sources and releases that Univ Ingest published."
+    features:
+      - 01a19f1e-d177-716d-b124-3d003878f4e1
+      - 01a19f1e-d177-716d-b124-3d0d39dc9a3f
+      - 01a19f1e-d177-716d-b124-3d23daf70123
+      - 01a19f1e-d177-716d-b124-3d3019ad55e7
+  - key: 01a19f1a-685d-7357-b67e-d660e2178068
+    slug: bulk-data
+    name: "Bulk data"
+    body: "Reading the points of whole catalogues and the reconstructed fields in compact binary form."
+    features:
+      - 01a19f1f-9fd6-77e0-931c-f98491ea6241
+      - 01a19f1f-9fd6-77e0-931c-f99189987122
+      - 01a19f1f-9fd6-77e0-931c-f99de4f76490
+  - key: 01a19f1a-685d-7357-b67e-d6615e6965c1
+    slug: spatial-and-temporal-queries
+    name: "Spatial and temporal queries"
+    body: "Asking what the server knows within a volume of space and an interval of time."
+    features:
+      - 01a19f1f-9fd7-7209-b7cb-5cf7de740462
+      - 01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00
+  - key: 01a19f1a-685d-7357-b67e-d662fbe4f6f3
+    slug: layers
+    name: "Layers"
+    body: "Client-authored collections of items placed in space and time on top of the reference data."
+    features:
+      - 01a19f20-1cb3-7721-97a0-4f182eae0369
+      - 01a19f20-1cb3-7721-97a0-4f279c973046
+      - 01a19f20-1cb3-7721-97a0-4f33a250acbb
+      - 01a19f20-1cb3-7721-97a0-4f46c62a0358
+      - 01a19f20-1cb3-7721-97a0-4f5588b2c1c4
+  - key: 01a19f1a-685d-7357-b67e-d663efc89e0d
+    slug: access
+    name: "Access"
+    body: "Who may read and write, and the limits each client keeps."
+    features:
+      - 01a19f20-8e6c-7039-b16f-abd83515093c
+      - 01a19f20-8e6c-7039-b16f-abe3447e87f6
+      - 01a19f20-8e6c-7039-b16f-abf06331899f
+      - 01a19f20-8e6c-7039-b16f-abf782688cdf
+  - key: 01a19f1a-685d-7357-b67e-d664d79c25f9
+    slug: api-contract
+    name: "API contract"
+    body: "The machine-readable description of the API and the tile format that clients build against."
+    features:
+      - 01a19f20-8e6c-7039-b16f-abfe741c359f
+      - 01a19f20-8e6c-7039-b16f-ac05a289fbdb
+constraints:
+  - key: 01a19f1a-685d-7357-b67e-d66582003f29
+    name: "Univ Server shall run on Cloudflare Workers as Rust compiled to WebAssembly with workers-rs."

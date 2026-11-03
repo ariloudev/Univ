@@ -1,0 +1,64 @@
+key: 01a19f25-5955-701e-b3cf-dd7a52b5651a
+slug: admit-a-source-by-its-redistribution-terms
+title: "Admit a source by its terms of redistribution"
+context: "Releases redistribute catalogue data. Most providers allow it with credit, but 2MRS's README asks that its files not be redistributed, and the owner asked whether 2MRS could be used."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dd7d19daad42
+  outcome: "Each source definition records its terms and status, Univ Ingest refuses forbidden sources, and 2MRS is used from its ApJS table on VizieR with its credit."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dd7bee2bd37c
+    kind: local
+    label: "Respect terms"
+    statement: "No source is redistributed against its terms."
+  - key: 01a19f25-5955-701e-b3cf-dd7cf2706abf
+    kind: local
+    label: "Coverage"
+    statement: "The all-sky nearby surveys are available."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dd7d19daad42
+    title: "Judge each source's terms"
+    description: "Each source definition records its terms and a redistribution status, and forbidden sources are refused; 2MRS comes from its ApJS table on VizieR."
+  - key: 01a19f25-5955-701e-b3cf-dd7e99bcc0b1
+    title: "Exclude 2MRS"
+    description: "Treat 2MRS as forbidden and leave it out."
+  - key: 01a19f25-5955-701e-b3cf-dd7f19c0c7ad
+    title: "Ignore terms"
+    description: "Treat every public catalogue as free to redistribute."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dd7d19daad42
+    driver: 01a19f25-5955-701e-b3cf-dd7bee2bd37c
+    rating: supports
+    rationale: "each judgment quotes the terms it rests on"
+  - option: 01a19f25-5955-701e-b3cf-dd7d19daad42
+    driver: 01a19f25-5955-701e-b3cf-dd7cf2706abf
+    rating: supports
+    rationale: "2MRS is used from its published table, with its credit"
+  - option: 01a19f25-5955-701e-b3cf-dd7e99bcc0b1
+    driver: 01a19f25-5955-701e-b3cf-dd7bee2bd37c
+    rating: supports
+    rationale: "the strictest reading is kept"
+  - option: 01a19f25-5955-701e-b3cf-dd7e99bcc0b1
+    driver: 01a19f25-5955-701e-b3cf-dd7cf2706abf
+    rating: conflicts
+    rationale: "the all-sky nearby survey is lost"
+  - option: 01a19f25-5955-701e-b3cf-dd7f19c0c7ad
+    driver: 01a19f25-5955-701e-b3cf-dd7bee2bd37c
+    rating: conflicts
+    rationale: "terms go unread"
+  - option: 01a19f25-5955-701e-b3cf-dd7f19c0c7ad
+    driver: 01a19f25-5955-701e-b3cf-dd7cf2706abf
+    rating: supports
+    rationale: "everything is used"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dd806f6795b1
+    kind: obligation
+    statement: "Every source's terms and required credit are served with its data."
+  - key: 01a19f25-5955-701e-b3cf-dd81945dc13f
+    kind: risk
+    statement: "A provider may read its terms more strictly than the source definition does, which the definition's quoted reasoning lets the owner revisit."
+subjects:
+  - role: affected
+    node: 01a19f22-2ad9-716e-876f-181f3d870b42
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-1831f423e25f

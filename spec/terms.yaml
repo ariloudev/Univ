@@ -1,0 +1,78 @@
+- key: 01a19f1e-d177-716d-b124-3d5520df63a6
+  name: "API key"
+  definition: "A secret the owner issues that lets a client write layers and read its own private layers."
+- key: 01a19f1e-d177-716d-b124-3d4224766d24
+  name: "catalogue entry"
+  definition: "One row of one source, as that source identifies it."
+- key: 01a19f1e-d177-716d-b124-3d5814733f17
+  name: "change sequence"
+  definition: "The ordered count of the changes made to one layer."
+- key: 01a19f1e-d177-716d-b124-3d59b35ee0e2
+  name: "client"
+  definition: "A program that calls Univ Server, such as a TypeScript web application."
+- key: 01a19f1e-d177-716d-b124-3d4737c93b24
+  name: "derived value"
+  definition: "A value computed from native values by a recorded transformation, in a named frame and, where it depends on one, under a named cosmology."
+- key: 01a19f1e-d177-716d-b124-3d51b8400713
+  name: "epoch"
+  definition: "The instant a position or an astrometric solution holds for."
+- key: 01a19f1e-d177-716d-b124-3d4f2e341573
+  name: "geometry"
+  definition: "The shape that places an object, structure or item: a point, ray, range, primitive, path, member list, sky region or volume grid."
+- key: 01a19f1e-d177-716d-b124-3d546cf7d4a4
+  name: "item"
+  definition: "One entry of a layer, placed in space and time, kept as numbered versions."
+- key: 01a19f1e-d177-716d-b124-3d48f2d1d4f1
+  name: "kind of value"
+  definition: "Whether a value is measured, estimated, inferred or reconstructed."
+- key: 01a19f1e-d177-716d-b124-3d538738945c
+  name: "layer"
+  definition: "A collection of items authored by one API key on top of the reference data."
+- key: 01a19f1e-d177-716d-b124-3d447261783d
+  name: "measurement"
+  definition: "A value a source published for a catalogue entry, in its native unit, with its uncertainty and kind of value."
+- key: 01a19f1e-d177-716d-b124-3d468c2bc86e
+  name: "native value"
+  definition: "A value as its source published it, in the source's unit and frame."
+- key: 01a19f1e-d177-716d-b124-3d43db958d6b
+  name: "object"
+  definition: "One astrophysical body as the server identifies it: one or more catalogue entries resolved to it by cross-matching."
+- key: 01a19f1e-d177-716d-b124-3d5731fbbb22
+  name: "owner"
+  definition: "The person who runs Univ Ingest and issues API keys."
+- key: 01a19f1e-d177-716d-b124-3d5674fa0138
+  name: "owning key"
+  definition: "The API key that created a layer."
+- key: 01a19f1e-d177-716d-b124-3d45bf470745
+  name: "preferred measurement"
+  definition: "The measurement the ranking rule chose to place an object in three dimensions."
+- key: 01a19f1e-d177-716d-b124-3d3fc692252b
+  name: "release"
+  definition: "An immutable, numbered set of objects, structures, volume grids, tiles, sources and manifests that one ingest run published."
+- key: 01a19f1e-d177-716d-b124-3d493ee24060
+  name: "release cosmology"
+  definition: "The cosmological model a release derives distances under: Planck 2018 unless the release names another."
+- key: 01a19f1e-d177-716d-b124-3d4a0a1729ef
+  name: "scale domain"
+  definition: "A range of scales with its own octree and unit: stars, nearby galaxies or cosmic web."
+- key: 01a19f1e-d177-716d-b124-3d4066093457
+  name: "source"
+  definition: "One catalogue, survey table, grid or paper that a release draws on, with its citation and terms of use."
+- key: 01a19f1e-d177-716d-b124-3d41cffcb6ba
+  name: "source definition"
+  definition: "The file in the repository that says how to fetch, read and credit one source."
+- key: 01a19f1e-d177-716d-b124-3d4b6b3d97e1
+  name: "structure"
+  definition: "A named large-scale feature, such as a void, wall, supercluster or basin of attraction, with a geometry and cited numbers."
+- key: 01a19f1e-d177-716d-b124-3d4d8fdd5a30
+  name: "tile"
+  definition: "The points of one octree node at one level of detail, in the tile encoding."
+- key: 01a19f1e-d177-716d-b124-3d4ea5cef768
+  name: "tile manifest"
+  definition: "The description of one scale domain's octree: its nodes, their bounds, sizes and digests, and the frame and unit of their positions."
+- key: 01a19f1e-d177-716d-b124-3d504048acfc
+  name: "time record"
+  definition: "A time attached to an item, with its kind (source event, arrival or discovery), its timescale and its uncertainty."
+- key: 01a19f1e-d177-716d-b124-3d4c67a6ca0f
+  name: "volume grid"
+  definition: "A three-dimensional grid of samples of one quantity, such as a reconstructed density field or basin labels."

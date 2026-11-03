@@ -1,0 +1,80 @@
+key: 01a19f22-b0bc-76da-bac8-977b37d09370
+slug: follow-a-runs-progress
+name: "Follow a run's progress"
+body: |
+  Watching an ingest run the way one watches `apt`: a line for each download as it finishes,
+  marked by what happened to it, a live status line at the bottom with the overall progress, rate
+  and time left, and a summary at the end. Runs take hours, so the display also has to read well
+  in a log when the run goes to the background.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cede7d0b609
+  - 01a19f1e-d177-716d-b124-3cee44add674
+  - 01a19f1e-d177-716d-b124-3cef889e66e6
+  - 01a19f1e-d177-716d-b124-3cf0a98909c1
+  - 01a19f1e-d177-716d-b124-3cf1defde8b6
+requirements:
+  - key: 01a19f22-b0bc-76da-bac8-977c0df0543a
+    statement:
+      form: state_driven
+      while: "Univ Ingest writes to a terminal"
+      system: "Univ Ingest"
+      shall: "keep a live status line at the bottom of the terminal with the run's progress."
+    criteria:
+      - key: 01a19f22-b0bc-76da-bac8-977d3868a411
+        name: "The status line gives the overall percentage, the bytes fetched of the bytes expected, the current rate and the estimated time left."
+      - key: 01a19f22-b0bc-76da-bac8-977efb075d7a
+        name: "The status line names each download in progress with its own bytes and percentage."
+      - key: 01a19f22-b0bc-76da-bac8-977f946ec036
+        name: "The status line names the current stage, which is fetch, normalize, cross-match, tiles, build or publish, with its count of items done of items expected."
+      - key: 01a19f22-b0bc-76da-bac8-97803a2ac7b3
+        name: "The status line is redrawn at most ten times a second and fits the terminal's width."
+  - key: 01a19f22-b0bc-76da-bac8-9781a4317a39
+    statement:
+      form: event_driven
+      when: "a download finishes, is found on disk or fails"
+      system: "Univ Ingest"
+      shall: "print one line for it above the status line."
+    criteria:
+      - key: 01a19f22-b0bc-76da-bac8-978243cd702f
+        name: "A fetched chunk or file prints a Get line with its number, source, chunk and size."
+      - key: 01a19f22-b0bc-76da-bac8-97838637e1af
+        name: "A chunk or file already on disk prints a Hit line, and is not fetched again."
+      - key: 01a19f22-b0bc-76da-bac8-97847bed1992
+        name: "A request that failed and will be retried prints an Err line with the mirror and the reason."
+      - key: 01a19f22-b0bc-76da-bac8-9785a0efa4a1
+        name: "A download that continued from a partial file prints the byte it continued from."
+  - key: 01a19f22-b0bc-76da-bac8-9786b22b6ce9
+    statement:
+      form: event_driven
+      when: "a run ends"
+      system: "Univ Ingest"
+      shall: "print a summary of what the run did."
+    criteria:
+      - key: 01a19f22-b0bc-76da-bac8-97876c10b6f3
+        name: "The summary gives the bytes fetched, the time taken and the mean rate."
+      - key: 01a19f22-b0bc-76da-bac8-9788528129a0
+        name: "The summary gives, per source, the catalogue entries published and left out."
+      - key: 01a19f22-b0bc-76da-bac8-9789936d8c57
+        name: "The summary names the release the run built or published, or the stage and reason it stopped at."
+  - key: 01a19f22-b0bc-76da-bac8-978a58c8fa20
+    statement:
+      form: state_driven
+      while: "Univ Ingest writes to something other than a terminal"
+      system: "Univ Ingest"
+      shall: "print plain, timestamped lines without control codes."
+    criteria:
+      - key: 01a19f22-b0bc-76da-bac8-978bd11f8a8a
+        name: "Each Get, Hit and Err line and each stage's start and end is printed as one line."
+      - key: 01a19f22-b0bc-76da-bac8-978c8f52c47a
+        name: "A download that lasts longer than a minute prints one progress line each minute."
+  - key: 01a19f22-b0bc-76da-bac8-978d5de52f15
+    statement:
+      form: event_driven
+      when: "the owner interrupts a run"
+      system: "Univ Ingest"
+      shall: "stop at once, keep every chunk and partial file on disk, and say how to continue."
+    criteria:
+      - key: 01a19f22-b0bc-76da-bac8-978e78be4742
+        name: "The next run continues each partial download from the byte it reached."
+      - key: 01a19f22-b0bc-76da-bac8-978f94c955a4
+        name: "No release is left half built or half published."

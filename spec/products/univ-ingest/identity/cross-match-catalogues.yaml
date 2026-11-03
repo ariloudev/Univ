@@ -1,0 +1,53 @@
+key: 01a19f23-636e-7035-8185-aba1fc8f7bbd
+slug: cross-match-catalogues
+name: "Cross-match catalogues"
+body: |
+  Resolving the entries that several sources hold for one body, such as a galaxy in SDSS, 2MRS,
+  2M++ and Cosmicflows-4, into one object, and keeping the uncertain cases apart rather than
+  guessing.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cef889e66e6
+requirements:
+  - key: 01a19f23-636e-7035-8185-aba27e410ae5
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "resolve catalogue entries that share a published cross-identification into one object before matching by position."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-1509ef3e2d47
+        name: "A published cross-identification, such as the Gaia DR3 Hipparcos cross-identification or a shared PGC number, is used before a positional match."
+      - key: 01a19f23-636f-72bd-b194-150a909c8f0e
+        name: "The object records the cross-identification as the method that resolved it."
+  - key: 01a19f23-636f-72bd-b194-150b2d35ea65
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "merge catalogue entries into one object when they agree within the release's match tolerances and no other candidate does."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-150cc0a7de4d
+        name: "The tolerances on angular separation and on redshift or distance are set for each pair of sources in the release's matching rules."
+      - key: 01a19f23-636f-72bd-b194-150dfab9225c
+        name: "Each merge records its method, the separation, the redshift or distance difference and a confidence between 0 and 1."
+      - key: 01a19f23-636f-72bd-b194-150e56ac26d6
+        name: "The release's matching rules state how the confidence is computed."
+  - key: 01a19f23-636f-72bd-b194-150f94f19121
+    statement:
+      form: unwanted
+      if: "a catalogue entry has more than one candidate within the match tolerances"
+      system: "Univ Ingest"
+      shall: "keep the candidates as separate objects linked as candidate matches."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-1510f8ea82b8
+        name: "Each candidate link carries its confidence."
+      - key: 01a19f23-636f-72bd-b194-15114b1cd667
+        name: "No measurement is merged across a candidate link."
+  - key: 01a19f23-636f-72bd-b194-15129323b215
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "attach to each object the designations and names its catalogue entries carry."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-1513f385222f
+        name: "Each designation keeps the source that gave it."
+      - key: 01a19f23-636f-72bd-b194-15144dcb948e
+        name: "A common name, such as M31 or the Large Magellanic Cloud, is attached with the source that published it."

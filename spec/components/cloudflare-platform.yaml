@@ -1,0 +1,21 @@
+key: 01a19f1e-d177-716d-b124-3ce12c3a03b8
+slug: cloudflare-platform
+name: "Cloudflare platform"
+body: "The Cloudflare services Univ Server runs on, used locally through Wrangler in the first version."
+boundary: external
+components:
+  - key: 01a19f1e-d177-716d-b124-3ce29baa34ab
+    name: "Workers runtime"
+    body: "Runs the Worker's WebAssembly."
+  - key: 01a19f1e-d177-716d-b124-3ce3944cd7e5
+    name: "D1"
+    body: "SQLite databases: objects, identities, the cell index, layers and keys."
+  - key: 01a19f1e-d177-716d-b124-3ce42ae3be29
+    name: "R2"
+    body: "Object storage: tiles, tile manifests, volume grids and release manifests."
+  - key: 01a19f1e-d177-716d-b124-3ce5e5f4a665
+    name: "Rate limiting binding"
+    body: "Counts requests per client within a time window."
+  - key: 01a19f1e-d177-716d-b124-3ce63ee2f0df
+    name: "Wrangler"
+    body: "The command-line tool that runs the Worker locally and writes local D1 and R2."

@@ -1,0 +1,62 @@
+key: 01a19f25-5955-701e-b3cf-dd9ac1fad17e
+slug: enforce-quotas-and-rate-limits
+title: "Enforce per-key quotas and per-client rate limits"
+context: "Anyone can read, and keyed clients write layers into storage the owner pays for."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dd9d15a679f7
+  outcome: "Every key has quotas, every client a rate limit, and a refusal names what was exceeded."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dd9b58c435c0
+    kind: local
+    label: "Protection"
+    statement: "No client can exhaust storage or requests."
+  - key: 01a19f25-5955-701e-b3cf-dd9cc5968130
+    kind: local
+    label: "Clarity"
+    statement: "A refused client learns why."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dd9d15a679f7
+    title: "Quotas and rate limits"
+    description: "Per-key quotas on layers, items and size, and rate limits on all requests."
+  - key: 01a19f25-5955-701e-b3cf-dd9e0132a172
+    title: "Key quotas only"
+    description: "Quotas on writes; reads unlimited."
+  - key: 01a19f25-5955-701e-b3cf-dd9f4c83b507
+    title: "None yet"
+    description: "Trust the few keyed clients."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dd9d15a679f7
+    driver: 01a19f25-5955-701e-b3cf-dd9b58c435c0
+    rating: supports
+    rationale: "writes and reads are both bounded"
+  - option: 01a19f25-5955-701e-b3cf-dd9d15a679f7
+    driver: 01a19f25-5955-701e-b3cf-dd9cc5968130
+    rating: supports
+    rationale: "refusals name the quota or limit"
+  - option: 01a19f25-5955-701e-b3cf-dd9e0132a172
+    driver: 01a19f25-5955-701e-b3cf-dd9b58c435c0
+    rating: neutral
+    rationale: "reads rely on Cloudflare's own protection"
+  - option: 01a19f25-5955-701e-b3cf-dd9e0132a172
+    driver: 01a19f25-5955-701e-b3cf-dd9cc5968130
+    rating: supports
+    rationale: "refusals name the quota"
+  - option: 01a19f25-5955-701e-b3cf-dd9f4c83b507
+    driver: 01a19f25-5955-701e-b3cf-dd9b58c435c0
+    rating: conflicts
+    rationale: "nothing is bounded"
+  - option: 01a19f25-5955-701e-b3cf-dd9f4c83b507
+    driver: 01a19f25-5955-701e-b3cf-dd9cc5968130
+    rating: neutral
+    rationale: "nothing is refused"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dda06933f481
+    kind: obligation
+    statement: "The owner can change a key's quotas and limits."
+  - key: 01a19f25-5955-701e-b3cf-dda1278af6d1
+    kind: cost
+    statement: "A busy client may be slowed by the rate limit."
+subjects:
+  - role: outcome
+    node: 01a19f20-8e6c-7039-b16f-abd83515093c

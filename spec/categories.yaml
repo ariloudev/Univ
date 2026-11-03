@@ -1,0 +1,3 @@
+- key: 01a19f1e-d177-716d-b124-3ce04be4ef06
+  name: storage.d1
+  definition: "A limit on how much one release stores in D1."

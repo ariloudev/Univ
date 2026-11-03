@@ -1,0 +1,73 @@
+key: 01a19f20-1cb3-7721-97a0-4f33a250acbb
+slug: publish-a-layer-item
+name: "Publish a layer item"
+body: |
+  Adding an item to a layer: a cosmic event, a landmark or anything a client wants to place in
+  space and time, linked where it applies to the reference objects and structures it concerns.
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cf3def064d0
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfeda1fea21
+requirements:
+  - key: 01a19f20-1cb3-7721-97a0-4f34698e25b8
+    statement:
+      form: event_driven
+      when: "the owning key publishes an item to a layer"
+      system: "Univ Server"
+      shall: "validate the item and store it as the item's first version."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f352d3ef9fc
+        name: "The item holds a title, a summary, a geometry, its time records, its kind of value, its links and its sources."
+      - key: 01a19f20-1cb3-7721-97a0-4f3603bb663b
+        name: "The item's id is chosen by the client and is unique within the layer."
+      - key: 01a19f20-1cb3-7721-97a0-4f37afa7a5f0
+        name: "The geometry is one of the geometry kinds univ-model defines, in a named frame."
+      - key: 01a19f20-1cb3-7721-97a0-4f380e7feae0
+        name: "Each time record names its kind, its timescale and its uncertainty."
+      - key: 01a19f20-1cb3-7721-97a0-4f39371a8402
+        name: "The stored version has the number 1 and the time the server stored it."
+      - key: 01a19f20-1cb3-7721-97a0-4f3a1008f3a6
+        name: "The publish advances the layer's change sequence by one."
+  - key: 01a19f20-1cb3-7721-97a0-4f3b5f5065f5
+    statement:
+      form: unwanted
+      if: "an item fails validation"
+      system: "Univ Server"
+      shall: "refuse the item and name each field that failed."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f3c190e7421
+        name: "Nothing is stored and the layer's change sequence is unchanged."
+      - key: 01a19f20-1cb3-7721-97a0-4f3db58503d4
+        name: "The problem details list each failing field by its JSON pointer, with the reason it failed."
+  - key: 01a19f20-1cb3-7721-97a0-4f3e36b397b1
+    statement:
+      form: unwanted
+      if: "an item cites no source"
+      system: "Univ Server"
+      shall: "refuse the item and say that a source is required."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f3f75200dfa
+        name: "The response status is 422 and nothing is stored."
+  - key: 01a19f20-1cb3-7721-97a0-4f40a8b8c250
+    statement:
+      form: event_driven
+      when: "an item links to a reference object or structure"
+      system: "Univ Server"
+      shall: "store the link with its relation and resolve it against the release a read is answered from."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f412ed74190
+        name: "A link names its relation, such as host, counterpart, member of or located in, and the id of an object or structure."
+      - key: 01a19f20-1cb3-7721-97a0-4f42b9073b71
+        name: "A link to an id that no release has published is refused with the id it names."
+      - key: 01a19f20-1cb3-7721-97a0-4f43ab9e950c
+        name: "A link to an id that a later release merged is served with the id that replaced it, beside the id as written."
+  - key: 01a19f20-1cb3-7721-97a0-4f4496bceaf8
+    statement:
+      form: unwanted
+      if: "an item uses an id that the layer already holds"
+      system: "Univ Server"
+      shall: "refuse the publish as a conflict."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f454b07cdb9
+        name: "The response status is 409 with problem details that give the item's current version."

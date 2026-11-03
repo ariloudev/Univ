@@ -1,0 +1,43 @@
+key: 01a19f23-636f-72bd-b194-153d515c188e
+slug: publish-a-release-locally
+name: "Publish a release locally"
+body: |
+  Making a complete release the one Univ Server serves. In the first version the target is the
+  local D1 and R2 that `wrangler dev` uses; nothing is deployed.
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3ce42ae3be29
+  - 01a19f1e-d177-716d-b124-3ce63ee2f0df
+  - 01a19f1e-d177-716d-b124-3cf1defde8b6
+requirements:
+  - key: 01a19f23-636f-72bd-b194-153ee5a17619
+    statement:
+      form: event_driven
+      when: "the owner publishes a complete release"
+      system: "Univ Ingest"
+      shall: "upload its files to local R2 and its tables to local D1, and only then point latest at it."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-153fb0e0dd43
+        name: "Each uploaded file is checked against its SHA-256 in the release manifest."
+      - key: 01a19f23-636f-72bd-b194-1540b752f379
+        name: "Until latest moves, reads that name no release answer from the previous release."
+      - key: 01a19f23-636f-72bd-b194-154133241de5
+        name: "Latest moves in a single write, so no read sees a release partly published."
+  - key: 01a19f23-636f-72bd-b194-1542bf149fa0
+    statement:
+      form: unwanted
+      if: "an upload fails part way"
+      system: "Univ Ingest"
+      shall: "leave latest where it was and continue the upload on the next run."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-154384255e3e
+        name: "Files already uploaded and verified are not uploaded again."
+  - key: 01a19f23-636f-72bd-b194-15447f9441ad
+    statement:
+      form: unwanted
+      if: "the release's number is already published"
+      system: "Univ Ingest"
+      shall: "refuse to publish it and leave the published release unchanged."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-1545c890a557
+        name: "The message names the release number and its publication time."
