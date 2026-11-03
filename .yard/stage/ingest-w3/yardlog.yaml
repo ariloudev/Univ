@@ -1,0 +1,23 @@
+format: yardlog/1
+key: 01a19f9a-424f-7733-9396-4713916f0f25
+branch: "stage/ingest-w3"
+base: "product/ingest"
+title: "stage/ingest-w3"
+revision: 1
+opened:
+  at: 2026-11-03T04:10:49Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+stages:
+  - key: 01a19f9a-424f-7733-9396-47142964396a
+    id: w3
+  - key: 01a19f9a-424f-7733-9396-4715e264e61b
+    id: w3-review
+acts:
+  - at: 2026-11-03T04:10:49Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"

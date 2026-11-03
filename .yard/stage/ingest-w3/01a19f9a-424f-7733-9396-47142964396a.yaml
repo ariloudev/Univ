@@ -1,0 +1,91 @@
+key: 01a19f9a-424f-7733-9396-47142964396a
+id: w3
+versions:
+  - key: 01a19f9a-424f-7733-9396-471c82e32e26
+    at: 2026-11-03T04:10:49Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W3 Run display"
+    goal: "A run shows an apt-style status line and event lines on a terminal and plain timestamped lines elsewhere, ends with a summary, and stops cleanly on Ctrl-C, with univ-ingest runnable as a fetch command"
+    status: active
+blocks:
+  - key: 01a19f9a-424f-7733-9396-47164eac4b20
+    id: w3-t1-state
+    kind: task
+    versions:
+      - key: 01a19f9a-424f-7733-9396-471e84de7706
+        at: 2026-11-03T04:10:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run state and line rendering"
+        detail: "A pure `RunState` fed events: bytes, rate, time left, downloads in progress, stage counts, Get numbering. Pure renderers for the status line (cut to a width), the Get, Hit and Err lines, resume lines and stage lines. Done when snapshot tests cover AC-107 to AC-114 and AC-118."
+        state: active
+  - key: 01a19f9a-424f-7733-9396-471763837877
+    id: w3-t2-sinks
+    kind: task
+    versions:
+      - key: 01a19f9a-424f-7733-9396-471fbfb737a3
+        at: 2026-11-03T04:10:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Terminal and plain sinks"
+        detail: "The terminal sink prints lines above an indicatif status line redrawn at most 10 times a second. The plain sink prints timestamped lines with no control codes, and a progress line each minute for long downloads. Done when plain-mode tests on a scripted clock cover AC-118 and AC-119, and the terminal sink's redraw limit and width are tested (AC-110)."
+        state: open
+  - key: 01a19f9a-424f-7733-9396-4718578c370f
+    id: w3-t3-summary
+    kind: task
+    versions:
+      - key: 01a19f9a-424f-7733-9396-47207e5b8f39
+        at: 2026-11-03T04:10:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run summary"
+        detail: "Bytes, time and mean rate; per source, the entries published and left out (filled from W4 on); the release built, or the stage and reason the run stopped. Done when tests cover AC-115 to AC-117."
+        state: open
+  - key: 01a19f9a-424f-7733-9396-471999769c9e
+    id: w3-t4-interrupt
+    kind: task
+    versions:
+      - key: 01a19f9a-424f-7733-9396-4721fe194831
+        at: 2026-11-03T04:10:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Interrupt and continue"
+        detail: "Ctrl-C cancels at once and keeps every chunk and partial file, says how to continue, and leaves no release half built. Done when a test cancels a stalled download, and the next run resumes from the byte it reached (AC-120, AC-121)."
+        state: open
+  - key: 01a19f9a-424f-7733-9396-471a73c339d3
+    id: w3-t5-cli
+    kind: task
+    versions:
+      - key: 01a19f9a-424f-7733-9396-472239d39356
+        at: 2026-11-03T04:10:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The fetch command"
+        detail: "`univ-ingest fetch [--offline] [--source ID]... [--cache DIR]` reads the definitions and acquires each source. It picks the terminal or plain display by whether stderr is a terminal. Chunks are fetched 2 or 3 at a time per source, results in order (a W2 follow-up). Done when a CLI test runs `fetch --offline` on a cache dir and gets the plain lines and summary."
+        state: open
+  - key: 01a19f9a-424f-7733-9396-471b805686f1
+    id: w3-t6-gate
+    kind: task
+    versions:
+      - key: 01a19f9a-424f-7733-9396-4723dcdab4c9
+        at: 2026-11-03T04:10:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "Done when `cargo xtask check` passes and AC-107 to AC-121 are linked and accepted, or marked unverified with the wave that verifies them."
+        state: open
