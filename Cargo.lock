@@ -3,5 +3,13 @@
 version = 4
 
 [[package]]
-name = "univ-server"
+name = "univ-ingest"
+version = "0.1.0"
+
+[[package]]
+name = "univ-model"
+version = "0.1.0"
+
+[[package]]
+name = "xtask"
 version = "0.1.0"

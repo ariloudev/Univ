@@ -1,0 +1,10 @@
+[package]
+name = "univ-ingest"
+description = "Downloads, normalizes and cross-matches public sky data, and publishes releases for Univ Server."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
