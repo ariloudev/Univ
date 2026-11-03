@@ -46,13 +46,14 @@ fn width(kind: u8, repeat: usize) -> Option<usize> {
 pub(super) fn first_table(fits: &[u8]) -> Result<BinTable, String> {
     let mut at = 0;
     while at < fits.len() {
-        let hdu = next_hdu(fits, &mut at)?;
+        let hdu = next_hdu(fits, &mut at).map_err(|e| e.to_string())?;
         let header = &hdu.header;
         if header.get("XTENSION") != Some("BINTABLE") {
             continue;
         }
         let count = |keyword: &str| {
-            usize::try_from(header.whole(keyword, 0)?).map_err(|_| format!("{keyword} is negative"))
+            usize::try_from(header.whole(keyword, 0).map_err(|e| e.to_string())?)
+                .map_err(|_| format!("{keyword} is negative"))
         };
         let (row_len, rows) = (count("NAXIS1")?, count("NAXIS2")?);
         let columns = columns(header, count("TFIELDS")?, row_len)?;

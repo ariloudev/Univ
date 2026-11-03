@@ -1,21 +1,19 @@
 //! FITS image HDUs (Pence et al. 2010, A&A 524, A42, FITS 4.0): the primary HDU and IMAGE
-//! extensions, their header cards, and their data scaled by BSCALE and BZERO.
+//! extensions and their data scaled by BSCALE and BZERO. Headers are read by [`crate::fits`].
 
 use std::io::Read;
 
 use super::{GridReadError, read_numbers};
+pub use crate::fits::Card;
+use crate::fits::{FitsError, Header, skip_padding};
 
-/// FITS files are written in blocks of this many bytes; a header is 36 cards of 80.
-const BLOCK: usize = 2880;
-const CARD: usize = 80;
-
-/// One header card: its keyword, its value as written (a string without its quotes), and its
-/// comment.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Card {
-    pub keyword: String,
-    pub value: Option<String>,
-    pub comment: Option<String>,
+impl From<FitsError> for GridReadError {
+    fn from(error: FitsError) -> Self {
+        match error {
+            FitsError::Io(e) => Self::Io(e),
+            FitsError::Malformed(reason) => Self::Fits(reason),
+        }
+    }
 }
 
 /// One image HDU: its cards and its physical values, `BZERO + BSCALE × stored`, in the file's
@@ -40,8 +38,8 @@ impl FitsImage {
     /// Fails on a reader error, a header that is not a FITS primary header, an unsupported BITPIX,
     /// or data shorter than its header declares.
     pub fn read_primary(mut reader: impl Read) -> Result<Self, GridReadError> {
-        let cards = read_header(&mut reader)?.ok_or_else(|| fits("the file is empty"))?;
-        Self::read_data(&mut reader, cards, true)
+        let header = Header::read_from(&mut reader)?.ok_or_else(|| fits("the file is empty"))?;
+        Self::read_data(&mut reader, header.cards, true)
     }
 
     /// Reads the primary HDU and every IMAGE extension after it, to the end of the file.
@@ -51,8 +49,8 @@ impl FitsImage {
     /// Fails as [`Self::read_primary`] does, or on an extension that is not an IMAGE.
     pub fn read_all(mut reader: impl Read) -> Result<Vec<Self>, GridReadError> {
         let mut hdus = vec![Self::read_primary(&mut reader)?];
-        while let Some(cards) = read_header(&mut reader)? {
-            hdus.push(Self::read_data(&mut reader, cards, false)?);
+        while let Some(header) = Header::read_from(&mut reader)? {
+            hdus.push(Self::read_data(&mut reader, header.cards, false)?);
         }
         Ok(hdus)
     }
@@ -76,19 +74,8 @@ impl FitsImage {
             (true, _) => return Err(fits("the first card is not SIMPLE = T")),
             (false, _) => return Err(fits("an extension is not an IMAGE")),
         }
-        let number = |keyword: &str| -> Result<Option<f64>, GridReadError> {
-            let Some(text) = cards
-                .iter()
-                .find(|c| c.keyword == keyword)
-                .and_then(|c| c.value.as_deref())
-            else {
-                return Ok(None);
-            };
-            text.replace(['D', 'd'], "E")
-                .parse()
-                .map(Some)
-                .map_err(|_| fits(&format!("{keyword} = {text} is not a number")))
-        };
+        let header = Header { cards };
+        let number = |keyword: &str| header.number(keyword).map_err(GridReadError::from);
         let size = |keyword: &str| -> Result<usize, GridReadError> {
             let x = number(keyword)?.ok_or_else(|| fits(&format!("no {keyword}")))?;
             #[expect(
@@ -115,8 +102,7 @@ impl FitsImage {
         } else {
             axes.iter().product()
         };
-        let bscale = number("BSCALE")?.unwrap_or(1.0);
-        let bzero = number("BZERO")?.unwrap_or(0.0);
+        let (bscale, bzero) = header.scaling()?;
         let blank = number("BLANK")?.filter(|_| bitpix > 0);
         let width = usize::try_from(bitpix.unsigned_abs() / 8).unwrap_or(8);
         let values = read_numbers(reader, count, width, |b| {
@@ -129,7 +115,7 @@ impl FitsImage {
         })?;
         skip_padding(reader, count * width)?;
         Ok(Self {
-            cards,
+            cards: header.cards,
             bitpix,
             axes,
             bscale,
@@ -170,111 +156,10 @@ fn decode(bitpix: i32, bytes: &[u8]) -> f64 {
     }
 }
 
-/// Reads header blocks up to and including the one holding END; `None` at a clean end of file.
-fn read_header(reader: &mut impl Read) -> Result<Option<Vec<Card>>, GridReadError> {
-    let mut cards = Vec::new();
-    let mut block = vec![0_u8; BLOCK];
-    loop {
-        let filled = fill(reader, &mut block)?;
-        if filled == 0 && cards.is_empty() {
-            return Ok(None);
-        }
-        if filled < BLOCK {
-            return Err(fits("the header ends without an END card"));
-        }
-        for raw in block.chunks(CARD) {
-            let text: String = raw.iter().map(|&b| char::from(b)).collect();
-            let keyword = text[..8].trim_end().to_string();
-            if keyword == "END" {
-                return Ok(Some(cards));
-            }
-            if !keyword.is_empty() {
-                cards.push(parse_card(keyword, &text));
-            }
-        }
-    }
-}
-
-/// A card's value and comment, when columns 9 and 10 hold the value indicator `= `.
-fn parse_card(keyword: String, text: &str) -> Card {
-    if &text[8..10] != "= " {
-        let comment = text[8..].trim();
-        let comment = (!comment.is_empty()).then(|| comment.to_string());
-        return Card {
-            keyword,
-            value: None,
-            comment,
-        };
-    }
-    let field = text[10..].trim_start();
-    let (value, rest) = if let Some(quoted) = field.strip_prefix('\'') {
-        // A string ends at a quote not doubled; a doubled quote stands for one.
-        let mut value = String::new();
-        let mut chars = quoted.char_indices().peekable();
-        let mut end = quoted.len();
-        while let Some((i, c)) = chars.next() {
-            if c == '\'' {
-                if chars.peek().map(|&(_, n)| n) == Some('\'') {
-                    chars.next();
-                } else {
-                    end = i + 1;
-                    break;
-                }
-            }
-            value.push(c);
-        }
-        (value.trim_end().to_string(), &quoted[end..])
-    } else {
-        let end = field.find('/').unwrap_or(field.len());
-        (field[..end].trim().to_string(), &field[end..])
-    };
-    let comment = rest
-        .trim_start()
-        .strip_prefix('/')
-        .map(|c| c.trim().to_string());
-    Card {
-        keyword,
-        value: Some(value),
-        comment,
-    }
-}
-
-/// Fills `buf` from the reader as far as it goes; the count is short only at the end of file.
-fn fill(reader: &mut impl Read, buf: &mut [u8]) -> Result<usize, GridReadError> {
-    let mut filled = 0;
-    while filled < buf.len() {
-        match reader.read(&mut buf[filled..]) {
-            Ok(0) => break,
-            Ok(n) => filled += n,
-            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => {}
-            Err(e) => return Err(e.into()),
-        }
-    }
-    Ok(filled)
-}
-
-/// Skips the fill after `bytes` of data up to the end of its block; a file may end without it.
-fn skip_padding(reader: &mut impl Read, bytes: usize) -> Result<(), GridReadError> {
-    let pad = (BLOCK - bytes % BLOCK) % BLOCK;
-    fill(reader, &mut vec![0; pad])?;
-    Ok(())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    /// A header block from cards, padded with blanks, END included.
-    fn header(cards: &[&str]) -> Vec<u8> {
-        let mut bytes = Vec::new();
-        for card in cards.iter().chain(&["END"]) {
-            let mut card = card.as_bytes().to_vec();
-            card.resize(CARD, b' ');
-            bytes.extend(card);
-        }
-        bytes.resize(bytes.len().div_ceil(BLOCK) * BLOCK, b' ');
-        bytes
-    }
+    use crate::fits::{BLOCK, header_block as header};
 
     fn padded(mut data: Vec<u8>) -> Vec<u8> {
         data.resize(data.len().div_ceil(BLOCK) * BLOCK, 0);
