@@ -12,6 +12,15 @@ use super::{QueryRow, Store};
 pub const DATABASE: &str = "univ";
 /// The R2 bucket `wrangler.toml` names.
 pub const BUCKET: &str = "univ-releases";
+/// The most lines of Wrangler's standard error a failure gives: its last.
+pub const STDERR_LINES: usize = 20;
+
+/// The directory in Wrangler's local state directory `persist_to` that Univ Ingest keeps its
+/// own files in: the publish journals and Wrangler's read-back scratch file.
+#[must_use]
+pub fn ingest_dir(persist_to: &Path) -> PathBuf {
+    persist_to.join("univ-ingest")
+}
 
 /// Wrangler, run from the repository's `node_modules`.
 #[derive(Clone, Debug)]
@@ -51,7 +60,7 @@ impl Wrangler {
                 root.display()
             ));
         }
-        let scratch = persist_to.join("univ-ingest");
+        let scratch = ingest_dir(&persist_to);
         std::fs::create_dir_all(&scratch).map_err(|e| format!("{}: {e}", scratch.display()))?;
         Ok(Self {
             program,
@@ -78,28 +87,95 @@ impl Wrangler {
             .map_err(|e| format!("{}: {e}", self.program.display()))
     }
 
+    /// Runs Wrangler with `args` and gives its output when it succeeds, else its failure.
+    fn run_ok(&self, args: &[&str]) -> Result<Output, String> {
+        let output = self.run(args)?;
+        if output.status.success() {
+            Ok(output)
+        } else {
+            Err(failure(args, &output))
+        }
+    }
+
     fn object(key: &str) -> String {
         format!("{BUCKET}/{key}")
     }
 }
 
-/// What a failed run said: its JSON error, or the last line of its error output.
+/// `text` without its ANSI escape sequences: control sequences (`ESC [` … a final byte),
+/// operating system commands (`ESC ]` … BEL or `ESC \`) and two-byte escapes.
+#[must_use]
+pub fn strip_ansi(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c != '\u{1b}' {
+            out.push(c);
+            continue;
+        }
+        match chars.next() {
+            Some('[') => {
+                for c in chars.by_ref() {
+                    if ('\u{40}'..='\u{7e}').contains(&c) {
+                        break;
+                    }
+                }
+            }
+            Some(']') => {
+                while let Some(c) = chars.next() {
+                    if c == '\u{7}' || (c == '\u{1b}' && chars.next_if_eq(&'\\').is_some()) {
+                        break;
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
+/// What a failed run of `args` said, its escapes stripped: the JSON error it printed, if any,
+/// and the last [`STDERR_LINES`] lines of its standard error.
 fn failure(args: &[&str], output: &Output) -> String {
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    said(
+        args,
+        &output.status.to_string(),
+        &output.stdout,
+        &output.stderr,
+    )
+}
+
+fn said(args: &[&str], status: &str, stdout: &[u8], stderr: &[u8]) -> String {
+    let stdout = strip_ansi(&String::from_utf8_lossy(stdout));
+    let stderr = strip_ansi(&String::from_utf8_lossy(stderr));
+    let mut said = format!("wrangler {} failed ({status})", args.join(" "));
     let json = serde_json::from_str::<Value>(stdout.trim())
         .ok()
         .and_then(|v| v["error"]["text"].as_str().map(str::to_owned));
-    let said = json.unwrap_or_else(|| {
-        stderr
-            .lines()
-            .chain(stdout.lines())
-            .map(str::trim)
-            .find(|l| l.contains("ERROR") || l.starts_with('✘'))
-            .unwrap_or("no message")
-            .to_owned()
-    });
-    format!("wrangler {} failed: {said}", args.join(" "))
+    if let Some(json) = json {
+        said.push_str(": ");
+        said.push_str(&json);
+    }
+    let lines: Vec<&str> = stderr
+        .lines()
+        .map(str::trim_end)
+        .filter(|l| !l.trim().is_empty())
+        .collect();
+    let tail = &lines[lines.len().saturating_sub(STDERR_LINES)..];
+    if tail.is_empty() {
+        said.push_str("; it wrote nothing to standard error");
+    } else {
+        let last = if tail.len() < lines.len() {
+            format!(", its last {STDERR_LINES} lines")
+        } else {
+            String::new()
+        };
+        said.push_str("; its standard error");
+        said.push_str(&last);
+        said.push_str(":\n");
+        said.push_str(&tail.join("\n"));
+    }
+    said
 }
 
 /// A MIME type for an R2 object, by its extension.
@@ -115,21 +191,12 @@ impl Store for Wrangler {
     fn execute_file(&mut self, file: &Path) -> Result<(), String> {
         let file = absolute(file)?;
         let file = file.to_string_lossy();
-        let args = ["d1", "execute", DATABASE, "--file", &file];
-        let output = self.run(&args)?;
-        if output.status.success() {
-            Ok(())
-        } else {
-            Err(failure(&args, &output))
-        }
+        self.run_ok(&["d1", "execute", DATABASE, "--file", &file])
+            .map(drop)
     }
 
     fn query(&mut self, sql: &str) -> Result<Vec<QueryRow>, String> {
-        let args = ["d1", "execute", DATABASE, "--command", sql, "--json"];
-        let output = self.run(&args)?;
-        if !output.status.success() {
-            return Err(failure(&args, &output));
-        }
+        let output = self.run_ok(&["d1", "execute", DATABASE, "--command", sql, "--json"])?;
         let value: Value = serde_json::from_slice(&output.stdout)
             .map_err(|e| format!("wrangler d1 execute gave no JSON: {e}"))?;
         let results = value
@@ -146,7 +213,7 @@ impl Store for Wrangler {
     fn put(&mut self, key: &str, file: &Path) -> Result<(), String> {
         let file = absolute(file)?;
         let (object, file) = (Self::object(key), file.to_string_lossy());
-        let args = [
+        self.run_ok(&[
             "r2",
             "object",
             "put",
@@ -155,13 +222,8 @@ impl Store for Wrangler {
             &file,
             "--content-type",
             content_type(key),
-        ];
-        let output = self.run(&args)?;
-        if output.status.success() {
-            Ok(())
-        } else {
-            Err(failure(&args, &output))
-        }
+        ])
+        .map(drop)
     }
 
     fn get(&mut self, key: &str) -> Result<Option<Vec<u8>>, String> {
@@ -176,7 +238,7 @@ impl Store for Wrangler {
             return Ok(Some(bytes));
         }
         let _ = std::fs::remove_file(&back);
-        let said = String::from_utf8_lossy(&output.stderr);
+        let said = strip_ansi(&String::from_utf8_lossy(&output.stderr));
         if said.contains("The specified key does not exist") {
             Ok(None)
         } else {
@@ -186,13 +248,7 @@ impl Store for Wrangler {
 
     fn delete(&mut self, key: &str) -> Result<(), String> {
         let object = Self::object(key);
-        let args = ["r2", "object", "delete", &object];
-        let output = self.run(&args)?;
-        if output.status.success() {
-            Ok(())
-        } else {
-            Err(failure(&args, &output))
-        }
+        self.run_ok(&["r2", "object", "delete", &object]).map(drop)
     }
 }
 
@@ -214,6 +270,50 @@ mod tests {
         assert_eq!(
             content_type("releases/1/tiles/stars/r0.bin"),
             "application/octet-stream"
+        );
+    }
+
+    #[test]
+    fn a_failure_gives_wranglers_standard_error_without_its_escapes() {
+        // Recorded: `wrangler d1 execute --command "SELEC 1"`, colours forced.
+        let recorded =
+            include_bytes!("../../tests/fixtures/wrangler/d1-execute-syntax-error.stderr");
+        assert!(recorded.contains(&0x1b), "the recording holds escapes");
+        let args = ["d1", "execute", DATABASE, "--command", "SELEC 1"];
+        let message = said(&args, "exit status: 1", b"", recorded);
+        assert!(!message.contains('\u{1b}'), "{message:?}");
+        assert!(
+            message.starts_with(
+                "wrangler d1 execute univ --command SELEC 1 failed (exit status: 1); its standard \
+                 error:\n"
+            ),
+            "{message}"
+        );
+        assert!(
+            message.contains("✘ [ERROR] near \"SELEC\": syntax error at offset 0: SQLITE_ERROR"),
+            "{message}"
+        );
+        assert!(message.contains("Logs were written to"), "{message}");
+
+        // Only the last lines of a long standard error, and the JSON error where there is one.
+        let long = (1..=30)
+            .map(|n| format!("line {n}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let json = br#"{"error": {"text": "D1 refused it"}}"#;
+        let message = said(&args, "exit status: 1", json, long.as_bytes());
+        assert!(
+            message.contains("failed (exit status: 1): D1 refused it"),
+            "{message}"
+        );
+        assert!(
+            message.contains("its last 20 lines:\nline 11\n"),
+            "{message}"
+        );
+        assert!(message.ends_with("line 30") && !message.contains("line 10\n"));
+        assert_eq!(
+            strip_ansi("\u{1b}]8;;http://x\u{7}link\u{1b}]8;;\u{1b}\\ ok"),
+            "link ok"
         );
     }
 }

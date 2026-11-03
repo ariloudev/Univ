@@ -10,3 +10,12 @@ versions:
     title: "W7 review"
     goal: "/simplify and /code-review findings on wave 7 are fixed, the gate is green and the trace is recorded"
     status: planned
+  - key: 01a1a0a6-ebba-739a-a343-6c8002166788
+    at: 2026-11-03T09:04:16Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W7 review"
+    goal: "/simplify and /code-review findings on wave 7 are fixed, the gate is green and the trace is recorded"
+    status: active

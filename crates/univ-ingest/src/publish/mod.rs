@@ -44,7 +44,7 @@ use serde_json::{Map, Value};
 pub use check::{Status, published_status, sql_text};
 pub use prune::{PruneError, PruneOptions, Pruned, prune};
 pub use upload::{PublishError, PublishOptions, Published, move_latest, publish};
-pub use wrangler::{BUCKET, DATABASE, Wrangler};
+pub use wrangler::{BUCKET, DATABASE, STDERR_LINES, Wrangler, ingest_dir, strip_ansi};
 
 /// A row a D1 query returns, each column by name.
 pub type QueryRow = Map<String, Value>;

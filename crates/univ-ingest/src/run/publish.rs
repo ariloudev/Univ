@@ -4,7 +4,7 @@
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-use crate::publish::{PruneOptions, PublishOptions, Wrangler, prune, publish};
+use crate::publish::{PruneOptions, PublishOptions, Wrangler, ingest_dir, prune, publish};
 
 /// Where Wrangler keeps local D1 and R2 by default: what `wrangler dev` reads from the
 /// repository root.
@@ -34,7 +34,7 @@ pub fn now() -> String {
 /// The directory of the publish journals in Wrangler's local state directory.
 #[must_use]
 pub fn journals(persist_to: &Path) -> PathBuf {
-    persist_to.join("univ-ingest")
+    ingest_dir(persist_to)
 }
 
 /// Publishes the release, giving each step's line to `line` and the closing line.

@@ -10,6 +10,15 @@ versions:
     title: "W7 Releases"
     goal: "A release is built with its manifest, D1 schema, cell index and R2 layout, checked before it takes a number, published to local D1 and R2 with latest moved in one write, and old releases pruned without losing an id"
     status: active
+  - key: 01a1a0a6-ebba-739a-a343-6c7f2cc3704f
+    at: 2026-11-03T09:04:16Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W7 Releases"
+    goal: "A release is built with its manifest, D1 schema, cell index and R2 layout, checked before it takes a number, published to local D1 and R2 with latest moved in one write, and old releases pruned without losing an id"
+    status: done
 blocks:
   - key: 01a1a090-d554-7526-95a3-08a89f484f8b
     id: w7-t1-build
@@ -48,3 +57,19 @@ blocks:
         title: "Publish locally and prune"
         detail: "A minimal `wrangler.toml` with only the D1 and R2 bindings, and wrangler pinned in `package.json`. Publish runs `wrangler d1 execute --local` and `r2 object put --local`, checking each file against its SHA-256. `latest` moves in one write at the end. An interrupted publish continues, and a release number already published is refused. Prune deletes a release's files and rows, keeps its pruning time and the id ledger, and refuses `latest`. Also: point and primitive structures go into the cell index. Done when AC-99 to AC-106 and AC-121 are tested, with an end-to-end run against a temporary wrangler state."
         state: active
+      - key: 01a1a0a6-ebba-739a-a343-6c7edb217c0b
+        at: 2026-11-03T09:04:16Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Publish locally and prune"
+        detail: |-
+          - **Tooling:** wrangler is pinned at 4.156.2 in `package.json`. `wrangler.toml` has only the D1 and R2 bindings.
+          - **`univ-ingest publish n`:** each R2 file is put, read back and hashed, and each D1 table's rows are counted. A journal under `--persist-to` lets an interrupted publish continue. `latest` moves in one statement after every upload. A release already published is refused, naming its number and publication time.
+          - **`univ-ingest prune n`:** refuses `latest`. It deletes the release's files and rows, keeps its pruning time and the id ledger, and every id still resolves.
+          - **Cell index:** points, spheres and sky regions (as cone boxes) are now indexed: 18 of 26 structures on the fixtures.
+          - **End-to-end:** an ignored test ran by hand against real local wrangler and passed in 65 s.
+
+          AC-99 to AC-106 and AC-121 are linked; 122 of 293 nodes.
+        state: done
