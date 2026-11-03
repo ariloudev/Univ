@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use univ_model::entry::CatalogueEntry;
 use univ_model::ids::SourceId;
 use univ_model::object::{LineOfSight, MatchMethod};
+use univ_model::position::separation_degrees;
 
 use crate::yaml::{FileError, read_checked};
 
@@ -311,14 +312,6 @@ fn positive(x: f64) -> bool {
 
 fn field(name: &str, problem: &str) -> (String, String) {
     (name.to_owned(), problem.to_owned())
-}
-
-/// The angle between two unit vectors, degrees, accurate at small angles.
-#[must_use]
-pub fn separation_degrees(a: [f64; 3], b: [f64; 3]) -> f64 {
-    let c = univ_model::position::cross(a, b);
-    let sin = (c[0] * c[0] + c[1] * c[1] + c[2] * c[2]).sqrt();
-    sin.atan2(univ_model::position::dot(a, b)).to_degrees()
 }
 
 /// The entry's heliocentric cz in km/s: its first spectroscopic redshift, else its first

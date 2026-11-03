@@ -16,7 +16,7 @@ use univ_model::derive::{
     DeriveError, DerivedPosition, Direction, MODEL_VERSION, Release, Transformation,
 };
 use univ_model::distance::{Distance, DistanceKind, Measure, Method};
-use univ_model::position::{Epoch, Frame, Vec3, between, dot, lon_lat, unit_vector};
+use univ_model::position::{Epoch, Frame, between, dot, lon_lat, separation_degrees, unit_vector};
 use univ_model::redshift::{CmbRedshift, DipoleModel};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty};
@@ -62,11 +62,6 @@ fn modulus(mu: f64, sigma: f64, assumed: Option<AssumedCosmology>) -> Distance {
 
 fn steps(p: &[univ_model::derive::Step]) -> Vec<&Transformation> {
     p.iter().map(|s| &s.transformation).collect()
-}
-
-fn angle_between(a: Vec3, b: Vec3) -> f64 {
-    let cos = dot(a, b) / (dot(a, a) * dot(b, b)).sqrt();
-    cos.clamp(-1.0, 1.0).acos().to_degrees()
 }
 
 #[test]
@@ -236,7 +231,7 @@ fn m31_is_placed_at_its_mcconnachie_distance_toward_andromeda() {
     // The origin is the barycentre: the far end of the radial interval lies along the same
     // line, further out.
     let (near_end, far_end) = m31.radial_interval(Frame::Galactic).unwrap();
-    assert!(angle_between(near_end, far_end) < 1e-9);
+    assert!(separation_degrees(near_end, far_end) < 1e-9);
     assert!(near(dot(far_end, far_end).sqrt(), 0.783_43 + plus, 1e-5));
     assert!(near(dot(near_end, near_end).sqrt(), 0.783_43 - minus, 1e-5));
 }
@@ -289,7 +284,7 @@ fn the_galactic_centre_and_the_supergalactic_pole_round_trip() {
         between(Frame::Galactic, Frame::Supergalactic)
             .apply(between(Frame::Icrs, Frame::Galactic).apply(start)),
     );
-    assert!(angle_between(start, around) < 1e-12);
+    assert!(separation_degrees(start, around) < 1e-12);
 }
 
 #[test]

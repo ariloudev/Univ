@@ -98,7 +98,7 @@ pub fn equinox_ambiguity() -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use super::super::{Frame, between, dot, lon_lat, scaled, unit_vector};
+    use super::super::{Frame, between, dot, lon_lat, scaled, separation_degrees, unit_vector};
 
     fn assert_near(actual: (f64, f64), expected: (f64, f64), tolerance: f64) {
         let dlon = (actual.0 - expected.0 + 180.0).rem_euclid(360.0) - 180.0;
@@ -189,7 +189,7 @@ mod tests {
         ] {
             let b1950 = between(Frame::Fk4B1950, Frame::Icrs).apply(unit_vector(ra, dec));
             let j2000 = j2000.apply(unit_vector(ra, dec));
-            let apart = dot(b1950, j2000).clamp(-1.0, 1.0).acos().to_degrees();
+            let apart = separation_degrees(b1950, j2000);
             assert!(apart <= error, "({ra}, {dec}) moves {apart}°");
         }
         assert_eq!(Frame::Icrs.systematic_uncertainty(), None);

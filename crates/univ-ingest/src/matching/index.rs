@@ -128,7 +128,7 @@ fn point(i: usize) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::matching::rules::separation_degrees;
+    use univ_model::position::separation_degrees;
     use univ_model::position::unit_vector;
 
     /// A simulated sky of points spread by a fixed generator: the index finds every pair

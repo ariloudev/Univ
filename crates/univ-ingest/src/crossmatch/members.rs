@@ -21,7 +21,7 @@ use univ_model::derive::DerivedPosition;
 use univ_model::geometry::{Aabb, Geometry, Member, Shape};
 use univ_model::ids::ObjectId;
 use univ_model::object::{NotPlacedReason, Object, Placement};
-use univ_model::position::{Frame, Vec3, between, dot, unit_vector};
+use univ_model::position::{Frame, Vec3, between, separation_degrees, unit_vector};
 use univ_model::units::Unit;
 
 use crate::structures::{ColumnName, Coordinates, Members, Structure, StructureGeometry};
@@ -206,7 +206,7 @@ fn member(
         .and_then(|e| e.entry.position.as_ref())
         .map(|p| p.icrs.unit_vector());
     if let (Some(a), Some(b)) = (sky, published) {
-        let arcsec = dot(a, b).clamp(-1.0, 1.0).acos().to_degrees() * 3_600.0;
+        let arcsec = separation_degrees(a, b) * 3_600.0;
         if arcsec > MEMBER_TOLERANCE_ARCSEC {
             return Err(MemberProblem::TooFar { id: c.id, arcsec });
         }

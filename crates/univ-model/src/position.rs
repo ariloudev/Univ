@@ -4,6 +4,7 @@
 //! equinox is not stated.
 
 mod fk4;
+mod vector;
 
 use std::array::from_fn;
 use std::sync::LazyLock;
@@ -334,34 +335,7 @@ pub fn between(from: Frame, to: Frame) -> Transform {
 }
 
 pub use fk4::equinox_ambiguity;
-
-/// The dot product.
-#[must_use]
-pub fn dot(a: Vec3, b: Vec3) -> f64 {
-    a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-}
-
-/// `f` applied to the matching components of `a` and `b`.
-#[must_use]
-pub fn zip(a: Vec3, b: Vec3, f: impl Fn(f64, f64) -> f64) -> Vec3 {
-    from_fn(|i| f(a[i], b[i]))
-}
-
-/// `v` times `s`.
-#[must_use]
-pub fn scaled(v: Vec3, s: f64) -> Vec3 {
-    v.map(|c| c * s)
-}
-
-/// The cross product.
-#[must_use]
-pub fn cross(a: Vec3, b: Vec3) -> Vec3 {
-    [
-        a[1] * b[2] - a[2] * b[1],
-        a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0],
-    ]
-}
+pub use vector::{cross, dot, scaled, separation_degrees, zip};
 
 #[cfg(test)]
 mod tests {
