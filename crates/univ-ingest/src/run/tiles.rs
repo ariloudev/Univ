@@ -4,11 +4,11 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use super::{FetchOptions, RunReport, lock};
+use super::{RunReport, lock};
 use crate::crossmatch::CrossMatched;
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::source::SourceDefinition;
-use crate::tiles::{Built, Context, DOMAINS, TileRules, build, name_of, write_all};
+use crate::tiles::{Built, Context, DOMAINS, build, name_of, write_all};
 
 /// Where the tiles stage writes, by default: the build directory of the cache.
 pub const DEFAULT_TILES: &str = ".cache/univ-ingest/build/tiles";
@@ -47,15 +47,14 @@ pub fn counts(built: &Built) -> Vec<Count> {
     counts
 }
 
-/// Builds the tiles of `crossed` under the rules in the repository's `rules/tiles.yaml` and the
-/// release cosmology the cross-match placed its objects under, and writes them under
+/// Builds the tiles of `crossed` under the tile rules and release cosmology the cross-match
+/// worked under, and writes them under
 /// `tile_options.out` where it names a directory. Nothing is written unless every domain builds. A stage that fails is
 /// reported in `report`, and gives nothing.
 pub async fn tiles_stage(
     sink: Arc<dyn EventSink>,
     definitions: &[SourceDefinition],
     crossed: Arc<CrossMatched>,
-    options: &FetchOptions,
     tile_options: &TileOptions,
     report: &Mutex<RunReport>,
 ) -> Option<Built> {
@@ -64,14 +63,12 @@ pub async fn tiles_stage(
         stage: Stage::Tiles,
         items: Some(DOMAINS.len() as u64),
     });
-    let rules = options.repository.join("rules").join("tiles.yaml");
     let (definitions, out, events) = (definitions.to_vec(), tile_options.out.clone(), sink.clone());
     let outcome = tokio::task::spawn_blocking(move || {
-        let rules = TileRules::read(&rules).map_err(|e| e.to_string())?;
         let context = Context {
             release: &crossed.release,
             cosmology: &crossed.cosmology,
-            rules: &rules,
+            rules: &crossed.basis.tiles,
             definitions: &definitions,
         };
         let built = build(&crossed.objects, &context).map_err(|e| e.to_string())?;

@@ -10,11 +10,8 @@ use crate::acquire::Acquired;
 use crate::crossmatch::CrossMatched;
 use crate::display::SourceState;
 use crate::events::{Count, Event, EventSink, Stage};
-use crate::release::{
-    BuiltRelease, CONFIG_FILE, Inputs, ReleaseConfig, build, decimal_bytes, is_grid, read_grid,
-};
-use crate::source::{Access, SourceDefinition};
-use crate::structures::read_all_named;
+use crate::release::{BuiltRelease, Inputs, build, decimal_bytes, is_grid, read_grid};
+use crate::source::SourceDefinition;
 use crate::tiles::Built;
 
 /// Where the build stage writes, by default: the build directory of the cache.
@@ -90,8 +87,8 @@ fn counts(built: &BuiltRelease) -> Vec<Count> {
     ]
 }
 
-/// Reads what the release holds beside the cross-match, the structures and grids, and builds
-/// it. Refuses when a source failed.
+/// Reads what the release holds beside the cross-match, its volume grids, and builds it under
+/// the rules, configuration and structures the cross-match worked under.
 fn assemble_and_build(
     definitions: &[SourceDefinition],
     acquired: &[Option<Acquired>],
@@ -100,18 +97,12 @@ fn assemble_and_build(
     options: &FetchOptions,
     build_options: &BuildOptions,
 ) -> Result<BuiltRelease, String> {
-    let rules = options.repository.join("rules");
-    let config = ReleaseConfig::read(&rules.join(CONFIG_FILE)).map_err(|e| e.to_string())?;
     let mut held = Vec::new();
-    let mut structures = Vec::new();
     let mut grids = Vec::new();
     for (definition, on_disk) in definitions.iter().zip(acquired) {
         let Some(on_disk) = on_disk else { continue };
         held.push(definition.clone());
-        if let Access::Repository { path } = &definition.access {
-            let dir = options.repository.join(path);
-            structures.extend(read_all_named(&dir).map_err(|e| e.to_string())?);
-        } else if is_grid(definition) {
+        if is_grid(definition) {
             grids.push((definition.clone(), read_grid(definition, &on_disk.files)?));
         }
     }
@@ -119,10 +110,7 @@ fn assemble_and_build(
         crossed,
         tiles,
         definitions: &held,
-        structures: &structures,
         grids: &grids,
-        config: &config,
-        rules: &rules,
         cache: &options.cache,
         built_at: super::now(),
     };

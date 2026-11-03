@@ -3,6 +3,7 @@
 //! the id ledger, and placed under the release cosmology; then the member lists of the
 //! researched structures resolved to those objects.
 
+mod basis;
 mod members;
 mod place;
 
@@ -15,6 +16,7 @@ use univ_model::ids::ObjectId;
 use univ_model::ledger::Ledger;
 use univ_model::object::{Object, Placement};
 
+pub use basis::{Basis, RULES};
 pub use members::{
     MemberPlacement, MemberProblem, NameIndex, Resolved, UnplacedMember, resolve_all,
 };
@@ -22,24 +24,21 @@ pub use place::place;
 
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::ids::{AssignError, Assigned, assign_in_order};
-use crate::matching::{MatchReport, MatchingRules, match_entries};
-use crate::ranking::{RankingRules, rank_all};
+use crate::matching::{MatchReport, match_entries};
+use crate::ranking::rank_all;
 use crate::state::State;
-use crate::structures::Structure;
 use univ_model::entry::CatalogueEntry;
 
 /// The steps of the stage, which its status line counts.
 pub const STEPS: u64 = 5;
 
-/// What the cross-match works under: the release's rules and cosmology, the state of the last
-/// release, and the researched structures.
+/// What the cross-match works under: the release's rules, configuration and researched
+/// structures, its cosmology, and the state of the last release.
 pub struct Inputs<'a> {
-    pub matching: &'a MatchingRules,
-    pub ranking: &'a RankingRules,
+    pub basis: &'a Basis,
     /// The release cosmology with its D(z) tabulated once for the run.
     pub release: &'a Release,
     pub state: &'a State,
-    pub structures: &'a [Structure],
 }
 
 /// An object of the release: its id, the object and its derived position, if placed.
@@ -65,6 +64,8 @@ pub struct CrossMatched {
     pub next: State,
     pub structures: Vec<MemberPlacement>,
     pub matching: MatchReport,
+    /// What the cross-match worked under, which the tiles and the release are built under.
+    pub basis: Basis,
 }
 
 /// A cross-match that cannot be made.
@@ -99,14 +100,15 @@ pub fn cross_match(
         });
     };
     let count = entries.len();
-    let matched = match_entries(inputs.matching, entries);
+    let basis = inputs.basis;
+    let matched = match_entries(&basis.matching, entries);
     let report = matched.report.clone();
     step(format!(
         "matching: {count} entries into {} objects, {} candidate links",
         report.objects, report.candidate_links
     ));
     let mut objects = matched.objects;
-    rank_all(&mut objects, inputs.ranking, inputs.release);
+    rank_all(&mut objects, &basis.ranking, inputs.release);
     let ranked = objects.iter().filter(|o| o.preferred_distance.is_some());
     step(format!(
         "ranking: {} with a preferred distance",
@@ -131,7 +133,7 @@ pub fn cross_match(
 
     let mut placed = Vec::with_capacity(objects.len());
     for (mut object, id) in objects.into_iter().zip(ids) {
-        let position = place(&mut object, inputs.release, inputs.ranking);
+        let position = place(&mut object, inputs.release, &basis.ranking);
         placed.push(ReleaseObject {
             id,
             object,
@@ -149,8 +151,8 @@ pub fn cross_match(
             position: o.position.as_ref(),
         })
         .collect();
-    let tolerance = inputs.matching.structure_members.angular_tolerance_arcsec;
-    let structures = resolve_all(inputs.structures, &NameIndex::new(&resolved), tolerance);
+    let tolerance = basis.matching.structure_members.angular_tolerance_arcsec;
+    let structures = resolve_all(&basis.structures(), &NameIndex::new(&resolved), tolerance);
     for s in structures.iter().filter(|s| s.shape.is_none()) {
         let (no_object, unplaced) = s.unresolved_and_unplaced();
         sink.emit(Event::MembersUnplaced {
@@ -175,6 +177,7 @@ pub fn cross_match(
         next,
         structures,
         matching: report,
+        basis: basis.clone(),
     };
     sink.emit(Event::StageEnded {
         stage: Stage::Match,

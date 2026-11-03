@@ -12,6 +12,7 @@ mod release_fixture;
 
 use common::workspace;
 use release_fixture::{BUILT_AT, build_next, built, cross, d1_text, fixture, read_manifest, tiles};
+use univ_ingest::crossmatch::Basis;
 use univ_ingest::release::{cell_rows, list, release_dir, structure_rows};
 use univ_ingest::state::{State, pending};
 use univ_ingest::tiles::sha256;
@@ -223,4 +224,42 @@ fn the_release_number_increments_and_the_pending_state_becomes_the_state() {
         "2"
     );
     assert!(release_dir(f.out.path(), 1).is_dir() && release_dir(f.out.path(), 2).is_dir());
+}
+
+#[test]
+fn a_release_is_built_under_the_rules_and_structures_its_cross_match_read() {
+    let f = fixture();
+    // The repository's rules, read by the cross-match from a copy.
+    let rules = tempfile::tempdir().unwrap();
+    for name in ["matching", "ranking", "tiles", "release"] {
+        let file = format!("{name}.yaml");
+        std::fs::copy(
+            workspace().join("rules").join(&file),
+            rules.path().join(&file),
+        )
+        .unwrap();
+    }
+    let read = Basis::read(rules.path(), &[workspace().join("structures")]).unwrap();
+    let mut crossed = cross(&f);
+    crossed.basis = read.clone();
+    let laid = tiles(&f, &crossed);
+    // The files change after the cross-match read them.
+    let ranking = std::fs::read_to_string(rules.path().join("ranking.yaml")).unwrap();
+    let changed = ranking.replace("peculiar_velocity_km_s: 300", "peculiar_velocity_km_s: 250");
+    assert_ne!(changed, ranking);
+    std::fs::write(rules.path().join("ranking.yaml"), &changed).unwrap();
+    std::fs::write(rules.path().join("matching.yaml"), "changed: true\n").unwrap();
+
+    let release = built(&f, &crossed, &laid, &f.definitions, &read.structures).unwrap();
+    let m = &release.manifest;
+    assert_eq!(m.peculiar_velocity_km_s, 300.0);
+    for name in ["matching", "ranking"] {
+        let recorded = m.rules.iter().find(|r| r.name == name).unwrap();
+        assert_eq!(recorded.sha256, sha256(read.file(name)), "{name}");
+        let path = release.dir.join(&recorded.path);
+        assert_eq!(std::fs::read(path).unwrap(), read.file(name), "{name}");
+    }
+    let row = d1_text(&release.dir, m, "releases");
+    assert!(row.contains("peculiar_velocity_km_s: 300") && !row.contains("changed: true"));
+    assert_eq!(m.counts.structures, read.structures.len() as u64);
 }

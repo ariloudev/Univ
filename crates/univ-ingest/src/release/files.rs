@@ -18,7 +18,7 @@ use super::{
     CellRows, D1Rows, GridFiles, Inputs, cell_rows, domain_rows, grid_files, source_rows,
     structure_rows,
 };
-use crate::ranking::RankingRules;
+use crate::crossmatch::RULES;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
 use crate::yaml::{FileError, parse_checked};
 
@@ -45,50 +45,33 @@ pub struct Assembled {
     pub failed: Vec<Failed>,
 }
 
-/// The rules files a release records, by name.
-const RULES: [&str; 4] = ["matching", "ranking", "tiles", "release"];
-
-/// The rules files recorded, with their entries in the manifest and their text.
-struct Rules {
-    files: Vec<ReleaseFile>,
-    recorded: Vec<RecordedFile>,
-    texts: Vec<String>,
-}
-
-/// Reads the rules files the release records from `inputs.rules`, the release configuration
-/// as the build read it when there is no file.
-fn rules(inputs: &Inputs<'_>, ranking: &RankingRules) -> Result<Rules, String> {
-    let mut rules = Rules {
-        files: Vec::new(),
-        recorded: Vec::new(),
-        texts: Vec::new(),
-    };
+/// The rules files the release records: each file of the cross-match's basis as it was read,
+/// with its entry in the manifest.
+fn rules(inputs: &Inputs<'_>) -> (Vec<ReleaseFile>, Vec<RecordedFile>) {
+    let basis = &inputs.crossed.basis;
+    let mut files = Vec::new();
+    let mut recorded = Vec::new();
     for name in RULES {
-        let file = inputs.rules.join(format!("{name}.yaml"));
-        let bytes = match std::fs::read(&file) {
-            Ok(bytes) => bytes,
-            Err(_) if name == "release" => serde_norway::to_string(inputs.config)
-                .map_err(|e| e.to_string())?
-                .into_bytes(),
-            Err(e) => return Err(format!("{}: {e}", file.display())),
-        };
+        let bytes = basis.file(name).to_vec();
         let path = keys::rules(name);
-        rules.recorded.push(RecordedFile {
+        recorded.push(RecordedFile {
             name: name.to_owned(),
-            rule: (name == "ranking").then(|| ranking.rule.clone()),
+            rule: (name == "ranking").then(|| basis.ranking.rule.clone()),
             path: path.clone(),
             sha256: sha256(&bytes),
         });
-        rules
-            .texts
-            .push(String::from_utf8_lossy(&bytes).into_owned());
-        rules.files.push(ReleaseFile {
+        files.push(ReleaseFile {
             path,
             bytes,
             target: Target::R2,
         });
     }
-    Ok(rules)
+    (files, recorded)
+}
+
+/// A rules file's text, as the release row records it.
+fn text(inputs: &Inputs<'_>, name: &str) -> String {
+    String::from_utf8_lossy(inputs.crossed.basis.file(name)).into_owned()
 }
 
 /// What the rows of a release came to, beside the rows.
@@ -100,13 +83,9 @@ struct Rows {
 }
 
 /// Every D1 row of release `number`, and the grids' files.
-fn rows(
-    inputs: &Inputs<'_>,
-    number: u32,
-    ranking: &RankingRules,
-    texts: &[String],
-) -> Result<Rows, String> {
+fn rows(inputs: &Inputs<'_>, number: u32) -> Result<Rows, String> {
     let crossed = inputs.crossed;
+    let ranking = &crossed.basis.ranking;
     let release =
         Release::new(&crossed.cosmology).with_peculiar_velocity(ranking.peculiar_velocity_km_s);
     let objects = object_rows(number, &crossed.objects, inputs.definitions)?;
@@ -117,8 +96,12 @@ fn rows(
         &objects.per_source,
         inputs.cache,
     )?;
-    let (structures, bounds) =
-        structure_rows(number, inputs.structures, &crossed.structures, &release)?;
+    let (structures, bounds) = structure_rows(
+        number,
+        &crossed.basis.structures,
+        &crossed.structures,
+        &release,
+    )?;
     let cells = cell_rows(
         number,
         &crossed.objects,
@@ -144,8 +127,8 @@ fn rows(
         model_version: MODEL_VERSION.to_owned(),
         ingest_version: env!("CARGO_PKG_VERSION").to_owned(),
         schema_version: SCHEMA_VERSION,
-        matching_rules: texts[0].clone(),
-        ranking_rule: texts[1].clone(),
+        matching_rules: text(inputs, "matching"),
+        ranking_rule: text(inputs, "ranking"),
         ranking_rule_name: ranking.rule.clone(),
         sources: json(&source_ids)?,
         objects: objects.objects.len() as u64,
@@ -196,10 +179,8 @@ fn tile_count(inputs: &Inputs<'_>) -> usize {
 ///
 /// Fails when a rules file cannot be read or a row cannot be made.
 pub fn assemble(inputs: &Inputs<'_>, number: u32) -> Result<Assembled, String> {
-    let ranking =
-        RankingRules::read(&inputs.rules.join("ranking.yaml")).map_err(|e| e.to_string())?;
-    let rules = rules(inputs, &ranking)?;
-    let rows = rows(inputs, number, &ranking, &rules.texts)?;
+    let (rule_files, recorded) = rules(inputs);
+    let rows = rows(inputs, number)?;
     let mut estimate = rows.d1.estimate();
     // The release's row records the estimate it is part of, computed with its widest value.
     estimate.estimated_bytes = rows
@@ -217,11 +198,11 @@ pub fn assemble(inputs: &Inputs<'_>, number: u32) -> Result<Assembled, String> {
         objects: &inputs.crossed.objects,
         tiles: inputs.tiles,
         definitions: inputs.definitions,
-        structures: inputs.structures,
+        structures: &inputs.crossed.basis.structures,
         entries: &rows.objects.per_source,
         cache: inputs.cache,
     });
-    let mut files = rules.files;
+    let mut files = rule_files;
     for d in &inputs.tiles.domains {
         let name = name_of(d.domain);
         files.push(ReleaseFile {
@@ -255,15 +236,7 @@ pub fn assemble(inputs: &Inputs<'_>, number: u32) -> Result<Assembled, String> {
         });
     }
     files.sort_by(|a, b| a.path.cmp(&b.path));
-    let manifest = manifest_of(
-        inputs,
-        number,
-        &ranking,
-        rules.recorded,
-        &rows,
-        estimate,
-        &files,
-    );
+    let manifest = manifest_of(inputs, number, recorded, &rows, estimate, &files);
     Ok(Assembled {
         files,
         manifest,
@@ -275,7 +248,6 @@ pub fn assemble(inputs: &Inputs<'_>, number: u32) -> Result<Assembled, String> {
 fn manifest_of(
     inputs: &Inputs<'_>,
     number: u32,
-    ranking: &RankingRules,
     recorded: Vec<RecordedFile>,
     rows: &Rows,
     estimate: D1Estimate,
@@ -291,7 +263,7 @@ fn manifest_of(
         release: number,
         built_at: inputs.built_at.clone(),
         cosmology: crossed.cosmology.clone(),
-        peculiar_velocity_km_s: ranking.peculiar_velocity_km_s,
+        peculiar_velocity_km_s: crossed.basis.ranking.peculiar_velocity_km_s,
         versions: Versions {
             univ_model: MODEL_VERSION.to_owned(),
             univ_ingest: env!("CARGO_PKG_VERSION").to_owned(),
@@ -315,7 +287,7 @@ fn manifest_of(
             objects: objects.objects.len() as u64,
             placed: placed as u64,
             entries: objects.entries.len() as u64,
-            structures: inputs.structures.len() as u64,
+            structures: crossed.basis.structures.len() as u64,
             structures_indexed: rows.cells.structures_indexed,
             grids: rows.grids.len() as u64,
             tiles: tile_count(inputs) as u64,

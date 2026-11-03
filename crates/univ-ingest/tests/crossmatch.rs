@@ -17,7 +17,7 @@ use simulated::{
     designation, entry, matching_rules, offset, ranking_rules, source, with_cz, with_distance,
 };
 use univ_ingest::crossmatch::{
-    CrossMatched, Inputs, MemberProblem, NameIndex, Resolved, cross_match, resolve_all,
+    Basis, CrossMatched, Inputs, MemberProblem, NameIndex, Resolved, cross_match, resolve_all,
 };
 use univ_ingest::display::{PlainTarget, RunDisplay, RunSink};
 use univ_ingest::events::{Count, Event, EventSink, RecordingSink, Stage};
@@ -273,14 +273,20 @@ fn cross(structures: &[Structure]) -> CrossMatched {
         Some(0.003),
         CEPHEIDS,
     ));
-    let (matching, ranking) = (matching_rules(), ranking_rules());
+    let basis = Basis {
+        matching: matching_rules(),
+        ranking: ranking_rules(),
+        structures: structures
+            .iter()
+            .map(|s| ("test-pair".to_owned(), s.clone()))
+            .collect(),
+        ..Basis::read(&workspace().join("rules"), &[]).unwrap()
+    };
     let (release, state) = (Release::planck_2018(), State::default());
     let inputs = Inputs {
-        matching: &matching,
-        ranking: &ranking,
+        basis: &basis,
         release: &release,
         state: &state,
-        structures,
     };
     cross_match(entries, &inputs, &RecordingSink::default()).unwrap()
 }

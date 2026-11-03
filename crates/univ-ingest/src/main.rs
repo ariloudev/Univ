@@ -208,15 +208,7 @@ impl Later<'_> {
         let tile_options = TileOptions {
             out: (!building).then(|| out.clone()),
         };
-        let tiles = tiles_stage(
-            sink.clone(),
-            defs,
-            crossed.clone(),
-            opts,
-            &tile_options,
-            report,
-        )
-        .await;
+        let tiles = tiles_stage(sink.clone(), defs, crossed.clone(), &tile_options, report).await;
         if let (Some(tiles), true) = (tiles, building) {
             let build_options = BuildOptions { state, out };
             build_stage(

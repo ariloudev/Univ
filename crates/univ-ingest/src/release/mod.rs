@@ -55,22 +55,17 @@ pub use place::{index_bounds, sky_region};
 use crate::crossmatch::CrossMatched;
 use crate::source::SourceDefinition;
 use crate::state::{State, pending};
-use crate::structures::Structure;
 use crate::tiles::Built;
 
-/// What a release is built from.
+/// What a release is built from. Its rules, release configuration and researched structures
+/// are those the cross-match worked under, which it carries (`crate::crossmatch::Basis`).
 pub struct Inputs<'a> {
     pub crossed: &'a CrossMatched,
     pub tiles: &'a Built,
     /// The definitions of every source the release holds.
     pub definitions: &'a [SourceDefinition],
-    /// The researched structures, each by its id.
-    pub structures: &'a [(String, Structure)],
     /// The volume grids, each with its source's definition.
     pub grids: &'a [(SourceDefinition, Grid)],
-    pub config: &'a ReleaseConfig,
-    /// The repository's `rules/`, whose files the release records.
-    pub rules: &'a Path,
     /// The cache, which keeps each source's provenance.
     pub cache: &'a Path,
     /// The build time, RFC 3339 in UTC.

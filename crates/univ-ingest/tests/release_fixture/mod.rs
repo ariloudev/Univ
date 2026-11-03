@@ -8,13 +8,11 @@ use std::path::Path;
 
 use crate::common::{definition_of, normalized_fixture, source_id, workspace};
 use tempfile::TempDir;
-use univ_ingest::crossmatch::{CrossMatched, Inputs as MatchInputs, cross_match};
+use univ_ingest::crossmatch::{Basis, CrossMatched, Inputs as MatchInputs, cross_match};
 use univ_ingest::events::RecordingSink;
-use univ_ingest::matching::MatchingRules;
 use univ_ingest::normalize::{NormalizationReport, Normalized};
 use univ_ingest::provenance::Provenance;
-use univ_ingest::ranking::RankingRules;
-use univ_ingest::release::{BuildError, BuiltRelease, Inputs, ReleaseConfig, build};
+use univ_ingest::release::{BuildError, BuiltRelease, Inputs, build};
 use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::State;
 use univ_ingest::structures::{Structure, read_all_named};
@@ -72,18 +70,15 @@ pub fn record(cache: &Path, id: &str, report: &NormalizationReport) {
 /// The cross-match of the fixture against its state, its ids written as pending, as a run
 /// leaves them.
 pub fn cross(f: &Fixture) -> CrossMatched {
-    let rules = workspace().join("rules");
-    let matching = MatchingRules::read(&rules.join("matching.yaml")).unwrap();
-    let ranking = RankingRules::read(&rules.join("ranking.yaml")).unwrap();
-    let release = Release::planck_2018().with_peculiar_velocity(ranking.peculiar_velocity_km_s);
+    let mut basis = Basis::read(&workspace().join("rules"), &[]).unwrap();
+    basis.structures.clone_from(&f.structures);
+    let release =
+        Release::planck_2018().with_peculiar_velocity(basis.ranking.peculiar_velocity_km_s);
     let state = State::read(f.state.path()).unwrap();
-    let structures: Vec<Structure> = f.structures.iter().map(|(_, s)| s.clone()).collect();
     let inputs = MatchInputs {
-        matching: &matching,
-        ranking: &ranking,
+        basis: &basis,
         release: &release,
         state: &state,
-        structures: &structures,
     };
     let entries = f
         .normalized
@@ -108,6 +103,8 @@ pub fn tiles(f: &Fixture, crossed: &CrossMatched) -> Built {
 
 pub const BUILT_AT: &str = "2026-11-03T12:00:00Z";
 
+/// Builds `crossed` with `definitions`, and with `structures` in place of those the cross-match
+/// worked under.
 pub fn built(
     f: &Fixture,
     crossed: &CrossMatched,
@@ -115,16 +112,13 @@ pub fn built(
     definitions: &[SourceDefinition],
     structures: &[(String, Structure)],
 ) -> Result<BuiltRelease, BuildError> {
-    let config = ReleaseConfig::default();
-    let rules = workspace().join("rules");
+    let mut crossed = crossed.clone();
+    crossed.basis.structures = structures.to_vec();
     let inputs = Inputs {
-        crossed,
+        crossed: &crossed,
         tiles,
         definitions,
-        structures,
         grids: &[],
-        config: &config,
-        rules: &rules,
         cache: f.cache.path(),
         built_at: BUILT_AT.to_owned(),
     };

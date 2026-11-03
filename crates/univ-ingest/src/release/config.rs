@@ -44,11 +44,18 @@ impl ReleaseConfig {
         if !file.exists() {
             return Ok(Self::default());
         }
-        read_checked(file, |config: &Self| {
-            if config.cosmology_basis.trim().is_empty() {
-                return Err(("cosmology_basis".to_owned(), "is empty".to_owned()));
-            }
-            Ok(())
-        })
+        read_checked(file, Self::check)
+    }
+
+    /// The checks serde cannot make: a basis is given.
+    ///
+    /// # Errors
+    ///
+    /// Gives the field and the problem.
+    pub fn check(&self) -> Result<(), (String, String)> {
+        if self.cosmology_basis.trim().is_empty() {
+            return Err(("cosmology_basis".to_owned(), "is empty".to_owned()));
+        }
+        Ok(())
     }
 }
