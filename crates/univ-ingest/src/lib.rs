@@ -8,6 +8,7 @@ pub mod events;
 pub mod fetch;
 pub mod fits;
 pub mod grids;
+pub mod ids;
 pub mod normalize;
 pub mod outlines;
 pub mod provenance;
