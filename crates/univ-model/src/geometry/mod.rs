@@ -108,11 +108,13 @@ pub enum Primitive {
     },
 }
 
-/// A member of a structure: an object, or a tracer with its own position and kind.
+/// A member of a structure: an object, or a tracer with its own position and kind. An object
+/// member carries the position it was resolved to at ingest, in the shape's frame and unit, so a
+/// member list is bounded without looking its objects up.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "member")]
 pub enum Member {
-    Object { id: ObjectId },
+    Object { id: ObjectId, at: Vec3 },
     Tracer { at: Vec3, kind: String },
 }
 
@@ -165,18 +167,13 @@ impl Shape {
         })
     }
 
-    /// The bounding box in `frame`, in this shape's unit. `position` gives the position of a
-    /// member object in this shape's frame. A member list with a member `position` cannot place
-    /// has no box, rather than a box too small for it. There is no box in FK4 B1950, which is
-    /// not a rotation of the other frames.
+    /// The bounding box in `frame`, in this shape's unit; a member list is bounded by the
+    /// positions its members carry. There is no box in FK4 B1950, which is not a rotation of the
+    /// other frames.
     #[must_use]
-    pub fn bounds_in(
-        &self,
-        frame: Frame,
-        position: impl Fn(ObjectId) -> Option<Vec3>,
-    ) -> Option<Aabb> {
+    pub fn bounds_in(&self, frame: Frame) -> Option<Aabb> {
         let rotation = between(self.frame, frame).rotation()?;
-        self.geometry.bounds(&rotation, position)
+        self.geometry.bounds(&rotation)
     }
 }
 
@@ -223,11 +220,10 @@ impl Geometry {
             Self::Members { members } => (
                 !members.is_empty()
                     && members.iter().all(|m| match m {
-                        Member::Object { .. } => true,
-                        Member::Tracer { at, .. } => finite(at),
+                        Member::Object { at, .. } | Member::Tracer { at, .. } => finite(at),
                     }),
                 "member list",
-                "a member, and finite tracer positions",
+                "a member, and finite member positions",
             ),
             Self::SkyRegion {
                 order,

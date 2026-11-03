@@ -148,6 +148,23 @@ pub struct PreferredPosition {
 pub enum NotPlacedReason {
     /// None of its entries carries a distance, a usable parallax or a positive redshift.
     NoDistance,
+    /// None of its entries carries a sky position.
+    NoSkyPosition,
+    /// Its preferred distance cannot be derived under the release cosmology, such as a
+    /// redshift beyond the model.
+    NotDerivable,
+}
+
+impl NotPlacedReason {
+    /// The reason in words, as a run's summary counts it.
+    #[must_use]
+    pub fn describe(self) -> &'static str {
+        match self {
+            Self::NoDistance => "no distance",
+            Self::NoSkyPosition => "no sky position",
+            Self::NotDerivable => "distance not derivable",
+        }
+    }
 }
 
 /// Whether an object can be placed in three dimensions. An object not placed can be looked up
@@ -155,7 +172,7 @@ pub enum NotPlacedReason {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "placed")]
 pub enum Placement {
-    /// It has a preferred distance.
+    /// It has a preferred distance and a sky position, from which its position is derived.
     #[serde(rename = "yes")]
     Placed,
     #[serde(rename = "no")]
