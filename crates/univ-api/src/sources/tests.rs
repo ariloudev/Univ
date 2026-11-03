@@ -174,3 +174,22 @@ fn a_source_of_a_pruned_release_is_refused_with_410() {
     assert_eq!(response.status, 410);
     assert_eq!(body(&response)["pruned_at"], "2026-11-02T09:00:00Z");
 }
+
+#[test]
+fn two_reads_pinned_to_one_release_return_identical_data_whatever_was_published_between() {
+    let db = db();
+    let before = db.get("/v1/sources/hipparcos-2007", "release=2");
+    db.exec(
+        "UPDATE releases SET published_at = '2026-11-03T08:00:00Z' WHERE number = 3;
+         UPDATE latest SET release = 3 WHERE one = 1;",
+    );
+    let after = db.get("/v1/sources/hipparcos-2007", "release=2");
+    assert_eq!(before.status, 200);
+    assert_eq!(before.body, after.body);
+    assert_eq!(after.header("univ-release"), Some("2"));
+    let unpinned = db.get("/v1/sources/hipparcos-2007", "");
+    assert_eq!(
+        unpinned.status, 404,
+        "latest moved to release 3, which has no such source"
+    );
+}
