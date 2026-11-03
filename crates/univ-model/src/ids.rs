@@ -92,6 +92,18 @@ impl fmt::Display for ObjectId {
     }
 }
 
+/// Whether `text` is a slug: lowercase letters, digits and single hyphens, starting with a
+/// letter and not ending with a hyphen, such as `tully-2019`.
+#[must_use]
+pub fn is_slug(text: &str) -> bool {
+    text.starts_with(|c: char| c.is_ascii_lowercase())
+        && text
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+        && !text.ends_with('-')
+        && !text.contains("--")
+}
+
 impl SourceId {
     /// # Errors
     ///
@@ -99,11 +111,7 @@ impl SourceId {
     /// and not ending with a hyphen.
     pub fn new(slug: impl Into<String>) -> Result<Self, IdError> {
         let slug = slug.into();
-        let starts = slug.chars().next().is_some_and(|c| c.is_ascii_lowercase());
-        let chars = slug
-            .chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
-        if starts && chars && !slug.ends_with('-') && !slug.contains("--") {
+        if is_slug(&slug) {
             Ok(Self(slug))
         } else {
             Err(IdError::SourceId(slug))

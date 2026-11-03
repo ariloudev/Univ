@@ -12,11 +12,12 @@ mod outline;
 mod shape;
 
 use std::collections::{BTreeMap, HashSet};
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
+use univ_model::ids::is_slug;
+
+use crate::yaml::{FileError, read_checked, read_dir};
 
 pub use cited::{Citation, Cited, Locator};
 pub use geometry::{Coordinates, Radial, StructureFrame};
@@ -111,13 +112,7 @@ pub struct Dispute {
 }
 
 /// A structure file that cannot be used, naming the file, the field and what is wrong.
-#[derive(Debug, Error, PartialEq)]
-#[error("{}: {field}: {problem}", file.display())]
-pub struct StructureError {
-    pub file: PathBuf,
-    pub field: String,
-    pub problem: String,
-}
+pub type StructureError = FileError;
 
 impl Structure {
     /// Reads and checks the structure in `file`.
@@ -128,26 +123,7 @@ impl Structure {
     /// nothing (naming the number), on a value read from a figure that is not estimated, and on
     /// the checks of [`Structure::check`].
     pub fn read(file: &Path) -> Result<Self, StructureError> {
-        let fail = |field: &str, problem: String| StructureError {
-            file: file.to_path_buf(),
-            field: field.to_owned(),
-            problem,
-        };
-        let text = fs::read_to_string(file).map_err(|e| fail("(file)", e.to_string()))?;
-        let document = serde_norway::Deserializer::from_str(&text);
-        let structure: Self = serde_path_to_error::deserialize(document).map_err(|e| {
-            let path = e.path().to_string();
-            let message = e.into_inner().to_string();
-            let problem = message
-                .strip_prefix(&format!("{path}: "))
-                .unwrap_or(&message);
-            let field = if path == "." { "(top level)" } else { &path };
-            fail(field, problem.to_owned())
-        })?;
-        structure
-            .check()
-            .map_err(|(field, problem)| fail(&field, problem))?;
-        Ok(structure)
+        read_checked(file, Self::check)
     }
 
     /// The checks serde cannot make, as the field and the problem: every citation names one of
@@ -163,12 +139,7 @@ impl Structure {
         }
         let mut ids = HashSet::new();
         for (i, paper) in self.papers.iter().enumerate() {
-            let slug = !paper.id.is_empty()
-                && paper
-                    .id
-                    .bytes()
-                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
-            if !slug || !ids.insert(paper.id.as_str()) {
+            if !is_slug(&paper.id) || !ids.insert(paper.id.as_str()) {
                 return problem(&format!("papers[{i}].id"), "is not a unique lowercase slug");
             }
             if paper.doi.is_none() && paper.bibcode.is_none() {
@@ -291,33 +262,19 @@ impl Structure {
 /// Fails when the directory cannot be read, a file name is not a kebab-case slug, or a structure
 /// fails [`Structure::read`].
 pub fn read_all(dir: &Path) -> Result<Vec<Structure>, StructureError> {
-    let fail = |file: &Path, field: &str, problem: String| StructureError {
-        file: file.to_path_buf(),
-        field: field.to_owned(),
-        problem,
-    };
-    let entries = fs::read_dir(dir).map_err(|e| fail(dir, "(directory)", e.to_string()))?;
-    let mut files: Vec<PathBuf> = entries
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "yaml"))
-        .collect();
-    files.sort();
-    files
+    read_dir(dir)?
         .iter()
         .map(|file| {
             let stem = file
                 .file_stem()
                 .and_then(|s| s.to_str())
                 .unwrap_or_default();
-            let kebab = stem.starts_with(|c: char| c.is_ascii_lowercase())
-                && !stem.contains("--")
-                && !stem.ends_with('-')
-                && stem
-                    .bytes()
-                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
-            if !kebab {
-                return Err(fail(file, "(file name)", "is not a kebab-case slug".into()));
+            if !is_slug(stem) {
+                return Err(FileError::new(
+                    file,
+                    "(file name)",
+                    "is not a kebab-case slug",
+                ));
             }
             Structure::read(file)
         })
