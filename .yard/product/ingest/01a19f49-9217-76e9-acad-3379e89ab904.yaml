@@ -10,3 +10,12 @@ versions:
     title: "W6 Octree tiles"
     goal: "Each scale domain is tiled deterministically within 1 MiB per tile (stage/ingest-w6)"
     status: planned
+  - key: 01a1a05d-8483-7253-a8be-0bd672580e34
+    at: 2026-11-03T07:44:05Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W6 Octree tiles"
+    goal: "Placed objects are written as octree tiles per scale domain with seeded levels of detail and JSON tile manifests, each tile at most 1 MiB (stage/ingest-w6)"
+    status: active

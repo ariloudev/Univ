@@ -19,3 +19,35 @@ versions:
     title: "W5 Identity and positions"
     goal: "Cross-matching resolves catalogue entries into objects with stable ids, a preferred measurement and ICRS, galactic and supergalactic positions under the release cosmology (stage/ingest-w5)"
     status: active
+  - key: 01a1a05d-8483-7253-a8be-0bd415ddb313
+    at: 2026-11-03T07:44:05Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W5 Identity and positions"
+    goal: "Cross-matching resolves catalogue entries into objects with stable ids, a preferred measurement and ICRS, galactic and supergalactic positions under the release cosmology (stage/ingest-w5)"
+    status: done
+blocks:
+  - key: 01a1a05d-8483-7253-a8be-0bd3d94bc6a7
+    id: wave-5-merged
+    kind: note
+    versions:
+      - key: 01a1a05d-8483-7253-a8be-0bd5e194a11a
+        at: 2026-11-03T07:44:05Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "W5 merged"
+        markdown: |-
+          `stage/ingest-w5` was merged as `4f45811`. It adds `univ-ingest match`, which runs fetch, normalize and cross-match:
+          - **Matching:** published cross-ids come first, then complete-linkage matching under cited tolerances.
+          - **Ranking:** 300 km/s peculiar velocity and the Gaia zero-point.
+          - **Ids:** stable ids in a YAML ledger, written to `pending/`.
+          - **Positions:** under Planck 2018, each with its chain recorded. D(z) matches astropy and FK4 matches ERFA.
+
+          AC-28 to AC-35 and AC-60 to AC-81 are traced, 96 of 293 nodes in all. Galaxy groups (Cosmicflows-4) are kept apart from galaxies.
+
+          One decision is held for you in W8, with real counts: measurements published without an error rank last.
+        tone: success
