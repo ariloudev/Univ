@@ -7,7 +7,6 @@
 
 use serde_json::{Value, json};
 use univ_model::api::structures::{Centre, StructureDetail, StructurePage, StructureSummary};
-use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
 
 use crate::backend::{Backend, Row, column, first, json_column};
 use crate::http::{Request, Response};
@@ -153,16 +152,9 @@ fn centre(row: &Row) -> Result<Option<Centre>, Problem> {
     let x: Option<f64> = column(row, "centre_x")?;
     let y: Option<f64> = column(row, "centre_y")?;
     let z: Option<f64> = column(row, "centre_z")?;
-    let unit: Option<String> = column(row, "unit")?;
+    let scale_domain: String = column(row, "scale_domain")?;
     Ok(match (x, y, z) {
-        (Some(x), Some(y), Some(z)) => Some(Centre {
-            frame: ICRS_CARTESIAN_NAME.to_owned(),
-            origin: BARYCENTRE.to_owned(),
-            unit: unit.unwrap_or_else(|| "Mpc".to_owned()),
-            x,
-            y,
-            z,
-        }),
+        (Some(x), Some(y), Some(z)) => Some(Centre::placed(&scale_domain, [x, y, z])),
         _ => None,
     })
 }

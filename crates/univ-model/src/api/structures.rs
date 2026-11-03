@@ -6,8 +6,8 @@ use serde_json::Value;
 
 use crate::derive::Step;
 use crate::geometry::{Aabb, Shape};
-use crate::position::Frame;
-use crate::units::Unit;
+use crate::position::{BARYCENTRE, Frame, ICRS_CARTESIAN_NAME, Vec3};
+use crate::units::{Unit, scale_domain_unit};
 
 /// A page of a release's structures, by id.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -35,7 +35,7 @@ pub struct StructureSummary {
 }
 
 /// A point placed by the release: ICRS equatorial Cartesian about the Solar System barycentre,
-/// in its scale domain's unit, under the release cosmology.
+/// in its scale domain's unit, under the release cosmology, at epoch [`STRUCTURE_EPOCH`].
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Centre {
@@ -43,10 +43,40 @@ pub struct Centre {
     pub frame: String,
     /// "Solar System barycentre".
     pub origin: String,
-    pub unit: String,
+    /// The scale domain's unit ([`scale_domain_unit`]): `parsec` for stars, `megaparsec`
+    /// otherwise, named as a shape names its unit.
+    pub unit: Unit,
     pub x: f64,
     pub y: f64,
     pub z: f64,
+    /// The epoch of the position, a Julian year: always [`STRUCTURE_EPOCH`], J2000.0.
+    pub epoch: f64,
+}
+
+/// The epoch every structure's centre is given at, a Julian year: J2000.0, a convention.
+///
+/// No structure file gives an epoch. Its papers publish extragalactic positions, whose proper
+/// motions no epoch could change measurably, in FK4 B1950, FK5 J2000, supergalactic or
+/// equatorial coordinates of an unstated equinox (placed as J2000), and each is moved to the
+/// ICRS, whose axes match FK5 J2000's. The centre is therefore stated at J2000.0; any other
+/// epoch would move it by nothing measurable.
+pub const STRUCTURE_EPOCH: f64 = 2000.0;
+
+impl Centre {
+    /// The centre `at` of a structure in the scale domain named `scale_domain`: ICRS Cartesian
+    /// about the barycentre, in that domain's unit, at [`STRUCTURE_EPOCH`].
+    #[must_use]
+    pub fn placed(scale_domain: &str, at: Vec3) -> Self {
+        Self {
+            frame: ICRS_CARTESIAN_NAME.to_owned(),
+            origin: BARYCENTRE.to_owned(),
+            unit: scale_domain_unit(scale_domain),
+            x: at[0],
+            y: at[1],
+            z: at[2],
+            epoch: STRUCTURE_EPOCH,
+        }
+    }
 }
 
 /// One structure in full.
@@ -258,5 +288,17 @@ mod tests {
         assert_eq!(step["from"], "equatorial_equinox_unstated");
         let read: Derivation = serde_json::from_str(&text).unwrap();
         assert_eq!(read, derivation);
+    }
+
+    #[test]
+    fn a_centre_names_its_frame_unit_and_epoch() {
+        let star = serde_json::to_value(Centre::placed("stars", [1.0, 2.0, 3.0])).unwrap();
+        assert_eq!(star["frame"], "ICRS equatorial Cartesian");
+        assert_eq!(star["origin"], "Solar System barycentre");
+        assert_eq!(star["unit"], "parsec");
+        assert_eq!(star["epoch"], 2000.0);
+        let void = Centre::placed("cosmic_web", [0.0; 3]);
+        assert_eq!(serde_json::to_value(&void).unwrap()["unit"], "megaparsec");
+        assert_eq!(void.unit, Unit::Megaparsec);
     }
 }
