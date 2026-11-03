@@ -1,0 +1,164 @@
+# The Huge Large Quasar Group, U1.27: 73 quasars linked at 100 Mpc in SDSS DR7QSO.
+name: Huge-LQG
+alternative_names: ["U1.27", "Huge Large Quasar Group"]
+kind: quasar_group
+status: statistical_claim
+papers:
+  - id: clowes-2013
+    reference: "Clowes, Harris, Raghunathan, Campusano, Söchting & Graham 2013, MNRAS 429, 2910"
+    title: "A structure in the early Universe at z ~ 1.3 that exceeds the homogeneity scale of the R-W concordance cosmology"
+    doi: 10.1093/mnras/sts497
+    bibcode: 2013MNRAS.429.2910C
+    arxiv: "1211.6256"
+    read: "arXiv source (LaTeX) of 1211.6256; Table 1 parsed from it"
+  - id: nadathur-2013
+    reference: "Nadathur 2013, MNRAS 434, 398"
+    title: "Seeing patterns in noise: gigaparsec-scale 'structures' that do not violate homogeneity"
+    doi: 10.1093/mnras/stt1028
+    bibcode: 2013MNRAS.434..398N
+    arxiv: "1306.1700"
+    read: "arXiv source (LaTeX) of 1306.1700"
+geometry:
+  kind: members
+  members:
+    frame: icrs
+    tracer: quasar
+    source: { paper: clowes-2013, table: "1" }
+    columns:
+      - { name: lon, header: "RA (2000)", unit: degree, format: hms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lat, header: "Dec. (2000)", unit: degree, format: dms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "z", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+    rows:
+      - ["SDSS J104139.15+143530.2", "10:41:39.15", "+14:35:30.2", 1.2164]
+      - ["SDSS J104321.62+143600.2", "10:43:21.62", "+14:36:00.2", 1.2660]
+      - ["SDSS J104430.92+160245.0", "10:44:30.92", "+16:02:45.0", 1.2294]
+      - ["SDSS J104445.03+151901.6", "10:44:45.03", "+15:19:01.6", 1.2336]
+      - ["SDSS J104520.62+141724.2", "10:45:20.62", "+14:17:24.2", 1.2650]
+      - ["SDSS J104604.05+140241.2", "10:46:04.05", "+14:02:41.2", 1.2884]
+      - ["SDSS J104616.31+164512.6", "10:46:16.31", "+16:45:12.6", 1.2815]
+      - ["SDSS J104624.25+143009.1", "10:46:24.25", "+14:30:09.1", 1.3620]
+      - ["SDSS J104813.63+162849.1", "10:48:13.63", "+16:28:49.1", 1.2905]
+      - ["SDSS J104859.74+125322.3", "10:48:59.74", "+12:53:22.3", 1.3597]
+      - ["SDSS J104915.66+165217.4", "10:49:15.66", "+16:52:17.4", 1.3459]
+      - ["SDSS J104922.60+154336.1", "10:49:22.60", "+15:43:36.1", 1.2590]
+      - ["SDSS J104924.30+154156.0", "10:49:24.30", "+15:41:56.0", 1.2965]
+      - ["SDSS J104938.22+214829.3", "10:49:38.22", "+21:48:29.3", 1.2352]
+      - ["SDSS J104941.67+151824.6", "10:49:41.67", "+15:18:24.6", 1.3390]
+      - ["SDSS J104947.77+162216.6", "10:49:47.77", "+16:22:16.6", 1.2966]
+      - ["SDSS J104954.70+160042.3", "10:49:54.70", "+16:00:42.3", 1.3373]
+      - ["SDSS J105001.22+153354.0", "10:50:01.22", "+15:33:54.0", 1.2500]
+      - ["SDSS J105042.26+160056.0", "10:50:42.26", "+16:00:56.0", 1.2591]
+      - ["SDSS J105104.16+161900.9", "10:51:04.16", "+16:19:00.9", 1.2502]
+      - ["SDSS J105117.00+131136.0", "10:51:17.00", "+13:11:36.0", 1.3346]
+      - ["SDSS J105119.60+142611.4", "10:51:19.60", "+14:26:11.4", 1.3093]
+      - ["SDSS J105122.98+115852.3", "10:51:22.98", "+11:58:52.3", 1.3085]
+      - ["SDSS J105125.72+124746.3", "10:51:25.72", "+12:47:46.3", 1.2810]
+      - ["SDSS J105132.22+145615.1", "10:51:32.22", "+14:56:15.1", 1.3607]
+      - ["SDSS J105140.40+203921.1", "10:51:40.40", "+20:39:21.1", 1.1742]
+      - ["SDSS J105144.88+125828.9", "10:51:44.88", "+12:58:28.9", 1.3153]
+      - ["SDSS J105210.02+165543.7", "10:52:10.02", "+16:55:43.7", 1.3369]
+      - ["SDSS J105222.13+123054.1", "10:52:22.13", "+12:30:54.1", 1.3162]
+      - ["SDSS J105223.68+140525.6", "10:52:23.68", "+14:05:25.6", 1.2483]
+      - ["SDSS J105224.08+204634.1", "10:52:24.08", "+20:46:34.1", 1.2032]
+      - ["SDSS J105245.80+134057.4", "10:52:45.80", "+13:40:57.4", 1.3544]
+      - ["SDSS J105257.17+105933.5", "10:52:57.17", "+10:59:33.5", 1.2649]
+      - ["SDSS J105258.16+201705.4", "10:52:58.16", "+20:17:05.4", 1.2526]
+      - ["SDSS J105412.67+145735.2", "10:54:12.67", "+14:57:35.2", 1.2277]
+      - ["SDSS J105421.90+212131.2", "10:54:21.90", "+21:21:31.2", 1.2573]
+      - ["SDSS J105435.64+101816.3", "10:54:35.64", "+10:18:16.3", 1.2600]
+      - ["SDSS J105442.71+104320.6", "10:54:42.71", "+10:43:20.6", 1.3348]
+      - ["SDSS J105446.73+195710.5", "10:54:46.73", "+19:57:10.5", 1.2195]
+      - ["SDSS J105523.03+130610.7", "10:55:23.03", "+13:06:10.7", 1.3570]
+      - ["SDSS J105525.18+191756.3", "10:55:25.18", "+19:17:56.3", 1.2005]
+      - ["SDSS J105525.68+113703.0", "10:55:25.68", "+11:37:03.0", 1.2893]
+      - ["SDSS J105541.83+111754.2", "10:55:41.83", "+11:17:54.2", 1.3298]
+      - ["SDSS J105556.22+184718.4", "10:55:56.22", "+18:47:18.4", 1.2767]
+      - ["SDSS J105611.27+170827.5", "10:56:11.27", "+17:08:27.5", 1.3316]
+      - ["SDSS J105621.90+143401.0", "10:56:21.90", "+14:34:01.0", 1.2333]
+      - ["SDSS J105637.49+150047.5", "10:56:37.49", "+15:00:47.5", 1.3713]
+      - ["SDSS J105637.98+100307.2", "10:56:37.98", "+10:03:07.2", 1.2730]
+      - ["SDSS J105655.36+144946.2", "10:56:55.36", "+14:49:46.2", 1.2283]
+      - ["SDSS J105714.02+184753.3", "10:57:14.02", "+18:47:53.3", 1.2852]
+      - ["SDSS J105805.09+200341.0", "10:58:05.09", "+20:03:41.0", 1.2731]
+      - ["SDSS J105832.01+170456.0", "10:58:32.01", "+17:04:56.0", 1.2813]
+      - ["SDSS J105840.49+175415.5", "10:58:40.49", "+17:54:15.5", 1.2687]
+      - ["SDSS J105855.33+081350.7", "10:58:55.33", "+08:13:50.7", 1.2450]
+      - ["SDSS J105928.57+164657.9", "10:59:28.57", "+16:46:57.9", 1.2993]
+      - ["SDSS J110006.02+092638.7", "11:00:06.02", "+09:26:38.7", 1.2485]
+      - ["SDSS J110016.88+193624.7", "11:00:16.88", "+19:36:24.7", 1.2399]
+      - ["SDSS J110039.99+165710.3", "11:00:39.99", "+16:57:10.3", 1.2997]
+      - ["SDSS J110148.66+082207.1", "11:01:48.66", "+08:22:07.1", 1.1940]
+      - ["SDSS J110217.19+083921.1", "11:02:17.19", "+08:39:21.1", 1.2355]
+      - ["SDSS J110504.46+084535.3", "11:05:04.46", "+08:45:35.3", 1.2371]
+      - ["SDSS J110621.40+084111.2", "11:06:21.40", "+08:41:11.2", 1.2346]
+      - ["SDSS J110736.60+090114.7", "11:07:36.60", "+09:01:14.7", 1.2266]
+      - ["SDSS J110744.61+095526.9", "11:07:44.61", "+09:55:26.9", 1.2228]
+      - ["SDSS J111007.89+104810.3", "11:10:07.89", "+10:48:10.3", 1.2097]
+      - ["SDSS J111009.58+075206.8", "11:10:09.58", "+07:52:06.8", 1.2123]
+      - ["SDSS J111416.17+102327.5", "11:14:16.17", "+10:23:27.5", 1.2053]
+      - ["SDSS J111545.30+081459.8", "11:15:45.30", "+08:14:59.8", 1.1927]
+      - ["SDSS J111802.11+103302.4", "11:18:02.11", "+10:33:02.4", 1.2151]
+      - ["SDSS J111823.21+090504.9", "11:18:23.21", "+09:05:04.9", 1.1923]
+      - ["SDSS J112019.62+085905.1", "11:20:19.62", "+08:59:05.1", 1.2239]
+      - ["SDSS J112059.27+101109.2", "11:20:59.27", "+10:11:09.2", 1.2103]
+      - ["SDSS J112109.76+075958.6", "11:21:09.76", "+07:59:58.6", 1.2369]
+values:
+  mean_redshift:
+    value: 1.27
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &abstract
+      paper: clowes-2013
+      sentence: "It has characteristic size (volume^1/3) ~ 500 Mpc (proper size, present epoch), longest dimension ~ 1240 Mpc, membership of 73 quasars, and mean redshift z = 1.27."
+  characteristic_size:
+    value: 500
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: &cosmology "proper size at the present epoch; H0 = 70 km/s/Mpc, Ωm = 0.27, ΩΛ = 0.73"
+    cite: *abstract
+    note: "The cube root of the corrected convex-hull-of-member-spheres volume."
+  principal_axis_long:
+    value: 1240
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: &axes
+      paper: clowes-2013
+      sentence: "From the inertia tensor of the member quasars of the Huge-LQG, the principal axes have lengths of ~ 1240, 640, and 370 Mpc, and the inhomogeneity thus extends to the Gpc-scale."
+  principal_axis_middle:
+    value: 640
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: *axes
+  principal_axis_short:
+    value: 370
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: *axes
+  separation_from_clowes_campusano_lqg:
+    value: 8.8
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: clowes-2013
+      sentence: "Its location on the sky is ~ 8.8° north (~ 615 Mpc projected) of the Clowes & Campusano LQG at the same redshift, z = 1.28, which is itself one of the more extreme examples."
+disputes:
+  - claim: >-
+      The algorithm that found the Huge-LQG finds even larger groups in homogeneous Poisson point
+      sets of the same density, so the group does not show a departure from homogeneity.
+    cite:
+      paper: nadathur-2013
+      sentence: "In addition, I show that the algorithm used to identify the Huge-LQG regularly finds even larger clusters of points, extending over Gpc scales, in explicitly homogeneous simulations of a Poisson point process with the same density as the quasar catalogue."
+notes: >-
+  The 73 members are the quasars of Table 1, with their SDSS J2000 positions as published. The
+  orientation of the principal axes is not given in numbers. Sawala et al. 2025 also cite Park et
+  al. 2015 and Fujii 2024 as finding the quasar agglomerations consistent with random fluctuations;
+  those papers were not read.

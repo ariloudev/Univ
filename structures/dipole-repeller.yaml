@@ -1,0 +1,62 @@
+# The point the Cosmicflows-2 anti-flow converges on: a predicted void that pushes the Local Group.
+name: Dipole Repeller
+alternative_names: []
+kind: repeller
+status: reconstructed
+papers:
+  - id: hoffman-2017
+    reference: "Hoffman, Pomarède, Tully & Courtois 2017, Nature Astronomy 1, 0036"
+    title: "The dipole repeller"
+    doi: 10.1038/s41550-016-0036
+    bibcode: 2017NatAs...1E..36H
+    arxiv: "1702.02483"
+    read: "arXiv source (LaTeX) of 1702.02483"
+position:
+  frame: supergalactic
+  x:
+    value: 11000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: &repeller
+      paper: hoffman-2017
+      sentence: "The right plot of figure 2 depicts the convergence of the streamlines of the anti-flow onto a repeller at [11,000, -6,000, 10,000] km s-1."
+  y:
+    value: -6000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *repeller
+  z:
+    value: 10000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *repeller
+values:
+  distance:
+    value: 16000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite:
+      paper: hoffman-2017
+      table: "1 (arXiv version: Cosmicflows-2 subsamples)"
+      row: "full"
+      column: "R [km s-1]"
+  position_uncertainty:
+    value: 4500
+    unit: kilometre_per_second
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite:
+      paper: hoffman-2017
+      sentence: "Assuming that the Repeller is the dominant structure that determines the direction of the bulk flow the scatter in μ_bulk(R) can be translated to uncertainty in the position of the Repeller, ΔR_GR ≈ 4,500 km s-1 (see Methods)."
+disputes: []
+notes: >-
+  A Wiener-filter reconstruction of Cosmicflows-2 peculiar velocities, at the edge of the data. The
+  position is uncertain by about 4,500 km/s, which the paper gives for the position as a whole
+  rather than per coordinate. The paper gives no extent; it predicts a void there, poorly covered
+  by redshift surveys. The newsroom atlas read the 16,000 ± 4,500 km/s of the paper's sentence on
+  the bulk flow as the repeller's distance and its error; the distance is the table's, and the
+  4,500 km/s is the position's uncertainty.

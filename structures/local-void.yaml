@@ -1,0 +1,112 @@
+# The Local Void, as the Cosmicflows-3 reconstruction maps it, with the dimensions Tully et al.
+# 2008 inferred from our motion away from it. Ported from the cosmic-newsroom atlas and checked
+# against the papers' arXiv sources.
+name: Local Void
+alternative_names: []
+kind: void
+status: reconstructed
+papers:
+  - id: tully-2019
+    reference: "Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24"
+    title: "Cosmicflows-3: Cosmography of the Local Void"
+    doi: 10.3847/1538-4357/ab2597
+    bibcode: 2019ApJ...880...24T
+    arxiv: "1905.08329"
+    read: "arXiv source (LaTeX) of 1905.08329"
+  - id: tully-2008
+    reference: "Tully, Shaya, Karachentsev, Courtois, Kocevski, Rizzi & Peel 2008, ApJ 676, 184"
+    title: "Our Peculiar Motion Away from the Local Void"
+    doi: 10.1086/527428
+    bibcode: 2008ApJ...676..184T
+    arxiv: "0705.4139"
+    read: "arXiv source (LaTeX) of 0705.4139"
+# The deepest density minimum, Lacerta-2.4: the paper gives no single centre for the void.
+position:
+  frame: supergalactic
+  x:
+    value: 1650
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: &lacerta
+      paper: tully-2019
+      sentence: "Here in the Local Void, Lacerta-2.4 is at the location of the lowest density of -1.89 at supergalactic SGX, SGY, SGZ of [+1650, -700, +1650] km s-1 ≈ [+22, -9, +22] Mpc."
+  y:
+    value: -700
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *lacerta
+  z:
+    value: 1650
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *lacerta
+values:
+  density_at_deepest_minimum:
+    value: -1.89
+    unit: dimensionless
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *lacerta
+    note: "Wiener-filter density contrast of the Cosmicflows-3 reconstruction."
+  extent_sgx_at_isodensity_minus_0_7:
+    value: 5200
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &dimensions
+      paper: tully-2019
+      sentence: "The rough dimensions of the Local Void at the isodensity contour -0.7 is ΔSGX,SGY,SGZ = 5200,3000,4500 km s-1 = 69,51,60 Mpc, hence a volume of ~ 2 × 10^5 Mpc^3."
+  extent_sgy_at_isodensity_minus_0_7:
+    value: 3000
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *dimensions
+  extent_sgz_at_isodensity_minus_0_7:
+    value: 4500
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *dimensions
+  radius_if_empty:
+    value: 16
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: lower_limit }
+    cite:
+      paper: tully-2008
+      sentence: "Simplistically, it could be inferred that the radius of a completely empty Local Void is at least 16 Mpc."
+  radius_to_centre_at_our_position:
+    value: 23
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: lower_limit }
+    cite:
+      paper: tully-2008
+      sentence: "The large expulsion velocities imply a dimension of the radius to the center of the Local Void at our position of at least 23 Mpc."
+  long_dimension_of_inner_void:
+    value: 35
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: tully-2008
+      sentence: "Even the smaller void is not so small, with a long dimension of ~35 Mpc."
+  long_dimension_of_enclosing_void:
+    value: 5000
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: upper_limit }
+    cite:
+      paper: tully-2008
+      sentence: "The long dimension may be as large as 5,000 km s-1 ~ 70 Mpc."
+disputes: []
+notes: >-
+  The void lies largely behind the Milky Way's plane. Tully et al. 2019 give density minima and a
+  bounding box at the -0.7 isodensity of their Wiener-filter density, not a centre; the position is
+  the deepest minimum. Their Mpc figures convert the km/s values with the reconstruction's Hubble
+  constant; the published km/s values are kept. Table 1 of Tully et al. 2019 lists three further
+  Local Void minima (Andromeda-2.3, Aquila-0.8, UMi-3.7). No published dispute was looked for.

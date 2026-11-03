@@ -1,0 +1,104 @@
+# The sheet of galaxies found in the CfA2 redshift survey slices, with the Coma Cluster at its centre.
+name: CfA2 Great Wall
+alternative_names: ["Great Wall", "Coma Wall"]
+kind: wall
+status: observed
+papers:
+  - id: geller-1989
+    reference: "Geller & Huchra 1989, Science 246, 897"
+    title: "Mapping the Universe"
+    doi: 10.1126/science.246.4932.897
+    read: "abstract only (Crossref record); the full text was not available"
+  - id: gott-2005
+    reference: "Gott, Jurić, Schlegel, Hoyle, Vogeley, Tegmark, Bahcall & Brinkmann 2005, ApJ 624, 463"
+    title: "A Map of the Universe"
+    doi: 10.1086/428890
+    bibcode: 2005ApJ...624..463G
+    arxiv: "astro-ph/0310571"
+    read: "arXiv source (LaTeX) of astro-ph/0310571"
+# The right-ascension run is the wall's, read off Gott et al.'s map; the declination and redshift
+# bounds are those of the CfA2 slices the wall was drawn from, not edges of the wall.
+geometry:
+  kind: sky_region
+  sky_region:
+    frame: equatorial_equinox_unstated
+    lon:
+      - value: 135
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "9h"
+        cite: &run
+          paper: gott-2005
+          sentence: "So although the CfA2 Great Wall stretches from 9h to 16.7h (or 7.7 hours of right ascension), as compared with the SDSS Great Wall which stretches from 8.7h to 13.7h (or 5 hours of right ascension) its real length in co-moving coordinates relative to the CfA2 Great Wall is, by this simple analysis, 2.5 × 5/(7.7 × 1.07) ≈ 1.74 times as long."
+      - value: 250.5
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "16.7h"
+        cite: *run
+    lat:
+      - value: -8.5
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &slices
+          paper: gott-2005
+          sentence: "confused with SDSS survey galaxies we have plotted density contours averaging over all the CfA2 slices from 42° to -8.5° declination."
+      - value: 42
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *slices
+    near:
+      redshift:
+        value: 0.01
+        unit: dimensionless
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &sample
+          paper: gott-2005
+          sentence: "The contours are based on galaxies satisfying -8.5° < δ < 42.5°, 120° < α < 255°, and 0.01 < z < 0.05 comprising the CfA2's first 6 slices (Geller and Huchra (1989))."
+    far:
+      redshift:
+        value: 0.05
+        unit: dimensionless
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *sample
+values:
+  median_redshift:
+    value: 0.029
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &length
+      paper: gott-2005
+      sentence: "It's total length in co-moving coordinates is 450 Mpc as compared with the total length of the Great Wall of Geller and Huchra which is 240 Mpc long in co-moving coordinates. This indicates the sizes the two walls would have at the current epoch. But the Great Wall is at a median redshift of z = 0.029 so it's true size at the epoch we are observing it is smaller by a factor of 1+z giving it an observed length of 232.64 Mpc (or 758 million light years)."
+  comoving_length:
+    value: 240
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: "H0 = 71 km/s/Mpc, Ωm = 0.27, ΩΛ = 0.73 (WMAP)"
+    cite: *length
+  minimum_extent_short:
+    value: 60
+    unit: megaparsec_over_h
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: &extent
+      paper: geller-1989
+      sentence: "The largest sheet detected so far is the \"Great Wall\" with a minimum extent of 60 h^-1 Mpc × 170 h^-1 Mpc, where h is the Hubble constant in units of 100 km s^-1 Mpc^-1."
+  minimum_extent_long:
+    value: 170
+    unit: megaparsec_over_h
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: *extent
+disputes: []
+notes: >-
+  Gott et al. 2005 place the Coma Cluster at the centre of the wall but give no coordinates for it.
+  The thickness often quoted for the wall was not found in the sources read, nor is it in the
+  Geller & Huchra abstract; it is left out. Gott et al.'s map is in equatorial coordinates whose
+  equinox the paper does not state. The comoving length uses the paper's WMAP cosmology.

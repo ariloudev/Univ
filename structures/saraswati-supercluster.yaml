@@ -1,0 +1,137 @@
+# A wall-like supercluster of at least 43 massive clusters at z ≈ 0.28 in SDSS Stripe 82.
+name: Saraswati Supercluster
+alternative_names: []
+kind: supercluster
+status: observed
+papers:
+  - id: bagchi-2017
+    reference: "Bagchi, Sankhyayan, Sarkar, Raychaudhury, Jacob & Dabhade 2017, ApJ 844, 25"
+    title: "Saraswati: An Extremely Massive ~200 Megaparsec Scale Supercluster"
+    doi: 10.3847/1538-4357/aa7949
+    arxiv: "1707.03082"
+    read: "arXiv source (LaTeX) of 1707.03082; Table 1 parsed from it"
+# Abell 2631, the first cluster of Table 1, which the paper takes as the supercluster's centre.
+position:
+  frame: icrs
+  lon:
+    value: 354.41553
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: { paper: bagchi-2017, table: "1", row: "1", column: "R.A. (deg)" }
+  lat:
+    value: 0.27137
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: { paper: bagchi-2017, table: "1", row: "1", column: "Decl. (deg)" }
+  redshift:
+    value: 0.2772
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: { paper: bagchi-2017, table: "1", row: "1", column: "Redshift" }
+geometry:
+  kind: members
+  members:
+    frame: icrs
+    tracer: galaxy cluster (WHL catalogue; position of its brightest cluster galaxy)
+    source: { paper: bagchi-2017, table: "1" }
+    columns:
+      - { name: lon, header: "R.A. (deg)", unit: degree, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lat, header: "Decl. (deg)", unit: degree, kind: measured, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "Redshift", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+    rows:
+      - ["1 (bound core)", 354.41553, 0.27137, 0.2772]
+      - ["2", 355.89862, 0.33093, 0.2694]
+      - ["3", 356.59955, 0.74942, 0.2746]
+      - ["4 (bound core)", 355.27872, 0.30925, 0.2768]
+      - ["5", 354.40656, -0.67781, 0.2876]
+      - ["6", 356.86499, -0.15381, 0.2639]
+      - ["7", 350.62363, -0.37294, 0.2728]
+      - ["8", 351.68036, 1.13423, 0.2774]
+      - ["9", 351.88278, 0.94281, 0.2788]
+      - ["10", 356.51950, -0.18573, 0.2665]
+      - ["11", 357.56891, 0.88373, 0.2767]
+      - ["12", 352.86020, 0.61525, 0.2739]
+      - ["13", 357.83884, 0.61691, 0.2775]
+      - ["14", 358.78690, 0.75341, 0.2789]
+      - ["15", 354.03653, -1.18347, 0.2650]
+      - ["16", 352.03851, 0.18593, 0.2768]
+      - ["17", 356.45068, -1.12771, 0.2797]
+      - ["18", 356.19455, -0.08880, 0.2674]
+      - ["19", 354.56683, 0.11680, 0.2711]
+      - ["20", 358.25555, -0.23089, 0.2779]
+      - ["21", 356.01273, 0.22644, 0.2714]
+      - ["22", 356.86264, 0.52773, 0.2729]
+      - ["23", 353.99393, -0.48434, 0.2700]
+      - ["24", 356.32980, -0.05331, 0.2665]
+      - ["25 (bound core)", 355.10202, -0.09299, 0.2761]
+      - ["26", 358.93271, -0.00393, 0.2752]
+      - ["27", 353.62631, -0.98501, 0.2772]
+      - ["28", 355.43375, -0.67539, 0.2680]
+      - ["29", 357.93292, 0.56078, 0.2703]
+      - ["30", 357.23520, -0.89120, 0.2793]
+      - ["31 (bound core)", 354.97913, -0.43282, 0.2769]
+      - ["32", 351.02548, 0.36311, 0.2780]
+      - ["33", 352.66733, 0.60940, 0.2757]
+      - ["34", 356.67987, 0.83429, 0.2637]
+      - ["35", 351.58939, 0.16173, 0.2870]
+      - ["36", 353.87994, -0.88882, 0.2974]
+      - ["37", 352.81964, 0.72678, 0.2812]
+      - ["38", 352.17755, 0.82753, 0.2784]
+      - ["39 (bound core)", 353.87866, -0.53116, 0.2764]
+      - ["40", 356.76236, -0.08544, 0.2655]
+      - ["41", 358.12292, 0.60623, 0.2698]
+      - ["42", 355.63776, -0.28874, 0.2770]
+      - ["43", 358.60349, 0.81066, 0.2805]
+      - ["44", 351.32236, 0.27741, 0.2767]
+      - ["45", 351.95999, -0.64258, 0.2856]
+      - ["46", 358.44800, 0.81641, 0.2787]
+      - ["47", 355.18701, 0.31234, 0.2982]
+      - ["48", 357.44406, 0.64598, 0.2705]
+values:
+  extent:
+    value: 200
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    assumes: &cosmology "H0 = 70.1 km/s/Mpc, Ωm = 0.279, ΩΛ = 0.721 (WMAP 5-year)"
+    cite:
+      paper: bagchi-2017
+      sentence: "This supercluster is a major concentration of galaxies and galaxy clusters, forming a wall-like structure spanning at least 200 Mpc across at the redshift z ≈ 0.3."
+  clusters_in_main_body:
+    value: 43
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: &body
+      paper: bagchi-2017
+      sentence: "The mean density contrast δ (relative to the background matter density of the universe) of Saraswati is ≳ 1.62 and the main body of the supercluster comprises at least 43 massive galaxy clusters (mean z = 0.28) with a total mass of ~2 × 10^16 M☉."
+  mean_redshift:
+    value: 0.28
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *body
+  mean_density_contrast:
+    value: 1.62
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: lower_limit }
+    cite: *body
+  core_radius:
+    value: 20
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite:
+      paper: bagchi-2017
+      sentence: "The spherical collapse model suggests that the central region of radius ~20 Mpc and mass at least 4 × 10^15 M☉ may be collapsing."
+disputes: []
+notes: >-
+  Table 1 lists the 48 WHL clusters within 90 comoving Mpc of Abell 2631, "in and around" the
+  supercluster; the paper counts 43 in its main body without flagging which, so all 48 are kept as
+  members. The five marked "bound core" form the bound central core. The masses (about 2 × 10^16
+  solar masses in all) have no unit in univ-model and are left out.
