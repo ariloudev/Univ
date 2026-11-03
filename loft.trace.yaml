@@ -359,7 +359,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
-        body: f2d697a5db9dc559ca25cb14fe5942c8f33975f2e53c6c24aa354424c829d11c
+        body: dbcb4b840aeddcd750ae80492c6ef7062a9482e2986bd15662278ed2bdef635e
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "a_failed_normalization_leaves_no_earlier_report_in_the_provenance"
         body: 6e1453a5679b1f7aa6c64dab890499b22209b0cc3555e0ae07004c333f845bf8
@@ -398,7 +398,7 @@ links:
         body: 71fd2c00edb51f863a34ed9e87c31db9c6c13efff60f2afc3edcc73f50c4d51b
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
-        body: f2d697a5db9dc559ca25cb14fe5942c8f33975f2e53c6c24aa354424c829d11c
+        body: dbcb4b840aeddcd750ae80492c6ef7062a9482e2986bd15662278ed2bdef635e
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
         body: d28231fcee59050bbc9b349224244cddab5527cf92e3503080b766d61a67ef4b
@@ -459,6 +459,9 @@ links:
       - file: "crates/univ-ingest/tests/outlines.rs"
         name: "a_threshold_chosen_by_this_pipeline_says_so_and_why_and_is_never_read_as_a_citation"
         body: 93dea4f857ef6e47adc890f975263526739a888febc4d631b77773fe426402f1
+      - file: "crates/univ-ingest/tests/outlines_dense.rs"
+        name: "a_void_whose_dense_places_lie_outside_it_is_admitted"
+        body: a60a29282b26fcfa168f3b2b4a766881cf1394ca44f462d463b7247db1ddb67b
   - node: 01a19f22-2ad9-716e-876f-188469a36f95
     reviewed: be6e235b2eca4f242ab750cf9b221d66b00adb028fd2339bdcf5db1b16004d4b
     tests:
@@ -471,6 +474,12 @@ links:
       - file: "crates/univ-ingest/tests/outlines.rs"
         name: "a_published_position_on_the_wrong_side_of_the_threshold_is_published_as_a_point"
         body: 2fdb8d82b9b2e0e4055e5084442bd046f705511c998765ba6a3debc6f05e05db
+      - file: "crates/univ-ingest/tests/outlines_dense.rs"
+        name: "a_void_holding_a_dense_place_is_refused_and_shown_as_a_point_with_the_reason"
+        body: 637863df38c2e9433360fffa03810afa0876f773df7cd18aa1a8f432578e9986
+      - file: "crates/univ-ingest/tests/crossmatch.rs"
+        name: "a_member_that_resolves_to_no_object_or_an_unplaced_one_keeps_the_structure_a_point"
+        body: c15ef4f6fcbd8576437486a9deec6e1b869cabead49ccd98b23f286300827d6e
   - node: 01a19f23-636e-7035-8185-ab998407d632
     reviewed: 7630424b0e1f46a63129bb35234a4a81243755014dfcfb33e42850be779fd1ec
     tests:
@@ -509,7 +518,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "an_object_without_a_distance_is_found_but_not_placed"
-        body: decebded94288ed5f0b7fff3fad99b830d444dc2997563c4436be28b0f2c1c6a
+        body: 914c29449c25d3038dc6d5790e04354727d477f375ebd30742d1121b830d1385
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "an_object_without_a_distance_or_a_position_is_not_placed"
         body: e1667d538f604132286fdc1c39ddeac852076c724516fb6794eb690ef58f3074
@@ -560,7 +569,7 @@ links:
         body: 2502db704b7d43dff35f07f6595841e7f04092660cf24a8c1e02976b09093476
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "a_candidate_link_never_lends_its_measurements"
-        body: e0d97d21ffea5903dd65783a484483cc6933a82ac0054c7fd3dd8c1973866673
+        body: 252f0cba87fcf4d6532751c048416954c9a8991a584202d2052eb1d8facd596d
   - node: 01a19f23-636f-72bd-b194-1513f385222f
     reviewed: 66f206a5eefa8b76732be7488e54f99a84eaaaf7358ea6a5f1667028732ec2bc
     tests:
@@ -582,6 +591,9 @@ links:
       - file: "crates/univ-ingest/tests/ids_sequences.rs"
         name: "the_same_groups_give_the_same_ids_in_any_order"
         body: 847b3eea00ce13bafd7d3789ec54efb3ad343d74172a288a5e50291d33dec788
+      - file: "crates/univ-ingest/tests/crossmatch.rs"
+        name: "a_cross_match_again_gives_the_same_ids_until_a_release_takes_them"
+        body: 0c00fc78b67ed9ae9454d71a2b31b662bd26d86683adb54c1fbe4d8ef7116670
   - node: 01a19f23-636f-72bd-b194-15189cad9cac
     reviewed: c8e45e3bedc38e6a6a12f1262fbddc78ebaccc99d96d3dd7a93fc5aef241a74b
     tests:
@@ -647,13 +659,19 @@ links:
         body: fb088d2dd87e6eebb7f68ed21f537a297306b0049f22e7f1a4910509d4c584d2
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_status_line_fits_the_width_and_is_redrawn_at_most_ten_times_a_second"
-        body: 52bd99fd0a429174b707231ec792598ff8ffbbf098f8bdfd98a9e5169854c125
+        body: 4da26c9886aacba7e8c52b2f978e57ccb4f41b7212ff3738cfba4e2c5c5e7d81
+      - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
+        name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
+        body: 729ab6df6f457b6506ec83f4057e282a303cfbef074510fbde3746ec5e205663
+      - file: "crates/univ-ingest/tests/crossmatch.rs"
+        name: "the_cross_match_stage_reports_its_steps_and_counts_and_writes_its_ids_as_pending"
+        body: 652a619e3ae74e2ddf7fb6c062d780cc45ed612508ae122ccb25ad0f6cfebcad
   - node: 01a19f22-b0bc-76da-bac8-97803a2ac7b3
     reviewed: 3e35a457eabc0a266e62b03c551f1d2599521cad6be77a3b6e2c6c2e3fc3b71f
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_status_line_fits_the_width_and_is_redrawn_at_most_ten_times_a_second"
-        body: 52bd99fd0a429174b707231ec792598ff8ffbbf098f8bdfd98a9e5169854c125
+        body: 4da26c9886aacba7e8c52b2f978e57ccb4f41b7212ff3738cfba4e2c5c5e7d81
   - node: 01a19f22-b0bc-76da-bac8-978243cd702f
     reviewed: 812ac9813b107dd3be5cbfd85478f9b9270e73fb7da81308d1d7a129150f41ff
     tests:
@@ -686,28 +704,28 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended"
-        body: 87ea2bee47739f2bb9e633ae53ad93fd697c83f23c33103952883278812e2fd1
+        body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
   - node: 01a19f22-b0bc-76da-bac8-9788528129a0
     reviewed: 19235e59bf99c5023b529bc8c50f333800338d4e0428f3b34d429c7e2979ec19
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended"
-        body: 87ea2bee47739f2bb9e633ae53ad93fd697c83f23c33103952883278812e2fd1
+        body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_names_each_source_fetched_failed_or_not_reached"
-        body: abea554b4a8731a883fbbf690c78d148568441a02daaadc9530428dc5c4932ed
+        body: acc99abf98df95f902ca6f48024fc0bac906d77f2d82d54fc6c8a29b01e7f102
   - node: 01a19f22-b0bc-76da-bac8-9789936d8c57
     reviewed: d37ad425e756aed2ebcc8910851b758a250851f5951d8f1d22ee306c1479f268
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended"
-        body: 87ea2bee47739f2bb9e633ae53ad93fd697c83f23c33103952883278812e2fd1
+        body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
       - file: "crates/univ-ingest/tests/cli.rs"
         name: "an_offline_fetch_prints_plain_lines_and_a_summary_and_fails_on_a_missing_chunk"
         body: 3c4566d86e5e7b71ba175859e0e526267ffd40d0a0c35abcd42232304f8eda7d
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_names_each_source_fetched_failed_or_not_reached"
-        body: abea554b4a8731a883fbbf690c78d148568441a02daaadc9530428dc5c4932ed
+        body: acc99abf98df95f902ca6f48024fc0bac906d77f2d82d54fc6c8a29b01e7f102
       - file: "crates/univ-ingest/tests/run.rs"
         name: "an_interrupted_fetch_names_the_sources_it_ended_and_leaves_the_rest_not_reached"
         body: 82b975c4785d473109110da1c61fa98f2f1c72ffc16fcea510ab30d1bb3b310e
@@ -716,7 +734,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "each_event_and_stage_prints_as_one_plain_timestamped_line_without_control_codes"
-        body: eed55ec0dd8e7baada8da16f8c0b76cee1b22d341d97d55445cd3c5b7e261d8d
+        body: 506bec1da1cbd3a1744d82118a749d581ce467a9beda8e51c2c7e187b4adda61
       - file: "crates/univ-ingest/tests/cli.rs"
         name: "an_offline_fetch_prints_plain_lines_and_a_summary_and_fails_on_a_missing_chunk"
         body: 3c4566d86e5e7b71ba175859e0e526267ffd40d0a0c35abcd42232304f8eda7d
@@ -725,7 +743,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "a_download_longer_than_a_minute_prints_one_progress_line_each_minute"
-        body: 659506a94d117cca59925a620612776f68b44a7d26de0f75ee133ab8e67ce4a4
+        body: 062cdb46d9a15fa70e65891c6aa3e37f3199a236bc8c2264945075f44a25455f
   - node: 01a19f22-b0bc-76da-bac8-978e78be4742
     reviewed: e8f6cc01a354c06937617c102a38e0cd8e861dc24149a0cbc674be0acd835ca1
     tests:
