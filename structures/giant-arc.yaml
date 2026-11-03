@@ -101,7 +101,8 @@ values:
     value: 0.802
     unit: dimensionless
     kind: measured
-    uncertainty: { form: none_reported }
+    # The slice's half-width (redshift_half_width below): an interval, not a one-sigma error.
+    uncertainty: { form: asymmetric, minus: 0.060, plus: 0.060 }
     cite: &slice
       paper: lopez-2022
       sentence: "We are now taking the GA to be predominantly concentrated in the redshift interval 0.802 ± 0.060, so 0.742 → 0.862. Its (present-epoch) depth is then ~ 340 Mpc."

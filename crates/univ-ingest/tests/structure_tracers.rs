@@ -111,3 +111,48 @@ fn a_member_table_without_redshifts_takes_the_structures_cited_redshift_as_an_es
         assert!(l.shape.is_some(), "{}: {:?}", l.structure, l.unplaced);
     }
 }
+
+#[test]
+fn a_member_placed_at_its_structure_s_redshift_slice_carries_the_slice_s_width() {
+    // Lopez et al. 2022 and 2024: the Giant Arc and the Big Ring lie in the slice z = 0.802 ±
+    // 0.060. Each absorber placed at 0.802 carries ±0.060, and the comoving distances of the
+    // slice's two ends, not a single distance as though its redshift were known.
+    let (_, lists) = placed();
+    let release = Release::planck_2018();
+    let (low, high) = (
+        release.cosmology().comoving_distance(0.742).unwrap(),
+        release.cosmology().comoving_distance(0.862).unwrap(),
+    );
+    for name in ["Giant Arc", "Big Ring"] {
+        let l = list(&lists, name);
+        assert!(!l.from_file.is_empty(), "{name}");
+        for m in &l.from_file {
+            assert_eq!(
+                m.redshift_uncertainty,
+                Uncertainty::Asymmetric {
+                    minus: 0.060,
+                    plus: 0.060
+                },
+                "{name}"
+            );
+            let [near, far] = m.distance_range_mpc.unwrap();
+            assert!(near < m.distance_mpc && m.distance_mpc < far);
+            // The CMB-frame shift toward each absorber moves the ends by well under 1%.
+            assert!((near - low).abs() < 0.01 * low && (far - high).abs() < 0.01 * high);
+        }
+    }
+}
+
+#[test]
+fn saraswati_s_cluster_redshifts_are_estimated_as_some_are_photometric() {
+    // Bagchi et al. 2017 used photometric redshifts for the clusters whose BCG spectra are not
+    // available, and Table 1 does not say which: none is called measured.
+    let (_, lists) = placed();
+    let l = list(&lists, "Saraswati Supercluster");
+    assert_eq!(l.from_file.len(), 48);
+    for m in &l.from_file {
+        assert_eq!(m.kind, KindOfValue::Estimated, "{}", m.member);
+        assert_eq!(m.redshift_uncertainty, Uncertainty::NoneReported);
+        assert_eq!(m.distance_range_mpc, None);
+    }
+}

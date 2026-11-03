@@ -80,9 +80,9 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
              {}\n",
             dir.join("manifest.yaml").display()
         ),
-        "Z Step build: cell index: 16 placed objects, 23 of 26 structures with a bounding box\n"
+        "Z Step build: cell index: 16 placed objects, 24 of 26 structures with a bounding box\n"
             .to_owned(),
-        "Z Step build: cell index: 3 structures not indexed: hercules-corona-borealis-great-wall \
+        "Z Step build: cell index: 2 structures not indexed: hercules-corona-borealis-great-wall \
          (it publishes no position or geometry); "
             .to_owned(),
         "Z Step build: provisional redistribution review, judged again before any public \

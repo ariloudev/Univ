@@ -124,7 +124,8 @@ values:
     value: 0.802
     unit: dimensionless
     kind: measured
-    uncertainty: { form: none_reported }
+    # The slice's half-width: an interval, not a one-sigma error.
+    uncertainty: { form: asymmetric, minus: 0.060, plus: 0.060 }
     cite:
       paper: lopez-2024
       sentence: "The tangent-plane distribution of Mg II absorbers in the redshift slice z = 0.802 ± 0.060."

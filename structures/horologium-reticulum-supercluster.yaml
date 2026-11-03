@@ -29,7 +29,29 @@ position:
     uncertainty: { form: none_reported }
     as_published: "δ = -50°02′"
     cite: *centre
+  velocity:
+    value: 19900
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &mean
+      paper: fleenor-2005
+      sentence: "The mean redshift of these clusters is 19,900 km s-1, with a dispersion σ of 2300 km s-1."
+    note: >-
+      From the section on the kinematic extent of the HRS: the mean cz of the seventeen ACO
+      clusters of the HRS within the survey field, heliocentric as every redshift of the paper
+      ("heliocentric corrections were applied to all redshifts", in its section on redshift
+      determination). The paper gives no uncertainty of the mean; the dispersion below is the
+      spread of the clusters' redshifts.
 values:
+  cluster_velocity_dispersion:
+    value: 2300
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *mean
+    note: "The spread of the seventeen clusters' redshifts, not an uncertainty of their mean."
+
   extent_on_sky:
     value: 12
     unit: degree

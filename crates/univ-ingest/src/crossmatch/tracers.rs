@@ -28,7 +28,7 @@ use univ_model::derive::Release;
 use univ_model::position::{Vec3, scaled};
 use univ_model::redshift::{CmbCorrection, DipoleModel, RedshiftFrame};
 use univ_model::units::Unit;
-use univ_model::value::{KindOfValue, Quantity};
+use univ_model::value::{KindOfValue, Quantity, Uncertainty};
 
 use crate::structures::{ColumnName, Members, Row, Structure};
 
@@ -45,6 +45,12 @@ pub struct FromFile {
     pub redshift_from: String,
     /// The redshift's kind of value: its column's, or estimated for the structure's.
     pub kind: KindOfValue,
+    /// The redshift's uncertainty as cited: its column's, or the structure value's, such as
+    /// the ±0.060 of the redshift slice the Giant Arc and the Big Ring were found in.
+    pub redshift_uncertainty: Uncertainty,
+    /// The comoving distances, Mpc, of the two ends of the redshift's interval (one sigma
+    /// either side, or the cited interval), where the uncertainty gives one.
+    pub distance_range_mpc: Option<[f64; 2]>,
     /// The redshift in the CMB frame, toward the member.
     pub cmb_redshift: f64,
     /// Its comoving distance under the release cosmology, Mpc.
@@ -131,11 +137,38 @@ impl<'a> FilePlacer<'a> {
             .ok()?;
         let radial = self.release.radial_from_redshift(&cmb).ok()?;
         let distance = radial.distance().value;
+        let (minus, plus) = match z.uncertainty {
+            Uncertainty::Symmetric { sigma } => (Some(sigma), Some(sigma)),
+            Uncertainty::Asymmetric { minus, plus }
+            | Uncertainty::CredibleInterval { minus, plus, .. } => (Some(minus), Some(plus)),
+            _ => (None, None),
+        };
+        let at = |dz: f64| {
+            let end =
+                Quantity::new(z.value + dz, Unit::Dimensionless, Uncertainty::NoneReported).ok()?;
+            let cmb = self
+                .correction
+                .apply(end, RedshiftFrame::Heliocentric, direction)
+                .ok()?;
+            Some(
+                self.release
+                    .radial_from_redshift(&cmb)
+                    .ok()?
+                    .distance()
+                    .value,
+            )
+        };
+        let distance_range_mpc = match (minus, plus) {
+            (Some(m), Some(p)) => at(-m).zip(at(p)).map(|(low, high)| [low, high]),
+            _ => None,
+        };
         let record = FromFile {
             member: row.name.clone(),
             redshift: z.value,
             redshift_from,
             kind,
+            redshift_uncertainty: z.uncertainty,
+            distance_range_mpc,
             cmb_redshift: cmb.value.value,
             distance_mpc: distance,
         };

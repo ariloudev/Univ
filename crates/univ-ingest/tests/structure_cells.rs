@@ -13,7 +13,7 @@ mod common;
 use common::workspace;
 use univ_ingest::release::{centre as structure_centre, index_bounds, structure_rows};
 use univ_ingest::source::ScaleDomain;
-use univ_ingest::structures::{Structure, StructureGeometry, read_all_named};
+use univ_ingest::structures::{Coordinates, Radial, Structure, StructureGeometry, read_all_named};
 use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::derive::Release;
 use univ_model::geometry::Aabb;
@@ -139,9 +139,38 @@ fn a_structure_that_cannot_be_placed_is_not_indexed_with_the_reason() {
         ),
         ("big-ring", "its member list was not resolved"),
     ] {
-        let refused = index_bounds(&structure(id), None, &release).unwrap_err();
+        let mut s = structure(id);
+        // Horologium-Reticulum now cites its mean velocity; without it, its position gives no
+        // distance.
+        if let Some(Coordinates::Spherical { radial, .. }) = &mut s.position {
+            *radial = None;
+        }
+        let refused = index_bounds(&s, None, &release).unwrap_err();
         assert_eq!(refused, reason, "{id}");
     }
+}
+
+#[test]
+fn horologium_reticulum_is_placed_at_its_cited_mean_velocity() {
+    // Fleenor et al. 2005: mean cz 19,900 km/s, heliocentric, near α = 03h19m, δ = -50°02′.
+    let release = Release::planck_2018();
+    let s = structure("horologium-reticulum-supercluster");
+    let Some(Coordinates::Spherical {
+        radial: Some(Radial::Velocity(v)),
+        ..
+    }) = &s.position
+    else {
+        unreachable!()
+    };
+    assert_eq!(v.quantity.value, 19_900.0);
+    let b = index_bounds(&s, None, &release).unwrap();
+    let centre: Vec3 = std::array::from_fn(|k| b.min[k].midpoint(b.max[k]));
+    let d = dot(centre, centre).sqrt();
+    let expected = release
+        .cosmology()
+        .comoving_distance(19_900.0 / SPEED_OF_LIGHT)
+        .unwrap();
+    assert!((d - expected).abs() < 0.03 * expected, "{d} {expected}");
 }
 
 #[test]
