@@ -7,26 +7,45 @@
 //! objects the release holds. A read of an older release still finds the object as it was
 //! there, because objects are rows of their release.
 
+use std::collections::{HashSet, VecDeque};
+
 use serde_json::json;
+use univ_model::api::lookup::LedgerChange;
 use univ_model::release::rows::name_key;
 
 use crate::backend::{Backend, column, first, json_column};
-use crate::problem::Problem;
+use crate::problem::{Problem, ProblemType};
 
-/// The most changes an id is followed through; the ledger never chains further in practice.
-const MAX_HOPS: usize = 32;
+/// The most ids the ledger is followed through from one id. Real chains are one or two
+/// changes long; a ledger that leads further is faulty, and is reported as such.
+const MAX_VISITED: usize = 1_024;
 
-/// What an id that a release does not hold leads to in it.
+/// What an id that a release does not hold leads to in it, with each ledger change followed
+/// from it in order.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Resolved {
-    /// The id was merged, in release `replaced_in`, into the one object `into`.
-    Merged { into: u64, replaced_in: u32 },
-    /// The id was split, in release `replaced_in`, into the objects `into`.
-    Split { into: Vec<u64>, replaced_in: u32 },
-    /// The id was retired in release `replaced_in`, or what it led to was.
-    Retired { replaced_in: u32 },
-    /// No release up to this one issued the id.
+    /// The id leads to the one object `into`.
+    Merged {
+        into: u64,
+        history: Vec<LedgerChange>,
+    },
+    /// The id leads to the objects `into`.
+    Split {
+        into: Vec<u64>,
+        history: Vec<LedgerChange>,
+    },
+    /// The id leads to no object: it, or each object it led to, was retired.
+    Retired { history: Vec<LedgerChange> },
+    /// No release up to this one changed the id.
     Unknown,
+}
+
+impl Resolved {
+    /// The release that replaced the id looked up: the first change followed.
+    #[must_use]
+    pub fn replaced_in(history: &[LedgerChange]) -> u32 {
+        history.first().map_or(0, |change| change.release)
+    }
 }
 
 /// Whether `release` holds object `id`.
@@ -40,55 +59,75 @@ pub async fn present<B: Backend>(backend: &B, release: u32, id: u64) -> Result<b
     Ok(!rows.is_empty())
 }
 
-/// The ledger's change of `id` recorded by a release up to `release`: that release and the ids
-/// that replaced it (none for a retirement).
+/// The ledger's change of `id` recorded by a release up to `release`.
 async fn change<B: Backend>(
     backend: &B,
     release: u32,
     id: u64,
-) -> Result<Option<(u32, Vec<u64>)>, Problem> {
+) -> Result<Option<LedgerChange>, Problem> {
     let rows = backend
         .releases(
-            "SELECT release, replaced_by FROM ids_replaced \
+            "SELECT release, change, replaced_by FROM ids_replaced \
              WHERE id = ?1 AND release <= ?2",
             &[json!(id), json!(release)],
         )
         .await?;
     first(rows)
-        .map(|row| Ok((column(&row, "release")?, json_column(&row, "replaced_by")?)))
+        .map(|row| {
+            Ok(LedgerChange {
+                id,
+                release: column(&row, "release")?,
+                change: column(&row, "change")?,
+                replaced_by: json_column(&row, "replaced_by")?,
+            })
+        })
         .transpose()
 }
 
-/// What `id`, absent from `release`, leads to there.
+/// What `id`, absent from `release`, leads to there: every change the ledger records up to
+/// that release is followed, breadth first, to the objects the release holds.
+///
+/// # Errors
+///
+/// A problem answer when the release database cannot be read, or an internal error when the
+/// ledger leads through more ids than any real chain does.
 pub async fn replaced<B: Backend>(backend: &B, release: u32, id: u64) -> Result<Resolved, Problem> {
-    let Some((replaced_in, by)) = change(backend, release, id).await? else {
-        return Ok(Resolved::Unknown);
-    };
+    let mut history = Vec::new();
     let mut found: Vec<u64> = Vec::new();
-    let mut pending = by;
-    let mut hops = 0;
-    while let Some(next) = pending.pop() {
-        hops += 1;
-        if hops > MAX_HOPS {
-            break;
-        }
-        if present(backend, release, next).await? {
+    let mut visited = HashSet::from([id]);
+    let mut pending = VecDeque::from([id]);
+    while let Some(next) = pending.pop_front() {
+        if next != id && present(backend, release, next).await? {
             found.push(next);
-        } else if let Some((_, further)) = change(backend, release, next).await? {
-            pending.extend(further);
+            continue;
+        }
+        let Some(change) = change(backend, release, next).await? else {
+            continue;
+        };
+        for &by in &change.replaced_by {
+            if visited.insert(by) {
+                pending.push_back(by);
+            }
+        }
+        history.push(change);
+        if visited.len() > MAX_VISITED {
+            return Err(Problem::new(
+                ProblemType::InternalError,
+                format!("The id ledger leads from {id} through more than {MAX_VISITED} ids."),
+            ));
         }
     }
     found.sort_unstable();
-    found.dedup();
-    Ok(match found.as_slice() {
-        [] => Resolved::Retired { replaced_in },
-        [into] => Resolved::Merged {
+    Ok(match (found.as_slice(), history.is_empty()) {
+        (_, true) => Resolved::Unknown,
+        ([], false) => Resolved::Retired { history },
+        ([into], false) => Resolved::Merged {
             into: *into,
-            replaced_in,
+            history,
         },
         _ => Resolved::Split {
             into: found,
-            replaced_in,
+            history,
         },
     })
 }

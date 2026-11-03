@@ -9,7 +9,9 @@ pub(crate) mod resolve;
 pub(crate) mod vocabulary;
 
 use serde_json::json;
-use univ_model::api::lookup::{Ambiguity, LookedUp, ObjectChoice, ObjectChoices, ObjectMerged};
+use univ_model::api::lookup::{
+    Ambiguity, LedgerChange, LookedUp, ObjectChoice, ObjectChoices, ObjectMerged,
+};
 use univ_model::api::objects::ObjectRecord;
 use univ_model::release::read;
 
@@ -18,7 +20,7 @@ use self::vocabulary::vocabulary;
 use crate::backend::{Backend, first, rows_as};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
-use crate::releases::{pinned, resolve};
+use crate::releases::{RELEASE_PARAM, pinned, resolve};
 
 /// Reads one object of the release the request reads, by its id.
 ///
@@ -56,31 +58,45 @@ pub async fn get<B: Backend>(
         return Ok(record);
     }
     let looked_up = LookedUp::Id { id };
-    match replaced(backend, release, id).await? {
-        Resolved::Merged { into, replaced_in } => {
+    let unpinned = request.param(RELEASE_PARAM).is_none();
+    let answer = match replaced(backend, release, id).await? {
+        Resolved::Merged { into, history } => {
             let merged = ObjectMerged {
                 release,
                 id,
-                replaced_in,
+                replaced_in: Resolved::replaced_in(&history),
                 merged_into: into,
                 href: href(into, release),
+                history,
             };
             let response =
                 Response::json_with_status(301, &merged)?.with_header("location", &merged.href);
-            Ok(pinned(response, release))
+            pinned(response, release)
         }
-        Resolved::Split { into, replaced_in } => choices(
+        Resolved::Split { into, history } => choices(
             release,
             looked_up,
             Ambiguity::Split,
-            Some(replaced_in),
+            history,
             into.into_iter().map(|id| (id, Vec::new())),
-        ),
-        Resolved::Retired { replaced_in } => {
-            Err(not_found(release, &looked_up).with("retired_in", replaced_in))
+        )?,
+        Resolved::Retired { history } => {
+            return Err(not_found(release, &looked_up)
+                .with("replaced_in", Resolved::replaced_in(&history))
+                .with(
+                    "history",
+                    serde_json::to_value(&history).unwrap_or_default(),
+                ));
         }
-        Resolved::Unknown => Err(not_found(release, &looked_up)),
-    }
+        Resolved::Unknown => return Err(not_found(release, &looked_up)),
+    };
+    // Where an unpinned read was sent depends on the release `latest` names now, which moves:
+    // a cache must not keep the redirect.
+    Ok(if unpinned {
+        answer.with_header("cache-control", "no-store")
+    } else {
+        answer
+    })
 }
 
 /// Looks an object up by a common name, or by a source and the designation it gives.
@@ -125,18 +141,31 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
                 found.into_iter().map(|id| (id, Vec::new())).collect(),
             )
         }
-        _ => {
+        (name, source, designation) => {
+            // Name the parameter that is missing, or the one that does not belong.
+            let parameter = match (name.is_some(), source.is_some(), designation.is_some()) {
+                (true, _, _) => "name",
+                (false, true, false) => "designation",
+                _ => "source",
+            };
             return Err(Problem::new(
                 ProblemType::InvalidParameter,
-                "Look an object up by `name`, or by `source` and `designation`.",
+                "Look an object up by `name` alone, or by `source` and `designation`.",
             )
-            .with("parameter", "name"));
+            .with("parameter", parameter));
         }
     };
     match found.as_slice() {
         [] => Err(not_found(release, &looked_up)),
         [(id, _)] => present_after_all(backend, release, *id).await,
-        _ => choices(release, looked_up, ambiguity, None, found),
+        _ => {
+            let answer = choices(release, looked_up, ambiguity, Vec::new(), found)?;
+            Ok(if request.param(RELEASE_PARAM).is_none() {
+                answer.with_header("cache-control", "no-store")
+            } else {
+                answer
+            })
+        }
     }
 }
 
@@ -209,14 +238,15 @@ fn choices(
     release: u32,
     looked_up: LookedUp,
     ambiguity: Ambiguity,
-    replaced_in: Option<u32>,
+    history: Vec<LedgerChange>,
     objects: impl IntoIterator<Item = (u64, Vec<String>)>,
 ) -> Result<Response, Problem> {
     let choices = ObjectChoices {
         release,
         looked_up,
         ambiguity,
-        replaced_in,
+        replaced_in: history.first().map(|change| change.release),
+        history,
         objects: objects
             .into_iter()
             .map(|(id, names)| ObjectChoice {

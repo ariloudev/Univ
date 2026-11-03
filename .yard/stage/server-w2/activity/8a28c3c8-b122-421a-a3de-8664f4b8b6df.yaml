@@ -23,7 +23,7 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-03T21:47:42Z
+lastEnded: 2026-11-03T21:55:17Z
 turns:
   - started: 2026-11-03T21:16:48Z
     ended: 2026-11-03T21:22:04Z
@@ -34,6 +34,8 @@ turns:
   - started: 2026-11-03T21:43:23Z
     ended: 2026-11-03T21:43:29Z
   - started: 2026-11-03T21:46:32Z
+    ended: 2026-11-03T21:49:56Z
+  - started: 2026-11-03T21:55:17Z
 subagents:
   - agent: a61308e005ca7d11c
     type: general-purpose
@@ -52,6 +54,7 @@ subagents:
   - agent: a9f6038677552f71c
     type: general-purpose
     started: 2026-11-03T21:47:41Z
+    ended: 2026-11-03T21:55:17Z
     stage: 01a1a345-9428-72f5-956a-8ef5a6407337
   - agent: a7e9e475ca580111f
     type: general-purpose
