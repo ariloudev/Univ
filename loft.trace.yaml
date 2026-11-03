@@ -417,6 +417,57 @@ links:
       - file: "crates/univ-ingest/tests/outlines.rs"
         name: "a_published_position_on_the_wrong_side_of_the_threshold_is_published_as_a_point"
         body: 2fdb8d82b9b2e0e4055e5084442bd046f705511c998765ba6a3debc6f05e05db
+  - node: 01a19f23-636f-72bd-b194-15178440da44
+    reviewed: d30b961b6c19837c70435a379c1919ce9154776e6c5131e472332bc73349fdaf
+    tests:
+      - file: "crates/univ-ingest/tests/ids.rs"
+        name: "an_object_keeps_its_id_whatever_new_entries_joined_it"
+        body: 72c0b96f770f20c39e8a174c13576f7b9cff53fed0bc9f47cd8a057ca1f3019d
+      - file: "crates/univ-ingest/tests/ids_sequences.rs"
+        name: "the_same_groups_give_the_same_ids_in_any_order"
+        body: 847b3eea00ce13bafd7d3789ec54efb3ad343d74172a288a5e50291d33dec788
+  - node: 01a19f23-636f-72bd-b194-15189cad9cac
+    reviewed: c8e45e3bedc38e6a6a12f1262fbddc78ebaccc99d96d3dd7a93fc5aef241a74b
+    tests:
+      - file: "crates/univ-ingest/tests/ids.rs"
+        name: "two_merging_objects_keep_the_older_id_and_the_other_is_merged_into_it"
+        body: 15f9143e7635f2e375cd1ea6935a298f7d9b4cb83ac38cb687b586063309cb17
+      - file: "crates/univ-ingest/tests/ids.rs"
+        name: "three_objects_merging_keep_the_oldest_id"
+        body: 3ad6d26bc8eddd55f1937697ed1015d4fc07207585ecb379d864a36e1ea169d7
+  - node: 01a19f23-636f-72bd-b194-151929ed3023
+    reviewed: 3d2339233e52be13be05bf55fdfdc57904bba2e9a474113820e8eceaa473c700
+    tests:
+      - file: "crates/univ-ingest/tests/ids.rs"
+        name: "a_split_object_gives_each_part_a_new_id_and_is_recorded_as_split_into_them"
+        body: 2c6301634fb7dfe9cf7d0baa459d6f51f52f85615d19808ee1f671eb544bec27
+  - node: 01a19f23-636f-72bd-b194-151af96748e0
+    reviewed: 8515040593c687d2d2b9480685284758052ffdc5b46256107cbbf76475fecfaf
+    tests:
+      - file: "crates/univ-ingest/tests/ids.rs"
+        name: "an_object_that_lost_entries_keeps_its_id_while_the_rest_all_belonged_to_it"
+        body: d5081244ecd57ca1e2f7a477126027e62bd013dec83da858bf61af1314a62a2a
+  - node: 01a19f2d-59a8-7398-b20d-5c59b10da0c2
+    reviewed: b50f4a29b72cbff1188fadd658640da49e7c76f8884c3e918dcd3e94b6dee10b
+    tests:
+      - file: "crates/univ-ingest/tests/ids.rs"
+        name: "an_object_of_only_new_entries_gets_a_new_id"
+        body: 63bd200addd403d7a2ee473602b59f2a897cc37f77c58735cdb75482de97b5ec
+  - node: 01a19f2d-59a8-7398-b20d-5c5a34616724
+    reviewed: 67656840c8cb7904e7179203cefc8f705d7435733b9b6e08557fc4fa871c48d3
+    tests:
+      - file: "crates/univ-ingest/tests/ids.rs"
+        name: "an_id_is_never_given_to_a_second_object"
+        body: f34fcc3ebf691315caf861c766430c50beafea9035f451d388f9e6875243ee77
+      - file: "crates/univ-ingest/tests/ids_sequences.rs"
+        name: "over_many_random_release_sequences_no_id_is_reused_and_every_old_id_is_recorded"
+        body: 6d6dd42516b26b593b49fb6da09646ee9538d6757e6a0941743728fe2f6f0cb4
+  - node: 01a19f23-636f-72bd-b194-151c7fe18cca
+    reviewed: 7575e1b16e07823353121f0841226f3006f1828d9546ddeb87afc1a794b3ae79
+    tests:
+      - file: "crates/univ-ingest/tests/ids.rs"
+        name: "each_ledger_entry_gives_the_old_id_what_happened_and_the_ids_that_replaced_it"
+        body: 96e60c14219c3ba3a426baa6ccabf922bc28d031b582f8595a51ac6ae4c818a8
   - node: 01a19f22-b0bc-76da-bac8-977d3868a411
     reviewed: cc37beca30b495d7bc6ca64117e2a846be04474bbe21d4eebfcd6054cd9631a6
     tests:
