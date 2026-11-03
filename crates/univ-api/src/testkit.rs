@@ -36,6 +36,7 @@ impl Sqlite {
         connection
             .execute_batch(univ_model::release::SCHEMA)
             .unwrap();
+        connection.execute_batch(SCHEMA_V3).unwrap();
         Self { connection }
     }
 
@@ -126,4 +127,42 @@ INSERT INTO releases VALUES (3, '2026-11-03T08:00:00Z', NULL, NULL,
   '{"name":"Planck 2018","hubble_constant":67.66,"omega_matter":0.3111}', 300.0, 'm', 'i', 2,
   'rules', 'rule', 'name', '["hipparcos-2007"]', 13, 2, 1, 4, 1300);
 INSERT INTO latest VALUES (1, 2, '2026-11-02T08:30:00Z');
+"#;
+
+/// The tables schema v3 adds, as Univ Ingest's schema states them, for the tests to hold until
+/// univ-model's schema has them; `IF NOT EXISTS` leaves them as the schema made them after.
+pub const SCHEMA_V3: &str = "
+CREATE TABLE IF NOT EXISTS source_details (
+  release INTEGER NOT NULL, source INTEGER NOT NULL, bibcode TEXT, doi TEXT,
+  reference_note TEXT, sky TEXT, radial TEXT, PRIMARY KEY (release, source)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS structure_details (
+  release INTEGER NOT NULL, id TEXT NOT NULL, shape TEXT, derivation TEXT, outline TEXT,
+  rescaled TEXT, PRIMARY KEY (release, id)
+) WITHOUT ROWID;
+";
+
+/// Release 2's two sources: Hipparcos, fetched in two payloads with a fix and rows left out,
+/// and the researched structures, which have no primary reference and nothing fetched.
+pub const SOURCES: &str = r#"
+INSERT INTO sources VALUES (2, 0, 'hipparcos-2007', 'Hipparcos, the new reduction', 'vizier',
+  'stars', 'van Leeuwen F. 2007, A&A 474, 653. 2007A&A...474..653V, doi:10.1051/0004-6361:20078357.',
+  'https://cds.unistra.fr/vizier-org/licences_vizier.html', 'The data are free of usage in a scientific context.',
+  'This research has made use of VizieR.', 'permitted_with_credit', 'provisional', 117955,
+  '{"method":"vizier_tsv","table":"I/311/hip2","constraints":[],"slices":{"column":"HIP","from":1,"to":120404,"step":30000},"rows":117955}',
+  '["No server-side cut: every row of I/311/hip2."]',
+  '[{"defect":"RArad and DErad are served in degrees.","change":"RArad and DErad are read as degrees."}]');
+INSERT INTO sources VALUES (2, 1, 'researched-structures', 'Researched structures', 'literature',
+  'cosmic_web', 'Each structure cites its own papers.', 'https://example.org/terms', 'Quoted.',
+  'Credit each paper.', 'permitted_with_credit', 'reviewed', 0, '{"method":"files"}', '[]', '[]');
+INSERT INTO payloads VALUES (2, 0, 'chunk-0', 'https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=I/311/hip2&HIP=1..30000',
+  'aa11', 2048, '2026-11-01T09:00:00Z', 29999);
+INSERT INTO payloads VALUES (2, 0, 'chunk-1', 'https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=I/311/hip2&HIP=30001..60000',
+  'bb22', 4096, '2026-11-01T09:01:00Z', NULL);
+INSERT INTO normalizations VALUES (2, 0, 117950, '{"no_parallax":3,"bad_position":2}',
+  '[{"change":"RArad and DErad are read as degrees.","entries_changed":117955}]');
+INSERT INTO source_details VALUES (2, 0, '2007A&A...474..653V', '10.1051/0004-6361:20078357', NULL,
+  '{"order":5,"cells":[1,2,3]}',
+  '[{"measure":"parallax","min":0.1,"max":772.33,"unit":"milliarcsecond","basis":"parallax as published","entries":117950}]');
+INSERT INTO source_details VALUES (2, 1, NULL, NULL, 'A compilation: each structure cites its own papers.', NULL, NULL);
 "#;

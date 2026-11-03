@@ -16,6 +16,8 @@ pub enum Endpoint {
     OpenApi,
     Releases,
     Sources,
+    Source,
+    SourceProvenance,
 }
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
@@ -27,7 +29,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 3] = [
+pub static ROUTES: [Route; 5] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -43,19 +45,33 @@ pub static ROUTES: [Route; 3] = [
         path: "/v1/sources",
         endpoint: Endpoint::Sources,
     },
+    Route {
+        method: Method::Get,
+        path: "/v1/sources/{id}",
+        endpoint: Endpoint::Source,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/sources/{id}/provenance",
+        endpoint: Endpoint::SourceProvenance,
+    },
 ];
 
 /// The answer of `endpoint` to `request`, a refusal included.
 async fn answer<B: Backend>(
     endpoint: Endpoint,
     request: &Request,
-    _params: &Params,
+    params: &Params,
     backend: &B,
 ) -> Response {
     let answered = match endpoint {
         Endpoint::OpenApi => Ok(openapi::serve()),
         Endpoint::Releases => releases::list(backend).await,
         Endpoint::Sources => sources::list(request, backend).await,
+        Endpoint::Source => sources::get(request, param(params, "id"), backend).await,
+        Endpoint::SourceProvenance => {
+            sources::provenance(request, param(params, "id"), backend).await
+        }
     };
     answered.unwrap_or_else(Problem::into_response)
 }
@@ -101,6 +117,15 @@ pub async fn dispatch<B: Backend>(request: &Request, backend: &B) -> Response {
     .with("allow", allow.as_str())
     .into_response()
     .with_header("allow", &allow)
+}
+
+/// The value of the route's `{name}` segment; every endpoint asks only for segments its own
+/// template has.
+fn param<'a>(params: &'a Params, name: &str) -> &'a str {
+    params
+        .iter()
+        .find(|(key, _)| *key == name)
+        .map_or("", |(_, value)| value.as_str())
 }
 
 /// The values of the template's `{name}` segments when `path` matches it, segment by segment.

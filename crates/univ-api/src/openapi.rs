@@ -19,7 +19,13 @@ use crate::problem::{Problem, ProblemType};
         title = "Univ Server",
         description = "Real, normalized astronomical and cosmological data, and the layers clients author on top of it."
     ),
-    paths(serve, crate::releases::list, crate::sources::list)
+    paths(
+        serve,
+        crate::releases::list,
+        crate::sources::list,
+        crate::sources::get,
+        crate::sources::provenance::provenance
+    )
 )]
 struct ApiDoc;
 

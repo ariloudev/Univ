@@ -23,9 +23,14 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-03T20:05:40Z
+lastEnded: 2026-11-03T20:09:38Z
 turns:
   - started: 2026-11-03T19:59:50Z
+subagents:
+  - agent: ab67a6ba577894827
+    type: general-purpose
+    started: 2026-11-03T20:09:38Z
+    stage: 01a1a2ff-1aff-720c-940c-ee5f476bca2d
 loft:
   - commands:
       - fmt

@@ -26,6 +26,15 @@ pub trait Backend {
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
 }
 
+impl BackendError {
+    /// Whether the read failed because a table it names does not exist, as in a release
+    /// database written by an earlier schema.
+    #[must_use]
+    pub fn is_missing_table(&self) -> bool {
+        self.0.contains("no such table")
+    }
+}
+
 /// The first row of `rows`, if any.
 #[must_use]
 pub fn first(mut rows: Vec<Row>) -> Option<Row> {

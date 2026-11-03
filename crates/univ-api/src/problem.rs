@@ -26,6 +26,8 @@ pub enum ProblemType {
     ReleaseNotFound,
     /// The release was pruned: its data is gone.
     ReleasePruned,
+    /// The release has no source of that id.
+    SourceNotFound,
     /// The server failed to answer a request it should have answered.
     InternalError,
 }
@@ -39,6 +41,7 @@ impl ProblemType {
         Self::InvalidParameter,
         Self::ReleaseNotFound,
         Self::ReleasePruned,
+        Self::SourceNotFound,
         Self::InternalError,
     ];
 
@@ -52,6 +55,7 @@ impl ProblemType {
             Self::InvalidParameter => "urn:univ:problem:invalid-parameter",
             Self::ReleaseNotFound => "urn:univ:problem:release-not-found",
             Self::ReleasePruned => "urn:univ:problem:release-pruned",
+            Self::SourceNotFound => "urn:univ:problem:source-not-found",
             Self::InternalError => "urn:univ:problem:internal-error",
         }
     }
@@ -66,6 +70,7 @@ impl ProblemType {
             Self::InvalidParameter => "Invalid parameter",
             Self::ReleaseNotFound => "No such release",
             Self::ReleasePruned => "Release pruned",
+            Self::SourceNotFound => "No such source",
             Self::InternalError => "Internal error",
         }
     }
@@ -74,7 +79,7 @@ impl ProblemType {
     #[must_use]
     pub fn status(self) -> u16 {
         match self {
-            Self::RouteNotFound | Self::ReleaseNotFound => 404,
+            Self::RouteNotFound | Self::ReleaseNotFound | Self::SourceNotFound => 404,
             Self::MethodNotAllowed => 405,
             Self::UnreadableBody | Self::InvalidParameter => 400,
             Self::ReleasePruned => 410,

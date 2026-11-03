@@ -24,6 +24,15 @@ blocks:
         title: "Async handlers over a Backend trait"
         detail: "univ-api handlers become async over one `Backend` trait that runs SQL on the release database. The Worker implements it with D1, and the native tests with rusqlite and the real `univ_model::release::SCHEMA`. Routes name an `Endpoint` that dispatch matches. Response types live in univ-model behind an `openapi` feature (AC-286). Done when a native test reads rows through the SQLite backend, and wasm32 clippy of univ-server passes."
         state: active
+      - key: 01a1a308-57fd-70c3-a60d-8c1c7c59c2e8
+        at: 2026-11-03T20:09:55Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Async handlers over a Backend trait"
+        detail: "Done in eb9d01c: the Backend trait, the D1 implementation in univ-server (binding DB), the in-memory SQLite test backend with univ_model::release::SCHEMA, routes by Endpoint, and response types in univ_model::api behind the `openapi` feature. wasm32 clippy is clean."
+        state: done
   - key: 01a1a2ff-1aff-720c-940c-ee624424e922
     id: t1-pin
     kind: task
@@ -37,6 +46,15 @@ blocks:
         title: "Pin a release for every release-scoped read"
         detail: "`?release=n` or `latest`. A pruned release answers 410 with its pruning time; one never published answers 404. The answer names its release in its body and in `Univ-Release`. Done when native tests cover AC-126 to AC-130 and the e2e tests read releases 1 (410) and 2."
         state: open
+      - key: 01a1a308-57fd-70c3-a60d-8c1b1890e132
+        at: 2026-11-03T20:09:55Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Pin a release for every release-scoped read"
+        detail: "In eb9d01c: `resolve` and `pinned`, with native tests for latest, a named release, 410 with pruned_at, 404 for never-published and missing releases, and 400 naming the parameter. Still to come: the e2e tests, and AC-128 (identical pinned reads) through the Worker."
+        state: active
   - key: 01a1a2ff-1aff-720c-940c-ee63866eeda4
     id: t1-releases
     kind: task
@@ -50,6 +68,15 @@ blocks:
         title: "GET /v1/releases"
         detail: "Every published release, newest first, pruned ones included with their pruning time. Each gives its number, publication time, cosmology, sources and counts, and the listing names latest. Done when native tests cover AC-122 to AC-125."
         state: open
+      - key: 01a1a308-57fd-70c3-a60d-8c1afd5893bb
+        at: 2026-11-03T20:09:55Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "GET /v1/releases"
+        detail: "Done in eb9d01c. Native tests cover AC-122 to AC-125: number, publication time, cosmology and source ids; counts; latest named; newest first, with release 3 (never published) left out and pruned release 1 listed with its pruning time."
+        state: done
   - key: 01a1a2ff-1aff-720c-940c-ee64af221a38
     id: t1-sources
     kind: task
@@ -538,3 +565,22 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1a308-57fd-70c3-a60d-8c184f1adf05
+    id: t1-ingest
+    kind: task
+    versions:
+      - key: 01a1a308-57fd-70c3-a60d-8c19f3d4e92b
+        at: 2026-11-03T20:09:55Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Ingest schema v3: source details and structure details"
+        detail: |-
+          Delegated to a subagent in its own worktree, branched from eb9d01c:
+          - `source_details`: bibcode and DOI, a HEALPix order-5 MOC of entry positions via cdshealpix, and the radial ranges;
+          - `structure_details`: placed univ-model shape (sky regions as MOCs), derivation, outline test result, rescaled sizes;
+          - a structured `reference` in each source definition.
+
+          Done when ingest's tests, clippy, deny and lines pass, and the fixture state holds the rows for release 2 and none for pruned release 1.
+        state: active
