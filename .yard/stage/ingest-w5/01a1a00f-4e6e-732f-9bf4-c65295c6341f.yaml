@@ -19,3 +19,113 @@ versions:
     title: "W5 review"
     goal: "/simplify and /code-review findings on wave 5 are fixed, the gate is green and the trace is recorded"
     status: active
+  - key: 01a1a05d-4894-71bc-890d-c8f5793b41c9
+    at: 2026-11-03T07:43:50Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W5 review"
+    goal: "/simplify and /code-review findings on wave 5 are fixed, the gate is green and the trace is recorded"
+    status: done
+blocks:
+  - key: 01a1a05d-4894-71bc-890d-c8ef7ef84ec5
+    id: w5-fix-review
+    kind: task
+    versions:
+      - key: 01a1a05d-4894-71bc-890d-c8f2abf44f34
+        at: 2026-11-03T07:43:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the /code-review and /simplify findings"
+        detail: |-
+          Each fix comes with a test that failed before it.
+
+          **Matching and ids:**
+          - An entry joins an object only if it agrees with every member already in it.
+          - An identifier claimed twice joins neither claimant; each gets a link.
+          - A ledger without its entry map is refused.
+          - Cosmicflows-4 groups are their own objects, related `dominant_member` to their galaxy (ReadMe Note G1), lending nothing.
+          - A redshift with no one-sigma error ranks as none reported.
+          - A NaN confidence counts as 0.
+          - Members checked by name only are counted.
+          - A repeated identifier is left out as `duplicate_identifier`.
+
+          **Positions:**
+          - Distance and size share one rescaling rule.
+          - A parallax's chain starts from the published parallax, then the Gaia zero-point (−17 µas, Lindegren et al. 2021 §1), then 1/ϖ.
+          - Redshift intervals carry the peculiar velocity.
+          - A luminosity distance keeps its redshift's kind and errors, and a blueshift is handled explicitly.
+          - An unstated equinox is taken as J2000 before the move to ICRS.
+          - Dense places off the grid are recorded.
+
+          **Also:** provenance payloads are kept in item order, which fixes nondeterminism from concurrent chunks. The `/simplify` reuse and allocation items are done.
+        state: done
+        type: fix
+  - key: 01a1a05d-4894-71bc-890d-c8f043423e4f
+    id: w5-trace
+    kind: loft
+    versions:
+      - key: 01a1a05d-4894-71bc-890d-c8f329a94182
+        at: 2026-11-03T07:43:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: trace
+        note: |-
+          F-3, F-6, F-7 and F-8 are linked:
+          - AC-28 to AC-35 to `positions*.rs`.
+          - AC-60 to AC-74 to `matching.rs` and `ranking.rs`.
+          - AC-75 to AC-81 to `ids*.rs`.
+          - AC-109 to the cross-match stage tests.
+
+          The review's new tests are added to their criteria. The spec does not yet state the new frames, `AssumedCosmology`, the distance measure, or the galaxy-group relation. These are planned as one minor spec change on `develop`.
+        recorded:
+          commit: "d82f98baa9081d1dccab15d9a68e99329b7dcc70"
+          branch: "stage/ingest-w5"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T07:43:50Z
+        report: |
+          {
+            "base": "product/ingest",
+            "commit": "0921ad89df03a2f39030e71e15cce6e38b0124ee",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 293,
+              "linked": 96,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a05d-4894-71bc-890d-c8f1c61c6f55
+    id: w5-review-summary
+    kind: note
+    versions:
+      - key: 01a1a05d-4894-71bc-890d-c8f493e6a5c7
+        at: 2026-11-03T07:43:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Wave 5 reviewed"
+        markdown: |-
+          | Part | Where | Notes |
+          |---|---|---|
+          | Positions | `univ-model/src/derive/` | Planck 2018 D(z) table (matches astropy to 1e-6); rescaling; ICRS, galactic and supergalactic Cartesian; typed chains; FK4 B1950 (matches ERFA) |
+          | Matching | `matching/`, `rules/matching.yaml` | cross-ids first, then complete-linkage pairs with cited tolerances; conflicts become links; groups are kept apart |
+          | Ranking | `ranking/`, `rules/ranking.yaml` | fractional uncertainty with 300 km/s; method rank breaks ties; Gaia zero-point |
+          | Ids | `ids/`, `univ-model/src/ledger/` | kept, merged into the lower id, split, retired; never reused; property-tested |
+          | Stage | `crossmatch/`, `univ-ingest match` | ids written to `pending/` for the release build to promote |
+
+          **Gate:** 10 gates pass. **Linked:** 96 of 293 nodes. **For the owner, in W8:** the rule that ranks measurements with no published error last.
+        tone: success
