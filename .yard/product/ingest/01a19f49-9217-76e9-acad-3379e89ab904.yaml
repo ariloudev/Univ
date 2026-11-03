@@ -19,3 +19,34 @@ versions:
     title: "W6 Octree tiles"
     goal: "Placed objects are written as octree tiles per scale domain with seeded levels of detail and JSON tile manifests, each tile at most 1 MiB (stage/ingest-w6)"
     status: active
+  - key: 01a1a07b-57b5-7125-ae17-c402fcae05fe
+    at: 2026-11-03T08:16:40Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W6 Octree tiles"
+    goal: "Placed objects are written as octree tiles per scale domain with seeded levels of detail and JSON tile manifests, each tile at most 1 MiB (stage/ingest-w6)"
+    status: done
+blocks:
+  - key: 01a1a07b-57b5-7125-ae17-c401ff0ae68a
+    id: wave-6-merged
+    kind: note
+    versions:
+      - key: 01a1a07b-57b5-7125-ae17-c403b4c26fa3
+        at: 2026-11-03T08:16:40Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "W6 merged"
+        markdown: |-
+          `stage/ingest-w6` was merged as `ff49baa`. It adds `univ-ingest tiles`:
+          - **Codec:** a versioned 17-byte point codec in univ-model, quantized to 1/65,536 of the node's edge.
+          - **Octree:** one octree per scale domain, with one sampling fraction per level so density follows the sky.
+          - **Manifests:** JSON, with source roles, rotations and per-node SHA-256s.
+          - **Determinism:** two builds are byte-identical.
+          - **QA-1:** proved by construction.
+
+          AC-91 to AC-98 and QA-1 are traced: 105 of 293 nodes.
+        tone: success
