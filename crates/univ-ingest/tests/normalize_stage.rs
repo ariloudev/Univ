@@ -15,7 +15,8 @@ use common::rig;
 use univ_ingest::events::{Event, Stage};
 use univ_ingest::provenance::Provenance;
 use univ_ingest::run::{FetchOptions, RunReport, fetch, normalize_stage};
-use univ_ingest::source::{LeftOutReason, SourceDefinition};
+use univ_ingest::source::{Column, Field, LeftOutReason, SourceDefinition};
+use univ_model::units::Unit;
 use univ_model::value::Uncertainty;
 use wiremock::matchers::query_param;
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -162,4 +163,38 @@ async fn an_offline_normalize_prints_each_source_and_the_summary_of_its_entries(
     ] {
         assert!(log.contains(line), "{line}in\n{log}");
     }
+}
+
+#[tokio::test]
+async fn a_failed_normalization_leaves_no_earlier_report_in_the_provenance() {
+    let server = serve().await;
+    let defs = tempfile::tempdir().unwrap();
+    let definitions = vec![galaxies(&defs, &server.uri())];
+    let cache = tempfile::tempdir().unwrap();
+    let options = FetchOptions {
+        definitions: defs.path().to_path_buf(),
+        repository: defs.path().to_path_buf(),
+        cache: cache.path().to_path_buf(),
+        sources: vec![],
+    };
+    let rig = rig(false);
+    let report = Mutex::new(RunReport::new(&definitions));
+    let acquired = fetch(&rig.fetcher, &definitions, &options, &report).await;
+    let sink = rig.sink.as_ref();
+    normalize_stage(sink, &definitions, &acquired, &options, &report).await;
+    let dir = cache.path().join("test-galaxies");
+    assert!(Provenance::read(&dir).unwrap().normalization.is_some());
+
+    // The definition now takes a column the answer lacks, so its normalization fails.
+    let mut broken = definitions.clone();
+    broken[0].columns.push(Column {
+        column: "mag".to_owned(),
+        field: Field::Magnitude,
+        unit: Unit::Magnitude,
+    });
+    let normalized = normalize_stage(sink, &broken, &acquired, &options, &report).await;
+    assert_eq!(normalized.len(), 0);
+    let provenance = Provenance::read(&dir).unwrap();
+    assert_eq!(provenance.normalization, None);
+    assert_eq!(provenance.payloads.len(), 1, "the payloads stay recorded");
 }

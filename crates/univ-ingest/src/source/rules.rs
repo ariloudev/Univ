@@ -34,6 +34,8 @@ pub enum LeftOutReason {
     SimulatedObject,
     /// The source marks the redshift unsuitable, as 6dFGS does with a zero error.
     UnsuitableRedshift,
+    /// Every cell of the row is blank: an empty line inside a table, or a line of empty cells.
+    BlankRow,
 }
 
 /// A rule on the rows whose cells meet a condition, and every condition in `and`: they are left

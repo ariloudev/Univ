@@ -89,4 +89,19 @@ impl Provenance {
         provenance.normalization = Some(report.clone());
         provenance.write(dir)
     }
+
+    /// Removes the normalization report from the provenance kept in `dir`, after a
+    /// normalization that failed or was cancelled: an earlier report no longer describes the
+    /// source. A provenance that holds none is left as it is.
+    ///
+    /// # Errors
+    ///
+    /// Fails when the provenance cannot be read or written.
+    pub fn unnormalized(dir: &Path) -> std::io::Result<()> {
+        let mut provenance = Self::read(dir)?;
+        if provenance.normalization.take().is_some() {
+            provenance.write(dir)?;
+        }
+        Ok(())
+    }
 }

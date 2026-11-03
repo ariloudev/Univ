@@ -42,9 +42,12 @@ impl<'a> TableReader<'a> {
                 return Err("files are read by their own readers".to_owned());
             }
         };
-        let mut lines = text
+        // Blank lines before the header are layout, as is the empty line ending an answer; a
+        // blank line between rows is a blank row.
+        let mut lines = without_final_blank_lines(text)
             .lines()
-            .filter(|l| !l.starts_with('#') && !l.trim().is_empty());
+            .filter(|l| !l.starts_with('#'))
+            .skip_while(|l| l.trim().is_empty());
         let mut reader = Self {
             columns: Vec::new(),
             lines: Box::new(std::iter::empty()),
@@ -95,13 +98,19 @@ impl<'a> TableReader<'a> {
         self.columns.iter().position(|c| c == name)
     }
 
-    /// The next row's cells, trimmed, or none once the table ends.
+    /// The next row's cells, trimmed, or none once the table ends. An empty line between rows
+    /// is a row of blank cells.
     ///
     /// # Errors
     ///
     /// Fails on a row whose number of cells is not the number of columns.
     pub fn next_row(&mut self) -> Option<Result<&[Cow<'a, str>], String>> {
         let line = self.lines.next()?;
+        if line.trim().is_empty() {
+            self.row.clear();
+            self.row.resize(self.columns.len(), Cow::Borrowed(""));
+            return Some(Ok(&self.row));
+        }
         split(self.format, line, &mut self.row);
         if self.row.len() == self.columns.len() {
             Some(Ok(&self.row))
@@ -127,6 +136,18 @@ impl<'a> TableReader<'a> {
         }
         Ok(rows)
     }
+}
+
+/// `text` without the blank lines that end it.
+fn without_final_blank_lines(text: &str) -> &str {
+    let (mut end, mut at) = (0, 0);
+    for line in text.split_inclusive('\n') {
+        at += line.len();
+        if !line.trim().is_empty() {
+            end = at;
+        }
+    }
+    &text[..end]
 }
 
 /// Splits `line` into `cells`, replacing what they held.

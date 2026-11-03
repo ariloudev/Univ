@@ -3,6 +3,7 @@
 
 use std::io::IsTerminal as _;
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex, PoisonError};
 
 use tokio::time::MissedTickBehavior;
@@ -17,7 +18,7 @@ use crate::display::{
 };
 use crate::events::{Event, EventSink, Stage};
 use crate::fetch::{Clock, Fetcher, SystemClock};
-use crate::normalize::{Normalized, normalize, reads_rows};
+use crate::normalize::{NormalizeError, Normalized, normalize_until, reads_rows};
 use crate::provenance::Provenance;
 use crate::source::{SourceDefinition, read_all};
 
@@ -140,6 +141,12 @@ impl RunReport {
         (self.sources.clone(), outcome)
     }
 
+    /// The stage the run is in.
+    #[must_use]
+    pub fn stage(&self) -> Stage {
+        self.stage
+    }
+
     /// The sources and outcome of a run the owner interrupted: the sources it had not ended
     /// stay as far as they got.
     #[must_use]
@@ -221,13 +228,28 @@ pub async fn fetch<C: Clock>(
 /// Normalizes each source that is a table of rows and that the fetch left whole on disk,
 /// with one CMB correction for the run, and records what became of its rows in its
 /// provenance. It gives each source's entries, kept in memory for the next stage. A source
-/// that fails is reported and left out, and the others are still normalized.
+/// that fails is reported and left out, with no earlier report left in its provenance, and
+/// the others are still normalized.
 pub async fn normalize_stage(
     sink: &dyn EventSink,
     definitions: &[SourceDefinition],
     acquired: &[Option<Acquired>],
     options: &FetchOptions,
     report: &Mutex<RunReport>,
+) -> Vec<Normalized> {
+    let cancel = Arc::new(AtomicBool::new(false));
+    normalize_stage_until(sink, definitions, acquired, options, report, &cancel).await
+}
+
+/// [`normalize_stage`], stopping soon after `cancel` is set: the source being normalized stops
+/// at its next look at the flag, keeps no report in its provenance, and no other source starts.
+pub async fn normalize_stage_until(
+    sink: &dyn EventSink,
+    definitions: &[SourceDefinition],
+    acquired: &[Option<Acquired>],
+    options: &FetchOptions,
+    report: &Mutex<RunReport>,
+    cancel: &Arc<AtomicBool>,
 ) -> Vec<Normalized> {
     let tables: Vec<(usize, &SourceDefinition, &Acquired)> = definitions
         .iter()
@@ -244,17 +266,29 @@ pub async fn normalize_stage(
     let correction = CmbCorrection::new(DipoleModel::Planck2018);
     let mut normalized = Vec::new();
     for (n, definition, on_disk) in tables {
-        let (owned, files) = (definition.clone(), on_disk.files.clone());
-        let outcome = tokio::task::spawn_blocking(move || normalize(&owned, &files, &correction))
-            .await
+        let (owned, files, flag) = (definition.clone(), on_disk.files.clone(), cancel.clone());
+        let dir = options.cache.join(definition.id.as_str());
+        let outcome = tokio::task::spawn_blocking(move || {
+            normalize_until(&owned, &files, &correction, &flag)
+        })
+        .await;
+        let cancelled = matches!(outcome, Ok(Err(NormalizeError::Cancelled { .. })));
+        let outcome = outcome
             .map_err(|e| e.to_string())
             .and_then(|outcome| outcome.map_err(|e| e.to_string()))
             .and_then(|done| {
-                let dir = options.cache.join(definition.id.as_str());
                 Provenance::normalized(&dir, &definition.id, &done.report)
                     .map(|()| done)
                     .map_err(|e| format!("its provenance cannot be written: {e}"))
             });
+        if outcome.is_err() {
+            // The report kept from an earlier run no longer describes what this run made of
+            // the source; failing to remove it is part of the failure already reported.
+            let _ = Provenance::unnormalized(&dir);
+        }
+        if cancelled {
+            break;
+        }
         let source = definition.id.clone();
         match outcome {
             Ok(done) => {

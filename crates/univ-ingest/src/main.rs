@@ -3,14 +3,15 @@
 
 use std::path::PathBuf;
 use std::process::ExitCode;
-use std::sync::{Mutex, PoisonError};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, PoisonError};
 
 use clap::{Args, Parser, Subcommand};
-use univ_ingest::events::EventSink;
+use univ_ingest::events::{EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
 use univ_ingest::run::{
-    FetchOptions, RunReport, display_for_stderr, drawing, fetch, interrupted, normalize_stage,
-    owner_interrupt, select,
+    FetchOptions, RunReport, display_for_stderr, drawing, fetch, interrupted,
+    normalize_stage_until, owner_interrupt, select,
 };
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
@@ -87,18 +88,27 @@ async fn main() -> ExitCode {
         }
     };
     let report = Mutex::new(RunReport::new(&definitions));
+    let cancel = Arc::new(AtomicBool::new(false));
     let run = async {
         let acquired = fetch(&fetcher, &definitions, &options, &report).await;
         if normalizing {
             // The entries are held for the stages that follow; this command ends here.
             let sink = display.as_ref() as &dyn EventSink;
-            normalize_stage(sink, &definitions, &acquired, &options, &report).await;
+            normalize_stage_until(sink, &definitions, &acquired, &options, &report, &cancel).await;
         }
     };
+    let mut run = std::pin::pin!(drawing(display.as_ref(), run));
     let interrupted_run = tokio::select! {
-        () = drawing(display.as_ref(), run) => false,
+        () = &mut run => false,
         () = owner_interrupt(tokio::signal::ctrl_c()) => true,
     };
+    let normalizing_now = report.lock().is_ok_and(|r| r.stage() == Stage::Normalize);
+    if interrupted_run && normalizing_now {
+        // A source is normalized on a blocking thread, which dropping the run would leave
+        // running: ask it to stop, and wait until it has.
+        cancel.store(true, Ordering::Relaxed);
+        run.await;
+    }
     let report = report.lock().unwrap_or_else(PoisonError::into_inner);
     if interrupted_run {
         let (sources, outcome) = report.interrupted();

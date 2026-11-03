@@ -9,6 +9,7 @@ mod row;
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -76,7 +77,12 @@ pub enum NormalizeError {
     MissingColumn { source_id: SourceId, column: String },
     #[error("{source_id} cannot be normalized: {what}")]
     Unsupported { source_id: SourceId, what: String },
+    #[error("{source_id}: normalization was cancelled")]
+    Cancelled { source_id: SourceId },
 }
+
+/// Rows read between two looks at the cancel flag.
+const CANCEL_EVERY: usize = 4096;
 
 /// Whether the normalizer reads `definition` as tables of rows: a provider's answers, or files
 /// that are all FITS tables, but not grids nor a source kept in the repository.
@@ -97,6 +103,8 @@ pub struct Normalizer<'a> {
     left_out: BTreeMap<LeftOutReason, u64>,
     /// Entries each fix changed, by the fix's index in the definition.
     changed: Vec<u64>,
+    /// Set by the owner's interrupt: the normalizer then stops at its next look.
+    cancel: Option<&'a AtomicBool>,
 }
 
 impl<'a> Normalizer<'a> {
@@ -121,7 +129,28 @@ impl<'a> Normalizer<'a> {
             entries: Vec::new(),
             left_out: BTreeMap::new(),
             changed: vec![0; definition.fixes.len()],
+            cancel: None,
         })
+    }
+
+    /// The normalizer, stopping with [`NormalizeError::Cancelled`] once `flag` is set: it looks
+    /// before each table and every [`CANCEL_EVERY`] rows.
+    #[must_use]
+    pub fn cancelled_by(mut self, flag: &'a AtomicBool) -> Self {
+        self.cancel = Some(flag);
+        self
+    }
+
+    /// Fails once the cancel flag is set, looking at row `row` and every [`CANCEL_EVERY`] rows.
+    fn go_on(&self, row: usize) -> Result<(), NormalizeError> {
+        if row.is_multiple_of(CANCEL_EVERY)
+            && self.cancel.is_some_and(|c| c.load(Ordering::Relaxed))
+        {
+            return Err(NormalizeError::Cancelled {
+                source_id: self.definition.id.clone(),
+            });
+        }
+        Ok(())
     }
 
     /// Reads one table, an answer to one chunk, named `file` in errors.
@@ -131,6 +160,7 @@ impl<'a> Normalizer<'a> {
     /// Fails when the answer is not a table, a row has the wrong number of cells, or the table
     /// lacks a column the definition takes.
     pub fn table(&mut self, file: &Path, body: &[u8]) -> Result<(), NormalizeError> {
+        self.go_on(0)?;
         let source_id = &self.definition.id;
         let malformed = |error: String| NormalizeError::Table {
             source_id: source_id.clone(),
@@ -149,14 +179,21 @@ impl<'a> Normalizer<'a> {
             epoch: self.definition.epoch,
             correction: self.correction,
         };
+        let mut n = 0;
         while let Some(cells) = table.next_row() {
+            n += 1;
+            self.go_on(n)?;
             self.row(&cx, cells.map_err(malformed)?);
         }
         Ok(())
     }
 
-    /// Reads one row: an entry kept, or a reason counted.
+    /// Reads one row: an entry kept, or a reason counted, such as a row of blank cells.
     fn row(&mut self, cx: &Context<'_>, cells: &[Cow<'_, str>]) {
+        if cells.iter().all(|c| c.is_empty()) {
+            *self.left_out.entry(LeftOutReason::BlankRow).or_default() += 1;
+            return;
+        }
         let changed = match row::read(cx, cells) {
             Ok((entry, changed)) => {
                 self.entries.push(entry);
@@ -242,6 +279,7 @@ impl<'a> Normalizer<'a> {
         let key = &sources[plan.identifier].1;
         let mut cells = Vec::with_capacity(sources.len());
         for row in 0..first.rows {
+            self.go_on(row)?;
             let id = first.text(row, key);
             cells.clear();
             cells.extend(sources.iter().map(|(t, column)| {
@@ -304,7 +342,21 @@ pub fn normalize(
     files: &[PathBuf],
     correction: &CmbCorrection,
 ) -> Result<Normalized, NormalizeError> {
-    let mut normalizer = Normalizer::new(definition, correction)?;
+    normalize_until(definition, files, correction, &AtomicBool::new(false))
+}
+
+/// [`normalize`], stopping with [`NormalizeError::Cancelled`] soon after `cancel` is set.
+///
+/// # Errors
+///
+/// Fails as [`normalize`] does, or when `cancel` is set.
+pub fn normalize_until(
+    definition: &SourceDefinition,
+    files: &[PathBuf],
+    correction: &CmbCorrection,
+    cancel: &AtomicBool,
+) -> Result<Normalized, NormalizeError> {
+    let mut normalizer = Normalizer::new(definition, correction)?.cancelled_by(cancel);
     let read = |file: &PathBuf| {
         std::fs::read(file).map_err(|e| NormalizeError::Read {
             source_id: definition.id.clone(),
