@@ -12,7 +12,8 @@ mod void;
 use std::f64::consts::FRAC_PI_2;
 
 use common::{definition_of, normalized_fixture};
-use univ_ingest::release::{COVERAGE_ORDER, Coverage, cells_of, distance_unit, healpix_cell};
+use univ_ingest::release::{COVERAGE_ORDER, Coverage, cells_of, healpix_cell};
+use univ_ingest::tiles::unit_of;
 use univ_model::entry::{CatalogueEntry, NativePosition, Position, PositionUncertainty};
 use univ_model::position::{Epoch, Frame};
 use univ_model::units::Unit;
@@ -35,13 +36,13 @@ fn at(n: usize, ra: f64, dec: f64) -> CatalogueEntry {
 #[test]
 fn a_sources_sky_is_the_sorted_order_5_cells_of_its_entries() {
     let directions = [(200.0, -45.0), (0.0, 90.0), (10.0, 20.0), (10.001, 20.001)];
-    let mut coverage = Coverage::default();
+    let mut coverage = Coverage::new(Unit::Megaparsec);
     for (n, (ra, dec)) in directions.iter().enumerate() {
-        coverage.add(&at(n, *ra, *dec), Unit::Megaparsec);
+        coverage.add(&at(n, *ra, *dec));
     }
     let sky = coverage.sky().unwrap();
-    assert_eq!(sky["order"], 5);
-    let cells: Vec<u64> = serde_json::from_value(sky["cells"].clone()).unwrap();
+    assert_eq!(sky.order, 5);
+    let cells = sky.cells;
     // The two entries 0.0014° apart share a cell: three cells, ascending, each the one
     // cdshealpix gives the entry's direction at order 5.
     let mut expected: Vec<u64> = directions
@@ -61,28 +62,28 @@ fn a_sources_sky_is_the_sorted_order_5_cells_of_its_entries() {
     assert!(pole >> 10 < 4, "{pole}");
     assert_eq!(pole >> 10, cdshealpix::nested::hash(0, 0.0, FRAC_PI_2));
     // Every entry here has one redshift.
-    let radial = coverage.radial(Unit::Megaparsec).unwrap();
-    assert_eq!(radial.as_array().unwrap().len(), 1);
-    assert_eq!(radial[0]["measure"], "redshift");
-    assert_eq!(radial[0]["entries"], 4);
+    let radial = coverage.radial().unwrap();
+    assert_eq!(radial.len(), 1);
+    assert_eq!(radial[0].measure, "redshift");
+    assert_eq!(radial[0].entries, 4);
 }
 
 #[test]
 fn a_source_without_entries_has_no_sky_and_no_radial_range() {
-    let coverage = Coverage::default();
+    let coverage = Coverage::new(Unit::Megaparsec);
     assert_eq!(coverage.sky(), None);
-    assert_eq!(coverage.radial(Unit::Megaparsec), None);
+    assert_eq!(coverage.radial(), None);
 }
 
 /// The coverage of a source's recorded fixture, in the unit of its distances.
 fn fixture_coverage(id: &str) -> (Vec<CatalogueEntry>, serde_json::Value) {
     let entries = normalized_fixture(id).entries;
-    let mut coverage = Coverage::default();
-    let unit = distance_unit(&definition_of(id));
+    let mut coverage = Coverage::new(unit_of(definition_of(id).scale_domain));
     for e in &entries {
-        coverage.add(e, unit);
+        coverage.add(e);
     }
-    (entries, coverage.radial(unit).unwrap())
+    let radial = serde_json::to_value(coverage.radial().unwrap()).unwrap();
+    (entries, radial)
 }
 
 /// The item of `measure` among a radial column's items.

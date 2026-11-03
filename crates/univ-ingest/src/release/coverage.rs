@@ -7,16 +7,17 @@
 //!
 //! - **redshift**: z in the frame each entry's source published it, as `measurements.value`
 //!   holds it (cz / c where the source gives the velocity cz), not moved to the CMB frame;
-//! - **distance**: the normalized distance, in pc for a source of the `stars` scale domain and
-//!   Mpc otherwise, as published (a modulus as its luminosity distance, a length in h⁻¹ Mpc as
-//!   the length for H0 = 100), not rescaled to the release cosmology nor made comoving;
+//! - **distance**: the normalized distance, in the unit of the source's scale domain
+//!   (`crate::tiles::unit_of`: pc for stars, Mpc otherwise), as published (a modulus as its
+//!   luminosity distance, a length in h⁻¹ Mpc as the length for H0 = 100), not rescaled to the
+//!   release cosmology nor made comoving;
 //! - **parallax**: the trigonometric parallax in milliarcseconds, negative ones kept.
 //!
 //! An entry with several values of one measure counts once in its `entries`.
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use serde_json::{Value as Json, json};
+use univ_model::api::sources::{RadialRange, SkyFootprint};
 use univ_model::entry::CatalogueEntry;
 use univ_model::ids::SourceId;
 use univ_model::release::rows::SourceDetailRow;
@@ -24,8 +25,10 @@ use univ_model::units::Unit;
 
 use super::objects::{json as to_text, snake};
 use super::sky::{COVERAGE_ORDER, cell};
+use super::terms::variant_name;
 use crate::crossmatch::ReleaseObject;
-use crate::source::{ScaleDomain, SourceDefinition};
+use crate::source::SourceDefinition;
+use crate::tiles::unit_of;
 
 /// The range of one measure over a source's entries.
 #[derive(Debug, Clone, Copy)]
@@ -58,24 +61,42 @@ impl Span {
     }
 }
 
-/// What a source's entries cover, gathered one entry at a time.
-#[derive(Debug, Default, Clone)]
+/// What a source's entries cover, gathered one entry at a time, its distances in one unit.
+#[derive(Debug, Clone)]
 pub struct Coverage {
+    /// The unit of the distances: that of the source's scale domain.
+    unit: Unit,
     cells: BTreeSet<u64>,
     redshift: Span,
     /// Redshifts by the frame they were published in, and those published as cz.
-    redshift_frames: BTreeMap<String, u64>,
+    redshift_frames: BTreeMap<&'static str, u64>,
     as_velocity: u64,
     distance: Span,
-    /// The measures of the distances, and how many assume a cosmology, by its H0.
-    distance_measures: BTreeSet<String>,
-    distance_assumed: BTreeMap<String, u64>,
+    /// The measures of the distances, and how many assume a cosmology, by the bits of its H0.
+    distance_measures: BTreeSet<&'static str>,
+    distance_assumed: BTreeMap<u64, u64>,
     parallax: Span,
 }
 
 impl Coverage {
-    /// Adds `entry`, its distances in `unit` (pc or Mpc).
-    pub fn add(&mut self, entry: &CatalogueEntry, unit: Unit) {
+    /// The coverage of no entry yet, its distances to be given in `unit` (pc or Mpc).
+    #[must_use]
+    pub fn new(unit: Unit) -> Self {
+        Self {
+            unit,
+            cells: BTreeSet::new(),
+            redshift: Span::default(),
+            redshift_frames: BTreeMap::new(),
+            as_velocity: 0,
+            distance: Span::default(),
+            distance_measures: BTreeSet::new(),
+            distance_assumed: BTreeMap::new(),
+            parallax: Span::default(),
+        }
+    }
+
+    /// Adds `entry`.
+    pub fn add(&mut self, entry: &CatalogueEntry) {
         if let Some(p) = &entry.position {
             self.cells
                 .insert(cell(COVERAGE_ORDER, p.icrs.ra, p.icrs.dec));
@@ -83,12 +104,11 @@ impl Coverage {
         self.redshift
             .add(entry.redshifts.iter().map(|z| z.cmb.as_published().value));
         for z in &entry.redshifts {
-            *self
-                .redshift_frames
-                .entry(snake(&z.cmb.published))
-                .or_default() += 1;
+            let frame = variant_name(&z.cmb.published).unwrap_or_default();
+            *self.redshift_frames.entry(frame).or_default() += 1;
             self.as_velocity += u64::from(z.velocity.is_some());
         }
+        let unit = self.unit;
         self.distance.add(
             entry
                 .distances
@@ -96,11 +116,12 @@ impl Coverage {
                 .filter_map(|d| d.normalized.to(unit).ok().map(|q| q.value)),
         );
         for d in &entry.distances {
-            self.distance_measures.insert(snake(&d.measure));
+            self.distance_measures
+                .insert(variant_name(&d.measure).unwrap_or_default());
             if let Some(a) = &d.assumed_cosmology {
                 *self
                     .distance_assumed
-                    .entry(format!("H0 = {}", a.hubble_constant))
+                    .entry(a.hubble_constant.to_bits())
                     .or_default() += 1;
             }
         }
@@ -112,43 +133,42 @@ impl Coverage {
         );
     }
 
-    /// The `sky` column: the cells as JSON, or none when no entry has a sky position.
+    /// The `sky` column: the cells, or none when no entry has a sky position.
     #[must_use]
-    pub fn sky(&self) -> Option<Json> {
-        (!self.cells.is_empty()).then(|| json!({"order": COVERAGE_ORDER, "cells": self.cells}))
+    pub fn sky(&self) -> Option<SkyFootprint> {
+        (!self.cells.is_empty()).then(|| SkyFootprint {
+            order: COVERAGE_ORDER,
+            cells: self.cells.iter().copied().collect(),
+        })
     }
 
     /// The `radial` column: one item per measure the entries hold, or none.
     #[must_use]
-    pub fn radial(&self, unit: Unit) -> Option<Json> {
+    pub fn radial(&self) -> Option<Vec<RadialRange>> {
         let mut items = Vec::new();
-        let mut push = |measure: &str, span: &Span, unit: Unit, basis: String| {
+        let mut push = |measure: &str, span: &Span, unit: Unit, basis: &dyn Fn() -> String| {
             if span.entries > 0 {
-                items.push(json!({
-                    "measure": measure,
-                    "min": span.min,
-                    "max": span.max,
-                    "unit": snake(&unit),
-                    "basis": basis,
-                    "entries": span.entries,
-                }));
+                items.push(RadialRange {
+                    measure: measure.to_owned(),
+                    min: span.min,
+                    max: span.max,
+                    unit: snake(&unit),
+                    basis: basis(),
+                    entries: span.entries,
+                });
             }
         };
-        push(
-            "redshift",
-            &self.redshift,
-            Unit::Dimensionless,
-            self.redshift_basis(),
-        );
-        push("distance", &self.distance, unit, self.distance_basis(unit));
-        push(
-            "parallax",
-            &self.parallax,
-            Unit::Milliarcsecond,
+        push("redshift", &self.redshift, Unit::Dimensionless, &|| {
+            self.redshift_basis()
+        });
+        push("distance", &self.distance, self.unit, &|| {
+            self.distance_basis()
+        });
+        push("parallax", &self.parallax, Unit::Milliarcsecond, &|| {
             "trigonometric parallax as published, in milliarcseconds, negative values kept"
-                .to_owned(),
-        );
-        (!items.is_empty()).then_some(Json::Array(items))
+                .to_owned()
+        });
+        (!items.is_empty()).then_some(items)
     }
 
     fn redshift_basis(&self) -> String {
@@ -184,12 +204,12 @@ impl Coverage {
         )
     }
 
-    fn distance_basis(&self, unit: Unit) -> String {
-        let measures: Vec<&str> = self.distance_measures.iter().map(String::as_str).collect();
+    fn distance_basis(&self) -> String {
+        let measures: Vec<&str> = self.distance_measures.iter().copied().collect();
         let assumed: Vec<String> = self
             .distance_assumed
             .iter()
-            .map(|(h, n)| format!("{n} assume {h}"))
+            .map(|(h, n)| format!("{n} assume H0 = {}", f64::from_bits(*h)))
             .collect();
         let assumed = if assumed.is_empty() {
             String::new()
@@ -199,23 +219,14 @@ impl Coverage {
         format!(
             "distance in {} as normalized ({} distances as published), not rescaled to the \
              release cosmology nor made comoving{assumed}",
-            snake(&unit),
+            snake(&self.unit),
             measures.join(", ")
         )
     }
 }
 
-/// The unit a source's distances are given in: pc for a source of stars, Mpc otherwise.
-#[must_use]
-pub fn distance_unit(definition: &SourceDefinition) -> Unit {
-    if definition.scale_domain == ScaleDomain::Stars {
-        Unit::Parsec
-    } else {
-        Unit::Megaparsec
-    }
-}
-
-/// The coverage of each source over the published entries of `objects`.
+/// The coverage of each source over the published entries of `objects`, its distances in the
+/// unit of the source's scale domain among `definitions` (Mpc for a source not among them).
 #[must_use]
 pub fn coverages(
     objects: &[ReleaseObject],
@@ -223,14 +234,17 @@ pub fn coverages(
 ) -> BTreeMap<SourceId, Coverage> {
     let units: BTreeMap<&SourceId, Unit> = definitions
         .iter()
-        .map(|d| (&d.id, distance_unit(d)))
+        .map(|d| (&d.id, unit_of(d.scale_domain)))
         .collect();
     let mut out: BTreeMap<SourceId, Coverage> = BTreeMap::new();
     for o in objects {
         for e in &o.object.entries {
             let source = &e.entry.designation.source;
-            let unit = units.get(source).copied().unwrap_or(Unit::Megaparsec);
-            out.entry(source.clone()).or_default().add(&e.entry, unit);
+            out.entry(source.clone())
+                .or_insert_with(|| {
+                    Coverage::new(units.get(source).copied().unwrap_or(Unit::Megaparsec))
+                })
+                .add(&e.entry);
         }
     }
     out
@@ -247,20 +261,23 @@ pub fn source_detail_rows(
     definitions: &[SourceDefinition],
     coverages: &BTreeMap<SourceId, Coverage>,
 ) -> Result<Vec<SourceDetailRow>, String> {
-    let empty = Coverage::default();
     (0u32..)
         .zip(definitions)
         .map(|(n, d)| {
-            let coverage = coverages.get(&d.id).unwrap_or(&empty);
+            let coverage = coverages.get(&d.id);
             Ok(SourceDetailRow {
                 release,
                 source: n,
                 bibcode: d.reference.bibcode.clone(),
                 doi: d.reference.doi.clone(),
                 reference_note: d.reference.none.clone(),
-                sky: coverage.sky().as_ref().map(to_text).transpose()?,
+                sky: coverage
+                    .and_then(Coverage::sky)
+                    .as_ref()
+                    .map(to_text)
+                    .transpose()?,
                 radial: coverage
-                    .radial(distance_unit(d))
+                    .and_then(Coverage::radial)
                     .as_ref()
                     .map(to_text)
                     .transpose()?,

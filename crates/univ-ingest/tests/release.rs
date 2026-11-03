@@ -112,7 +112,8 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
     let crossed = cross(&f);
     let release = univ_model::derive::Release::new(&crossed.cosmology);
     let (s, dipole) = (&crossed.structures, CmbCorrection::new(crossed.dipole));
-    let (_, mut bounds) = structure_rows(1, &f.structures, s, &release, &dipole).unwrap();
+    let none = std::collections::BTreeMap::new();
+    let (_, mut bounds) = structure_rows(1, &f.structures, s, &none, &release, &dipole).unwrap();
     // SIMULATED: the recorded answers place no member list whole, so a wall 1,500 Mpc long
     // stands in for a structure with a bounding box.
     let wall = univ_model::geometry::Aabb {

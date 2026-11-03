@@ -266,7 +266,15 @@ fn each_structure_is_in_the_scale_domain_its_published_distance_falls_in() {
 fn a_structure_row_gives_its_scale_domain_and_centre_or_none_when_unplaced() {
     let release = Release::planck_2018();
     let named = read_all_named(&workspace().join("structures")).unwrap();
-    let (rows, _) = structure_rows(1, &named, &[], &release, &dipole()).unwrap();
+    let (rows, _) = structure_rows(
+        1,
+        &named,
+        &[],
+        &std::collections::BTreeMap::new(),
+        &release,
+        &dipole(),
+    )
+    .unwrap();
     let row = |id: &str| rows.iter().find(|r| r.id == id).unwrap();
     let bootes = row("bootes-void");
     assert_eq!(bootes.scale_domain, "cosmic_web");
