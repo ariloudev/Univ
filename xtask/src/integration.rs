@@ -4,19 +4,22 @@
 //! directory, applies the univ-layers migrations there, starts `wrangler dev` on a free port,
 //! runs the ignored tests of `crates/univ-server/tests/` against it, and stops Wrangler, also
 //! when a step fails. `cargo xtask serve` runs the same Worker on the real local state.
+//!
+//! Wrangler runs from the Worker's crate directory, where its `wrangler.toml` lies, as it would
+//! by hand; `npx` finds it in the workspace's `node_modules`.
 
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::os::unix::process::CommandExt;
-use std::path::{Path, PathBuf};
-use std::process::{Child, Stdio};
+use std::path::Path;
+use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
 
-use crate::{command, run};
+use crate::command;
 
-/// The Worker's Wrangler configuration, from the workspace root.
-const CONFIG: &str = "crates/univ-server/wrangler.toml";
+/// The Worker's crate, from the workspace root, which holds its `wrangler.toml`.
+const WORKER_DIR: &str = "crates/univ-server";
 
 /// The owner secret the Worker is started with in the tests.
 const OWNER_SECRET: &str = "integration-owner-secret";
@@ -24,12 +27,12 @@ const OWNER_SECRET: &str = "integration-owner-secret";
 /// The local state Univ Ingest publishes real releases to.
 const REAL_STATE: &str = ".cache/univ-ingest/wrangler";
 
-/// The port `serve` listens on: one of its own, since 8787, Wrangler's default, is often taken
-/// by another project's Worker.
-const SERVE_PORT: &str = "8790";
-
 /// How long the Worker may take to build and answer: a cold release build of the wasm.
 const READY_WITHIN: Duration = Duration::from_secs(600);
+
+/// How many times Wrangler is started on a fresh port when it exits before answering, as it
+/// does when another process took the port first.
+const STARTS: u32 = 3;
 
 /// Runs the end-to-end tests; true when every step passed.
 pub fn integration(root: &Path) -> bool {
@@ -53,26 +56,14 @@ pub fn integration(root: &Path) -> bool {
         eprintln!("integration failed at: univ-layers migrations");
         return false;
     }
-    let port = match free_port() {
-        Ok(port) => port,
-        Err(error) => {
-            eprintln!("could not find a free port: {error}");
-            return false;
-        }
-    };
-    eprintln!("==> wrangler dev on port {port}");
     let log = work.join("wrangler.log");
-    let wrangler = match Wrangler::start(root, &state, port, &log) {
-        Ok(wrangler) => wrangler,
-        Err(error) => {
-            eprintln!("could not start wrangler dev: {error}");
-            return false;
-        }
-    };
-    if let Err(error) = wrangler.wait_ready(port) {
-        eprintln!("{error}; its log is {}", log.display());
+    let Some((wrangler, port)) = start_ready(root, &state, &log) else {
+        eprintln!(
+            "integration failed at: wrangler dev; its log is {}",
+            log.display()
+        );
         return false;
-    }
+    };
     eprintln!("==> end-to-end tests");
     let passed = command(root, "cargo")
         .args(["test", "--quiet", "--package", "univ-server"])
@@ -93,7 +84,8 @@ pub fn integration(root: &Path) -> bool {
     passed
 }
 
-/// Runs the Worker on the real local state until it is stopped.
+/// Runs the Worker on the real local state until it is stopped, on the port its
+/// `wrangler.toml` names for development.
 pub fn serve(root: &Path) -> bool {
     let state = root.join(REAL_STATE);
     if !state.is_dir() {
@@ -103,49 +95,75 @@ pub fn serve(root: &Path) -> bool {
         );
         return false;
     }
-    if !migrate(root, &state) {
-        return false;
-    }
-    let state = state.display().to_string();
-    run(
-        root,
-        "npx",
-        &[
-            "--no-install",
-            "wrangler",
-            "dev",
-            "--config",
-            CONFIG,
-            "--persist-to",
-            &state,
-            "--ip",
-            "127.0.0.1",
-            "--port",
-            SERVE_PORT,
-        ],
-    )
+    migrate(root, &state) && succeeded(wrangler(root, "dev", &state).status(), "wrangler dev")
 }
 
 /// Applies the univ-layers migrations to the local state in `state`.
 fn migrate(root: &Path, state: &Path) -> bool {
-    let state = state.display().to_string();
-    run(
-        root,
-        "npx",
-        &[
-            "--no-install",
-            "wrangler",
-            "d1",
-            "migrations",
-            "apply",
-            "univ-layers",
-            "--local",
-            "--persist-to",
-            &state,
-            "--config",
-            CONFIG,
-        ],
-    )
+    let mut migrate = wrangler(root, "d1", state);
+    migrate.args(["migrations", "apply", "univ-layers", "--local"]);
+    succeeded(migrate.status(), "wrangler d1 migrations apply")
+}
+
+/// `npx wrangler <subcommand> --persist-to <state>`, run from the Worker's crate directory,
+/// quiet and without telemetry, as Univ Ingest runs Wrangler.
+fn wrangler(root: &Path, subcommand: &str, state: &Path) -> Command {
+    let mut wrangler = command(&root.join(WORKER_DIR), "npx");
+    wrangler
+        .args(["--no-install", "wrangler", subcommand])
+        .arg("--persist-to")
+        .arg(state)
+        .env("WRANGLER_SEND_METRICS", "false")
+        .env("NO_COLOR", "1");
+    wrangler
+}
+
+/// Whether a command ran and succeeded, saying why not when it did not.
+fn succeeded(status: std::io::Result<std::process::ExitStatus>, what: &str) -> bool {
+    match status {
+        Ok(status) => status.success(),
+        Err(error) => {
+            eprintln!("could not run {what}: {error} (run `npm install` first)");
+            false
+        }
+    }
+}
+
+/// Starts `wrangler dev` on a free port and waits until it answers, starting it again on a new
+/// port when it exits first; the running Wrangler and its port, or none.
+fn start_ready(root: &Path, state: &Path, log: &Path) -> Option<(Wrangler, u16)> {
+    for start in 1..=STARTS {
+        let port = match free_port() {
+            Ok(port) => port,
+            Err(error) => {
+                eprintln!("could not find a free port: {error}");
+                return None;
+            }
+        };
+        eprintln!("==> wrangler dev on port {port}");
+        let mut wrangler = match Wrangler::start(root, state, port, log) {
+            Ok(wrangler) => wrangler,
+            Err(error) => {
+                eprintln!("could not start wrangler dev: {error}");
+                return None;
+            }
+        };
+        match wrangler.wait_ready(port) {
+            Ready::Answering => return Some((wrangler, port)),
+            Ready::Exited if start < STARTS => {
+                eprintln!("wrangler dev exited before it answered; starting it again");
+            }
+            Ready::Exited => eprintln!("wrangler dev exited before it answered, {STARTS} times"),
+            Ready::TimedOut => {
+                eprintln!(
+                    "wrangler dev did not answer within {} s",
+                    READY_WITHIN.as_secs()
+                );
+                return None;
+            }
+        }
+    }
+    None
 }
 
 /// Removes `dir` and everything below it, and creates it empty.
@@ -161,6 +179,13 @@ fn free_port() -> std::io::Result<u16> {
     Ok(TcpListener::bind("127.0.0.1:0")?.local_addr()?.port())
 }
 
+/// How waiting for Wrangler ended.
+enum Ready {
+    Answering,
+    Exited,
+    TimedOut,
+}
+
 /// A running `wrangler dev`, in a process group of its own so that stopping it stops the
 /// workerd processes it started too. Dropping it stops it.
 struct Wrangler {
@@ -168,14 +193,11 @@ struct Wrangler {
 }
 
 impl Wrangler {
-    fn start(root: &Path, state: &Path, port: u16, log: &PathBuf) -> std::io::Result<Self> {
+    fn start(root: &Path, state: &Path, port: u16, log: &Path) -> std::io::Result<Self> {
         let out = fs::File::create(log)?;
         let err = out.try_clone()?;
-        let child = command(root, "npx")
-            .args(["--no-install", "wrangler", "dev", "--config", CONFIG])
-            .arg("--persist-to")
-            .arg(state)
-            .args(["--ip", "127.0.0.1", "--port", &port.to_string()])
+        let child = wrangler(root, "dev", state)
+            .args(["--port", &port.to_string()])
             .args(["--var", &format!("OWNER_SECRET:{OWNER_SECRET}")])
             .arg("--show-interactive-dev-session=false")
             .stdin(Stdio::null())
@@ -186,41 +208,28 @@ impl Wrangler {
         Ok(Self { child })
     }
 
-    /// Waits until the Worker answers its OpenAPI document, or fails when Wrangler exits or
-    /// the time runs out.
-    fn wait_ready(&self, port: u16) -> Result<(), String> {
+    /// Waits until the Worker answers its OpenAPI document, Wrangler exits, or the time runs
+    /// out.
+    fn wait_ready(&mut self, port: u16) -> Ready {
         let started = Instant::now();
         while started.elapsed() < READY_WITHIN {
             if answers(port) {
                 eprintln!("ready after {} s", started.elapsed().as_secs());
-                return Ok(());
+                return Ready::Answering;
             }
-            if !self.running() {
-                return Err("wrangler dev exited before it answered".to_owned());
+            if !matches!(self.child.try_wait(), Ok(None)) {
+                return Ready::Exited;
             }
             std::thread::sleep(Duration::from_millis(500));
         }
-        Err(format!(
-            "wrangler dev did not answer within {} s",
-            READY_WITHIN.as_secs()
-        ))
-    }
-
-    fn running(&self) -> bool {
-        let pid = self.child.id().to_string();
-        std::process::Command::new("kill")
-            .args(["-0", &pid])
-            .status()
-            .is_ok_and(|status| status.success())
+        Ready::TimedOut
     }
 }
 
 impl Drop for Wrangler {
     fn drop(&mut self) {
         let group = format!("-{}", self.child.id());
-        let _ = std::process::Command::new("kill")
-            .args(["-TERM", "--", &group])
-            .status();
+        let _ = Command::new("kill").args(["-TERM", "--", &group]).status();
         let _ = self.child.wait();
     }
 }

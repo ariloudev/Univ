@@ -12,7 +12,7 @@ mod common;
 mod release_fixture;
 
 use std::path::Path;
-use std::process::{Command, Output};
+use std::process::Output;
 
 use common::workspace;
 use release_fixture::{build_next, fixture};
@@ -23,19 +23,7 @@ use univ_model::release::keys;
 type Dirs<'a> = (&'a Path, &'a Path);
 
 fn univ_ingest(command: &str, number: u32, (out, state): Dirs<'_>, persist: &Path) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_univ-ingest"))
-        .arg(command)
-        .arg(number.to_string())
-        .arg("--out")
-        .arg(out)
-        .arg("--state")
-        .arg(state)
-        .arg("--persist-to")
-        .arg(persist)
-        .arg("--config")
-        .arg(workspace().join("wrangler.toml"))
-        .output()
-        .unwrap()
+    release_fixture::univ_ingest(command, number, out, state, persist)
 }
 
 /// Runs the command, echoes its lines, and gives its log.

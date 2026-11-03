@@ -10,6 +10,15 @@ versions:
     title: "W0: Worker skeleton, contract base and integration harness"
     goal: "A workers-rs Worker answers under /v1 with problem details, CORS and a generated OpenAPI document, and `cargo xtask integration` tests it inside wrangler dev"
     status: active
+  - key: 01a1a2e9-1410-70d4-9ac8-54d3b6adc936
+    at: 2026-11-03T19:35:46Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W0: Worker skeleton, contract base and integration harness"
+    goal: "A workers-rs Worker answers under /v1 with problem details, CORS and a generated OpenAPI document, and `cargo xtask integration` tests it inside wrangler dev"
+    status: done
 blocks:
   - key: 01a1a2cf-3cac-7599-8a58-56cff847bcab
     id: t-crates
@@ -192,6 +201,15 @@ blocks:
         title: "`cargo xtask integration` and the first e2e tests"
         detail: "It builds, publishes and prunes the fixture release in a temporary state, applies the layer migrations, starts wrangler dev on a free port, runs the #[ignore] HTTP tests of univ-server and stops wrangler, also on failure. Done when the e2e tests (an anonymous read, a CORS preflight, a 404 problem) pass through it."
         state: active
+      - key: 01a1a2e8-d487-7121-8e9d-03f840472401
+        at: 2026-11-03T19:35:30Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask integration` and the first e2e tests"
+        detail: "Done in 1db3322. The run writes the fixture state (about 48 s), applies the migration, and starts wrangler dev, ready in 3 s once built. It passed 3 of 3 e2e tests: an anonymous read from another origin, a CORS preflight, and a 404 problem. Wrangler runs in its own process group, and no univ-server workerd was left behind."
+        state: done
   - key: 01a1a2cf-3cac-7599-8a58-56d675884a42
     id: t-serve-docs
     kind: task
@@ -214,3 +232,50 @@ blocks:
         title: "`cargo xtask serve` and AGENTS.md"
         detail: "serve runs the Worker on .cache/univ-ingest/wrangler. AGENTS.md gains the server layout, the product/server and stage/server-wN branches, integration and serve, and the full gate at each wave's end. Done when serve answers /v1/openapi.json on release 6's state."
         state: active
+      - key: 01a1a2e8-d487-7121-8e9d-03f9cbfbaaed
+        at: 2026-11-03T19:35:30Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask serve` and AGENTS.md"
+        detail: "Done in 1db3322. serve applies the migration to .cache/univ-ingest/wrangler and runs on port 8790, a port of its own: 8787 was taken by another project's Worker, which first answered my probe. It binds DB, LAYERS, RELEASES and the rate limiters on release 6's real state and serves /v1/openapi.json. AGENTS.md now gives the server's layout, commands and branches, and the full gate at each wave's end."
+        state: done
+  - key: 01a1a2e9-1410-70d4-9ac8-54d0933c3dbd
+    id: w0-built
+    kind: note
+    versions:
+      - key: 01a1a2e9-1410-70d4-9ac8-54d2a8fc32a2
+        at: 2026-11-03T19:35:46Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W0 built: the Worker answers inside wrangler dev"
+        markdown: |-
+          | Part | State |
+          |---|---|
+          | `univ-api` | `/v1` route table, RFC 9457 problems (`urn:univ:problem:*`), CORS, and OpenAPI 3.1 held to the routes by a test; 15 native tests |
+          | `univ-server` | workers-rs 0.8.7 entry; its own `wrangler.toml` with DB, LAYERS, RELEASES and 4 rate limiters; builds for wasm32 and natively |
+          | `univ-layers` | migration 0001 (`schema_version`) |
+          | `cargo xtask integration` | fixture state → migrations → `wrangler dev` → 3 e2e tests, **passed** |
+          | `cargo xtask serve` | release 6's real state on port 8790 |
+          | Gate | wasm32 check of univ-api, clippy wasm32 of univ-server |
+
+          ```mermaid
+          flowchart LR
+            R[runtime Request] --> S[univ-server: to plain Request]
+            S --> H[univ_api::handle]
+            H --> P{OPTIONS?}
+            P -- yes --> F[204 preflight]
+            P -- no --> D[route table] --> X[handler or problem]
+            F --> C[CORS headers]
+            X --> C --> B[univ-server: runtime Response]
+          ```
+
+          **Changes from the plan:**
+
+          - workers-rs compiles natively, so `univ-server` stays an ordinary workspace member, with no `default-members` exclusion.
+          - `serve` uses port 8790, because another project's Worker holds 8787.
+          - Wrangler runs `[build]` from its start directory, so the build command names the crate path.
+        tone: success

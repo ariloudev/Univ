@@ -4,12 +4,14 @@
 //! The paths come from each handler's `#[utoipa::path]`, and the schemas from the Rust types the
 //! server answers with. A test holds the document's paths to [`ROUTES`](crate::ROUTES) exactly.
 
+use std::sync::LazyLock;
+
 use utoipa::OpenApi;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::schema::{ObjectBuilder, Schema, SchemaFormat, Type};
 
 use crate::http::{Request, Response};
-use crate::problem::ProblemType;
+use crate::problem::{Problem, ProblemType};
 use crate::routes::Params;
 
 #[derive(OpenApi)]
@@ -39,7 +41,7 @@ pub fn document() -> utoipa::openapi::OpenApi {
 
 /// The RFC 9457 problem details document, its `type` limited to the URIs of [`ProblemType`].
 fn problem_schema() -> Schema {
-    let uris: Vec<String> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
+    let uris: Vec<&str> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
     let string = || ObjectBuilder::new().schema_type(Type::String);
     ObjectBuilder::new()
         .schema_type(Type::Object)
@@ -71,15 +73,19 @@ fn problem_schema() -> Schema {
     )
 )]
 pub fn serve(_request: &Request, _params: &Params) -> Response {
-    match serde_json::to_value(document()) {
-        Ok(value) => Response::json(&value),
-        Err(error) => Response::bytes(
-            500,
-            "text/plain",
-            format!("the OpenAPI document did not serialize: {error}").into_bytes(),
-        ),
+    match &*SERIALIZED {
+        Ok(bytes) => Response::bytes(200, "application/json", bytes.clone()),
+        Err(error) => Problem::new(
+            ProblemType::InternalError,
+            format!("The OpenAPI document did not serialize: {error}."),
+        )
+        .into_response(),
     }
 }
+
+/// The document as JSON, built once per isolate: it depends on nothing but the code.
+static SERIALIZED: LazyLock<Result<Vec<u8>, String>> =
+    LazyLock::new(|| serde_json::to_vec(&document()).map_err(|error| error.to_string()));
 
 #[cfg(test)]
 mod tests {
@@ -115,7 +121,7 @@ mod tests {
     fn the_document_describes_every_route_served_and_no_other() {
         let served: BTreeSet<(String, String)> = ROUTES
             .iter()
-            .map(|route| (route.method.to_owned(), route.path.to_owned()))
+            .map(|route| (route.method.as_str().to_owned(), route.path.to_owned()))
             .collect();
         assert_eq!(documented(), served);
     }
@@ -130,7 +136,7 @@ mod tests {
     fn the_problem_schema_lists_every_problem_type() {
         let value = serde_json::to_value(document()).unwrap();
         let listed = &value["components"]["schemas"][PROBLEM_SCHEMA]["properties"]["type"]["enum"];
-        let uris: Vec<String> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
+        let uris: Vec<&str> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
         assert_eq!(listed, &serde_json::json!(uris));
     }
 }

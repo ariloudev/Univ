@@ -15,6 +15,13 @@ pub use openapi::document;
 pub use problem::{Problem, ProblemType};
 pub use routes::{ROUTES, Route};
 
+/// The answer to a request the runtime failed to hand over or to answer, such as a body that
+/// could not be read: a problem, with the CORS headers every response carries.
+#[must_use]
+pub fn failure(kind: ProblemType, detail: impl Into<String>) -> Response {
+    cors::allow_any_origin(Problem::new(kind, detail).into_response())
+}
+
 /// Answers one request: a CORS preflight, a route of [`ROUTES`], or a problem.
 #[must_use]
 pub fn handle(request: &Request) -> Response {
@@ -91,6 +98,15 @@ mod tests {
     }
 
     #[test]
+    fn a_head_request_is_answered_as_a_get_without_its_body() {
+        let get = handle(&get("/v1/openapi.json"));
+        let head = handle(&Request::new(Method::Head, "/v1/openapi.json"));
+        assert_eq!(head.status, 200);
+        assert_eq!(head.body, Body::Empty);
+        assert_eq!(head.header("content-type"), get.header("content-type"));
+    }
+
+    #[test]
     fn a_path_outside_the_api_version_is_no_route() {
         assert_eq!(handle(&get("/openapi.json")).status, 404);
     }
@@ -99,7 +115,7 @@ mod tests {
     fn a_route_asked_with_another_method_answers_405_naming_the_allowed_ones() {
         let response = handle(&Request::new(Method::Post, "/v1/openapi.json"));
         assert_eq!(response.status, 405);
-        assert_eq!(response.header("allow"), Some("GET"));
+        assert_eq!(response.header("allow"), Some("GET, HEAD"));
         assert_eq!(
             problem_type(&response),
             "urn:univ:problem:method-not-allowed"

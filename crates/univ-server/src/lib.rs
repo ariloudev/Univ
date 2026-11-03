@@ -2,26 +2,56 @@
 //! request, lets [`univ_api::handle`] answer it, and turns the answer back.
 //!
 //! Its bindings are named in `wrangler.toml` beside this crate. Nothing here decides what a
-//! request means; that is all `univ_api`'s.
+//! request means; that is all `univ_api`'s. A failure of the runtime itself is still answered
+//! as a problem with the CORS headers, so a browser on another origin can read it.
 
+use univ_api::{Method, ProblemType};
 use worker::{Context, Env, Headers, Request, Response, Result, event};
 
 #[event(fetch)]
-async fn fetch(mut request: Request, _env: Env, _ctx: Context) -> Result<Response> {
-    let url = request.url()?;
-    let mut headers = Vec::new();
-    for (name, value) in request.headers() {
-        headers.push((name.to_ascii_lowercase(), value));
+async fn fetch(request: Request, _env: Env, _ctx: Context) -> Result<Response> {
+    let answer = match answer(request).await {
+        Ok(answer) => answer,
+        Err(error) => univ_api::failure(
+            ProblemType::InternalError,
+            format!("The Worker failed to answer: {error}."),
+        ),
+    };
+    match respond(answer) {
+        Ok(response) => Ok(response),
+        Err(error) => respond(univ_api::failure(
+            ProblemType::InternalError,
+            format!("The Worker failed to send its answer: {error}."),
+        )),
     }
-    let body = request.bytes().await.unwrap_or_default();
+}
+
+/// `univ_api`'s answer to the runtime request.
+async fn answer(mut request: Request) -> Result<univ_api::Response> {
+    let url = request.url()?;
+    let method = Method::parse(request.method().as_ref());
+    // Only a write carries a body; a read's is never read, whatever it sends.
+    let body = if matches!(method, Method::Post | Method::Patch | Method::Delete) {
+        match request.bytes().await {
+            Ok(body) => body,
+            Err(error) => {
+                return Ok(univ_api::failure(
+                    ProblemType::UnreadableBody,
+                    format!("The request's body could not be read: {error}."),
+                ));
+            }
+        }
+    } else {
+        Vec::new()
+    };
     let api_request = univ_api::Request {
-        method: univ_api::Method::parse(request.method().as_ref()),
+        method,
         path: url.path().to_owned(),
         query: url.query().unwrap_or_default().to_owned(),
-        headers,
+        headers: request.headers().entries().collect(),
         body,
     };
-    respond(univ_api::handle(&api_request))
+    Ok(univ_api::handle(&api_request))
 }
 
 /// The runtime response that carries `answer`.

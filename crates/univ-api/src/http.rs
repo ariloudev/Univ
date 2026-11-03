@@ -42,8 +42,8 @@ impl Method {
     }
 }
 
-/// One request: its method, its path without the query, its raw query, its headers with
-/// lower-case names, and its body.
+/// One request: its method, its path without the query, its raw query, its headers, and its
+/// body.
 #[derive(Clone, Debug)]
 pub struct Request {
     pub method: Method,
@@ -69,10 +69,7 @@ impl Request {
     /// The value of the first header of that name, compared without regard to case.
     #[must_use]
     pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers
-            .iter()
-            .find(|(key, _)| key.eq_ignore_ascii_case(name))
-            .map(|(_, value)| value.as_str())
+        find_header(&self.headers, name)
     }
 }
 
@@ -133,9 +130,14 @@ impl Response {
     /// The value of the first header of that name, compared without regard to case.
     #[must_use]
     pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers
-            .iter()
-            .find(|(key, _)| key.eq_ignore_ascii_case(name))
-            .map(|(_, value)| value.as_str())
+        find_header(&self.headers, name)
     }
+}
+
+/// The value of the first header of that name in `headers`, compared without regard to case.
+fn find_header<'a>(headers: &'a [(String, String)], name: &str) -> Option<&'a str> {
+    headers
+        .iter()
+        .find(|(key, _)| key.eq_ignore_ascii_case(name))
+        .map(|(_, value)| value.as_str())
 }

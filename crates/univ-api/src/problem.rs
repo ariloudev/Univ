@@ -18,25 +18,30 @@ pub enum ProblemType {
     RouteNotFound,
     /// A route answers the path, but not with the request's method.
     MethodNotAllowed,
+    /// The request's body could not be read to its end.
+    UnreadableBody,
+    /// The server failed to answer a request it should have answered.
+    InternalError,
 }
 
 impl ProblemType {
     /// Every kind, in the order the OpenAPI document lists them.
-    pub const ALL: &[Self] = &[Self::RouteNotFound, Self::MethodNotAllowed];
+    pub const ALL: &[Self] = &[
+        Self::RouteNotFound,
+        Self::MethodNotAllowed,
+        Self::UnreadableBody,
+        Self::InternalError,
+    ];
 
-    /// The kind's name, the last part of its URI.
+    /// The problem type URI, `urn:univ:problem:<kind>`.
     #[must_use]
-    pub fn slug(self) -> &'static str {
+    pub fn uri(self) -> &'static str {
         match self {
-            Self::RouteNotFound => "route-not-found",
-            Self::MethodNotAllowed => "method-not-allowed",
+            Self::RouteNotFound => "urn:univ:problem:route-not-found",
+            Self::MethodNotAllowed => "urn:univ:problem:method-not-allowed",
+            Self::UnreadableBody => "urn:univ:problem:unreadable-body",
+            Self::InternalError => "urn:univ:problem:internal-error",
         }
-    }
-
-    /// The problem type URI, `urn:univ:problem:<slug>`.
-    #[must_use]
-    pub fn uri(self) -> String {
-        format!("urn:univ:problem:{}", self.slug())
     }
 
     /// The short, human-readable summary that is the same for every problem of this kind.
@@ -45,6 +50,8 @@ impl ProblemType {
         match self {
             Self::RouteNotFound => "No such route",
             Self::MethodNotAllowed => "Method not allowed",
+            Self::UnreadableBody => "Unreadable body",
+            Self::InternalError => "Internal error",
         }
     }
 
@@ -54,6 +61,8 @@ impl ProblemType {
         match self {
             Self::RouteNotFound => 404,
             Self::MethodNotAllowed => 405,
+            Self::UnreadableBody => 400,
+            Self::InternalError => 500,
         }
     }
 }
@@ -79,8 +88,8 @@ impl Problem {
 
     /// The problem with one more extension member.
     #[must_use]
-    pub fn with(mut self, name: &str, value: Value) -> Self {
-        self.extensions.insert(name.to_owned(), value);
+    pub fn with(mut self, name: &str, value: impl Into<Value>) -> Self {
+        self.extensions.insert(name.to_owned(), value.into());
         self
     }
 
@@ -88,7 +97,7 @@ impl Problem {
     #[must_use]
     pub fn to_json(&self) -> Value {
         let mut document = Map::new();
-        document.insert("type".to_owned(), Value::String(self.kind.uri()));
+        document.insert("type".to_owned(), Value::from(self.kind.uri()));
         document.insert("title".to_owned(), Value::from(self.kind.title()));
         document.insert("status".to_owned(), Value::from(self.kind.status()));
         document.insert("detail".to_owned(), Value::String(self.detail.clone()));
@@ -125,8 +134,8 @@ mod tests {
 
     #[test]
     fn a_problem_document_holds_the_rfc_9457_members_and_its_extensions() {
-        let problem = Problem::new(ProblemType::MethodNotAllowed, "PUT is not served")
-            .with("allow", Value::from("GET"));
+        let problem =
+            Problem::new(ProblemType::MethodNotAllowed, "PUT is not served").with("allow", "GET");
         let response = problem.into_response();
         let Body::Bytes(bytes) = response.body else {
             panic!("a problem has a body");
@@ -142,20 +151,20 @@ mod tests {
     #[test]
     fn an_extension_cannot_overwrite_a_standard_member() {
         let document = Problem::new(ProblemType::RouteNotFound, "x")
-            .with("status", Value::from(200))
+            .with("status", 200)
             .to_json();
         assert_eq!(document["status"], 404);
     }
 
     #[test]
     fn every_problem_type_uri_is_absolute_and_distinct() {
-        let uris: Vec<String> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
+        let uris: Vec<&str> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
         for uri in &uris {
             let (scheme, rest) = uri.split_once(':').unwrap();
             assert!(!scheme.is_empty() && !rest.is_empty(), "{uri} is absolute");
         }
         let mut unique = uris.clone();
-        unique.sort();
+        unique.sort_unstable();
         unique.dedup();
         assert_eq!(unique.len(), uris.len());
     }

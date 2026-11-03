@@ -8,11 +8,16 @@ name = "univ-server"
 main = "build/index.js"
 compatibility_date = "2026-11-01"
 
-# Wrangler runs the build from the directory it was started in, which is the workspace root
-# when `cargo xtask serve` or `integration` starts it; the crate is named so that worker-build
-# builds it rather than looking for a package in the workspace's manifest.
+# Wrangler runs the build from the directory it is started in: run it from this crate's
+# directory, as `cargo xtask serve` and `integration` do.
 [build]
-command = "worker-build --release crates/univ-server"
+command = "worker-build --release"
+
+# A port of its own: 8787, Wrangler's default, is often taken by another project's Worker.
+# `cargo xtask integration` passes a free port instead.
+[dev]
+ip = "127.0.0.1"
+port = 8790
 
 [[d1_databases]]
 binding = "DB"

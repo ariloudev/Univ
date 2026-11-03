@@ -2,9 +2,7 @@
 //! (read-the-openapi-document). The OpenAPI document lists exactly these routes, which a test
 //! of `openapi` holds it to.
 
-use serde_json::Value;
-
-use crate::http::{Request, Response};
+use crate::http::{Body, Method, Request, Response};
 use crate::openapi;
 use crate::problem::{Problem, ProblemType};
 
@@ -12,38 +10,47 @@ use crate::problem::{Problem, ProblemType};
 pub type Params = Vec<(&'static str, String)>;
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
-/// handler.
+/// handler. A `GET` route also answers `HEAD`, with the same headers and no body.
 pub struct Route {
-    pub method: &'static str,
+    pub method: Method,
     pub path: &'static str,
     pub handler: fn(&Request, &Params) -> Response,
 }
 
 /// Every route served, in the order they are matched.
 pub static ROUTES: [Route; 1] = [Route {
-    method: "GET",
+    method: Method::Get,
     path: "/v1/openapi.json",
     handler: openapi::serve,
 }];
 
 /// Answers a request that is not a preflight: the handler of the route it names, or a problem.
 pub fn dispatch(request: &Request) -> Response {
+    let head = request.method == Method::Head;
     let mut allowed: Vec<&str> = Vec::new();
     for route in &ROUTES {
         let Some(params) = matches(route.path, &request.path) else {
             continue;
         };
-        if route.method == request.method.as_str() {
-            return (route.handler)(request, &params);
+        if route.method == request.method || (head && route.method == Method::Get) {
+            let response = (route.handler)(request, &params);
+            return if head {
+                response.with_body(Body::Empty)
+            } else {
+                response
+            };
         }
-        allowed.push(route.method);
+        allowed.push(route.method.as_str());
+        if route.method == Method::Get {
+            allowed.push(Method::Head.as_str());
+        }
     }
     if allowed.is_empty() {
         return Problem::new(
             ProblemType::RouteNotFound,
             format!("No route answers {}.", request.path),
         )
-        .with("path", Value::String(request.path.clone()))
+        .with("path", request.path.as_str())
         .into_response();
     }
     let allow = allowed.join(", ");
@@ -55,7 +62,7 @@ pub fn dispatch(request: &Request) -> Response {
             request.method.as_str()
         ),
     )
-    .with("allow", Value::String(allow.clone()))
+    .with("allow", allow.as_str())
     .into_response()
     .with_header("allow", &allow)
 }
