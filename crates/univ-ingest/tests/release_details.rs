@@ -9,23 +9,11 @@
 mod common;
 mod release_fixture;
 
-use release_fixture::{build_next, fixture};
-use rusqlite::Connection;
+use release_fixture::{build_next, fixture, loaded};
 use serde_json::Value;
 use univ_model::api::sources::{RadialRange, SkyFootprint};
 use univ_model::api::structures::{Derivation, OutlineRecord, RescaledLength};
 use univ_model::geometry::Shape;
-use univ_model::release::manifest::Target;
-
-/// The release's D1 files executed in path order into a fresh database.
-fn loaded(dir: &std::path::Path, m: &univ_model::release::ReleaseManifest) -> Connection {
-    let db = Connection::open_in_memory().unwrap();
-    for f in m.files.iter().filter(|f| f.target == Target::D1) {
-        let sql = std::fs::read_to_string(dir.join(&f.path)).unwrap();
-        db.execute_batch(&sql).unwrap();
-    }
-    db
-}
 
 fn json(text: Option<String>) -> Option<Value> {
     text.map(|t| serde_json::from_str(&t).unwrap())

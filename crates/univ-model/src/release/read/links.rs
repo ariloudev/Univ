@@ -6,7 +6,13 @@
 //! "method":"position",...}`. A JSON reader keeps the last, the match method, so such a reason
 //! reads as a match when it carries a match's `separation_arcsec`, and as the resolution its
 //! `method` names otherwise.
+//!
+//! Only releases built before the `by` tag, by univ-ingest before commit 99f2ac7 ("tag a
+//! resolution by \"by\""), wrote the old shape; every release built since writes the new one.
+//! [`retag`] is a shim for those releases alone: it can go once no published release built
+//! before that tag remains, every one of them pruned or rebuilt.
 
+use serde::Deserialize;
 use serde_json::Value;
 
 use super::ReadError;
@@ -40,6 +46,6 @@ pub(super) fn links(c: &Columns<'_>) -> Result<Vec<CandidateLink>, ReadError> {
             }
         }
     }
-    serde_json::from_value(links.clone())
+    Vec::<CandidateLink>::deserialize(&links)
         .map_err(|e| c.error("links", format!("{links} does not read: {e}")))
 }

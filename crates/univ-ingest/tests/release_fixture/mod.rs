@@ -19,6 +19,7 @@ use univ_ingest::state::State;
 use univ_ingest::structures::{Structure, read_all_named};
 use univ_ingest::tiles::{Built, Context, TileRules, build as build_tiles};
 use univ_model::derive::Release;
+use univ_model::release::manifest::Target;
 use univ_model::release::{ReleaseManifest, keys};
 
 /// Sources each fetched in one query: Hipparcos stars, nearby galaxies and cosmic web galaxies.
@@ -139,6 +140,17 @@ pub fn build_next(f: &Fixture) -> BuiltRelease {
 pub fn read_manifest(dir: &Path) -> ReleaseManifest {
     let text = std::fs::read_to_string(dir.join(keys::MANIFEST)).unwrap();
     serde_norway::from_str(&text).unwrap()
+}
+
+/// The release in `dir`, its manifest `m`: its D1 files executed in path order into a fresh
+/// in-memory database.
+pub fn loaded(dir: &Path, m: &ReleaseManifest) -> rusqlite::Connection {
+    let db = rusqlite::Connection::open_in_memory().unwrap();
+    for f in m.files.iter().filter(|f| f.target == Target::D1) {
+        let sql = std::fs::read_to_string(dir.join(&f.path)).unwrap();
+        db.execute_batch(&sql).unwrap();
+    }
+    db
 }
 
 /// The text of the release's D1 file of `table`.
