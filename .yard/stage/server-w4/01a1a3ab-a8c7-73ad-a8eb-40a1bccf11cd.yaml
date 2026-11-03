@@ -10,6 +10,15 @@ versions:
     title: "W4: keys, owner and access"
     goal: "The owner issues, lists, adjusts and revokes API keys; every request with a key is authenticated; anonymous and keyed requests are rate limited by address and by tier (F-28, F-29, F-31)"
     status: active
+  - key: 01a1a3c7-74b0-718e-8354-1e94a3ae9282
+    at: 2026-11-03T23:38:40Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W4: keys, owner and access"
+    goal: "The owner issues, lists, adjusts and revokes API keys; every request with a key is authenticated; anonymous and keyed requests are rate limited by address and by tier (F-28, F-29, F-31)"
+    status: done
 blocks:
   - key: 01a1a3ab-a8c7-73ad-a8eb-40a38f3bd7c9
     id: t4-platform
