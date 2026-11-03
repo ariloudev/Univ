@@ -1,0 +1,61 @@
+# A filamentary wall reconstructed from Cosmicflows-3 velocities, densest at the celestial South Pole.
+name: South Pole Wall
+alternative_names: []
+kind: wall
+status: reconstructed
+papers:
+  - id: pomarede-2020
+    reference: "Pomarède, Tully, Graziani, Courtois, Hoffman & Lezmy 2020, ApJ 897, 133"
+    title: "Cosmicflows-3: The South Pole Wall"
+    doi: 10.3847/1538-4357/ab9952
+    arxiv: "2007.04414"
+    read: "arXiv source (LaTeX) of 2007.04414"
+# The density peak, Chamaeleon+11.8, at the celestial South Pole; the longitude is undefined there.
+position:
+  frame: equatorial_equinox_unstated
+  lat:
+    value: -90
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "celestial South Pole"
+    cite:
+      paper: pomarede-2020
+      sentence: "Chamaeleon+11.8 is the highest density peak along this extended filament, coincident with the celestial South Pole."
+  velocity:
+    value: 12000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite:
+      paper: pomarede-2020
+      sentence: "The structure, at a characteristic redshift of 12,000 km s-1, has a density peak coincident with the celestial South Pole."
+values:
+  length_apus_to_lepus:
+    value: 19000
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &lengths
+      paper: pomarede-2020
+      sentence: "The run from Apus to Lepus over ~98° at latitude -20° and ~12,000 km s-1 covers ~19,000 km s-1 ~250 Mpc. The bend toward us inward to ~7000 km s-1 over ~85° from Lepus to the Funnel (Cetus+6.8) is of length ~13,000 km s-1 ~170 Mpc. End-to-end, from Apus to the Funnel is ~0.11c ~420 Mpc."
+  length_lepus_to_funnel:
+    value: 13000
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *lengths
+  length_end_to_end:
+    value: 420
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *lengths
+    note: "The paper's conversion of 0.11c to a length."
+disputes: []
+notes: >-
+  A reconstruction from Cosmicflows-3 peculiar velocities. The paper names its features by
+  constellation and velocity (Apus+12.5, Chamaeleon+11.8, Lepus+12, Columba+11.1, Eridanus+10.2,
+  the Funnel at Cetus+6.8) but gives no coordinates for them, so no path is drawn. The sentence
+  giving the run's latitude of -20° does not name its frame, so that value is left out. The
+  equinox of the pole is not stated, which matters little so close to it.

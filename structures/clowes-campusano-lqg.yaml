@@ -1,0 +1,91 @@
+# The Clowes-Campusano Large Quasar Group, U1.28: 34 quasars linked at 100 Mpc in SDSS DR7QSO.
+name: Clowes-Campusano LQG
+alternative_names: ["U1.28", "CCLQG"]
+kind: quasar_group
+status: statistical_claim
+papers:
+  - id: clowes-2012
+    reference: "Clowes, Campusano, Graham & Söchting 2012, MNRAS 419, 556"
+    title: "Two close large quasar groups of size ~350 Mpc at z ~ 1.2"
+    doi: 10.1111/j.1365-2966.2011.19719.x
+    bibcode: 2012MNRAS.419..556C
+    arxiv: "1108.6221"
+    read: "arXiv source (LaTeX) of 1108.6221; Table 1 parsed from it"
+geometry:
+  kind: members
+  members:
+    frame: icrs
+    tracer: quasar
+    source: { paper: clowes-2012, table: "1" }
+    columns:
+      - { name: lon, header: "RA (2000)", unit: degree, format: hms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lat, header: "Dec. (2000)", unit: degree, format: dms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "z", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+    rows:
+      - ["SDSS J103744.89+051834.2", "10:37:44.89", "+05:18:34.2", 1.2280]
+      - ["SDSS J104114.06+034312.0", "10:41:14.06", "+03:43:12.0", 1.2633]
+      - ["SDSS J104115.58+051345.0", "10:41:15.58", "+05:13:45.0", 1.2553]
+      - ["SDSS J104116.79+035511.4", "10:41:16.79", "+03:55:11.4", 1.2444]
+      - ["SDSS J104149.92+064336.5", "10:41:49.92", "+06:43:36.5", 1.3238]
+      - ["SDSS J104225.63+035539.1", "10:42:25.63", "+03:55:39.1", 1.2293]
+      - ["SDSS J104256.38+054937.4", "10:42:56.38", "+05:49:37.4", 1.3555]
+      - ["SDSS J104304.95+052515.6", "10:43:04.95", "+05:25:15.6", 1.1865]
+      - ["SDSS J104321.88+045920.6", "10:43:21.88", "+04:59:20.6", 1.3646]
+      - ["SDSS J104345.39+040300.3", "10:43:45.39", "+04:03:00.3", 1.1884]
+      - ["SDSS J104425.80+060925.6", "10:44:25.80", "+06:09:25.6", 1.2523]
+      - ["SDSS J104426.79+072754.9", "10:44:26.79", "+07:27:54.9", 1.4232]
+      - ["SDSS J104445.32+054348.8", "10:44:45.32", "+05:43:48.8", 1.1879]
+      - ["SDSS J104556.93+072714.7", "10:45:56.93", "+07:27:14.7", 1.3966]
+      - ["SDSS J104637.30+075318.7", "10:46:37.30", "+07:53:18.7", 1.3635]
+      - ["SDSS J104656.71+054150.3", "10:46:56.71", "+05:41:50.3", 1.2284]
+      - ["SDSS J104733.16+052454.9", "10:47:33.16", "+05:24:54.9", 1.3341]
+      - ["SDSS J104752.69+061828.9", "10:47:52.69", "+06:18:28.9", 1.3125]
+      - ["SDSS J104843.05+064456.8", "10:48:43.05", "+06:44:56.8", 1.3523]
+      - ["SDSS J105010.05+043249.1", "10:50:10.05", "+04:32:49.1", 1.2158]
+      - ["SDSS J105018.10+052826.4", "10:50:18.10", "+05:28:26.4", 1.3067]
+      - ["SDSS J105022.81+064621.8", "10:50:22.81", "+06:46:21.8", 1.2900]
+      - ["SDSS J105149.58+033430.2", "10:51:49.58", "+03:34:30.2", 1.2697]
+      - ["SDSS J105422.47+033719.3", "10:54:22.47", "+03:37:19.3", 1.2278]
+      - ["SDSS J105423.26+051909.8", "10:54:23.26", "+05:19:09.8", 1.2785]
+      - ["SDSS J105512.23+061243.9", "10:55:12.23", "+06:12:43.9", 1.3018]
+      - ["SDSS J105534.66+033028.8", "10:55:34.66", "+03:30:28.8", 1.2495]
+      - ["SDSS J105537.63+040520.0", "10:55:37.63", "+04:05:20.0", 1.2619]
+      - ["SDSS J105719.23+045548.2", "10:57:19.23", "+04:55:48.2", 1.3355]
+      - ["SDSS J105810.30+025145.7", "10:58:10.30", "+02:51:45.7", 1.2761]
+      - ["SDSS J105821.28+053448.9", "10:58:21.28", "+05:34:48.9", 1.2540]
+      - ["SDSS J105833.86+055440.2", "10:58:33.86", "+05:54:40.2", 1.3222]
+      - ["SDSS J110108.00+043849.6", "11:01:08.00", "+04:38:49.6", 1.2516]
+      - ["SDSS J110412.00+044058.2", "11:04:12.00", "+04:40:58.2", 1.2554]
+values:
+  mean_redshift:
+    value: 1.28
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: clowes-2012
+      sentence: "In the DR7QSO data, the LQG has 34 members, with z = 1.28."
+  characteristic_size:
+    value: 350
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: &cosmology "proper size at the present epoch; H0 = 70 km/s/Mpc, Ωm = 0.27, ΩΛ = 0.73"
+    cite:
+      paper: clowes-2012
+      sentence: "A simple measure of the characteristic size of the LQGs, which takes no account of morphology, is the cube root of the corrected CHMS volumes, giving ~ 350, 380 Mpc for U1.28 and U1.11 respectively."
+  longest_axis:
+    value: 630
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite:
+      paper: clowes-2012
+      sentence: "By this measure the longest axes are ~ 630 and 780 Mpc for U1.28 and U1.11 respectively."
+disputes: []
+notes: >-
+  The 34 members are the quasars of Table 1, with their SDSS J2000 positions as published; they
+  span z = 1.1865 to 1.4232. Its neighbour U1.11 (38 quasars, mean z = 1.11, Table 2 of the same
+  paper) is not ported. No paper disputing this group in particular was read; Nadathur 2013
+  disputes the method for the Huge-LQG.

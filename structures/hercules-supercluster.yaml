@@ -1,0 +1,98 @@
+# The Hercules cluster A2151 and the double cluster A2147/A2152, in the region Barmby & Huchra
+# survey.
+name: Hercules Supercluster
+alternative_names: []
+kind: supercluster
+status: observed
+papers:
+  - id: barmby-1998
+    reference: "Barmby & Huchra 1998, AJ 115, 6"
+    title: "Kinematics of the Hercules Supercluster"
+    doi: 10.1086/300179
+    arxiv: "astro-ph/9709270"
+    read: "arXiv source (LaTeX) of astro-ph/9709270"
+geometry:
+  kind: sky_region
+  sky_region:
+    frame: fk4_b1950
+    lon:
+      - value: 238.5
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        as_published: "15h54m"
+        cite: &region
+          paper: barmby-1998
+          sentence: "Our 'Hercules supercluster' region of interest, comprising 22.5 square degrees (14°30′ < δ < 19°30′ and 15h54m < α < 16h12m, B(1950)), now has a total of 294 velocities available from the literature. Of these, approximately 262 are possible cluster members (8500 < v < 14500 km s-1)."
+      - value: 243
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        as_published: "16h12m"
+        cite: *region
+    lat:
+      - value: 14.5
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        as_published: "14°30′"
+        cite: *region
+      - value: 19.5
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        as_published: "19°30′"
+        cite: *region
+    near:
+      velocity:
+        value: 8500
+        unit: kilometre_per_second
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *region
+    far:
+      velocity:
+        value: 14500
+        unit: kilometre_per_second
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *region
+values:
+  a2151_mean_velocity:
+    value: 11004
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: symmetric, sigma: 59 }
+    cite: &dynamics
+      paper: barmby-1998
+      table: "Dynamical parameters of clusters (the third table of the arXiv source)"
+      row: "A2151"
+      column: "v̄ (km s-1)"
+  a2152_mean_velocity:
+    value: 12942
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: symmetric, sigma: 97 }
+    cite:
+      paper: barmby-1998
+      table: "Dynamical parameters of clusters (the third table of the arXiv source)"
+      row: "A2152"
+      column: "v̄ (km s-1)"
+  a2147_mean_velocity:
+    value: 10492
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: symmetric, sigma: 85 }
+    cite:
+      paper: barmby-1998
+      table: "Dynamical parameters of clusters (the third table of the arXiv source)"
+      row: "A2147"
+      column: "v̄ (km s-1)"
+disputes: []
+notes: >-
+  This is the compact core of the supercluster: A2151 (the Hercules cluster) and the double cluster
+  A2147/2152, all near α ~ 16h, δ ~ 17°. At a low density enhancement A2107, A2063 and A2052 also
+  belong to it. The region is given in B1950. The paper also quotes Tarenghi et al. (1980) cluster
+  centres in J2000, used only as starting points for its own centres, which it does not tabulate;
+  the newsroom atlas used those as member positions, and they are left out here. Its upper limit on
+  the volume, in h^-3 Mpc^3, has no unit in univ-model and is left out.

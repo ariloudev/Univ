@@ -1,0 +1,61 @@
+# A local underdensity in K-band galaxy counts, centred on us by construction.
+name: KBC void
+alternative_names: ["Keenan-Barger-Cowie void", "Local Hole"]
+kind: void
+status: observed
+papers:
+  - id: keenan-2013
+    reference: "Keenan, Barger & Cowie 2013, ApJ 775, 62"
+    title: "Evidence for a ~300 Megaparsec Scale Under-density in the Local Galaxy Distribution"
+    doi: 10.1088/0004-637X/775/1/62
+    bibcode: 2013ApJ...775...62K
+    arxiv: "1304.2884"
+    read: "arXiv source (LaTeX) of 1304.2884"
+  - id: kenworthy-2019
+    reference: "Kenworthy, Scolnic & Riess 2019, ApJ 875, 145"
+    title: "The Local Perspective on the Hubble Tension: Local Structure Does Not Impact Measurement of the Hubble Constant"
+    doi: 10.3847/1538-4357/ab0ebf
+    bibcode: 2019ApJ...875..145K
+    arxiv: "1901.08681"
+    read: "arXiv source (LaTeX) of 1901.08681"
+geometry:
+  kind: primitive
+  primitive:
+    form: sphere
+    centre: { observer: true }
+    radius:
+      value: 300
+      unit: megaparsec
+      kind: inferred
+      uncertainty: { form: none_reported }
+      assumes: "h70^-1 Mpc: H0 = 70 km/s/Mpc"
+      cite: &local
+        paper: keenan-2013
+        sentence: "We find a local (z < 0.07, D < 300 h70^-1 Mpc) luminosity density that is in good agreement with previous studies."
+values:
+  edge_redshift:
+    value: 0.07
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: *local
+  luminosity_density_ratio_beyond:
+    value: 1.5
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: keenan-2013
+      sentence: "Beyond z ~ 0.07, we detect a rising luminosity density that reaches a value of roughly ~1.5 times higher than that measured locally at z > 0.1."
+disputes:
+  - claim: >-
+      The type Ia supernova distance-redshift relation rules out large local underdensities
+      (|δ| > 20%) at 4 to 5 sigma.
+    cite:
+      paper: kenworthy-2019
+      sentence: "We conclude that the SN luminosity distance-redshift relation is inconsistent at the 4-5σ confidence level with large local underdensities (|δ| > 20%, where the density contrast δ = Δρ/ρ) proposed in some galaxy count studies"
+notes: >-
+  The underdensity is measured as a function of distance from us, so it is a sphere about the
+  observer; the paper gives no offset or anisotropy. Its fields cover only part of the sky
+  (UKIDSS-LAS with SDSS, GAMA and 2dFGRS, and 2M++ at low redshift). Mazurenko et al. 2024 model
+  bulk flows assuming the void is real, which supports rather than disputes it.

@@ -11,4 +11,5 @@ pub mod normalize;
 pub mod provenance;
 pub mod run;
 pub mod source;
+pub mod structures;
 pub mod table;
