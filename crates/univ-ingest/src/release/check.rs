@@ -12,6 +12,7 @@ use std::fmt;
 use std::path::Path;
 
 use univ_model::ids::{ObjectId, SourceId};
+use univ_model::release::manifest::{D1Estimate, TableEstimate};
 use univ_model::release::{D1_CAP_BYTES, SqlValue, TABLES, Table};
 use univ_model::tile::decode;
 
@@ -193,16 +194,37 @@ pub fn decimal_bytes(bytes: u64) -> String {
     )
 }
 
+/// Each table with rows, its rows and estimated bytes, largest first: `objects 2095269 rows
+/// 1.2 GB`.
+#[must_use]
+pub fn table_sizes(estimate: &D1Estimate) -> Vec<String> {
+    let mut tables: Vec<&TableEstimate> = estimate.tables.iter().filter(|t| t.rows > 0).collect();
+    tables.sort_by_key(|t| std::cmp::Reverse(t.estimated_bytes));
+    tables
+        .iter()
+        .map(|t| {
+            format!(
+                "{} {} rows {}",
+                t.table,
+                t.rows,
+                decimal_bytes(t.estimated_bytes)
+            )
+        })
+        .collect()
+}
+
 /// CON-3: the estimate of the release's rows against the cap.
 fn d1_size(d1: &D1Rows, failed: &mut Vec<Failed>) {
-    let estimated = d1.estimate().estimated_bytes;
+    let estimate = d1.estimate();
+    let estimated = estimate.estimated_bytes;
     if estimated > D1_CAP_BYTES {
         failed.push(Failed {
             check: D1_SIZE,
             cause: format!(
                 "its rows are estimated at {estimated} bytes, beyond the {} cap of {D1_CAP_BYTES} \
-                 bytes",
-                decimal_bytes(D1_CAP_BYTES)
+                 bytes; by table: {}",
+                decimal_bytes(D1_CAP_BYTES),
+                table_sizes(&estimate).join(", ")
             ),
         });
     }

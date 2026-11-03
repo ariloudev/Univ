@@ -1,0 +1,131 @@
+key: 01a1a0d1-e441-72be-8ac7-62202925ee8b
+id: w8
+versions:
+  - key: 01a1a0d1-e441-72be-8ac7-62268a49f98c
+    at: 2026-11-03T09:51:12Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W8 First real release"
+    goal: "All 18 sources are fetched for real, release 1 is built and published to local D1 and R2, and its science is checked against published values, with what the real data exposes fixed"
+    status: active
+blocks:
+  - key: 01a1a0d1-e441-72be-8ac7-6222e5815a65
+    id: w8-t1-fetch
+    kind: task
+    versions:
+      - key: 01a1a0d1-e441-72be-8ac7-622865ddd811
+        at: 2026-11-03T09:51:12Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fetch all 18 sources"
+        detail: "`univ-ingest fetch` runs in the background against the real providers. Done when every source is on disk with its provenance and its row checks pass, or each failure is reported with its cause."
+        state: active
+      - key: 01a1a0e8-dafc-76d7-b695-63ced1d9871d
+        at: 2026-11-03T10:16:17Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fetch all 18 sources"
+        detail: "All 18 sources are on disk with provenance and row checks: 313.4 MB in 24 min 55 s. Bailer-Jones chunks 2–5 failed against the Gaia archive several times, and every retry succeeded. The main CDS VizieR host failed all five tries and was skipped for the run, so Cosmicflows-4 came from the next mirror. Finding: a network error's message omits its cause (timeout, refused or TLS)."
+        state: done
+  - key: 01a1a0d1-e441-72be-8ac7-62233bf6252c
+    id: w8-t2-build
+    kind: task
+    versions:
+      - key: 01a1a0d1-e441-72be-8ac7-622924cafcff
+        at: 2026-11-03T09:51:12Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Build and publish release 1"
+        detail: "`univ-ingest build` then `publish 1` to local D1 and R2. Done when release 1 is published, `latest` points to it, and the D1 size (CON-3) and largest tile (QA-1) are recorded."
+        state: open
+      - key: 01a1a0e8-dafc-76d7-b695-63cf673a735f
+        at: 2026-11-03T10:16:17Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Build and publish release 1"
+        detail: "`univ-ingest build --offline` then `publish 1` to local D1 and R2. Done when release 1 is published, `latest` points to it, and the D1 size (CON-3) and largest tile (QA-1) are recorded."
+        state: active
+  - key: 01a1a0d1-e441-72be-8ac7-6224e4542ef8
+    id: w8-t3-science
+    kind: task
+    versions:
+      - key: 01a1a0d1-e441-72be-8ac7-622a6fb8cf77
+        at: 2026-11-03T09:51:12Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Science checks"
+        detail: |-
+          Each check against its published value, with the source cited:
+          - M31 at about 0.77 Mpc.
+          - Virgo and Coma at their published distances.
+          - The Laniakea attractor where Dupuy & Courtois place it.
+          - Cross-match rates between 2M++ and its parent surveys.
+          - eRASS1's 155 `bad_uncertainty` rows.
+          - How many objects the no-error ranking rule affects.
+
+          Done when each result is recorded in a note, failures included.
+        state: open
+  - key: 01a1a0d1-e441-72be-8ac7-6225c2c2db05
+    id: w8-t4-fixes
+    kind: task
+    versions:
+      - key: 01a1a0d1-e441-72be-8ac7-622b948b3bbe
+        at: 2026-11-03T09:51:12Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix what the real data exposes"
+        detail: "Plus the W8 follow-ups: batched R2 put/read-back, streaming SQL generation, and `Until` carrying its options. Done when the gate passes and release 1 (or a rebuilt release 2) passes the checks."
+        state: open
+      - key: 01a1a0ea-fbcc-72c2-b75e-fb646acb1ccf
+        at: 2026-11-03T10:18:36Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix what the real data exposes"
+        detail: |-
+          - **D1 size:** measure each table, then slim the schema to at most 4.5 GB per release (integer keys, typed uncertainty columns, chains stored once).
+          - **Memory:** stream SQL generation, aiming under 8 GB peak.
+          - **Members:** place members from their own cited coordinates and redshift.
+          - **Fetch errors:** include the underlying cause.
+          - **Commands:** `Until` carries its own options.
+
+          Done when the real build succeeds and release 1 is published locally.
+        state: active
+  - key: 01a1a0ea-fbcc-72c2-b75e-fb620605cde1
+    id: w8-first-build
+    kind: note
+    versions:
+      - key: 01a1a0ea-fbcc-72c2-b75e-fb6394ef5587
+        at: 2026-11-03T10:18:36Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "First real build: refused by CON-3, as it should be"
+        markdown: |-
+          | Stage | Result |
+          |---|---|
+          | Normalize | 2,909,101 entries from 14 tables. Left out: 2M++ 3,813, eRASS1 155, UNGC 110, SDSS 6, BOSS 1 |
+          | Cross-match | 2,095,269 objects, 813,832 merges, 1,252 candidate links; 2,082,458 placed, 12,811 with no distance |
+          | Tiles | stars 141 nodes and 780,442 points; nearby galaxies 1 node and 637 points; cosmic web 259 nodes and 1,301,379 points. Largest tile 553,959 B, within QA-1's 1 MiB |
+          | Build | **refused**: D1 estimated at 18.05 GB against the 10 GB cap (CON-3), so no number was used |
+          | Resources | 80 s wall time, **62 GB peak RSS** |
+          | Members | none of the 275 members of 6 structures match a catalogue object: they are quasars, absorbers, GRBs and clusters |
+
+          The fix targets at most 4.5 GB of D1 per release (so the next release can be published before this one is pruned) and a peak under 8 GB. Members will be placed from their own cited positions and redshifts.
+        tone: warning

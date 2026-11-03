@@ -10,7 +10,7 @@ use crate::acquire::Acquired;
 use crate::crossmatch::CrossMatched;
 use crate::display::SourceState;
 use crate::events::{Count, Event, EventSink, Stage};
-use crate::release::{BuiltRelease, Inputs, build, decimal_bytes, is_grid, read_grid};
+use crate::release::{BuiltRelease, Inputs, build, decimal_bytes, is_grid, read_grid, table_sizes};
 use crate::source::SourceDefinition;
 use crate::tiles::Built;
 
@@ -44,6 +44,7 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
             decimal_bytes(m.d1.estimated_bytes),
             decimal_bytes(m.d1.cap_bytes)
         ),
+        format!("D1 by table: {}", table_sizes(&m.d1).join(", ")),
         format!(
             "cell index: {} placed objects, {} of {} structures with a bounding box",
             m.counts.object_cells, m.counts.structures_indexed, m.counts.structures
