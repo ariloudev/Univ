@@ -7,7 +7,7 @@ use univ_ingest::tiles::{BuiltDomain, Context, DomainPoint, TileRules, build_dom
 use univ_model::cosmology::Cosmology;
 use univ_model::derive::Release;
 use univ_model::entry::CatalogueEntry;
-use univ_model::ids::ObjectId;
+use univ_model::ids::{ObjectId, SourceId};
 use univ_model::object::{
     Decided, FractionalUncertainty, MeasurementRef, MethodRank, Object, ObjectEntry, Placement,
     PositionClass, PreferredDistance, PreferredPosition, Resolution,
@@ -66,14 +66,19 @@ impl Lcg {
     }
 }
 
+/// The sources of [`point`]: Gaia DR3 alone.
+pub fn gaia() -> [SourceId; 1] {
+    [source("gaia-dr3-bright")]
+}
+
 /// SIMULATED: a stars point of object `id` at `position`, its distance and sky position from
-/// Gaia DR3.
+/// Gaia DR3, the first of [`gaia`].
 pub fn point(id: u64, position: Vec3) -> DomainPoint {
     DomainPoint {
         id: ObjectId::new(id).unwrap(),
         position,
-        source: source("gaia-dr3-bright"),
-        sky_source: source("gaia-dr3-bright"),
+        source: 0,
+        sky_source: 0,
         kind: KindOfValue::Measured,
     }
 }
@@ -93,6 +98,7 @@ pub fn stars(points: &[DomainPoint], rules: &TileRules) -> BuiltDomain {
     build_domain(
         ScaleDomain::Stars,
         points,
+        &gaia(),
         &context(rules, &cosmology, &definitions),
     )
     .unwrap_or_else(|e| panic!("{e}"))

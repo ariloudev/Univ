@@ -4,8 +4,6 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use univ_model::cosmology::Cosmology;
-
 use super::{FetchOptions, RunReport, lock};
 use crate::crossmatch::CrossMatched;
 use crate::events::{Count, Event, EventSink, Stage};
@@ -49,7 +47,7 @@ pub fn counts(built: &Built) -> Vec<Count> {
 }
 
 /// Builds the tiles of `crossed` under the rules in the repository's `rules/tiles.yaml` and the
-/// release cosmology, Planck 2018 as the cross-match derives under, and writes them under
+/// release cosmology the cross-match placed its objects under, and writes them under
 /// `tile_options.out`. Nothing is written unless every domain builds. A stage that fails is
 /// reported in `report`, and gives nothing.
 pub async fn tiles_stage(
@@ -69,10 +67,9 @@ pub async fn tiles_stage(
     let (definitions, out, events) = (definitions.to_vec(), tile_options.out.clone(), sink.clone());
     let outcome = tokio::task::spawn_blocking(move || {
         let rules = TileRules::read(&rules).map_err(|e| e.to_string())?;
-        let cosmology = Cosmology::planck_2018();
         let context = Context {
             release: &crossed.release,
-            cosmology: &cosmology,
+            cosmology: &crossed.cosmology,
             rules: &rules,
             definitions: &definitions,
         };

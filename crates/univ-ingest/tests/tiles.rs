@@ -94,7 +94,7 @@ fn each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs()
         assert_eq!(d.nodes.len(), 1, "one point, one root");
         let root = &d.nodes[0];
         assert_eq!((root.address.as_str(), root.level), ("r", 0));
-        assert_eq!(root.ids, [ObjectId::new(id).unwrap()]);
+        assert_eq!(decoded_ids(d)["r"], [ObjectId::new(id).unwrap()]);
         let r = d.manifest.radius;
         assert!((r - radius).abs() < radius * 1e-3, "{unit}: {r}");
         // A cube centred on the barycentre, its half-edge the power of two just above the
@@ -191,10 +191,14 @@ fn a_node_splits_above_the_threshold_down_to_the_maximum_depth() {
         assert_eq!(n.address.len(), usize::from(n.level) + 1);
         if n.sampled_from > threshold && n.level < depth {
             assert!(has_children(&n.address), "{} is split", n.address);
-            assert_eq!(n.ids.len(), kept);
+            // Its level's fraction of the points reaching it, rounded down: at most `kept`.
+            let fraction = built.manifest.levels[usize::from(n.level)].fraction;
+            let share = fraction * real(n.sampled_from);
+            assert!(n.points <= kept, "{}", n.address);
+            assert!(real(n.points) <= share + 1e-6 && real(n.points) > share - 1.0);
         } else {
             assert!(!has_children(&n.address), "{} is a leaf", n.address);
-            assert_eq!(n.ids.len(), n.sampled_from, "a leaf keeps every point");
+            assert_eq!(n.points, n.sampled_from, "a leaf keeps every point");
             if n.sampled_from > threshold {
                 deep_and_full += 1;
             }
@@ -204,7 +208,7 @@ fn a_node_splits_above_the_threshold_down_to_the_maximum_depth() {
         deep_and_full > 0,
         "a cell at the maximum depth over the threshold"
     );
-    let total: usize = built.nodes.iter().map(|n| n.ids.len()).sum();
+    let total: usize = built.nodes.iter().map(|n| n.points).sum();
     assert_eq!(total, 1_600);
 }
 
@@ -212,32 +216,32 @@ fn a_node_splits_above_the_threshold_down_to_the_maximum_depth() {
 fn each_level_is_an_even_random_subsample_and_a_finer_level_repeats_no_point() {
     let points = uniform(20_000, 1_000.0, 5);
     let built = stars(&points, &rules(4_000, 2_000, 6, 11));
+    let decoded = decoded_ids(&built);
     let mut seen = BTreeSet::new();
-    for (address, ids) in decoded_ids(&built) {
+    for (address, ids) in &decoded {
         for id in ids {
-            assert!(seen.insert(id), "{id} repeated in {address}");
+            assert!(seen.insert(*id), "{id} repeated in {address}");
         }
     }
     assert_eq!(seen.len(), 20_000, "every point in exactly one node");
-    for n in &built.nodes {
-        let parent = &n.address[..n.address.len() - 1];
-        if let Some(p) = built.nodes.iter().find(|p| p.address == parent) {
-            assert!(p.ids.iter().all(|id| !n.ids.contains(id)));
+    for (address, ids) in &decoded {
+        if let Some(parent) = decoded.get(&address[..address.len() - 1]) {
+            assert!(parent.iter().all(|id| !ids.contains(id)));
         }
     }
     // The root keeps 2,000 of 20,000 uniform points, each equally likely: about 250 in each
     // octant and a mean id near the middle, within four standard deviations.
-    let root = &built.nodes[0];
-    assert_eq!((root.ids.len(), root.sampled_from), (2_000, 20_000));
+    let (root, root_ids) = (&built.nodes[0], &decoded["r"]);
+    assert_eq!((root_ids.len(), root.sampled_from), (2_000, 20_000));
     let mut octants = [0_u32; 8];
-    for id in &root.ids {
+    for id in root_ids {
         let p = points[usize::try_from(id.get()).unwrap() - 1].position;
         octants[usize::from(root.bounds.octant_of(p))] += 1;
     }
     for n in octants {
         assert!((190..=310).contains(&n), "{octants:?}");
     }
-    let sum: u64 = root.ids.iter().map(|i| i.get()).sum();
+    let sum: u64 = root_ids.iter().map(|i| i.get()).sum();
     let mean = f64::from(u32::try_from(sum).unwrap()) / 2_000.0;
     assert!((mean - 10_000.5).abs() < 520.0, "{mean}");
 }
@@ -252,13 +256,145 @@ fn the_subsample_is_drawn_with_the_seed_the_manifest_records() {
     assert_eq!(c.manifest.sampling.seed, 43);
     let json: serde_json::Value = serde_json::from_slice(&a.json).unwrap();
     assert_eq!(json["sampling"]["seed"], 42);
-    assert_eq!(
-        a.nodes[0].ids, b.nodes[0].ids,
-        "the same seed, the same draw"
-    );
-    assert_ne!(a.nodes[0].ids, c.nodes[0].ids, "another seed, another draw");
+    let root = |d: &BuiltDomain| decoded_ids(d).remove("r").unwrap();
+    assert_eq!(root(&a), root(&b), "the same seed, the same draw");
+    assert_ne!(root(&a), root(&c), "another seed, another draw");
     let all = |d: &BuiltDomain| -> BTreeSet<ObjectId> {
-        d.nodes.iter().flat_map(|n| n.ids.clone()).collect()
+        decoded_ids(d).into_values().flatten().collect()
     };
     assert_eq!(all(&a), all(&c), "never other points");
+}
+
+/// `n` as an `f64`, for the ratios below.
+fn real(n: usize) -> f64 {
+    f64::from(u32::try_from(n).unwrap())
+}
+
+#[test]
+fn every_inner_node_of_a_level_keeps_one_fraction_so_shown_densities_keep_their_ratio() {
+    // SIMULATED: 20,000 stars spread through the root's lowest octant and 2,000, ten times
+    // fewer, through its highest, each well over the split threshold.
+    let mut lcg = Lcg(21);
+    let points: Vec<_> = (1..=22_000)
+        .map(|id| {
+            let centre = if id <= 20_000 { -50.0 } else { 50.0 };
+            point(
+                id,
+                [0, 1, 2].map(|_| centre + 40.0 * (2.0 * lcg.next() - 1.0)),
+            )
+        })
+        .collect();
+    let built = stars(&points, &rules(1_000, 500, 6, 3));
+    let json: serde_json::Value = serde_json::from_slice(&built.json).unwrap();
+    let node = |address: &str| {
+        built
+            .manifest
+            .nodes
+            .iter()
+            .find(|n| n.address == address)
+            .unwrap()
+    };
+    let (dense, sparse) = (node("r0"), node("r7"));
+    assert!(
+        dense.sampled_from > 1_000 && sparse.sampled_from > 1_000,
+        "both inner"
+    );
+    let kept = |n: &univ_ingest::tiles::NodeEntry| real(n.points) / real(n.sampled_from);
+    // One fraction for the level, which the manifest records: each node keeps it of the points
+    // reaching it, within the rounding of one point.
+    let fraction = json["levels"][1]["fraction"].as_f64().unwrap();
+    for n in [dense, sparse] {
+        assert!(
+            (kept(n) - fraction).abs() <= 1.0 / real(n.sampled_from),
+            "{} keeps {} of {}, not {fraction}",
+            n.address,
+            n.points,
+            n.sampled_from
+        );
+        assert!(n.points <= 500);
+    }
+    assert_eq!(dense.points, 500, "the fullest node keeps the level points");
+    // The points shown at level 1 are ten times as dense in the lower octant as in the upper,
+    // as the stars are, within the rounding of one point in 50.
+    let level_one = real(dense.points) / real(sparse.points);
+    assert!(
+        (level_one / 10.0 - 1.0).abs() < 0.05,
+        "level 1: {level_one}"
+    );
+    // So are those of levels 0 and 1 together, within the noise of the root's own draw: about
+    // 45 of its 500 points fall in the upper octant, give or take 7, and a quarter is 4 sigma.
+    let root = decode(&built.nodes[0].tile).unwrap();
+    let in_root = |octant: u8| {
+        root.points
+            .iter()
+            .filter(|p| root.node.octant_of(p.position) == octant)
+            .count()
+    };
+    let together = real(in_root(0) + dense.points) / real(in_root(7) + sparse.points);
+    assert!(
+        (together / 10.0 - 1.0).abs() < 0.25,
+        "levels 0 and 1: {together}"
+    );
+}
+
+#[test]
+fn the_source_table_says_whether_each_source_gave_points_their_distance_or_position() {
+    // SIMULATED: a galaxy whose sky position comes from 2MRS and its distance from
+    // Cosmicflows-4, then another wholly from Cosmicflows-4.
+    let twomrs = entry("twomrs", "g", 150.0, 5.0);
+    let cf4 = with_distance(
+        entry("cosmicflows-4", "g", 150.0, 5.0),
+        80.0,
+        Some(4.0),
+        CEPHEIDS,
+    );
+    let alone = with_distance(
+        entry("cosmicflows-4", "h", 20.0, -5.0),
+        60.0,
+        Some(3.0),
+        CEPHEIDS,
+    );
+    let by = |e: &univ_model::entry::CatalogueEntry| {
+        Some(MeasurementRef::Distance {
+            entry: e.designation.clone(),
+            index: 0,
+        })
+    };
+    let rules = rules(100, 50, 8, 7);
+    let (cosmology, definitions) = (Cosmology::planck_2018(), common::read_sources());
+    let source_roles = |objects: &[univ_ingest::crossmatch::ReleaseObject]| {
+        let built = build(objects, &context(&rules, &cosmology, &definitions)).unwrap();
+        let cosmic = &built.domains[2];
+        let json: serde_json::Value = serde_json::from_slice(&cosmic.json).unwrap();
+        let sources = json["sources"].as_array().unwrap().clone();
+        // Each point's source is the source of its preferred distance.
+        for p in decode(&cosmic.nodes[0].tile).unwrap().points {
+            assert_eq!(sources[usize::from(p.source)]["id"], "cosmicflows-4");
+        }
+        sources
+            .iter()
+            .map(|s| {
+                (
+                    s["id"].as_str().unwrap().to_owned(),
+                    s["role"].as_str().unwrap_or("none").to_owned(),
+                )
+            })
+            .collect::<BTreeMap<_, _>>()
+    };
+    let galaxy = object(1, vec![twomrs, cf4.clone()], by(&cf4));
+    let expected = |cf4: &str| {
+        BTreeMap::from([
+            ("cosmicflows-4".to_owned(), cf4.to_owned()),
+            ("twomrs".to_owned(), "position".to_owned()),
+        ])
+    };
+    assert_eq!(
+        source_roles(std::slice::from_ref(&galaxy)),
+        expected("distance")
+    );
+    let other = object(2, vec![alone.clone()], by(&alone));
+    assert_eq!(
+        source_roles(&[galaxy, other]),
+        expected("distance_and_position")
+    );
 }

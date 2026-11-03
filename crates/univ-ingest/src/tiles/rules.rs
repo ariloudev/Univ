@@ -1,5 +1,6 @@
 //! The tile rules of a release, read from `rules/tiles.yaml`: when a node splits, how many
-//! points an inner node keeps, how deep the octree goes and the seed of the subsample.
+//! points the fullest inner node of a level keeps, how deep the octree goes and the seed of the
+//! subsample.
 
 use std::path::Path;
 
@@ -24,7 +25,8 @@ pub struct TileRules {
     /// A node holding more points than this is split, above the maximum depth.
     pub split_threshold: usize,
     pub split_basis: String,
-    /// The points an inner node keeps: its level's subsample.
+    /// The most points an inner node keeps: the fullest inner node of a level keeps this many,
+    /// and the others the same fraction of theirs.
     pub level_points: usize,
     pub level_points_basis: String,
     /// The deepest level; a node there is never split.

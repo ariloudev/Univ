@@ -1,8 +1,17 @@
 //! A scale domain's tile manifest, the JSON a client reads before any tile (fetch-a-tile-manifest):
 //! its frame, unit and cosmology, the rotations to galactic and supergalactic axes, the tile
-//! encoding and the quantization step of each level, the seed and rules of the subsample, the
-//! sources its points come from with their credit, and each node's address, bounds, level,
-//! point count, byte size and SHA-256.
+//! encoding, the quantization step and sampling fraction of each level, the seed and rules of
+//! the subsample, the sources its points come from with their role and credit, and each node's
+//! address, bounds, level, point count, byte size and SHA-256.
+//!
+//! - **Levels.** Every inner node of a level keeps the level's `fraction` of the points
+//!   reaching it (`sampled_from`), rounded down, so the points a client shows down to any level
+//!   keep the densities of the domain in proportion. A leaf keeps every point reaching it: it is
+//!   the finest level of its region, and nothing lies below it.
+//! - **Sources.** A point's source index names the source of its preferred distance, which
+//!   gives its kind of value too. The table also credits the sources of the points' sky
+//!   positions, and each entry's `role` says which: `distance`, `position`, or
+//!   `distance_and_position`.
 //!
 //! Its numbers are written by `serde_json` as the shortest decimal that reads back to the same
 //! `f64`, and every list is in a fixed order, so the same build gives the same bytes.
@@ -10,7 +19,8 @@
 use serde::Serialize;
 use univ_model::cosmology::Cosmology;
 use univ_model::position::{Frame, Rotation, from_icrs};
-use univ_model::tile::{HEADER_BYTES, MAX_TILE_BYTES, POINT_BYTES, STEPS, VERSION};
+use univ_model::tile::{HEADER_BYTES, KINDS, MAX_TILE_BYTES, POINT_BYTES, STEPS, VERSION};
+use univ_model::value::KindOfValue;
 
 use super::TilesError;
 use super::rules::TileRules;
@@ -34,7 +44,8 @@ pub struct Manifest {
     pub cosmology: Cosmology,
     pub rotations: Rotations,
     pub encoding: Encoding,
-    /// Each level present, root first, with its node edge and quantization step.
+    /// Each level present, root first, with its node edge, quantization step and sampling
+    /// fraction.
     pub levels: Vec<Level>,
     pub sampling: Sampling,
     /// The points of every tile together.
@@ -104,8 +115,10 @@ pub struct Encoding {
     /// The quantization steps along a node's edge: a step is the edge over this.
     pub steps_per_edge: u32,
     pub max_tile_bytes: usize,
+    /// What a point's source index names.
+    pub point_source: &'static str,
     /// The kind-of-value codes, in order from 0.
-    pub kinds: [&'static str; 4],
+    pub kinds: [KindOfValue; 4],
 }
 
 /// The encoding of this version.
@@ -115,15 +128,22 @@ pub const ENCODING: Encoding = Encoding {
     point_bytes: POINT_BYTES,
     steps_per_edge: STEPS,
     max_tile_bytes: MAX_TILE_BYTES,
-    kinds: ["measured", "estimated", "inferred", "reconstructed"],
+    point_source: "the index in sources of the source of the point's preferred distance, which \
+                   gives its kind of value too",
+    kinds: KINDS,
 };
 
-/// A level of the octree: its nodes' edge and its quantization step, in the unit.
+/// A level of the octree: its nodes' edge and its quantization step, in the unit, and the
+/// fraction of the points reaching it that each of its inner nodes keeps.
 #[derive(Clone, Debug, Serialize)]
 pub struct Level {
     pub level: u8,
     pub edge: f64,
     pub step: f64,
+    /// `level_points / m`, `m` the most points reaching any inner node of the level: an inner
+    /// node of `n` points keeps `floor(level_points × n / m)`. 1 for a level of leaves alone;
+    /// a leaf keeps every point reaching it.
+    pub fraction: f64,
 }
 
 /// How the subsample was drawn, and the rules the octree was split by.
@@ -145,9 +165,12 @@ impl Sampling {
         Self {
             seed: rules.seed,
             generator: "ChaCha20, key the seed's 8 little-endian bytes then 24 zero bytes, \
-                        stream the domain's number; an inner node's points shuffled by a partial \
-                        Fisher-Yates over its points in increasing id, nodes in depth-first order \
-                        of address",
+                        stream the domain's number; level by level from the root, the nodes of a \
+                        level in order of address, an inner node of n points keeps \
+                        floor(level_points * n / m) of them, m the most points reaching any inner \
+                        node of its level, drawn by a partial Fisher-Yates shuffle over its points \
+                        in increasing id; a leaf keeps every point reaching it, the finest level \
+                        of its region",
             stream,
             split_threshold: rules.split_threshold,
             level_points: rules.level_points,
@@ -157,11 +180,24 @@ impl Sampling {
     }
 }
 
+/// What a source gives the points of a domain.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SourceRole {
+    /// The preferred distance of some points, so their source index and kind of value.
+    Distance,
+    /// The sky position of some points, whose distance comes from another source.
+    Position,
+    /// Both, for some points or for different ones.
+    DistanceAndPosition,
+}
+
 /// A source whose points, or whose sky positions, the tiles hold, at its index in the table.
 #[derive(Clone, Debug, Serialize)]
 pub struct SourceEntry {
     pub index: u16,
     pub id: String,
+    pub role: SourceRole,
     pub title: String,
     pub citation: String,
     /// The credit the source requires, quoted from its terms.

@@ -9,6 +9,7 @@ mod place;
 use std::collections::BTreeMap;
 
 use thiserror::Error;
+use univ_model::cosmology::Cosmology;
 use univ_model::derive::{DerivedPosition, Release};
 use univ_model::ids::ObjectId;
 use univ_model::ledger::Ledger;
@@ -54,6 +55,8 @@ pub struct ReleaseObject {
 pub struct CrossMatched {
     /// The release the ids were assigned for: the next in the ledger.
     pub release: String,
+    /// The release cosmology every derived position was placed under.
+    pub cosmology: Cosmology,
     /// The objects, in the order of their first entry.
     pub objects: Vec<ReleaseObject>,
     pub assigned: Assigned,
@@ -166,6 +169,7 @@ pub fn cross_match(
     };
     let crossed = CrossMatched {
         release,
+        cosmology: inputs.release.cosmology().clone(),
         objects: placed,
         assigned,
         next,

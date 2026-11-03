@@ -7,20 +7,27 @@
 //!   web in megaparsecs. An object not placed is in no tile.
 //! - **Root.** A cube centred on the barycentre, its half-edge the smallest power of two of the
 //!   unit not below the largest |coordinate| of the domain's points.
-//! - **Splits and levels.** A node receiving more points than the rules' split threshold, above
-//!   the maximum depth, keeps an even random subsample of the rules' level points and passes the
-//!   rest to its children by octant; any other node keeps all it receives. Each point is in one
-//!   node only, so a finer level adds points and repeats none.
+//! - **Splits and levels.** The octree is laid out level by level. A node that more points
+//!   than the rules' split threshold reach, above the maximum depth, is inner; any other node
+//!   is a leaf. Each level has one sampling fraction, `f = level_points / m` with `m` the most
+//!   points reaching any of its inner nodes, and an inner node of `n` points keeps an even
+//!   random subsample of `floor(level_points × n / m)` of them, so no node keeps more than the
+//!   level points and every inner node of a level shows the same fraction of its points,
+//!   keeping their densities in proportion; it passes the rest to its children by octant. A
+//!   leaf keeps every point reaching it: it is the finest level of its region. Each point is in
+//!   one node only, so a finer level adds points and repeats none.
 //! - **Seed.** The subsample is drawn by `ChaCha20` under the rules' seed, which every manifest
-//!   records; the points are in increasing id and the nodes in depth-first order, so the same
-//!   inputs and seed give byte-identical tiles and manifests.
+//!   records with each level's fraction; the points are in increasing id and the draws made
+//!   level by level, nodes in order of address, so the same inputs and seed give
+//!   byte-identical tiles and manifests.
 //! - **Size.** A tile of `n` points is `48 + 17 n` bytes, at most 61,678 points within 1 MiB.
 //!   The rules' split threshold and level points are checked against it when read, so only a
 //!   leaf at the maximum depth could hold more, and such a build is refused naming the node,
 //!   before anything is written; the encoder refuses one too.
 //! - **Points.** Each point gives its object id, the manifest's index of the source of its
-//!   preferred distance, and that measurement's kind of value. The manifest's source table also
-//!   credits the sources of the points' sky positions.
+//!   preferred distance, and that measurement's kind of value. The manifest's source table
+//!   also credits the sources of the points' sky positions, and gives each source's role:
+//!   `distance`, `position` or `distance_and_position`.
 
 mod domain;
 mod manifest;
@@ -28,7 +35,7 @@ mod octree;
 mod rules;
 mod write;
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -37,12 +44,14 @@ use univ_model::ids::{ObjectId, SourceId};
 use univ_model::position::Frame;
 use univ_model::tile::{MAX_TILE_BYTES, NodeBox, TileError, TilePoint, encode};
 
-pub use domain::{Assigned, DOMAINS, DomainPoint, assign, name_of, unit_of, unit_symbol};
+pub use domain::{
+    Assigned, DOMAINS, DomainPoint, DomainPoints, assign, name_of, unit_of, unit_symbol,
+};
 pub use manifest::{
     Bounds, ENCODING, FORMAT, FRAME, Level, MANIFEST_VERSION, Manifest, NodeEntry, Rotations,
-    Sampling, SourceEntry,
+    Sampling, SourceEntry, SourceRole,
 };
-pub use octree::{Node, generator, root_box};
+pub use octree::{Node, Octree, generator, root_box};
 pub use rules::{DEEPEST, MAX_SEED, TileRules};
 pub use write::{MANIFEST_FILE, tile_file, write_all};
 
@@ -80,6 +89,8 @@ pub enum TilesError {
     },
     #[error("the {domain} tiles draw on {sources} sources, more than a u16 index can name")]
     TooManySources { domain: String, sources: usize },
+    #[error("the {domain} sources do not fit its points: {problem}")]
+    SourceList { domain: String, problem: String },
     #[error("univ-model gives no rotation from the ICRS to {0:?}")]
     NoRotation(Frame),
     #[error("the manifest cannot be written: {0}")]
@@ -105,8 +116,8 @@ pub struct BuiltNode {
     pub level: u8,
     pub bounds: NodeBox,
     pub sampled_from: usize,
-    /// The objects of its tile, in increasing id, the order the tile holds them in.
-    pub ids: Vec<ObjectId>,
+    /// The points its tile holds.
+    pub points: usize,
     pub tile: Vec<u8>,
     pub sha256: String,
 }
@@ -150,11 +161,12 @@ pub struct Built {
 /// Fails when an object cannot be assigned a domain, or a tile would exceed 1 MiB.
 pub fn build(objects: &[ReleaseObject], context: &Context<'_>) -> Result<Built, TilesError> {
     let assigned = assign(objects, context.definitions, context.cosmology)?;
+    let none = DomainPoints::default();
     let domains = DOMAINS
         .iter()
         .map(|d| {
-            let points = assigned.domains.get(d).map_or(&[][..], Vec::as_slice);
-            build_domain(*d, points, context)
+            let points = assigned.domains.get(d).unwrap_or(&none);
+            build_domain(*d, &points.points, &points.sources, context)
         })
         .collect::<Result<_, _>>()?;
     Ok(Built {
@@ -169,54 +181,79 @@ pub fn sha256(bytes: &[u8]) -> String {
     hex(&Sha256::digest(bytes))
 }
 
-/// The table of sources of `points`, both of their distances and of their sky positions, in
-/// order of id, and the index of each.
+/// The source table of a domain's `points`: its `sources`, each with the role it plays for
+/// them.
+///
+/// # Errors
+///
+/// Fails on a source with no definition, a source no point names, or a point naming an index
+/// beyond the sources.
 fn source_table(
     domain: &str,
     points: &[DomainPoint],
+    sources: &[SourceId],
     definitions: &[SourceDefinition],
-) -> Result<(Vec<SourceEntry>, BTreeMap<SourceId, u16>), TilesError> {
-    let mut used: BTreeMap<&SourceId, ObjectId> = BTreeMap::new();
-    for p in points {
-        used.entry(&p.source).or_insert(p.id);
-        used.entry(&p.sky_source).or_insert(p.id);
-    }
-    let too_many = || TilesError::TooManySources {
+) -> Result<Vec<SourceEntry>, TilesError> {
+    let mismatch = |problem: String| TilesError::SourceList {
         domain: domain.to_owned(),
-        sources: used.len(),
+        problem,
     };
-    let mut table = Vec::new();
-    let mut index = BTreeMap::new();
-    for (n, (source, id)) in used.iter().enumerate() {
+    // For each source, the first point taking its distance or its sky position from it.
+    let mut uses: Vec<[Option<ObjectId>; 2]> = vec![[None; 2]; sources.len()];
+    for p in points {
+        for (role, index) in [p.source, p.sky_source].into_iter().enumerate() {
+            let first = uses.get_mut(usize::from(index)).ok_or_else(|| {
+                mismatch(format!(
+                    "object {} names source {index} of {}",
+                    p.id,
+                    sources.len()
+                ))
+            })?;
+            first[role].get_or_insert(p.id);
+        }
+    }
+    let mut table = Vec::with_capacity(sources.len());
+    for (n, (source, [distance, position])) in sources.iter().zip(uses).enumerate() {
+        let index = u16::try_from(n).map_err(|_| TilesError::TooManySources {
+            domain: domain.to_owned(),
+            sources: sources.len(),
+        })?;
+        let (role, id) = match (distance, position) {
+            (Some(id), Some(_)) => (SourceRole::DistanceAndPosition, id),
+            (Some(id), None) => (SourceRole::Distance, id),
+            (None, Some(id)) => (SourceRole::Position, id),
+            (None, None) => return Err(mismatch(format!("no point names {source}"))),
+        };
         let d = definitions
             .iter()
-            .find(|d| &d.id == *source)
+            .find(|d| &d.id == source)
             .ok_or_else(|| TilesError::UnknownSource {
-                id: *id,
-                source_id: (*source).clone(),
+                id,
+                source_id: source.clone(),
             })?;
-        let i = u16::try_from(n).map_err(|_| too_many())?;
-        index.insert((*source).clone(), i);
         table.push(SourceEntry {
-            index: i,
+            index,
             id: d.id.to_string(),
+            role,
             title: d.title.clone(),
             citation: d.citation.clone(),
             credit: d.terms.credit.clone(),
         });
     }
-    Ok((table, index))
+    Ok(table)
 }
 
-/// Builds one scale domain's octree, tiles and manifest from its `points`, in increasing id.
+/// Builds one scale domain's octree, tiles and manifest from its `points`, in increasing id,
+/// and the `sources` their indices name.
 ///
 /// # Errors
 ///
-/// Fails when a leaf at the maximum depth would hold a tile beyond 1 MiB, naming it, or a
-/// point's source has no definition.
+/// Fails when a leaf at the maximum depth would hold a tile beyond 1 MiB, naming it, or the
+/// sources do not fit the points or have no definition.
 pub fn build_domain(
     domain: ScaleDomain,
     points: &[DomainPoint],
+    sources: &[SourceId],
     context: &Context<'_>,
 ) -> Result<BuiltDomain, TilesError> {
     let name = name_of(domain);
@@ -225,19 +262,18 @@ pub fn build_domain(
         .position(|d| *d == domain)
         .and_then(|n| u64::try_from(n).ok())
         .unwrap_or_default();
-    let positions: Vec<_> = points.iter().map(|p| p.position).collect();
     let encode_error = |address: &str, error| TilesError::Encode {
         domain: name.to_owned(),
         address: address.to_owned(),
         error,
     };
-    let root = root_box(&positions).map_err(|e| encode_error("r", e))?;
+    let sources = source_table(name, points, sources, context.definitions)?;
+    let root = root_box(points).map_err(|e| encode_error("r", e))?;
     let mut rng = generator(context.rules.seed, stream);
-    let nodes = octree::build(name, &positions, root, context.rules, &mut rng)?;
-    let (sources, index) = source_table(name, points, context.definitions)?;
+    let tree = octree::build(name, points, root, context.rules, &mut rng)?;
 
-    let mut built = Vec::with_capacity(nodes.len());
-    for node in nodes {
+    let mut built = Vec::with_capacity(tree.nodes.len());
+    for node in tree.nodes {
         let tile_points: Vec<TilePoint> = node
             .points
             .iter()
@@ -246,7 +282,7 @@ pub fn build_domain(
                 TilePoint {
                     position: p.position,
                     id: p.id,
-                    source: index.get(&p.source).copied().unwrap_or_default(),
+                    source: p.source,
                     kind: p.kind,
                 }
             })
@@ -255,7 +291,7 @@ pub fn build_domain(
             encode(&node.bounds, &tile_points).map_err(|e| encode_error(&node.address, e))?;
         built.push(BuiltNode {
             sha256: sha256(&tile),
-            ids: tile_points.iter().map(|p| p.id).collect(),
+            points: tile_points.len(),
             address: node.address,
             level: node.level,
             bounds: node.bounds,
@@ -263,7 +299,15 @@ pub fn build_domain(
             tile,
         });
     }
-    let manifest = manifest_of(domain, stream, root, points, sources, &built, context)?;
+    let manifest = manifest_of(
+        domain,
+        stream,
+        points,
+        sources,
+        &tree.fractions,
+        &built,
+        context,
+    )?;
     let json = manifest.to_json()?;
     Ok(BuiltDomain {
         domain,
@@ -277,19 +321,24 @@ pub fn build_domain(
 fn manifest_of(
     domain: ScaleDomain,
     stream: u64,
-    root: NodeBox,
     points: &[DomainPoint],
     sources: Vec<SourceEntry>,
+    fractions: &[f64],
     nodes: &[BuiltNode],
     context: &Context<'_>,
 ) -> Result<Manifest, TilesError> {
-    let levels: BTreeSet<u8> = nodes.iter().map(|n| n.level).collect();
-    let levels = levels
+    // The first node of each level, whose cube gives the level's edge and step.
+    let mut first: BTreeMap<u8, &NodeBox> = BTreeMap::new();
+    for n in nodes {
+        first.entry(n.level).or_insert(&n.bounds);
+    }
+    let levels = first
         .into_iter()
-        .map(|level| {
-            let edge = root.edge() / f64::from(1u32 << level.min(31));
-            let step = NodeBox::new([0.0; 3], edge).map_or(0.0, |b| b.step());
-            Level { level, edge, step }
+        .map(|(level, bounds)| Level {
+            level,
+            edge: bounds.edge(),
+            step: bounds.step(),
+            fraction: fractions.get(usize::from(level)).copied().unwrap_or(1.0),
         })
         .collect();
     let radius = points
@@ -320,7 +369,7 @@ fn manifest_of(
                     min: n.bounds.min(),
                     max: n.bounds.max(),
                 },
-                points: n.ids.len(),
+                points: n.points,
                 sampled_from: n.sampled_from,
                 bytes: n.tile.len(),
                 sha256: n.sha256.clone(),

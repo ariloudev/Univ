@@ -10,7 +10,7 @@ mod simulated;
 
 use std::collections::BTreeMap;
 
-use simulated::tiles::{Lcg, context, point, repository_rules, rules, stars, uniform};
+use simulated::tiles::{Lcg, context, gaia, point, repository_rules, rules, stars, uniform};
 use univ_ingest::source::ScaleDomain;
 use univ_ingest::tiles::{
     Built, MANIFEST_FILE, TilesError, build_domain, sha256, tile_file, write_all,
@@ -98,9 +98,9 @@ fn the_manifest_states_the_encoding_version_and_each_levels_step() {
 fn cosmic_web(order: &[usize]) -> (Vec<u8>, Vec<Vec<u8>>) {
     let mut points = uniform(4_000, 1_000.0, 8);
     for p in &mut points {
-        p.source = simulated::source("cosmicflows-4");
-        p.sky_source = simulated::source("twomrs");
+        (p.source, p.sky_source) = (0, 1);
     }
+    let sources = ["cosmicflows-4", "twomrs"].map(simulated::source);
     let mut shuffled: Vec<_> = order.iter().map(|&i| points[i].clone()).collect();
     shuffled.sort_by_key(|p| p.id);
     let (rules, cosmology, definitions) = (
@@ -111,6 +111,7 @@ fn cosmic_web(order: &[usize]) -> (Vec<u8>, Vec<Vec<u8>>) {
     let built = build_domain(
         ScaleDomain::CosmicWeb,
         &shuffled,
+        &sources,
         &context(&rules, &cosmology, &definitions),
     )
     .unwrap();
@@ -179,7 +180,7 @@ fn every_tile_stays_within_one_mebibyte_under_the_repository_rules() {
             n.address,
             n.tile.len()
         );
-        assert_eq!(decode(&n.tile).unwrap().points.len(), n.ids.len());
+        assert_eq!(decode(&n.tile).unwrap().points.len(), n.points);
     }
     assert_eq!(built.points(), 300_000);
 }
@@ -201,7 +202,8 @@ fn a_cell_at_the_maximum_depth_too_full_for_one_tile_refuses_the_build_naming_it
     // The four nodes above the cell, at depths 0 to 3, keep 500 points each.
     let above = 4 * 500;
     let too_many = u64::try_from(MAX_POINTS + above).unwrap() + 1;
-    let Err(refused) = build_domain(ScaleDomain::Stars, &crowded(too_many), &context) else {
+    let Err(refused) = build_domain(ScaleDomain::Stars, &crowded(too_many), &gaia(), &context)
+    else {
         panic!("built")
     };
     let TilesError::TileTooLarge {
@@ -220,7 +222,7 @@ fn a_cell_at_the_maximum_depth_too_full_for_one_tile_refuses_the_build_naming_it
     assert!(refused.to_string().contains(address.as_str()), "{refused}");
 
     let full = u64::try_from(MAX_POINTS + above).unwrap();
-    let built = build_domain(ScaleDomain::Stars, &crowded(full), &context).unwrap();
+    let built = build_domain(ScaleDomain::Stars, &crowded(full), &gaia(), &context).unwrap();
     assert_eq!(built.largest_tile(), tile_bytes(MAX_POINTS));
     assert!(built.largest_tile() <= MAX_TILE_BYTES);
 }

@@ -1,12 +1,12 @@
 //! A scale domain's octree: its root cube, its nodes split down to the release's maximum depth,
-//! and the seeded subsample each inner node keeps.
+//! and the seeded subsample each inner node keeps, one fraction for each level.
 
 use rand_chacha::ChaCha20Rng;
 use rand_chacha::rand_core::{Rng, SeedableRng};
-use univ_model::position::Vec3;
 use univ_model::tile::{MAX_POINTS, NodeBox, TileError, tile_bytes};
 
 use super::TilesError;
+use super::domain::DomainPoint;
 use super::rules::TileRules;
 
 /// One node of an octree: its address, level and cube, how many points reached it, and the
@@ -22,16 +22,26 @@ pub struct Node {
     pub points: Vec<usize>,
 }
 
-/// The root of a domain whose points are `positions`: a cube centred on the origin whose
-/// half-edge is the smallest power of two not below the largest |coordinate|, 1 for none.
+/// A domain's octree: its nodes in depth-first order of address, and the fraction of the
+/// points reaching it that each inner node of a level keeps, by level from the root.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Octree {
+    pub nodes: Vec<Node>,
+    /// For each level, `level_points / m`, `m` the most points reaching any inner node of the
+    /// level; 1 for a level of leaves alone, which keep every point reaching them.
+    pub fractions: Vec<f64>,
+}
+
+/// The root of a domain of `points`: a cube centred on the origin whose half-edge is the
+/// smallest power of two not below the largest |coordinate|, 1 for none.
 ///
 /// # Errors
 ///
-/// Fails only on a coordinate that is not finite, which leaves no cube to hold it.
-pub fn root_box(positions: &[Vec3]) -> Result<NodeBox, TileError> {
-    let largest = positions
+/// Fails only on a coordinate too large for a cube to hold it.
+pub fn root_box(points: &[DomainPoint]) -> Result<NodeBox, TileError> {
+    let largest = points
         .iter()
-        .flatten()
+        .flat_map(|p| p.position)
         .fold(0.0_f64, |m, c| m.max(c.abs()));
     let mut half = 1.0_f64;
     while half < largest && half.is_finite() {
@@ -78,17 +88,38 @@ fn sample_to_front(points: &mut [usize], k: usize, rng: &mut ChaCha20Rng) {
     }
 }
 
+/// The points an inner node of `n` points keeps at a level whose fullest inner node has
+/// `largest`: `floor(level_points × n / largest)`, in integers, so never more than
+/// `level_points`.
+fn kept(level_points: usize, n: usize, largest: usize) -> usize {
+    let wide = |x: usize| u128::try_from(x).unwrap_or(u128::MAX);
+    let k = wide(level_points).saturating_mul(wide(n)) / wide(largest).max(1);
+    usize::try_from(k).unwrap_or(level_points).min(level_points)
+}
+
+/// `level_points / largest`, the fraction a level's inner nodes keep.
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "point counts stay far below 2^53, where an f64 holds every integer"
+)]
+fn fraction(level_points: usize, largest: usize) -> f64 {
+    level_points as f64 / largest as f64
+}
+
 /// A node still to be laid out.
 struct Pending {
     address: String,
-    level: u8,
     bounds: NodeBox,
     points: Vec<usize>,
 }
 
-/// Lays out the `domain`'s `positions` (all inside `root`) as an octree under `rules`, drawing each inner
-/// node's subsample from `rng`. Nodes come in depth-first order of address, children in octant
-/// order, and that is the order the draws are made in.
+/// Lays out the `domain`'s `points` (all inside `root`) as an octree under `rules`, level by
+/// level from the root. A node is inner when more points than the split threshold reach it,
+/// above the maximum depth. Each level then has one fraction, `level_points / m` with `m` the
+/// most points reaching any of its inner nodes, and an inner node of `n` points keeps an even
+/// random subsample of `floor(level_points × n / m)` of them, drawn from `rng`, and passes the
+/// rest to its children by octant; a leaf keeps every point reaching it. Draws are made level
+/// by level, the nodes of a level in order of address.
 ///
 /// # Errors
 ///
@@ -96,72 +127,85 @@ struct Pending {
 /// naming it.
 pub fn build(
     domain: &str,
-    positions: &[Vec3],
+    points: &[DomainPoint],
     root: NodeBox,
     rules: &TileRules,
     rng: &mut ChaCha20Rng,
-) -> Result<Vec<Node>, TilesError> {
-    let mut nodes = Vec::new();
-    if positions.is_empty() {
-        return Ok(nodes);
+) -> Result<Octree, TilesError> {
+    let mut tree = Octree::default();
+    if points.is_empty() {
+        return Ok(tree);
     }
-    let mut stack = vec![Pending {
+    let mut level_nodes = vec![Pending {
         address: "r".to_owned(),
-        level: 0,
         bounds: root,
-        points: (0..positions.len()).collect(),
+        points: (0..points.len()).collect(),
     }];
-    while let Some(Pending {
-        address,
-        level,
-        bounds,
-        mut points,
-    }) = stack.pop()
-    {
-        let n = points.len();
-        if n <= rules.split_threshold || level >= rules.max_depth {
-            if n > MAX_POINTS {
-                return Err(TilesError::TileTooLarge {
-                    domain: domain.to_owned(),
+    let mut level = 0u8;
+    while !level_nodes.is_empty() {
+        let inner = |n: usize| n > rules.split_threshold && level < rules.max_depth;
+        let largest = level_nodes
+            .iter()
+            .map(|p| p.points.len())
+            .filter(|n| inner(*n))
+            .max();
+        tree.fractions
+            .push(largest.map_or(1.0, |m| fraction(rules.level_points, m)));
+        let mut next = Vec::new();
+        for Pending {
+            address,
+            bounds,
+            points: mut members,
+        } in level_nodes
+        {
+            let n = members.len();
+            let Some(largest) = largest.filter(|_| inner(n)) else {
+                if n > MAX_POINTS {
+                    return Err(TilesError::TileTooLarge {
+                        domain: domain.to_owned(),
+                        address,
+                        points: n,
+                        bytes: tile_bytes(n),
+                    });
+                }
+                tree.nodes.push(Node {
                     address,
-                    points: n,
-                    bytes: tile_bytes(n),
+                    level,
+                    bounds,
+                    sampled_from: n,
+                    points: members,
                 });
+                continue;
+            };
+            let k = kept(rules.level_points, n, largest);
+            sample_to_front(&mut members, k, rng);
+            let rest = members.split_off(k);
+            members.sort_unstable();
+            let mut children: [Vec<usize>; 8] = Default::default();
+            for i in rest {
+                children[usize::from(bounds.octant_of(points[i].position))].push(i);
             }
-            nodes.push(Node {
+            for (octant, mut child) in (0u8..8).zip(children) {
+                if !child.is_empty() {
+                    child.sort_unstable();
+                    next.push(Pending {
+                        address: format!("{address}{octant}"),
+                        bounds: bounds.child(octant),
+                        points: child,
+                    });
+                }
+            }
+            tree.nodes.push(Node {
                 address,
                 level,
                 bounds,
                 sampled_from: n,
-                points,
+                points: members,
             });
-            continue;
         }
-        sample_to_front(&mut points, rules.level_points, rng);
-        let mut rest = points.split_off(rules.level_points);
-        points.sort_unstable();
-        rest.sort_unstable();
-        let mut children: [Vec<usize>; 8] = Default::default();
-        for i in rest {
-            children[usize::from(bounds.octant_of(positions[i]))].push(i);
-        }
-        nodes.push(Node {
-            address: address.clone(),
-            level,
-            bounds,
-            sampled_from: n,
-            points,
-        });
-        for (octant, child) in (0u8..8).zip(children).rev() {
-            if !child.is_empty() {
-                stack.push(Pending {
-                    address: format!("{address}{octant}"),
-                    level: level + 1,
-                    bounds: bounds.child(octant),
-                    points: child,
-                });
-            }
-        }
+        level_nodes = next;
+        level += 1;
     }
-    Ok(nodes)
+    tree.nodes.sort_by(|a, b| a.address.cmp(&b.address));
+    Ok(tree)
 }

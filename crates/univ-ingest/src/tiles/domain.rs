@@ -56,20 +56,39 @@ pub struct DomainPoint {
     pub id: ObjectId,
     /// Its derived ICRS Cartesian position in the domain's unit, the barycentre as origin.
     pub position: Vec3,
-    /// The source of the entry holding its preferred distance: the source its tiles give it.
-    pub source: SourceId,
-    /// The source of the entry whose sky position it takes, credited in the manifest too.
-    pub sky_source: SourceId,
+    /// The index in its domain's sources of the source of its preferred distance: the source
+    /// its tile gives it.
+    pub source: u16,
+    /// The index in its domain's sources of the source of its sky position.
+    pub sky_source: u16,
     /// The kind of value of its preferred distance measurement.
     pub kind: KindOfValue,
+}
+
+/// A scale domain's points, in increasing id, and the sources they index.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct DomainPoints {
+    pub points: Vec<DomainPoint>,
+    /// Each source the points name, once, in order of first use by the points in increasing
+    /// id, a point's distance source before its sky position's: the manifest's source table.
+    pub sources: Vec<SourceId>,
 }
 
 /// The release's objects sorted into scale domains.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Assigned {
-    pub domains: BTreeMap<ScaleDomain, Vec<DomainPoint>>,
+    pub domains: BTreeMap<ScaleDomain, DomainPoints>,
     /// Objects with no derived position, which are in no tile.
     pub unplaced: usize,
+}
+
+/// A placed object before its sources are interned: the indices of its sources' definitions.
+struct Placed {
+    id: ObjectId,
+    position: Vec3,
+    distance: usize,
+    sky: usize,
+    kind: KindOfValue,
 }
 
 /// The kind of value of the measurement `m` of `object`.
@@ -87,25 +106,37 @@ fn kind_of(object: &Object, m: &MeasurementRef) -> Option<KindOfValue> {
 }
 
 /// Sorts the placed `objects` into the scale domains `definitions` name, each domain's points
-/// in order of id, under `cosmology`, the release's.
+/// in order of id and its sources interned, under `cosmology`, the release's.
 ///
 /// # Errors
 ///
-/// Fails on a placed object whose preferred distance is missing or names a source with no
-/// definition, whose position was derived under another cosmology, or is not finite.
+/// Fails on a placed object whose preferred distance is missing or whose distance or sky
+/// position names a source with no definition, whose position was derived under another
+/// cosmology, or is not finite; or a domain drawing on more sources than a `u16` can index.
 pub fn assign(
     objects: &[ReleaseObject],
     definitions: &[SourceDefinition],
     cosmology: &Cosmology,
 ) -> Result<Assigned, TilesError> {
-    let domain_of: BTreeMap<&SourceId, ScaleDomain> = definitions
+    let by_id: BTreeMap<&SourceId, usize> = definitions
         .iter()
-        .map(|d| (&d.id, d.scale_domain))
+        .enumerate()
+        .map(|(i, d)| (&d.id, i))
         .collect();
-    let mut assigned = Assigned::default();
+    let definition = |id: ObjectId, source: &SourceId| {
+        by_id
+            .get(source)
+            .copied()
+            .ok_or_else(|| TilesError::UnknownSource {
+                id,
+                source_id: source.clone(),
+            })
+    };
+    let mut placed: BTreeMap<ScaleDomain, Vec<Placed>> = BTreeMap::new();
+    let mut unplaced = 0;
     for o in objects {
         let Some(position) = &o.position else {
-            assigned.unplaced += 1;
+            unplaced += 1;
             continue;
         };
         let id = o.id;
@@ -114,13 +145,8 @@ pub fn assign(
             .preferred_distance
             .as_ref()
             .ok_or(TilesError::NoPreferred(id))?;
-        let source = preferred.measurement.entry().source.clone();
-        let domain = *domain_of
-            .get(&source)
-            .ok_or_else(|| TilesError::UnknownSource {
-                id,
-                source_id: source.clone(),
-            })?;
+        let distance = definition(id, &preferred.measurement.entry().source)?;
+        let domain = definitions[distance].scale_domain;
         if position.cosmology() != cosmology {
             return Err(TilesError::Cosmology {
                 id,
@@ -128,11 +154,10 @@ pub fn assign(
             });
         }
         let kind = kind_of(&o.object, &preferred.measurement).ok_or(TilesError::NoPreferred(id))?;
-        let sky_source = o
-            .object
-            .preferred_position
-            .as_ref()
-            .map_or_else(|| source.clone(), |p| p.entry.source.clone());
+        let sky = match &o.object.preferred_position {
+            Some(p) => definition(id, &p.entry.source)?,
+            None => distance,
+        };
         let factor = Unit::Megaparsec
             .factor_to(unit_of(domain))
             .map_err(|_| TilesError::NotFinite(id))?;
@@ -143,20 +168,54 @@ pub fn assign(
         if !at.iter().all(|c| c.is_finite()) {
             return Err(TilesError::NotFinite(id));
         }
-        assigned
-            .domains
-            .entry(domain)
-            .or_default()
-            .push(DomainPoint {
-                id,
-                position: at,
-                source,
-                sky_source,
-                kind,
-            });
+        placed.entry(domain).or_default().push(Placed {
+            id,
+            position: at,
+            distance,
+            sky,
+            kind,
+        });
     }
-    for points in assigned.domains.values_mut() {
+    let mut domains = BTreeMap::new();
+    for (domain, mut points) in placed {
         points.sort_by_key(|p| p.id);
+        domains.insert(domain, intern(domain, points, definitions)?);
     }
-    Ok(assigned)
+    Ok(Assigned { domains, unplaced })
+}
+
+/// The `points` of `domain` with their sources' definitions interned as indices into the
+/// domain's sources, in order of first use.
+fn intern(
+    domain: ScaleDomain,
+    points: Vec<Placed>,
+    definitions: &[SourceDefinition],
+) -> Result<DomainPoints, TilesError> {
+    let mut index: Vec<Option<u16>> = vec![None; definitions.len()];
+    let mut interned = DomainPoints::default();
+    let mut source = |definition: usize, sources: &mut Vec<SourceId>| {
+        if let Some(i) = index[definition] {
+            return Ok(i);
+        }
+        let i = u16::try_from(sources.len()).map_err(|_| TilesError::TooManySources {
+            domain: name_of(domain).to_owned(),
+            sources: sources.len() + 1,
+        })?;
+        index[definition] = Some(i);
+        sources.push(definitions[definition].id.clone());
+        Ok(i)
+    };
+    interned.points.reserve(points.len());
+    for p in points {
+        let distance = source(p.distance, &mut interned.sources)?;
+        let sky = source(p.sky, &mut interned.sources)?;
+        interned.points.push(DomainPoint {
+            id: p.id,
+            position: p.position,
+            source: distance,
+            sky_source: sky,
+            kind: p.kind,
+        });
+    }
+    Ok(interned)
 }
