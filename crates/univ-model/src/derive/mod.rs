@@ -17,6 +17,7 @@
 //! - An object with neither a distance nor a redshift has no [`Radial`] and so no position.
 
 mod chain;
+mod parallax;
 mod place;
 mod radial;
 mod table;
@@ -24,32 +25,54 @@ mod table;
 use thiserror::Error;
 
 pub use chain::{Step, Transformation};
+pub use parallax::{InvertedParallax, inverted_parallax};
 pub use place::{DerivedPosition, Direction};
-pub use radial::{Radial, Rescaled, Rescaling};
+pub use radial::{Radial, Rescaled, Rescaling, peculiar_velocity_redshift, redshift_sigma};
 pub use table::ComovingTable;
 
 use crate::cosmology::{Cosmology, CosmologyError};
 use crate::position::PositionError;
 use crate::units::Unit;
-use crate::value::ValueError;
+use crate::value::{Uncertainty, ValueError};
 
 /// The version of univ-model that derives a value, recorded in it.
 pub const MODEL_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+/// The line-of-sight peculiar velocity, km/s, that a redshift distance's error takes in when
+/// the release's ranking rule sets none: the value the specification names
+/// (choose-the-preferred-measurement, "300 km/s unless the release's ranking rule sets another").
+pub const DEFAULT_PECULIAR_VELOCITY_KM_S: f64 = 300.0;
+
 /// The release cosmology with its comoving distance tabulated once, for every derivation of a
-/// release.
+/// release, and the peculiar velocity its redshift distances carry in their errors.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Release {
     table: ComovingTable,
+    peculiar_velocity_km_s: f64,
 }
 
 impl Release {
-    /// A release under `cosmology`, as the release names it.
+    /// A release under `cosmology`, as the release names it, with the default peculiar velocity.
     #[must_use]
     pub fn new(cosmology: &Cosmology) -> Self {
         Self {
             table: ComovingTable::new(cosmology),
+            peculiar_velocity_km_s: DEFAULT_PECULIAR_VELOCITY_KM_S,
         }
+    }
+
+    /// The release with the peculiar velocity, km/s, of its ranking rule: the one parameter the
+    /// ranking and the derived redshift distances share.
+    #[must_use]
+    pub fn with_peculiar_velocity(mut self, km_s: f64) -> Self {
+        self.peculiar_velocity_km_s = km_s;
+        self
+    }
+
+    /// The line-of-sight peculiar velocity, km/s, in every redshift distance's error.
+    #[must_use]
+    pub fn peculiar_velocity_km_s(&self) -> f64 {
+        self.peculiar_velocity_km_s
     }
 
     /// A release under Planck 2018, the cosmology of every release that names no other.
@@ -78,6 +101,10 @@ pub enum DeriveError {
     NotALength(Unit),
     #[error("a length in h⁻¹ Mpc assumes H0 = 100 km/s/Mpc, not {0}")]
     HubbleScaled(f64),
+    #[error("the parallax {0} mas, after its zero point, gives no distance interval: {1}")]
+    Parallax(f64, &'static str),
+    #[error("an error given as {0:?} cannot be added in quadrature to another")]
+    Uncombinable(Uncertainty),
     #[error(transparent)]
     Cosmology(#[from] CosmologyError),
     #[error(transparent)]

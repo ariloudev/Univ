@@ -3,9 +3,7 @@
 
 use std::cmp::Ordering;
 
-use univ_model::cosmology::SPEED_OF_LIGHT;
-use univ_model::derive::Release;
-use univ_model::entry::RedshiftKind;
+use univ_model::derive::{Release, inverted_parallax, peculiar_velocity_redshift, redshift_sigma};
 use univ_model::object::{
     Decided, FractionalUncertainty, MeasurementRef, MethodRank, Object, PreferredDistance,
 };
@@ -18,13 +16,36 @@ use super::rules::RankingRules;
 /// width to stand for a sigma.
 const ONE_SIGMA: f64 = 0.6827;
 
-/// A measurement that could place the object.
+/// A measurement that could place the object: the place of its entry in the object, which of
+/// the entry's measurements it is, and how it ranks.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Candidate {
-    pub measurement: MeasurementRef,
+    pub entry: usize,
+    pub which: Which,
     pub rank: MethodRank,
     pub distance_mpc: f64,
     pub uncertainty: FractionalUncertainty,
+}
+
+/// Which measurement of an entry a candidate is.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Which {
+    Distance(usize),
+    Redshift(usize),
+    Parallax,
+}
+
+impl Candidate {
+    /// The candidate as the object records it, by its entry's designation.
+    #[must_use]
+    pub fn measurement(&self, object: &Object) -> MeasurementRef {
+        let entry = object.entries[self.entry].entry.designation.clone();
+        match self.which {
+            Which::Distance(index) => MeasurementRef::Distance { entry, index },
+            Which::Redshift(index) => MeasurementRef::Redshift { entry, index },
+            Which::Parallax => MeasurementRef::Parallax { entry },
+        }
+    }
 }
 
 /// The comoving distance in Mpc of redshift `z` under the release cosmology, read from the
@@ -66,14 +87,13 @@ fn reported(total: f64, measurement: Option<f64>, pv: Option<f64>) -> Fractional
     }
 }
 
-/// Every candidate of `object`: its entries' distances, parallaxes fine enough to invert, and
-/// positive redshifts, in the order of the entries.
+/// Every candidate of `object`: its entries' distances, parallaxes fine enough to invert once
+/// their zero point is taken off, and positive redshifts, in the order of the entries.
 #[must_use]
 pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> Vec<Candidate> {
     let mut out = Vec::new();
-    for e in &object.entries {
+    for (at, e) in object.entries.iter().enumerate() {
         let entry = &e.entry;
-        let at = &entry.designation;
         for (index, d) in entry.distances.iter().enumerate() {
             let Ok(mpc) = d.normalized.to(Unit::Megaparsec) else {
                 continue;
@@ -82,10 +102,8 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
                 continue;
             }
             out.push(Candidate {
-                measurement: MeasurementRef::Distance {
-                    entry: at.clone(),
-                    index,
-                },
+                entry: at,
+                which: Which::Distance(index),
                 rank: d.kind.into(),
                 distance_mpc: mpc.value,
                 uncertainty: fraction(&mpc).map_or(FractionalUncertainty::NoneReported, |f| {
@@ -93,15 +111,18 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
                 }),
             });
         }
+        let zero_point = rules.zero_point_of(&entry.designation.source);
         if let Some(p) = &entry.parallax
-            && let Some(f) = fraction(&p.normalized)
+            && let Ok(mas) = p.normalized.to(Unit::Milliarcsecond)
+            && let Some(inverted) = inverted_parallax(mas.value, sigma_of(&mas), zero_point)
+            && let Some(f) = inverted.fraction()
             && f <= rules.parallax_max_fractional_error
         {
-            let arcsec = p.normalized.value * 3_600.0;
             out.push(Candidate {
-                measurement: MeasurementRef::Parallax { entry: at.clone() },
+                entry: at,
+                which: Which::Parallax,
                 rank: MethodRank::Geometric,
-                distance_mpc: 1e-6 / arcsec,
+                distance_mpc: inverted.distance_pc * 1e-6,
                 uncertainty: reported(f, Some(f), None),
             });
         }
@@ -110,23 +131,22 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
             let Some((d, slope)) = redshift_distance(release, z) else {
                 continue;
             };
-            let sigma_z = sigma(r.cmb.value.uncertainty);
-            let uncertainty = if sigma_z.is_none() && r.kind == RedshiftKind::Photometric {
-                FractionalUncertainty::NoneReported
-            } else {
-                let pv = (1.0 + z) * rules.peculiar_velocity_km_s / SPEED_OF_LIGHT;
-                let total = sigma_z.unwrap_or(0.0).hypot(pv);
-                reported(
-                    slope * total / d,
-                    sigma_z.map(|s| slope * s / d),
-                    Some(slope * pv / d),
-                )
-            };
-            out.push(Candidate {
-                measurement: MeasurementRef::Redshift {
-                    entry: at.clone(),
-                    index,
+            // A redshift without a one-sigma error, of either kind, has no uncertainty the rule
+            // can compare: the peculiar velocity alone would rank it as though it had one.
+            let uncertainty = sigma(r.cmb.value.uncertainty).map_or(
+                FractionalUncertainty::NoneReported,
+                |sigma_z| {
+                    let v = rules.peculiar_velocity_km_s;
+                    reported(
+                        slope * redshift_sigma(z, sigma_z, v) / d,
+                        Some(slope * sigma_z / d),
+                        Some(slope * peculiar_velocity_redshift(z, v) / d),
+                    )
                 },
+            );
+            out.push(Candidate {
+                entry: at,
+                which: Which::Redshift(index),
                 rank: r.kind.into(),
                 distance_mpc: d,
                 uncertainty,
@@ -136,40 +156,58 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
     out
 }
 
-/// The candidate the rule prefers, by place in `candidates`, and what decided it.
-fn winner(candidates: &[Candidate], rules: &RankingRules) -> Option<(usize, Decided)> {
+/// The symmetric error of `q`, where it has one.
+fn sigma_of(q: &Quantity) -> Option<f64> {
+    match q.uncertainty {
+        Uncertainty::Symmetric { sigma } => Some(sigma),
+        _ => None,
+    }
+}
+
+/// The candidate the rule prefers, by place in `candidates`, leaving out the one at `excluded`,
+/// and what decided it.
+fn winner(
+    candidates: &[Candidate],
+    excluded: Option<usize>,
+    rules: &RankingRules,
+) -> Option<(usize, Decided)> {
+    let total = |i: usize| candidates[i].uncertainty.total();
     let by_rank = |a: &usize, b: &usize| {
         let (x, y) = (&candidates[*a], &candidates[*b]);
-        let total = |c: &Candidate| c.uncertainty.total().unwrap_or(f64::INFINITY);
+        let t = |i: usize| total(i).unwrap_or(f64::INFINITY);
         rules
             .rank_of(x.rank)
             .cmp(&rules.rank_of(y.rank))
-            .then(total(x).partial_cmp(&total(y)).unwrap_or(Ordering::Equal))
+            .then(t(*a).partial_cmp(&t(*b)).unwrap_or(Ordering::Equal))
             .then(a.cmp(b))
     };
-    let reported: Vec<usize> = (0..candidates.len())
-        .filter(|&i| candidates[i].uncertainty.total().is_some())
+    let open: Vec<usize> = (0..candidates.len())
+        .filter(|&i| Some(i) != excluded)
+        .collect();
+    let reported: Vec<usize> = open
+        .iter()
+        .copied()
+        .filter(|&i| total(i).is_some())
         .collect();
     if reported.is_empty() {
-        let best = (0..candidates.len()).min_by(by_rank)?;
-        let decided = if candidates.len() == 1 {
+        let best = open.iter().copied().min_by(by_rank)?;
+        let decided = if open.len() == 1 {
             Decided::OnlyCandidate
         } else {
             Decided::MethodRankNoneReported
         };
         return Some((best, decided));
     }
-    let total = |i: usize| candidates[i].uncertainty.total().unwrap_or(f64::INFINITY);
     let smallest = reported
         .iter()
-        .map(|&i| total(i))
+        .filter_map(|&i| total(i))
         .fold(f64::INFINITY, f64::min);
     let tied: Vec<usize> = reported
         .into_iter()
-        .filter(|&i| total(i) <= smallest + rules.tie_tolerance)
+        .filter(|&i| total(i).is_some_and(|t| t <= smallest + rules.tie_tolerance))
         .collect();
     let best = tied.iter().copied().min_by(by_rank)?;
-    let decided = if candidates.len() == 1 {
+    let decided = if open.len() == 1 {
         Decided::OnlyCandidate
     } else if tied.len() > 1 {
         Decided::MethodRank
@@ -179,23 +217,22 @@ fn winner(candidates: &[Candidate], rules: &RankingRules) -> Option<(usize, Deci
     Some((best, decided))
 }
 
-/// The preferred distance among `candidates`, with the best of the others as runner-up.
+/// The preferred distance of `object` among `candidates`, with the best of the others as
+/// runner-up.
 #[must_use]
-pub fn choose(candidates: &[Candidate], rules: &RankingRules) -> Option<PreferredDistance> {
-    let (best, decided) = winner(candidates, rules)?;
-    let rest: Vec<Candidate> = candidates
-        .iter()
-        .enumerate()
-        .filter(|(i, _)| *i != best)
-        .map(|(_, c)| c.clone())
-        .collect();
-    let runner_up = winner(&rest, rules).map(|(i, _)| {
-        let c = &rest[i];
-        (c.measurement.clone(), c.uncertainty)
+pub fn choose(
+    object: &Object,
+    candidates: &[Candidate],
+    rules: &RankingRules,
+) -> Option<PreferredDistance> {
+    let (best, decided) = winner(candidates, None, rules)?;
+    let runner_up = winner(candidates, Some(best), rules).map(|(i, _)| {
+        let c = &candidates[i];
+        (c.measurement(object), c.uncertainty)
     });
     let c = &candidates[best];
     Some(PreferredDistance {
-        measurement: c.measurement.clone(),
+        measurement: c.measurement(object),
         rank: c.rank,
         distance_mpc: c.distance_mpc,
         uncertainty: c.uncertainty,

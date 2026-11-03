@@ -23,7 +23,18 @@ pub struct RankingRules {
     pub tie_basis: String,
     pub parallax_max_fractional_error: f64,
     pub parallax_basis: String,
+    pub parallax_zero_point: ZeroPointRule,
     pub position: PositionRule,
+}
+
+/// The parallax zero point taken off the parallaxes of some sources before they are inverted.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ZeroPointRule {
+    pub sources: Vec<SourceId>,
+    /// The zero point Z in mas: the corrected parallax is ϖ − Z.
+    pub zero_point_mas: f64,
+    pub basis: String,
 }
 
 /// Which sources give Gaia and Hipparcos positions; every other source gives a survey position.
@@ -72,6 +83,9 @@ impl RankingRules {
         if !(p > 0.0 && p <= 1.0) {
             return bad("parallax_max_fractional_error", "lies outside (0, 1]");
         }
+        if !self.parallax_zero_point.zero_point_mas.is_finite() {
+            return bad("parallax_zero_point.zero_point_mas", "is not a number");
+        }
         if self.method_rank.len() != ALL_RANKS.len()
             || ALL_RANKS.iter().any(|r| !self.method_rank.contains(r))
         {
@@ -95,6 +109,13 @@ impl RankingRules {
             .iter()
             .position(|r| *r == rank)
             .unwrap_or(self.method_rank.len())
+    }
+
+    /// The parallax zero point of `source`, mas, where the rule gives it one.
+    #[must_use]
+    pub fn zero_point_of(&self, source: &SourceId) -> Option<f64> {
+        let z = &self.parallax_zero_point;
+        z.sources.contains(source).then_some(z.zero_point_mas)
     }
 
     /// The position class of `source`.

@@ -16,6 +16,7 @@ use univ_model::derive::{
     DeriveError, DerivedPosition, Direction, MODEL_VERSION, Release, Transformation,
 };
 use univ_model::distance::{Distance, DistanceKind, Measure, Method};
+use univ_model::entry::{Redshift, RedshiftKind};
 use univ_model::position::{Epoch, Frame, between, dot, lon_lat, separation_degrees, unit_vector};
 use univ_model::redshift::{CmbRedshift, DipoleModel};
 use univ_model::units::Unit;
@@ -50,6 +51,16 @@ fn cmb(z: f64, uncertainty: Uncertainty) -> CmbRedshift {
         value,
         heliocentric: value,
         dipole: DipoleModel::Planck2018,
+    }
+}
+
+/// A spectroscopic redshift whose CMB-frame value is `cmb`.
+fn spectroscopic(cmb: CmbRedshift) -> Redshift {
+    Redshift {
+        kind: RedshiftKind::Spectroscopic,
+        kind_of_value: KindOfValue::Measured,
+        velocity: None,
+        cmb,
     }
 }
 
@@ -149,7 +160,9 @@ fn a_luminosity_distance_at_z_0_1_converts_by_one_over_one_plus_z() {
     let mu = 5.0 * (d_l * 1e6 / 10.0).log10();
     let distance = modulus(mu, 0.1, None);
     let z = cmb(0.1, Uncertainty::NoneReported);
-    let radial = release.radial_from_distance(&distance, Some(&z)).unwrap();
+    let radial = release
+        .radial_from_distance(&distance, Some(&spectroscopic(z)))
+        .unwrap();
     assert!(near(radial.distance().value, d_l / 1.1, 1e-9));
     assert!(
         near(radial.distance().value, FLAT[1].1, 1e-6),
@@ -294,7 +307,9 @@ fn each_derived_value_records_the_release_cosmology_its_chain_and_the_model_vers
     let release = Release::planck_2018();
     let distance = modulus(35.0, 0.4, Some(AssumedCosmology::hubble(75.0)));
     let z = cmb(0.023, Uncertainty::Symmetric { sigma: 1e-4 });
-    let radial = release.radial_from_distance(&distance, Some(&z)).unwrap();
+    let radial = release
+        .radial_from_distance(&distance, Some(&spectroscopic(z)))
+        .unwrap();
     let direction = Direction::new(Frame::Fk5J2000, 54.430_541_7, -22.908_194_4, Epoch::J2000);
     let p = DerivedPosition::new(direction.unwrap(), radial);
     assert_eq!(p.cosmology(), &Cosmology::planck_2018());
@@ -306,7 +321,10 @@ fn each_derived_value_records_the_release_cosmology_its_chain_and_the_model_vers
             Transformation::Published { measure: Measure::Luminosity, .. },
             Transformation::FromModulus { .. },
             Transformation::HubbleRescaled { factor: f, release_hubble_constant: h, .. },
-            Transformation::LuminosityToComoving { cmb_redshift },
+            Transformation::LuminosityToComoving {
+                cmb_redshift,
+                redshift_kind: RedshiftKind::Spectroscopic,
+            },
             Transformation::ToIcrs { from: Frame::Fk5J2000 },
             Transformation::Cartesian,
             Transformation::Rotated { to: Frame::Galactic },

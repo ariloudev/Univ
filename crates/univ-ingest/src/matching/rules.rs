@@ -318,13 +318,9 @@ fn field(name: &str, problem: &str) -> (String, String) {
 /// redshift, else its published velocity.
 #[must_use]
 pub fn velocity(entry: &CatalogueEntry) -> Option<f64> {
-    use univ_model::entry::RedshiftKind;
     let c = univ_model::cosmology::SPEED_OF_LIGHT;
     entry
-        .redshifts
-        .iter()
-        .find(|r| r.kind == RedshiftKind::Spectroscopic)
-        .or_else(|| entry.redshifts.first())
+        .preferred_redshift()
         .map(|r| r.cmb.heliocentric.value * c)
         .or_else(|| entry.velocity.map(|v| v.normalized.value))
 }

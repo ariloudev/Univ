@@ -192,3 +192,31 @@ pub fn named(mut e: CatalogueEntry, name: &str) -> CatalogueEntry {
     e.name = Some(name.to_owned());
     e
 }
+
+/// The entry with a parallax of `mas` ± `sigma` mas, as published, normalized to degrees.
+pub fn with_parallax(mut e: CatalogueEntry, mas: f64, sigma: f64) -> CatalogueEntry {
+    e.parallax = Some(value(
+        mas,
+        Unit::Milliarcsecond,
+        Unit::Degree,
+        Uncertainty::Symmetric { sigma },
+    ));
+    e
+}
+
+/// The entry with a heliocentric spectroscopic cz of `cz` km/s, published without an error.
+pub fn with_bare_cz(mut e: CatalogueEntry, cz: f64) -> CatalogueEntry {
+    let p = e.position.as_ref().unwrap().icrs;
+    let correction = CmbCorrection::new(DipoleModel::Planck2018);
+    let q = Quantity::new(cz, Unit::KilometrePerSecond, Uncertainty::NoneReported).unwrap();
+    let r = Redshift::heliocentric(
+        q,
+        RedshiftKind::Spectroscopic,
+        KindOfValue::Measured,
+        unit_vector(p.ra, p.dec),
+        &correction,
+    )
+    .unwrap();
+    e.redshifts.push(r);
+    e
+}

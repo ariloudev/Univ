@@ -8,9 +8,8 @@ use super::radial::Radial;
 use super::{DeriveError, MODEL_VERSION, Release};
 use crate::cosmology::{AssumedCosmology, Cosmology};
 use crate::distance::{Distance, Measure};
-use crate::entry::Position;
+use crate::entry::{Position, Redshift};
 use crate::position::{Epoch, Frame, SkyPosition, Vec3, between, from_icrs, lon_lat, scaled};
-use crate::redshift::CmbRedshift;
 use crate::value::{Quantity, Uncertainty};
 
 /// A direction in the ICRS, with the frame it was published in and the systematic error, in
@@ -101,11 +100,12 @@ impl DerivedPosition {
         let cosmology = radial.cosmology().clone();
         let mut chain = radial.chain().to_vec();
         let frame = direction.published_in;
-        if frame != Frame::Icrs {
-            chain.push(Transformation::ToIcrs { from: frame }.into());
-        }
+        // An unstated equinox is first taken as J2000, then moved to the ICRS from there.
         if let Some(systematic_degrees) = direction.systematic_degrees {
             chain.push(Transformation::EquinoxAssumedJ2000 { systematic_degrees }.into());
+        }
+        if frame != Frame::Icrs {
+            chain.push(Transformation::ToIcrs { from: frame }.into());
         }
         chain.push(Transformation::Cartesian.into());
         for to in [Frame::Galactic, Frame::Supergalactic] {
@@ -205,9 +205,9 @@ impl DerivedPosition {
 }
 
 impl Release {
-    /// Places an object from its preferred measurement: `distance` where it has one (made
-    /// comoving with `redshift` when it is a luminosity distance), else the comoving distance
-    /// of `redshift`. An object without a position, or with neither a distance nor a redshift,
+    /// Places an object from its preferred measurement: `distance` where it has one (rescaled
+    /// at, and made comoving with, `redshift` when it is a luminosity distance), else the
+    /// comoving distance of `redshift`. An object without a position, or with neither a distance nor a redshift,
     /// is not placed.
     ///
     /// # Errors
@@ -217,14 +217,14 @@ impl Release {
         &self,
         position: Option<&Position>,
         distance: Option<&Distance>,
-        redshift: Option<&CmbRedshift>,
+        redshift: Option<&Redshift>,
     ) -> Result<Option<DerivedPosition>, DeriveError> {
         let Some(position) = position else {
             return Ok(None);
         };
         let radial = match (distance, redshift) {
             (Some(d), z) => self.radial_from_distance(d, z)?,
-            (None, Some(z)) => self.radial_from_redshift(z)?,
+            (None, Some(z)) => self.radial_from_redshift(&z.cmb)?,
             (None, None) => return Ok(None),
         };
         Ok(Some(DerivedPosition::new(Direction::of(position), radial)))

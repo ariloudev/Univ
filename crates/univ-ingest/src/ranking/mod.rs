@@ -9,14 +9,14 @@ use univ_model::derive::Release;
 use univ_model::entry::PositionUncertainty;
 use univ_model::object::{NotPlacedReason, Object, Placement, PreferredPosition};
 
-pub use distance::{Candidate, candidates, choose, fraction, redshift_distance};
+pub use distance::{Candidate, Which, candidates, choose, fraction, redshift_distance};
 pub use rules::RankingRules;
 
 /// Ranks `object` under the release cosmology of `release`, whose table of D(z) is built once
 /// per run: its preferred distance and position, and whether it can be placed.
 pub fn rank(object: &mut Object, rules: &RankingRules, release: &Release) {
     let found = candidates(object, rules, release);
-    object.preferred_distance = choose(&found, rules);
+    object.preferred_distance = choose(object, &found, rules);
     object.preferred_position = preferred_position(object, rules);
     object.placement = if object.preferred_distance.is_some() {
         Placement::Placed

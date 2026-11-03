@@ -135,7 +135,7 @@ pub fn cross_match(
             .entries
             .get(anchor)
             .ok_or_else(|| CrossMatchError::Unassigned(format!("{anchor:?}")))?;
-        let position = place(&mut object, inputs.release);
+        let position = place(&mut object, inputs.release, inputs.ranking);
         placed.push(ReleaseObject {
             id,
             object,

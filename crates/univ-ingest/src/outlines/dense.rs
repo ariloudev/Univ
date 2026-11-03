@@ -45,8 +45,8 @@ pub struct DenseCheck {
 }
 
 /// The dense places of `rule` among `objects` and `structures`: every object holding an entry
-/// of one of the rule's sources, at that entry's CMB-frame redshift (an object whose entry has
-/// none is left out), and every structure of one of its kinds with a published position.
+/// of one of the rule's sources, at that entry's preferred CMB-frame redshift (an object whose
+/// entry has none is left out), and every structure of one of its kinds with a published position.
 #[must_use]
 pub fn dense_places<'a>(
     rule: &DensePlaces,
@@ -60,7 +60,7 @@ pub fn dense_places<'a>(
             if !rule.sources.contains(&entry.designation.source) {
                 return None;
             }
-            let z = entry.redshifts.first()?;
+            let z = entry.preferred_redshift()?;
             Some((entry, entry.position.as_ref()?, z.cmb.value.value))
         });
         if let Some((entry, position, cmb_redshift)) = found {

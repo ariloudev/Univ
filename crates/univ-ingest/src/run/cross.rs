@@ -84,7 +84,9 @@ pub async fn match_stage(
             let events = sink.clone();
             let entries = normalized.into_iter().flat_map(|n| n.entries).collect();
             tokio::task::spawn_blocking(move || {
-                let release = Release::planck_2018();
+                // The ranking and the derived redshift distances share one peculiar velocity.
+                let release = Release::planck_2018()
+                    .with_peculiar_velocity(inputs.ranking.peculiar_velocity_km_s);
                 let inputs = Inputs {
                     matching: &inputs.matching,
                     ranking: &inputs.ranking,

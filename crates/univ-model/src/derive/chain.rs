@@ -7,6 +7,7 @@ use serde::Serialize;
 
 use crate::cosmology::AssumedCosmology;
 use crate::distance::Measure;
+use crate::entry::RedshiftKind;
 use crate::position::Frame;
 use crate::redshift::DipoleModel;
 use crate::value::Quantity;
@@ -37,14 +38,27 @@ pub enum Transformation {
         factor: f64,
     },
     /// A luminosity distance to a comoving one, `D_C = D_L / (1 + z)`, with the CMB-frame
-    /// redshift of the same entry.
-    LuminosityToComoving { cmb_redshift: f64 },
+    /// redshift of the same entry, spectroscopic or photometric.
+    LuminosityToComoving {
+        cmb_redshift: f64,
+        redshift_kind: RedshiftKind,
+    },
     /// The comoving distance of a CMB-frame redshift in the release cosmology.
     ComovingFromRedshift {
         cmb_redshift: f64,
         heliocentric_redshift: f64,
         dipole: DipoleModel,
     },
+    /// A parallax as its source published it.
+    PublishedParallax { native: Quantity },
+    /// A parallax zero point subtracted from a parallax: `ϖ − Z`, in mas.
+    ParallaxZeroPoint {
+        zero_point_mas: f64,
+        corrected_mas: f64,
+    },
+    /// A parallax inverted to a distance, `d = 1 / ϖ`, its interval exactly
+    /// `[1 / (ϖ + σ), 1 / (ϖ − σ)]`; an inferred distance.
+    InvertedParallax { parallax_mas: f64 },
     /// A distance kept as published, with the reason; it is not a comoving distance.
     KeptAsPublished {
         measure: Measure,
@@ -78,6 +92,17 @@ impl From<Transformation> for Step {
         let citation: Cow<'static, str> = match &transformation {
             Transformation::Published { .. } | Transformation::KeptAsPublished { .. } => {
                 "the source's own value".into()
+            }
+            Transformation::PublishedParallax { .. } => "the source's own parallax".into(),
+            Transformation::ParallaxZeroPoint { .. } => {
+                "Lindegren et al. 2021, A&A 649, A4, §1: \"In Gaia EDR3 quasars have a median \
+                 parallax of about −17 µas\"; the zero point Z is subtracted, ϖ − Z"
+                    .into()
+            }
+            Transformation::InvertedParallax { .. } => {
+                "d = 1 / ϖ, a fair estimate where σ_ϖ / ϖ is small (Bailer-Jones 2015, PASP 127, \
+                 994)"
+                    .into()
             }
             Transformation::FromModulus { .. } => {
                 "the distance modulus, μ = 5 log10(d / 10 pc)".into()
