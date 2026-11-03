@@ -301,7 +301,9 @@ row! {
         centre_z: Option<f64>,
         geometry_kind: Option<String>,
         record: String,
-        /// JSON of its member list as resolved at ingest.
+        /// JSON of its member list as resolved at ingest: `shape`, each member an object at its
+        /// derived position or a tracer, and `placed_from_file`, how each tracer was placed from
+        /// the structure file's own sky position and redshift for it.
         members: Option<String>,
         /// JSON of its ICRS bounding box in Mpc, when it has one.
         bounds: Option<String>,

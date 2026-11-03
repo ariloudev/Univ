@@ -346,7 +346,10 @@ CREATE TABLE IF NOT EXISTS structure_cells (
 
 -- Each researched structure, listed by kind and scale domain. Its centre is ICRS Cartesian
 -- about the barycentre in its scale domain's unit (pc for stars, Mpc otherwise), NULL when it
--- cannot be placed.
+-- cannot be placed. members is JSON of its member list placed whole: "shape", each member an
+-- object at its derived position or a tracer, and "placed_from_file", the redshift, its kind,
+-- where it was cited, its CMB-frame value and the comoving distance of each tracer placed from
+-- the structure file's own sky position and redshift; NULL when the list is not placed whole.
 CREATE TABLE IF NOT EXISTS structures (
   release INTEGER NOT NULL,
   id TEXT NOT NULL,

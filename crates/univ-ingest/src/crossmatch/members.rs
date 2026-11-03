@@ -10,6 +10,9 @@
 //!   compared without case, must equal a designation's identifier or a common name of exactly
 //!   one matched object. A name without a letter, such as a row number, resolves to nothing: a
 //!   bare number names no catalogue.
+//! - A member that no object carries is placed from the structure file itself, at its own
+//!   cited sky position and redshift ([`super::tracers`]), as a tracer, and recorded with the
+//!   values that placed it.
 //! - The object's preferred sky position must lie within the matching rules'
 //!   `structure_members.angular_tolerance_arcsec` of the member's published position, so that
 //!   a name shared by two catalogues cannot pull in an object elsewhere on the sky. Where the
@@ -27,6 +30,7 @@ use univ_model::object::{NotPlacedReason, Object, Placement};
 use univ_model::position::{Frame, Vec3, between, separation_degrees, unit_vector};
 use univ_model::units::Unit;
 
+use super::tracers::{FilePlacer, FromFile};
 use crate::structures::{ColumnName, Coordinates, Members, Structure, StructureGeometry};
 
 /// A matched object as a member list sees it: its id, the object and its derived position.
@@ -51,6 +55,9 @@ pub struct MemberPlacement {
     pub by_name_only: Vec<String>,
     /// The published position the structure is shown at when its members cannot all be placed.
     pub point: Option<Coordinates>,
+    /// The members no object carries, placed from the structure file's own sky position and
+    /// redshift for each, as tracers.
+    pub from_file: Vec<FromFile>,
 }
 
 /// A member that cannot be placed.
@@ -126,17 +133,31 @@ impl<'a> NameIndex<'a> {
 }
 
 /// Resolves the member list of each structure that has one, a member's object within
-/// `tolerance_arcsec` of its published position.
+/// `tolerance_arcsec` of its published position; a member no object carries is not placed.
 #[must_use]
 pub fn resolve_all(
     structures: &[Structure],
     index: &NameIndex<'_>,
     tolerance_arcsec: f64,
 ) -> Vec<MemberPlacement> {
+    resolve_all_placing(structures, index, tolerance_arcsec, None)
+}
+
+/// As [`resolve_all`], a member no object carries placed by `placer` from the structure file's
+/// own sky position and redshift for it, where it cites them.
+#[must_use]
+pub fn resolve_all_placing(
+    structures: &[Structure],
+    index: &NameIndex<'_>,
+    tolerance_arcsec: f64,
+    placer: Option<&FilePlacer<'_>>,
+) -> Vec<MemberPlacement> {
     structures
         .iter()
         .filter_map(|s| match &s.geometry {
-            Some(StructureGeometry::Members(m)) => Some(resolve(s, m, index, tolerance_arcsec)),
+            Some(StructureGeometry::Members(m)) => {
+                Some(resolve(s, m, index, tolerance_arcsec, placer))
+            }
             _ => None,
         })
         .collect()
@@ -147,6 +168,7 @@ fn resolve(
     members: &Members,
     index: &NameIndex<'_>,
     tolerance_arcsec: f64,
+    from_file_placer: Option<&FilePlacer<'_>>,
 ) -> MemberPlacement {
     let to_icrs = between(members.frame, Frame::Icrs);
     let degrees = |name: ColumnName| {
@@ -158,6 +180,7 @@ fn resolve(
     let mut placed = Vec::new();
     let mut unplaced = Vec::new();
     let mut by_name_only = Vec::new();
+    let mut from_file = Vec::new();
     for row in &members.rows {
         let published = lon.zip(lat).map(|((i, fi), (j, fj))| {
             to_icrs.apply(unit_vector(row.values[i] * fi, row.values[j] * fj))
@@ -167,6 +190,17 @@ fn resolve(
             Ok((m, Checked::NameOnly)) => {
                 by_name_only.push(row.name.clone());
                 placed.push(m);
+            }
+            Err(MemberProblem::NoObject)
+                if let Some((at, record)) = from_file_placer
+                    .zip(published)
+                    .and_then(|(p, toward)| p.place(structure, members, row, toward)) =>
+            {
+                placed.push(Member::Tracer {
+                    at,
+                    kind: members.tracer.clone(),
+                });
+                from_file.push(record);
             }
             Err(why) => unplaced.push(UnplacedMember {
                 member: row.name.clone(),
@@ -191,6 +225,7 @@ fn resolve(
         shape,
         unplaced,
         by_name_only,
+        from_file,
     }
 }
 

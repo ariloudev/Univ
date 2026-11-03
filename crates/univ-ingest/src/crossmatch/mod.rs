@@ -6,6 +6,7 @@
 mod basis;
 mod members;
 mod place;
+mod tracers;
 
 use std::collections::BTreeMap;
 
@@ -19,8 +20,10 @@ use univ_model::object::{Object, Placement};
 pub use basis::{Basis, RULES};
 pub use members::{
     MemberPlacement, MemberProblem, NameIndex, Resolved, UnplacedMember, resolve_all,
+    resolve_all_placing,
 };
 pub use place::place;
+pub use tracers::{FilePlacer, FromFile, STRUCTURE_REDSHIFTS};
 
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::ids::{AssignError, Assigned, assign_in_order};
@@ -152,7 +155,13 @@ pub fn cross_match(
         })
         .collect();
     let tolerance = basis.matching.structure_members.angular_tolerance_arcsec;
-    let structures = resolve_all(&basis.structures(), &NameIndex::new(&resolved), tolerance);
+    let tracers = FilePlacer::new(inputs.release);
+    let structures = resolve_all_placing(
+        &basis.structures(),
+        &NameIndex::new(&resolved),
+        tolerance,
+        Some(&tracers),
+    );
     for s in structures.iter().filter(|s| s.shape.is_none()) {
         let (no_object, unplaced) = s.unresolved_and_unplaced();
         sink.emit(Event::MembersUnplaced {
@@ -163,7 +172,12 @@ pub fn cross_match(
             point: s.point.is_some(),
         });
     }
-    step(format!("members: {} member lists", structures.len()));
+    let from_file: usize = structures.iter().map(|s| s.from_file.len()).sum();
+    step(format!(
+        "members: {} member lists, {from_file} members placed from their own cited position and \
+         redshift",
+        structures.len()
+    ));
 
     let next = State {
         ledger,

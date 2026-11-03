@@ -130,7 +130,14 @@ pub fn structure_rows(
             centre_z: at.map(|c| c[2]),
             geometry_kind: s.geometry_kind().map(str::to_owned),
             record: json(s)?,
-            members: shape.map(json).transpose()?,
+            members: shape
+                .map(|shape| {
+                    json(&serde_json::json!({
+                        "shape": shape,
+                        "placed_from_file": placed.map_or(&[][..], |p| p.from_file.as_slice()),
+                    }))
+                })
+                .transpose()?,
             bounds: boxed.as_ref().ok().map(json).transpose()?,
         });
         bounds.push((id.clone(), boxed));

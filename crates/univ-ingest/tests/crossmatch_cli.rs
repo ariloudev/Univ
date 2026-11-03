@@ -66,17 +66,20 @@ async fn an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts() 
     let run = matching(definitions.path(), cache.path(), state.path());
     let log = String::from_utf8(run.stderr).unwrap();
     assert!(run.status.success(), "{log}");
+    assert!(
+        !log.contains("Z Members "),
+        "every member list is placed: {log}"
+    );
     for line in [
         "Z Stage cross-match: 5 items\n",
         "Z Step cross-match: matching: 19 entries into 19 objects, 0 candidate links\n",
         "Z Step cross-match: ranking: 16 with a preferred distance\n",
         "Z Step cross-match: ids: release 1, 19 new, 0 replaced\n",
         "Z Step cross-match: positions: 16 placed of 19\n",
-        "Z Members Clowes-Campusano LQG: 34 of 34 cannot be placed (34 name no matched object, 0 \
-         an unplaced one); it publishes no position, so it is not placed\n",
-        "Z Step cross-match: members: 6 member lists\n",
+        "Z Step cross-match: members: 6 member lists, 275 members placed from their own cited \
+         position and redshift\n",
         "Z cross-match: 19 entries, 19 objects, 0 merges, 0 candidate links, 19 new ids, 0 ids \
-         replaced, 16 placed, 3 not placed (no distance), 0 member lists placed, 6 member lists \
+         replaced, 16 placed, 3 not placed (no distance), 6 member lists placed, 0 member lists \
          not placed, 0 members resolved by name only\n",
         "Z Stopped at cross-match: cross-match only; no release was asked for\n",
     ] {

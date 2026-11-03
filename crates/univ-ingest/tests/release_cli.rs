@@ -80,10 +80,10 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
              {}\n",
             dir.join("manifest.yaml").display()
         ),
-        "Z Step build: cell index: 17 placed objects, 18 of 26 structures with a bounding box\n"
+        "Z Step build: cell index: 17 placed objects, 23 of 26 structures with a bounding box\n"
             .to_owned(),
-        "Z Step build: cell index: 8 structures not indexed: big-ring (56 of its 56 members \
-         are not placed); "
+        "Z Step build: cell index: 3 structures not indexed: hercules-corona-borealis-great-wall \
+         (it publishes no position or geometry); "
             .to_owned(),
         "Z Step build: provisional redistribution review, judged again before any public \
          deployment: cosmicflows-4, hipparcos-2007, mcconnachie-2012, researched-structures, \
