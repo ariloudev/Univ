@@ -1,0 +1,12 @@
+key: 01a1a00f-4e6e-732f-9bf4-c65295c6341f
+id: w5-review
+versions:
+  - key: 01a1a00f-4e6e-732f-9bf4-c658b80548ea
+    at: 2026-11-03T06:18:40Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W5 review"
+    goal: "/simplify and /code-review findings on wave 5 are fixed, the gate is green and the trace is recorded"
+    status: planned
