@@ -14,6 +14,13 @@
 //!   Galaxy and the Local Group the cosmological distances differ from it by `H0 d / c`, under
 //!   2e-4 at 1 Mpc, and its chain gives that fraction for its own distance.
 //! - A distance whose source does not say which one it is is kept as published, and says so.
+//! - A luminosity distance whose entry's CMB-frame redshift is a blueshift is kept as a
+//!   luminosity distance, and says why: `D_L / (1 + z)` would make it larger.
+//! - A parallax is inverted after the zero point its source's ranking rule names is taken off,
+//!   its chain starting from the parallax as published and its interval exact,
+//!   `[1 / (ϖ + σ), 1 / (ϖ − σ)]`.
+//! - A redshift distance's error adds the peculiar velocity of the release's ranking rule in
+//!   quadrature, as the ranking does.
 //! - An object with neither a distance nor a redshift has no [`Radial`] and so no position.
 
 mod chain;
