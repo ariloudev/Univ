@@ -3,7 +3,7 @@
 //! of `openapi` holds it to.
 
 use crate::backend::Backend;
-use crate::http::{Body, Method, Request, Response};
+use crate::http::{Method, Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::{openapi, releases, sources, structures};
 
@@ -91,6 +91,7 @@ async fn answer<B: Backend>(
 }
 
 /// Answers a request that is not a preflight: the endpoint of the route it names, or a problem.
+/// A HEAD is answered as the GET of its route; [`crate::handle`] leaves out the body.
 pub async fn dispatch<B: Backend>(request: &Request, backend: &B) -> Response {
     let head = request.method == Method::Head;
     let mut allowed: Vec<&str> = Vec::new();
@@ -99,12 +100,7 @@ pub async fn dispatch<B: Backend>(request: &Request, backend: &B) -> Response {
             continue;
         };
         if route.method == request.method || (head && route.method == Method::Get) {
-            let response = answer(route.endpoint, request, &params, backend).await;
-            return if head {
-                response.with_body(Body::Empty)
-            } else {
-                response
-            };
+            return answer(route.endpoint, request, &params, backend).await;
         }
         allowed.push(route.method.as_str());
         if route.method == Method::Get {

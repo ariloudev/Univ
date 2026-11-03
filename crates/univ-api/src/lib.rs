@@ -30,11 +30,21 @@ pub fn failure(kind: ProblemType, detail: impl Into<String>) -> Response {
 }
 
 /// Answers one request from `backend`: a CORS preflight, a route of [`ROUTES`], or a problem.
+/// A HEAD is answered with the headers of the GET, and the length of its body, but no body,
+/// whatever the answer (RFC 9110 §9.3.2).
 pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
     let response = if request.method == Method::Options {
         cors::preflight()
     } else {
         routes::dispatch(request, backend).await
+    };
+    let response = if request.method == Method::Head {
+        let length = response.body.as_bytes().len();
+        response
+            .with_body(Body::Empty)
+            .with_header("content-length", &length.to_string())
+    } else {
+        response
     };
     cors::allow_any_origin(response)
 }
@@ -53,10 +63,7 @@ mod tests {
     }
 
     fn problem_type(response: &Response) -> serde_json::Value {
-        let Body::Bytes(bytes) = &response.body else {
-            panic!("a problem has a body");
-        };
-        serde_json::from_slice::<serde_json::Value>(bytes).unwrap()["type"].clone()
+        crate::testkit::body(response)["type"].clone()
     }
 
     #[test]
@@ -115,6 +122,23 @@ mod tests {
         assert_eq!(head.status, 200);
         assert_eq!(head.body, Body::Empty);
         assert_eq!(head.header("content-type"), get.header("content-type"));
+        let length = get.body.as_bytes().len().to_string();
+        assert_eq!(head.header("content-length"), Some(length.as_str()));
+    }
+
+    #[test]
+    fn a_head_request_that_is_refused_has_no_body_either() {
+        for path in ["/v1/nowhere", "/v1/sources/nowhere"] {
+            let head = handle(&Request::new(Method::Head, path));
+            assert_eq!(head.status, 404, "{path}");
+            assert_eq!(head.body, Body::Empty, "{path}");
+        }
+    }
+
+    #[test]
+    fn a_method_in_lower_case_is_not_served() {
+        let response = handle(&Request::new(Method::parse("get"), "/v1/openapi.json"));
+        assert_eq!(response.status, 405);
     }
 
     #[test]

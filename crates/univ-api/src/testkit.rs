@@ -9,7 +9,7 @@ use rusqlite::types::ValueRef;
 use serde_json::Value;
 
 use crate::backend::{Backend, BackendError, Row};
-use crate::http::{Request, Response};
+use crate::http::{Method, Request, Response};
 
 /// Runs `future` to its end. The backends of the tests never wait, so a future that is not
 /// ready after many polls is a fault of the test.
@@ -49,6 +49,19 @@ impl Sqlite {
     pub fn answer(&self, request: &Request) -> Response {
         block_on(crate::handle(request, self))
     }
+
+    /// The answer to a GET of `path` with the raw query `query`.
+    pub fn get(&self, path: &str, query: &str) -> Response {
+        let mut request = Request::new(Method::Get, path);
+        query.clone_into(&mut request.query);
+        self.answer(&request)
+    }
+}
+
+/// The JSON document a response carries.
+pub fn body(response: &Response) -> Value {
+    serde_json::from_slice(response.body.as_bytes())
+        .unwrap_or_else(|error| panic!("{} carries no JSON: {error}", response.status))
 }
 
 impl Backend for Sqlite {

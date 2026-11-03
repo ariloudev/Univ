@@ -10,6 +10,15 @@ versions:
     title: "W1: releases, sources and structures"
     goal: "Clients list releases, pin any of them, and read each release's sources with their provenance and its structures with every number cited (F-14, F-16, F-17)"
     status: active
+  - key: 01a1a325-ad45-71d4-8d08-c6f14a424cd9
+    at: 2026-11-03T20:41:57Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W1: releases, sources and structures"
+    goal: "Clients list releases, pin any of them, and read each release's sources with their provenance and its structures with every number cited (F-14, F-16, F-17)"
+    status: done
 blocks:
   - key: 01a1a2ff-1aff-720c-940c-ee61dfbc1127
     id: t1-backend
@@ -55,6 +64,15 @@ blocks:
         title: "Pin a release for every release-scoped read"
         detail: "In eb9d01c: `resolve` and `pinned`, with native tests for latest, a named release, 410 with pruned_at, 404 for never-published and missing releases, and 400 naming the parameter. Still to come: the e2e tests, and AC-128 (identical pinned reads) through the Worker."
         state: active
+      - key: 01a1a325-ad45-71d4-8d08-c6ef1b97f952
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Pin a release for every release-scoped read"
+        detail: "Native tests in eb9d01c, and e2e tests for identical pinned bytes, 410 and 404 in 0a595ee; those run in the W1 close."
+        state: done
   - key: 01a1a2ff-1aff-720c-940c-ee63866eeda4
     id: t1-releases
     kind: task
@@ -134,6 +152,15 @@ blocks:
         title: "W1 end-to-end tests"
         detail: "Through the real Worker: the release listing, pinned reads of release 2 returning identical bytes, 410 for release 1, 404 for release 99, and a source and a structure read. Done when they pass in `cargo xtask integration`."
         state: open
+      - key: 01a1a325-ad45-71d4-8d08-c6eed6afbf48
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W1 end-to-end tests"
+        detail: "Written in 0a595ee and 56fa972: releases, identical pinned reads, 410/404, a source and its provenance, structure pages, a reference and coverage, and the Boötes 63 Mpc (H0 = 50) radius rescaled by 50/67.66. They run in the W1 close's integration run."
+        state: done
   - key: 01a1a304-9a6d-73c6-8276-aa8c3eca041e
     id: w1-gaps
     kind: note
@@ -602,3 +629,33 @@ blocks:
 
           Done when ingest's tests, clippy, deny and lines pass, and the fixture state holds the rows for release 2 and none for pruned release 1.
         state: active
+      - key: 01a1a325-ad45-71d4-8d08-c6edbd377ed6
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Ingest schema v3: source details and structure details"
+        detail: |-
+          Merged in bf0bcf0 from the agent's branch (74f413e, dbe9db0, 35f566a). I reviewed the HEALPix code (cdshealpix, Górski et al. 2005), the rescaling (univ-model's rules, comoving ratio at the cited redshift), and the 19 references against their citations.
+
+          Choices:
+          - sky regions at order 6 (CfA2 Great Wall: 6,517 cells);
+          - an admitted outline keeps its published point as its shape, because a GridRegion in h⁻¹ Mpc can't be expressed in ICRS;
+          - deny.toml ignores RUSTSEC-2025-0141 (bincode unmaintained, not vulnerable, comes only through cdshealpix, never called).
+
+          Results: ingest 396 tests, model 92. The fixture holds 6 source_details and 26 structure_details rows for release 2, none for release 1.
+        state: done
+  - key: 01a1a325-ad45-71d4-8d08-c6eb54a91db3
+    id: w1-slip
+    kind: note
+    versions:
+      - key: 01a1a325-ad45-71d4-8d08-c6f06e332d29
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A commit through a pipe, corrected"
+        markdown: "8ee667d was committed after `cargo clippy … | grep`. The pipe's status hid a clippy failure (`assert_is_empty`). The commit was local, so I amended it to 56fa972, gated on clippy's own exit status. The memory rule now names focused checks explicitly."
+        tone: warning

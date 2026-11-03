@@ -5,11 +5,9 @@ pub(crate) mod provenance;
 pub use provenance::provenance;
 
 use serde_json::json;
-use univ_model::api::sources::{
-    Coverage, Reference, SourceDetail, SourceList, SourceSummary, Terms,
-};
+use univ_model::api::sources::{Coverage, Reference, SourceDetail, SourceList, Terms};
 
-use crate::backend::{Backend, Row, column, first, json_column};
+use crate::backend::{Backend, column, first, json_column, rows_as};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{pinned, resolve};
@@ -36,26 +34,15 @@ pub async fn list<B: Backend>(request: &Request, backend: &B) -> Result<Response
             &[json!(release)],
         )
         .await?;
-    let sources = rows
-        .iter()
-        .map(summary)
-        .collect::<Result<Vec<_>, Problem>>()?;
-    let listing = SourceList { release, sources };
-    Ok(pinned(Response::json(&json!(listing)), release))
+    let listing = SourceList {
+        release,
+        sources: rows_as(rows)?,
+    };
+    Ok(pinned(Response::json(&listing)?, release))
 }
 
-fn summary(row: &Row) -> Result<SourceSummary, Problem> {
-    Ok(SourceSummary {
-        id: column(row, "id")?,
-        title: column(row, "title")?,
-        scale_domain: column(row, "scale_domain")?,
-        entries: column(row, "entries")?,
-        citation: column(row, "citation")?,
-        credit: column(row, "credit")?,
-    })
-}
-
-/// Reads one source of the release the request reads.
+/// Reads one source of the release the request reads, with what schema v3 records beside it:
+/// its primary reference and its coverage, absent for a release built before schema v3.
 ///
 /// # Errors
 ///
@@ -78,8 +65,19 @@ pub async fn get<B: Backend>(
     backend: &B,
 ) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
-    let (n, row) = source_row(backend, release, id).await?;
-    let details = details(backend, release, n).await?;
+    let rows = backend
+        .releases(
+            "SELECT s.id, s.title, s.provider, s.scale_domain, s.entries, s.citation, \
+             s.terms_url, s.terms_quote, s.credit, s.redistribution, s.review, s.access, s.cuts, \
+             d.source AS detailed, d.bibcode, d.doi, d.reference_note, d.sky, d.radial \
+             FROM sources s LEFT JOIN source_details d \
+             ON d.release = s.release AND d.source = s.n \
+             WHERE s.release = ?1 AND s.id = ?2",
+            &[json!(release), json!(id)],
+        )
+        .await?;
+    let row = first(rows).ok_or_else(|| not_found(release, id))?;
+    let detailed = column::<Option<u32>>(&row, "detailed")?.is_some();
     let detail = SourceDetail {
         release,
         id: column(&row, "id")?,
@@ -88,7 +86,15 @@ pub async fn get<B: Backend>(
         scale_domain: column(&row, "scale_domain")?,
         entries: column(&row, "entries")?,
         citation: column(&row, "citation")?,
-        reference: details.as_ref().map(|d| d.reference.clone()),
+        reference: if detailed {
+            Some(Reference {
+                bibcode: column(&row, "bibcode")?,
+                doi: column(&row, "doi")?,
+                note: column(&row, "reference_note")?,
+            })
+        } else {
+            None
+        },
         terms: Terms {
             url: column(&row, "terms_url")?,
             quote: column(&row, "terms_quote")?,
@@ -98,86 +104,21 @@ pub async fn get<B: Backend>(
         },
         query: json_column(&row, "access")?,
         cuts: json_column(&row, "cuts")?,
-        coverage: details.map(|d| d.coverage),
-    };
-    Ok(pinned(Response::json(&json!(detail)), release))
-}
-
-/// The row of source `id` in `release`, with its number, or a 404 naming it.
-pub(crate) async fn source_row<B: Backend>(
-    backend: &B,
-    release: u32,
-    id: &str,
-) -> Result<(u32, Row), Problem> {
-    let rows = backend
-        .releases(
-            "SELECT * FROM sources WHERE release = ?1 AND id = ?2",
-            &[json!(release), json!(id)],
-        )
-        .await?;
-    let row = first(rows).ok_or_else(|| {
-        Problem::new(
-            ProblemType::SourceNotFound,
-            format!("Release {release} has no source {id:?}."),
-        )
-        .with("id", id)
-        .with("release", release)
-    })?;
-    Ok((column(&row, "n")?, row))
-}
-
-/// What schema v3 records of a source beside its row.
-struct Details {
-    reference: Reference,
-    coverage: Coverage,
-}
-
-/// The source's reference and coverage, or none in a release database from before schema v3.
-async fn details<B: Backend>(
-    backend: &B,
-    release: u32,
-    n: u32,
-) -> Result<Option<Details>, Problem> {
-    let rows = match backend
-        .releases(
-            "SELECT bibcode, doi, reference_note, sky, radial FROM source_details \
-             WHERE release = ?1 AND source = ?2",
-            &[json!(release), json!(n)],
-        )
-        .await
-    {
-        Ok(rows) => rows,
-        Err(error) if error.is_missing_table() => return Ok(None),
-        Err(error) => return Err(error.into()),
-    };
-    let Some(row) = first(rows) else {
-        return Ok(None);
-    };
-    let sky: Option<String> = column(&row, "sky")?;
-    let radial: Option<String> = column(&row, "radial")?;
-    Ok(Some(Details {
-        reference: Reference {
-            bibcode: column(&row, "bibcode")?,
-            doi: column(&row, "doi")?,
-            note: column(&row, "reference_note")?,
+        coverage: if detailed {
+            Some(Coverage {
+                sky: json_column(&row, "sky")?,
+                radial: json_column::<Option<_>>(&row, "radial")?.unwrap_or_default(),
+            })
+        } else {
+            None
         },
-        coverage: Coverage {
-            sky: sky.map(|text| parse(&text, "sky")).transpose()?,
-            radial: radial
-                .map(|text| parse(&text, "radial"))
-                .transpose()?
-                .unwrap_or_default(),
-        },
-    }))
+    };
+    Ok(pinned(Response::json(&detail)?, release))
 }
 
-fn parse<T: serde::de::DeserializeOwned>(text: &str, name: &str) -> Result<T, Problem> {
-    serde_json::from_str(text).map_err(|error| {
-        Problem::new(
-            ProblemType::InternalError,
-            format!("The release database's column {name} did not read: {error}."),
-        )
-    })
+/// The 404 of a source that `release` does not hold.
+pub(crate) fn not_found(release: u32, id: &str) -> Problem {
+    Problem::not_found(ProblemType::SourceNotFound, "source", release, id)
 }
 
 #[cfg(test)]

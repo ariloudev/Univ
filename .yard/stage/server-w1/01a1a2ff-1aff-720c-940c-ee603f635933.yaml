@@ -10,3 +10,26 @@ versions:
     title: "W1 close: review, gate, trace, merge"
     goal: "W1's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
     status: planned
+  - key: 01a1a325-ad45-71d4-8d08-c6f2006c88ee
+    at: 2026-11-03T20:41:57Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W1 close: review, gate, trace, merge"
+    goal: "W1's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: active
+blocks:
+  - key: 01a1a325-ad45-71d4-8d08-c6ec0d5aa79d
+    id: t1-review
+    kind: task
+    versions:
+      - key: 01a1a325-ad45-71d4-8d08-c6f3c215aca6
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Run /simplify and /code-review on W1's diff"
+        detail: "Both run in parallel on product/server..stage/server-w1. Done when every finding is fixed or kept with a reason."
+        state: active

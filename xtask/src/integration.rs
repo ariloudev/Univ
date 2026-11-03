@@ -14,6 +14,7 @@ use std::net::{TcpListener, TcpStream};
 use std::os::unix::process::CommandExt;
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, Instant};
 
 use crate::command;
@@ -69,7 +70,6 @@ pub fn integration(root: &Path) -> bool {
         .args(["test", "--quiet", "--package", "univ-server"])
         .args(["--test", "e2e", "--", "--ignored"])
         .env("UNIV_E2E_URL", format!("http://127.0.0.1:{port}"))
-        .env("UNIV_E2E_OWNER_SECRET", OWNER_SECRET)
         .status()
         .is_ok_and(|status| status.success());
     drop(wrangler);
@@ -95,7 +95,30 @@ pub fn serve(root: &Path) -> bool {
         );
         return false;
     }
-    migrate(root, &state) && succeeded(wrangler(root, "dev", &state).status(), "wrangler dev")
+    release_tables(root, &state)
+        && migrate(root, &state)
+        && succeeded(wrangler(root, "dev", &state).status(), "wrangler dev")
+}
+
+/// Creates each table of univ-model's release schema that the release database in `state`
+/// lacks, as a release built before the schema grew does: its rows stay as they are, and the
+/// Worker reads the new tables as holding nothing for it. The schema is only `CREATE … IF NOT
+/// EXISTS`; the schema version is Univ Ingest's to record when it publishes.
+fn release_tables(root: &Path, state: &Path) -> bool {
+    let file = root.join("target/serve/release-schema.sql");
+    let written = file
+        .parent()
+        .map_or(Ok(()), fs::create_dir_all)
+        .and_then(|()| fs::write(&file, univ_model::release::SCHEMA));
+    if let Err(error) = written {
+        eprintln!("could not write {}: {error}", file.display());
+        return false;
+    }
+    let mut execute = wrangler(root, "d1", state);
+    execute
+        .args(["execute", "univ", "--local", "--file"])
+        .arg(&file);
+    succeeded(execute.status(), "wrangler d1 execute (release schema)")
 }
 
 /// Applies the univ-layers migrations to the local state in `state`.
@@ -187,9 +210,34 @@ enum Ready {
 }
 
 /// A running `wrangler dev`, in a process group of its own so that stopping it stops the
-/// workerd processes it started too. Dropping it stops it.
+/// workerd processes it started too. Dropping it stops it, and so does Ctrl-C or a TERM to
+/// xtask, which would otherwise reach xtask alone and leave the group running.
 struct Wrangler {
     child: Child,
+}
+
+/// The process group of the running Wrangler, or 0 when none runs.
+static GROUP: AtomicU32 = AtomicU32::new(0);
+
+/// Stops the process group `group`.
+fn stop_group(group: u32) {
+    let _ = Command::new("kill")
+        .args(["-TERM", "--", &format!("-{group}")])
+        .status();
+}
+
+/// Stops the running Wrangler's group when xtask is interrupted, then exits as interrupted.
+pub fn stop_on_interrupt() {
+    let installed = ctrlc::set_handler(|| {
+        let group = GROUP.swap(0, Ordering::SeqCst);
+        if group != 0 {
+            stop_group(group);
+        }
+        std::process::exit(130);
+    });
+    if let Err(error) = installed {
+        eprintln!("Ctrl-C will not stop Wrangler: {error}");
+    }
 }
 
 impl Wrangler {
@@ -205,6 +253,7 @@ impl Wrangler {
             .stderr(err)
             .process_group(0)
             .spawn()?;
+        GROUP.store(child.id(), Ordering::SeqCst);
         Ok(Self { child })
     }
 
@@ -228,8 +277,8 @@ impl Wrangler {
 
 impl Drop for Wrangler {
     fn drop(&mut self) {
-        let group = format!("-{}", self.child.id());
-        let _ = Command::new("kill").args(["-TERM", "--", &group]).status();
+        GROUP.store(0, Ordering::SeqCst);
+        stop_group(self.child.id());
         let _ = self.child.wait();
     }
 }

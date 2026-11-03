@@ -3,6 +3,7 @@
 
 use std::future::Future;
 
+use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
 use crate::problem::{Problem, ProblemType};
@@ -26,15 +27,6 @@ pub trait Backend {
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
 }
 
-impl BackendError {
-    /// Whether the read failed because a table it names does not exist, as in a release
-    /// database written by an earlier schema.
-    #[must_use]
-    pub fn is_missing_table(&self) -> bool {
-        self.0.contains("no such table")
-    }
-}
-
 /// The first row of `rows`, if any.
 #[must_use]
 pub fn first(mut rows: Vec<Row>) -> Option<Row> {
@@ -45,25 +37,46 @@ pub fn first(mut rows: Vec<Row>) -> Option<Row> {
     }
 }
 
-/// The value of column `name` of `row`, as `T`; a missing column or another type is the
-/// server's failure, not the client's.
+/// The value of column `name` of `row`, as `T`; a missing column reads as NULL. A column of
+/// another type is the server's failure, not the client's.
 ///
 /// # Errors
 ///
 /// An internal-error problem naming the column.
-pub fn column<T: serde::de::DeserializeOwned>(row: &Row, name: &str) -> Result<T, Problem> {
-    let value = row.get(name).cloned().unwrap_or(Value::Null);
-    serde_json::from_value(value).map_err(|error| unreadable(name, &error))
+pub fn column<T: DeserializeOwned>(row: &Row, name: &str) -> Result<T, Problem> {
+    T::deserialize(row.get(name).unwrap_or(&Value::Null)).map_err(|error| unreadable(name, &error))
 }
 
-/// The JSON document that the text of column `name` holds, as `T`.
+/// The JSON document that the text of column `name` holds, as `T`; a NULL column reads as
+/// JSON null, so an `Option` is none.
 ///
 /// # Errors
 ///
 /// An internal-error problem naming the column.
-pub fn json_column<T: serde::de::DeserializeOwned>(row: &Row, name: &str) -> Result<T, Problem> {
-    let text: String = column(row, name)?;
-    serde_json::from_str(&text).map_err(|error| unreadable(name, &error))
+pub fn json_column<T: DeserializeOwned>(row: &Row, name: &str) -> Result<T, Problem> {
+    match row.get(name) {
+        Some(Value::String(text)) => serde_json::from_str(text),
+        other => T::deserialize(other.unwrap_or(&Value::Null)),
+    }
+    .map_err(|error| unreadable(name, &error))
+}
+
+/// Each row as `T`, its columns read as the fields of the same names.
+///
+/// # Errors
+///
+/// An internal-error problem when a row does not read.
+pub fn rows_as<T: DeserializeOwned>(rows: Vec<Row>) -> Result<Vec<T>, Problem> {
+    rows.into_iter()
+        .map(|row| {
+            serde_json::from_value(Value::Object(row)).map_err(|error| {
+                Problem::new(
+                    ProblemType::InternalError,
+                    format!("A row of the release database did not read: {error}."),
+                )
+            })
+        })
+        .collect()
 }
 
 fn unreadable(name: &str, error: &serde_json::Error) -> Problem {

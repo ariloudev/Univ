@@ -2,8 +2,8 @@
 
 use serde_json::{Value, json};
 
-use crate::http::{Body, Method, Request, Response};
-use crate::testkit::{RELEASES, SOURCES, Sqlite};
+use crate::http::Response;
+use crate::testkit::{RELEASES, SOURCES, Sqlite, body};
 
 fn db() -> Sqlite {
     let db = Sqlite::new();
@@ -12,14 +12,7 @@ fn db() -> Sqlite {
 }
 
 fn get(db: &Sqlite, path: &str) -> Response {
-    db.answer(&Request::new(Method::Get, path))
-}
-
-fn body(response: &Response) -> Value {
-    let Body::Bytes(bytes) = &response.body else {
-        panic!("{} has no body", response.status);
-    };
-    serde_json::from_slice(bytes).unwrap()
+    db.get(path, "")
 }
 
 fn read(path: &str) -> Value {
@@ -110,7 +103,7 @@ fn the_coverage_gives_the_sky_footprint_and_the_range_of_each_radial_measure() {
 #[test]
 fn a_release_written_before_schema_v3_reads_without_reference_or_coverage() {
     let db = db();
-    db.exec("DROP TABLE source_details;");
+    db.exec("DELETE FROM source_details;");
     let response = get(&db, "/v1/sources/hipparcos-2007");
     assert_eq!(response.status, 200);
     let source = body(&response);
@@ -177,9 +170,7 @@ fn an_unknown_source_answers_404_naming_it() {
 
 #[test]
 fn a_source_of_a_pruned_release_is_refused_with_410() {
-    let mut request = Request::new(Method::Get, "/v1/sources/hipparcos-2007");
-    request.query = "release=1".to_owned();
-    let response = db().answer(&request);
+    let response = db().get("/v1/sources/hipparcos-2007", "release=1");
     assert_eq!(response.status, 410);
     assert_eq!(body(&response)["pruned_at"], "2026-11-02T09:00:00Z");
 }

@@ -134,7 +134,10 @@ fn main() -> ExitCode {
     let passed = match std::env::args().nth(1).as_deref() {
         Some("check") => check(&root),
         Some("lines") => lines_pass(&root),
-        Some("integration") => integration::integration(&root),
+        Some("integration") => {
+            integration::stop_on_interrupt();
+            integration::integration(&root)
+        }
         Some("serve") => integration::serve(&root),
         Some("science") => {
             let args: Vec<String> = std::env::args().skip(2).collect();

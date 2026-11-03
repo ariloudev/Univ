@@ -2,8 +2,8 @@
 
 use serde_json::{Value, json};
 
-use crate::http::{Body, Method, Request, Response};
-use crate::testkit::{MANY_STRUCTURES, RELEASES, STRUCTURES, Sqlite};
+use crate::http::Response;
+use crate::testkit::{MANY_STRUCTURES, RELEASES, STRUCTURES, Sqlite, body};
 
 fn db() -> Sqlite {
     let db = Sqlite::new();
@@ -12,16 +12,7 @@ fn db() -> Sqlite {
 }
 
 fn get(db: &Sqlite, path: &str, query: &str) -> Response {
-    let mut request = Request::new(Method::Get, path);
-    query.clone_into(&mut request.query);
-    db.answer(&request)
-}
-
-fn body(response: &Response) -> Value {
-    let Body::Bytes(bytes) = &response.body else {
-        panic!("{} has no body", response.status);
-    };
-    serde_json::from_slice(bytes).unwrap()
+    db.get(path, query)
 }
 
 fn read(db: &Sqlite, path: &str, query: &str) -> Value {

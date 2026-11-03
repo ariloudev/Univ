@@ -8,7 +8,7 @@
 use serde_json::{Value, json};
 use univ_model::api::structures::{Centre, StructureDetail, StructurePage, StructureSummary};
 
-use crate::backend::{Backend, BackendError, Row, column, first};
+use crate::backend::{Backend, Row, column, first, json_column};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{pinned, published, resolve};
@@ -82,7 +82,7 @@ pub async fn list<B: Backend>(request: &Request, backend: &B) -> Result<Response
         structures,
         next,
     };
-    Ok(pinned(Response::json(&json!(page)), release))
+    Ok(pinned(Response::json(&page)?, release))
 }
 
 /// Reads one structure of the release the request reads.
@@ -110,21 +110,19 @@ pub async fn get<B: Backend>(
     let release = resolve(request, backend).await?;
     let rows = backend
         .releases(
-            "SELECT s.*, d.unit FROM structures s LEFT JOIN scale_domains d \
-             ON d.release = s.release AND d.name = s.scale_domain \
+            "SELECT s.id, s.name, s.kind, s.status, s.scale_domain, s.centre_x, s.centre_y, \
+             s.centre_z, s.record, s.members, s.bounds, d.unit, \
+             sd.shape, sd.derivation, sd.outline, sd.rescaled \
+             FROM structures s \
+             LEFT JOIN scale_domains d ON d.release = s.release AND d.name = s.scale_domain \
+             LEFT JOIN structure_details sd ON sd.release = s.release AND sd.id = s.id \
              WHERE s.release = ?1 AND s.id = ?2",
             &[json!(release), json!(id)],
         )
         .await?;
     let row = first(rows).ok_or_else(|| {
-        Problem::new(
-            ProblemType::StructureNotFound,
-            format!("Release {release} has no structure {id:?}."),
-        )
-        .with("id", id)
-        .with("release", release)
+        Problem::not_found(ProblemType::StructureNotFound, "structure", release, id)
     })?;
-    let details = details(backend, release, id).await?;
     let detail = StructureDetail {
         release,
         id: column(&row, "id")?,
@@ -132,36 +130,16 @@ pub async fn get<B: Backend>(
         kind: column(&row, "kind")?,
         status: column(&row, "status")?,
         scale_domain: column(&row, "scale_domain")?,
-        record: json_text(&row, "record")?.unwrap_or(Value::Null),
+        record: json_column(&row, "record")?,
         centre: centre(&row)?,
-        bounds: json_text(&row, "bounds")?,
-        shape: json_text(&details, "shape")?,
-        derivation: json_text(&details, "derivation")?,
-        members: json_text(&row, "members")?,
-        outline: json_text(&details, "outline")?,
-        rescaled: match json_text(&details, "rescaled")? {
-            Some(Value::Array(items)) => items,
-            _ => Vec::new(),
-        },
+        bounds: json_column(&row, "bounds")?,
+        shape: json_column(&row, "shape")?,
+        derivation: json_column(&row, "derivation")?,
+        members: json_column(&row, "members")?,
+        outline: json_column(&row, "outline")?,
+        rescaled: json_column::<Option<_>>(&row, "rescaled")?.unwrap_or_default(),
     };
-    Ok(pinned(Response::json(&json!(detail)), release))
-}
-
-/// What schema v3 records of a structure beside its row: an empty row in a release database
-/// from before it, or for a structure it has nothing on.
-async fn details<B: Backend>(backend: &B, release: u32, id: &str) -> Result<Row, Problem> {
-    let read = backend
-        .releases(
-            "SELECT shape, derivation, outline, rescaled FROM structure_details \
-             WHERE release = ?1 AND id = ?2",
-            &[json!(release), json!(id)],
-        )
-        .await;
-    match read {
-        Ok(rows) => Ok(first(rows).unwrap_or_default()),
-        Err(error) if BackendError::is_missing_table(&error) => Ok(Row::new()),
-        Err(error) => Err(error.into()),
-    }
+    Ok(pinned(Response::json(&detail)?, release))
 }
 
 fn summary(row: &Row) -> Result<StructureSummary, Problem> {
@@ -193,20 +171,6 @@ fn centre(row: &Row) -> Result<Option<Centre>, Problem> {
     })
 }
 
-/// The JSON document a text column holds, or none when it is NULL or absent.
-fn json_text(row: &Row, name: &str) -> Result<Option<Value>, Problem> {
-    let text: Option<String> = column(row, name)?;
-    text.map(|text| {
-        serde_json::from_str(&text).map_err(|error| {
-            Problem::new(
-                ProblemType::InternalError,
-                format!("The release database's column {name} did not read: {error}."),
-            )
-        })
-    })
-    .transpose()
-}
-
 /// The values of a comma-separated query parameter, as a JSON array for `json_each`, or null
 /// when the parameter is absent.
 fn list_param(request: &Request, name: &str) -> Value {
@@ -227,12 +191,11 @@ fn parse_cursor(cursor: &str) -> Result<(u32, String), Problem> {
         .and_then(|(release, id)| Some((release.parse().ok()?, id.to_owned())))
         .filter(|(release, _): &(u32, String)| *release > 0)
         .ok_or_else(|| {
-            Problem::new(
-                ProblemType::InvalidParameter,
+            Problem::invalid_parameter(
+                "cursor",
+                cursor,
                 format!("The cursor {cursor:?} is not one a page of structures gave."),
             )
-            .with("parameter", "cursor")
-            .with("value", cursor)
         })
 }
 

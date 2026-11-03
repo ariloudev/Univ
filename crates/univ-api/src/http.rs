@@ -13,10 +13,11 @@ pub enum Method {
 }
 
 impl Method {
-    /// The method named by an HTTP request line, matched without regard to case.
+    /// The method named by an HTTP request line. Methods are case-sensitive (RFC 9110 §9.1),
+    /// so `get` is not GET but a method of its own, which no route answers.
     #[must_use]
     pub fn parse(name: &str) -> Self {
-        match name.to_ascii_uppercase().as_str() {
+        match name {
             "GET" => Self::Get,
             "HEAD" => Self::Head,
             "POST" => Self::Post,
@@ -73,44 +74,13 @@ impl Request {
     }
 
     /// The decoded value of the first query parameter of that name, as a form encodes it:
-    /// `+` is a space and `%XX` a byte of UTF-8. A value that does not decode is kept as sent.
+    /// `+` is a space and `%XX` a byte of UTF-8. A malformed escape is kept as sent.
     #[must_use]
     pub fn param(&self, name: &str) -> Option<String> {
-        self.query
-            .split('&')
-            .filter_map(|pair| pair.split_once('=').or(Some((pair, ""))))
-            .find(|(key, _)| decode(key) == name)
-            .map(|(_, value)| decode(value))
+        form_urlencoded::parse(self.query.as_bytes())
+            .find(|(key, _)| key == name)
+            .map(|(_, value)| value.into_owned())
     }
-}
-
-/// `text` with `+` as a space and each `%XX` as its byte, or `text` itself when the bytes are
-/// not UTF-8. A `%` not followed by two hexadecimal digits is kept.
-fn decode(text: &str) -> String {
-    let bytes = text.as_bytes();
-    let mut out = Vec::with_capacity(bytes.len());
-    let mut i = 0;
-    while i < bytes.len() {
-        let escaped = match bytes.get(i..i + 3) {
-            Some([b'%', high, low]) => hex(*high).zip(hex(*low)).map(|(h, l)| h * 16 + l),
-            _ => None,
-        };
-        if let Some(byte) = escaped {
-            out.push(byte);
-            i += 3;
-        } else {
-            out.push(if bytes[i] == b'+' { b' ' } else { bytes[i] });
-            i += 1;
-        }
-    }
-    String::from_utf8(out).unwrap_or_else(|_| text.to_owned())
-}
-
-/// The value of one hexadecimal digit.
-fn hex(digit: u8) -> Option<u8> {
-    char::from(digit)
-        .to_digit(16)
-        .and_then(|value| u8::try_from(value).ok())
 }
 
 /// What a response carries.
@@ -118,6 +88,20 @@ fn hex(digit: u8) -> Option<u8> {
 pub enum Body {
     Empty,
     Bytes(Vec<u8>),
+    /// Bytes built once and kept for the isolate's life, such as the OpenAPI document.
+    Static(&'static [u8]),
+}
+
+impl Body {
+    /// The body's bytes.
+    #[must_use]
+    pub fn as_bytes(&self) -> &[u8] {
+        match self {
+            Self::Empty => &[],
+            Self::Bytes(bytes) => bytes,
+            Self::Static(bytes) => bytes,
+        }
+    }
 }
 
 /// One response: its status, its headers and its body.
@@ -139,10 +123,20 @@ impl Response {
         }
     }
 
-    /// A 200 response holding `value` as JSON.
-    #[must_use]
-    pub fn json(value: &serde_json::Value) -> Self {
-        Self::bytes(200, "application/json", value.to_string().into_bytes())
+    /// A 200 response holding `value` serialized as JSON.
+    ///
+    /// # Errors
+    ///
+    /// An internal-error problem when `value` does not serialize.
+    pub fn json<T: serde::Serialize>(value: &T) -> Result<Self, crate::Problem> {
+        serde_json::to_vec(value)
+            .map(|body| Self::bytes(200, "application/json", body))
+            .map_err(|error| {
+                crate::Problem::new(
+                    crate::ProblemType::InternalError,
+                    format!("The answer did not serialize: {error}."),
+                )
+            })
     }
 
     /// A response of that status and content type holding `body`.
@@ -199,6 +193,13 @@ mod tests {
         assert_eq!(request.param("kind").as_deref(), Some("void wall"));
         assert_eq!(request.param("release").as_deref(), Some("6"));
         assert_eq!(request.param("missing"), None);
+    }
+
+    #[test]
+    fn methods_are_case_sensitive() {
+        assert_eq!(Method::parse("GET"), Method::Get);
+        assert_eq!(Method::parse("get"), Method::Other("get".to_owned()));
+        assert_eq!(Method::parse("Patch"), Method::Other("Patch".to_owned()));
     }
 
     #[test]

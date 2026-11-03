@@ -94,10 +94,29 @@ fn an_unknown_route_answers_404_with_problem_details() {
 #[test]
 #[ignore = "needs the Worker: run `cargo xtask integration`"]
 fn a_head_request_is_answered_with_no_body() {
-    let response = CLIENT.head(url("/v1/openapi.json")).send().unwrap();
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(header(&response, "access-control-allow-origin"), Some("*"));
-    assert!(response.bytes().unwrap().is_empty());
+    // An HTTP client never reads a HEAD's body, so the bytes on the wire are read instead.
+    for (path, status) in [("/v1/openapi.json", "200"), ("/v1/nowhere", "404")] {
+        let raw = raw_head(path);
+        let (head, body) = raw.split_once("\r\n\r\n").unwrap();
+        assert!(head.starts_with(&format!("HTTP/1.1 {status}")), "{head}");
+        assert!(
+            head.to_ascii_lowercase()
+                .contains("access-control-allow-origin: *"),
+            "{head}"
+        );
+        assert_eq!(body, "", "HEAD {path} carried a body");
+    }
+}
+
+/// Everything the Worker sends back to a HEAD of `path`, read until it closes.
+fn raw_head(path: &str) -> String {
+    let authority = BASE.trim_start_matches("http://");
+    let mut stream = std::net::TcpStream::connect(authority).unwrap();
+    let request = format!("HEAD {path} HTTP/1.1\r\nHost: {authority}\r\nConnection: close\r\n\r\n");
+    std::io::Write::write_all(&mut stream, request.as_bytes()).unwrap();
+    let mut raw = String::new();
+    std::io::Read::read_to_string(&mut stream, &mut raw).unwrap();
+    raw
 }
 
 #[test]

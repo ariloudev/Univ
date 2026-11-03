@@ -66,6 +66,7 @@ fn respond(answer: univ_api::Response) -> Result<Response> {
     let response = match answer.body {
         univ_api::Body::Empty => Response::empty()?,
         univ_api::Body::Bytes(bytes) => Response::from_bytes(bytes)?,
+        univ_api::Body::Static(bytes) => Response::from_bytes(bytes.to_vec())?,
     };
     Ok(response.with_status(answer.status).with_headers(headers))
 }

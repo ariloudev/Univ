@@ -5,10 +5,9 @@ use std::collections::BTreeMap;
 
 use serde::Deserialize;
 use serde_json::json;
-use univ_model::api::sources::{EntryCounts, Fix, Payload, SourceProvenance};
+use univ_model::api::sources::{EntryCounts, Fix, SourceProvenance};
 
-use super::source_row;
-use crate::backend::{Backend, Row, column, first, json_column};
+use crate::backend::{Backend, column, first, json_column, rows_as};
 use crate::http::{Request, Response};
 use crate::problem::Problem;
 use crate::releases::{pinned, resolve};
@@ -50,38 +49,35 @@ pub async fn provenance<B: Backend>(
     backend: &B,
 ) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
-    let (n, source) = source_row(backend, release, id).await?;
+    let rows = backend
+        .releases(
+            "SELECT s.n, s.fixes, nm.published, nm.left_out, nm.fixes AS applied \
+             FROM sources s LEFT JOIN normalizations nm \
+             ON nm.release = s.release AND nm.source = s.n \
+             WHERE s.release = ?1 AND s.id = ?2",
+            &[json!(release), json!(id)],
+        )
+        .await?;
+    let source = first(rows).ok_or_else(|| super::not_found(release, id))?;
+    let n: u32 = column(&source, "n")?;
     let payloads = backend
         .releases(
             "SELECT item, url, sha256, bytes, retrieved, rows FROM payloads \
              WHERE release = ?1 AND source = ?2 ORDER BY item",
             &[json!(release), json!(n)],
         )
-        .await?
-        .iter()
-        .map(payload)
-        .collect::<Result<Vec<_>, Problem>>()?;
-    let normalization = first(
-        backend
-            .releases(
-                "SELECT published, left_out, fixes FROM normalizations \
-                 WHERE release = ?1 AND source = ?2",
-                &[json!(release), json!(n)],
-            )
-            .await?,
-    );
+        .await?;
     let defined: Vec<DefinedFix> = json_column(&source, "fixes")?;
-    let (counts, left_out, applied) = match &normalization {
-        Some(row) => {
-            let left_out: BTreeMap<String, u64> = json_column(row, "left_out")?;
-            let published: u64 = column(row, "published")?;
+    let (counts, left_out, applied) = match column::<Option<u64>>(&source, "published")? {
+        Some(published) => {
+            let left_out: BTreeMap<String, u64> = json_column(&source, "left_out")?;
             let dropped: u64 = left_out.values().sum();
             let counts = EntryCounts {
                 fetched: published + dropped,
                 published,
                 left_out: dropped,
             };
-            let applied: Vec<AppliedFix> = json_column(row, "fixes")?;
+            let applied: Vec<AppliedFix> = json_column(&source, "applied")?;
             (Some(counts), left_out, applied)
         }
         None => (None, BTreeMap::new(), Vec::new()),
@@ -89,23 +85,12 @@ pub async fn provenance<B: Backend>(
     let record = SourceProvenance {
         release,
         id: id.to_owned(),
-        payloads,
+        payloads: rows_as(payloads)?,
         counts,
         left_out,
         fixes: fixes(defined, &applied),
     };
-    Ok(pinned(Response::json(&json!(record)), release))
-}
-
-fn payload(row: &Row) -> Result<Payload, Problem> {
-    Ok(Payload {
-        item: column(row, "item")?,
-        url: column(row, "url")?,
-        sha256: column(row, "sha256")?,
-        bytes: column(row, "bytes")?,
-        retrieved: column(row, "retrieved")?,
-        rows: column(row, "rows")?,
-    })
+    Ok(pinned(Response::json(&record)?, release))
 }
 
 /// Each fix the source definition states, with how many entries normalization changed by it:

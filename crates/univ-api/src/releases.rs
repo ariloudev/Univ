@@ -26,12 +26,11 @@ pub async fn resolve<B: Backend>(request: &Request, backend: &B) -> Result<u32, 
         return latest(backend).await;
     };
     let number = text.parse::<u32>().ok().filter(|n| *n > 0).ok_or_else(|| {
-        Problem::new(
-            ProblemType::InvalidParameter,
+        Problem::invalid_parameter(
+            RELEASE_PARAM,
+            &text,
             format!("The release must be a positive whole number, not {text:?}."),
         )
-        .with("parameter", RELEASE_PARAM)
-        .with("value", text.clone())
     })?;
     published(number, backend).await
 }
@@ -80,11 +79,15 @@ async fn latest<B: Backend>(backend: &B) -> Result<u32, Problem> {
         .await?;
     match first(rows) {
         Some(row) => column(&row, "release"),
-        None => Err(Problem::new(
-            ProblemType::ReleaseNotFound,
-            "No release has been published yet.",
-        )),
+        None => Err(nothing_published()),
     }
+}
+
+fn nothing_published() -> Problem {
+    Problem::new(
+        ProblemType::ReleaseNotFound,
+        "No release has been published yet.",
+    )
 }
 
 /// The response, marked as answered from `release`.
@@ -109,19 +112,26 @@ pub async fn list<B: Backend>(backend: &B) -> Result<Response, Problem> {
     let rows = backend
         .releases(
             "SELECT number, published_at, pruned_at, cosmology, sources, objects, structures, \
-             grids, tiles FROM releases WHERE published_at IS NOT NULL ORDER BY number DESC",
+             grids, tiles, (SELECT release FROM latest WHERE one = 1) AS latest \
+             FROM releases WHERE published_at IS NOT NULL ORDER BY number DESC",
             &[],
         )
         .await?;
-    let releases = rows
-        .iter()
-        .map(summary)
-        .collect::<Result<Vec<_>, Problem>>()?;
-    let listing = ReleaseList {
-        latest: latest(backend).await?,
-        releases,
+    let latest = match rows.first() {
+        Some(row) => column::<Option<u32>>(row, "latest")?,
+        None => None,
     };
-    Ok(Response::json(&json!(listing)))
+    let Some(latest) = latest else {
+        return Err(nothing_published());
+    };
+    let listing = ReleaseList {
+        latest,
+        releases: rows
+            .iter()
+            .map(summary)
+            .collect::<Result<Vec<_>, Problem>>()?,
+    };
+    Response::json(&listing)
 }
 
 fn summary(row: &Row) -> Result<ReleaseSummary, Problem> {
@@ -145,18 +155,15 @@ mod tests {
     use serde_json::Value;
 
     use super::*;
-    use crate::http::{Body, Method};
-    use crate::testkit::{RELEASES, Sqlite, block_on};
+    use crate::http::Method;
+    use crate::testkit::{RELEASES, Sqlite, block_on, body};
 
     fn listing() -> Value {
         let db = Sqlite::new();
         db.exec(RELEASES);
-        let response = db.answer(&Request::new(Method::Get, "/v1/releases"));
+        let response = db.get("/v1/releases", "");
         assert_eq!(response.status, 200);
-        let Body::Bytes(bytes) = response.body else {
-            panic!("a listing has a body");
-        };
-        serde_json::from_slice(&bytes).unwrap()
+        body(&response)
     }
 
     fn pinned_to(query: &str) -> Result<u32, Problem> {
@@ -238,6 +245,16 @@ mod tests {
             assert_eq!(problem.kind, ProblemType::InvalidParameter, "{query}");
             assert_eq!(problem.extensions["parameter"], "release");
         }
+    }
+
+    #[test]
+    fn with_nothing_published_the_listing_is_refused_with_404() {
+        let response = Sqlite::new().get("/v1/releases", "");
+        assert_eq!(response.status, 404);
+        assert_eq!(
+            body(&response)["type"],
+            "urn:univ:problem:release-not-found"
+        );
     }
 
     #[test]
