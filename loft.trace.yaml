@@ -165,6 +165,9 @@ links:
       - file: "crates/univ-ingest/tests/acquire.rs"
         name: "a_source_whose_rows_match_its_count_is_acquired_and_every_payload_recorded"
         body: f5c83cf46111f98ebe978744d278b8d181583fc3cf5c5d4e7595a6f4f68d9e4c
+      - file: "crates/univ-ingest/tests/provenance.rs"
+        name: "payloads_are_kept_in_item_order_whatever_order_they_arrive_in"
+        body: f7b6e62a4f8f25edd0912bb85c9f4d1d20b44528ed949fe7af9ed29b403d813a
   - node: 01a19f22-2ad9-716e-876f-184f18271ab3
     reviewed: 182bebcb0e3e34fa7e3c3f04d73f7dc496e87cea2f1b41885d34bd956e4adb2b
     tests:
@@ -197,22 +200,34 @@ links:
         body: 3a4209fa46d5f86a73ea190f7ca866f6c342574e00f4758d065397c31720a3f5
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "a_luminosity_distance_at_z_0_1_converts_by_one_over_one_plus_z"
-        body: dcf54b8dfa2d74e2c88c5f958e8675ff0cba6b6b064aec0b98e7f7773876e976
+        body: 4918083ea62820839f22a063387203312620a654ec3988beb73d9f70f06b69f1
+      - file: "crates/univ-ingest/tests/positions_chain.rs"
+        name: "a_redshift_distance_s_interval_carries_the_peculiar_velocity"
+        body: ec2e3ababdedff07849efde20432a57ab9f0fbefbf13f0886d504763f87170eb
+      - file: "crates/univ-ingest/tests/positions_chain.rs"
+        name: "a_luminosity_distance_takes_its_redshift_s_kind_errors_and_refuses_a_blueshift"
+        body: 48f66b6eb8b7d9a5b72fbb29ec9b2f362549db5080e9da773eb7995008b789a6
   - node: 01a19f22-2ad9-716e-876f-1857a487f288
     reviewed: 40f97d402d7a8ecc1de6fc9637e2689502231d9f415497f6f13c51aae1668445
     tests:
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "m31_is_placed_at_its_mcconnachie_distance_toward_andromeda"
-        body: 99aa954f1647dce6755b5379a2ee7879c24769a5a0c261790fb3487cbbfd59bf
+        body: f5b66287a4248decae140f8e7298c8c07e536eb7ef68e744b3d4dc184ec5c609
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
-        body: e9dec6029c450bb51698216e7d18d6b8286b8aa2c76c2b484e6329722d4b0d58
+        body: 4dabd2bf63a2450519b1326be4219096bccbf4041ec046dd2cc66ce280e5aaf8
   - node: 01a19f22-2ad9-716e-876f-18581d266d87
     reviewed: b0628e3a2ff8a552c79740e3cadb9ca161a367ddba50c1ad9c41135224ef2ac5
     tests:
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "each_derived_value_records_the_release_cosmology_its_chain_and_the_model_version"
-        body: 29a62f2106e466bea4370664ac3123edce591323fb9449b0ae5a0d4e95677ad4
+        body: 81acdf14732e949cf36569d96dbf2e0e1c3bfc2a4a131842d3b93fb803266556
+      - file: "crates/univ-ingest/tests/positions_chain.rs"
+        name: "an_inverted_parallax_starts_from_the_published_parallax_and_its_zero_point"
+        body: bad7fb097039edf4b1dd99d65ab35637decd2d903c6640c117f71ba973a5ea5e
+      - file: "crates/univ-ingest/tests/positions_chain.rs"
+        name: "an_unstated_equinox_is_taken_as_j2000_before_it_is_moved_to_the_icrs"
+        body: 1436bdc4423123b11657a113b3ba0c409c1b489b8424541ce5384519596bdf35
   - node: 01a19f22-2ad9-716e-876f-185a4c7f512f
     reviewed: fe3459e698e168a8dc527ccb0e54bbc53ab85123ed9d2d2e95d729d7fcf1907c
     tests:
@@ -225,6 +240,9 @@ links:
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "a_size_is_rescaled_with_the_same_factor_as_its_structures_distance"
         body: 891e098243adc6507467d1ca20ba032ed9a642d9ac4a0852244d8fea866c1885
+      - file: "crates/univ-ingest/tests/positions_chain.rs"
+        name: "a_distance_is_rescaled_by_the_rule_its_size_follows"
+        body: b320103b4b32ddbfc7c9e87948a48b8925121b6149725f007e5e67789e52cb0b
   - node: 01a19f22-2ad9-716e-876f-186064637cbc
     reviewed: 45088d301500263f3d8ddf925252261bbac6057644125800cebe93b857fc49d0
     tests:
@@ -239,7 +257,7 @@ links:
         body: 4c9364dd1cbd7acbf93d8077d07fa9d74afc53643da89c3b0e598cfa3b03bf39
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
-        body: e9dec6029c450bb51698216e7d18d6b8286b8aa2c76c2b484e6329722d4b0d58
+        body: 4dabd2bf63a2450519b1326be4219096bccbf4041ec046dd2cc66ce280e5aaf8
   - node: 01a19f22-2ad9-716e-876f-18610047a726
     reviewed: 8d1059018ea0ccc9f9db37c3cfd24bc457f7b44ce026c27f427025c03adab502
     tests:
@@ -251,7 +269,7 @@ links:
         body: 4c9364dd1cbd7acbf93d8077d07fa9d74afc53643da89c3b0e598cfa3b03bf39
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
-        body: e9dec6029c450bb51698216e7d18d6b8286b8aa2c76c2b484e6329722d4b0d58
+        body: 4dabd2bf63a2450519b1326be4219096bccbf4041ec046dd2cc66ce280e5aaf8
   - node: 01a19f22-2ad9-716e-876f-186415c2b2be
     reviewed: 458cb36ebd2c648503a49d347b9c2ac1d7d318306bca79bc27c117259efaa85a
     tests:
@@ -375,6 +393,9 @@ links:
       - file: "crates/univ-ingest/tests/normalize_rows.rs"
         name: "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
         body: 58b4f769505e894360d7e0f7464e4680ecb898f6a9650eed34d48683c5422e08
+      - file: "crates/univ-ingest/tests/normalize_rows.rs"
+        name: "a_row_repeating_an_identifier_is_left_out_and_counted_and_the_match_goes_on"
+        body: 90bb81d625e55a44ad2cf380bb0421951211a0bfb82a431557295a21962fcaa9
   - node: 01a19f22-2ad9-716e-876f-1877e0c274f2
     reviewed: 05ea7f696d8d63e80d345077a13b6c6efb2bc8ec3f246770e85de49e7562a492
     tests:
@@ -458,7 +479,7 @@ links:
         body: e66045689416bb643c0d15eb7eb0bf064e26783b024fe75629d42844ed188bf4
       - file: "crates/univ-ingest/tests/outlines.rs"
         name: "a_threshold_chosen_by_this_pipeline_says_so_and_why_and_is_never_read_as_a_citation"
-        body: 93dea4f857ef6e47adc890f975263526739a888febc4d631b77773fe426402f1
+        body: 549bab5b7ee1f715947faecaaf50bc5cb943b0e3e9912a68aae7f19c51c8468d
       - file: "crates/univ-ingest/tests/outlines_dense.rs"
         name: "a_void_whose_dense_places_lie_outside_it_is_admitted"
         body: a60a29282b26fcfa168f3b2b4a766881cf1394ca44f462d463b7247db1ddb67b
@@ -480,6 +501,9 @@ links:
       - file: "crates/univ-ingest/tests/crossmatch.rs"
         name: "a_member_that_resolves_to_no_object_or_an_unplaced_one_keeps_the_structure_a_point"
         body: c15ef4f6fcbd8576437486a9deec6e1b869cabead49ccd98b23f286300827d6e
+      - file: "crates/univ-ingest/tests/outlines_dense.rs"
+        name: "a_dense_place_off_the_grid_is_recorded_with_why_and_counted"
+        body: 6f82156a0e31361a291c9ebee792a5e63f990310afe669ecbe3c0c5b3fde64e8
   - node: 01a19f23-636e-7035-8185-ab998407d632
     reviewed: 7630424b0e1f46a63129bb35234a4a81243755014dfcfb33e42850be779fd1ec
     tests:
@@ -489,6 +513,9 @@ links:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "the_peculiar_velocity_term_is_the_rule_s_parameter"
         body: 3c79cd95913cb511c86a0fd9b8c3ccd50c4c51f25e35dadd845a8d9c3a05364d
+      - file: "crates/univ-ingest/tests/ranking_parallax.rs"
+        name: "a_spectroscopic_redshift_without_an_error_ranks_after_a_reported_one"
+        body: f0d785f7f171dfc1dcf5186cc90c4f442503ae8be6f9ec2c607ac1098c8129e3
   - node: 01a19f23-636e-7035-8185-ab9ac704109a
     reviewed: 7389e1121c9ac1b5c1a533b7a13f1cc4cac71c296739634ec22b1acece13860b
     tests:
@@ -531,6 +558,9 @@ links:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "a_shared_2masx_name_joins_entries_beyond_the_positional_tolerance"
         body: 92f1057a69a2de78f0ef4bb67bd593c29a023f212c654a912ddfa1a2b27cc55c
+      - file: "crates/univ-ingest/tests/matching_linkage.rs"
+        name: "a_cross_identification_two_entries_of_one_source_claim_joins_neither"
+        body: 9451d30b56a83313ed6a5dbdf78bb8cebfd95823b78cb50a7b4706a5f4a09203
   - node: 01a19f23-636f-72bd-b194-150a909c8f0e
     reviewed: 23bd90e2ea5f02a35571b02e6ce29e75659bfc0ec5fbad0cf52bb671fad0fdf0
     tests:
@@ -542,13 +572,16 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "each_pair_of_sources_has_its_own_tolerances"
-        body: dc325ceeac7cf53d62d78e406c13c3212ed408067a04776d03d7d8dfe52f39d0
+        body: 7aab26e1fbf8600ff13d45ba13e6fea5040391bb676ee8602071d841b578d95f
   - node: 01a19f23-636f-72bd-b194-150dfab9225c
     reviewed: 3f33c2d62850e3a0f4c5d758efbe55899e291ece373e0a7181b313085483a9b9
     tests:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "a_merge_records_method_separation_velocity_difference_and_confidence"
         body: 5a178d2e122b85310884192593714b7cabbabc16194d2fad2078511599b8d6e7
+      - file: "crates/univ-ingest/tests/matching_linkage.rs"
+        name: "a_chain_of_close_pairs_does_not_join_entries_too_far_apart"
+        body: 50a13f6160fd22895bdf927d6cae8415e165bdfa24582a773913e8e72214f7d6
   - node: 01a19f23-636f-72bd-b194-150e56ac26d6
     reviewed: f55f26a1d1b0ce4a4976c72b695b95288361bd2e72f11a48a39a5c68eab6204b
     tests:
@@ -560,7 +593,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "an_entry_with_two_candidates_is_kept_apart_and_linked_to_each_with_its_confidence"
-        body: 7dabfaf84432796726e716ab7ed8b025143ee433a210e39183b52521191cf95d
+        body: d8d4246588d895e233a958065dca1d2f9a2ddfcfb6145fc390dc57827da69a59
   - node: 01a19f23-636f-72bd-b194-15114b1cd667
     reviewed: 4041399c59e701a49c5982850626ab94b9297b454de46d995d84523ef0dca5eb
     tests:
@@ -570,6 +603,9 @@ links:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "a_candidate_link_never_lends_its_measurements"
         body: 252f0cba87fcf4d6532751c048416954c9a8991a584202d2052eb1d8facd596d
+      - file: "crates/univ-ingest/tests/matching_linkage.rs"
+        name: "a_galaxy_group_stays_apart_from_its_dominant_galaxy_and_lends_it_nothing"
+        body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
   - node: 01a19f23-636f-72bd-b194-1513f385222f
     reviewed: 66f206a5eefa8b76732be7488e54f99a84eaaaf7358ea6a5f1667028732ec2bc
     tests:
@@ -593,7 +629,7 @@ links:
         body: 847b3eea00ce13bafd7d3789ec54efb3ad343d74172a288a5e50291d33dec788
       - file: "crates/univ-ingest/tests/crossmatch.rs"
         name: "a_cross_match_again_gives_the_same_ids_until_a_release_takes_them"
-        body: 0c00fc78b67ed9ae9454d71a2b31b662bd26d86683adb54c1fbe4d8ef7116670
+        body: 29258d403313badf4bde2304641505a7b536700ee4a9cb154e4eac9d54aecfd5
   - node: 01a19f23-636f-72bd-b194-15189cad9cac
     reviewed: c8e45e3bedc38e6a6a12f1262fbddc78ebaccc99d96d3dd7a93fc5aef241a74b
     tests:
@@ -630,6 +666,12 @@ links:
       - file: "crates/univ-ingest/tests/ids_sequences.rs"
         name: "over_many_random_release_sequences_no_id_is_reused_and_every_old_id_is_recorded"
         body: 6d6dd42516b26b593b49fb6da09646ee9538d6757e6a0941743728fe2f6f0cb4
+      - file: "crates/univ-ingest/tests/state.rs"
+        name: "a_ledger_with_releases_and_no_entry_ids_is_refused_by_name"
+        body: 482ceec67f7f57aaece5b93e2a14b844d8816733b8ce4980196de72f78b1789d
+      - file: "crates/univ-ingest/tests/state.rs"
+        name: "entry_ids_that_leave_out_a_live_id_are_refused_naming_it"
+        body: 1fec0249a720f031c8d6b66a6251d56f37bbe073a4366a0bcd4cef9298a9d073
   - node: 01a19f23-636f-72bd-b194-151c7fe18cca
     reviewed: 7575e1b16e07823353121f0841226f3006f1828d9546ddeb87afc1a794b3ae79
     tests:
@@ -662,10 +704,10 @@ links:
         body: 4da26c9886aacba7e8c52b2f978e57ccb4f41b7212ff3738cfba4e2c5c5e7d81
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
-        body: 729ab6df6f457b6506ec83f4057e282a303cfbef074510fbde3746ec5e205663
+        body: 9eec4ae315d8f656836c69cfdca2ed6ba1c3d7802ca06133202cbdd7e68e7222
       - file: "crates/univ-ingest/tests/crossmatch.rs"
         name: "the_cross_match_stage_reports_its_steps_and_counts_and_writes_its_ids_as_pending"
-        body: 652a619e3ae74e2ddf7fb6c062d780cc45ed612508ae122ccb25ad0f6cfebcad
+        body: bba61434f6d49da2d39e82e9e3efcd298358f76ddc7781f0c8da9f6e2c63b5a3
   - node: 01a19f22-b0bc-76da-bac8-97803a2ac7b3
     reviewed: 3e35a457eabc0a266e62b03c551f1d2599521cad6be77a3b6e2c6c2e3fc3b71f
     tests:
