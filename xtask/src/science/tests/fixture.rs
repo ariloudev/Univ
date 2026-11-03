@@ -322,6 +322,7 @@ fn manifest(files: Vec<ManifestFile>, tables: Vec<TableEstimate>) -> ReleaseMani
         release: 1,
         built_at: "2026-11-03T12:00:00Z".to_owned(),
         cosmology: Cosmology::planck_2018(),
+        cosmology_note: None,
         peculiar_velocity_km_s: 300.0,
         versions: Versions {
             univ_model: "0".into(),
