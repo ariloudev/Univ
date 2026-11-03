@@ -10,6 +10,7 @@ use crate::value::{Quantity, Uncertainty, ValueError};
 
 /// The frame a redshift is published in.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RedshiftFrame {
     #[default]

@@ -13,6 +13,7 @@ pub use convert::{from_hubble_scaled, from_modulus, rescale_hubble};
 
 /// How a distance was obtained, from the most direct to the most model-dependent.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum DistanceKind {
     Parallax,
@@ -26,6 +27,7 @@ pub enum DistanceKind {
 
 /// The indicator or technique behind a distance.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Method {
     TrigonometricParallax,
@@ -46,6 +48,7 @@ pub enum Method {
     Redshift,
     /// A distance its source combined from several indicators, as its source lists them, such
     /// as a Cosmicflows-4 group distance.
+    #[cfg_attr(feature = "openapi", schema(no_recursion))]
     Mixed(Vec<Method>),
     /// An indicator named by its source that has no variant here.
     Other(String),
