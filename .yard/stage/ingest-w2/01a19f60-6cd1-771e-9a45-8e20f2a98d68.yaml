@@ -55,6 +55,15 @@ blocks:
         title: "Run events"
         detail: "Typed events for W3 to render: Get, Hit, Err, Resumed, Restarted, stage start and end, and bytes received. Done when the fetcher emits them through a sink and a recording sink sees them in order in tests."
         state: active
+      - key: 01a19f6e-202a-71d1-a099-bd71e0636cf1
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run events"
+        detail: "Done in `events.rs`. Events: Get, Hit, Err (attempt and wait), MirrorSkipped, Received, Resumed, Restarted (range ignored, changed, unsatisfiable), Done, and stage start and end. `RecordingSink` keeps them for tests."
+        state: done
   - key: 01a19f60-6cd1-771e-9a45-8e248b2fb7fe
     id: w2-t3-fetch
     kind: task
@@ -77,6 +86,22 @@ blocks:
         title: "Durable fetcher: retries, mirrors and chunks"
         detail: "At least 4 retries per mirror, with waits doubling from 2 s on an injected clock. A mirror that fails is skipped for the rest of the run. Chunks are written as `.part` then renamed, and a chunk on disk is never fetched again. Done when mock-server tests cover AC-14 to AC-18."
         state: active
+      - key: 01a19f6e-202a-71d1-a099-bd72c90822b0
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Durable fetcher: retries, mirrors and chunks"
+        detail: |-
+          Done in `fetch/mod.rs`, with 6 wiremock tests in `tests/fetch_chunks.rs`:
+          - waits of 2, 4, 8 and 16 s, then the next mirror;
+          - a mirror that fails is skipped for the run;
+          - resume from the first chunk not on disk, with no chunk fetched twice;
+          - `.part` then rename, and a body that fails its check never becomes a chunk;
+          - a failure names the source, the chunk and each mirror's last error, and keeps the chunks;
+          - offline runs make no request.
+        state: done
   - key: 01a19f60-6cd1-771e-9a45-8e251fd8fbfe
     id: w2-t4-resume
     kind: task
@@ -90,6 +115,20 @@ blocks:
         title: "Byte-range resume and payload checks"
         detail: "A partial download continues with a Range request. It restarts, with an event saying so, when the server ignores Range or the ETag or length changed. The finished file is checked against the published size and digest. Done when mock-server tests cover AC-19 to AC-23."
         state: open
+      - key: 01a19f6e-202a-71d1-a099-bd734b806c56
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Byte-range resume and payload checks"
+        detail: |-
+          Done in `fetch/file.rs`, with 6 tests in `tests/fetch_files.rs`:
+          - Range plus If-Range from the byte reached;
+          - start over when the provider ignores the range, the ETag changes, or the length differs;
+          - a raw TCP server cuts the body off at 40 bytes, and the retry continues from them;
+          - size and SHA-256 checked against the published values.
+        state: done
   - key: 01a19f60-6cd1-771e-9a45-8e26ec08770b
     id: w2-t5-provenance
     kind: task
@@ -103,6 +142,15 @@ blocks:
         title: "Provenance, failure and offline mode"
         detail: "A YAML provenance record holds each payload's SHA-256, retrieval time and URL, written before parsing. A failure names the source, the chunk and each mirror's last error, and keeps the chunks. `--offline` makes no request and fails on the first missing chunk. Done when tests cover AC-24 to AC-27."
         state: open
+      - key: 01a19f6e-202a-71d1-a099-bd74ef47e987
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Provenance, failure and offline mode"
+        detail: "Done in `provenance.rs`. A YAML record per source holds each payload's item, URL, SHA-256, bytes and retrieval time, written through a rename. Tested in `tests/provenance.rs`. Failure and offline mode are tested with the chunks."
+        state: done
   - key: 01a19f60-6cd1-771e-9a45-8e274c17d809
     id: w2-t6-access
     kind: task
@@ -116,6 +164,15 @@ blocks:
         title: "Access methods: VizieR ASU-TSV, SkyServer SQL, Gaia TAP, file"
         detail: "Each method turns a definition into the chunk requests and reads its answer format into rows. Done when tests build the expected URLs and read each method's recorded fixture."
         state: open
+      - key: 01a19f6e-202a-71d1-a099-bd75fb64830a
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Access methods: VizieR ASU-TSV, SkyServer SQL, Gaia TAP, file"
+        detail: "Each method turns a definition into the chunk requests and reads its answer format into rows. Done when tests build the expected URLs and read each method's recorded fixture."
+        state: active
   - key: 01a19f60-6cd1-771e-9a45-8e28e95cc25d
     id: w2-t7-definitions
     kind: task

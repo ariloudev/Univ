@@ -23,7 +23,8 @@ access:
   method: vizier_tsv
   table: "VII/259/spectra"
   constraints: ["z_helio=0.005..0.35"]
-  chunks: 4
+  rows: 125071
+  chunk_rows: 50000
 cuts: ["0.005 < z < 0.35"]
 columns:
   - { column: _RAJ2000, field: right_ascension, unit: degree }
@@ -69,14 +70,15 @@ fn a_definition_gives_id_title_provider_access_query_and_cuts() {
     let Access::VizierTsv {
         table,
         constraints,
-        chunks,
+        rows,
+        ..
     } = &d.access
     else {
         panic!("vizier")
     };
     assert_eq!(
-        (table.as_str(), constraints.len(), *chunks),
-        ("VII/259/spectra", 1, 4)
+        (table.as_str(), constraints.len(), *rows),
+        ("VII/259/spectra", 1, 125_071)
     );
     assert_eq!(d.cuts, ["0.005 < z < 0.35"]);
 }
@@ -162,7 +164,7 @@ fn an_incomplete_definition_is_refused_naming_the_missing_field() {
 #[test]
 fn a_chunked_query_without_its_chunk_placeholder_is_refused() {
     let sql = VALID.replace(
-        "  method: vizier_tsv\n  table: \"VII/259/spectra\"\n  constraints: [\"z_helio=0.005..0.35\"]\n  chunks: 4\n",
+        "  method: vizier_tsv\n  table: \"VII/259/spectra\"\n  constraints: [\"z_helio=0.005..0.35\"]\n  rows: 125071\n  chunk_rows: 50000\n",
         "  method: skyserver_sql\n  query: \"SELECT ra FROM SpecObj\"\n  chunks: 4\n",
     );
     let refused = refusal(&sql);

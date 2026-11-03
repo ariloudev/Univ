@@ -41,11 +41,13 @@ pub struct SourceDefinition {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "method", deny_unknown_fields)]
 pub enum Access {
-    /// A `VizieR` table through `asu-tsv`, with these constraints, in `chunks` ranges of declination.
+    /// A `VizieR` table through `asu-tsv`, with these constraints, fetched in ranges of its
+    /// record number `recno`: `rows` is the table's length and `chunk_rows` each range's.
     VizierTsv {
         table: String,
         constraints: Vec<String>,
-        chunks: u32,
+        rows: u64,
+        chunk_rows: u64,
     },
     /// An SQL query to `SkyServer`, split into `chunks` by `{chunk}` and `{chunks}` in the query.
     SkyserverSql { query: String, chunks: u32 },
@@ -298,9 +300,11 @@ impl Access {
             {
                 Some(("access.query", "is split into chunks but holds no {chunk}"))
             }
-            Self::VizierTsv { chunks: 0, .. }
-            | Self::SkyserverSql { chunks: 0, .. }
-            | Self::Tap { chunks: 0, .. } => Some(("access.chunks", "is zero")),
+            Self::VizierTsv { rows: 0, .. } => Some(("access.rows", "is zero")),
+            Self::VizierTsv { chunk_rows: 0, .. } => Some(("access.chunk_rows", "is zero")),
+            Self::SkyserverSql { chunks: 0, .. } | Self::Tap { chunks: 0, .. } => {
+                Some(("access.chunks", "is zero"))
+            }
             Self::File { path, .. } if path.trim().is_empty() => Some(("access.path", "is empty")),
             Self::File {
                 sha256: Some(digest),
