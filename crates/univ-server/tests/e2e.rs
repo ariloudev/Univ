@@ -200,7 +200,7 @@ fn structures_are_listed_in_pages_and_read_with_their_citations() {
         bootes["record"]["papers"][0]["bibcode"],
         "1987ApJ...314..493K"
     );
-    assert_eq!(bootes["centre"]["unit"], "Mpc");
+    assert_eq!(bootes["centre"]["unit"], "megaparsec");
     let missing = get("/v1/structures/nowhere");
     assert_eq!(missing.status(), StatusCode::NOT_FOUND);
 }

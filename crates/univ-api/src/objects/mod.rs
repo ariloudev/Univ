@@ -17,7 +17,7 @@ use univ_model::release::read;
 
 use self::resolve::{Resolved, by_designation, by_name, replaced};
 use self::vocabulary::vocabulary;
-use crate::backend::{Backend, first};
+use crate::backend::{Backend, Row, first};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{RELEASE_PARAM, pinned, resolve};
@@ -176,35 +176,40 @@ async fn record<B: Backend>(
     id: u64,
 ) -> Result<Option<Response>, Problem> {
     let params = [json!(release), json!(id)];
-    let objects = backend
-        .releases(
-            "SELECT * FROM objects WHERE release = ?1 AND id = ?2",
-            &params,
-        )
+    // One round trip for every row of the object; on a miss the three reads past the first
+    // are empty range scans of their primary keys.
+    let batch = backend
+        .releases_batch(&[
+            (
+                "SELECT * FROM objects WHERE release = ?1 AND id = ?2",
+                &params,
+            ),
+            (
+                "SELECT * FROM entries WHERE release = ?1 AND object_id = ?2",
+                &params,
+            ),
+            (
+                "SELECT * FROM measurements WHERE release = ?1 AND object_id = ?2",
+                &params,
+            ),
+            (
+                "SELECT s.id AS source, d.identifier FROM designations d JOIN sources s \
+                 ON s.release = d.release AND s.n = d.source \
+                 WHERE d.release = ?1 AND d.object_id = ?2 ORDER BY s.id, d.identifier",
+                &params,
+            ),
+        ])
         .await?;
+    let [objects, entries, measurements, designations]: [Vec<Row>; 4] =
+        batch.try_into().map_err(|_| {
+            Problem::new(
+                ProblemType::InternalError,
+                "The release database answered a batch of four reads with another number.",
+            )
+        })?;
     let Some(object) = first(objects) else {
         return Ok(None);
     };
-    let entries = backend
-        .releases(
-            "SELECT * FROM entries WHERE release = ?1 AND object_id = ?2",
-            &params,
-        )
-        .await?;
-    let measurements = backend
-        .releases(
-            "SELECT * FROM measurements WHERE release = ?1 AND object_id = ?2",
-            &params,
-        )
-        .await?;
-    let designations = backend
-        .releases(
-            "SELECT s.id AS source, d.identifier FROM designations d JOIN sources s \
-             ON s.release = d.release AND s.n = d.source \
-             WHERE d.release = ?1 AND d.object_id = ?2 ORDER BY s.id, d.identifier",
-            &params,
-        )
-        .await?;
     let vocabulary = vocabulary(backend, release).await?;
     let record = read::object(&vocabulary, &object, &entries, &measurements, &designations)
         .map_err(|error| {
