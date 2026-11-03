@@ -417,6 +417,105 @@ links:
       - file: "crates/univ-ingest/tests/outlines.rs"
         name: "a_published_position_on_the_wrong_side_of_the_threshold_is_published_as_a_point"
         body: 2fdb8d82b9b2e0e4055e5084442bd046f705511c998765ba6a3debc6f05e05db
+  - node: 01a19f23-636e-7035-8185-ab998407d632
+    reviewed: 7630424b0e1f46a63129bb35234a4a81243755014dfcfb33e42850be779fd1ec
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "a_redshift_distance_beats_tully_fisher_at_15000_km_s_and_loses_at_1000"
+        body: a257950bf695344755dbec84d22f8fe93994e8e35b8717e731a86e350cfe217b
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "the_peculiar_velocity_term_is_the_rule_s_parameter"
+        body: 3c79cd95913cb511c86a0fd9b8c3ccd50c4c51f25e35dadd845a8d9c3a05364d
+  - node: 01a19f23-636e-7035-8185-ab9ac704109a
+    reviewed: 7389e1121c9ac1b5c1a533b7a13f1cc4cac71c296739634ec22b1acece13860b
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "a_tie_is_broken_by_method_rank"
+        body: 77c11e2ecb00eef71fb9467332b7b70b572beb59c0a874051dcf70a0ed014d14
+  - node: 01a19f23-636e-7035-8185-ab9b3e95c24c
+    reviewed: ee3d5ff5259b6b7f0d95c5e5c9dfcfbc2af59b63fbf563b718f2ad395f4de919
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "the_ranking_rule_and_its_parameters_are_recorded_for_the_manifest"
+        body: f9337abf65955f3e4696d71e983d6bdd6c380c34f2baa4a0bd08c1a1fbb01498
+  - node: 01a19f23-636e-7035-8185-ab9ce127e733
+    reviewed: 286b60dee8debeb5d560ebacc23e2408a101cea931efe5ac30957f452bc39a78
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "the_object_names_its_preferred_measurement_and_the_uncertainty_that_made_it_win"
+        body: bcdde0bdfd7c4167324c1acc8b3dcb413938a5ee190128fb3f0f7721bc3e2416
+  - node: 01a19f23-636e-7035-8185-ab9e42fa2c14
+    reviewed: baabbb6804f2c1935a4addc4630563ce9e8223de199ffaf6a0ed1d09f192362f
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "gaia_is_preferred_over_hipparcos_and_either_over_a_survey_unless_an_error_says_otherwise"
+        body: 8082c54f277f03dc8b1f89178b9499f43117f2c56f87d41239a255af853d1581
+  - node: 01a19f23-636e-7035-8185-aba03617706c
+    reviewed: 8c0c0dc0af0b94b7c703e25b0d5e4fa0383eb71bef167f46e9f9b6e5311097ef
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "an_object_without_a_distance_is_found_but_not_placed"
+        body: decebded94288ed5f0b7fff3fad99b830d444dc2997563c4436be28b0f2c1c6a
+  - node: 01a19f23-636f-72bd-b194-1509ef3e2d47
+    reviewed: 4f4adc623457071571c932e9cf76b0c84e212abdc073326bf7fc8176d096e4a4
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "a_published_cross_identification_is_used_before_a_closer_positional_candidate"
+        body: 5046880a59aee71d2e9a75c4c3dacc258521674cd115c52082e740b8e058f991
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "a_shared_2masx_name_joins_entries_beyond_the_positional_tolerance"
+        body: 92f1057a69a2de78f0ef4bb67bd593c29a023f212c654a912ddfa1a2b27cc55c
+  - node: 01a19f23-636f-72bd-b194-150a909c8f0e
+    reviewed: 23bd90e2ea5f02a35571b02e6ce29e75659bfc0ec5fbad0cf52bb671fad0fdf0
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "the_object_records_the_cross_identification_that_resolved_it"
+        body: dc0082893362b1b04e4be6b8ee04845927570a45e5eb112465844b8a4259318d
+  - node: 01a19f23-636f-72bd-b194-150cc0a7de4d
+    reviewed: 149dd72735ea72ce3d9141b32916aeafbeca2edae2425073d2353704573844bf
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "each_pair_of_sources_has_its_own_tolerances"
+        body: dc325ceeac7cf53d62d78e406c13c3212ed408067a04776d03d7d8dfe52f39d0
+  - node: 01a19f23-636f-72bd-b194-150dfab9225c
+    reviewed: 3f33c2d62850e3a0f4c5d758efbe55899e291ece373e0a7181b313085483a9b9
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "a_merge_records_method_separation_velocity_difference_and_confidence"
+        body: 5a178d2e122b85310884192593714b7cabbabc16194d2fad2078511599b8d6e7
+  - node: 01a19f23-636f-72bd-b194-150e56ac26d6
+    reviewed: f55f26a1d1b0ce4a4976c72b695b95288361bd2e72f11a48a39a5c68eab6204b
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "the_confidence_rule_is_stated_in_the_rules_and_applied_as_stated"
+        body: 3d40f046c16c21c40f8143f0431a14157d94a8a9ca1c94242455b458a3674609
+  - node: 01a19f23-636f-72bd-b194-1510f8ea82b8
+    reviewed: 73139dc32347c25261a787411d07a51e1860e76787b2e9551fafab3213511433
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "an_entry_with_two_candidates_is_kept_apart_and_linked_to_each_with_its_confidence"
+        body: 7dabfaf84432796726e716ab7ed8b025143ee433a210e39183b52521191cf95d
+  - node: 01a19f23-636f-72bd-b194-15114b1cd667
+    reviewed: 4041399c59e701a49c5982850626ab94b9297b454de46d995d84523ef0dca5eb
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "no_measurement_is_merged_across_a_candidate_link"
+        body: 2502db704b7d43dff35f07f6595841e7f04092660cf24a8c1e02976b09093476
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "a_candidate_link_never_lends_its_measurements"
+        body: e0d97d21ffea5903dd65783a484483cc6933a82ac0054c7fd3dd8c1973866673
+  - node: 01a19f23-636f-72bd-b194-1513f385222f
+    reviewed: 66f206a5eefa8b76732be7488e54f99a84eaaaf7358ea6a5f1667028732ec2bc
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "designations_and_common_names_keep_their_sources"
+        body: a55b5c4d34f6b514df3c25720c84dd82ee14fbb4357f1beee203f85ce5e722e5
+  - node: 01a19f23-636f-72bd-b194-15144dcb948e
+    reviewed: 75d95472819b7b0b695520cfb33e4f210e085f5a6dbb0b04bcbbf336cd45532f
+    tests:
+      - file: "crates/univ-ingest/tests/matching.rs"
+        name: "designations_and_common_names_keep_their_sources"
+        body: a55b5c4d34f6b514df3c25720c84dd82ee14fbb4357f1beee203f85ce5e722e5
   - node: 01a19f23-636f-72bd-b194-15178440da44
     reviewed: d30b961b6c19837c70435a379c1919ce9154776e6c5131e472332bc73349fdaf
     tests:

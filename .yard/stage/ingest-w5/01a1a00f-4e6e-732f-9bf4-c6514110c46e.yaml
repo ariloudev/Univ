@@ -50,6 +50,22 @@ blocks:
         title: "Stable ids and the id ledger"
         detail: "Id assignment from the previous release's entry-to-object map: kept, merged (the older id wins), split (new ids), lost entries and new objects. A YAML id ledger that never reuses an id. Done when a release-over-release suite tests AC-75 to AC-81."
         state: active
+      - key: 01a1a017-09db-7772-9009-bfe4480681cf
+        at: 2026-11-03T06:27:06Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Stable ids and the id ledger"
+        detail: |-
+          `ids::assign` works from the previous entry-to-id map and the ledger:
+          - An object that takes one earlier object whole keeps its id.
+          - Merges keep the lower (older) id.
+          - Splits and only-new objects get new ids above the high-water mark.
+          - An object with no entries left is retired, and its id is never reused.
+
+          The YAML ledger (version 1) records each id that left as merged_into, split_into or retired, with the ids that replaced it. Ids come out the same in any input order. A property test runs 200 random sequences of 10 releases. AC-75 to AC-81 are linked; 75 of 293 nodes.
+        state: done
   - key: 01a1a00f-4e6e-732f-9bf4-c6568fc85949
     id: w5-t4-integrate
     kind: task
