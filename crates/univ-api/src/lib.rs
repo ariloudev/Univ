@@ -4,12 +4,19 @@
 //! The Worker (`univ-server`) turns each runtime request into a [`Request`], calls [`handle`],
 //! and turns the [`Response`] back. Nothing here performs I/O.
 
+mod access;
 mod backend;
 mod bulk;
+mod clock;
 mod cors;
 mod grids;
 mod http;
 mod kept;
+mod keys;
+#[cfg(test)]
+mod keys_tests;
+#[cfg(test)]
+mod limits_tests;
 mod objects;
 mod openapi;
 mod problem;
@@ -20,7 +27,8 @@ mod structures;
 #[cfg(test)]
 mod testkit;
 
-pub use backend::{Backend, BackendError, Row};
+pub use access::Caller;
+pub use backend::{Backend, BackendError, Limiter, Row};
 pub use http::{Body, Method, Request, Response};
 pub use kept::Kept;
 pub use openapi::document;
@@ -35,13 +43,18 @@ pub fn failure(kind: ProblemType, detail: impl Into<String>) -> Response {
 }
 
 /// Answers one request from `backend`: a CORS preflight, a route of [`ROUTES`], or a problem.
+/// Any other request is first authenticated and counted against its rate limit
+/// ([`access`]), and refused before it reaches its route where either fails.
 /// A HEAD is answered with the headers of the GET, and the length of its body, but no body,
 /// whatever the answer (RFC 9110 §9.3.2).
 pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
     let response = if request.method == Method::Options {
         cors::preflight()
     } else {
-        routes::dispatch(request, backend).await
+        match admit(request, backend).await {
+            Ok(()) => routes::dispatch(request, backend).await,
+            Err(problem) => refusal(problem),
+        }
     };
     let response = if request.method == Method::Head {
         if matches!(response.body, Body::Object(_)) {
@@ -58,6 +71,27 @@ pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
         response
     };
     cors::allow_any_origin(response)
+}
+
+/// Authenticates the request, then counts it against its caller's rate limit.
+async fn admit<B: Backend>(request: &Request, backend: &B) -> Result<(), Problem> {
+    let caller = access::authenticate(request, backend).await?;
+    access::limit(&caller, backend).await
+}
+
+/// A refusal of [`admit`]: a 429 tells the client when to try again (RFC 6585 §4), and a 401
+/// names the scheme the request must use (RFC 9110 §11.6.1).
+fn refusal(problem: Problem) -> Response {
+    let status = problem.kind.status();
+    let response = problem.into_response();
+    match status {
+        429 => response.with_header(
+            "retry-after",
+            &univ_model::api::keys::RATE_WINDOW_SECONDS.to_string(),
+        ),
+        401 => response.with_header("www-authenticate", "Bearer"),
+        _ => response,
+    }
 }
 
 #[cfg(test)]

@@ -16,6 +16,7 @@ crate-type = ["cdylib", "rlib"]
 univ-api = { path = "../univ-api" }
 worker = { version = "=0.8.7", features = ["d1"] }
 serde_json = "1.0.154"
+getrandom = { version = "0.4.3", features = ["wasm_js"] }
 
 [dev-dependencies]
 sha2 = "0.11.1"

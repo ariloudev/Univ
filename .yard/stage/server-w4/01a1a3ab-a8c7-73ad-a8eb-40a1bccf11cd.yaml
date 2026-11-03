@@ -1,0 +1,91 @@
+key: 01a1a3ab-a8c7-73ad-a8eb-40a1bccf11cd
+id: w4
+versions:
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40a9f794702d
+    at: 2026-11-03T23:08:18Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W4: keys, owner and access"
+    goal: "The owner issues, lists, adjusts and revokes API keys; every request with a key is authenticated; anonymous and keyed requests are rate limited by address and by tier (F-28, F-29, F-31)"
+    status: active
+blocks:
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40a38f3bd7c9
+    id: t4-platform
+    kind: task
+    versions:
+      - key: 01a1a3ab-a8c7-73ad-a8eb-40abf9467422
+        at: 2026-11-03T23:08:18Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Platform: layers database, randomness, clock, limiters, owner secret"
+        detail: "The backend gains the univ-layers database, random bytes, the time, the rate limiters and the owner secret; the Worker binds them, and the test kit gives deterministic stand-ins. Done when native tests run through them."
+        state: active
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40a4396df6e7
+    id: t4-owner
+    kind: task
+    versions:
+      - key: 01a1a3ab-a8c7-73ad-a8eb-40ac88740825
+        at: 2026-11-03T23:08:18Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Owner key operations"
+        detail: "Issue (a 256-bit secret, returned once, stored only as its SHA-256; default quotas and the standard tier), list (no secret), change quotas and tier, revoke (with time); 401 without the owner secret, changing nothing. Done when native tests cover AC-265 to AC-269, AC-272 and the tier-default criterion."
+        state: open
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40a580b75ca1
+    id: t4-auth
+    kind: task
+    versions:
+      - key: 01a1a3ab-a8c7-73ad-a8eb-40adc4a63f95
+        at: 2026-11-03T23:08:18Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "API key authentication"
+        detail: "A bearer key on any request is checked against its stored SHA-256 before the request is handled; an unknown or revoked key gets the same 401. Done when native tests cover AC-277 to AC-280."
+        state: open
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40a609899f9d
+    id: t4-limits
+    kind: task
+    versions:
+      - key: 01a1a3ab-a8c7-73ad-a8eb-40ae43894e5a
+        at: 2026-11-03T23:08:18Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Rate limits by address and by tier"
+        detail: "Anonymous requests by client address at 300 per 60 s; keyed requests by key at the tier's rate (basic 300, standard 1,200, extended 6,000), changed from the next request; 429 with Retry-After. Done when native tests cover AC-261 to AC-263 and the tier criteria, and an e2e test gets a real 429."
+        state: open
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40a7ebb533a1
+    id: t4-e2e
+    kind: task
+    versions:
+      - key: 01a1a3ab-a8c7-73ad-a8eb-40afb6e28e88
+        at: 2026-11-03T23:08:18Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W4 end-to-end tests"
+        detail: "Issue a key, read with it, revoke it and get 401; the owner operations refused without the secret; a 429 from the real binding."
+        state: open
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40a857c8af2e
+    id: w4-deferred
+    kind: note
+    versions:
+      - key: 01a1a3ab-a8c7-73ad-a8eb-40b08d8d6b5e
+        at: 2026-11-03T23:08:18Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Quota criteria deferred to W5"
+        markdown: "AC-258 to AC-260 and AC-264 (quotas refused on writes, storing nothing) and AC-270 and AC-271 (a revoked key's layers, usage per key) need layers and items, which W5 builds. W4 stores each key's quotas and changes them; W5 enforces them, as the approved plan says."
+        tone: info

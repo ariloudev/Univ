@@ -1,0 +1,12 @@
+key: 01a1a3ab-a8c7-73ad-a8eb-40a29a5dccd4
+id: w4-close
+versions:
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40aa0df509d1
+    at: 2026-11-03T23:08:18Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W4 close: review, gate, trace, merge"
+    goal: "W4's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: planned

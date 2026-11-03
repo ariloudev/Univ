@@ -68,8 +68,9 @@ pub fn integration(root: &Path) -> bool {
     eprintln!("==> end-to-end tests");
     let passed = command(root, "cargo")
         .args(["test", "--quiet", "--package", "univ-server"])
-        .args(["--test", "e2e", "--", "--ignored"])
+        .args(["--test", "e2e", "--test", "access", "--", "--ignored"])
         .env("UNIV_E2E_URL", format!("http://127.0.0.1:{port}"))
+        .env("UNIV_E2E_OWNER_SECRET", OWNER_SECRET)
         .status()
         .is_ok_and(|status| status.success());
     drop(wrangler);

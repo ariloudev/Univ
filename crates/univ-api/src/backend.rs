@@ -39,6 +39,70 @@ pub trait Backend {
 
     /// What this backend keeps between requests: for the Worker, one keeping per isolate.
     fn kept(&self) -> &crate::Kept;
+
+    /// Runs one statement on the univ-layers database (keys, layers, items), reading or
+    /// writing, with `?1`, `?2` … bound to `params`, and gives every row.
+    fn layers(
+        &self,
+        sql: &str,
+        params: &[Value],
+    ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
+
+    /// Fills `bytes` from a cryptographically secure source of randomness.
+    ///
+    /// # Errors
+    ///
+    /// When the platform has none to give.
+    fn random(&self, bytes: &mut [u8]) -> Result<(), BackendError>;
+
+    /// The time now, in milliseconds since the Unix epoch.
+    fn now_millis(&self) -> u64;
+
+    /// Counts one request of `client` against `limiter`; true while it is within the limit.
+    fn limit(
+        &self,
+        limiter: Limiter,
+        client: &str,
+    ) -> impl Future<Output = Result<bool, BackendError>>;
+
+    /// The owner secret the Worker was given, if any; without one, every owner operation is
+    /// refused.
+    fn owner_secret(&self) -> Option<String>;
+}
+
+/// The rate limits a request is counted against: anonymous clients by address, and keys by
+/// their tier.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Limiter {
+    Anonymous,
+    Basic,
+    Standard,
+    Extended,
+}
+
+impl Limiter {
+    /// The limiter of keys of `tier`.
+    #[must_use]
+    pub fn of(tier: univ_model::api::keys::RateLimitTier) -> Self {
+        use univ_model::api::keys::RateLimitTier;
+        match tier {
+            RateLimitTier::Basic => Self::Basic,
+            RateLimitTier::Standard => Self::Standard,
+            RateLimitTier::Extended => Self::Extended,
+        }
+    }
+
+    /// The requests it allows in the window.
+    #[must_use]
+    pub fn requests(self) -> u32 {
+        use univ_model::api::keys::{ANONYMOUS_REQUESTS, RateLimitTier};
+        match self {
+            Self::Anonymous => ANONYMOUS_REQUESTS,
+            Self::Basic => RateLimitTier::Basic.requests(),
+            Self::Standard => RateLimitTier::Standard.requests(),
+            Self::Extended => RateLimitTier::Extended.requests(),
+        }
+    }
 }
 
 /// The first row of `rows`, if any.

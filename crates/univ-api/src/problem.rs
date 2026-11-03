@@ -58,6 +58,14 @@ problem_types! {
     MethodNotAllowed = "urn:univ:problem:method-not-allowed", "Method not allowed", 405;
     /// The request's body could not be read to its end.
     UnreadableBody = "urn:univ:problem:unreadable-body", "Unreadable body", 400;
+    /// The request's body is not a document the route takes.
+    InvalidBody = "urn:univ:problem:invalid-body", "Invalid body", 400;
+    /// The request's API key or owner secret is missing where needed, or not valid.
+    Unauthorized = "urn:univ:problem:unauthorized", "Unauthorized", 401;
+    /// The client made more requests than its rate limit allows in the window.
+    RateLimited = "urn:univ:problem:rate-limited", "Too many requests", 429;
+    /// The owner has issued no key of that id.
+    KeyNotFound = "urn:univ:problem:key-not-found", "No such key", 404;
     /// A query parameter or path segment does not hold a value of its kind.
     InvalidParameter = "urn:univ:problem:invalid-parameter", "Invalid parameter", 400;
     /// No release of that number was ever published.
