@@ -1,23 +1,18 @@
 //! `univ-ingest tiles --offline` run as the owner runs it, on the recorded answers of five
 //! `VizieR` sources: the tiles stage's lines, and every tile it writes decoded by the Rust
 //! reference decoder against its manifest.
-#![expect(
-    clippy::unwrap_used,
-    clippy::panic,
-    reason = "a failed unwrap or a panic is the test failing"
-)]
+#![expect(clippy::unwrap_used, reason = "a failed unwrap is the test failing")]
 
 mod common;
 
-use common::workspace;
+use common::{copied, workspace};
 
 use std::collections::BTreeSet;
 use std::path::Path;
-use std::process::Command;
 
 use univ_ingest::acquire::acquire;
-use univ_ingest::source::{Access, SourceDefinition};
-use univ_ingest::tiles::{MANIFEST_FILE, sha256, tile_file};
+use univ_ingest::source::Access;
+use univ_ingest::tiles::{DOMAINS, MANIFEST_FILE, name_of, sha256, tile_file};
 use univ_model::tile::{MAX_TILE_BYTES, decode};
 use wiremock::matchers::query_param;
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -32,55 +27,27 @@ const SOURCES: [&str; 5] = [
     "cosmicflows-4",
 ];
 
-/// The repository's definition of `id`, written to `dir` as one query to `mirror` that must give
-/// the rows of its recorded answer.
-fn copied(id: &str, dir: &Path, mirror: &str) -> SourceDefinition {
-    let definition = common::definition_of(id);
-    let rows = common::count_rows(&definition);
-    let original = workspace().join("sources").join(format!("{id}.yaml"));
-    let text = std::fs::read_to_string(original).unwrap();
-    let Access::VizierTsv {
-        rows: Some(all), ..
-    } = &definition.access
-    else {
-        panic!("{id} is not a VizieR query")
-    };
-    // One query for the whole recorded answer: no slices.
-    let text = text
-        .lines()
-        .filter(|line| !line.starts_with("  slices:"))
-        .fold(String::new(), |text, line| text + line + "\n");
-    let text = text
-        .replace(&format!("  rows: {all}\n"), &format!("  rows: {rows}\n"))
-        .replace(
-            "\"https://vizier.cds.unistra.fr/viz-bin/asu-tsv\"",
-            &format!("\"{mirror}/viz-bin/asu-tsv\""),
-        );
-    let path = dir.join(format!("{id}.yaml"));
-    std::fs::write(&path, text).unwrap();
-    SourceDefinition::read(&path).unwrap()
+fn tiling(definitions: &Path, cache: &Path, state: &Path, out: &Path) -> std::process::Output {
+    common::run(
+        "tiles",
+        &[
+            ("--definitions", definitions),
+            ("--cache", cache),
+            ("--state", state),
+            ("--out", out),
+        ],
+    )
 }
 
-fn tiling(definitions: &Path, cache: &Path, state: &Path, out: &Path) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_univ-ingest"))
-        .args(["tiles", "--offline", "--definitions"])
-        .arg(definitions)
-        .arg("--cache")
-        .arg(cache)
-        .arg("--repository")
-        .arg(workspace())
-        .arg("--state")
-        .arg(state)
-        .arg("--out")
-        .arg(out)
-        .output()
-        .unwrap()
+/// The directory name of each scale domain, in the order of their manifests.
+fn domains() -> [&'static str; 3] {
+    DOMAINS.map(name_of)
 }
 
 /// Every file each domain's directory under `out` holds, by path, with its bytes.
 fn files(out: &Path) -> Vec<(String, Vec<u8>)> {
     let mut files = Vec::new();
-    for domain in ["stars", "nearby_galaxies", "cosmic_web"] {
+    for domain in domains() {
         let mut names: Vec<_> = std::fs::read_dir(out.join(domain))
             .unwrap()
             .map(|e| e.unwrap().file_name().into_string().unwrap())
@@ -164,7 +131,7 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
     ] {
         assert!(log.contains(line), "{line}in\n{log}");
     }
-    let points: Vec<usize> = ["stars", "nearby_galaxies", "cosmic_web"]
+    let points: Vec<usize> = domains()
         .into_iter()
         .map(|d| check_domain(out.path(), d))
         .collect();
