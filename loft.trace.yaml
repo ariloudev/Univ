@@ -330,6 +330,9 @@ links:
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
         body: f2d697a5db9dc559ca25cb14fe5942c8f33975f2e53c6c24aa354424c829d11c
+      - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
+        name: "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
+        body: d28231fcee59050bbc9b349224244cddab5527cf92e3503080b766d61a67ef4b
   - node: 01a19f22-2ad9-716e-876f-187cf88a2254
     reviewed: add8e24c470b97fbc83bca5e65c152e361f002377e3cdeaef04479098482e4d9
     tests:
@@ -360,6 +363,27 @@ links:
       - file: "crates/univ-ingest/tests/structures.rs"
         name: "a_digitised_value_cites_its_figure_and_is_estimated"
         body: 67dc705b662017baade89032b13f9152f9fc0388ba856b2990ca81b873386302
+  - node: 01a19f22-2ad9-716e-876f-1883e57d3f39
+    reviewed: 9ac9dc06cb3ad68b942f7fa12913de05c965f65abf74551d1493207d31c440bd
+    tests:
+      - file: "crates/univ-ingest/tests/outlines.rs"
+        name: "an_outline_emptier_than_every_covering_catalogue_expects_is_admitted_as_a_reconstructed_grid_region"
+        body: e66045689416bb643c0d15eb7eb0bf064e26783b024fe75629d42844ed188bf4
+      - file: "crates/univ-ingest/tests/outlines.rs"
+        name: "a_threshold_chosen_by_this_pipeline_says_so_and_why_and_is_never_read_as_a_citation"
+        body: 93dea4f857ef6e47adc890f975263526739a888febc4d631b77773fe426402f1
+  - node: 01a19f22-2ad9-716e-876f-188469a36f95
+    reviewed: be6e235b2eca4f242ab750cf9b221d66b00adb028fd2339bdcf5db1b16004d4b
+    tests:
+      - file: "crates/univ-ingest/tests/outlines.rs"
+        name: "an_outline_a_covering_catalogue_finds_overdense_is_published_as_a_point_with_the_reason"
+        body: 784247614fbc34447132075892a2fbff39030d660ee84c630d9e4e426ab38cef
+      - file: "crates/univ-ingest/tests/outlines.rs"
+        name: "an_outline_no_catalogue_covers_is_published_as_a_point_with_the_reason"
+        body: c998bd55f33c72654c0a7c416ae6bcb306e73ac796fe12da446aed8c4b1e99da
+      - file: "crates/univ-ingest/tests/outlines.rs"
+        name: "a_published_position_on_the_wrong_side_of_the_threshold_is_published_as_a_point"
+        body: 2fdb8d82b9b2e0e4055e5084442bd046f705511c998765ba6a3debc6f05e05db
   - node: 01a19f22-b0bc-76da-bac8-977d3868a411
     reviewed: cc37beca30b495d7bc6ca64117e2a846be04474bbe21d4eebfcd6054cd9631a6
     tests:

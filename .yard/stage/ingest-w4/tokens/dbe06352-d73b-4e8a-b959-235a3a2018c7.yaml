@@ -2,30 +2,30 @@ format: yardtokens/2
 session: dbe06352-d73b-4e8a-b959-235a3a2018c7
 host: claude-code
 firstEnded: 2026-11-03T04:31:50Z
-lastEnded: 2026-11-03T05:28:53Z
+lastEnded: 2026-11-03T05:29:35Z
 tokens:
-  input: 597
-  cacheRead: 69970856
-  cacheWrite: 875410
-  output: 364754
+  input: 607
+  cacheRead: 71039670
+  cacheWrite: 881238
+  output: 368893
 stages:
   - stage: 01a19fad-7f58-7247-ac4b-33911527a39d
-    input: 597
-    cacheRead: 69970856
-    cacheWrite: 875410
-    output: 364754
+    input: 607
+    cacheRead: 71039670
+    cacheWrite: 881238
+    output: 368893
     agents:
       - agent: main
-        input: 88
-        cacheRead: 8290622
-        cacheWrite: 45639
-        output: 25470
+        input: 94
+        cacheRead: 8780857
+        cacheWrite: 50345
+        output: 27312
       - agent: a6a51b5db2de599f9
         type: general-purpose
-        input: 192
-        cacheRead: 17943359
-        cacheWrite: 288863
-        output: 98262
+        input: 196
+        cacheRead: 18521938
+        cacheWrite: 289985
+        output: 100559
       - agent: a6bc32db135a97366
         type: web-fetch
         input: 13
@@ -47,17 +47,17 @@ stages:
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 88
-    cacheRead: 8290622
-    cacheWrite: 45639
-    output: 25470
+    input: 94
+    cacheRead: 8780857
+    cacheWrite: 50345
+    output: 27312
   - agent: a6a51b5db2de599f9
     type: general-purpose
     model: claude-opus-5-5
-    input: 192
-    cacheRead: 17943359
-    cacheWrite: 288863
-    output: 98262
+    input: 196
+    cacheRead: 18521938
+    cacheWrite: 289985
+    output: 100559
   - agent: a6bc32db135a97366
     type: web-fetch
     model: claude-haiku-5-5
