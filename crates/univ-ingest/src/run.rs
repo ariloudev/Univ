@@ -13,8 +13,8 @@ use univ_model::redshift::{CmbCorrection, DipoleModel};
 
 use crate::acquire::{Acquired, acquire};
 use crate::display::{
-    IndicatifTarget, Outcome, PlainSink, REDRAW_EVERY, RunDisplay, SourceState, SourceSummary,
-    TerminalSink, stage_name,
+    IndicatifTarget, Outcome, PlainTarget, REDRAW_EVERY, RunDisplay, RunSink, SourceState,
+    SourceSummary, stage_name,
 };
 use crate::events::{Event, EventSink, Stage};
 use crate::fetch::{Clock, Fetcher, SystemClock};
@@ -40,9 +40,12 @@ pub struct FetchOptions {
 #[must_use]
 pub fn display_for_stderr() -> Arc<dyn RunDisplay> {
     if std::io::stderr().is_terminal() {
-        Arc::new(TerminalSink::new(SystemClock, IndicatifTarget::stderr()))
+        Arc::new(RunSink::new(SystemClock, IndicatifTarget::stderr()))
     } else {
-        Arc::new(PlainSink::new(SystemClock, std::io::stderr()))
+        Arc::new(RunSink::new(
+            SystemClock,
+            PlainTarget::new(std::io::stderr()),
+        ))
     }
 }
 
@@ -221,6 +224,7 @@ pub async fn fetch<C: Clock>(
     }
     fetcher.emit(Event::StageEnded {
         stage: Stage::Fetch,
+        counts: vec![],
     });
     acquired
 }
@@ -316,6 +320,7 @@ pub async fn normalize_stage_until(
     }
     sink.emit(Event::StageEnded {
         stage: Stage::Normalize,
+        counts: vec![],
     });
     normalized
 }

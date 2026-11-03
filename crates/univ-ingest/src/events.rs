@@ -16,6 +16,23 @@ pub enum Stage {
     Publish,
 }
 
+/// A number a stage counted, and what it counts, such as 98 `objects`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Count {
+    pub n: u64,
+    pub what: String,
+}
+
+impl Count {
+    #[must_use]
+    pub fn new(n: u64, what: impl Into<String>) -> Self {
+        Self {
+            n,
+            what: what.into(),
+        }
+    }
+}
+
 /// Why a partial download started over.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RestartReason {
@@ -35,8 +52,26 @@ pub enum Event {
         stage: Stage,
         items: Option<u64>,
     },
+    /// A stage ended, with what it counted, such as the objects a cross-match resolved; none
+    /// for a stage that reports per source.
     StageEnded {
         stage: Stage,
+        counts: Vec<Count>,
+    },
+    /// A step of a stage is done, such as the ranking of a cross-match; `step` says what it
+    /// did.
+    Stepped {
+        stage: Stage,
+        step: String,
+    },
+    /// A structure's member list cannot be placed whole: of `members`, `no_object` name no
+    /// matched object and `unplaced` name an object that is not placed, so the structure is
+    /// shown at its published position.
+    MembersUnplaced {
+        structure: String,
+        members: u64,
+        no_object: u64,
+        unplaced: u64,
     },
     /// A request was sent.
     Get {

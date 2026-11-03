@@ -7,8 +7,8 @@ use std::time::{Duration, SystemTime};
 
 use common::{TestClock, source};
 use univ_ingest::display::{
-    Outcome, PlainSink, RunDisplay, RunState, SourceState, SourceSummary, StatusTarget, Summary,
-    TerminalSink,
+    Outcome, PlainTarget, RunDisplay, RunSink, RunState, SourceState, SourceSummary, StatusTarget,
+    Summary,
 };
 use univ_ingest::events::{Event, EventSink, RestartReason, Stage};
 use univ_ingest::fetch::Clock;
@@ -195,7 +195,7 @@ fn the_status_line_fits_the_width_and_is_redrawn_at_most_ten_times_a_second() {
     // Events between two draws are drawn together, in one draw with the status line.
     let clock = TestClock::default();
     let screen = Screen::default();
-    let sink = TerminalSink::new(clock.clone(), screen.clone());
+    let sink = RunSink::new(clock.clone(), screen.clone());
     for n in 0..5 {
         sink.emit(get(&format!("c{n}")));
         sink.emit(done(&format!("c{n}"), 1_000));
@@ -216,7 +216,7 @@ fn the_status_line_fits_the_width_and_is_redrawn_at_most_ten_times_a_second() {
 
 #[test]
 fn each_event_and_stage_prints_as_one_plain_timestamped_line_without_control_codes() {
-    let sink = PlainSink::new(TestClock::default(), Vec::new());
+    let sink = RunSink::new(TestClock::default(), PlainTarget::new(Vec::new()));
     for e in [
         Event::StageStarted {
             stage: Stage::Fetch,
@@ -226,6 +226,7 @@ fn each_event_and_stage_prints_as_one_plain_timestamped_line_without_control_cod
         done("chunk 1 of 1", 2_048),
         Event::StageEnded {
             stage: Stage::Fetch,
+            counts: vec![],
         },
     ] {
         sink.emit(e);
@@ -241,7 +242,7 @@ fn each_event_and_stage_prints_as_one_plain_timestamped_line_without_control_cod
 #[test]
 fn a_download_longer_than_a_minute_prints_one_progress_line_each_minute() {
     let clock = TestClock::default();
-    let sink = PlainSink::new(clock.clone(), Vec::new());
+    let sink = RunSink::new(clock.clone(), PlainTarget::new(Vec::new()));
     sink.emit(get("grid.npz"));
     for (after, bytes) in [
         (30, 10_000_000),
@@ -287,6 +288,7 @@ fn the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended() 
                 left_out: None,
             },
         ],
+        stages: vec![],
         outcome: Outcome::Built(3),
     };
     assert_eq!(
@@ -332,6 +334,7 @@ fn the_summary_names_each_source_fetched_failed_or_not_reached() {
             summary(SourceState::Failed("chunk 1 of 2: HTTP 404".into())),
             summary(SourceState::NotReached),
         ],
+        stages: vec![],
         outcome: Outcome::Stopped {
             stage: Stage::Fetch,
             reason: "interrupted by the owner".into(),
@@ -386,5 +389,68 @@ fn a_resumed_download_counts_only_the_bytes_this_run_fetched() {
         state.status(ten, 200).starts_with("50 B of 100 B "),
         "{}",
         state.status(ten, 200)
+    );
+}
+
+#[test]
+fn a_stage_with_counts_prints_them_at_its_end_and_in_the_summary() {
+    let sink = RunSink::new(TestClock::default(), PlainTarget::new(Vec::new()));
+    let counts = vec![
+        univ_ingest::events::Count::new(98, "objects"),
+        univ_ingest::events::Count::new(3, "merges"),
+    ];
+    for e in [
+        Event::StageStarted {
+            stage: Stage::Match,
+            items: Some(2),
+        },
+        Event::Stepped {
+            stage: Stage::Match,
+            step: "matching: 101 entries into 98 objects".into(),
+        },
+        Event::StageEnded {
+            stage: Stage::Match,
+            counts: counts.clone(),
+        },
+    ] {
+        sink.emit(e);
+    }
+    sink.finish(
+        vec![],
+        Outcome::Stopped {
+            stage: Stage::Match,
+            reason: "cross-match only; no release was asked for".into(),
+        },
+    );
+    let text = String::from_utf8(sink.into_inner()).unwrap();
+    for line in [
+        "Z Stage cross-match: 2 items\n",
+        "Z Step cross-match: matching: 101 entries into 98 objects\n",
+        "Z Stage cross-match done: 98 objects, 3 merges\n",
+        "Z cross-match: 98 objects, 3 merges\n",
+        "Z Stopped at cross-match: cross-match only; no release was asked for\n",
+    ] {
+        assert!(text.contains(line), "{line} in\n{text}");
+    }
+
+    let mut state = RunState::default();
+    state.apply(
+        &Event::StageStarted {
+            stage: Stage::Match,
+            items: Some(4),
+        },
+        now(),
+    );
+    state.apply(
+        &Event::Stepped {
+            stage: Stage::Match,
+            step: "ranking".into(),
+        },
+        now(),
+    );
+    assert!(
+        state
+            .status(Duration::from_secs(1), 80)
+            .starts_with("25% [cross-match 1/4]")
     );
 }

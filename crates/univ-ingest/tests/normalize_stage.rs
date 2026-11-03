@@ -129,7 +129,8 @@ async fn the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_c
                 left_out: 1
             },
             &Event::StageEnded {
-                stage: Stage::Normalize
+                stage: Stage::Normalize,
+                counts: vec![]
             },
         ]
     );
