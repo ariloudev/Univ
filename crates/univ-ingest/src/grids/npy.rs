@@ -3,7 +3,7 @@
 
 use std::io::Read;
 
-use super::{GridReadError, read_numbers};
+use super::{GridReadError, at_end, read_numbers};
 
 /// The magic string that opens every `.npy` file.
 const MAGIC: &[u8] = b"\x93NUMPY";
@@ -80,7 +80,7 @@ impl NpyArray {
     /// # Errors
     ///
     /// Fails on a reader error, a missing magic string, an unsupported version or element type,
-    /// a header that does not parse, or data shorter than the shape needs.
+    /// a header that does not parse, or data shorter or longer than the shape needs.
     pub fn read(mut reader: impl Read) -> Result<Self, GridReadError> {
         let header = read_header(&mut reader)?;
         let dtype = Dtype::parse(&dict_value(&header, "descr")?)?;
@@ -95,6 +95,9 @@ impl NpyArray {
             .try_fold(1_usize, |n, &d| n.checked_mul(d))
             .ok_or_else(|| npy("the shape overflows".into()))?;
         let stored = read_numbers(&mut reader, count, dtype.size(), |b| dtype.decode(b))?;
+        if !at_end(&mut reader)? {
+            return Err(npy("bytes follow the data its shape declares".into()));
+        }
         let values = if fortran_order {
             to_row_major(&shape, &stored)
         } else {
@@ -133,18 +136,21 @@ fn read_header(reader: &mut impl Read) -> Result<String, GridReadError> {
         1 => {
             let mut length = [0_u8; 2];
             reader.read_exact(&mut length)?;
-            usize::from(u16::from_le_bytes(length))
+            u64::from(u16::from_le_bytes(length))
         }
         2 | 3 => {
             let mut length = [0_u8; 4];
             reader.read_exact(&mut length)?;
-            usize::try_from(u32::from_le_bytes(length))
-                .map_err(|_| npy("header too long".into()))?
+            u64::from(u32::from_le_bytes(length))
         }
         v => return Err(npy(format!("format version {v} is not 1, 2 or 3"))),
     };
-    let mut header = vec![0_u8; length];
-    reader.read_exact(&mut header)?;
+    // The length is the file's word: the header grows as it is read rather than being reserved.
+    let mut header = Vec::new();
+    reader.take(length).read_to_end(&mut header)?;
+    if (header.len() as u64) < length {
+        return Err(npy("the file ends inside its header".into()));
+    }
     String::from_utf8(header).map_err(|_| npy("the header is not text".into()))
 }
 
@@ -272,5 +278,19 @@ mod tests {
         let short = "{'descr': '<f8', 'fortran_order': False, 'shape': (2,), }";
         assert!(NpyArray::read(npy_file(short, &[0; 8]).as_slice()).is_err());
         assert!(NpyArray::read(&b"\x93NUMPX\x01\x00"[..]).is_err());
+    }
+
+    #[test]
+    fn a_shape_larger_than_its_data_is_refused_without_reserving_it() {
+        // 2^61 float64 values: 2^64 bytes, which no allocation can hold.
+        let huge = "{'descr': '<f8', 'fortran_order': False, 'shape': (2305843009213693952,), }";
+        let err = NpyArray::read(npy_file(huge, &[0; 16]).as_slice()).unwrap_err();
+        assert!(err.to_string().contains("2 of the"), "{err}");
+    }
+
+    #[test]
+    fn bytes_after_the_data_are_refused() {
+        let dict = "{'descr': '<f8', 'fortran_order': False, 'shape': (1,), }";
+        assert!(NpyArray::read(npy_file(dict, &[0; 9]).as_slice()).is_err());
     }
 }

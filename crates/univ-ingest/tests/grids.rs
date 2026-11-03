@@ -12,7 +12,9 @@
     reason = "a failed unwrap in a test helper is the test failing"
 )]
 
-use std::path::{Path, PathBuf};
+mod common;
+
+use std::path::PathBuf;
 
 use serde::Deserialize;
 use univ_ingest::grids::{Window, read_cf4_basins, read_cf4pp, read_twompp};
@@ -297,11 +299,30 @@ fn a_file_that_is_not_the_window_it_claims_is_refused() {
     assert!(missing.is_err());
 }
 
-fn cache() -> PathBuf {
-    std::env::var_os("UNIV_INGEST_CACHE").map_or_else(
-        || PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.cache/univ-ingest"),
-        PathBuf::from,
-    )
+#[test]
+fn a_member_whose_bytes_were_flipped_is_refused() {
+    let mut zip = std::fs::read(fixtures().join("cf4pp-crop.npz")).unwrap();
+    // The local header of d_mean.npy, the first member: stored, so its data are the array file.
+    let u16_at = |z: &[u8], i: usize| usize::from(u16::from_le_bytes([z[i], z[i + 1]]));
+    assert_eq!(&zip[..4], b"PK\x03\x04");
+    assert_eq!(u16_at(&zip, 8), 0, "stored, not deflated");
+    let data = 30 + u16_at(&zip, 26) + u16_at(&zip, 28);
+    assert_eq!(&zip[data..data + 6], b"\x93NUMPY");
+    // Its sizes are in a ZIP64 extra field; its data end where the next member's header starts.
+    let end = data
+        + zip[data..]
+            .windows(4)
+            .position(|w| w == b"PK\x03\x04")
+            .unwrap();
+    // The low bit of the last value's exponent: still a float, half or twice the value.
+    zip[end - 1] ^= 0x01;
+    let dir = tempfile::tempdir().unwrap();
+    let corrupt = dir.path().join("cf4pp-crop.npz");
+    std::fs::write(&corrupt, zip).unwrap();
+    let Err(err) = read_cf4pp(&corrupt, window("cf4pp-crop.yaml")) else {
+        panic!("a member with a flipped byte was read")
+    };
+    assert!(err.to_string().contains("checksum"), "{err}");
 }
 
 /// The range of a field's real samples; `None` for a label field.
@@ -321,8 +342,8 @@ fn range(grid: &Grid, column: &str) -> Option<(f64, f64)> {
 #[test]
 #[ignore = "reads the whole cached files, about 800 MB; run by hand"]
 fn full_cached_files_parse() {
-    let cache = cache();
-    let at = |p: &str| -> PathBuf { Path::new(&cache).join(p) };
+    let cache = common::cache_dir();
+    let at = |p: &str| -> PathBuf { cache.join(p) };
     let cf4pp = read_cf4pp(
         &at("cf4pp-density/new_CF4pp_mean_std_grids.npz"),
         Window::Whole,

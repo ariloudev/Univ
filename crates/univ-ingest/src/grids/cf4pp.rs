@@ -18,7 +18,7 @@ use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
 
 use super::npy::NpyArray;
-use super::{GridReadError, Published, Window, with_member};
+use super::{GridReadError, Published, Window, archive, member};
 
 /// The source definition this grid belongs to.
 pub const SOURCE: &str = "cf4pp-density";
@@ -71,7 +71,8 @@ pub struct Cf4pp {
 /// Fails when the archive cannot be read, misses a member, or holds arrays of another shape than
 /// the grid's (or `window` of it).
 pub fn read_cf4pp(path: &Path, window: Window) -> Result<Cf4pp, GridReadError> {
-    let member = |name: &str| with_member(path, &format!("{name}.npy"), |r| NpyArray::read(r));
+    let mut zip = archive(path)?;
+    let mut array = |name: &str| member(&mut zip, &format!("{name}.npy"), |r| NpyArray::read(r));
     let layout = |file: &str, reason: String| GridReadError::Layout {
         file: file.to_string(),
         reason,
@@ -79,7 +80,7 @@ pub fn read_cf4pp(path: &Path, window: Window) -> Result<Cf4pp, GridReadError> {
     let mut geometry = None;
     let mut fields = Vec::new();
     for (mean, std, field, unit, vector) in FIELDS {
-        let (m, s) = (member(mean)?, member(std)?);
+        let (m, s) = (array(mean)?, array(std)?);
         if m.shape != s.shape {
             return Err(layout(
                 std,
@@ -115,7 +116,7 @@ pub fn read_cf4pp(path: &Path, window: Window) -> Result<Cf4pp, GridReadError> {
             labels: vec![],
         });
     }
-    let n = member("N")?;
+    let n = array("N")?;
     let realizations = n
         .scalar()
         .filter(|x| x.fract() == 0.0 && *x >= 1.0)

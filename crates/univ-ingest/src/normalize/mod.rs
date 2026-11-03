@@ -320,7 +320,7 @@ pub fn normalize(
                 .map_err(|error| NormalizeError::Table {
                     source_id: definition.id.clone(),
                     file: file.clone(),
-                    error,
+                    error: error.to_string(),
                 })?;
             tables.push((file.clone(), table));
         }

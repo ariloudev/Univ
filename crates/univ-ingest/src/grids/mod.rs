@@ -17,6 +17,8 @@ use std::path::Path;
 
 use thiserror::Error;
 use univ_model::grid::{Axis, GridError, GridGeometry};
+
+use crate::fits::{FitsError, fill};
 use univ_model::position::{Epoch, Frame, Vec3};
 use univ_model::units::Unit;
 
@@ -33,8 +35,10 @@ pub enum GridReadError {
     Zip(#[from] zip::result::ZipError),
     #[error("not a NumPy array this reader takes: {0}")]
     Npy(String),
-    #[error("not a FITS image this reader takes: {0}")]
-    Fits(String),
+    #[error(transparent)]
+    Fits(#[from] FitsError),
+    #[error("the data end after {read} of the {declared} values the header declares")]
+    Truncated { declared: usize, read: usize },
     #[error("{file}: {reason}")]
     Layout { file: String, reason: String },
     #[error(transparent)]
@@ -117,7 +121,9 @@ impl Published {
     }
 }
 
-/// Reads `count` numbers of `width` bytes each, decoding each with `decode`, in chunks.
+/// Reads `count` numbers of `width` bytes each (1 to 8), decoding each with `decode`, in chunks.
+/// `count` comes from a file's header, so no more is reserved than one chunk holds: the values
+/// grow as the data arrive, and data shorter than `count` are an error.
 fn read_numbers(
     reader: &mut impl Read,
     count: usize,
@@ -125,31 +131,67 @@ fn read_numbers(
     decode: impl Fn(&[u8]) -> Result<f64, GridReadError>,
 ) -> Result<Vec<f64>, GridReadError> {
     const CHUNK: usize = 1 << 20;
-    let mut values = Vec::with_capacity(count);
-    let per_chunk = (CHUNK / width).max(1);
+    let per_chunk = CHUNK.checked_div(width).unwrap_or(0);
+    let mut values = Vec::with_capacity(count.min(per_chunk));
     let mut buf = vec![0_u8; per_chunk * width];
-    let mut left = count;
-    while left > 0 {
-        let n = left.min(per_chunk);
+    while values.len() < count && per_chunk > 0 {
+        let n = (count - values.len()).min(per_chunk);
         let bytes = &mut buf[..n * width];
-        reader.read_exact(bytes)?;
-        for element in bytes.chunks_exact(width) {
+        let filled = fill(reader, bytes)?;
+        for element in bytes[..filled].chunks_exact(width) {
             values.push(decode(element)?);
         }
-        left -= n;
+        if filled < bytes.len() {
+            break;
+        }
+    }
+    if values.len() < count {
+        return Err(GridReadError::Truncated {
+            declared: count,
+            read: values.len(),
+        });
     }
     Ok(values)
 }
 
-/// Runs `read` on one member of a ZIP archive (an NPZ is one), streamed from the file.
-fn with_member<T>(
-    archive: &Path,
-    member: &str,
+/// Reads one byte more: none should follow the data a header declares, and reaching the end
+/// is what makes a ZIP member check its CRC-32.
+fn at_end(reader: &mut (impl Read + ?Sized)) -> std::io::Result<bool> {
+    Ok(fill(reader, &mut [0_u8; 1])? == 0)
+}
+
+/// A ZIP archive (an NPZ is one), open on its file.
+type Archive = zip::ZipArchive<BufReader<File>>;
+
+/// Opens a ZIP archive once, for all the members read from it.
+fn archive(path: &Path) -> Result<Archive, GridReadError> {
+    Ok(zip::ZipArchive::new(open(path)?)?)
+}
+
+/// Runs `read` on one member of an archive, streamed, then reads the member to its end, so
+/// that bytes after the data or a member whose CRC-32 does not match are refused. A reading
+/// error names the member.
+fn member<T>(
+    zip: &mut Archive,
+    name: &str,
     read: impl FnOnce(&mut dyn Read) -> Result<T, GridReadError>,
 ) -> Result<T, GridReadError> {
-    let mut zip = zip::ZipArchive::new(BufReader::new(File::open(archive)?))?;
-    let mut entry = zip.by_name(member)?;
-    read(&mut entry)
+    let in_member = |reason: String| GridReadError::Layout {
+        file: name.to_string(),
+        reason,
+    };
+    let mut entry = zip.by_name(name)?;
+    let value = read(&mut entry).map_err(|e| match e {
+        GridReadError::Io(e) => in_member(e.to_string()),
+        e => e,
+    })?;
+    match at_end(&mut entry) {
+        Ok(true) => Ok(value),
+        Ok(false) => Err(in_member(
+            "bytes follow the data its header declares".into(),
+        )),
+        Err(e) => Err(in_member(e.to_string())),
+    }
 }
 
 /// Opens a plain file for buffered reading.

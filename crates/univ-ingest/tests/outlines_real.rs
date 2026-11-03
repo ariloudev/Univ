@@ -8,6 +8,8 @@
 //! `.cache/univ-ingest`), and `UNIV_INGEST_CATALOGUES` the cache holding the catalogues' chunks
 //! (default: the same).
 
+mod common;
+
 use std::path::PathBuf;
 
 use univ_ingest::grids::{Window, read_cf4pp};
@@ -30,7 +32,7 @@ fn env_dir(name: &str, default: PathBuf) -> PathBuf {
 
 /// The cached chunks of `definition`, or its recorded fixture.
 fn tables(definition: &SourceDefinition) -> Vec<PathBuf> {
-    let cache = env_dir("UNIV_INGEST_CACHE", workspace().join(".cache/univ-ingest"));
+    let cache = common::cache_dir();
     let dir = env_dir("UNIV_INGEST_CATALOGUES", cache).join(definition.id.as_str());
     let mut chunks: Vec<PathBuf> = std::fs::read_dir(&dir)
         .map(|entries| {
@@ -94,7 +96,7 @@ fn downhill(g: &GridGeometry, values: &[f64], mut cell: [usize; 3]) -> [usize; 3
 #[test]
 #[ignore = "reads the whole cached CF4++ grid and catalogue chunks; run by hand"]
 fn the_local_void_outline_on_the_real_cf4pp_grid_and_catalogues() {
-    let cache = env_dir("UNIV_INGEST_CACHE", workspace().join(".cache/univ-ingest"));
+    let cache = common::cache_dir();
     let grid = read_cf4pp(
         &cache.join("cf4pp-density/new_CF4pp_mean_std_grids.npz"),
         Window::Whole,

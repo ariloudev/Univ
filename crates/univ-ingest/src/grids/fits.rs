@@ -1,26 +1,18 @@
 //! FITS image HDUs (Pence et al. 2010, A&A 524, A42, FITS 4.0): the primary HDU and IMAGE
-//! extensions and their data scaled by BSCALE and BZERO. Headers are read by [`crate::fits`].
+//! extensions and their data scaled by BSCALE and BZERO. Headers and samples are read by
+//! [`crate::fits`].
 
 use std::io::Read;
 
 use super::{GridReadError, read_numbers};
 pub use crate::fits::Card;
-use crate::fits::{FitsError, Header, skip_padding};
+use crate::fits::{Header, Sample, SampleKind, malformed, sample, skip_padding};
 
-impl From<FitsError> for GridReadError {
-    fn from(error: FitsError) -> Self {
-        match error {
-            FitsError::Io(e) => Self::Io(e),
-            FitsError::Malformed(reason) => Self::Fits(reason),
-        }
-    }
-}
-
-/// One image HDU: its cards and its physical values, `BZERO + BSCALE × stored`, in the file's
+/// One image HDU: its header and its physical values, `BZERO + BSCALE × stored`, in the file's
 /// order, NAXIS1 fastest. An integer image's BLANK value reads as NaN.
 #[derive(Clone, Debug, PartialEq)]
 pub struct FitsImage {
-    pub cards: Vec<Card>,
+    pub header: Header,
     /// The stored sample type: 8, 16, 32, 64 for integers, -32, -64 for IEEE floats.
     pub bitpix: i32,
     /// NAXIS1, NAXIS2, …: the first runs fastest.
@@ -36,10 +28,10 @@ impl FitsImage {
     /// # Errors
     ///
     /// Fails on a reader error, a header that is not a FITS primary header, an unsupported BITPIX,
-    /// or data shorter than its header declares.
+    /// sizes that are missing or overflow, or data shorter than its header declares.
     pub fn read_primary(mut reader: impl Read) -> Result<Self, GridReadError> {
         let header = Header::read_from(&mut reader)?.ok_or_else(|| fits("the file is empty"))?;
-        Self::read_data(&mut reader, header.cards, true)
+        Self::read_data(&mut reader, header, true)
     }
 
     /// Reads the primary HDU and every IMAGE extension after it, to the end of the file.
@@ -50,7 +42,7 @@ impl FitsImage {
     pub fn read_all(mut reader: impl Read) -> Result<Vec<Self>, GridReadError> {
         let mut hdus = vec![Self::read_primary(&mut reader)?];
         while let Some(header) = Header::read_from(&mut reader)? {
-            hdus.push(Self::read_data(&mut reader, header.cards, false)?);
+            hdus.push(Self::read_data(&mut reader, header, false)?);
         }
         Ok(hdus)
     }
@@ -58,15 +50,16 @@ impl FitsImage {
     /// The card with this keyword.
     #[must_use]
     pub fn card(&self, keyword: &str) -> Option<&Card> {
-        self.cards.iter().find(|c| c.keyword == keyword)
+        self.header.card(keyword)
     }
 
     fn read_data(
         reader: &mut impl Read,
-        cards: Vec<Card>,
+        header: Header,
         primary: bool,
     ) -> Result<Self, GridReadError> {
-        let first = cards
+        let first = header
+            .cards
             .first()
             .map(|c| (c.keyword.as_str(), c.value.as_deref()));
         match (primary, first) {
@@ -74,49 +67,36 @@ impl FitsImage {
             (true, _) => return Err(fits("the first card is not SIMPLE = T")),
             (false, _) => return Err(fits("an extension is not an IMAGE")),
         }
-        let header = Header { cards };
-        let number = |keyword: &str| header.number(keyword).map_err(GridReadError::from);
-        let size = |keyword: &str| -> Result<usize, GridReadError> {
-            let x = number(keyword)?.ok_or_else(|| fits(&format!("no {keyword}")))?;
-            #[expect(
-                clippy::cast_possible_truncation,
-                clippy::cast_sign_loss,
-                reason = "checked to be a whole number in [0, 2^32)"
-            )]
-            let n = x as usize;
-            if x.fract() == 0.0 && (0.0..4_294_967_296.0).contains(&x) {
-                Ok(n)
-            } else {
-                Err(fits(&format!("{keyword} = {x} is not a size")))
-            }
-        };
-        let bitpix = match size_signed(number("BITPIX")?)? {
-            b @ (8 | 16 | 32 | 64 | -32 | -64) => b,
-            b => return Err(fits(&format!("BITPIX = {b} is not a FITS sample type"))),
-        };
-        let axes = (1..=size("NAXIS")?)
-            .map(|n| size(&format!("NAXIS{n}")))
-            .collect::<Result<Vec<_>, _>>()?;
+        let kind = header.sample_kind()?;
+        let axes = header.axes()?;
+        // The bytes the header declares, checked; an image has no groups or parameters, so they
+        // are its samples.
+        let bytes = header.data_bytes()?;
         let count = if axes.is_empty() {
             0
         } else {
             axes.iter().product()
         };
+        if count.checked_mul(kind.width()) != Some(bytes) {
+            return Err(fits("an image with PCOUNT or GCOUNT other than 0 and 1"));
+        }
         let (bscale, bzero) = header.scaling()?;
-        let blank = number("BLANK")?.filter(|_| bitpix > 0);
-        let width = usize::try_from(bitpix.unsigned_abs() / 8).unwrap_or(8);
-        let values = read_numbers(reader, count, width, |b| {
-            let stored = decode(bitpix, b);
-            Ok(if blank == Some(stored) {
-                f64::NAN
-            } else {
-                bzero + bscale * stored
-            })
+        let blank = match kind {
+            SampleKind::F32 | SampleKind::F64 => None,
+            _ => header.integer("BLANK")?,
+        };
+        let values = read_numbers(reader, count, kind.width(), |b| {
+            Ok(
+                match sample(kind, b).ok_or_else(|| fits("a short sample"))? {
+                    Sample::Integer(i) if blank == Some(i) => f64::NAN,
+                    stored => bzero + bscale * stored.to_f64(),
+                },
+            )
         })?;
-        skip_padding(reader, count * width)?;
+        skip_padding(reader, bytes)?;
         Ok(Self {
-            cards: header.cards,
-            bitpix,
+            header,
+            bitpix: kind.bitpix(),
             axes,
             bscale,
             bzero,
@@ -126,34 +106,7 @@ impl FitsImage {
 }
 
 fn fits(reason: &str) -> GridReadError {
-    GridReadError::Fits(reason.to_string())
-}
-
-fn size_signed(bitpix: Option<f64>) -> Result<i32, GridReadError> {
-    let x = bitpix.ok_or_else(|| fits("no BITPIX"))?;
-    #[expect(
-        clippy::cast_possible_truncation,
-        reason = "matched against the six sample types after"
-    )]
-    Ok(x as i32)
-}
-
-/// A stored big-endian sample of this BITPIX as a number; `bytes` has the sample's width.
-fn decode(bitpix: i32, bytes: &[u8]) -> f64 {
-    let mut b = [0_u8; 8];
-    b[..bytes.len()].copy_from_slice(bytes);
-    match bitpix {
-        8 => f64::from(b[0]),
-        16 => f64::from(i16::from_be_bytes([b[0], b[1]])),
-        32 => f64::from(i32::from_be_bytes([b[0], b[1], b[2], b[3]])),
-        -32 => f64::from(f32::from_be_bytes([b[0], b[1], b[2], b[3]])),
-        #[expect(
-            clippy::cast_precision_loss,
-            reason = "a 64-bit integer image is read as the nearest float"
-        )]
-        64 => i64::from_be_bytes(b) as f64,
-        _ => f64::from_be_bytes(b),
-    }
+    malformed(reason).into()
 }
 
 #[cfg(test)]
@@ -248,5 +201,30 @@ mod tests {
         ]);
         assert!(FitsImage::read_primary(short.as_slice()).is_err());
         assert!(FitsImage::read_primary(&b""[..]).is_err());
+    }
+
+    #[test]
+    fn an_image_whose_size_overflows_or_names_more_than_999_axes_is_refused() {
+        let overflow = header(&[
+            "SIMPLE  =                    T",
+            "BITPIX  =                  -64",
+            "NAXIS   =                    3",
+            "NAXIS1  =           4294967295",
+            "NAXIS2  =           4294967295",
+            "NAXIS3  =           4294967295",
+        ]);
+        assert!(FitsImage::read_primary(overflow.as_slice()).is_err());
+        let mut cards = vec![
+            "SIMPLE  =                    T".to_owned(),
+            "BITPIX  =                    8".to_owned(),
+            "NAXIS   =                 1000".to_owned(),
+        ];
+        cards.extend(
+            (1..=1000).map(|i| format!("{:<8}=                    1", format!("NAXIS{i}"))),
+        );
+        let cards: Vec<&str> = cards.iter().map(String::as_str).collect();
+        let mut file = header(&cards);
+        file.extend(padded(vec![1]));
+        assert!(FitsImage::read_primary(file.as_slice()).is_err());
     }
 }

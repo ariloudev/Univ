@@ -121,6 +121,15 @@ pub fn sources_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../sources")
 }
 
+/// The ingest cache the tests run by hand read: `UNIV_INGEST_CACHE`, or the workspace's
+/// `.cache/univ-ingest`.
+pub fn cache_dir() -> PathBuf {
+    std::env::var_os("UNIV_INGEST_CACHE").map_or_else(
+        || PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.cache/univ-ingest"),
+        PathBuf::from,
+    )
+}
+
 /// Every source definition in the repository.
 pub fn read_sources() -> Vec<SourceDefinition> {
     read_all(&sources_dir()).unwrap_or_else(|e| panic!("{e}"))
