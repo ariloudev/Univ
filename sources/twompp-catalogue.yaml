@@ -34,6 +34,7 @@ citation: >-
   Lavaux G., Hudson M.J. 2011, "The 2M++ galaxy redshift catalogue", MNRAS 416, 2840-2856.
   2011MNRAS.416.2840L, doi:10.1111/j.1365-2966.2011.19233.x. VizieR catalogue J/MNRAS/416/2840,
   doi:10.26093/cds/vizier.74162840.
+reference: { bibcode: "2011MNRAS.416.2840L", doi: "10.1111/j.1365-2966.2011.19233.x" }
 terms:
   url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
   quote: >-

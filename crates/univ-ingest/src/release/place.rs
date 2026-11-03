@@ -133,7 +133,7 @@ pub fn centre(
 
 /// The span of a longitude range from `lon0` to `lon1`, degrees: a full turn or more, such as
 /// [0, 360], spans every longitude, not none.
-fn longitude_span(lon0: f64, lon1: f64) -> f64 {
+pub(super) fn longitude_span(lon0: f64, lon1: f64) -> f64 {
     match lon1 - lon0 {
         whole if whole >= 360.0 => 360.0,
         part => part.rem_euclid(360.0),
@@ -154,7 +154,7 @@ fn point(at: &Coordinates, release: &Release, correction: &CmbCorrection) -> Res
 }
 
 /// The comoving distance of redshift `z` in the release cosmology, Mpc.
-fn comoving(z: f64, release: &Release) -> Result<f64, String> {
+pub(super) fn comoving(z: f64, release: &Release) -> Result<f64, String> {
     release
         .cosmology()
         .comoving_distance(z)
@@ -168,21 +168,26 @@ fn km_s(c: &Cited) -> Result<f64, String> {
         .map_err(|e| e.to_string())
 }
 
-fn degrees(c: &Cited) -> Result<f64, String> {
+pub(super) fn degrees(c: &Cited) -> Result<f64, String> {
     c.quantity
         .to(Unit::Degree)
         .map(|q| q.value)
         .map_err(|e| e.to_string())
 }
 
-/// A published length in Mpc of the release cosmology.
-fn length(c: &Cited, release: &Release) -> Result<f64, String> {
-    let assumed = if c.unit().dimension() == Dimension::HubbleScaledLength {
+/// The cosmology a published length was given for: H0 = 100 for h⁻¹ Mpc, else the one its
+/// `assumes` states, if any.
+pub(super) fn assumed(c: &Cited) -> Option<AssumedCosmology> {
+    if c.unit().dimension() == Dimension::HubbleScaledLength {
         Some(AssumedCosmology::HUBBLE_SCALED)
     } else {
         c.assumes.as_ref().and_then(|a| a.cosmology)
-    };
-    let quantity = match assumed {
+    }
+}
+
+/// A published length in Mpc of the release cosmology.
+pub(super) fn length(c: &Cited, release: &Release) -> Result<f64, String> {
+    let quantity = match assumed(c) {
         Some(a) => {
             release
                 .hubble_rescaling(a)
@@ -215,7 +220,7 @@ fn cmb_redshift(r: &Radial, u: Vec3, correction: &CmbCorrection) -> Result<f64, 
 }
 
 /// A published distance along the line of sight in Mpc of the release cosmology.
-fn radial(r: &Radial, release: &Release) -> Result<f64, String> {
+pub(super) fn radial(r: &Radial, release: &Release) -> Result<f64, String> {
     match r {
         Radial::Redshift(z) => comoving(z.value(), release),
         Radial::Velocity(v) => comoving(km_s(v)? / SPEED_OF_LIGHT, release),
@@ -231,7 +236,7 @@ fn margin(frame: Frame, distance: f64) -> f64 {
 }
 
 /// A published position in the ICRS and Mpc, with how much its box grows for its frame.
-fn place(
+pub(super) fn place(
     at: &Coordinates,
     release: &Release,
     correction: &CmbCorrection,

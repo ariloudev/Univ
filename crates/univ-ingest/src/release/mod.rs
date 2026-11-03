@@ -23,13 +23,20 @@ mod assemble;
 mod cells;
 mod check;
 mod config;
+mod coverage;
 mod d1;
+mod details;
 mod entries;
 mod files;
 mod grids;
 mod meta;
 mod objects;
+mod outline;
 mod place;
+mod pointers;
+mod rescaled;
+mod shapes;
+mod sky;
 mod terms;
 
 use std::fmt;
@@ -45,14 +52,20 @@ pub use check::{
     STRUCTURE_CITATIONS, Subject, TILE_OBJECTS, check_all, decimal_bytes, provisional, table_sizes,
 };
 pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
+pub use coverage::{Coverage, coverages, distance_unit, source_detail_rows};
 pub use d1::{D1Writer, D1Written, InMemory, MAX_FILE_BYTES, PartSink, content_sha256};
+pub use details::structure_detail_rows;
 pub use files::{
     DirSink, RELEASES, list, parse_manifest, read_manifest, release_dir, verify, write_manifest,
 };
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
 pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
 pub use objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
+pub use outline::{not_drawn, outlines_on, result_json};
 pub use place::{centre, index_bounds, sky_region};
+pub use rescaled::rescaled;
+pub use shapes::{PlacedShape, Placing, frame_chain, placed_shape};
+pub use sky::{COVERAGE_ORDER, REGION_ORDER, box_cells, cell as healpix_cell, cells_of};
 pub use terms::{Chains, SourceIndex, Terms, variant_name};
 
 use crate::crossmatch::CrossMatched;

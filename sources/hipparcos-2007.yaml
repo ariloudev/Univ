@@ -33,6 +33,7 @@ citation: >-
   2007A&A...474..653V, doi:10.1051/0004-6361:20078357. Catalogue: van Leeuwen F. 2007,
   "Hipparcos, the New Reduction of the Raw Data", Astrophysics & Space Science Library 350; VizieR
   catalogue I/311.
+reference: { bibcode: "2007A&A...474..653V", doi: "10.1051/0004-6361:20078357" }
 terms:
   url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
   quote: >-

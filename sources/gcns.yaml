@@ -40,6 +40,7 @@ citation: >-
   Abbas U., Barstow M.A., de Bruijne J.H.J., et al. 2021, "Gaia Early Data Release 3: The Gaia
   Catalogue of Nearby Stars", A&A 649, A6. 2021A&A...649A...6G, doi:10.1051/0004-6361/202039498.
   VizieR catalogue J/A+A/649/A6, doi:10.26093/cds/vizier.36490006.
+reference: { bibcode: "2021A&A...649A...6G", doi: "10.1051/0004-6361/202039498" }
 terms:
   url: "https://www.cosmos.esa.int/web/gaia-users/license"
   quote: >-

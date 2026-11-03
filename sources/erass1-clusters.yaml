@@ -43,6 +43,7 @@ citation: >-
   and groups in the western galactic hemisphere", A&A 688, A210. 2024A&A...688A.210K,
   doi:10.1051/0004-6361/202349031, arXiv:2402.08453. DR1 reference: Merloni et al. 2024, A&A 682,
   A34 (2024A&A...682A..34M).
+reference: { bibcode: "2024A&A...685A.106B", doi: "10.1051/0004-6361/202348264" }
 terms:
   url: "https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/acknowledgement.html"
   quote: "All publications based on eROSITA-DE data must include the following text:"
