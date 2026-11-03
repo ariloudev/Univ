@@ -1,0 +1,48 @@
+# Ranking rule: which of an object's measurements places it, and which entry's sky position it
+# takes. A release records this file, with its parameters, in its manifest. Read by univ-ingest
+# `ranking::RankingRules`.
+
+rule: smallest-fractional-distance-uncertainty
+statement: >-
+  Every distance, usable parallax and positive redshift of an object's entries is a candidate.
+  Each is given a fractional distance uncertainty: for a published distance, its error over its
+  value (a symmetric sigma, the mean of an asymmetric interval's two sides, or half the width of
+  a 68% credible interval); for a parallax, its error over its value; for a redshift, the
+  comoving distance D(z) of its CMB-frame value under the release cosmology, with
+  sigma_D = D'(z) * sqrt(sigma_z^2 + ((1 + z) * v_pec / c)^2) over D, where v_pec is the
+  peculiar velocity below. The candidate with the smallest fraction wins; candidates within
+  the tie tolerance of the smallest are a tie, which the method rank breaks, then the smaller
+  fraction, then the order of the entries. A candidate whose source reports no uncertainty the
+  rule can compare (none at all, a limit, or a photometric redshift without an error) ranks
+  after every candidate with one, and among such candidates the method rank decides. An object
+  with no candidate is not placed.
+peculiar_velocity_km_s: 300
+peculiar_velocity_basis: >-
+  The value the specification names (choose-the-preferred-measurement: "a peculiar-velocity
+  term, 300 km/s unless the release's ranking rule sets another"): the typical line-of-sight
+  peculiar velocity of a galaxy, which its redshift does not separate from the Hubble flow.
+method_rank: [geometric, primary_indicator, secondary_indicator, spectroscopic_redshift, photometric_redshift]
+method_rank_basis: >-
+  The specification's order. Bailer-Jones photogeometric distances and inverted parallaxes rank
+  as geometric: both rest on the parallax.
+tie_tolerance: 0.001
+tie_basis: >-
+  Pipeline choice: fractions within 0.1 percentage point are a tie. Published errors are rounded
+  to two or three digits, so closer fractions do not tell the measurements apart.
+parallax_max_fractional_error: 0.1
+parallax_basis: >-
+  Pipeline choice following Bailer-Jones 2015 (PASP 127, 994): inverting a parallax is a fair
+  distance estimate only when its fractional error is small, below about 0.1; a noisier parallax
+  is not a candidate, and the Bailer-Jones et al. 2021 distances serve those stars.
+position:
+  statement: >-
+    An object takes the sky position of the entry with the smallest published position error,
+    the root mean square of sigma(alpha cos delta) and sigma(delta). Entries with a published
+    error rank before those without; a tie, or entries without errors, go by class, Gaia then
+    Hipparcos then any survey, then by the order of the entries.
+  gaia: [gaia-dr3-bright, gcns]
+  hipparcos: [hipparcos-2007]
+  basis: >-
+    Gaia DR3 positions are good to 0.01 to 0.5 mas at J2016.0 (Lindegren et al. 2021, A&A 649,
+    A2), Hipparcos-2 ones to about a milliarcsecond at J1991.25 (van Leeuwen 2007, A&A 474, 653),
+    and survey positions publish no error or one of tenths of an arcsecond.

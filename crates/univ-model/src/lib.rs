@@ -11,6 +11,7 @@ pub mod geometry;
 pub mod grid;
 pub mod ids;
 pub mod ledger;
+pub mod object;
 pub mod position;
 pub mod redshift;
 pub mod units;
