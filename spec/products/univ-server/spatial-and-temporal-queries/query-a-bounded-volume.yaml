@@ -40,18 +40,33 @@ requirements:
       - key: 01a19f1f-9fd7-7209-b7cb-5d15532c9c3a
         name: "Each page carries a cursor to the next page while results remain."
       - key: 01a19f1f-9fd7-7209-b7cb-5d164b16f644
-        name: "Results come in a stable order, so paging the same query twice returns the same pages."
+        name: "Results come in a stable order, so paging a query whose layers have not changed returns the same pages."
       - key: 01a19f1f-9fd7-7209-b7cb-5d174e903e62
         name: "A query that matches more than 10,000 results returns the first 10,000 and states that the result was truncated."
+      - key: 01a19f2c-ae0d-773f-9bf7-22c8f33720f3
+        name: "Each cursor records the release the query reads and the change sequence of each layer whose items it reads."
+  - key: 01a19f2c-ae0d-773f-9bf7-22c9f72e887f
+    statement:
+      form: unwanted
+      if: "a layer that a cursor records has changed since the cursor's first page"
+      system: "Univ Server"
+      shall: "refuse the next page and name the layers that changed."
+    criteria:
+      - key: 01a19f2c-ae0d-773f-9bf7-22ca5dbce89f
+        name: "The response status is 409 with problem details that list each changed layer with its current change sequence."
+      - key: 01a19f2c-ae0d-773f-9bf7-22cbf2d197a5
+        name: "No page is returned that skips or repeats a result because a layer changed between pages."
   - key: 01a19f1f-9fd7-7209-b7cb-5d18140f9506
     statement:
       form: event_driven
       when: "a client queries a bounded volume"
       system: "Univ Server"
-      shall: "return the address of every octree node of each scale domain that intersects the volume."
+      shall: "return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain."
     criteria:
       - key: 01a19f1f-9fd7-7209-b7cb-5d19cdceaeab
-        name: "The nodes are given at the deepest level of detail the client asks for, or at the deepest level of the octree when it asks for none."
+        name: "The nodes of a scale domain are given at the deepest level, no deeper than the client asks for, at which no more than 4,096 nodes intersect the volume."
+      - key: 01a19f2c-ae0d-773f-9bf7-22cc0ddcee28
+        name: "The response names the level it chose for each scale domain."
       - key: 01a19f1f-9fd7-7209-b7cb-5d1a86501cb8
         name: "Each node address can be fetched as a tile without further lookup."
   - key: 01a19f1f-9fd7-7209-b7cb-5d1b5a00f7dd

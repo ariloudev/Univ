@@ -5,7 +5,7 @@ context: "The owner wants to ask what the server knows within a volume, but a la
 state:
   kind: accepted
   selectedOption: 01a19f25-5955-701e-b3cf-dd85e638e45d
-  outcome: "A volume query returns at most 10,000 results in pages of 1,000, and the octree nodes that cover the volume."
+  outcome: "A volume query returns at most 10,000 results in pages of 1,000, and at most 4,096 covering octree nodes per scale domain."
 drivers:
   - key: 01a19f25-5955-701e-b3cf-dd833128b5fc
     kind: local

@@ -42,7 +42,9 @@ requirements:
       shall: "stop serving the layer and its items."
     criteria:
       - key: 01a19f20-1cb3-7721-97a0-4f21a598c53b
-        name: "A read of a retired layer answers 410 with problem details that give the retirement time."
+        name: "A read of a retired layer by a caller allowed to read it answers 410 with problem details that give the retirement time."
+      - key: 01a19f2c-e7d7-7285-bdfa-6f3ba9446790
+        name: "A read of a retired private layer without its owning key answers 404, exactly as a layer that does not exist."
       - key: 01a19f20-1cb3-7721-97a0-4f23c530f226
         name: "A retired layer no longer counts toward its key's quota of layers."
   - key: 01a19f20-1cb3-7721-97a0-4f2449c53c62

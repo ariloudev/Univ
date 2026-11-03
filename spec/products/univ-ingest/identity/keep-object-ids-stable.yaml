@@ -10,15 +10,19 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Ingest"
-      shall: "give each object the id it had in the previous release when its catalogue entries carry over."
+      shall: "decide each object's id by the catalogue entries it carries over from the previous release."
     criteria:
       - key: 01a19f23-636f-72bd-b194-15178440da44
-        name: "An object whose catalogue entries are all in one object of the previous release keeps that object's id."
+        name: "An object whose carried-over catalogue entries all belonged to one object of the previous release keeps that object's id, whatever new entries joined it."
       - key: 01a19f23-636f-72bd-b194-15189cad9cac
         name: "Two objects of the previous release that merge keep the older id, and the other id is recorded as merged into it."
       - key: 01a19f23-636f-72bd-b194-151929ed3023
         name: "An object of the previous release that splits gives each part a new id, and the old id is recorded as split into them."
       - key: 01a19f23-636f-72bd-b194-151af96748e0
+        name: "An object that lost catalogue entries keeps its id while the entries it kept all belonged to it."
+      - key: 01a19f2d-59a8-7398-b20d-5c59b10da0c2
+        name: "An object made only of catalogue entries new in this release gets a new id."
+      - key: 01a19f2d-59a8-7398-b20d-5c5a34616724
         name: "An id is never given to a second object."
   - key: 01a19f23-636f-72bd-b194-151bff4f24f5
     statement:

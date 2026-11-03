@@ -46,16 +46,18 @@ requirements:
   - key: 01a19f1e-d177-716d-b124-3d1b89e0362b
     statement:
       form: event_driven
-      when: "a client requests an object id that a later release merged into another object or split into more than one"
+      when: "a client requests an object id that the release it reads from records as merged into another object or split into more than one"
       system: "Univ Server"
-      shall: "direct the client to the object or objects that replaced it."
+      shall: "direct the client to the objects of that release that replaced it."
     criteria:
       - key: 01a19f1e-d177-716d-b124-3d1c08830bee
-        name: "An id merged into one object answers with a permanent redirect to that object."
+        name: "An id merged into one object answers with a permanent redirect to that object in the same release."
       - key: 01a19f1e-d177-716d-b124-3d1d3700915c
         name: "An id split into more than one object answers with the list of objects that replaced it."
       - key: 01a19f1e-d177-716d-b124-3d1e82a3e951
         name: "The response names the release in which the id was replaced."
+      - key: 01a19f2d-251d-77d9-a8e5-ffa62e4598ec
+        name: "A read of a release in which the id still names an object returns that object, whatever later releases did to it."
   - key: 01a19f1e-d177-716d-b124-3d1f02c8bee9
     statement:
       form: unwanted

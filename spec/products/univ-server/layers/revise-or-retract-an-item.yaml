@@ -47,3 +47,18 @@ requirements:
     criteria:
       - key: 01a19f20-1cb3-7721-97a0-4f608f85d888
         name: "The response status is 409 with problem details that give the item's current version."
+  - key: 01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5
+    statement:
+      form: unwanted
+      if: "a revision fails any check that publishing an item applies"
+      system: "Univ Server"
+      shall: "refuse the revision and name each check that failed."
+    criteria:
+      - key: 01a19f2c-e7d7-7285-bdfa-6f3d2ddc2ce9
+        name: "A revision is checked for its geometry, time records, kind of value, links and sources exactly as a published item is."
+      - key: 01a19f2c-e7d7-7285-bdfa-6f3ebe384e68
+        name: "A revision that cites no source is refused."
+      - key: 01a19f2c-e7d7-7285-bdfa-6f3f361ed80c
+        name: "The problem details list each failing field by its JSON pointer, with the reason it failed."
+      - key: 01a19f2c-e7d7-7285-bdfa-6f40cb89a4da
+        name: "Nothing is stored, the item keeps its current version and the layer's change sequence is unchanged."

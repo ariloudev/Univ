@@ -3,7 +3,7 @@ key: 01a19f02-dbab-7094-be74-f9950800177d
 branch: "feature/initial-spec"
 base: "develop"
 title: "feature/initial-spec"
-revision: 18
+revision: 27
 opened:
   at: 2026-11-03T01:25:27Z
   revision: 1
@@ -17,6 +17,8 @@ stages:
     id: scope
   - key: 01a19f02-dbab-7094-be74-f998384440e8
     id: spec
+  - key: 01a19f2c-6f01-71c4-806d-b3f342adc63d
+    id: review-fixes
 submissions:
   - key: 01a19f06-6833-7679-b0af-8528368716cb
     blocks:
@@ -117,6 +119,22 @@ submissions:
         by:
           name: "ariloudev"
           email: "ariloudev@local"
+  - key: 01a19f2d-a038-77b8-be2a-14abd4132ee6
+    blocks:
+      - 01a19f2d-a037-70fc-9309-b476c55835fc
+    changes:
+      - what: sent
+        at: 2026-11-03T02:12:09Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+      - what: answered
+        at: 2026-11-03T02:12:23Z
+        revision: 26
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
 acts:
   - at: 2026-11-03T01:25:27Z
     revision: 1
@@ -205,6 +223,51 @@ acts:
       email: "ariloudev@local"
   - at: 2026-11-03T02:06:12Z
     revision: 18
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:10:51Z
+    revision: 19
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:10:59Z
+    revision: 20
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:11:14Z
+    revision: 21
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:11:27Z
+    revision: 22
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:11:43Z
+    revision: 23
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:12:03Z
+    revision: 24
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:12:09Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:12:23Z
+    revision: 26
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-03T02:12:26Z
+    revision: 27
     by:
       host: claude-code
       session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"

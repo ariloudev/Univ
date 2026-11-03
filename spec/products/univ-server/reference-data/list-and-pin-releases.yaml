@@ -14,7 +14,7 @@ requirements:
       form: event_driven
       when: "a client lists releases"
       system: "Univ Server"
-      shall: "return every release that has not been pruned, newest first."
+      shall: "return every release ever published, newest first, pruned releases included."
     criteria:
       - key: 01a19f1e-d177-716d-b124-3d021cccd33d
         name: "Each release gives its number, publication time, release cosmology and sources."

@@ -17,7 +17,7 @@ requirements:
       - key: 01a19f23-636f-72bd-b194-152c99726521
         name: "Each scale domain has its own root: stars in parsecs, nearby galaxies and cosmic web in megaparsecs."
       - key: 01a19f23-636f-72bd-b194-152dec6f0f74
-        name: "Each object belongs to the scale domain its source definition names."
+        name: "Each object belongs to one scale domain: the one named by the source definition of the catalogue entry that holds its preferred measurement."
       - key: 01a19f23-636f-72bd-b194-152e3b4f79ee
         name: "A node is split when it holds more points than the release's split threshold, down to the release's maximum depth."
       - key: 01a19f23-636f-72bd-b194-152f904380b9
