@@ -19,6 +19,15 @@ versions:
     title: "W1 review"
     goal: "/simplify and /code-review findings on wave 1 are fixed, the gate is green and the trace is recorded"
     status: active
+  - key: 01a19f5f-1e85-732f-9576-062e42f539c7
+    at: 2026-11-03T03:06:13Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W1 review"
+    goal: "/simplify and /code-review findings on wave 1 are fixed, the gate is green and the trace is recorded"
+    status: done
 blocks:
   - key: 01a19f5e-f128-7760-87f7-7d5b4bfaa698
     id: w1-fix-simplify
@@ -73,3 +82,63 @@ blocks:
           Also added `loft reconcile --fail-on warning` to the gate. Split geometry.rs (562 lines after fmt) into `geometry/mod.rs` (types and checks) and `geometry/bounds.rs`.
         state: done
         type: fix
+  - key: 01a19f5f-1e85-732f-9576-062a31ec4843
+    id: w1-trace
+    kind: loft
+    versions:
+      - key: 01a19f5f-1e85-732f-9576-062c8bc28ae7
+        at: 2026-11-03T03:06:13Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: trace
+        note: "These criteria are verified at the model level: the frame rotations (AC-34, AC-35) and the CMB-frame derivation (AC-47, AC-48). W4 and W5 add the ingest-level tests that apply them to catalogue rows. The other F-3 and F-4 criteria wait for those waves."
+        recorded:
+          commit: "e638c761cb99d5c86dea1c8e8ac9e8c63839670d"
+          branch: "stage/ingest-w1"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T03:06:13Z
+        report: |
+          {
+            "base": "product/ingest",
+            "commit": "93973d7e0f8fd661f07fa2b41dbea322f846c946",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 293,
+              "linked": 4,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a19f5f-1e85-732f-9576-062bdea035eb
+    id: w1-review-summary
+    kind: note
+    versions:
+      - key: 01a19f5f-1e85-732f-9576-062d620ff941
+        at: 2026-11-03T03:06:13Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Wave 1 reviewed"
+        markdown: |-
+          | Module | What it holds | Checked against |
+          |---|---|---|
+          | `units`, `value` | units, kinds of value, typed uncertainty | IAU au and light-year |
+          | `distance` | kinds, methods, modulus, h⁻¹ Mpc, H0 rescaling | McConnachie 2012 M31 |
+          | `position` | ICRS + epoch, galactic, supergalactic | Hipparcos matrix, Lahav 2000, astropy 8.0.2 |
+          | `cosmology` | flat ΛCDM to z = 10, inverse | astropy, same model to 1e-6; Planck18 to 0.1% |
+          | `redshift` | CMB frame, Planck 2018 dipole | astropy apex |
+          | `geometry` | 8 kinds, checks, boxes | hand-computed boxes |
+          | `ids` | object and source ids, designations | — |
+
+          **Gate:** 10 gates passed, `loft verify` skipped, 35 univ-model tests. Five follow-ups were added to the plan file.
+        tone: success
