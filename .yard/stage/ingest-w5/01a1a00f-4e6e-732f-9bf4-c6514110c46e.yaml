@@ -37,6 +37,15 @@ blocks:
         title: "Cross-matching and the preferred measurement"
         detail: "YAML matching rules with per-pair tolerances and a stated confidence rule. Published cross-identifications (Gaia DR3–Hipparcos-2, PGC) come first, then positional and redshift matching. More than one candidate gives candidate links and no merge. Designations and names keep their source. The ranking rule picks the preferred distance (300 km/s term, method rank for ties) and the position (Gaia over Hipparcos over survey). Done when synthetic pairs, ambiguous triples and far misses, and the TF-versus-redshift crossover at 1,000 and 15,000 km/s, test AC-60 to AC-74."
         state: active
+      - key: 01a1a021-cf12-7436-b402-4ce5d2af69e1
+        at: 2026-11-03T06:38:52Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cross-matching and the preferred measurement"
+        detail: "`rules/matching.yaml`: published cross-identifications (Gaia source_id, HIP, 2MASX, SDSS specObjID, PGC), then per-pair angular and cz or distance tolerances. Angular tolerances cite published accuracies; the others are marked as pipeline choices. Confidence is c = (1−(s/θ)²)·L. Ambiguous candidates become links with their confidence and are never merged. The sky index is a dec-band/RA-cell grid that matches 2 M entries in 2.4 s. `rules/ranking.yaml`: the smallest fractional uncertainty wins, a redshift distance's uncertainty includes 300 km/s, and ties go by method rank. Positions rank Gaia, then Hipparcos, then survey. A measurement with no published uncertainty ranks last; to be decided with real numbers in W8. AC-60 to AC-74 linked; 90 of 293 nodes."
+        state: done
   - key: 01a1a00f-4e6e-732f-9bf4-c6553126656e
     id: w5-t3-ids
     kind: task

@@ -183,18 +183,63 @@ links:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk"
         body: 9e7d90f859d51deabd5797cb953f49bd47f2d6da19fe806231b4b13722d7798c
+  - node: 01a19f22-2ad9-716e-876f-185572e41a3f
+    reviewed: 2d3cb4992519a620162990040dfc76aad5363aa90b920bfcea16ad0b6dd271d9
+    tests:
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "the_release_cosmology_is_planck_2018_unless_the_release_names_another"
+        body: 3b767c46e0c02ae27f4492dbdca8c556cd50a0b71d05bb20c073b0b070e30508
+  - node: 01a19f22-2ad9-716e-876f-185687a92854
+    reviewed: 927307e53be629f8cc288c7378c4c5b8054d2b1fdf235b3e17c95831ece72485
+    tests:
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "a_redshift_distance_is_the_comoving_distance_of_the_cmb_frame_redshift"
+        body: 3a4209fa46d5f86a73ea190f7ca866f6c342574e00f4758d065397c31720a3f5
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "a_luminosity_distance_at_z_0_1_converts_by_one_over_one_plus_z"
+        body: dcf54b8dfa2d74e2c88c5f958e8675ff0cba6b6b064aec0b98e7f7773876e976
+  - node: 01a19f22-2ad9-716e-876f-1857a487f288
+    reviewed: 40f97d402d7a8ecc1de6fc9637e2689502231d9f415497f6f13c51aae1668445
+    tests:
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "m31_is_placed_at_its_mcconnachie_distance_toward_andromeda"
+        body: 99aa954f1647dce6755b5379a2ee7879c24769a5a0c261790fb3487cbbfd59bf
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
+        body: e9dec6029c450bb51698216e7d18d6b8286b8aa2c76c2b484e6329722d4b0d58
+  - node: 01a19f22-2ad9-716e-876f-18581d266d87
+    reviewed: b0628e3a2ff8a552c79740e3cadb9ca161a367ddba50c1ad9c41135224ef2ac5
+    tests:
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "each_derived_value_records_the_release_cosmology_its_chain_and_the_model_version"
+        body: 29a62f2106e466bea4370664ac3123edce591323fb9449b0ae5a0d4e95677ad4
+  - node: 01a19f22-2ad9-716e-876f-185a4c7f512f
+    reviewed: fe3459e698e168a8dc527ccb0e54bbc53ab85123ed9d2d2e95d729d7fcf1907c
+    tests:
+      - file: "crates/univ-ingest/tests/positions_rescaling.rs"
+        name: "an_h_inverse_mpc_grid_distance_is_rescaled_and_kept_beside_its_native_value"
+        body: b8e32d70ea7856c9f25d76c265acbfa0d4f089fcf9a690a104bb53094436dbac
+  - node: 01a19f22-2ad9-716e-876f-185b99a202e5
+    reviewed: 3deeea3e212c500b8d5e78ce0f4aa8adf8dd310ec2f96cfb88cbc98261ce6280
+    tests:
+      - file: "crates/univ-ingest/tests/positions_rescaling.rs"
+        name: "a_size_is_rescaled_with_the_same_factor_as_its_structures_distance"
+        body: 891e098243adc6507467d1ca20ba032ed9a642d9ac4a0852244d8fea866c1885
   - node: 01a19f22-2ad9-716e-876f-186064637cbc
     reviewed: 45088d301500263f3d8ddf925252261bbac6057644125800cebe93b857fc49d0
     tests:
       - file: "crates/univ-model/src/position.rs"
         name: "the_galactic_rotation_matches_the_hipparcos_matrix_and_is_orthonormal"
-        body: da2f9f853388cbc03a293b34b693e0a6d53e366d23eab723d2552da29324202f
+        body: 66c5f9d96a4ac8db127d3bf548cefb24afda394e16b68090704da8dec7245f4a
       - file: "crates/univ-model/src/position.rs"
         name: "the_galactic_centre_and_pole_land_where_hipparcos_puts_them"
         body: 19e6e8250f89a5cb479877f497728a1137c29929e82af73a75b520b80ec9b4a1
       - file: "crates/univ-model/src/position.rs"
         name: "m31_matches_astropy_in_every_frame"
         body: 4c9364dd1cbd7acbf93d8077d07fa9d74afc53643da89c3b0e598cfa3b03bf39
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
+        body: e9dec6029c450bb51698216e7d18d6b8286b8aa2c76c2b484e6329722d4b0d58
   - node: 01a19f22-2ad9-716e-876f-18610047a726
     reviewed: 8d1059018ea0ccc9f9db37c3cfd24bc457f7b44ce026c27f427025c03adab502
     tests:
@@ -204,12 +249,21 @@ links:
       - file: "crates/univ-model/src/position.rs"
         name: "m31_matches_astropy_in_every_frame"
         body: 4c9364dd1cbd7acbf93d8077d07fa9d74afc53643da89c3b0e598cfa3b03bf39
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
+        body: e9dec6029c450bb51698216e7d18d6b8286b8aa2c76c2b484e6329722d4b0d58
   - node: 01a19f22-2ad9-716e-876f-186415c2b2be
     reviewed: 458cb36ebd2c648503a49d347b9c2ac1d7d318306bca79bc27c117259efaa85a
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "each_position_is_stored_in_icrs_with_the_epoch_of_its_source"
         body: 144efbcd727fee24dfc213198b3d978f42fc5b42d6ad28d02af5bd321a597039
+      - file: "crates/univ-ingest/tests/positions_rescaling.rs"
+        name: "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
+        body: 4a8ac97da1f2312968d0f8d9e3e9d351e969960863399657196a20012e7754d0
+      - file: "crates/univ-ingest/tests/positions_rescaling.rs"
+        name: "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
+        body: b5f7f249cec2df5f3b2fdb4cb4f1496c15448e5d3476e17b53da41c2f43e3e80
   - node: 01a19f22-2ad9-716e-876f-1865763fa63d
     reviewed: 00fdbbf8ec387c88f8f4c6bea65028bcab0eecce03cdbfba9c85ba19e78ceb98
     tests:
@@ -263,7 +317,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "a_distance_in_h_inverse_mpc_or_for_a_stated_hubble_constant_keeps_that_constant"
-        body: 701bb78e23553e9d03ddf84f9b0b1f57d765c7b85fd95fd3aaf9a416dd614618
+        body: bf825c989b753a7f92b943f3fced2c96e689147ac10b813d60a368576b30139e
   - node: 01a19f22-2ad9-716e-876f-186e940da69e
     reviewed: 1d8bccb0d795a431d52ae687bf3690cf819d3e93c617f4818d20132cfa5726a5
     tests:
@@ -374,7 +428,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/structures.rs"
         name: "a_structure_geometry_is_a_univ_model_geometry_kind_in_a_named_frame"
-        body: 1dfb03203fe7fb963e2e1d6a97885cff2a551276ca11b5b163bd90fbd9303811
+        body: 318f701dc84db310a2050bb09f81af4681d1c38199b3279bcf76768d13670bf0
       - file: "crates/univ-ingest/tests/structures_numbers.rs"
         name: "latitudes_and_longitudes_lie_in_range"
         body: 0d2ef7cfff08b887b7f6111d673eff78f354bfcd9a7d7e0f2c930e22d348c9f5
@@ -456,6 +510,9 @@ links:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "an_object_without_a_distance_is_found_but_not_placed"
         body: decebded94288ed5f0b7fff3fad99b830d444dc2997563c4436be28b0f2c1c6a
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "an_object_without_a_distance_or_a_position_is_not_placed"
+        body: e1667d538f604132286fdc1c39ddeac852076c724516fb6794eb690ef58f3074
   - node: 01a19f23-636f-72bd-b194-1509ef3e2d47
     reviewed: 4f4adc623457071571c932e9cf76b0c84e212abdc073326bf7fc8176d096e4a4
     tests:
