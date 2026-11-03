@@ -10,6 +10,15 @@ versions:
     title: "W6 Octree tiles"
     goal: "Placed objects become byte-identical octree tiles per scale domain with seeded additive levels of detail, a versioned point codec in univ-model and JSON tile manifests, every tile within 1 MiB"
     status: active
+  - key: 01a1a06c-46db-72e1-abe5-d02d49bb6d6b
+    at: 2026-11-03T08:00:13Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W6 Octree tiles"
+    goal: "Placed objects become byte-identical octree tiles per scale domain with seeded additive levels of detail, a versioned point codec in univ-model and JSON tile manifests, every tile within 1 MiB"
+    status: done
 blocks:
   - key: 01a1a05d-c8c7-7234-baa6-031434a35920
     id: w6-t1-codec
@@ -24,6 +33,15 @@ blocks:
         title: "Tile codec in univ-model"
         detail: "A versioned binary point encoding: position quantized relative to its node with a step of at most 1/65,536 of the edge, object id, source and kind of value. An encoder and a decoder, wasm32-clean. Done when round trips hold the quantization error within the step (AC-96)."
         state: active
+      - key: 01a1a06c-2c3e-7580-bcfa-61f7757c24ca
+        at: 2026-11-03T08:00:06Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Tile codec in univ-model"
+        detail: "Version 1 is little-endian: a 48-byte header (magic `UVTL`, version, count, node min corner and edge), then columns for u16×3 positions (step = edge/65,536), u64 ids, u16 source indices and u8 kinds, 17 bytes per point. The decoder refuses bad magic, version, sizes, ids or kinds without panicking."
+        state: done
   - key: 01a1a05d-c8c7-7234-baa6-03151d359d35
     id: w6-t2-octree
     kind: task
@@ -37,6 +55,15 @@ blocks:
         title: "Octree builder and levels of detail"
         detail: "One root per scale domain: stars in pc, nearby galaxies and cosmic web in Mpc. The domain comes from the source of each object's preferred measurement. Nodes split above the release threshold, down to the maximum depth. Additive subsamples are drawn with a seeded ChaCha RNG. Done when tests cover AC-91 to AC-95 and AC-98 (two builds byte-identical)."
         state: open
+      - key: 01a1a06c-33b4-742f-bcfa-9a5fe2482c61
+        at: 2026-11-03T08:00:08Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Octree builder and levels of detail"
+        detail: "One root per scale domain, as a power-of-two cube about the barycentre. Each object's domain comes from the source of its preferred distance. The rules are in `rules/tiles.yaml`: split above 32,768 points, max depth 16, levels of 16,384 points, seed 1. Additive levels are drawn with ChaCha20, and two builds are byte-identical."
+        state: done
   - key: 01a1a05d-c8c7-7234-baa6-0316d45efe49
     id: w6-t3-manifest
     kind: task
@@ -50,6 +77,15 @@ blocks:
         title: "Tile manifests and the size bound"
         detail: "JSON manifests per the spec's client contract: node table, SHA-256s, seed, encoding version and per-level step, and the rotations to galactic and supergalactic. Every tile is at most 1 MiB, proved by construction and by a stress fixture. Done when tests cover AC-97 and QA-1."
         state: open
+      - key: 01a1a06c-3be5-776c-917f-3c19eddf882b
+        at: 2026-11-03T08:00:10Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Tile manifests and the size bound"
+        detail: "A JSON manifest per domain gives the frame and origin, unit, cosmology, rotations to galactic and supergalactic, encoding version, step per level, seed, a source table with credits, and a node table with SHA-256s. QA-1 holds by construction: the rules are checked against the 61,678-point bound, and an overfull max-depth leaf refuses the build, naming the node. Stress fixture: 300,000 points."
+        state: done
   - key: 01a1a05d-c8c7-7234-baa6-0317795903ac
     id: w6-t4-gate
     kind: task
@@ -63,3 +99,12 @@ blocks:
         title: "Stage, gate and trace"
         detail: "A tiles stage after cross-match in the run, with events and summary counts. Done when the gate passes and AC-91 to AC-98 and QA-1 are linked."
         state: open
+      - key: 01a1a06c-46db-72e1-abe5-d02c421e4373
+        at: 2026-11-03T08:00:13Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Stage, gate and trace"
+        detail: "`univ-ingest tiles` runs fetch, normalize, cross-match and then tiles. On the fixtures it places 17 of 24 objects across 3 domains, and its output is byte-identical across runs. AC-91 to AC-98 and QA-1 are linked; 105 of 293 nodes."
+        state: done

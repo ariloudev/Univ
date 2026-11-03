@@ -25,13 +25,10 @@ fn f64_at(bytes: &[u8], at: usize) -> Result<f64, TileError> {
 ///
 /// # Errors
 ///
-/// Fails, never panicking, on another magic, an unknown version (named), a reserved field that
-/// is not zero, a length other than its count gives or beyond [`MAX_TILE_BYTES`], a node that
+/// Fails, never panicking, on another magic or an unknown version (named), both read before the
+/// size, a reserved field that is not zero, a length other than its count gives or beyond [`MAX_TILE_BYTES`], a node that
 /// cannot stand, an object id outside 1 to 2^53 − 1, or an unknown kind of value.
 pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
-    if bytes.len() > MAX_TILE_BYTES {
-        return Err(TileError::Oversized(bytes.len()));
-    }
     let magic: [u8; 4] = array(bytes, 0)?;
     if magic != MAGIC {
         return Err(TileError::Magic(magic));
@@ -39,6 +36,9 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
     let version = u16::from_le_bytes(array(bytes, 4)?);
     if version != VERSION {
         return Err(TileError::UnknownVersion(version));
+    }
+    if bytes.len() > MAX_TILE_BYTES {
+        return Err(TileError::Oversized(bytes.len()));
     }
     if bytes.len() < HEADER_BYTES {
         return Err(TileError::Truncated {

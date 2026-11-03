@@ -170,7 +170,7 @@ fn a_decoder_refuses_bad_input_with_an_error() {
     ));
     assert_eq!(
         decode(&vec![0; MAX_TILE_BYTES + 1]),
-        Err(TileError::Oversized(MAX_TILE_BYTES + 1))
+        Err(TileError::Magic([0; 4]))
     );
 
     let mut edge = good.clone();
@@ -229,4 +229,71 @@ fn a_child_cube_halves_its_parent_and_takes_its_octant() {
         "the middle plane goes up"
     );
     assert_eq!(node.octant_of([-512.0, -511.0, 0.0]), 0);
+}
+
+#[test]
+fn an_oversized_tile_of_an_unknown_version_is_refused_naming_its_version() {
+    let mut bytes = vec![0; 1_048_577];
+    bytes[..4].copy_from_slice(&MAGIC);
+    bytes[4..6].copy_from_slice(&2u16.to_le_bytes());
+    let error = decode(&bytes).unwrap_err();
+    assert_eq!(error, TileError::UnknownVersion(2));
+    assert!(error.to_string().contains("version 2"), "{error}");
+    bytes[..4].copy_from_slice(b"XXXX");
+    assert_eq!(decode(&bytes), Err(TileError::Magic(*b"XXXX")));
+    bytes[..4].copy_from_slice(&MAGIC);
+    bytes[4..6].copy_from_slice(&VERSION.to_le_bytes());
+    assert_eq!(decode(&bytes), Err(TileError::Oversized(1_048_577)));
+}
+
+/// A version 1 tile of one point at the far corner of the node with corner `min` and edge
+/// `edge`.
+fn one_point_tile(min: f64, edge: f64) -> Vec<u8> {
+    let mut bytes = vec![0; tile_bytes(1)];
+    bytes[..4].copy_from_slice(&MAGIC);
+    bytes[4..6].copy_from_slice(&VERSION.to_le_bytes());
+    bytes[8..12].copy_from_slice(&1u32.to_le_bytes());
+    for at in [16, 24, 32] {
+        bytes[at..at + 8].copy_from_slice(&min.to_le_bytes());
+    }
+    bytes[40..48].copy_from_slice(&edge.to_le_bytes());
+    bytes[48..54].fill(0xFF);
+    bytes[54..62].copy_from_slice(&1u64.to_le_bytes());
+    bytes
+}
+
+#[test]
+fn a_node_whose_far_corner_overflows_or_whose_step_is_not_normal_is_refused() {
+    let huge = 1.7e308;
+    let subnormal = f64::from_bits(1);
+    for (min, edge) in [
+        (huge, huge),
+        (-huge, 2.0 * huge),
+        (0.0, subnormal),
+        (0.0, f64::MIN_POSITIVE),
+        (0.0, f64::MIN_POSITIVE * 65_535.0),
+    ] {
+        assert!(
+            matches!(NodeBox::new([min; 3], edge), Err(TileError::BadNode { .. })),
+            "{min}, {edge}"
+        );
+        assert!(
+            matches!(
+                decode(&one_point_tile(min, edge)),
+                Err(TileError::BadNode { .. })
+            ),
+            "decoded {min}, {edge}"
+        );
+    }
+    // The smallest edge whose step is normal, and the largest whose far corner is finite.
+    let smallest = f64::MIN_POSITIVE * 65_536.0;
+    assert_eq!(
+        NodeBox::new([0.0; 3], smallest).unwrap().step(),
+        f64::MIN_POSITIVE
+    );
+    assert!(decode(&one_point_tile(0.0, smallest)).is_ok());
+    let node = NodeBox::new([-huge / 2.0; 3], huge).unwrap();
+    assert!(node.max().iter().all(|c| c.is_finite()));
+    let decoded = decode(&one_point_tile(-huge / 2.0, huge)).unwrap();
+    assert!(decoded.points[0].position.iter().all(|c| c.is_finite()));
 }

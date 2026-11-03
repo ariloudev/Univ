@@ -18,10 +18,14 @@
 //! | 48 | 6 n | Each point's quantized position: x, y, z as three `u16` |
 //! | 48 + 6 n | 8 n | Each point's object id, `u64` (1 to 2^53 − 1) |
 //! | 48 + 14 n | 2 n | Each point's source: a `u16` index into the manifest's source table |
-//! | 48 + 16 n | n | Each point's kind of value, `u8`: 0 measured, 1 estimated, 2 inferred, 3 reconstructed |
+//! | 48 + 16 n | n | Each point's kind of value, `u8`: its index in [`KINDS`] |
 //!
 //! The columns hold the points in the same order, so the positions can go to a GPU as one
 //! `Uint16Array`.
+//!
+//! A point's source is the source of the measurement that gives the point its distance, its
+//! preferred distance, and its kind of value is that measurement's. Its sky position may come
+//! from another source; the manifest's source table says what each source gives its points.
 //!
 //! A position is quantized relative to its node: the node's edge is cut into 65,536 steps per
 //! axis, so the step is exactly 1/65,536 of the edge, and a coordinate `p` is stored as
@@ -31,8 +35,10 @@
 //!
 //! A decoder refuses a tile with another magic, a version it does not know (naming it), a
 //! reserved field that is not zero, fewer or more bytes than its count gives, more than
-//! [`MAX_TILE_BYTES`], a node that is not finite with a positive edge, an object id outside 1 to
-//! 2^53 − 1, or a kind of value it does not know; it never panics.
+//! [`MAX_TILE_BYTES`], a node that cannot stand (see [`NodeBox::new`]), an object id outside 1
+//! to 2^53 − 1, or a kind of value it does not know; it never panics. It reads the magic and the
+//! version before the size, so a tile of a version it does not know is named as such at any
+//! size.
 
 mod read;
 #[cfg(test)]
@@ -81,9 +87,15 @@ impl NodeBox {
     ///
     /// # Errors
     ///
-    /// Fails unless the corner is finite and the edge finite and positive.
+    /// Fails unless the corner and the far corner (`min + edge` on each axis) are finite and
+    /// the step, `edge / 65,536`, is a positive normal number, so that every decoded position
+    /// is finite and every step distinct.
     pub fn new(min: Vec3, edge: f64) -> Result<Self, TileError> {
-        if min.iter().all(|c| c.is_finite()) && edge.is_finite() && edge > 0.0 {
+        let step = edge / f64::from(STEPS);
+        let stands = step.is_normal()
+            && step > 0.0
+            && min.iter().all(|c| c.is_finite() && (c + edge).is_finite());
+        if stands {
             Ok(Self { min, edge })
         } else {
             Err(TileError::BadNode { min, edge })
@@ -177,7 +189,10 @@ pub struct Tile {
 /// A tile that cannot be encoded or decoded.
 #[derive(Debug, Error, PartialEq)]
 pub enum TileError {
-    #[error("the node's corner {min:?} and edge {edge} are not finite with a positive edge")]
+    #[error(
+        "the node's corner {min:?} and edge {edge} cannot stand: its corners must be finite and \
+         its step, the edge over 65,536, a positive normal number"
+    )]
     BadNode { min: Vec3, edge: f64 },
     #[error(
         "{points} points take {} bytes, beyond the {MAX_TILE_BYTES} a tile may hold (at most \
@@ -205,27 +220,28 @@ pub enum TileError {
     Kind { point: usize, code: u8 },
 }
 
-/// The code version 1 gives a kind of value.
+/// The kinds of value of version 1, each coded as its index.
+pub const KINDS: [KindOfValue; 4] = [
+    KindOfValue::Measured,
+    KindOfValue::Estimated,
+    KindOfValue::Inferred,
+    KindOfValue::Reconstructed,
+];
+
+/// The code version 1 gives a kind of value: its index in [`KINDS`].
 #[must_use]
 pub fn kind_code(kind: KindOfValue) -> u8 {
-    match kind {
-        KindOfValue::Measured => 0,
-        KindOfValue::Estimated => 1,
-        KindOfValue::Inferred => 2,
-        KindOfValue::Reconstructed => 3,
-    }
+    KINDS
+        .iter()
+        .position(|k| *k == kind)
+        .and_then(|i| u8::try_from(i).ok())
+        .unwrap_or_default()
 }
 
 /// The kind of value of a version 1 code.
 #[must_use]
 pub fn kind_of_code(code: u8) -> Option<KindOfValue> {
-    match code {
-        0 => Some(KindOfValue::Measured),
-        1 => Some(KindOfValue::Estimated),
-        2 => Some(KindOfValue::Inferred),
-        3 => Some(KindOfValue::Reconstructed),
-        _ => None,
-    }
+    KINDS.get(usize::from(code)).copied()
 }
 
 /// The step of the coordinate `p` along an axis starting at `min` with step `step`, clamped
@@ -243,8 +259,10 @@ fn quantize(p: f64, min: f64, step: f64) -> u16 {
 ///
 /// # Errors
 ///
-/// Fails on more points than [`MAX_POINTS`], or a point outside the node or not finite.
+/// Fails on a node that cannot stand (a child cube may halve below a normal step), more points
+/// than [`MAX_POINTS`], or a point outside the node or not finite.
 pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError> {
+    let node = NodeBox::new(node.min, node.edge)?;
     let n = points.len();
     let count = u32::try_from(n)
         .ok()
