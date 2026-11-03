@@ -1,0 +1,5 @@
+source: mcconnachie-2012
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=Name%2C%28m-M%29%2CE_%28m-M%29%2Ce_%28m-M%29%2Cu_%28m-M%29%2CD%2CE_D%2Ce_D%2CHRV%2Ce_HRV%2Cf_HRV%2CVmag&-out.add=_RAJ%2C_DEJ&-out.max=5
+retrieved: 2026-11-03T03:55:46Z
+sha256: df8c19dc52e7398e93bba9c7c4ca8d9c4086aca4f12ae5a93336d27f4d0cde22
+note: the first chunk's query cut to 5 rows

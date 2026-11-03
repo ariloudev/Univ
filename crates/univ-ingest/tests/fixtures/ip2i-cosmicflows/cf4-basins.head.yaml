@@ -1,0 +1,5 @@
+source: cf4-basins
+url: https://projets.ip2i.in2p3.fr//cosmicflows/CF4_new_128-z008_watersheds-fits.zip
+retrieved: 2026-11-03T03:52:35Z
+sha256: 7e2f4bebc4b28026de025bb89d0d346ea3db19c92d9bbf762f82a26db7330410
+note: the first 4096 bytes of the first file

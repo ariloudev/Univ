@@ -1,0 +1,5 @@
+source: gaia-dr3-hipparcos2
+url: https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=SELECT+TOP+5+source_id%2C+original_ext_source_id%2C+angular_distance%2C+xm_flag+FROM+gaiadr3.hipparcos2_best_neighbour+WHERE+MOD%28original_ext_source_id%2C+4%29+%3D+0
+retrieved: 2026-11-03T03:55:38Z
+sha256: a2f47f66e36a08a40dae9a7af9b6a922357f2c12234ab4bd2fa64087a0ed0ddf
+note: the first chunk's query cut to 5 rows
