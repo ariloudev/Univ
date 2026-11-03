@@ -130,6 +130,12 @@ impl CmbCorrection {
         }
     }
 
+    /// The dipole model it corrects with.
+    #[must_use]
+    pub fn model(&self) -> DipoleModel {
+        self.model
+    }
+
     /// The unit vector toward the apex in ICRS.
     #[must_use]
     pub fn apex_icrs(&self) -> Vec3 {

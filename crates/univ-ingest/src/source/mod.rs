@@ -5,8 +5,8 @@ mod normalization;
 mod rules;
 
 pub use normalization::{
-    Coded, DistanceReading, ErrorColumns, MethodCodes, Normalization, Published, RedshiftCodes,
-    RedshiftReading,
+    Coded, ComovingVelocity, DistanceReading, ErrorColumns, MethodCodes, Normalization, Published,
+    RedshiftCodes, RedshiftReading,
 };
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,

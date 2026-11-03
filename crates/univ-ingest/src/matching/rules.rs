@@ -12,7 +12,7 @@ use univ_model::position::separation_degrees;
 
 use crate::yaml::{FileError, read_checked};
 
-pub use super::sight::distance;
+pub use super::sight::{NearbyTolerance, distance};
 
 /// The matching rules, as the release records them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -181,6 +181,9 @@ pub struct PairRule {
     pub sources: [SourceId; 2],
     pub angular_tolerance_arcsec: f64,
     pub line_of_sight: LineOfSightRule,
+    /// A wider tolerance for two nearby entries, where given.
+    #[serde(default)]
+    pub nearby: Option<NearbyTolerance>,
     pub basis: String,
 }
 
@@ -226,29 +229,7 @@ impl MatchingRules {
                 return Err(field(&format!("confidence.{name}"), "lies outside [0, 1]"));
             }
         }
-        let mut seen = BTreeSet::new();
-        for (i, pair) in self.pairs.iter().enumerate() {
-            let at = |what: &str| format!("pairs[{i}].{what}");
-            let [a, b] = &pair.sources;
-            if a == b {
-                return Err(field(&at("sources"), "names one source twice"));
-            }
-            if !seen.insert(key(a, b)) {
-                return Err(field(&at("sources"), "is a pair given before"));
-            }
-            if !positive(pair.angular_tolerance_arcsec) {
-                return Err(field(&at("angular_tolerance_arcsec"), "is not positive"));
-            }
-            match pair.line_of_sight {
-                LineOfSightRule::Velocity { tolerance_km_s: t }
-                | LineOfSightRule::Distance {
-                    tolerance_fraction: t,
-                } if !positive(t) => {
-                    return Err(field(&at("line_of_sight"), "has a tolerance not positive"));
-                }
-                _ => {}
-            }
-        }
+        self.check_pairs()?;
         if !positive(self.structure_members.angular_tolerance_arcsec) {
             return Err(field(
                 "structure_members.angular_tolerance_arcsec",
@@ -310,6 +291,44 @@ impl MatchingRules {
         Ok(())
     }
 
+    /// Each pair given once, of two sources, with positive tolerances.
+    fn check_pairs(&self) -> Result<(), (String, String)> {
+        let mut seen = BTreeSet::new();
+        for (i, pair) in self.pairs.iter().enumerate() {
+            let at = |what: &str| format!("pairs[{i}].{what}");
+            let [a, b] = &pair.sources;
+            if a == b {
+                return Err(field(&at("sources"), "names one source twice"));
+            }
+            if !seen.insert(key(a, b)) {
+                return Err(field(&at("sources"), "is a pair given before"));
+            }
+            if !positive(pair.angular_tolerance_arcsec) {
+                return Err(field(&at("angular_tolerance_arcsec"), "is not positive"));
+            }
+            if pair
+                .nearby
+                .as_ref()
+                .is_some_and(|n| !n.widens(pair.angular_tolerance_arcsec))
+            {
+                return Err(field(
+                    &at("nearby"),
+                    "needs a positive velocity, a tolerance wider than the pair's and a basis",
+                ));
+            }
+            match pair.line_of_sight {
+                LineOfSightRule::Velocity { tolerance_km_s: t }
+                | LineOfSightRule::Distance {
+                    tolerance_fraction: t,
+                } if !positive(t) => {
+                    return Err(field(&at("line_of_sight"), "has a tolerance not positive"));
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
     /// The cross-identification scheme named `name`.
     #[must_use]
     pub fn scheme(&self, name: &str) -> Option<&CrossIdentification> {
@@ -343,7 +362,11 @@ impl MatchingRules {
     pub fn search_radius_degrees(&self) -> f64 {
         self.pairs
             .iter()
-            .map(|p| p.angular_tolerance_arcsec / 3_600.0)
+            .flat_map(|p| {
+                std::iter::once(p.angular_tolerance_arcsec)
+                    .chain(p.nearby.as_ref().map(|n| n.angular_tolerance_arcsec))
+            })
+            .map(|t| t / 3_600.0)
             .fold(0.0, f64::max)
     }
 
@@ -384,7 +407,7 @@ impl MatchingRules {
         b: &CatalogueEntry,
         separation: f64,
     ) -> Option<Comparison> {
-        let theta = pair.angular_tolerance_arcsec;
+        let theta = self.angular_tolerance(pair, a, b);
         if separation > theta {
             return None;
         }

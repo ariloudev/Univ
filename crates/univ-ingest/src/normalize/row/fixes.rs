@@ -1,8 +1,11 @@
 //! The fixes a row applies before it is read: rows left out, values dropped or replaced with
 //! cited ones, and the fixes marked that changed the row.
 
+use univ_model::distance::Distance;
+use univ_model::value::{KindOfValue, Quantity, Uncertainty};
+
 use super::super::plan::FixEffect;
-use super::Row;
+use super::{Row, distance_reason};
 use crate::source::LeftOutReason;
 use crate::table::identifier_key;
 
@@ -95,5 +98,42 @@ impl Row<'_, '_> {
                 self.replaced.push((*column, value.as_str()));
             }
         }
+    }
+
+    /// The cited distances fixes add to this row, beside its own, marking each fix and flag.
+    pub(super) fn added_distances(&mut self) -> Result<Vec<Distance>, LeftOutReason> {
+        let mut added = Vec::new();
+        for fix in &self.cx.plan.fixes {
+            let FixEffect::AddDistance {
+                key,
+                values,
+                unit,
+                how,
+                measure,
+                mark,
+            } = &fix.effect
+            else {
+                continue;
+            };
+            let Some(&(value, sigma)) = values.get(identifier_key(self.cell(*key))) else {
+                continue;
+            };
+            self.changed |= 1 << fix.fix;
+            self.marks.push((mark.0.as_str(), mark.1.as_str()));
+            let native = Quantity::new(value, *unit, Uncertainty::Symmetric { sigma })
+                .map_err(|_| LeftOutReason::UnusableValue)?;
+            let distance = Distance::new(
+                native,
+                None,
+                self.cx.plan.distance_unit,
+                KindOfValue::Measured,
+                how.clone(),
+                *measure,
+                None,
+            )
+            .map_err(distance_reason)?;
+            added.push(distance);
+        }
+        Ok(added)
     }
 }

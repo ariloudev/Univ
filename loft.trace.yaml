@@ -192,9 +192,18 @@ links:
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "the_release_cosmology_is_planck_2018_unless_the_release_names_another"
         body: 3b767c46e0c02ae27f4492dbdca8c556cd50a0b71d05bb20c073b0b070e30508
+  - node: 01a1a211-4f38-7751-a3f5-d2946bd18364
+    reviewed: d69e32a4252a6e56555c3f7ef4a8cf7d5aefa143901b22c06217c082f0cf8244
+    tests:
+      - file: "crates/univ-ingest/tests/release.rs"
+        name: "the_manifest_notes_the_distance_ladders_hubble_constant_beside_the_release_cosmology"
+        body: ac339c879ca3f6930c7de1ecbed4b899b51ee8ce13ad5b24a8580d40ee3450c8
   - node: 01a19f22-2ad9-716e-876f-185687a92854
     reviewed: 927307e53be629f8cc288c7378c4c5b8054d2b1fdf235b3e17c95831ece72485
     tests:
+      - file: "crates/univ-ingest/tests/structure_cells.rs"
+        name: "horologium_reticulum_is_placed_at_its_cited_mean_velocity"
+        body: 5997e23bff42072150b838e880ccb261a058b2039dbc47d0443bd6ea668b72be
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "a_redshift_distance_is_the_comoving_distance_of_the_cmb_frame_redshift"
         body: 3a4209fa46d5f86a73ea190f7ca866f6c342574e00f4758d065397c31720a3f5
@@ -293,7 +302,7 @@ links:
         body: c2faeb3c5a338f7cd19473a1bd0adaeb3b760dadea09b675b9315959ac7b243c
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
-        body: 58b1fd717a6d6ce88b7e2493b064235c822a2ae8e12d3e94191d1dd93e264cd1
+        body: 06605592dc942ad4e6fcaa0225da1f58d73838142bceb134a5e6774e36e9b9c6
   - node: 01a1a147-6018-75e1-9409-3f820e7bc1c8
     reviewed: b4375d7f47b119efcd6e7138b0fb93aaf0787d89683e9d508f5a5e21dc51e266
     tests:
@@ -311,7 +320,7 @@ links:
         body: 144efbcd727fee24dfc213198b3d978f42fc5b42d6ad28d02af5bd321a597039
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
-        body: 58b1fd717a6d6ce88b7e2493b064235c822a2ae8e12d3e94191d1dd93e264cd1
+        body: 06605592dc942ad4e6fcaa0225da1f58d73838142bceb134a5e6774e36e9b9c6
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
         body: b5f7f249cec2df5f3b2fdb4cb4f1496c15448e5d3476e17b53da41c2f43e3e80
@@ -476,7 +485,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "the_report_lists_each_fix_applied_with_the_entries_it_changed"
-        body: 3a22572d10fd3374b7c6831d840ea7142d68a145a507c67ba67fa25f294e6782
+        body: 8ff5307a44398fa3e1a466ffd9113fe837e45889d70a3e36f3ca2d7e573c634e
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
         body: dbcb4b840aeddcd750ae80492c6ef7062a9482e2986bd15662278ed2bdef635e
@@ -720,6 +729,9 @@ links:
   - node: 01a19f23-636f-72bd-b194-150cc0a7de4d
     reviewed: 149dd72735ea72ce3d9141b32916aeafbeca2edae2425073d2353704573844bf
     tests:
+      - file: "crates/univ-ingest/tests/local_group_duplicates.rs"
+        name: "nearby_galaxies_take_the_pairs_wider_tolerance_and_ungc_meets_2mpp"
+        body: 79a364e8582e26b1a21f391d620969c33900480eb27590328bba470f272ba215
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "each_pair_of_sources_has_its_own_tolerances"
         body: 7aab26e1fbf8600ff13d45ba13e6fea5040391bb676ee8602071d841b578d95f
@@ -884,10 +896,10 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "the_cell_index_holds_every_placed_object_in_the_cell_of_its_position"
-        body: d552c87a32083946816911c776be2ca2e45df4a8c8b51e1d2bd1b983fc5b7f9e
+        body: bdc64920c766d15ab67864cc08d5c44ec6455d371a2f4d54472d5dbdaa34ed3a
       - file: "crates/univ-ingest/tests/structure_cells.rs"
         name: "a_sky_region_over_every_longitude_spans_all_360_degrees"
-        body: 14a993954ae857d17b8d26a77c0c0414af120f68a3b371bd05d6080fdc1f6748
+        body: af490900dac9dea747c3868359a1dd331f6d861761e278517a042d2cb5cb530e
   - node: 01a19f23-636f-72bd-b194-15248994b03f
     reviewed: 531442a7f316a2ed5e8fbade5d8190168bc1fd7e6f311bde2266d6665ab61149
     tests:

@@ -29,6 +29,7 @@ position:
     uncertainty: { form: none_reported }
     as_published: "δ = -50°02′"
     cite: *centre
+  redshift_frame: heliocentric
   velocity:
     value: 19900
     unit: kilometre_per_second

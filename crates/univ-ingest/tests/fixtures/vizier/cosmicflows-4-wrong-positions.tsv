@@ -1,13 +1,13 @@
 #
 #   VizieR Astronomical Server vizier.idia.ac.za
-#    Date: 2026-11-03T12:37:25 [V7.6.1]
+#    Date: 2026-11-03T15:32:11 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-03T12:37:25	  Query execution date
-#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Fgroups&-out=1PGC%2CDMzp%2Ce_DMzp%2CDMav%2Ce_DMav%2CVh%2CSGX%2CSGY%2CSGZ&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&1PGC=41220%2C1816%2C43423%2C43296	  Full request URL
+#INFO	request_date=2026-11-03T15:32:11	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Fgroups&-out=1PGC%2CDMzp%2Ce_DMzp%2CDMav%2Ce_DMav%2CV3k%2CSGX%2CSGY%2CSGZ&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&1PGC=41220%2C1816%2C43423%2C43296	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -35,15 +35,15 @@
 #Column	e_DMzp	(F6.3)	[0.008/2.11] Uncertainty in DMzp	[ucd=stat.error;phot.mag.distMod]
 #Column	DMav	(F6.3)	[0/39.6] Group, weighted average distance modulus, arbitrary SNIa scale (2)	[ucd=phot.mag.distMod;stat.mean]
 #Column	e_DMav	(F6.3)	[0/2.11] Uncertainty in DMav	[ucd=stat.error;phot.mag.distMod]
-#Column	Vh	(I5)	[-331/32885] Group velocity, relative to the Sun	[ucd=phys.veloc;pos.heliocentric]
+#Column	V3k	(I5)	[-617/32575] Group velocity, relative to cosmic background	[ucd=phys.veloc;pos.cmb]
 #Column	SGX	(I6)	[-22455/23499] Cartesian supergalactic coordinates of group, observed velocity units	[ucd=pos.cartesian.x;pos.supergalactic]
 #Column	SGY	(I6)	[-28286/28984] Cartesian supergalactic coordinates of group, observed velocity units	[ucd=pos.cartesian.y;pos.supergalactic]
 #Column	SGZ	(I6)	[-27377/27941] Cartesian supergalactic coordinates of group, observed velocity units	[ucd=pos.cartesian.z;pos.supergalactic]
-_RAJ2000	_DEJ2000	1PGC	DMzp	e_DMzp	DMav	e_DMav	Vh	SGX	SGY	SGZ
+_RAJ2000	_DEJ2000	1PGC	DMzp	e_DMzp	DMav	e_DMav	V3k	SGX	SGY	SGZ
 deg	deg	 	mag	mag	mag	mag	km/s	Mpc	Mpc	Mpc
 ----------	----------	-------	------	------	------	------	-----	------	------	------
-079.596100	-08.309000	   1816	33.290	 0.540	33.437	 0.540	 3103	   820	  -942	 -2710
-220.824300	-23.900800	  41220	31.048	 0.008	31.195	 0.008	 1257	  -905	   562	   324
-235.148700	-71.694800	  43296	33.027	 0.048	33.174	 0.048	 3602	 -3280	  -745	  -192
-354.127100	+10.946200	  43423	33.193	 0.120	33.340	 0.120	 4058	  2120	 -3364	  1578
+079.596100	-08.309000	   1816	33.290	 0.540	33.437	 0.540	 3120	   820	  -942	 -2710
+220.824300	-23.900800	  41220	31.048	 0.008	31.195	 0.008	 1479	  -905	   562	   324
+235.148700	-71.694800	  43296	33.027	 0.048	33.174	 0.048	 3690	 -3280	  -745	  -192
+354.127100	+10.946200	  43423	33.193	 0.120	33.340	 0.120	 3690	  2120	 -3364	  1578
 

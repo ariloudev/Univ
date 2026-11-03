@@ -1,0 +1,42 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-03T15:32:22 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-03T15:32:22	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&ID=00145360-3911478	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_21990026
+#Name: J/ApJS/199/26
+#Title: The 2MASS Redshift Survey (2MRS) (Huchra+, 2012)
+#INFO	ivoid=ivo://cds.vizier/j/apjs/199/26	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/apjs/199/26	    IVOID of underlying data collection
+#INFO	creator=Huchra J.P.	    First author or institution
+#INFO	cites=bibcode:2012ApJS..199...26H	    Article or Data origin sources
+#INFO	journal=ApJS	    Journal name
+#INFO	original_date=2012	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJS/199/26	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.21990026	    Dataset identifier that can be used for citation
+#INFO	publication_date=2017-09-19	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Table	J_ApJS_199_26_table3:
+#Name: J/ApJS/199/26/table3
+#Title: 2MRS catalog
+#Column	_RAJ2000	(F11.7)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F11.7)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	ID	(A16)	2MASS ID from XSC (Cat. VII/233) or 2MASS Large Galaxy Atlas (LGA) databases (Jarrett et al. 2003AJ....125..525J)	[ucd=meta.id;meta.main]
+#Column	cz	(I5)	? Redshift, corrected to solar system barycenter reference frame	[ucd=phys.veloc;pos.heliocentric]
+#Column	e_cz	(I3)	? Uncertainty in cz	[ucd=stat.error]
+#Column	Kcmag	(F6.3)	Extinction-corrected 2MASS Ks magnitude (1)	[ucd=phot.mag;em.IR.K]
+#Column	r_cz	(A19)	Reference for cz; see table4.dat file	[ucd=meta.ref;pos.frame]
+_RAJ2000	_DEJ2000	ID	cz	e_cz	Kcmag	r_cz
+deg	deg	 	km/s	km/s	mag	
+-----------	-----------	----------------	-----	---	------	-------------------
+003.7233400	-39.1966300	00145360-3911478	  129	  2	 6.557	2004AJ....128...16K
+

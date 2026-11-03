@@ -1,0 +1,6 @@
+source: twompp-catalogue
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FMNRAS%2F416%2F2840%2Fcatalog&-out=Name%2CHV%2Ce_HV%2CKsmag%2CGID%2CRef%2CCln&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=00145360-3911478
+retrieved: 2026-11-03T15:32:25Z
+sha256: 33483807a760cac86c53b315d8dfd28dd0e64e82370f253f5f8851e2ad6f6aac
+note: >-
+  The source's own query narrowed by Name to NGC 55, 2MASX J00145360-3911478.
