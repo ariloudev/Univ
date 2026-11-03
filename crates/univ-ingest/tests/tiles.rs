@@ -81,7 +81,7 @@ fn each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs()
     let names: Vec<_> = built
         .domains
         .iter()
-        .map(|d| d.manifest.scale_domain)
+        .map(|d| d.manifest.scale_domain.as_ref())
         .collect();
     assert_eq!(names, ["stars", "nearby_galaxies", "cosmic_web"]);
     for (domain, unit, id, radius) in [
