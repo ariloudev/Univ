@@ -21,7 +21,7 @@ requirements:
       - key: 01a19f22-2ad9-716e-876f-1867aeb456fd
         name: "Each value is classified by its kind of value."
       - key: 01a19f22-2ad9-716e-876f-186820f4df2c
-        name: "Each uncertainty is typed as a symmetric error, an asymmetric interval, an upper or lower limit, a credible region, or none reported."
+        name: "Each uncertainty is typed as a symmetric error, an asymmetric interval, a stated interval with no probability, an upper or lower limit, a credible region, or none reported."
       - key: 01a19f22-2ad9-716e-876f-186959bf0d6e
         name: "A value published without an uncertainty is marked as having none reported, never as having zero uncertainty."
   - key: 01a19f22-2ad9-716e-876f-186a829fb7fa
