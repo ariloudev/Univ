@@ -12,7 +12,7 @@ use univ_model::release::manifest::{
     CellIndex, CellSpaceInfo, Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestSource,
     NotIndexed, RecordedFile, ReleaseManifest, Versions,
 };
-use univ_model::release::rows::{ObjectCellRow, ReleaseRow};
+use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseRow};
 use univ_model::release::{Row, SCHEMA_VERSION, keys};
 
 use super::check::{Failed, Subject, check_all, d1_derived, d1_size};
@@ -26,6 +26,10 @@ use super::{
 };
 use crate::crossmatch::RULES;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
+use crate::watch::Watch;
+
+/// Objects turned into rows between two looks at the build's stop flag.
+const OBJECTS_BETWEEN_CHECKS: usize = 10_000;
 
 /// A release written into its directory, with the failures of its checks.
 pub struct Written {
@@ -35,7 +39,7 @@ pub struct Written {
 
 /// Writes each rules file of the cross-match's basis as it was read, giving its entry in the
 /// manifest.
-fn rules(inputs: &Inputs<'_>, sink: &mut DirSink) -> Result<Vec<RecordedFile>, String> {
+fn rules(inputs: &Inputs<'_>, sink: &mut DirSink<'_>) -> Result<Vec<RecordedFile>, String> {
     let basis = &inputs.crossed.basis;
     let mut recorded = Vec::new();
     for name in RULES {
@@ -76,9 +80,10 @@ fn d1_rows(
     inputs: &Inputs<'_>,
     number: u32,
     mut writer: D1Writer<'_>,
-    grids: &[univ_model::release::rows::GridRow],
+    grids: &[GridRow],
     release: &Release,
     sources: SourceIndex,
+    watch: Watch<'_>,
 ) -> Result<D1Done, String> {
     let crossed = inputs.crossed;
     let ranking = &crossed.basis.ranking;
@@ -87,10 +92,7 @@ fn d1_rows(
         terms: Terms::default(),
         sources,
     };
-    let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
-    for o in &crossed.objects {
-        objects.write(&mut writer, o)?;
-    }
+    let objects = write_objects(inputs, numbering, &mut writer, watch)?;
     let ObjectWriter {
         numbering: Numbering { mut terms, .. },
         chains,
@@ -183,14 +185,74 @@ fn d1_rows(
     })
 }
 
-/// Writes release `number` of `inputs` into the new directory `dir` and checks it.
+/// Writes each volume grid's files, one grid at a time: read, written, and let go. It gives
+/// each grid's row, its source numbered by `sources`.
+fn write_grids(
+    inputs: &Inputs<'_>,
+    number: u32,
+    sink: &mut DirSink<'_>,
+    release: &Release,
+    sources: &mut SourceIndex,
+) -> Result<Vec<GridRow>, String> {
+    sink.watch.check()?;
+    let mut grids = Vec::with_capacity(inputs.grids.len());
+    let mut written = 0;
+    for (definition, files) in inputs.grids {
+        sink.watch.check()?;
+        let grid = read_grid(definition, files)?;
+        let mut g = grid_files(number, &grid, definition, release)?;
+        drop(grid);
+        for (path, bytes) in &g.files {
+            sink.put(path.clone(), bytes)?;
+        }
+        written += g.files.len();
+        g.row.source = sources.n(&definition.id);
+        grids.push(g.row);
+    }
+    sink.watch.step(format!(
+        "volume grids: {} grids in {written} files",
+        grids.len()
+    ));
+    Ok(grids)
+}
+
+/// Turns every object into its rows through `writer`, looking at the build's stop flag every
+/// [`OBJECTS_BETWEEN_CHECKS`] objects.
+fn write_objects<'a>(
+    inputs: &Inputs<'a>,
+    numbering: Numbering,
+    writer: &mut D1Writer<'_>,
+    watch: Watch<'_>,
+) -> Result<ObjectWriter<'a>, String> {
+    let crossed = inputs.crossed;
+    let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
+    for (n, o) in crossed.objects.iter().enumerate() {
+        if n % OBJECTS_BETWEEN_CHECKS == 0 {
+            watch.check()?;
+        }
+        objects.write(writer, o)?;
+    }
+    Ok(objects)
+}
+
+/// Writes release `number` of `inputs` into the new directory `dir` and checks it, telling
+/// `watch` as each of its phases is done: the rules, the tiles, the volume grids, the D1 rows and
+/// the checks. Each file written, each grid and every [`OBJECTS_BETWEEN_CHECKS`] objects is a
+/// safe point at which the build stops once the owner asks it to.
 ///
 /// # Errors
 ///
-/// Fails when a file cannot be read or written or a row cannot be made.
-pub fn write_release(inputs: &Inputs<'_>, number: u32, dir: &Path) -> Result<Written, String> {
-    let mut sink = DirSink::new(dir, number)?;
+/// Fails when a file cannot be read or written or a row cannot be made, or when the owner asked
+/// the build to stop.
+pub fn write_release(
+    inputs: &Inputs<'_>,
+    number: u32,
+    dir: &Path,
+    watch: Watch<'_>,
+) -> Result<Written, String> {
+    let mut sink = DirSink::new(dir, number, watch)?;
     let recorded = rules(inputs, &mut sink)?;
+    watch.step(format!("rules: {} files", recorded.len()));
     for d in &inputs.tiles.domains {
         let name = name_of(d.domain);
         sink.put(keys::tile_manifest(name), &d.json)?;
@@ -198,22 +260,16 @@ pub fn write_release(inputs: &Inputs<'_>, number: u32, dir: &Path) -> Result<Wri
             sink.put(keys::tile(name, &node.address), &node.tile)?;
         }
     }
-    // One grid at a time: read, written, and let go.
+    watch.step(format!(
+        "tiles: {} tiles and {} manifests",
+        tile_count(inputs),
+        inputs.tiles.domains.len()
+    ));
     let crossed = inputs.crossed;
     let release = Release::new(&crossed.cosmology)
         .with_peculiar_velocity(crossed.basis.ranking.peculiar_velocity_km_s);
     let mut sources = SourceIndex::new(inputs.definitions.iter().map(|d| &d.id));
-    let mut grids = Vec::with_capacity(inputs.grids.len());
-    for (definition, files) in inputs.grids {
-        let grid = read_grid(definition, files)?;
-        let mut g = grid_files(number, &grid, definition, &release)?;
-        drop(grid);
-        for (path, bytes) in &g.files {
-            sink.put(path.clone(), bytes)?;
-        }
-        g.row.source = sources.n(&definition.id);
-        grids.push(g.row);
-    }
+    let grids = write_grids(inputs, number, &mut sink, &release, &mut sources)?;
     let d1 = d1_rows(
         inputs,
         number,
@@ -221,7 +277,14 @@ pub fn write_release(inputs: &Inputs<'_>, number: u32, dir: &Path) -> Result<Wri
         &grids,
         &release,
         sources,
+        watch,
     )?;
+    let sql_files = sink.files.iter().filter(|f| f.key.is_none()).count();
+    watch.step(format!(
+        "D1 rows: {} rows in {sql_files} SQL files",
+        d1.estimate.tables.iter().map(|t| t.rows).sum::<u64>()
+    ));
+    watch.check()?;
     let mut failed = check_all(&Subject {
         objects: &crossed.objects,
         tiles: inputs.tiles,
@@ -231,6 +294,11 @@ pub fn write_release(inputs: &Inputs<'_>, number: u32, dir: &Path) -> Result<Wri
         cache: inputs.cache,
     });
     failed.extend(d1.failed.iter().cloned());
+    watch.step(if failed.is_empty() {
+        "checks: every check passed".to_owned()
+    } else {
+        format!("checks: {} failed", failed.len())
+    });
     let mut files = sink.files;
     files.sort_by(|a, b| a.path.cmp(&b.path));
     let assigned = &crossed.assigned;

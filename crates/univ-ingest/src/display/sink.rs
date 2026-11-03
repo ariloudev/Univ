@@ -107,12 +107,22 @@ impl<C: Clock, T: Target> EventSink for RunSink<C, T> {
 
 impl<C: Clock, T: Target> RunDisplay for RunSink<C, T> {
     /// Prints the lines queued since the last draw and redraws the status line, in one draw.
+    /// A target that is not live prints a progress line for a stage that printed nothing for a
+    /// minute.
     fn draw(&self) {
-        if !self.target.live() {
-            return;
-        }
         let now = self.clock.now();
         let mut inner = self.lock();
+        if !self.target.live() {
+            let due: Vec<String> = inner
+                .state
+                .stage_progress_due(now, PROGRESS_EVERY)
+                .into_iter()
+                .collect();
+            if !due.is_empty() {
+                self.target.print(now, &due);
+            }
+            return;
+        }
         let lines = std::mem::take(&mut inner.queued);
         let status = inner.state.status(self.elapsed(now), self.target.width());
         self.target.draw(&lines, &status);
@@ -122,7 +132,7 @@ impl<C: Clock, T: Target> RunDisplay for RunSink<C, T> {
         let now = self.clock.now();
         let mut inner = self.lock();
         let summary = Summary {
-            bytes: inner.state.fetched,
+            bytes: inner.state.moved(),
             elapsed: self.elapsed(now),
             sources,
             stages: inner.state.stages.clone(),

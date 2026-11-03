@@ -26,8 +26,10 @@ use univ_model::release::{ReleaseManifest, Scope, TABLES, keys};
 
 use super::check::{published_status, sql_text};
 use super::journal::{self, Journal};
+use super::progress::{Lines, Progress};
 use super::{Latest, Store, StoreOptions};
 use crate::release::{parse_manifest, read_manifest, release_dir};
+use crate::watch::STOPPED;
 
 /// A release pruned.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -173,10 +175,10 @@ fn remove_build(out: &Path, number: u32) -> Result<Option<PathBuf>, String> {
 fn remove_build_and_journal(
     options: &StoreOptions<'_>,
     number: u32,
-    progress: &mut dyn FnMut(String),
+    progress: &mut dyn Progress,
 ) -> Result<Option<PathBuf>, String> {
     let build = remove_build(options.out, number)?;
-    progress(match &build {
+    progress.line(match &build {
         Some(dir) => format!(
             "release {number}: its local build {} deleted",
             dir.display()
@@ -217,6 +219,21 @@ pub fn prune(
     options: &StoreOptions<'_>,
     progress: &mut dyn FnMut(String),
 ) -> Result<Pruned, PruneError> {
+    prune_with(store, number, options, &mut Lines(progress))
+}
+
+/// [`prune`], telling `progress` how many steps it takes once it is not refused. Once `progress`
+/// says the owner asked it to stop, it stops after the step in hand; pruning again finishes it.
+///
+/// # Errors
+///
+/// As [`prune`], and as failed part way when the owner asked it to stop.
+pub fn prune_with(
+    store: &mut dyn Store,
+    number: u32,
+    options: &StoreOptions<'_>,
+    progress: &mut dyn Progress,
+) -> Result<Pruned, PruneError> {
     let failed = |problem: String| PruneError::Failed { number, problem };
     let status = published_status(store, number).map_err(failed)?;
     let latest = status.latest();
@@ -229,8 +246,10 @@ pub fn prune(
         let Some(keys) = listing.filter(|_| journaled) else {
             return Err(PruneError::NotListed { number });
         };
+        // The R2 files, then the local build.
+        progress.started(2);
         delete_all(store, number, &keys).map_err(failed)?;
-        progress(format!(
+        progress.line(format!(
             "release {number}: never listed in D1, but its journal records R2 uploads: the {} \
              keys under {prefix} its journal and manifest name deleted",
             keys.len()
@@ -248,6 +267,8 @@ pub fn prune(
             latest,
         });
     }
+    // The R2 files, the rows, then the local build.
+    progress.started(3);
     let files = match listing {
         Some(keys) => {
             delete_all(store, number, &keys).map_err(failed)?;
@@ -257,9 +278,12 @@ pub fn prune(
         None if status.pruned_at.is_some() => 0,
         None => return Err(PruneError::NoFileList { number }),
     };
-    progress(format!(
+    progress.line(format!(
         "release {number}: {files} R2 files under {prefix} deleted"
     ));
+    if progress.stopping() {
+        return Err(failed(STOPPED.to_owned()));
+    }
     let rows = rows_of(store, number).map_err(failed)?;
     let mut statements: Vec<String> = TABLES
         .iter()
@@ -283,10 +307,13 @@ pub fn prune(
             "D1 still holds {left} rows of release {number}"
         )));
     }
-    progress(format!(
+    progress.line(format!(
         "release {number}: {rows} rows deleted from the tables of one release; the list of \
          releases and the id ledger are kept"
     ));
+    if progress.stopping() {
+        return Err(failed(STOPPED.to_owned()));
+    }
     let after = published_status(store, number).map_err(failed)?;
     let pruned_at = after
         .pruned_at

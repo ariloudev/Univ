@@ -74,6 +74,7 @@ impl<C: Clock> Fetcher<C> {
             .await
             .map_err(disk)?;
         let _ = tokio::fs::remove_file(meta_path(item.dest)).await;
+        self.counter.got();
         self.sink.emit(Event::Done {
             source: item.source.clone(),
             item: item.name.to_owned(),
@@ -235,6 +236,7 @@ impl<C: Clock> Fetcher<C> {
                 Ok(Some(bytes)) => {
                     file.write_all(&bytes).await.map_err(|e| at.disk(&e))?;
                     written += bytes.len() as u64;
+                    self.counter.bytes(bytes.len() as u64);
                     if written - reported >= REPORT_EVERY {
                         reported = written;
                         let (source, item) = at.id();

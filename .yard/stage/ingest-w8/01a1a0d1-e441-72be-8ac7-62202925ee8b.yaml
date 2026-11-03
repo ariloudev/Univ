@@ -3800,6 +3800,24 @@ blocks:
         detail: "Covers the spec and the code, then builds release 6. Done when `cargo xtask science` shows no FAIL and the worst conflicts are placed by their measured, smaller-σ redshift."
         state: active
         type: fix
+      - key: 01a1a25c-aff8-7134-979f-cbf430a46535
+        at: 2026-11-03T17:02:25Z
+        revision: 29
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Rank redshift distances by kind, then σ_cz"
+        detail: |-
+          Commits `b2f2e72` (spec and a new decision), `3e35584` and `dc5d8fd`. Release 6 is built: 27 PASS, 0 FAIL, 3 CONCERN.
+
+          **Changes against release 5:** 78,143 preferred measurements changed, mostly between agreeing duplicates; 131 moved by more than 10%.
+
+          **Conflicting redshifts:**
+          - ESO 460-G001 is now at 7,520 km/s and NGC 279 at 3,878 km/s (2MRS).
+          - No object with a measured redshift is placed by a clone any more.
+          - Conflicts placed by the higher value fell from 141 to 47. 2MFGC 13736 stays at 2M++'s 50,042 km/s: its σ of 11 km/s beats 2MRS's 73. No source in the release can settle it.
+        state: done
+        type: fix
   - key: 01a1a24a-0dc3-734c-8e17-2051e2532209
     id: w8-t11-prune
     kind: task
@@ -3852,3 +3870,66 @@ blocks:
 
           Done when publish and prune are timed against 12 and 4 min and the gate passes.
         state: active
+      - key: 01a1a26e-7c4e-758e-866b-805d194614cc
+        at: 2026-11-03T17:21:52Z
+        revision: 30
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Faster prune and publish: batched R2, prune deletes the local build"
+        detail: |-
+          Spec commit `cd30028`, code `3e8d57b`, merged into W8 as `eba587f`.
+
+          **Design:** `scripts/r2-batch.mjs` loads Wrangler's own Miniflare and local bucket, and runs one Node process per run. A put returns the object read back with its SHA-256, and deletes go 1,000 keys per call. A round-trip test against `wrangler r2 object get` shows the script and wrangler share one storage.
+
+          **Measured** on a copy of release 4:
+          - Publish: 12 min → 6 min. R2 now takes about 5 s; D1's 2.9 GB of SQL is the rest.
+          - Prune: 4 min → 17 s.
+
+          Prune also deletes `build/releases/{n}`, last.
+        state: done
+  - key: 01a1a27b-027a-76fe-b3b0-53c20ed2f0d4
+    id: w8-f13
+    kind: note
+    versions:
+      - key: 01a1a27b-027a-76fe-b3b0-53c4d5471262
+        at: 2026-11-03T17:35:32Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "F-13 re-checked across every stage"
+        markdown: |-
+          | Stage | Display |
+          |---|---|
+          | fetch, normalize, cross-match, tiles | Pass; fetch and normalize end on a bare `done` |
+          | build | No item count (`[build 0]`) |
+          | publish, prune | Bypass the run display: no status line, stage lines or summary, and 143–181 s silences during the D1 import |
+
+          **Bug:** Ctrl-C during build, cross-match or tiles prints "Stopped … no release was built" and releases the lock, but the blocking work keeps running and records the release. AC-121 has no Ctrl-C test for build or publish.
+
+          Release 6 is published and `latest`. Releases 1–4 are pruned (prune of 4: 34 s). Release 5 was built but never published, so prune correctly refuses it.
+        tone: warning
+  - key: 01a1a27b-027a-76fe-b3b0-53c3789f6d82
+    id: w8-t13-f13
+    kind: task
+    versions:
+      - key: 01a1a27b-027a-76fe-b3b0-53c50972335a
+        at: 2026-11-03T17:35:32Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the display and cancellation for every stage"
+        detail: |-
+          Covers:
+          - Ctrl-C really stops match, tiles, build and publish.
+          - Publish and prune go through the run display.
+          - Progress lines during long D1 imports.
+          - A build item count.
+          - Counts on fetch and normalize end lines.
+          - Linking the CLI stage-line tests.
+
+          Done when tests cover each fix, including Ctrl-C mid-build and mid-publish, and the gate passes.
+        state: active
+        type: fix

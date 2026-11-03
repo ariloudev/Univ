@@ -30,6 +30,7 @@ use crate::ids::{AssignError, Assigned, assign_in_order};
 use crate::matching::{MatchReport, match_entries};
 use crate::ranking::rank_all;
 use crate::state::State;
+use crate::watch::Watch;
 use univ_model::entry::CatalogueEntry;
 
 /// The steps of the stage, which its status line counts.
@@ -80,6 +81,8 @@ pub struct CrossMatched {
 pub enum CrossMatchError {
     #[error("the ids cannot be assigned: {0}")]
     Ids(#[from] AssignError),
+    #[error("{0}")]
+    Stopped(String),
 }
 
 /// The name of the release after those `ledger` lists: one more than their number.
@@ -100,11 +103,26 @@ pub fn cross_match(
     inputs: &Inputs<'_>,
     sink: &dyn EventSink,
 ) -> Result<CrossMatched, CrossMatchError> {
+    cross_match_watched(entries, inputs, sink, Watch::unwatched())
+}
+
+/// [`cross_match`], stopping after the step in hand once the owner asks it to through `watch`.
+///
+/// # Errors
+///
+/// Fails as [`cross_match`] does, or when the owner asked it to stop.
+pub fn cross_match_watched(
+    entries: Vec<CatalogueEntry>,
+    inputs: &Inputs<'_>,
+    sink: &dyn EventSink,
+    watch: Watch<'_>,
+) -> Result<CrossMatched, CrossMatchError> {
     let step = |step: String| {
         sink.emit(Event::Stepped {
             stage: Stage::Match,
             step,
         });
+        watch.check().map_err(CrossMatchError::Stopped)
     };
     let count = entries.len();
     let basis = inputs.basis;
@@ -113,14 +131,14 @@ pub fn cross_match(
     step(format!(
         "matching: {count} entries into {} objects, {} candidate links",
         report.objects, report.candidate_links
-    ));
+    ))?;
     let mut objects = matched.objects;
     rank_all(&mut objects, &basis.ranking, inputs.release);
     let ranked = objects.iter().filter(|o| o.preferred_distance.is_some());
     step(format!(
         "ranking: {} with a preferred distance",
         ranked.count()
-    ));
+    ))?;
 
     let release = next_release(&inputs.state.ledger);
     let mut ledger = inputs.state.ledger.clone();
@@ -136,7 +154,7 @@ pub fn cross_match(
         "ids: release {release}, {} new, {} replaced",
         issued(&assigned),
         assigned.replaced.len()
-    ));
+    ))?;
 
     let mut placed = Vec::with_capacity(objects.len());
     for (mut object, id) in objects.into_iter().zip(ids) {
@@ -148,7 +166,7 @@ pub fn cross_match(
         });
     }
     let count = placed.iter().filter(|o| o.position.is_some()).count();
-    step(format!("positions: {count} placed of {}", placed.len()));
+    step(format!("positions: {count} placed of {}", placed.len()))?;
 
     let resolved: Vec<Resolved<'_>> = placed
         .iter()
@@ -181,7 +199,7 @@ pub fn cross_match(
         "members: {} member lists, {from_file} members placed from their own cited position and \
          redshift",
         structures.len()
-    ));
+    ))?;
 
     let next = State {
         ledger,

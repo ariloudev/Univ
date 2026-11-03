@@ -98,7 +98,7 @@ impl Wrangler {
 
     /// Runs Wrangler with `args` and the local options.
     fn run(&self, args: &[&str]) -> Result<Output, String> {
-        Command::new(&self.program)
+        own_group(&mut Command::new(&self.program))
             .current_dir(&self.root)
             .args(args)
             .arg("--local")
@@ -121,6 +121,15 @@ impl Wrangler {
             Err(failure(args, &output))
         }
     }
+}
+
+/// `command` in a process group of its own, so that the owner's Ctrl-C reaches only Univ Ingest,
+/// which stops once the unit in hand is done rather than have Wrangler killed part way through
+/// it.
+pub(super) fn own_group(command: &mut Command) -> &mut Command {
+    #[cfg(unix)]
+    std::os::unix::process::CommandExt::process_group(command, 0);
+    command
 }
 
 /// `text` without its ANSI escape sequences: control sequences (`ESC [` … a final byte),

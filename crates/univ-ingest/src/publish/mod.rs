@@ -42,6 +42,7 @@
 mod check;
 mod error;
 pub mod journal;
+mod progress;
 mod prune;
 mod r2batch;
 mod upload;
@@ -56,9 +57,10 @@ use crate::tiles::sha256;
 
 pub use check::{Status, published_status, sql_text};
 pub use error::PublishError;
-pub use prune::{PruneError, Pruned, prune};
+pub use progress::{FileDone, Lines, Progress};
+pub use prune::{PruneError, Pruned, prune, prune_with};
 pub use r2batch::{R2Batch, SCRIPT};
-pub use upload::{Published, move_latest, publish};
+pub use upload::{Published, move_latest, publish, publish_with};
 pub use wrangler::{BUCKET, DATABASE, STDERR_LINES, Wrangler, ingest_dir, strip_ansi};
 
 /// Where publishing and pruning find a release and keep their journals, and their clock.

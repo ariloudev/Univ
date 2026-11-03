@@ -75,6 +75,14 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     let dir = release_dir(out.path(), 1);
     for line in [
         "Z Stage tiles: 3 items\n".to_owned(),
+        // The build's phases, each a step of its six.
+        "Z Stage build: 6 items\n".to_owned(),
+        "Z Step build: rules: 4 files\n".to_owned(),
+        "Z Step build: tiles: 3 tiles and 3 manifests\n".to_owned(),
+        "Z Step build: volume grids: 0 grids in 0 files\n".to_owned(),
+        "Z Step build: checks: every check passed\n".to_owned(),
+        "Z Step build: manifest: 27 files checked against their SHA-256\n".to_owned(),
+        "Z Stage build done: ".to_owned(),
         format!(
             "Z Step build: release 1: every check passed; 27 files listed with their SHA-256 in \
              {}\n",
@@ -93,6 +101,7 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     ] {
         assert!(log.contains(&line), "{line}in\n{log}");
     }
+    assert!(log.contains("Z Step build: D1 rows: "), "{log}");
     assert!(log.contains("Z Step build: D1: "), "{log}");
     assert!(log.contains(" of the 10 GB cap ("), "{log}");
     assert!(!dir.with_file_name(".building-1").exists());

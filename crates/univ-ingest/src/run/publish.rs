@@ -1,10 +1,19 @@
 //! The publish and prune commands: a built release uploaded to local D1 and R2 through
-//! Wrangler, and a release pruned from them. Each prints a plain, timestamped line per step.
+//! Wrangler, and a release pruned from them, each shown on the run display as a stage, a step
+//! per file or step, and a summary.
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::SystemTime;
 
-use crate::publish::{Store, StoreOptions, Wrangler, ingest_dir, prune, publish};
+use univ_model::release::keys;
+
+use crate::display::Outcome;
+use crate::events::{Count, Event, EventSink, Stage};
+use crate::publish::{
+    FileDone, Progress, Pruned, Published, Store, StoreOptions, Wrangler, ingest_dir, prune_with,
+    publish_with,
+};
 use crate::release::release_dir;
 
 /// Where Wrangler keeps local D1 and R2 by default: what `wrangler dev` reads from the
@@ -28,10 +37,102 @@ pub struct StoreRun {
     pub config: PathBuf,
 }
 
-/// A publish or prune of one release against a store, giving each step's line to its last
-/// argument and its closing line as its outcome.
-pub type StoreCommand =
-    fn(&mut dyn Store, u32, &StoreOptions<'_>, &mut dyn FnMut(String)) -> Result<String, String>;
+/// A command against local D1 and R2.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum StoreCommand {
+    Publish,
+    Prune,
+}
+
+impl StoreCommand {
+    /// The stage the command is shown as.
+    #[must_use]
+    pub fn stage(self) -> Stage {
+        match self {
+            Self::Publish => Stage::Publish,
+            Self::Prune => Stage::Prune,
+        }
+    }
+}
+
+/// A publish or prune shown on the run display: each step and file as an event, as soon as it is
+/// done, with what the files came to, and the owner's stop flag.
+pub struct Shown<'a> {
+    sink: &'a dyn EventSink,
+    stage: Stage,
+    stop: &'a AtomicBool,
+    /// The files done by this run of each kind, in the order first seen.
+    files: Vec<(&'static str, u64)>,
+    /// The rows of the release each table holds once checked by this run, in the order checked.
+    tables: Vec<(&'static str, u64)>,
+}
+
+impl<'a> Shown<'a> {
+    /// The progress of `stage` on `sink`, stopping once `stop` is set.
+    #[must_use]
+    pub fn new(sink: &'a dyn EventSink, stage: Stage, stop: &'a AtomicBool) -> Self {
+        Self {
+            sink,
+            stage,
+            stop,
+            files: Vec::new(),
+            tables: Vec::new(),
+        }
+    }
+
+    fn ended(&self, counts: Vec<Count>) {
+        self.sink.emit(Event::StageEnded {
+            stage: self.stage,
+            counts,
+        });
+    }
+}
+
+/// The kind of a release file, by the directory its path starts with, as a count names it.
+fn kind(path: &str) -> &'static str {
+    match path.split('/').next() {
+        Some("d1") => "D1 files",
+        Some("grids") => "grid files",
+        Some("rules") => "rules files",
+        Some("tiles") => "tile files",
+        Some(keys::MANIFEST) => "manifest files",
+        _ => "other files",
+    }
+}
+
+impl Progress for Shown<'_> {
+    fn started(&mut self, items: usize) {
+        self.sink.emit(Event::StageStarted {
+            stage: self.stage,
+            items: Some(items as u64),
+        });
+    }
+
+    fn line(&mut self, line: String) {
+        self.sink.emit(Event::Stepped {
+            stage: self.stage,
+            step: line,
+        });
+    }
+
+    fn file(&mut self, file: FileDone<'_>) {
+        let kind = kind(file.path);
+        match self.files.iter_mut().find(|(k, _)| *k == kind) {
+            Some((_, n)) => *n += 1,
+            None => self.files.push((kind, 1)),
+        }
+        self.tables.extend(file.rows);
+        self.sink.emit(Event::Uploaded {
+            stage: self.stage,
+            step: file.line,
+            bytes: file.bytes,
+        });
+    }
+
+    fn stopping(&self) -> bool {
+        self.stop.load(Ordering::Relaxed)
+    }
+}
 
 /// The time now, RFC 3339 in UTC to the second.
 #[must_use]
@@ -39,17 +140,23 @@ pub fn now() -> String {
     humantime::format_rfc3339_seconds(SystemTime::now()).to_string()
 }
 
-/// Runs `command` against local D1 and R2 through Wrangler, giving each step's line to `line`.
-///
-/// # Errors
-///
-/// Fails, saying why, when Wrangler is missing or the command fails.
+/// Runs `command` on release `run.number` against local D1 and R2 through Wrangler, showing it
+/// on `sink`, and stopping after the unit in hand once `stop` is set. It gives how the run
+/// ended.
 pub fn store_command(
     run: &StoreRun,
     command: StoreCommand,
-    line: &mut dyn FnMut(String),
-) -> Result<String, String> {
-    let mut store = Wrangler::new(&run.config, &run.persist_to)?;
+    sink: &dyn EventSink,
+    stop: &AtomicBool,
+) -> Outcome {
+    let stopped = |reason: String| Outcome::Stopped {
+        stage: command.stage(),
+        reason,
+    };
+    let mut store = match Wrangler::new(&run.config, &run.persist_to) {
+        Ok(store) => store,
+        Err(error) => return stopped(error),
+    };
     let journals = ingest_dir(&run.persist_to);
     let options = StoreOptions {
         out: &run.out,
@@ -57,10 +164,16 @@ pub fn store_command(
         journals: &journals,
         now: &now,
     };
-    command(&mut store, run.number, &options, line)
+    let mut shown = Shown::new(sink, command.stage(), stop);
+    let done = match command {
+        StoreCommand::Publish => publish_command(&mut store, run.number, &options, &mut shown),
+        StoreCommand::Prune => prune_command(&mut store, run.number, &options, &mut shown),
+    };
+    done.unwrap_or_else(stopped)
 }
 
-/// Publishes the release, giving its closing line.
+/// Publishes the release, ending its stage with what it uploaded: the files of each kind, the
+/// files an earlier run uploaded, and the rows of each table it checked.
 ///
 /// # Errors
 ///
@@ -70,17 +183,40 @@ pub fn publish_command(
     store: &mut dyn Store,
     number: u32,
     options: &StoreOptions<'_>,
-    line: &mut dyn FnMut(String),
-) -> Result<String, String> {
-    let done = publish(store, number, options, line).map_err(|e| e.to_string())?;
-    Ok(format!(
+    shown: &mut Shown<'_>,
+) -> Result<Outcome, String> {
+    let done = publish_with(store, number, options, shown).map_err(|e| e.to_string())?;
+    shown.line(published_line(&done));
+    let mut counts: Vec<Count> = shown
+        .files
+        .iter()
+        .map(|(k, n)| Count::new(*n, *k))
+        .collect();
+    if done.journaled > 0 {
+        counts.push(Count::new(
+            done.journaled as u64,
+            "files uploaded by an earlier run",
+        ));
+    }
+    counts.extend(
+        shown
+            .tables
+            .iter()
+            .map(|(table, rows)| Count::new(*rows, format!("{table} rows"))),
+    );
+    shown.ended(counts);
+    Ok(Outcome::Published(u64::from(done.number)))
+}
+
+fn published_line(done: &Published) -> String {
+    format!(
         "Published release {} at {}: latest points to release {} (it pointed to {}); {} files \
          uploaded and checked by this run, {} by an earlier one",
         done.number, done.published_at, done.number, done.previous, done.uploaded, done.journaled
-    ))
+    )
 }
 
-/// Prunes the release, giving its closing line.
+/// Prunes the release, ending its stage with what it deleted.
 ///
 /// # Errors
 ///
@@ -89,31 +225,41 @@ pub fn prune_command(
     store: &mut dyn Store,
     number: u32,
     options: &StoreOptions<'_>,
-    line: &mut dyn FnMut(String),
-) -> Result<String, String> {
-    let done = prune(store, number, options, line).map_err(|e| e.to_string())?;
+    shown: &mut Shown<'_>,
+) -> Result<Outcome, String> {
+    let done = prune_with(store, number, options, shown).map_err(|e| e.to_string())?;
+    shown.line(pruned_line(&done, options));
+    shown.ended(vec![
+        Count::new(done.files as u64, "R2 files deleted"),
+        Count::new(done.rows, "rows deleted"),
+        Count::new(u64::from(done.build.is_some()), "local builds deleted"),
+    ]);
+    Ok(Outcome::Pruned(u64::from(done.number)))
+}
+
+fn pruned_line(done: &Pruned, options: &StoreOptions<'_>) -> String {
     let build = match &done.build {
         Some(dir) => format!("its local build {} was deleted", dir.display()),
         None => format!(
             "no local build was left at {}",
-            release_dir(options.out, number).display()
+            release_dir(options.out, done.number).display()
         ),
     };
     if !done.listed {
-        return Ok(format!(
+        return format!(
             "Release {} was never listed in D1: the {} R2 keys its journal and manifest name \
              were deleted at {}, and {build}; latest points to {}",
             done.number, done.files, done.pruned_at, done.latest
-        ));
+        );
     }
     let when = if done.already {
         "already pruned at"
     } else {
         "pruned at"
     };
-    Ok(format!(
+    format!(
         "Release {} {when} {}: {} R2 files and {} rows deleted, and {build}; it stays in the \
          list of releases with its pruning time, and the id ledger is kept; latest points to {}",
         done.number, done.pruned_at, done.files, done.rows, done.latest
-    ))
+    )
 }

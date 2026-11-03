@@ -8,15 +8,16 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use clap::{Args, Parser, Subcommand};
 use univ_ingest::acquire::Acquired;
-use univ_ingest::events::{EventSink, Stage};
+use univ_ingest::display::{Outcome, RunDisplay, stage_name};
+use univ_ingest::events::{Event, EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
 use univ_ingest::lock::StateLock;
 use univ_ingest::normalize::Normalized;
 use univ_ingest::run::{
     BuildOptions, DEFAULT_BUILD, DEFAULT_CONFIG, DEFAULT_PERSIST, DEFAULT_TILES, FetchOptions,
     MatchOptions, RunReport, StoreCommand, StoreRun, TileOptions, build_stage, display_for_stderr,
-    drawing, fetch, interrupted, match_stage, normalize_stage_until, now, owner_interrupt,
-    prune_command, publish_command, select, store_command, tiles_stage,
+    drawing, fetch, interrupted, match_stage_until, normalize_stage_until, now, owner_interrupt,
+    select, store_command, tiles_stage, until_set,
 };
 use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::DEFAULT_STATE;
@@ -88,25 +89,74 @@ struct StoreArgs {
     config: PathBuf,
 }
 
-/// Runs the publish or prune `command`, a plain, timestamped line per step on standard error.
-fn on_store(args: StoreArgs, command: StoreCommand) -> ExitCode {
+/// Runs the publish or prune `command` on the run display. A first Ctrl-C stops it once the unit
+/// in hand is uploaded and checked, as the journal then lists it; a second stops it at once.
+async fn on_store(args: StoreArgs, command: StoreCommand) -> ExitCode {
+    let number = args.number;
     let run = StoreRun {
-        number: args.number,
+        number,
         out: args.out,
         state: args.state,
         persist_to: args.persist_to,
         config: args.config,
     };
-    let mut line = |text: String| eprintln!("{} {text}", now());
-    match store_command(&run, command, &mut line) {
-        Ok(closing) => {
-            eprintln!("{} {closing}", now());
-            ExitCode::SUCCESS
+    let display = display_for_stderr();
+    let stop = Arc::new(AtomicBool::new(false));
+    let (shown, flag) = (display.clone(), stop.clone());
+    let work =
+        tokio::task::spawn_blocking(move || store_command(&run, command, shown.as_ref(), &flag));
+    let mut work = std::pin::pin!(drawing(display.as_ref(), work));
+    let first = tokio::select! {
+        done = &mut work => Some(done),
+        () = owner_interrupt(tokio::signal::ctrl_c()) => None,
+    };
+    let interrupted_run = first.is_none();
+    let done = if let Some(done) = first {
+        done
+    } else {
+        stop.store(true, Ordering::Relaxed);
+        display.emit(Event::Stopping {
+            what: stopping(command, number),
+        });
+        tokio::select! {
+            done = &mut work => done,
+            () = owner_interrupt(tokio::signal::ctrl_c()) => {
+                display.finish(vec![], Outcome::Stopped {
+                    stage: command.stage(),
+                    reason: "stopped at once by the owner".to_owned(),
+                });
+                // Returning would have the runtime wait for the unit in hand; the journal lists
+                // only the units done, so the next run uploads that one again.
+                std::process::exit(i32::from(INTERRUPTED));
+            }
         }
-        Err(error) => {
-            eprintln!("{} univ-ingest: {error}", now());
-            ExitCode::FAILURE
-        }
+    };
+    let outcome = done.unwrap_or_else(|e| Outcome::Stopped {
+        stage: command.stage(),
+        reason: e.to_string(),
+    });
+    let failed = matches!(outcome, Outcome::Stopped { .. });
+    display.finish(vec![], outcome);
+    if interrupted_run && failed {
+        ExitCode::from(INTERRUPTED)
+    } else {
+        ExitCode::from(u8::from(failed))
+    }
+}
+
+/// What a publish or prune says once the owner interrupted it.
+fn stopping(command: StoreCommand, number: u32) -> String {
+    match command {
+        StoreCommand::Publish => format!(
+            "the publish of release {number} stops once the unit in hand is uploaded and \
+             checked, latest left where it was; publishing release {number} again continues \
+             from its journal. Ctrl-C again stops at once, and the unit in hand is uploaded \
+             again by the next run"
+        ),
+        StoreCommand::Prune => format!(
+            "the prune of release {number} stops once the step in hand is done; pruning \
+             release {number} again finishes it. Ctrl-C again stops at once"
+        ),
     }
 }
 
@@ -196,13 +246,16 @@ struct Later<'a> {
     report: &'a Mutex<RunReport>,
     /// The run's one CMB dipole correction, the normalize stage's.
     correction: CmbCorrection,
+    /// Set when the owner interrupts the run: each stage stops at its next safe point.
+    cancel: &'a Arc<AtomicBool>,
 }
 
 impl Later<'_> {
     /// Cross-matches the `normalized` entries, then lays out the tiles and builds the release
     /// as far as `until` asks.
     async fn run(&self, sink: Arc<dyn EventSink>, normalized: Vec<Normalized>, until: Until) {
-        let (defs, opts, report) = (self.definitions, self.options, self.report);
+        let (defs, opts, report, cancel) =
+            (self.definitions, self.options, self.report, self.cancel);
         let Some(state) = until.state().cloned() else {
             return;
         };
@@ -210,7 +263,7 @@ impl Later<'_> {
             state: state.clone(),
             correction: self.correction,
         };
-        let crossed = match_stage(
+        let crossed = match_stage_until(
             sink.clone(),
             defs,
             self.acquired,
@@ -218,6 +271,7 @@ impl Later<'_> {
             opts,
             &match_options,
             report,
+            cancel,
         )
         .await;
         let Some(crossed) = crossed else {
@@ -233,7 +287,15 @@ impl Later<'_> {
                 (TileOptions { out: None }, Some(BuildOptions { state, out }))
             }
         };
-        let tiles = tiles_stage(sink.clone(), defs, crossed.clone(), &tile_options, report).await;
+        let tiles = tiles_stage(
+            sink.clone(),
+            defs,
+            crossed.clone(),
+            &tile_options,
+            report,
+            cancel,
+        )
+        .await;
         if let (Some(tiles), Some(build_options)) = (tiles, build) {
             build_stage(
                 sink,
@@ -244,6 +306,7 @@ impl Later<'_> {
                 opts,
                 &build_options,
                 report,
+                cancel,
             )
             .await;
         }
@@ -259,6 +322,52 @@ fn lock_state(until: &Until) -> Result<Option<StateLock>, ()> {
     StateLock::take(dir, std::process::id(), &now())
         .map(Some)
         .map_err(|error| eprintln!("univ-ingest: {error}"))
+}
+
+/// Runs every stage `until` asks for: the fetch on this thread, dropped once `cancel` is set,
+/// and the stages after it, each stopping at its next safe point once it is.
+async fn every_stage(
+    fetcher: &Fetcher<SystemClock>,
+    definitions: &[SourceDefinition],
+    options: &FetchOptions,
+    report: &Mutex<RunReport>,
+    cancel: &Arc<AtomicBool>,
+    display: &Arc<dyn RunDisplay>,
+    until: Until,
+) {
+    // The fetch runs on this thread: once the owner interrupts the run, it is dropped, and
+    // every chunk and partial download stays on disk.
+    let acquired = tokio::select! {
+        acquired = fetch(fetcher, definitions, options, report) => acquired,
+        () = until_set(cancel) => return,
+    };
+    if matches!(until, Until::Fetch) {
+        return;
+    }
+    let sink = display.as_ref() as &dyn EventSink;
+    let correction = CmbCorrection::new(DipoleModel::Planck2018);
+    let normalized = normalize_stage_until(
+        sink,
+        definitions,
+        &acquired,
+        options,
+        report,
+        &correction,
+        cancel,
+    )
+    .await;
+    if until.state().is_none() {
+        return;
+    }
+    let stages = Later {
+        definitions,
+        acquired: &acquired,
+        options,
+        report,
+        correction,
+        cancel,
+    };
+    stages.run(display.clone(), normalized, until).await;
 }
 
 #[tokio::main]
@@ -277,8 +386,8 @@ async fn main() -> ExitCode {
             let (state, out) = (m.state, args.out);
             (m.fetch, Until::Build { state, out })
         }
-        Command::Publish(args) => return on_store(args, publish_command),
-        Command::Prune(args) => return on_store(args, prune_command),
+        Command::Publish(args) => return on_store(args, StoreCommand::Publish).await,
+        Command::Prune(args) => return on_store(args, StoreCommand::Prune).await,
     };
     // A match, tiles or build run holds the state directory's lock until it ends.
     let Ok(_lock) = lock_state(&until) else {
@@ -312,52 +421,40 @@ async fn main() -> ExitCode {
     };
     let report = Mutex::new(RunReport::new(&definitions));
     let cancel = Arc::new(AtomicBool::new(false));
-    let run = async {
-        let acquired = fetch(&fetcher, &definitions, &options, &report).await;
-        if matches!(until, Until::Fetch) {
-            return;
-        }
-        let sink = display.as_ref() as &dyn EventSink;
-        let correction = CmbCorrection::new(DipoleModel::Planck2018);
-        let normalized = normalize_stage_until(
-            sink,
-            &definitions,
-            &acquired,
-            &options,
-            &report,
-            &correction,
-            &cancel,
-        )
-        .await;
-        if until.state().is_none() {
-            return;
-        }
-        let stages = Later {
-            definitions: &definitions,
-            acquired: &acquired,
-            options: &options,
-            report: &report,
-            correction,
-        };
-        stages.run(display.clone(), normalized, until).await;
-    };
+    let run = every_stage(
+        &fetcher,
+        &definitions,
+        &options,
+        &report,
+        &cancel,
+        &display,
+        until,
+    );
     let mut run = std::pin::pin!(drawing(display.as_ref(), run));
     let interrupted_run = tokio::select! {
         () = &mut run => false,
         () = owner_interrupt(tokio::signal::ctrl_c()) => true,
     };
-    let normalizing_now = report.lock().is_ok_and(|r| r.stage() == Stage::Normalize);
-    if interrupted_run && normalizing_now {
-        // A source is normalized on a blocking thread, which dropping the run would leave
-        // running: ask it to stop, and wait until it has.
+    if interrupted_run {
+        // Every stage after the fetch runs on a blocking thread, which dropping the run would
+        // leave running, and which the runtime would wait for: ask each to stop at its next safe
+        // point, and wait until it has, so that the summary says what was really done and the
+        // state directory's lock is released only once nothing writes to it.
         cancel.store(true, Ordering::Relaxed);
+        let stage = report.lock().map_or(Stage::Fetch, |r| r.stage());
+        display.emit(Event::Stopping {
+            what: format!(
+                "the {} stage stops at its next safe point, and keeps nothing half made",
+                stage_name(stage)
+            ),
+        });
         run.await;
     }
     let report = report.lock().unwrap_or_else(PoisonError::into_inner);
     if interrupted_run {
         let (sources, outcome) = report.interrupted();
         display.finish(sources, outcome);
-        eprintln!("{}", interrupted(&options));
+        eprintln!("{}", interrupted(&options, report.built()));
         return ExitCode::from(INTERRUPTED);
     }
     let (sources, outcome) = report.ended();

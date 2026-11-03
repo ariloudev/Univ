@@ -2,6 +2,7 @@
 //! the objects of the next release, with the state that release would leave written as pending.
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use univ_model::derive::Release;
@@ -9,11 +10,12 @@ use univ_model::redshift::CmbCorrection;
 
 use super::{FetchOptions, RunReport, lock};
 use crate::acquire::Acquired;
-use crate::crossmatch::{Basis, CrossMatched, Inputs, STEPS, cross_match};
+use crate::crossmatch::{Basis, CrossMatched, Inputs, STEPS, cross_match_watched};
 use crate::events::{Event, EventSink, Stage};
 use crate::normalize::Normalized;
 use crate::source::{Access, SourceDefinition};
 use crate::state::State;
+use crate::watch::Watch;
 
 /// What a cross-match is asked to do beyond a fetch.
 #[derive(Clone, Debug)]
@@ -55,6 +57,39 @@ pub async fn match_stage(
     match_options: &MatchOptions,
     report: &Mutex<RunReport>,
 ) -> Option<CrossMatched> {
+    let never = Arc::new(AtomicBool::new(false));
+    match_stage_until(
+        sink,
+        definitions,
+        acquired,
+        normalized,
+        options,
+        match_options,
+        report,
+        &never,
+    )
+    .await
+}
+
+/// [`match_stage`], stopping after the step in hand once `cancel` is set: it then gives nothing,
+/// writes no pending state, and reports no failure, as the run was interrupted.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "a stage takes the run's sink, sources, inputs, options, report and cancel flag"
+)]
+pub async fn match_stage_until(
+    sink: Arc<dyn EventSink>,
+    definitions: &[SourceDefinition],
+    acquired: &[Option<Acquired>],
+    normalized: Vec<Normalized>,
+    options: &FetchOptions,
+    match_options: &MatchOptions,
+    report: &Mutex<RunReport>,
+    cancel: &Arc<AtomicBool>,
+) -> Option<CrossMatched> {
+    if cancel.load(Ordering::Relaxed) {
+        return None;
+    }
     lock(report).stage = Stage::Match;
     sink.emit(Event::StageStarted {
         stage: Stage::Match,
@@ -66,7 +101,7 @@ pub async fn match_stage(
     let outcome = match read {
         Err(error) => Err(error),
         Ok((basis, state)) => {
-            let events = sink.clone();
+            let (events, flag) = (sink.clone(), cancel.clone());
             let correction = match_options.correction;
             // Gathered into one vector of its final size, each source's let go as it is moved.
             let mut entries = Vec::with_capacity(normalized.iter().map(|n| n.entries.len()).sum());
@@ -83,8 +118,10 @@ pub async fn match_stage(
                     correction: &correction,
                     state: &state,
                 };
-                let crossed =
-                    cross_match(entries, &inputs, events.as_ref()).map_err(|e| e.to_string())?;
+                let watch = Watch::new(&flag, &|_| {});
+                let crossed = cross_match_watched(entries, &inputs, events.as_ref(), watch)
+                    .map_err(|e| e.to_string())?;
+                watch.check()?;
                 crossed
                     .next
                     .write_pending(&dir)
@@ -97,7 +134,11 @@ pub async fn match_stage(
         }
     };
     match outcome {
-        Ok(crossed) => Some(crossed),
+        Ok(crossed) => {
+            super::used::mark(report, definitions, acquired, super::Reached::Match);
+            Some(crossed)
+        }
+        Err(_) if cancel.load(Ordering::Relaxed) => None,
         Err(error) => {
             lock(report).failure = Some(error);
             sink.emit(Event::StageEnded {

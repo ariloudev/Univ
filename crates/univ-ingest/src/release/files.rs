@@ -9,6 +9,7 @@ use univ_model::release::manifest::{ManifestFile, ReleaseManifest, Target};
 use super::check::{Failed, MANIFEST};
 use super::d1::PartSink;
 use crate::tiles::sha256;
+use crate::watch::Watch;
 use crate::yaml::{FileError, parse_checked};
 
 /// The directory, within the build output, of the releases.
@@ -21,20 +22,23 @@ pub fn release_dir(out: &Path, number: u32) -> PathBuf {
 }
 
 /// A release directory written as its files come, each listed with its size and SHA-256 as the
-/// manifest lists it: a D1 file by its path under `d1/`, any other by its R2 key too.
-pub struct DirSink {
+/// manifest lists it: a D1 file by its path under `d1/`, any other by its R2 key too. Each file
+/// is a safe point of the build's `watch`: once the owner asks the build to stop, the next file
+/// is refused.
+pub struct DirSink<'w> {
     dir: PathBuf,
     number: u32,
+    pub(super) watch: Watch<'w>,
     pub files: Vec<ManifestFile>,
 }
 
-impl DirSink {
+impl<'w> DirSink<'w> {
     /// A new, empty directory `dir` for release `number`, replacing what a stopped build left.
     ///
     /// # Errors
     ///
     /// Fails when it cannot be made.
-    pub fn new(dir: &Path, number: u32) -> Result<Self, String> {
+    pub fn new(dir: &Path, number: u32, watch: Watch<'w>) -> Result<Self, String> {
         if dir.exists() {
             std::fs::remove_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
         }
@@ -42,13 +46,15 @@ impl DirSink {
         Ok(Self {
             dir: dir.to_owned(),
             number,
+            watch,
             files: Vec::new(),
         })
     }
 }
 
-impl PartSink for DirSink {
+impl PartSink for DirSink<'_> {
     fn put(&mut self, path: String, bytes: &[u8]) -> Result<(), String> {
+        self.watch.check()?;
         let full = self.dir.join(&path);
         if let Some(parent) = full.parent() {
             std::fs::create_dir_all(parent).map_err(|e| format!("{}: {e}", parent.display()))?;

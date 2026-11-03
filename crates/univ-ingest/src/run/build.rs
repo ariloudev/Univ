@@ -3,6 +3,7 @@
 //! under the build output's `releases/{n}`.
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use univ_model::release::RELEASE_BUDGET_BYTES;
@@ -12,9 +13,12 @@ use crate::acquire::Acquired;
 use crate::crossmatch::CrossMatched;
 use crate::display::SourceState;
 use crate::events::{Count, Event, EventSink, Stage};
-use crate::release::{BuiltRelease, Inputs, build, decimal_bytes, is_grid, table_sizes};
+use crate::release::{
+    BuiltRelease, Inputs, PHASES, build_watched, decimal_bytes, is_grid, table_sizes,
+};
 use crate::source::SourceDefinition;
 use crate::tiles::Built;
+use crate::watch::Watch;
 
 /// Where the build stage writes, by default: the build directory of the cache.
 pub const DEFAULT_BUILD: &str = ".cache/univ-ingest/build";
@@ -101,6 +105,7 @@ fn assemble_and_build(
     tiles: &Built,
     options: &FetchOptions,
     build_options: &BuildOptions,
+    watch: Watch<'_>,
 ) -> Result<BuiltRelease, String> {
     let mut held = Vec::new();
     let mut grids = Vec::new();
@@ -119,16 +124,18 @@ fn assemble_and_build(
         cache: &options.cache,
         built_at: super::now(),
     };
-    build(&inputs, &build_options.state, &build_options.out).map_err(|e| e.to_string())
+    build_watched(&inputs, &build_options.state, &build_options.out, watch)
+        .map_err(|e| e.to_string())
 }
 
 /// Builds the release of `crossed` and `tiles` under `build_options.out`, and takes the pending
 /// state as the state directory's once it is complete. A run in which a source failed builds
 /// nothing and names the sources. A stage that fails is reported in `report`, and gives
-/// nothing.
+/// nothing. Once `cancel` is set the build stops at its next safe point, leaving no release
+/// directory and using up no number, and gives nothing.
 #[expect(
     clippy::too_many_arguments,
-    reason = "a stage takes the run's sink, sources, inputs, options and report, as the others do"
+    reason = "a stage takes the run's sink, sources, inputs, options, report and cancel flag"
 )]
 pub async fn build_stage(
     sink: Arc<dyn EventSink>,
@@ -139,11 +146,15 @@ pub async fn build_stage(
     options: &FetchOptions,
     build_options: &BuildOptions,
     report: &Mutex<RunReport>,
+    cancel: &Arc<AtomicBool>,
 ) -> Option<BuiltRelease> {
+    if cancel.load(Ordering::Relaxed) {
+        return None;
+    }
     lock(report).stage = Stage::Release;
     sink.emit(Event::StageStarted {
         stage: Stage::Release,
-        items: None,
+        items: Some(PHASES),
     });
     let failed: Vec<String> = lock(report)
         .sources()
@@ -154,7 +165,15 @@ pub async fn build_stage(
     let outcome = if failed.is_empty() {
         let (definitions, acquired) = (definitions.to_vec(), acquired.to_vec());
         let (options, build_options) = (options.clone(), build_options.clone());
+        let (events, flag) = (sink.clone(), cancel.clone());
         tokio::task::spawn_blocking(move || {
+            let step = |step| {
+                events.emit(Event::Stepped {
+                    stage: Stage::Release,
+                    step,
+                });
+            };
+            let watch = Watch::new(&flag, &step);
             assemble_and_build(
                 &definitions,
                 &acquired,
@@ -162,6 +181,7 @@ pub async fn build_stage(
                 &tiles,
                 &options,
                 &build_options,
+                watch,
             )
         })
         .await
@@ -186,8 +206,11 @@ pub async fn build_stage(
                 counts: counts(&built),
             });
             lock(report).built = Some(built.number);
+            let reached = super::Reached::Built(built.number);
+            super::used::mark(report, definitions, acquired, reached);
             Some(built)
         }
+        Err(_) if cancel.load(Ordering::Relaxed) => None,
         Err(error) => {
             lock(report).failure = Some(error);
             sink.emit(Event::StageEnded {

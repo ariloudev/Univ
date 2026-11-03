@@ -14,6 +14,7 @@ pub enum Stage {
     Tiles,
     Release,
     Publish,
+    Prune,
 }
 
 /// A number a stage counted, and what it counts, such as 98 `objects`.
@@ -63,6 +64,17 @@ pub enum Event {
     Stepped {
         stage: Stage,
         step: String,
+    },
+    /// A file of a publish was uploaded, `bytes` of it, and checked or imported; `step` says
+    /// which and how. It counts as a step of the stage.
+    Uploaded {
+        stage: Stage,
+        step: String,
+        bytes: u64,
+    },
+    /// The owner interrupted the run, which is stopping as `what` says.
+    Stopping {
+        what: String,
     },
     /// A structure's member list cannot be placed whole: of `members`, `no_object` name no
     /// matched object and `unplaced` name an object that is not placed, so the structure is

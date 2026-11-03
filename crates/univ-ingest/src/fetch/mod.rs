@@ -2,6 +2,7 @@
 //! on disk through an atomic rename, and an offline mode that makes no request.
 
 mod file;
+mod tally;
 
 use std::collections::HashSet;
 use std::fmt::Write as _;
@@ -20,6 +21,7 @@ use univ_model::ids::SourceId;
 use crate::events::{Event, EventSink};
 
 pub use file::Expected;
+pub use tally::Tally;
 
 /// How often and how patiently a request is retried on one mirror.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -146,6 +148,7 @@ pub struct Fetcher<C: Clock> {
     policy: RetryPolicy,
     offline: bool,
     skipped: Mutex<HashSet<String>>,
+    counter: tally::Counter,
 }
 
 impl<C: Clock> Fetcher<C> {
@@ -170,12 +173,19 @@ impl<C: Clock> Fetcher<C> {
             policy,
             offline,
             skipped: Mutex::default(),
+            counter: tally::Counter::default(),
         })
     }
 
     /// Sends `event` to the run's sink.
     pub fn emit(&self, event: Event) {
         self.sink.emit(event);
+    }
+
+    /// What the fetcher has fetched so far.
+    #[must_use]
+    pub fn tally(&self) -> Tally {
+        self.counter.tally()
     }
 
     /// Fetches one chunk of a query: `suffix` is appended to each mirror in turn. The chunk is
@@ -205,6 +215,8 @@ impl<C: Clock> Fetcher<C> {
         let bytes = body.len() as u64;
         let payload = self.payload(item, url, &Sha256::digest(&body), bytes, Some(rows));
         write_via_part(item.dest, &body, || record(&payload)).map_err(|e| disk_error(item, &e))?;
+        self.counter.got();
+        self.counter.bytes(bytes);
         self.sink.emit(Event::Done {
             source: item.source.clone(),
             item: item.name.to_owned(),
@@ -217,6 +229,7 @@ impl<C: Clock> Fetcher<C> {
     /// it is not.
     fn on_disk(&self, item: &Item<'_>) -> Result<Option<Fetched>, FetchError> {
         if item.dest.is_file() {
+            self.counter.hit();
             self.sink.emit(Event::Hit {
                 source: item.source.clone(),
                 item: item.name.to_owned(),

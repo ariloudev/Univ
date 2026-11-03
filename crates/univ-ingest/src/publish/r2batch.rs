@@ -19,7 +19,7 @@ use serde::Deserialize;
 use serde_json::json;
 
 use super::ReadBack;
-use super::wrangler::{BUCKET, STDERR_LINES, strip_ansi};
+use super::wrangler::{BUCKET, STDERR_LINES, own_group, strip_ansi};
 
 /// The script, from the directory of the Wrangler configuration.
 pub const SCRIPT: &str = "scripts/r2-batch.mjs";
@@ -94,7 +94,7 @@ impl R2Batch {
         if !script.is_file() {
             return Err(format!("{} does not exist", script.display()));
         }
-        let mut child = Command::new("node")
+        let mut child = own_group(&mut Command::new("node"))
             .current_dir(root)
             .arg(&script)
             .arg("--persist-to")

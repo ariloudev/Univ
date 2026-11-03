@@ -443,7 +443,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
-        body: dbcb4b840aeddcd750ae80492c6ef7062a9482e2986bd15662278ed2bdef635e
+        body: 7ebcbad7464a20879a29c46560e2a836374869610c0da3c5663a2b98648a5354
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "a_failed_normalization_leaves_no_earlier_report_in_the_provenance"
         body: 6e1453a5679b1f7aa6c64dab890499b22209b0cc3555e0ae07004c333f845bf8
@@ -494,7 +494,7 @@ links:
         body: 8ff5307a44398fa3e1a466ffd9113fe837e45889d70a3e36f3ca2d7e573c634e
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
-        body: dbcb4b840aeddcd750ae80492c6ef7062a9482e2986bd15662278ed2bdef635e
+        body: 7ebcbad7464a20879a29c46560e2a836374869610c0da3c5663a2b98648a5354
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
         body: d28231fcee59050bbc9b349224244cddab5527cf92e3503080b766d61a67ef4b
@@ -1085,7 +1085,7 @@ links:
         body: 375d87ed294516dd46a2432041e40029417dd901de690a52965eba976d84736a
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: b69c52998650555d576cdebffd1f7d9e2509da66270636abb5168ac5e9f56218
+        body: 3a50615299d0cf2008927c96a087a377c843ac1cf76f93336866dae4a613562b
   - node: 01a19f23-636f-72bd-b194-1536b3b46eba
     reviewed: 3f558f7729869bcac13551d351b84e16571ee4843004754609970d9b08c111f3
     tests:
@@ -1223,13 +1223,19 @@ links:
         body: 4da26c9886aacba7e8c52b2f978e57ccb4f41b7212ff3738cfba4e2c5c5e7d81
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
-        body: 946ee48f5c46cdf6ad092577acbd938273ad0b20d2473c26481b351f6bc39c72
+        body: ae3a075bbab555b875550fdbb6598d70e8dd5a2bdfd0265a391c33535cf9db8b
       - file: "crates/univ-ingest/tests/crossmatch.rs"
         name: "the_cross_match_stage_reports_its_steps_and_counts_and_writes_its_ids_as_pending"
         body: bba61434f6d49da2d39e82e9e3efcd298358f76ddc7781f0c8da9f6e2c63b5a3
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: b69c52998650555d576cdebffd1f7d9e2509da66270636abb5168ac5e9f56218
+        body: 3a50615299d0cf2008927c96a087a377c843ac1cf76f93336866dae4a613562b
+      - file: "crates/univ-ingest/tests/release_cli.rs"
+        name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
+        body: 7b602c443c1c39d024734535afdcb0adfecef2bb44b997a48e5bdb2b432f06fd
+      - file: "crates/univ-ingest/tests/run_display.rs"
+        name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
+        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
   - node: 01a19f22-b0bc-76da-bac8-97803a2ac7b3
     reviewed: 3e35a457eabc0a266e62b03c551f1d2599521cad6be77a3b6e2c6c2e3fc3b71f
     tests:
@@ -1269,6 +1275,9 @@ links:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended"
         body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
+      - file: "crates/univ-ingest/tests/run_display.rs"
+        name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
+        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
   - node: 01a19f22-b0bc-76da-bac8-9788528129a0
     reviewed: 19235e59bf99c5023b529bc8c50f333800338d4e0428f3b34d429c7e2979ec19
     tests:
@@ -1278,6 +1287,9 @@ links:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_names_each_source_fetched_failed_or_not_reached"
         body: acc99abf98df95f902ca6f48024fc0bac906d77f2d82d54fc6c8a29b01e7f102
+      - file: "crates/univ-ingest/tests/run_display.rs"
+        name: "a_source_that_is_no_table_says_what_became_of_it_rather_than_not_normalized"
+        body: 34115e757a3427ea0395fc330c60b213f2f328e6ad111c217bb42b11baf2eb9a
   - node: 01a19f22-b0bc-76da-bac8-9789936d8c57
     reviewed: d37ad425e756aed2ebcc8910851b758a250851f5951d8f1d22ee306c1479f268
     tests:
@@ -1295,7 +1307,16 @@ links:
         body: 82b975c4785d473109110da1c61fa98f2f1c72ffc16fcea510ab30d1bb3b310e
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: eaa458df6a24a2bbd2ed398529a4740b3a3fd589d7f33cb46e348c1b5d07e38c
+        body: 7b602c443c1c39d024734535afdcb0adfecef2bb44b997a48e5bdb2b432f06fd
+      - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
+        name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
+        body: ae3a075bbab555b875550fdbb6598d70e8dd5a2bdfd0265a391c33535cf9db8b
+      - file: "crates/univ-ingest/tests/tiles_cli.rs"
+        name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
+        body: 3a50615299d0cf2008927c96a087a377c843ac1cf76f93336866dae4a613562b
+      - file: "crates/univ-ingest/tests/run_display.rs"
+        name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
+        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
   - node: 01a19f22-b0bc-76da-bac8-978bd11f8a8a
     reviewed: 8873f5183472621d806a2ca4e2c84abfcc1e0453dbdaf7b1a8d4df1b4699d099
     tests:
@@ -1308,12 +1329,30 @@ links:
       - file: "crates/univ-ingest/src/publish/wrangler.rs"
         name: "a_failure_gives_wranglers_standard_error_without_its_escapes"
         body: fb3233969c3b0a55c726aae02e8cf6bdec7cb47fc1252d96f0717c912178ea25
+      - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
+        name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
+        body: ae3a075bbab555b875550fdbb6598d70e8dd5a2bdfd0265a391c33535cf9db8b
+      - file: "crates/univ-ingest/tests/tiles_cli.rs"
+        name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
+        body: 3a50615299d0cf2008927c96a087a377c843ac1cf76f93336866dae4a613562b
+      - file: "crates/univ-ingest/tests/release_cli.rs"
+        name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
+        body: 7b602c443c1c39d024734535afdcb0adfecef2bb44b997a48e5bdb2b432f06fd
+      - file: "crates/univ-ingest/tests/run_display.rs"
+        name: "the_fetch_ends_with_what_it_got_hit_failed_and_fetched"
+        body: 7f2007f98ba30b6948371bd583e8ff2a05ae7b197fab612e3e13dbb352831138
+      - file: "crates/univ-ingest/tests/run_display.rs"
+        name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
+        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
   - node: 01a19f22-b0bc-76da-bac8-978c8f52c47a
     reviewed: 304e9a5c1577b8e86c9178d0caa43b6d46301ff3eeb41e3cfe485a95def6f62f
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "a_download_longer_than_a_minute_prints_one_progress_line_each_minute"
         body: 062cdb46d9a15fa70e65891c6aa3e37f3199a236bc8c2264945075f44a25455f
+      - file: "crates/univ-ingest/tests/run_display.rs"
+        name: "a_long_stage_prints_a_progress_line_each_minute_it_prints_nothing_else"
+        body: 88e028e82635aa2839fdd7c65396ff897b4033a82f16034633f0cc7e08555966
   - node: 01a19f22-b0bc-76da-bac8-978e78be4742
     reviewed: e8f6cc01a354c06937617c102a38e0cd8e861dc24149a0cbc674be0acd835ca1
     tests:
@@ -1332,3 +1371,9 @@ links:
       - file: "crates/univ-ingest/tests/release_checks.rs"
         name: "a_failure_while_recording_the_state_uses_no_number_and_leaves_no_release_publish_accepts"
         body: c09ab417580117d96dfcb5f7e57504647a860970d44aeea29c3fd2e65c6b785b
+      - file: "crates/univ-ingest/tests/interrupt_stages.rs"
+        name: "a_build_stopped_at_each_safe_point_leaves_nothing_and_the_next_build_completes"
+        body: 6a954622087b04020cdd52828bdad4434cecf9ca546aa1fff623d11efa758124
+      - file: "crates/univ-ingest/tests/interrupt_stages.rs"
+        name: "a_publish_stopped_by_the_owner_ends_after_the_unit_in_hand_and_the_next_run_completes_it"
+        body: 83047f6292e49198391d83daa44e21846f287578499bd3f05cf6f239cb6fa49f

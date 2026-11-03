@@ -12,7 +12,7 @@ use std::process::Command;
 use std::sync::Mutex;
 
 use common::rig;
-use univ_ingest::events::{Event, Stage};
+use univ_ingest::events::{Count, Event, Stage};
 use univ_ingest::provenance::Provenance;
 use univ_ingest::run::{FetchOptions, RunReport, fetch, normalize_stage};
 use univ_ingest::source::{Column, Field, LeftOutReason, SourceDefinition};
@@ -130,7 +130,11 @@ async fn the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_c
             },
             &Event::StageEnded {
                 stage: Stage::Normalize,
-                counts: vec![]
+                counts: vec![
+                    Count::new(3, "entries"),
+                    Count::new(1, "left out"),
+                    Count::new(0, "sources failed"),
+                ]
             },
         ]
     );

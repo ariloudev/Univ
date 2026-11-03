@@ -128,6 +128,7 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
          nodes, 9 nearby galaxies points, 201 nearby galaxies largest tile bytes, 1 cosmic web \
          nodes, 6 cosmic web points, 150 cosmic web largest tile bytes, 9 unplaced objects in no \
          tile\n",
+        "Z Stage tiles done: 1 stars nodes, ",
         "Z Stopped at tiles: tiles only; no release was asked for\n",
     ] {
         assert!(log.contains(line), "{line}in\n{log}");

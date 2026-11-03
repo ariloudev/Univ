@@ -12,14 +12,16 @@ mod build;
 mod cross;
 mod publish;
 mod tiles;
+mod used;
 
 pub use build::{BuildOptions, DEFAULT_BUILD, build_stage};
-pub use cross::{MatchOptions, match_stage};
+pub use cross::{MatchOptions, match_stage, match_stage_until};
 pub use publish::{
-    DEFAULT_CONFIG, DEFAULT_PERSIST, StoreCommand, StoreRun, now, prune_command, publish_command,
-    store_command,
+    DEFAULT_CONFIG, DEFAULT_PERSIST, Shown, StoreCommand, StoreRun, now, prune_command,
+    publish_command, store_command,
 };
 pub use tiles::{DEFAULT_TILES, TileOptions, tiles_stage};
+pub use used::Reached;
 
 use crate::access::item_count;
 use univ_model::redshift::{CmbCorrection, DipoleModel};
@@ -29,7 +31,7 @@ use crate::display::{
     IndicatifTarget, Outcome, PlainTarget, REDRAW_EVERY, RunDisplay, RunSink, SourceState,
     SourceSummary, stage_name,
 };
-use crate::events::{Event, EventSink, Stage};
+use crate::events::{Count, Event, EventSink, Stage};
 use crate::fetch::{Clock, Fetcher, SystemClock};
 use crate::normalize::{NormalizeError, Normalized, normalize_until, reads_rows};
 use crate::provenance::Provenance;
@@ -177,10 +179,19 @@ impl RunReport {
         self.stage
     }
 
+    /// The release the run built, once it is complete.
+    #[must_use]
+    pub fn built(&self) -> Option<u32> {
+        self.built
+    }
+
     /// The sources and outcome of a run the owner interrupted: the sources it had not ended
-    /// stay as far as they got.
+    /// stay as far as they got. A build interrupted once its release was complete built it.
     #[must_use]
     pub fn interrupted(&self) -> (Vec<SourceSummary>, Outcome) {
+        if let Some(n) = self.built {
+            return (self.sources.clone(), Outcome::Built(u64::from(n)));
+        }
         let outcome = Outcome::Stopped {
             stage: self.stage,
             reason: "interrupted by the owner".to_owned(),
@@ -232,6 +243,7 @@ pub async fn fetch<C: Clock>(
     report: &Mutex<RunReport>,
 ) -> Vec<Option<Acquired>> {
     lock(report).stage = Stage::Fetch;
+    let before = fetcher.tally();
     fetcher.emit(Event::StageStarted {
         stage: Stage::Fetch,
         items: Some(items(definitions)),
@@ -249,9 +261,16 @@ pub async fn fetch<C: Clock>(
         lock(report).set(n, state);
         acquired.push(on_disk);
     }
+    let after = fetcher.tally();
+    let failed = acquired.iter().filter(|a| a.is_none()).count();
     fetcher.emit(Event::StageEnded {
         stage: Stage::Fetch,
-        counts: vec![],
+        counts: vec![
+            Count::new(after.got - before.got, "got"),
+            Count::new(after.hit - before.hit, "hit"),
+            Count::new(failed as u64, "sources failed"),
+            Count::new(after.bytes - before.bytes, "bytes fetched"),
+        ],
     });
     acquired
 }
@@ -301,10 +320,12 @@ pub async fn normalize_stage_until(
         .filter(|(_, d, _)| reads_rows(d))
         .collect();
     lock(report).stage = Stage::Normalize;
+    used::mark(report, definitions, acquired, Reached::Normalize);
     sink.emit(Event::StageStarted {
         stage: Stage::Normalize,
         items: Some(tables.len() as u64),
     });
+    let (mut entries, mut left_out_total, mut failed) = (0, 0, 0);
     let correction = *correction;
     let mut normalized = Vec::new();
     for (n, definition, on_disk) in tables {
@@ -340,6 +361,7 @@ pub async fn normalize_stage_until(
                     published,
                     left_out,
                 });
+                (entries, left_out_total) = (entries + published, left_out_total + left_out);
                 let mut report = lock(report);
                 if let Some(s) = report.sources.get_mut(n) {
                     (s.published, s.left_out) = (Some(published), Some(left_out));
@@ -353,12 +375,17 @@ pub async fn normalize_stage_until(
                     error: error.clone(),
                 });
                 lock(report).set(n, SourceState::Failed(error));
+                failed += 1;
             }
         }
     }
     sink.emit(Event::StageEnded {
         stage: Stage::Normalize,
-        counts: vec![],
+        counts: vec![
+            Count::new(entries, "entries"),
+            Count::new(left_out_total, "left out"),
+            Count::new(failed, "sources failed"),
+        ],
     });
     normalized
 }
@@ -367,12 +394,25 @@ fn lock(report: &Mutex<RunReport>) -> std::sync::MutexGuard<'_, RunReport> {
     report.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
-/// What an interrupted run says: where its work is kept, and how to continue.
+/// What an interrupted run says: where its work is kept, how to continue, and the release it
+/// built, if it was complete before the run stopped.
 #[must_use]
-pub fn interrupted(options: &FetchOptions) -> String {
+pub fn interrupted(options: &FetchOptions, built: Option<u32>) -> String {
+    let release = built.map_or_else(
+        || "No release was built.".to_owned(),
+        |n| format!("Release {n} was complete before the run stopped, and is built."),
+    );
     format!(
         "Interrupted. Every chunk and partial download is kept in {}; run the same command again \
-         to continue from where this run stopped. No release was built.",
+         to continue from where this run stopped. {release}",
         options.cache.display()
     )
+}
+
+/// Resolves once `flag` is set, looking at it every 50 ms: what stops a stage that runs on the
+/// run's own thread, such as the fetch.
+pub async fn until_set(flag: &AtomicBool) {
+    while !flag.load(std::sync::atomic::Ordering::Relaxed) {
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    }
 }

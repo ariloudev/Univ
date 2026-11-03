@@ -59,6 +59,11 @@ use crate::crossmatch::CrossMatched;
 use crate::source::SourceDefinition;
 use crate::state::{State, pending};
 use crate::tiles::Built;
+use crate::watch::Watch;
+
+/// The phases of a build its watch is told of: the rules, the tiles, the volume grids, the D1
+/// rows, the checks, and the manifest with every file checked against it.
+pub const PHASES: u64 = 6;
 
 /// What a release is built from. Its rules, release configuration and researched structures
 /// are those the cross-match worked under, which it carries (`crate::crossmatch::Basis`).
@@ -135,6 +140,22 @@ impl std::error::Error for BuildError {}
 /// state of this release, its directory already exists, a check fails, or a file cannot be
 /// written or checked.
 pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelease, BuildError> {
+    build_watched(inputs, state, out, Watch::unwatched())
+}
+
+/// [`build`], telling `watch` as each of its [`PHASES`] is done. Once the owner asks it to stop,
+/// it stops at its next safe point, before the release is made complete: the directory it was
+/// writing is removed, no number is used up and the state is left as it was.
+///
+/// # Errors
+///
+/// Fails as [`build`] does, or when the owner asked the build to stop.
+pub fn build_watched(
+    inputs: &Inputs<'_>,
+    state: &Path,
+    out: &Path,
+    watch: Watch<'_>,
+) -> Result<BuiltRelease, BuildError> {
     let number = inputs
         .crossed
         .release
@@ -170,10 +191,14 @@ pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelea
     }
     let dir = release_dir(out, number);
     let building = out.join(RELEASES).join(format!(".building-{number}"));
-    let written = write_release(inputs, number, &building).map_err(|problem| {
+    let written = write_release(inputs, number, &building, watch).map_err(|problem| {
         let _ = std::fs::remove_dir_all(&building);
         fail(problem)
     })?;
+    if let Err(stopped) = watch.check() {
+        let _ = std::fs::remove_dir_all(&building);
+        return Err(fail(stopped));
+    }
     if !written.failed.is_empty() {
         let _ = std::fs::remove_dir_all(&building);
         return Err(BuildError::Checks {
@@ -189,6 +214,15 @@ pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelea
             number,
             failed: vec![failed],
         });
+    }
+    watch.step(format!(
+        "manifest: {} files checked against their SHA-256",
+        written.manifest.files.len()
+    ));
+    // The last safe point: from here the release is made complete and its number used up.
+    if let Err(stopped) = watch.check() {
+        let _ = std::fs::remove_dir_all(&building);
+        return Err(fail(stopped));
     }
     std::fs::rename(&building, &dir).map_err(|e| {
         let _ = std::fs::remove_dir_all(&building);

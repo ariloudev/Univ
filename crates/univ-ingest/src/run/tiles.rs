@@ -2,13 +2,15 @@
 //! octree of tiles under the repository's tile rules, and written with a manifest per domain.
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use super::{RunReport, lock};
 use crate::crossmatch::CrossMatched;
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::source::SourceDefinition;
-use crate::tiles::{Built, Context, DOMAINS, build, name_of, write_all};
+use crate::tiles::{Built, Context, DOMAINS, build_watched, name_of, write_all};
+use crate::watch::Watch;
 
 /// Where the tiles stage writes, by default: the build directory of the cache.
 pub const DEFAULT_TILES: &str = ".cache/univ-ingest/build/tiles";
@@ -50,20 +52,26 @@ pub fn counts(built: &Built) -> Vec<Count> {
 /// Builds the tiles of `crossed` under the tile rules and release cosmology the cross-match
 /// worked under, and writes them under
 /// `tile_options.out` where it names a directory. Nothing is written unless every domain builds. A stage that fails is
-/// reported in `report`, and gives nothing.
+/// reported in `report`, and gives nothing. Once `cancel` is set it stops before the next domain,
+/// writes nothing, and gives nothing.
 pub async fn tiles_stage(
     sink: Arc<dyn EventSink>,
     definitions: &[SourceDefinition],
     crossed: Arc<CrossMatched>,
     tile_options: &TileOptions,
     report: &Mutex<RunReport>,
+    cancel: &Arc<AtomicBool>,
 ) -> Option<Built> {
+    if cancel.load(Ordering::Relaxed) {
+        return None;
+    }
     lock(report).stage = Stage::Tiles;
     sink.emit(Event::StageStarted {
         stage: Stage::Tiles,
         items: Some(DOMAINS.len() as u64),
     });
     let (definitions, out, events) = (definitions.to_vec(), tile_options.out.clone(), sink.clone());
+    let flag = cancel.clone();
     let outcome = tokio::task::spawn_blocking(move || {
         let context = Context {
             release: &crossed.release,
@@ -71,19 +79,15 @@ pub async fn tiles_stage(
             rules: &crossed.basis.tiles,
             definitions: &definitions,
         };
-        let built = build(&crossed.objects, &context).map_err(|e| e.to_string())?;
-        for d in &built.domains {
+        let step = |step| {
             events.emit(Event::Stepped {
                 stage: Stage::Tiles,
-                step: format!(
-                    "{}: {} nodes, {} points, largest tile {} bytes",
-                    spoken(name_of(d.domain)),
-                    d.nodes.len(),
-                    d.points(),
-                    d.largest_tile()
-                ),
+                step,
             });
-        }
+        };
+        let watch = Watch::new(&flag, &step);
+        let built = build_watched(&crossed.objects, &context, watch).map_err(|e| e.to_string())?;
+        watch.check()?;
         if let Some(out) = out {
             write_all(&out, &built).map_err(|e| format!("the tiles cannot be written: {e}"))?;
         }
@@ -100,6 +104,7 @@ pub async fn tiles_stage(
             });
             Some(built)
         }
+        Err(_) if cancel.load(Ordering::Relaxed) => None,
         Err(error) => {
             lock(report).failure = Some(error);
             sink.emit(Event::StageEnded {
