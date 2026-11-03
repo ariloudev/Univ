@@ -1,0 +1,19 @@
+fixture: cf4pp-crop.npz
+source: cf4pp-density
+source_file: new_CF4pp_mean_std_grids.npz
+url: https://projets.ip2i.in2p3.fr//cosmicflows/new_CF4pp_mean_std_grids.npz
+sha256: b2c8c695c522c286d330a81774334829a2f8b92544990c6978cd8b0d4d43bf3f
+retrieved: 2026-11-03T04:32:00Z
+crop:
+  # Cell indices along SGX, SGY, SGZ of the published 128^3 grid; stop is exclusive.
+  start: [54, 54, 54]
+  stop: [71, 71, 71]
+  why: >-
+    Holds the observer (cell 64) and the CF4 Laniakea attractor of Dupuy & Courtois 2023 (cells 56,
+    62, 68) with a margin, and every permutation of those cells, so a test that reads the grid with
+    its axes permuted still reads real cells.
+how: >-
+  numpy 2.5.3 under python3 -I: np.load(source, allow_pickle=False); each (128, 128, 128) member
+  cut a[54:71, 54:71, 54:71], each (3, 128, 128, 128) member a[:, 54:71, 54:71, 54:71], made
+  contiguous; the scalar N copied; written with np.savez (members stored, little-endian float64,
+  C order). Values are unchanged.
