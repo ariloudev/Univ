@@ -90,6 +90,15 @@ blocks:
         title: "Sources and their provenance"
         detail: "GET /v1/sources, /v1/sources/{id} and /v1/sources/{id}/provenance, plus whatever ingest must add (coverage at least: see the gap analysis). Done when native tests cover AC-147 to AC-155."
         state: open
+      - key: 01a1a30f-3ecb-70d8-9063-a2c0d0679e82
+        at: 2026-11-03T20:17:27Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Sources and their provenance"
+        detail: "Done in eb9d01c (listing) and f66a0c2 (detail and provenance). 15 native tests cover AC-147 to AC-155, including 404, 410, and a release database from before schema v3, which reads with no reference or coverage. The values of AC-147 and AC-150 come from t1-ingest."
+        state: done
   - key: 01a1a2ff-1aff-720c-940c-ee65428eb06a
     id: t1-structures
     kind: task
@@ -103,6 +112,15 @@ blocks:
         title: "Structures, listed and read"
         detail: "GET /v1/structures (filtered by kind and scale domain, 500 per page with a cursor) and /v1/structures/{id}. Done when native tests cover AC-156 to AC-165."
         state: open
+      - key: 01a1a30f-3ecb-70d8-9063-a2c1e26372df
+        at: 2026-11-03T20:17:27Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structures, listed and read"
+        detail: "Done in d974df2. 16 native tests cover AC-156 to AC-165 and the new derivation criterion. They include pages of 500 over 1,203 structures (each once, in id order), a cursor that keeps its release, a cursor into a pruned release answering 410, filters, and 404. Shape, derivation, outline and rescaled come from t1-ingest's `structure_details`; until it merges, the test kit creates that table itself."
+        state: done
   - key: 01a1a2ff-1aff-720c-940c-ee6696c884e8
     id: t1-e2e
     kind: task

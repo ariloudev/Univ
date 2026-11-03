@@ -99,3 +99,89 @@ fn a_head_request_is_answered_with_no_body() {
     assert_eq!(header(&response, "access-control-allow-origin"), Some("*"));
     assert!(response.bytes().unwrap().is_empty());
 }
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn the_releases_are_listed_newest_first_with_the_pruned_one_and_latest_named() {
+    let listing = json(get("/v1/releases"));
+    assert_eq!(listing["latest"], 2);
+    let releases = listing["releases"].as_array().unwrap();
+    assert_eq!(releases[0]["number"], 2);
+    assert_eq!(releases[0]["pruned_at"], Value::Null);
+    assert_eq!(releases[1]["number"], 1);
+    assert!(releases[1]["pruned_at"].is_string());
+    assert_eq!(releases[0]["cosmology"]["hubble_constant"], 67.66);
+    assert!(releases[0]["counts"]["objects"].as_u64().unwrap() > 0);
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn two_reads_pinned_to_one_release_return_identical_data() {
+    let path = "/v1/structures/bootes-void?release=2";
+    let first = get(path);
+    assert_eq!(first.status(), StatusCode::OK);
+    assert_eq!(header(&first, "univ-release"), Some("2"));
+    let first = first.bytes().unwrap();
+    let second = get(path).bytes().unwrap();
+    assert_eq!(first, second);
+    let unpinned = get("/v1/structures/bootes-void").bytes().unwrap();
+    assert_eq!(first, unpinned, "latest is release 2");
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn a_pruned_release_answers_410_and_one_never_published_404() {
+    let pruned = get("/v1/sources?release=1");
+    assert_eq!(pruned.status(), StatusCode::GONE);
+    let problem = json(pruned);
+    assert_eq!(problem["type"], "urn:univ:problem:release-pruned");
+    assert!(problem["pruned_at"].is_string());
+    let missing = get("/v1/sources?release=99");
+    assert_eq!(missing.status(), StatusCode::NOT_FOUND);
+    assert_eq!(json(missing)["type"], "urn:univ:problem:release-not-found");
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn a_source_gives_its_terms_query_and_provenance() {
+    let listing = json(get("/v1/sources"));
+    let ids: Vec<&str> = listing["sources"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["id"].as_str().unwrap())
+        .collect();
+    assert!(ids.contains(&"hipparcos-2007"), "{ids:?}");
+    let source = json(get("/v1/sources/hipparcos-2007"));
+    assert_eq!(source["release"], 2);
+    assert_eq!(source["query"]["table"], "I/311/hip2");
+    assert!(
+        source["terms"]["credit"]
+            .as_str()
+            .unwrap()
+            .contains("VizieR")
+    );
+    let provenance = json(get("/v1/sources/hipparcos-2007/provenance"));
+    let counts = &provenance["counts"];
+    assert_eq!(
+        counts["fetched"].as_u64().unwrap(),
+        counts["published"].as_u64().unwrap() + counts["left_out"].as_u64().unwrap()
+    );
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn structures_are_listed_in_pages_and_read_with_their_citations() {
+    let page = json(get("/v1/structures?kind=void"));
+    let structures = page["structures"].as_array().unwrap();
+    assert!(structures.iter().all(|s| s["kind"] == "void"));
+    assert!(structures.iter().any(|s| s["id"] == "bootes-void"));
+    let bootes = json(get("/v1/structures/bootes-void"));
+    assert_eq!(
+        bootes["record"]["papers"][0]["bibcode"],
+        "1987ApJ...314..493K"
+    );
+    assert_eq!(bootes["centre"]["unit"], "Mpc");
+    let missing = get("/v1/structures/nowhere");
+    assert_eq!(missing.status(), StatusCode::NOT_FOUND);
+}
