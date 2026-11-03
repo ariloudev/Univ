@@ -1261,3 +1261,64 @@ blocks:
         title: "Review findings resolved"
         markdown: "All eight findings are resolved and approved, and committed as `spec: resolve review findings on the first draft` on `feature/initial-spec`. Nothing is merged. The build still waits to be asked for."
         tone: success
+  - key: 01a19f2f-9ee4-7297-b040-ae34185f7f1a
+    id: published
+    kind: loft
+    versions:
+      - key: 01a19f2f-9ee4-7297-b040-ae359557d587
+        at: 2026-11-03T02:14:20Z
+        revision: 29
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: publish
+        note: "Published as **sequence 1** on `develop`, which `spec/loftspec.yaml` now names as the publish branch, at the owner's request. State root `d84d7a436045976e01bbeff555365768c13bebf8ba376ac10b00d03e773d48c7`. Labels assigned: 2 P, 11 FG, 33 F, 112 RQ, 292 AC, 46 CMP, 8 CON, 3 QA, 24 ADR."
+        recorded:
+          commit: "0eca2795b46076381fda83319ab6fd08c75c12bf"
+          branch: "develop"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T02:14:20Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 46,
+              "constraint": 8,
+              "criterion": 292,
+              "decision": 24,
+              "feature": 33,
+              "feature_group": 11,
+              "product": 2,
+              "quality_attribute": 3,
+              "requirement": 112
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "0eca2795b46076381fda83319ab6fd08c75c12bf",
+                "removed": [],
+                "revision": "0eca2795b46076381fda83319ab6fd08c75c12bf"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 1,
+                "publishedAt": "2026-11-03T02:14:13Z",
+                "stateRoot": "d84d7a436045976e01bbeff555365768c13bebf8ba376ac10b00d03e773d48c7"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
