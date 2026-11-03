@@ -1,5 +1,5 @@
 use super::*;
-use crate::distance::{DistanceKind, Method};
+use crate::distance::{DistanceKind, Measure, Method};
 use crate::ids::SourceId;
 use crate::position::Epoch;
 use crate::redshift::DipoleModel;
@@ -35,8 +35,16 @@ fn entry() -> CatalogueEntry {
     .unwrap();
     let mu = Quantity::new(24.47, Unit::Magnitude, Uncertainty::NoneReported).unwrap();
     let how = (DistanceKind::PrimaryIndicator, Method::Cepheids);
-    let distance =
-        Distance::new(mu, None, Unit::Megaparsec, KindOfValue::Measured, how, None).unwrap();
+    let distance = Distance::new(
+        mu,
+        None,
+        Unit::Megaparsec,
+        KindOfValue::Measured,
+        how,
+        Measure::Luminosity,
+        None,
+    )
+    .unwrap();
     CatalogueEntry {
         designation: Designation::new(SourceId::new("twomrs").unwrap(), "00424433+4116074")
             .unwrap(),

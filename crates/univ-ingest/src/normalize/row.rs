@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 
-use univ_model::distance::{Distance, DistanceError};
+use univ_model::distance::{Distance, DistanceError, DistanceKind, Method};
 use univ_model::entry::{
     CatalogueEntry, EntryError, Magnitude, NativePosition, Position, PositionErrors,
     PositionUncertainty, ProperMotion, Redshift, RedshiftKind, SupergalacticVelocity,
@@ -32,6 +32,8 @@ struct Row<'a, 'c> {
     cx: &'a Context<'a>,
     cells: &'a [Cow<'c, str>],
     kinds: Vec<(usize, KindOfValue)>,
+    /// The kind and method a rule gives a distance, by its index among the plan's distances.
+    methods: Vec<(usize, (DistanceKind, Method))>,
     /// Columns a fix dropped on this row, read as blank.
     dropped: Vec<usize>,
     changed: Changed,
@@ -47,6 +49,7 @@ pub(super) fn read(
         cx,
         cells,
         kinds: Vec::new(),
+        methods: Vec::new(),
         dropped: Vec::new(),
         changed: 0,
     };
@@ -147,11 +150,14 @@ impl Row<'_, '_> {
             redshifts.push(redshift);
         }
         let mut distances = Vec::new();
-        for d in &plan.distances {
+        for (i, d) in plan.distances.iter().enumerate() {
             let Some(native) = self.quantity(&d.measured)? else {
                 continue;
             };
-            let how = self.by_code(&d.how)?;
+            let how = match self.methods.iter().find(|(d, _)| *d == i) {
+                Some((_, how)) => how.clone(),
+                None => self.by_code(&d.how)?,
+            };
             let also = match &d.also_published {
                 Some(m) => self.quantity(m)?,
                 None => None,
@@ -163,6 +169,7 @@ impl Row<'_, '_> {
                 plan.distance_unit,
                 kind_of_value,
                 how,
+                d.measure,
                 d.hubble_constant,
             )
             .map_err(distance_reason)?;
@@ -196,8 +203,11 @@ impl Row<'_, '_> {
     /// value.
     fn rules(&mut self) -> Result<(), LeftOutReason> {
         for rule in &self.cx.plan.rules {
-            let cell = self.cell(rule.column);
-            if !rule.is.iter().any(|v| v == cell) {
+            if !rule
+                .conditions
+                .iter()
+                .all(|(c, when)| when.matches(self.cell(*c)))
+            {
                 continue;
             }
             match &rule.action {
@@ -205,6 +215,7 @@ impl Row<'_, '_> {
                 RuleAction::Kind(columns, kind) => {
                     self.kinds.extend(columns.iter().map(|c| (*c, *kind)));
                 }
+                RuleAction::Distance(d, how) => self.methods.push((*d, how.clone())),
             }
         }
         Ok(())
@@ -230,11 +241,10 @@ impl Row<'_, '_> {
     /// fix when it dropped a value that was there.
     fn drop_values(&mut self) {
         for fix in &self.cx.plan.fixes {
-            let FixEffect::DropWhen { column, is } = &fix.effect else {
+            let FixEffect::DropWhen { column, when } = &fix.effect else {
                 continue;
             };
-            let cell = self.cell(*column);
-            if !is.iter().any(|v| v == cell) {
+            if !when.matches(self.cell(*column)) {
                 continue;
             }
             if fix.columns.iter().any(|c| !self.cell(*c).trim().is_empty()) {

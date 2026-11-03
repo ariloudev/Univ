@@ -20,6 +20,8 @@ columns:
   - { column: _DEJ2000, field: declination, unit: degree }
   - { column: DMzp, field: distance_modulus, unit: magnitude }
   - { column: e_DMzp, field: distance_modulus_error, unit: magnitude }
+  - { column: DMav, field: quality, unit: magnitude }
+  - { column: e_DMav, field: quality, unit: magnitude }
   - { column: Vh, field: velocity, unit: kilometre_per_second }
   - { column: SGX, field: supergalactic_x, unit: megaparsec }
   - { column: SGY, field: supergalactic_y, unit: megaparsec }
@@ -94,11 +96,27 @@ normalization:
           - tip_of_the_red_giant_branch
           - cepheids
           - masers
+      measure: luminosity
       kind_of_value: measured
       basis: >-
         ReadMe table3 Notes (1) and (2): DMzp is the group's weighted average over five methods
-        (FP, TF, SBF, SNIa, SNII) "set to the scale defined by TRGB, cepheid and maser
-        calibrators", or the direct calibrator value where no five-method measurement exists,
-        which this table does not mark; so the kind is that of the five methods. The abstract
-        calls these "the measured distances". The modulus rests on the calibrators, not on a
-        Hubble constant (the abstract finds the distances compatible with H0 = 74.6 km/s/Mpc).
+        (FP, TF, SBF, SNIa, SNII), DMav, "set to the scale defined by TRGB, cepheid and maser
+        calibrators", so the kind is that of the five methods; where no five-method measurement
+        exists DMzp is the direct calibration value, which a rule below marks. The abstract calls
+        these "the measured distances". The modulus rests on the calibrators, not on a Hubble
+        constant (the abstract finds the distances compatible with H0 = 74.6 km/s/Mpc). Dist,
+        derived from DMzp, is a "Luminosity distance corresponding ot DMzp" (ReadMe table4).
+  rules:
+    - when: { column: DMav, is: ["0"] }
+      and: [{ column: e_DMav, is: ["0"] }]
+      distance:
+        value: DMzp
+        kind: primary_indicator
+        method: { mixed: [tip_of_the_red_giant_branch, cepheids, masers] }
+      basis: >-
+        ReadMe table3 Note (1): "If column e (DMav) is blank because no five methods measurement
+        is available then the direct calibration value is given." The table writes that blank
+        as DMav = e_DMav = 0 (ranges [0/39.6] and [0/2.11], not marked as nullable), and DMcal is
+        the "Average of all TRGB, CPLR, or MASER calibrators" (Note 4). On every one of the 228
+        rows with DMav = 0 served by vizier.idia.ac.za (2026-11-03), e_DMav is 0 and DMzp equals
+        DMcal, e.g. 1PGC 35: DMzp = DMcal = 29.730.

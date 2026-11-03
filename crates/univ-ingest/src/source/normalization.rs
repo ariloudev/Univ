@@ -1,44 +1,18 @@
 //! What a source definition says about reading its rows that the normalizer cannot infer: the
 //! frame of each redshift, the kind and method of each distance and the Hubble constant it
-//! assumes, rules on single rows, and the machine form of each fix.
+//! assumes. Rules on single rows and the machine form of each fix are in `rules`.
 
 use std::collections::{BTreeMap, HashSet};
 
 use serde::{Deserialize, Serialize};
-use univ_model::distance::{DistanceKind, Method};
+use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::entry::RedshiftKind;
 use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
+use super::rules::{self, Rule};
 use super::{Column, Field, Fix};
-
-/// Why a catalogue entry is left out of a release. Every entry left out is counted under one.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum LeftOutReason {
-    /// The identifier cell is blank.
-    MissingIdentifier,
-    /// A position cell is blank in a source that publishes positions.
-    MissingPosition,
-    /// A cell that holds a number does not parse as one.
-    UnparsableNumber,
-    RightAscensionOutOfRange,
-    DeclinationOutOfRange,
-    /// An error is negative or not a finite number, or a credible bound lies on the wrong side
-    /// of its value.
-    BadUncertainty,
-    /// A value parses but cannot stand, such as a distance modulus too large for a distance.
-    UnusableValue,
-    /// A distance's method code is not one the definition maps.
-    UnknownMethodCode,
-    /// The source's distance is an estimate from a velocity or a texture, not a measurement.
-    DistanceNotMeasured,
-    /// The entry is simulated, such as a 2M++ galaxy filling the Zone of Avoidance.
-    SimulatedObject,
-    /// The source marks the redshift unsuitable, as 6dFGS does with a zero error.
-    UnsuitableRedshift,
-}
 
 /// How a source's rows are read beyond the column each field comes from.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -96,6 +70,8 @@ pub struct DistanceReading {
     /// The kind and method of each row, by the code in a column.
     #[serde(default)]
     pub by_code: Option<MethodCodes>,
+    /// Which distance it is, as the source states it: a luminosity distance for a modulus.
+    pub measure: Measure,
     pub kind_of_value: KindOfValue,
     #[serde(default)]
     pub hubble_constant: Option<f64>,
@@ -144,62 +120,6 @@ pub struct Coded {
     pub method: Method,
 }
 
-/// A rule on the rows whose cell in a column is one of some values: they are left out, or some
-/// of their values take another kind of value.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Rule {
-    pub when: Condition,
-    #[serde(default)]
-    pub leave_out: Option<LeftOutReason>,
-    #[serde(default)]
-    pub kind_of_value: Option<KindOverride>,
-    /// Where the source states what the code means.
-    pub basis: String,
-}
-
-/// A row whose trimmed cell in `column` is one of `is`.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Condition {
-    pub column: String,
-    pub is: Vec<String>,
-}
-
-/// The values of `columns` take the kind of value `kind`.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct KindOverride {
-    pub columns: Vec<String>,
-    pub kind: KindOfValue,
-}
-
-/// What a fix changes, applied by the normalizer. A fix without one is expressed by the
-/// definition itself, such as a column's unit.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "kind", deny_unknown_fields)]
-pub enum FixAction {
-    /// The columns hold values in `unit`, whatever their published unit says.
-    ReadAs { columns: Vec<String>, unit: Unit },
-    /// An error of zero in these columns means the error was not reported.
-    ZeroErrorIsNoneReported { columns: Vec<String> },
-    /// An error of zero in these columns marks the row, which is left out for `reason`.
-    ZeroErrorLeavesOut {
-        columns: Vec<String>,
-        reason: LeftOutReason,
-    },
-    /// On the rows that meet `when`, the values of `columns` are dropped and the entry kept, as
-    /// if the cells were blank.
-    DropWhen {
-        columns: Vec<String>,
-        when: Condition,
-    },
-}
-
-/// The most fixes a definition may have: the normalizer counts the entries each changed with a
-/// bit per fix.
-pub const MAX_FIXES: usize = 64;
-
 /// Fields a definition maps at most one column to. Quality columns are kept by name, and the
 /// columns of distances and redshifts are named in `normalization`.
 const SINGLE: [Field; 17] = [
@@ -236,14 +156,14 @@ const READ: [Field; 10] = [
     Field::PhotometricRedshiftError,
 ];
 
-type Problem = (String, String);
+pub(super) type Problem = (String, String);
 
-fn problem(field: impl Into<String>, what: impl Into<String>) -> Problem {
+pub(super) fn problem(field: impl Into<String>, what: impl Into<String>) -> Problem {
     (field.into(), what.into())
 }
 
 /// The columns of a definition, by name.
-struct Columns<'a>(&'a [Column]);
+pub(super) struct Columns<'a>(&'a [Column]);
 
 impl Columns<'_> {
     fn unit(&self, name: &str) -> Option<Unit> {
@@ -251,7 +171,7 @@ impl Columns<'_> {
     }
 
     /// Refuses `name` unless it is a column of the definition.
-    fn known(&self, at: &str, name: &str) -> Result<(), Problem> {
+    pub(super) fn known(&self, at: &str, name: &str) -> Result<(), Problem> {
         self.unit(name)
             .map(|_| ())
             .ok_or_else(|| problem(at, format!("names {name}, which is not a column")))
@@ -306,31 +226,14 @@ pub(super) fn check(
         ));
     }
     for (i, rule) in normalization.rules.iter().enumerate() {
-        check_rule(&table, &format!("normalization.rules[{i}]"), rule)?;
+        rules::check_rule(
+            &table,
+            &normalization.distances,
+            &format!("normalization.rules[{i}]"),
+            rule,
+        )?;
     }
-    if fixes.len() > MAX_FIXES {
-        return Err(problem(
-            "fixes",
-            format!("lists {} fixes, more than {MAX_FIXES}", fixes.len()),
-        ));
-    }
-    for (i, fix) in fixes.iter().enumerate() {
-        let Some(action) = &fix.action else { continue };
-        let at = format!("fixes[{i}].action.columns");
-        if action.columns().is_empty() {
-            return Err(problem(at, "lists no column"));
-        }
-        for c in action.columns() {
-            table.known(&at, c)?;
-        }
-        if let FixAction::DropWhen { when, .. } = action {
-            let at = format!("fixes[{i}].action.when");
-            table.known(&format!("{at}.column"), &when.column)?;
-            if when.is.is_empty() {
-                return Err(problem(at, "lists no value"));
-            }
-        }
-    }
+    rules::check_fixes(&table, fixes)?;
     Ok(())
 }
 
@@ -397,6 +300,12 @@ fn check_distance<'a>(
             return Err(problem(at, "gives a probability outside (0, 1]"));
         }
     }
+    if table.unit(&d.value) == Some(Unit::Magnitude) && d.measure != Measure::Luminosity {
+        return Err(problem(
+            format!("{at}.measure"),
+            "a distance from a distance modulus is a luminosity distance",
+        ));
+    }
     let mut read = vec![d.value.as_str()];
     read.extend(errors.iter().flat_map(|e| e.columns()));
     read.extend(d.also_published.iter().map(|p| p.value.as_str()));
@@ -407,23 +316,7 @@ fn check_distance<'a>(
     Ok(read)
 }
 
-fn check_rule(table: &Columns<'_>, at: &str, rule: &Rule) -> Result<(), Problem> {
-    blank(&format!("{at}.basis"), &rule.basis)?;
-    table.known(&format!("{at}.when.column"), &rule.when.column)?;
-    if rule.when.is.is_empty() {
-        return Err(problem(format!("{at}.when.is"), "lists no value"));
-    }
-    match (&rule.leave_out, &rule.kind_of_value) {
-        (Some(_), None) => Ok(()),
-        (None, Some(k)) => k
-            .columns
-            .iter()
-            .try_for_each(|c| table.known(&format!("{at}.kind_of_value.columns"), c)),
-        _ => Err(problem(at, "either leaves out or sets a kind of value")),
-    }
-}
-
-fn blank(field: &str, value: &str) -> Result<(), Problem> {
+pub(super) fn blank(field: &str, value: &str) -> Result<(), Problem> {
     if value.trim().is_empty() {
         Err(problem(field, "is empty"))
     } else {
@@ -439,19 +332,6 @@ impl ErrorColumns {
             Self::Symmetric(c) => vec![c],
             Self::Asymmetric { minus, plus } => vec![minus, plus],
             Self::CredibleInterval { low, high, .. } => vec![low, high],
-        }
-    }
-}
-
-impl FixAction {
-    /// The columns the fix changes.
-    #[must_use]
-    pub fn columns(&self) -> &[String] {
-        match self {
-            Self::ReadAs { columns, .. }
-            | Self::ZeroErrorIsNoneReported { columns }
-            | Self::ZeroErrorLeavesOut { columns, .. }
-            | Self::DropWhen { columns, .. } => columns,
         }
     }
 }

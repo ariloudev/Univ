@@ -51,6 +51,24 @@ pub enum Method {
     Other(String),
 }
 
+/// Which distance a value is, as its source states it. Beyond the nearby universe the
+/// cosmological distances differ, by a factor 1 + z between the luminosity and the comoving
+/// distance of a flat universe; a later stage converts each to the comoving distance with the
+/// release cosmology.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Measure {
+    /// A luminosity distance: every distance derived from a distance modulus is one.
+    Luminosity,
+    /// A comoving distance.
+    Comoving,
+    /// A distance within the Galaxy measured geometrically, such as from a parallax, where
+    /// space is Euclidean to the data's precision and the cosmological distances coincide.
+    Euclidean,
+    /// The source does not say which distance it publishes.
+    Unspecified,
+}
+
 /// A distance as its source published it, beside its normalized value.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawDistance")]
@@ -66,6 +84,8 @@ pub struct Distance {
     pub kind_of_value: KindOfValue,
     pub kind: DistanceKind,
     pub method: Method,
+    /// Which distance it is: a luminosity distance for one derived from a modulus.
+    pub measure: Measure,
     /// The Hubble constant in km/s/Mpc that the value was published for, where it depends on
     /// one: 100 for a length in h⁻¹ Mpc.
     pub hubble_constant: Option<f64>,
@@ -80,6 +100,7 @@ struct RawDistance {
     kind_of_value: KindOfValue,
     kind: DistanceKind,
     method: Method,
+    measure: Measure,
     hubble_constant: Option<f64>,
 }
 
@@ -92,6 +113,7 @@ impl TryFrom<RawDistance> for Distance {
             raw.normalized.unit,
             raw.kind_of_value,
             (raw.kind, raw.method),
+            raw.measure,
             raw.hubble_constant,
         )?;
         let (ours, theirs) = (distance.normalized.value, raw.normalized.value);
@@ -117,16 +139,20 @@ impl Distance {
     ///
     /// Fails when `unit` is neither parsecs nor megaparsecs, `native` is not a length, a
     /// Hubble-scaled length or a modulus, `also_published` is neither a length nor a modulus,
-    /// a mixed method lists fewer than two methods, or the Hubble constant is not positive or,
-    /// for a Hubble-scaled length, not 100.
+    /// a mixed method lists fewer than two methods, a modulus is not given as a luminosity
+    /// distance, or the Hubble constant is not positive or, for a Hubble-scaled length, not 100.
     pub fn new(
         native: Quantity,
         also_published: Option<Quantity>,
         unit: Unit,
         kind_of_value: KindOfValue,
         (kind, method): (DistanceKind, Method),
+        measure: Measure,
         hubble_constant: Option<f64>,
     ) -> Result<Self, DistanceError> {
+        if native.unit == Unit::Magnitude && measure != Measure::Luminosity {
+            return Err(DistanceError::ModulusNotLuminosity(measure));
+        }
         if !matches!(unit, Unit::Parsec | Unit::Megaparsec) {
             return Err(DistanceError::NormalizedUnit(unit));
         }
@@ -168,6 +194,7 @@ impl Distance {
             kind_of_value,
             kind,
             method,
+            measure,
             hubble_constant,
         })
     }
@@ -194,6 +221,8 @@ pub enum DistanceError {
     NotADistance(Unit),
     #[error("a distance is normalized to parsecs or megaparsecs, not {0:?}")]
     NormalizedUnit(Unit),
+    #[error("a distance from a distance modulus is a luminosity distance, not {0:?}")]
+    ModulusNotLuminosity(Measure),
     #[error("a mixed method lists at least two methods")]
     MixedOfOne,
     #[error("the normalized distance {normalized} is not the {derived} its native value gives")]
@@ -215,7 +244,12 @@ mod tests {
 
     fn measured(native: Quantity, unit: Unit, h: Option<f64>) -> Result<Distance, DistanceError> {
         let how = (DistanceKind::SecondaryIndicator, Method::TullyFisher);
-        Distance::new(native, None, unit, KindOfValue::Measured, how, h)
+        let measure = if native.unit == Unit::Magnitude {
+            Measure::Luminosity
+        } else {
+            Measure::Unspecified
+        };
+        Distance::new(native, None, unit, KindOfValue::Measured, how, measure, h)
     }
 
     #[test]
@@ -267,7 +301,15 @@ mod tests {
             DistanceKind::SecondaryIndicator,
             Method::Mixed(vec![Method::TullyFisher]),
         );
-        let one = Distance::new(d, None, Unit::Parsec, KindOfValue::Measured, how, None);
+        let one = Distance::new(
+            d,
+            None,
+            Unit::Parsec,
+            KindOfValue::Measured,
+            how,
+            Measure::Euclidean,
+            None,
+        );
         assert_eq!(one, Err(DistanceError::MixedOfOne));
     }
 
@@ -281,5 +323,28 @@ mod tests {
         tampered.normalized.value = 11.0;
         let yaml = serde_norway::to_string(&tampered).unwrap();
         assert!(serde_norway::from_str::<Distance>(&yaml).is_err(), "{yaml}");
+    }
+
+    #[test]
+    fn a_distance_from_a_modulus_is_a_luminosity_distance_and_nothing_else() {
+        let mu = quantity(30.0, Unit::Magnitude, Uncertainty::NoneReported);
+        assert_eq!(
+            measured(mu, Unit::Megaparsec, None).unwrap().measure,
+            Measure::Luminosity
+        );
+        let how = (DistanceKind::SecondaryIndicator, Method::TullyFisher);
+        let comoving = Distance::new(
+            mu,
+            None,
+            Unit::Megaparsec,
+            KindOfValue::Measured,
+            how,
+            Measure::Comoving,
+            None,
+        );
+        assert_eq!(
+            comoving,
+            Err(DistanceError::ModulusNotLuminosity(Measure::Comoving))
+        );
     }
 }

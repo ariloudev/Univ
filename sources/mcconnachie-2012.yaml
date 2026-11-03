@@ -76,6 +76,7 @@ normalization:
           - tip_of_the_red_giant_branch
           - horizontal_branch
           - { other: main-sequence fitting }
+      measure: luminosity
       kind_of_value: measured
       basis: >-
         J/AJ/144/4 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/AJ/144/4/ReadMe,

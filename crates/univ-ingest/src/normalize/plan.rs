@@ -4,7 +4,7 @@
 
 use std::collections::BTreeMap;
 
-use univ_model::distance::{DistanceKind, Method};
+use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::entry::RedshiftKind;
 use univ_model::position::Frame;
 use univ_model::units::{Dimension, Unit};
@@ -12,7 +12,7 @@ use univ_model::value::KindOfValue;
 
 use super::NormalizeError;
 use crate::source::{
-    Coded, DistanceReading, ErrorColumns, Field, FixAction, LeftOutReason, MAX_FIXES,
+    Coded, Condition, DistanceReading, ErrorColumns, Field, FixAction, LeftOutReason, MAX_FIXES,
     RedshiftReading, Rule, ScaleDomain, SourceDefinition,
 };
 
@@ -72,14 +72,15 @@ pub(super) struct DistancePlan {
     pub measured: Measured,
     pub also_published: Option<Measured>,
     pub how: ByCode<(DistanceKind, Method)>,
+    pub measure: Measure,
     pub kind_of_value: KindOfValue,
     pub hubble_constant: Option<f64>,
 }
 
-/// A rule resolved: the rows it matches, and what it does to them.
+/// A rule resolved: the rows it matches, by the column of each condition, and what it does to
+/// them.
 pub(super) struct RulePlan {
-    pub column: usize,
-    pub is: Vec<String>,
+    pub conditions: Vec<(usize, Condition)>,
     pub action: RuleAction,
 }
 
@@ -87,6 +88,8 @@ pub(super) enum RuleAction {
     LeaveOut(LeftOutReason),
     /// The values read from these columns take this kind of value.
     Kind(Vec<usize>, KindOfValue),
+    /// The distance of this index among the plan's distances takes this kind and method.
+    Distance(usize, (DistanceKind, Method)),
 }
 
 /// A fix the normalizer applies, by its index among the definition's fixes.
@@ -101,10 +104,10 @@ pub(super) enum FixEffect {
     ReadAs,
     ZeroIsNoneReported,
     ZeroLeavesOut(LeftOutReason),
-    /// The columns are blank on rows whose cell in `column`, trimmed, is one of `is`.
+    /// The columns are blank on rows whose cell in `column` meets `when`.
     DropWhen {
         column: usize,
-        is: Vec<String>,
+        when: Condition,
     },
 }
 
@@ -269,28 +272,39 @@ impl Resolver<'_> {
             measured: self.reading(&d.value, d.error.as_ref())?,
             also_published,
             how,
+            measure: d.measure,
             kind_of_value: d.kind_of_value,
             hubble_constant: d.hubble_constant,
         })
     }
 
     fn rule(&self, r: &Rule) -> Result<RulePlan, NormalizeError> {
-        let action = match (&r.leave_out, &r.kind_of_value) {
-            (Some(reason), _) => RuleAction::LeaveOut(*reason),
-            (None, Some(k)) => RuleAction::Kind(
+        let distances = &self.definition.normalization.distances;
+        let action = match (&r.leave_out, &r.kind_of_value, &r.distance) {
+            (Some(reason), _, _) => RuleAction::LeaveOut(*reason),
+            (None, Some(k), _) => RuleAction::Kind(
                 k.columns
                     .iter()
                     .map(|c| self.index(c))
                     .collect::<Result<_, _>>()?,
                 k.kind,
             ),
-            (None, None) => return Err(self.unsupported("a rule does nothing")),
+            (None, None, Some(d)) => RuleAction::Distance(
+                distances
+                    .iter()
+                    .position(|x| x.value == d.value)
+                    .ok_or_else(|| {
+                        self.unsupported(format!("no distance is read from {}", d.value))
+                    })?,
+                (d.kind, d.method.clone()),
+            ),
+            (None, None, None) => return Err(self.unsupported("a rule does nothing")),
         };
-        Ok(RulePlan {
-            column: self.index(&r.when.column)?,
-            is: r.when.is.clone(),
-            action,
-        })
+        let conditions = std::iter::once(&r.when)
+            .chain(&r.and)
+            .map(|c| Ok((self.index(&c.column)?, c.clone())))
+            .collect::<Result<_, NormalizeError>>()?;
+        Ok(RulePlan { conditions, action })
     }
 
     fn fix(&self, fix: usize, action: &FixAction) -> Result<FixPlan, NormalizeError> {
@@ -305,7 +319,7 @@ impl Resolver<'_> {
             FixAction::ZeroErrorLeavesOut { reason, .. } => FixEffect::ZeroLeavesOut(*reason),
             FixAction::DropWhen { when, .. } => FixEffect::DropWhen {
                 column: self.index(&when.column)?,
-                is: when.is.clone(),
+                when: when.clone(),
             },
         };
         Ok(FixPlan {

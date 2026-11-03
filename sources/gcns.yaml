@@ -75,6 +75,7 @@ normalization:
       error: { credible_interval: { low: Dist16, high: Dist84, probability: 0.68 } }
       kind: geometric
       method: { other: "GCNS Bayesian distance posterior from the parallax, with a mock-catalogue prior" }
+      measure: euclidean
       kind_of_value: estimated
       basis: >-
         J/A+A/649/A6 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/A+A/649/A6/ReadMe,

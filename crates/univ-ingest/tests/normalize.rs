@@ -301,7 +301,7 @@ fn a_distance_in_h_inverse_mpc_or_for_a_stated_hubble_constant_keeps_that_consta
     .replace(
         "columns:\n",
         "columns:\n  - { column: id, field: identifier, unit: dimensionless }\n  - { column: d, field: distance, unit: megaparsec_over_h }\n  - { column: d73, field: distance, unit: megaparsec }\n",
-    ) + "normalization:\n  distances:\n    - { value: d, kind: secondary_indicator, method: tully_fisher, kind_of_value: measured, basis: b }\n    - { value: d73, kind: secondary_indicator, method: tully_fisher, kind_of_value: estimated, hubble_constant: 73, basis: b }\n";
+    ) + "normalization:\n  distances:\n    - { value: d, kind: secondary_indicator, method: tully_fisher, measure: unspecified, kind_of_value: measured, basis: b }\n    - { value: d73, kind: secondary_indicator, method: tully_fisher, measure: unspecified, kind_of_value: estimated, hubble_constant: 73, basis: b }\n";
     let path = dir.path().join("test-galaxies.yaml");
     std::fs::write(&path, text).unwrap();
     let definition = SourceDefinition::read(&path).unwrap();

@@ -70,6 +70,7 @@ normalization:
       error: { credible_interval: { low: r_lo_geo, high: r_hi_geo, probability: 0.68 } }
       kind: geometric
       method: bayesian_geometric
+      measure: euclidean
       kind_of_value: estimated
       basis: >-
         I/352 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/I/352/ReadMe, 2026-11-03): rgeo is
@@ -81,6 +82,7 @@ normalization:
       error: { credible_interval: { low: r_lo_photogeo, high: r_hi_photogeo, probability: 0.68 } }
       kind: photogeometric
       method: bayesian_photogeometric
+      measure: euclidean
       kind_of_value: estimated
       basis: >-
         I/352 ReadMe: b_rpgeo and B_rpgeo are the "16th percentile" and "84th percentile of the
