@@ -2,6 +2,7 @@
 //! connected across faces to the cell that holds the seed; and a published position placed on
 //! the grid.
 
+use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::grid::{Axis, Components, Grid, GridGeometry, Samples};
 use univ_model::position::{Vec3, between, unit_vector};
 use univ_model::units::{Dimension, Unit};
@@ -11,6 +12,12 @@ use crate::structures::{Cited, Coordinates, Radial, Side};
 /// The Hubble constant of velocity space, 100 h km s⁻¹ Mpc⁻¹: a recession velocity v stands for
 /// the distance v / 100 h⁻¹ Mpc, with no cosmology.
 const HUNDRED_H: f64 = 100.0;
+
+/// The distance in velocity space of a redshift `z`: cz / 100 h⁻¹ Mpc.
+#[must_use]
+pub fn velocity_distance(z: f64) -> f64 {
+    z * SPEED_OF_LIGHT / HUNDRED_H
+}
 
 /// The cells of a region, by their indices along X, Y and Z of the grid's frame.
 #[derive(Clone, Debug, PartialEq)]
@@ -134,9 +141,7 @@ pub fn on_grid(position: &Coordinates, geometry: &GridGeometry) -> Result<Vec3, 
             };
             let lon = lon.as_ref().map_or(Ok(0.0), degrees)?;
             let r = match radial {
-                Some(Radial::Redshift(z)) => {
-                    z.value() * univ_model::cosmology::SPEED_OF_LIGHT / HUNDRED_H
-                }
+                Some(Radial::Redshift(z)) => velocity_distance(z.value()),
                 Some(Radial::Velocity(c) | Radial::Distance(c)) => velocity_space(c)?,
                 None => return Err("the published position gives no distance".into()),
             };
