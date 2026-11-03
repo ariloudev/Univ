@@ -3,7 +3,10 @@
 //! - `cargo xtask check` runs every gate in order and stops at the first that fails.
 //! - `cargo xtask lines` reports each `.rs` file over the 500-line limit.
 //! - `cargo xtask science <release-dir>` runs the science checks of a built release.
+//! - `cargo xtask integration` runs Univ Server's end-to-end tests inside `wrangler dev`.
+//! - `cargo xtask serve` runs Univ Server on the real local state.
 
+mod integration;
 mod lines;
 mod science;
 
@@ -75,9 +78,28 @@ const GATES: &[Gate] = &[
             "check",
             "--package",
             "univ-model",
+            "--package",
+            "univ-api",
             "--target",
             "wasm32-unknown-unknown",
             "--quiet",
+        ],
+    ),
+    // The Worker's own target: what native clippy cannot see, such as code behind
+    // `cfg(target_arch = "wasm32")` in workers-rs's macros.
+    Gate::Command(
+        "clippy wasm32",
+        "cargo",
+        &[
+            "clippy",
+            "--package",
+            "univ-server",
+            "--target",
+            "wasm32-unknown-unknown",
+            "--quiet",
+            "--",
+            "-D",
+            "warnings",
         ],
     ),
     Gate::Command("deny", "cargo", &["deny", "check"]),
@@ -112,12 +134,14 @@ fn main() -> ExitCode {
     let passed = match std::env::args().nth(1).as_deref() {
         Some("check") => check(&root),
         Some("lines") => lines_pass(&root),
+        Some("integration") => integration::integration(&root),
+        Some("serve") => integration::serve(&root),
         Some("science") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             science::run(&root, &args)
         }
         _ => {
-            eprintln!("usage: cargo xtask <check|lines|science <release-dir>>");
+            eprintln!("usage: cargo xtask <check|lines|integration|serve|science <release-dir>>");
             return ExitCode::from(2);
         }
     };

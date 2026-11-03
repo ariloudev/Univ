@@ -1377,3 +1377,75 @@ links:
       - file: "crates/univ-ingest/tests/interrupt_stages.rs"
         name: "a_publish_stopped_by_the_owner_ends_after_the_unit_in_hand_and_the_next_run_completes_it"
         body: 83047f6292e49198391d83daa44e21846f287578499bd3f05cf6f239cb6fa49f
+  - node: 01a19f20-8e6c-7039-b16f-abf26c9701c7
+    reviewed: ea71d05b23ad1326f5e779d03f85852f106de228c3aafbbd7334f0bef8248794
+    tests:
+      - file: "crates/univ-api/src/lib.rs"
+        name: "a_read_with_no_authorization_header_succeeds"
+        body: 8102afb20f1d0bf70c34449a218fd1742df82367b18330a56f6e05b02820ae6c
+      - file: "crates/univ-server/tests/e2e.rs"
+        name: "a_read_with_no_authorization_header_succeeds_from_any_origin"
+        body: 52760d160fab0fa63656651cbb95ef07bf30cfba2affea684c35af9faa00e6dd
+  - node: 01a19f20-8e6c-7039-b16f-abf520a82854
+    reviewed: b8df71fea550340cf38cdfcef18ddd4e8e0ac5ba501ace729a885f065b0475af
+    tests:
+      - file: "crates/univ-api/src/lib.rs"
+        name: "every_response_allows_any_origin"
+        body: 8304e313675187e48f6e5b4e301b5cfc4f9a07771e13473b16f242d0ebbdc649
+      - file: "crates/univ-server/tests/e2e.rs"
+        name: "a_read_with_no_authorization_header_succeeds_from_any_origin"
+        body: 52760d160fab0fa63656651cbb95ef07bf30cfba2affea684c35af9faa00e6dd
+      - file: "crates/univ-server/tests/e2e.rs"
+        name: "a_head_request_is_answered_with_no_body"
+        body: c760ae3283d8c86d96bb72edcf5e301aba2dc4a0eaf6bedd746d63c9bff1f0f5
+  - node: 01a19f20-8e6c-7039-b16f-abf64b1ee438
+    reviewed: a43a9d2569ab762023db3ea5991a75b20cf2fae8942af5db0b42988912eb009d
+    tests:
+      - file: "crates/univ-api/src/lib.rs"
+        name: "a_preflight_for_a_read_is_answered_without_credentials"
+        body: e1faf200ff09fbc817552debe3eef8bf537aac4ed2ba6730d368626e5e1651b1
+      - file: "crates/univ-server/tests/e2e.rs"
+        name: "a_cors_preflight_for_a_read_is_answered_without_credentials"
+        body: 8005809bd490ef49d9f4c871f27db49b8e9e6a111209b09ceda2603d7dd6bb71
+  - node: 01a19f20-8e6c-7039-b16f-ac0782b8bf64
+    reviewed: cd3d5c598eb5768886cce5b75d25023538b1c09c500dc8d51e4db468635f4520
+    tests:
+      - file: "crates/univ-server/tests/e2e.rs"
+        name: "a_read_with_no_authorization_header_succeeds_from_any_origin"
+        body: 52760d160fab0fa63656651cbb95ef07bf30cfba2affea684c35af9faa00e6dd
+      - file: "crates/univ-api/src/openapi.rs"
+        name: "the_document_is_openapi_3_1"
+        body: 0588411b2d8c68ed0820bbb804fc655d37788c7c7d8adc7019452a54fe9e7bce
+  - node: 01a19f20-8e6c-7039-b16f-ac09bec61527
+    reviewed: 1101ee170b4cf1e3a80fdabcfddedd284252711243a4121141f6c4bed3dc94da
+    tests:
+      - file: "crates/univ-api/src/openapi.rs"
+        name: "the_document_describes_every_route_served_and_no_other"
+        body: 61656f54a0bc2cdabb10954766a2eab188c39bcb6fed5b838e5c492451ad4a50
+  - node: 01a19f20-8e6c-7039-b16f-ac0c9f071903
+    reviewed: 594ec7d33ac902e675bae6248599f4d55ed3925a41ec3a01e3420f6471d557f2
+    tests:
+      - file: "crates/univ-api/src/problem.rs"
+        name: "a_problem_is_answered_as_application_problem_json"
+        body: ee2b217a5878c649b8fccc79a2e741da4a83f5d0ff7e3734441a26ca70369795
+      - file: "crates/univ-api/src/lib.rs"
+        name: "an_unknown_route_answers_404_with_a_problem"
+        body: 7243342d0d1e9fb83f2c436d160fa6789cc582ebbd3a4fa8120521999b2b0b2f
+      - file: "crates/univ-server/tests/e2e.rs"
+        name: "an_unknown_route_answers_404_with_problem_details"
+        body: bab54cbae7cba29e75c09b93e624ac136bcd4d9298d8fe0059d77beef63d76e9
+  - node: 01a19f20-8e6c-7039-b16f-ac0d10549d0c
+    reviewed: 8f4da46829654766d2933c014f3791d18fdfe12faf252d989bf258ab1b5364ff
+    tests:
+      - file: "crates/univ-api/src/problem.rs"
+        name: "every_problem_type_uri_is_absolute_and_distinct"
+        body: bd3b67ce0d6081d8941060c4202c6f35d46247dfe7485713576b947ff7ccd721
+      - file: "crates/univ-api/src/openapi.rs"
+        name: "the_problem_schema_lists_every_problem_type"
+        body: 87647b11b0fbf00b9f678f5b23c44a23589656a71b363ba21225624634ce1a53
+  - node: 01a19f20-8e6c-7039-b16f-ac0f65af0df8
+    reviewed: a2d82c61532b93158dbdae9b6fd925795e5a2b49e81d32dcbaff172db2ea7402
+    tests:
+      - file: "crates/univ-api/src/routes.rs"
+        name: "every_route_lives_under_the_path_of_its_api_version"
+        body: 2612c6dd415a8b9d521f10ce19c37d32e0df5a3e87e6f55e5631ae4c44f07cab

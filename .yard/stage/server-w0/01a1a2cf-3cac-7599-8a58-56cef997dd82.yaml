@@ -1,0 +1,221 @@
+key: 01a1a2cf-3cac-7599-8a58-56cef997dd82
+id: w0-review
+versions:
+  - key: 01a1a2cf-3cac-7599-8a58-56d89d61e2b3
+    at: 2026-11-03T19:07:32Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W0 close: review, gate, trace"
+    goal: "W0's /simplify and /code-review findings are fixed, the gate and integration run are green, and its tests are traced"
+    status: planned
+  - key: 01a1a2e9-1410-70d4-9ac8-54d4a1e030ef
+    at: 2026-11-03T19:35:46Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W0 close: review, gate, trace"
+    goal: "W0's /simplify and /code-review findings are fixed, the gate and integration run are green, and its tests are traced"
+    status: active
+  - key: 01a1a2f9-f7b2-719e-a957-ad304875ecba
+    at: 2026-11-03T19:54:13Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W0 close: review, gate, trace"
+    goal: "W0's /simplify and /code-review findings are fixed, the gate and integration run are green, and its tests are traced"
+    status: done
+blocks:
+  - key: 01a1a2e9-1410-70d4-9ac8-54d19bd712be
+    id: t-review
+    kind: task
+    versions:
+      - key: 01a1a2e9-1410-70d4-9ac8-54d5202ca176
+        at: 2026-11-03T19:35:46Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Run /simplify and /code-review on W0's diff"
+        detail: "Both run in parallel on product/server..stage/server-w0. Done when every finding is fixed as its own task or kept with a reason."
+        state: active
+      - key: 01a1a2ef-c93e-77ff-9e77-5f6b94ddb2d6
+        at: 2026-11-03T19:43:06Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Run /simplify and /code-review on W0's diff"
+        detail: "Both ran in parallel on product/server..stage/server-w0. /code-review (high) gave 10 findings and /simplify's four angles gave 28, with overlaps. The fixes are the tasks below; the note `w0-review-findings` gives what was kept or skipped, and why."
+        state: done
+  - key: 01a1a2ef-c93e-77ff-9e77-5f6635814121
+    id: t-fix-api
+    kind: task
+    versions:
+      - key: 01a1a2ef-c93e-77ff-9e77-5f6c2e810f0a
+        at: 2026-11-03T19:43:06Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "univ-api: HEAD, problems for every failure, typed route methods"
+        detail: |-
+          - HEAD is answered as GET without its body, and Allow lists HEAD.
+          - New problem kinds unreadable-body (400) and internal-error (500); the OpenAPI document's serialization failure is a problem, and `univ_api::failure` gives the Worker a problem with CORS.
+          - `Route.method` is a `Method`.
+          - One shared header lookup.
+          - `ProblemType::uri` returns `&'static str` and `slug` is gone.
+          - `Problem::with` takes `impl Into<Value>`.
+          - The OpenAPI JSON is built once per isolate.
+
+          16 native tests pass.
+        state: done
+  - key: 01a1a2ef-c93e-77ff-9e77-5f6705f273f7
+    id: t-fix-worker
+    kind: task
+    versions:
+      - key: 01a1a2ef-c93e-77ff-9e77-5f6dc7c3c382
+        at: 2026-11-03T19:43:06Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "univ-server: runtime errors and unread bodies"
+        detail: |-
+          - Any runtime error, while building the request or sending the answer, becomes an internal-error problem with CORS, not the runtime's plain 500.
+          - A body is read only for POST, PATCH and DELETE; one that cannot be read is refused as unreadable-body rather than taken as empty.
+          - Header names are taken as the runtime gives them.
+          - The answer is moved, not copied.
+
+          wasm32 clippy is clean.
+        state: done
+  - key: 01a1a2ef-c93e-77ff-9e77-5f683bf5500a
+    id: t-fix-harness
+    kind: task
+    versions:
+      - key: 01a1a2ef-c93e-77ff-9e77-5f6ebb32738c
+        at: 2026-11-03T19:43:06Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "xtask: Wrangler from the crate dir, try_wait, retried start"
+        detail: |-
+          - One `wrangler()` builder, run from crates/univ-server with metrics off and no colour, so the build command is plain `worker-build --release`.
+          - `[dev]` port 8790 moves to wrangler.toml.
+          - Liveness uses `Child::try_wait`: the `kill -0` probe also succeeded on an exited zombie, so a dead Wrangler waited the full 600 s.
+          - A Wrangler that exits before answering, such as on a port taken in the meantime, is started again on a new port, up to 3 times.
+        state: done
+  - key: 01a1a2ef-c93e-77ff-9e77-5f6916221b19
+    id: t-fix-tests
+    kind: task
+    versions:
+      - key: 01a1a2ef-c93e-77ff-9e77-5f6f4d705f33
+        at: 2026-11-03T19:43:06Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tests: shared runner, config id check, one e2e client"
+        detail: |-
+          - `release_fixture::univ_ingest` is the one runner for publish_wrangler and fixture_state.
+          - fixture_state explains itself when UNIV_FIXTURE_STATE is unset.
+          - New tests/config.rs: the Worker's `univ` database id and bucket match the root wrangler.toml, and a planted id mismatch fails it; LAYERS is another file.
+          - The e2e tests share one LazyLock client.
+          - A new e2e test checks HEAD.
+        state: done
+  - key: 01a1a2ef-c93e-77ff-9e77-5f6aa3b43a91
+    id: w0-review-findings
+    kind: note
+    versions:
+      - key: 01a1a2ef-c93e-77ff-9e77-5f70a8bbbe46
+        at: 2026-11-03T19:43:06Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W0 review: what was fixed, kept and skipped"
+        markdown: |-
+          | Finding | From | Outcome |
+          |---|---|---|
+          | `kill -0` on a zombie: a dead Wrangler waits 600 s | review, simplify ×3 | fixed: `try_wait` |
+          | HEAD answered 405 | review | fixed |
+          | OpenAPI 500 and runtime errors not problem+json, no CORS | review | fixed: `internal-error`, `univ_api::failure` |
+          | Failed body read taken as empty; every body buffered | review, efficiency | fixed: writes only, `unreadable-body` |
+          | free-port race | review | fixed: retried start on a new port |
+          | fixture_state panics opaquely under `--ignored` | review, altitude | fixed: explicit message (kept as a test: its helpers live in tests/) |
+          | OpenAPI rebuilt per request | review, efficiency | fixed: `LazyLock` |
+          | Duplicate header lookup, string route methods, `slug`, `with(Value)` | simplify, review | fixed |
+          | `--config` path tied to the start directory | altitude | fixed: Wrangler runs from the crate dir |
+          | Config ids copied by hand, unchecked | reuse | fixed: tests/config.rs |
+          | Runner copied between ingest tests | reuse | fixed |
+          | **Each route's refusals in OpenAPI (AC-290)** | review | **kept for W7**, where the plan places it |
+          | Request body size cap | review | **kept for W4/W5**, with the 64 KiB item quota |
+          | Build the wasm while the fixture state is written; cache the state | efficiency | **skipped**: the cargo lock serializes the builds, and a cached state risks staleness |
+          | fixture_state as a Cargo example | altitude | **skipped**: examples get no `CARGO_BIN_EXE_*` |
+  - key: 01a1a2f9-e32f-7097-bc8a-0dc83dace78c
+    id: trace-w0
+    kind: loft
+    versions:
+      - key: 01a1a2f9-e32f-7097-bc8a-0dc9ab03a504
+        at: 2026-11-03T19:54:08Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: |-
+          W0 links 8 criteria of F-30 and F-33, each reviewed against its words: AC-273, AC-275, AC-276, AC-285, AC-287, AC-289, AC-290, AC-291. (An earlier task detail named the problem-type criterion AC-289; it is AC-290.)
+
+          Still open in their waves: AC-274 (W4, needs a key and reference data), AC-286 (schemas from univ-model types, W1 onward), AC-288 (each route's refusals, W7) and AC-292 (compatibility snapshot, W7). The one TR-008, on AC-301, belongs to ingest and predates this wave.
+        base: "product/server"
+        recorded:
+          commit: "a87355df832afa41c239637241346f584dc4ea80"
+          branch: "stage/server-w0"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T19:54:07Z
+        report: |
+          {
+            "base": "product/server",
+            "commit": "13a0265e09b82cc385871583880af7c8705ba629",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 329,
+              "linked": 163,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a2f9-f7b2-719e-a957-ad2e89efb715
+    id: w0-closed
+    kind: note
+    versions:
+      - key: 01a1a2f9-f7b2-719e-a957-ad2f4a2de9af
+        at: 2026-11-03T19:54:13Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W0 ready: gate and integration green, unmerged"
+        markdown: |-
+          | Check | Result |
+          |---|---|
+          | `cargo xtask check` | passed, 11 gates (`loft verify` skipped off `develop`) |
+          | `cargo xtask integration` | passed: fixture state in 78 s, Wrangler ready in 4 s, 4 of 4 e2e tests |
+          | Native tests | univ-api 16, univ-server config 2 |
+          | Trace | 8 criteria linked and accepted, no warnings |
+
+          Commits: `caac3e1`, `770e083`, `1db3322`, `abe7647`, `a87355d`.
+
+          `stage/server-w0` is **not merged** and its Yard Log is **left open**. Both wait for the owner to ask. W1 (releases, sources, structures) is cut from `product/server` once W0 is merged, or from W0 if the owner prefers to stack.
+        tone: success

@@ -5,6 +5,7 @@
 #![allow(dead_code, reason = "each test file uses a part of the fixture")]
 
 use std::path::Path;
+use std::process::{Command, Output};
 
 use crate::common::{definition_of, normalized_fixture, source_id, workspace};
 use tempfile::TempDir;
@@ -148,4 +149,22 @@ pub fn d1_text(dir: &Path, manifest: &ReleaseManifest, table: &str) -> String {
         .filter(|f| f.path.contains(&format!("-{table}-")))
         .map(|f| std::fs::read_to_string(dir.join(&f.path)).unwrap())
         .collect()
+}
+
+/// Runs `univ-ingest <command> <number>` on the build output `out` and state directory `state`,
+/// against Wrangler's local state in `persist` and the repository's `wrangler.toml`.
+pub fn univ_ingest(command: &str, number: u32, out: &Path, state: &Path, persist: &Path) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_univ-ingest"))
+        .arg(command)
+        .arg(number.to_string())
+        .arg("--out")
+        .arg(out)
+        .arg("--state")
+        .arg(state)
+        .arg("--persist-to")
+        .arg(persist)
+        .arg("--config")
+        .arg(workspace().join("wrangler.toml"))
+        .output()
+        .unwrap()
 }

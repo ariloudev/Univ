@@ -18,7 +18,9 @@ The specification in `spec/` is the contract. It is published from `develop`.
 | `loft.trace.yaml` | Links from acceptance criteria to the tests that verify them |
 | `crates/univ-model` | Shared domain model; no I/O, and builds for `wasm32-unknown-unknown` |
 | `crates/univ-ingest` | The Univ Ingest CLI; recorded provider answers in `tests/fixtures/<provider>/` |
-| `xtask` | Project tasks: the check gate and the 500-line rule |
+| `crates/univ-api` | Univ Server's routes, handlers and HTTP contract as plain values, with no I/O; native and wasm32. `migrations/` holds the univ-layers database |
+| `crates/univ-server` | The Worker: workers-rs bindings of D1, R2 and the rate limiters around `univ-api`; its own `wrangler.toml`; end-to-end tests in `tests/e2e.rs` |
+| `xtask` | Project tasks: the check gate, the 500-line rule, the science checks, and the Worker's `integration` and `serve` |
 | `scripts/r2-batch.mjs` | Every R2 operation of a publish or prune through one Node process, on Wrangler's local bucket |
 
 ## Commands
@@ -32,6 +34,13 @@ Run them from this directory.
 - `cargo xtask science <release-dir>` loads a built release's D1 rows into a scratch SQLite
   database and runs the cited checks of `rules/science-checks.yaml`, one line each; it exits
   non-zero on any FAIL. `--db <file>` keeps the database in a file and reuses it on the next run.
+- `cargo xtask integration` runs Univ Server's end-to-end tests: it writes the fixture state
+  (ingest's fixture releases, the first pruned) into `target/integration/state`, applies the
+  univ-layers migrations, starts `wrangler dev` on a free port and runs the ignored tests of
+  `crates/univ-server/tests/` against it. Wrangler's log is `target/integration/wrangler.log`.
+- `cargo xtask serve` runs Univ Server under `wrangler dev` on the real local state,
+  `.cache/univ-ingest/wrangler`, where `univ-ingest publish` puts releases. The owner secret
+  comes from `crates/univ-server/.dev.vars` (`OWNER_SECRET=...`), which git ignores.
 - `cargo fmt` formats the workspace. Nothing formats automatically, and the gate fails on
   unformatted code.
 
@@ -49,10 +58,16 @@ Run them from this directory.
   exempted.
 - **No network in tests.** Tests read small recorded provider answers. Tests that fetch live are
   `#[ignore]` and run by hand.
-- **Branches.** `product/ingest` gathers the ingest work. Each wave is a `stage/ingest-wN` branch
-  cut from it, and each branch keeps a Yard Log under `.yard/` (use the `loft:yard` skill). A
-  wave ends with `/simplify` and `/code-review` run in parallel, their findings fixed, and the
-  gate green. Merges happen only when the owner asks.
+- **Branches.** `product/ingest` gathered the ingest work and `product/server` gathers the
+  server's. Each wave is a `stage/ingest-wN` or `stage/server-wN` branch cut from its product
+  branch, and each branch keeps a Yard Log under `.yard/` (use the `loft:yard` skill). Merges
+  happen only when the owner asks.
+- **Checks during a wave, the gate at its end.** Between tasks, run focused checks on what
+  changed: `cargo test -p <crate> <filter>`, `cargo clippy -p <crate> --all-targets -- -D
+  warnings`, `cargo fmt --check`, and `loft check` after a spec edit. A wave ends with
+  `/simplify` and `/code-review` run in parallel and their findings fixed, then the full gate
+  (`cargo xtask check`) and, for the server, `cargo xtask integration`, each run once and
+  green. Commit on a command's own exit status, never through a pipe.
 - **Commits.** `type(scope): summary` in lower case, such as `feat(model): …`, `fix(ingest): …`,
   `spec: …`, `test(trace): …` or `chore: …`. Merges are `merge: …`. Commit `.yard/` with the
   work.

@@ -1,0 +1,79 @@
+format: yardlog/1
+key: 01a1a2cf-3cac-7599-8a58-56ccde11118b
+branch: "stage/server-w0"
+base: "develop"
+title: "stage/server-w0"
+revision: 11
+opened:
+  at: 2026-11-03T19:07:32Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+stages:
+  - key: 01a1a2cf-3cac-7599-8a58-56cdcf1330f5
+    id: w0
+  - key: 01a1a2cf-3cac-7599-8a58-56cef997dd82
+    id: w0-review
+closed:
+  at: 2026-11-03T19:57:42Z
+  revision: 11
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+acts:
+  - at: 2026-11-03T19:07:32Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:07:36Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:18:39Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:23:02Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:28:28Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:35:30Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:35:46Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:43:06Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:54:08Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:54:13Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-03T19:57:42Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
