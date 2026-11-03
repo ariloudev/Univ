@@ -12,9 +12,10 @@ use univ_ingest::events::{EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
 use univ_ingest::normalize::Normalized;
 use univ_ingest::run::{
-    BuildOptions, DEFAULT_BUILD, DEFAULT_TILES, FetchOptions, MatchOptions, RunReport, TileOptions,
-    build_stage, display_for_stderr, drawing, fetch, interrupted, match_stage,
-    normalize_stage_until, owner_interrupt, select, tiles_stage,
+    BuildOptions, DEFAULT_BUILD, DEFAULT_CONFIG, DEFAULT_PERSIST, DEFAULT_TILES, FetchOptions,
+    MatchOptions, RunReport, StoreOptions, TileOptions, build_stage, display_for_stderr, drawing,
+    fetch, interrupted, match_stage, normalize_stage_until, now, owner_interrupt, prune_command,
+    publish_command, select, tiles_stage,
 };
 use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::DEFAULT_STATE;
@@ -54,6 +55,57 @@ enum Command {
     /// release is checked before it is complete; only a complete release uses up its number and
     /// takes the cross-match's pending state into the state directory.
     Build(BuildArgs),
+    /// Publishes a complete release to the local D1 and R2 that `wrangler dev` reads: its
+    /// files to R2 and its tables to D1, each checked against its SHA-256 in the release
+    /// manifest or by its rows, and only then moves latest to it in one write. An interrupted
+    /// publish continues from its journal; a release already published is refused.
+    Publish(StoreArgs),
+    /// Deletes a release's R2 files and D1 rows, keeping it in the list of releases with its
+    /// pruning time and keeping the id ledger, so every id still resolves. The release latest
+    /// points to is refused.
+    Prune(StoreArgs),
+}
+
+#[derive(Args)]
+struct StoreArgs {
+    /// The release number.
+    number: u32,
+    /// The build output, whose `releases/{n}` holds the release.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_BUILD)]
+    out: PathBuf,
+    /// Wrangler's local state directory, as `wrangler dev --persist-to` takes it.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_PERSIST)]
+    persist_to: PathBuf,
+    /// The Wrangler configuration naming the local D1 and R2 bindings; Wrangler is run from
+    /// the `node_modules` beside it.
+    #[arg(long, value_name = "FILE", default_value = DEFAULT_CONFIG)]
+    config: PathBuf,
+}
+
+/// Runs the publish or prune command, a plain, timestamped line per step on standard error.
+fn on_store(args: StoreArgs, pruning: bool) -> ExitCode {
+    let options = StoreOptions {
+        number: args.number,
+        out: args.out,
+        persist_to: args.persist_to,
+        config: args.config,
+    };
+    let mut line = |text: String| eprintln!("{} {text}", now());
+    let outcome = if pruning {
+        prune_command(&options, &mut line)
+    } else {
+        publish_command(&options, &mut line)
+    };
+    match outcome {
+        Ok(closing) => {
+            eprintln!("{} {closing}", now());
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("{} univ-ingest: {error}", now());
+            ExitCode::FAILURE
+        }
+    }
 }
 
 #[derive(Args)]
@@ -195,6 +247,8 @@ async fn main() -> ExitCode {
             let m = args.matching;
             (m.fetch, Until::Build, Some(m.state), Some(args.out))
         }
+        Command::Publish(args) => return on_store(args, false),
+        Command::Prune(args) => return on_store(args, true),
     };
     let options = FetchOptions {
         definitions: args.definitions,

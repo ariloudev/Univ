@@ -10,10 +10,14 @@ use tokio::time::MissedTickBehavior;
 
 mod build;
 mod cross;
+mod publish;
 mod tiles;
 
 pub use build::{BuildOptions, DEFAULT_BUILD, build_stage};
 pub use cross::{MatchOptions, match_stage};
+pub use publish::{
+    DEFAULT_CONFIG, DEFAULT_PERSIST, StoreOptions, journals, now, prune_command, publish_command,
+};
 pub use tiles::{DEFAULT_TILES, TileOptions, tiles_stage};
 
 use crate::access::item_count;

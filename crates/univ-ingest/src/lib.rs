@@ -14,6 +14,7 @@ pub mod matching;
 pub mod normalize;
 pub mod outlines;
 pub mod provenance;
+pub mod publish;
 pub mod ranking;
 pub mod release;
 pub mod run;
