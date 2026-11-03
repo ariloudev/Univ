@@ -28,6 +28,17 @@ pub fn block_on<F: Future>(future: F) -> F::Output {
 pub struct Sqlite {
     connection: rusqlite::Connection,
     kept: crate::Kept,
+    /// The univ-layers database, with its migrations applied.
+    pub layers: rusqlite::Connection,
+    /// The requests each (limiter, client) made; a limiter's limit is its own unless
+    /// `limits` lowers it.
+    pub counted: std::cell::RefCell<std::collections::HashMap<(crate::Limiter, String), u32>>,
+    pub limits: std::cell::RefCell<std::collections::HashMap<crate::Limiter, u32>>,
+    /// The owner secret.
+    pub owner: Option<String>,
+    /// The time, in milliseconds since the epoch: 2026-11-03T12:00:00Z unless set.
+    pub now: std::cell::Cell<u64>,
+    random: std::cell::Cell<u8>,
     /// The releases bucket, by key.
     pub bucket: std::cell::RefCell<std::collections::HashMap<String, Vec<u8>>>,
     /// How many statements were run, to show what the vocabulary keeping saves.
@@ -44,6 +55,12 @@ impl Sqlite {
         Self {
             connection,
             kept: crate::Kept::default(),
+            layers: layers_database(),
+            counted: std::cell::RefCell::default(),
+            limits: std::cell::RefCell::default(),
+            owner: Some(OWNER_SECRET.to_owned()),
+            now: std::cell::Cell::new(1_793_707_200_000),
+            random: std::cell::Cell::new(0),
             bucket: std::cell::RefCell::default(),
             statements: std::cell::Cell::new(0),
         }
@@ -58,6 +75,21 @@ impl Sqlite {
     /// The answer to `request`.
     pub fn answer(&self, request: &Request) -> Response {
         block_on(crate::handle(request, self))
+    }
+
+    /// The answer to `request` sent with the owner secret, and its JSON document.
+    pub fn as_owner(&self, request: Request) -> (Response, Value) {
+        let response = self.answer(&request.with_bearer(OWNER_SECRET));
+        let document = body(&response);
+        (response, document)
+    }
+
+    /// Issues a key as `json` asks, as the owner, and gives the issued key with its secret.
+    pub fn issue(&self, json: &Value) -> Value {
+        let (response, issued) =
+            self.as_owner(Request::new(Method::Post, "/v1/owner/keys").with_json(json));
+        assert_eq!(response.status, 201, "{issued}");
+        issued
     }
 
     /// The answer to a GET of `path` with the raw query `query`.
@@ -106,7 +138,7 @@ impl Backend for Sqlite {
         params: &[Value],
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>> {
         self.statements.set(self.statements.get() + 1);
-        std::future::ready(self.query(sql, params))
+        std::future::ready(run(&self.connection, sql, params))
     }
 
     fn releases_batch(
@@ -117,7 +149,7 @@ impl Backend for Sqlite {
         std::future::ready(
             statements
                 .iter()
-                .map(|(sql, params)| self.query(sql, params))
+                .map(|(sql, params)| run(&self.connection, sql, params))
                 .collect(),
         )
     }
@@ -129,32 +161,89 @@ impl Backend for Sqlite {
     fn kept(&self) -> &crate::Kept {
         &self.kept
     }
+
+    fn layers(
+        &self,
+        sql: &str,
+        params: &[Value],
+    ) -> impl Future<Output = Result<Vec<Row>, BackendError>> {
+        std::future::ready(run(&self.layers, sql, params))
+    }
+
+    fn random(&self, bytes: &mut [u8]) -> Result<(), BackendError> {
+        // Deterministic, so tests can name what they expect; never random.
+        for byte in bytes {
+            let next = self.random.get().wrapping_add(1);
+            self.random.set(next);
+            *byte = next;
+        }
+        Ok(())
+    }
+
+    fn now_millis(&self) -> u64 {
+        self.now.get()
+    }
+
+    fn limit(
+        &self,
+        limiter: crate::Limiter,
+        client: &str,
+    ) -> impl Future<Output = Result<bool, BackendError>> {
+        let limit = self
+            .limits
+            .borrow()
+            .get(&limiter)
+            .copied()
+            .unwrap_or_else(|| limiter.requests());
+        let mut counted = self.counted.borrow_mut();
+        let count = counted.entry((limiter, client.to_owned())).or_insert(0);
+        *count += 1;
+        std::future::ready(Ok(*count <= limit))
+    }
+
+    fn owner_secret(&self) -> Option<String> {
+        self.owner.clone()
+    }
 }
 
-impl Sqlite {
-    /// Runs one statement, as D1 would, and gives every row.
-    fn query(&self, sql: &str, params: &[Value]) -> Result<Vec<Row>, BackendError> {
-        let error = |error: rusqlite::Error| BackendError(error.to_string());
-        let mut statement = self.connection.prepare(sql).map_err(error)?;
-        let names: Vec<String> = statement
-            .column_names()
-            .iter()
-            .map(|name| (*name).to_owned())
-            .collect();
-        let params: Vec<rusqlite::types::Value> = params.iter().map(sql_value).collect();
-        let mut rows = statement
-            .query(rusqlite::params_from_iter(params))
-            .map_err(error)?;
-        let mut out = Vec::new();
-        while let Some(row) = rows.next().map_err(error)? {
-            let mut fields = Row::new();
-            for (i, name) in names.iter().enumerate() {
-                fields.insert(name.clone(), json_value(row.get_ref(i).map_err(error)?));
-            }
-            out.push(fields);
-        }
-        Ok(out)
+/// The owner secret of the test kit's backend.
+pub const OWNER_SECRET: &str = "the-owner-secret";
+
+/// The univ-layers database in memory, with every migration of `migrations/` applied.
+fn layers_database() -> rusqlite::Connection {
+    let connection = rusqlite::Connection::open_in_memory().unwrap();
+    for migration in crate::MIGRATIONS {
+        connection.execute_batch(migration).unwrap();
     }
+    connection
+}
+
+/// Runs one statement on `connection`, as D1 would, and gives every row.
+fn run(
+    connection: &rusqlite::Connection,
+    sql: &str,
+    params: &[Value],
+) -> Result<Vec<Row>, BackendError> {
+    let error = |error: rusqlite::Error| BackendError(error.to_string());
+    let mut statement = connection.prepare(sql).map_err(error)?;
+    let names: Vec<String> = statement
+        .column_names()
+        .iter()
+        .map(|name| (*name).to_owned())
+        .collect();
+    let params: Vec<rusqlite::types::Value> = params.iter().map(sql_value).collect();
+    let mut rows = statement
+        .query(rusqlite::params_from_iter(params))
+        .map_err(error)?;
+    let mut out = Vec::new();
+    while let Some(row) = rows.next().map_err(error)? {
+        let mut fields = Row::new();
+        for (i, name) in names.iter().enumerate() {
+            fields.insert(name.clone(), json_value(row.get_ref(i).map_err(error)?));
+        }
+        out.push(fields);
+    }
+    Ok(out)
 }
 
 /// A bound parameter as SQLite takes it, the way D1 binds JSON values.

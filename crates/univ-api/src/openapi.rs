@@ -34,11 +34,41 @@ use crate::problem::{Problem, ProblemDocument, ProblemType};
         crate::grids::header,
         crate::grids::samples,
         crate::grids::uncertainty,
-        crate::bulk::tile_format
+        crate::bulk::tile_format,
+        crate::keys::issue,
+        crate::keys::list,
+        crate::keys::change,
+        crate::keys::revoke
     ),
-    components(schemas(ProblemDocument, ProblemType, univ_model::tile::manifest::TileManifest))
+    components(schemas(ProblemDocument, ProblemType, univ_model::tile::manifest::TileManifest)),
+    modifiers(&Security)
 )]
 struct ApiDoc;
+
+/// The bearer schemes: `owner`, the owner secret of the owner's operations, and `api_key`, a
+/// key the owner issued, which any request may carry.
+struct Security;
+
+impl utoipa::Modify for Security {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        use utoipa::openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme};
+        let components = openapi.components.get_or_insert_with(Default::default);
+        for (name, description) in [
+            ("owner", "The owner secret the Worker was given."),
+            ("api_key", "An API key the owner issued."),
+        ] {
+            components.add_security_scheme(
+                name,
+                SecurityScheme::Http(
+                    HttpBuilder::new()
+                        .scheme(HttpAuthScheme::Bearer)
+                        .description(Some(description))
+                        .build(),
+                ),
+            );
+        }
+    }
+}
 
 /// The OpenAPI document of every route served, with the problem details schema, generated from
 /// [`ProblemDocument`], whose `type` lists every kind of problem.

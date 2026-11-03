@@ -61,7 +61,7 @@ async fn answer(mut request: Request, env: &Env) -> Result<univ_api::Response> {
         headers: request.headers().entries().collect(),
         body,
     };
-    let backend = d1::D1::new(env)?;
+    let backend = d1::D1::new(env);
     Ok(univ_api::handle(&api_request, &backend).await)
 }
 

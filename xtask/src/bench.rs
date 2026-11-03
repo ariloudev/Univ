@@ -9,7 +9,9 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use crate::integration::{REAL_STATE, migrate, release_tables, start_ready, status};
+use crate::integration::{
+    Exchange, REAL_STATE, issue_key, migrate, release_tables, send, start_ready,
+};
 
 /// How many lookups are timed.
 const SAMPLES: usize = 1_000;
@@ -50,12 +52,24 @@ pub fn lookup(root: &Path) -> bool {
         );
         return false;
     };
+    // An extended key: anonymous reads are limited to 300 a minute, too few for the run.
+    let key = match issue_key(port, "extended") {
+        Ok(key) => key,
+        Err(error) => {
+            eprintln!("bench failed at: issuing its key: {error}");
+            return false;
+        }
+    };
     let mut times = Vec::with_capacity(ids.len());
     let mut failures = Vec::new();
     for (n, id) in ids.iter().enumerate() {
         let path = format!("/v1/objects/{id}");
         let started = Instant::now();
-        let status = status(port, &path, Duration::from_secs(30));
+        let exchange = Exchange {
+            bearer: Some(&key),
+            ..Exchange::get(&path)
+        };
+        let status = send(port, &exchange, Duration::from_secs(30)).map(|(status, _)| status);
         let took = started.elapsed();
         match status {
             Ok(200) => {}

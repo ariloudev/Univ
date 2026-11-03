@@ -45,7 +45,9 @@ Run them from this directory.
   comes from `crates/univ-server/.dev.vars` (`OWNER_SECRET=...`), which git ignores.
 - `cargo xtask bench lookup` starts Univ Server on the real local state and times 1,000 random
   object lookups of the latest release after 20 uncounted ones, printing the 50th, 95th and
-  99th percentiles against QA-2's 200 ms at the 95th. It measures the local runtime and D1.
+  99th percentiles against QA-2's 200 ms at the 95th. It reads with an extended-tier key it
+  issues itself, since anonymous reads are limited to 300 a minute. It measures the local
+  runtime and D1.
 - `cargo fmt` formats the workspace. Nothing formats automatically, and the gate fails on
   unformatted code.
 

@@ -68,8 +68,9 @@ pub fn integration(root: &Path) -> bool {
     eprintln!("==> end-to-end tests");
     let passed = command(root, "cargo")
         .args(["test", "--quiet", "--package", "univ-server"])
-        .args(["--test", "e2e", "--", "--ignored"])
+        .args(["--tests", "--", "--ignored"])
         .env("UNIV_E2E_URL", format!("http://127.0.0.1:{port}"))
+        .env("UNIV_E2E_OWNER_SECRET", OWNER_SECRET)
         .status()
         .is_ok_and(|status| status.success());
     drop(wrangler);
@@ -291,12 +292,58 @@ fn answers(port: u16) -> bool {
 /// The status of `GET path` on the Worker at `port`, its answer read to the end within
 /// `timeout`.
 pub(crate) fn status(port: u16, path: &str, timeout: Duration) -> Result<u16, String> {
+    send(port, &Exchange::get(path), timeout).map(|(status, _)| status)
+}
+
+/// One request to the Worker on `port`.
+pub(crate) struct Exchange<'a> {
+    pub method: &'a str,
+    pub path: &'a str,
+    pub bearer: Option<&'a str>,
+    pub json: Option<&'a str>,
+}
+
+impl<'a> Exchange<'a> {
+    pub(crate) fn get(path: &'a str) -> Self {
+        Self {
+            method: "GET",
+            path,
+            bearer: None,
+            json: None,
+        }
+    }
+}
+
+/// Sends `exchange` over one connection, and gives the status and the body as text, read
+/// until the Worker closes the connection.
+pub(crate) fn send(
+    port: u16,
+    exchange: &Exchange,
+    timeout: Duration,
+) -> Result<(u16, String), String> {
     let mut stream = TcpStream::connect(("127.0.0.1", port)).map_err(|e| e.to_string())?;
     stream
         .set_read_timeout(Some(timeout))
         .map_err(|e| e.to_string())?;
-    let request =
-        format!("GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n");
+    let authorization = exchange
+        .bearer
+        .map(|token| format!("Authorization: Bearer {token}\r\n"))
+        .unwrap_or_default();
+    let body = exchange.json.unwrap_or_default();
+    let content = exchange
+        .json
+        .map(|json| {
+            format!(
+                "Content-Type: application/json\r\nContent-Length: {}\r\n",
+                json.len()
+            )
+        })
+        .unwrap_or_default();
+    let request = format!(
+        "{} {} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\
+         {authorization}{content}\r\n{body}",
+        exchange.method, exchange.path
+    );
     stream
         .write_all(request.as_bytes())
         .map_err(|e| e.to_string())?;
@@ -304,10 +351,40 @@ pub(crate) fn status(port: u16, path: &str, timeout: Duration) -> Result<u16, St
     stream
         .read_to_end(&mut response)
         .map_err(|e| e.to_string())?;
-    let line = response.split(|b| *b == b'\n').next().unwrap_or_default();
-    String::from_utf8_lossy(line)
-        .split_whitespace()
-        .nth(1)
+    let response = String::from_utf8_lossy(&response).into_owned();
+    let status = response
+        .lines()
+        .next()
+        .and_then(|line| line.split_whitespace().nth(1))
         .and_then(|status| status.parse().ok())
-        .ok_or_else(|| "no status line".to_owned())
+        .ok_or_else(|| "no status line".to_owned())?;
+    let body = response
+        .split_once("\r\n\r\n")
+        .map_or("", |(_, body)| body)
+        .to_owned();
+    Ok((status, body))
+}
+
+/// Issues a key of `tier` from the Worker on `port`, which `start_ready` gave the owner
+/// secret, and gives its secret.
+pub(crate) fn issue_key(port: u16, tier: &str) -> Result<String, String> {
+    let json = format!(r#"{{"label":"xtask","tier":"{tier}"}}"#);
+    let exchange = Exchange {
+        method: "POST",
+        path: "/v1/owner/keys",
+        bearer: Some(OWNER_SECRET),
+        json: Some(&json),
+    };
+    let (status, body) = send(port, &exchange, Duration::from_secs(30))?;
+    // The body may come in one chunk of chunked transfer coding: the document is its braces.
+    let document = body
+        .find('{')
+        .zip(body.rfind('}'))
+        .map_or("", |(start, end)| &body[start..=end]);
+    let issued: serde_json::Value = serde_json::from_str(document)
+        .map_err(|error| format!("issuing a key answered {status}: {error}"))?;
+    issued["secret"]
+        .as_str()
+        .map(str::to_owned)
+        .ok_or_else(|| format!("issuing a key answered {status}: {issued}"))
 }

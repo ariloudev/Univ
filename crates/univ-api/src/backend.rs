@@ -1,10 +1,11 @@
-//! What a handler reads from: the release database, as SQL on SQLite, which D1 is in the
+//! What a handler reads from: the release and univ-layers databases, as SQL on SQLite, which D1 is in the
 //! Worker and an in-memory database is in the native tests. The same statements run on both.
 
 use std::future::Future;
 
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
+use univ_model::api::keys::{ANONYMOUS_REQUESTS, RateLimitTier};
 
 use crate::problem::{Problem, ProblemType};
 
@@ -39,6 +40,54 @@ pub trait Backend {
 
     /// What this backend keeps between requests: for the Worker, one keeping per isolate.
     fn kept(&self) -> &crate::Kept;
+
+    /// Runs one statement on the univ-layers database (keys, layers, items), reading or
+    /// writing, with `?1`, `?2` … bound to `params`, and gives every row.
+    fn layers(
+        &self,
+        sql: &str,
+        params: &[Value],
+    ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
+
+    /// Fills `bytes` from a cryptographically secure source of randomness.
+    ///
+    /// # Errors
+    ///
+    /// When the platform has none to give.
+    fn random(&self, bytes: &mut [u8]) -> Result<(), BackendError>;
+
+    /// The time now, in milliseconds since the Unix epoch.
+    fn now_millis(&self) -> u64;
+
+    /// Counts one request of `client` against `limiter`; true while it is within the limit.
+    fn limit(
+        &self,
+        limiter: Limiter,
+        client: &str,
+    ) -> impl Future<Output = Result<bool, BackendError>>;
+
+    /// The owner secret the Worker was given, if any; without one, every owner operation is
+    /// refused.
+    fn owner_secret(&self) -> Option<String>;
+}
+
+/// The rate limits a request is counted against: anonymous clients by address, and keys by
+/// their tier.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Limiter {
+    Anonymous,
+    Key(RateLimitTier),
+}
+
+impl Limiter {
+    /// The requests it allows in [`univ_model::api::keys::RATE_WINDOW_SECONDS`].
+    #[must_use]
+    pub fn requests(self) -> u32 {
+        match self {
+            Self::Anonymous => ANONYMOUS_REQUESTS,
+            Self::Key(tier) => tier.requests(),
+        }
+    }
 }
 
 /// The first row of `rows`, if any.
@@ -86,7 +135,7 @@ pub fn rows_as<T: DeserializeOwned>(rows: Vec<Row>) -> Result<Vec<T>, Problem> {
             serde_json::from_value(Value::Object(row)).map_err(|error| {
                 Problem::new(
                     ProblemType::InternalError,
-                    format!("A row of the release database did not read: {error}."),
+                    format!("A row of the database did not read: {error}."),
                 )
             })
         })
@@ -96,7 +145,7 @@ pub fn rows_as<T: DeserializeOwned>(rows: Vec<Row>) -> Result<Vec<T>, Problem> {
 fn unreadable(name: &str, error: &serde_json::Error) -> Problem {
     Problem::new(
         ProblemType::InternalError,
-        format!("The release database's column {name} did not read: {error}."),
+        format!("The database's column {name} did not read: {error}."),
     )
 }
 
@@ -104,7 +153,7 @@ impl From<BackendError> for Problem {
     fn from(error: BackendError) -> Self {
         Problem::new(
             ProblemType::InternalError,
-            format!("The release database could not be read: {}.", error.0),
+            format!("The database could not be read: {}.", error.0),
         )
     }
 }

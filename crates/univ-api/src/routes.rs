@@ -5,7 +5,7 @@
 use crate::backend::Backend;
 use crate::http::{Method, Request, Response};
 use crate::problem::{Problem, ProblemType};
-use crate::{bulk, grids, objects, openapi, releases, sources, structures};
+use crate::{bulk, grids, keys, objects, openapi, releases, sources, structures};
 
 /// The values a route's `{name}` segments took in one request, in the template's order.
 pub type Params = Vec<(&'static str, String)>;
@@ -30,6 +30,10 @@ pub enum Endpoint {
     GridSamples,
     GridUncertainty,
     TileFormat,
+    IssueKey,
+    Keys,
+    ChangeKey,
+    RevokeKey,
 }
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
@@ -41,7 +45,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 17] = [
+pub static ROUTES: [Route; 21] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -123,6 +127,26 @@ pub static ROUTES: [Route; 17] = [
         endpoint: Endpoint::GridUncertainty,
     },
     Route {
+        method: Method::Post,
+        path: "/v1/owner/keys",
+        endpoint: Endpoint::IssueKey,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/owner/keys",
+        endpoint: Endpoint::Keys,
+    },
+    Route {
+        method: Method::Patch,
+        path: "/v1/owner/keys/{id}",
+        endpoint: Endpoint::ChangeKey,
+    },
+    Route {
+        method: Method::Post,
+        path: "/v1/owner/keys/{id}/revoke",
+        endpoint: Endpoint::RevokeKey,
+    },
+    Route {
         method: Method::Get,
         path: "/v1/tile-format",
         endpoint: Endpoint::TileFormat,
@@ -161,6 +185,10 @@ async fn answer<B: Backend>(
         }
         Endpoint::Grids => grids::list(request, backend).await,
         Endpoint::TileFormat => bulk::tile_format(request, backend).await,
+        Endpoint::IssueKey => keys::issue(request, backend).await,
+        Endpoint::Keys => keys::list(backend).await,
+        Endpoint::ChangeKey => keys::change(request, param(params, "id"), backend).await,
+        Endpoint::RevokeKey => keys::revoke(param(params, "id"), backend).await,
         Endpoint::GridUncertainty => {
             grids::uncertainty(
                 request,

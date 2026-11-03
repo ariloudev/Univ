@@ -4,12 +4,18 @@
 //! The Worker (`univ-server`) turns each runtime request into a [`Request`], calls [`handle`],
 //! and turns the [`Response`] back. Nothing here performs I/O.
 
+mod access;
 mod backend;
 mod bulk;
 mod cors;
 mod grids;
 mod http;
 mod kept;
+mod keys;
+#[cfg(test)]
+mod keys_tests;
+#[cfg(test)]
+mod limits_tests;
 mod objects;
 mod openapi;
 mod problem;
@@ -20,12 +26,19 @@ mod structures;
 #[cfg(test)]
 mod testkit;
 
-pub use backend::{Backend, BackendError, Row};
+pub use backend::{Backend, BackendError, Limiter, Row};
 pub use http::{Body, Method, Request, Response};
 pub use kept::Kept;
 pub use openapi::document;
 pub use problem::{Problem, ProblemType};
 pub use routes::{ROUTES, Route};
+
+/// The univ-layers database's migrations, in order, as `migrations/` holds them and Wrangler
+/// applies them.
+pub const MIGRATIONS: [&str; 2] = [
+    include_str!("../migrations/0001_schema_version.sql"),
+    include_str!("../migrations/0002_keys.sql"),
+];
 
 /// The answer to a request the runtime failed to hand over or to answer, such as a body that
 /// could not be read: a problem, with the CORS headers every response carries.
@@ -35,13 +48,18 @@ pub fn failure(kind: ProblemType, detail: impl Into<String>) -> Response {
 }
 
 /// Answers one request from `backend`: a CORS preflight, a route of [`ROUTES`], or a problem.
+/// Any other request is first authenticated and counted against its rate limit
+/// ([`access`]), and refused before it reaches its route where either fails.
 /// A HEAD is answered with the headers of the GET, and the length of its body, but no body,
 /// whatever the answer (RFC 9110 §9.3.2).
 pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
     let response = if request.method == Method::Options {
         cors::preflight()
     } else {
-        routes::dispatch(request, backend).await
+        match access::admit(request, backend).await {
+            Ok(_) => routes::dispatch(request, backend).await,
+            Err(problem) => problem.into_response(),
+        }
     };
     let response = if request.method == Method::Head {
         if matches!(response.body, Body::Object(_)) {

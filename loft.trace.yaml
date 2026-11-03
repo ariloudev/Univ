@@ -1986,6 +1986,114 @@ links:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_read_unpinned_lands_on_the_tile_of_the_latest_release"
         body: 17cf87b26d66bb5785ee53a04eb6acefcb57e4b41453cefa92460403e52962df
+  - node: 01a19f20-8e6c-7039-b16f-abde5a8c8ce0
+    reviewed: 8d4fe09290588a3d6d601a8b95278de5ee59259e466ff55cc6ca8da1af11dbf7
+    tests:
+      - file: "crates/univ-api/src/limits_tests.rs"
+        name: "anonymous_requests_are_limited_per_client_address_at_300_in_60_seconds"
+        body: 7341015eeb678c5b610f842d7d103d49cf610204ec0826025064ab3b5e031276
+      - file: "crates/univ-api/src/limits_tests.rs"
+        name: "a_request_whose_credentials_fail_counts_against_its_addresss_limit"
+        body: 84d6b122f765ad68abc7e73496ab16484277c2201b6b57adaa80124a111a9e33
+      - file: "crates/univ-server/tests/config.rs"
+        name: "each_rate_limit_binding_allows_what_its_tier_allows_in_the_same_window"
+        body: c2cd9a4fe282088bed8ff5b73d7279685967488a8a37075c097a96f9887539d1
+  - node: 01a19f20-8e6c-7039-b16f-abdf92323beb
+    reviewed: b84598e600d9efeef21ef584d494261f0f30dd5b0e26e1808211cbd0b642dd29
+    tests:
+      - file: "crates/univ-api/src/limits_tests.rs"
+        name: "requests_with_a_key_are_limited_per_key_at_its_tiers_rate"
+        body: fe59b72775998711d8388255fd126a839714fb9d4d38300c33ab1aa23e67142b
+      - file: "crates/univ-server/tests/config.rs"
+        name: "each_rate_limit_binding_allows_what_its_tier_allows_in_the_same_window"
+        body: c2cd9a4fe282088bed8ff5b73d7279685967488a8a37075c097a96f9887539d1
+  - node: 01a1a2b8-447e-752b-832a-974f9a8253a9
+    reviewed: 67058ac0b713902195100ead5bb484815b387b37d9cda393b465f616fbd7230b
+    tests:
+      - file: "crates/univ-api/src/limits_tests.rs"
+        name: "the_tiers_are_basic_300_standard_1200_and_extended_6000_in_60_seconds"
+        body: 5e63f8da92a09e0a8881aa5e8ff06d7d65348b22f86acb3ecf0769d9f5e800d5
+      - file: "crates/univ-server/tests/config.rs"
+        name: "each_rate_limit_binding_allows_what_its_tier_allows_in_the_same_window"
+        body: c2cd9a4fe282088bed8ff5b73d7279685967488a8a37075c097a96f9887539d1
+  - node: 01a19f20-8e6c-7039-b16f-abe06d55345f
+    reviewed: 217dfed2388658b13c28cf43534412af1cece77cdff70106deb0600c0f2bdec0
+    tests:
+      - file: "crates/univ-api/src/limits_tests.rs"
+        name: "over_the_limit_the_answer_is_429_with_retry_after"
+        body: 40dc933f40e5938692dc558d9eceafe20059e9b975bf0b88c6b98eb78c973c22
+      - file: "crates/univ-server/tests/access.rs"
+        name: "a_basic_key_is_refused_with_429_and_retry_after_past_300_requests_in_a_minute"
+        body: c8fba242f506402d1d259bfc4da16f9b0dfecb6bab67310eb34c874c788d3a1a
+  - node: 01a1a2b8-447e-752b-832a-9750ec8ef08a
+    reviewed: c03699eaffc105d639e0574230d0e3fa1f16f49b83f88dab4312ed7ffb104716
+    tests:
+      - file: "crates/univ-api/src/limits_tests.rs"
+        name: "a_key_moved_to_another_tier_is_limited_at_that_tiers_rate_from_its_next_request"
+        body: 13d21257ce96549b9964a5c7509108e655136677361a6f318bcb495396998ba5
+      - file: "crates/univ-server/tests/access.rs"
+        name: "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+        body: 1b917d3d862a620b98ad1e422fc11d1bf814ba7a8aee26bd94a2b3f04434f3b6
+  - node: 01a19f20-8e6c-7039-b16f-abe5d0392ce2
+    reviewed: 03b6f4f94f24644ca0712932a8283b43d154a2728af70274ee02c3da1f58b5bb
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "an_issued_key_holds_256_random_bits_and_only_its_sha256_is_stored"
+        body: dfe10c0945b4931c375760f858524d30e9fc11a77bf552482b0963a22ebd9c0f
+      - file: "crates/univ-server/tests/access.rs"
+        name: "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+        body: 1b917d3d862a620b98ad1e422fc11d1bf814ba7a8aee26bd94a2b3f04434f3b6
+  - node: 01a19f20-8e6c-7039-b16f-abe6140958c5
+    reviewed: 7f7e33c84c40a7a94e1435f549ea61257b1f514d523c0229dda1f4f0e2717b36
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "an_issued_key_holds_256_random_bits_and_only_its_sha256_is_stored"
+        body: dfe10c0945b4931c375760f858524d30e9fc11a77bf552482b0963a22ebd9c0f
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "a_key_is_checked_against_the_sha256_stored_at_its_issuance"
+        body: ccfe2659aa90600f904f50b71316e8e56f4a942e221c9192edfca5c92260b02b
+  - node: 01a19f20-8e6c-7039-b16f-abe78c0f59b1
+    reviewed: 67e68da7a1e6ca3ff3e943c3580676955f663c4f3d21a7006498b68764f72b9b
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "the_secret_is_returned_when_issued_and_in_no_later_response"
+        body: cbece1b07bf4db3854d672d26ffdb0aff9391c70ac97e176827d050e05725380
+      - file: "crates/univ-server/tests/access.rs"
+        name: "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+        body: 1b917d3d862a620b98ad1e422fc11d1bf814ba7a8aee26bd94a2b3f04434f3b6
+  - node: 01a19f20-8e6c-7039-b16f-abe824aac9f3
+    reviewed: 75f80b3283bdc3ce12a19371fbbd5bb2b8933f5d75a5e245181108cc3db15b3b
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "a_key_issued_without_quotas_or_tier_gets_the_default_quotas_and_the_standard_tier"
+        body: f54c35cda96139c9eb1c9d19b685c5bbe9d9ed4ba2fa60c4a32e16c5ba6eb21f
+  - node: 01a1a2b8-447e-752b-832a-975136ea867e
+    reviewed: 14941d5be0c1aadd7564efccec9f8c9a6f3ae5bd78c6d6d3920dfbc0df6a4df8
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "a_key_issued_without_quotas_or_tier_gets_the_default_quotas_and_the_standard_tier"
+        body: f54c35cda96139c9eb1c9d19b685c5bbe9d9ed4ba2fa60c4a32e16c5ba6eb21f
+  - node: 01a19f20-8e6c-7039-b16f-abeaf5bb032f
+    reviewed: 18bce9386f27e9bd4edb2b0ba4e050171d4730decb535179312d2ef7213a3458
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "a_revocation_is_recorded_with_its_time_and_the_key_is_refused_from_then_on"
+        body: 5b2596ece96c7472ca1dc4720a3c3a026f0b067d37d96c9e2ecde1c536ed3cbe
+      - file: "crates/univ-server/tests/access.rs"
+        name: "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+        body: 1b917d3d862a620b98ad1e422fc11d1bf814ba7a8aee26bd94a2b3f04434f3b6
+  - node: 01a19f20-8e6c-7039-b16f-abefcb4ce396
+    reviewed: 34a59ff24e5e1a5dcbea28a520c9b7011ac96f77d924e2bde8d96b1340a00ec0
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "an_owner_operation_without_the_owner_secret_answers_401_and_changes_nothing"
+        body: 13eb4ef699e13b7e3975c864ee182d7c6d363b68c546fabeb22929083844def3
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "a_worker_given_no_owner_secret_refuses_every_owner_operation"
+        body: a7ca581a78e838b785ea27e9d350da612b406c90a207205b4aa595d520436750
+      - file: "crates/univ-server/tests/access.rs"
+        name: "the_owners_operations_are_refused_without_the_owner_secret"
+        body: 82b8dfe65ccd538add031d3244b1a40ed6924d8c5d3260fb62c3ef4578d00776
   - node: 01a19f20-8e6c-7039-b16f-abf26c9701c7
     reviewed: ea71d05b23ad1326f5e779d03f85852f106de228c3aafbbd7334f0bef8248794
     tests:
@@ -2016,6 +2124,30 @@ links:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_cors_preflight_for_a_read_is_answered_without_credentials"
         body: 8005809bd490ef49d9f4c871f27db49b8e9e6a111209b09ceda2603d7dd6bb71
+  - node: 01a19f20-8e6c-7039-b16f-abf9f45a15c6
+    reviewed: 901c2765c78ddfdce9d86857b517100261fb28a178245dbec5568ca935c1680b
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "a_key_is_read_from_the_authorization_header_as_a_bearer_token"
+        body: f4cf08945409cdeebd9c4eb3c772186f660cb8a60156a2d026fba31778fe64f0
+      - file: "crates/univ-api/src/access.rs"
+        name: "a_bearer_token_is_read_from_the_authorization_header"
+        body: 2bc42b3e8ce08a09c66ababec57947079f735800b859382457e1460f0e72ed56
+  - node: 01a19f20-8e6c-7039-b16f-abfa34e30e20
+    reviewed: 38d6376b7aca7c7676846ca8011441fc94ed982b723cf446684a9b14a8e5f2af
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "a_key_is_checked_against_the_sha256_stored_at_its_issuance"
+        body: ccfe2659aa90600f904f50b71316e8e56f4a942e221c9192edfca5c92260b02b
+  - node: 01a19f20-8e6c-7039-b16f-abfd57ec4eda
+    reviewed: 074c5a35a297b94464c5bf06a98271155e9990ef136415654aa44e260708619b
+    tests:
+      - file: "crates/univ-api/src/keys_tests.rs"
+        name: "an_unknown_key_and_a_revoked_key_are_refused_alike"
+        body: e4917588b35cd09f4a6e66064b2929e84ae11136bacd3e284aef78cf8b430747
+      - file: "crates/univ-server/tests/access.rs"
+        name: "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+        body: 1b917d3d862a620b98ad1e422fc11d1bf814ba7a8aee26bd94a2b3f04434f3b6
   - node: 01a19f20-8e6c-7039-b16f-ac0049cc05d8
     reviewed: 6a3ac5e9488a9b1acb3f09d2cb0cc7367918b2495555375bc0ee80f0785698dd
     tests:

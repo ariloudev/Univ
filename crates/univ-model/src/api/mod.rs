@@ -5,6 +5,7 @@
 //! Times are RFC 3339 UTC strings, as the release database records them.
 
 pub mod bulk;
+pub mod keys;
 pub mod lookup;
 pub mod objects;
 pub mod releases;

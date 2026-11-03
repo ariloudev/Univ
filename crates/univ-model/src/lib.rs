@@ -8,6 +8,7 @@ pub mod api;
 pub mod cosmology;
 pub mod derive;
 pub mod distance;
+pub mod encoding;
 pub mod entry;
 pub mod geometry;
 pub mod grid;

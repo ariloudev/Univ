@@ -58,6 +58,14 @@ problem_types! {
     MethodNotAllowed = "urn:univ:problem:method-not-allowed", "Method not allowed", 405;
     /// The request's body could not be read to its end.
     UnreadableBody = "urn:univ:problem:unreadable-body", "Unreadable body", 400;
+    /// The request's body is not a document the route takes.
+    InvalidBody = "urn:univ:problem:invalid-body", "Invalid body", 400;
+    /// The request's API key or owner secret is missing where needed, or not valid.
+    Unauthorized = "urn:univ:problem:unauthorized", "Unauthorized", 401;
+    /// The client made more requests than its rate limit allows in the window.
+    RateLimited = "urn:univ:problem:rate-limited", "Too many requests", 429;
+    /// The owner has issued no key of that id.
+    KeyNotFound = "urn:univ:problem:key-not-found", "No such key", 404;
     /// A query parameter or path segment does not hold a value of its kind.
     InvalidParameter = "urn:univ:problem:invalid-parameter", "Invalid parameter", 400;
     /// No release of that number was ever published.
@@ -112,12 +120,14 @@ pub struct ProblemDocument<'a> {
     pub detail: &'a str,
 }
 
-/// One problem: its kind, what went wrong in this occurrence, and any extension members.
+/// One problem: its kind, what went wrong in this occurrence, any extension members, and any
+/// header its answer carries, such as `Retry-After`.
 #[derive(Clone, Debug)]
 pub struct Problem {
     pub kind: ProblemType,
     pub detail: String,
     pub extensions: Map<String, Value>,
+    pub headers: Vec<(String, String)>,
 }
 
 impl Problem {
@@ -128,6 +138,7 @@ impl Problem {
             kind,
             detail: detail.into(),
             extensions: Map::new(),
+            headers: Vec::new(),
         }
     }
 
@@ -151,6 +162,13 @@ impl Problem {
     #[must_use]
     pub fn with(mut self, name: &str, value: impl Into<Value>) -> Self {
         self.extensions.insert(name.to_owned(), value.into());
+        self
+    }
+
+    /// The problem with one more header on its answer.
+    #[must_use]
+    pub fn with_header(mut self, name: &str, value: &str) -> Self {
+        self.headers.push((name.to_owned(), value.to_owned()));
         self
     }
 
@@ -179,11 +197,16 @@ impl Problem {
     /// The response that carries the problem, with its status and media type.
     #[must_use]
     pub fn into_response(self) -> Response {
-        Response::bytes(
+        let response = Response::bytes(
             self.kind.status(),
             CONTENT_TYPE,
             self.to_json().to_string().into_bytes(),
-        )
+        );
+        self.headers
+            .iter()
+            .fold(response, |response, (name, value)| {
+                response.with_header(name, value)
+            })
     }
 }
 
