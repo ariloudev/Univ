@@ -303,13 +303,12 @@ fn a_tile_read_unpinned_lands_on_the_tile_of_the_latest_release() {
     let name = domains["domains"][0]["name"].as_str().unwrap().to_owned();
     let manifest = json(get(&format!("/v1/scale-domains/{name}/manifest")));
     let address = manifest["nodes"][0]["address"].as_str().unwrap();
-    let tile = get(&format!("/v1/scale-domains/{name}/tiles/{address}"));
-    assert_eq!(tile.status(), StatusCode::OK);
-    assert!(
-        tile.url().as_str().ends_with("?release=2"),
-        "{}",
-        tile.url()
-    );
+    let redirect = get(&format!("/v1/scale-domains/{name}/tiles/{address}"));
+    assert_eq!(redirect.status(), StatusCode::FOUND);
+    assert_eq!(header(&redirect, "cache-control"), Some("no-store"));
+    let location = header(&redirect, "location").unwrap().to_owned();
+    assert!(location.ends_with("?release=2"), "{location}");
+    assert_eq!(get(&location).status(), StatusCode::OK);
     let missing = get(&format!("/v1/scale-domains/{name}/tiles/nowhere"));
     assert_eq!(missing.status(), StatusCode::NOT_FOUND);
     let unknown = json(get("/v1/scale-domains/nowhere/manifest"));
