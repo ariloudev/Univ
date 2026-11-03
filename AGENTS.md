@@ -43,6 +43,9 @@ Run them from this directory.
   table of univ-model's release schema that state lacks (a release built before the schema grew
   then reads as holding nothing in it), and applies the univ-layers migrations. The owner secret
   comes from `crates/univ-server/.dev.vars` (`OWNER_SECRET=...`), which git ignores.
+- `cargo xtask bench lookup` starts Univ Server on the real local state and times 1,000 random
+  object lookups of the latest release after 20 uncounted ones, printing the 50th, 95th and
+  99th percentiles against QA-2's 200 ms at the 95th. It measures the local runtime and D1.
 - `cargo fmt` formats the workspace. Nothing formats automatically, and the gate fails on
   unformatted code.
 

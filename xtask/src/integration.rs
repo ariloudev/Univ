@@ -26,7 +26,7 @@ const WORKER_DIR: &str = "crates/univ-server";
 const OWNER_SECRET: &str = "integration-owner-secret";
 
 /// The local state Univ Ingest publishes real releases to.
-const REAL_STATE: &str = ".cache/univ-ingest/wrangler";
+pub(crate) const REAL_STATE: &str = ".cache/univ-ingest/wrangler";
 
 /// How long the Worker may take to build and answer: a cold release build of the wasm.
 const READY_WITHIN: Duration = Duration::from_secs(600);
@@ -104,7 +104,7 @@ pub fn serve(root: &Path) -> bool {
 /// lacks, as a release built before the schema grew does: its rows stay as they are, and the
 /// Worker reads the new tables as holding nothing for it. The schema is only `CREATE … IF NOT
 /// EXISTS`; the schema version is Univ Ingest's to record when it publishes.
-fn release_tables(root: &Path, state: &Path) -> bool {
+pub(crate) fn release_tables(root: &Path, state: &Path) -> bool {
     let file = root.join("target/serve/release-schema.sql");
     let written = file
         .parent()
@@ -122,7 +122,7 @@ fn release_tables(root: &Path, state: &Path) -> bool {
 }
 
 /// Applies the univ-layers migrations to the local state in `state`.
-fn migrate(root: &Path, state: &Path) -> bool {
+pub(crate) fn migrate(root: &Path, state: &Path) -> bool {
     let mut migrate = wrangler(root, "d1", state);
     migrate.args(["migrations", "apply", "univ-layers", "--local"]);
     succeeded(migrate.status(), "wrangler d1 migrations apply")
@@ -154,7 +154,7 @@ fn succeeded(status: std::io::Result<std::process::ExitStatus>, what: &str) -> b
 
 /// Starts `wrangler dev` on a free port and waits until it answers, starting it again on a new
 /// port when it exits first; the running Wrangler and its port, or none.
-fn start_ready(root: &Path, state: &Path, log: &Path) -> Option<(Wrangler, u16)> {
+pub(crate) fn start_ready(root: &Path, state: &Path, log: &Path) -> Option<(Wrangler, u16)> {
     for start in 1..=STARTS {
         let port = match free_port() {
             Ok(port) => port,
@@ -212,7 +212,7 @@ enum Ready {
 /// A running `wrangler dev`, in a process group of its own so that stopping it stops the
 /// workerd processes it started too. Dropping it stops it, and so does Ctrl-C or a TERM to
 /// xtask, which would otherwise reach xtask alone and leave the group running.
-struct Wrangler {
+pub(crate) struct Wrangler {
     child: Child,
 }
 

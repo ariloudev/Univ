@@ -1,0 +1,23 @@
+format: yardlog/1
+key: 01a1a345-9428-72f5-956a-8ef4a70338e7
+branch: "stage/server-w2"
+base: "product/server"
+title: "stage/server-w2"
+revision: 1
+opened:
+  at: 2026-11-03T21:16:48Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+stages:
+  - key: 01a1a345-9428-72f5-956a-8ef5a6407337
+    id: w2
+  - key: 01a1a345-9428-72f5-956a-8ef6712727c0
+    id: w2-close
+acts:
+  - at: 2026-11-03T21:16:48Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
