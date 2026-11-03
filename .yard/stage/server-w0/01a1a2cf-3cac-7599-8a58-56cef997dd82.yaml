@@ -19,6 +19,15 @@ versions:
     title: "W0 close: review, gate, trace"
     goal: "W0's /simplify and /code-review findings are fixed, the gate and integration run are green, and its tests are traced"
     status: active
+  - key: 01a1a2f9-f7b2-719e-a957-ad304875ecba
+    at: 2026-11-03T19:54:13Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W0 close: review, gate, trace"
+    goal: "W0's /simplify and /code-review findings are fixed, the gate and integration run are green, and its tests are traced"
+    status: done
 blocks:
   - key: 01a1a2e9-1410-70d4-9ac8-54d19bd712be
     id: t-review
@@ -147,3 +156,66 @@ blocks:
           | Request body size cap | review | **kept for W4/W5**, with the 64 KiB item quota |
           | Build the wasm while the fixture state is written; cache the state | efficiency | **skipped**: the cargo lock serializes the builds, and a cached state risks staleness |
           | fixture_state as a Cargo example | altitude | **skipped**: examples get no `CARGO_BIN_EXE_*` |
+  - key: 01a1a2f9-e32f-7097-bc8a-0dc83dace78c
+    id: trace-w0
+    kind: loft
+    versions:
+      - key: 01a1a2f9-e32f-7097-bc8a-0dc9ab03a504
+        at: 2026-11-03T19:54:08Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: |-
+          W0 links 8 criteria of F-30 and F-33, each reviewed against its words: AC-273, AC-275, AC-276, AC-285, AC-287, AC-289, AC-290, AC-291. (An earlier task detail named the problem-type criterion AC-289; it is AC-290.)
+
+          Still open in their waves: AC-274 (W4, needs a key and reference data), AC-286 (schemas from univ-model types, W1 onward), AC-288 (each route's refusals, W7) and AC-292 (compatibility snapshot, W7). The one TR-008, on AC-301, belongs to ingest and predates this wave.
+        base: "product/server"
+        recorded:
+          commit: "a87355df832afa41c239637241346f584dc4ea80"
+          branch: "stage/server-w0"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T19:54:07Z
+        report: |
+          {
+            "base": "product/server",
+            "commit": "13a0265e09b82cc385871583880af7c8705ba629",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 329,
+              "linked": 163,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a2f9-f7b2-719e-a957-ad2e89efb715
+    id: w0-closed
+    kind: note
+    versions:
+      - key: 01a1a2f9-f7b2-719e-a957-ad2f4a2de9af
+        at: 2026-11-03T19:54:13Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W0 ready: gate and integration green, unmerged"
+        markdown: |-
+          | Check | Result |
+          |---|---|
+          | `cargo xtask check` | passed, 11 gates (`loft verify` skipped off `develop`) |
+          | `cargo xtask integration` | passed: fixture state in 78 s, Wrangler ready in 4 s, 4 of 4 e2e tests |
+          | Native tests | univ-api 16, univ-server config 2 |
+          | Trace | 8 criteria linked and accepted, no warnings |
+
+          Commits: `caac3e1`, `770e083`, `1db3322`, `abe7647`, `a87355d`.
+
+          `stage/server-w0` is **not merged** and its Yard Log is **left open**. Both wait for the owner to ask. W1 (releases, sources, structures) is cut from `product/server` once W0 is merged, or from W0 if the owner prefers to stack.
+        tone: success
