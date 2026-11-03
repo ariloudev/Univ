@@ -13,6 +13,7 @@ use crate::events::{Event, EventSink, Stage};
 use crate::matching::MatchingRules;
 use crate::normalize::Normalized;
 use crate::ranking::RankingRules;
+use crate::release::ReleaseConfig;
 use crate::source::{Access, SourceDefinition};
 use crate::state::State;
 use crate::structures::{Structure, read_all};
@@ -26,13 +27,14 @@ pub struct MatchOptions {
 
 /// What the cross-match reads besides the entries.
 struct Read {
+    config: ReleaseConfig,
     matching: MatchingRules,
     ranking: RankingRules,
     state: State,
     structures: Vec<Structure>,
 }
 
-/// The rules in the repository's `rules/`, the state in `state`, and the researched structures
+/// The release configuration and rules in the repository's `rules/`, the state in `state`, and the researched structures
 /// of the repository source among `definitions` that the fetch found.
 fn read(
     definitions: &[SourceDefinition],
@@ -41,6 +43,8 @@ fn read(
     state: &Path,
 ) -> Result<Read, String> {
     let rules = options.repository.join("rules");
+    let config =
+        ReleaseConfig::read(&rules.join(crate::release::CONFIG_FILE)).map_err(|e| e.to_string())?;
     let matching = MatchingRules::read(&rules.join("matching.yaml")).map_err(|e| e.to_string())?;
     let ranking = RankingRules::read(&rules.join("ranking.yaml")).map_err(|e| e.to_string())?;
     let state = State::read(state).map_err(|e| e.to_string())?;
@@ -52,6 +56,7 @@ fn read(
         }
     }
     Ok(Read {
+        config,
         matching,
         ranking,
         state,
@@ -60,7 +65,7 @@ fn read(
 }
 
 /// Cross-matches the entries of `normalized` under the repository's rules, the release
-/// cosmology tabulated once, the state in `match_options.state` and the researched structures,
+/// cosmology of its release configuration tabulated once, the state in `match_options.state` and the researched structures,
 /// and writes the state it would leave as pending. A stage that fails is reported in `report`,
 /// and gives nothing.
 pub async fn match_stage(
@@ -85,7 +90,7 @@ pub async fn match_stage(
             let entries = normalized.into_iter().flat_map(|n| n.entries).collect();
             tokio::task::spawn_blocking(move || {
                 // The ranking and the derived redshift distances share one peculiar velocity.
-                let release = Release::planck_2018()
+                let release = Release::new(&inputs.config.cosmology)
                     .with_peculiar_velocity(inputs.ranking.peculiar_velocity_km_s);
                 let inputs = Inputs {
                     matching: &inputs.matching,

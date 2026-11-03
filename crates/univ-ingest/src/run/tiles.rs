@@ -16,8 +16,9 @@ pub const DEFAULT_TILES: &str = ".cache/univ-ingest/build/tiles";
 /// What a tiles stage is asked to do beyond a cross-match.
 #[derive(Clone, Debug)]
 pub struct TileOptions {
-    /// The directory each scale domain's tiles and manifest are written under.
-    pub out: PathBuf,
+    /// The directory each scale domain's tiles and manifest are written under, or none to keep
+    /// them for the release that follows.
+    pub out: Option<PathBuf>,
 }
 
 /// A scale domain's name in a run's lines: `nearby galaxies` for `nearby_galaxies`.
@@ -48,12 +49,12 @@ pub fn counts(built: &Built) -> Vec<Count> {
 
 /// Builds the tiles of `crossed` under the rules in the repository's `rules/tiles.yaml` and the
 /// release cosmology the cross-match placed its objects under, and writes them under
-/// `tile_options.out`. Nothing is written unless every domain builds. A stage that fails is
+/// `tile_options.out` where it names a directory. Nothing is written unless every domain builds. A stage that fails is
 /// reported in `report`, and gives nothing.
 pub async fn tiles_stage(
     sink: Arc<dyn EventSink>,
     definitions: &[SourceDefinition],
-    crossed: CrossMatched,
+    crossed: Arc<CrossMatched>,
     options: &FetchOptions,
     tile_options: &TileOptions,
     report: &Mutex<RunReport>,
@@ -86,7 +87,9 @@ pub async fn tiles_stage(
                 ),
             });
         }
-        write_all(&out, &built).map_err(|e| format!("the tiles cannot be written: {e}"))?;
+        if let Some(out) = out {
+            write_all(&out, &built).map_err(|e| format!("the tiles cannot be written: {e}"))?;
+        }
         Ok::<_, String>(built)
     })
     .await

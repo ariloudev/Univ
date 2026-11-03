@@ -15,6 +15,7 @@ pub mod normalize;
 pub mod outlines;
 pub mod provenance;
 pub mod ranking;
+pub mod release;
 pub mod run;
 pub mod source;
 pub mod state;

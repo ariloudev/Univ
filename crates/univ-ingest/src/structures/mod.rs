@@ -265,6 +265,15 @@ impl Structure {
 /// Fails when the directory cannot be read, a file name is not a kebab-case slug, or a structure
 /// fails [`Structure::read`].
 pub fn read_all(dir: &Path) -> Result<Vec<Structure>, StructureError> {
+    Ok(read_all_named(dir)?.into_iter().map(|(_, s)| s).collect())
+}
+
+/// [`read_all`], each structure with its id: the slug its file is named by.
+///
+/// # Errors
+///
+/// As [`read_all`].
+pub fn read_all_named(dir: &Path) -> Result<Vec<(String, Structure)>, StructureError> {
     read_dir(dir)?
         .iter()
         .map(|file| {
@@ -279,7 +288,19 @@ pub fn read_all(dir: &Path) -> Result<Vec<Structure>, StructureError> {
                     "is not a kebab-case slug",
                 ));
             }
-            Structure::read(file)
+            Ok((stem.to_owned(), Structure::read(file)?))
         })
         .collect()
+}
+
+impl Structure {
+    /// Checks a structure already read as its loader does: every number cites one of its
+    /// papers, a quoted sentence holds its number, and it is placed or says why not.
+    ///
+    /// # Errors
+    ///
+    /// Gives the field and the problem of the first check that fails.
+    pub fn check_cited(&self) -> Result<(), (String, String)> {
+        self.check()
+    }
 }

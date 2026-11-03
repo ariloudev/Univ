@@ -7,12 +7,16 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use clap::{Args, Parser, Subcommand};
+use univ_ingest::acquire::Acquired;
 use univ_ingest::events::{EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
+use univ_ingest::normalize::Normalized;
 use univ_ingest::run::{
-    DEFAULT_TILES, FetchOptions, MatchOptions, RunReport, TileOptions, display_for_stderr, drawing,
-    fetch, interrupted, match_stage, normalize_stage_until, owner_interrupt, select, tiles_stage,
+    BuildOptions, DEFAULT_BUILD, DEFAULT_TILES, FetchOptions, MatchOptions, RunReport, TileOptions,
+    build_stage, display_for_stderr, drawing, fetch, interrupted, match_stage,
+    normalize_stage_until, owner_interrupt, select, tiles_stage,
 };
+use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::DEFAULT_STATE;
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
@@ -44,6 +48,21 @@ enum Command {
     /// placed objects as an octree of tiles under `rules/tiles.yaml`, written with a JSON tile
     /// manifest per domain under the output directory; no release is built.
     Tiles(TilesArgs),
+    /// Fetches, normalizes and cross-matches the sources and lays out their tiles, then builds
+    /// the next release under the output directory's `releases/{n}`: its D1 rows as SQL files,
+    /// its tiles, volume grids and rules, and a manifest of every file with its SHA-256. The
+    /// release is checked before it is complete; only a complete release uses up its number and
+    /// takes the cross-match's pending state into the state directory.
+    Build(BuildArgs),
+}
+
+#[derive(Args)]
+struct BuildArgs {
+    #[command(flatten)]
+    matching: MatchArgs,
+    /// The build output: each release is written to `releases/{n}` under it.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_BUILD)]
+    out: PathBuf,
 }
 
 #[derive(Args)]
@@ -71,6 +90,7 @@ enum Until {
     Normalize,
     Match,
     Tiles,
+    Build,
 }
 
 #[derive(Args)]
@@ -92,6 +112,75 @@ struct FetchArgs {
     repository: PathBuf,
 }
 
+/// The stages after normalization, which a run asks for by its command.
+struct Later<'a> {
+    definitions: &'a [SourceDefinition],
+    acquired: &'a [Option<Acquired>],
+    options: &'a FetchOptions,
+    report: &'a Mutex<RunReport>,
+}
+
+impl Later<'_> {
+    /// Cross-matches the `normalized` entries, then lays out the tiles and builds the release
+    /// as far as `until` asks.
+    async fn run(
+        &self,
+        sink: Arc<dyn EventSink>,
+        normalized: Vec<Normalized>,
+        state: PathBuf,
+        out: Option<PathBuf>,
+        until: Until,
+    ) {
+        let (defs, opts, report) = (self.definitions, self.options, self.report);
+        let match_options = MatchOptions {
+            state: state.clone(),
+        };
+        let crossed = match_stage(
+            sink.clone(),
+            defs,
+            self.acquired,
+            normalized,
+            opts,
+            &match_options,
+            report,
+        )
+        .await;
+        let (Some(crossed), Some(out)) = (crossed, out) else {
+            return;
+        };
+        let crossed = Arc::new(crossed);
+        let building = until == Until::Build;
+        // A build keeps the tiles for its release; the tiles command writes them under its
+        // output and ends there.
+        let tile_options = TileOptions {
+            out: (!building).then(|| out.clone()),
+        };
+        let tiles = tiles_stage(
+            sink.clone(),
+            defs,
+            crossed.clone(),
+            opts,
+            &tile_options,
+            report,
+        )
+        .await;
+        if let (Some(tiles), true) = (tiles, building) {
+            let build_options = BuildOptions { state, out };
+            build_stage(
+                sink,
+                defs,
+                self.acquired,
+                crossed,
+                tiles,
+                opts,
+                &build_options,
+                report,
+            )
+            .await;
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> ExitCode {
     let (args, until, state, out) = match Cli::parse().command {
@@ -101,6 +190,10 @@ async fn main() -> ExitCode {
         Command::Tiles(args) => {
             let m = args.matching;
             (m.fetch, Until::Tiles, Some(m.state), Some(args.out))
+        }
+        Command::Build(args) => {
+            let m = args.matching;
+            (m.fetch, Until::Build, Some(m.state), Some(args.out))
         }
     };
     let options = FetchOptions {
@@ -142,24 +235,15 @@ async fn main() -> ExitCode {
         let Some(state) = state else {
             return;
         };
-        let sink: Arc<dyn EventSink> = display.clone();
-        let match_options = MatchOptions { state };
-        let (defs, opts) = (&definitions, &options);
-        let crossed = match_stage(
-            sink.clone(),
-            defs,
-            &acquired,
-            normalized,
-            opts,
-            &match_options,
-            &report,
-        )
-        .await;
-        if let (Some(crossed), Some(out)) = (crossed, out) {
-            // The tiles are held for the release stage that follows; this command ends here.
-            let tile_options = TileOptions { out };
-            tiles_stage(sink, defs, crossed, opts, &tile_options, &report).await;
-        }
+        let stages = Later {
+            definitions: &definitions,
+            acquired: &acquired,
+            options: &options,
+            report: &report,
+        };
+        stages
+            .run(display.clone(), normalized, state, out, until)
+            .await;
     };
     let mut run = std::pin::pin!(drawing(display.as_ref(), run));
     let interrupted_run = tokio::select! {
