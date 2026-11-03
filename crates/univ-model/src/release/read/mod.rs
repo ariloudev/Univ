@@ -15,7 +15,7 @@ mod placed;
 
 use std::collections::{BTreeMap, HashMap};
 
-use crate::api::objects::ObjectRecord;
+use crate::api::objects::{Designation, ObjectRecord};
 use crate::cosmology::Cosmology;
 use columns::Columns;
 
@@ -27,18 +27,21 @@ pub type Row = serde_json::Map<String, serde_json::Value>;
 pub struct Vocabulary {
     release: u32,
     cosmology: Cosmology,
+    ranking_rule: String,
     terms: HashMap<i64, String>,
     chains: HashMap<i64, serde_json::Value>,
     sources: HashMap<i64, String>,
 }
 
 impl Vocabulary {
-    /// The vocabulary of release `release`, placed under `cosmology`: its `terms` by id, its
-    /// chain templates by id (`chains.steps` parsed), and its sources' ids by `sources.n`.
+    /// The vocabulary of release `release`, placed under `cosmology` and ranked by the rule
+    /// named `ranking_rule`: its `terms` by id, its chain templates by id (`chains.steps`
+    /// parsed), and its sources' ids by `sources.n`.
     #[must_use]
     pub fn new(
         release: u32,
         cosmology: Cosmology,
+        ranking_rule: String,
         terms: impl IntoIterator<Item = (i64, String)>,
         chains: impl IntoIterator<Item = (i64, serde_json::Value)>,
         sources: impl IntoIterator<Item = (i64, String)>,
@@ -46,6 +49,7 @@ impl Vocabulary {
         Self {
             release,
             cosmology,
+            ranking_rule,
             terms: terms.into_iter().collect(),
             chains: chains.into_iter().collect(),
             sources: sources.into_iter().collect(),
@@ -55,6 +59,12 @@ impl Vocabulary {
     #[must_use]
     pub fn release(&self) -> u32 {
         self.release
+    }
+
+    /// The name of the release's ranking rule, which chose each preferred measurement.
+    #[must_use]
+    pub fn ranking_rule(&self) -> &str {
+        &self.ranking_rule
     }
 
     /// The release cosmology, which every derived position of the release is placed under.
@@ -134,7 +144,7 @@ pub fn object(
         .map(|(_, row)| measurements::measurement(v, row, &heads))
         .collect::<Result<Vec<_>, _>>()?;
 
-    let preferred = placed::preferred(&c)?;
+    let preferred = placed::preferred(&c, v.ranking_rule())?;
     let position = if c.int("placed")? == 0 {
         None
     } else {
@@ -146,7 +156,19 @@ pub fn object(
         )?)
     };
     let id = c.int("id")?;
+    // The entries' own designations; a reader that also holds the `designations` rows of the
+    // object gives those instead, which add the ones sources give beside their entries.
+    let mut designations: Vec<Designation> = entries
+        .iter()
+        .map(|e| Designation {
+            source: e.source.clone(),
+            identifier: e.identifier.clone(),
+        })
+        .collect();
+    designations.sort();
+    designations.dedup();
     Ok(ObjectRecord {
+        designations,
         release: v.release(),
         id: u64::try_from(id).map_err(|_| c.error("id", format!("{id} is negative")))?,
         kind: c.typed("kind")?,

@@ -1,7 +1,9 @@
 //! The backend of the Worker: the release database as its D1 binding `DB`.
 
 use serde_json::Value;
-use univ_api::{Backend, BackendError, Row};
+use std::sync::LazyLock;
+
+use univ_api::{Backend, BackendError, Row, Vocabularies};
 use worker::wasm_bindgen::JsValue;
 use worker::{D1Database, Env};
 
@@ -34,7 +36,15 @@ impl Backend for D1 {
             .results()
             .map_err(error)
     }
+
+    fn vocabularies(&self) -> &Vocabularies {
+        &VOCABULARIES
+    }
 }
+
+/// The release vocabularies of this isolate, kept across its requests: releases never change
+/// once published.
+static VOCABULARIES: LazyLock<Vocabularies> = LazyLock::new(Vocabularies::default);
 
 /// A bound parameter as D1 takes it.
 fn js_value(value: &Value) -> JsValue {

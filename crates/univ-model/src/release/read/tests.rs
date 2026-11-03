@@ -30,6 +30,7 @@ fn vocabulary() -> Vocabulary {
     Vocabulary::new(
         7,
         Cosmology::planck_2018(),
+        "the-rule".to_owned(),
         (0..).zip(TERMS.iter().map(|t| (*t).to_owned())),
         [(0, json!([{"step": "cartesian", "citation": "x"}]))],
         [(0, "sixdfgs-dr3".to_owned()), (1, "twomrs".to_owned())],

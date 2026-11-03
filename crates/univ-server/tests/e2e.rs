@@ -237,3 +237,22 @@ fn a_size_published_under_h0_50_is_served_beside_its_rescaled_value() {
     assert!(bootes["shape"].is_object());
     assert!(bootes["derivation"]["from"].is_array());
 }
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn an_object_is_read_by_id_by_name_and_by_designation_through_the_worker() {
+    let by_id = json(get("/v1/objects/11"));
+    assert_eq!(by_id["entries"][0]["identifier"], "Canis Major");
+    assert_eq!(by_id["position"]["frame"], "ICRS equatorial Cartesian");
+    assert!(by_id["preferred"]["rule"].is_string());
+    let by_name = get("/v1/objects?name=canis%20MAJOR");
+    assert_eq!(by_name.status(), StatusCode::OK);
+    assert_eq!(json(by_name)["id"], 11);
+    let by_designation = json(get(
+        "/v1/objects?source=mcconnachie-2012&designation=Sagittarius%20dSph",
+    ));
+    assert_eq!(by_designation["id"], 12);
+    let missing = get("/v1/objects/99999");
+    assert_eq!(missing.status(), StatusCode::NOT_FOUND);
+    assert_eq!(json(missing)["looked_up"]["id"], 99_999);
+}

@@ -25,6 +25,10 @@ pub trait Backend {
         sql: &str,
         params: &[Value],
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
+
+    /// The release vocabularies this backend keeps between requests: for the Worker, one
+    /// keeping per isolate.
+    fn vocabularies(&self) -> &crate::Vocabularies;
 }
 
 /// The first row of `rows`, if any.

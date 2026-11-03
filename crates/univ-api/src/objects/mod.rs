@@ -1,0 +1,263 @@
+//! Objects (look-up-an-object): read by id, designation or common name.
+//!
+//! An object is answered 200 with its record. A lookup that leads to more than one object, a
+//! shared name or designation or a split id, answers 300 with the objects; a merged id answers
+//! 301 to the object it is part of, in the same release. Anything else answers 404 naming what
+//! was looked up.
+
+pub(crate) mod resolve;
+pub(crate) mod vocabulary;
+
+use serde_json::json;
+use univ_model::api::lookup::{Ambiguity, LookedUp, ObjectChoice, ObjectChoices, ObjectMerged};
+use univ_model::api::objects::ObjectRecord;
+use univ_model::release::read;
+
+use self::resolve::{Resolved, by_designation, by_name, replaced};
+use self::vocabulary::vocabulary;
+use crate::backend::{Backend, first, rows_as};
+use crate::http::{Request, Response};
+use crate::problem::{Problem, ProblemType};
+use crate::releases::{pinned, resolve};
+
+/// Reads one object of the release the request reads, by its id.
+///
+/// # Errors
+///
+/// A problem answer: the release refused, an id that is not a positive whole number (400), an
+/// id that leads to no object (404), or the release database unreadable.
+#[utoipa::path(
+    get,
+    path = "/v1/objects/{id}",
+    params(
+        ("id" = u64, Path, description = "The object's id"),
+        ("release" = Option<u32>, Query, description = "The release to read; latest when absent")
+    ),
+    responses(
+        (status = 200, description = "The object", body = ObjectRecord),
+        (status = 300, description = "The id was split; the objects that replaced it", body = ObjectChoices),
+        (status = 301, description = "The id was merged; the object it is part of", body = ObjectMerged)
+    )
+)]
+pub async fn get<B: Backend>(
+    request: &Request,
+    id: &str,
+    backend: &B,
+) -> Result<Response, Problem> {
+    let release = resolve(request, backend).await?;
+    let id: u64 = id.parse().ok().filter(|id| *id > 0).ok_or_else(|| {
+        Problem::invalid_parameter(
+            "id",
+            id,
+            format!("An object id is a positive whole number, not {id:?}."),
+        )
+    })?;
+    if let Some(record) = record(backend, release, id).await? {
+        return Ok(record);
+    }
+    let looked_up = LookedUp::Id { id };
+    match replaced(backend, release, id).await? {
+        Resolved::Merged { into, replaced_in } => {
+            let merged = ObjectMerged {
+                release,
+                id,
+                replaced_in,
+                merged_into: into,
+                href: href(into, release),
+            };
+            let mut response = Response::json(&merged)?.with_header("location", &merged.href);
+            response.status = 301;
+            Ok(pinned(response, release))
+        }
+        Resolved::Split { into, replaced_in } => choices(
+            release,
+            looked_up,
+            Ambiguity::Split,
+            Some(replaced_in),
+            into.into_iter().map(|id| (id, Vec::new())).collect(),
+        ),
+        Resolved::Retired { replaced_in } => {
+            Err(not_found(release, &looked_up).with("retired_in", replaced_in))
+        }
+        Resolved::Unknown => Err(not_found(release, &looked_up)),
+    }
+}
+
+/// Looks an object up by a common name, or by a source and the designation it gives.
+///
+/// # Errors
+///
+/// A problem answer: the release refused, neither a name nor a source and designation (400),
+/// nothing found (404), or the release database unreadable.
+#[utoipa::path(
+    get,
+    path = "/v1/objects",
+    params(
+        ("name" = Option<String>, Query, description = "A common name, such as M31; letter case and white space are ignored"),
+        ("source" = Option<String>, Query, description = "A source's id, such as gaia-dr3-bright, with `designation`"),
+        ("designation" = Option<String>, Query, description = "The identifier the source gives the object, with `source`"),
+        ("release" = Option<u32>, Query, description = "The release to read; latest when absent")
+    ),
+    responses(
+        (status = 200, description = "The one object the name or designation leads to", body = ObjectRecord),
+        (status = 300, description = "More than one object carries the name or designation", body = ObjectChoices)
+    )
+)]
+pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response, Problem> {
+    let release = resolve(request, backend).await?;
+    let (looked_up, ambiguity, found) = match (
+        request.param("name"),
+        request.param("source"),
+        request.param("designation"),
+    ) {
+        (Some(name), None, None) => {
+            let found = by_name(backend, release, &name).await?;
+            (LookedUp::Name { name }, Ambiguity::SharedName, found)
+        }
+        (None, Some(source), Some(designation)) => {
+            let found = by_designation(backend, release, &source, &designation).await?;
+            (
+                LookedUp::Designation {
+                    source,
+                    designation,
+                },
+                Ambiguity::SharedDesignation,
+                found.into_iter().map(|id| (id, Vec::new())).collect(),
+            )
+        }
+        _ => {
+            return Err(Problem::new(
+                ProblemType::InvalidParameter,
+                "Look an object up by `name`, or by `source` and `designation`.",
+            )
+            .with("parameter", "name"));
+        }
+    };
+    match found.as_slice() {
+        [] => Err(not_found(release, &looked_up)),
+        [(id, _)] => present_after_all(backend, release, *id).await,
+        _ => choices(release, looked_up, ambiguity, None, found),
+    }
+}
+
+/// The record of object `id` of `release`, or none when the release does not hold it.
+async fn record<B: Backend>(
+    backend: &B,
+    release: u32,
+    id: u64,
+) -> Result<Option<Response>, Problem> {
+    let params = [json!(release), json!(id)];
+    let objects = backend
+        .releases(
+            "SELECT * FROM objects WHERE release = ?1 AND id = ?2",
+            &params,
+        )
+        .await?;
+    let Some(object) = first(objects) else {
+        return Ok(None);
+    };
+    let entries = backend
+        .releases(
+            "SELECT * FROM entries WHERE release = ?1 AND object_id = ?2",
+            &params,
+        )
+        .await?;
+    let measurements = backend
+        .releases(
+            "SELECT * FROM measurements WHERE release = ?1 AND object_id = ?2",
+            &params,
+        )
+        .await?;
+    let designations = backend
+        .releases(
+            "SELECT s.id AS source, d.identifier FROM designations d JOIN sources s \
+             ON s.release = d.release AND s.n = d.source \
+             WHERE d.release = ?1 AND d.object_id = ?2 ORDER BY s.id, d.identifier",
+            &params,
+        )
+        .await?;
+    let vocabulary = vocabulary(backend, release).await?;
+    let mut record =
+        read::object(&vocabulary, &object, &entries, &measurements).map_err(|error| {
+            Problem::new(
+                ProblemType::InternalError,
+                format!("Object {id} of release {release} did not read: {error}."),
+            )
+        })?;
+    if !designations.is_empty() {
+        record.designations = rows_as(designations)?;
+    }
+    Ok(Some(pinned(Response::json(&record)?, release)))
+}
+
+/// The record of an object a lookup found, which the release holds.
+async fn present_after_all<B: Backend>(
+    backend: &B,
+    release: u32,
+    id: u64,
+) -> Result<Response, Problem> {
+    record(backend, release, id).await?.ok_or_else(|| {
+        Problem::new(
+            ProblemType::InternalError,
+            format!("Release {release} names object {id}, which it does not hold."),
+        )
+    })
+}
+
+/// The 300 answer of a lookup that leads to `objects`.
+fn choices(
+    release: u32,
+    looked_up: LookedUp,
+    ambiguity: Ambiguity,
+    replaced_in: Option<u32>,
+    objects: Vec<(u64, Vec<String>)>,
+) -> Result<Response, Problem> {
+    let choices = ObjectChoices {
+        release,
+        looked_up,
+        ambiguity,
+        replaced_in,
+        objects: objects
+            .into_iter()
+            .map(|(id, names)| ObjectChoice {
+                id,
+                href: href(id, release),
+                names,
+            })
+            .collect(),
+    };
+    let mut response = Response::json(&choices)?;
+    response.status = 300;
+    Ok(pinned(response, release))
+}
+
+/// The path that reads object `id` in `release`.
+fn href(id: u64, release: u32) -> String {
+    format!("/v1/objects/{id}?release={release}")
+}
+
+/// The 404 of a lookup that leads to no object of `release`, naming what was looked up.
+fn not_found(release: u32, looked_up: &LookedUp) -> Problem {
+    let what = match looked_up {
+        LookedUp::Id { id } => format!("object {id}"),
+        LookedUp::Name { name } => format!("an object named {name:?}"),
+        LookedUp::Designation {
+            source,
+            designation,
+        } => format!("an object that {source} designates {designation:?}"),
+    };
+    Problem::new(
+        ProblemType::ObjectNotFound,
+        format!("Release {release} holds no {what}."),
+    )
+    .with("release", release)
+    .with(
+        "looked_up",
+        serde_json::to_value(looked_up).unwrap_or_default(),
+    )
+}
+
+#[cfg(test)]
+mod record_tests;
+#[cfg(test)]
+mod tests;

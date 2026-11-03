@@ -58,8 +58,12 @@ fn fraction(c: &Columns<'_>, prefix: &str) -> Result<FractionalUncertainty, Read
     })
 }
 
-/// The preferred measurement and the ranking that chose it, none when there is none.
-pub(super) fn preferred(c: &Columns<'_>) -> Result<Option<PreferredMeasurement>, ReadError> {
+/// The preferred measurement and the ranking, by the rule named `rule`, that chose it; none
+/// when there is none.
+pub(super) fn preferred(
+    c: &Columns<'_>,
+    rule: &str,
+) -> Result<Option<PreferredMeasurement>, ReadError> {
     let Some(measurement) = key(c, "preferred_")? else {
         return Ok(None);
     };
@@ -72,6 +76,7 @@ pub(super) fn preferred(c: &Columns<'_>) -> Result<Option<PreferredMeasurement>,
         })
         .transpose()?;
     Ok(Some(PreferredMeasurement {
+        rule: rule.to_owned(),
         measurement,
         rank: c.typed("preferred_rank")?,
         distance_mpc: c.real("preferred_mpc")?,

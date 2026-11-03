@@ -34,6 +34,10 @@ pub struct ObjectRecord {
     pub kind: ObjectKind,
     /// Every catalogue entry resolved to it, numbered from 0, the anchor first.
     pub entries: Vec<EntryRecord>,
+    /// Every designation it carries, each a source and the identifier that source gives: its
+    /// entries' own and those their sources give beside them, such as a Hipparcos number.
+    #[serde(default)]
+    pub designations: Vec<Designation>,
     /// Every measurement of its entries, by entry, quantity and n.
     pub measurements: Vec<MeasurementRecord>,
     /// Its preferred sky position; absent when no entry has one.
@@ -50,6 +54,16 @@ pub struct ObjectRecord {
     pub links: Vec<CandidateLink>,
     /// Typed relations to other objects, such as a group's dominant galaxy.
     pub relations: Vec<Relation>,
+}
+
+/// A designation: a source and the identifier that source gives the object.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct Designation {
+    /// The source's id, such as `hipparcos-2007`.
+    pub source: String,
+    /// The identifier the source gives.
+    pub identifier: String,
 }
 
 /// A catalogue entry of the object: the designation its source gives it, how it was resolved
@@ -187,6 +201,8 @@ pub struct MeasurementKey {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct PreferredMeasurement {
+    /// The name of the release's ranking rule that chose it.
+    pub rule: String,
     /// The distance, redshift or parallax preferred.
     pub measurement: MeasurementKey,
     /// Its method rank, which breaks a tie in fractional uncertainty.

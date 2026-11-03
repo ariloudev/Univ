@@ -75,10 +75,12 @@ fn vocabulary(db: &Connection) -> Vocabulary {
             .map(Result::unwrap)
             .collect()
     };
-    let cosmology: String = db
-        .query_row("SELECT cosmology FROM releases WHERE number = 1", [], |r| {
-            r.get(0)
-        })
+    let (cosmology, rule): (String, String) = db
+        .query_row(
+            "SELECT cosmology, ranking_rule_name FROM releases WHERE number = 1",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
         .unwrap();
     let chains = pairs("SELECT id, steps FROM chains WHERE release = 1")
         .into_iter()
@@ -86,6 +88,7 @@ fn vocabulary(db: &Connection) -> Vocabulary {
     Vocabulary::new(
         1,
         serde_json::from_str(&cosmology).unwrap(),
+        rule,
         pairs("SELECT id, term FROM terms WHERE release = 1"),
         chains,
         pairs("SELECT n, id FROM sources WHERE release = 1"),
