@@ -1,0 +1,579 @@
+key: 01a1a2b1-c372-719d-bf01-77d3c53c215e
+id: master-plan
+versions:
+  - key: 01a1a2b1-c372-719d-bf01-77d6e1ede495
+    at: 2026-11-03T18:35:21Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Master plan for Univ Server"
+    goal: "An approved, wave-by-wave plan maps every Univ Server criterion to the wave that meets it and the tests that verify it"
+    status: planned
+  - key: 01a1a2b1-dff1-73e5-8071-c716dc08e849
+    at: 2026-11-03T18:35:28Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Master plan for Univ Server"
+    goal: "An approved, wave-by-wave plan maps every Univ Server criterion to the wave that meets it and the tests that verify it"
+    status: active
+blocks:
+  - key: 01a1a2b4-fef6-72a3-9bf5-d1a217e55780
+    id: plan-context
+    kind: note
+    versions:
+      - key: 01a1a2b4-fef6-72a3-9bf5-d1a65ce2e4fb
+        at: 2026-11-03T18:38:53Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What the Worker starts from"
+        markdown: |-
+          **Scope:** Univ Server is F-14 to F-33, with RQ-49 to RQ-112, AC-122 to AC-292 (171 criteria), QA-2 and QA-3 (latency, `sampled`) and CON-2 (Rust on Workers with workers-rs).
+
+          **Already in place from ingest:**
+
+          - `univ-model` already builds for wasm32.
+          - The D1 schema (v2), with the cell index (`object_cells`, `structure_cells`), the id ledger (`ids_issued`, `ids_replaced`), `releases` and `latest`.
+          - The R2 key layout (`releases/{n}/tiles/…`, `grids/…`).
+          - The tile encoder and the Rust decoder.
+
+          **Real data:** release 6 is `latest` in the local state at `.cache/univ-ingest/wrangler`, with 2,098,918 objects, 26 structures, 3 grids and 401 tiles. Releases 1–4 are pruned, so their 410 answers can be tested on real data. The SQLite file is 6.5 GB on disk.
+
+          **One spec/platform conflict:** the rate-limiting binding fixes its limit in `wrangler.toml`, one per namespace, with a period of 10 or 60 s. RQ-99 says the owner can change a **key's rate limit** at runtime. The binding cannot do that as written.
+        tone: info
+  - key: 01a1a2b4-fef6-72a3-9bf5-d1a39ecf00a9
+    id: q-rate-limit
+    kind: question
+    versions:
+      - key: 01a1a2b4-fef6-72a3-9bf5-d1a71b82fd52
+        at: 2026-11-03T18:38:53Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "The rate-limiting binding fixes each limit in wrangler.toml, but RQ-99 lets the owner change one key's rate limit at runtime. How should a per-key rate limit work?"
+        header: "Rate limit"
+        context: "The defaults stay as the spec has them: 300 requests per 60 s for anonymous clients, per address, and 1,200 per 60 s per key. The binding answers only allowed or refused, so `Retry-After` will be the 60 s window. Options 1 and 3 change RQ-99 in `spec/`, and the change comes to you for approval before any code."
+        options:
+          - label: "Tiers"
+            detail: "A few binding namespaces, such as 300, 1,200 and 6,000 per 60 s. The owner moves a key between tiers, and the move applies from the key's next request. This keeps the binding that CMP-5 names and adds no write to any request. RQ-99 changes from \"a rate limit\" to \"a rate-limit tier\". I recommend this: it meets the need behind RQ-99 at no runtime cost."
+            recommended: true
+          - label: "Fixed limits"
+            detail: "The two limits come from the config only, and the owner changes quotas but not rate limits. This is the simplest option, but it removes part of RQ-99 and AC-264's premise for rate limits."
+          - label: "Count in storage"
+            detail: "Count each key's requests per window in D1 or a Durable Object, so any value works exactly as RQ-99 says, with no spec change. The cost is a write on every keyed request (D1), or a Durable Object, which ADR-7 avoided for simplicity. The binding would then serve only anonymous clients."
+    responses:
+      - key: 01a1a2b7-49d6-718a-ae01-16f48a87e5fc
+        at: 2026-11-03T18:41:23Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Tiers"
+  - key: 01a1a2b4-fef6-72a3-9bf5-d1a451ac85bc
+    id: q-d1-layout
+    kind: question
+    versions:
+      - key: 01a1a2b4-fef6-72a3-9bf5-d1a87f9f35d6
+        at: 2026-11-03T18:38:53Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "Where should layers, items and API keys live in D1: beside the releases in the `univ` database, or in a database of their own?"
+        header: "Layer DB"
+        context: "The `univ` database holds immutable releases. Ingest's publish and prune write it, and CON-3 caps it at 10 GB. Layers and keys are the only data clients change."
+        options:
+          - label: "Separate database"
+            detail: "A second D1 binding, `univ-layers`, for keys, layers, items, versions and changes. Ingest never touches it, CON-3 counts releases alone, and a release database can be rebuilt without risk to client data. Link checks and volume queries read both databases and merge the results in code. I recommend this."
+            recommended: true
+          - label: "Same database"
+            detail: "Layer and key tables are added to the `univ` schema (v3). Link checks can join against `ids_issued` in SQL. But client data shares a file and the CON-3 budget with the releases, and ingest's schema owns tables it never writes."
+    responses:
+      - key: 01a1a2b7-49d6-718a-ae01-16f5e437afe4
+        at: 2026-11-03T18:41:23Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Separate database"
+  - key: 01a1a2b4-fef6-72a3-9bf5-d1a5644e6940
+    id: q-e2e
+    kind: question
+    versions:
+      - key: 01a1a2b4-fef6-72a3-9bf5-d1a91792c2eb
+        at: 2026-11-03T18:38:53Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "How should the Worker be tested, given that workers-rs code only runs as wasm inside workerd?"
+        header: "Worker tests"
+        context: "Either way, the handlers live in a plain Rust crate behind storage traits. Most criteria are then tested natively and fast, against SQLite with the real schema, while a thin `univ-server` crate binds D1, R2 and the rate limiter. The question is how the real Worker gets tested. Since the full gate now runs only at the end of each wave, a slower step costs little."
+        options:
+          - label: "E2E in the gate"
+            detail: "An end-to-end suite starts `wrangler dev` on a small fixture release that ingest builds from its recorded fixtures, then calls the real routes over HTTP. It runs in `cargo xtask check`, adding about 30–60 s at each wave's end. This is the only test of the real bindings, CORS, streaming and the rate limiter. I recommend this."
+            recommended: true
+          - label: "E2E by hand"
+            detail: "The same suite, but `#[ignore]`, run by hand at each wave's end like the live fetches. The gate stays fast, but a broken binding could pass the gate."
+          - label: "Native only"
+            detail: "Native tests only, with nothing run inside `wrangler dev`. Criteria about the runtime would then have no test: CORS preflight, streaming from R2 without decoding, and 429 from the binding."
+    responses:
+      - key: 01a1a2b7-49d6-718a-ae01-16f659ec4344
+        at: 2026-11-03T18:41:23Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        words: "cargo xtask integration, default rule is to run once per stage/wave at the end"
+  - key: 01a1a2b7-8723-76d9-a30e-20d53eb718d0
+    id: d-rate-limit
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a2b7-8723-76d9-a30e-20d84d52380c
+        at: 2026-11-03T18:41:39Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A key's rate limit is a tier the owner picks"
+        consequence: "Each key tier is one rate-limit binding namespace in the Worker's config, with anonymous clients on their own namespace per address. RQ-99 and the key features change in `spec/` to name tiers; that change comes for approval before the master plan."
+        question: 01a1a2b4-fef6-72a3-9bf5-d1a39ecf00a9
+  - key: 01a1a2b7-8723-76d9-a30e-20d67b80f045
+    id: d-d1-layout
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1a2b7-8723-76d9-a30e-20d9ce2da10c
+        at: 2026-11-03T18:41:39Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Layers and keys get a D1 database of their own"
+        consequence: "The Worker binds two D1 databases: `univ` (releases, read-only to the Worker) and `univ-layers` (keys, layers, items, versions, changes), whose schema and migrations the server crate owns. Link checks and volume queries read both and merge in code; ingest and CON-3 are untouched."
+        question: 01a1a2b4-fef6-72a3-9bf5-d1a451ac85bc
+  - key: 01a1a2b7-8723-76d9-a30e-20d70b6fff4f
+    id: d-e2e
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1a2b7-8723-76d9-a30e-20da66b9a4cf
+        at: 2026-11-03T18:41:39Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "End-to-end tests run as `cargo xtask integration`, once at each stage's or wave's end"
+        consequence: "The suite that drives `wrangler dev` over a fixture release is its own xtask command, not a step of `cargo xtask check`. Each stage or wave ends with both the gate and the integration run green; between tasks only focused native checks run."
+        question: 01a1a2b4-fef6-72a3-9bf5-d1a5644e6940
+  - key: 01a1a2b8-7ec0-7649-bdbe-5b8a68b2c69e
+    id: spec-rate-tiers
+    kind: loft
+    versions:
+      - key: 01a1a2b8-7ec0-7649-bdbe-5b8cb1812b4e
+        at: 2026-11-03T18:42:42Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "Carries out decision `d-rate-limit`. Only the key side changes: anonymous clients keep their own limit of 300 per 60 s per address (AC-261, unchanged), and `standard` keeps the old key default of 1,200, so a key that was never given a tier behaves exactly as before."
+        recorded:
+          commit: "607b6eeffbc062d1bdbdd6d219dcca1adf220240"
+          branch: "product/server"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T18:42:42Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 1,
+              "graph.diff": 9,
+              "graph.edges": 2,
+              "graph.nodes": 12,
+              "status.base.added": 3,
+              "status.base.changed": 5,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "added",
+                  "key": "01a1a2b8-447e-752b-832a-97474716125a",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Set a key's rate limit by tier",
+                  "words": {
+                    "after": "Set a key's rate limit by tier\n\nEach key has one of three rate-limit tiers, each a namespace of the binding, and the owner moves a key between them."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abd83515093c",
+                  "kind": "feature",
+                  "label": "F-28",
+                  "name": "Enforce quotas and rate limits",
+                  "words": {
+                    "after": "Enforce quotas and rate limits\n\nKeeping what each key writes, and how often any client calls, within limits the owner sets. The\ndefault quotas are 100 layers per key, 100,000 items per layer and 64 KiB per item version.\n\nA key's request rate is one of a few rate-limit tiers rather than any number, because the\nrate-limiting binding fixes each limit in the Worker's configuration.",
+                    "before": "Enforce quotas and rate limits\n\nKeeping what each key writes, and how often any client calls, within limits the owner sets. The\ndefault quotas are 100 layers per key, 100,000 items per layer and 64 KiB per item version."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abdf92323beb",
+                  "kind": "criterion",
+                  "label": "AC-262",
+                  "name": "Requests with an API key are limited per key, at the rate of the key's rate-limit tier.",
+                  "words": {
+                    "after": "Requests with an API key are limited per key, at the rate of the key's rate-limit tier.",
+                    "before": "Requests with an API key are limited per key, by default to 1,200 requests in 60 seconds."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a2b8-447e-752b-832a-974f9a8253a9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rate-limit tiers are basic at 300, standard at 1,200 and extended at 6,000 requests in 60 seconds.",
+                  "words": {
+                    "after": "The rate-limit tiers are basic at 300, standard at 1,200 and extended at 6,000 requests in 60 seconds."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abe10a4ee3c8",
+                  "kind": "requirement",
+                  "label": "RQ-99",
+                  "name": "When the owner changes a key's quotas or rate-limit tier, Univ Server shall apply the new values from the key's next request.",
+                  "words": {
+                    "after": "When the owner changes a key's quotas or rate-limit tier, Univ Server shall apply the new values from the key's next request.",
+                    "before": "When the owner changes a key's quotas or rate limit, Univ Server shall apply the new values from the key's next request."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a2b8-447e-752b-832a-9750ec8ef08a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A key moved to another rate-limit tier is limited at that tier's rate from its next request.",
+                  "words": {
+                    "after": "A key moved to another rate-limit tier is limited at that tier's rate from its next request."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                  "kind": "requirement",
+                  "label": "RQ-100",
+                  "name": "When the owner issues an API key, Univ Server shall create the key with its label, quotas and rate-limit tier and return its secret once.",
+                  "words": {
+                    "after": "When the owner issues an API key, Univ Server shall create the key with its label, quotas and rate-limit tier and return its secret once.",
+                    "before": "When the owner issues an API key, Univ Server shall create the key with its label and quotas and return its secret once."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a2b8-447e-752b-832a-975136ea867e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A key issued without a rate-limit tier gets the standard tier.",
+                  "words": {
+                    "after": "A key issued without a rate-limit tier gets the standard tier."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abeccca54ce7",
+                  "kind": "requirement",
+                  "label": "RQ-102",
+                  "name": "When the owner lists API keys, Univ Server shall return each key's label, issuance time, revocation time, quotas, rate-limit tier and usage, without its secret.",
+                  "words": {
+                    "after": "When the owner lists API keys, Univ Server shall return each key's label, issuance time, revocation time, quotas, rate-limit tier and usage, without its secret.",
+                    "before": "When the owner lists API keys, Univ Server shall return each key's label, issuance time, revocation time, quotas and usage, without its secret."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a2b8-447e-752b-832a-97474716125a",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Set a key's rate limit by tier",
+                  "words": {
+                    "after": "Set a key's rate limit by tier\n\nEach key has one of three rate-limit tiers, each a namespace of the binding, and the owner moves a key between them."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a1a2b8-447e-752b-832a-97474716125a",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a19f20-8e6c-7039-b16f-abd83515093c"
+                },
+                {
+                  "from": "01a1a2b8-447e-752b-832a-97474716125a",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a19f20-8e6c-7039-b16f-abe3447e87f6"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d663efc89e0d",
+                  "kind": "feature_group",
+                  "label": "FG-10",
+                  "name": "Access",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abd83515093c",
+                  "kind": "feature",
+                  "label": "F-28",
+                  "name": "Enforce quotas and rate limits",
+                  "parent": "01a19f1a-685d-7357-b67e-d663efc89e0d"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-abdd6cea244d",
+                  "kind": "requirement",
+                  "label": "RQ-98",
+                  "name": "If a client exceeds its request rate limit, then Univ Server shall refuse its requests until the limit's window has passed.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abd83515093c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abdf92323beb",
+                  "kind": "criterion",
+                  "label": "AC-262",
+                  "name": "Requests with an API key are limited per key, at the rate of the key's rate-limit tier.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abdd6cea244d"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a2b8-447e-752b-832a-974f9a8253a9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rate-limit tiers are basic at 300, standard at 1,200 and extended at 6,000 requests in 60 seconds.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abdd6cea244d"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abe10a4ee3c8",
+                  "kind": "requirement",
+                  "label": "RQ-99",
+                  "name": "When the owner changes a key's quotas or rate-limit tier, Univ Server shall apply the new values from the key's next request.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abd83515093c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a2b8-447e-752b-832a-9750ec8ef08a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A key moved to another rate-limit tier is limited at that tier's rate from its next request.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abe10a4ee3c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-abe3447e87f6",
+                  "kind": "feature",
+                  "label": "F-29",
+                  "name": "Issue and revoke keys",
+                  "parent": "01a19f1a-685d-7357-b67e-d663efc89e0d"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                  "kind": "requirement",
+                  "label": "RQ-100",
+                  "name": "When the owner issues an API key, Univ Server shall create the key with its label, quotas and rate-limit tier and return its secret once.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abe3447e87f6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a2b8-447e-752b-832a-975136ea867e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A key issued without a rate-limit tier gets the standard tier.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abe4333991f2"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-abeccca54ce7",
+                  "kind": "requirement",
+                  "label": "RQ-102",
+                  "name": "When the owner lists API keys, Univ Server shall return each key's label, issuance time, revocation time, quotas, rate-limit tier and usage, without its secret.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abe3447e87f6"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1a2b8-447e-752b-832a-974f9a8253a9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 38,
+                    "name": "The rate-limit tiers are basic at 300, standard at 1,200 and extended at 6,000 requests in 60 seconds.",
+                    "path": "spec/products/univ-server/access/enforce-quotas-and-rate-limits.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a2b8-447e-752b-832a-9750ec8ef08a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 51,
+                    "name": "A key moved to another rate-limit tier is limited at that tier's rate from its next request.",
+                    "path": "spec/products/univ-server/access/enforce-quotas-and-rate-limits.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a2b8-447e-752b-832a-975136ea867e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 27,
+                    "name": "A key issued without a rate-limit tier gets the standard tier.",
+                    "path": "spec/products/univ-server/access/issue-and-revoke-keys.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 6,
+                    "key": "01a19f20-8e6c-7039-b16f-abd83515093c",
+                    "kind": "feature",
+                    "label": "F-28",
+                    "line": 1,
+                    "name": "Enforce quotas and rate limits",
+                    "path": "spec/products/univ-server/access/enforce-quotas-and-rate-limits.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f20-8e6c-7039-b16f-abdf92323beb",
+                    "kind": "criterion",
+                    "label": "AC-262",
+                    "line": 36,
+                    "name": "Requests with an API key are limited per key, at the rate of the key's rate-limit tier.",
+                    "path": "spec/products/univ-server/access/enforce-quotas-and-rate-limits.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f20-8e6c-7039-b16f-abe10a4ee3c8",
+                    "kind": "requirement",
+                    "label": "RQ-99",
+                    "line": 42,
+                    "name": "When the owner changes a key's quotas or rate-limit tier, Univ Server shall apply the new values from the key's next request.",
+                    "path": "spec/products/univ-server/access/enforce-quotas-and-rate-limits.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                    "kind": "requirement",
+                    "label": "RQ-100",
+                    "line": 12,
+                    "name": "When the owner issues an API key, Univ Server shall create the key with its label, quotas and rate-limit tier and return its secret once.",
+                    "path": "spec/products/univ-server/access/issue-and-revoke-keys.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f20-8e6c-7039-b16f-abeccca54ce7",
+                    "kind": "requirement",
+                    "label": "RQ-102",
+                    "line": 40,
+                    "name": "When the owner lists API keys, Univ Server shall return each key's label, issuance time, revocation time, quotas, rate-limit tier and usage, without its secret.",
+                    "path": "spec/products/univ-server/access/issue-and-revoke-keys.yaml"
+                  }
+                ],
+                "commit": "607b6eeffbc062d1bdbdd6d219dcca1adf220240",
+                "removed": [],
+                "revision": "develop"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 2,
+                "publishedAt": "2026-11-03T18:26:57Z",
+                "stateRoot": "f809d6d341a5bae88459ad23c3abf1629e161ed74c5cda771fc8465b01c8d2cb"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "product/server",
+                "modified": [
+                  "spec/decisions/set-a-keys-rate-limit-by-tier.yaml",
+                  "spec/products/univ-server/access/enforce-quotas-and-rate-limits.yaml",
+                  "spec/products/univ-server/access/issue-and-revoke-keys.yaml",
+                  "spec/terms.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a2b8-7ec0-7649-bdbe-5b8b5d654016
+    id: approve-rate-tiers
+    kind: approval
+    versions:
+      - key: 01a1a2b8-7ec0-7649-bdbe-5b8d540fe0b8
+        at: 2026-11-03T18:42:42Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Approve the rate-limit tier change to spec/"
+        markdown: |-
+          **Changed:**
+
+          - **RQ-99:** the owner changes a key's quotas or **rate-limit tier**.
+          - **RQ-100:** a key is issued with its label, quotas and **rate-limit tier**.
+          - **RQ-102:** the key listing gives each key's **rate-limit tier**.
+          - **AC-262:** a keyed request is limited at the rate of its key's tier, where it used to be 1,200 per 60 s.
+          - **F-28 body:** why the rate is a tier rather than any number.
+
+          **Added:**
+
+          - **Criterion on RQ-98:** the tiers are `basic` 300, `standard` 1,200 and `extended` 6,000 requests per 60 s.
+          - **Criterion on RQ-99:** a key moved to another tier is limited at that tier's rate from its next request.
+          - **Criterion on RQ-100:** a key issued without a tier gets `standard`.
+          - **Term:** *rate-limit tier*.
+          - **Decision:** *Set a key's rate limit by tier*, which compares tiers, fixed limits and counting in storage. Its subjects are F-28, F-29 and the rate-limiting binding.
+
+          **Please check:**
+
+          - the three tier names and rates;
+          - that `standard` is the default.
+
+          Once you approve, I commit `spec/` alone as `spec: give each key a rate-limit tier`, then write the master plan.
+    responses:
+      - key: 01a1a2b9-06c7-753b-907b-89010d80d6fa
+        at: 2026-11-03T18:43:17Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved

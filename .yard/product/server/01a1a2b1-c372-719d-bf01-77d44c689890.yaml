@@ -1,0 +1,12 @@
+key: 01a1a2b1-c372-719d-bf01-77d44c689890
+id: waves
+versions:
+  - key: 01a1a2b1-c372-719d-bf01-77d7d6a9ce38
+    at: 2026-11-03T18:35:21Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Build Univ Server in waves"
+    goal: "Every Univ Server wave is built on its own stage branch and merged into product/server with the owner's approval"
+    status: planned
