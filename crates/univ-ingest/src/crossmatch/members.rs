@@ -10,9 +10,12 @@
 //!   compared without case, must equal a designation's identifier or a common name of exactly
 //!   one matched object. A name without a letter, such as a row number, resolves to nothing: a
 //!   bare number names no catalogue.
-//! - The object's preferred sky position must lie within [`MEMBER_TOLERANCE_ARCSEC`] of the
-//!   member's published position, so that a name shared by two catalogues cannot pull in an
-//!   object elsewhere on the sky.
+//! - The object's preferred sky position must lie within the matching rules'
+//!   `structure_members.angular_tolerance_arcsec` of the member's published position, so that
+//!   a name shared by two catalogues cannot pull in an object elsewhere on the sky. Where the
+//!   check cannot be made, the member published without a usable position or the object
+//!   without a sky position, the member is resolved by its name alone, recorded as unchecked
+//!   and counted.
 
 use std::collections::HashMap;
 
@@ -26,11 +29,8 @@ use univ_model::units::Unit;
 
 use crate::structures::{ColumnName, Coordinates, Members, Structure, StructureGeometry};
 
-/// How far, in arcseconds, a resolved object may lie from the member's published position.
-pub const MEMBER_TOLERANCE_ARCSEC: f64 = 60.0;
-
-/// A matched object as a member list sees it: its id, sky direction and derived position.
-pub struct Candidate<'a> {
+/// A matched object as a member list sees it: its id, the object and its derived position.
+pub struct Resolved<'a> {
     pub id: ObjectId,
     pub object: &'a Object,
     pub position: Option<&'a DerivedPosition>,
@@ -47,6 +47,8 @@ pub struct MemberPlacement {
     pub bounds: Option<Aabb>,
     /// Each member that cannot be placed, and why.
     pub unplaced: Vec<UnplacedMember>,
+    /// The members resolved by name alone, their position unchecked against the object's.
+    pub by_name_only: Vec<String>,
     /// The published position the structure is shown at when its members cannot all be placed.
     pub point: Option<Coordinates>,
 }
@@ -102,14 +104,14 @@ fn key(name: &str) -> Option<String> {
 /// Every matched object by each name it carries.
 pub struct NameIndex<'a> {
     by_name: HashMap<String, Vec<usize>>,
-    candidates: &'a [Candidate<'a>],
+    objects: &'a [Resolved<'a>],
 }
 
 impl<'a> NameIndex<'a> {
     #[must_use]
-    pub fn new(candidates: &'a [Candidate<'a>]) -> Self {
+    pub fn new(objects: &'a [Resolved<'a>]) -> Self {
         let mut by_name: HashMap<String, Vec<usize>> = HashMap::new();
-        for (i, c) in candidates.iter().enumerate() {
+        for (i, c) in objects.iter().enumerate() {
             let names = c.object.designations.iter().map(|d| d.identifier.as_str());
             let common = c.object.names.iter().map(|n| n.name.as_str());
             for name in names.chain(common).filter_map(key) {
@@ -119,26 +121,33 @@ impl<'a> NameIndex<'a> {
                 }
             }
         }
-        Self {
-            by_name,
-            candidates,
-        }
+        Self { by_name, objects }
     }
 }
 
-/// Resolves the member list of each structure that has one.
+/// Resolves the member list of each structure that has one, a member's object within
+/// `tolerance_arcsec` of its published position.
 #[must_use]
-pub fn resolve_all(structures: &[Structure], index: &NameIndex<'_>) -> Vec<MemberPlacement> {
+pub fn resolve_all(
+    structures: &[Structure],
+    index: &NameIndex<'_>,
+    tolerance_arcsec: f64,
+) -> Vec<MemberPlacement> {
     structures
         .iter()
         .filter_map(|s| match &s.geometry {
-            Some(StructureGeometry::Members(m)) => Some(resolve(s, m, index)),
+            Some(StructureGeometry::Members(m)) => Some(resolve(s, m, index, tolerance_arcsec)),
             _ => None,
         })
         .collect()
 }
 
-fn resolve(structure: &Structure, members: &Members, index: &NameIndex<'_>) -> MemberPlacement {
+fn resolve(
+    structure: &Structure,
+    members: &Members,
+    index: &NameIndex<'_>,
+    tolerance_arcsec: f64,
+) -> MemberPlacement {
     let to_icrs = between(members.frame, Frame::Icrs);
     let degrees = |name: ColumnName| {
         let i = members.column(name)?;
@@ -148,12 +157,17 @@ fn resolve(structure: &Structure, members: &Members, index: &NameIndex<'_>) -> M
     let (lon, lat) = (degrees(ColumnName::Lon), degrees(ColumnName::Lat));
     let mut placed = Vec::new();
     let mut unplaced = Vec::new();
+    let mut by_name_only = Vec::new();
     for row in &members.rows {
         let published = lon.zip(lat).map(|((i, fi), (j, fj))| {
             to_icrs.apply(unit_vector(row.values[i] * fi, row.values[j] * fj))
         });
-        match member(&row.name, published, index) {
-            Ok(m) => placed.push(m),
+        match member(&row.name, published, index, tolerance_arcsec) {
+            Ok((m, Checked::Position)) => placed.push(m),
+            Ok((m, Checked::NameOnly)) => {
+                by_name_only.push(row.name.clone());
+                placed.push(m);
+            }
             Err(why) => unplaced.push(UnplacedMember {
                 member: row.name.clone(),
                 why,
@@ -176,22 +190,30 @@ fn resolve(structure: &Structure, members: &Members, index: &NameIndex<'_>) -> M
             .flatten(),
         shape,
         unplaced,
+        by_name_only,
     }
 }
 
+/// Whether a resolved member's position was checked against its object's.
+enum Checked {
+    Position,
+    NameOnly,
+}
+
 /// The member named `name`, published toward `published` (an ICRS unit vector), as an object
-/// member at its derived position.
+/// member at its derived position, and whether its position could be checked.
 fn member(
     name: &str,
     published: Option<Vec3>,
     index: &NameIndex<'_>,
-) -> Result<Member, MemberProblem> {
+    tolerance_arcsec: f64,
+) -> Result<(Member, Checked), MemberProblem> {
     let found = key(name)
         .and_then(|k| index.by_name.get(&k))
         .map_or(&[][..], Vec::as_slice);
     let c = match found {
         [] => return Err(MemberProblem::NoObject),
-        [one] => &index.candidates[*one],
+        [one] => &index.objects[*one],
         many => {
             return Err(MemberProblem::Ambiguous {
                 objects: many.len(),
@@ -205,12 +227,15 @@ fn member(
         .and_then(|p| c.object.entry(&p.entry))
         .and_then(|e| e.entry.position.as_ref())
         .map(|p| p.icrs.unit_vector());
-    if let (Some(a), Some(b)) = (sky, published) {
+    let checked = if let (Some(a), Some(b)) = (sky, published) {
         let arcsec = separation_degrees(a, b) * 3_600.0;
-        if arcsec > MEMBER_TOLERANCE_ARCSEC {
+        if arcsec > tolerance_arcsec {
             return Err(MemberProblem::TooFar { id: c.id, arcsec });
         }
-    }
+        Checked::Position
+    } else {
+        Checked::NameOnly
+    };
     let reason = match c.object.placement {
         Placement::NotPlaced { reason } => reason,
         Placement::Placed => NotPlacedReason::NotDerivable,
@@ -219,5 +244,5 @@ fn member(
         .position
         .and_then(|p| p.cartesian(Frame::Icrs))
         .ok_or(MemberProblem::Unplaced { id: c.id, reason })?;
-    Ok(Member::Object { id: c.id, at })
+    Ok((Member::Object { id: c.id, at }, checked))
 }

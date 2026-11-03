@@ -112,7 +112,7 @@ async fn an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts() 
         "Z Step cross-match: members: 6 member lists\n",
         "Z cross-match: 19 entries, 19 objects, 0 merges, 0 candidate links, 19 new ids, 0 ids \
          replaced, 16 placed, 3 not placed (no distance), 0 member lists placed, 6 member lists \
-         not placed\n",
+         not placed, 0 members resolved by name only\n",
         "Z Stopped at cross-match: cross-match only; no release was asked for\n",
     ] {
         assert!(log.contains(line), "{line}in\n{log}");

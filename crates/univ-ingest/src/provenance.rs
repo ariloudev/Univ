@@ -7,7 +7,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use univ_model::ids::SourceId;
 
-use crate::fetch::{Payload, write_via_part};
+use crate::fetch::Payload;
 use crate::normalize::NormalizationReport;
 
 /// The file name of a source's provenance, in the directory that holds its chunks.
@@ -59,8 +59,7 @@ impl Provenance {
     ///
     /// Fails when the file cannot be written.
     pub fn write(&self, dir: &Path) -> std::io::Result<()> {
-        let yaml = serde_norway::to_string(self).map_err(std::io::Error::other)?;
-        write_via_part(&dir.join(FILE), yaml.as_bytes(), || Ok(()))
+        crate::yaml::write(&dir.join(FILE), self)
     }
 
     /// Records `payload` for `source` in the provenance kept in `dir`.

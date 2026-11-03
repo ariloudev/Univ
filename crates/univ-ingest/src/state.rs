@@ -8,8 +8,12 @@
 //!   `pending/` as the new state once the release is whole, and a cross-match run again starts
 //!   from the same state and gives the same ids.
 //!
-//! Before the first release neither file exists: the ledger is new and no entry has an id.
+//! Before the first release neither file exists: the ledger is new and no entry has an id. After
+//! it, the two go together: a ledger that lists releases needs the entry ids of the last, and
+//! those must hold every id the ledger counts as live, issued and never replaced, or the next
+//! release would give those objects new ids.
 
+use std::collections::HashSet;
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -17,9 +21,8 @@ use serde::{Deserialize, Serialize};
 use univ_model::ids::{Designation, ObjectId, SourceId};
 use univ_model::ledger::Ledger;
 
-use crate::fetch::write_via_part;
-use crate::ids::{EntryIds, read_ledger, write_ledger};
-use crate::yaml::{FileError, read_checked};
+use crate::ids::EntryIds;
+use crate::yaml::{FileError, read_checked, write};
 
 /// The state directory a run uses when none is given.
 pub const DEFAULT_STATE: &str = ".cache/univ-ingest/state";
@@ -80,9 +83,35 @@ impl State {
         };
         let previous = if ids.exists() {
             read_entry_ids(&ids)?
+        } else if let Some(last) = ledger.releases().last() {
+            return Err(FileError::new(
+                &ids,
+                "(file)",
+                format!(
+                    "is missing, but the ledger lists {} release(s), the last {:?}: without the \
+                     entry ids of that release every object would be given a new id",
+                    ledger.releases().len(),
+                    last.name
+                ),
+            ));
         } else {
             EntryIds::new()
         };
+        let missing = uncovered(&ledger, &previous);
+        if let Some(first) = missing.first() {
+            let shown: Vec<String> = missing.iter().take(10).map(ToString::to_string).collect();
+            return Err(FileError::new(
+                &ids,
+                "entries",
+                format!(
+                    "holds no entry for {} id(s) the ledger counts as live (issued and never \
+                     replaced), from {first}: {}{}",
+                    missing.len(),
+                    shown.join(", "),
+                    if missing.len() > 10 { ", ..." } else { "" }
+                ),
+            ));
+        }
         Ok(Self { ledger, previous })
     }
 
@@ -107,8 +136,7 @@ impl State {
                 })
                 .collect(),
         };
-        let yaml = serde_norway::to_string(&file).map_err(io::Error::other)?;
-        write_via_part(&dir.join(ENTRY_IDS), yaml.as_bytes(), || Ok(()))
+        write(&dir.join(ENTRY_IDS), &file)
     }
 }
 
@@ -137,6 +165,42 @@ impl State {
 #[must_use]
 pub fn pending(dir: &Path) -> PathBuf {
     dir.join(PENDING)
+}
+
+/// The ids `ledger` counts as live, issued and never replaced, that no entry of `previous` holds,
+/// ascending.
+fn uncovered(ledger: &Ledger, previous: &EntryIds) -> Vec<ObjectId> {
+    let Some(last) = ledger.last_issued() else {
+        return Vec::new();
+    };
+    let held: HashSet<ObjectId> = previous.values().copied().collect();
+    let replaced: HashSet<ObjectId> = ledger.replaced().iter().map(|r| r.id).collect();
+    (1..=last.get())
+        .filter_map(|n| ObjectId::new(n).ok())
+        .filter(|id| !held.contains(id) && !replaced.contains(id))
+        .collect()
+}
+
+/// Reads the id ledger kept in `file`, with the ledger's checks.
+///
+/// A missing file is refused rather than taken for an empty ledger: starting over would give
+/// ids again. The first release starts from [`Ledger::new`].
+///
+/// # Errors
+///
+/// Fails when the file cannot be read, its YAML is not a ledger, or the ledger does not stand,
+/// naming the file and the field.
+pub fn read_ledger(file: &Path) -> Result<Ledger, FileError> {
+    read_checked(file, |_: &Ledger| Ok(()))
+}
+
+/// Writes `ledger` to `file` through a rename, so that it is never half written.
+///
+/// # Errors
+///
+/// Fails when the file cannot be written.
+pub fn write_ledger(file: &Path, ledger: &Ledger) -> io::Result<()> {
+    write(file, ledger)
 }
 
 fn read_entry_ids(file: &Path) -> Result<EntryIds, FileError> {

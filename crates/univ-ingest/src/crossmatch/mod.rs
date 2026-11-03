@@ -15,13 +15,12 @@ use univ_model::ledger::Ledger;
 use univ_model::object::{Object, Placement};
 
 pub use members::{
-    Candidate, MEMBER_TOLERANCE_ARCSEC, MemberPlacement, MemberProblem, NameIndex, UnplacedMember,
-    resolve_all,
+    MemberPlacement, MemberProblem, NameIndex, Resolved, UnplacedMember, resolve_all,
 };
 pub use place::place;
 
 use crate::events::{Count, Event, EventSink, Stage};
-use crate::ids::{AssignError, Assigned, assign};
+use crate::ids::{AssignError, Assigned, assign_in_order};
 use crate::matching::{MatchReport, MatchingRules, match_entries};
 use crate::ranking::{RankingRules, rank_all};
 use crate::state::State;
@@ -58,7 +57,8 @@ pub struct CrossMatched {
     /// The objects, in the order of their first entry.
     pub objects: Vec<ReleaseObject>,
     pub assigned: Assigned,
-    /// The ledger with the release recorded, and the entry ids, as the next state.
+    /// The ledger with the release recorded, and the entry ids, as the next state; the ids
+    /// are kept there alone, not in `assigned`.
     pub next: State,
     pub structures: Vec<MemberPlacement>,
     pub matching: MatchReport,
@@ -69,8 +69,6 @@ pub struct CrossMatched {
 pub enum CrossMatchError {
     #[error("the ids cannot be assigned: {0}")]
     Ids(#[from] AssignError),
-    #[error("object holding {0} has no id")]
-    Unassigned(String),
 }
 
 /// The name of the release after those `ledger` lists: one more than their number.
@@ -120,7 +118,8 @@ pub fn cross_match(
             .map(|e| e.entry.designation.clone())
             .collect()
     });
-    let assigned = assign(&inputs.state.previous, &mut ledger, &release, groups)?;
+    let (mut assigned, ids) =
+        assign_in_order(&inputs.state.previous, &mut ledger, &release, groups)?;
     step(format!(
         "ids: release {release}, {} new, {} replaced",
         issued(&assigned),
@@ -128,13 +127,7 @@ pub fn cross_match(
     ));
 
     let mut placed = Vec::with_capacity(objects.len());
-    for mut object in objects {
-        // The matching's objects and the ids' groups share their entries' designations.
-        let anchor = &object.entries[0].entry.designation;
-        let id = *assigned
-            .entries
-            .get(anchor)
-            .ok_or_else(|| CrossMatchError::Unassigned(format!("{anchor:?}")))?;
+    for (mut object, id) in objects.into_iter().zip(ids) {
         let position = place(&mut object, inputs.release, inputs.ranking);
         placed.push(ReleaseObject {
             id,
@@ -145,15 +138,16 @@ pub fn cross_match(
     let count = placed.iter().filter(|o| o.position.is_some()).count();
     step(format!("positions: {count} placed of {}", placed.len()));
 
-    let candidates: Vec<Candidate<'_>> = placed
+    let resolved: Vec<Resolved<'_>> = placed
         .iter()
-        .map(|o| Candidate {
+        .map(|o| Resolved {
             id: o.id,
             object: &o.object,
             position: o.position.as_ref(),
         })
         .collect();
-    let structures = resolve_all(inputs.structures, &NameIndex::new(&candidates));
+    let tolerance = inputs.matching.structure_members.angular_tolerance_arcsec;
+    let structures = resolve_all(inputs.structures, &NameIndex::new(&resolved), tolerance);
     for s in structures.iter().filter(|s| s.shape.is_none()) {
         let (no_object, unplaced) = s.unresolved_and_unplaced();
         sink.emit(Event::MembersUnplaced {
@@ -168,7 +162,7 @@ pub fn cross_match(
 
     let next = State {
         ledger,
-        previous: assigned.entries.clone(),
+        previous: std::mem::take(&mut assigned.entries),
     };
     let crossed = CrossMatched {
         release,
@@ -218,6 +212,11 @@ impl CrossMatched {
         let whole = self.structures.iter().filter(|s| s.shape.is_some()).count() as u64;
         counts.push(Count::new(whole, "member lists placed"));
         counts.push(Count::new(lists - whole, "member lists not placed"));
+        let unchecked: usize = self.structures.iter().map(|s| s.by_name_only.len()).sum();
+        counts.push(Count::new(
+            unchecked as u64,
+            "members resolved by name only",
+        ));
         counts
     }
 }

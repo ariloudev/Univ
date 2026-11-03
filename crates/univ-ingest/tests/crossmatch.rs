@@ -16,7 +16,9 @@ use common::TestClock;
 use simulated::{
     designation, entry, matching_rules, offset, ranking_rules, source, with_cz, with_distance,
 };
-use univ_ingest::crossmatch::{CrossMatched, Inputs, MemberProblem, cross_match};
+use univ_ingest::crossmatch::{
+    CrossMatched, Inputs, MemberProblem, NameIndex, Resolved, cross_match, resolve_all,
+};
 use univ_ingest::display::{PlainTarget, RunDisplay, RunSink};
 use univ_ingest::events::{Count, Event, EventSink, RecordingSink, Stage};
 use univ_ingest::normalize::{NormalizationReport, Normalized};
@@ -27,7 +29,8 @@ use univ_model::derive::Release;
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::entry::CatalogueEntry;
 use univ_model::geometry::{Geometry, Member};
-use univ_model::object::{NotPlacedReason, Placement};
+use univ_model::ids::ObjectId;
+use univ_model::object::{NotPlacedReason, Object, ObjectEntry, Placement, Resolution};
 use univ_model::position::Frame;
 
 const CEPHEIDS: (DistanceKind, Method) = (DistanceKind::PrimaryIndicator, Method::Cepheids);
@@ -187,7 +190,7 @@ async fn the_cross_match_stage_reports_its_steps_and_counts_and_writes_its_ids_a
     let prepared = State::read(&pending(dir.path())).unwrap();
     assert_eq!(prepared.ledger.releases()[0].name, "1");
     assert_eq!(prepared.previous.len(), 6);
-    assert_eq!(prepared.previous, crossed.assigned.entries);
+    assert_eq!(prepared.previous, crossed.next.previous);
 
     // The run's summary gives the stage's counts and where it stopped.
     let display = RunSink::new(TestClock::default(), PlainTarget::new(Vec::new()));
@@ -201,7 +204,7 @@ async fn the_cross_match_stage_reports_its_steps_and_counts_and_writes_its_ids_a
         "Z Step cross-match: matching: 6 entries into 5 objects, 2 candidate links\n",
         "Z cross-match: 6 entries, 5 objects, 1 merges, 2 candidate links, 5 new ids, 0 ids \
          replaced, 3 placed, 2 not placed (no distance), 0 member lists placed, 0 member lists \
-         not placed\n",
+         not placed, 0 members resolved by name only\n",
         "Z Stopped at cross-match: cross-match only; no release was asked for\n",
     ] {
         assert!(text.contains(line), "{line} in\n{text}");
@@ -213,7 +216,7 @@ async fn a_cross_match_again_gives_the_same_ids_until_a_release_takes_them() {
     let dir = tempfile::tempdir().unwrap();
     let first = run(dir.path(), Arc::new(RecordingSink::default())).await;
     let again = run(dir.path(), Arc::new(RecordingSink::default())).await;
-    let ids = |c: &Option<CrossMatched>| c.as_ref().unwrap().assigned.entries.clone();
+    let ids = |c: &Option<CrossMatched>| c.as_ref().unwrap().next.previous.clone();
     assert_eq!(ids(&first.0), ids(&again.0));
 
     // Once a release has taken the pending state, the next cross-match keeps its ids.
@@ -224,7 +227,7 @@ async fn a_cross_match_again_gives_the_same_ids_until_a_release_takes_them() {
     let next = run(dir.path(), Arc::new(RecordingSink::default())).await;
     let next = next.0.unwrap();
     assert_eq!(next.release, "2");
-    assert_eq!(next.assigned.entries, ids(&first.0));
+    assert_eq!(next.next.previous, ids(&first.0));
     assert_eq!(count(&next.counts(), "new ids"), 0);
 }
 
@@ -303,7 +306,7 @@ fn members_that_all_resolve_to_placed_objects_are_cached_with_their_bounding_box
             Member::Tracer { .. } => panic!("a tracer"),
         })
         .collect();
-    let id_of = |d| crossed.assigned.entries[&designation("updated-nearby-galaxies", d)];
+    let id_of = |d| crossed.next.previous[&designation("updated-nearby-galaxies", d)];
     assert_eq!(ids, [id_of("LMC"), id_of("SMC")]);
     let bounds = placed.bounds.unwrap();
     assert_eq!(
@@ -361,4 +364,42 @@ fn a_member_that_resolves_to_no_object_or_an_unplaced_one_keeps_the_structure_a_
     assert!(matches!(why[3], ("SMC", MemberProblem::TooFar { arcsec, .. }) if *arcsec > 60.0));
     assert_eq!(placed.unresolved_and_unplaced(), (3, 1));
     assert_eq!(count(&crossed.counts(), "member lists not placed"), 1);
+}
+
+#[test]
+fn a_member_whose_position_cannot_be_checked_is_resolved_by_name_alone_and_counted() {
+    // A placed object without a preferred sky position to check the member's against: the
+    // member is resolved by its name alone, recorded as unchecked, and the stage counts it.
+    let galaxy = with_distance(
+        entry("updated-nearby-galaxies", "Lonely", 10.0, 10.0),
+        5.0,
+        Some(0.2),
+        CEPHEIDS,
+    );
+    let release = Release::planck_2018();
+    let at = release.place(galaxy.position.as_ref(), galaxy.distances.first(), None);
+    let at = at.unwrap().unwrap();
+    let mut object = Object::new(vec![ObjectEntry {
+        entry: galaxy,
+        resolved_by: Resolution::Anchor,
+    }]);
+    object.placement = Placement::Placed;
+    let resolved = [Resolved {
+        id: ObjectId::new(1).unwrap(),
+        object: &object,
+        position: Some(&at),
+    }];
+    let tolerance = matching_rules().structure_members.angular_tolerance_arcsec;
+    assert_eq!(tolerance, 60.0);
+    let wall = structure(&[("Lonely", 50.0, -30.0)]);
+    let lists = resolve_all(
+        std::slice::from_ref(&wall),
+        &NameIndex::new(&resolved),
+        tolerance,
+    );
+    assert_eq!(lists[0].by_name_only, ["Lonely"]);
+    assert!(lists[0].shape.is_some() && lists[0].unplaced.is_empty());
+    let mut crossed = cross(&[wall]);
+    crossed.structures = lists;
+    assert_eq!(count(&crossed.counts(), "members resolved by name only"), 1);
 }

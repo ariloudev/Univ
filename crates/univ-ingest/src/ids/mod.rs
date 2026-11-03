@@ -19,15 +19,13 @@
 //!   smallest entry key, so no id is given twice (AC-80) and the same groups give the same ids
 //!   in whatever order they come.
 
-mod file;
-
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use thiserror::Error;
 use univ_model::ids::{Designation, ObjectId};
 use univ_model::ledger::{Change, IdRange, Ledger, LedgerError, Replacement};
 
-pub use file::{read_ledger, write_ledger};
+pub use crate::state::{read_ledger, write_ledger};
 
 /// A release's map from each catalogue entry, by its source and identifier, to its object's id.
 pub type EntryIds = BTreeMap<Designation, ObjectId>;
@@ -95,7 +93,21 @@ pub fn assign(
     release: &str,
     objects: impl IntoIterator<Item = Vec<Designation>>,
 ) -> Result<Assigned, AssignError> {
-    let groups = normalize(objects)?;
+    assign_in_order(previous, ledger, release, objects).map(|(assigned, _)| assigned)
+}
+
+/// As [`assign`], with the id of each object in the order `objects` gave them.
+///
+/// # Errors
+///
+/// Fails as [`assign`] does.
+pub fn assign_in_order(
+    previous: &EntryIds,
+    ledger: &mut Ledger,
+    release: &str,
+    objects: impl IntoIterator<Item = Vec<Designation>>,
+) -> Result<(Assigned, Vec<ObjectId>), AssignError> {
+    let (order, groups) = normalize(objects)?;
     for &id in previous.values() {
         if !ledger.is_issued(id) {
             return Err(AssignError::NotIssued(id));
@@ -153,36 +165,41 @@ pub fn assign(
         .iter()
         .flat_map(|o| o.entries.iter().map(|e| (e.clone(), o.id)))
         .collect();
-    Ok(Assigned {
+    let mut ids = vec![None; assigned.len()];
+    for (object, &given) in assigned.iter().zip(&order) {
+        ids[given] = Some(object.id);
+    }
+    let assigned = Assigned {
         objects: assigned,
         entries,
         issued,
         replaced,
-    })
+    };
+    Ok((assigned, ids.into_iter().flatten().collect()))
 }
 
 /// Sorts each group's entries and the groups by their smallest entry, refusing an empty group or
-/// an entry in two groups.
+/// an entry in two groups; with the groups, the place each had in the order given.
 fn normalize(
     objects: impl IntoIterator<Item = Vec<Designation>>,
-) -> Result<Vec<Vec<Designation>>, AssignError> {
-    let mut groups = Vec::new();
-    let mut seen = BTreeSet::new();
+) -> Result<(Vec<usize>, Vec<Vec<Designation>>), AssignError> {
+    let mut groups: Vec<(usize, Vec<Designation>)> = Vec::new();
     for (index, mut entries) in objects.into_iter().enumerate() {
         entries.sort();
         entries.dedup();
         if entries.is_empty() {
             return Err(AssignError::EmptyObject(index));
         }
-        for entry in &entries {
-            if !seen.insert(entry.clone()) {
-                return Err(AssignError::EntryInTwoObjects(entry.clone()));
-            }
-        }
-        groups.push(entries);
+        groups.push((index, entries));
     }
-    groups.sort_by(|a, b| a[0].cmp(&b[0]));
-    Ok(groups)
+    let mut seen: HashSet<&Designation> = HashSet::new();
+    for entry in groups.iter().flat_map(|(_, g)| g) {
+        if !seen.insert(entry) {
+            return Err(AssignError::EntryInTwoObjects(entry.clone()));
+        }
+    }
+    groups.sort_by(|a, b| a.1[0].cmp(&b.1[0]));
+    Ok(groups.into_iter().unzip())
 }
 
 /// What became of each previous id that does not go on: merged into the object that took it
