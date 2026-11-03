@@ -4,18 +4,13 @@
 
 mod common;
 
-use common::{definition_of, entry, normalize_body};
+use common::{definition_of, entry};
 use univ_ingest::source::{FixAction, LeftOutReason};
 use univ_model::position::separation_degrees;
 use univ_model::position::unit_vector;
 
 fn recorded() -> univ_ingest::normalize::Normalized {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/vizier/cosmicflows-4-wrong-positions.tsv");
-    normalize_body(
-        &definition_of("cosmicflows-4"),
-        &std::fs::read(path).unwrap_or_default(),
-    )
+    common::normalized_file("cosmicflows-4", "cosmicflows-4-wrong-positions.tsv")
 }
 
 fn at(e: &univ_model::entry::CatalogueEntry) -> (f64, f64) {
@@ -130,4 +125,10 @@ fn a_replaced_group_position_names_kourkchi_and_tully_and_the_fix() {
         panic!("{:?}", d.fixes[1].action)
     };
     assert_eq!(mark.flag, "position_source");
+}
+
+#[test]
+#[should_panic(expected = "no-such-answer.tsv")]
+fn a_missing_recorded_answer_fails_rather_than_reading_as_empty() {
+    common::normalized_file("cosmicflows-4", "no-such-answer.tsv");
 }

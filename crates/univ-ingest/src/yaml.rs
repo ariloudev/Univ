@@ -80,12 +80,11 @@ pub fn parse_checked<T: DeserializeOwned>(
 pub fn write<T: Serialize>(file: &Path, value: &T) -> std::io::Result<()> {
     // Streamed to the part file, so a large value, such as the entry ids of millions of
     // entries, is never held whole as text.
-    let part = crate::fetch::part_path(file);
-    let mut out = std::io::BufWriter::new(fs::File::create(&part)?);
-    serde_norway::to_writer(&mut out, value).map_err(std::io::Error::other)?;
-    std::io::Write::flush(&mut out)?;
-    drop(out);
-    fs::rename(part, file)
+    crate::fetch::write_via_part_with(
+        file,
+        |out| serde_norway::to_writer(out, value).map_err(std::io::Error::other),
+        || Ok(()),
+    )
 }
 
 /// The `.yaml` files in `dir`, in file-name order.

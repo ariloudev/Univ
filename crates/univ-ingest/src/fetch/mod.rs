@@ -389,8 +389,21 @@ pub(crate) fn write_via_part(
     bytes: &[u8],
     before: impl FnOnce() -> io::Result<()>,
 ) -> io::Result<()> {
+    write_via_part_with(dest, |out| out.write_all(bytes), before)
+}
+
+/// As [`write_via_part`], the partial file written by `write` through a buffered writer, so a
+/// large value is streamed rather than held whole.
+pub(crate) fn write_via_part_with(
+    dest: &Path,
+    write: impl FnOnce(&mut dyn io::Write) -> io::Result<()>,
+    before: impl FnOnce() -> io::Result<()>,
+) -> io::Result<()> {
     let part = part_path(dest);
-    std::fs::write(&part, bytes)?;
+    let mut out = io::BufWriter::new(std::fs::File::create(&part)?);
+    write(&mut out)?;
+    io::Write::flush(&mut out)?;
+    drop(out);
     before()?;
     std::fs::rename(part, dest)
 }

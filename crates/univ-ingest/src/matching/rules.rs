@@ -1,7 +1,7 @@
 //! The matching rules of a release, read from `rules/matching.yaml`: the published
 //! cross-identifications, the tolerances of each pair of sources and the confidence rule.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
@@ -25,18 +25,6 @@ pub struct MatchingRules {
     pub names: Vec<NameRule>,
     pub structure_members: MemberRule,
     pub pairs: Vec<PairRule>,
-    /// Sources whose published velocity is in the CMB frame, moved back to a heliocentric cz
-    /// before a pair compares it.
-    #[serde(default)]
-    pub cmb_frame_velocities: Vec<FrameRule>,
-}
-
-/// A source whose velocity column is a CMB-frame cz, with where its source says so.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct FrameRule {
-    pub source: SourceId,
-    pub basis: String,
 }
 
 /// A galaxy source whose field names, by the group rule's scheme, the group each galaxy
@@ -132,6 +120,13 @@ pub struct CrossIdentification {
     /// Why the tolerance is what it is; required with it.
     #[serde(default)]
     pub tolerance_basis: Option<String>,
+    /// For a scheme compared as common names, catalogue prefixes written another way, by their
+    /// lower-case letters, and how they are compared: `messier` as `m`.
+    #[serde(default)]
+    pub aliases: BTreeMap<String, String>,
+    /// Where the sources write a catalogue so; required with aliases.
+    #[serde(default)]
+    pub aliases_basis: Option<String>,
     pub members: Vec<SchemeMember>,
 }
 
@@ -279,6 +274,17 @@ impl MatchingRules {
         }
         let mut members = BTreeSet::new();
         for (i, scheme) in self.cross_identifications.iter().enumerate() {
+            if !scheme.aliases.is_empty()
+                && scheme
+                    .aliases_basis
+                    .as_deref()
+                    .is_none_or(|b| b.trim().is_empty())
+            {
+                return Err(field(
+                    &format!("cross_identifications[{i}].aliases"),
+                    "are given without their aliases_basis",
+                ));
+            }
             if let Some(t) = scheme.angular_tolerance_arcmin {
                 let at = format!("cross_identifications[{i}].angular_tolerance_arcmin");
                 if !(t.is_finite() && t > 0.0) {

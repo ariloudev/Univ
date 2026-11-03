@@ -27,9 +27,9 @@ cuts:
     background" (Note 2). It is kept as published under velocity, and read as the entry's
     redshift in the CMB frame, as published: no dipole is applied to it again. That redshift
     makes DM, a luminosity distance, comoving (D_L / (1 + z)), as a redshift of the same entry
-    does for any source; it also ranks as a candidate like any other redshift. The matching
-    rules move it back to a heliocentric cz before comparing it with another source's
-    (rules/matching.yaml, cmb_frame_velocities).
+    does for any source; it also ranks as a candidate like any other redshift. The normalizer
+    derives its heliocentric cz back with the run's dipole, which the matching rules compare
+    with another source's.
   - "T17, the group of Tempel et al. 2017, and GLON, GLAT, SGL and SGB are not taken."
 columns:
   - { column: PGC, field: identifier, unit: dimensionless }

@@ -103,7 +103,7 @@ fn a_row_gives_its_values_in_column_order() {
         change: "merged_into".into(),
         replaced_by: "[3]".into(),
     };
-    let statements = IdReplacedRow::TABLE.inserts(&[replaced.values()]);
+    let statements = super::sql::inserts(IdReplacedRow::TABLE, &[replaced.values()]);
     assert_eq!(
         statements,
         [

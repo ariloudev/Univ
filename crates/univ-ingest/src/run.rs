@@ -269,7 +269,17 @@ pub async fn normalize_stage(
     report: &Mutex<RunReport>,
 ) -> Vec<Normalized> {
     let cancel = Arc::new(AtomicBool::new(false));
-    normalize_stage_until(sink, definitions, acquired, options, report, &cancel).await
+    let correction = CmbCorrection::new(DipoleModel::Planck2018);
+    normalize_stage_until(
+        sink,
+        definitions,
+        acquired,
+        options,
+        report,
+        &correction,
+        &cancel,
+    )
+    .await
 }
 
 /// [`normalize_stage`], stopping soon after `cancel` is set: the source being normalized stops
@@ -280,6 +290,7 @@ pub async fn normalize_stage_until(
     acquired: &[Option<Acquired>],
     options: &FetchOptions,
     report: &Mutex<RunReport>,
+    correction: &CmbCorrection,
     cancel: &Arc<AtomicBool>,
 ) -> Vec<Normalized> {
     let tables: Vec<(usize, &SourceDefinition, &Acquired)> = definitions
@@ -294,7 +305,7 @@ pub async fn normalize_stage_until(
         stage: Stage::Normalize,
         items: Some(tables.len() as u64),
     });
-    let correction = CmbCorrection::new(DipoleModel::Planck2018);
+    let correction = *correction;
     let mut normalized = Vec::new();
     for (n, definition, on_disk) in tables {
         let (owned, files, flag) = (definition.clone(), on_disk.files.clone(), cancel.clone());

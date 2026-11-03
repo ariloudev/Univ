@@ -20,6 +20,7 @@ use univ_ingest::run::{
 };
 use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::DEFAULT_STATE;
+use univ_model::redshift::{CmbCorrection, DipoleModel};
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
 const INTERRUPTED: u8 = 130;
@@ -193,6 +194,8 @@ struct Later<'a> {
     acquired: &'a [Option<Acquired>],
     options: &'a FetchOptions,
     report: &'a Mutex<RunReport>,
+    /// The run's one CMB dipole correction, the normalize stage's.
+    correction: CmbCorrection,
 }
 
 impl Later<'_> {
@@ -205,6 +208,7 @@ impl Later<'_> {
         };
         let match_options = MatchOptions {
             state: state.clone(),
+            correction: self.correction,
         };
         let crossed = match_stage(
             sink.clone(),
@@ -246,6 +250,17 @@ impl Later<'_> {
     }
 }
 
+/// The state directory's lock for a run that holds one, or none; a lock another run holds is
+/// reported and refused.
+fn lock_state(until: &Until) -> Result<Option<StateLock>, ()> {
+    let Some(dir) = until.state() else {
+        return Ok(None);
+    };
+    StateLock::take(dir, std::process::id(), &now())
+        .map(Some)
+        .map_err(|error| eprintln!("univ-ingest: {error}"))
+}
+
 #[tokio::main]
 async fn main() -> ExitCode {
     let (args, until) = match Cli::parse().command {
@@ -266,15 +281,8 @@ async fn main() -> ExitCode {
         Command::Prune(args) => return on_store(args, prune_command),
     };
     // A match, tiles or build run holds the state directory's lock until it ends.
-    let _lock = match until.state() {
-        Some(dir) => match StateLock::take(dir, std::process::id(), &now()) {
-            Ok(lock) => Some(lock),
-            Err(error) => {
-                eprintln!("univ-ingest: {error}");
-                return ExitCode::FAILURE;
-            }
-        },
-        None => None,
+    let Ok(_lock) = lock_state(&until) else {
+        return ExitCode::FAILURE;
     };
     let options = FetchOptions {
         definitions: args.definitions,
@@ -310,8 +318,17 @@ async fn main() -> ExitCode {
             return;
         }
         let sink = display.as_ref() as &dyn EventSink;
-        let normalized =
-            normalize_stage_until(sink, &definitions, &acquired, &options, &report, &cancel).await;
+        let correction = CmbCorrection::new(DipoleModel::Planck2018);
+        let normalized = normalize_stage_until(
+            sink,
+            &definitions,
+            &acquired,
+            &options,
+            &report,
+            &correction,
+            &cancel,
+        )
+        .await;
         if until.state().is_none() {
             return;
         }
@@ -320,6 +337,7 @@ async fn main() -> ExitCode {
             acquired: &acquired,
             options: &options,
             report: &report,
+            correction,
         };
         stages.run(display.clone(), normalized, until).await;
     };
@@ -344,9 +362,6 @@ async fn main() -> ExitCode {
     }
     let (sources, outcome) = report.ended();
     display.finish(sources, outcome);
-    if report.failed() {
-        ExitCode::FAILURE
-    } else {
-        ExitCode::SUCCESS
-    }
+    // 1, the failure status, when a stage failed; 0 otherwise.
+    ExitCode::from(u8::from(report.failed()))
 }

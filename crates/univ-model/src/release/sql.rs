@@ -96,11 +96,16 @@ impl From<bool> for SqlValue {
 
 /// Whether a text is written as a cast of its bytes: it holds a NUL or words Wrangler strips.
 fn needs_hex(text: &str) -> bool {
-    if text.contains('\0') {
-        return true;
-    }
-    let upper = text.to_ascii_uppercase();
-    upper.contains("BEGIN TRANSACTION") || upper.contains("COMMIT")
+    text.contains('\0')
+        || contains_ignoring_case(text, b"BEGIN TRANSACTION")
+        || contains_ignoring_case(text, b"COMMIT")
+}
+
+/// Whether `text` holds `upper`, an upper-case ASCII word, in any case.
+fn contains_ignoring_case(text: &str, upper: &[u8]) -> bool {
+    text.as_bytes()
+        .windows(upper.len())
+        .any(|w| w.eq_ignore_ascii_case(upper))
 }
 
 /// Bytes of a varint holding `n`.
@@ -125,18 +130,39 @@ impl SqlValue {
     /// from a file's SQL wherever they stand, inside quotes too (its `trimSqlQuery`).
     #[must_use]
     pub fn literal(&self) -> String {
+        let mut out = String::new();
+        self.write_literal(&mut out);
+        out
+    }
+
+    /// Appends the value's [`SqlValue::literal`] to `out`, with no text of its own made.
+    pub fn write_literal(&self, out: &mut String) {
+        // Writing into a String cannot fail.
         match self {
-            Self::Integer(n) => n.to_string(),
-            Self::Real(x) if x.is_finite() => format!("{x:?}"),
-            Self::Null | Self::Real(_) => "NULL".to_owned(),
-            Self::Text(t) if needs_hex(t) => {
-                let hex = t.bytes().fold(String::new(), |mut s, b| {
-                    let _ = write!(s, "{b:02X}");
-                    s
-                });
-                format!("CAST(X'{hex}' AS TEXT)")
+            Self::Integer(n) => {
+                let _ = write!(out, "{n}");
             }
-            Self::Text(t) => format!("'{}'", t.replace('\'', "''")),
+            Self::Real(x) if x.is_finite() => {
+                let _ = write!(out, "{x:?}");
+            }
+            Self::Null | Self::Real(_) => out.push_str("NULL"),
+            Self::Text(t) if needs_hex(t) => {
+                out.push_str("CAST(X'");
+                for b in t.bytes() {
+                    let _ = write!(out, "{b:02X}");
+                }
+                out.push_str("' AS TEXT)");
+            }
+            Self::Text(t) => {
+                out.push('\'');
+                for (i, part) in t.split('\'').enumerate() {
+                    if i > 0 {
+                        out.push_str("''");
+                    }
+                    out.push_str(part);
+                }
+                out.push('\'');
+            }
         }
     }
 
@@ -306,34 +332,19 @@ impl Table {
             self.columns.join(", ")
         )
     }
-
-    /// `INSERT OR IGNORE` statements for `rows`, each row's values in the order of
-    /// [`Table::columns`], several rows to a statement and no statement over
-    /// [`MAX_STATEMENT_BYTES`] unless one row alone is longer.
-    #[must_use]
-    pub fn inserts(&self, rows: &[Vec<SqlValue>]) -> Vec<String> {
-        let mut statements = Statements::new(*self);
-        let mut out = Vec::new();
-        for row in rows {
-            out.extend(statements.push(row));
-        }
-        out.extend(statements.finish());
-        out
-    }
 }
 
-/// A row's values as an SQL tuple: `(1, 'a', NULL)`.
-#[must_use]
-pub fn tuple(values: &[SqlValue]) -> String {
-    let mut out = String::from("(");
+/// Appends a row's values to `out` as an SQL tuple, `(1, 'a', NULL)`, each literal written in
+/// place.
+pub fn write_tuple(values: &[SqlValue], out: &mut String) {
+    out.push('(');
     for (i, v) in values.iter().enumerate() {
         if i > 0 {
             out.push_str(", ");
         }
-        out.push_str(&v.literal());
+        v.write_literal(out);
     }
     out.push(')');
-    out
 }
 
 /// A table's `INSERT OR IGNORE` statements made one row at a time: a statement is given once
@@ -341,6 +352,8 @@ pub fn tuple(values: &[SqlValue]) -> String {
 pub struct Statements {
     head: String,
     current: String,
+    /// The row being added, as its tuple: one buffer for every row.
+    tuple: String,
 }
 
 impl Statements {
@@ -350,12 +363,15 @@ impl Statements {
         Self {
             head: table.insert_head(),
             current: String::new(),
+            tuple: String::new(),
         }
     }
 
     /// Adds a row, giving the statement it closed, if any.
     pub fn push(&mut self, row: &[SqlValue]) -> Option<String> {
-        let tuple = tuple(row);
+        self.tuple.clear();
+        write_tuple(row, &mut self.tuple);
+        let tuple = &self.tuple;
         let mut closed = None;
         if !self.current.is_empty() && self.current.len() + tuple.len() + 3 > MAX_STATEMENT_BYTES {
             self.current.push_str(";\n");
@@ -366,7 +382,7 @@ impl Statements {
         } else {
             self.current.push_str(",\n");
         }
-        self.current.push_str(&tuple);
+        self.current.push_str(tuple);
         closed
     }
 
@@ -386,6 +402,15 @@ pub trait Row {
     const TABLE: Table;
     /// Its values in the order of the table's columns.
     fn values(&self) -> Vec<SqlValue>;
+}
+
+/// The statements [`Statements`] makes of `rows`, for a test.
+#[cfg(test)]
+pub(crate) fn inserts(table: Table, rows: &[Vec<SqlValue>]) -> Vec<String> {
+    let mut statements = Statements::new(table);
+    let mut out: Vec<String> = rows.iter().filter_map(|r| statements.push(r)).collect();
+    out.extend(statements.finish());
+    out
 }
 
 #[cfg(test)]
@@ -454,11 +479,11 @@ mod tests {
                 ]
             })
             .collect();
-        let statements = T.inserts(&rows);
+        let statements = inserts(T, &rows);
         assert_eq!(statements.len(), 3, "two rows of 40 kB to a statement");
         assert!(statements.iter().all(|s| s.len() <= MAX_STATEMENT_BYTES));
         assert!(statements[0].starts_with("INSERT OR IGNORE INTO t (release, id, name) VALUES\n"));
         assert!(statements[2].ends_with(");\n"));
-        assert_eq!(T.inserts(&[]), Vec::<String>::new());
+        assert_eq!(inserts(T, &[]), Vec::<String>::new());
     }
 }

@@ -10,7 +10,7 @@
 //! table's primary keys are unique and every number finite, so `INSERT OR IGNORE` can only skip
 //! a row written before, identical, and no NULL stands for a number.
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::HashSet;
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 use sha2::{Digest, Sha256};
@@ -57,6 +57,8 @@ struct TableState {
     rows: u64,
     bytes: u64,
     fingerprint: Fingerprinter,
+    /// The places of the key's columns among the table's.
+    key: Vec<usize>,
     /// The rows of a table checked by its content, kept for their digest: a few hundred.
     content: Option<Vec<Vec<SqlValue>>>,
     keys: HashSet<u128>,
@@ -75,6 +77,7 @@ impl TableState {
             rows: 0,
             bytes: 0,
             fingerprint: Fingerprinter::new(table),
+            key: table.key.iter().filter_map(|c| table.position(c)).collect(),
             content: table.checked_by_content().then(Vec::new),
             keys: HashSet::new(),
             repeated: 0,
@@ -97,14 +100,49 @@ fn key_of(table: &Table, row: &[SqlValue]) -> String {
     format!("({})", parts.join(", "))
 }
 
-/// A 128-bit hash of a key, two `SipHash` runs apart: a key is told from another by it.
-fn hash128(key: &str) -> u128 {
+/// A 128-bit hash of the key values of `row` at `places`, two `SipHash` runs apart, each value
+/// hashed with its type: a key is told from another by it, and no text is made of it.
+fn hash128(places: &[usize], row: &[SqlValue]) -> u128 {
     let mut a = DefaultHasher::new();
-    key.hash(&mut a);
     let mut b = DefaultHasher::new();
     0x5eed_u32.hash(&mut b);
-    key.hash(&mut b);
+    for &i in places {
+        for h in [&mut a, &mut b] {
+            match row.get(i) {
+                Some(SqlValue::Integer(n)) => (1_u8, n).hash(h),
+                Some(SqlValue::Real(x)) => (2_u8, x.to_bits()).hash(h),
+                Some(SqlValue::Text(t)) => (3_u8, t).hash(h),
+                Some(SqlValue::Null) | None => 0_u8.hash(h),
+            }
+        }
+    }
     (u128::from(a.finish()) << 64) | u128::from(b.finish())
+}
+
+/// The place in `TABLES` of the table named `name`, worked out when compiled for a row type.
+const fn place_of(name: &str) -> usize {
+    let mut i = 0;
+    while i < TABLES.len() {
+        if same(TABLES[i].name.as_bytes(), name.as_bytes()) {
+            return i;
+        }
+        i += 1;
+    }
+    TABLES.len()
+}
+
+const fn same(a: &[u8], b: &[u8]) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    let mut i = 0;
+    while i < a.len() {
+        if a[i] != b[i] {
+            return false;
+        }
+        i += 1;
+    }
+    true
 }
 
 /// The SHA-256, in hex, of `rows` in their canonical form, in the order given.
@@ -162,7 +200,8 @@ impl<'s> D1Writer<'s> {
     ///
     /// Fails when its table is not of the schema or a file cannot be put.
     pub fn add<R: Row>(&mut self, row: &R) -> Result<(), String> {
-        self.add_values(&R::TABLE, &row.values())
+        let place = const { place_of(R::TABLE.name) };
+        self.add_at(place, &R::TABLE, &row.values())
     }
 
     /// Writes each of `rows`.
@@ -180,11 +219,15 @@ impl<'s> D1Writer<'s> {
     ///
     /// As [`D1Writer::add`].
     pub fn add_values(&mut self, table: &Table, values: &[SqlValue]) -> Result<(), String> {
-        let place = TABLES
-            .iter()
-            .position(|t| t.name == table.name)
+        self.add_at(place_of(table.name), table, values)
+    }
+
+    /// Writes a row of `table`, the table at `place` in `TABLES`.
+    fn add_at(&mut self, place: usize, table: &Table, values: &[SqlValue]) -> Result<(), String> {
+        let state = self
+            .tables
+            .get_mut(place)
             .ok_or_else(|| format!("{} is not a table of the schema", table.name))?;
-        let state = &mut self.tables[place];
         state.rows += 1;
         state.bytes += table.estimated_bytes(values);
         state.fingerprint.add(values);
@@ -207,10 +250,11 @@ impl<'s> D1Writer<'s> {
                 key_of(table, values)
             ));
         }
-        let key = key_of(table, values);
-        if !state.keys.insert(hash128(&key)) {
+        if !state.keys.insert(hash128(&state.key, values)) {
             state.repeated += 1;
-            state.first_repeated.get_or_insert(key);
+            if state.first_repeated.is_none() {
+                state.first_repeated = Some(key_of(table, values));
+            }
         }
         if let Some(statement) = state.statements.push(values) {
             Self::to_part(&mut *self.sink, place, state, &statement)?;
@@ -319,67 +363,6 @@ impl<'s> D1Writer<'s> {
     }
 }
 
-/// A release's rows kept in memory, by table, for a test or a small release: written through a
-/// [`D1Writer`] like any other.
-#[derive(Debug, Default)]
-pub struct D1Rows {
-    tables: BTreeMap<&'static str, Vec<Vec<SqlValue>>>,
-}
-
-impl D1Rows {
-    /// Adds `rows` to their table.
-    pub fn add<R: Row>(&mut self, rows: &[R]) {
-        self.tables
-            .entry(R::TABLE.name)
-            .or_default()
-            .extend(rows.iter().map(Row::values));
-    }
-
-    /// The rows of the table `name`.
-    #[must_use]
-    pub fn rows(&self, name: &str) -> usize {
-        self.tables.get(name).map_or(0, Vec::len)
-    }
-
-    /// Every row written through a writer into memory: the files, the estimate and the failed
-    /// checks.
-    fn written(&self) -> (Vec<(String, Vec<u8>)>, D1Written) {
-        let mut sink = InMemory::default();
-        let written = (|| {
-            let mut writer = D1Writer::new(&mut sink)?;
-            for table in &TABLES {
-                for row in self.tables.get(table.name).into_iter().flatten() {
-                    writer.add_values(table, row)?;
-                }
-            }
-            writer.finish()
-        })();
-        // In memory nothing fails to be put.
-        let written = written.unwrap_or_else(|_| D1Written {
-            estimate: D1Estimate {
-                cap_bytes: D1_CAP_BYTES,
-                estimated_bytes: 0,
-                tables: Vec::new(),
-            },
-            failed: Vec::new(),
-        });
-        (sink.files, written)
-    }
-
-    /// The estimated storage of every row, by table, against the 10 GB cap, with each table's
-    /// fingerprint.
-    #[must_use]
-    pub fn estimate(&self) -> D1Estimate {
-        self.written().1.estimate
-    }
-
-    /// The SQL files, by path within the release directory.
-    #[must_use]
-    pub fn files(&self) -> Vec<(String, Vec<u8>)> {
-        self.written().0
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -387,14 +370,19 @@ mod tests {
 
     #[test]
     fn the_files_load_the_schema_then_each_table_in_order() {
-        let mut rows = D1Rows::default();
-        rows.add(&[IdsIssuedRow {
-            release: 1,
-            first: 1,
-            last: 9,
-        }]);
-        rows.add::<ReleaseRow>(&[]);
-        let files = rows.files();
+        let mut sink = InMemory::default();
+        let mut writer = D1Writer::new(&mut sink).unwrap();
+        writer
+            .add(&IdsIssuedRow {
+                release: 1,
+                first: 1,
+                last: 9,
+            })
+            .unwrap();
+        writer.add_all::<ReleaseRow>(&[]).unwrap();
+        let rows = writer.rows("ids_issued");
+        let estimate = writer.finish().unwrap().estimate;
+        let files = sink.files;
         let paths: Vec<&str> = files.iter().map(|(p, _)| p.as_str()).collect();
         assert_eq!(paths, ["d1/0000-schema.sql", "d1/0012-ids_issued-001.sql"]);
         let text = String::from_utf8(files[1].1.clone()).unwrap();
@@ -402,10 +390,9 @@ mod tests {
             text,
             "INSERT OR IGNORE INTO ids_issued (release, first, last) VALUES\n(1, 1, 9);\n"
         );
-        let estimate = rows.estimate();
         assert_eq!(estimate.tables.len(), TABLES.len());
         assert!(estimate.estimated_bytes > 0 && estimate.estimated_bytes < 100);
-        assert_eq!(rows.rows("ids_issued"), 1);
+        assert_eq!(rows, 1);
     }
 
     #[test]

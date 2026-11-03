@@ -1,9 +1,10 @@
 //! The fixes a row applies before it is read: rows left out, values dropped or replaced with
 //! cited ones, and the fixes marked that changed the row.
 
-use super::super::plan::{FixEffect, key_of};
+use super::super::plan::FixEffect;
 use super::Row;
 use crate::source::LeftOutReason;
+use crate::table::identifier_key;
 
 impl Row<'_, '_> {
     /// Leaves the row out when a fix says a zero error in one of its columns marks it.
@@ -84,7 +85,7 @@ impl Row<'_, '_> {
             else {
                 continue;
             };
-            let Some(cited) = values.get(&key_of(self.cell(*key))) else {
+            let Some(cited) = values.get(identifier_key(self.cell(*key))) else {
                 continue;
             };
             self.changed |= 1 << fix.fix;

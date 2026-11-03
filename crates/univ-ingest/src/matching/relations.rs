@@ -6,8 +6,8 @@
 use std::collections::HashMap;
 
 use super::Work;
-use super::cross_id::normalized;
 use super::rules::GalaxyGroupRule;
+use crate::table::identifier_key;
 
 /// A relation from the group entry `group` to the galaxy entry `galaxy`, by the identifier
 /// `identifier` of scheme number `scheme`: the galaxy dominates the group, or is a member.
@@ -41,7 +41,10 @@ pub(super) fn find(work: &Work<'_>) -> Vec<GroupRelation> {
             }
             for m in members.iter().filter(|m| &m.source == source) {
                 if let Some(text) = m.field.read(entry) {
-                    carriers.entry(normalized(text)).or_default().push(e);
+                    carriers
+                        .entry(identifier_key(text).to_owned())
+                        .or_default()
+                        .push(e);
                 }
             }
         }
@@ -49,16 +52,16 @@ pub(super) fn find(work: &Work<'_>) -> Vec<GroupRelation> {
             if entry.designation.source != group.source {
                 continue;
             }
-            let Some(id) = group.dominant_member.read(entry).map(normalized) else {
+            let Some(id) = group.dominant_member.read(entry).map(identifier_key) else {
                 continue;
             };
-            for &galaxy in carriers.get(&id).map_or(&[][..], Vec::as_slice) {
+            for &galaxy in carriers.get(id).map_or(&[][..], Vec::as_slice) {
                 found.push(GroupRelation {
                     dominant: true,
                     group: g,
                     galaxy,
                     scheme,
-                    identifier: id.clone(),
+                    identifier: id.to_owned(),
                 });
             }
         }
@@ -83,22 +86,25 @@ fn member_relations(
         if entry.designation.source == rule.source
             && let Some(id) = rule.dominant_member.read(entry)
         {
-            groups.entry(normalized(id)).or_default().push(g);
+            groups
+                .entry(identifier_key(id).to_owned())
+                .or_default()
+                .push(g);
         }
     }
     for (e, entry) in work.entries.iter().enumerate() {
         let source = &entry.designation.source;
         for m in rule.members.iter().filter(|m| &m.source == source) {
-            let Some(id) = m.field.read(entry).map(normalized) else {
+            let Some(id) = m.field.read(entry).map(identifier_key) else {
                 continue;
             };
-            for &group in groups.get(&id).map_or(&[][..], Vec::as_slice) {
+            for &group in groups.get(id).map_or(&[][..], Vec::as_slice) {
                 found.push(GroupRelation {
                     dominant: false,
                     group,
                     galaxy: e,
                     scheme,
-                    identifier: id.clone(),
+                    identifier: id.to_owned(),
                 });
             }
         }

@@ -8,6 +8,8 @@ use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::entry::RedshiftKind;
 use univ_model::position::Frame;
 use univ_model::redshift::RedshiftFrame;
+
+use crate::table::identifier_key;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
@@ -105,8 +107,7 @@ pub(super) struct FixPlan {
 pub(super) enum FixEffect {
     /// The columns are read in another unit, already in each [`Col`].
     ReadAs,
-    ZeroIsNoneReported,
-    /// An error equal to this value was not reported.
+    /// An error equal to this value, 0 for a zero error, was not reported.
     SentinelIsNoneReported(f64),
     ZeroLeavesOut(LeftOutReason),
     /// The columns are blank on rows whose cell in `column` meets `when`.
@@ -129,17 +130,6 @@ pub(super) enum FixEffect {
         when: Condition,
         reason: LeftOutReason,
     },
-}
-
-/// A key cell as compared: trimmed, and a number without its leading zeros.
-pub(super) fn key_of(cell: &str) -> String {
-    let t = cell.trim();
-    if !t.is_empty() && t.bytes().all(|b| b.is_ascii_digit()) {
-        let n = t.trim_start_matches('0');
-        if n.is_empty() { "0" } else { n }.to_owned()
-    } else {
-        t.to_owned()
-    }
 }
 
 /// Everything the row reader needs, resolved once per table.
@@ -347,7 +337,7 @@ impl Resolver<'_> {
             .collect::<Result<_, _>>()?;
         let effect = match action {
             FixAction::ReadAs { .. } => FixEffect::ReadAs,
-            FixAction::ZeroErrorIsNoneReported { .. } => FixEffect::ZeroIsNoneReported,
+            FixAction::ZeroErrorIsNoneReported { .. } => FixEffect::SentinelIsNoneReported(0.0),
             FixAction::SentinelErrorIsNoneReported { value, .. } => {
                 FixEffect::SentinelIsNoneReported(*value)
             }
@@ -373,7 +363,10 @@ impl Resolver<'_> {
                 key: self.index(key)?,
                 values: values
                     .iter()
-                    .map(|(k, v)| (key_of(k), v.iter().map(f64::to_string).collect()))
+                    .map(|(k, v)| {
+                        let key = identifier_key(k).to_owned();
+                        (key, v.iter().map(f64::to_string).collect())
+                    })
                     .collect(),
                 drop: drop
                     .iter()

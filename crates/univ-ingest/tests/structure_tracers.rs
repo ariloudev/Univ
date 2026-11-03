@@ -8,7 +8,7 @@
 mod common;
 
 use common::workspace;
-use univ_ingest::crossmatch::{FilePlacer, MemberPlacement, NameIndex, resolve_all_placing};
+use univ_ingest::crossmatch::{FilePlacer, MemberPlacement, NameIndex, resolve_all};
 use univ_ingest::structures::{Structure, read_all_named};
 use univ_model::derive::Release;
 use univ_model::geometry::{Geometry, Member};
@@ -22,8 +22,10 @@ fn placed() -> (Vec<(String, Structure)>, Vec<MemberPlacement>) {
     let named = read_all_named(&workspace().join("structures")).unwrap();
     let structures: Vec<Structure> = named.iter().map(|(_, s)| s.clone()).collect();
     let release = Release::planck_2018();
-    let placer = FilePlacer::new(&release);
-    let lists = resolve_all_placing(&structures, &NameIndex::new(&[]), 60.0, Some(&placer));
+    let correction =
+        univ_model::redshift::CmbCorrection::new(univ_model::redshift::DipoleModel::Planck2018);
+    let placer = FilePlacer::new(&release, &correction);
+    let lists = resolve_all(&structures, &NameIndex::new(&[]), 60.0, Some(&placer));
     (named, lists)
 }
 

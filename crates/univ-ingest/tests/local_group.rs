@@ -6,7 +6,6 @@
 mod common;
 mod simulated;
 
-use common::{definition_of, normalize_body};
 use simulated::{designation, matching_rules, ranking_rules};
 use univ_ingest::matching::match_entries;
 use univ_ingest::ranking::rank_all;
@@ -14,10 +13,7 @@ use univ_model::derive::Release;
 use univ_model::object::{MatchMethod, Object, Resolution};
 
 fn recorded(id: &str, file: &str) -> Vec<univ_model::entry::CatalogueEntry> {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/vizier")
-        .join(file);
-    normalize_body(&definition_of(id), &std::fs::read(path).unwrap()).entries
+    common::normalized_file(id, file).entries
 }
 
 fn objects() -> Vec<Object> {
@@ -118,4 +114,39 @@ fn a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link(
     // Within the tolerance, 20 arcmin away, the name joins them.
     let near = simulated::entry("updated-nearby-galaxies", "Fornax", p.ra, p.dec + 1.0 / 3.0);
     assert_eq!(match_entries(&rules, vec![fornax, near]).objects.len(), 1);
+}
+
+#[test]
+fn messier_compares_as_m_by_the_rules_alias_which_names_its_basis() {
+    // C10: the alias is the rules' own, not the code's: without it MESSIER032 and M32 are two
+    // names, and an alias without its basis is refused.
+    let rules = matching_rules();
+    let scheme = rules.scheme("common-name").unwrap();
+    assert_eq!(scheme.aliases.get("messier").map(String::as_str), Some("m"));
+    let mut bare = rules.clone();
+    let at = bare
+        .cross_identifications
+        .iter()
+        .position(|s| s.scheme == "common-name")
+        .unwrap();
+    bare.cross_identifications[at].aliases.clear();
+    let mut entries = recorded("mcconnachie-2012", "mcconnachie-2012-local-group.tsv");
+    entries.extend(recorded(
+        "updated-nearby-galaxies",
+        "updated-nearby-galaxies-local-group.tsv",
+    ));
+    let m = match_entries(&bare, entries);
+    let m32 = m
+        .objects
+        .iter()
+        .find(|o| o.entry(&designation("mcconnachie-2012", "M32")).is_some())
+        .unwrap();
+    assert!(!matches!(
+        m32.entry(&designation("updated-nearby-galaxies", "MESSIER032"))
+            .map(|e| &e.resolved_by),
+        Some(Resolution::CrossIdentification { .. })
+    ));
+    let mut unexplained = rules;
+    unexplained.cross_identifications[at].aliases_basis = None;
+    assert!(unexplained.check().is_err());
 }

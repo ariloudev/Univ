@@ -7,13 +7,18 @@
 )]
 
 use rusqlite::Connection;
-use univ_ingest::release::D1Rows;
+use univ_ingest::release::{D1Writer, InMemory};
 use univ_model::release::rows::{NameRow, StructureRow, name_key};
-use univ_model::release::{ColumnKind, Row, SCHEMA, SqlValue};
+use univ_model::release::{ColumnKind, Row, SCHEMA, SqlValue, Statements};
 
-/// A database holding the schema and the D1 files of `rows`, executed in order.
-fn loaded(db: &Connection, rows: &D1Rows) {
-    for (_, sql) in rows.files() {
+/// A database holding the schema and the D1 files of `rows`, written through a D1 writer and
+/// executed in order.
+fn loaded<R: Row>(db: &Connection, rows: &[R]) {
+    let mut sink = InMemory::default();
+    let mut writer = D1Writer::new(&mut sink).unwrap();
+    writer.add_all(rows).unwrap();
+    writer.finish().unwrap();
+    for (_, sql) in sink.files {
         db.execute_batch(&String::from_utf8(sql).unwrap()).unwrap();
     }
 }
@@ -28,10 +33,8 @@ fn two_spellings_of_a_name_that_share_its_key_are_both_kept() {
         name: name.into(),
     };
     assert_eq!(name_key("M 31"), name_key("M31"));
-    let mut rows = D1Rows::default();
-    rows.add(&[name("M 31"), name("M31")]);
     let db = Connection::open_in_memory().unwrap();
-    loaded(&db, &rows);
+    loaded(&db, &[name("M 31"), name("M31")]);
     let mut names: Vec<String> = db
         .prepare("SELECT name FROM names WHERE key = 'm31' ORDER BY name")
         .unwrap()
@@ -71,9 +74,11 @@ fn measured(rows: &[Vec<SqlValue>]) -> f64 {
     let pages =
         |db: &Connection| -> i64 { db.query_row("PRAGMA page_count", [], |r| r.get(0)).unwrap() };
     let before = pages(&db);
-    for statement in StructureRow::TABLE.inserts(rows) {
+    let mut statements = Statements::new(StructureRow::TABLE);
+    for statement in rows.iter().filter_map(|r| statements.push(r)) {
         db.execute_batch(&statement).unwrap();
     }
+    db.execute_batch(&statements.finish().unwrap()).unwrap();
     let after = pages(&db);
     #[expect(clippy::cast_precision_loss, reason = "page counts are small")]
     let per_row = ((after - before) * 4096) as f64 / rows.len() as f64;

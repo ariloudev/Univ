@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use univ_model::derive::Release;
+use univ_model::redshift::CmbCorrection;
 
 use super::{FetchOptions, RunReport, lock};
 use crate::acquire::Acquired;
@@ -19,6 +20,8 @@ use crate::state::State;
 pub struct MatchOptions {
     /// The state directory: the id ledger and the last release's entry ids.
     pub state: PathBuf,
+    /// The run's one CMB dipole correction, the one the normalize stage used.
+    pub correction: CmbCorrection,
 }
 
 /// The rules and release configuration in the repository's `rules/`, each read once, and the
@@ -64,6 +67,7 @@ pub async fn match_stage(
         Err(error) => Err(error),
         Ok((basis, state)) => {
             let events = sink.clone();
+            let correction = match_options.correction;
             // Gathered into one vector of its final size, each source's let go as it is moved.
             let mut entries = Vec::with_capacity(normalized.iter().map(|n| n.entries.len()).sum());
             for n in normalized {
@@ -76,6 +80,7 @@ pub async fn match_stage(
                 let inputs = Inputs {
                     basis: &basis,
                     release: &release,
+                    correction: &correction,
                     state: &state,
                 };
                 let crossed =

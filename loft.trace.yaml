@@ -708,6 +708,9 @@ links:
       - file: "crates/univ-ingest/tests/local_group.rs"
         name: "a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link"
         body: ed3800dca78455357b64827ae9bb1b911da5bdcfe0e0c870cb693990a46e6ef5
+      - file: "crates/univ-ingest/tests/local_group.rs"
+        name: "messier_compares_as_m_by_the_rules_alias_which_names_its_basis"
+        body: 12e7935ac7258521afaa2f2b87cb388fb11f0233269c00d3e90a18ec559d1f39
   - node: 01a19f23-636f-72bd-b194-150a909c8f0e
     reviewed: 23bd90e2ea5f02a35571b02e6ce29e75659bfc0ec5fbad0cf52bb671fad0fdf0
     tests:

@@ -112,6 +112,12 @@ cross_identifications:
       one galaxy. Names compare by their key in the names table, with a catalogue number's
       leading zeros dropped and MESSIER written M; a name only one of them uses (Sag dSph against
       Sagittarius dSph) is left to the pair rule below.
+    aliases:
+      messier: m
+    aliases_basis: >-
+      UNGC writes Messier objects as MESSIER with a zero-padded number (MESSIER031, MESSIER032,
+      MESSIER081), McConnachie 2012 as M (M32, M33), as the served tables show
+      (vizier.idia.ac.za, 2026-11-03): both are Messier's catalogue, so MESSIER compares as M.
     angular_tolerance_arcmin: 30
     tolerance_basis: >-
       Pipeline choice: a shared name joins two entries only where their centres lie within 30
@@ -163,18 +169,6 @@ galaxy_groups:
           ReadMe table2: each galaxy's 1PGC is the "PGC ID, dominant galaxy in the group" (G1),
           the same number the groups table gives its group in 1PGC. The galaxy is related to
           that group as a member; neither lends the other a measurement.
-
-# Sources whose velocity column is a CMB-frame cz. Before a pair compares it with a heliocentric
-# cz, it is moved back along the entry's direction with the release's dipole (Planck 2018,
-# the one every redshift is moved to the CMB frame with); it is never kept as a measurement.
-cmb_frame_velocities:
-  - source: cosmicflows-4-galaxies
-    basis: >-
-      J/ApJ/944/94 ReadMe, table2: Vcmb is the "Systemic velocity of the galaxy" (Note 2:
-      "Systemic velocity of the galaxy in the reference frame of the cosmic microwave
-      background"). The table gives no heliocentric velocity. The dipole the authors used is
-      not stated in the ReadMe; any recent measurement differs from Planck 2018's by a few
-      km/s, far below the 200 km/s tolerance.
 
 # Common names, such as LMC or Andromeda, attached with the source that published them.
 names:
@@ -284,8 +278,9 @@ pairs:
       ReadMe, table2, F8.4), 0.36 arcsec, for galaxies named by their HyperLEDA PGC number; 10
       arcsec is a pipeline choice for the offset between the centre a compilation adopts and
       an XSC centroid or a fibre position of an extended galaxy (M87: 0.5 arcsec between
-      Cosmicflows-4 and 2MRS). Its Vcmb is moved back to a heliocentric cz first
-      (cmb_frame_velocities); 200 km/s as for 2MRS and 2M++.
+      Cosmicflows-4 and 2MRS). Its Vcmb, read as its redshift in the CMB frame,
+      compares by the heliocentric cz the normalizer derives back from it with the run's dipole
+      (Planck 2018); 200 km/s as for 2MRS and 2M++.
   - sources: [cosmicflows-4-galaxies, twompp-catalogue]
     angular_tolerance_arcsec: 10.0
     line_of_sight: { compare: velocity, tolerance_km_s: 200 }

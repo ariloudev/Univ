@@ -201,6 +201,15 @@ pub fn normalized_fixture(id: &str) -> Normalized {
     normalize_body(&definition, &body)
 }
 
+/// The recorded answer `file`, beside the source `id`'s own under its provider's fixtures,
+/// normalized as an answer of that source; a missing file fails the test.
+pub fn normalized_file(id: &str, file: &str) -> Normalized {
+    let definition = definition_of(id);
+    let path = fixture_of(&definition).with_file_name(file);
+    let body = std::fs::read(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+    normalize_body(&definition, &body)
+}
+
 /// The entry of `normalized` whose identifier is `identifier`.
 pub fn entry<'a>(normalized: &'a Normalized, identifier: &str) -> &'a CatalogueEntry {
     normalized

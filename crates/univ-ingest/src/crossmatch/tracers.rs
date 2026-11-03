@@ -26,7 +26,7 @@ use serde::Serialize;
 use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::derive::Release;
 use univ_model::position::{Vec3, scaled};
-use univ_model::redshift::{CmbCorrection, DipoleModel, RedshiftFrame};
+use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty};
 
@@ -65,12 +65,13 @@ pub struct FilePlacer<'a> {
 }
 
 impl<'a> FilePlacer<'a> {
-    /// A placer under `release`, with the Planck 2018 dipole the normalization uses.
+    /// A placer under `release`, with `correction`, the run's dipole, the one the normalization
+    /// uses.
     #[must_use]
-    pub fn new(release: &'a Release) -> Self {
+    pub fn new(release: &'a Release, correction: &CmbCorrection) -> Self {
         Self {
             release,
-            correction: CmbCorrection::new(DipoleModel::Planck2018),
+            correction: *correction,
         }
     }
 

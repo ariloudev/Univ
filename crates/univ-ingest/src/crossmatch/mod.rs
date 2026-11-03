@@ -16,11 +16,11 @@ use univ_model::derive::{DerivedPosition, Release};
 use univ_model::ids::ObjectId;
 use univ_model::ledger::Ledger;
 use univ_model::object::{Object, Placement};
+use univ_model::redshift::CmbCorrection;
 
 pub use basis::{Basis, RULES};
 pub use members::{
     MemberPlacement, MemberProblem, NameIndex, Resolved, UnplacedMember, resolve_all,
-    resolve_all_placing,
 };
 pub use place::place;
 pub use tracers::{FilePlacer, FromFile, STRUCTURE_REDSHIFTS};
@@ -41,6 +41,8 @@ pub struct Inputs<'a> {
     pub basis: &'a Basis,
     /// The release cosmology with its D(z) tabulated once for the run.
     pub release: &'a Release,
+    /// The run's one CMB dipole correction, the one its entries were normalized with.
+    pub correction: &'a CmbCorrection,
     pub state: &'a State,
 }
 
@@ -155,8 +157,8 @@ pub fn cross_match(
         })
         .collect();
     let tolerance = basis.matching.structure_members.angular_tolerance_arcsec;
-    let tracers = FilePlacer::new(inputs.release);
-    let structures = resolve_all_placing(
+    let tracers = FilePlacer::new(inputs.release, inputs.correction);
+    let structures = resolve_all(
         &basis.structures(),
         &NameIndex::new(&resolved),
         tolerance,

@@ -133,20 +133,11 @@ impl<'a> NameIndex<'a> {
 }
 
 /// Resolves the member list of each structure that has one, a member's object within
-/// `tolerance_arcsec` of its published position; a member no object carries is not placed.
+/// `tolerance_arcsec` of its published position; a member no object carries is placed by
+/// `placer` from the structure file's own sky position and redshift for it, where it cites
+/// them, and is not placed without a placer.
 #[must_use]
 pub fn resolve_all(
-    structures: &[Structure],
-    index: &NameIndex<'_>,
-    tolerance_arcsec: f64,
-) -> Vec<MemberPlacement> {
-    resolve_all_placing(structures, index, tolerance_arcsec, None)
-}
-
-/// As [`resolve_all`], a member no object carries placed by `placer` from the structure file's
-/// own sky position and redshift for it, where it cites them.
-#[must_use]
-pub fn resolve_all_placing(
     structures: &[Structure],
     index: &NameIndex<'_>,
     tolerance_arcsec: f64,

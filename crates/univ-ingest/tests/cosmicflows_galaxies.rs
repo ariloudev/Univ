@@ -6,7 +6,7 @@
 mod common;
 mod simulated;
 
-use common::{definition_of, entry, normalize_body, normalized_fixture};
+use common::{entry, normalized_file, normalized_fixture};
 use simulated::{designation, matching_rules, ranking_rules, with_cz, with_modulus};
 use univ_ingest::crossmatch::place;
 use univ_ingest::matching::match_entries;
@@ -24,9 +24,7 @@ use univ_model::units::Unit;
 const M87: &str = "41361";
 
 fn twomrs_virgo() -> Normalized {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/vizier/twomrs-virgo.tsv");
-    normalize_body(&definition_of("twomrs"), &std::fs::read(path).unwrap())
+    normalized_file("twomrs", "twomrs-virgo.tsv")
 }
 
 fn galaxies() -> Normalized {

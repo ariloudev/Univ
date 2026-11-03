@@ -209,6 +209,19 @@ fn csv_fields<'a>(line: &'a str, fields: &mut Vec<Cow<'a, str>>) {
     }
 }
 
+/// An identifier as compared: trimmed, and a number without its leading zeros, so that the
+/// PGC numbers `     12` and `0012` agree with `12`; a number of zeros alone compares as `0`.
+/// The normalizer's keyed fixes and the matching's identifiers compare by it.
+#[must_use]
+pub fn identifier_key(identifier: &str) -> &str {
+    let t = identifier.trim();
+    if t.is_empty() || !t.bytes().all(|b| b.is_ascii_digit()) {
+        return t;
+    }
+    let n = t.trim_start_matches('0');
+    if n.is_empty() { &t[t.len() - 1..] } else { n }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

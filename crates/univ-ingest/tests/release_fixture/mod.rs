@@ -78,6 +78,9 @@ pub fn cross(f: &Fixture) -> CrossMatched {
     let inputs = MatchInputs {
         basis: &basis,
         release: &release,
+        correction: &univ_model::redshift::CmbCorrection::new(
+            univ_model::redshift::DipoleModel::Planck2018,
+        ),
         state: &state,
     };
     let entries = f

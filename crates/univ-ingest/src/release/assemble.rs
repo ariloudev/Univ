@@ -69,21 +69,22 @@ struct D1Done {
     structures: u64,
 }
 
-/// Writes every D1 row of release `number` through `writer`, the grids' rows given.
+/// Writes every D1 row of release `number` through `writer`, the grids' rows given, under
+/// `release`, with the sources numbered by `sources`: both made once for the build.
 fn d1_rows(
     inputs: &Inputs<'_>,
     number: u32,
     mut writer: D1Writer<'_>,
     grids: &[univ_model::release::rows::GridRow],
+    release: &Release,
+    sources: SourceIndex,
 ) -> Result<D1Done, String> {
     let crossed = inputs.crossed;
     let ranking = &crossed.basis.ranking;
-    let release =
-        Release::new(&crossed.cosmology).with_peculiar_velocity(ranking.peculiar_velocity_km_s);
     let numbering = Numbering {
         release: number,
         terms: Terms::default(),
-        sources: SourceIndex::new(inputs.definitions.iter().map(|d| &d.id)),
+        sources,
     };
     let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
     for o in &crossed.objects {
@@ -107,7 +108,7 @@ fn d1_rows(
         number,
         &crossed.basis.structures,
         &crossed.structures,
-        &release,
+        release,
     )?;
     writer.add_all(&structures)?;
     writer.add_all(&domain_rows(number, inputs.tiles))?;
@@ -211,7 +212,14 @@ pub fn write_release(inputs: &Inputs<'_>, number: u32, dir: &Path) -> Result<Wri
         g.row.source = sources.n(&definition.id);
         grids.push(g.row);
     }
-    let d1 = d1_rows(inputs, number, D1Writer::new(&mut sink)?, &grids)?;
+    let d1 = d1_rows(
+        inputs,
+        number,
+        D1Writer::new(&mut sink)?,
+        &grids,
+        &release,
+        sources,
+    )?;
     let mut failed = check_all(&Subject {
         objects: &crossed.objects,
         tiles: inputs.tiles,

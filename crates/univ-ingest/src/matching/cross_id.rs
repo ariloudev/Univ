@@ -4,30 +4,21 @@
 //! to none of them: each claimant is linked to every entry of another source that carries it,
 //! so the outcome does not hang on the order of the entries.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use univ_model::position::separation_degrees;
+
+use crate::table::identifier_key;
 
 use super::groups::Refused;
 use super::rules::IdentifierForm;
 use super::{Edge, Join, Work};
 
-/// An identifier as compared: trimmed, and a number without its leading zeros, so that the
-/// PGC number `     12` and `12` agree.
-pub(super) fn normalized(identifier: &str) -> String {
-    let t = identifier.trim();
-    if !t.is_empty() && t.bytes().all(|b| b.is_ascii_digit()) {
-        let n = t.trim_start_matches('0');
-        if n.is_empty() { "0" } else { n }.to_owned()
-    } else {
-        t.to_owned()
-    }
-}
-
 /// A common name as compared: its key in the names table (lower case, without white space),
 /// then, for a catalogue designation of letters and a number, the number without its leading
-/// zeros and `messier` written `m`. `NGC0055` and `NGC 55` agree, as do `MESSIER032` and `M32`.
-pub(super) fn common_name(name: &str) -> String {
+/// zeros and its letters written as `aliases` writes them (the scheme's, such as `messier` as
+/// `m`). `NGC0055` and `NGC 55` agree, as do `MESSIER032` and `M32` under that alias.
+pub(super) fn common_name(name: &str, aliases: &BTreeMap<String, String>) -> String {
     let key = univ_model::release::rows::name_key(name);
     let split = key.find(|c: char| c.is_ascii_digit()).unwrap_or(key.len());
     let (letters, number) = key.split_at(split);
@@ -38,8 +29,8 @@ pub(super) fn common_name(name: &str) -> String {
     {
         return key;
     }
-    let letters = if letters == "messier" { "m" } else { letters };
-    format!("{letters}{}", normalized(number))
+    let letters = aliases.get(letters).map_or(letters, String::as_str);
+    format!("{letters}{}", identifier_key(number))
 }
 
 /// Applies every scheme of the rules, in the order of the file, entries in their order.
@@ -59,8 +50,8 @@ pub(super) fn apply(work: &mut Work<'_>) {
                 continue;
             };
             let id = match scheme.compare {
-                IdentifierForm::Identifier => normalized(text),
-                IdentifierForm::CommonName => common_name(text),
+                IdentifierForm::Identifier => identifier_key(text).to_owned(),
+                IdentifierForm::CommonName => common_name(text, &scheme.aliases),
             };
             let list = by_id.entry(id.clone()).or_default();
             if list.is_empty() {
@@ -134,16 +125,26 @@ fn apply_one(work: &mut Work<'_>, scheme: usize, id: &str, list: &[usize]) {
 
 #[cfg(test)]
 mod tests {
-    use super::{common_name, normalized};
+    use std::collections::BTreeMap;
+
+    use super::common_name;
+    use crate::table::identifier_key as normalized;
 
     #[test]
     fn common_names_compare_by_key_and_catalogue_number() {
+        let messier = BTreeMap::from([("messier".to_owned(), "m".to_owned())]);
+        let common_name = |name: &str| common_name(name, &messier);
         assert_eq!(common_name("NGC0055"), common_name("NGC 55"));
         assert_eq!(common_name("MESSIER032"), common_name("M32"));
         assert_eq!(common_name("Fornax "), common_name("fornax"));
         assert_ne!(common_name("Sag dSph"), common_name("Sagittarius dSph"));
         assert_ne!(common_name("NGC 55"), common_name("NGC 555"));
         assert_eq!(common_name("And IV"), "andiv");
+        // Without the alias, MESSIER and M are two catalogues.
+        assert_ne!(
+            super::common_name("MESSIER032", &BTreeMap::new()),
+            super::common_name("M32", &BTreeMap::new())
+        );
     }
 
     #[test]

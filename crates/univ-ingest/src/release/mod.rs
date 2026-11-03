@@ -45,7 +45,7 @@ pub use check::{
     STRUCTURE_CITATIONS, Subject, TILE_OBJECTS, check_all, decimal_bytes, provisional, table_sizes,
 };
 pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
-pub use d1::{D1Rows, D1Writer, D1Written, InMemory, MAX_FILE_BYTES, PartSink, content_sha256};
+pub use d1::{D1Writer, D1Written, InMemory, MAX_FILE_BYTES, PartSink, content_sha256};
 pub use files::{
     DirSink, RELEASES, list, parse_manifest, read_manifest, release_dir, verify, write_manifest,
 };

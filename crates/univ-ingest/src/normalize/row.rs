@@ -331,9 +331,6 @@ impl Row<'_, '_> {
         let Some(sigma) = self.number(col.index)? else {
             return Ok(None);
         };
-        if sigma == 0.0 && self.mark(|e| matches!(e, FixEffect::ZeroIsNoneReported), col.index) {
-            return Ok(None);
-        }
         let sentinel =
             |e: &FixEffect| matches!(e, FixEffect::SentinelIsNoneReported(v) if *v == sigma);
         if self.mark(sentinel, col.index) {
