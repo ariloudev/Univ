@@ -436,8 +436,17 @@ fn the_report_lists_each_fix_applied_with_the_entries_it_changed() {
             .change
             .starts_with("SGX, SGY and SGZ are read as km/s")
     );
-    // 2M++ rows 1 and 3 with e_HV = 0.
-    let (d, body) = edited("twompp-catalogue", &[(0, "e_HV", "0"), (2, "e_HV", "0")]);
+    // 2M++ rows 1, 3 and 4 with e_HV = 0, and row 4 also a fake ZoA galaxy, left out: the
+    // fix changed two entries.
+    let (d, body) = edited(
+        "twompp-catalogue",
+        &[
+            (0, "e_HV", "0"),
+            (2, "e_HV", "0"),
+            (3, "e_HV", "0"),
+            (3, "Ref", "zoa"),
+        ],
+    );
     let n = normalize_body(&d, &body);
     assert_eq!(
         n.report.fixes,

@@ -51,7 +51,16 @@ pub(super) fn read(
     };
     match row.entry() {
         Ok(entry) => Ok((entry, row.changed)),
-        Err(reason) => Err((reason, row.changed)),
+        // A row left out was changed only by a fix that left it out.
+        Err(reason) => {
+            let leaving: Changed = cx
+                .plan
+                .fixes
+                .iter()
+                .filter(|f| matches!(f.effect, FixEffect::ZeroLeavesOut(_)))
+                .fold(0, |bits, f| bits | 1 << f.fix);
+            Err((reason, row.changed & leaving))
+        }
     }
 }
 
