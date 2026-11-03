@@ -2,7 +2,7 @@
 
 mod common;
 
-use common::{accept, rig, source};
+use common::{accept, item, keep, rig, source};
 use univ_ingest::fetch::Fetched;
 use univ_ingest::provenance::{FILE, Provenance};
 use wiremock::matchers::method;
@@ -22,12 +22,11 @@ async fn the_provenance_lists_each_payload_with_its_digest_retrieval_time_and_ur
         let fetched = rig
             .fetcher
             .chunk(
-                &source(),
-                &format!("chunk {n}"),
+                &item(&format!("chunk {n}"), &dest),
                 &[server.uri()],
                 &format!("/q?chunk={n}"),
-                &dest,
                 &accept,
+                &keep,
             )
             .await
             .unwrap();

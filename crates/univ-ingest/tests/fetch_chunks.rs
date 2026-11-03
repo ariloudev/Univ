@@ -4,9 +4,9 @@ mod common;
 
 use std::time::Duration;
 
-use common::{accept, rig, source};
+use common::{accept, item, keep, rig};
 use univ_ingest::events::Event;
-use univ_ingest::fetch::{FetchError, Fetched};
+use univ_ingest::fetch::{FetchError, Fetched, Payload};
 use wiremock::matchers::{method, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -34,7 +34,13 @@ async fn a_request_is_retried_four_times_with_waits_doubling_from_two_seconds() 
     let dest = dir.path().join("chunk-0.tsv");
     let fetched = rig
         .fetcher
-        .chunk(&source(), "chunk 0", &mirrors, "/q?chunk=0", &dest, &accept)
+        .chunk(
+            &item("chunk 0", &dest),
+            &mirrors,
+            "/q?chunk=0",
+            &accept,
+            &keep,
+        )
         .await
         .unwrap();
     assert!(matches!(fetched, Fetched::Arrived(_)));
@@ -63,12 +69,11 @@ async fn a_mirror_that_fails_all_its_retries_is_skipped_for_the_rest_of_the_run(
         let dest = dir.path().join(format!("chunk-{n}.tsv"));
         rig.fetcher
             .chunk(
-                &source(),
-                &format!("chunk {n}"),
+                &item(&format!("chunk {n}"), &dest),
                 &mirrors,
                 &format!("/q?chunk={n}"),
-                &dest,
                 &accept,
+                &keep,
             )
             .await
             .unwrap();
@@ -105,12 +110,11 @@ async fn a_run_resumes_from_the_first_chunk_not_on_disk_and_fetches_no_chunk_twi
         let dest = dir.path().join(format!("chunk-{n}.tsv"));
         rig.fetcher
             .chunk(
-                &source(),
-                &format!("chunk {n}"),
+                &item(&format!("chunk {n}"), &dest),
                 &[server.uri()],
                 &format!("/q?chunk={n}"),
-                &dest,
                 &accept,
+                &keep,
             )
             .await
             .unwrap();
@@ -147,18 +151,17 @@ async fn a_chunk_is_renamed_into_place_only_once_complete_and_a_partial_file_is_
         if body.starts_with(b"<html>") {
             Err("an error page".to_owned())
         } else {
-            Ok(())
+            Ok(0)
         }
     };
     let refused = rig
         .fetcher
         .chunk(
-            &source(),
-            "chunk 0",
+            &item("chunk 0", &dest),
             &[server.uri()],
             "/q?chunk=0",
-            &dest,
             &tsv_only,
+            &keep,
         )
         .await;
     assert!(refused.is_err());
@@ -176,12 +179,11 @@ async fn a_chunk_is_renamed_into_place_only_once_complete_and_a_partial_file_is_
     next_run
         .fetcher
         .chunk(
-            &source(),
-            "chunk 0",
+            &item("chunk 0", &dest),
             &[server.uri()],
             "/q?chunk=0",
-            &dest,
             &tsv_only,
+            &keep,
         )
         .await
         .unwrap();
@@ -210,12 +212,11 @@ async fn a_chunk_no_mirror_can_give_fails_naming_the_source_the_chunk_and_each_m
     let error = rig
         .fetcher
         .chunk(
-            &source(),
-            "chunk 1",
+            &item("chunk 1", &dest),
             &[busy.uri(), missing.uri()],
             "/q?chunk=1",
-            &dest,
             &accept,
+            &keep,
         )
         .await
         .unwrap_err();
@@ -254,30 +255,135 @@ async fn an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk() 
     let on_disk = rig
         .fetcher
         .chunk(
-            &source(),
-            "chunk 0",
+            &item("chunk 0", &dir.path().join("chunk-0.tsv")),
             &[server.uri()],
             "/q?chunk=0",
-            &dir.path().join("chunk-0.tsv"),
             &accept,
+            &keep,
         )
         .await
         .unwrap();
-    assert!(matches!(on_disk, Fetched::OnDisk(_)));
+    assert!(matches!(on_disk, Fetched::OnDisk));
     let missing = rig
         .fetcher
         .chunk(
-            &source(),
-            "chunk 1",
+            &item("chunk 1", &dir.path().join("chunk-1.tsv")),
             &[server.uri()],
             "/q?chunk=1",
-            &dir.path().join("chunk-1.tsv"),
             &accept,
+            &keep,
         )
         .await
         .unwrap_err();
     assert!(
         matches!(missing, FetchError::MissingOffline { .. }),
         "{missing}"
+    );
+}
+
+/// Answers chunk 0 with an error page and chunk 1 with a table.
+async fn error_page_for_chunk_0() -> MockServer {
+    let server = MockServer::start().await;
+    Mock::given(query_param("chunk", "0"))
+        .respond_with(always(200).set_body_string("<html>Server overloaded</html>"))
+        .expect(1)
+        .mount(&server)
+        .await;
+    Mock::given(query_param("chunk", "1"))
+        .respond_with(always(200).set_body_string("ra\tdec\n"))
+        .expect(1)
+        .mount(&server)
+        .await;
+    server
+}
+
+fn tsv_only(body: &[u8]) -> Result<u64, String> {
+    if body.starts_with(b"<html>") {
+        Err("an error page".to_owned())
+    } else {
+        Ok(1)
+    }
+}
+
+#[tokio::test]
+async fn a_body_that_fails_its_check_moves_to_the_next_mirror_without_skipping_this_one() {
+    let flaky = error_page_for_chunk_0().await;
+    let working = MockServer::start().await;
+    Mock::given(query_param("chunk", "0"))
+        .respond_with(always(200).set_body_string("ra\tdec\n"))
+        .expect(1)
+        .mount(&working)
+        .await;
+    let rig = rig(false);
+    let dir = tempfile::tempdir().unwrap();
+    let mirrors = [flaky.uri(), working.uri()];
+    for n in 0..2 {
+        let dest = dir.path().join(format!("chunk-{n}.tsv"));
+        rig.fetcher
+            .chunk(
+                &item(&format!("chunk {n}"), &dest),
+                &mirrors,
+                &format!("/q?chunk={n}"),
+                &tsv_only,
+                &keep,
+            )
+            .await
+            .unwrap();
+    }
+    assert!(
+        rig.clock.waits().is_empty(),
+        "a failed body check is not retried"
+    );
+    assert!(
+        !rig.events()
+            .iter()
+            .any(|e| matches!(e, Event::MirrorSkipped { .. })),
+        "the mirror stays in use for chunk 1"
+    );
+}
+
+#[tokio::test]
+async fn a_chunk_is_recorded_before_it_is_renamed_and_a_failed_record_leaves_no_chunk() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .respond_with(always(200).set_body_string("ra\tdec\n"))
+        .mount(&server)
+        .await;
+    let rig = rig(false);
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("chunk-0.tsv");
+    let seen = |payload: &Payload| {
+        assert!(!dest.exists(), "recorded before the rename");
+        assert_eq!(payload.rows, Some(1));
+        Ok(())
+    };
+    rig.fetcher
+        .chunk(
+            &item("chunk 0", &dest),
+            &[server.uri()],
+            "/q",
+            &tsv_only,
+            &seen,
+        )
+        .await
+        .unwrap();
+    assert!(dest.exists());
+    let dest = dir.path().join("chunk-1.tsv");
+    let failing = |_: &Payload| Err(std::io::Error::other("disk full"));
+    let error = rig
+        .fetcher
+        .chunk(
+            &item("chunk 1", &dest),
+            &[server.uri()],
+            "/q",
+            &tsv_only,
+            &failing,
+        )
+        .await
+        .unwrap_err();
+    assert!(matches!(error, FetchError::Disk { .. }), "{error}");
+    assert!(
+        !dest.exists(),
+        "a chunk without its record is not renamed into place"
     );
 }

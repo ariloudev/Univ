@@ -1,10 +1,8 @@
 //! Each source has a small recorded answer from its real provider, which its access method's
 //! reader parses. `record_fixtures` fetches them live and is run by hand:
 //! `cargo test -p univ-ingest --test fixtures -- --ignored record_fixtures`.
-#![expect(
-    clippy::panic,
-    reason = "a test helper that cannot read the definitions fails the test"
-)]
+
+mod common;
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -13,8 +11,8 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use univ_ingest::access::{check_answer, chunk_requests};
 use univ_ingest::events::RecordingSink;
-use univ_ingest::fetch::{Fetched, Fetcher, RetryPolicy, SystemClock};
-use univ_ingest::source::{Access, SourceDefinition, read_all};
+use univ_ingest::fetch::{Fetched, Fetcher, Item, RetryPolicy, SystemClock, hex};
+use univ_ingest::source::{Access, SourceDefinition};
 
 /// Rows asked of a query provider for a fixture.
 const ROWS: u32 = 5;
@@ -35,10 +33,6 @@ fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
-fn definitions() -> Vec<SourceDefinition> {
-    read_all(&root().join("../../sources")).unwrap_or_else(|e| panic!("{e}"))
-}
-
 /// The fixture of a source: `tests/fixtures/<provider>/<id>.<ext>`.
 fn fixture(definition: &SourceDefinition) -> Option<PathBuf> {
     let extension = match &definition.access {
@@ -51,14 +45,6 @@ fn fixture(definition: &SourceDefinition) -> Option<PathBuf> {
     Some(dir.join(format!("{}.{extension}", definition.id)))
 }
 
-fn hex(bytes: &[u8]) -> String {
-    use std::fmt::Write as _;
-    bytes.iter().fold(String::new(), |mut text, byte| {
-        let _ = write!(text, "{byte:02x}");
-        text
-    })
-}
-
 fn sidecar_of(path: &Path) -> PathBuf {
     path.with_extension(format!(
         "{}.yaml",
@@ -68,7 +54,7 @@ fn sidecar_of(path: &Path) -> PathBuf {
 
 #[test]
 fn every_source_has_a_recording_its_reader_parses() {
-    for definition in definitions() {
+    for definition in common::read_sources() {
         let Some(path) = fixture(&definition) else {
             continue;
         };
@@ -113,7 +99,7 @@ async fn record_fixtures() {
     .unwrap_or_else(|e| panic!("{e}"));
     let client = reqwest::Client::new();
     let mut failures = Vec::new();
-    for definition in definitions() {
+    for definition in common::read_sources() {
         let Some(path) = fixture(&definition) else {
             continue;
         };
@@ -163,15 +149,13 @@ async fn record_fixtures() {
             };
             let part = path.with_extension("download");
             let check = |b: &[u8]| check_answer(&definition, b);
+            let item = Item {
+                source: &definition.id,
+                name: "fixture",
+                dest: &part,
+            };
             match fetcher
-                .chunk(
-                    &definition.id,
-                    "fixture",
-                    &definition.mirrors,
-                    &suffix,
-                    &part,
-                    &check,
-                )
+                .chunk(&item, &definition.mirrors, &suffix, &check, &|_| Ok(()))
                 .await
             {
                 Ok(Fetched::Arrived(payload)) => {
@@ -183,7 +167,7 @@ async fn record_fixtures() {
                         format!("the first chunk's query cut to {ROWS} rows"),
                     )
                 }
-                Ok(Fetched::OnDisk(_)) => continue,
+                Ok(Fetched::OnDisk) => continue,
                 Err(e) => {
                     failures.push(e.to_string());
                     continue;

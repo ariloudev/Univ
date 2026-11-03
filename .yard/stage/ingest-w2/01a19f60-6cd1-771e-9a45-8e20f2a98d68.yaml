@@ -10,6 +10,15 @@ versions:
     title: "W2 Acquisition"
     goal: "All 18 source definitions are validated YAML, and the fetcher retries, resumes chunks and byte ranges, records digests and works offline, tested against a mock server and recorded answers"
     status: active
+  - key: 01a19f8e-2591-737c-9656-146ef99f56b5
+    at: 2026-11-03T03:57:35Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 Acquisition"
+    goal: "All 18 source definitions are validated YAML, and the fetcher retries, resumes chunks and byte ranges, records digests and works offline, tested against a mock server and recorded answers"
+    status: done
 blocks:
   - key: 01a19f60-6cd1-771e-9a45-8e22f2a7ff09
     id: w2-t1-source
@@ -210,6 +219,15 @@ blocks:
         title: "The 18 source definitions"
         detail: "Each with researched citation, endpoints and mirrors, columns and units, verbatim terms, credit and redistribution reasoning. An agent drafts them from the three research reports. The choices waiting on the owner (G cut, licence posture, SDSS sample) are filled with the recommended options and marked provisional. Done when `tests/definitions.rs` passes and the drafts are reviewed against the research."
         state: active
+      - key: 01a19f8e-2591-737c-9656-146be824cd44
+        at: 2026-11-03T03:57:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The 18 source definitions"
+        detail: "Done in `sources/*.yaml`; `tests/definitions.rs` checks all 18 ids, their scale domains, and that none is forbidden. Provisional until the owner answers: G < 10, the SDSS all-spectra sample, and permitted_with_credit everywhere with each caveat stated. A repository source needs no mirror (no invented ADS mirror)."
+        state: done
   - key: 01a19f60-6cd1-771e-9a45-8e29fa1c1059
     id: w2-t8-fixtures
     kind: task
@@ -223,6 +241,20 @@ blocks:
         title: "A recorded fixture per source"
         detail: "A few rows or bytes from the real service, each with a YAML sidecar giving the URL or query, retrieval time and SHA-256. Done when every source has one and its access method's reader parses it."
         state: open
+      - key: 01a19f8e-2591-737c-9656-146c479e19c0
+        at: 2026-11-03T03:57:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "A recorded fixture per source"
+        detail: |-
+          17 recordings (140 KiB) in `tests/fixtures/<provider>/`, each with a YAML sidecar of URL, retrieval time and SHA-256:
+          - query sources: their first chunk cut to 5 rows;
+          - file sources: their first 4 KiB.
+
+          Every query answer passed the column check against the live service, so all column names are confirmed. `record_fixtures` is `#[ignore]` and run by hand. The main VizieR host was unreachable, so the IDIA mirror served.
+        state: done
   - key: 01a19f60-6cd1-771e-9a45-8e2a57f68569
     id: w2-t9-gate
     kind: task
@@ -236,6 +268,15 @@ blocks:
         title: "Gate green, criteria linked"
         detail: "Done when `cargo xtask check` passes and AC-1 to AC-27 are linked and accepted, or marked unverified with a reason."
         state: open
+      - key: 01a19f8e-2591-737c-9656-146d0bcac618
+        at: 2026-11-03T03:57:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "10 gates passed. AC-1 to AC-27 are linked and accepted, 31 of 293 nodes in all. AC-20's display half is re-checked in W3."
+        state: done
   - key: 01a19f67-7b44-7257-a73d-e3355772bb36
     id: w2-q-gaia-cut
     kind: question

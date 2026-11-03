@@ -32,20 +32,20 @@ pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
             slices,
             ..
         } => {
-            let ranges = slices.as_ref().map_or_else(
+            let ranges: Vec<_> = slices.as_ref().map_or_else(
                 || vec![None],
                 |s| {
-                    let mut ranges = Vec::new();
-                    let mut low = s.from;
-                    while low <= s.to {
-                        let high = low.saturating_add(s.step - 1).min(s.to);
-                        ranges.push(Some((s.column.as_str(), low, high)));
-                        low = high.saturating_add(1);
-                        if high == s.to {
-                            break;
-                        }
-                    }
-                    ranges
+                    let step = usize::try_from(s.step).unwrap_or(usize::MAX);
+                    (s.from..=s.to)
+                        .step_by(step)
+                        .map(|low| {
+                            Some((
+                                s.column.as_str(),
+                                low,
+                                low.saturating_add(s.step - 1).min(s.to),
+                            ))
+                        })
+                        .collect()
                 },
             );
             ranges
@@ -64,14 +64,16 @@ pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
                 })
                 .collect()
         }
-        Access::SkyserverSql { query, chunks, .. } => split(query, *chunks, skyserver_suffix),
-        Access::Tap { query, chunks, .. } => split(query, *chunks, tap_suffix),
+        Access::SkyserverSql { query, chunks, .. } | Access::Tap { query, chunks, .. } => {
+            suffix_for(&definition.access).map_or_else(Vec::new, |s| split(query, *chunks, s))
+        }
         Access::Files { .. } | Access::Repository { .. } => Vec::new(),
     }
 }
 
-/// A `VizieR` query for the definition's columns: the computed `_RAJ2000` and `_DEJ2000` are
-/// asked for with `-out.add`, the others with `-out`.
+/// A `VizieR` query for the definition's columns: the computed ones, whose names start with
+/// `_`, are asked for with `-out.add`, the others with `-out`. `VizieR` answers `_RAJ` and `_DEJ`
+/// as the columns `_RAJ2000` and `_DEJ2000`.
 fn vizier_query(
     definition: &SourceDefinition,
     table: &str,
@@ -86,7 +88,15 @@ fn vizier_query(
     query.append_pair("-source", table);
     query.append_pair("-out", &stored.join(","));
     if !computed.is_empty() {
-        query.append_pair("-out.add", "_RAJ,_DEJ");
+        let asked: Vec<&str> = computed
+            .iter()
+            .map(|c| match *c {
+                "_RAJ2000" => "_RAJ",
+                "_DEJ2000" => "_DEJ",
+                other => other,
+            })
+            .collect();
+        query.append_pair("-out.add", &asked.join(","));
     }
     query.append_pair("-out.max", "unlimited");
     for constraint in constraints {
@@ -130,6 +140,15 @@ fn request(
     }
 }
 
+/// What is appended to a mirror to send a query of `access`, for the methods that take one.
+fn suffix_for(access: &Access) -> Option<fn(&str) -> String> {
+    match access {
+        Access::SkyserverSql { .. } => Some(skyserver_suffix),
+        Access::Tap { .. } => Some(tap_suffix),
+        Access::VizierTsv { .. } | Access::Files { .. } | Access::Repository { .. } => None,
+    }
+}
+
 fn skyserver_suffix(sql: &str) -> String {
     let mut q = Serializer::new(String::new());
     q.append_pair("cmd", sql);
@@ -150,15 +169,16 @@ fn tap_suffix(adql: &str) -> String {
 /// a count query.
 #[must_use]
 pub fn count_request(definition: &SourceDefinition) -> Option<ChunkRequest> {
-    let (count, suffix): (&String, fn(&str) -> String) = match &definition.access {
-        Access::SkyserverSql {
-            count: Some(count), ..
-        } => (count, skyserver_suffix),
-        Access::Tap {
-            count: Some(count), ..
-        } => (count, tap_suffix),
-        _ => return None,
+    let (Access::SkyserverSql {
+        count: Some(count), ..
+    }
+    | Access::Tap {
+        count: Some(count), ..
+    }) = &definition.access
+    else {
+        return None;
     };
+    let suffix = suffix_for(&definition.access)?;
     Some(request(
         "row count".to_owned(),
         "count",
@@ -202,13 +222,17 @@ pub fn read_table(access: &Access, body: &[u8]) -> Result<Table, String> {
 }
 
 /// Checks that an answer is a table holding every column `definition` takes, so an error page
-/// sent with status 200 is retried rather than kept as a chunk.
+/// sent with status 200 is never kept as a chunk, and gives its number of rows. An empty table,
+/// with no header, is a valid answer of no rows.
 ///
 /// # Errors
 ///
 /// Fails, saying why, when the answer is not such a table.
-pub fn check_answer(definition: &SourceDefinition, body: &[u8]) -> Result<(), String> {
+pub fn check_answer(definition: &SourceDefinition, body: &[u8]) -> Result<u64, String> {
     let table = read_table(&definition.access, body)?;
+    if table.columns.is_empty() {
+        return Ok(0);
+    }
     let missing: Vec<&str> = definition
         .columns
         .iter()
@@ -216,7 +240,7 @@ pub fn check_answer(definition: &SourceDefinition, body: &[u8]) -> Result<(), St
         .filter(|name| !table.columns.iter().any(|c| c == name))
         .collect();
     if missing.is_empty() {
-        Ok(())
+        Ok(table.rows.len() as u64)
     } else {
         Err(format!(
             "the answer lacks the columns {}",
@@ -226,13 +250,17 @@ pub fn check_answer(definition: &SourceDefinition, body: &[u8]) -> Result<(), St
 }
 
 /// `VizieR`'s `asu-tsv`: `#` comments, then a header, a units line and a line of dashes, then
-/// one tab-separated row per line.
+/// one tab-separated row per line. An answer of comments only is a table of no rows, unless a
+/// comment reports an error.
 fn read_vizier_tsv(text: &str) -> Result<Table, String> {
-    let mut lines = text
-        .lines()
-        .filter(|l| !l.starts_with('#') && !l.trim().is_empty());
-    let header = lines.next().ok_or("the answer holds no table")?;
-    let columns: Vec<String> = header.split('\t').map(|c| c.trim().to_owned()).collect();
+    let mut lines = content_lines(text);
+    let Some(header) = lines.next() else {
+        return match text.lines().find(|l| vizier_error(l)) {
+            Some(line) => Err(format!("VizieR reports an error: {}", line.trim())),
+            None => Ok(Table::default()),
+        };
+    };
+    let columns = cells(header, '\t');
     lines.next().ok_or("the table has no units line")?;
     let dashes = lines.next().ok_or("the table has no line of dashes")?;
     if !dashes.trim_start().starts_with('-') {
@@ -240,29 +268,20 @@ fn read_vizier_tsv(text: &str) -> Result<Table, String> {
             "expected a line of dashes under the header, found {dashes:?}"
         ));
     }
-    let rows = lines
-        .map(|line| {
-            let row: Vec<String> = line.split('\t').map(|c| c.trim().to_owned()).collect();
-            if row.len() == columns.len() {
-                Ok(row)
-            } else {
-                Err(format!(
-                    "a row has {} cells for {} columns: {line:?}",
-                    row.len(),
-                    columns.len()
-                ))
-            }
-        })
-        .collect::<Result<_, _>>()?;
+    let rows = rows(lines, columns.len(), |line| cells(line, '\t'))?;
     Ok(Table { columns, rows })
+}
+
+/// A `VizieR` comment that reports an error: an `#INFO` line naming one, or a `#***` line.
+fn vizier_error(line: &str) -> bool {
+    line.starts_with("#***")
+        || (line.starts_with("#INFO") && line.to_ascii_lowercase().contains("error"))
 }
 
 /// CSV as `SkyServer` and TAP services give it: `#` lines skipped, a header, then rows, with
 /// fields in double quotes where they hold a comma.
 fn read_csv(text: &str) -> Result<Table, String> {
-    let mut lines = text
-        .lines()
-        .filter(|l| !l.starts_with('#') && !l.trim().is_empty());
+    let mut lines = content_lines(text);
     let header = lines.next().ok_or("the answer holds no table")?;
     if header.trim_start().starts_with('<') {
         return Err(format!(
@@ -271,21 +290,40 @@ fn read_csv(text: &str) -> Result<Table, String> {
         ));
     }
     let columns = fields(header);
-    let rows = lines
+    let rows = rows(lines, columns.len(), fields)?;
+    Ok(Table { columns, rows })
+}
+
+/// The lines of an answer that are neither `#` comments nor blank.
+fn content_lines(text: &str) -> impl Iterator<Item = &str> {
+    text.lines()
+        .filter(|l| !l.starts_with('#') && !l.trim().is_empty())
+}
+
+/// Each line split into cells by `split`, refusing a line whose width is not `width`.
+fn rows<'a>(
+    lines: impl Iterator<Item = &'a str>,
+    width: usize,
+    split: impl Fn(&str) -> Vec<String>,
+) -> Result<Vec<Vec<String>>, String> {
+    lines
         .map(|line| {
-            let row = fields(line);
-            if row.len() == columns.len() {
+            let row = split(line);
+            if row.len() == width {
                 Ok(row)
             } else {
                 Err(format!(
-                    "a row has {} fields for {} columns: {line:?}",
-                    row.len(),
-                    columns.len()
+                    "a row has {} cells for {width} columns: {line:?}",
+                    row.len()
                 ))
             }
         })
-        .collect::<Result<_, _>>()?;
-    Ok(Table { columns, rows })
+        .collect()
+}
+
+/// The trimmed cells of a line separated by `separator`.
+fn cells(line: &str, separator: char) -> Vec<String> {
+    line.split(separator).map(|c| c.trim().to_owned()).collect()
 }
 
 /// The fields of one CSV line.

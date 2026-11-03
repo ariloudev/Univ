@@ -1,7 +1,8 @@
 //! The repository holds a valid definition for each source of the first release (RQ-5).
 
-use std::path::PathBuf;
+mod common;
 
+use common::sources_dir;
 use univ_ingest::source::{RedistributionStatus, ScaleDomain, read_all};
 
 /// The sources of the first release, by id, with their scale domains.
@@ -26,10 +27,6 @@ const FIRST_RELEASE: [(&str, ScaleDomain); 18] = [
     ("researched-structures", ScaleDomain::CosmicWeb),
 ];
 
-fn sources_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../sources")
-}
-
 #[test]
 fn every_source_of_the_first_release_has_a_valid_definition() {
     let definitions = read_all(&sources_dir()).unwrap_or_else(|e| panic!("{e}"));
@@ -46,7 +43,7 @@ fn every_source_of_the_first_release_has_a_valid_definition() {
 
 #[test]
 fn no_source_of_the_first_release_is_forbidden() {
-    for d in read_all(&sources_dir()).unwrap_or_else(|e| panic!("{e}")) {
+    for d in common::read_sources() {
         assert_ne!(
             d.redistribution.status,
             RedistributionStatus::Forbidden,

@@ -2,13 +2,17 @@
 
 use std::path::{Path, PathBuf};
 
+use reqwest::StatusCode;
 use reqwest::header::{CONTENT_RANGE, ETAG, IF_RANGE, RANGE};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use univ_model::ids::SourceId;
 
-use super::{Attempt, Clock, FetchError, Fetched, Fetcher, hex, judge_status, part_path};
+use super::{
+    Attempt, Clock, FetchError, Fetched, Fetcher, Item, Record, disk_error, hex, judge_status,
+    part_path, with_ending, write_via_part,
+};
 use crate::events::{Event, RestartReason};
 
 /// Progress is reported each time this many more bytes arrive.
@@ -29,57 +33,67 @@ struct PartMeta {
     length: Option<u64>,
 }
 
-/// A download that arrived whole: its URL, SHA-256 and size.
+/// A download that arrived whole and matched what was published: its URL, SHA-256 and size.
 type Complete = (String, Vec<u8>, u64);
 
 impl<C: Clock> Fetcher<C> {
-    /// Fetches the file at `path` under each mirror in turn into `dest`. A stopped download
-    /// continues by range from the byte it reached. It starts over when the provider ignores
-    /// the range or the file changed, and is checked against `expected` once complete. Its
-    /// bytes stay in a `.part` file until then.
+    /// Fetches the file at `path` under each mirror in turn into the item's file. A stopped
+    /// download continues by range from the byte it reached. It starts over when the provider
+    /// ignores the range or the file changed, and is checked against `expected` once complete.
+    /// Its bytes stay in a `.part` file until it is checked and recorded.
     ///
     /// # Errors
     ///
     /// Fails when no mirror gives the whole file, when the run is offline and the file is
-    /// missing, or when it cannot be written.
+    /// missing, or when it or its record cannot be written.
     pub async fn file(
         &self,
-        source: &SourceId,
-        item: &str,
+        item: &Item<'_>,
         mirrors: &[String],
         path: &str,
-        dest: &Path,
         expected: &Expected,
+        record: &Record<'_>,
     ) -> Result<Fetched, FetchError> {
-        if let Some(on_disk) = self.on_disk(source, item, dest)? {
+        if let Some(on_disk) = self.on_disk(item)? {
             return Ok(on_disk);
         }
         let (url, digest, bytes) = self
-            .across_mirrors(source, item, mirrors, |mirror| {
+            .across_mirrors(item, mirrors, |mirror| {
                 let url = format!(
                     "{}/{}",
                     mirror.trim_end_matches('/'),
                     path.trim_start_matches('/')
                 );
-                self.download(source, item, url, dest, expected)
+                self.download(item, url, expected)
             })
             .await?;
-        Ok(Fetched::Arrived(self.payload(item, url, &digest, bytes)))
+        let payload = self.payload(item, url, &digest, bytes, None);
+        let disk = |e: std::io::Error| disk_error(item, &e);
+        record(&payload).map_err(disk)?;
+        tokio::fs::rename(part_path(item.dest), item.dest)
+            .await
+            .map_err(disk)?;
+        let _ = tokio::fs::remove_file(meta_path(item.dest)).await;
+        self.sink.emit(Event::Done {
+            source: item.source.clone(),
+            item: item.name.to_owned(),
+            bytes,
+        });
+        Ok(Fetched::Arrived(payload))
     }
 
+    /// Brings the item's partial file to the whole file at `url` and checks it against
+    /// `expected`, leaving it there to be recorded and renamed.
     async fn download(
         &self,
-        source: &SourceId,
-        item: &str,
+        item: &Item<'_>,
         url: String,
-        dest: &Path,
         expected: &Expected,
     ) -> Result<Complete, Attempt> {
         let at = Place {
-            source,
-            item,
-            part: part_path(dest),
-            meta: meta_path(dest),
+            item: *item,
+            part: part_path(item.dest),
+            meta: meta_path(item.dest),
         };
         let have = tokio::fs::metadata(&at.part).await.map_or(0, |m| m.len());
         let before = if have > 0 {
@@ -95,8 +109,8 @@ impl<C: Clock> Fetcher<C> {
             }
         }
         self.sink.emit(Event::Get {
-            source: source.clone(),
-            item: item.to_owned(),
+            source: item.source.clone(),
+            item: item.name.to_owned(),
             url: url.clone(),
         });
         let response = request
@@ -110,9 +124,7 @@ impl<C: Clock> Fetcher<C> {
             length,
         };
         let yaml = serde_norway::to_string(&record).map_err(|e| Attempt::GiveUp(e.to_string()))?;
-        tokio::fs::write(&at.meta, yaml)
-            .await
-            .map_err(|e| at.disk(&e))?;
+        write_via_part(&at.meta, yaml.as_bytes(), || Ok(())).map_err(|e| at.disk(&e))?;
         let written = self.stream(&at, response, offset, length).await?;
         let digest = sha256_of(&at.part).await.map_err(|e| at.disk(&e))?;
         let wrong_size = expected.size.is_some_and(|s| s != written);
@@ -122,22 +134,13 @@ impl<C: Clock> Fetcher<C> {
             .is_some_and(|d| !d.eq_ignore_ascii_case(&hex(&digest)));
         if wrong_size || wrong_digest {
             discard(&at).await;
-            return Err(Attempt::Retry(format!(
+            return Err(Attempt::GiveUp(format!(
                 "the file of {written} bytes and SHA-256 {} does not match the published {:?} bytes and {:?}",
                 hex(&digest),
                 expected.size,
                 expected.sha256,
             )));
         }
-        tokio::fs::rename(&at.part, dest)
-            .await
-            .map_err(|e| at.disk(&e))?;
-        let _ = tokio::fs::remove_file(&at.meta).await;
-        self.sink.emit(Event::Done {
-            source: source.clone(),
-            item: item.to_owned(),
-            bytes: written,
-        });
         Ok((url, digest, written))
     }
 
@@ -159,8 +162,8 @@ impl<C: Clock> Fetcher<C> {
                 reason,
             });
         };
-        match (response.status().as_u16(), before) {
-            (206, Some(m)) => {
+        match (response.status(), before) {
+            (StatusCode::PARTIAL_CONTENT, Some(m)) => {
                 let (start, total) = header(response, CONTENT_RANGE)
                     .and_then(|r| content_range(&r))
                     .ok_or_else(|| {
@@ -184,12 +187,12 @@ impl<C: Clock> Fetcher<C> {
                 });
                 Ok((have, total.or(m.length)))
             }
-            (416, Some(_)) => {
+            (StatusCode::RANGE_NOT_SATISFIABLE, Some(_)) => {
                 restart(RestartReason::RangeUnsatisfiable);
                 discard(at).await;
                 Err(Attempt::Retry("the range was not satisfiable".to_owned()))
             }
-            (200, before) => {
+            (StatusCode::OK, before) => {
                 let length = response.content_length();
                 if let Some(m) = before {
                     let changed = differ(etag.as_ref(), m.etag.as_ref())
@@ -265,15 +268,14 @@ impl<C: Clock> Fetcher<C> {
 
 /// The item being downloaded and the files that hold it until it is whole.
 struct Place<'a> {
-    source: &'a SourceId,
-    item: &'a str,
+    item: Item<'a>,
     part: PathBuf,
     meta: PathBuf,
 }
 
 impl Place<'_> {
     fn id(&self) -> (SourceId, String) {
-        (self.source.clone(), self.item.to_owned())
+        (self.item.source.clone(), self.item.name.to_owned())
     }
 
     fn disk(&self, error: &std::io::Error) -> Attempt {
@@ -283,12 +285,7 @@ impl Place<'_> {
 
 /// Where the record of a partial download is kept.
 fn meta_path(dest: &Path) -> PathBuf {
-    let mut name = part_path(dest)
-        .file_name()
-        .unwrap_or_default()
-        .to_os_string();
-    name.push(".yaml");
-    dest.with_file_name(name)
+    with_ending(dest, ".part.yaml")
 }
 
 async fn read_meta(path: &Path) -> Option<PartMeta> {

@@ -6,10 +6,13 @@ mod file;
 use std::collections::HashSet;
 use std::fmt::Write as _;
 use std::future::Future;
+use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, SystemTime};
 
+use reqwest::StatusCode;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 use univ_model::ids::SourceId;
@@ -57,7 +60,7 @@ impl Clock for SystemClock {
 }
 
 /// A payload that arrived, as the source's provenance records it.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Payload {
     pub item: String,
     pub url: String,
@@ -65,6 +68,10 @@ pub struct Payload {
     pub bytes: u64,
     /// The retrieval time, RFC 3339 in UTC.
     pub retrieved: String,
+    /// What the body check measured: the rows of a table chunk, or the number a count query
+    /// gave. None for a file, which has no body check.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rows: Option<u64>,
 }
 
 /// What a fetch came to.
@@ -73,7 +80,16 @@ pub enum Fetched {
     /// The item arrived now.
     Arrived(Payload),
     /// The item was already on disk.
-    OnDisk(PathBuf),
+    OnDisk,
+}
+
+/// An item of a source and the file it is kept in.
+#[derive(Clone, Copy, Debug)]
+pub struct Item<'a> {
+    pub source: &'a SourceId,
+    /// The item's name in events and provenance.
+    pub name: &'a str,
+    pub dest: &'a Path,
 }
 
 /// A fetch that failed. Whatever is already on disk stays there for the next run.
@@ -108,12 +124,19 @@ fn list(errors: &[(String, String)]) -> String {
 pub(crate) enum Attempt {
     /// Worth trying again on the same mirror, such as a timeout or a 5xx.
     Retry(String),
-    /// Not worth trying again on this mirror, such as a 404.
+    /// Not worth trying again on this mirror, such as a 404, a body that fails its check or a
+    /// file that does not match its published digest. The next mirror is tried, and this one is
+    /// not skipped for the rest of the run.
     GiveUp(String),
 }
 
-/// Checks a body before it is kept, such as a provider's error page sent with status 200.
-pub type Validate<'a> = dyn Fn(&[u8]) -> Result<(), String> + Send + Sync + 'a;
+/// Checks a body before it is kept, such as a provider's error page sent with status 200, and
+/// gives its measure: the rows of a table chunk, or the number a count query gave.
+pub type Check<'a> = dyn Fn(&[u8]) -> Result<u64, String> + Send + Sync + 'a;
+
+/// Records a payload's provenance once every check has passed and before its file is renamed
+/// into place, so that no payload is ever visible without its record. An error fails the item.
+pub type Record<'a> = dyn Fn(&Payload) -> io::Result<()> + Send + Sync + 'a;
 
 /// Fetches the chunks and files of sources.
 pub struct Fetcher<C: Clock> {
@@ -151,66 +174,54 @@ impl<C: Clock> Fetcher<C> {
     }
 
     /// Fetches one chunk of a query: `suffix` is appended to each mirror in turn. The chunk is
-    /// written to `dest` with `.part` added, then renamed, so a partial chunk is never read as
-    /// one. A chunk already at `dest` is not fetched again.
+    /// written to its file with `.part` added, recorded, then renamed, so a partial chunk is
+    /// never read as one. A chunk already on disk is not fetched again.
     ///
     /// # Errors
     ///
-    /// Fails when no mirror gives a body that passes `validate`, when the run is offline and the
-    /// chunk is missing, or when the chunk cannot be written.
+    /// Fails when no mirror gives a body that passes `check`, when the run is offline and the
+    /// chunk is missing, or when the chunk or its record cannot be written.
     pub async fn chunk(
         &self,
-        source: &SourceId,
-        item: &str,
+        item: &Item<'_>,
         mirrors: &[String],
         suffix: &str,
-        dest: &Path,
-        validate: &Validate<'_>,
+        check: &Check<'_>,
+        record: &Record<'_>,
     ) -> Result<Fetched, FetchError> {
-        if let Some(on_disk) = self.on_disk(source, item, dest)? {
+        if let Some(on_disk) = self.on_disk(item)? {
             return Ok(on_disk);
         }
-        let (url, body) = self
-            .across_mirrors(source, item, mirrors, |mirror| {
-                self.get_chunk(source, item, format!("{mirror}{suffix}"), validate)
+        let (url, body, rows) = self
+            .across_mirrors(item, mirrors, |mirror| {
+                self.get_chunk(item, format!("{mirror}{suffix}"), check)
             })
             .await?;
-        let disk = |e: std::io::Error| disk_error(source, item, &e);
-        let part = part_path(dest);
-        tokio::fs::write(&part, &body).await.map_err(disk)?;
-        tokio::fs::rename(&part, dest).await.map_err(disk)?;
         let bytes = body.len() as u64;
+        let payload = self.payload(item, url, &Sha256::digest(&body), bytes, Some(rows));
+        write_via_part(item.dest, &body, || record(&payload)).map_err(|e| disk_error(item, &e))?;
         self.sink.emit(Event::Done {
-            source: source.clone(),
-            item: item.to_owned(),
+            source: item.source.clone(),
+            item: item.name.to_owned(),
             bytes,
         });
-        Ok(Fetched::Arrived(self.payload(
-            item,
-            url,
-            &Sha256::digest(&body),
-            bytes,
-        )))
+        Ok(Fetched::Arrived(payload))
     }
 
-    /// The item at `dest` when it is there; an error when the run is offline and it is not.
-    fn on_disk(
-        &self,
-        source: &SourceId,
-        item: &str,
-        dest: &Path,
-    ) -> Result<Option<Fetched>, FetchError> {
-        if dest.is_file() {
+    /// `Fetched::OnDisk` when the item's file is there; an error when the run is offline and
+    /// it is not.
+    fn on_disk(&self, item: &Item<'_>) -> Result<Option<Fetched>, FetchError> {
+        if item.dest.is_file() {
             self.sink.emit(Event::Hit {
-                source: source.clone(),
-                item: item.to_owned(),
+                source: item.source.clone(),
+                item: item.name.to_owned(),
             });
-            return Ok(Some(Fetched::OnDisk(dest.to_path_buf())));
+            return Ok(Some(Fetched::OnDisk));
         }
         if self.offline {
             return Err(FetchError::MissingOffline {
-                source_id: source.clone(),
-                item: item.to_owned(),
+                source_id: item.source.clone(),
+                item: item.name.to_owned(),
             });
         }
         Ok(None)
@@ -218,14 +229,13 @@ impl<C: Clock> Fetcher<C> {
 
     async fn get_chunk(
         &self,
-        source: &SourceId,
-        item: &str,
+        item: &Item<'_>,
         url: String,
-        validate: &Validate<'_>,
-    ) -> Result<(String, Vec<u8>), Attempt> {
+        check: &Check<'_>,
+    ) -> Result<(String, Vec<u8>, u64), Attempt> {
         self.sink.emit(Event::Get {
-            source: source.clone(),
-            item: item.to_owned(),
+            source: item.source.clone(),
+            item: item.name.to_owned(),
             url: url.clone(),
         });
         let response = self
@@ -239,16 +249,15 @@ impl<C: Clock> Fetcher<C> {
             .bytes()
             .await
             .map_err(|e| Attempt::Retry(e.to_string()))?;
-        validate(&body).map_err(Attempt::Retry)?;
-        Ok((url, body.to_vec()))
+        let rows = check(&body).map_err(Attempt::GiveUp)?;
+        Ok((url, body.into(), rows))
     }
 
     /// Tries `attempt` on each mirror in order, with retries, skipping mirrors that failed all
     /// their retries earlier in the run.
     async fn across_mirrors<T, F, Fut>(
         &self,
-        source: &SourceId,
-        item: &str,
+        item: &Item<'_>,
         mirrors: &[String],
         attempt: F,
     ) -> Result<T, FetchError>
@@ -278,8 +287,8 @@ impl<C: Clock> Fetcher<C> {
                     }
                 };
                 self.sink.emit(Event::Err {
-                    source: source.clone(),
-                    item: item.to_owned(),
+                    source: item.source.clone(),
+                    item: item.name.to_owned(),
                     mirror: mirror.clone(),
                     attempt: n + 1,
                     error: error.clone(),
@@ -295,15 +304,15 @@ impl<C: Clock> Fetcher<C> {
             if exhausted {
                 self.skip(mirror);
                 self.sink.emit(Event::MirrorSkipped {
-                    source: source.clone(),
+                    source: item.source.clone(),
                     mirror: mirror.clone(),
                 });
             }
             errors.push((mirror.clone(), last));
         }
         Err(FetchError::AllMirrorsFailed {
-            source_id: source.clone(),
-            item: item.to_owned(),
+            source_id: item.source.clone(),
+            item: item.name.to_owned(),
             errors,
         })
     }
@@ -322,13 +331,21 @@ impl<C: Clock> Fetcher<C> {
             .insert(mirror.to_owned());
     }
 
-    fn payload(&self, item: &str, url: String, digest: &[u8], bytes: u64) -> Payload {
+    fn payload(
+        &self,
+        item: &Item<'_>,
+        url: String,
+        digest: &[u8],
+        bytes: u64,
+        rows: Option<u64>,
+    ) -> Payload {
         Payload {
-            item: item.to_owned(),
+            item: item.name.to_owned(),
             url,
             sha256: hex(digest),
             bytes,
             retrieved: humantime::format_rfc3339_seconds(self.clock.now()).to_string(),
+            rows,
         }
     }
 }
@@ -337,30 +354,52 @@ impl<C: Clock> Fetcher<C> {
 fn judge_status(status: reqwest::StatusCode) -> Result<(), Attempt> {
     if status.is_success() {
         Ok(())
-    } else if status.is_server_error() || status.as_u16() == 408 || status.as_u16() == 429 {
+    } else if status.is_server_error()
+        || status == StatusCode::REQUEST_TIMEOUT
+        || status == StatusCode::TOO_MANY_REQUESTS
+    {
         Err(Attempt::Retry(format!("HTTP {status}")))
     } else {
         Err(Attempt::GiveUp(format!("HTTP {status}")))
     }
 }
 
-/// `dest` with `.part` added to its name.
-fn part_path(dest: &Path) -> PathBuf {
-    let mut name = dest.file_name().unwrap_or_default().to_os_string();
-    name.push(".part");
-    dest.with_file_name(name)
+/// `dest` with `ending`, such as `.part`, added to its name.
+fn with_ending(dest: &Path, ending: &str) -> PathBuf {
+    let mut name = dest.as_os_str().to_owned();
+    name.push(ending);
+    PathBuf::from(name)
 }
 
-fn disk_error(source: &SourceId, item: &str, error: &std::io::Error) -> FetchError {
+/// `dest` with `.part` added to its name.
+fn part_path(dest: &Path) -> PathBuf {
+    with_ending(dest, ".part")
+}
+
+/// Writes `bytes` to `dest` through `dest.part` and a rename, so that `dest` is never half
+/// written. `before` runs once the partial file is whole; an error from it stops the rename.
+pub(crate) fn write_via_part(
+    dest: &Path,
+    bytes: &[u8],
+    before: impl FnOnce() -> io::Result<()>,
+) -> io::Result<()> {
+    let part = part_path(dest);
+    std::fs::write(&part, bytes)?;
+    before()?;
+    std::fs::rename(part, dest)
+}
+
+fn disk_error(item: &Item<'_>, error: &io::Error) -> FetchError {
     FetchError::Disk {
-        source_id: source.clone(),
-        item: item.to_owned(),
+        source_id: item.source.clone(),
+        item: item.name.to_owned(),
         error: error.to_string(),
     }
 }
 
 /// Lower-case hexadecimal.
-pub(crate) fn hex(bytes: &[u8]) -> String {
+#[must_use]
+pub fn hex(bytes: &[u8]) -> String {
     bytes
         .iter()
         .fold(String::with_capacity(bytes.len() * 2), |mut text, byte| {

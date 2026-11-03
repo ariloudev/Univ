@@ -2,17 +2,19 @@
 #![allow(
     dead_code,
     clippy::expect_used,
+    clippy::panic,
     clippy::unnecessary_wraps,
-    reason = "test helpers shared by several test crates: each uses a subset, a failed expect is \
-              the test failing, and `accept` has the shape of a body check"
+    reason = "test helpers shared by several test crates: each uses a subset, a failed expect or \
+              panic is the test failing, and `accept` and `keep` have the shapes of the hooks"
 )]
 
-use std::sync::{Arc, Mutex, PoisonError};
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, LazyLock, Mutex, PoisonError};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use univ_ingest::events::{Event, RecordingSink};
-use univ_ingest::fetch::{Clock, Fetcher, RetryPolicy};
-use univ_ingest::source::SourceDefinition;
+use univ_ingest::fetch::{Clock, Fetcher, Item, Payload, RetryPolicy};
+use univ_ingest::source::{SourceDefinition, read_all};
 use univ_model::ids::SourceId;
 
 /// A clock that never waits and remembers each wait it was asked for.
@@ -67,12 +69,40 @@ pub fn rig(offline: bool) -> Rig {
     }
 }
 
+static SOURCE: LazyLock<SourceId> =
+    LazyLock::new(|| SourceId::new("test-galaxies").expect("a valid id"));
+
 pub fn source() -> SourceId {
-    SourceId::new("test-galaxies").expect("a valid id")
+    SOURCE.clone()
 }
 
-pub fn accept(_: &[u8]) -> Result<(), String> {
+/// The item `name` of `test-galaxies`, kept at `dest`.
+pub fn item<'a>(name: &'a str, dest: &'a Path) -> Item<'a> {
+    Item {
+        source: &SOURCE,
+        name,
+        dest,
+    }
+}
+
+/// A body check that takes any body, measuring it as no rows.
+pub fn accept(_: &[u8]) -> Result<u64, String> {
+    Ok(0)
+}
+
+/// A provenance hook that records nothing.
+pub fn keep(_: &Payload) -> std::io::Result<()> {
     Ok(())
+}
+
+/// The repository's `sources/` directory.
+pub fn sources_dir() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../sources")
+}
+
+/// Every source definition in the repository.
+pub fn read_sources() -> Vec<SourceDefinition> {
+    read_all(&sources_dir()).unwrap_or_else(|e| panic!("{e}"))
 }
 
 /// A definition of `test-galaxies` with `access`, columns `ra` and `dec`, and one mirror,

@@ -238,3 +238,14 @@ fn a_run_reads_every_definition_and_stops_at_the_first_bad_one() {
     let refused = read_all(dir.path()).unwrap_err();
     assert!(refused.file.ends_with("test-stars.yaml") && refused.field == "frame");
 }
+
+#[test]
+fn two_files_kept_under_the_same_name_are_refused() {
+    let files = VALID.replace(
+        "  method: vizier_tsv\n  table: \"VII/259/spectra\"\n  constraints: [\"z_helio=0.005..0.35\"]\n  rows: 125071",
+        "  method: files\n  files: [{ path: a/grid.npz }, { path: b/grid.npz }]",
+    );
+    let error = refusal(&files);
+    assert_eq!(error.field, "access.files");
+    assert!(error.problem.contains("same file name"), "{error}");
+}

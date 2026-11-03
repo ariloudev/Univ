@@ -4,18 +4,15 @@
     reason = "a failed unwrap in a test helper is the test failing"
 )]
 
-use univ_ingest::access::{chunk_requests, read_table};
+mod common;
+
+use univ_ingest::access::{check_answer, chunk_requests, read_table};
 use univ_ingest::source::{Access, SourceDefinition};
 
 /// A definition with `access` and two columns, read from YAML as a run would.
 fn definition(access: &str) -> SourceDefinition {
-    let yaml = format!(
-        "id: test-galaxies\ntitle: t\nprovider: p\naccess:\n{access}\ncuts: []\ncolumns:\n  - {{ column: ra, field: right_ascension, unit: degree }}\n  - {{ column: dec, field: declination, unit: degree }}\nframe: icrs\nepoch: 2000.0\ncitation: c\nterms: {{ url: u, quote: q, credit: c }}\nredistribution: {{ status: permitted, reasoning: r }}\nscale_domain: cosmic_web\nmirrors: [\"https://example.org\"]\n"
-    );
     let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("test-galaxies.yaml");
-    std::fs::write(&path, yaml).unwrap();
-    SourceDefinition::read(&path).unwrap()
+    common::definition(&dir, access, "https://example.org")
 }
 
 #[test]
@@ -51,8 +48,47 @@ fn a_small_vizier_table_is_one_request_and_computed_positions_are_added() {
     assert_eq!(requests[0].item, "the whole table");
     assert_eq!(
         requests[0].suffix,
-        "?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=dec&-out.add=_RAJ%2C_DEJ&-out.max=unlimited"
+        "?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=dec&-out.add=_RAJ&-out.max=unlimited"
     );
+}
+
+#[test]
+fn the_computed_columns_asked_for_are_the_ones_the_definition_takes() {
+    let yaml = "  method: vizier_tsv\n  table: J/AJ/144/4/catalog\n  constraints: []";
+    let mut d = definition(yaml);
+    d.columns[0].column = "_DEJ2000".to_owned();
+    d.columns[1].column = "_Glon".to_owned();
+    let requests = chunk_requests(&d);
+    assert!(
+        requests[0].suffix.contains("&-out.add=_DEJ%2C_Glon&"),
+        "{}",
+        requests[0].suffix
+    );
+}
+
+fn vizier() -> Access {
+    Access::VizierTsv {
+        table: String::new(),
+        constraints: vec![],
+        slices: None,
+        rows: None,
+    }
+}
+
+#[test]
+fn an_empty_vizier_answer_is_a_table_of_no_rows_unless_it_reports_an_error() {
+    let empty = b"#\n#   VizieR Astronomical Server\n#INFO\tqueryParams=-source=VII/259\n\n";
+    let table = read_table(&vizier(), empty).unwrap();
+    assert!(table.rows.is_empty() && table.columns.is_empty());
+    let d = definition("  method: vizier_tsv\n  table: VII/259/6dfgs\n  constraints: []");
+    assert_eq!(check_answer(&d, empty), Ok(0));
+    for error in [
+        &b"#INFO\tQUERY_STATUS=error\n"[..],
+        b"#\n#***  Cannot find table VII/259/nothing\n",
+    ] {
+        assert!(read_table(&vizier(), error).is_err());
+        assert!(check_answer(&d, error).is_err());
+    }
 }
 
 #[test]
@@ -98,11 +134,5 @@ fn an_error_page_is_not_read_as_a_table() {
     let page =
         b"<?xml version=\"1.0\"?><VOTABLE><INFO name=\"QUERY_STATUS\" value=\"ERROR\"/></VOTABLE>";
     assert!(read_table(&tap, page).unwrap_err().contains("markup"));
-    let vizier = Access::VizierTsv {
-        table: String::new(),
-        constraints: vec![],
-        slices: None,
-        rows: None,
-    };
-    assert!(read_table(&vizier, b"#INFO\tQUERY_STATUS=ERROR\n").is_err());
+    assert!(read_table(&vizier(), b"#INFO\tQUERY_STATUS=ERROR\n").is_err());
 }

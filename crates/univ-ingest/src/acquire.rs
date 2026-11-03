@@ -2,23 +2,26 @@
 //! number of rows the source must hold, so a provider's silent row limit never passes for a
 //! complete source.
 
+use std::collections::HashSet;
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 use thiserror::Error;
 use univ_model::ids::SourceId;
 
-use crate::access::{check_answer, chunk_requests, count_request, read_count, read_table};
-use crate::fetch::{Clock, Expected, FetchError, Fetched, Fetcher};
+use crate::access::{ChunkRequest, check_answer, chunk_requests, count_request, read_count};
+use crate::fetch::{Check, Clock, Expected, FetchError, Fetched, Fetcher, Item, Payload};
 use crate::provenance::Provenance;
-use crate::source::{Access, SourceDefinition};
+use crate::source::{Access, RemoteFile, SourceDefinition};
 
-/// A source on disk, ready to be read: its chunks or file, in order.
+/// A source on disk, ready to be read: its chunks or files, in order.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Acquired {
     pub files: Vec<PathBuf>,
 }
 
-/// A source that could not be acquired whole. What is on disk stays for the next run.
+/// A source that could not be acquired whole. What is on disk stays for the next run, except
+/// the chunks of a source found incomplete.
 #[derive(Debug, Error)]
 pub enum AcquireError {
     #[error(transparent)]
@@ -41,146 +44,223 @@ pub enum AcquireError {
         found: u64,
         basis: &'static str,
     },
+    #[error("{source_id}: {} is not in the repository", path.display())]
+    NotInRepository { source_id: SourceId, path: PathBuf },
 }
 
-/// Fetches every chunk or the file of `definition` into its directory under `cache`, records
-/// each payload's provenance before anything parses it, and checks the rows against the
-/// source's count where it has one.
+/// Fetches every chunk or file of `definition` into its directory under `cache`, records each
+/// payload's provenance before it is renamed into place, and checks the rows against the
+/// source's count where it has one. A source kept in the repository is found under
+/// `repository`.
 ///
 /// # Errors
 ///
-/// Fails when a chunk or file cannot be fetched, provenance cannot be written, a chunk cannot be
-/// read, or the rows fall short of or exceed the count.
+/// Fails when a chunk or file cannot be fetched, provenance cannot be written, the rows fall
+/// short of or exceed the count, or a repository source's path does not exist.
 pub async fn acquire<C: Clock>(
     fetcher: &Fetcher<C>,
     definition: &SourceDefinition,
     cache: &Path,
+    repository: &Path,
 ) -> Result<Acquired, AcquireError> {
     let source = &definition.id;
-    let dir = cache.join(source.as_str());
-    let disk = |e: std::io::Error| AcquireError::Disk {
-        source_id: source.clone(),
-        error: e.to_string(),
-    };
-    std::fs::create_dir_all(&dir).map_err(disk)?;
-    let record = |fetched: &Fetched| match fetched {
-        Fetched::Arrived(payload) => Provenance::record(&dir, source, payload).map_err(disk),
-        Fetched::OnDisk(_) => Ok(()),
-    };
-
-    match &definition.access {
-        Access::Files { files } => {
-            let mut on_disk = Vec::new();
-            for file in files {
-                let name = Path::new(&file.path)
-                    .file_name()
-                    .map_or_else(|| "file".into(), ToOwned::to_owned);
-                let dest = dir.join(name);
-                let expected = Expected {
-                    size: file.size,
-                    sha256: file.sha256.clone(),
-                };
-                let outcome = fetcher
-                    .file(
-                        source,
-                        &file.path,
-                        &definition.mirrors,
-                        &file.path,
-                        &dest,
-                        &expected,
-                    )
-                    .await?;
-                record(&outcome)?;
-                on_disk.push(dest);
-            }
-            return Ok(Acquired { files: on_disk });
-        }
-        Access::Repository { path } => {
-            return Ok(Acquired {
-                files: vec![PathBuf::from(path)],
+    if let Access::Repository { path } = &definition.access {
+        let path = repository.join(path);
+        if !path.exists() {
+            return Err(AcquireError::NotInRepository {
+                source_id: source.clone(),
+                path,
             });
         }
-        _ => {}
+        return Ok(Acquired { files: vec![path] });
     }
+    let dir = cache.join(source.as_str());
+    std::fs::create_dir_all(&dir).map_err(|e| disk(source, &e))?;
+    let known = Provenance::read(&dir).map_err(|e| disk(source, &e))?;
+    let run = Run {
+        fetcher,
+        definition,
+        dir,
+        known,
+    };
+    let files = match &definition.access {
+        Access::Files { files } => acquire_files(&run, files).await?,
+        _ => acquire_chunks(&run).await?,
+    };
+    Ok(Acquired { files })
+}
 
+/// The acquisition of one source: its definition, directory and provenance as the run began.
+struct Run<'a, C: Clock> {
+    fetcher: &'a Fetcher<C>,
+    definition: &'a SourceDefinition,
+    dir: PathBuf,
+    known: Provenance,
+}
+
+/// Fetches each file of a file source. A file on disk without a record, or whose record or size
+/// differs from what its provider publishes, is fetched again.
+async fn acquire_files<C: Clock>(
+    run: &Run<'_, C>,
+    files: &[RemoteFile],
+) -> Result<Vec<PathBuf>, AcquireError> {
+    let mut on_disk = Vec::new();
+    for file in files {
+        let name = Path::new(&file.path)
+            .file_name()
+            .map_or_else(|| "file".into(), ToOwned::to_owned);
+        let dest = run.dir.join(name);
+        let current = run.known.payload(&file.path).is_some_and(|p| {
+            file.sha256
+                .as_ref()
+                .is_none_or(|d| d.eq_ignore_ascii_case(&p.sha256))
+        }) && file
+            .size
+            .is_none_or(|s| std::fs::metadata(&dest).is_ok_and(|m| m.len() == s));
+        if !current {
+            run.remove(&dest)?;
+        }
+        let expected = Expected {
+            size: file.size,
+            sha256: file.sha256.clone(),
+        };
+        run.fetcher
+            .file(
+                &run.item(&file.path, &dest),
+                &run.definition.mirrors,
+                &file.path,
+                &expected,
+                &|p| run.record(p),
+            )
+            .await?;
+        on_disk.push(dest);
+    }
+    run.prune(&on_disk)?;
+    Ok(on_disk)
+}
+
+/// Fetches each chunk of a query source and its count, and checks the rows the chunks hold, as
+/// their records give them, against the count. Chunks of a source found incomplete are removed
+/// so that the next run fetches them again.
+async fn acquire_chunks<C: Clock>(run: &Run<'_, C>) -> Result<Vec<PathBuf>, AcquireError> {
+    let definition = run.definition;
     let check = |body: &[u8]| check_answer(definition, body);
     let mut files = Vec::new();
+    let mut found = 0;
     for request in chunk_requests(definition) {
-        let dest = dir.join(&request.file);
-        let outcome = fetcher
-            .chunk(
-                source,
-                &request.item,
-                &definition.mirrors,
-                &request.suffix,
-                &dest,
-                &check,
-            )
-            .await?;
-        record(&outcome)?;
+        let (dest, rows) = run.measured(&request, &check).await?;
+        found += rows;
         files.push(dest);
     }
-
+    let mut kept = files.clone();
     let expected = if let Some(request) = count_request(definition) {
-        let dest = dir.join(&request.file);
-        let count = |body: &[u8]| read_count(&definition.access, body).map(|_| ());
-        let outcome = fetcher
-            .chunk(
-                source,
-                &request.item,
-                &definition.mirrors,
-                &request.suffix,
-                &dest,
-                &count,
-            )
-            .await?;
-        record(&outcome)?;
-        let body = std::fs::read(&dest).map_err(disk)?;
-        let n = read_count(&definition.access, &body)
-            .map_err(|error| unreadable(source, &dest, error))?;
+        let count = |body: &[u8]| read_count(&definition.access, body);
+        let (dest, n) = run.measured(&request, &count).await?;
+        kept.push(dest);
         Some((n, "the count query"))
     } else if let Access::VizierTsv { rows: Some(n), .. } = &definition.access {
         Some((*n, "the source definition's row count"))
     } else {
         None
     };
-    check_rows(definition, &files, expected)?;
-    Ok(Acquired { files })
-}
-
-/// Refuses chunks whose rows differ from the `expected` count, read on the given basis.
-fn check_rows(
-    definition: &SourceDefinition,
-    files: &[PathBuf],
-    expected: Option<(u64, &'static str)>,
-) -> Result<(), AcquireError> {
-    let Some((expected, basis)) = expected else {
-        return Ok(());
-    };
-    let source = &definition.id;
-    let mut found = 0;
-    for file in files {
-        let body = std::fs::read(file).map_err(|e| unreadable(source, file, e.to_string()))?;
-        let table = read_table(&definition.access, &body)
-            .map_err(|error| unreadable(source, file, error))?;
-        found += table.rows.len() as u64;
-    }
-    if found == expected {
-        Ok(())
-    } else {
-        Err(AcquireError::Incomplete {
-            source_id: source.clone(),
+    if let Some((expected, basis)) = expected
+        && expected != found
+    {
+        for file in &kept {
+            run.remove(file)?;
+        }
+        return Err(AcquireError::Incomplete {
+            source_id: definition.id.clone(),
             expected,
             found,
             basis,
-        })
+        });
+    }
+    run.prune(&kept)?;
+    Ok(files)
+}
+
+impl<C: Clock> Run<'_, C> {
+    fn item<'a>(&'a self, name: &'a str, dest: &'a Path) -> Item<'a> {
+        Item {
+            source: &self.definition.id,
+            name,
+            dest,
+        }
+    }
+
+    fn record(&self, payload: &Payload) -> std::io::Result<()> {
+        Provenance::record(&self.dir, &self.definition.id, payload)
+    }
+
+    /// Fetches `request` unless its file is on disk with a record of the same request, and
+    /// gives the file and the measure its body check found, from the check or the record.
+    async fn measured(
+        &self,
+        request: &ChunkRequest,
+        check: &Check<'_>,
+    ) -> Result<(PathBuf, u64), AcquireError> {
+        let dest = self.dir.join(&request.file);
+        let recorded = self
+            .known
+            .payload(&request.item)
+            .filter(|p| p.url.ends_with(&request.suffix))
+            .and_then(|p| p.rows);
+        if recorded.is_none() {
+            self.remove(&dest)?;
+        }
+        let fetched = self
+            .fetcher
+            .chunk(
+                &self.item(&request.item, &dest),
+                &self.definition.mirrors,
+                &request.suffix,
+                check,
+                &|p| self.record(p),
+            )
+            .await?;
+        match (fetched, recorded) {
+            (Fetched::Arrived(Payload { rows: Some(n), .. }), _) | (Fetched::OnDisk, Some(n)) => {
+                Ok((dest, n))
+            }
+            _ => Err(AcquireError::Unreadable {
+                source_id: self.definition.id.clone(),
+                file: dest.display().to_string(),
+                error: "no row count is recorded for it".to_owned(),
+            }),
+        }
+    }
+
+    /// Removes `file` if it is there.
+    fn remove(&self, file: &Path) -> Result<(), AcquireError> {
+        match std::fs::remove_file(file) {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+                Err(disk(&self.definition.id, &e))
+            }
+            _ => Ok(()),
+        }
+    }
+
+    /// Removes the `chunk-*` files of the source's directory that are not `kept`, such as the
+    /// chunks of a query the definition no longer makes. No other file is touched.
+    fn prune(&self, kept: &[PathBuf]) -> Result<(), AcquireError> {
+        let kept: HashSet<&OsStr> = kept.iter().filter_map(|p| p.file_name()).collect();
+        let entries = std::fs::read_dir(&self.dir).map_err(|e| disk(&self.definition.id, &e))?;
+        for entry in entries {
+            let entry = entry.map_err(|e| disk(&self.definition.id, &e))?;
+            let name = entry.file_name();
+            let chunk = name.to_str().is_some_and(|n| n.starts_with("chunk-"));
+            if chunk && !kept.contains(name.as_os_str()) && entry.path().is_file() {
+                self.remove(&entry.path())?;
+            }
+        }
+        Ok(())
     }
 }
 
-fn unreadable(source: &SourceId, file: &Path, error: String) -> AcquireError {
-    AcquireError::Unreadable {
+fn disk(source: &SourceId, error: &std::io::Error) -> AcquireError {
+    AcquireError::Disk {
         source_id: source.clone(),
-        file: file.display().to_string(),
-        error,
+        error: error.to_string(),
     }
 }

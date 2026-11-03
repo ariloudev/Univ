@@ -1,5 +1,6 @@
-//! Frames and positions: ICRS with an epoch, and rotations to galactic (Hipparcos, ESA 1997) and
-//! supergalactic (Lahav et al. 2000) coordinates.
+//! Frames and positions: ICRS with an epoch, and rotations between it and FK5 J2000 (Mignard &
+//! Froeschlé 2000), galactic (Hipparcos, ESA 1997) and supergalactic (Lahav et al. 2000)
+//! coordinates.
 
 use std::array::from_fn;
 use std::sync::LazyLock;
@@ -185,7 +186,6 @@ fn galactic_to_supergalactic() -> Rotation {
     Rotation([x, cross(z, x), z])
 }
 
-/// The rotations from ICRS into each frame, in the order of [`Frame`], computed once.
 /// The FK5 J2000 → ICRS rotation: the orientation of the Hipparcos frame, and so the ICRS,
 /// against FK5 found by Mignard & Froeschlé 2000 (A&A 354, 732), −19.9, −9.1 and +22.9 mas about
 /// x, y and z, built as ERFA's `fk5hip` builds it and as astropy applies it. FK5's spin of about

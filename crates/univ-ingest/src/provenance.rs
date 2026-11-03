@@ -1,12 +1,12 @@
-//! A source's provenance: every payload that arrived, with its digest, retrieval time and URL,
-//! kept as YAML beside its chunks and written before anything parses them.
+//! A source's provenance: every payload that arrived, with its digest, retrieval time, URL and
+//! measure, kept as YAML beside its chunks and written before the payload is renamed into place.
 
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use univ_model::ids::SourceId;
 
-use crate::fetch::Payload;
+use crate::fetch::{Payload, write_via_part};
 
 /// The file name of a source's provenance, in the directory that holds its chunks.
 pub const FILE: &str = "provenance.yaml";
@@ -15,29 +15,7 @@ pub const FILE: &str = "provenance.yaml";
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Provenance {
     pub source: Option<SourceId>,
-    pub payloads: Vec<PayloadRecord>,
-}
-
-/// One payload as it arrived.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PayloadRecord {
-    pub item: String,
-    pub url: String,
-    pub sha256: String,
-    pub bytes: u64,
-    pub retrieved: String,
-}
-
-impl From<&Payload> for PayloadRecord {
-    fn from(p: &Payload) -> Self {
-        Self {
-            item: p.item.clone(),
-            url: p.url.clone(),
-            sha256: p.sha256.clone(),
-            bytes: p.bytes,
-            retrieved: p.retrieved.clone(),
-        }
-    }
+    pub payloads: Vec<Payload>,
 }
 
 impl Provenance {
@@ -54,6 +32,12 @@ impl Provenance {
         }
     }
 
+    /// The record of `item`, if there is one.
+    #[must_use]
+    pub fn payload(&self, item: &str) -> Option<&Payload> {
+        self.payloads.iter().find(|p| p.item == item)
+    }
+
     /// Records `payload` for `source` in `dir`, replacing an earlier record of the same item,
     /// and writes the file through a rename so that it is never half written.
     ///
@@ -64,10 +48,8 @@ impl Provenance {
         let mut provenance = Self::read(dir)?;
         provenance.source = Some(source.clone());
         provenance.payloads.retain(|p| p.item != payload.item);
-        provenance.payloads.push(payload.into());
+        provenance.payloads.push(payload.clone());
         let yaml = serde_norway::to_string(&provenance).map_err(std::io::Error::other)?;
-        let part = dir.join(format!("{FILE}.part"));
-        std::fs::write(&part, yaml)?;
-        std::fs::rename(part, dir.join(FILE))
+        write_via_part(&dir.join(FILE), yaml.as_bytes(), || Ok(()))
     }
 }

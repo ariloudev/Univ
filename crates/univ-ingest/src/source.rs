@@ -374,6 +374,10 @@ impl Access {
                     "holds a SHA-256 that is not 64 hexadecimal digits",
                 ))
             }
+            Self::Files { files } if !distinct_names(files) => Some((
+                "access.files",
+                "holds two files with the same file name, which would share one file on disk",
+            )),
             Self::Repository { path } if path.trim().is_empty() => {
                 Some(("access.path", "is empty"))
             }
@@ -383,6 +387,14 @@ impl Access {
             Err((field.to_owned(), what.to_owned()))
         })
     }
+}
+
+/// Whether no two files share the file name they are kept under.
+fn distinct_names(files: &[RemoteFile]) -> bool {
+    let mut seen = HashSet::new();
+    files
+        .iter()
+        .all(|f| seen.insert(Path::new(&f.path).file_name()))
 }
 
 /// Reads every definition in `dir`, in file-name order, refusing the run on the first that

@@ -5,26 +5,18 @@ mod common;
 
 use std::path::Path;
 
-use common::{rig, source};
+use common::{item, keep, rig};
 use sha2::{Digest, Sha256};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use univ_ingest::events::{Event, RestartReason};
-use univ_ingest::fetch::{Expected, FetchError, Fetched};
+use univ_ingest::fetch::{Expected, FetchError, Fetched, Payload, hex};
 use wiremock::matchers::{header, method};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 /// The 100 bytes of the file.
 fn body() -> Vec<u8> {
     (0u8..100).collect()
-}
-
-fn hex(bytes: &[u8]) -> String {
-    use std::fmt::Write as _;
-    bytes.iter().fold(String::new(), |mut text, byte| {
-        let _ = write!(text, "{byte:02x}");
-        text
-    })
 }
 
 /// Leaves the first 40 bytes of `url` in `dest`'s partial file, as a stopped run would.
@@ -67,12 +59,11 @@ async fn a_stopped_download_continues_with_a_range_request_from_the_byte_it_reac
     let fetched = rig
         .fetcher
         .file(
-            &source(),
-            "grid",
+            &item("grid", &dest),
             &[server.uri()],
             "data/grid.npz",
-            &dest,
             &Expected::default(),
+            &keep,
         )
         .await
         .unwrap();
@@ -109,12 +100,11 @@ async fn a_provider_that_ignores_ranges_makes_the_download_start_over_and_says_s
     stopped_at_40(&dest, &format!("{}/data/grid.npz", server.uri()));
     rig.fetcher
         .file(
-            &source(),
-            "grid",
+            &item("grid", &dest),
             &[server.uri()],
             "data/grid.npz",
-            &dest,
             &Expected::default(),
+            &keep,
         )
         .await
         .unwrap();
@@ -140,12 +130,11 @@ async fn a_file_that_changed_since_the_partial_download_starts_over() {
     stopped_at_40(&dest, &format!("{}/data/grid.npz", server.uri()));
     rig.fetcher
         .file(
-            &source(),
-            "grid",
+            &item("grid", &dest),
             &[server.uri()],
             "data/grid.npz",
-            &dest,
             &Expected::default(),
+            &keep,
         )
         .await
         .unwrap();
@@ -174,12 +163,11 @@ async fn a_range_answer_with_another_length_starts_over() {
     stopped_at_40(&dest, &format!("{}/data/grid.npz", server.uri()));
     rig.fetcher
         .file(
-            &source(),
-            "grid",
+            &item("grid", &dest),
             &[server.uri()],
             "data/grid.npz",
-            &dest,
             &Expected::default(),
+            &keep,
         )
         .await
         .unwrap();
@@ -203,12 +191,11 @@ async fn a_complete_file_is_checked_against_its_published_size_and_digest() {
     rig(false)
         .fetcher
         .file(
-            &source(),
-            "grid",
+            &item("grid", &dest),
             &[server.uri()],
             "grid.npz",
-            &dest,
             &right,
+            &keep,
         )
         .await
         .unwrap();
@@ -220,12 +207,11 @@ async fn a_complete_file_is_checked_against_its_published_size_and_digest() {
     let error = rig(false)
         .fetcher
         .file(
-            &source(),
-            "grid",
+            &item("grid", &dest),
             &[server.uri()],
             "grid.npz",
-            &dest,
             &wrong,
+            &keep,
         )
         .await
         .unwrap_err();
@@ -245,12 +231,11 @@ async fn a_complete_file_is_checked_against_its_published_size_and_digest() {
         rig(false)
             .fetcher
             .file(
-                &source(),
-                "grid",
+                &item("grid", &dest),
                 &[server.uri()],
                 "grid.npz",
-                &dest,
-                &short
+                &short,
+                &keep
             )
             .await
             .is_err()
@@ -295,12 +280,11 @@ async fn the_bytes_of_a_cut_off_download_stay_in_its_partial_file_and_the_retry_
     let dest = dir.path().join("grid.npz");
     rig.fetcher
         .file(
-            &source(),
-            "grid",
+            &item("grid", &dest),
             &[mirror],
             "grid.npz",
-            &dest,
             &Expected::default(),
+            &keep,
         )
         .await
         .unwrap();
@@ -315,4 +299,67 @@ async fn the_bytes_of_a_cut_off_download_stay_in_its_partial_file_and_the_retry_
         .position(|e| matches!(e, Event::Resumed { from: 40, .. }))
         .unwrap();
     assert!(err < resumed);
+}
+
+#[tokio::test]
+async fn a_file_that_does_not_match_its_published_digest_is_not_retried_on_that_mirror() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .respond_with(ResponseTemplate::new(200).set_body_bytes(body()))
+        .expect(1)
+        .mount(&server)
+        .await;
+    let rig = rig(false);
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("grid.npz");
+    let wrong = Expected {
+        size: Some(100),
+        sha256: Some("0".repeat(64)),
+    };
+    let fetched = rig
+        .fetcher
+        .file(
+            &item("grid", &dest),
+            &[server.uri()],
+            "grid.npz",
+            &wrong,
+            &keep,
+        )
+        .await;
+    assert!(fetched.is_err());
+    assert!(rig.clock.waits().is_empty(), "a mismatch is not retried");
+    assert!(
+        !dir.path().join("grid.npz.part").exists()
+            && !dir.path().join("grid.npz.part.yaml").exists()
+    );
+}
+
+#[tokio::test]
+async fn a_file_is_recorded_before_it_is_renamed_and_a_failed_record_leaves_no_file() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .respond_with(ResponseTemplate::new(200).set_body_bytes(body()))
+        .mount(&server)
+        .await;
+    let rig = rig(false);
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("grid.npz");
+    let failing = |payload: &Payload| {
+        assert!(!dest.exists(), "recorded before the rename");
+        assert_eq!(payload.bytes, 100);
+        Err(std::io::Error::other("disk full"))
+    };
+    let error = rig
+        .fetcher
+        .file(
+            &item("grid", &dest),
+            &[server.uri()],
+            "grid.npz",
+            &Expected::default(),
+            &failing,
+        )
+        .await
+        .unwrap_err();
+    assert!(matches!(error, FetchError::Disk { .. }), "{error}");
+    assert!(!dest.exists());
 }
