@@ -33,6 +33,7 @@ columns:
 frame: icrs
 epoch: 2000.0
 citation: "Jones et al. 2009, MNRAS 399, 683"
+reference: { bibcode: "2009MNRAS.399..683J", doi: "10.1111/j.1365-2966.2009.15338.x" }
 terms:
   url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
   quote: "The data are free to use."
@@ -163,6 +164,83 @@ fn an_incomplete_definition_is_refused_naming_the_missing_field() {
         unknown.problem.contains("unknown field `colour`"),
         "{unknown}"
     );
+}
+
+#[test]
+fn a_definition_names_its_primary_reference_by_bibcode_and_doi() {
+    let d = read(VALID).unwrap();
+    assert_eq!(d.reference.bibcode.as_deref(), Some("2009MNRAS.399..683J"));
+    assert_eq!(
+        d.reference.doi.as_deref(),
+        Some("10.1111/j.1365-2966.2009.15338.x")
+    );
+    // A DOI alone, or a reason for none, also stands.
+    let doi_only = VALID.replace("bibcode: \"2009MNRAS.399..683J\", ", "");
+    assert_eq!(read(&doi_only).unwrap().reference.bibcode, None);
+    let none = VALID.replace(REFERENCE, "reference: { none: \"cited per structure\" }\n");
+    assert!(read(&none).unwrap().reference.none.is_some());
+}
+
+/// The reference line of [`VALID`].
+const REFERENCE: &str =
+    "reference: { bibcode: \"2009MNRAS.399..683J\", doi: \"10.1111/j.1365-2966.2009.15338.x\" }\n";
+
+#[test]
+fn a_malformed_primary_reference_is_refused_naming_the_field() {
+    for (bad, field, says) in [
+        // 18 characters: the volume's padding is one dot short.
+        ("2009MNRAS.399.683J", "reference.bibcode", "19-character"),
+        ("2009 MNRAS 399 683J", "reference.bibcode", "19-character"),
+        ("09MNRAS..399..683J.", "reference.bibcode", "19-character"),
+    ] {
+        let e = refusal(&VALID.replace("2009MNRAS.399..683J", bad));
+        assert_eq!(e.field, field, "{bad}: {e}");
+        assert!(e.problem.contains(says), "{bad}: {e}");
+    }
+    for bad in [
+        "doi:10.1111/j.1365-2966.2009.15338.x",
+        "11.1111/x",
+        "10.1111",
+        "10.1111/ j",
+    ] {
+        let e = refusal(&VALID.replace("10.1111/j.1365-2966.2009.15338.x", bad));
+        assert_eq!(e.field, "reference.doi", "{bad}: {e}");
+        assert!(e.problem.contains("is not a DOI"), "{bad}: {e}");
+    }
+    let neither = refusal(&VALID.replace(REFERENCE, "reference: {}\n"));
+    assert_eq!(neither.field, "reference", "{neither}");
+    let both =
+        refusal(&VALID.replace("doi: \"10.1111/j.1365-2966.2009.15338.x\"", "none: \"why\""));
+    assert_eq!(both.field, "reference.none", "{both}");
+    let missing = refusal(&VALID.replace(REFERENCE, ""));
+    assert!(
+        missing.problem.contains("missing field `reference`"),
+        "{missing}"
+    );
+}
+
+#[test]
+fn every_repository_definition_names_a_well_formed_primary_reference() {
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../sources");
+    for d in read_all(&dir).unwrap() {
+        let r = &d.reference;
+        assert!(
+            r.bibcode.is_some() || r.doi.is_some() || r.none.is_some(),
+            "{}",
+            d.id
+        );
+        // The primary reference is the paper the citation names first.
+        if let Some(b) = &r.bibcode {
+            assert!(d.citation.contains(b.as_str()), "{}: {b}", d.id);
+        }
+        if let Some(doi) = &r.doi {
+            assert!(
+                d.citation.contains(&format!("doi:{doi}")),
+                "{}: {doi}",
+                d.id
+            );
+        }
+    }
 }
 
 #[test]

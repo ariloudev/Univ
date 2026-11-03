@@ -21,6 +21,7 @@ use position::in_unit;
 
 /// How a redshift was measured.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RedshiftKind {
     Spectroscopic,

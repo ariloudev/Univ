@@ -5,6 +5,7 @@
 //! redshift, cz / 100 h⁻¹ Mpc along its ICRS direction rotated into the grid's frame. No
 //! cosmology is involved.
 
+use std::borrow::Borrow;
 use std::collections::{BTreeMap, HashMap};
 
 use serde::Serialize;
@@ -161,12 +162,13 @@ struct Placed {
     far: f64,
 }
 
-fn place(geometry: &GridGeometry, entries: &[CatalogueEntry]) -> Placed {
+fn place<E: Borrow<CatalogueEntry>>(geometry: &GridGeometry, entries: &[E]) -> Placed {
     let rotation = from_icrs(geometry.frame);
     let mut footprint = vec![false; RA_BINS * DEC_BINS];
     let mut counts = HashMap::new();
     let mut distances = Vec::new();
     for entry in entries {
+        let entry: &CatalogueEntry = entry.borrow();
         let Some(position) = &entry.position else {
             continue;
         };
@@ -214,13 +216,13 @@ struct Shell {
 }
 
 /// Compares the outline `region` of the grid of `sky` with one catalogue: `None` entries when
-/// the catalogue was not given.
+/// the catalogue was not given. The entries are held or borrowed.
 #[must_use]
-pub fn compare(
+pub fn compare<E: Borrow<CatalogueEntry>>(
     sky: &GridSky<'_>,
     region: &Region,
     source: &SourceId,
-    entries: Option<&[CatalogueEntry]>,
+    entries: Option<&[E]>,
     test: &OutlineTest,
 ) -> CatalogueCheck {
     let mut check = CatalogueCheck {

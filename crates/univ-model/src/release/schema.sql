@@ -1,4 +1,6 @@
--- The D1 schema of Univ releases, version 2 (univ_model::release::SCHEMA_VERSION).
+-- The D1 schema of Univ releases, version 3 (univ_model::release::SCHEMA_VERSION).
+--
+-- Version 3 adds source_details and structure_details and changes no table of version 2.
 --
 -- One database holds every published release. A table that belongs to one release carries a
 -- `release` column that leads its primary key: publishing release n + 1 only inserts rows whose
@@ -10,7 +12,7 @@
 -- written with INSERT OR IGNORE on their primary keys, so a row once written stays as it was
 -- (a release's rows never change, and publishing and pruning set their own columns later).
 --
--- Compact by design, every fact kept (version 2):
+-- Compact by design, every fact kept (since version 2):
 --
 -- - Terms. A column whose comment says "term" holds the id of a row of `terms`: the name
 --   univ-model serializes for that value, such as 'parsec', 'estimated' or 'credible_interval'.
@@ -388,5 +390,56 @@ CREATE TABLE IF NOT EXISTS grids (
   shape TEXT NOT NULL,
   fields TEXT NOT NULL,
   header_key TEXT NOT NULL,
+  PRIMARY KEY (release, id)
+) WITHOUT ROWID;
+
+-- Each source's primary reference and coverage (version 3), source its sources.n.
+--
+-- - Reference: bibcode, the ADS bibcode of the paper the source's citation names first, and
+--   doi, its DOI without the "doi:" prefix, each NULL when it has none; reference_note says why
+--   a source has no single primary reference (the researched structures cite their papers per
+--   structure), NULL when it has one.
+-- - sky: JSON {"order": 5, "cells": [...]}, the NESTED HEALPix cells of order 5 (Gorski et al.
+--   2005) in the ICRS, ascending, that hold the ICRS position of at least one of the source's
+--   entries published in the release; NULL when no entry has a sky position.
+-- - radial: JSON array, one item per measure its entries hold: {"measure": "redshift",
+--   "distance" or "parallax", "min", "max", "unit" (univ-model unit name), "basis" (what the
+--   values are), "entries" (how many contributed)}, over the entries' normalized values; NULL
+--   when none holds one. A grid source, or the researched structures, holds no entry: both NULL.
+CREATE TABLE IF NOT EXISTS source_details (
+  release INTEGER NOT NULL,
+  source INTEGER NOT NULL,
+  bibcode TEXT,
+  doi TEXT,
+  reference_note TEXT,
+  sky TEXT,
+  radial TEXT,
+  PRIMARY KEY (release, source)
+) WITHOUT ROWID;
+
+-- Each researched structure's placed geometry, outline test and rescaled sizes (version 3), id
+-- its structures.id.
+--
+-- - shape: JSON univ-model shape of the structure as placed (point, sphere, member list or sky
+--   region), ICRS Cartesian about the barycentre in its scale domain's unit, beside the
+--   geometry its structure file gives (structures.record); NULL when it cannot be placed.
+-- - derivation: JSON {"from": JSON pointers into structures.record of each cited value used,
+--   "frame_chain": the frames converted through, "distance": {"from", "method"}, "cosmology":
+--   "release"}: how shape, the centre and the bounds were derived; NULL when unplaced.
+-- - outline: JSON result of the test that admitted or refused the structure's outline on a
+--   volume grid: {"grid", "field", "threshold", "test", "verdict": "admitted" or "refused",
+--   "reason", "cells", "touches_edge", "checks", "dense"}; NULL for a structure not outlined
+--   from a grid.
+-- - rescaled: JSON array of each length published under another cosmology: {"value": JSON
+--   pointer into the record, "native": {"value", "unit", "hubble_constant", "assumed"},
+--   "rescaled": {"value", "unit"}, "factor", "method": "hubble_ratio" or "comoving_ratio",
+--   "redshift": that of a comoving ratio, else null}; NULL when none.
+CREATE TABLE IF NOT EXISTS structure_details (
+  release INTEGER NOT NULL,
+  id TEXT NOT NULL,
+  shape TEXT,
+  derivation TEXT,
+  outline TEXT,
+  rescaled TEXT,
   PRIMARY KEY (release, id)
 ) WITHOUT ROWID;

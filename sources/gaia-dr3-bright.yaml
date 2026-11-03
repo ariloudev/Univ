@@ -36,6 +36,7 @@ citation: >-
   Summary of the content and survey properties", A&A 674, A1. 2023A&A...674A...1G,
   doi:10.1051/0004-6361/202243940. Gaia Collaboration, Prusti T., de Bruijne J.H.J., et al. 2016,
   "The Gaia mission", A&A 595, A1. 2016A&A...595A...1G, doi:10.1051/0004-6361/201629272.
+reference: { bibcode: "2023A&A...674A...1G", doi: "10.1051/0004-6361/202243940" }
 terms:
   url: "https://www.cosmos.esa.int/web/gaia-users/license"
   quote: >-

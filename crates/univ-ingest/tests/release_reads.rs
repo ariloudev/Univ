@@ -1,4 +1,4 @@
-//! What Univ Server reads of a release, read back from its compact D1 rows (schema version 2)
+//! What Univ Server reads of a release, read back from its compact D1 rows (schema version 3)
 //! loaded into `SQLite`: every derived position whole, its transformation chain from the
 //! release's chain template and the object's parameters, every measurement's native value
 //! beside its normalized one, and every designation and common name resolving to its object.

@@ -38,6 +38,7 @@ citation: >-
   The positions of 148 groups that the table gives wrongly are those of Kourkchi E. & Tully R.B.
   2017, "Galaxy groups within 3500 km/s", ApJ 843, 16, 2017ApJ...843...16K, VizieR catalogue
   J/ApJ/843/16 (fixes below).
+reference: { bibcode: "2023ApJ...944...94T", doi: "10.3847/1538-4357/ac94d8" }
 terms:
   url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
   quote: >-

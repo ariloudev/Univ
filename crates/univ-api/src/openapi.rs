@@ -7,12 +7,9 @@
 use std::sync::LazyLock;
 
 use utoipa::OpenApi;
-use utoipa::openapi::RefOr;
-use utoipa::openapi::schema::{ObjectBuilder, Schema, SchemaFormat, Type};
 
-use crate::http::{Request, Response};
-use crate::problem::{Problem, ProblemType};
-use crate::routes::Params;
+use crate::http::{Body, Response};
+use crate::problem::{Problem, ProblemDocument, ProblemType};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -20,48 +17,24 @@ use crate::routes::Params;
         title = "Univ Server",
         description = "Real, normalized astronomical and cosmological data, and the layers clients author on top of it."
     ),
-    paths(serve)
+    paths(
+        serve,
+        crate::releases::list,
+        crate::sources::list,
+        crate::sources::get,
+        crate::sources::provenance::provenance,
+        crate::structures::list,
+        crate::structures::get
+    ),
+    components(schemas(ProblemDocument, ProblemType))
 )]
 struct ApiDoc;
 
-/// The name of the problem details schema in the document's components.
-pub const PROBLEM_SCHEMA: &str = "Problem";
-
-/// The OpenAPI document of every route served, with the problem details schema whose `type`
-/// lists every kind of problem.
+/// The OpenAPI document of every route served, with the problem details schema, generated from
+/// [`ProblemDocument`], whose `type` lists every kind of problem.
 #[must_use]
 pub fn document() -> utoipa::openapi::OpenApi {
-    let mut document = ApiDoc::openapi();
-    let components = document.components.get_or_insert_with(Default::default);
-    components
-        .schemas
-        .insert(PROBLEM_SCHEMA.to_owned(), RefOr::T(problem_schema()));
-    document
-}
-
-/// The RFC 9457 problem details document, its `type` limited to the URIs of [`ProblemType`].
-fn problem_schema() -> Schema {
-    let uris: Vec<&str> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
-    let string = || ObjectBuilder::new().schema_type(Type::String);
-    ObjectBuilder::new()
-        .schema_type(Type::Object)
-        .description(Some(
-            "An RFC 9457 problem details document, answered as application/problem+json.",
-        ))
-        .property(
-            "type",
-            string()
-                .format(Some(SchemaFormat::Custom("uri".to_owned())))
-                .enum_values(Some(uris)),
-        )
-        .required("type")
-        .property("title", string())
-        .required("title")
-        .property("status", ObjectBuilder::new().schema_type(Type::Integer))
-        .required("status")
-        .property("detail", string())
-        .required("detail")
-        .into()
+    ApiDoc::openapi()
 }
 
 /// Serves the OpenAPI document.
@@ -72,9 +45,11 @@ fn problem_schema() -> Schema {
         (status = 200, description = "The OpenAPI 3.1 document of every route served", content_type = "application/json")
     )
 )]
-pub fn serve(_request: &Request, _params: &Params) -> Response {
+pub fn serve() -> Response {
     match &*SERIALIZED {
-        Ok(bytes) => Response::bytes(200, "application/json", bytes.clone()),
+        Ok(bytes) => Response::empty(200)
+            .with_header("content-type", "application/json")
+            .with_body(Body::Static(bytes)),
         Err(error) => Problem::new(
             ProblemType::InternalError,
             format!("The OpenAPI document did not serialize: {error}."),
@@ -93,6 +68,9 @@ mod tests {
 
     use super::*;
     use crate::routes::ROUTES;
+
+    /// The name of the problem details schema in the document's components.
+    const PROBLEM_SCHEMA: &str = "Problem";
 
     /// Each `(method, path)` the document describes.
     fn documented() -> BTreeSet<(String, String)> {
@@ -135,7 +113,19 @@ mod tests {
     #[test]
     fn the_problem_schema_lists_every_problem_type() {
         let value = serde_json::to_value(document()).unwrap();
-        let listed = &value["components"]["schemas"][PROBLEM_SCHEMA]["properties"]["type"]["enum"];
+        let schemas = &value["components"]["schemas"];
+        let kind = &schemas[PROBLEM_SCHEMA]["properties"]["type"]["$ref"];
+        assert_eq!(kind, "#/components/schemas/ProblemType");
+        for member in ["type", "title", "status", "detail"] {
+            assert!(
+                schemas[PROBLEM_SCHEMA]["required"]
+                    .as_array()
+                    .unwrap()
+                    .contains(&member.into()),
+                "{member} is required"
+            );
+        }
+        let listed = &schemas["ProblemType"]["enum"];
         let uris: Vec<&str> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
         assert_eq!(listed, &serde_json::json!(uris));
     }

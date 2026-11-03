@@ -5,66 +5,101 @@
 //! domain is claimed. Each kind is listed in the OpenAPI document ([`ProblemType::ALL`]).
 
 use serde_json::{Map, Value};
+use utoipa::openapi::RefOr;
+use utoipa::openapi::schema::{ObjectBuilder, Schema, SchemaFormat, Type};
 
 use crate::http::Response;
 
 /// The media type of a problem details document (RFC 9457 §3).
 pub const CONTENT_TYPE: &str = "application/problem+json";
 
-/// Each kind of refusal or failure Univ Server can answer with.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ProblemType {
-    /// No route of the API version answers the path.
-    RouteNotFound,
-    /// A route answers the path, but not with the request's method.
-    MethodNotAllowed,
-    /// The request's body could not be read to its end.
-    UnreadableBody,
-    /// The server failed to answer a request it should have answered.
-    InternalError,
+/// Declares [`ProblemType`] from one row per kind: its doc, its variant, its type URI, its
+/// title and its status. The enum, [`ProblemType::ALL`] and the lookups all come from the
+/// rows, so a kind cannot be left out of one of them.
+macro_rules! problem_types {
+    ($($(#[doc = $doc:literal])* $kind:ident = $uri:literal, $title:literal, $status:literal;)+) => {
+        /// Each kind of refusal or failure Univ Server can answer with. It serializes as its
+        /// type URI, and its OpenAPI schema lists every URI.
+        #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+        pub enum ProblemType {
+            $($(#[doc = $doc])* #[serde(rename = $uri)] $kind,)+
+        }
+
+        impl ProblemType {
+            /// Every kind, in the order the OpenAPI document lists them.
+            pub const ALL: &[Self] = &[$(Self::$kind),+];
+
+            /// The problem type URI, `urn:univ:problem:<kind>`.
+            #[must_use]
+            pub fn uri(self) -> &'static str {
+                match self { $(Self::$kind => $uri),+ }
+            }
+
+            /// The short, human-readable summary that is the same for every problem of this
+            /// kind.
+            #[must_use]
+            pub fn title(self) -> &'static str {
+                match self { $(Self::$kind => $title),+ }
+            }
+
+            /// The HTTP status every problem of this kind is answered with.
+            #[must_use]
+            pub fn status(self) -> u16 {
+                match self { $(Self::$kind => $status),+ }
+            }
+        }
+    };
 }
 
-impl ProblemType {
-    /// Every kind, in the order the OpenAPI document lists them.
-    pub const ALL: &[Self] = &[
-        Self::RouteNotFound,
-        Self::MethodNotAllowed,
-        Self::UnreadableBody,
-        Self::InternalError,
-    ];
+problem_types! {
+    /// No route of the API version answers the path.
+    RouteNotFound = "urn:univ:problem:route-not-found", "No such route", 404;
+    /// A route answers the path, but not with the request's method.
+    MethodNotAllowed = "urn:univ:problem:method-not-allowed", "Method not allowed", 405;
+    /// The request's body could not be read to its end.
+    UnreadableBody = "urn:univ:problem:unreadable-body", "Unreadable body", 400;
+    /// A query parameter or path segment does not hold a value of its kind.
+    InvalidParameter = "urn:univ:problem:invalid-parameter", "Invalid parameter", 400;
+    /// No release of that number was ever published.
+    ReleaseNotFound = "urn:univ:problem:release-not-found", "No such release", 404;
+    /// The release was pruned: its data is gone.
+    ReleasePruned = "urn:univ:problem:release-pruned", "Release pruned", 410;
+    /// The release has no source of that id.
+    SourceNotFound = "urn:univ:problem:source-not-found", "No such source", 404;
+    /// The release has no structure of that id.
+    StructureNotFound = "urn:univ:problem:structure-not-found", "No such structure", 404;
+    /// The server failed to answer a request it should have answered.
+    InternalError = "urn:univ:problem:internal-error", "Internal error", 500;
+}
 
-    /// The problem type URI, `urn:univ:problem:<kind>`.
-    #[must_use]
-    pub fn uri(self) -> &'static str {
-        match self {
-            Self::RouteNotFound => "urn:univ:problem:route-not-found",
-            Self::MethodNotAllowed => "urn:univ:problem:method-not-allowed",
-            Self::UnreadableBody => "urn:univ:problem:unreadable-body",
-            Self::InternalError => "urn:univ:problem:internal-error",
-        }
+/// The schema of a problem's `type`: a URI, one of [`ProblemType::ALL`]'s. It is written here
+/// rather than derived, because the derive does not read a rename that a macro wrote.
+impl utoipa::PartialSchema for ProblemType {
+    fn schema() -> RefOr<Schema> {
+        ObjectBuilder::new()
+            .schema_type(Type::String)
+            .format(Some(SchemaFormat::Custom("uri".to_owned())))
+            .description(Some("The kind of problem, as a URN."))
+            .enum_values(Some(Self::ALL.iter().map(|kind| kind.uri())))
+            .into()
     }
+}
 
-    /// The short, human-readable summary that is the same for every problem of this kind.
-    #[must_use]
-    pub fn title(self) -> &'static str {
-        match self {
-            Self::RouteNotFound => "No such route",
-            Self::MethodNotAllowed => "Method not allowed",
-            Self::UnreadableBody => "Unreadable body",
-            Self::InternalError => "Internal error",
-        }
-    }
+impl utoipa::ToSchema for ProblemType {}
 
-    /// The HTTP status every problem of this kind is answered with.
-    #[must_use]
-    pub fn status(self) -> u16 {
-        match self {
-            Self::RouteNotFound => 404,
-            Self::MethodNotAllowed => 405,
-            Self::UnreadableBody => 400,
-            Self::InternalError => 500,
-        }
-    }
+/// The RFC 9457 members of a problem details document, as it is served and as the OpenAPI
+/// document describes it; a problem's extension members follow them.
+#[derive(serde::Serialize, utoipa::ToSchema)]
+#[schema(
+    as = Problem,
+    description = "An RFC 9457 problem details document, answered as application/problem+json, with any extension members after these."
+)]
+pub struct ProblemDocument<'a> {
+    #[serde(rename = "type")]
+    pub kind: ProblemType,
+    pub title: &'static str,
+    pub status: u16,
+    pub detail: &'a str,
 }
 
 /// One problem: its kind, what went wrong in this occurrence, and any extension members.
@@ -86,6 +121,22 @@ impl Problem {
         }
     }
 
+    /// A 404 of `kind`: release `release` has no `noun` of id `id`.
+    #[must_use]
+    pub fn not_found(kind: ProblemType, noun: &str, release: u32, id: &str) -> Self {
+        Self::new(kind, format!("Release {release} has no {noun} {id:?}."))
+            .with("id", id)
+            .with("release", release)
+    }
+
+    /// A 400 naming the query parameter `name` and the value it was sent with.
+    #[must_use]
+    pub fn invalid_parameter(name: &str, value: &str, detail: impl Into<String>) -> Self {
+        Self::new(ProblemType::InvalidParameter, detail)
+            .with("parameter", name)
+            .with("value", value)
+    }
+
     /// The problem with one more extension member.
     #[must_use]
     pub fn with(mut self, name: &str, value: impl Into<Value>) -> Self {
@@ -93,14 +144,20 @@ impl Problem {
         self
     }
 
-    /// The problem details document: the RFC 9457 members, then the extension members.
+    /// The problem details document: the RFC 9457 members, then the extension members, none
+    /// of which can overwrite a standard member.
     #[must_use]
     pub fn to_json(&self) -> Value {
-        let mut document = Map::new();
-        document.insert("type".to_owned(), Value::from(self.kind.uri()));
-        document.insert("title".to_owned(), Value::from(self.kind.title()));
-        document.insert("status".to_owned(), Value::from(self.kind.status()));
-        document.insert("detail".to_owned(), Value::String(self.detail.clone()));
+        let standard = ProblemDocument {
+            kind: self.kind,
+            title: self.kind.title(),
+            status: self.kind.status(),
+            detail: &self.detail,
+        };
+        let mut document = match serde_json::to_value(standard) {
+            Ok(Value::Object(members)) => members,
+            _ => Map::new(),
+        };
         for (name, value) in &self.extensions {
             document
                 .entry(name.clone())

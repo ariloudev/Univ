@@ -11,6 +11,7 @@ const MAX_SAFE_INTEGER: u64 = (1 << 53) - 1;
 
 /// An object's id in Univ releases: a positive integer that, once given, is never reused.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "u64", into = "u64")]
 pub struct ObjectId(u64);
 

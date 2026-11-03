@@ -39,7 +39,9 @@ Run them from this directory.
   univ-layers migrations, starts `wrangler dev` on a free port and runs the ignored tests of
   `crates/univ-server/tests/` against it. Wrangler's log is `target/integration/wrangler.log`.
 - `cargo xtask serve` runs Univ Server under `wrangler dev` on the real local state,
-  `.cache/univ-ingest/wrangler`, where `univ-ingest publish` puts releases. The owner secret
+  `.cache/univ-ingest/wrangler`, where `univ-ingest publish` puts releases. It first creates any
+  table of univ-model's release schema that state lacks (a release built before the schema grew
+  then reads as holding nothing in it), and applies the univ-layers migrations. The owner secret
   comes from `crates/univ-server/.dev.vars` (`OWNER_SECRET=...`), which git ignores.
 - `cargo fmt` formats the workspace. Nothing formats automatically, and the gate fails on
   unformatted code.

@@ -13,10 +13,11 @@ pub enum Method {
 }
 
 impl Method {
-    /// The method named by an HTTP request line, matched without regard to case.
+    /// The method named by an HTTP request line. Methods are case-sensitive (RFC 9110 §9.1),
+    /// so `get` is not GET but a method of its own, which no route answers.
     #[must_use]
     pub fn parse(name: &str) -> Self {
-        match name.to_ascii_uppercase().as_str() {
+        match name {
             "GET" => Self::Get,
             "HEAD" => Self::Head,
             "POST" => Self::Post,
@@ -71,6 +72,15 @@ impl Request {
     pub fn header(&self, name: &str) -> Option<&str> {
         find_header(&self.headers, name)
     }
+
+    /// The decoded value of the first query parameter of that name, as a form encodes it:
+    /// `+` is a space and `%XX` a byte of UTF-8. A malformed escape is kept as sent.
+    #[must_use]
+    pub fn param(&self, name: &str) -> Option<String> {
+        form_urlencoded::parse(self.query.as_bytes())
+            .find(|(key, _)| key == name)
+            .map(|(_, value)| value.into_owned())
+    }
 }
 
 /// What a response carries.
@@ -78,6 +88,20 @@ impl Request {
 pub enum Body {
     Empty,
     Bytes(Vec<u8>),
+    /// Bytes built once and kept for the isolate's life, such as the OpenAPI document.
+    Static(&'static [u8]),
+}
+
+impl Body {
+    /// The body's bytes.
+    #[must_use]
+    pub fn as_bytes(&self) -> &[u8] {
+        match self {
+            Self::Empty => &[],
+            Self::Bytes(bytes) => bytes,
+            Self::Static(bytes) => bytes,
+        }
+    }
 }
 
 /// One response: its status, its headers and its body.
@@ -99,10 +123,20 @@ impl Response {
         }
     }
 
-    /// A 200 response holding `value` as JSON.
-    #[must_use]
-    pub fn json(value: &serde_json::Value) -> Self {
-        Self::bytes(200, "application/json", value.to_string().into_bytes())
+    /// A 200 response holding `value` serialized as JSON.
+    ///
+    /// # Errors
+    ///
+    /// An internal-error problem when `value` does not serialize.
+    pub fn json<T: serde::Serialize>(value: &T) -> Result<Self, crate::Problem> {
+        serde_json::to_vec(value)
+            .map(|body| Self::bytes(200, "application/json", body))
+            .map_err(|error| {
+                crate::Problem::new(
+                    crate::ProblemType::InternalError,
+                    format!("The answer did not serialize: {error}."),
+                )
+            })
     }
 
     /// A response of that status and content type holding `body`.
@@ -140,4 +174,40 @@ fn find_header<'a>(headers: &'a [(String, String)], name: &str) -> Option<&'a st
         .iter()
         .find(|(key, _)| key.eq_ignore_ascii_case(name))
         .map(|(_, value)| value.as_str())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn with_query(query: &str) -> Request {
+        let mut request = Request::new(Method::Get, "/v1/x");
+        query.clone_into(&mut request.query);
+        request
+    }
+
+    #[test]
+    fn a_query_parameter_is_decoded_as_a_form_encodes_it() {
+        let request = with_query("name=M%2031&kind=void+wall&release=6");
+        assert_eq!(request.param("name").as_deref(), Some("M 31"));
+        assert_eq!(request.param("kind").as_deref(), Some("void wall"));
+        assert_eq!(request.param("release").as_deref(), Some("6"));
+        assert_eq!(request.param("missing"), None);
+    }
+
+    #[test]
+    fn methods_are_case_sensitive() {
+        assert_eq!(Method::parse("GET"), Method::Get);
+        assert_eq!(Method::parse("get"), Method::Other("get".to_owned()));
+        assert_eq!(Method::parse("Patch"), Method::Other("Patch".to_owned()));
+    }
+
+    #[test]
+    fn a_malformed_escape_is_kept_as_sent() {
+        let request = with_query("a=100%&b=%zz&c=%C3%A9&d");
+        assert_eq!(request.param("a").as_deref(), Some("100%"));
+        assert_eq!(request.param("b").as_deref(), Some("%zz"));
+        assert_eq!(request.param("c").as_deref(), Some("é"));
+        assert_eq!(request.param("d").as_deref(), Some(""));
+    }
 }

@@ -39,6 +39,7 @@ citation: >-
   Eisenstein et al. 2011, AJ 142, 72 (2011AJ....142...72E); Dawson et al. 2013, AJ 145, 10
   (2013AJ....145...10D); Smee et al. 2013, AJ 146, 32 (2013AJ....146...32S). The SDSS and Lietzen
   bibcodes were constructed from Crossref-verified journal, volume and page; ADS was not reachable.
+reference: { bibcode: "2016A&A...588L...4L", doi: "10.1051/0004-6361/201628261" }
 terms:
   url: "https://www.sdss4.org/collaboration/"
   quote: "All SDSS data released in our public data releases is considered in the public domain."

@@ -39,6 +39,7 @@ citation: >-
   Gaia Early Data Release 3", AJ 161, 147. 2021AJ....161..147B, doi:10.3847/1538-3881/abd806.
   Underlying data: Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1 (2023A&A...674A...1G) and
   Gaia Collaboration, Prusti et al. 2016, A&A 595, A1 (2016A&A...595A...1G).
+reference: { bibcode: "2021AJ....161..147B", doi: "10.3847/1538-3881/abd806" }
 terms:
   url: "https://dc.g-vo.org/browse/gedr3dist/q"
   quote: >-

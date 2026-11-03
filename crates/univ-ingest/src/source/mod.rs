@@ -2,7 +2,10 @@
 //! anything is fetched.
 
 mod normalization;
+mod reference;
 mod rules;
+
+pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
     Coded, ComovingVelocity, DistanceReading, ErrorColumns, MethodCodes, Normalization, Published,
@@ -39,6 +42,8 @@ pub struct SourceDefinition {
     pub frame: Frame,
     pub epoch: Epoch,
     pub citation: String,
+    /// The primary reference, the paper `citation` names first, by its bibcode and DOI.
+    pub reference: Reference,
     pub terms: Terms,
     pub redistribution: Redistribution,
     pub scale_domain: ScaleDomain,
@@ -307,6 +312,7 @@ impl SourceDefinition {
         blank("title", &self.title)?;
         blank("provider", &self.provider)?;
         blank("citation", &self.citation)?;
+        self.reference.check()?;
         blank("terms.url", &self.terms.url)?;
         blank("terms.quote", &self.terms.quote)?;
         blank("terms.credit", &self.terms.credit)?;

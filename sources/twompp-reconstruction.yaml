@@ -25,6 +25,7 @@ citation: >-
   Carrick J., Turnbull S.J., Lavaux G., Hudson M.J. 2015, "Cosmological parameters from the
   comparison of peculiar velocities with predictions from the 2M++ density field", MNRAS 450,
   317-332. 2015MNRAS.450..317C, doi:10.1093/mnras/stv547, arXiv:1504.04627.
+reference: { bibcode: "2015MNRAS.450..317C", doi: "10.1093/mnras/stv547" }
 terms:
   url: "https://cosmicflows.iap.fr/download/"
   quote: >-

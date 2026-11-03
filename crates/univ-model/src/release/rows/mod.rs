@@ -336,8 +336,52 @@ row! {
     }
 }
 
+row! {
+    /// A source's primary reference and coverage, beside its row in `sources`.
+    SourceDetailRow => "source_details", scope: PerRelease, key: ["release", "source"],
+    indexes: [], {
+        release: u32,
+        /// The source's `sources.n`.
+        source: u32,
+        /// The primary reference's ADS bibcode, when it has one.
+        bibcode: Option<String>,
+        /// The primary reference's DOI without the `doi:` prefix, when it has one.
+        doi: Option<String>,
+        /// Why the source has no single primary reference, when it has none.
+        reference_note: Option<String>,
+        /// JSON `{"order": 5, "cells": [..]}`: the NESTED `HEALPix` cells, ICRS, ascending, that
+        /// hold at least one of its published entries; none when no entry has a sky position.
+        sky: Option<String>,
+        /// JSON array of the radial ranges its entries span, one per measure; none when none.
+        radial: Option<String>,
+    }
+}
+
+row! {
+    /// A structure's placed geometry and how it was derived, its outline test and its sizes
+    /// rescaled to the release cosmology, beside its row in `structures`.
+    StructureDetailRow => "structure_details", scope: PerRelease, key: ["release", "id"],
+    indexes: [], {
+        release: u32,
+        /// The structure's `structures.id`.
+        id: String,
+        /// JSON of the univ-model shape of the placed structure, ICRS Cartesian about the
+        /// barycentre in its scale domain's unit; none when it cannot be placed.
+        shape: Option<String>,
+        /// JSON of how `shape` and the structure's centre and bounds were derived; none when it
+        /// is not placed.
+        derivation: Option<String>,
+        /// JSON of the result of the test that admitted or refused its outline on a volume
+        /// grid; none for a structure not outlined from a grid.
+        outline: Option<String>,
+        /// JSON array of its lengths published under another cosmology, each as published and
+        /// rescaled to the release cosmology; none when it has none.
+        rescaled: Option<String>,
+    }
+}
+
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 18] = [
+pub const TABLES: [Table; 20] = [
     ReleaseRow::TABLE,
     TermRow::TABLE,
     SourceRow::TABLE,
@@ -356,6 +400,8 @@ pub const TABLES: [Table; 18] = [
     GridRow::TABLE,
     ObjectCellRow::TABLE,
     StructureCellRow::TABLE,
+    SourceDetailRow::TABLE,
+    StructureDetailRow::TABLE,
 ];
 
 /// The key a common name is looked up by: lower case, without white space.

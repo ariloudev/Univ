@@ -3,9 +3,11 @@
 //! rows, then checked, with the manifest of every file it wrote. Nothing holds a table's rows,
 //! a statement beyond the one being written, or a copy of a tile or a grid's samples.
 
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use univ_model::derive::{MODEL_VERSION, Release};
+use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
 use univ_model::redshift::CmbCorrection;
 use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
@@ -19,10 +21,12 @@ use super::check::{Failed, Subject, check_all, d1_derived, d1_size};
 use super::d1::{D1Writer, PartSink};
 use super::entries::Numbering;
 use super::files::DirSink;
-use super::objects::{ObjectCounts, ObjectWriter, json, ledger_rows};
+use super::objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
+use super::outline::Outlined;
 use super::terms::{SourceIndex, Terms};
 use super::{
-    CellRows, Inputs, cell_rows, domain_rows, grid_files, read_grid, source_rows, structure_rows,
+    CellRows, Inputs, Placing, StructureBounds, cell_rows, coverages, domain_rows, grid_files,
+    outlines_on, read_grid, source_detail_rows, source_rows, structure_detail_rows, structure_rows,
 };
 use crate::crossmatch::RULES;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
@@ -80,7 +84,7 @@ fn d1_rows(
     inputs: &Inputs<'_>,
     number: u32,
     mut writer: D1Writer<'_>,
-    grids: &[GridRow],
+    grids: &WrittenGrids,
     release: &Release,
     sources: SourceIndex,
     watch: Watch<'_>,
@@ -107,16 +111,9 @@ fn d1_rows(
     let (issued, replaced) = ledger_rows(&crossed.next.ledger)?;
     writer.add_all(&issued)?;
     writer.add_all(&replaced)?;
-    let (structures, bounds) = structure_rows(
-        number,
-        &crossed.basis.structures,
-        &crossed.structures,
-        release,
-        &CmbCorrection::new(crossed.dipole),
-    )?;
-    writer.add_all(&structures)?;
+    let (structures, bounds) = write_structures(&mut writer, inputs, number, release, grids)?;
     writer.add_all(&domain_rows(number, inputs.tiles))?;
-    writer.add_all(grids)?;
+    writer.add_all(&grids.rows)?;
     let cells = cell_rows(
         number,
         &crossed.objects,
@@ -154,8 +151,8 @@ fn d1_rows(
         ranking_rule_name: ranking.rule.clone(),
         sources: json(&source_ids)?,
         objects: counts.objects,
-        structures: structures.len() as u64,
-        grids: grids.len() as u64,
+        structures,
+        grids: grids.rows.len() as u64,
         tiles: tile_count(inputs) as u64,
         // Estimated with the widest integer here, then set to the estimate it is part of,
         // which therefore errs high by at most a few bytes.
@@ -181,37 +178,96 @@ fn d1_rows(
         failed,
         objects: counts,
         cells,
-        structures: structures.len() as u64,
+        structures,
     })
 }
 
-/// Writes each volume grid's files, one grid at a time: read, written, and let go. It gives
-/// each grid's row, its source numbered by `sources`.
+/// Writes the `source_details`, `structures` and `structure_details` rows of release `number`
+/// through `writer`, its structures placed under `release` and the run's dipole, with the
+/// `outline` columns the grids gave; it gives how many structures it wrote and their boxes.
+fn write_structures(
+    writer: &mut D1Writer<'_>,
+    inputs: &Inputs<'_>,
+    number: u32,
+    release: &Release,
+    grids: &WrittenGrids,
+) -> Result<(u64, Vec<StructureBounds>), String> {
+    let crossed = inputs.crossed;
+    let covered = coverages(&crossed.objects, inputs.definitions);
+    writer.add_all(&source_detail_rows(number, inputs.definitions, &covered)?)?;
+    let correction = CmbCorrection::new(crossed.dipole);
+    let (structures, bounds) = structure_rows(
+        number,
+        &crossed.basis.structures,
+        &crossed.structures,
+        &grids.outlines,
+        release,
+        &correction,
+    )?;
+    writer.add_all(&structures)?;
+    let placing = Placing {
+        release,
+        correction: &correction,
+        dipole: snake(&crossed.dipole),
+    };
+    writer.add_all(&structure_detail_rows(
+        number,
+        &crossed.basis.structures,
+        &crossed.structures,
+        &placing,
+        &grids.outlines,
+    )?)?;
+    Ok((structures.len() as u64, bounds))
+}
+
+/// The volume grids written: their rows, and the `outline` column of each structure outlined
+/// on one of them, by its id.
+struct WrittenGrids {
+    rows: Vec<GridRow>,
+    outlines: BTreeMap<String, Outlined>,
+}
+
+/// Writes each volume grid's files, one grid at a time: read, written, its structures outlined
+/// and tested, and let go. It gives each grid's row, its source numbered by `sources`.
 fn write_grids(
     inputs: &Inputs<'_>,
     number: u32,
     sink: &mut DirSink<'_>,
     release: &Release,
     sources: &mut SourceIndex,
-) -> Result<Vec<GridRow>, String> {
+) -> Result<WrittenGrids, String> {
     sink.watch.check()?;
-    let mut grids = Vec::with_capacity(inputs.grids.len());
+    let crossed = inputs.crossed;
+    let mut grids = WrittenGrids {
+        rows: Vec::with_capacity(inputs.grids.len()),
+        outlines: BTreeMap::new(),
+    };
     let mut written = 0;
     for (definition, files) in inputs.grids {
         sink.watch.check()?;
         let grid = read_grid(definition, files)?;
         let mut g = grid_files(number, &grid, definition, release)?;
+        grids.outlines.extend(outlines_on(
+            &grid,
+            &crossed.basis.structures,
+            &crossed.objects,
+            release,
+        )?);
         drop(grid);
         for (path, bytes) in &g.files {
             sink.put(path.clone(), bytes)?;
         }
         written += g.files.len();
         g.row.source = sources.n(&definition.id);
-        grids.push(g.row);
+        grids.rows.push(g.row);
     }
+    let tested = match grids.outlines.len() {
+        0 => String::new(),
+        n => format!(", {n} outlines tested"),
+    };
     sink.watch.step(format!(
-        "volume grids: {} grids in {written} files",
-        grids.len()
+        "volume grids: {} grids in {written} files{tested}",
+        grids.rows.len(),
     ));
     Ok(grids)
 }
@@ -335,7 +391,7 @@ pub fn write_release(
             entries: d1.objects.entries,
             structures: d1.structures,
             structures_indexed: d1.cells.structures_indexed,
-            grids: grids.len() as u64,
+            grids: grids.rows.len() as u64,
             tiles: tile_count(inputs) as u64,
             object_cells: d1.cells.objects.len() as u64,
             structure_cells: d1.cells.structures.len() as u64,
@@ -358,7 +414,7 @@ fn cell_index(cells: &CellRows) -> CellIndex {
                  * 2^level)); objects at level 0 of their scale domain, structures at the \
                  finest level their box meets at most structure_span cells a side"
             .to_owned(),
-        frame: "ICRS equatorial Cartesian, origin the Solar System barycentre".to_owned(),
+        frame: format!("{ICRS_CARTESIAN_NAME}, origin the {BARYCENTRE}"),
         spaces: SPACES
             .iter()
             .map(|s| CellSpaceInfo {

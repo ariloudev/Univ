@@ -7,8 +7,11 @@ use crate::position::{Rotation, Vec3, dot, scaled, zip};
 
 /// An axis-aligned box.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Aabb {
+    #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
     pub min: Vec3,
+    #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
     pub max: Vec3,
 }
 
