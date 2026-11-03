@@ -9,6 +9,7 @@
 )]
 
 use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
 use std::sync::{Arc, LazyLock, Mutex, PoisonError};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -238,4 +239,45 @@ pub fn every_table() -> Vec<(SourceDefinition, Normalized)> {
             (d, n)
         })
         .collect()
+}
+
+/// The repository's definition of the `VizieR` source `id`, written to `dir` as one query to
+/// `mirror` (no slices) that must give the rows of its recorded answer.
+pub fn copied(id: &str, dir: &Path, mirror: &str) -> SourceDefinition {
+    let definition = definition_of(id);
+    let rows = count_rows(&definition);
+    let original = sources_dir().join(format!("{id}.yaml"));
+    let text = std::fs::read_to_string(original).expect("a source definition");
+    let univ_ingest::source::Access::VizierTsv {
+        rows: Some(all), ..
+    } = &definition.access
+    else {
+        panic!("{id} is not a VizieR query")
+    };
+    let text = text
+        .lines()
+        .filter(|line| !line.starts_with("  slices:"))
+        .fold(String::new(), |text, line| text + line + "\n");
+    let text = text
+        .replace(&format!("  rows: {all}\n"), &format!("  rows: {rows}\n"))
+        .replace(
+            "\"https://vizier.cds.unistra.fr/viz-bin/asu-tsv\"",
+            &format!("\"{mirror}/viz-bin/asu-tsv\""),
+        );
+    let path = dir.join(format!("{id}.yaml"));
+    std::fs::write(&path, text).expect("written");
+    SourceDefinition::read(&path).expect("a valid definition")
+}
+
+/// The `univ-ingest` binary run as `univ-ingest <subcommand> --offline --repository
+/// <workspace>`, then each flag of `extra_args` with its path.
+pub fn run(subcommand: &str, extra_args: &[(&str, &Path)]) -> Output {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_univ-ingest"));
+    command
+        .args([subcommand, "--offline", "--repository"])
+        .arg(workspace());
+    for (flag, path) in extra_args {
+        command.arg(flag).arg(path);
+    }
+    command.output().expect("the binary runs")
 }

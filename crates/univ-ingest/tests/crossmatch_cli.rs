@@ -1,20 +1,14 @@
 //! `univ-ingest match --offline` run as the owner runs it, on the recorded answers of four
 //! `VizieR` sources and the repository's researched structures (F-13).
-#![expect(
-    clippy::unwrap_used,
-    clippy::panic,
-    reason = "a failed unwrap or a panic is the test failing"
-)]
 
 mod common;
 
-use common::workspace;
+use common::{copied, workspace};
 
 use std::path::Path;
-use std::process::Command;
 
 use univ_ingest::acquire::acquire;
-use univ_ingest::source::{Access, SourceDefinition};
+use univ_ingest::source::Access;
 use univ_ingest::state::{State, pending};
 use wiremock::matchers::query_param;
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -27,42 +21,15 @@ const SOURCES: [&str; 4] = [
     "cosmicflows-4",
 ];
 
-/// The repository's definition of `id`, written to `dir` with `mirror` as its one mirror and
-/// the rows of its recorded answer as the rows it must give.
-fn copied(id: &str, dir: &Path, mirror: &str) -> SourceDefinition {
-    let definition = common::definition_of(id);
-    let rows = common::count_rows(&definition);
-    let original = workspace().join("sources").join(format!("{id}.yaml"));
-    let text = std::fs::read_to_string(original).unwrap();
-    let Access::VizierTsv {
-        rows: Some(all), ..
-    } = &definition.access
-    else {
-        panic!("{id} is not one VizieR query")
-    };
-    let text = text
-        .replace(&format!("  rows: {all}\n"), &format!("  rows: {rows}\n"))
-        .replace(
-            "\"https://vizier.cds.unistra.fr/viz-bin/asu-tsv\"",
-            &format!("\"{mirror}/viz-bin/asu-tsv\""),
-        );
-    let path = dir.join(format!("{id}.yaml"));
-    std::fs::write(&path, text).unwrap();
-    SourceDefinition::read(&path).unwrap()
-}
-
 fn matching(definitions: &Path, cache: &Path, state: &Path) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_univ-ingest"))
-        .args(["match", "--offline", "--definitions"])
-        .arg(definitions)
-        .arg("--cache")
-        .arg(cache)
-        .arg("--repository")
-        .arg(workspace())
-        .arg("--state")
-        .arg(state)
-        .output()
-        .unwrap()
+    common::run(
+        "match",
+        &[
+            ("--definitions", definitions),
+            ("--cache", cache),
+            ("--state", state),
+        ],
+    )
 }
 
 #[tokio::test]

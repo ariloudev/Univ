@@ -1,5 +1,5 @@
-//! A run of Univ Ingest: which display it uses, the fetch of every source it is asked for, and
-//! the normalization of each source fetched.
+//! A run of Univ Ingest: which display it uses, the fetch of every source it is asked for, the
+//! normalization of each source fetched, and the cross-match and tiles stages that follow.
 
 use std::io::IsTerminal as _;
 use std::path::PathBuf;
@@ -9,8 +9,10 @@ use std::sync::{Arc, Mutex, PoisonError};
 use tokio::time::MissedTickBehavior;
 
 mod cross;
+mod tiles;
 
 pub use cross::{MatchOptions, match_stage};
+pub use tiles::{DEFAULT_TILES, TileOptions, tiles_stage};
 
 use crate::access::item_count;
 use univ_model::redshift::{CmbCorrection, DipoleModel};
