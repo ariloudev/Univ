@@ -5,6 +5,7 @@ use sha2::{Digest, Sha256};
 use url::form_urlencoded::Serializer;
 
 use crate::source::{Access, SourceDefinition};
+use crate::table::TableReader;
 
 /// One chunk of a query: its name in events and provenance, its file on disk, and what is
 /// appended to each mirror to ask for it.
@@ -13,13 +14,6 @@ pub struct ChunkRequest {
     pub item: String,
     pub file: String,
     pub suffix: String,
-}
-
-/// A table as a provider answered it, every cell kept as text.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct Table {
-    pub columns: Vec<String>,
-    pub rows: Vec<Vec<String>>,
 }
 
 /// The chunk requests of a query source, in order; none for a file source.
@@ -193,31 +187,22 @@ pub fn count_request(definition: &SourceDefinition) -> Option<ChunkRequest> {
 ///
 /// Fails when the answer is not one row holding one whole number.
 pub fn read_count(access: &Access, body: &[u8]) -> Result<u64, String> {
-    let table = read_table(access, body)?;
-    match table.rows.as_slice() {
-        [row] if row.len() == 1 => row[0]
+    let mut table = TableReader::new(access, body)?;
+    let count = match table.next_row() {
+        Some(Ok([cell])) => cell
             .parse()
-            .map_err(|e| format!("the count {:?} is not a whole number: {e}", row[0])),
-        _ => Err(format!(
-            "a count answers one row of one column, not {} rows",
-            table.rows.len()
-        )),
-    }
-}
-
-/// Reads an answer of `access` into a table.
-///
-/// # Errors
-///
-/// Fails when the answer is not a table of that format, such as an error page.
-pub fn read_table(access: &Access, body: &[u8]) -> Result<Table, String> {
-    let text = std::str::from_utf8(body).map_err(|e| format!("the answer is not UTF-8: {e}"))?;
-    match access {
-        Access::VizierTsv { .. } => read_vizier_tsv(text),
-        Access::SkyserverSql { .. } | Access::Tap { .. } => read_csv(text),
-        Access::Files { .. } | Access::Repository { .. } => {
-            Err("files are read by their own readers".to_owned())
+            .map_err(|e| format!("the count {cell:?} is not a whole number: {e}"))?,
+        Some(Err(e)) => return Err(e),
+        Some(Ok(_)) | None => {
+            return Err("a count answers one row of one column".to_owned());
         }
+    };
+    match table.count_rows()? {
+        0 => Ok(count),
+        more => Err(format!(
+            "a count answers one row of one column, not {} rows",
+            more + 1
+        )),
     }
 }
 
@@ -229,18 +214,18 @@ pub fn read_table(access: &Access, body: &[u8]) -> Result<Table, String> {
 ///
 /// Fails, saying why, when the answer is not such a table.
 pub fn check_answer(definition: &SourceDefinition, body: &[u8]) -> Result<u64, String> {
-    let table = read_table(&definition.access, body)?;
-    if table.columns.is_empty() {
+    let table = TableReader::new(&definition.access, body)?;
+    if table.columns().is_empty() {
         return Ok(0);
     }
     let missing: Vec<&str> = definition
         .columns
         .iter()
         .map(|c| c.column.as_str())
-        .filter(|name| !table.columns.iter().any(|c| c == name))
+        .filter(|name| table.index(name).is_none())
         .collect();
     if missing.is_empty() {
-        Ok(table.rows.len() as u64)
+        table.count_rows()
     } else {
         Err(format!(
             "the answer lacks the columns {}",
@@ -249,113 +234,13 @@ pub fn check_answer(definition: &SourceDefinition, body: &[u8]) -> Result<u64, S
     }
 }
 
-/// `VizieR`'s `asu-tsv`: `#` comments, then a header, a units line and a line of dashes, then
-/// one tab-separated row per line. An answer of comments only is a table of no rows, unless a
-/// comment reports an error.
-fn read_vizier_tsv(text: &str) -> Result<Table, String> {
-    let mut lines = content_lines(text);
-    let Some(header) = lines.next() else {
-        return match text.lines().find(|l| vizier_error(l)) {
-            Some(line) => Err(format!("VizieR reports an error: {}", line.trim())),
-            None => Ok(Table::default()),
-        };
+/// The chunks, count query and files a fetch of `definition` asks for.
+#[must_use]
+pub fn item_count(definition: &SourceDefinition) -> u64 {
+    let items = match &definition.access {
+        Access::Files { files } => files.len(),
+        Access::Repository { .. } => 0,
+        _ => chunk_requests(definition).len() + usize::from(count_request(definition).is_some()),
     };
-    let columns = cells(header, '\t');
-    lines.next().ok_or("the table has no units line")?;
-    let dashes = lines.next().ok_or("the table has no line of dashes")?;
-    if !dashes.trim_start().starts_with('-') {
-        return Err(format!(
-            "expected a line of dashes under the header, found {dashes:?}"
-        ));
-    }
-    let rows = rows(lines, columns.len(), |line| cells(line, '\t'))?;
-    Ok(Table { columns, rows })
-}
-
-/// A `VizieR` comment that reports an error: an `#INFO` line naming one, or a `#***` line.
-fn vizier_error(line: &str) -> bool {
-    line.starts_with("#***")
-        || (line.starts_with("#INFO") && line.to_ascii_lowercase().contains("error"))
-}
-
-/// CSV as `SkyServer` and TAP services give it: `#` lines skipped, a header, then rows, with
-/// fields in double quotes where they hold a comma.
-fn read_csv(text: &str) -> Result<Table, String> {
-    let mut lines = content_lines(text);
-    let header = lines.next().ok_or("the answer holds no table")?;
-    if header.trim_start().starts_with('<') {
-        return Err(format!(
-            "the answer is markup, not CSV: {}",
-            header.chars().take(120).collect::<String>()
-        ));
-    }
-    let columns = fields(header);
-    let rows = rows(lines, columns.len(), fields)?;
-    Ok(Table { columns, rows })
-}
-
-/// The lines of an answer that are neither `#` comments nor blank.
-fn content_lines(text: &str) -> impl Iterator<Item = &str> {
-    text.lines()
-        .filter(|l| !l.starts_with('#') && !l.trim().is_empty())
-}
-
-/// Each line split into cells by `split`, refusing a line whose width is not `width`.
-fn rows<'a>(
-    lines: impl Iterator<Item = &'a str>,
-    width: usize,
-    split: impl Fn(&str) -> Vec<String>,
-) -> Result<Vec<Vec<String>>, String> {
-    lines
-        .map(|line| {
-            let row = split(line);
-            if row.len() == width {
-                Ok(row)
-            } else {
-                Err(format!(
-                    "a row has {} cells for {width} columns: {line:?}",
-                    row.len()
-                ))
-            }
-        })
-        .collect()
-}
-
-/// The trimmed cells of a line separated by `separator`.
-fn cells(line: &str, separator: char) -> Vec<String> {
-    line.split(separator).map(|c| c.trim().to_owned()).collect()
-}
-
-/// The fields of one CSV line.
-fn fields(line: &str) -> Vec<String> {
-    let mut fields = Vec::new();
-    let mut field = String::new();
-    let mut quoted = false;
-    let mut chars = line.chars().peekable();
-    while let Some(c) = chars.next() {
-        match (c, quoted) {
-            ('"', true) if chars.peek() == Some(&'"') => {
-                field.push('"');
-                chars.next();
-            }
-            ('"', _) => quoted = !quoted,
-            (',', false) => fields.push(std::mem::take(&mut field).trim().to_owned()),
-            _ => field.push(c),
-        }
-    }
-    fields.push(field.trim().to_owned());
-    fields
-}
-
-#[cfg(test)]
-mod tests {
-    use super::fields;
-
-    #[test]
-    fn csv_fields_keep_quoted_commas_and_doubled_quotes() {
-        assert_eq!(
-            fields(r#"1,"a, b","say ""hi""",  2.5 "#),
-            ["1", "a, b", "say \"hi\"", "2.5"]
-        );
-    }
+    items as u64
 }

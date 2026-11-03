@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use tokio::time::MissedTickBehavior;
 
-use crate::access::{chunk_requests, count_request};
+use crate::access::item_count;
 use crate::acquire::acquire;
 use crate::display::{
     IndicatifTarget, Outcome, PlainSink, REDRAW_EVERY, RunDisplay, SourceState, SourceSummary,
@@ -14,7 +14,7 @@ use crate::display::{
 };
 use crate::events::{Event, Stage};
 use crate::fetch::{Clock, Fetcher, SystemClock};
-use crate::source::{Access, SourceDefinition, read_all};
+use crate::source::{SourceDefinition, read_all};
 
 /// What a fetch is asked to do.
 #[derive(Clone, Debug)]
@@ -159,15 +159,7 @@ pub fn select(options: &FetchOptions) -> Result<Vec<SourceDefinition>, String> {
 
 /// The chunks, count queries and files the run will fetch.
 fn items(definitions: &[SourceDefinition]) -> u64 {
-    definitions
-        .iter()
-        .map(|d| match &d.access {
-            Access::Files { files } => files.len(),
-            Access::Repository { .. } => 0,
-            _ => chunk_requests(d).len() + usize::from(count_request(d).is_some()),
-        })
-        .map(|n| n as u64)
-        .sum()
+    definitions.iter().map(item_count).sum()
 }
 
 /// Fetches every definition into the cache, marking each source in `report` as it ends. A

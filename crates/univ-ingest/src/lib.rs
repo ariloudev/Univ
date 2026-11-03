@@ -9,3 +9,4 @@ pub mod fetch;
 pub mod provenance;
 pub mod run;
 pub mod source;
+pub mod table;
