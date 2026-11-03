@@ -5,7 +5,7 @@
 use crate::backend::Backend;
 use crate::http::{Body, Method, Request, Response};
 use crate::problem::{Problem, ProblemType};
-use crate::{openapi, releases, sources};
+use crate::{openapi, releases, sources, structures};
 
 /// The values a route's `{name}` segments took in one request, in the template's order.
 pub type Params = Vec<(&'static str, String)>;
@@ -18,6 +18,8 @@ pub enum Endpoint {
     Sources,
     Source,
     SourceProvenance,
+    Structures,
+    Structure,
 }
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
@@ -29,7 +31,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 5] = [
+pub static ROUTES: [Route; 7] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -55,6 +57,16 @@ pub static ROUTES: [Route; 5] = [
         path: "/v1/sources/{id}/provenance",
         endpoint: Endpoint::SourceProvenance,
     },
+    Route {
+        method: Method::Get,
+        path: "/v1/structures",
+        endpoint: Endpoint::Structures,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/structures/{id}",
+        endpoint: Endpoint::Structure,
+    },
 ];
 
 /// The answer of `endpoint` to `request`, a refusal included.
@@ -72,6 +84,8 @@ async fn answer<B: Backend>(
         Endpoint::SourceProvenance => {
             sources::provenance(request, param(params, "id"), backend).await
         }
+        Endpoint::Structures => structures::list(request, backend).await,
+        Endpoint::Structure => structures::get(request, param(params, "id"), backend).await,
     };
     answered.unwrap_or_else(Problem::into_response)
 }

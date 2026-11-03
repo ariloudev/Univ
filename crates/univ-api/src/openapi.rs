@@ -24,7 +24,9 @@ use crate::problem::{Problem, ProblemType};
         crate::releases::list,
         crate::sources::list,
         crate::sources::get,
-        crate::sources::provenance::provenance
+        crate::sources::provenance::provenance,
+        crate::structures::list,
+        crate::structures::get
     )
 )]
 struct ApiDoc;

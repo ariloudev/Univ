@@ -6,3 +6,4 @@
 
 pub mod releases;
 pub mod sources;
+pub mod structures;

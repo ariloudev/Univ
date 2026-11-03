@@ -166,3 +166,41 @@ INSERT INTO source_details VALUES (2, 0, '2007A&A...474..653V', '10.1051/0004-63
   '[{"measure":"parallax","min":0.1,"max":772.33,"unit":"milliarcsecond","basis":"parallax as published","entries":117950}]');
 INSERT INTO source_details VALUES (2, 1, NULL, NULL, 'A compilation: each structure cites its own papers.', NULL, NULL);
 "#;
+
+/// Release 2's scale domains and three structures: a void published under H0 = 50 and placed
+/// as a sphere, a void outlined from a reconstruction, and a ring of tracers; with their
+/// schema v3 details.
+pub const STRUCTURES: &str = r#"
+INSERT INTO scale_domains VALUES (2, 'cosmic_web', 'Mpc', 168.0, 6, 1, 'releases/2/tiles/cosmic_web/manifest.json');
+INSERT INTO scale_domains VALUES (2, 'stars', 'pc', 48.0, 1, 1, 'releases/2/tiles/stars/manifest.json');
+INSERT INTO structures VALUES (2, 'bootes-void', 'Bootes Void', 'void', 'observed', 'cosmic_web',
+  -115.49, -107.35, 162.22, 'primitive',
+  '{"papers":[{"id":"kirshner-1987","bibcode":"1987ApJ...314..493K","doi":"10.1086/165080"}],"values":{"radius":{"quantity":{"value":63.0,"unit":"megaparsec","uncertainty":{"form":"none_reported"}},"kind":"inferred","cite":{"paper":"kirshner-1987","locator":{"form":"sentence","quote":"a radius of 63 Mpc (assuming H0 = 50 km s-1 Mpc-1)","page":501}},"assumes":{"cosmology":{"hubble_constant":50.0}}}}}',
+  NULL, '{"min":[-162.0,-154.0,115.7],"max":[-68.9,-60.9,208.8]}');
+INSERT INTO structures VALUES (2, 'local-void', 'Local Void', 'void', 'reconstructed', 'cosmic_web',
+  23.98, -13.46, 23.14, 'point',
+  '{"values":{"depth":{"quantity":{"value":-1.0,"unit":"dimensionless","uncertainty":{"form":"none_reported"}},"kind":"reconstructed","cite":{"paper":"tully-2019","locator":{"form":"figure","figure":"3"}}},"edge":{"quantity":{"value":20.0,"unit":"megaparsec","uncertainty":{"form":"none_reported"}},"kind":"estimated","cite":{"paper":"tully-2019","locator":{"form":"figure","figure":"5"}}}},"outline":{"grid":"cf4pp-density","field":"density","threshold":{"chosen":{"chosen":-1.0}},"side":"below","test":{"rule":"underdense_in_every_covering_catalogue"}}}',
+  NULL, '{"min":[23.98,-13.46,23.14],"max":[23.98,-13.46,23.14]}');
+INSERT INTO structures VALUES (2, 'giant-grb-ring', 'Giant GRB Ring', 'ring', 'statistical_claim', 'cosmic_web',
+  NULL, NULL, NULL, 'members', '{"values":{}}',
+  '{"shape":{"members":[{"member":"tracer","kind":"gamma-ray burst","at":[1.0,2.0,3.0]},{"member":"object","id":42,"at":[4.0,5.0,6.0]}]}}',
+  NULL);
+INSERT INTO structure_details VALUES (2, 'bootes-void',
+  '{"kind":"primitive","frame":"icrs","unit":"Mpc","shape":"sphere","centre":[-115.49,-107.35,162.22],"radius":46.56}',
+  '{"from":["/position/lon","/position/lat","/position/radial/velocity","/values/radius"],"frame_chain":["fk4_b1950 -> icrs"],"distance":{"from":"/position/radial/velocity","method":"comoving distance from the CMB-frame redshift under the release cosmology"},"cosmology":"release"}',
+  NULL,
+  '[{"value":"/values/radius","native":{"value":63.0,"unit":"megaparsec","hubble_constant":50.0,"assumed":{"cosmology":{"hubble_constant":50.0}}},"rescaled":{"value":46.56,"unit":"megaparsec"},"factor":0.739,"method":"hubble_ratio"}]');
+INSERT INTO structure_details VALUES (2, 'local-void', NULL, NULL,
+  '{"grid":"cf4pp-density","field":"density","threshold":-1.0,"test":{"rule":"underdense_in_every_covering_catalogue"},"verdict":"refused","reason":"the region touches the grid edge","cells":0,"touches_edge":true,"checks":[]}',
+  NULL);
+"#;
+
+/// 1,200 more structures of release 2, `filler-0000` to `filler-1199`, alternating between
+/// walls and filaments, for paging.
+pub const MANY_STRUCTURES: &str = "
+WITH RECURSIVE n(i) AS (SELECT 0 UNION ALL SELECT i + 1 FROM n WHERE i < 1199)
+INSERT INTO structures
+SELECT 2, printf('filler-%04d', i), printf('Filler %d', i),
+  CASE i % 2 WHEN 0 THEN 'wall' ELSE 'filament' END, 'observed', 'cosmic_web',
+  i, 0, 0, 'point', '{}', NULL, NULL FROM n;
+";

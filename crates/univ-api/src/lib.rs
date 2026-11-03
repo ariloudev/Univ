@@ -12,6 +12,7 @@ mod problem;
 mod releases;
 mod routes;
 mod sources;
+mod structures;
 #[cfg(test)]
 mod testkit;
 

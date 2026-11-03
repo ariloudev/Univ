@@ -33,6 +33,16 @@ pub async fn resolve<B: Backend>(request: &Request, backend: &B) -> Result<u32, 
         .with("parameter", RELEASE_PARAM)
         .with("value", text.clone())
     })?;
+    published(number, backend).await
+}
+
+/// `number`, when it names a release that was published and not pruned.
+///
+/// # Errors
+///
+/// A problem answer: a release never published (404), a pruned release (410), or a backend
+/// failure.
+pub async fn published<B: Backend>(number: u32, backend: &B) -> Result<u32, Problem> {
     let rows = backend
         .releases(
             "SELECT published_at, pruned_at FROM releases WHERE number = ?1",
