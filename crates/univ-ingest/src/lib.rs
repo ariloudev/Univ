@@ -9,6 +9,7 @@ pub mod fetch;
 pub mod fits;
 pub mod grids;
 pub mod normalize;
+pub mod outlines;
 pub mod provenance;
 pub mod run;
 pub mod source;

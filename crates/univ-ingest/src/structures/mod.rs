@@ -21,7 +21,7 @@ use thiserror::Error;
 pub use cited::{Citation, Cited, Locator};
 pub use geometry::{Coordinates, Radial, StructureFrame};
 pub use members::{Column, ColumnName, Format, MemberSource, Members, Row};
-pub use outline::{GridOutline, OutlineTest, Side};
+pub use outline::{Choice, GridOutline, OutlineTest, Rule, Seed, Side, Threshold};
 pub use shape::{SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
 
 /// A researched structure as its file describes it.
@@ -259,7 +259,14 @@ impl Structure {
             out.push((format!("values.{name}"), c));
         }
         if let Some(outline) = &self.outline {
-            out.push(("outline.threshold".to_owned(), &outline.threshold));
+            if let Threshold::Cited(c) = &outline.threshold {
+                out.push(("outline.threshold".to_owned(), c));
+            }
+            if let Some(seed) = &outline.seed {
+                for (field, c) in seed.position.cited() {
+                    out.push((format!("outline.seed.position.{field}"), c));
+                }
+            }
         }
         out
     }

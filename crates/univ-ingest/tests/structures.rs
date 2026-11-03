@@ -342,7 +342,10 @@ outline:
   side: below
   test:
     catalogues: [sdss-dr17, sixdfgs-dr3]
-    rule: "fewer galaxies than other cells at its distance in every catalogue that covers it"
+    rule: underdense_in_every_covering_catalogue
+    ratio: 0.85
+    min_expected: 100
+    why: "fewer galaxies than other cells at its distance in every catalogue that covers it"
 "#;
 
 #[test]
