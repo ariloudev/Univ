@@ -24,13 +24,21 @@ requirements:
       - key: 01a19f23-636e-7035-8185-ab998407d632
         name: "The uncertainty of a redshift distance includes a peculiar-velocity term, 300 km/s unless the release's ranking rule sets another."
       - key: 01a1a147-6018-75e1-9409-3f77617e6ee1
-        name: "A geometric, primary-indicator or secondary-indicator distance is preferred over any redshift distance whose fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states."
+        name: "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, every redshift distance whose fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states is set aside."
       - key: 01a1a147-6018-75e1-9409-3f788275d038
-        name: "Candidates the threshold does not decide between are ranked by fractional distance uncertainty, the smallest first."
-      - key: 01a1a147-6018-75e1-9409-3f79f4feda94
-        name: "A measurement published without an uncertainty is compared with the other candidates by method rank, never by an invented uncertainty."
+        name: "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads."
       - key: 01a19f23-636e-7035-8185-ab9ac704109a
         name: "A tie is broken by method rank: geometric, then primary indicator, then secondary indicator, then spectroscopic redshift, then photometric redshift."
+      - key: 01a1a147-6018-75e1-9409-3f79f4feda94
+        name: "A candidate without a published uncertainty wins only if its method rank is strictly better than that of every remaining candidate with a published uncertainty."
+      - key: 01a1a149-623d-7310-8064-e65204c3c532
+        name: "Where no candidate without a published uncertainty wins, the leader among the candidates with a published uncertainty wins."
+      - key: 01a1a149-623d-7310-8064-e653f6590128
+        name: "Where more than one candidate without a published uncertainty qualifies to win, the one with the best method rank wins."
+      - key: 01a1a149-623d-7310-8064-e6548a057bc6
+        name: "Where qualifying candidates without a published uncertainty share the best method rank, the one whose source the ranking rule lists first wins."
+      - key: 01a1a149-623d-7310-8064-e655ca08d473
+        name: "A candidate published without an uncertainty is given none in the ranking, never an invented one."
       - key: 01a19f23-636e-7035-8185-ab9b3e95c24c
         name: "The ranking rule and its parameters are recorded in the release manifest."
       - key: 01a19f23-636e-7035-8185-ab9ce127e733
