@@ -19,3 +19,93 @@ versions:
     title: "W7 review"
     goal: "/simplify and /code-review findings on wave 7 are fixed, the gate is green and the trace is recorded"
     status: active
+  - key: 01a1a0d1-28f9-7110-892d-83ddded7ef6d
+    at: 2026-11-03T09:50:24Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W7 review"
+    goal: "/simplify and /code-review findings on wave 7 are fixed, the gate is green and the trace is recorded"
+    status: done
+blocks:
+  - key: 01a1a0d1-28f9-7110-892d-83d9d15fed09
+    id: w7-fix-review
+    kind: task
+    versions:
+      - key: 01a1a0d1-28f9-7110-892d-83dba075f065
+        at: 2026-11-03T09:50:24Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the /code-review and /simplify findings"
+        detail: |-
+          Each fix comes with a test that failed before it.
+
+          **D1 integrity**
+          - Non-finite values and duplicate keys fail the build.
+          - Raw names are part of the key, so 'M 31' and 'M31' are both kept.
+          - Text holding BEGIN TRANSACTION or COMMIT is written as hex.
+          - Each table's count and per-column totals are checked against D1 after the load.
+
+          **CON-3**
+          - The size estimate counts SQLite overflow pages.
+          - Publish checks the unpruned releases plus the new one against 10 GB.
+
+          **Atomicity**
+          - A state lock guards match, tiles and build.
+          - The state comes from memory into `states/{n}`, with `current` switched by rename.
+          - Publish refuses a release the state doesn't record.
+
+          **Publish and prune**
+          - A rerun records a missing `published_at`.
+          - Prune uses the journal when there is no manifest, and otherwise refuses.
+          - Unlisted releases are cleaned.
+
+          **Other**
+          - A 360° sky region is handled.
+          - Wrangler's stderr is shown without ANSI codes.
+          - Structures carry a scale domain and centre.
+          - The build uses the cross-match's own rules and structures.
+          - The `/simplify` items are done.
+
+          End to end: real wrangler passes in 66 s.
+        state: done
+        type: fix
+  - key: 01a1a0d1-28f9-7110-892d-83da5a16c781
+    id: w7-trace
+    kind: loft
+    versions:
+      - key: 01a1a0d1-28f9-7110-892d-83dcfca51bc3
+        at: 2026-11-03T09:50:24Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: trace
+        note: "F-9 (AC-82 to AC-90), F-11 (AC-99 to AC-101), F-12 (AC-102 to AC-106) and AC-121 are linked. The real-wrangler end-to-end test is `#[ignore]` so the gate never needs node; it was run by hand and passed."
+        recorded:
+          commit: "0b58a57d7651293c5a2546845340a5f7975ca365"
+          branch: "stage/ingest-w7"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T09:50:24Z
+        report: |
+          {
+            "base": "product/ingest",
+            "commit": "bc3d0ba5d4e2b28832c600b94360ef1f08992dfd",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 293,
+              "linked": 122,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
