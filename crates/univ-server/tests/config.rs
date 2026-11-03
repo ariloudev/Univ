@@ -67,3 +67,27 @@ fn the_layer_database_is_another_file_than_the_release_database() {
         value(&releases, "database_id")
     );
 }
+
+#[test]
+fn each_rate_limit_binding_allows_what_its_tier_allows_in_the_same_window() {
+    use univ_api::Limiter;
+    use univ_model::api::keys::{RATE_WINDOW_SECONDS, RateLimitTier};
+    let worker = read("crates/univ-server/wrangler.toml");
+    for (name, limiter) in [
+        ("ANON", Limiter::Anonymous),
+        ("BASIC", Limiter::Key(RateLimitTier::Basic)),
+        ("STANDARD", Limiter::Key(RateLimitTier::Standard)),
+        ("EXTENDED", Limiter::Key(RateLimitTier::Extended)),
+    ] {
+        let table = table_with(&worker, &format!("name = \"{name}\""));
+        let simple = value(&table, "simple");
+        assert_eq!(
+            simple,
+            format!(
+                "{{ limit = {}, period = {RATE_WINDOW_SECONDS} }}",
+                limiter.requests()
+            ),
+            "{name}"
+        );
+    }
+}

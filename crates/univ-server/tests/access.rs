@@ -7,34 +7,17 @@
     reason = "test helpers unwrap: a failure there is the test failing"
 )]
 
-use std::sync::LazyLock;
+mod common;
 
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use common::{CLIENT, OWNER, header, json, url};
 use reqwest::StatusCode;
-use reqwest::blocking::{Client, RequestBuilder, Response};
-use serde_json::{Value, json};
-
-static BASE: LazyLock<String> = LazyLock::new(|| {
-    std::env::var("UNIV_E2E_URL")
-        .expect("UNIV_E2E_URL names the Worker: run `cargo xtask integration`")
-});
-
-static OWNER: LazyLock<String> = LazyLock::new(|| {
-    std::env::var("UNIV_E2E_OWNER_SECRET")
-        .expect("UNIV_E2E_OWNER_SECRET is the Worker's: run `cargo xtask integration`")
-});
-
-static CLIENT: LazyLock<Client> = LazyLock::new(Client::new);
-
-fn url(path: &str) -> String {
-    format!("{}{path}", *BASE)
-}
+use reqwest::blocking::{RequestBuilder, Response};
+use serde_json::json;
 
 fn owner(request: RequestBuilder) -> RequestBuilder {
     request.bearer_auth(&*OWNER)
-}
-
-fn json(response: Response) -> Value {
-    serde_json::from_str(&response.text().unwrap()).unwrap()
 }
 
 /// Issues a key of `tier`, and gives its id and secret.
@@ -64,6 +47,8 @@ fn read_with(secret: &str) -> Response {
 #[ignore = "needs the Worker: run `cargo xtask integration`"]
 fn a_key_is_issued_read_with_moved_between_tiers_and_revoked() {
     let (id, secret) = issue("e2e lifecycle", "standard");
+    let (_, other) = issue("e2e other", "standard");
+    assert_ne!(secret, other, "each key draws its own random bits");
     assert_eq!(read_with(&secret).status(), StatusCode::OK);
     let listed = json(owner(CLIENT.get(url("/v1/owner/keys"))).send().unwrap());
     let key = listed["keys"]
@@ -117,6 +102,7 @@ fn the_owners_operations_are_refused_without_the_owner_secret() {
 #[ignore = "needs the Worker: run `cargo xtask integration`"]
 fn a_basic_key_is_refused_with_429_and_retry_after_past_300_requests_in_a_minute() {
     let (_, secret) = issue("e2e basic", "basic");
+    within_one_window();
     let mut answered = 0;
     let refused = loop {
         let response = CLIENT
@@ -135,14 +121,19 @@ fn a_basic_key_is_refused_with_429_and_retry_after_past_300_requests_in_a_minute
         );
     };
     assert_eq!(answered, 300);
-    assert_eq!(
-        refused
-            .headers()
-            .get("retry-after")
-            .unwrap()
-            .to_str()
-            .unwrap(),
-        "60"
-    );
+    assert_eq!(header(&refused, "retry-after"), Some("60"));
     assert_eq!(json(refused)["type"], "urn:univ:problem:rate-limited");
+}
+
+/// Waits for a new window when too little of this one is left for the 301 requests: the
+/// local limiter's windows start at whole minutes of the wall clock.
+fn within_one_window() {
+    let into = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+        % 60;
+    if into > 40 {
+        std::thread::sleep(Duration::from_secs(61 - into));
+    }
 }

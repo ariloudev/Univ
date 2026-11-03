@@ -8,12 +8,14 @@
 //!
 //! Then the request is counted against its rate limit: an anonymous one by its client address,
 //! a keyed one by its key at its tier's rate, read from the key's row on every request so a
-//! tier changed applies from the next one.
+//! tier changed applies from the next one. A request whose credentials fail counts as
+//! anonymous, so credentials cannot be guessed faster than the address's limit.
 
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use subtle::ConstantTimeEq;
 use univ_model::api::keys::{RATE_WINDOW_SECONDS, RateLimitTier};
+use univ_model::encoding::hex;
 
 use crate::backend::{Backend, Limiter, column, first};
 use crate::http::Request;
@@ -26,20 +28,34 @@ pub const OWNER_PREFIX: &str = "/v1/owner/";
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Caller {
     /// No key: limited by its client address.
-    Anonymous { address: String },
+    Anonymous,
     /// A key that stands.
     Key { id: String, tier: RateLimitTier },
     /// The owner, by the owner secret.
     Owner,
 }
 
-/// Who `request` comes from, its key or owner secret checked.
+/// Authenticates `request`, then counts it against its caller's rate limit.
 ///
 /// # Errors
 ///
-/// A 401 problem for a malformed `Authorization` header, a key that does not stand, or an
-/// owner operation without the owner secret; or the database unreadable.
-pub async fn authenticate<B: Backend>(request: &Request, backend: &B) -> Result<Caller, Problem> {
+/// A 401 for credentials that fail, a 429 once the caller's limit is spent (credentials that
+/// fail count against the address's), or the database or limiter failing.
+pub async fn admit<B: Backend>(request: &Request, backend: &B) -> Result<Caller, Problem> {
+    let caller = match authenticate(request, backend).await {
+        Ok(caller) => caller,
+        Err(problem) if problem.kind == ProblemType::Unauthorized => {
+            limit(request, &Caller::Anonymous, backend).await?;
+            return Err(problem);
+        }
+        Err(problem) => return Err(problem),
+    };
+    limit(request, &caller, backend).await?;
+    Ok(caller)
+}
+
+/// Who `request` comes from, its key or owner secret checked.
+async fn authenticate<B: Backend>(request: &Request, backend: &B) -> Result<Caller, Problem> {
     let token =
         match request.header("authorization") {
             None => None,
@@ -55,9 +71,7 @@ pub async fn authenticate<B: Backend>(request: &Request, backend: &B) -> Result<
         };
     }
     let Some(secret) = token else {
-        return Ok(Caller::Anonymous {
-            address: client_address(request),
-        });
+        return Ok(Caller::Anonymous);
     };
     let rows = backend
         .layers(
@@ -73,18 +87,13 @@ pub async fn authenticate<B: Backend>(request: &Request, backend: &B) -> Result<
 }
 
 /// Counts the request against the caller's rate limit.
-///
-/// # Errors
-///
-/// A 429 problem with `Retry-After` once the caller's limit for the window is spent, or the
-/// limiter unreachable.
-pub async fn limit<B: Backend>(caller: &Caller, backend: &B) -> Result<(), Problem> {
+async fn limit<B: Backend>(request: &Request, caller: &Caller, backend: &B) -> Result<(), Problem> {
     let (limiter, client) = match caller {
         Caller::Owner => return Ok(()),
-        Caller::Anonymous { address } => (Limiter::Anonymous, address.clone()),
-        Caller::Key { id, tier } => (Limiter::of(*tier), id.clone()),
+        Caller::Anonymous => (Limiter::Anonymous, client_address(request)),
+        Caller::Key { id, tier } => (Limiter::Key(*tier), id.as_str()),
     };
-    if backend.limit(limiter, &client).await? {
+    if backend.limit(limiter, client).await? {
         return Ok(());
     }
     Err(Problem::new(
@@ -95,19 +104,15 @@ pub async fn limit<B: Backend>(caller: &Caller, backend: &B) -> Result<(), Probl
         ),
     )
     .with("limit", limiter.requests())
-    .with("window_seconds", RATE_WINDOW_SECONDS))
+    .with("window_seconds", RATE_WINDOW_SECONDS)
+    // RFC 6585 §4: when the client may try again.
+    .with_header("retry-after", &RATE_WINDOW_SECONDS.to_string()))
 }
 
 /// The SHA-256 of `secret`, as lower-case hex: what is stored of a key's secret.
 #[must_use]
 pub fn sha256_hex(secret: &str) -> String {
-    Sha256::digest(secret.as_bytes())
-        .iter()
-        .fold(String::with_capacity(64), |mut hex, byte| {
-            use std::fmt::Write;
-            let _ = write!(hex, "{byte:02x}");
-            hex
-        })
+    hex(&Sha256::digest(secret.as_bytes()))
 }
 
 /// The token of a bearer `Authorization` header; the scheme's case is ignored (RFC 9110
@@ -127,15 +132,13 @@ fn same(given: &str, secret: &str) -> bool {
 }
 
 /// The address the request came from, as Cloudflare names it.
-fn client_address(request: &Request) -> String {
-    request
-        .header("cf-connecting-ip")
-        .unwrap_or("unknown")
-        .to_owned()
+fn client_address(request: &Request) -> &str {
+    request.header("cf-connecting-ip").unwrap_or("unknown")
 }
 
+/// A 401 naming the scheme the request must use (RFC 9110 §11.6.1).
 fn unauthorized(detail: &str) -> Problem {
-    Problem::new(ProblemType::Unauthorized, detail)
+    Problem::new(ProblemType::Unauthorized, detail).with_header("www-authenticate", "Bearer")
 }
 
 #[cfg(test)]

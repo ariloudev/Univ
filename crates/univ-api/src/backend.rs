@@ -1,10 +1,11 @@
-//! What a handler reads from: the release database, as SQL on SQLite, which D1 is in the
+//! What a handler reads from: the release and univ-layers databases, as SQL on SQLite, which D1 is in the
 //! Worker and an in-memory database is in the native tests. The same statements run on both.
 
 use std::future::Future;
 
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
+use univ_model::api::keys::{ANONYMOUS_REQUESTS, RateLimitTier};
 
 use crate::problem::{Problem, ProblemType};
 
@@ -75,32 +76,16 @@ pub trait Backend {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Limiter {
     Anonymous,
-    Basic,
-    Standard,
-    Extended,
+    Key(RateLimitTier),
 }
 
 impl Limiter {
-    /// The limiter of keys of `tier`.
-    #[must_use]
-    pub fn of(tier: univ_model::api::keys::RateLimitTier) -> Self {
-        use univ_model::api::keys::RateLimitTier;
-        match tier {
-            RateLimitTier::Basic => Self::Basic,
-            RateLimitTier::Standard => Self::Standard,
-            RateLimitTier::Extended => Self::Extended,
-        }
-    }
-
-    /// The requests it allows in the window.
+    /// The requests it allows in [`univ_model::api::keys::RATE_WINDOW_SECONDS`].
     #[must_use]
     pub fn requests(self) -> u32 {
-        use univ_model::api::keys::{ANONYMOUS_REQUESTS, RateLimitTier};
         match self {
             Self::Anonymous => ANONYMOUS_REQUESTS,
-            Self::Basic => RateLimitTier::Basic.requests(),
-            Self::Standard => RateLimitTier::Standard.requests(),
-            Self::Extended => RateLimitTier::Extended.requests(),
+            Self::Key(tier) => tier.requests(),
         }
     }
 }
@@ -150,7 +135,7 @@ pub fn rows_as<T: DeserializeOwned>(rows: Vec<Row>) -> Result<Vec<T>, Problem> {
             serde_json::from_value(Value::Object(row)).map_err(|error| {
                 Problem::new(
                     ProblemType::InternalError,
-                    format!("A row of the release database did not read: {error}."),
+                    format!("A row of the database did not read: {error}."),
                 )
             })
         })
@@ -160,7 +145,7 @@ pub fn rows_as<T: DeserializeOwned>(rows: Vec<Row>) -> Result<Vec<T>, Problem> {
 fn unreadable(name: &str, error: &serde_json::Error) -> Problem {
     Problem::new(
         ProblemType::InternalError,
-        format!("The release database's column {name} did not read: {error}."),
+        format!("The database's column {name} did not read: {error}."),
     )
 }
 
@@ -168,7 +153,7 @@ impl From<BackendError> for Problem {
     fn from(error: BackendError) -> Self {
         Problem::new(
             ProblemType::InternalError,
-            format!("The release database could not be read: {}.", error.0),
+            format!("The database could not be read: {}.", error.0),
         )
     }
 }

@@ -1,22 +1,24 @@
 //! The owner's operations on API keys (issue-and-revoke-keys, enforce-quotas-and-rate-limits):
 //! issue, list, change and revoke. Every route here is under [`crate::access::OWNER_PREFIX`],
-//! which [`crate::access::authenticate`] opens to the owner secret alone, so a handler is only
-//! ever reached by the owner.
+//! which [`crate::access::admit`] opens to the owner secret alone, so a handler is only ever
+//! reached by the owner. No answer here is stored by a cache.
 
-use serde::Deserialize;
-use serde::de::DeserializeOwned;
+use std::time::{Duration, UNIX_EPOCH};
+
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use univ_model::api::keys::{
-    IssueKey, IssuedKey, KeyChange, KeyList, KeyRecord, QuotaChange, Quotas, RateLimitTier,
+    IssueKey, IssuedKey, KeyChange, KeyList, KeyRecord, MAX_QUOTA, QuotaChange, Quotas,
+    RateLimitTier,
 };
+use univ_model::encoding::hex;
 
 use crate::access::sha256_hex;
 use crate::backend::{Backend, rows_as};
-use crate::clock::rfc3339;
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 
-/// The columns of a key row, as [`record`] reads them.
+/// The columns of a key row, as [`KeyRow`] reads them.
 const COLUMNS: &str = "id, label, issued_at, revoked_at, layers_per_key, items_per_layer, \
                        bytes_per_item_version, tier";
 
@@ -25,8 +27,8 @@ const COLUMNS: &str = "id, label, issued_at, revoked_at, layers_per_key, items_p
 ///
 /// # Errors
 ///
-/// A problem answer: the body not a key to issue (400), or the database or the source of
-/// randomness failing.
+/// A problem answer: the body not a key to issue, or a quota above 2^53 − 1 (400), or the
+/// database or the source of randomness failing.
 #[utoipa::path(
     post,
     path = "/v1/owner/keys",
@@ -35,12 +37,22 @@ const COLUMNS: &str = "id, label, issued_at, revoked_at, layers_per_key, items_p
     responses((status = 201, description = "The key issued, with its secret", body = IssuedKey))
 )]
 pub async fn issue<B: Backend>(request: &Request, backend: &B) -> Result<Response, Problem> {
-    let asked: IssueKey = body(request)?;
-    let quotas = apply(Quotas::default(), asked.quotas);
-    let tier = asked.tier.unwrap_or_default();
+    let asked: IssueKey = request.json()?;
+    let quotas = bounded(asked.quotas)?;
+    let quotas = Quotas {
+        layers_per_key: quotas
+            .layers_per_key
+            .unwrap_or(Quotas::default().layers_per_key),
+        items_per_layer: quotas
+            .items_per_layer
+            .unwrap_or(Quotas::default().items_per_layer),
+        bytes_per_item_version: quotas
+            .bytes_per_item_version
+            .unwrap_or(Quotas::default().bytes_per_item_version),
+    };
     let id = format!("key_{}", hex(&random::<8>(backend)?));
     let secret = format!("univ_{}", hex(&random::<32>(backend)?));
-    let issued_at = rfc3339(backend.now_millis());
+    let issued_at = now(backend);
     backend
         .layers(
             "INSERT INTO keys (id, label, secret_sha256, issued_at, layers_per_key, \
@@ -54,7 +66,7 @@ pub async fn issue<B: Backend>(request: &Request, backend: &B) -> Result<Respons
                 json!(quotas.layers_per_key),
                 json!(quotas.items_per_layer),
                 json!(quotas.bytes_per_item_version),
-                json!(tier.as_str()),
+                json!(asked.tier),
             ],
         )
         .await?;
@@ -65,11 +77,11 @@ pub async fn issue<B: Backend>(request: &Request, backend: &B) -> Result<Respons
             issued_at,
             revoked_at: None,
             quotas,
-            tier,
+            tier: asked.tier,
         },
         secret,
     };
-    Ok(Response::json_with_status(201, &issued)?.with_header("cache-control", "no-store"))
+    unstored(201, &issued)
 }
 
 /// Lists every key issued, revoked ones included, without their secrets.
@@ -94,15 +106,15 @@ pub async fn list<B: Backend>(backend: &B) -> Result<Response, Problem> {
         .into_iter()
         .map(KeyRow::record)
         .collect();
-    Ok(Response::json(&KeyList { keys })?.with_header("cache-control", "no-store"))
+    unstored(200, &KeyList { keys })
 }
 
 /// Changes a key's label, quotas or tier, which apply from its next request.
 ///
 /// # Errors
 ///
-/// A problem answer: no key of that id (404), the body not a change (400), or the database
-/// failing.
+/// A problem answer: no key of that id (404), the body not a change or a quota above
+/// 2^53 − 1 (400), or the database failing.
 #[utoipa::path(
     patch,
     path = "/v1/owner/keys/{id}",
@@ -116,27 +128,28 @@ pub async fn change<B: Backend>(
     id: &str,
     backend: &B,
 ) -> Result<Response, Problem> {
-    let asked: KeyChange = body(request)?;
-    let key = find(backend, id).await?;
-    let quotas = apply(key.quotas, asked.quotas);
-    let tier = asked.tier.unwrap_or(key.tier);
-    let label = asked.label.unwrap_or(key.label);
-    backend
+    let asked: KeyChange = request.json()?;
+    let quotas = bounded(asked.quotas)?;
+    let rows = backend
         .layers(
-            "UPDATE keys SET label = ?2, layers_per_key = ?3, items_per_layer = ?4, \
-             bytes_per_item_version = ?5, tier = ?6 WHERE id = ?1",
+            &format!(
+                "UPDATE keys SET label = COALESCE(?2, label), \
+                 layers_per_key = COALESCE(?3, layers_per_key), \
+                 items_per_layer = COALESCE(?4, items_per_layer), \
+                 bytes_per_item_version = COALESCE(?5, bytes_per_item_version), \
+                 tier = COALESCE(?6, tier) WHERE id = ?1 RETURNING {COLUMNS}"
+            ),
             &[
                 json!(id),
-                json!(label),
+                json!(asked.label),
                 json!(quotas.layers_per_key),
                 json!(quotas.items_per_layer),
                 json!(quotas.bytes_per_item_version),
-                json!(tier.as_str()),
+                json!(asked.tier),
             ],
         )
         .await?;
-    let key = find(backend, id).await?;
-    Ok(Response::json(&key)?.with_header("cache-control", "no-store"))
+    unstored(200, &the_key(rows, id)?)
 }
 
 /// Revokes a key: it is refused from the next request on, and its revocation time recorded.
@@ -153,15 +166,16 @@ pub async fn change<B: Backend>(
     responses((status = 200, description = "The key as revoked", body = KeyRecord))
 )]
 pub async fn revoke<B: Backend>(id: &str, backend: &B) -> Result<Response, Problem> {
-    find(backend, id).await?;
-    backend
+    let rows = backend
         .layers(
-            "UPDATE keys SET revoked_at = ?2 WHERE id = ?1 AND revoked_at IS NULL",
-            &[json!(id), json!(rfc3339(backend.now_millis()))],
+            &format!(
+                "UPDATE keys SET revoked_at = COALESCE(revoked_at, ?2) WHERE id = ?1 \
+                 RETURNING {COLUMNS}"
+            ),
+            &[json!(id), json!(now(backend))],
         )
         .await?;
-    let key = find(backend, id).await?;
-    Ok(Response::json(&key)?.with_header("cache-control", "no-store"))
+    unstored(200, &the_key(rows, id)?)
 }
 
 /// A key row as stored.
@@ -194,14 +208,8 @@ impl KeyRow {
     }
 }
 
-/// Key `id`, or a 404 naming it.
-async fn find<B: Backend>(backend: &B, id: &str) -> Result<KeyRecord, Problem> {
-    let rows = backend
-        .layers(
-            &format!("SELECT {COLUMNS} FROM keys WHERE id = ?1"),
-            &[json!(id)],
-        )
-        .await?;
+/// The one key `rows` hold, or a 404 naming `id`.
+fn the_key(rows: Vec<crate::Row>, id: &str) -> Result<KeyRecord, Problem> {
     rows_as::<KeyRow>(rows)?
         .pop()
         .map(KeyRow::record)
@@ -214,25 +222,36 @@ async fn find<B: Backend>(backend: &B, id: &str) -> Result<KeyRecord, Problem> {
         })
 }
 
-/// `quotas` with each quota `change` names set.
-fn apply(quotas: Quotas, change: QuotaChange) -> Quotas {
-    Quotas {
-        layers_per_key: change.layers_per_key.unwrap_or(quotas.layers_per_key),
-        items_per_layer: change.items_per_layer.unwrap_or(quotas.items_per_layer),
-        bytes_per_item_version: change
-            .bytes_per_item_version
-            .unwrap_or(quotas.bytes_per_item_version),
+/// The quotas asked, or a 400 naming the first above [`MAX_QUOTA`], which neither D1 nor a
+/// JSON client would carry exactly.
+fn bounded(quotas: QuotaChange) -> Result<QuotaChange, Problem> {
+    for (name, quota) in [
+        ("layers_per_key", quotas.layers_per_key),
+        ("items_per_layer", quotas.items_per_layer),
+        ("bytes_per_item_version", quotas.bytes_per_item_version),
+    ] {
+        if let Some(quota) = quota.filter(|quota| *quota > MAX_QUOTA) {
+            return Err(Problem::new(
+                ProblemType::InvalidBody,
+                format!("The quota {name} is {quota}; a quota is at most {MAX_QUOTA}."),
+            )
+            .with("quota", name)
+            .with("limit", MAX_QUOTA));
+        }
     }
+    Ok(quotas)
 }
 
-/// The request's JSON body as a `T`, or a 400 naming what is wrong with it.
-fn body<T: DeserializeOwned>(request: &Request) -> Result<T, Problem> {
-    serde_json::from_slice(&request.body).map_err(|error| {
-        Problem::new(
-            ProblemType::InvalidBody,
-            format!("The body is not what this route takes: {error}."),
-        )
-    })
+/// `value` as JSON with `status`, kept by no cache: owner answers are the owner's alone, and
+/// an issued key's carries its secret.
+fn unstored(status: u16, value: &impl Serialize) -> Result<Response, Problem> {
+    Ok(Response::json_with_status(status, value)?.with_header("cache-control", "no-store"))
+}
+
+/// The time now, as RFC 3339 UTC to the millisecond.
+fn now(backend: &impl Backend) -> String {
+    humantime::format_rfc3339_millis(UNIX_EPOCH + Duration::from_millis(backend.now_millis()))
+        .to_string()
 }
 
 /// `N` bytes from the backend's source of randomness.
@@ -240,12 +259,4 @@ fn random<const N: usize>(backend: &impl Backend) -> Result<[u8; N], Problem> {
     let mut bytes = [0_u8; N];
     backend.random(&mut bytes)?;
     Ok(bytes)
-}
-
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().fold(String::new(), |mut hex, byte| {
-        use std::fmt::Write;
-        let _ = write!(hex, "{byte:02x}");
-        hex
-    })
 }

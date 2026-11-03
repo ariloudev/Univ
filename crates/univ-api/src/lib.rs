@@ -7,7 +7,6 @@
 mod access;
 mod backend;
 mod bulk;
-mod clock;
 mod cors;
 mod grids;
 mod http;
@@ -27,13 +26,19 @@ mod structures;
 #[cfg(test)]
 mod testkit;
 
-pub use access::Caller;
 pub use backend::{Backend, BackendError, Limiter, Row};
 pub use http::{Body, Method, Request, Response};
 pub use kept::Kept;
 pub use openapi::document;
 pub use problem::{Problem, ProblemType};
 pub use routes::{ROUTES, Route};
+
+/// The univ-layers database's migrations, in order, as `migrations/` holds them and Wrangler
+/// applies them.
+pub const MIGRATIONS: [&str; 2] = [
+    include_str!("../migrations/0001_schema_version.sql"),
+    include_str!("../migrations/0002_keys.sql"),
+];
 
 /// The answer to a request the runtime failed to hand over or to answer, such as a body that
 /// could not be read: a problem, with the CORS headers every response carries.
@@ -51,9 +56,9 @@ pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
     let response = if request.method == Method::Options {
         cors::preflight()
     } else {
-        match admit(request, backend).await {
-            Ok(()) => routes::dispatch(request, backend).await,
-            Err(problem) => refusal(problem),
+        match access::admit(request, backend).await {
+            Ok(_) => routes::dispatch(request, backend).await,
+            Err(problem) => problem.into_response(),
         }
     };
     let response = if request.method == Method::Head {
@@ -71,27 +76,6 @@ pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
         response
     };
     cors::allow_any_origin(response)
-}
-
-/// Authenticates the request, then counts it against its caller's rate limit.
-async fn admit<B: Backend>(request: &Request, backend: &B) -> Result<(), Problem> {
-    let caller = access::authenticate(request, backend).await?;
-    access::limit(&caller, backend).await
-}
-
-/// A refusal of [`admit`]: a 429 tells the client when to try again (RFC 6585 §4), and a 401
-/// names the scheme the request must use (RFC 9110 §11.6.1).
-fn refusal(problem: Problem) -> Response {
-    let status = problem.kind.status();
-    let response = problem.into_response();
-    match status {
-        429 => response.with_header(
-            "retry-after",
-            &univ_model::api::keys::RATE_WINDOW_SECONDS.to_string(),
-        ),
-        401 => response.with_header("www-authenticate", "Bearer"),
-        _ => response,
-    }
 }
 
 #[cfg(test)]

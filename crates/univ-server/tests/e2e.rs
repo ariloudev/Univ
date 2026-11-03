@@ -7,44 +7,11 @@
     reason = "test helpers unwrap: a failure there is the test failing"
 )]
 
-use std::sync::LazyLock;
+mod common;
 
-use reqwest::blocking::{Client, Response};
+use common::{BASE, CLIENT, get, header, json, url};
 use reqwest::{Method, StatusCode};
 use serde_json::Value;
-
-/// The Worker's base URL, as `cargo xtask integration` gives it.
-static BASE: LazyLock<String> = LazyLock::new(|| {
-    std::env::var("UNIV_E2E_URL")
-        .expect("UNIV_E2E_URL names the Worker: run `cargo xtask integration`")
-});
-
-/// One client for every test, which follows no redirect so that a test sees it.
-static CLIENT: LazyLock<Client> = LazyLock::new(|| {
-    Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .unwrap()
-});
-
-fn url(path: &str) -> String {
-    format!("{}{path}", *BASE)
-}
-
-fn get(path: &str) -> Response {
-    CLIENT.get(url(path)).send().unwrap()
-}
-
-fn header<'a>(response: &'a Response, name: &str) -> Option<&'a str> {
-    response
-        .headers()
-        .get(name)
-        .map(|value| value.to_str().unwrap())
-}
-
-fn json(response: Response) -> Value {
-    serde_json::from_slice(&response.bytes().unwrap()).unwrap()
-}
 
 #[test]
 #[ignore = "needs the Worker: run `cargo xtask integration`"]

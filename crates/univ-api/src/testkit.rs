@@ -77,6 +77,21 @@ impl Sqlite {
         block_on(crate::handle(request, self))
     }
 
+    /// The answer to `request` sent with the owner secret, and its JSON document.
+    pub fn as_owner(&self, request: Request) -> (Response, Value) {
+        let response = self.answer(&request.with_bearer(OWNER_SECRET));
+        let document = body(&response);
+        (response, document)
+    }
+
+    /// Issues a key as `json` asks, as the owner, and gives the issued key with its secret.
+    pub fn issue(&self, json: &Value) -> Value {
+        let (response, issued) =
+            self.as_owner(Request::new(Method::Post, "/v1/owner/keys").with_json(json));
+        assert_eq!(response.status, 201, "{issued}");
+        issued
+    }
+
     /// The answer to a GET of `path` with the raw query `query`.
     pub fn get(&self, path: &str, query: &str) -> Response {
         let mut request = Request::new(Method::Get, path);
@@ -123,7 +138,7 @@ impl Backend for Sqlite {
         params: &[Value],
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>> {
         self.statements.set(self.statements.get() + 1);
-        std::future::ready(self.query(sql, params))
+        std::future::ready(run(&self.connection, sql, params))
     }
 
     fn releases_batch(
@@ -134,7 +149,7 @@ impl Backend for Sqlite {
         std::future::ready(
             statements
                 .iter()
-                .map(|(sql, params)| self.query(sql, params))
+                .map(|(sql, params)| run(&self.connection, sql, params))
                 .collect(),
         )
     }
@@ -197,20 +212,10 @@ pub const OWNER_SECRET: &str = "the-owner-secret";
 /// The univ-layers database in memory, with every migration of `migrations/` applied.
 fn layers_database() -> rusqlite::Connection {
     let connection = rusqlite::Connection::open_in_memory().unwrap();
-    for migration in [
-        include_str!("../migrations/0001_schema_version.sql"),
-        include_str!("../migrations/0002_keys.sql"),
-    ] {
+    for migration in crate::MIGRATIONS {
         connection.execute_batch(migration).unwrap();
     }
     connection
-}
-
-impl Sqlite {
-    /// Runs one statement, as D1 would, and gives every row.
-    fn query(&self, sql: &str, params: &[Value]) -> Result<Vec<Row>, BackendError> {
-        run(&self.connection, sql, params)
-    }
 }
 
 /// Runs one statement on `connection`, as D1 would, and gives every row.
@@ -219,28 +224,26 @@ fn run(
     sql: &str,
     params: &[Value],
 ) -> Result<Vec<Row>, BackendError> {
-    {
-        let error = |error: rusqlite::Error| BackendError(error.to_string());
-        let mut statement = connection.prepare(sql).map_err(error)?;
-        let names: Vec<String> = statement
-            .column_names()
-            .iter()
-            .map(|name| (*name).to_owned())
-            .collect();
-        let params: Vec<rusqlite::types::Value> = params.iter().map(sql_value).collect();
-        let mut rows = statement
-            .query(rusqlite::params_from_iter(params))
-            .map_err(error)?;
-        let mut out = Vec::new();
-        while let Some(row) = rows.next().map_err(error)? {
-            let mut fields = Row::new();
-            for (i, name) in names.iter().enumerate() {
-                fields.insert(name.clone(), json_value(row.get_ref(i).map_err(error)?));
-            }
-            out.push(fields);
+    let error = |error: rusqlite::Error| BackendError(error.to_string());
+    let mut statement = connection.prepare(sql).map_err(error)?;
+    let names: Vec<String> = statement
+        .column_names()
+        .iter()
+        .map(|name| (*name).to_owned())
+        .collect();
+    let params: Vec<rusqlite::types::Value> = params.iter().map(sql_value).collect();
+    let mut rows = statement
+        .query(rusqlite::params_from_iter(params))
+        .map_err(error)?;
+    let mut out = Vec::new();
+    while let Some(row) = rows.next().map_err(error)? {
+        let mut fields = Row::new();
+        for (i, name) in names.iter().enumerate() {
+            fields.insert(name.clone(), json_value(row.get_ref(i).map_err(error)?));
         }
-        Ok(out)
+        out.push(fields);
     }
+    Ok(out)
 }
 
 /// A bound parameter as SQLite takes it, the way D1 binds JSON values.

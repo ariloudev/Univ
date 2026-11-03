@@ -24,6 +24,15 @@ blocks:
         title: "Platform: layers database, randomness, clock, limiters, owner secret"
         detail: "The backend gains the univ-layers database, random bytes, the time, the rate limiters and the owner secret; the Worker binds them, and the test kit gives deterministic stand-ins. Done when native tests run through them."
         state: active
+      - key: 01a1a3b3-55ff-7441-b7da-895e21003fb5
+        at: 2026-11-03T23:16:41Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Platform: layers database, randomness, clock, limiters, owner secret"
+        detail: "The backend gains `layers`, `random` (getrandom `wasm_js` in the Worker), `now_millis`, `limit` (the ANON, BASIC, STANDARD and EXTENDED bindings) and `owner_secret`. The test kit gives deterministic stand-ins, and migration 0002 adds `keys`."
+        state: done
   - key: 01a1a3ab-a8c7-73ad-a8eb-40a4396df6e7
     id: t4-owner
     kind: task
@@ -37,6 +46,15 @@ blocks:
         title: "Owner key operations"
         detail: "Issue (a 256-bit secret, returned once, stored only as its SHA-256; default quotas and the standard tier), list (no secret), change quotas and tier, revoke (with time); 401 without the owner secret, changing nothing. Done when native tests cover AC-265 to AC-269, AC-272 and the tier-default criterion."
         state: open
+      - key: 01a1a3b3-55ff-7441-b7da-895f80b54b7f
+        at: 2026-11-03T23:16:41Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Owner key operations"
+        detail: "Issue, list, change and revoke under /v1/owner/keys, documented in OpenAPI with an `owner` bearer scheme. The secret is compared in constant time."
+        state: done
   - key: 01a1a3ab-a8c7-73ad-a8eb-40a580b75ca1
     id: t4-auth
     kind: task
@@ -50,6 +68,15 @@ blocks:
         title: "API key authentication"
         detail: "A bearer key on any request is checked against its stored SHA-256 before the request is handled; an unknown or revoked key gets the same 401. Done when native tests cover AC-277 to AC-280."
         state: open
+      - key: 01a1a3b3-55ff-7441-b7da-8960f5397beb
+        at: 2026-11-03T23:16:41Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "API key authentication"
+        detail: "`access::authenticate` runs before routing. An unknown and a revoked key get identical 401s, with `WWW-Authenticate: Bearer`."
+        state: done
   - key: 01a1a3ab-a8c7-73ad-a8eb-40a609899f9d
     id: t4-limits
     kind: task
@@ -63,6 +90,15 @@ blocks:
         title: "Rate limits by address and by tier"
         detail: "Anonymous requests by client address at 300 per 60 s; keyed requests by key at the tier's rate (basic 300, standard 1,200, extended 6,000), changed from the next request; 429 with Retry-After. Done when native tests cover AC-261 to AC-263 and the tier criteria, and an e2e test gets a real 429."
         state: open
+      - key: 01a1a3b3-55ff-7441-b7da-89610fafac6e
+        at: 2026-11-03T23:16:41Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Rate limits by address and by tier"
+        detail: "The tier is read from the key's row on every request, so a change applies from the next one. The 429 carries `Retry-After: 60`. 120 univ-api tests pass."
+        state: done
   - key: 01a1a3ab-a8c7-73ad-a8eb-40a7ebb533a1
     id: t4-e2e
     kind: task
@@ -76,6 +112,15 @@ blocks:
         title: "W4 end-to-end tests"
         detail: "Issue a key, read with it, revoke it and get 401; the owner operations refused without the secret; a 429 from the real binding."
         state: open
+      - key: 01a1a3b3-55ff-7441-b7da-89629b809165
+        at: 2026-11-03T23:16:41Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W4 end-to-end tests"
+        detail: "`crates/univ-server/tests/access.rs`: a key's whole life, owner refusals, and a real 429 on a basic key's 301st request. The anonymous address budget is left to the other e2e tests (about 50 requests). These run in the wave-end integration run."
+        state: done
   - key: 01a1a3ab-a8c7-73ad-a8eb-40a857c8af2e
     id: w4-deferred
     kind: note

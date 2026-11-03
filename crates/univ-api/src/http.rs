@@ -67,10 +67,44 @@ impl Request {
         }
     }
 
+    /// The request with one more header.
+    #[must_use]
+    pub fn with_header(mut self, name: &str, value: &str) -> Self {
+        self.headers.push((name.to_owned(), value.to_owned()));
+        self
+    }
+
+    /// The request with `Authorization: Bearer <token>`.
+    #[must_use]
+    pub fn with_bearer(self, token: &str) -> Self {
+        self.with_header("authorization", &format!("Bearer {token}"))
+    }
+
+    /// The request with `json` as its body.
+    #[must_use]
+    pub fn with_json(mut self, json: &serde_json::Value) -> Self {
+        self.body = json.to_string().into_bytes();
+        self.with_header("content-type", "application/json")
+    }
+
     /// The value of the first header of that name, compared without regard to case.
     #[must_use]
     pub fn header(&self, name: &str) -> Option<&str> {
         find_header(&self.headers, name)
+    }
+
+    /// The JSON body as a `T`.
+    ///
+    /// # Errors
+    ///
+    /// A 400 problem saying what is wrong with the body.
+    pub fn json<T: serde::de::DeserializeOwned>(&self) -> Result<T, crate::Problem> {
+        serde_json::from_slice(&self.body).map_err(|error| {
+            crate::Problem::new(
+                crate::ProblemType::InvalidBody,
+                format!("The body is not what this route takes: {error}."),
+            )
+        })
     }
 
     /// The decoded value of the first query parameter of that name, as a form encodes it:

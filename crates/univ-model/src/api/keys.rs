@@ -4,7 +4,7 @@
 use serde::{Deserialize, Serialize};
 
 /// A key's rate-limit tier: how many requests it may make in 60 seconds.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RateLimitTier {
@@ -27,16 +27,6 @@ impl RateLimitTier {
             Self::Extended => 6_000,
         }
     }
-
-    /// The tier's name as stored and served.
-    #[must_use]
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Basic => "basic",
-            Self::Standard => "standard",
-            Self::Extended => "extended",
-        }
-    }
 }
 
 /// The window every rate limit counts requests over.
@@ -44,6 +34,10 @@ pub const RATE_WINDOW_SECONDS: u32 = 60;
 
 /// The requests an anonymous client address may make in [`RATE_WINDOW_SECONDS`].
 pub const ANONYMOUS_REQUESTS: u32 = 300;
+
+/// The largest quota a key can be given: 2^53 − 1, the largest integer every JSON client and
+/// D1 carry exactly.
+pub const MAX_QUOTA: u64 = (1 << 53) - 1;
 
 /// A key's quotas.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -88,7 +82,7 @@ pub struct IssueKey {
     pub quotas: QuotaChange,
     /// The tier; the standard tier where absent.
     #[serde(default)]
-    pub tier: Option<RateLimitTier>,
+    pub tier: RateLimitTier,
 }
 
 /// What the owner asks to change of a key.
