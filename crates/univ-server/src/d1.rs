@@ -56,6 +56,28 @@ async fn all(database: &D1Database, sql: &str, params: &[Value]) -> Result<Vec<R
         .map_err(error)
 }
 
+/// Every row of each of `statements`, run on `database` as one batch: one transaction.
+async fn batch(
+    database: &D1Database,
+    statements: &[(&str, &[Value])],
+) -> Result<Vec<Vec<Row>>, BackendError> {
+    let prepared = statements
+        .iter()
+        .map(|(sql, params)| {
+            let params: Vec<JsValue> = params.iter().map(js_value).collect();
+            database.prepare(*sql).bind(&params)
+        })
+        .collect::<worker::Result<Vec<_>>>()
+        .map_err(failed)?;
+    database
+        .batch(prepared)
+        .await
+        .map_err(failed)?
+        .iter()
+        .map(|result| result.results().map_err(failed))
+        .collect()
+}
+
 impl Backend for D1 {
     async fn releases(&self, sql: &str, params: &[Value]) -> Result<Vec<Row>, BackendError> {
         all(&self.database(RELEASES)?, sql, params).await
@@ -63,6 +85,13 @@ impl Backend for D1 {
 
     async fn layers(&self, sql: &str, params: &[Value]) -> Result<Vec<Row>, BackendError> {
         all(&self.database(LAYERS)?, sql, params).await
+    }
+
+    async fn layers_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> Result<Vec<Vec<Row>>, BackendError> {
+        batch(&self.database(LAYERS)?, statements).await
     }
 
     fn random(&self, bytes: &mut [u8]) -> Result<(), BackendError> {
@@ -103,23 +132,7 @@ impl Backend for D1 {
         &self,
         statements: &[(&str, &[Value])],
     ) -> Result<Vec<Vec<Row>>, BackendError> {
-        let error = failed;
-        let releases = self.database(RELEASES)?;
-        let prepared = statements
-            .iter()
-            .map(|(sql, params)| {
-                let params: Vec<JsValue> = params.iter().map(js_value).collect();
-                releases.prepare(*sql).bind(&params)
-            })
-            .collect::<worker::Result<Vec<_>>>()
-            .map_err(error)?;
-        releases
-            .batch(prepared)
-            .await
-            .map_err(error)?
-            .iter()
-            .map(|result| result.results().map_err(error))
-            .collect()
+        batch(&self.database(RELEASES)?, statements).await
     }
 
     async fn blob(&self, key: &str) -> Result<Option<Vec<u8>>, BackendError> {

@@ -1,0 +1,199 @@
+key: 01a1a3c8-77e1-7419-bfa1-5c20eb7727f6
+id: w5
+versions:
+  - key: 01a1a3c8-77e1-7419-bfa1-5c2a72d665dc
+    at: 2026-11-03T23:39:46Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W5: layers"
+    goal: "Keys create, configure and retire layers; publish, revise and retract items with validated geometry, time records, links and sources; anyone allowed reads layers and items, and follows each layer's changes with cursors and entity tags; quotas are enforced (F-23 to F-27, the rest of F-28 and F-29)"
+    status: active
+blocks:
+  - key: 01a1a3c8-77e1-7419-bfa1-5c222c8fcbf1
+    id: t5-schema
+    kind: task
+    versions:
+      - key: 01a1a3c8-77e1-7419-bfa1-5c2c43677ec6
+        at: 2026-11-03T23:39:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Layers schema and caller in handlers"
+        detail: "Migration 0003 adds `layers`, `items`, `item_versions` and `changes`; handlers receive the authenticated caller; a request body is read only after authentication. Done when the native tests run on the new schema."
+        state: active
+      - key: 01a1a3ce-7be9-706e-bf56-0e760d09a793
+        at: 2026-11-03T23:46:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Layers schema and caller in handlers"
+        detail: "Migration 0003 adds `layers`, `items`, `item_versions` and `changes`. `univ_api::admit` and `answer` split, so the Worker reads a write's body only once the request is admitted, and every handler gets the caller. `layers_batch` runs a write's statements as one D1 batch."
+        state: done
+  - key: 01a1a3c8-77e1-7419-bfa1-5c23b842b3a4
+    id: t5-layers
+    kind: task
+    versions:
+      - key: 01a1a3c8-77e1-7419-bfa1-5c2dafb39b94
+        at: 2026-11-03T23:39:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Create, configure, retire and list layers"
+        detail: "Private by default, sequence from 0, 403/404 for another key, 410 with the retirement time for a reader allowed to read it, a retired layer leaving the key's layer quota. Done when native tests cover F-23 and read-a-layer's listing."
+        state: open
+  - key: 01a1a3c8-77e1-7419-bfa1-5c246f723390
+    id: t5-items
+    kind: task
+    versions:
+      - key: 01a1a3c8-77e1-7419-bfa1-5c2ec90086a7
+        at: 2026-11-03T23:39:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Publish, revise and retract items"
+        detail: "Validation by JSON pointer, 422 without a source, 409 on a used id or a stale version, links checked against every release's issued ids and structures, quotas on items and bytes. Done when native tests cover F-25 and F-26, with time records once the time questions are answered."
+        state: open
+  - key: 01a1a3c8-77e1-7419-bfa1-5c254ed367f0
+    id: t5-reads
+    kind: task
+    versions:
+      - key: 01a1a3c8-77e1-7419-bfa1-5c2f18b9ea84
+        at: 2026-11-03T23:39:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Read layers, items and versions; follow changes"
+        detail: "Pages of 500 items and 1,000 changes, cursors, entity tags and 304, a private layer answering exactly as one that does not exist. Done when native tests cover read-a-layer and F-24."
+        state: open
+  - key: 01a1a3c8-77e1-7419-bfa1-5c2687458f71
+    id: t5-time
+    kind: task
+    versions:
+      - key: 01a1a3c8-77e1-7419-bfa1-5c30668fa777
+        at: 2026-11-03T23:39:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Time records"
+        detail: "Kind, timescale and uncertainty, validated and stored on TT for W6's filter, as the questions below settle. Done when native tests cover the time-record criteria with cited conversions."
+        state: open
+      - key: 01a1a3ce-7be9-706e-bf56-0e77adb40682
+        at: 2026-11-03T23:46:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Time records"
+        detail: "Kind, timescale and uncertainty, validated and stored on TT for W6's filter, as decided: UTC from 1961 via the cited IERS tables, and a calendar instant or years before J2000.0. Done when native tests cover the time-record criteria with cited conversions."
+        state: active
+  - key: 01a1a3c8-77e1-7419-bfa1-5c27f576c53a
+    id: t5-e2e
+    kind: task
+    versions:
+      - key: 01a1a3c8-77e1-7419-bfa1-5c31ad580fc0
+        at: 2026-11-03T23:39:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W5 end-to-end tests"
+        detail: "Publish, revise, retract and follow the changes through the Worker; an entity tag answers 304; a private layer looks absent; a quota refused."
+        state: open
+  - key: 01a1a3c8-77e1-7419-bfa1-5c2818a6e8f9
+    id: q-utc-1972
+    kind: question
+    versions:
+      - key: 01a1a3c8-77e1-7419-bfa1-5c325128f53d
+        at: 2026-11-03T23:39:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "How should a time given in UTC before 1972 be treated?"
+        header: "UTC < 1972"
+        context: "Time records come in UTC or TT and are compared on TT (filter-by-time). Since 1972, TT − UTC is 32.184 s plus a whole number of leap seconds, from IERS Bulletin C. From 1961 to 1971, UTC ran with \"rubber seconds\": TAI − UTC was an offset plus a drift, both stepping several times. USNO's `tai-utc.dat` table gives them. Before 1961 there is no UTC, only UT (GMT); a historical date such as Tycho's supernova of 1572 is not a UTC time at all. Turning UT into TT needs ΔT, which comes from a model and carries its own uncertainty."
+        options:
+          - label: "UTC from 1961, table"
+            detail: "Accept UTC from 1961-01-01 on. Convert 1961–1971 with USNO's cited offset-and-drift table, and 1972 on with the leap-second table. Refuse UTC before 1961 with a 400 that says to give the time in TT. Every conversion is exact and cited. Historical dates need the client to apply ΔT itself and send TT."
+            recommended: true
+          - label: "UTC from 1972 only"
+            detail: "Accept UTC only from 1972-01-01, and refuse anything earlier with a 400 that says to give it in TT. This is the simplest and is exact, but it also turns away the 1960s, where UTC is well defined."
+          - label: "Add UT with a ΔT model"
+            detail: "Also accept UT as a third timescale for dates before 1961. Convert it to TT with a cited ΔT model (Morrison & Stephenson 2004 / Espenak & Meeus 2006), adding ΔT's uncertainty to the record's. This is the most convenient for historical events, but it is a spec change (the first version names only UTC and TT), and a modelled value would sit beside measured ones."
+    responses:
+      - key: 01a1a3cc-740f-7408-baa8-dd387d926150
+        at: 2026-11-03T23:44:07Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "UTC from 1961, table"
+  - key: 01a1a3c8-77e1-7419-bfa1-5c297e06cc06
+    id: q-time-form
+    kind: question
+    versions:
+      - key: 01a1a3c8-77e1-7419-bfa1-5c339a7c3e99
+        at: 2026-11-03T23:39:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "How should a time record write its time, given that source events can lie billions of years in the past?"
+        header: "Time form"
+        context: "A time record has a kind (source event, arrival or discovery), a timescale and an uncertainty. Arrivals and discoveries are calendar instants, such as SN 1987A on 1987-02-23. A source event is the time the event itself happened, which for an extragalactic source is millions to billions of years before its arrival: GW170817 merged about 130 Myr before its signal reached us. ISO 8601 calendar strings cannot sensibly carry that. Whichever form is chosen, the server stores each time as TT days from J2000.0 for the time filter. A float64 keeps about 40 µs of precision today and about 0.1 day of precision 10 Gyr ago, far finer than any such uncertainty."
+        options:
+          - label: "Calendar or years before"
+            detail: "A time is either a calendar instant (ISO 8601 with its timescale, years 1–9999, to any fraction of a second) or a span of Julian years before J2000.0 on TT, for deep-past times. The uncertainty is an interval in the same form: seconds or days for an instant, years for a span. This reads naturally for both kinds and keeps a source event's age in its own units."
+            recommended: true
+          - label: "Julian Date only"
+            detail: "Every time is a TT Julian Date (a number of days), with UTC accepted only as an ISO 8601 string that is converted on input. It is uniform and exact, but a client must convert \"130 Myr before arrival\" into a negative JD of about −4.7×10¹⁰ itself, and records read awkwardly."
+          - label: "Calendar only"
+            detail: "Only ISO 8601 instants, so a source event earlier than year 1 cannot be recorded. That leaves a source event's time out for every extragalactic event, which defeats the source-event kind."
+    responses:
+      - key: 01a1a3cc-740f-7408-baa8-dd39a8a8d84a
+        at: 2026-11-03T23:44:07Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Calendar or years before"
+  - key: 01a1a3ce-7be9-706e-bf56-0e726c025fd4
+    id: d-utc-1961
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a3ce-7be9-706e-bf56-0e747c9ec114
+        at: 2026-11-03T23:46:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "UTC is accepted from 1961-01-01, converted with the cited TAI − UTC tables"
+        consequence: "Items and time queries convert UTC to TT exactly. 1961–1971 use the offset-and-drift rows of TAI − UTC, and 1972 on use the leap-second table, each from IERS and kept as a recorded file a test checks the code against. UTC before 1961, or after the leap-second table expires, is refused with a 400 that points at the field and says to give the time in TT. Historical dates are the client's to convert with ΔT."
+        question: 01a1a3c8-77e1-7419-bfa1-5c2818a6e8f9
+  - key: 01a1a3ce-7be9-706e-bf56-0e73339b1171
+    id: d-time-form
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1a3ce-7be9-706e-bf56-0e7581bb5005
+        at: 2026-11-03T23:46:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A time is a calendar instant or a span of Julian years before J2000.0"
+        consequence: "A time record is either an ISO 8601 instant (years 1–9999) in UTC or TT, or `years_before_j2000` on TT for the deep past. Its uncertainty names its unit (s, d or a), so a source event's age keeps its own units. The server stores each record's time and its uncertainty interval as TT days from J2000.0, ready for W6's time filter."
+        question: 01a1a3c8-77e1-7419-bfa1-5c297e06cc06

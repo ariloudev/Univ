@@ -170,6 +170,13 @@ impl Backend for Sqlite {
         std::future::ready(run(&self.layers, sql, params))
     }
 
+    fn layers_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>> {
+        std::future::ready(batch(&self.layers, statements))
+    }
+
     fn random(&self, bytes: &mut [u8]) -> Result<(), BackendError> {
         // Deterministic, so tests can name what they expect; never random.
         for byte in bytes {
@@ -216,6 +223,21 @@ fn layers_database() -> rusqlite::Connection {
         connection.execute_batch(migration).unwrap();
     }
     connection
+}
+
+/// Runs `statements` on `connection` in one transaction, as D1's batch does.
+fn batch(
+    connection: &rusqlite::Connection,
+    statements: &[(&str, &[Value])],
+) -> Result<Vec<Vec<Row>>, BackendError> {
+    let error = |error: rusqlite::Error| BackendError(error.to_string());
+    let transaction = connection.unchecked_transaction().map_err(error)?;
+    let rows = statements
+        .iter()
+        .map(|(sql, params)| run(&transaction, sql, params))
+        .collect::<Result<Vec<_>, _>>()?;
+    transaction.commit().map_err(error)?;
+    Ok(rows)
 }
 
 /// Runs one statement on `connection`, as D1 would, and gives every row.

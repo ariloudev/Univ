@@ -49,6 +49,13 @@ pub trait Backend {
         params: &[Value],
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
 
+    /// Runs several statements on the univ-layers database as one transaction, as D1's batch
+    /// does: all of them take effect, or, when one fails, none.
+    fn layers_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>>;
+
     /// Fills `bytes` from a cryptographically secure source of randomness.
     ///
     /// # Errors

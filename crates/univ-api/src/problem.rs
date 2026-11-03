@@ -64,6 +64,16 @@ problem_types! {
     Unauthorized = "urn:univ:problem:unauthorized", "Unauthorized", 401;
     /// The client made more requests than its rate limit allows in the window.
     RateLimited = "urn:univ:problem:rate-limited", "Too many requests", 429;
+    /// No layer has that id, or it is private to another key: the two answer alike.
+    LayerNotFound = "urn:univ:problem:layer-not-found", "No such layer", 404;
+    /// The layer holds no item of that id, or no version of that number.
+    ItemNotFound = "urn:univ:problem:item-not-found", "No such item", 404;
+    /// The layer was retired.
+    LayerRetired = "urn:univ:problem:layer-retired", "Layer retired", 410;
+    /// The layer belongs to another key, which alone may change it.
+    NotLayerOwner = "urn:univ:problem:not-layer-owner", "Not the layer's owner", 403;
+    /// The write would take the key beyond one of its quotas.
+    QuotaExceeded = "urn:univ:problem:quota-exceeded", "Quota exceeded", 403;
     /// The owner has issued no key of that id.
     KeyNotFound = "urn:univ:problem:key-not-found", "No such key", 404;
     /// A query parameter or path segment does not hold a value of its kind.

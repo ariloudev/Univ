@@ -19,5 +19,6 @@ pub mod position;
 pub mod redshift;
 pub mod release;
 pub mod tile;
+pub mod time;
 pub mod units;
 pub mod value;
