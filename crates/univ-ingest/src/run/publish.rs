@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 
 use crate::publish::{Store, StoreOptions, Wrangler, ingest_dir, prune, publish};
+use crate::release::release_dir;
 
 /// Where Wrangler keeps local D1 and R2 by default: what `wrangler dev` reads from the
 /// repository root.
@@ -91,10 +92,17 @@ pub fn prune_command(
     line: &mut dyn FnMut(String),
 ) -> Result<String, String> {
     let done = prune(store, number, options, line).map_err(|e| e.to_string())?;
+    let build = match &done.build {
+        Some(dir) => format!("its local build {} was deleted", dir.display()),
+        None => format!(
+            "no local build was left at {}",
+            release_dir(options.out, number).display()
+        ),
+    };
     if !done.listed {
         return Ok(format!(
             "Release {} was never listed in D1: the {} R2 keys its journal and manifest name \
-             were deleted at {}; latest points to {}",
+             were deleted at {}, and {build}; latest points to {}",
             done.number, done.files, done.pruned_at, done.latest
         ));
     }
@@ -104,8 +112,8 @@ pub fn prune_command(
         "pruned at"
     };
     Ok(format!(
-        "Release {} {when} {}: {} R2 files and {} rows deleted; it stays in the list of \
-         releases with its pruning time, and the id ledger is kept; latest points to {}",
+        "Release {} {when} {}: {} R2 files and {} rows deleted, and {build}; it stays in the \
+         list of releases with its pruning time, and the id ledger is kept; latest points to {}",
         done.number, done.pruned_at, done.files, done.rows, done.latest
     ))
 }

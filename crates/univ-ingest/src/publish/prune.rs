@@ -2,9 +2,12 @@
 //! pruning time recorded in the list of releases, which keeps it (AC-100), beside the id
 //! ledger, which is never pruned (AC-99). The release `latest` points to is refused (AC-101).
 //!
-//! The steps can run again: R2 files are deleted first, the manifest last among them, then
-//! the rows and the pruning time in one file, the time last; an interrupted prune is finished by
-//! the next, which keeps the first pruning time recorded.
+//! The steps can run again: R2 files are deleted first, all but the manifest in one batch and
+//! the manifest after them, then the rows and the pruning time in one file, the time last, then
+//! the release's local build in the build output, `releases/{n}`, and last its publish journal,
+//! which names its R2 files should the build's deletion fail. An interrupted prune is finished
+//! by the next, which keeps the first pruning time recorded. A local build already gone is no
+//! error.
 //!
 //! # Which R2 files a release has
 //!
@@ -16,7 +19,7 @@
 
 use std::collections::BTreeSet;
 use std::fmt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use univ_model::release::manifest::Target;
 use univ_model::release::{ReleaseManifest, Scope, TABLES, keys};
@@ -41,6 +44,8 @@ pub struct Pruned {
     pub files: usize,
     /// The rows of the release deleted from the tables of one release.
     pub rows: u64,
+    /// The release's local build in the build output, deleted; none when it was already gone.
+    pub build: Option<PathBuf>,
     /// Where `latest` points.
     pub latest: Latest,
 }
@@ -142,16 +147,47 @@ fn r2_keys(
     Ok((Some(found), any_journaled))
 }
 
-/// Deletes `keys`, the release's manifest last.
+/// Deletes `keys`: all but the release's manifest in one batch, then the manifest.
 fn delete_all(store: &mut dyn Store, number: u32, keys: &BTreeSet<String>) -> Result<(), String> {
     let manifest = keys::key(number, keys::MANIFEST);
-    for key in keys.iter().filter(|k| **k != manifest) {
-        store.delete(key)?;
-    }
+    let rest: Vec<String> = keys.iter().filter(|k| **k != manifest).cloned().collect();
+    store.delete_keys(&rest)?;
     if keys.contains(&manifest) {
         store.delete(&manifest)?;
     }
     Ok(())
+}
+
+/// Deletes release `number`'s local build in the build output `out`, giving its directory, or
+/// none when it was already gone.
+fn remove_build(out: &Path, number: u32) -> Result<Option<PathBuf>, String> {
+    let dir = release_dir(out, number);
+    match std::fs::remove_dir_all(&dir) {
+        Ok(()) => Ok(Some(dir)),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(format!("its local build {}: {e}", dir.display())),
+    }
+}
+
+/// Deletes release `number`'s local build, then its publish journal, with a line for the build.
+fn remove_build_and_journal(
+    options: &StoreOptions<'_>,
+    number: u32,
+    progress: &mut dyn FnMut(String),
+) -> Result<Option<PathBuf>, String> {
+    let build = remove_build(options.out, number)?;
+    progress(match &build {
+        Some(dir) => format!(
+            "release {number}: its local build {} deleted",
+            dir.display()
+        ),
+        None => format!(
+            "release {number}: no local build was left at {}",
+            release_dir(options.out, number).display()
+        ),
+    });
+    remove_journal(options.journals, number)?;
+    Ok(build)
 }
 
 /// The rows of release `number` in the tables of one release, as one sum of counts (D1 limits
@@ -199,14 +235,16 @@ pub fn prune(
              keys under {prefix} its journal and manifest name deleted",
             keys.len()
         ));
-        remove_journal(options.journals, number).map_err(failed)?;
+        let pruned_at = (options.now)();
+        let build = remove_build_and_journal(options, number, progress).map_err(failed)?;
         return Ok(Pruned {
             number,
-            pruned_at: (options.now)(),
+            pruned_at,
             listed: false,
             already: false,
             files: keys.len(),
             rows: 0,
+            build,
             latest,
         });
     }
@@ -253,7 +291,7 @@ pub fn prune(
     let pruned_at = after
         .pruned_at
         .ok_or_else(|| failed("D1 records no pruning time".to_owned()))?;
-    remove_journal(options.journals, number).map_err(failed)?;
+    let build = remove_build_and_journal(options, number, progress).map_err(failed)?;
     Ok(Pruned {
         number,
         pruned_at,
@@ -261,6 +299,7 @@ pub fn prune(
         already: status.pruned_at.is_some(),
         files,
         rows,
+        build,
         latest,
     })
 }
