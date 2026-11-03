@@ -1,0 +1,176 @@
+key: 01a1a37b-e1cc-72fb-b455-e1de339a49df
+id: w3
+versions:
+  - key: 01a1a37b-e1cd-74aa-b3eb-bdaec9ed41b0
+    at: 2026-11-03T22:16:07Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W3: bulk data and the TypeScript decoder"
+    goal: "Clients list scale domains, fetch their tile manifests and tiles straight from R2, fetch volume grids, read the tile format, and decode tiles with a reference TypeScript decoder (F-18, F-19, F-20, F-32)"
+    status: active
+  - key: 01a1a3aa-c51e-7306-8fd8-3242a9c8524f
+    at: 2026-11-03T23:07:20Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W3: bulk data and the TypeScript decoder"
+    goal: "Clients list scale domains, fetch their tile manifests and tiles straight from R2, fetch volume grids, read the tile format, and decode tiles with a reference TypeScript decoder (F-18, F-19, F-20, F-32)"
+    status: done
+blocks:
+  - key: 01a1a37b-e1cc-72fb-b455-e1e0cbc345f2
+    id: t3-format
+    kind: task
+    versions:
+      - key: 01a1a37b-e1cd-74aa-b3eb-bdb03974e904
+        at: 2026-11-03T22:16:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tile format in univ-model and the TypeScript decoder"
+        detail: "Delegated to a worktree agent. Scope: the tile manifest type moved into univ-model with its OpenAPI schema; a byte-layout description of each encoding version; `clients/tile-decoder` (`node --test`, no dependencies) with fixtures the Rust encoder writes; a gate in `cargo xtask check`. Done for AC-282 to AC-284 when the decoder's tests pass."
+        state: active
+      - key: 01a1a3aa-c51e-7306-8fd8-324085de2cc9
+        at: 2026-11-03T23:07:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tile format in univ-model and the TypeScript decoder"
+        detail: "Merged in 63e7dab. `univ_model::tile::manifest::TileManifest` round-trips ingest's manifests byte for byte (`float_roundtrip` enabled). `tile::format::layout` is tested against the encoder. `clients/tile-decoder` (no dependencies) passes 5 node tests, and decoding all 1,227 real nearby-galaxy points lands within half a step. Its gate is in `cargo xtask check`."
+        state: done
+  - key: 01a1a37b-e1cc-72fb-b455-e1e1519a0482
+    id: t3-blobs
+    kind: task
+    versions:
+      - key: 01a1a37b-e1cd-74aa-b3eb-bdb164f8aabd
+        at: 2026-11-03T22:16:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "R2 reads and streamed bodies"
+        detail: "The backend reads small R2 files (manifests, headers); a response can stream an R2 object without the Worker decoding it (AC-185). Done when native tests read from an in-memory bucket."
+        state: active
+      - key: 01a1a381-8e6d-7109-863a-3895b1606cdd
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "R2 reads and streamed bodies"
+        detail: "In 18670a3. `Body::Object(key)` is handed to the runtime as the R2 object's stream (`ObjectBody::response_body`), so the Worker never reads it (AC-185). `Backend::blob` reads small files such as manifests. One `Kept` store per isolate holds vocabularies and manifest nodes."
+        state: done
+  - key: 01a1a37b-e1cc-72fb-b455-e1e267d41352
+    id: t3-domains
+    kind: task
+    versions:
+      - key: 01a1a37b-e1cd-74aa-b3eb-bdb24428d5ee
+        at: 2026-11-03T22:16:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Scale domains and their tile manifests"
+        detail: "`GET /v1/scale-domains` and `/v1/scale-domains/{name}/manifest`, with a 404 that lists the domains. Done when native tests cover AC-166 to AC-174."
+        state: open
+      - key: 01a1a381-8e6d-7109-863a-38968911f130
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Scale domains and their tile manifests"
+        detail: "In 18670a3. The listing gives each domain's radius in its own unit; a manifest is served as published; an unknown domain gives 404 listing the domains. The manifest's contents (AC-168 to AC-173) are checked through the Worker by the e2e test, and by the format agent's round trip."
+        state: done
+  - key: 01a1a37b-e1cc-72fb-b455-e1e3b17d6884
+    id: t3-tiles
+    kind: task
+    versions:
+      - key: 01a1a37b-e1cd-74aa-b3eb-bdb3e8100f6a
+        at: 2026-11-03T22:16:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tiles streamed from R2"
+        detail: "`GET /v1/scale-domains/{name}/tiles/{address}`: only a node the manifest holds, immutable for a year, with an ETag from its SHA-256. Done when native tests cover AC-184 to AC-186 and an e2e test checks every fixture tile's SHA-256 (AC-183)."
+        state: open
+      - key: 01a1a381-8e6d-7109-863a-389793e4ac37
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tiles streamed from R2"
+        detail: "In 18670a3. A pinned tile is immutable for a year with its SHA-256 as ETag; an unpinned tile gets a no-store 302 to the pinned URL; an unknown node gives 404 naming its address; HEAD invents no length. The e2e test checks every fixture tile's SHA-256 (AC-183)."
+        state: done
+  - key: 01a1a37b-e1cc-72fb-b455-e1e487d01b15
+    id: t3-grids
+    kind: task
+    versions:
+      - key: 01a1a37b-e1cd-74aa-b3eb-bdb45dd20533
+        at: 2026-11-03T22:16:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Volume grids"
+        detail: "`GET /v1/grids`, `/v1/grids/{id}` (header) and `/v1/grids/{id}/fields/{field}` (samples streamed). Done when native tests cover AC-175 to AC-182."
+        state: open
+      - key: 01a1a381-8e6d-7109-863a-38982af55d5a
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Volume grids"
+        detail: "In 18670a3. The listing gives id, source, unit, shape and each field (index, quantity, kind, unit, samples path); the header and samples are streamed as published; fields are addressed by index because names repeat (two `basin_label` fields); an unknown grid or field gives 404 naming it. The fixture release holds no grid, so grid e2e checks are the listing and the 404."
+        state: done
+  - key: 01a1a37b-e1cc-72fb-b455-e1e5b291f426
+    id: t3-tile-format
+    kind: task
+    versions:
+      - key: 01a1a37b-e1cd-74aa-b3eb-bdb52b5a8c38
+        at: 2026-11-03T22:16:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "GET /v1/tile-format"
+        detail: "The tile manifest's schema and the byte layout of each encoding version the release uses (AC-281). Done after t3-format merges."
+        state: open
+      - key: 01a1a3aa-c51e-7306-8fd8-3241293c496e
+        at: 2026-11-03T23:07:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "GET /v1/tile-format"
+        detail: "In c0a15e7 and 0c2a142: the layouts of the encodings the release's manifests use, and the manifest's schema with its own `$defs`."
+        state: done
+  - key: 01a1a37b-e1cd-74aa-b3eb-bdadba37bd19
+    id: t3-e2e
+    kind: task
+    versions:
+      - key: 01a1a37b-e1cd-74aa-b3eb-bdb6736c95f7
+        at: 2026-11-03T22:16:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W3 end-to-end tests"
+        detail: "Domains, a manifest, every fixture tile's SHA-256, a grid header and samples, and the tile format, through the Worker."
+        state: open
+      - key: 01a1a381-8e6d-7109-863a-38998e520012
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W3 end-to-end tests"
+        detail: "In 18670a3: every fixture tile's SHA-256, the unpinned redirect, the domain and tile 404s, the grid listing and 404. A tile-format test follows t3-tile-format."
+        state: done

@@ -10,6 +10,7 @@
 mod bench;
 mod integration;
 mod lines;
+mod node;
 mod science;
 
 use std::fs;
@@ -37,11 +38,13 @@ enum Gate {
     Lines,
     /// `loft verify`, which only holds on the publish branch.
     Verify,
+    /// The reference TypeScript tile decoder's tests, when `node` is on the path.
+    TileDecoder,
 }
 
 /// What a gate came to.
 #[derive(PartialEq, Eq)]
-enum Outcome {
+pub(crate) enum Outcome {
     Passed,
     Skipped,
     Failed,
@@ -73,6 +76,7 @@ const GATES: &[Gate] = &[
         ],
     ),
     Gate::Command("test", "cargo", &["test", "--workspace", "--quiet"]),
+    Gate::TileDecoder,
     Gate::Command(
         "wasm32",
         "cargo",
@@ -114,6 +118,7 @@ impl Gate {
             Self::Command(name, _, _) => name,
             Self::Lines => "lines",
             Self::Verify => "loft verify",
+            Self::TileDecoder => "tile decoder",
         }
     }
 
@@ -122,6 +127,7 @@ impl Gate {
             Self::Command(_, program, args) => run(root, program, args),
             Self::Lines => lines_pass(root),
             Self::Verify => return verify(root),
+            Self::TileDecoder => return node::tile_decoder(root),
         };
         if passed {
             Outcome::Passed
@@ -195,7 +201,7 @@ fn check(root: &Path) -> bool {
 }
 
 /// A command for `program` run from the workspace root, without the variables `cargo run` set.
-fn command(root: &Path, program: &str) -> Command {
+pub(crate) fn command(root: &Path, program: &str) -> Command {
     let mut command = Command::new(program);
     command.current_dir(root);
     for (key, _) in std::env::vars_os() {

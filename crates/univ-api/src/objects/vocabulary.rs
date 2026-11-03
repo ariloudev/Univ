@@ -1,8 +1,7 @@
 //! A release's vocabulary (its terms, chain templates, sources and cosmology), read once and
 //! kept by the backend: a release never changes once published.
 
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex, PoisonError};
+use std::sync::Arc;
 
 use serde_json::{Value, json};
 use univ_model::cosmology::Cosmology;
@@ -11,34 +10,13 @@ use univ_model::release::read::Vocabulary;
 use crate::backend::{Backend, column, first, json_column};
 use crate::problem::{Problem, ProblemType};
 
-/// The vocabularies a backend has read, by release.
-#[derive(Default)]
-pub struct Vocabularies(Mutex<HashMap<u32, Arc<Vocabulary>>>);
-
-impl Vocabularies {
-    fn get(&self, release: u32) -> Option<Arc<Vocabulary>> {
-        self.0
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .get(&release)
-            .cloned()
-    }
-
-    fn keep(&self, release: u32, vocabulary: Arc<Vocabulary>) {
-        self.0
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .insert(release, vocabulary);
-    }
-}
-
 /// The vocabulary of `release`, from the backend's keeping or read in one query.
 ///
 /// # Errors
 ///
 /// An internal-error problem when the release database cannot be read.
 pub async fn vocabulary<B: Backend>(backend: &B, release: u32) -> Result<Arc<Vocabulary>, Problem> {
-    if let Some(vocabulary) = backend.vocabularies().get(release) {
+    if let Some(vocabulary) = backend.kept().vocabularies.get(&release) {
         return Ok(vocabulary);
     }
     let rows = backend
@@ -60,18 +38,8 @@ pub async fn vocabulary<B: Backend>(backend: &B, release: u32) -> Result<Arc<Voc
     let terms: Vec<(i64, String)> = json_column(&row, "terms")?;
     let chains: Vec<(i64, Value)> = json_column(&row, "chains")?;
     let sources: Vec<(i64, String)> = json_column(&row, "sources")?;
-    let vocabulary = Arc::new(Vocabulary::new(
-        release,
-        cosmology,
-        ranking_rule,
-        terms,
-        chains,
-        sources,
-    ));
-    backend
-        .vocabularies()
-        .keep(release, Arc::clone(&vocabulary));
-    Ok(vocabulary)
+    let vocabulary = Vocabulary::new(release, cosmology, ranking_rule, terms, chains, sources);
+    Ok(backend.kept().vocabularies.keep(release, vocabulary))
 }
 
 fn unreadable(why: &str) -> Problem {

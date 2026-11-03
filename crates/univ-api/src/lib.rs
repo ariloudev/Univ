@@ -5,8 +5,11 @@
 //! and turns the [`Response`] back. Nothing here performs I/O.
 
 mod backend;
+mod bulk;
 mod cors;
+mod grids;
 mod http;
+mod kept;
 mod objects;
 mod openapi;
 mod problem;
@@ -19,7 +22,7 @@ mod testkit;
 
 pub use backend::{Backend, BackendError, Row};
 pub use http::{Body, Method, Request, Response};
-pub use objects::vocabulary::Vocabularies;
+pub use kept::Kept;
 pub use openapi::document;
 pub use problem::{Problem, ProblemType};
 pub use routes::{ROUTES, Route};
@@ -41,10 +44,16 @@ pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
         routes::dispatch(request, backend).await
     };
     let response = if request.method == Method::Head {
-        let length = response.body.as_bytes().len();
-        response
-            .with_body(Body::Empty)
-            .with_header("content-length", &length.to_string())
+        if matches!(response.body, Body::Object(_)) {
+            // Its length is the bucket's to know: the runtime answers it from the object's
+            // metadata, without its body.
+            response
+        } else {
+            let length = response.body.as_bytes().len();
+            response
+                .with_body(Body::Empty)
+                .with_header("content-length", &length.to_string())
+        }
     } else {
         response
     };

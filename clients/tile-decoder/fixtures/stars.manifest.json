@@ -1,0 +1,122 @@
+{
+  "format": "univ-tile-manifest",
+  "manifest_version": 1,
+  "release": "1",
+  "scale_domain": "stars",
+  "frame": {
+    "name": "ICRS equatorial Cartesian",
+    "origin": "Solar System barycentre",
+    "axes": "x toward (RA, Dec) = (0 deg, 0 deg), y toward (90 deg, 0 deg), z toward Dec = +90 deg",
+    "epoch": "each object's position at the epoch of its preferred sky position, not propagated"
+  },
+  "unit": "pc",
+  "cosmology": {
+    "name": "Planck 2018 (A&A 641, A6, Table 2: TT,TE,EE+lowE+lensing+BAO)",
+    "hubble_constant": 67.66,
+    "omega_matter": 0.3111
+  },
+  "rotations": {
+    "applied_as": "row-major matrix times the ICRS column vector [x, y, z]",
+    "to_galactic": [
+      [
+        -0.05487556041621561,
+        -0.873437090234885,
+        -0.48383501554871317
+      ],
+      [
+        0.49410942787558354,
+        -0.44482962996001124,
+        0.7469822444972188
+      ],
+      [
+        -0.8676661490190047,
+        -0.1980763734312013,
+        0.45598377617506697
+      ]
+    ],
+    "galactic_basis": "Hipparcos catalogue (ESA 1997, vol. 1, sec. 1.5.3): the transpose of A_G",
+    "to_supergalactic": [
+      [
+        0.37501547780780486,
+        0.3413589618290254,
+        0.861880183426672
+      ],
+      [
+        -0.8983204556165199,
+        -0.09572714072498714,
+        0.4287851134887344
+      ],
+      [
+        0.22887496679521785,
+        -0.9350456532745492,
+        0.27075057870087615
+      ]
+    ],
+    "supergalactic_basis": "Lahav et al. 2000 (MNRAS 312, 166): pole at galactic (47.37, 6.32) deg, origin at (137.37, 0) deg"
+  },
+  "encoding": {
+    "version": 1,
+    "header_bytes": 48,
+    "point_bytes": 17,
+    "steps_per_edge": 65536,
+    "max_tile_bytes": 1048576,
+    "point_source": "the index in sources of the source of the point's preferred distance, which gives its kind of value too",
+    "kinds": [
+      "measured",
+      "estimated",
+      "inferred",
+      "reconstructed"
+    ]
+  },
+  "levels": [
+    {
+      "level": 0,
+      "edge": 128.0,
+      "step": 0.001953125,
+      "fraction": 1.0
+    }
+  ],
+  "sampling": {
+    "seed": 1,
+    "generator": "ChaCha20, key the seed's 8 little-endian bytes then 24 zero bytes, stream the domain's number; level by level from the root, the nodes of a level in order of address, an inner node of n points keeps floor(level_points * n / m) of them, m the most points reaching any inner node of its level, drawn by a partial Fisher-Yates shuffle over its points in increasing id; a leaf keeps every point reaching it, the finest level of its region",
+    "stream": 0,
+    "split_threshold": 32768,
+    "level_points": 16384,
+    "max_depth": 16,
+    "statement": "Each scale domain is an octree over its placed objects' derived ICRS Cartesian positions. A node reached by more points than the split threshold is split, down to the maximum depth. Every split node of a level keeps the same fraction of the points reaching it, an even random subsample, the fullest keeping the level points; the rest go to its children, and a leaf keeps all its points."
+  },
+  "points": 1,
+  "radius": 47.96163069544364,
+  "sources": [
+    {
+      "index": 0,
+      "id": "hipparcos-2007",
+      "role": "distance_and_position",
+      "title": "Hipparcos, the new reduction (van Leeuwen 2007)",
+      "citation": "van Leeuwen F. 2007, \"Validation of the new Hipparcos reduction\", A&A 474, 653. 2007A&A...474..653V, doi:10.1051/0004-6361:20078357. Catalogue: van Leeuwen F. 2007, \"Hipparcos, the New Reduction of the Raw Data\", Astrophysics & Space Science Library 350; VizieR catalogue I/311.",
+      "credit": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23. Cite van Leeuwen 2007, A&A 474, 653."
+    }
+  ],
+  "nodes": [
+    {
+      "address": "r",
+      "level": 0,
+      "bounds": {
+        "min": [
+          -64.0,
+          -64.0,
+          -64.0
+        ],
+        "max": [
+          64.0,
+          64.0,
+          64.0
+        ]
+      },
+      "points": 1,
+      "sampled_from": 1,
+      "bytes": 65,
+      "sha256": "8779e4d1e83d957074f37f6c2ea6cb48a6a4a5e4d99b40dcfb3b9e6101e8b69c"
+    }
+  ]
+}

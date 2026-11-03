@@ -33,9 +33,12 @@ pub trait Backend {
         statements: &[(&str, &[Value])],
     ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>>;
 
-    /// The release vocabularies this backend keeps between requests: for the Worker, one
-    /// keeping per isolate.
-    fn vocabularies(&self) -> &crate::Vocabularies;
+    /// The object of `key` in the releases bucket, read whole: for small files such as a
+    /// tile manifest. None when the bucket holds no such key.
+    fn blob(&self, key: &str) -> impl Future<Output = Result<Option<Vec<u8>>, BackendError>>;
+
+    /// What this backend keeps between requests: for the Worker, one keeping per isolate.
+    fn kept(&self) -> &crate::Kept;
 }
 
 /// The first row of `rows`, if any.

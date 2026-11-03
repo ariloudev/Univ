@@ -26,9 +26,17 @@ use crate::problem::{Problem, ProblemDocument, ProblemType};
         crate::structures::list,
         crate::structures::get,
         crate::objects::find,
-        crate::objects::get
+        crate::objects::get,
+        crate::bulk::domains,
+        crate::bulk::manifest,
+        crate::bulk::tile,
+        crate::grids::list,
+        crate::grids::header,
+        crate::grids::samples,
+        crate::grids::uncertainty,
+        crate::bulk::tile_format
     ),
-    components(schemas(ProblemDocument, ProblemType))
+    components(schemas(ProblemDocument, ProblemType, univ_model::tile::manifest::TileManifest))
 )]
 struct ApiDoc;
 

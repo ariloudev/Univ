@@ -1,0 +1,117 @@
+key: 01a1a37b-e1cc-72fb-b455-e1df47bc8d23
+id: w3-close
+versions:
+  - key: 01a1a37b-e1cd-74aa-b3eb-bdaf66d7bc3b
+    at: 2026-11-03T22:16:07Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W3 close: review, gate, trace, merge"
+    goal: "W3's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: planned
+  - key: 01a1a3aa-d1c0-7475-828d-4830dbeeaf73
+    at: 2026-11-03T23:07:23Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W3 close: review, gate, trace, merge"
+    goal: "W3's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: done
+blocks:
+  - key: 01a1a3aa-c51e-7306-8fd8-323c012f799e
+    id: t3-review
+    kind: task
+    versions:
+      - key: 01a1a3aa-c51e-7306-8fd8-32431910e0ec
+        at: 2026-11-03T23:07:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Review W3 and fix the findings"
+        detail: |-
+          Correctness and simplify reviews ran on W3's own diff. Fixed in 0c2a142:
+          - the manifest schema had unresolved refs;
+          - grid uncertainty samples could not be reached;
+          - a HEAD of an R2 object would report length 0;
+          - a client could mix releases between a manifest and its tiles (README);
+          - a grid field had the wrong problem title;
+          - duplicated cache helpers and repeated domain queries;
+          - a slim manifest index in univ-model;
+          - the fixture build ran twice;
+          - the npm script disagreed with the gate.
+        state: done
+  - key: 01a1a3aa-c51e-7306-8fd8-323d800562b5
+    id: t3-gate
+    kind: task
+    versions:
+      - key: 01a1a3aa-c51e-7306-8fd8-3244d8cb4d5e
+        at: 2026-11-03T23:07:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration run"
+        detail: "`cargo xtask check` passed 12 gates (the tile decoder's is new). `cargo xtask integration` first passed 17 of 18: the unpinned-tile test expected the client to follow the 302, which it is configured not to do. After fixing the test (e35fd47) both passed, the integration with 18 of 18."
+        state: done
+  - key: 01a1a3aa-c51e-7306-8fd8-323eb20c086d
+    id: w3-trace
+    kind: loft
+    versions:
+      - key: 01a1a3aa-c51e-7306-8fd8-324594b062ba
+        at: 2026-11-03T23:07:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "W3 links AC-166 to AC-186 and AC-281 to AC-284; the last three are verified by the TypeScript decoder's node tests. AC-91, AC-174 and AC-186 were re-reviewed and accepted after their tests changed."
+        base: "68b4a6a"
+        recorded:
+          commit: "e35fd47316e8a647088a74379a8aa2f70f1a2b71"
+          branch: "stage/server-w3"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T23:07:20Z
+        report: |
+          {
+            "base": "68b4a6a",
+            "commit": "68b4a6a705a1ae63bf446024bec66ed0c53239fe",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 335,
+              "linked": 238,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a3aa-c51e-7306-8fd8-323fba2b94d4
+    id: w3-result
+    kind: note
+    versions:
+      - key: 01a1a3aa-c51e-7306-8fd8-32461c564337
+        at: 2026-11-03T23:07:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What W3 produced"
+        markdown: |-
+          | Area | Result |
+          |---|---|
+          | Scale domains | Listed with radius in their own unit; manifests served from R2 as published |
+          | Tiles | Streamed by the runtime from R2, never read by the Worker; immutable for a year when pinned, ETag = SHA-256; unpinned gets a no-store 302 to the pinned URL; HEAD sized from R2 metadata |
+          | Grids | Listing, header, samples, and each field's uncertainty where published (CF4++ standard deviations) |
+          | Tile format | Byte layout per encoding the release uses, and a self-contained manifest JSON Schema |
+          | Decoder | `clients/tile-decoder`, reference TypeScript with no dependencies, in the gate |
+
+          **Open:** the fixture release has no grid, so grid reads are checked natively and only listed end to end; W7 checks real grids on release 6. A plain-Mpc grid stating another H0 still has no `cell_rescaled` in its header.
+        tone: success
