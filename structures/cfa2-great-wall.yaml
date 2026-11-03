@@ -42,23 +42,21 @@ geometry:
         unit: degree
         kind: measured
         uncertainty: { form: none_reported }
-        cite: &slices
+        cite: &sample
           paper: gott-2005
-          sentence: "confused with SDSS survey galaxies we have plotted density contours averaging over all the CfA2 slices from 42° to -8.5° declination."
-      - value: 42
+          sentence: "The contours are based on galaxies satisfying −8.5° < δ < 42.5°, 120° < α < 255°, and 0.01 < z < 0.05 comprising the CfA2's first 6 slices (Geller and Huchra (1989))."
+      - value: 42.5
         unit: degree
         kind: measured
         uncertainty: { form: none_reported }
-        cite: *slices
+        cite: *sample
     near:
       redshift:
         value: 0.01
         unit: dimensionless
         kind: measured
         uncertainty: { form: none_reported }
-        cite: &sample
-          paper: gott-2005
-          sentence: "The contours are based on galaxies satisfying -8.5° < δ < 42.5°, 120° < α < 255°, and 0.01 < z < 0.05 comprising the CfA2's first 6 slices (Geller and Huchra (1989))."
+        cite: *sample
     far:
       redshift:
         value: 0.05
@@ -101,4 +99,7 @@ notes: >-
   Gott et al. 2005 place the Coma Cluster at the centre of the wall but give no coordinates for it.
   The thickness often quoted for the wall was not found in the sources read, nor is it in the
   Geller & Huchra abstract; it is left out. Gott et al.'s map is in equatorial coordinates whose
-  equinox the paper does not state. The comoving length uses the paper's WMAP cosmology.
+  equinox the paper does not state. The comoving length uses the paper's WMAP cosmology. The
+  declination bounds are those of the sample the map's contours are drawn from, as the paper's
+  list of sources defines it; its Section 3 describes the same slices with the upper bound
+  rounded to a whole degree.
