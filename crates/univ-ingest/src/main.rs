@@ -136,14 +136,36 @@ struct MatchArgs {
     state: PathBuf,
 }
 
-/// How far a run goes.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+/// How far a run goes, with what the stages after normalization take.
 enum Until {
     Fetch,
     Normalize,
-    Match,
-    Tiles,
-    Build,
+    /// A cross-match, its ids pending in the state directory.
+    Match {
+        state: PathBuf,
+    },
+    /// A cross-match and its tiles, written under `out`.
+    Tiles {
+        state: PathBuf,
+        out: PathBuf,
+    },
+    /// A cross-match, its tiles and the release built under `out`.
+    Build {
+        state: PathBuf,
+        out: PathBuf,
+    },
+}
+
+impl Until {
+    /// The state directory a cross-match reads, and holds the lock of while it runs.
+    fn state(&self) -> Option<&PathBuf> {
+        match self {
+            Self::Fetch | Self::Normalize => None,
+            Self::Match { state } | Self::Tiles { state, .. } | Self::Build { state, .. } => {
+                Some(state)
+            }
+        }
+    }
 }
 
 #[derive(Args)]
@@ -176,15 +198,11 @@ struct Later<'a> {
 impl Later<'_> {
     /// Cross-matches the `normalized` entries, then lays out the tiles and builds the release
     /// as far as `until` asks.
-    async fn run(
-        &self,
-        sink: Arc<dyn EventSink>,
-        normalized: Vec<Normalized>,
-        state: PathBuf,
-        out: Option<PathBuf>,
-        until: Until,
-    ) {
+    async fn run(&self, sink: Arc<dyn EventSink>, normalized: Vec<Normalized>, until: Until) {
         let (defs, opts, report) = (self.definitions, self.options, self.report);
+        let Some(state) = until.state().cloned() else {
+            return;
+        };
         let match_options = MatchOptions {
             state: state.clone(),
         };
@@ -198,19 +216,21 @@ impl Later<'_> {
             report,
         )
         .await;
-        let (Some(crossed), Some(out)) = (crossed, out) else {
+        let Some(crossed) = crossed else {
             return;
         };
         let crossed = Arc::new(crossed);
-        let building = until == Until::Build;
         // A build keeps the tiles for its release; the tiles command writes them under its
         // output and ends there.
-        let tile_options = TileOptions {
-            out: (!building).then(|| out.clone()),
+        let (tile_options, build) = match until {
+            Until::Fetch | Until::Normalize | Until::Match { .. } => return,
+            Until::Tiles { out, .. } => (TileOptions { out: Some(out) }, None),
+            Until::Build { state, out } => {
+                (TileOptions { out: None }, Some(BuildOptions { state, out }))
+            }
         };
         let tiles = tiles_stage(sink.clone(), defs, crossed.clone(), &tile_options, report).await;
-        if let (Some(tiles), true) = (tiles, building) {
-            let build_options = BuildOptions { state, out };
+        if let (Some(tiles), Some(build_options)) = (tiles, build) {
             build_stage(
                 sink,
                 defs,
@@ -228,23 +248,25 @@ impl Later<'_> {
 
 #[tokio::main]
 async fn main() -> ExitCode {
-    let (args, until, state, out) = match Cli::parse().command {
-        Command::Fetch(args) => (args, Until::Fetch, None, None),
-        Command::Normalize(args) => (args, Until::Normalize, None, None),
-        Command::Match(args) => (args.fetch, Until::Match, Some(args.state), None),
+    let (args, until) = match Cli::parse().command {
+        Command::Fetch(args) => (args, Until::Fetch),
+        Command::Normalize(args) => (args, Until::Normalize),
+        Command::Match(args) => (args.fetch, Until::Match { state: args.state }),
         Command::Tiles(args) => {
             let m = args.matching;
-            (m.fetch, Until::Tiles, Some(m.state), Some(args.out))
+            let (state, out) = (m.state, args.out);
+            (m.fetch, Until::Tiles { state, out })
         }
         Command::Build(args) => {
             let m = args.matching;
-            (m.fetch, Until::Build, Some(m.state), Some(args.out))
+            let (state, out) = (m.state, args.out);
+            (m.fetch, Until::Build { state, out })
         }
         Command::Publish(args) => return on_store(args, publish_command),
         Command::Prune(args) => return on_store(args, prune_command),
     };
     // A match, tiles or build run holds the state directory's lock until it ends.
-    let _lock = match &state {
+    let _lock = match until.state() {
         Some(dir) => match StateLock::take(dir, std::process::id(), &now()) {
             Ok(lock) => Some(lock),
             Err(error) => {
@@ -284,24 +306,22 @@ async fn main() -> ExitCode {
     let cancel = Arc::new(AtomicBool::new(false));
     let run = async {
         let acquired = fetch(&fetcher, &definitions, &options, &report).await;
-        if until < Until::Normalize {
+        if matches!(until, Until::Fetch) {
             return;
         }
         let sink = display.as_ref() as &dyn EventSink;
         let normalized =
             normalize_stage_until(sink, &definitions, &acquired, &options, &report, &cancel).await;
-        let Some(state) = state else {
+        if until.state().is_none() {
             return;
-        };
+        }
         let stages = Later {
             definitions: &definitions,
             acquired: &acquired,
             options: &options,
             report: &report,
         };
-        stages
-            .run(display.clone(), normalized, state, out, until)
-            .await;
+        stages.run(display.clone(), normalized, until).await;
     };
     let mut run = std::pin::pin!(drawing(display.as_ref(), run));
     let interrupted_run = tokio::select! {
