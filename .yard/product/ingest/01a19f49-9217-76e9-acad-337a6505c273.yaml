@@ -1,0 +1,12 @@
+key: 01a19f49-9217-76e9-acad-337a6505c273
+id: wave-7
+versions:
+  - key: 01a19f49-9217-76e9-acad-33861cc339c7
+    at: 2026-11-03T02:42:41Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W7 Releases"
+    goal: "Releases are built, checked, published to local D1 and R2 and pruned (stage/ingest-w7)"
+    status: planned

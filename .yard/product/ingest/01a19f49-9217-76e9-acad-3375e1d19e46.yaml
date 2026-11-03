@@ -1,0 +1,12 @@
+key: 01a19f49-9217-76e9-acad-3375e1d19e46
+id: wave-2
+versions:
+  - key: 01a19f49-9217-76e9-acad-338126ee1e1c
+    at: 2026-11-03T02:42:41Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 Acquisition"
+    goal: "All 18 sources are defined in YAML and fetched durably, with resume and offline mode (stage/ingest-w2)"
+    status: planned

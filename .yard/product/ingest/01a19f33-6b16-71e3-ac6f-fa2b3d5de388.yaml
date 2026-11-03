@@ -1,0 +1,419 @@
+key: 01a19f33-6b16-71e3-ac6f-fa2b3d5de388
+id: master-plan
+versions:
+  - key: 01a19f33-6b16-71e3-ac6f-fa331466dc04
+    at: 2026-11-03T02:18:29Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Master plan for Univ Ingest"
+    goal: "An approved, wave-by-wave plan maps every Univ Ingest criterion to the step that meets it and the tests that verify it"
+    status: planned
+  - key: 01a19f35-fd34-76f3-8f12-ce6f68f27240
+    at: 2026-11-03T02:21:18Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Master plan for Univ Ingest"
+    goal: "An approved, wave-by-wave plan maps every Univ Ingest criterion to the step that meets it and the tests that verify it"
+    status: active
+  - key: 01a19f49-9217-76e9-acad-337ecc29a29e
+    at: 2026-11-03T02:42:41Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Master plan for Univ Ingest"
+    goal: "An approved, wave-by-wave plan maps every Univ Ingest criterion to the step that meets it and the tests that verify it"
+    status: done
+blocks:
+  - key: 01a19f36-ba25-7484-8df2-e1e119b275db
+    id: ask-toolu-01lxn5ssmdy6dgc98ymchgbn-1
+    kind: question
+    versions:
+      - key: 01a19f36-ba25-7484-8df2-e1e24f37701b
+        at: 2026-11-03T02:22:06Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Univ Ingest needs a researched-structures file in which every number cites its paper. The cosmic-newsroom experiment already has one: packages/atlas/data/structures.json, with 26 structures, each number cited. The Univ rules forbid sharing data between projects unless you ask. How should wave 4 get its structures?"
+        header: "Structures"
+        options:
+          - label: "Port newsroom's"
+            detail: "Convert the newsroom's structures.json into univ-server's structure-file format once, re-checking every citation as it moves. After that the two copies are independent; nothing is shared at runtime."
+            recommended: true
+          - label: "Research afresh"
+            detail: "Research the structures again from the papers for univ-server. Fully independent, but it repeats a lot of careful work already done."
+          - label: "Start with a few"
+            detail: "Wave 4 builds the format and its checks with three or four structures researched afresh, such as Laniakea, the Sloan Great Wall and the Boötes Void. The rest come later."
+        ownWords: true
+    responses:
+      - key: 01a19f3c-c7de-76d0-9876-ebf6c6dc2ef4
+        at: 2026-11-03T02:28:43Z
+        revision: 6
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        words: "Port newsroom’s, use yaml instead of json. For internal catalogs, ledgers, etc, always use yaml"
+  - key: 01a19f3d-c506-74a9-a6b7-c51772f4684c
+    id: plan-30-plan-dreamy-marinating-firefly-01a19f33-6b16-71e3-ac6f-fa2b3d5de388
+    kind: plan
+    versions:
+      - key: 01a19f3d-c506-74a9-a6b7-c518ee31e906
+        at: 2026-11-03T02:29:47Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Master plan: build Univ Ingest in waves"
+        markdown: |
+          # Master plan: build Univ Ingest in waves
+
+          ## Context
+
+          The univ-server spec is published (sequence 1 on `develop`). This plan builds the **Univ Ingest**
+          product: the local Rust CLI that fetches the 18 sources, normalizes them, cross-matches them,
+          builds tiles and publishes releases to local D1 and R2. Its scope is Features **F-1 to F-13**,
+          requirements **RQ-1 to RQ-48**, criteria **AC-1 to AC-121**, **QA-1**, the univ-model
+          constraints **CON-4 to CON-8**, the D1 cap **CON-3** and the Univ Ingest constraint. Univ Server
+          (the Worker) is a separate product and is not built here, except the shared parts in univ-model
+          that a release's layout needs.
+
+          The dev process is the one you settled on `product/ingest`:
+
+          - each wave is a branch cut from `product/ingest`;
+          - `cargo xtask check` is the single gate;
+          - clippy runs `pedantic` plus the guard lints, with warnings as errors;
+          - no `.rs` file may exceed 500 lines;
+          - `cargo fmt --check` checks formatting;
+          - tests are traced to criteria and use recorded fixtures, never the network;
+          - `cargo-deny` and `cargo-machete` run in the gate;
+          - univ-model is built for wasm32;
+          - univ-server gets an `AGENTS.md`.
+
+          The newsroom's structures are ported once, as YAML, and **every internal catalogue or ledger is
+          YAML**: source definitions, structure files, matching and ranking rules, provenance records and
+          release manifests. Only what Univ Server sends clients stays JSON (the API and tile manifests), as
+          the spec fixes.
+
+          ## Wave routine (every wave)
+
+          1. Cut `stage/ingest-wN` from `product/ingest` and open its Yard Log, with the wave's tasks as
+             `task` blocks, each with a bounded completion check.
+          2. Build test-first where a criterion is concrete. Commit as `type(scope): summary`, with
+             `.yard/` in every commit.
+          3. Run `/simplify` and `/code-review` **in parallel** on the wave's diff, and fix their findings
+             in the wave as `fix` tasks.
+          4. Pass the gate: `cargo xtask check`, which runs fmt, clippy, the 500-line rule, tests, deny,
+             machete, the wasm32 build and `loft fmt --check` / `check --fail-on warning` / `verify`.
+          5. Link the new tests in `loft.trace.yaml` and run `loft reconcile --accept`, then record a
+             `trace` block.
+          6. Close the wave's Yard Log, commit it, and **merge into `product/ingest` only after your
+             approval**.
+
+          A file that goes over 500 lines is split by responsibility in the same wave.
+
+          ```mermaid
+          flowchart LR
+            W0[W0 Workspace + gate] --> W1[W1 univ-model]
+            W1 --> W2[W2 Acquisition]
+            W2 --> W3[W3 Run display]
+            W1 --> W4[W4 Normalization]
+            W2 --> W4
+            W4 --> W5[W5 Identity + positions]
+            W5 --> W6[W6 Octree tiles]
+            W6 --> W7[W7 Releases]
+            W3 --> W8[W8 First real release]
+            W7 --> W8
+          ```
+
+          ## Waves
+
+          ### W0: Workspace and gate (`stage/ingest-w0`)
+
+          Turn the single crate into a virtual workspace: `crates/univ-model` (lib),
+          `crates/univ-ingest` (bin) and `xtask`. Remove the root hello-world `src/main.rs`.
+
+          - **Lints and tools:** `[workspace.lints]` with clippy `pedantic` plus `unwrap_used`,
+            `expect_used`, `panic`, `dbg_macro` and `print_stdout`, and `unsafe_code = "forbid"`. Tests
+            are allowed `unwrap` and `expect` through `clippy.toml` (`allow-unwrap-in-tests`,
+            `allow-expect-in-tests`). Also `rustfmt.toml` (edition 2024, width 100), `deny.toml`, and
+            the `wasm32-unknown-unknown` target in `rust-toolchain.toml`.
+          - **`cargo xtask check`:** runs each step in order and stops at the first failure, naming it.
+            `cargo xtask lines` lists every `.rs` file over 500 lines.
+          - **Project files:** `AGENTS.md` plus a `CLAUDE.md` link (layout, commands, gates, branches,
+            commit style, science rules, YAML for internal data). Also an empty `loft.trace.yaml`
+            (`format: loft-trace/2`), and `tests/fixtures/<provider>/` as the home of recorded answers.
+          - **Covers:** the Univ Ingest constraint (native Rust CLI) and CON-4 (wasm32 build in the
+            gate).
+          - **Tests:** unit tests of the line counter (500 lines pass, 501 fail, and `target/` is
+            skipped). The gate passes on the empty crates.
+
+          ### W1: univ-model foundations (`stage/ingest-w1`)
+
+          The types and maths that ingest needs, all wasm32-clean (no I/O, no threads). Each part below
+          is a module.
+
+          - **`value`:** a value with its kind of value (measured, estimated, inferred or reconstructed)
+            and a typed uncertainty: symmetric, asymmetric, upper or lower limit, credible region, or none
+            reported (CON-7, CON-8).
+          - **`units`:** angles, velocities, pc, Mpc and h⁻¹ Mpc, with the native value kept beside the
+            normalized one (CON-5).
+          - **`distance`:** kinds (parallax, geometric/photogeometric, primary, secondary, spec-z,
+            photo-z), methods, H0, and the distance modulus kept as published.
+          - **`position`:** ICRS plus epoch. Frames: galactic through the Hipparcos ICRS→galactic matrix
+            (ESA 1997 §1.5.3), and supergalactic through the pole and origin of Lahav et al. 2000 (CON-6).
+          - **`cosmology`:** flat ΛCDM Planck 2018 (H0 = 67.66, Ωm = 0.3111), comoving distance by
+            numerical integration, and the inverse z(D_C).
+          - **`redshift`:** the heliocentric value kept, and the CMB frame derived with the Planck 2018
+            dipole (369.82 km/s toward l = 264.021°, b = 48.253°).
+          - **`geometry`:** the 8 kinds (point, ray, range, primitive, path, member list, MOC sky region
+            and volume grid), each with a bounding box.
+          - **`ids`:** object ids, source ids and designations.
+
+          Covers CON-4 to CON-8 and the mathematics behind F-3 (RQ-12, RQ-13 and RQ-14).
+
+          **Tests:**
+
+          - **Frames:** the Galactic centre's ICRS position (266.405°, −28.936°) maps to l ≈ 0, b ≈ 0.
+          - **Supergalactic pole:** it maps to SGB = 90°.
+          - **Comoving distance:** checked against published Planck 2018 values at z = 0.1, 0.5 and 1,
+            within 0.1%.
+          - **Round trips:** z → D_C → z returns the starting value.
+          - **CMB frame:** the dipole correction has the right sign toward and away from the apex.
+
+          ### W2: Acquisition (`stage/ingest-w2`)
+
+          `univ-ingest` modules:
+
+          - **`source`:** source definitions as YAML in `sources/<id>.yaml`. Each holds the provider,
+            access method, query, cuts, column map with units, frame, epoch, citation, terms, credit,
+            scale domain, mirrors and fixes, and a redistribution status with the quoted terms and its
+            reasoning.
+          - **`fetch`:** the durable fetcher:
+            - retries with waits doubling from 2 s, at least 4 per mirror, and a failed mirror skipped
+              for the rest of the run;
+            - chunked queries, each chunk kept on disk through an atomic `.part` → rename;
+            - HTTP range resume, with an ETag or length check that restarts the download when the file
+              changed;
+            - SHA-256 and retrieval time recorded before parsing;
+            - `--offline` mode.
+          - **`access`:** VizieR ASU-TSV, SkyServer SQL, Gaia TAP/ADQL and plain file download.
+
+          Also in this wave:
+
+          - **Run events:** typed events (Get, Hit, Err, Resumed, stage start and end) that W3 renders.
+          - **Source definitions:** all 18, with a small recorded fixture each.
+          - **Open questions:** settle the 2M++ reconstruction and eRASS1 download URLs (recorded in their
+            definitions), and propose the Gaia G cut, which you decide.
+
+          Covers F-1 (RQ-1 to RQ-5, AC-1 to AC-13) and F-2 (RQ-6 to RQ-11, AC-14 to AC-27).
+
+          **Tests:**
+
+          - **Definitions:** validation refuses an unknown unit, frame or scale domain, naming the field.
+            A `forbidden` status blocks the release.
+          - **Fetching:** an in-process mock HTTP server injects 5xx, timeouts, a dead mirror, cut-off
+            bodies, servers that ignore `Range`, and a changed ETag. Tests check the retry count and
+            waits (with a test clock), resume from the first missing chunk or byte, that `.part` files are
+            never read, and that offline mode makes no request.
+
+          ### W3: Run display (`stage/ingest-w3`)
+
+          - **Terminal:** an apt-style renderer for the W2 events, built on `indicatif`. Get, Hit and Err
+            lines scroll above a status line showing the overall percentage, bytes, rate, time left, the
+            downloads in progress and the current stage's count. It redraws at most 10 times a second and
+            is cut to the terminal's width.
+          - **Not a terminal:** plain timestamped lines, and one progress line a minute for long
+            downloads.
+          - **End and interrupt:** a summary at the end. Ctrl-C keeps every chunk and partial file, says
+            how to continue, and leaves no half-built release.
+
+          Covers F-13 (RQ-44 to RQ-48, AC-107 to AC-121). The criteria that name later stages are
+          re-checked in W8.
+
+          **Tests:** snapshot tests of the renderer fed scripted events, in both TTY and plain modes, a
+          width-truncation test, and an interrupt test on the fetcher with a cancellation token.
+
+          ### W4: Normalization (`stage/ingest-w4`)
+
+          - **Readers:** a reader per source turns rows into univ-model catalogue entries. Native values
+            are kept, units normalized, kinds of value and typed uncertainties set, and distance kinds and
+            methods recorded, with H0 kept for h-scaled values.
+          - **Redshifts:** the CMB-frame redshift is derived for every redshift.
+          - **Refused rows:** a row that fails validation is left out and counted per reason.
+          - **Fixes:** the definition-driven fixes, such as CF4's SGX/SGY/SGZ columns read as km/s, are
+            listed in provenance with their counts.
+          - **Structures:** the YAML structure-file format, with every number citing its paper and its
+            sentence, table or figure, and digitised values marked estimated.
+            - Port the newsroom's 26 structures from `structures.json`, re-checking each citation.
+            - Outlines from a volume grid record the grid, threshold and test, and fall back to a point
+              when the test fails.
+          - **Grids:** the volume-grid readers: CF4++ NPZ, the CF4 basins FITS (with their axis order
+            explicit), and the 2M++ reconstruction.
+
+          Covers F-4 (RQ-15 to RQ-19, AC-36 to AC-53) and F-5 (RQ-20 to RQ-23, AC-54 to AC-59).
+
+          **Tests:** per-source fixture rows give the expected entries. An uncertainty published as none
+          is never stored as zero. The CF4 fix changes exactly the documented rows. A structure with an
+          uncited number is refused, naming the number. The axis order of both CF4 grids is checked
+          against the known position of the Laniakea attractor.
+
+          ### W5: Identity and derived positions (`stage/ingest-w5`)
+
+          - **Cross-matching:** published cross-identifications first (Gaia DR3–Hipparcos-2, PGC), then
+            positional and redshift matching with per-pair tolerances from the YAML matching rules.
+            Confidence comes from a rule stated in the matching-rules file. More than one candidate gives
+            candidate links, with no merge. Designations and names are attached.
+          - **Preferred measurement:** the smallest fractional distance uncertainty, counting a 300 km/s
+            peculiar-velocity term for redshift distances, with method rank breaking ties. The sky
+            position comes from the entry with the smallest position uncertainty. Objects without a
+            distance get no 3D position.
+          - **Stable ids:** an object keeps its id when its carried-over entries all belonged to one
+            object; merges keep the older id, splits get new ids, and the id ledger is YAML.
+          - **Derived positions:** ICRS, galactic and supergalactic Cartesian positions under the release
+            cosmology, with H0 rescaling and the transformation chain recorded.
+
+          Covers F-7 (RQ-27 to RQ-30, AC-66 to AC-74), F-6 (RQ-24 to RQ-26, AC-60 to AC-65), F-8 (RQ-31
+          and RQ-32, AC-75 to AC-81) and F-3 (RQ-12 to RQ-14, AC-28 to AC-35).
+
+          **Tests:**
+
+          - **Matching:** synthetic catalogues with known pairs, ambiguous triples and far misses.
+          - **Preferred distance:** a TF distance loses to a redshift distance at cz = 15,000 km/s and
+            wins at 1,000 km/s.
+          - **Ids:** a release-over-release suite covers entries added, dropped, merged and split, and
+            checks that an id is never reused.
+          - **Positions:** M31 is placed at its McConnachie distance in the right direction.
+
+          ### W6: Octree tiles (`stage/ingest-w6`)
+
+          - **Tile builder:** an octree per scale domain (stars in pc; nearby galaxies and cosmic web in
+            Mpc) over ICRS Cartesian positions. Each object's domain comes from the source behind its
+            preferred measurement. Nodes split above the threshold, down to the maximum depth.
+          - **Levels of detail:** additive subsamples drawn with a seeded ChaCha RNG, with the seed
+            recorded in the tile manifest.
+          - **Tile codec (encoder half, in univ-model):** each point holds its quantized position (step ≤
+            1/65,536 of the node's edge), object id, source and kind of value. The encoding is versioned.
+          - **Tile manifests:** JSON, as the spec requires for clients. Each holds the node table,
+            SHA-256s and the rotation matrices to galactic and supergalactic.
+
+          Covers F-10 (RQ-36 to RQ-38, AC-91 to AC-98) and QA-1 (tile ≤ 1 MiB, `proved`).
+
+          **Tests:** two builds from the same inputs are byte-identical, no point repeats across levels,
+          the quantization error stays within the step, every tile is ≤ 1 MiB on a stress fixture, and the
+          Rust decoder round-trips every tile.
+
+          ### W7: Releases (`stage/ingest-w7`)
+
+          - **Release layout in univ-model:** the D1 schema (objects, measurements, identities, id ledger,
+            cell index, sources, provenance, releases and `latest`) and the R2 key layout (tiles, tile
+            manifests, grids, release manifest). Univ Server will read the same layout.
+          - **Build:** release number, cosmology, versions, rules, the YAML release manifest with SHA-256s
+            and the cell index. The checks before completion: tile ids exist, structure numbers are cited,
+            counts match provenance, and no source is forbidden. A failed build uses up no number.
+          - **Publish locally:** a minimal `wrangler.toml` with only the D1 and R2 bindings, not the
+            Worker. Upload through `wrangler d1 execute --local` and `wrangler r2 object put --local`,
+            verifying each file. `latest` moves in one statement at the end. An interrupted upload
+            continues, and a number already published is refused.
+          - **Prune:** files and tables are deleted, the pruning time and the id ledger are kept, and
+            pruning `latest` is refused.
+
+          Covers F-9 (RQ-33 to RQ-35, AC-82 to AC-90), F-12 (RQ-41 to RQ-43, AC-102 to AC-106), F-11
+          (RQ-39 and RQ-40, AC-99 to AC-101) and CON-3 (D1 size reported and checked against 10 GB).
+
+          **Tests:** fixture end-to-end: build a small release, publish it to a temporary local wrangler
+          state, check what `latest` reads during and after the publish, kill the upload midway and
+          resume, publish a second release, prune the first, and confirm its ids still resolve through
+          the ledger.
+
+          ### W8: First real release (`stage/ingest-w8`)
+
+          Run the whole pipeline for real, in the background with progress monitored. Fetch all 18
+          sources, build release 1 and publish it locally. Then check the results against the science:
+
+          - M31 at about 0.77 Mpc;
+          - the Virgo and Coma clusters at their published distances;
+          - the Laniakea attractor where Dupuy & Courtois place it;
+          - cross-match rates between 2M++ and its parent surveys;
+          - the D1 size (CON-3) and the largest tile (QA-1).
+
+          Re-check the F-13 criteria across every stage. Fix what the real data exposes, as `fix` tasks.
+          Everything that fails is reported plainly.
+
+          ## Verification
+
+          - **Each wave:** `cargo xtask check` is green, `/simplify` and `/code-review` findings are
+            resolved, `loft reconcile --accept` passes, and a `trace` block is recorded.
+          - **End of W8:** every AC from AC-1 to AC-121 is linked to a passing test in `loft.trace.yaml`,
+            or marked `unverified` with a reason. Release 1 is published to local D1 and R2, and the
+            science checks above are recorded in a note.
+
+          ## Critical files
+
+          - `Cargo.toml` (workspace, lints), `rustfmt.toml`, `clippy.toml`, `deny.toml`,
+            `rust-toolchain.toml`
+          - `xtask/src/main.rs`, `AGENTS.md`
+          - `crates/univ-model/src/{value,units,distance,position,cosmology,redshift,geometry,ids,tile,release}.rs`
+          - `crates/univ-ingest/src/{source,fetch,access,events,display,normalize,structures,matching,ranking,ids,tiles,release,publish,prune}.rs`
+          - `sources/*.yaml`, `structures/*.yaml`, `rules/{matching,ranking}.yaml`, `loft.trace.yaml`
+
+          ## Proposed crates, to be confirmed by cargo-deny and the wasm32 check
+
+          `clap`, `serde` + `serde_yaml_ng` (YAML), `serde_json`, `reqwest` (rustls) + `tokio` (ingest
+          only), `sha2`, `indicatif`, `thiserror`, `zip`, `npyz`, `rand_chacha`, and `wiremock` (tests).
+          FITS is read by a small parser, as the newsroom's scripts did.
+        planMode: true
+    responses:
+      - key: 01a19f49-1958-7600-9e87-fcb7f30d3673
+        at: 2026-11-03T02:42:10Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
+  - key: 01a19f49-9217-76e9-acad-3371573adf1c
+    id: d-structures
+    kind: decision
+    number: 6
+    versions:
+      - key: 01a19f49-9217-76e9-acad-337cb0df7584
+        at: 2026-11-03T02:42:41Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Port the newsroom's structures as YAML; internal data is always YAML"
+        consequence: "Wave 4 converts the newsroom's 26 cited structures once into YAML structure files, re-checking each citation. Every internal catalogue, ledger, rule file and manifest in univ-server is YAML. Only client-facing JSON fixed by the spec stays JSON."
+        question: 01a19f36-ba25-7484-8df2-e1e119b275db
+  - key: 01a19f49-9217-76e9-acad-337256c595b0
+    id: master-plan-summary
+    kind: note
+    versions:
+      - key: 01a19f49-9217-76e9-acad-337d73099528
+        at: 2026-11-03T02:42:41Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Master plan approved"
+        markdown: |-
+          Nine waves, each on its own `stage/ingest-wN` branch cut from `product/ingest`, and each merged back only with your approval. Each wave's tasks are registered in that wave's own Yard Log when it starts.
+
+          | Wave | Covers |
+          |---|---|
+          | W0 Workspace + gate | Univ Ingest constraint, CON-4 |
+          | W1 univ-model | CON-4–CON-8, the maths of F-3 |
+          | W2 Acquisition | F-1, F-2 |
+          | W3 Run display | F-13 |
+          | W4 Normalization | F-4, F-5 |
+          | W5 Identity + positions | F-7, F-6, F-8, F-3 |
+          | W6 Octree tiles | F-10, QA-1 |
+          | W7 Releases | F-9, F-12, F-11, CON-3 |
+          | W8 First real release | everything, against real data |
+        tone: success

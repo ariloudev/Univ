@@ -1,0 +1,12 @@
+key: 01a19f49-9217-76e9-acad-33789d4ff326
+id: wave-5
+versions:
+  - key: 01a19f49-9217-76e9-acad-338403619424
+    at: 2026-11-03T02:42:41Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W5 Identity and positions"
+    goal: "Entries are cross-matched into objects with stable ids, preferred measurements and derived positions (stage/ingest-w5)"
+    status: planned

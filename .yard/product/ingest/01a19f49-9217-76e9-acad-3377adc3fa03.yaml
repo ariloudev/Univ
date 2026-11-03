@@ -1,0 +1,12 @@
+key: 01a19f49-9217-76e9-acad-3377adc3fa03
+id: wave-4
+versions:
+  - key: 01a19f49-9217-76e9-acad-3383efed8a4e
+    at: 2026-11-03T02:42:41Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W4 Normalization"
+    goal: "Every source's rows become univ-model catalogue entries, and the ported structures and the grids are read (stage/ingest-w4)"
+    status: planned

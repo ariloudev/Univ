@@ -1,0 +1,281 @@
+key: 01a19f33-6b16-71e3-ac6f-fa2a33ade1dd
+id: dev-process
+versions:
+  - key: 01a19f33-6b16-71e3-ac6f-fa32de5e8404
+    at: 2026-11-03T02:18:29Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Settle the dev process"
+    goal: "The tooling, gates and wave routine for building Univ Ingest are agreed"
+    status: active
+  - key: 01a19f35-fd34-76f3-8f12-ce6e0f22b88e
+    at: 2026-11-03T02:21:18Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Settle the dev process"
+    goal: "The tooling, gates and wave routine for building Univ Ingest are agreed"
+    status: done
+blocks:
+  - key: 01a19f33-6b16-71e3-ac6f-fa2c4e8604ce
+    id: process-context
+    kind: note
+    versions:
+      - key: 01a19f33-6b16-71e3-ac6f-fa34773a4edb
+        at: 2026-11-03T02:18:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "What you asked for, and one correction"
+        markdown: |-
+          You asked for:
+
+          - the build done in **waves**, each ending with `/simplify` and `/code-review` run in parallel;
+          - **clippy in nitpick mode** across the workspace;
+          - a static check that **no `.rs` file exceeds 500 lines**, where going over triggers a refactor;
+          - **automatic formatting** of `.rs` files.
+
+          The correction: **clippy has no lint for file length.** `clippy::too_many_lines` counts lines per *function*, not per file. The 500-line rule needs its own check, and the first question below chooses where it lives. The "nitpick mode" is clippy's `pedantic` group, which can be set once for the whole workspace in `[workspace.lints.clippy]` in `Cargo.toml`.
+        tone: info
+  - key: 01a19f33-6b16-71e3-ac6f-fa2d5eb15fc7
+    id: q-file-length
+    kind: question
+    versions:
+      - key: 01a19f33-6b16-71e3-ac6f-fa35acab5f9d
+        at: 2026-11-03T02:18:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Where should the 500-line limit on .rs files be enforced?"
+        header: "500-line rule"
+        options:
+          - label: "xtask check"
+            detail: "A `cargo xtask` crate in the workspace runs every gate, this one included. It lists each `.rs` file over 500 lines and fails. One command, no extra tools, and it runs the same on any machine."
+            recommended: true
+          - label: "Custom lint (dylint)"
+            detail: "A real lint, loaded through `dylint` and run with clippy. Closest to \"via clippy\", but dylint needs a nightly toolchain to build the lint library, which breaks the stable-only setup."
+          - label: "Git pre-commit hook"
+            detail: "A shell script run by git before each commit. Easy to bypass, and it only checks staged files."
+    responses:
+      - key: 01a19f35-185b-7200-aeb2-8a9788bc6ddf
+        at: 2026-11-03T02:20:19Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "xtask check"
+  - key: 01a19f33-6b16-71e3-ac6f-fa2e7c74806d
+    id: q-format
+    kind: question
+    versions:
+      - key: 01a19f33-6b16-71e3-ac6f-fa368b79a4d2
+        at: 2026-11-03T02:18:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should .rs formatting happen automatically?"
+        header: "Formatting"
+        options:
+          - label: "Edit hook + gate"
+            detail: "A Claude Code PostToolUse hook runs `rustfmt` on every `.rs` file an agent writes or edits, a `rustfmt.toml` sets the style (edition 2024, width 100), and `cargo fmt --check` is part of the gate. Files are formatted the moment they're written, and the gate catches anything else."
+            recommended: true
+          - label: "Git pre-commit hook"
+            detail: "`cargo fmt` runs before each commit. It covers your own edits too, but it rewrites files during the commit, and it is easy to skip."
+          - label: "Gate only"
+            detail: "No automatic rewrite; `cargo fmt --check` fails the gate, and the fix is to run `cargo fmt`."
+    responses:
+      - key: 01a19f35-185b-7200-aeb2-8a986b7d0fb3
+        at: 2026-11-03T02:20:19Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Gate only"
+  - key: 01a19f33-6b16-71e3-ac6f-fa2f0456c9b7
+    id: q-clippy
+    kind: question
+    versions:
+      - key: 01a19f33-6b16-71e3-ac6f-fa37fa1f40dc
+        at: 2026-11-03T02:18:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How strict should clippy be?"
+        header: "Clippy level"
+        context: "Every level runs as `cargo clippy --workspace --all-targets -- -D warnings`, so a warning fails the gate."
+        options:
+          - label: "Pedantic + guards"
+            detail: "`pedantic` plus a few `restriction` lints that matter for a data pipeline: `unwrap_used`, `expect_used` and `panic` outside tests, `dbg_macro`, `print_stdout` outside the CLI's output module. `unsafe_code = \"forbid\"` as a Rust lint. Errors are handled rather than aborted on, so a bad row can't crash a long run."
+            recommended: true
+          - label: "Pedantic only"
+            detail: "The whole `pedantic` group and nothing more."
+          - label: "Pedantic + nursery"
+            detail: "Also the `nursery` group: newer lints, some with false positives that need suppressing."
+    responses:
+      - key: 01a19f35-185b-7200-aeb2-8a9928266840
+        at: 2026-11-03T02:20:19Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Pedantic + guards"
+  - key: 01a19f33-6b16-71e3-ac6f-fa30727ee1fc
+    id: q-additions
+    kind: question
+    versions:
+      - key: 01a19f33-6b16-71e3-ac6f-fa38342fcc56
+        at: 2026-11-03T02:18:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "What else should the dev process include? These are the things I think are missing."
+        header: "Also adopt"
+        options:
+          - label: "One check gate"
+            detail: "`cargo xtask check` runs everything in order: fmt, clippy, the 500-line rule, tests, the wasm32 build, and `loft fmt --check`, `loft check --fail-on warning` and `loft verify`. It must pass before every wave's merge, like `pnpm check` in the newsroom."
+            recommended: true
+          - label: "Trace tests to criteria"
+            detail: "Each test that verifies an acceptance criterion is linked in `loft.trace.yaml` and accepted with `loft reconcile` at the end of each wave, so the spec shows which ACs are proven."
+            recommended: true
+          - label: "No network in tests"
+            detail: "Tests read small recorded fixtures of each provider's answers (VizieR TSV, SkyServer CSV, Gaia TAP, FITS and NPZ samples). Live fetches only run in tests marked `#[ignore]` that you start by hand. Tests stay fast and don't fail when CDS is down."
+            recommended: true
+          - label: "Dependency hygiene"
+            detail: "`cargo-deny` for licences, advisories and banned or duplicate crates; `cargo-machete` for unused dependencies (the Rust counterpart of the newsroom's strict fallow); `Cargo.lock` committed."
+            recommended: true
+          - label: "wasm32 build check"
+            detail: "`univ-model` is built for `wasm32-unknown-unknown` in the gate, enforcing the spec constraint before Univ Server needs it."
+            recommended: true
+          - label: "AGENTS.md for univ-server"
+            detail: "An `AGENTS.md` (with a `CLAUDE.md` link to it) giving the layout, commands, gates, branch and commit conventions and the science rules, like the newsroom's."
+            recommended: true
+          - label: "Coverage floor"
+            detail: "`cargo llvm-cov` with a minimum line coverage, e.g. 80% for `univ-model` and the ingest crate. It catches untested code, but a floor can push toward tests that run code without checking it."
+        multiple: true
+    responses:
+      - key: 01a19f35-bdd3-7602-bc5e-5a0a6930bf30
+        at: 2026-11-03T02:21:01Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "One check gate"
+          - "Trace tests to criteria"
+          - "No network in tests"
+          - "Dependency hygiene"
+          - "wasm32 build check"
+          - "AGENTS.md for univ-server"
+  - key: 01a19f33-6b16-71e3-ac6f-fa3100063caf
+    id: q-waves
+    kind: question
+    versions:
+      - key: 01a19f33-6b16-71e3-ac6f-fa390910815a
+        at: 2026-11-03T02:18:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should each wave be branched and closed?"
+        header: "Wave branches"
+        options:
+          - label: "Stage branch per wave"
+            detail: "Each wave is a `stage/ingest-wN` branch cut from `product/ingest`, with its own Yard Log. It ends with `/simplify` and `/code-review` in parallel, their findings fixed in the same wave, and the gate green. Then it merges into `product/ingest` once you approve. This is how the newsroom ran."
+            recommended: true
+          - label: "Commits on product/ingest"
+            detail: "Waves are commit ranges on `product/ingest`, reviewed by range. Less ceremony, but no per-wave Yard Log and no merge point to approve."
+    responses:
+      - key: 01a19f35-bdd3-7602-bc5e-5a0bdf70d80b
+        at: 2026-11-03T02:21:01Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Stage branch per wave"
+  - key: 01a19f35-fd34-76f3-8f12-ce6431739b3a
+    id: d-file-length
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a19f35-fd34-76f3-8f12-ce698d5e955b
+        at: 2026-11-03T02:21:18Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The 500-line rule runs in cargo xtask check"
+        consequence: "A workspace `xtask` crate lists every `.rs` file over 500 lines and fails the gate. A file over the limit is split by responsibility in the same wave, never suppressed."
+        question: 01a19f33-6b16-71e3-ac6f-fa2d5eb15fc7
+  - key: 01a19f35-fd34-76f3-8f12-ce65392cddf8
+    id: d-format
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a19f35-fd34-76f3-8f12-ce6ab86320d4
+        at: 2026-11-03T02:21:18Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Formatting is checked by the gate, not rewritten automatically"
+        consequence: "`rustfmt.toml` fixes the style, and `cargo fmt --check` fails the gate on any unformatted file. No editor or commit hook rewrites files, and the fix is to run `cargo fmt` before committing."
+        question: 01a19f33-6b16-71e3-ac6f-fa2e7c74806d
+  - key: 01a19f35-fd34-76f3-8f12-ce663d6e7526
+    id: d-clippy
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a19f35-fd34-76f3-8f12-ce6bb00db7d5
+        at: 2026-11-03T02:21:18Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Clippy pedantic plus guard lints, with warnings as errors"
+        consequence: "`[workspace.lints]` sets clippy `pedantic` plus `unwrap_used`, `expect_used`, `panic`, `dbg_macro` and `print_stdout` (allowed in tests and in the CLI's output module), and `unsafe_code = \"forbid\"`. The gate runs `cargo clippy --workspace --all-targets -- -D warnings`."
+        question: 01a19f33-6b16-71e3-ac6f-fa2f0456c9b7
+  - key: 01a19f35-fd34-76f3-8f12-ce67f86e8410
+    id: d-additions
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a19f35-fd34-76f3-8f12-ce6c105f1fe8
+        at: 2026-11-03T02:21:18Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "One gate, traced tests, offline tests, dependency hygiene, a wasm32 check and an AGENTS.md"
+        consequence: "`cargo xtask check` runs fmt, clippy, the 500-line rule, tests, `cargo deny`, `cargo machete`, the wasm32 build of univ-model, and `loft fmt --check`, `loft check --fail-on warning` and `loft verify`. Every test that verifies a criterion is linked in `loft.trace.yaml` each wave. Tests read recorded fixtures, and live fetches are `#[ignore]`. univ-server gets an `AGENTS.md` and a `CLAUDE.md` link. No coverage floor."
+        question: 01a19f33-6b16-71e3-ac6f-fa30727ee1fc
+  - key: 01a19f35-fd34-76f3-8f12-ce686c204513
+    id: d-waves
+    kind: decision
+    number: 5
+    versions:
+      - key: 01a19f35-fd34-76f3-8f12-ce6d9311831e
+        at: 2026-11-03T02:21:18Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Each wave is its own branch cut from product/ingest"
+        consequence: "Wave N runs on `stage/ingest-wN`, cut from `product/ingest`, with its own Yard Log. It closes with `/simplify` and `/code-review` in parallel, findings fixed in the wave, the gate green and the trace accepted. Then it merges into `product/ingest` only once you approve."
+        question: 01a19f33-6b16-71e3-ac6f-fa3100063caf
