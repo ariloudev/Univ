@@ -46,6 +46,8 @@ pub enum CosmologyError {
     HubbleConstant(f64),
     #[error("the matter density {0} lies outside (0, 1]")]
     MatterDensity(f64),
+    #[error("the density of Λ {0} is negative or not a finite number")]
+    LambdaDensity(f64),
     #[error("the redshift {0} is negative, not a finite number or beyond z = {MAX_REDSHIFT}")]
     Redshift(f64),
     #[error("the comoving distance {0} Mpc is negative or lies beyond z = {MAX_REDSHIFT}")]
@@ -92,7 +94,7 @@ impl Cosmology {
     }
 
     /// E(z) = H(z)/H0.
-    fn expansion(&self, z: f64) -> f64 {
+    pub(crate) fn expansion(&self, z: f64) -> f64 {
         let a = 1.0 + z;
         (self.omega_matter * a * a * a + (1.0 - self.omega_matter)).sqrt()
     }
@@ -146,6 +148,105 @@ impl Cosmology {
             };
         }
         Err(CosmologyError::Distance(distance))
+    }
+}
+
+/// The cosmology a published value assumed, as its source states it: the Hubble constant and,
+/// where stated, the densities of matter and of Λ today. A length in h⁻¹ Mpc assumes
+/// H0 = 100 km/s/Mpc. Checked when read; a value built in code is checked where it is used.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(try_from = "RawAssumedCosmology")]
+pub struct AssumedCosmology {
+    /// The Hubble constant in km/s/Mpc.
+    pub hubble_constant: f64,
+    pub omega_matter: Option<f64>,
+    pub omega_lambda: Option<f64>,
+}
+
+/// An assumed cosmology as read, before its checks.
+#[derive(Deserialize)]
+struct RawAssumedCosmology {
+    hubble_constant: f64,
+    #[serde(default)]
+    omega_matter: Option<f64>,
+    #[serde(default)]
+    omega_lambda: Option<f64>,
+}
+
+impl TryFrom<RawAssumedCosmology> for AssumedCosmology {
+    type Error = CosmologyError;
+    fn try_from(raw: RawAssumedCosmology) -> Result<Self, CosmologyError> {
+        Self::new(raw.hubble_constant, raw.omega_matter, raw.omega_lambda)
+    }
+}
+
+impl AssumedCosmology {
+    /// What a length in h⁻¹ Mpc assumes: H0 = 100 km/s/Mpc.
+    pub const HUBBLE_SCALED: Self = Self::hubble(100.0);
+
+    /// A cosmology stated by its Hubble constant alone, unchecked.
+    #[must_use]
+    pub const fn hubble(hubble_constant: f64) -> Self {
+        Self {
+            hubble_constant,
+            omega_matter: None,
+            omega_lambda: None,
+        }
+    }
+
+    /// # Errors
+    ///
+    /// Fails on a Hubble constant that is not positive, a matter density outside (0, 1] or a
+    /// density of Λ that is negative.
+    pub fn new(
+        hubble_constant: f64,
+        omega_matter: Option<f64>,
+        omega_lambda: Option<f64>,
+    ) -> Result<Self, CosmologyError> {
+        let cosmology = Self {
+            hubble_constant,
+            omega_matter,
+            omega_lambda,
+        };
+        cosmology.check()?;
+        Ok(cosmology)
+    }
+
+    /// Whether it is the H0 = 100 km/s/Mpc of a length in h⁻¹ Mpc.
+    #[must_use]
+    pub fn is_hubble_scaled(&self) -> bool {
+        (self.hubble_constant - Self::HUBBLE_SCALED.hubble_constant).abs() < 1e-12
+    }
+
+    /// # Errors
+    ///
+    /// Fails as [`AssumedCosmology::new`] does.
+    pub fn check(&self) -> Result<(), CosmologyError> {
+        if !positive(self.hubble_constant) {
+            return Err(CosmologyError::HubbleConstant(self.hubble_constant));
+        }
+        if let Some(m) = self.omega_matter
+            && !(m > 0.0 && m <= 1.0)
+        {
+            return Err(CosmologyError::MatterDensity(m));
+        }
+        if let Some(l) = self.omega_lambda
+            && !(l.is_finite() && l >= 0.0)
+        {
+            return Err(CosmologyError::LambdaDensity(l));
+        }
+        Ok(())
+    }
+
+    /// The flat ΛCDM cosmology it states, when it states both densities and they sum to 1 (to
+    /// 1e-6); none otherwise, for a density not stated is never filled in.
+    #[must_use]
+    pub fn flat(&self) -> Option<Cosmology> {
+        let (m, l) = (self.omega_matter?, self.omega_lambda?);
+        if (m + l - 1.0).abs() > 1e-6 {
+            return None;
+        }
+        Cosmology::new("as published", self.hubble_constant, m).ok()
     }
 }
 
@@ -224,6 +325,24 @@ mod tests {
             planck.redshift_at(at_limit + 1.0),
             Err(CosmologyError::Distance(at_limit + 1.0))
         );
+    }
+
+    #[test]
+    fn an_assumed_cosmology_is_flat_only_when_both_densities_say_so() {
+        let wmap = AssumedCosmology::new(71.0, Some(0.27), Some(0.73)).unwrap();
+        let flat = wmap.flat().unwrap();
+        assert_eq!((flat.hubble_constant, flat.omega_matter), (71.0, 0.27));
+        assert!(AssumedCosmology::hubble(70.0).flat().is_none());
+        let open = AssumedCosmology::new(70.0, Some(0.3), Some(0.0)).unwrap();
+        assert!(open.flat().is_none());
+        assert_eq!(
+            AssumedCosmology::new(70.0, None, Some(-0.1)),
+            Err(CosmologyError::LambdaDensity(-0.1))
+        );
+        assert_eq!(AssumedCosmology::HUBBLE_SCALED.hubble_constant, 100.0);
+        let read: AssumedCosmology = serde_norway::from_str("hubble_constant: 74.6").unwrap();
+        assert_eq!(read, AssumedCosmology::hubble(74.6));
+        assert!(serde_norway::from_str::<AssumedCosmology>("hubble_constant: 0").is_err());
     }
 
     #[test]

@@ -6,13 +6,13 @@ use univ_model::units::{Dimension, Unit};
 use univ_model::value::{KindOfValue, Quantity, Uncertainty};
 
 use super::cited::{Assumes, uncited};
-use super::geometry::StructureFrame;
+use univ_model::position::Frame;
 
 /// The members of a structure, with every column's unit, kind of value and uncertainty.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawMembers")]
 pub struct Members {
-    pub frame: StructureFrame,
+    pub frame: Frame,
     /// What each member is, such as `quasar`, `galaxy cluster` or `Mg II absorber`.
     pub tracer: String,
     pub source: MemberSource,
@@ -142,7 +142,7 @@ enum Cell {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RawMembers {
-    frame: StructureFrame,
+    frame: Frame,
     tracer: String,
     #[serde(default)]
     source: Option<MemberSource>,

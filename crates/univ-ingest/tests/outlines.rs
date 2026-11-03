@@ -42,7 +42,7 @@ fn geometry() -> GridGeometry {
         shape: [12, 16, 14],
         cell: 10.0,
         origin: [-75.0, -65.0, -55.0],
-        assumed_hubble_constant: None,
+        assumed_cosmology: None,
     }
 }
 

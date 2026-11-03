@@ -13,6 +13,7 @@
 
 use std::path::Path;
 
+use univ_model::cosmology::AssumedCosmology;
 use univ_model::grid::{Axis, CellUncertainty, Components, Field, Grid, LabelName, Samples};
 use univ_model::position::Frame;
 use univ_model::units::Unit;
@@ -56,7 +57,7 @@ const PUBLISHED: Published = Published {
     cells: [128; 3],
     cell: 1000.0 / 128.0,
     origin: [-500.0; 3],
-    assumed_hubble_constant: Some(74.6),
+    assumed_cosmology: Some(AssumedCosmology::hubble(74.6)),
 };
 
 /// Reads the four label grids of the archive into one grid with a field per member. The labels

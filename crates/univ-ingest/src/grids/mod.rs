@@ -16,6 +16,7 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 
 use thiserror::Error;
+use univ_model::cosmology::AssumedCosmology;
 use univ_model::grid::{Axis, GridError, GridGeometry};
 
 use crate::fits::{FitsError, fill};
@@ -66,7 +67,7 @@ struct Published {
     cell: f64,
     /// The centre of the whole grid's first cell, X, Y, Z.
     origin: Vec3,
-    assumed_hubble_constant: Option<f64>,
+    assumed_cosmology: Option<AssumedCosmology>,
 }
 
 impl Published {
@@ -114,7 +115,7 @@ impl Published {
             shape,
             cell: self.cell,
             origin,
-            assumed_hubble_constant: self.assumed_hubble_constant,
+            assumed_cosmology: self.assumed_cosmology,
         };
         geometry.check()?;
         Ok(geometry)

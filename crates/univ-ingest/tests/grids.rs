@@ -18,6 +18,7 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 use univ_ingest::grids::{Window, read_cf4_basins, read_cf4pp, read_twompp};
+use univ_model::cosmology::AssumedCosmology;
 use univ_model::grid::{Axis, CellUncertainty, Components, Grid, Samples};
 use univ_model::position::{Frame, Vec3, lon_lat};
 use univ_model::units::Unit;
@@ -216,7 +217,7 @@ fn cf4_basins_read_as_labelled_supergalactic_grids_in_fits_axis_order() {
     assert_eq!(g.axes, [Axis::Z, Axis::Y, Axis::X]);
     assert_eq!(g.shape, [17; 3]);
     assert_eq!(g.unit, Unit::MegaparsecOverH);
-    assert_eq!(g.assumed_hubble_constant, Some(74.6));
+    assert_eq!(g.assumed_cosmology, Some(AssumedCosmology::hubble(74.6)));
     // Voxel 54 lies at (54 − 64) × 7.8125, the convention of Dupuy & Courtois 2023 Table 1.
     assert_eq!(g.origin, [-78.125; 3]);
     assert_eq!(grid.fields.len(), 4);

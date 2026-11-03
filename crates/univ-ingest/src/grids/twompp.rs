@@ -33,7 +33,7 @@ const PUBLISHED: Published = Published {
     cells: [257; 3],
     cell: 400.0 / 256.0,
     origin: [-200.0; 3],
-    assumed_hubble_constant: None,
+    assumed_cosmology: None,
 };
 
 /// Reads the density and velocity files into one grid, both reconstructed, with no uncertainty

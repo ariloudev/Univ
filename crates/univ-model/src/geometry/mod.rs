@@ -123,6 +123,8 @@ pub enum GeometryError {
     NotALength(Unit),
     #[error("a {0} needs {1}")]
     Malformed(&'static str, &'static str),
+    #[error("a shape lies in a frame that rotates into the others, not {0:?}")]
+    NotARotatedFrame(Frame),
 }
 
 fn finite(v: &Vec3) -> bool {
@@ -148,6 +150,13 @@ impl Shape {
         if unit.dimension() != Dimension::Length {
             return Err(GeometryError::NotALength(unit));
         }
+        // FK4's E-terms bend a box, and an unstated equinox carries a systematic error a shape
+        // cannot hold: the pipeline moves such coordinates to the ICRS first.
+        if between(frame, Frame::Icrs).rotation().is_none()
+            || frame.systematic_uncertainty().is_some()
+        {
+            return Err(GeometryError::NotARotatedFrame(frame));
+        }
         geometry.check()?;
         Ok(Self {
             frame,
@@ -158,14 +167,16 @@ impl Shape {
 
     /// The bounding box in `frame`, in this shape's unit. `position` gives the position of a
     /// member object in this shape's frame. A member list with a member `position` cannot place
-    /// has no box, rather than a box too small for it.
+    /// has no box, rather than a box too small for it. There is no box in FK4 B1950, which is
+    /// not a rotation of the other frames.
     #[must_use]
     pub fn bounds_in(
         &self,
         frame: Frame,
         position: impl Fn(ObjectId) -> Option<Vec3>,
     ) -> Option<Aabb> {
-        self.geometry.bounds(&between(self.frame, frame), position)
+        let rotation = between(self.frame, frame).rotation()?;
+        self.geometry.bounds(&rotation, position)
     }
 }
 

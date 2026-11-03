@@ -9,7 +9,7 @@ fn geometry(axes: [Axis; 3]) -> GridGeometry {
         shape: [2, 3, 4],
         cell: 10.0,
         origin: [-5.0, -10.0, -15.0],
-        assumed_hubble_constant: None,
+        assumed_cosmology: None,
     }
 }
 
