@@ -3,7 +3,8 @@
 
 mod common;
 
-use common::{entry, every_table, normalized_fixture};
+use common::{definition_of, entry, every_table, fixture_of, normalize_body, normalized_fixture};
+use univ_ingest::source::{Condition, Fix, FixAction};
 use univ_model::redshift::DipoleModel;
 use univ_model::value::Uncertainty;
 
@@ -49,4 +50,78 @@ fn the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from() {
         yaml.contains("heliocentric:") && yaml.contains("dipole: planck2018"),
         "{yaml}"
     );
+}
+
+#[test]
+fn a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed() {
+    // eRASS1: Z_LAMBDA belongs to a foreground or background cluster on lit_z rows (Kluge et
+    // al. 2024, Appendix A), so it and its error are dropped there.
+    let erass1 = definition_of("erass1-clusters");
+    let drops: Vec<_> = erass1
+        .fixes
+        .iter()
+        .filter_map(|f| match &f.action {
+            Some(FixAction::DropWhen { columns, when }) => Some((columns, when)),
+            _ => None,
+        })
+        .collect();
+    let [(columns, when)] = &drops[..] else {
+        panic!("one drop fix")
+    };
+    assert_eq!(*columns, &["Z_LAMBDA", "Z_LAMBDA_ERR"]);
+    assert_eq!(
+        (when.column.as_str(), &when.is[..]),
+        ("BEST_Z_TYPE", &["lit_z".to_owned()][..])
+    );
+
+    // The same action on the recorded 2M++ rows, dropping Ksmag where Cln is x: row 1 has a
+    // magnitude, row 2 none to drop, row 3 is left out for its blank
+    // identifier; row 4 is untouched.
+    let mut definition = definition_of("twompp-catalogue");
+    definition.fixes.push(Fix {
+        defect: "a test defect".into(),
+        change: "Ksmag is dropped where Cln is x".into(),
+        evidence: "a test".into(),
+        action: Some(FixAction::DropWhen {
+            columns: vec!["Ksmag".into()],
+            when: Condition {
+                column: "Cln".into(),
+                is: vec!["x".into()],
+            },
+        }),
+    });
+    let text = std::fs::read_to_string(fixture_of(&definition)).unwrap();
+    let mut row = 0;
+    let lines: Vec<String> = text
+        .lines()
+        .map(|line| {
+            let mut cells: Vec<&str> = line.split('\t').collect();
+            let data = !line.starts_with('#')
+                && cells.len() == 9
+                && cells[3].trim().parse::<f64>().is_ok();
+            if data {
+                row += 1;
+                match row {
+                    1 => cells[8] = "x",
+                    2 => (cells[5], cells[8]) = ("", "x"),
+                    3 => (cells[2], cells[8]) = ("", "x"),
+                    _ => {}
+                }
+            }
+            cells.join("\t")
+        })
+        .collect();
+    let n = normalize_body(&definition, (lines.join("\n") + "\n").as_bytes());
+    let counts: Vec<(&str, u64)> = n
+        .report
+        .fixes
+        .iter()
+        .map(|f| (f.change.as_str(), f.entries_changed))
+        .collect();
+    assert_eq!(counts.len(), 2, "{counts:?}");
+    assert_eq!(counts[1], ("Ksmag is dropped where Cln is x", 1));
+    assert_eq!(n.report.left_out_total(), 1);
+    assert_eq!(entry(&n, "01413509-8920041").magnitude, None);
+    assert!(entry(&n, "23085574-8859141").magnitude.is_none());
+    assert!(entry(&n, "15433127-8740427").magnitude.is_some());
 }

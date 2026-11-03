@@ -34,6 +34,8 @@ struct Row<'a, 'c> {
     cx: &'a Context<'a>,
     cells: &'a [Cow<'c, str>],
     kinds: Vec<(usize, KindOfValue)>,
+    /// Columns a fix dropped on this row, read as blank.
+    dropped: Vec<usize>,
     changed: Changed,
 }
 
@@ -47,6 +49,7 @@ pub(super) fn read(
         cx,
         cells,
         kinds: Vec::new(),
+        dropped: Vec::new(),
         changed: 0,
     };
     match row.entry() {
@@ -66,6 +69,9 @@ pub(super) fn read(
 
 impl Row<'_, '_> {
     fn cell(&self, index: usize) -> &str {
+        if self.dropped.contains(&index) {
+            return "";
+        }
         self.cells.get(index).map_or("", |c| c.as_ref())
     }
 
@@ -110,6 +116,7 @@ impl Row<'_, '_> {
         let plan = self.cx.plan;
         self.rules()?;
         self.zero_errors()?;
+        self.drop_values();
         let identifier = self
             .text(plan.identifier)
             .ok_or(LeftOutReason::MissingIdentifier)?;
@@ -226,6 +233,24 @@ impl Row<'_, '_> {
             }
         }
         Ok(())
+    }
+
+    /// Drops the values of the columns of each fix whose condition the row meets, marking the
+    /// fix when it dropped a value that was there.
+    fn drop_values(&mut self) {
+        for fix in &self.cx.plan.fixes {
+            let FixEffect::DropWhen { column, is } = &fix.effect else {
+                continue;
+            };
+            let cell = self.cell(*column).trim_end_matches(['\0', ' ']).trim();
+            if !is.iter().any(|v| v == cell) {
+                continue;
+            }
+            if fix.columns.iter().any(|c| !self.cell(*c).trim().is_empty()) {
+                self.changed |= 1 << fix.fix;
+            }
+            self.dropped.extend(&fix.columns);
+        }
     }
 
     /// Marks each fix that reads columns in another unit, for an entry that took a value from

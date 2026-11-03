@@ -95,6 +95,11 @@ pub(super) enum FixEffect {
     ReadAs,
     ZeroIsNoneReported,
     ZeroLeavesOut(LeftOutReason),
+    /// The columns are blank on rows whose cell in `column`, trimmed, is one of `is`.
+    DropWhen {
+        column: usize,
+        is: Vec<String>,
+    },
 }
 
 /// Everything the row reader needs, resolved once per table.
@@ -290,6 +295,10 @@ impl Resolver<'_> {
             FixAction::ReadAs { .. } => FixEffect::ReadAs,
             FixAction::ZeroErrorIsNoneReported { .. } => FixEffect::ZeroIsNoneReported,
             FixAction::ZeroErrorLeavesOut { reason, .. } => FixEffect::ZeroLeavesOut(*reason),
+            FixAction::DropWhen { when, .. } => FixEffect::DropWhen {
+                column: self.index(&when.column)?,
+                is: when.is.clone(),
+            },
         };
         Ok(FixPlan {
             fix,

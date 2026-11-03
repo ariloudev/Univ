@@ -188,6 +188,12 @@ pub enum FixAction {
         columns: Vec<String>,
         reason: LeftOutReason,
     },
+    /// On the rows that meet `when`, the values of `columns` are dropped and the entry kept, as
+    /// if the cells were blank.
+    DropWhen {
+        columns: Vec<String>,
+        when: Condition,
+    },
 }
 
 /// Fields a definition maps at most one column to. Quality columns are kept by name, and the
@@ -306,6 +312,13 @@ pub(super) fn check(
         }
         for c in action.columns() {
             table.known(&at, c)?;
+        }
+        if let FixAction::DropWhen { when, .. } = action {
+            let at = format!("fixes[{i}].action.when");
+            table.known(&format!("{at}.column"), &when.column)?;
+            if when.is.is_empty() {
+                return Err(problem(at, "lists no value"));
+            }
         }
     }
     Ok(())
@@ -427,7 +440,8 @@ impl FixAction {
         match self {
             Self::ReadAs { columns, .. }
             | Self::ZeroErrorIsNoneReported { columns }
-            | Self::ZeroErrorLeavesOut { columns, .. } => columns,
+            | Self::ZeroErrorLeavesOut { columns, .. }
+            | Self::DropWhen { columns, .. } => columns,
         }
     }
 }
