@@ -164,35 +164,64 @@ fn sigma_of(q: &Quantity) -> Option<f64> {
     }
 }
 
-/// The candidate the rule prefers, by place in `candidates`, leaving out the one at `excluded`,
-/// and what decided it.
-fn winner(
+/// Whether `rank` is a redshift's.
+fn is_redshift(rank: MethodRank) -> bool {
+    matches!(
+        rank,
+        MethodRank::SpectroscopicRedshift | MethodRank::PhotometricRedshift
+    )
+}
+
+/// The candidates the rule weighs, by place in `candidates`, leaving out the one at `excluded`
+/// and, where `threshold` is given and a geometric or indicator candidate exists, every redshift
+/// candidate whose fractional uncertainty exceeds it.
+fn remaining(
     candidates: &[Candidate],
     excluded: Option<usize>,
+    threshold: Option<f64>,
+) -> Vec<usize> {
+    let open = (0..candidates.len()).filter(|&i| Some(i) != excluded);
+    let indicator = open.clone().any(|i| !is_redshift(candidates[i].rank));
+    open.filter(|&i| {
+        let c = &candidates[i];
+        let above = threshold.is_some_and(|t| c.uncertainty.total().is_some_and(|f| f > t));
+        !(indicator && above && is_redshift(c.rank))
+    })
+    .collect()
+}
+
+/// The winner among `open` by steps (ii) and (iii) of the rule, and what decided it.
+fn among(
+    object: &Object,
+    candidates: &[Candidate],
+    open: &[usize],
     rules: &RankingRules,
 ) -> Option<(usize, Decided)> {
     let total = |i: usize| candidates[i].uncertainty.total();
-    let by_rank = |a: &usize, b: &usize| {
-        let (x, y) = (&candidates[*a], &candidates[*b]);
-        let t = |i: usize| total(i).unwrap_or(f64::INFINITY);
-        rules
-            .rank_of(x.rank)
-            .cmp(&rules.rank_of(y.rank))
-            .then(t(*a).partial_cmp(&t(*b)).unwrap_or(Ordering::Equal))
-            .then(a.cmp(b))
-    };
-    let open: Vec<usize> = (0..candidates.len())
-        .filter(|&i| Some(i) != excluded)
+    let rank = |i: usize| rules.rank_of(candidates[i].rank);
+    let (reported, unreported): (Vec<usize>, Vec<usize>) =
+        open.iter().partition(|&&i| total(i).is_some());
+    let best_reported = reported.iter().map(|&i| rank(i)).min();
+    let qualifying: Vec<usize> = unreported
+        .into_iter()
+        .filter(|&i| best_reported.is_none_or(|best| rank(i) < best))
         .collect();
-    let reported: Vec<usize> = open
-        .iter()
-        .copied()
-        .filter(|&i| total(i).is_some())
-        .collect();
-    if reported.is_empty() {
-        let best = open.iter().copied().min_by(by_rank)?;
-        let decided = if open.len() == 1 {
-            Decided::OnlyCandidate
+    if let Some(&best) = qualifying.iter().min_by(|&&a, &&b| {
+        let source = |i: usize| {
+            let entry = &object.entries[candidates[i].entry].entry;
+            rules.source_place(&entry.designation.source)
+        };
+        rank(a)
+            .cmp(&rank(b))
+            .then(source(a).cmp(&source(b)))
+            .then(a.cmp(&b))
+    }) {
+        let shared = qualifying
+            .iter()
+            .filter(|&&i| rank(i) == rank(best))
+            .count();
+        let decided = if shared > 1 {
+            Decided::SourceOrder
         } else {
             Decided::MethodRankNoneReported
         };
@@ -206,14 +235,41 @@ fn winner(
         .into_iter()
         .filter(|&i| total(i).is_some_and(|t| t <= smallest + rules.tie_tolerance))
         .collect();
-    let best = tied.iter().copied().min_by(by_rank)?;
-    let decided = if open.len() == 1 {
-        Decided::OnlyCandidate
-    } else if tied.len() > 1 {
+    let best = tied.iter().copied().min_by(|&a, &b| {
+        let t = |i: usize| total(i).unwrap_or(f64::INFINITY);
+        rank(a)
+            .cmp(&rank(b))
+            .then(t(a).partial_cmp(&t(b)).unwrap_or(Ordering::Equal))
+            .then(a.cmp(&b))
+    })?;
+    let decided = if tied.len() > 1 {
         Decided::MethodRank
     } else {
         Decided::Uncertainty
     };
+    Some((best, decided))
+}
+
+/// The candidate the rule prefers, by place in `candidates`, leaving out the one at `excluded`,
+/// and what decided it: the redshift threshold where the winner without it would have been
+/// another.
+fn winner(
+    object: &Object,
+    candidates: &[Candidate],
+    excluded: Option<usize>,
+    rules: &RankingRules,
+) -> Option<(usize, Decided)> {
+    let open = remaining(candidates, excluded, Some(rules.redshift_threshold));
+    let (best, decided) = among(object, candidates, &open, rules)?;
+    let unthresholded = remaining(candidates, excluded, None);
+    if unthresholded.len() == 1 {
+        return Some((best, Decided::OnlyCandidate));
+    }
+    if unthresholded.len() != open.len()
+        && among(object, candidates, &unthresholded, rules).is_some_and(|(b, _)| b != best)
+    {
+        return Some((best, Decided::RedshiftThreshold));
+    }
     Some((best, decided))
 }
 
@@ -225,8 +281,8 @@ pub fn choose(
     candidates: &[Candidate],
     rules: &RankingRules,
 ) -> Option<PreferredDistance> {
-    let (best, decided) = winner(candidates, None, rules)?;
-    let runner_up = winner(candidates, Some(best), rules).map(|(i, _)| {
+    let (best, decided) = winner(object, candidates, None, rules)?;
+    let runner_up = winner(object, candidates, Some(best), rules).map(|(i, _)| {
         let c = &candidates[i];
         (c.measurement(object), c.uncertainty)
     });

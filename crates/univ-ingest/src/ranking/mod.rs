@@ -13,18 +13,20 @@ pub use distance::{Candidate, Which, candidates, choose, fraction, redshift_dist
 pub use rules::RankingRules;
 
 /// Ranks `object` under the release cosmology of `release`, whose table of D(z) is built once
-/// per run: its preferred distance and position, and whether it can be placed.
+/// per run: its preferred distance and position, and whether it can be placed. An object whose
+/// preferred distance is more than 100% uncertain keeps it, for look-ups, but is not placed.
 pub fn rank(object: &mut Object, rules: &RankingRules, release: &Release) {
     let found = candidates(object, rules, release);
     object.preferred_distance = choose(object, &found, rules);
     object.preferred_position = preferred_position(object, rules);
-    object.placement = if object.preferred_distance.is_some() {
-        Placement::Placed
-    } else {
-        Placement::NotPlaced {
-            reason: NotPlacedReason::NoDistance,
+    let reason = match &object.preferred_distance {
+        None => Some(NotPlacedReason::NoDistance),
+        Some(p) if p.uncertainty.total().is_some_and(|f| f > 1.0) => {
+            Some(NotPlacedReason::DistanceTooUncertain)
         }
+        Some(_) => None,
     };
+    object.placement = reason.map_or(Placement::Placed, |reason| Placement::NotPlaced { reason });
 }
 
 /// Ranks every object.

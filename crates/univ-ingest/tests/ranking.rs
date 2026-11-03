@@ -297,7 +297,12 @@ fn every_recorded_answer_ranks() {
         m.objects.len()
     );
     for o in &m.objects {
-        assert_eq!(o.placement.is_placed(), o.preferred_distance.is_some());
+        // Placed with a preferred distance, unless that distance is more than 100% uncertain.
+        let placeable = o
+            .preferred_distance
+            .as_ref()
+            .is_some_and(|p| p.uncertainty.total().is_none_or(|f| f <= 1.0));
+        assert_eq!(o.placement.is_placed(), placeable);
         if let Some(p) = &o.preferred_distance {
             assert!(o.entry(p.measurement.entry()).is_some());
             assert!(p.distance_mpc > 0.0);

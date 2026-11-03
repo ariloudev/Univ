@@ -104,8 +104,15 @@ pub enum Decided {
     Uncertainty,
     /// Its uncertainty tied with another's, and its method ranks higher.
     MethodRank,
-    /// No candidate reported an uncertainty, and its method ranks highest.
+    /// It was published without an uncertainty, and its method ranks strictly better than that
+    /// of every remaining candidate with one, or no remaining candidate has one.
     MethodRankNoneReported,
+    /// A redshift distance whose fractional uncertainty passes the rule's threshold would have
+    /// won, and was set aside because an indicator or geometric distance is a candidate.
+    RedshiftThreshold,
+    /// It was published without an uncertainty, shares the best method rank with another such
+    /// candidate, and its source comes first in the rule's order of sources.
+    SourceOrder,
 }
 
 /// The measurement that places an object, and the uncertainty that made it win.
@@ -153,6 +160,9 @@ pub enum NotPlacedReason {
     /// Its preferred distance cannot be derived under the release cosmology, such as a
     /// redshift beyond the model.
     NotDerivable,
+    /// Its preferred distance has a fractional uncertainty above 1 (100%): it would place the
+    /// object nowhere in particular along its line of sight.
+    DistanceTooUncertain,
 }
 
 impl NotPlacedReason {
@@ -163,6 +173,7 @@ impl NotPlacedReason {
             Self::NoDistance => "no distance",
             Self::NoSkyPosition => "no sky position",
             Self::NotDerivable => "distance not derivable",
+            Self::DistanceTooUncertain => "distance too uncertain",
         }
     }
 }

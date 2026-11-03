@@ -118,14 +118,15 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
     let log = String::from_utf8(run.stderr).unwrap();
     assert!(run.status.success(), "{log}");
     for line in [
-        "Z Step cross-match: positions: 17 placed of 24\n",
+        // M81's 2MRS redshift alone is about 600% uncertain: it is not placed, and in no tile.
+        "Z Step cross-match: positions: 16 placed of 24\n",
         "Z Stage tiles: 3 items\n",
         "Z Step tiles: stars: 1 nodes, 1 points, largest tile 65 bytes\n",
         "Z Step tiles: nearby galaxies: 1 nodes, 8 points, largest tile 184 bytes\n",
-        "Z Step tiles: cosmic web: 1 nodes, 8 points, largest tile 184 bytes\n",
+        "Z Step tiles: cosmic web: 1 nodes, 7 points, largest tile 167 bytes\n",
         "Z tiles: 1 stars nodes, 1 stars points, 65 stars largest tile bytes, 1 nearby galaxies \
          nodes, 8 nearby galaxies points, 184 nearby galaxies largest tile bytes, 1 cosmic web \
-         nodes, 8 cosmic web points, 184 cosmic web largest tile bytes, 7 unplaced objects in no \
+         nodes, 7 cosmic web points, 167 cosmic web largest tile bytes, 8 unplaced objects in no \
          tile\n",
         "Z Stopped at tiles: tiles only; no release was asked for\n",
     ] {
@@ -135,7 +136,7 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
         .into_iter()
         .map(|d| check_domain(out.path(), d))
         .collect();
-    assert_eq!(points, [1, 8, 8], "the 17 placed objects, each in one tile");
+    assert_eq!(points, [1, 8, 7], "the 16 placed objects, each in one tile");
 
     // The same run again, from a fresh state, writes the same bytes.
     let (again, out_again) = (tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap());
