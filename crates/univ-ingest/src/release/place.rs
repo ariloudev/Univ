@@ -107,10 +107,9 @@ pub fn centre(
     release: &Release,
     correction: &CmbCorrection,
 ) -> Result<Vec3, String> {
-    let middle = |b: Aabb| -> Vec3 { std::array::from_fn(|k| f64::midpoint(b.min[k], b.max[k])) };
     match &structure.geometry {
         Some(StructureGeometry::Members(_)) => {
-            index_bounds(structure, placed, release, correction).map(middle)
+            index_bounds(structure, placed, release, correction).map(|b| b.centre())
         }
         Some(StructureGeometry::Primitive(p)) => {
             place(&p.centre, release, correction).map(|(c, _)| c)

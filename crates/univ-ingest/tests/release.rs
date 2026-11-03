@@ -11,9 +11,13 @@ mod common;
 mod release_fixture;
 
 use common::workspace;
-use release_fixture::{BUILT_AT, build_next, built, cross, d1_text, fixture, read_manifest, tiles};
-use univ_ingest::crossmatch::Basis;
-use univ_ingest::release::{cell_rows, list, release_dir, structure_rows};
+use release_fixture::{
+    BUILT_AT, Fixture, build_next, built, cross, d1_text, fixture, read_manifest, tiles,
+};
+use univ_ingest::crossmatch::{Basis, CrossMatched};
+use univ_ingest::release::{
+    Placing, StructureBounds, cell_rows, list, placements, release_dir, structure_rows,
+};
 use univ_ingest::state::{State, pending};
 use univ_ingest::tiles::sha256;
 use univ_model::cosmology::Cosmology;
@@ -106,14 +110,25 @@ fn the_manifest_lists_every_file_of_the_release_with_its_sha256() {
     assert!(m.d1.estimated_bytes > 0 && m.d1.estimated_bytes < m.d1.cap_bytes);
 }
 
+/// The boxes the fixture's structures enter the cell index with.
+fn structure_bounds(f: &Fixture, crossed: &CrossMatched) -> Vec<StructureBounds> {
+    let release = univ_model::derive::Release::new(&crossed.cosmology);
+    let dipole = CmbCorrection::new(crossed.dipole);
+    let placing = Placing {
+        release: &release,
+        correction: &dipole,
+        dipole: "planck2018".to_owned(),
+    };
+    let none = std::collections::BTreeMap::new();
+    let placed = placements(&f.structures, &crossed.structures, &placing, &none).unwrap();
+    structure_rows(1, &placed).unwrap().1
+}
+
 #[test]
 fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
     let f = fixture();
     let crossed = cross(&f);
-    let release = univ_model::derive::Release::new(&crossed.cosmology);
-    let (s, dipole) = (&crossed.structures, CmbCorrection::new(crossed.dipole));
-    let none = std::collections::BTreeMap::new();
-    let (_, mut bounds) = structure_rows(1, &f.structures, s, &none, &release, &dipole).unwrap();
+    let mut bounds = structure_bounds(&f, &crossed);
     // SIMULATED: the recorded answers place no member list whole, so a wall 1,500 Mpc long
     // stands in for a structure with a bounding box.
     let wall = univ_model::geometry::Aabb {

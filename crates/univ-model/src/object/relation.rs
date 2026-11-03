@@ -8,6 +8,7 @@ use crate::ids::Designation;
 
 /// What an object's sources list it as.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum ObjectKind {
     /// One body: a star, a galaxy, or a cluster listed as one entry.
@@ -20,6 +21,7 @@ pub enum ObjectKind {
 
 /// How one object stands to another.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RelationKind {
     /// The other object is this group's dominant galaxy, as the group's source names it.
@@ -36,6 +38,7 @@ pub enum RelationKind {
 /// the identifier `identifier` of `scheme` that the group's source gives. The two objects stay
 /// apart, and neither lends the other a measurement.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Relation {
     pub kind: RelationKind,
     pub entry: Designation,

@@ -66,6 +66,8 @@ problem_types! {
     ReleasePruned = "urn:univ:problem:release-pruned", "Release pruned", 410;
     /// The release has no source of that id.
     SourceNotFound = "urn:univ:problem:source-not-found", "No such source", 404;
+    /// No object of the release answers the id, designation or name looked up.
+    ObjectNotFound = "urn:univ:problem:object-not-found", "No such object", 404;
     /// The release has no structure of that id.
     StructureNotFound = "urn:univ:problem:structure-not-found", "No such structure", 404;
     /// The server failed to answer a request it should have answered.

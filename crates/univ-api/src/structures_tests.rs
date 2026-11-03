@@ -34,7 +34,7 @@ fn the_geometry_is_a_univ_model_geometry_in_a_named_frame() {
     assert_eq!(bootes["shape"]["unit"], "megaparsec");
     assert_eq!(bootes["centre"]["frame"], "ICRS equatorial Cartesian");
     assert_eq!(bootes["centre"]["origin"], "Solar System barycentre");
-    assert_eq!(bootes["centre"]["unit"], "Mpc");
+    assert_eq!(bootes["centre"]["unit"], "megaparsec");
 }
 
 #[test]
@@ -143,6 +143,12 @@ fn the_listing_is_filtered_by_the_kinds_and_scale_domains_named() {
     assert_eq!(both["structures"].as_array().unwrap().len(), 3);
     let none = read(&db(), "/v1/structures", "scale_domain=stars");
     assert_eq!(none["structures"], json!([]));
+    let unfiltered = read(&db(), "/v1/structures", "kind=&scale_domain=+,");
+    assert_eq!(
+        unfiltered["structures"].as_array().unwrap().len(),
+        3,
+        "an empty filter is none"
+    );
 }
 
 #[test]

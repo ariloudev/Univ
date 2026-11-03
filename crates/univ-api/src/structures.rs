@@ -7,7 +7,6 @@
 
 use serde_json::{Value, json};
 use univ_model::api::structures::{Centre, StructureDetail, StructurePage, StructureSummary};
-use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
 
 use crate::backend::{Backend, Row, column, first, json_column};
 use crate::http::{Request, Response};
@@ -50,10 +49,8 @@ pub async fn list<B: Backend>(request: &Request, backend: &B) -> Result<Response
     let limit = PAGE + 1;
     let rows = backend
         .releases(
-            "SELECT s.id, s.name, s.kind, s.scale_domain, s.centre_x, s.centre_y, s.centre_z, \
-             d.unit FROM structures s LEFT JOIN scale_domains d \
-             ON d.release = s.release AND d.name = s.scale_domain \
-             WHERE s.release = ?1 AND s.id > ?2 \
+            "SELECT s.id, s.name, s.kind, s.scale_domain, s.centre_x, s.centre_y, s.centre_z \
+             FROM structures s WHERE s.release = ?1 AND s.id > ?2 \
              AND (?3 IS NULL OR s.kind IN (SELECT value FROM json_each(?3))) \
              AND (?4 IS NULL OR s.scale_domain IN (SELECT value FROM json_each(?4))) \
              ORDER BY s.id LIMIT ?5",
@@ -107,10 +104,9 @@ pub async fn get<B: Backend>(
     let rows = backend
         .releases(
             "SELECT s.id, s.name, s.kind, s.status, s.scale_domain, s.centre_x, s.centre_y, \
-             s.centre_z, s.record, s.members, s.bounds, d.unit, \
+             s.centre_z, s.record, s.members, s.bounds, \
              sd.shape, sd.derivation, sd.outline, sd.rescaled \
              FROM structures s \
-             LEFT JOIN scale_domains d ON d.release = s.release AND d.name = s.scale_domain \
              LEFT JOIN structure_details sd ON sd.release = s.release AND sd.id = s.id \
              WHERE s.release = ?1 AND s.id = ?2",
             &[json!(release), json!(id)],
@@ -153,31 +149,32 @@ fn centre(row: &Row) -> Result<Option<Centre>, Problem> {
     let x: Option<f64> = column(row, "centre_x")?;
     let y: Option<f64> = column(row, "centre_y")?;
     let z: Option<f64> = column(row, "centre_z")?;
-    let unit: Option<String> = column(row, "unit")?;
+    let scale_domain: String = column(row, "scale_domain")?;
     Ok(match (x, y, z) {
-        (Some(x), Some(y), Some(z)) => Some(Centre {
-            frame: ICRS_CARTESIAN_NAME.to_owned(),
-            origin: BARYCENTRE.to_owned(),
-            unit: unit.unwrap_or_else(|| "Mpc".to_owned()),
-            x,
-            y,
-            z,
-        }),
+        (Some(x), Some(y), Some(z)) => Some(Centre::placed(&scale_domain, [x, y, z])),
         _ => None,
     })
 }
 
 /// The values of a comma-separated query parameter, as a JSON array for `json_each`, or null
-/// when the parameter is absent.
+/// (no filter) when the parameter is absent or names no value, as a form sends `kind=` when
+/// nothing is chosen.
 fn list_param(request: &Request, name: &str) -> Value {
-    request.param(name).map_or(Value::Null, |text| {
-        json!(
+    let values: Vec<String> = request
+        .param(name)
+        .map(|text| {
             text.split(',')
                 .map(str::trim)
                 .filter(|v| !v.is_empty())
-                .collect::<Vec<_>>()
-        )
-    })
+                .map(str::to_owned)
+                .collect()
+        })
+        .unwrap_or_default();
+    if values.is_empty() {
+        Value::Null
+    } else {
+        json!(values)
+    }
 }
 
 /// The release and the last id a cursor names, or a problem naming the cursor.

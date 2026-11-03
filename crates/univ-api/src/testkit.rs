@@ -27,6 +27,9 @@ pub fn block_on<F: Future>(future: F) -> F::Output {
 /// The release database, with univ-model's schema, in memory.
 pub struct Sqlite {
     connection: rusqlite::Connection,
+    vocabularies: crate::Vocabularies,
+    /// How many statements were run, to show what the vocabulary keeping saves.
+    pub statements: std::cell::Cell<usize>,
 }
 
 impl Sqlite {
@@ -36,7 +39,11 @@ impl Sqlite {
         connection
             .execute_batch(univ_model::release::SCHEMA)
             .unwrap();
-        Self { connection }
+        Self {
+            connection,
+            vocabularies: crate::Vocabularies::default(),
+            statements: std::cell::Cell::new(0),
+        }
     }
 
     /// Runs `sql`, statements that write the fixture's rows.
@@ -58,6 +65,15 @@ impl Sqlite {
     }
 }
 
+impl Sqlite {
+    /// The answer to a GET of `path` with the raw query `query`, and the JSON it carries.
+    pub fn get_json(&self, path: &str, query: &str) -> (Response, Value) {
+        let response = self.get(path, query);
+        let document = body(&response);
+        (response, document)
+    }
+}
+
 /// The JSON document a response carries.
 pub fn body(response: &Response) -> Value {
     serde_json::from_slice(response.body.as_bytes())
@@ -70,7 +86,25 @@ impl Backend for Sqlite {
         sql: &str,
         params: &[Value],
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>> {
+        self.statements.set(self.statements.get() + 1);
         std::future::ready(self.query(sql, params))
+    }
+
+    fn releases_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>> {
+        self.statements.set(self.statements.get() + 1);
+        std::future::ready(
+            statements
+                .iter()
+                .map(|(sql, params)| self.query(sql, params))
+                .collect(),
+        )
+    }
+
+    fn vocabularies(&self) -> &crate::Vocabularies {
+        &self.vocabularies
     }
 }
 
@@ -210,3 +244,23 @@ SELECT 2, printf('filler-%04d', i), printf('Filler %d', i),
   CASE i % 2 WHEN 0 THEN 'wall' ELSE 'filament' END, 'observed', 'cosmic_web',
   i, 0, 0, 'point', '{}', NULL, NULL FROM n;
 ";
+
+/// Release 2's objects, names and designations, and an id ledger: 5 merged into 10 and 6 split
+/// into 20 and 21 by release 2, 7 retired, 8 merged into 9 by release 1 and 9 into 30 by
+/// release 2, and 50 and 40 merged into 10 only by release 3.
+pub const OBJECTS: &str = "
+INSERT INTO objects (release, id, kind, placed) VALUES
+  (2, 10, 1, 1), (2, 11, 1, 1), (2, 12, 1, 1), (2, 20, 1, 1), (2, 21, 1, 1), (2, 30, 1, 1),
+  (2, 50, 1, 1), (1, 5, 1, 1), (1, 6, 1, 1);
+INSERT INTO names VALUES
+  (2, 'm31', 10, 0, 'M 31'), (2, 'm31', 10, 0, 'M31'), (2, 'andromeda', 10, 0, 'Andromeda'),
+  (2, 'twins', 11, 0, 'Twins'), (2, 'twins', 12, 0, 'Twins');
+INSERT INTO designations VALUES (2, 0, 'HIP 1', 10), (2, 0, 'HIP 2', 11), (2, 0, 'HIP 2', 12);
+INSERT INTO ids_replaced VALUES
+  (5, 2, 'merged_into', '[10]'), (6, 2, 'split_into', '[20,21]'), (7, 2, 'retired', '[]'),
+  (8, 1, 'merged_into', '[9]'), (9, 2, 'merged_into', '[30]'),
+  (50, 3, 'merged_into', '[10]'), (40, 3, 'merged_into', '[10]');
+";
+
+/// Release 2 of Univ Ingest's fixture, with every object and the vocabulary it is coded in.
+pub const FIXTURE_OBJECTS: &str = include_str!("testkit_objects.sql");

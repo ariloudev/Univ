@@ -8,6 +8,7 @@ use crate::units::{Unit, UnitError};
 
 /// Whether a value was measured, estimated, inferred by analysis or reconstructed by a model.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum KindOfValue {
     Measured,
@@ -185,12 +186,18 @@ impl TryFrom<RawQuantity> for Quantity {
 }
 
 /// A value as its source published it, beside its normalized form, with its kind of value.
+/// Its schema is named `MeasuredValue`: an OpenAPI generator reads a type named `Value` as any
+/// JSON value.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema), schema(as = MeasuredValue))]
 pub struct Value {
     pub native: Quantity,
     pub normalized: Quantity,
     pub kind: KindOfValue,
 }
+
+/// [`Value`] by the name of its schema.
+pub type MeasuredValue = Value;
 
 impl Value {
     /// Keeps `native` as published and normalizes it to `unit`.

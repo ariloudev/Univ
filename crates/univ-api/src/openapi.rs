@@ -24,7 +24,9 @@ use crate::problem::{Problem, ProblemDocument, ProblemType};
         crate::sources::get,
         crate::sources::provenance::provenance,
         crate::structures::list,
-        crate::structures::get
+        crate::structures::get,
+        crate::objects::find,
+        crate::objects::get
     ),
     components(schemas(ProblemDocument, ProblemType))
 )]

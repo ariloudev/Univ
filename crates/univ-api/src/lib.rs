@@ -7,6 +7,7 @@
 mod backend;
 mod cors;
 mod http;
+mod objects;
 mod openapi;
 mod problem;
 mod releases;
@@ -18,6 +19,7 @@ mod testkit;
 
 pub use backend::{Backend, BackendError, Row};
 pub use http::{Body, Method, Request, Response};
+pub use objects::vocabulary::Vocabularies;
 pub use openapi::document;
 pub use problem::{Problem, ProblemType};
 pub use routes::{ROUTES, Route};

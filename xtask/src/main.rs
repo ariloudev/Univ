@@ -5,7 +5,9 @@
 //! - `cargo xtask science <release-dir>` runs the science checks of a built release.
 //! - `cargo xtask integration` runs Univ Server's end-to-end tests inside `wrangler dev`.
 //! - `cargo xtask serve` runs Univ Server on the real local state.
+//! - `cargo xtask bench lookup` times object lookups through it (QA-2).
 
+mod bench;
 mod integration;
 mod lines;
 mod science;
@@ -139,12 +141,18 @@ fn main() -> ExitCode {
             integration::integration(&root)
         }
         Some("serve") => integration::serve(&root),
+        Some("bench") if std::env::args().nth(2).as_deref() == Some("lookup") => {
+            integration::stop_on_interrupt();
+            bench::lookup(&root)
+        }
         Some("science") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             science::run(&root, &args)
         }
         _ => {
-            eprintln!("usage: cargo xtask <check|lines|integration|serve|science <release-dir>>");
+            eprintln!(
+                "usage: cargo xtask <check|lines|integration|serve|bench lookup|science <release-dir>>"
+            );
             return ExitCode::from(2);
         }
     };

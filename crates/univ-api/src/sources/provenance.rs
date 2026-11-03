@@ -93,17 +93,23 @@ pub async fn provenance<B: Backend>(
     Ok(pinned(Response::json(&record)?, release))
 }
 
-/// Each fix the source definition states, with how many entries normalization changed by it:
-/// a report's fix is matched to its definition by the change, which normalization copies.
+/// Each fix the source definition states, with how many entries normalization changed by it.
+/// A report's fix is matched to its definition by the change, which normalization copies;
+/// each reported fix is counted for one definition only, in order, so two definitions that
+/// state the same change are not both credited with each other's entries.
 fn fixes(defined: Vec<DefinedFix>, applied: &[AppliedFix]) -> Vec<Fix> {
+    let mut used = vec![false; applied.len()];
     defined
         .into_iter()
         .map(|fix| {
-            let entries_changed = applied
+            let found = applied
                 .iter()
-                .filter(|a| a.change == fix.change)
-                .map(|a| a.entries_changed)
-                .sum();
+                .zip(used.iter_mut())
+                .find(|(a, used)| !**used && a.change == fix.change);
+            let entries_changed = found.map_or(0, |(a, used)| {
+                *used = true;
+                a.entries_changed
+            });
             Fix {
                 reason: fix.defect,
                 change: fix.change,
@@ -111,4 +117,36 @@ fn fixes(defined: Vec<DefinedFix>, applied: &[AppliedFix]) -> Vec<Fix> {
             }
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn two_fixes_stating_the_same_change_are_each_credited_with_their_own_entries() {
+        let defined = vec![
+            DefinedFix {
+                defect: "a".into(),
+                change: "same".into(),
+            },
+            DefinedFix {
+                defect: "b".into(),
+                change: "same".into(),
+            },
+        ];
+        let applied = [
+            AppliedFix {
+                change: "same".into(),
+                entries_changed: 10,
+            },
+            AppliedFix {
+                change: "same".into(),
+                entries_changed: 5,
+            },
+        ];
+        let fixes = fixes(defined, &applied);
+        assert_eq!(fixes[0].entries_changed, 10);
+        assert_eq!(fixes[1].entries_changed, 5);
+    }
 }

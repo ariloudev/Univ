@@ -9,6 +9,7 @@ use crate::ids::Designation;
 
 /// The method ranks that break a tie in fractional distance uncertainty, best first.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum MethodRank {
     /// A parallax, or a distance derived from one alone or with a photometric prior.
@@ -68,6 +69,7 @@ impl MeasurementRef {
 
 /// The fractional distance uncertainty, the error over the distance, that a measurement was ranked by.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "form")]
 pub enum FractionalUncertainty {
     /// `total` is what was compared: the measurement's own term and, for a redshift distance,
@@ -96,6 +98,7 @@ impl FractionalUncertainty {
 
 /// What made the preferred measurement win.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Decided {
     /// It was the object's only candidate.
@@ -144,6 +147,7 @@ pub struct PreferredDistance {
 
 /// The classes of sky position, best first, where the published uncertainties cannot decide.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum PositionClass {
     Gaia,
@@ -163,6 +167,7 @@ pub struct PreferredPosition {
 
 /// Why an object has no three-dimensional position.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum NotPlacedReason {
     /// None of its entries carries a distance, a usable parallax or a positive redshift.

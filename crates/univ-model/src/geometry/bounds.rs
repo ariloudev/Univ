@@ -16,6 +16,21 @@ pub struct Aabb {
 }
 
 impl Aabb {
+    /// The middle of the box.
+    #[must_use]
+    pub fn centre(&self) -> Vec3 {
+        zip(self.min, self.max, f64::midpoint)
+    }
+
+    /// The box with every coordinate multiplied by `factor`, a positive change of unit.
+    #[must_use]
+    pub fn scaled(&self, factor: f64) -> Self {
+        Self {
+            min: scaled(self.min, factor),
+            max: scaled(self.max, factor),
+        }
+    }
+
     fn around(points: impl IntoIterator<Item = Vec3>) -> Option<Self> {
         points.into_iter().fold(None, |acc, p| {
             Some(match acc {
@@ -244,6 +259,19 @@ mod tests {
             far: 50.0,
         };
         assert_eq!(boxed(region).min, [-50.0; 3]);
+    }
+
+    #[test]
+    fn a_box_has_a_centre_and_scales_with_its_unit() {
+        let b = Aabb {
+            min: [-2.0, 0.0, 1.0],
+            max: [4.0, 2.0, 1.0],
+        };
+        assert_eq!(b.centre(), [1.0, 1.0, 1.0]);
+        let in_pc = b.scaled(1.0e6);
+        assert_eq!(in_pc.min, [-2.0e6, 0.0, 1.0e6]);
+        assert_eq!(in_pc.max, [4.0e6, 2.0e6, 1.0e6]);
+        assert_eq!(in_pc.centre(), [1.0e6; 3]);
     }
 
     #[test]

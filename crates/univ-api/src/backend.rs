@@ -25,6 +25,17 @@ pub trait Backend {
         sql: &str,
         params: &[Value],
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
+
+    /// Runs several statements that read the release database in one round trip, as D1's
+    /// batch does, and gives each one's rows in order.
+    fn releases_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>>;
+
+    /// The release vocabularies this backend keeps between requests: for the Worker, one
+    /// keeping per isolate.
+    fn vocabularies(&self) -> &crate::Vocabularies;
 }
 
 /// The first row of `rows`, if any.
