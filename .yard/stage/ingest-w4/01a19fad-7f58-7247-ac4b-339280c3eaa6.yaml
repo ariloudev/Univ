@@ -19,3 +19,108 @@ versions:
     title: "W4 review"
     goal: "/simplify and /code-review findings on wave 4 are fixed, the gate is green and the trace is recorded"
     status: active
+  - key: 01a1a00e-70a5-77d0-b041-5470c3ad3b0e
+    at: 2026-11-03T06:17:43Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W4 review"
+    goal: "/simplify and /code-review findings on wave 4 are fixed, the gate is green and the trace is recorded"
+    status: done
+blocks:
+  - key: 01a1a00e-70a5-77d0-b041-546a7df9fbe0
+    id: w4-fix-review
+    kind: task
+    versions:
+      - key: 01a1a00e-70a5-77d0-b041-546d04b57932
+        at: 2026-11-03T06:17:43Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the /code-review and /simplify findings"
+        detail: |-
+          Each fix comes with a test that failed before it.
+
+          **Science**
+          - CF4 groups with DMav = 0 (228 of them) are direct TRGB, Cepheid or maser calibrations, so their distances are now primary-indicator distances (ReadMe table3 Note 1).
+          - Each distance names its measure; a modulus gives a luminosity distance.
+          - A modulus error maps to the exact interval d·10^(∓σ/5).
+          - Dipole Repeller: 16,000 ± 4,500 km/s, as Hoffman et al. 2017 give it.
+          - CfA2 Great Wall: −8.5° to 42.5°, from Gott's sample definition.
+          - Mpc values in the structure files name their paper's cosmology.
+
+          **Integrity**
+          - A failed normalization leaves no stale report in provenance.
+          - Ctrl-C cancels normalization within 4,096 rows.
+          - A row of blank cells is counted as `blank_row`.
+          - Structure citations: whole-token matches, `as_published` checked against the value, uncertainties cited, numbers in free text cited, coordinate ranges checked.
+
+          **Hostile files**
+          - FITS, NPY and ZIP input: checked sizes, NAXIS ≤ 999, non-ASCII cards refused, zip CRCs checked, unpack capped at 1 GiB, and no unbounded allocation.
+
+          **Simplify**
+          - One YAML loader and one FITS sample decoder.
+          - One cz/100 helper and shared test helpers.
+          - Each zip archive opened once; the grid tests split out of their file.
+        state: done
+        type: fix
+  - key: 01a1a00e-70a5-77d0-b041-546b4d38a978
+    id: w4-trace
+    kind: loft
+    versions:
+      - key: 01a1a00e-70a5-77d0-b041-546e068040d6
+        at: 2026-11-03T06:17:43Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: trace
+        note: "F-4 and F-5 (AC-36 to AC-59) are linked to the normalize, structures, outlines and source-definition tests, with the review's new tests added to AC-40, 43, 45, 49, 50 and 54 to 56. Not yet in the spec: the distance measure, `blank_row` and cited cosmologies for structure values. They are planned as one minor spec change on `develop`."
+        recorded:
+          commit: "1b1c78d0fad63f3c7d65c9064c7fa888d2b8ae14"
+          branch: "stage/ingest-w4"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T06:17:43Z
+        report: |
+          {
+            "base": "product/ingest",
+            "commit": "1ad183a7d0847f3856247e91e737df80db261c11",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 293,
+              "linked": 68,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a00e-70a5-77d0-b041-546cc7854032
+    id: w4-review-summary
+    kind: note
+    versions:
+      - key: 01a1a00e-70a5-77d0-b041-546fad1edcc0
+        at: 2026-11-03T06:17:43Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Wave 4 reviewed"
+        markdown: |-
+          | Part | Where | Notes |
+          |---|---|---|
+          | Entries | `univ-model/src/entry/` | native and normalized values, kinds, typed uncertainty, distance kind, method, measure and H0 |
+          | Normalizer | `normalize/`, `table.rs` | 14 tabular sources incl. eRASS1 FITS; FK5→ICRS; CMB redshifts; refusals and fixes counted |
+          | Structures | `structures/` | 26 files, every number cited and checked against its paper |
+          | Grids | `grids/`, `fits.rs` | CF4++, CF4 basins and 2M++; axis order checked at Laniakea |
+          | Outlines | `outlines/` | admitted only if every covering catalogue agrees; the real Local Void is published as a point |
+
+          **Gate:** 10 gates pass; 225 tests pass and 3 ignored ones read the real data. **Linked:** 68 of 293 nodes.
+        tone: success
