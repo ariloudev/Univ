@@ -1,0 +1,23 @@
+format: yardlog/1
+key: 01a1a090-d554-7526-95a3-08a5dc90abfd
+branch: "stage/ingest-w7"
+base: "product/ingest"
+title: "stage/ingest-w7"
+revision: 1
+opened:
+  at: 2026-11-03T08:40:08Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+stages:
+  - key: 01a1a090-d554-7526-95a3-08a6b18baae4
+    id: w7
+  - key: 01a1a090-d554-7526-95a3-08a752586cd2
+    id: w7-review
+acts:
+  - at: 2026-11-03T08:40:08Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
