@@ -1,0 +1,56 @@
+key: 01a1a24c-8649-746c-8af0-2d2cf7202314
+slug: rank-redshift-distances-by-kind-of-value-and-velocity-uncertainty
+title: "Rank redshift distances by kind of value and velocity uncertainty"
+context: "Release 5 compared an object's redshift distances by fractional distance uncertainty, which always favours the higher of two conflicting redshifts, because the 300 km/s peculiar-velocity term is a smaller fraction of it. The redshift-conflicts check found 154 objects whose redshifts disagree by more than 1,000 km/s. In the worst five, NED agrees with 2MRS's lower value, yet the higher one placed the object: ESO 460-G001 at 6dFGS's 54,179 km/s against 2MRS's 7,520 km/s. 30 objects were placed by a 2M++ clone (Cln = 1, an estimated redshift copied from a neighbour) though they have a measured redshift. This refines the decision \"Rank a distance without an uncertainty by its method\" among redshift distances, and leaves its rule for a redshift distance against the other distances as it is. The owner chose on 2026-11-03."
+state:
+  kind: accepted
+  selectedOption: 01a1a24c-8649-746c-8af0-2d2fb0acdca6
+  outcome: "Among an object's redshift distances a measured redshift ranks first, then the smallest published velocity uncertainty, then method rank and source order, with none invented; only the first of them competes with the other distances, as before."
+drivers:
+  - key: 01a1a24c-8649-746c-8af0-2d2d77e479ff
+    kind: local
+    label: "Provenance"
+    statement: "A measured value is preferred to an estimated one, and no uncertainty is made up."
+  - key: 01a1a24c-8649-746c-8af0-2d2e5cae40d3
+    kind: local
+    label: "Accurate placement"
+    statement: "Each object is placed by its best distance."
+options:
+  - key: 01a1a24c-8649-746c-8af0-2d2fb0acdca6
+    title: "Kind of value, then velocity uncertainty"
+    description: "A measured redshift ranks before an estimated, inferred or reconstructed one; then the smallest published velocity uncertainty; a redshift without one after those with one; then method rank and the rule's source order."
+  - key: 01a1a24c-8649-746c-8af0-2d306c390e9f
+    title: "Fractional distance uncertainty"
+    description: "Redshift distances rank among themselves as every other distance does, by fractional distance uncertainty with the peculiar-velocity term, as release 5 did."
+assessments:
+  - option: 01a1a24c-8649-746c-8af0-2d2fb0acdca6
+    driver: 01a1a24c-8649-746c-8af0-2d2d77e479ff
+    rating: supports
+    rationale: "a measured redshift beats a 2M++ clone, and a redshift without a published error is given none"
+  - option: 01a1a24c-8649-746c-8af0-2d2fb0acdca6
+    driver: 01a1a24c-8649-746c-8af0-2d2e5cae40d3
+    rating: supports
+    rationale: "the velocity error says which of two conflicting redshifts was measured better, whatever their values"
+  - option: 01a1a24c-8649-746c-8af0-2d306c390e9f
+    driver: 01a1a24c-8649-746c-8af0-2d2d77e479ff
+    rating: conflicts
+    rationale: "30 objects of release 5 are placed by a clone despite a measured redshift"
+  - option: 01a1a24c-8649-746c-8af0-2d306c390e9f
+    driver: 01a1a24c-8649-746c-8af0-2d2e5cae40d3
+    rating: conflicts
+    rationale: "the higher of two conflicting redshifts always wins, as ESO 460-G001 at 54,179 km/s shows"
+consequences:
+  - key: 01a1a24c-8649-746c-8af0-2d319c26ed15
+    kind: obligation
+    statement: "Each object names the comparison between redshift distances that decided its preferred measurement: kind of value or velocity uncertainty."
+    subject: 01a19f23-636e-7035-8185-ab9ce127e733
+  - key: 01a1a24c-8649-746c-8af0-2d3222e4eac5
+    kind: risk
+    statement: "A redshift without a published velocity uncertainty loses to one with any, however large, and a wrong redshift with a small published error still places its object."
+subjects:
+  - role: affected
+    node: 01a19f23-636e-7035-8185-ab97eb9c2fb9
+  - role: outcome
+    node: 01a19f23-636e-7035-8185-ab988f5d57b7
+mentions:
+  - 01a1a149-623d-7310-8064-e6497ba7827e

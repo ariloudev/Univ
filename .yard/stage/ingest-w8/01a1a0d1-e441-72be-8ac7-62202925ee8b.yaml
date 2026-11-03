@@ -3678,3 +3678,177 @@ blocks:
           Done when release 5 is built and `cargo xtask science` shows no FAIL. It is not published until the prune is decided.
         state: active
         type: fix
+      - key: 01a1a24a-0dc3-734c-8e17-2054b3b495aa
+        at: 2026-11-03T16:42:04Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Join extended nearby galaxies and pass every check"
+        detail: |-
+          Commits `9742ca9` (spec) and `085a5b9`. A galaxy below 1,000 km/s takes as its pieces the entries within its published UNGC a26 or 2MRS Riso radius whose cz agrees within 300 km/s. That made 80 joins into 53 galaxies; IC 5052 is now one object from 8 entries.
+
+          **Exceptions and new checks:**
+          - HIZSS 3A/3B are a real pair (Begum et al. 2005), listed as an exception.
+          - `redshift-conflicts` is a new check and finds 154 objects.
+          - CF4 V3k above 13,000 km/s is marked inferred.
+
+          **Release 5:** 27 PASS, 0 FAIL, 2 CONCERN.
+        state: done
+        type: fix
+  - key: 01a1a248-e0f1-7654-8984-d34bd17b6b2e
+    id: ask-toolu-01r5ydo7vz6vp2h4tqxqzcsg-1
+    kind: question
+    versions:
+      - key: 01a1a248-e0f2-7416-a201-a8ae459cbddb
+        at: 2026-11-03T16:40:47Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "When an object has two redshift distances, the ranking compares fractional distance uncertainty, so the higher redshift always wins: the 300 km/s term is a smaller fraction of it. In the 5 worst of 154 conflicts NED agrees with the lower value, but the higher one places the object (ESO 460-G001 at cz 54,179 instead of 7,520), and 30 objects are placed by a 2M++ clone (an estimated redshift copied from a neighbour) despite having a measured one. How should redshift distances be compared with each other?"
+        header: "z vs z rank"
+        options:
+          - label: "Measured first, then σ_cz"
+            detail: "Among redshift distances only: a measured redshift beats an estimated one (2M++ clones, photometric), then the smallest published velocity uncertainty σ_cz wins, then method rank and source order. Redshift vs indicator stays as now (fraction plus the threshold). A minor change to RQ-24's order."
+            recommended: true
+          - label: "Measured first only"
+            detail: "Fix the clone cases by ranking measured above estimated, but keep comparing redshifts by fractional distance uncertainty. The 5 worst conflicts stay placed by the higher, likely wrong redshift."
+          - label: "Leave as is"
+            detail: "Keep the current rule and the redshift-conflicts concern as a known limitation of release 1 data."
+        ownWords: true
+    responses:
+      - key: 01a1a249-5839-77d6-82f9-3d804232f9c2
+        at: 2026-11-03T16:41:18Z
+        revision: 25
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Measured first, then σ_cz"
+  - key: 01a1a248-e0f1-7654-8984-d34cf802babe
+    id: ask-toolu-01r5ydo7vz6vp2h4tqxqzcsg-2
+    kind: question
+    versions:
+      - key: 01a1a248-e0f2-7416-a201-a8af3063901f
+        at: 2026-11-03T16:40:47Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Release 5 can't be published while releases 1–4 sit in D1 (five releases ≈ 11.5 GB, over the 10 GB cap). Pruning deletes a release's D1 rows, R2 files and local build, and keeps the id ledger so its ids still resolve. Prune releases 1–3 now (leaving 4 as latest until the final release is published, then pruning 4)?"
+        header: "Prune"
+        options:
+          - label: "Prune 1–3, later 4"
+            detail: "I run `univ-ingest prune` for 1, 2 and 3 now (you'll get a permission prompt), publish the final W8 release, then prune 4. Each prune's result is checked: no rows or keys left, ledger kept, retired ids still resolve."
+            recommended: true
+          - label: "Wipe and start fresh"
+            detail: "Delete the local wrangler state and build directories entirely and publish the final release as the only one. Simpler, but loses the id ledger history of releases 1–4 (ids would restart from the final release)."
+          - label: "Don't prune yet"
+            detail: "Keep all four; the final W8 release stays built but unpublished."
+        ownWords: true
+    responses:
+      - key: 01a1a249-5839-77d6-82f9-3d8108d56c9d
+        at: 2026-11-03T16:41:18Z
+        revision: 25
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Prune 1–3, later 4"
+  - key: 01a1a24a-0dc3-734c-8e17-204e6b9b2a85
+    id: w8-d-zrank
+    kind: decision
+    number: 6
+    versions:
+      - key: 01a1a24a-0dc3-734c-8e17-20522510583a
+        at: 2026-11-03T16:42:04Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Among redshift distances: measured first, then σ_cz"
+        consequence: "A measured redshift beats an estimated one (2M++ clones, photometric). Then the smallest published velocity uncertainty wins, then method rank and source order. Redshift against indicator distances stays as it is. This ends the bias where the higher of two conflicting redshifts always won, as with ESO 460-G001 at 54,179 against 7,520 km/s."
+        question: 01a1a248-e0f1-7654-8984-d34bd17b6b2e
+  - key: 01a1a24a-0dc3-734c-8e17-204f9b3994ab
+    id: w8-d-prune
+    kind: decision
+    number: 7
+    versions:
+      - key: 01a1a24a-0dc3-734c-8e17-2053c98ce462
+        at: 2026-11-03T16:42:04Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Prune releases 1–3 now, and release 4 after the final W8 release is published"
+        consequence: "Pruning frees D1 for the final release, and the id ledger keeps every retired id resolving. From now on in dev, a release is pruned once its successor is published."
+        question: 01a1a248-e0f1-7654-8984-d34cf802babe
+  - key: 01a1a24a-0dc3-734c-8e17-2050176538ee
+    id: w8-t10-zrank
+    kind: task
+    versions:
+      - key: 01a1a24a-0dc3-734c-8e17-2055b84ed892
+        at: 2026-11-03T16:42:04Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Rank redshift distances by kind, then σ_cz"
+        detail: "Covers the spec and the code, then builds release 6. Done when `cargo xtask science` shows no FAIL and the worst conflicts are placed by their measured, smaller-σ redshift."
+        state: active
+        type: fix
+  - key: 01a1a24a-0dc3-734c-8e17-2051e2532209
+    id: w8-t11-prune
+    kind: task
+    versions:
+      - key: 01a1a24a-0dc3-734c-8e17-2056a460ba7f
+        at: 2026-11-03T16:42:04Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Prune releases 1–3"
+        detail: "Each prune is checked afterwards: no D1 rows or R2 keys of those releases remain, the ledger and pruning times are kept, and retired ids still resolve."
+        state: active
+      - key: 01a1a255-1b86-7218-a87f-4ec39b61bf91
+        at: 2026-11-03T16:54:09Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Prune releases 1–3"
+        detail: |-
+          This was the first real run of prune, about 4 min per release.
+
+          **Removed per release:** 423 or 424 R2 files and 17.7–18.0M D1 rows.
+
+          **Checked afterwards:**
+          - D1 holds only release 4's rows and R2 only `releases/4/`.
+          - Releases 1–3 keep their pruning times, and `ids_issued` and `ids_replaced` are kept.
+          - All 179 ids replaced in release 2 resolve to a live or a further-replaced id.
+
+          Local wrangler state went from 18 to 6.5 GB, and the local builds of 1–3 were deleted.
+
+          **Follow-up:** prune doesn't delete a release's local build. It should.
+        state: done
+  - key: 01a1a256-79b3-7334-81e1-bd5981a21c1e
+    id: w8-t12-prune-fast
+    kind: task
+    versions:
+      - key: 01a1a256-79b3-7334-81e1-bd5a2839bce9
+        at: 2026-11-03T16:55:38Z
+        revision: 28
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Faster prune and publish: batched R2, prune deletes the local build"
+        detail: |-
+          The owner asked for this. Every R2 operation of a run goes through one long-running Miniflare script instead of a wrangler process per object. Each upload is still read back and checked against its SHA-256, and the journal and the move of `latest` work as before. Prune also deletes `build/releases/{n}`.
+
+          Built in its own worktree, measured on throwaway state.
+
+          Done when publish and prune are timed against 12 and 4 min and the gate passes.
+        state: active
