@@ -25,8 +25,9 @@ use super::objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
 use super::outline::Outlined;
 use super::terms::{SourceIndex, Terms};
 use super::{
-    CellRows, Inputs, Placing, StructureBounds, cell_rows, coverages, domain_rows, grid_files,
-    outlines_on, read_grid, source_detail_rows, source_rows, structure_detail_rows, structure_rows,
+    CellRows, Inputs, Placing, StructureBounds, TestCatalogues, cell_rows, coverages, domain_rows,
+    grid_files, outlines_on, placements, read_grid, source_detail_rows, source_rows,
+    structure_detail_rows, structure_rows,
 };
 use crate::crossmatch::RULES;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
@@ -196,26 +197,24 @@ fn write_structures(
     let covered = coverages(&crossed.objects, inputs.definitions);
     writer.add_all(&source_detail_rows(number, inputs.definitions, &covered)?)?;
     let correction = CmbCorrection::new(crossed.dipole);
-    let (structures, bounds) = structure_rows(
-        number,
-        &crossed.basis.structures,
-        &crossed.structures,
-        &grids.outlines,
-        release,
-        &correction,
-    )?;
-    writer.add_all(&structures)?;
     let placing = Placing {
         release,
         correction: &correction,
         dipole: snake(&crossed.dipole),
     };
-    writer.add_all(&structure_detail_rows(
-        number,
+    let placed = placements(
         &crossed.basis.structures,
         &crossed.structures,
         &placing,
         &grids.outlines,
+    )?;
+    let (structures, bounds) = structure_rows(number, &placed)?;
+    writer.add_all(&structures)?;
+    writer.add_all(&structure_detail_rows(
+        number,
+        &placed,
+        &grids.outlines,
+        release,
     )?)?;
     Ok((structures.len() as u64, bounds))
 }
@@ -243,6 +242,12 @@ fn write_grids(
         outlines: BTreeMap::new(),
     };
     let mut written = 0;
+    // Gathered once, for every grid's outline tests; empty when the release holds no grid.
+    let catalogues = if inputs.grids.is_empty() {
+        TestCatalogues::default()
+    } else {
+        TestCatalogues::new(&crossed.basis.structures, &crossed.objects)
+    };
     for (definition, files) in inputs.grids {
         sink.watch.check()?;
         let grid = read_grid(definition, files)?;
@@ -251,6 +256,7 @@ fn write_grids(
             &grid,
             &crossed.basis.structures,
             &crossed.objects,
+            &catalogues,
             release,
         )?);
         drop(grid);
