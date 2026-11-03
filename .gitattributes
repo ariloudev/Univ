@@ -1,0 +1,2 @@
+spec/**/*.yaml merge=loft
+.yard/**/*.yaml merge=loft

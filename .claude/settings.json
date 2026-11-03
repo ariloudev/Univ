@@ -1,0 +1,14 @@
+{
+  "extraKnownMarketplaces": {
+    "ask-loft": {
+      "source": {
+        "source": "github",
+        "repo": "Ask-Loft/loft",
+        "ref": "v2.3.0-alpha.3"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "loft@ask-loft": true
+  }
+}
