@@ -16,6 +16,8 @@ requirements:
     criteria:
       - key: 01a19f22-2ad9-716e-876f-185572e41a3f
         name: "The release cosmology is flat ΛCDM with Planck 2018 parameters, H0 = 67.66 km/s/Mpc and Ωm = 0.3111, unless the release names another."
+      - key: 01a1a211-4f38-7751-a3f5-d2946bd18364
+        name: "The release manifest records beside the release cosmology that distances calibrated on the distance ladder are on a scale of H0 = 74.6 ± 0.8 km/s/Mpc (Tully et al. 2023), nearer than redshift distances under the release cosmology, citing both."
       - key: 01a19f22-2ad9-716e-876f-185687a92854
         name: "A redshift distance is the comoving distance of the CMB-frame redshift."
       - key: 01a19f22-2ad9-716e-876f-1857a487f288
