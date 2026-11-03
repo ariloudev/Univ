@@ -28,7 +28,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Ingest"
-      shall: "record each distance with its kind, its method and, where it depends on one, its Hubble constant or cosmology."
+      shall: "record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology."
     criteria:
       - key: 01a19f22-2ad9-716e-876f-186b82bcfc95
         name: "The kinds of distance are parallax, geometric or photogeometric, primary indicator, secondary indicator, spectroscopic redshift and photometric redshift."
@@ -38,6 +38,10 @@ requirements:
         name: "A distance published in h⁻¹ Mpc or for a stated Hubble constant keeps that constant beside its native value."
       - key: 01a19f22-2ad9-716e-876f-186e940da69e
         name: "A distance modulus is kept as published beside the distance derived from it."
+      - key: 01a1a147-6018-75e1-9409-3f835cca0e82
+        name: "Each distance names its measure: luminosity, comoving, Euclidean or unspecified."
+      - key: 01a1a147-6018-75e1-9409-3f8400aee970
+        name: "A distance derived from a distance modulus is a luminosity distance."
   - key: 01a19f22-2ad9-716e-876f-186f83aad488
     statement:
       form: ubiquitous
@@ -61,6 +65,8 @@ requirements:
         name: "The source's provenance gives the count of entries left out for each reason."
       - key: 01a19f22-2ad9-716e-876f-18755300ea38
         name: "No entry is left out without a reason recorded."
+      - key: 01a1a147-6018-75e1-9409-3f8501160747
+        name: "A row whose cells are all blank is left out under the reason `blank_row`."
   - key: 01a19f22-2ad9-716e-876f-1876f53660fb
     statement:
       form: ubiquitous

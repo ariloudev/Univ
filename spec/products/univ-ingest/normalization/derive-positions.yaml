@@ -32,13 +32,21 @@ requirements:
         name: "The rescaled value is stored beside the native value and the Hubble constant it was published for."
       - key: 01a19f22-2ad9-716e-876f-185b99a202e5
         name: "A size is rescaled with the same factor as its structure's distance, so the structure keeps its size relative to its distance."
+      - key: 01a1a147-6018-75e1-9409-3f7f4665912a
+        name: "A value published for a stated Hubble constant or cosmology records it as an assumed cosmology holding the Hubble constant with whichever of the matter and Λ densities the source states."
+      - key: 01a1a147-6018-75e1-9409-3f805f3d0223
+        name: "A length published in h⁻¹ Mpc records an assumed cosmology of H0 = 100 km/s/Mpc."
   - key: 01a19f22-2ad9-716e-876f-185fd835d316
     statement:
       form: ubiquitous
       system: "Univ Ingest"
-      shall: "transform between frames with the published definitions of the galactic and supergalactic systems."
+      shall: "transform between frames with the published definitions of the FK4, galactic and supergalactic systems."
     criteria:
       - key: 01a19f22-2ad9-716e-876f-186064637cbc
         name: "Galactic coordinates use the ICRS to galactic transformation of the Hipparcos catalogue (ESA 1997, volume 1, section 1.5.3)."
       - key: 01a19f22-2ad9-716e-876f-18610047a726
         name: "Supergalactic coordinates use the pole and origin of Lahav et al. 2000 (MNRAS 312, 166)."
+      - key: 01a1a147-6018-75e1-9409-3f8182b395ba
+        name: "A position in the frame FK4 B1950 is moved to FK5 J2000 as ERFA's fk45z moves it, with the E-terms of aberration removed and the matrix of Standish 1982 (A&A 115, 20), and from there to ICRS."
+      - key: 01a1a147-6018-75e1-9409-3f820e7bc1c8
+        name: "A position in the frame \"equatorial, equinox not stated\" is placed as J2000 with a stated systematic uncertainty of 0.6986°, the largest angle between reading it as B1950 and as J2000."
