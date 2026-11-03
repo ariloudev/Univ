@@ -59,10 +59,11 @@ pub fn alias(column: &str) -> String {
     format!("t_{column}")
 }
 
-/// The name the fingerprint query gives the count of `column`'s values that are not NULL.
+/// The name the fingerprint query gives the count of `column`'s values that are not NULL: a
+/// prefix of its own, so that it never meets [`ROWS`], which a column named `rows` would.
 #[must_use]
 pub fn non_null_alias(column: &str) -> String {
-    format!("n_{column}")
+    format!("nn_{column}")
 }
 
 /// Appends `row` to `out` in the canonical form a content digest takes: each value tagged by
@@ -316,9 +317,26 @@ mod tests {
         assert_eq!(
             T.fingerprint_query("release = 2"),
             "SELECT COUNT(*) AS n_rows, total(release) AS t_release, COUNT(release) AS \
-             n_release, total(length(CAST(name AS BLOB))) AS t_name, COUNT(name) AS n_name, \
-             total(x) AS t_x, COUNT(x) AS n_x FROM t WHERE release = 2"
+             nn_release, total(length(CAST(name AS BLOB))) AS t_name, COUNT(name) AS nn_name, \
+             total(x) AS t_x, COUNT(x) AS nn_x FROM t WHERE release = 2"
         );
+    }
+
+    #[test]
+    fn every_measure_of_every_table_has_a_name_of_its_own() {
+        // The payloads table has a column named rows: its count must not take the name of the
+        // row count.
+        for table in crate::release::TABLES {
+            let mut names = vec![ROWS.to_owned()];
+            for column in table.columns {
+                names.push(alias(column));
+                names.push(non_null_alias(column));
+            }
+            let all = names.len();
+            names.sort();
+            names.dedup();
+            assert_eq!(names.len(), all, "{}", table.name);
+        }
     }
 
     #[test]
