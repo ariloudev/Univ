@@ -116,7 +116,7 @@ impl<C: Clock> Fetcher<C> {
         let response = request
             .send()
             .await
-            .map_err(|e| Attempt::Retry(e.to_string()))?;
+            .map_err(|e| Attempt::Retry(super::with_causes(&e)))?;
         let (offset, length) = self.start(&at, &response, have, before.as_ref()).await?;
         let record = PartMeta {
             url: url.clone(),
@@ -247,7 +247,7 @@ impl<C: Clock> Fetcher<C> {
                     }
                 }
                 Ok(None) => break None,
-                Err(error) => break Some(error.to_string()),
+                Err(error) => break Some(super::with_causes(&error)),
             }
         };
         file.flush().await.map_err(|e| at.disk(&e))?;

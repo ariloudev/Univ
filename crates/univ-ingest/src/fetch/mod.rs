@@ -248,12 +248,12 @@ impl<C: Clock> Fetcher<C> {
             .get(&url)
             .send()
             .await
-            .map_err(|e| Attempt::Retry(e.to_string()))?;
+            .map_err(|e| Attempt::Retry(with_causes(&e)))?;
         judge_status(response.status())?;
         let body = response
             .bytes()
             .await
-            .map_err(|e| Attempt::Retry(e.to_string()))?;
+            .map_err(|e| Attempt::Retry(with_causes(&e)))?;
         let rows = check(&body).map_err(Attempt::GiveUp)?;
         Ok((url, body.into(), rows))
     }
@@ -401,6 +401,25 @@ fn disk_error(item: &Item<'_>, error: &io::Error) -> FetchError {
         item: item.name.to_owned(),
         error: error.to_string(),
     }
+}
+
+/// An error with each of its causes, outermost first: `error sending request for url (…): client
+/// error (Connect): tcp connect error: Connection refused (os error 61)`, rather than only its
+/// own message, which for a request names none of timeout, refused connection, TLS or DNS. A
+/// cause whose message its error already gives is not repeated.
+#[must_use]
+pub fn with_causes(error: &(dyn std::error::Error + 'static)) -> String {
+    let mut text = error.to_string();
+    let mut cause = error.source();
+    while let Some(c) = cause {
+        let message = c.to_string();
+        if !message.is_empty() && !text.contains(&message) {
+            text.push_str(": ");
+            text.push_str(&message);
+        }
+        cause = c.source();
+    }
+    text
 }
 
 /// Lower-case hexadecimal.
