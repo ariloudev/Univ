@@ -1,0 +1,50 @@
+key: 01a19f1e-d177-716d-b124-3d003878f4e1
+slug: list-and-pin-releases
+name: "List and pin releases"
+body: |
+  Knowing which releases exist, and reading reference data as it stood in any of them. Pinning a
+  release is how a client reads what was known as of that release.
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+requirements:
+  - key: 01a19f1e-d177-716d-b124-3d011d9a2392
+    statement:
+      form: event_driven
+      when: "a client lists releases"
+      system: "Univ Server"
+      shall: "return every release that has not been pruned, newest first."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d021cccd33d
+        name: "Each release gives its number, publication time, release cosmology and sources."
+      - key: 01a19f1e-d177-716d-b124-3d03d7adf4a8
+        name: "Each release gives its counts of objects, structures, volume grids and tiles."
+      - key: 01a19f1e-d177-716d-b124-3d040ae70863
+        name: "The listing names the release that latest points to."
+      - key: 01a19f1e-d177-716d-b124-3d05968932a2
+        name: "Each pruned release is listed with the time it was pruned."
+  - key: 01a19f1e-d177-716d-b124-3d061b7122c4
+    statement:
+      form: event_driven
+      when: "a client names a release"
+      system: "a read tagged `release-scoped`"
+      shall: "answer from that release alone."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d07cf8c66f8
+        name: "A read that names no release answers from the release that latest points to."
+      - key: 01a19f1e-d177-716d-b124-3d080b16ed2a
+        name: "The response names the release it answered from."
+      - key: 01a19f1e-d177-716d-b124-3d0916dbb3de
+        name: "Two reads pinned to one release return identical data, whatever was published between them."
+  - key: 01a19f1e-d177-716d-b124-3d0a953e5526
+    statement:
+      form: unwanted
+      if: "the named release was pruned or never existed"
+      system: "a read tagged `release-scoped`"
+      shall: "refuse the read."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d0bc2fec3a8
+        name: "A pruned release answers 410 with problem details that give the time it was pruned."
+      - key: 01a19f1e-d177-716d-b124-3d0cb2aafd93
+        name: "A release that never existed answers 404."

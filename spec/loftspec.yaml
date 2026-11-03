@@ -1,3 +1,6 @@
 format: loftspec/1
 algorithm: sha256-jcs/1
 documentKey: 01a19efc-b4c1-7350-8274-8feccad0e0fb
+products:
+  - 01a19f1a-685d-7357-b67e-d658085bf5c8
+  - 01a19f1a-685d-7357-b67e-d65e20557892

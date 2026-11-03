@@ -1,0 +1,51 @@
+key: 01a19f25-5955-701e-b3cf-ddc0d2082b79
+slug: ingest-offline-with-a-local-cli
+title: "Ingest offline with a command-line tool on the owner's machine"
+context: "Ingesting the surveys means multi-gigabyte downloads, hours of work and providers that fail often, which a Worker's CPU and memory limits cannot hold."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddc3183b7cbc
+  outcome: "Ingest runs on the owner's machine and publishes complete releases for Univ Server to serve."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddc1a434182e
+    kind: local
+    label: "Heavy work"
+    statement: "Ingest can run for hours and read large binary files."
+  - key: 01a19f25-5955-701e-b3cf-ddc2feaba611
+    kind: local
+    label: "Simplicity"
+    statement: "No scheduler or queue to build for the first version."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddc3183b7cbc
+    title: "Local CLI"
+    description: "A native Rust program the owner runs, which builds a release and uploads it."
+  - key: 01a19f25-5955-701e-b3cf-ddc4c7a17325
+    title: "Ingest in Workers"
+    description: "Cron Triggers, Queues or Workflows fetch and normalize sources inside Cloudflare."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddc3183b7cbc
+    driver: 01a19f25-5955-701e-b3cf-ddc1a434182e
+    rating: supports
+    rationale: "a native program has threads, disk and no time limit"
+  - option: 01a19f25-5955-701e-b3cf-ddc3183b7cbc
+    driver: 01a19f25-5955-701e-b3cf-ddc2feaba611
+    rating: supports
+    rationale: "the owner runs it by hand"
+  - option: 01a19f25-5955-701e-b3cf-ddc4c7a17325
+    driver: 01a19f25-5955-701e-b3cf-ddc1a434182e
+    rating: conflicts
+    rationale: "Worker limits on CPU time and memory cut long fetches and large grids"
+  - option: 01a19f25-5955-701e-b3cf-ddc4c7a17325
+    driver: 01a19f25-5955-701e-b3cf-ddc2feaba611
+    rating: conflicts
+    rationale: "it needs queues, retries and state across invocations"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddc5040d6de8
+    kind: benefit
+    statement: "Univ Server never fetches from a provider, so its requests stay small and fast."
+  - key: 01a19f25-5955-701e-b3cf-ddc6f52abe56
+    kind: cost
+    statement: "Data is only as fresh as the owner's last run."
+subjects:
+  - role: outcome
+    node: 01a19f1a-685d-7357-b67e-d65d26c057bb

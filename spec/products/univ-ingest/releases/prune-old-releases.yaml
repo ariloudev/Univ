@@ -1,0 +1,29 @@
+key: 01a19f23-636f-72bd-b194-15372421c144
+slug: prune-old-releases
+name: "Prune old releases"
+body: "Freeing storage by removing releases no client needs, while keeping every object id resolvable."
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3ce42ae3be29
+  - 01a19f1e-d177-716d-b124-3cf1defde8b6
+requirements:
+  - key: 01a19f23-636f-72bd-b194-1538be54b520
+    statement:
+      form: event_driven
+      when: "the owner prunes a release"
+      system: "Univ Ingest"
+      shall: "delete the release's files and tables and record when it was pruned."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-153927026b4b
+        name: "The record of object ids merged, split or retired is kept, so every id still resolves."
+      - key: 01a19f23-636f-72bd-b194-153a6cd80c2c
+        name: "The pruned release stays in the list of releases with its pruning time."
+  - key: 01a19f23-636f-72bd-b194-153bcc1d7e13
+    statement:
+      form: unwanted
+      if: "the release is the one latest points to"
+      system: "Univ Ingest"
+      shall: "refuse to prune it."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-153c0959ad96
+        name: "The message says that latest points to the release."

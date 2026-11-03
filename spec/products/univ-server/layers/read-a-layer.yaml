@@ -1,0 +1,50 @@
+key: 01a19f20-1cb3-7721-97a0-4f46c62a0358
+slug: read-a-layer
+name: "Read a layer"
+body: "Reading a layer's items as they stand now, and any earlier version of an item by its number."
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfeda1fea21
+  - 01a19f1e-d177-716d-b124-3cffdfae1655
+requirements:
+  - key: 01a19f20-1cb3-7721-97a0-4f47f0d47d3c
+    statement:
+      form: event_driven
+      when: "a client lists layers"
+      system: "Univ Server"
+      shall: "return every public layer and, for a request with an API key, that key's private layers."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f485024d062
+        name: "Each listed layer gives its id, title, visibility, item count and change sequence."
+      - key: 01a19f20-1cb3-7721-97a0-4f49aa6b6d22
+        name: "A retired layer is not listed."
+  - key: 01a19f20-1cb3-7721-97a0-4f4a486147fc
+    statement:
+      form: event_driven
+      when: "a client reads a layer"
+      system: "Univ Server"
+      shall: "return the layer's details and the current version of each of its items that is not retracted."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f4be0d600b7
+        name: "Items come in pages of at most 500, each page with a cursor to the next."
+      - key: 01a19f20-1cb3-7721-97a0-4f4c6cf130cd
+        name: "Each item gives its version number and the time that version was stored."
+  - key: 01a19f20-1cb3-7721-97a0-4f4da000dbe3
+    statement:
+      form: event_driven
+      when: "a client reads an item"
+      system: "Univ Server"
+      shall: "return its current version and the list of all its versions."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f4e28800b19
+        name: "Any earlier version can be read by its number."
+  - key: 01a19f20-1cb3-7721-97a0-4f534c3dc736
+    statement:
+      form: unwanted
+      if: "a request without the owning key reads a private layer or one of its items"
+      system: "Univ Server"
+      shall: "answer exactly as for a layer that does not exist."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f54f63a7133
+        name: "The response status is 404 and its body is the same as for an id no layer has."

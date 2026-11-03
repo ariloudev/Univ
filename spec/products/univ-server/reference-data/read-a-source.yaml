@@ -1,0 +1,50 @@
+key: 01a19f1e-d177-716d-b124-3d23daf70123
+slug: read-a-source
+name: "Read a source"
+body: "Reading where a release's data came from: the citation, the terms and credit, what was fetched, and what was kept or left out."
+tags:
+  - release-scoped
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+requirements:
+  - key: 01a19f1e-d177-716d-b124-3d24f2c252fc
+    statement:
+      form: event_driven
+      when: "a client requests a source"
+      system: "Univ Server"
+      shall: "return its citation, terms of use, required credit, provider, query, cuts and coverage."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d2511599468
+        name: "The citation gives the bibcode or DOI of the source's primary reference."
+      - key: 01a19f1e-d177-716d-b124-3d267490d236
+        name: "The terms of use and the required credit are given as the source definition states them."
+      - key: 01a19f1e-d177-716d-b124-3d2711844898
+        name: "The query and the cuts are the ones the fetch ran, verbatim."
+      - key: 01a19f1e-d177-716d-b124-3d2878dbdf48
+        name: "The coverage gives the source's sky footprint as a sky region and the range of redshift or distance it holds."
+  - key: 01a19f1e-d177-716d-b124-3d29d163748c
+    statement:
+      form: event_driven
+      when: "a client requests a source's provenance"
+      system: "Univ Server"
+      shall: "return the record of its acquisition and normalization."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d2a8487abe5
+        name: "Each acquired payload is listed with its SHA-256 and its retrieval time."
+      - key: 01a19f1e-d177-716d-b124-3d2beb1e33d9
+        name: "The record gives the number of catalogue entries fetched and published."
+      - key: 01a19f1e-d177-716d-b124-3d2cc2baedfc
+        name: "The record gives the number of catalogue entries left out, grouped by the reason each was left out."
+      - key: 01a19f1e-d177-716d-b124-3d2df1555360
+        name: "Each fix applied to a known defect of the source is listed with its reason."
+  - key: 01a19f1e-d177-716d-b124-3d2e26581c44
+    statement:
+      form: event_driven
+      when: "a client lists sources"
+      system: "Univ Server"
+      shall: "return every source of the release with its citation and credit."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d2fbbf24a08
+        name: "Each listed source gives its id, title, scale domain and number of published catalogue entries."

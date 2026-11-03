@@ -1,0 +1,66 @@
+key: 01a19f25-5955-701e-b3cf-dde50e292ff4
+slug: read-anonymously-and-write-with-api-keys
+title: "Read anonymously and write with an API key per client application"
+context: "Reference data is public, but layers are written by a few trusted client applications, and the project is a hobby with no wish to run accounts."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dde899d8a19d
+  outcome: "Reference data and public layers are read anonymously, and every write carries an API key."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dde6a715593c
+    kind: local
+    label: "Open data"
+    statement: "Anyone can read the reference data and public layers."
+  - key: 01a19f25-5955-701e-b3cf-dde730eb6de1
+    kind: local
+    label: "Low overhead"
+    statement: "No sign-in, accounts or moderation to build."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dde899d8a19d
+    title: "Public read, keyed writes"
+    description: "Reads need nothing; writes need an API key the owner issues per client application."
+  - key: 01a19f25-5955-701e-b3cf-dde929805463
+    title: "Owner only"
+    description: "Every request needs one owner secret."
+  - key: 01a19f25-5955-701e-b3cf-ddea62c9ff48
+    title: "End-user accounts"
+    description: "People sign in and author their own layers."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dde899d8a19d
+    driver: 01a19f25-5955-701e-b3cf-dde6a715593c
+    rating: supports
+    rationale: "reads need no credentials"
+  - option: 01a19f25-5955-701e-b3cf-dde899d8a19d
+    driver: 01a19f25-5955-701e-b3cf-dde730eb6de1
+    rating: supports
+    rationale: "keys are issued by hand"
+  - option: 01a19f25-5955-701e-b3cf-dde929805463
+    driver: 01a19f25-5955-701e-b3cf-dde6a715593c
+    rating: conflicts
+    rationale: "nothing can be read publicly"
+  - option: 01a19f25-5955-701e-b3cf-dde929805463
+    driver: 01a19f25-5955-701e-b3cf-dde730eb6de1
+    rating: supports
+    rationale: "one secret"
+  - option: 01a19f25-5955-701e-b3cf-ddea62c9ff48
+    driver: 01a19f25-5955-701e-b3cf-dde6a715593c
+    rating: supports
+    rationale: "reads stay open"
+  - option: 01a19f25-5955-701e-b3cf-ddea62c9ff48
+    driver: 01a19f25-5955-701e-b3cf-dde730eb6de1
+    rating: conflicts
+    rationale: "accounts bring ownership, privacy, quotas and moderation"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddeb66a2d825
+    kind: obligation
+    statement: "The owner issues and revokes keys, and each layer belongs to exactly one key."
+  - key: 01a19f25-5955-701e-b3cf-ddec784b991c
+    kind: cost
+    statement: "A layer cannot be shared between chosen people, only made public or kept private."
+subjects:
+  - role: affected
+    node: 01a19f20-8e6c-7039-b16f-abe3447e87f6
+  - role: outcome
+    node: 01a19f20-8e6c-7039-b16f-abf06331899f
+  - role: outcome
+    node: 01a19f20-8e6c-7039-b16f-abf782688cdf

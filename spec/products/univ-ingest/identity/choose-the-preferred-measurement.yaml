@@ -1,0 +1,43 @@
+key: 01a19f23-636e-7035-8185-ab97eb9c2fb9
+slug: choose-the-preferred-measurement
+name: "Choose the preferred measurement"
+body: |
+  Choosing which of an object's measurements places it in three dimensions. A ranking by method
+  alone would misplace galaxies: at a recession velocity of 15,000 km/s a Tully-Fisher distance
+  carries about 20% error, while a redshift distance, with a peculiar velocity of 300 km/s, carries
+  about 2%. So the rule weighs each measurement's uncertainty first and its method second.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cee44add674
+  - 01a19f1e-d177-716d-b124-3cef889e66e6
+requirements:
+  - key: 01a19f23-636e-7035-8185-ab988f5d57b7
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "choose as an object's preferred distance the measurement with the smallest fractional distance uncertainty."
+    criteria:
+      - key: 01a19f23-636e-7035-8185-ab998407d632
+        name: "The uncertainty of a redshift distance includes a peculiar-velocity term, 300 km/s unless the release's ranking rule sets another."
+      - key: 01a19f23-636e-7035-8185-ab9ac704109a
+        name: "A tie is broken by method rank: geometric, then primary indicator, then secondary indicator, then spectroscopic redshift, then photometric redshift."
+      - key: 01a19f23-636e-7035-8185-ab9b3e95c24c
+        name: "The ranking rule and its parameters are recorded in the release manifest."
+      - key: 01a19f23-636e-7035-8185-ab9ce127e733
+        name: "The object names its preferred measurement and the uncertainty that made it win."
+  - key: 01a19f23-636e-7035-8185-ab9dfac6edfe
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "take an object's sky position from its catalogue entry with the smallest position uncertainty."
+    criteria:
+      - key: 01a19f23-636e-7035-8185-ab9e42fa2c14
+        name: "A Gaia position is preferred over a Hipparcos one, and either over a survey position, unless a published uncertainty says otherwise."
+  - key: 01a19f23-636e-7035-8185-ab9fe065861e
+    statement:
+      form: unwanted
+      if: "an object has no distance"
+      system: "Univ Ingest"
+      shall: "keep the object with its sky position alone and give it no derived three-dimensional position."
+    criteria:
+      - key: 01a19f23-636e-7035-8185-aba03617706c
+        name: "The object can be looked up but appears in no tile and in no bounded volume query."

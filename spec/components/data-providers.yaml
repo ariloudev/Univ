@@ -1,0 +1,99 @@
+key: 01a19f1e-d177-716d-b124-3ce7c64960ab
+slug: data-providers
+name: "Data providers"
+body: |
+  The public archives that sources are fetched from, each holding the sources a release draws on.
+  A source's body gives its primary citation, what the first release takes from it and the terms
+  it is used under; its source definition records the same, and Univ Server serves them.
+boundary: external
+components:
+  - key: 01a19f1e-d177-716d-b124-3ce87476d831
+    name: "SDSS SkyServer"
+    body: "The SQL search service of SDSS DR17."
+    components:
+      - key: 01a19f22-2ad9-716e-876f-181c48025787
+        name: "SDSS DR17 main galaxy sample"
+        body: "Spectroscopic galaxies of SDSS DR17 (Abdurro'uf et al. 2022, ApJS 259, 35) with zWarning = 0 and 0.005 < z < 0.35: about 1.1 million galaxies over 29% of the sky. Public, with the SDSS acknowledgement."
+      - key: 01a19f22-2ad9-716e-876f-181dd6136c68
+        name: "BOSS DR17 Great Wall region"
+        body: "BOSS galaxies around the BOSS Great Wall (Lietzen et al. 2016, A&A 588, L4), at RA 152° to 170°, Dec 42° to 58° and z 0.43 to 0.51, with a margin. Public, with the SDSS acknowledgement."
+  - key: 01a19f1e-d177-716d-b124-3ce94dbc10f4
+    name: "VizieR"
+    body: "The CDS catalogue service and its mirrors, such as the one at SAAO."
+    components:
+      - key: 01a19f22-2ad9-716e-876f-181e1a7c9f8c
+        name: "6dFGS DR3"
+        body: "The 6dF Galaxy Survey's final redshifts (Jones et al. 2009, MNRAS 399, 683; VizieR VII/259), covering the southern sky that SDSS missed."
+      - key: 01a19f22-2ad9-716e-876f-181f3d870b42
+        name: "2MRS"
+        body: |
+          The 2MASS Redshift Survey (Huchra et al. 2012, ApJS 199, 26; VizieR J/ApJS/199/26): 43,533
+          galaxies with redshifts to Ks 11.75, all sky outside low Galactic latitudes. Its README asks
+          that its own files not be redistributed so users get the latest version; the release uses
+          the table published in ApJS through VizieR, credits Huchra et al. and each entry's bibcode,
+          and links to the survey's home page.
+      - key: 01a19f22-2ad9-716e-876f-18207fe78d15
+        name: "2M++ catalogue"
+        body: "The 2M++ redshift compilation (Lavaux & Hudson 2011, MNRAS 416, 2840; VizieR J/MNRAS/416/2840): 69,160 galaxies to K 12.5 over nearly the whole sky, with its galaxy and group tables."
+      - key: 01a19f22-2ad9-716e-876f-182139b89dd9
+        name: "Cosmicflows-4 distances"
+        body: |
+          Cosmicflows-4 (Tully et al. 2023, ApJ 944, 94; VizieR J/ApJ/944/94): 55,877 galaxies with
+          redshift-independent distances, on H0 = 74.6. Its SGX, SGY and SGZ columns are in km/s
+          although labelled Mpc, and 158 of its group positions are wrong.
+      - key: 01a19f22-2ad9-716e-876f-1822e01df492
+        name: "McConnachie 2012 Local Group"
+        body: "The Local Group and nearby galaxies of McConnachie 2012 (AJ 144, 4; VizieR J/AJ/144/4): 102 galaxies."
+      - key: 01a19f22-2ad9-716e-876f-18236e86c3cd
+        name: "Updated Nearby Galaxy Catalog"
+        body: "Karachentsev et al. 2013 (AJ 145, 101; VizieR J/AJ/145/101), of which only the galaxies with a distance measured for them are taken."
+      - key: 01a19f22-2ad9-716e-876f-182403edb79e
+        name: "Gaia Catalogue of Nearby Stars"
+        body: "Smart et al. 2021 (A&A 649, A6; VizieR J/A+A/649/A6): 331,312 objects within 100 pc, from Gaia EDR3 astrometry at epoch J2016.0."
+      - key: 01a19f22-2ad9-716e-876f-1825c9086ff6
+        name: "Hipparcos new reduction"
+        body: "The Hipparcos catalogue as reduced by van Leeuwen 2007 (A&A 474, 653; VizieR I/311), at epoch J1991.25, for the brightest stars."
+  - key: 01a19f1e-d177-716d-b124-3cea65a86848
+    name: "ESA Gaia Archive"
+    body: "The TAP service of Gaia DR3 and the tables published beside it."
+    components:
+      - key: 01a19f22-2ad9-716e-876f-1826edbc9607
+        name: "Gaia DR3 bright stars"
+        body: "Gaia DR3 sources (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1) brighter than the G cut the source definition names, at epoch J2016.0."
+      - key: 01a19f22-2ad9-716e-876f-18279019d046
+        name: "Bailer-Jones 2021 distances"
+        body: "Geometric and photogeometric distances to Gaia EDR3 sources (Bailer-Jones et al. 2021, AJ 161, 147), used in place of inverted parallaxes."
+      - key: 01a19f22-2ad9-716e-876f-1828212cc2c0
+        name: "Gaia DR3 Hipparcos cross-identification"
+        body: "The Gaia DR3 best-neighbour table to Hipparcos-2, used to resolve a Hipparcos star and its Gaia source into one object."
+  - key: 01a19f1e-d177-716d-b124-3cebd889fc11
+    name: "Cosmicflows data site"
+    body: "The download site of the Cosmicflows-4 reconstructions."
+    components:
+      - key: 01a19f22-2ad9-716e-876f-182993f18555
+        name: "CF4++ density grid"
+        body: "The Cosmicflows-4 density field of Courtois et al. 2025 (A&A 701, 187): 128 cells a side over 1000 h⁻¹ Mpc in supergalactic coordinates, positions in cz/100."
+      - key: 01a19f22-2ad9-716e-876f-182a6e02c9e0
+        name: "CF4 basins of attraction"
+        body: "The watershed basins of Dupuy and Courtois 2023 (A&A 678, A176), including Laniakea: 128 cells a side, with its axes in the reverse order of the density grid's."
+  - key: 01a19f22-2ad9-716e-876f-182b3cd71558
+    name: "eROSITA-DE release site"
+    body: "The data release site of the German eROSITA consortium."
+    components:
+      - key: 01a19f22-2ad9-716e-876f-182ccc78e8f6
+        name: "eRASS1 clusters"
+        body: "Groups and clusters of the first eROSITA all-sky survey (Bulbul et al. 2024), with their optical identification by Kluge et al. 2024: about 12,000, in the western Galactic hemisphere only, with photometric redshifts and spectroscopic ones for a subset."
+  - key: 01a19f22-2ad9-716e-876f-182d7c1a086e
+    name: "2M++ reconstruction host"
+    body: "The site that serves the 2M++ reconstruction; its location is verified before the source definition is written."
+    components:
+      - key: 01a19f22-2ad9-716e-876f-182e57951b3d
+        name: "2M++ reconstruction"
+        body: "The density and velocity fields reconstructed from 2M++ by Carrick et al. 2015 (MNRAS 450, 317)."
+  - key: 01a19f22-2ad9-716e-876f-182f41fd2c08
+    name: "Literature"
+    body: "Papers read through NASA ADS, arXiv and the journals' sites."
+    components:
+      - key: 01a19f22-2ad9-716e-876f-18308cd8dc6c
+        name: "Researched structures"
+        body: "Structures read from their papers, such as voids, walls, superclusters and their members, with each number cited to the sentence, table or figure it comes from."

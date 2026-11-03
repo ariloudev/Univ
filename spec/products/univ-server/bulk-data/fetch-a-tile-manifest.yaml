@@ -1,0 +1,52 @@
+key: 01a19f1f-9fd6-77e0-931c-f98491ea6241
+slug: fetch-a-tile-manifest
+name: "Fetch a tile manifest"
+body: |
+  Learning how one scale domain's points are tiled before fetching any tile. The scale domains of
+  the first version are stars, nearby galaxies and cosmic web; each has its own octree and unit.
+tags:
+  - release-scoped
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce42ae3be29
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+requirements:
+  - key: 01a19f1f-9fd6-77e0-931c-f985aa2ecbff
+    statement:
+      form: event_driven
+      when: "a client lists scale domains"
+      system: "Univ Server"
+      shall: "return each scale domain of the release with its extent, unit and point count."
+    criteria:
+      - key: 01a19f1f-9fd6-77e0-931c-f9865de3a042
+        name: "The listing holds the stars, nearby galaxies and cosmic web scale domains."
+      - key: 01a19f1f-9fd6-77e0-931c-f987e3fef734
+        name: "Each scale domain gives the radius it extends to from the Solar System barycentre, in its own unit."
+  - key: 01a19f1f-9fd6-77e0-931c-f988f492ced3
+    statement:
+      form: event_driven
+      when: "a client requests the tile manifest of a scale domain"
+      system: "Univ Server"
+      shall: "return the tile manifest the release published for that scale domain."
+    criteria:
+      - key: 01a19f1f-9fd6-77e0-931c-f9895068d4df
+        name: "The tile manifest names its frame as ICRS equatorial Cartesian with its origin at the Solar System barycentre."
+      - key: 01a19f1f-9fd6-77e0-931c-f98a535a13e1
+        name: "The tile manifest names its unit and the release cosmology its positions were derived under."
+      - key: 01a19f1f-9fd6-77e0-931c-f98b8c9c8762
+        name: "The tile manifest gives each octree node's address, bounds, level, point count, byte size and SHA-256."
+      - key: 01a19f1f-9fd6-77e0-931c-f98c18795bc6
+        name: "The tile manifest gives the rotation matrices from its frame to galactic and to supergalactic Cartesian coordinates."
+      - key: 01a19f1f-9fd6-77e0-931c-f98d1570141b
+        name: "The tile manifest lists the sources whose points its tiles hold, each with its required credit."
+      - key: 01a19f1f-9fd6-77e0-931c-f98ef0bef672
+        name: "The tile manifest names the version of the tile encoding and the quantization step of each level."
+  - key: 01a19f1f-9fd6-77e0-931c-f98fa8f425d5
+    statement:
+      form: unwanted
+      if: "the release has no scale domain of the requested name"
+      system: "Univ Server"
+      shall: "answer that the scale domain was not found."
+    criteria:
+      - key: 01a19f1f-9fd6-77e0-931c-f990d1335739
+        name: "The response status is 404 with problem details that list the scale domains the release has."

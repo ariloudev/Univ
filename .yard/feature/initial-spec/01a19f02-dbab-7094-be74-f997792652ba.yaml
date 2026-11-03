@@ -1,0 +1,1071 @@
+key: 01a19f02-dbab-7094-be74-f997792652ba
+id: scope
+versions:
+  - key: 01a19f02-dbab-7094-be74-f99a5f07ca98
+    at: 2026-11-03T01:25:27Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Scope interview"
+    goal: "The person's answers settle univ-server's scope: data domains, serving format, layers model, ingestion and deployment"
+    status: planned
+  - key: 01a19f06-6833-7679-b0af-852068acda80
+    at: 2026-11-03T01:29:19Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Scope interview"
+    goal: "The person's answers settle univ-server's scope: data domains, serving format, layers model, ingestion and deployment"
+    status: active
+  - key: 01a19f1a-20f1-769d-9fb7-1c91682afdc7
+    at: 2026-11-03T01:50:52Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Scope interview"
+    goal: "The person's answers settle univ-server's scope: data domains, serving format, layers model, ingestion and deployment"
+    status: done
+blocks:
+  - key: 01a19f06-6833-7679-b0af-8517b983ccb0
+    id: q-clients
+    kind: question
+    versions:
+      - key: 01a19f06-6833-7679-b0af-8521b3b84add
+        at: 2026-11-03T01:29:19Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Who calls univ-server, and who may write to it?"
+        header: "Who uses it"
+        context: "Reading the data could stay anonymous, as the newsroom's `keep-public-access-anonymous` decision does. Authoring layers needs some form of identity, and the choice decides whether the spec needs accounts, ownership and moderation."
+        options:
+          - label: "Public read, keyed writes"
+            detail: "Anyone can read reference data and public layers. Writing needs an API key issued per client app, such as the newsroom. No end-user accounts. This keeps the Worker simple and fits a hobby project with a few trusted clients."
+            recommended: true
+          - label: "Owner only"
+            detail: "Only you read and write, behind one secret. Simplest, but nothing can be public and other apps can't build on it."
+          - label: "End-user accounts"
+            detail: "People sign in (e.g. with Cloudflare Access or OAuth) and author their own layers. This brings in ownership, privacy, quotas and moderation, a large part of the spec."
+    responses:
+      - key: 01a19f0b-c773-72d2-bf5d-46dc8eb32860
+        at: 2026-11-03T01:35:11Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Public read, keyed writes"
+  - key: 01a19f06-6833-7679-b0af-85184a03a8ae
+    id: q-domains
+    kind: question
+    versions:
+      - key: 01a19f06-6833-7679-b0af-852245d5837f
+        at: 2026-11-03T01:29:19Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Which kinds of reference data should the first version serve?"
+        header: "First data"
+        context: "Each domain brings its own sources, frames and ways of measuring distance. The newsroom covered all of them in a small way. The spec can name every domain and still specify only the first ones in depth."
+        options:
+          - label: "Galaxies and cosmic web"
+            detail: "SDSS, 6dFGS, BOSS and Cosmicflows-4 galaxies with redshift or redshift-independent distances. The work is already proven and the newsroom atlas could consume it straight away."
+            recommended: true
+          - label: "Large structures"
+            detail: "Voids, walls, superclusters, Laniakea basins and density fields: reconstructions and shapes taken from papers. This is where the 3D geometry lives."
+            recommended: true
+          - label: "Local Group and nearby"
+            detail: "McConnachie 2012, UNGC 2013 and named landmarks: small, curated, with mixed distance methods."
+            recommended: true
+          - label: "Stars and Milky Way"
+            detail: "Gaia DR3 and Hipparcos: huge (1.8 billion sources in Gaia) unless cut to the nearby or bright ones. The earlier session called it \"its own piece of work\"."
+          - label: "Solar System bodies"
+            detail: "Planets, small bodies and spacecraft from JPL Horizons and MPC. Their positions depend on time (ephemerides), which is a different model from catalogues."
+          - label: "Transient events"
+            detail: "GW, GRB, neutrino, nova and supernova alerts from GCN, GraceDB and TNS, as reference records that a newsroom layer can cite."
+        multiple: true
+    responses:
+      - key: 01a19f0b-c773-72d2-bf5d-46ddaa1e4554
+        at: 2026-11-03T01:35:11Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Galaxies and cosmic web"
+          - "Large structures"
+          - "Local Group and nearby"
+          - "Stars and Milky Way"
+  - key: 01a19f06-6833-7679-b0af-851940cfa849
+    id: q-format
+    kind: question
+    versions:
+      - key: 01a19f06-6833-7679-b0af-8523385de9e0
+        at: 2026-11-03T01:29:19Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should clients get bulk data such as a million galaxy positions?"
+        header: "Format"
+        context: "The newsroom ships whole-survey `.bin` files of uint16 (ra, dec, z), 7.4 MB in total, with no tiling. A Worker serves small JSON well and can stream large R2 objects cheaply, but shouldn't compute big responses per request."
+        options:
+          - label: "JSON API + binary tiles"
+            detail: "A JSON API for objects, structures, sources and layers, plus bulk points as pre-built binary tiles in R2: spatial cells (HEALPix by distance shell, or an octree) at several levels of detail, each with a manifest. Cheap to serve from Workers, with level of detail and no recomputation. The tile format becomes part of the spec."
+            recommended: true
+          - label: "JSON API + whole-survey files"
+            detail: "Keep the newsroom's approach: one file per survey (with higher precision), streamed from R2. Simplest, but the client downloads everything, which won't scale to Gaia or DESI."
+          - label: "Query API (SQL-like)"
+            detail: "Clients send cone, box or redshift-range queries answered from D1. Flexible, but D1's size limits and Worker CPU make bulk queries slow and costly. Better suited to object lookup than to bulk points."
+    responses:
+      - key: 01a19f0b-c773-72d2-bf5d-46de6299b005
+        at: 2026-11-03T01:35:11Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "JSON API + binary tiles"
+  - key: 01a19f06-6833-7679-b0af-851a10ca5b58
+    id: q-normalize
+    kind: question
+    versions:
+      - key: 01a19f06-6833-7679-b0af-85249b20ee57
+        at: 2026-11-03T01:29:19Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Where are derived positions, such as 3D Cartesian coordinates under a cosmology, computed?"
+        header: "Derived values"
+        context: "The rule so far: store what was measured (sky position, redshift, distance modulus) and derive distances in code with a named cosmology. The question is whether the server ships derived values, and for which cosmologies."
+        options:
+          - label: "Ingest derives, both shipped"
+            detail: "The ingest CLI keeps native values and also precomputes derived ones under Planck 2018, in named frames (ICRS, galactic, supergalactic Cartesian). Clients get both, labelled with the cosmology and the transformation. Another cosmology means another ingest run. Fast clients with an explicit lineage."
+            recommended: true
+          - label: "Native only"
+            detail: "The server ships measured values only, and each client derives positions with a shared library (e.g. univ-model compiled to WASM). Most flexible, but every client repeats the work and can get it wrong."
+          - label: "Server derives on request"
+            detail: "The Worker converts per request for any requested cosmology. Flexible, but costs CPU on bulk data and makes caching harder."
+    responses:
+      - key: 01a19f0b-c773-72d2-bf5d-46df7ebdcae1
+        at: 2026-11-03T01:35:11Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Ingest derives, both shipped"
+  - key: 01a19f06-6833-7679-b0af-851bee48878c
+    id: q-identity
+    kind: question
+    versions:
+      - key: 01a19f06-6833-7679-b0af-8525f79e7c35
+        at: 2026-11-03T01:29:19Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Should the first version cross-match the same object across catalogues?"
+        header: "Cross-match"
+        context: "The same galaxy can appear in SDSS, 6dFGS and Cosmicflows-4. Without cross-matching it's counted twice. With it, there's one identity per object, with a confidence score and a record of the evidence."
+        options:
+          - label: "Identity table, later"
+            detail: "Specify identities now (one object, several catalogue entries, a match confidence and method). The first version keeps each catalogue as its own source and marks the overlap with footprints. Building the matcher waits."
+            recommended: true
+          - label: "Cross-match in v1"
+            detail: "The ingest CLI matches by position and redshift tolerance, and the server serves deduplicated objects. Most correct for display, but fuzzy matching is a project of its own."
+          - label: "Never"
+            detail: "Catalogues stay separate forever. Simplest, but a layer can't refer to \"M31\" as a single thing."
+    responses:
+      - key: 01a19f0b-c773-72d2-bf5d-46e071b696e1
+        at: 2026-11-03T01:35:11Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Cross-match in v1"
+  - key: 01a19f06-6833-7679-b0af-851c50d83410
+    id: q-layers
+    kind: question
+    versions:
+      - key: 01a19f06-6833-7679-b0af-85262159378f
+        at: 2026-11-03T01:29:19Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "What can a client-authored layer hold?"
+        header: "Layers"
+        context: "In the newsroom, a story is a versioned snapshot with claims, sources, typed uncertainty, a geometry (point, region, range, ray or trajectory) and time records. Of the options below, the first is the minimum a newsroom layer needs."
+        options:
+          - label: "Features with geometry + time"
+            detail: "Items with a geometry (point, region, credible area, range, ray, trajectory, shape) in a named frame, optional time records (event, arrival, discovery), and typed uncertainty, validated by univ-model. Enough to rebuild the newsroom's stories as a layer."
+            recommended: true
+          - label: "Links to reference objects"
+            detail: "An item can point at univ-server's own objects or structures (\"this event's host galaxy is X\") as well as carrying its own geometry."
+            recommended: true
+          - label: "Versions and provenance"
+            detail: "Each item is versioned (corrections and retractions publish new versions) and cites its sources, as newsroom snapshots do."
+            recommended: true
+          - label: "Free-form properties"
+            detail: "Arbitrary JSON properties per item, for client-specific data the server doesn't interpret."
+        multiple: true
+    responses:
+      - key: 01a19f0b-c773-72d2-bf5d-46e1a39a5a21
+        at: 2026-11-03T01:35:11Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Features with geometry + time"
+          - "Links to reference objects"
+          - "Versions and provenance"
+        words: "Outside of this question: the server should support \"bounded\" queries, i.e. asking for objects it knowns within a certain volume. I also think we might want to have some sort of 4D (spacetime-like, dedup'd storage)"
+  - key: 01a19f06-6833-7679-b0af-851da240da83
+    id: q-newsroom
+    kind: question
+    versions:
+      - key: 01a19f06-6833-7679-b0af-8527660b47fc
+        at: 2026-11-03T01:29:19Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Should the cosmic-newsroom experiment become univ-server's first client?"
+        header: "Newsroom"
+        context: "The Univ rules keep experiments from sharing code or data unless asked. If the newsroom is the first client, univ-server's API and layer model are shaped to replace its static `.bin` files and to host its stories as a layer."
+        options:
+          - label: "Yes, first client"
+            detail: "Specify univ-server so that the newsroom's atlas data and stories can move onto it. That gives the spec a concrete acceptance target. Moving the newsroom over is separate work in its own repository, done later."
+            recommended: true
+          - label: "Independent for now"
+            detail: "Treat the newsroom only as inspiration. univ-server's API is designed on its own, and any migration is decided later."
+    responses:
+      - key: 01a19f0b-c773-72d2-bf5d-46e2ff04b9be
+        at: 2026-11-03T01:35:11Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Independent for now"
+  - key: 01a19f0d-0f67-7301-99ac-b3f511c87639
+    id: d-clients
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b404b19573a2
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Public read, keyed writes"
+        consequence: "Reference data and public layers are readable anonymously. Writing requires an API key issued per client app. The spec covers key issuance, revocation and per-key ownership of layers, but has no end-user accounts, sign-in or moderation."
+        question: 01a19f06-6833-7679-b0af-8517b983ccb0
+  - key: 01a19f0d-0f67-7301-99ac-b3f614c9c60d
+    id: d-domains
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b4055add21d3
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Galaxies, large structures, the Local Group and nearby galaxies, and stars of the Milky Way"
+        consequence: "The first version specifies four reference domains: galaxy surveys (SDSS, 6dFGS, BOSS, CF4), large structures and fields, the Local Group and nearby galaxies, and Milky Way stars (Gaia DR3, Hipparcos). Solar System ephemerides and transient-alert feeds are out of the first version. Gaia's size needs a decision on how much of it to take."
+        question: 01a19f06-6833-7679-b0af-85184a03a8ae
+  - key: 01a19f0d-0f67-7301-99ac-b3f78abd3868
+    id: d-format
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b406c488a121
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "JSON API plus pre-built binary tiles"
+        consequence: "Objects, structures, sources and layers are served as JSON. Bulk points are pre-built binary tiles at several levels of detail, stored in R2 with manifests. The tile layout and encoding are part of the spec and are produced by the ingest CLI, not the Worker."
+        question: 01a19f06-6833-7679-b0af-851940cfa849
+  - key: 01a19f0d-0f67-7301-99ac-b3f8228948aa
+    id: d-normalize
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b4072e972d22
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Ingest derives; native and derived values are both served"
+        consequence: "Every record keeps its native measured values. The ingest CLI also writes derived Cartesian positions under a named cosmology (Planck 2018 to start) and in named frames, with each transformation recorded. A different cosmology means a new ingest run, not a per-request computation."
+        question: 01a19f06-6833-7679-b0af-851a10ca5b58
+  - key: 01a19f0d-0f67-7301-99ac-b3f9a9ed38a6
+    id: d-identity
+    kind: decision
+    number: 5
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b4082112e82c
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cross-match catalogues in the first version"
+        consequence: "The ingest CLI resolves catalogue entries into one identity per astrophysical object, with a match method, confidence and evidence. The server serves deduplicated objects, so the spec must state how matching works, how ambiguous matches are held and which value wins when catalogues disagree."
+        question: 01a19f06-6833-7679-b0af-851bee48878c
+  - key: 01a19f0d-0f67-7301-99ac-b3fac7681ef1
+    id: d-layers
+    kind: decision
+    number: 6
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b409cf71e354
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Layers hold geometry and time, link to reference objects, and are versioned with provenance"
+        consequence: "A layer item has a typed geometry in a named frame, optional time records, typed uncertainty, links to reference objects, versions (including corrections and retractions) and cited sources. Free-form properties are left out. Two further asks came with this answer: bounded volume queries and 4D spacetime storage without duplicates. Both are followed up in the next round."
+        question: 01a19f06-6833-7679-b0af-851c50d83410
+  - key: 01a19f0d-0f67-7301-99ac-b3fba8d19737
+    id: d-newsroom
+    kind: decision
+    number: 7
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b40a3cc44e01
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "univ-server stands independent of cosmic-newsroom"
+        consequence: "The API and layer model are designed for univ-server's own goals. The newsroom serves only as prior art, and no acceptance criterion depends on moving it over. The Univ rule against sharing code between experiments stands."
+        question: 01a19f06-6833-7679-b0af-851da240da83
+  - key: 01a19f0d-0f67-7301-99ac-b3fc69635039
+    id: q-4d
+    kind: question
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b40b044c3025
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "What should \"4D, spacetime-like, deduplicated storage\" mean for univ-server?"
+        header: "4D storage"
+        context: "You asked for some form of 4D storage without duplicates. The options below are the readings I can see, and several can hold at once. Deduplication across catalogues is already settled by the cross-match decision; this question is about the time axis."
+        options:
+          - label: "Positions at an epoch"
+            detail: "Every position states the epoch it holds for. Stars carry proper motion and radial velocity (from Gaia), so a client can ask where a star is at any time. Galaxies are effectively static on human timescales."
+            recommended: true
+          - label: "Events in spacetime"
+            detail: "Layer items and future transients are located in space **and** time (event, arrival and discovery times, as in the newsroom), and bounded queries can filter on time as well as volume."
+            recommended: true
+          - label: "Light-cone / lookback"
+            detail: "Each object also carries the cosmic time at which the light we see left it, under the named cosmology. A galaxy at z = 0.3 is seen as it was roughly 3.5 Gyr ago, so queries and views can be framed in lookback time."
+            recommended: true
+          - label: "Bitemporal history"
+            detail: "The server keeps what was known when: each data release or correction adds a version, and a client can query the state as of a past release. This is close to the dataset-versioning question below."
+        multiple: true
+    responses:
+      - key: 01a19f12-0449-7394-a8a8-1848fa858a70
+        at: 2026-11-03T01:42:00Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Positions at an epoch"
+          - "Events in spacetime"
+          - "Light-cone / lookback"
+          - "Bitemporal history"
+  - key: 01a19f0d-0f67-7301-99ac-b3fd2d6ffe8f
+    id: q-volume
+    kind: question
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b40c97964a6b
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "What should a bounded volume query return?"
+        header: "Bounded query"
+        context: "Bulk points are served as tiles (already decided), but you also want to ask \"what does the server know inside this volume?\". The Worker can answer that from an index of spatial cells kept in D1 (about 10 GB per database). Matching objects are checked against the exact shape."
+        options:
+          - label: "Objects, capped + tiles"
+            detail: "The query takes a shape (box, sphere, or cone with a distance range) in a named frame and cosmology, plus filters (kind, catalogue, time range). It returns matching named objects, structures and layer items as paginated JSON with a hard cap. For bulk points it returns the list of tiles that cover the volume. Bounded cost per request."
+            recommended: true
+          - label: "Everything, streamed"
+            detail: "Same shapes, but every matching point is streamed back, galaxies and stars included. Simple for clients, but a large volume could mean millions of rows and long Worker run times."
+          - label: "Counts and tiles only"
+            detail: "The query returns counts per kind and the covering tiles, and clients fetch the tiles. The cheapest option, but you can't list \"what's in here\" by name."
+    responses:
+      - key: 01a19f12-0449-7394-a8a8-1849748cbba2
+        at: 2026-11-03T01:42:00Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Objects, capped + tiles"
+  - key: 01a19f0d-0f67-7301-99ac-b3fee2ba6048
+    id: q-gaia
+    kind: question
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b40d26406ba5
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How much of Gaia DR3 should the first version take?"
+        header: "Gaia scope"
+        context: "Gaia DR3 holds about 1.8 billion sources, too many for this setup. Distances should come from Bailer-Jones et al. 2021 (geometric and photogeometric), not from inverting the parallax, which is biased for faint or distant stars."
+        options:
+          - label: "100 pc + bright stars"
+            detail: "The Gaia Catalogue of Nearby Stars (Smart et al. 2021, 331,312 objects within 100 pc) plus a brightness cut (e.g. G < 12, a few million stars) for the Milky Way's shape, with Hipparcos for the brightest. Fits D1 and R2 easily and covers \"stars around us\" plus the visible Galaxy."
+            recommended: true
+          - label: "Nearby only"
+            detail: "Only the 100 pc catalogue and Hipparcos. Smallest, but the Milky Way scale stays a schematic."
+          - label: "Large, tiled"
+            detail: "Tens to hundreds of millions of stars (e.g. G < 17 or a parallax-quality cut), as level-of-detail tiles in R2 with only named stars in D1. Gives the best Milky Way, but ingest takes hours and storage grows to tens of GB."
+    responses:
+      - key: 01a19f12-0449-7394-a8a8-184abe37625a
+        at: 2026-11-03T01:42:00Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "100 pc + bright stars"
+  - key: 01a19f0d-0f67-7301-99ac-b3ff319a4dcb
+    id: q-merge
+    kind: question
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b40ee96b430f
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "When cross-matched catalogues disagree on a value, what does the merged object show?"
+        header: "Disagreeing data"
+        context: "Example: one galaxy has an SDSS spectroscopic redshift, a 6dFGS redshift and a Cosmicflows-4 redshift-independent distance. Its 3D position depends on which distance is used."
+        options:
+          - label: "All kept, one preferred"
+            detail: "The object keeps every measurement with its source. A documented ranking picks a preferred value for the derived position (e.g. parallax or redshift-independent distance > spectroscopic redshift > photometric redshift), and the object says which one was picked. Ambiguous matches are kept as candidates, not merged."
+            recommended: true
+          - label: "Combined estimate"
+            detail: "Compatible measurements are combined into one value weighted by their uncertainties. Statistically neater, but it creates new values no source published, which makes provenance harder to state."
+          - label: "Client chooses"
+            detail: "Nothing is preferred. Each client picks which source's value to use. Most neutral, but there's no ready 3D position for every object."
+    responses:
+      - key: 01a19f12-0449-7394-a8a8-184bdb4d5ebb
+        at: 2026-11-03T01:42:00Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "All kept, one preferred"
+  - key: 01a19f0d-0f67-7301-99ac-b400fc7ccc91
+    id: q-layer-visibility
+    kind: question
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b40f28f18fc9
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Who can read a client-authored layer?"
+        header: "Layer access"
+        context: "Writes need an API key (decided). This is about reading."
+        options:
+          - label: "Public or private"
+            detail: "Each layer is marked public (anyone reads) or private (readable only with its owning key). One flag, without the cost of sharing lists."
+            recommended: true
+          - label: "Always public"
+            detail: "Every layer is public once written. Simplest, but nothing can be drafted privately."
+          - label: "Shared per key"
+            detail: "Private layers can be shared with chosen other keys, adding access lists and more endpoints to the spec."
+    responses:
+      - key: 01a19f12-0449-7394-a8a8-184cd54c3f03
+        at: 2026-11-03T01:42:00Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Public or private"
+  - key: 01a19f0d-0f67-7301-99ac-b401ae23d7c7
+    id: q-releases
+    kind: question
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b410742c7ee6
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should reference data change over time?"
+        header: "Data versions"
+        context: "Each ingest run produces new tiles, objects and identities. Clients and layers point at reference objects, so object ids and positions shouldn't shift under them without warning."
+        options:
+          - label: "Immutable releases"
+            detail: "Each ingest publishes a numbered release (tiles, objects and manifests) that never changes afterwards. `latest` follows the newest release, and a client can pin one. Object identities stay stable across releases, with superseded and merged ids redirected. Old releases are kept until you prune them."
+            recommended: true
+          - label: "Latest only"
+            detail: "Each ingest replaces what was there. Simplest, but layer links can silently move to a different object."
+    responses:
+      - key: 01a19f12-0449-7394-a8a8-184d353c8159
+        at: 2026-11-03T01:42:00Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Immutable releases"
+  - key: 01a19f0d-0f67-7301-99ac-b4028f4f18c6
+    id: q-contract
+    kind: question
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b41178f88416
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should TypeScript clients get the API's types?"
+        header: "API contract"
+        context: "The model lives in Rust (`univ-model`). Clients such as a TypeScript web app need the same types and validation."
+        options:
+          - label: "OpenAPI from Rust"
+            detail: "The Worker publishes an OpenAPI 3.1 document generated from the Rust types, and a typed TS client is generated from it. The tile format is documented with a manifest schema and a small TS decoder. One source of truth."
+            recommended: true
+          - label: "univ-model as WASM"
+            detail: "The Rust model is also compiled to a WASM + TS package, so clients use the same validation and coordinate transforms. More capable, but a bigger download for clients and a harder build."
+          - label: "Handwritten TS"
+            detail: "A TS types package maintained by hand next to the Rust code. Quick to start, but the two will drift apart."
+    responses:
+      - key: 01a19f12-0449-7394-a8a8-184ee96d55bf
+        at: 2026-11-03T01:42:00Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "OpenAPI from Rust"
+  - key: 01a19f0d-0f67-7301-99ac-b4035b1508ce
+    id: q-tiles
+    kind: question
+    versions:
+      - key: 01a19f0d-0f67-7301-99ac-b412c8c968a8
+        at: 2026-11-03T01:36:35Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should bulk-point tiles divide space?"
+        header: "Tile layout"
+        context: "The data covers a huge range of distances, from parsecs (nearby stars) to gigaparsecs (BOSS), and the earlier atlas had ten scale levels. Tiles carry derived Cartesian positions; native values stay in the object API."
+        options:
+          - label: "Octree per scale"
+            detail: "A Cartesian octree in one canonical frame (ICRS equatorial, in light-years or Mpc), with a separate root per scale domain (stars, nearby galaxies, cosmic web) and levels of detail by subsampling. Fits 3D views and volume queries naturally, and clients rotate to galactic or supergalactic with a fixed matrix given in the manifest."
+            recommended: true
+          - label: "HEALPix × shells"
+            detail: "Sky cells (HEALPix) crossed with logarithmic distance shells. Natural for an observer at Earth and for sky-coverage footprints, but awkward for volumes away from the observer."
+          - label: "Decide in the spec later"
+            detail: "The spec states the performance and level-of-detail requirements and leaves the layout to an Architecture Decision made during the build."
+    responses:
+      - key: 01a19f12-0449-7394-a8a8-184ff7d69dcc
+        at: 2026-11-03T01:42:00Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Octree per scale"
+  - key: 01a19f13-335d-7690-8368-87c6677a609e
+    id: d-4d
+    kind: decision
+    number: 8
+    versions:
+      - key: 01a19f13-335d-7690-8368-87d4d6d4fb45
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Time is a full axis: epochs, events, lookback time and as-of history"
+        consequence: "Each position names its epoch, and stars carry the motion needed to move them to another epoch. Layer items and events have time records that volume queries can filter on. Objects carry a lookback time under the release's cosmology. Reads can ask for the state as of a past release or a past layer version, so the server keeps history rather than overwriting it."
+        question: 01a19f0d-0f67-7301-99ac-b3fc69635039
+  - key: 01a19f13-335d-7690-8368-87c7a1c2baef
+    id: d-volume
+    kind: decision
+    number: 9
+    versions:
+      - key: 01a19f13-335d-7690-8368-87d5c4dccf97
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Volume queries return capped object lists and covering tiles"
+        consequence: "A query names a shape (box, sphere, or cone with a distance range), a frame, a cosmology and filters, including time. It returns named objects, structures and layer items, paginated with a hard cap, plus the tiles that cover the volume. It never streams every bulk point, so each request has a bounded cost. D1 holds a spatial cell index for this."
+        question: 01a19f0d-0f67-7301-99ac-b3fd2d6ffe8f
+  - key: 01a19f13-335d-7690-8368-87c8721a8bdf
+    id: d-gaia
+    kind: decision
+    number: 10
+    versions:
+      - key: 01a19f13-335d-7690-8368-87d6b81fc05d
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gaia: the 100 pc catalogue plus bright stars, with Hipparcos"
+        consequence: "Stars come from GCNS (Smart et al. 2021) within 100 pc, a Gaia DR3 brightness cut for the shape of the Milky Way, and Hipparcos (van Leeuwen 2007) for the brightest. Distances use Bailer-Jones et al. 2021, never an inverted parallax. The exact G cut is a parameter of the source definition."
+        question: 01a19f0d-0f67-7301-99ac-b3fee2ba6048
+  - key: 01a19f13-335d-7690-8368-87c9ced11d9b
+    id: d-merge
+    kind: decision
+    number: 11
+    versions:
+      - key: 01a19f13-335d-7690-8368-87d79e15842e
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Keep every measurement; a documented ranking picks the preferred one"
+        consequence: "A merged object lists every catalogue measurement with its source. The ingest applies a published ranking of distance methods to pick the value that drives the derived position, and the object names the value it picked. Ambiguous matches stay as candidates with their confidence and are not merged."
+        question: 01a19f0d-0f67-7301-99ac-b3ff319a4dcb
+  - key: 01a19f13-335d-7690-8368-87caa00bfed0
+    id: d-layer-visibility
+    kind: decision
+    number: 12
+    versions:
+      - key: 01a19f13-335d-7690-8368-87d89589c7dd
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Each layer is public or private to its owning key"
+        consequence: "A layer carries one visibility flag. A private layer and its items are readable only with the owning key, and anonymous reads of it look the same as reads of a layer that doesn't exist. There are no sharing lists."
+        question: 01a19f0d-0f67-7301-99ac-b400fc7ccc91
+  - key: 01a19f13-335d-7690-8368-87cbd02ec84c
+    id: d-releases
+    kind: decision
+    number: 13
+    versions:
+      - key: 01a19f13-335d-7690-8368-87d9546680bc
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Reference data is published as immutable, numbered releases"
+        consequence: "Each ingest publishes a new release and never edits an old one. `latest` points to the newest release, and clients can pin a release. Object ids are stable across releases, and merged or superseded ids redirect. Together with the bitemporal answer, a read can be made against any release that has not been pruned."
+        question: 01a19f0d-0f67-7301-99ac-b401ae23d7c7
+  - key: 01a19f13-335d-7690-8368-87cccf495cfb
+    id: d-contract
+    kind: decision
+    number: 14
+    versions:
+      - key: 01a19f13-335d-7690-8368-87daed242f8d
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "OpenAPI 3.1 generated from the Rust types"
+        consequence: "The Worker serves an OpenAPI document generated from univ-model, from which a typed TS client is generated. The tile format has a manifest schema and a reference TS decoder. The Rust types are the single source of truth."
+        question: 01a19f0d-0f67-7301-99ac-b4028f4f18c6
+  - key: 01a19f13-335d-7690-8368-87cd2a48683f
+    id: d-tiles
+    kind: decision
+    number: 15
+    versions:
+      - key: 01a19f13-335d-7690-8368-87db15be748c
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cartesian octree tiles, one root per scale domain"
+        consequence: "Tiles are octree nodes in one canonical Cartesian frame (ICRS equatorial), with a root for each scale domain (stars, nearby galaxies, cosmic web) and coarser levels made by subsampling. Each manifest gives the rotation matrices to galactic and supergalactic, and the cosmology and release it was built under."
+        question: 01a19f0d-0f67-7301-99ac-b4035b1508ce
+  - key: 01a19f13-335d-7690-8368-87ce67a3d585
+    id: q-shapes
+    kind: question
+    versions:
+      - key: 01a19f13-335d-7690-8368-87dca1e58b7e
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Which kinds of geometry should structures and layer items be able to carry?"
+        header: "Shapes"
+        context: "The newsroom used points, credible regions, distance ranges, rays and trajectories for events, and spheres, paths, member lists, basins and contours for structures. Each kind needs a schema, validation, a bounding volume for the spatial index and a client encoding."
+        options:
+          - label: "Points, rays, ranges"
+            detail: "A position, a direction with an error radius, or a direction with a distance interval, each with typed uncertainty. The minimum for events."
+            recommended: true
+          - label: "Primitives"
+            detail: "Sphere, ellipsoid and box in a named frame. These cover most structures from papers, such as supercluster extents and void radii."
+            recommended: true
+          - label: "Paths and members"
+            detail: "Polylines (filaments, walls, trajectories) and member lists (a structure traced by named galaxies, quasars or absorbers), as the newsroom drew the Giant Arc."
+            recommended: true
+          - label: "Sky regions (MOC)"
+            detail: "Regions of the sky as HEALPix Multi-Order Coverage maps: GW and GRB credible areas and survey footprints. This is the IVOA standard."
+            recommended: true
+          - label: "Volume grids"
+            detail: "3D scalar fields such as the CF4++ density (128³), served as binary volumes, with contours and basins derived from them."
+            recommended: true
+          - label: "Meshes"
+            detail: "Arbitrary triangle meshes (e.g. glTF) for iso-surfaces or hand-made shapes. Flexible, but heavy to validate and to index."
+        multiple: true
+    responses:
+      - key: 01a19f18-10ee-7661-85f5-77d6bcd48345
+        at: 2026-11-03T01:48:36Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Points, rays, ranges"
+          - "Primitives"
+          - "Paths and members"
+          - "Sky regions (MOC)"
+          - "Volume grids"
+  - key: 01a19f13-335d-7690-8368-87cfed0caacf
+    id: q-freshness
+    kind: question
+    versions:
+      - key: 01a19f13-335d-7690-8368-87dd62972e5f
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How do clients learn that a layer changed?"
+        header: "Layer updates"
+        context: "Reference data changes only with a release. Layers change whenever a client with a key writes to them."
+        options:
+          - label: "Change feed + ETags"
+            detail: "Every layer has an ordered change sequence. Clients poll `changes since <cursor>` and use conditional requests (ETag). Cheap on Workers and simple to cache."
+            recommended: true
+          - label: "Push (WebSocket)"
+            detail: "A Durable Object per layer pushes changes to connected clients, as the newsroom's live slice planned. Real time, but more moving parts. It could come after the change feed."
+          - label: "Re-read only"
+            detail: "Clients just fetch the layer again. Simplest, with no cursor, but slow for large layers."
+    responses:
+      - key: 01a19f18-10ee-7661-85f5-77d78bba16ae
+        at: 2026-11-03T01:48:36Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Change feed + ETags"
+  - key: 01a19f13-335d-7690-8368-87d0c2a0cfa1
+    id: q-deploy
+    kind: question
+    versions:
+      - key: 01a19f13-335d-7690-8368-87de0136becf
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Where does the first version run?"
+        header: "Environments"
+        context: "Public reads and per-app keys only make sense once the server is reachable. The newsroom chose to stay local only."
+        options:
+          - label: "Local + one deployed"
+            detail: "`wrangler dev` with local D1 and R2 for development and tests, plus one deployed environment on your Cloudflare account. Ingest publishes to either."
+            recommended: true
+          - label: "Local only"
+            detail: "Everything runs under `wrangler dev`, with nothing deployed for now. Ingest publishes to local storage only."
+          - label: "Staging + production"
+            detail: "Two deployed environments. A new release is checked on staging before it reaches production. Safer, but double the setup."
+    responses:
+      - key: 01a19f18-10ee-7661-85f5-77d8e12c2231
+        at: 2026-11-03T01:48:36Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Local only"
+  - key: 01a19f13-335d-7690-8368-87d16a5cbd9f
+    id: q-limits
+    kind: question
+    versions:
+      - key: 01a19f13-335d-7690-8368-87dfd07d2c09
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Should the server enforce limits on clients?"
+        header: "Limits"
+        context: "Anyone can read anonymously, and keyed clients write layers into D1, which you pay for."
+        options:
+          - label: "Quotas + rate limits"
+            detail: "Per-key quotas (number of layers, items per layer, size per item) and per-client rate limits on anonymous reads, using Cloudflare's rate-limiting binding. Refusals are explicit errors."
+            recommended: true
+          - label: "Key quotas only"
+            detail: "Limit what each key can write, but leave anonymous reads unlimited, relying on caching and Cloudflare's own DDoS protection."
+          - label: "None yet"
+            detail: "Trust the few clients you issue keys to and add limits later."
+    responses:
+      - key: 01a19f18-10ee-7661-85f5-77d9e1976e8a
+        at: 2026-11-03T01:48:36Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Quotas + rate limits"
+  - key: 01a19f13-335d-7690-8368-87d2c0eaeb23
+    id: q-licence
+    kind: question
+    versions:
+      - key: 01a19f13-335d-7690-8368-87e000fab03a
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "What happens to a source whose licence forbids redistribution, like 2MRS?"
+        header: "Licences"
+        context: "Most catalogues reached through VizieR, SDSS and Gaia allow redistribution with credit; a few don't."
+        options:
+          - label: "Excluded"
+            detail: "Ingest refuses to publish a source whose licence forbids redistribution. Every published source states its licence and the credit it requires, and the API serves both."
+            recommended: true
+          - label: "Metadata only"
+            detail: "The source appears as a description, footprint and link, with no rows. Users learn it exists without the server copying its data."
+    responses:
+      - key: 01a19f18-10ee-7661-85f5-77dacb4b91ff
+        at: 2026-11-03T01:48:36Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        words: |-
+          This is what I got from the Internet on 2MRS: yes, you can freely distribute derivative data from the 2MASS Redshift Survey (2MRS).
+          Because the official 2MRS catalog dataset is published by NASA and its federal partners, it is classified as a U.S. Government Work. Under United States copyright law, government works are placed directly into the public domain. Can't we use it?
+  - key: 01a19f13-335d-7690-8368-87d38f334221
+    id: outline
+    kind: approval
+    versions:
+      - key: 01a19f13-335d-7690-8368-87e17e48eb6d
+        at: 2026-11-03T01:43:18Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Proposed outline of the specification"
+        markdown: |-
+          The decisions so far shape the outline below. Approving it settles the structure. Changing a Feature's place now costs one line, and every criterion beneath it later. The answers to the five questions above change only details within this outline.
+
+          ```mermaid
+          flowchart LR
+            subgraph local[Your machine]
+              ING[Univ Ingest CLI]
+            end
+            SRC[(Public data providers<br/>SkyServer · VizieR · Gaia archive · Cosmicflows)] --> ING
+            ING -- releases: tiles --> R2[(R2)]
+            ING -- releases: objects, identities, cell index --> D1[(D1)]
+            subgraph cf[Cloudflare Workers]
+              API[Univ Server Worker]
+            end
+            R2 --> API
+            D1 --> API
+            API -- JSON + tiles + OpenAPI --> CL[Clients, e.g. a TS web app]
+            CL -- keyed writes: layers --> API
+            MODEL[univ-model, shared crate] -.-> ING
+            MODEL -.-> API
+          ```
+
+          ### Product 1: Univ Server, the Worker that clients call
+
+          | Feature Group | Features |
+          |---|---|
+          | Reference data | Look up an object (by id or catalogue name; merged ids redirect) · Read a structure and its geometry · Read a source and its provenance · List and pin releases |
+          | Bulk data | Fetch a tile manifest · Fetch point tiles by octree node and level of detail · Fetch a volume grid |
+          | Spatial and temporal queries | Query a bounded volume · Filter by time · Read as of a past release · Place a star at an epoch |
+          | Layers | Create and configure a layer · Publish a layer item · Correct or retract an item · Read a layer · Follow a layer's changes |
+          | Access | Read anonymously · Write with an API key · Issue and revoke keys · Enforce quotas and rate limits |
+          | API contract | Read the OpenAPI document · Decode the tile format |
+
+          ### Product 2: Univ Ingest, the local CLI that builds and publishes releases
+
+          | Feature Group | Features |
+          |---|---|
+          | Acquisition | Define a source (query, cuts, licence, credit) · Fetch a source durably (retries, mirrors, resumable cache, digests) |
+          | Normalization | Normalize records (frames, units, typed distances, typed uncertainty, kind of value) · Derive positions and lookback time under a named cosmology · Record a researched structure from its paper |
+          | Identity | Cross-match catalogues · Choose the preferred measurement · Keep identities stable across releases |
+          | Releases | Build octree tiles · Build a release and its manifests · Publish a release to local or deployed storage · Prune old releases |
+
+          ### Components
+
+          - **Shared:** univ-model (types, validation, frames, cosmology, geometry).
+          - **Univ Server:** HTTP API and OpenAPI; reference reader; spatial index and query; layer store; access control.
+          - **Univ Ingest:** source connectors; normalizer; cross-matcher; tile builder; release publisher.
+          - **External:** Cloudflare Workers runtime, D1 and R2; SDSS SkyServer; VizieR (CDS and the SAAO mirror); ESA Gaia archive; the Cosmicflows site.
+
+          ### Constraints for the whole document
+
+          - Univ Server runs on Cloudflare Workers, written in Rust and built to WebAssembly with `workers-rs`.
+          - Univ Ingest is a native Rust CLI.
+          - Real data only, with primary sources cited. Native values are kept beside derived ones. Every frame, epoch and cosmology is named. Uncertainty is typed, and measured, estimated, inferred and reconstructed values stay distinct.
+
+          ### Decisions recorded in `spec/decisions/`
+
+          The 15 choices recorded in the Yard Log so far, plus hosting on Workers and offline ingestion.
+
+          ### Left out of the first version, as stated scope
+
+          Solar System ephemerides, live transient-alert feeds, end-user accounts, sharing lists for private layers, and meshes (pending your answer).
+    responses:
+      - key: 01a19f17-fe3d-7449-b336-ec47e2c6b605
+        at: 2026-11-03T01:48:32Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a19f1a-20f1-769d-9fb7-1c8541114ba1
+    id: d-shapes
+    kind: decision
+    number: 16
+    versions:
+      - key: 01a19f1a-20f1-769d-9fb7-1c8bc34de3e6
+        at: 2026-11-03T01:50:52Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Geometry kinds: points, rays, ranges, primitives, paths, member lists, MOC sky regions and volume grids; no meshes"
+        consequence: "univ-model defines a closed set of geometry kinds, each with a schema, validation, a bounding volume for the cell index and a JSON or binary encoding. Meshes are refused for now, and adding them later is a model change."
+        question: 01a19f13-335d-7690-8368-87ce67a3d585
+  - key: 01a19f1a-20f1-769d-9fb7-1c86176c0c71
+    id: d-freshness
+    kind: decision
+    number: 17
+    versions:
+      - key: 01a19f1a-20f1-769d-9fb7-1c8c93cb8ec9
+        at: 2026-11-03T01:50:52Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Layers expose an ordered change feed and ETags"
+        consequence: "Each write to a layer advances the layer's change sequence. Clients poll for changes since a cursor and send conditional reads. Push over WebSockets is left out of the first version."
+        question: 01a19f13-335d-7690-8368-87cfed0caacf
+  - key: 01a19f1a-20f1-769d-9fb7-1c879190b660
+    id: d-deploy
+    kind: decision
+    number: 18
+    versions:
+      - key: 01a19f1a-20f1-769d-9fb7-1c8d740bcbcc
+        at: 2026-11-03T01:50:52Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The first version runs locally only"
+        consequence: "Univ Server runs under `wrangler dev` with local D1, R2 and the local rate-limit binding, and Univ Ingest publishes releases to that local storage only. Nothing is deployed yet. The Workers-only constraint keeps a later deployment a configuration step, and the spec states no availability target."
+        question: 01a19f13-335d-7690-8368-87d0c2a0cfa1
+  - key: 01a19f1a-20f1-769d-9fb7-1c88dbbdc1f9
+    id: d-limits
+    kind: decision
+    number: 19
+    versions:
+      - key: 01a19f1a-20f1-769d-9fb7-1c8ed1758656
+        at: 2026-11-03T01:50:52Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Per-key quotas and per-client rate limits"
+        consequence: "Each API key has quotas on layers, items per layer and item size, and anonymous reads are rate limited per client address. Going over a quota or limit is refused with an explicit error that names it."
+        question: 01a19f13-335d-7690-8368-87d16a5cbd9f
+  - key: 01a19f1a-20f1-769d-9fb7-1c89c035bc9b
+    id: d-licence
+    kind: decision
+    number: 20
+    versions:
+      - key: 01a19f1a-20f1-769d-9fb7-1c8fc4ef9ff5
+        at: 2026-11-03T01:50:52Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Admit a source by its terms; 2MRS comes in through its published ApJS table on VizieR"
+        consequence: "Each source definition records its terms of use and the credit it requires, and ingest refuses to publish a source whose terms forbid redistribution of its data. The \"U.S. Government Work\" reading doesn't hold for 2MRS: the catalogue was produced by the survey team (Huchra et al. 2012, maintained at Texas A&M), not by NASA staff. Its README asks that **its files** not be redistributed, so that users get the latest version. The same table is published in ApJS and already redistributed by VizieR (J/ApJS/199/26) and NASA's HEASARC. So 2MRS is ingested from VizieR, cites Huchra et al. 2012 and each entry's own bibcode, and links to the 2MRS home page. It joins the galaxy sources as the all-sky survey of the nearby universe (Ks ≤ 11.75; it leaves out low Galactic latitudes)."
+        question: 01a19f13-335d-7690-8368-87d2c0eaeb23
+  - key: 01a19f1a-20f1-769d-9fb7-1c8accc8961b
+    id: scope-summary
+    kind: note
+    versions:
+      - key: 01a19f1a-20f1-769d-9fb7-1c905a484d19
+        at: 2026-11-03T01:50:52Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Scope settled"
+        markdown: |-
+          Three rounds settled **20 choices**, and the outline was approved.
+
+          Adjustments while writing:
+
+          - **Releases:** "Read as of a past release" folds into the release-pinning Feature, since pinning a release *is* the as-of read for reference data. Layers get their own as-of read.
+          - **Deployment:** publishing targets local storage only, after the local-only decision.
+          - **Preferred measurement:** the "documented ranking" will be a published rule that picks the measurement with the **smallest fractional distance uncertainty**, counting a peculiar-velocity term for redshift distances, with ties broken by method rank. A rule that ranks by method alone would place a galaxy at cz 15,000 km/s at its ~20% Tully–Fisher distance rather than its ~2% redshift distance, which would be wrong.
+        tone: success

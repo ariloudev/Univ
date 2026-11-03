@@ -1,0 +1,48 @@
+key: 01a19f1f-9fd6-77e0-931c-f99189987122
+slug: fetch-a-volume-grid
+name: "Fetch a volume grid"
+body: "Downloading a reconstructed field, such as the Cosmicflows-4 density or the basins of attraction, as a header and a block of samples."
+tags:
+  - release-scoped
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce42ae3be29
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+requirements:
+  - key: 01a19f1f-9fd6-77e0-931c-f9923b48cc13
+    statement:
+      form: event_driven
+      when: "a client lists volume grids"
+      system: "Univ Server"
+      shall: "return each volume grid of the release with its quantity, source and kind of value."
+    criteria:
+      - key: 01a19f1f-9fd6-77e0-931c-f9932c971a53
+        name: "Each listed volume grid gives its id, quantity, unit, grid shape and source."
+  - key: 01a19f1f-9fd6-77e0-931c-f99446dc3f36
+    statement:
+      form: event_driven
+      when: "a client requests a volume grid"
+      system: "Univ Server"
+      shall: "return its header and its binary samples."
+    criteria:
+      - key: 01a19f1f-9fd6-77e0-931c-f9953002e188
+        name: "The header names the quantity, its unit and the kind of value, which is reconstructed for a reconstruction."
+      - key: 01a19f1f-9fd6-77e0-931c-f9962004b264
+        name: "The header names the frame, the order of the axes in the samples, the grid shape and the origin."
+      - key: 01a19f1f-9fd6-77e0-931c-f9979ac5e915
+        name: "The header gives the cell size in the unit its source published and, where that unit is h⁻¹ Mpc, rescaled to the release cosmology."
+      - key: 01a19f1f-9fd6-77e0-931c-f9986bc2748c
+        name: "The samples are little-endian 32-bit floats laid out in the axis order the header names."
+      - key: 01a19f1f-9fd6-77e0-931c-f9995066da08
+        name: "A grid of labels, such as basins of attraction, gives the table that names each label."
+      - key: 01a19f1f-9fd6-77e0-931c-f99a5e76e0b0
+        name: "The header cites the grid's source and names the release that published it."
+  - key: 01a19f1f-9fd6-77e0-931c-f99b99d555ba
+    statement:
+      form: unwanted
+      if: "no volume grid has the requested id"
+      system: "Univ Server"
+      shall: "answer that the volume grid was not found."
+    criteria:
+      - key: 01a19f1f-9fd6-77e0-931c-f99c3b94bb2d
+        name: "The response status is 404 with problem details that name the requested id."

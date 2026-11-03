@@ -1,0 +1,75 @@
+key: 01a19f22-2ad9-716e-876f-186219f4e104
+slug: normalize-records
+name: "Normalize records"
+body: "Turning each source's rows into univ-model values while keeping what the source published."
+realizes:
+  - 01a19f1e-d177-716d-b124-3cee44add674
+  - 01a19f1e-d177-716d-b124-3cf3def064d0
+requirements:
+  - key: 01a19f22-2ad9-716e-876f-18637db5e446
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "convert each catalogue entry into univ-model values while keeping each native value."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-186415c2b2be
+        name: "Each position is stored in ICRS with the epoch of its source."
+      - key: 01a19f22-2ad9-716e-876f-1865763fa63d
+        name: "Each native value keeps its published unit beside the normalized value."
+      - key: 01a19f22-2ad9-716e-876f-18663bbd5e71
+        name: "Normalized values use degrees for angles, km/s for velocities, parsecs for stellar distances and megaparsecs for extragalactic ones."
+      - key: 01a19f22-2ad9-716e-876f-1867aeb456fd
+        name: "Each value is classified by its kind of value."
+      - key: 01a19f22-2ad9-716e-876f-186820f4df2c
+        name: "Each uncertainty is typed as a symmetric error, an asymmetric interval, an upper or lower limit, a credible region, or none reported."
+      - key: 01a19f22-2ad9-716e-876f-186959bf0d6e
+        name: "A value published without an uncertainty is marked as having none reported, never as having zero uncertainty."
+  - key: 01a19f22-2ad9-716e-876f-186a829fb7fa
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "record each distance with its kind, its method and, where it depends on one, its Hubble constant or cosmology."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-186b82bcfc95
+        name: "The kinds of distance are parallax, geometric or photogeometric, primary indicator, secondary indicator, spectroscopic redshift and photometric redshift."
+      - key: 01a19f22-2ad9-716e-876f-186c1d4c0f38
+        name: "The method names the indicator, such as Cepheids, the tip of the red giant branch, masers, type Ia supernovae, surface brightness fluctuations, Tully-Fisher or fundamental plane."
+      - key: 01a19f22-2ad9-716e-876f-186d9b7a0c04
+        name: "A distance published in h⁻¹ Mpc or for a stated Hubble constant keeps that constant beside its native value."
+      - key: 01a19f22-2ad9-716e-876f-186e940da69e
+        name: "A distance modulus is kept as published beside the distance derived from it."
+  - key: 01a19f22-2ad9-716e-876f-186f83aad488
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "keep each redshift in the frame its source published it in and derive its value in the CMB frame."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-187089f08fa0
+        name: "A heliocentric redshift is kept as measured."
+      - key: 01a19f22-2ad9-716e-876f-187151a4aac5
+        name: "The CMB-frame redshift uses the Planck 2018 dipole of 369.82 km/s toward galactic longitude 264.021° and latitude 48.253°."
+      - key: 01a19f22-2ad9-716e-876f-1872f4143cd2
+        name: "The derivation is recorded with the redshift it was derived from."
+  - key: 01a19f22-2ad9-716e-876f-18734f56d5aa
+    statement:
+      form: unwanted
+      if: "a catalogue entry fails validation"
+      system: "Univ Ingest"
+      shall: "leave the entry out of the release and count it under its reason."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-187496ae140f
+        name: "The source's provenance gives the count of entries left out for each reason."
+      - key: 01a19f22-2ad9-716e-876f-18755300ea38
+        name: "No entry is left out without a reason recorded."
+  - key: 01a19f22-2ad9-716e-876f-1876f53660fb
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "fix a known defect of a source only as its source definition states the fix."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-1877e0c274f2
+        name: "Each fix in a source definition names the defect, the change it makes and the evidence for it."
+      - key: 01a19f22-2ad9-716e-876f-187827977f54
+        name: "Cosmicflows-4's SGX, SGY and SGZ columns are read as km/s, as the evidence shows, although VizieR labels them Mpc."
+      - key: 01a19f22-2ad9-716e-876f-18790159a9dd
+        name: "The source's provenance lists each fix applied with the number of entries it changed."

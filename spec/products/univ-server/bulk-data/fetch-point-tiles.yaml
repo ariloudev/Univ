@@ -1,0 +1,33 @@
+key: 01a19f1f-9fd6-77e0-931c-f99de4f76490
+slug: fetch-point-tiles
+name: "Fetch point tiles"
+body: "Downloading the points of one octree node, so that a client draws only what its view needs, at the level of detail it can afford."
+tags:
+  - release-scoped
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce42ae3be29
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+requirements:
+  - key: 01a19f1f-9fd6-77e0-931c-f99edc04db94
+    statement:
+      form: event_driven
+      when: "a client requests an octree node of a scale domain"
+      system: "Univ Server"
+      shall: "return that node's tile exactly as the release stored it."
+    criteria:
+      - key: 01a19f1f-9fd6-77e0-931c-f99f4c025db5
+        name: "The bytes of the response match the SHA-256 the tile manifest gives for the node."
+      - key: 01a19f1f-9fd6-77e0-931c-f9a0a2ceac71
+        name: "The response marks the tile as immutable and cacheable for one year."
+      - key: 01a19f1f-9fd7-7209-b7cb-5cf491cd92ad
+        name: "The tile is streamed from R2 without being decoded by the Worker."
+  - key: 01a19f1f-9fd7-7209-b7cb-5cf5b0acf817
+    statement:
+      form: unwanted
+      if: "the tile manifest has no node at the requested address"
+      system: "Univ Server"
+      shall: "answer that the tile was not found."
+    criteria:
+      - key: 01a19f1f-9fd7-7209-b7cb-5cf680d98b67
+        name: "The response status is 404 with problem details that name the requested address."

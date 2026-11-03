@@ -1,0 +1,46 @@
+key: 01a19f20-1cb3-7721-97a0-4f279c973046
+slug: follow-a-layers-changes
+name: "Follow a layer's changes"
+body: "Keeping a client up to date by polling a layer's change sequence and by conditional reads, without re-reading the whole layer."
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfeda1fea21
+requirements:
+  - key: 01a19f20-1cb3-7721-97a0-4f280579c165
+    statement:
+      form: event_driven
+      when: "a client asks for a layer's changes since a cursor"
+      system: "Univ Server"
+      shall: "return the changes made after that cursor in the order of the layer's change sequence."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f29763822f6
+        name: "Each change gives its sequence number, its time, its kind, and the item and version it concerns."
+      - key: 01a19f20-1cb3-7721-97a0-4f2ac80ae6de
+        name: "The kinds of change are layer configured, item published, item revised, item retracted and layer retired."
+      - key: 01a19f20-1cb3-7721-97a0-4f2bcd986dbc
+        name: "The response gives the cursor of the last change it holds."
+      - key: 01a19f20-1cb3-7721-97a0-4f2cd2218c36
+        name: "A page holds at most 1,000 changes."
+      - key: 01a19f20-1cb3-7721-97a0-4f2d90d4b301
+        name: "A cursor of zero returns the changes from the layer's creation."
+  - key: 01a19f20-1cb3-7721-97a0-4f2ec27451ac
+    statement:
+      form: event_driven
+      when: "a client repeats a read of a layer or an item with the entity tag it last received"
+      system: "Univ Server"
+      shall: "answer that nothing changed when the layer's change sequence has not advanced."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f2f545440ba
+        name: "The response status is 304 with no body."
+      - key: 01a19f20-1cb3-7721-97a0-4f3070065acf
+        name: "Every change to a layer gives the layer and the changed item a new entity tag."
+  - key: 01a19f20-1cb3-7721-97a0-4f31052701ce
+    statement:
+      form: unwanted
+      if: "the cursor is malformed or lies beyond the layer's change sequence"
+      system: "Univ Server"
+      shall: "refuse the request and give the layer's current change sequence."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f3215abe316
+        name: "The response status is 400 with problem details that give the current change sequence."

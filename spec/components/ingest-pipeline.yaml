@@ -1,0 +1,30 @@
+key: 01a19f1e-d177-716d-b124-3ceccbdcd63e
+slug: ingest-pipeline
+name: "Ingest pipeline"
+body: "The stages of Univ Ingest, from fetching a source to publishing a release."
+scopedTo:
+  - 01a19f1a-685d-7357-b67e-d658085bf5c8
+components:
+  - key: 01a19f1e-d177-716d-b124-3cede7d0b609
+    name: "Source connectors"
+    body: "Read source definitions and fetch each source durably through its provider's access method."
+  - key: 01a19f1e-d177-716d-b124-3cee44add674
+    name: "Normalizer"
+    body: "Turns native records into univ-model types and derives positions and distances."
+  - key: 01a19f1e-d177-716d-b124-3cef889e66e6
+    name: "Cross-matcher"
+    body: "Resolves catalogue entries into objects, chooses preferred measurements and keeps object ids stable."
+  - key: 01a19f1e-d177-716d-b124-3cf0a98909c1
+    name: "Tile builder"
+    body: "Builds the octree tiles and tile manifests of each scale domain."
+  - key: 01a19f1e-d177-716d-b124-3cf1defde8b6
+    name: "Release publisher"
+    body: "Assembles, checks, publishes and prunes releases."
+    constraints:
+      - key: 01a19f1e-d177-716d-b124-3cf23344602c
+        name: "The Release publisher shall keep the D1 tables of one release within 10 GB."
+        constraintBinding:
+          category: storage.d1
+          requiredValue: "10 GB"
+        conservationKind: cap
+        verificationFate: monitored

@@ -1,0 +1,22 @@
+key: 01a19f1e-d177-716d-b124-3cf3def064d0
+slug: univ-model
+name: "univ-model"
+body: |
+  The shared Rust crate that holds the domain model: objects, measurements, distances, frames,
+  epochs, cosmologies, geometries, time records, layers and their validation. Univ Server and
+  Univ Ingest both build on it, so a value means the same thing on both sides.
+components:
+  - key: 01a19f1e-d177-716d-b124-3cf4d7ad065c
+    name: "Tile codec"
+    body: "The encoder and decoder of the tile format, with a reference TypeScript decoder for clients."
+constraints:
+  - key: 01a19f1e-d177-716d-b124-3cf53dbc7964
+    name: "univ-model shall compile both for native targets and for wasm32-unknown-unknown."
+  - key: 01a19f1e-d177-716d-b124-3cf61be1b796
+    name: "univ-model shall keep each native value beside every derived value computed from it."
+  - key: 01a19f1e-d177-716d-b124-3cf78d609c16
+    name: "univ-model shall name the frame and epoch of every position, and the cosmology of every value that depends on one."
+  - key: 01a19f1e-d177-716d-b124-3cf8ca9db059
+    name: "univ-model shall classify every value by its kind of value: measured, estimated, inferred or reconstructed."
+  - key: 01a19f1e-d177-716d-b124-3cf9b013bc7c
+    name: "univ-model shall carry each value's uncertainty in a typed form and mark a value with no published uncertainty as having none reported."

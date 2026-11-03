@@ -1,0 +1,69 @@
+key: 01a19f22-2ad9-716e-876f-1831f423e25f
+slug: define-a-source
+name: "Define a source"
+body: |
+  Describing a source once, in a file kept in the repository, so that a release can be rebuilt
+  from the same queries and credited the same way. Each source of the first release is an
+  external Component under Data providers.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cede7d0b609
+  - 01a19f1e-d177-716d-b124-3cf3def064d0
+requirements:
+  - key: 01a19f22-2ad9-716e-876f-1832b1bae1e2
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "read each source from its source definition in the repository."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-1833afc5c0fc
+        name: "A source definition gives the source's id, title, provider, access method, query and cuts."
+      - key: 01a19f22-2ad9-716e-876f-1834e602c6b1
+        name: "A source definition maps each column it takes to a univ-model field with the column's unit."
+      - key: 01a19f22-2ad9-716e-876f-1835412ca8ed
+        name: "A source definition names the frame and epoch of the source's positions."
+      - key: 01a19f22-2ad9-716e-876f-1836d60c8672
+        name: "A source definition gives the primary citation, the terms of use, the required credit and the scale domain."
+      - key: 01a19f22-2ad9-716e-876f-183725365029
+        name: "A source definition lists the mirrors to try, in order."
+  - key: 01a19f22-2ad9-716e-876f-1838f05eb5b7
+    statement:
+      form: unwanted
+      if: "a source definition is incomplete or names an unknown unit, frame or scale domain"
+      system: "Univ Ingest"
+      shall: "refuse the run before fetching anything and name the field."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-183984aea659
+        name: "The message names the source definition, the field and what is wrong with it."
+  - key: 01a19f22-2ad9-716e-876f-183a6daa9364
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "record in each source definition whether its terms permit redistributing its data, with the terms it rests on."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-183b90085a10
+        name: "The redistribution status is permitted, permitted with credit, or forbidden."
+      - key: 01a19f22-2ad9-716e-876f-183ca629c7f8
+        name: "The source definition quotes the terms of use it judged and states the reasoning for its status."
+  - key: 01a19f22-2ad9-716e-876f-183d2d91487a
+    statement:
+      form: unwanted
+      if: "a source definition's redistribution status is forbidden"
+      system: "Univ Ingest"
+      shall: "refuse to publish any release that holds the source."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-183ee3b99b68
+        name: "The message names the source and quotes its terms of use."
+  - key: 01a19f22-2ad9-716e-876f-183f79f9ae1c
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "provide a source definition for each source of the first release."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-1840046e9bc8
+        name: "The galaxy sources are SDSS DR17 main galaxy sample, BOSS DR17 Great Wall region, 6dFGS DR3, 2MRS, 2M++ catalogue and Cosmicflows-4 distances."
+      - key: 01a19f22-2ad9-716e-876f-1841361113b6
+        name: "The Local Group and nearby sources are McConnachie 2012 Local Group and the Updated Nearby Galaxy Catalog."
+      - key: 01a19f22-2ad9-716e-876f-1842afd6d59e
+        name: "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification and the Hipparcos new reduction."
+      - key: 01a19f22-2ad9-716e-876f-18439d96b214
+        name: "The structure and field sources are the CF4++ density grid, CF4 basins of attraction, 2M++ reconstruction, eRASS1 clusters and Researched structures."

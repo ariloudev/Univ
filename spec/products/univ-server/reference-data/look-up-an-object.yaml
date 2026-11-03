@@ -1,0 +1,83 @@
+key: 01a19f1e-d177-716d-b124-3d0d39dc9a3f
+slug: look-up-an-object
+name: "Look up an object"
+body: "Reading one object, with everything every source published for it, by its id, a catalogue designation or a common name."
+tags:
+  - release-scoped
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+requirements:
+  - key: 01a19f1e-d177-716d-b124-3d0ee7e600ab
+    statement:
+      form: event_driven
+      when: "a client requests an object by its object id"
+      system: "Univ Server"
+      shall: "return the object with its catalogue entries, measurements, preferred measurement and derived positions."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d0f2163e49f
+        name: "The response lists every catalogue entry resolved to the object, each with its source and the designation that source gives it."
+      - key: 01a19f1e-d177-716d-b124-3d100d0beecf
+        name: "The response lists every measurement with its native value, unit, uncertainty, kind of value and source."
+      - key: 01a19f1e-d177-716d-b124-3d11207d1f43
+        name: "The response names the preferred measurement and the ranking rule that chose it."
+      - key: 01a19f1e-d177-716d-b124-3d1233780c6e
+        name: "Each derived position names its frame, epoch, release cosmology and the transformation that produced it."
+      - key: 01a19f1e-d177-716d-b124-3d14e7c5aa1e
+        name: "The response lists each candidate match to another object with its confidence."
+      - key: 01a19f1e-d177-716d-b124-3d15581dbbe1
+        name: "An object with no distance has a sky position and no derived three-dimensional position."
+  - key: 01a19f1e-d177-716d-b124-3d16ab310032
+    statement:
+      form: event_driven
+      when: "a client requests an object by a catalogue designation or a common name"
+      system: "Univ Server"
+      shall: "return the object that the designation or name resolves to."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d17358a5809
+        name: "A designation is given as a source and that source's identifier, such as Gaia DR3 and a source_id."
+      - key: 01a19f1e-d177-716d-b124-3d187201bad5
+        name: "A common name such as M31 resolves through the names the sources publish for their catalogue entries."
+      - key: 01a19f1e-d177-716d-b124-3d192b854029
+        name: "Name matching ignores letter case and whitespace."
+      - key: 01a19f1e-d177-716d-b124-3d1a9f344b6d
+        name: "A name that more than one object carries answers with the list of those objects instead of choosing one."
+  - key: 01a19f1e-d177-716d-b124-3d1b89e0362b
+    statement:
+      form: event_driven
+      when: "a client requests an object id that a later release merged into another object or split into more than one"
+      system: "Univ Server"
+      shall: "direct the client to the object or objects that replaced it."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d1c08830bee
+        name: "An id merged into one object answers with a permanent redirect to that object."
+      - key: 01a19f1e-d177-716d-b124-3d1d3700915c
+        name: "An id split into more than one object answers with the list of objects that replaced it."
+      - key: 01a19f1e-d177-716d-b124-3d1e82a3e951
+        name: "The response names the release in which the id was replaced."
+  - key: 01a19f1e-d177-716d-b124-3d1f02c8bee9
+    statement:
+      form: unwanted
+      if: "no object carries the requested id, designation or name"
+      system: "Univ Server"
+      shall: "answer that the object was not found."
+    criteria:
+      - key: 01a19f1e-d177-716d-b124-3d2075b12616
+        name: "The response status is 404."
+      - key: 01a19f1e-d177-716d-b124-3d21ce741ac6
+        name: "The problem details name the id, designation or name that was looked up."
+qualityAttributes:
+  - key: 01a19f1e-d177-716d-b124-3d22c902253b
+    name: "Univ Server shall answer an object lookup within 200 milliseconds at the 95th percentile."
+    qaKind: latency
+    qualityTarget:
+      metric: "object.lookup.latency"
+      band:
+        kind: at_most
+        upper: "200"
+      unit: "ms"
+      aggregation: p95
+      scenario: "Looking up 1,000 random object ids of the first full release"
+      environment: "wrangler dev with local D1 on the owner's laptop"
+    verificationFate: sampled

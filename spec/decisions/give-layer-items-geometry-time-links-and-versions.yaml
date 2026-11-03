@@ -1,0 +1,53 @@
+key: 01a19f25-5955-701e-b3cf-ddb230ab4847
+slug: give-layer-items-geometry-time-links-and-versions
+title: "Give layer items geometry, time, links and versions, but no free-form properties"
+context: "A layer such as a newsroom of cosmic events needs to place items in space and time, tie them to reference objects and correct them openly."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddb5b8bb07ed
+  outcome: "Layer items carry typed geometry, time records, links, sources and versions, and nothing untyped."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddb398029217
+    kind: local
+    label: "Expressive"
+    statement: "A layer can hold what the newsroom's stories held."
+  - key: 01a19f25-5955-701e-b3cf-ddb4fbbbb0ef
+    kind: local
+    label: "Validated"
+    statement: "The server can check every field it stores."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddb5b8bb07ed
+    title: "Typed items"
+    description: "Geometry, time records, links and versioned provenance, all typed by univ-model."
+  - key: 01a19f25-5955-701e-b3cf-ddb635b85317
+    title: "Typed items with free-form properties"
+    description: "The typed fields plus arbitrary JSON the server does not read."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddb5b8bb07ed
+    driver: 01a19f25-5955-701e-b3cf-ddb398029217
+    rating: supports
+    rationale: "stories map onto geometry, time records, links and versions"
+  - option: 01a19f25-5955-701e-b3cf-ddb5b8bb07ed
+    driver: 01a19f25-5955-701e-b3cf-ddb4fbbbb0ef
+    rating: supports
+    rationale: "every field has a schema"
+  - option: 01a19f25-5955-701e-b3cf-ddb635b85317
+    driver: 01a19f25-5955-701e-b3cf-ddb398029217
+    rating: supports
+    rationale: "anything else fits too"
+  - option: 01a19f25-5955-701e-b3cf-ddb635b85317
+    driver: 01a19f25-5955-701e-b3cf-ddb4fbbbb0ef
+    rating: conflicts
+    rationale: "free-form properties go unchecked"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddb7852a3ed6
+    kind: cost
+    statement: "A client needing a field the model lacks must wait for a model change."
+  - key: 01a19f25-5955-701e-b3cf-ddb8508152d0
+    kind: obligation
+    statement: "Every item cites at least one source."
+subjects:
+  - role: affected
+    node: 01a19f20-1cb3-7721-97a0-4f5588b2c1c4
+  - role: outcome
+    node: 01a19f20-1cb3-7721-97a0-4f33a250acbb

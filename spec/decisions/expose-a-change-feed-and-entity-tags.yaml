@@ -1,0 +1,62 @@
+key: 01a19f25-5955-701e-b3cf-dda232cd8d3f
+slug: expose-a-change-feed-and-entity-tags
+title: "Let clients follow layers through a change feed and entity tags"
+context: "Layers change whenever a client writes, and readers need to stay current without re-reading everything."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dda596071b5b
+  outcome: "Each layer has a change sequence that clients poll since a cursor, and every read carries an entity tag."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dda3ec433249
+    kind: local
+    label: "Efficiency"
+    statement: "A reader fetches only what changed."
+  - key: 01a19f25-5955-701e-b3cf-dda4412fb452
+    kind: local
+    label: "Simplicity"
+    statement: "Nothing beyond plain HTTP."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dda596071b5b
+    title: "Change feed and entity tags"
+    description: "An ordered change sequence per layer and conditional reads."
+  - key: 01a19f25-5955-701e-b3cf-dda632597daf
+    title: "Push over WebSockets"
+    description: "A Durable Object per layer pushes changes."
+  - key: 01a19f25-5955-701e-b3cf-dda77c3578f7
+    title: "Re-read only"
+    description: "Clients fetch the whole layer again."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dda596071b5b
+    driver: 01a19f25-5955-701e-b3cf-dda3ec433249
+    rating: supports
+    rationale: "only changes since a cursor"
+  - option: 01a19f25-5955-701e-b3cf-dda596071b5b
+    driver: 01a19f25-5955-701e-b3cf-dda4412fb452
+    rating: supports
+    rationale: "plain HTTP polling"
+  - option: 01a19f25-5955-701e-b3cf-dda632597daf
+    driver: 01a19f25-5955-701e-b3cf-dda3ec433249
+    rating: supports
+    rationale: "only changes, at once"
+  - option: 01a19f25-5955-701e-b3cf-dda632597daf
+    driver: 01a19f25-5955-701e-b3cf-dda4412fb452
+    rating: conflicts
+    rationale: "Durable Objects and sockets to run"
+  - option: 01a19f25-5955-701e-b3cf-dda77c3578f7
+    driver: 01a19f25-5955-701e-b3cf-dda3ec433249
+    rating: conflicts
+    rationale: "the whole layer each time"
+  - option: 01a19f25-5955-701e-b3cf-dda77c3578f7
+    driver: 01a19f25-5955-701e-b3cf-dda4412fb452
+    rating: supports
+    rationale: "nothing new"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dda8da99330c
+    kind: cost
+    statement: "Clients learn of a change only when they next poll."
+  - key: 01a19f25-5955-701e-b3cf-dda940f1bb6e
+    kind: benefit
+    statement: "Push can be added later on the same change sequence."
+subjects:
+  - role: outcome
+    node: 01a19f20-1cb3-7721-97a0-4f279c973046

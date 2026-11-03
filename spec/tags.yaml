@@ -1,0 +1,3 @@
+- key: 01a19f1e-d177-716d-b124-3d3ebe3e8a9d
+  name: release-scoped
+  definition: "A read of reference data that answers from one release: the one the client names, or the one latest points to."

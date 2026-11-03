@@ -1,0 +1,51 @@
+key: 01a19f25-5955-701e-b3cf-ddcffaf7bf98
+slug: keep-objects-in-d1-until-a-desi-sized-source
+title: "Keep every object in D1 until a DESI-sized source arrives"
+context: "Every object is a D1 row, and one release must fit D1's 10 GB. The first release's roughly five million objects fit; DESI DR1's eighteen million would not."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddd2a8ccbb6f
+  outcome: "Objects live in D1 under a monitored 10 GB cap, and a larger source first needs a decision on R2 shards."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddd0a1254659
+    kind: local
+    label: "Simplicity"
+    statement: "One store for objects in the first version."
+  - key: 01a19f25-5955-701e-b3cf-ddd1ccd43383
+    kind: local
+    label: "Growth"
+    statement: "A path exists for much larger sources."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddd2a8ccbb6f
+    title: "D1 now, R2 shards later"
+    description: "All objects in D1, with a new decision before a DESI-sized source."
+  - key: 01a19f25-5955-701e-b3cf-ddd367789645
+    title: "R2 shards from the start"
+    description: "Bulk survey objects in R2 shards per octree node."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddd2a8ccbb6f
+    driver: 01a19f25-5955-701e-b3cf-ddd0a1254659
+    rating: supports
+    rationale: "one store"
+  - option: 01a19f25-5955-701e-b3cf-ddd2a8ccbb6f
+    driver: 01a19f25-5955-701e-b3cf-ddd1ccd43383
+    rating: neutral
+    rationale: "growth needs a later decision"
+  - option: 01a19f25-5955-701e-b3cf-ddd367789645
+    driver: 01a19f25-5955-701e-b3cf-ddd0a1254659
+    rating: conflicts
+    rationale: "two stores from day one"
+  - option: 01a19f25-5955-701e-b3cf-ddd367789645
+    driver: 01a19f25-5955-701e-b3cf-ddd1ccd43383
+    rating: supports
+    rationale: "ready for DESI"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddd499b38c76
+    kind: risk
+    statement: "A release that nears the cap blocks new sources until the decision is made."
+  - key: 01a19f25-5955-701e-b3cf-ddd5b57eb781
+    kind: benefit
+    statement: "Lookups and volume queries read one store."
+subjects:
+  - role: outcome
+    node: 01a19f1e-d177-716d-b124-3cf23344602c
