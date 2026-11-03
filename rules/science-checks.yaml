@@ -515,7 +515,8 @@ checks:
       orders redshifts by kind of value and published velocity error, which holds no preference
       for either value, so what is left here is placed high by a measured redshift with the
       smaller error. The release holds no independent redshift, such as NED's, to say which of
-      the two is right, so each is listed for a look rather than judged. Release 5: 141 of 154.
+      the two is right, so each is listed for a look rather than judged. Release 5: 141 of 154;
+      release 6: 47 of 154.
 
   - id: nothing-inside-1-mpc-outside-local-group
     title: Nothing outside the Local Group placed inside 1 Mpc
