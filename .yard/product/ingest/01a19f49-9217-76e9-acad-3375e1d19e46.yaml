@@ -65,6 +65,16 @@ blocks:
             detail: "About 1.25M stars: more Galactic structure, with roughly double the star share of D1 and the fetch time."
           - label: "G < 12"
             detail: "About 3.1M stars: the largest set, likely the biggest part of D1 and the tiles."
+    responses:
+      - key: 01a1a2a4-a1af-7149-97a8-0bdcd92bdff1
+        at: 2026-11-03T18:21:00Z
+        revision: 18
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "G < 10"
   - key: 01a19f99-b4da-71ab-82f3-ac63f9589f0c
     id: pi-q-licences
     kind: question
@@ -96,6 +106,16 @@ blocks:
             detail: "Sources with silent terms (CF4++, basins, 2M++ reconstruction, eRASS1) are forbidden until their authors grant permission. v1 then has no grids, no grid-outlined structures and no eRASS1 clusters."
           - label: "Derived only"
             detail: "Silent-terms grids feed derived products but are never served raw. This needs a fourth status, `derived_only`, which is a spec change."
+    responses:
+      - key: 01a1a2a4-a1af-7149-97a8-0bddad3bad3f
+        at: 2026-11-03T18:21:00Z
+        revision: 18
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Credit, re-judge later"
   - key: 01a19f99-b4da-71ab-82f3-ac64ac6d36ce
     id: pi-q-sdss-sample
     kind: question
@@ -115,3 +135,55 @@ blocks:
             recommended: true
           - label: "Main Galaxy Sample"
             detail: "Keep the name and add the target-flag cut, for 687,048 uniformly selected galaxies. The spec's count changes to about 0.69 million."
+    responses:
+      - key: 01a1a2a4-a1af-7149-97a8-0bde55cf5267
+        at: 2026-11-03T18:21:00Z
+        revision: 18
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "All spectra, renamed"
+  - key: 01a1a2a5-5799-76e7-b665-820f4b1ba538
+    id: pi-d-gaia-cut
+    kind: decision
+    number: 7
+    versions:
+      - key: 01a1a2a5-5799-76e7-b665-821235e8dcdf
+        at: 2026-11-03T18:21:47Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gaia DR3 stars brighter than G = 10"
+        consequence: "The cut already in the Gaia definition stands: about 482k stars beyond the GCNS's 100 pc. Release 6 holds 780,441 star objects in all."
+        question: 01a19f99-b4da-71ab-82f3-ac6283f56761
+  - key: 01a1a2a5-5799-76e7-b665-8210d2a459ed
+    id: pi-d-licences
+    kind: decision
+    number: 8
+    versions:
+      - key: 01a1a2a5-5799-76e7-b665-8213fbfe5a60
+        at: 2026-11-03T18:21:47Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Credit now, re-judge every licence before any public deployment"
+        consequence: "Sources with silent or scientific-use terms stay `permitted_with_credit` with their caveats and `review: provisional`. Each status is judged again before Univ is deployed publicly, which the release gate already enforces through the provisional review field."
+        question: 01a19f99-b4da-71ab-82f3-ac63f9589f0c
+  - key: 01a1a2a5-5799-76e7-b665-8211d3f93894
+    id: pi-d-sdss
+    kind: decision
+    number: 9
+    versions:
+      - key: 01a1a2a5-5799-76e7-b665-821407b65bde
+        at: 2026-11-03T18:21:47Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "All SDSS DR17 spectroscopic galaxies, with the source renamed"
+        consequence: "The spec names the source \"SDSS DR17 spectroscopic galaxies\" (data-providers and AC-10), matching the definition, which already takes all ~1.1M spectra with zWarning = 0."
+        question: 01a19f99-b4da-71ab-82f3-ac64ac6d36ce

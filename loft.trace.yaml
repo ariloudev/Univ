@@ -58,7 +58,7 @@ links:
         name: "a_forbidden_source_blocks_a_release_naming_it_and_quoting_its_terms"
         body: 14acacf2d3caa870efd1a96cd4f55b3e73299809a0b51f8488e27c803d719a56
   - node: 01a19f22-2ad9-716e-876f-1840046e9bc8
-    reviewed: 154ee971aa52fb22e0ed45d50e503deca9e95a5033a259c0546de4b194fb3e33
+    reviewed: d94647fbce6f3baf72d24be4d11d4f239a8395f58460d9aecca34bca05f29034
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_of_the_first_release_has_a_valid_definition"

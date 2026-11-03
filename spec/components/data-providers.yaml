@@ -12,7 +12,7 @@ components:
     body: "The SQL search service of SDSS DR17."
     components:
       - key: 01a19f22-2ad9-716e-876f-181c48025787
-        name: "SDSS DR17 main galaxy sample"
+        name: "SDSS DR17 spectroscopic galaxies"
         body: "Spectroscopic galaxies of SDSS DR17 (Abdurro'uf et al. 2022, ApJS 259, 35) with zWarning = 0 and 0.005 < z < 0.35: about 1.1 million galaxies over 29% of the sky. Public, with the SDSS acknowledgement."
       - key: 01a19f22-2ad9-716e-876f-181dd6136c68
         name: "BOSS DR17 Great Wall region"

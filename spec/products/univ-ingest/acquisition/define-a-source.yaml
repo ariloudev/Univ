@@ -60,7 +60,7 @@ requirements:
       shall: "provide a source definition for each source of the first release."
     criteria:
       - key: 01a19f22-2ad9-716e-876f-1840046e9bc8
-        name: "The galaxy sources are SDSS DR17 main galaxy sample, BOSS DR17 Great Wall region, 6dFGS DR3, 2MRS, 2M++ catalogue and Cosmicflows-4 distances."
+        name: "The galaxy sources are SDSS DR17 spectroscopic galaxies, BOSS DR17 Great Wall region, 6dFGS DR3, 2MRS, 2M++ catalogue and Cosmicflows-4 distances."
       - key: 01a19f22-2ad9-716e-876f-1841361113b6
         name: "The Local Group and nearby sources are McConnachie 2012 Local Group and the Updated Nearby Galaxy Catalog."
       - key: 01a19f22-2ad9-716e-876f-1842afd6d59e
