@@ -3,13 +3,15 @@
 
 use std::path::PathBuf;
 use std::process::ExitCode;
-use std::sync::{Mutex, PoisonError};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, PoisonError};
 
 use clap::{Args, Parser, Subcommand};
+use univ_ingest::events::{EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
 use univ_ingest::run::{
-    FetchOptions, FetchReport, display_for_stderr, drawing, fetch, interrupted, owner_interrupt,
-    select,
+    FetchOptions, RunReport, display_for_stderr, drawing, fetch, interrupted,
+    normalize_stage_until, owner_interrupt, select,
 };
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
@@ -29,11 +31,14 @@ struct Cli {
 enum Command {
     /// Fetches the sources into the cache, continuing whatever an earlier run left.
     Fetch(FetchArgs),
+    /// Fetches the sources, or with --offline takes them from the cache, and normalizes each
+    /// table of rows into catalogue entries.
+    Normalize(FetchArgs),
 }
 
 #[derive(Args)]
 struct FetchArgs {
-    /// Fetch only this source; repeat for more. All sources when left out.
+    /// Take only this source; repeat for more. All sources when left out.
     #[arg(long = "source", value_name = "ID")]
     sources: Vec<String>,
     /// Make no request: use only what is on disk, and fail on the first item missing.
@@ -52,7 +57,10 @@ struct FetchArgs {
 
 #[tokio::main]
 async fn main() -> ExitCode {
-    let Command::Fetch(args) = Cli::parse().command;
+    let (args, normalizing) = match Cli::parse().command {
+        Command::Fetch(args) => (args, false),
+        Command::Normalize(args) => (args, true),
+    };
     let options = FetchOptions {
         definitions: args.definitions,
         repository: args.repository,
@@ -79,12 +87,28 @@ async fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    let report = Mutex::new(FetchReport::new(&definitions));
-    let fetching = fetch(&fetcher, &definitions, &options, &report);
+    let report = Mutex::new(RunReport::new(&definitions));
+    let cancel = Arc::new(AtomicBool::new(false));
+    let run = async {
+        let acquired = fetch(&fetcher, &definitions, &options, &report).await;
+        if normalizing {
+            // The entries are held for the stages that follow; this command ends here.
+            let sink = display.as_ref() as &dyn EventSink;
+            normalize_stage_until(sink, &definitions, &acquired, &options, &report, &cancel).await;
+        }
+    };
+    let mut run = std::pin::pin!(drawing(display.as_ref(), run));
     let interrupted_run = tokio::select! {
-        () = drawing(display.as_ref(), fetching) => false,
+        () = &mut run => false,
         () = owner_interrupt(tokio::signal::ctrl_c()) => true,
     };
+    let normalizing_now = report.lock().is_ok_and(|r| r.stage() == Stage::Normalize);
+    if interrupted_run && normalizing_now {
+        // A source is normalized on a blocking thread, which dropping the run would leave
+        // running: ask it to stop, and wait until it has.
+        cancel.store(true, Ordering::Relaxed);
+        run.await;
+    }
     let report = report.lock().unwrap_or_else(PoisonError::into_inner);
     if interrupted_run {
         let (sources, outcome) = report.interrupted();

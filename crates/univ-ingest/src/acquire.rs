@@ -88,8 +88,8 @@ pub async fn acquire<C: Clock>(
         fetcher,
         definition,
         dir,
+        provenance: Mutex::new(known.clone()),
         known,
-        recording: Mutex::new(()),
     };
     let files = match &definition.access {
         Access::Files { files } => acquire_files(&run, files).await?,
@@ -104,8 +104,9 @@ struct Run<'a, C: Clock> {
     definition: &'a SourceDefinition,
     dir: PathBuf,
     known: Provenance,
-    /// Held while provenance is written, as chunks arrive together.
-    recording: Mutex<()>,
+    /// The provenance as it stands, written whole after each change; held while it is
+    /// changed and written, as chunks arrive together.
+    provenance: Mutex<Provenance>,
 }
 
 /// Fetches each file of a file source. A file on disk without a record, or whose record or size
@@ -221,11 +222,12 @@ impl<C: Clock> Run<'_, C> {
     }
 
     fn record(&self, payload: &Payload) -> std::io::Result<()> {
-        let _held = self
-            .recording
+        let mut provenance = self
+            .provenance
             .lock()
             .unwrap_or_else(PoisonError::into_inner);
-        Provenance::record(&self.dir, &self.definition.id, payload)
+        provenance.recorded(&self.definition.id, payload);
+        provenance.write(&self.dir)
     }
 
     /// Fetches `request` unless its file is on disk with a record of the same request, and

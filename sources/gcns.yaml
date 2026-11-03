@@ -69,3 +69,17 @@ mirrors:
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+normalization:
+  distances:
+    - value: Dist50
+      error: { credible_interval: { low: Dist16, high: Dist84, probability: 0.68 } }
+      kind: geometric
+      method: { other: "GCNS Bayesian distance posterior from the parallax, with a mock-catalogue prior" }
+      measure: euclidean
+      kind_of_value: estimated
+      basis: >-
+        J/A+A/649/A6 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/A+A/649/A6/ReadMe,
+        2026-11-03): Dist16, Dist50 and Dist84 are the "16%", "50%" and "84%" distances of the
+        distance probability function, calculated "using Bayesian procedures and mock catalogues
+        for the prediction of the priors" for objects selected by parallax. The ReadMe names no
+        photometric term, so the kind is geometric.

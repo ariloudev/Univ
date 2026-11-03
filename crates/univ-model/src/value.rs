@@ -32,6 +32,14 @@ pub enum Uncertainty {
     LowerLimit,
     /// The value lies in a credible region of this probability, described by its geometry.
     CredibleRegion { probability: f64 },
+    /// A one-dimensional credible region: the value's posterior holds `probability` between
+    /// `value - minus` and `value + plus`, such as the 16th to 84th percentiles of Bailer-Jones et
+    /// al. 2021 (probability 0.68). The bounds are kept as offsets, as they scale with the value.
+    CredibleInterval {
+        minus: f64,
+        plus: f64,
+        probability: f64,
+    },
 }
 
 /// A value, an uncertainty or a unit that cannot stand.
@@ -59,22 +67,44 @@ impl Uncertainty {
                 minus: minus * factor,
                 plus: plus * factor,
             },
+            Self::CredibleInterval {
+                minus,
+                plus,
+                probability,
+            } => Self::CredibleInterval {
+                minus: minus * factor,
+                plus: plus * factor,
+                probability,
+            },
             other => other,
         }
     }
 
     fn check(self) -> Result<(), ValueError> {
-        let error = |x: f64| x.is_finite() && x >= 0.0;
+        let error = |x: f64| {
+            if x.is_finite() && x >= 0.0 {
+                Ok(())
+            } else {
+                Err(ValueError::BadUncertainty(x))
+            }
+        };
+        let probable = |p: f64| {
+            if p > 0.0 && p <= 1.0 {
+                Ok(())
+            } else {
+                Err(ValueError::BadProbability(p))
+            }
+        };
         match self {
-            Self::Symmetric { sigma } if !error(sigma) => Err(ValueError::BadUncertainty(sigma)),
-            Self::Asymmetric { minus, .. } if !error(minus) => {
-                Err(ValueError::BadUncertainty(minus))
-            }
-            Self::Asymmetric { plus, .. } if !error(plus) => Err(ValueError::BadUncertainty(plus)),
-            Self::CredibleRegion { probability } if !(probability > 0.0 && probability <= 1.0) => {
-                Err(ValueError::BadProbability(probability))
-            }
-            _ => Ok(()),
+            Self::Symmetric { sigma } => error(sigma),
+            Self::Asymmetric { minus, plus } => error(minus).and(error(plus)),
+            Self::CredibleRegion { probability } => probable(probability),
+            Self::CredibleInterval {
+                minus,
+                plus,
+                probability,
+            } => error(minus).and(error(plus)).and(probable(probability)),
+            Self::NoneReported | Self::UpperLimit | Self::LowerLimit => Ok(()),
         }
     }
 }
@@ -209,6 +239,20 @@ mod tests {
                 plus: 3_000.0
             }
         );
+        let interval = Uncertainty::CredibleInterval {
+            minus: 0.5,
+            plus: 0.25,
+            probability: 0.68,
+        };
+        let q = Quantity::new(2.0, Unit::Kiloparsec, interval).unwrap();
+        assert_eq!(
+            q.to(Unit::Parsec).unwrap().uncertainty,
+            Uncertainty::CredibleInterval {
+                minus: 500.0,
+                plus: 250.0,
+                probability: 0.68
+            }
+        );
         let limit = Quantity::new(5.0, Unit::Arcsecond, Uncertainty::UpperLimit).unwrap();
         assert_eq!(
             limit.to(Unit::Degree).unwrap().uncertainty,
@@ -229,6 +273,12 @@ mod tests {
         assert!(Quantity::new(1.0, Unit::Degree, negative).is_err());
         let region = Uncertainty::CredibleRegion { probability: 1.5 };
         assert!(Quantity::new(1.0, Unit::Degree, region).is_err());
+        let interval = Uncertainty::CredibleInterval {
+            minus: -0.1,
+            plus: 0.2,
+            probability: 0.68,
+        };
+        assert!(Quantity::new(1.0, Unit::Parsec, interval).is_err());
         let q = Quantity::new(1.0, Unit::Degree, none).unwrap();
         assert!(Value::normalize(q, Unit::Parsec, KindOfValue::Measured).is_err());
     }

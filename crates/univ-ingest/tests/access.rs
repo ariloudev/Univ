@@ -6,8 +6,9 @@
 
 mod common;
 
-use univ_ingest::access::{check_answer, chunk_requests, read_table};
+use univ_ingest::access::{check_answer, chunk_requests, read_count};
 use univ_ingest::source::{Access, SourceDefinition};
+use univ_ingest::table::TableReader;
 
 /// A definition with `access` and two columns, read from YAML as a run would.
 fn definition(access: &str) -> SourceDefinition {
@@ -78,15 +79,16 @@ fn vizier() -> Access {
 #[test]
 fn an_empty_vizier_answer_is_a_table_of_no_rows_unless_it_reports_an_error() {
     let empty = b"#\n#   VizieR Astronomical Server\n#INFO\tqueryParams=-source=VII/259\n\n";
-    let table = read_table(&vizier(), empty).unwrap();
-    assert!(table.rows.is_empty() && table.columns.is_empty());
+    let table = TableReader::new(&vizier(), empty).unwrap();
+    assert_eq!(table.columns(), &[] as &[std::borrow::Cow<str>]);
+    assert_eq!(table.count_rows(), Ok(0));
     let d = definition("  method: vizier_tsv\n  table: VII/259/6dfgs\n  constraints: []");
     assert_eq!(check_answer(&d, empty), Ok(0));
     for error in [
         &b"#INFO\tQUERY_STATUS=error\n"[..],
         b"#\n#***  Cannot find table VII/259/nothing\n",
     ] {
-        assert!(read_table(&vizier(), error).is_err());
+        assert!(TableReader::new(&vizier(), error).is_err());
         assert!(check_answer(&d, error).is_err());
     }
 }
@@ -133,6 +135,33 @@ fn an_error_page_is_not_read_as_a_table() {
     };
     let page =
         b"<?xml version=\"1.0\"?><VOTABLE><INFO name=\"QUERY_STATUS\" value=\"ERROR\"/></VOTABLE>";
-    assert!(read_table(&tap, page).unwrap_err().contains("markup"));
-    assert!(read_table(&vizier(), b"#INFO\tQUERY_STATUS=ERROR\n").is_err());
+    let refused = TableReader::new(&tap, page).err().unwrap();
+    assert!(refused.contains("markup"), "{refused}");
+    assert!(TableReader::new(&vizier(), b"#INFO\tQUERY_STATUS=ERROR\n").is_err());
+}
+
+#[test]
+fn a_table_lends_its_rows_and_refuses_a_row_of_the_wrong_width() {
+    let tsv = b"#c\nid\tcz\n \tkm/s\n--\t--\n a \t 12 \nb\t\n";
+    let mut table = TableReader::new(&vizier(), tsv).unwrap();
+    assert_eq!(table.index("cz"), Some(1));
+    assert_eq!(table.next_row().unwrap().unwrap(), ["a", "12"]);
+    assert_eq!(table.next_row().unwrap().unwrap(), ["b", ""]);
+    assert!(table.next_row().is_none());
+    let short = b"#Table1\nra,dec\n1,2\n3\n";
+    let tap = Access::Tap {
+        query: String::new(),
+        chunks: 1,
+        count: None,
+    };
+    assert_eq!(
+        TableReader::new(&tap, short)
+            .unwrap()
+            .count_rows()
+            .err()
+            .unwrap(),
+        "a row has 1 cells for 2 columns: \"3\""
+    );
+    assert_eq!(read_count(&tap, b"n\n482106\n"), Ok(482_106));
+    assert!(read_count(&tap, b"n\n1\n2\n").is_err());
 }

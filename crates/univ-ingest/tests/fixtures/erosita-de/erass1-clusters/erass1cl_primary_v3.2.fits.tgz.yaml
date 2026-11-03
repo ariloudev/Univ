@@ -1,0 +1,9 @@
+source: erass1-clusters
+url: https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/BulbulE_DR1/erass1cl_primary_v3.2.fits.tgz
+retrieved: 2026-11-03T05:01:00Z
+sha256: 65994f958267b7855efb38094e04345069993066c3bba1febfa91e1f118f9e69
+note: >-
+  The first 5 rows of HDU 1 (EXTNAME Joined) of the archive's FITS member (archive SHA-256 f9e9e8f750a2831ac68dad1fb24a028b024c00d3b5879f7a5760af81fc9a40ca), cut by
+  hand: every header card kept except NAXIS2, set to 5; the data cut to 5 rows and padded with
+  zero bytes to a 2880-byte block; re-packed as a gzipped tar holding one member of the same
+  name.

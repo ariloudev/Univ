@@ -81,3 +81,48 @@ fixes:
       Joined (12,247 rows, 85 columns), while
       https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/BulbulE_DR1/erass1cl_primary_v3.2.html
       says "Filename: erass1cl_main_v3.2.fits".
+  - defect: >-
+      On rows whose BEST_Z_TYPE is lit_z, the eROMaPPer photometric redshift Z_LAMBDA (and its error)
+      belongs to a foreground or background cluster, not to the X-ray cluster whose literature
+      redshift was adopted.
+    change: >-
+      On lit_z rows, Z_LAMBDA and Z_LAMBDA_ERR are dropped and the entry kept, with BEST_Z (the
+      literature redshift) as its redshift.
+    evidence: >-
+      Kluge et al. 2024 (arXiv:2402.08453v2 LaTeX source, read 2026-11-03), Appendix A
+      "Limitations & caveats", subsection "Cluster properties": "The cluster parameters were always
+      calculated at the photometric redshift $z_\lambda$. [...] In cases where the best redshift type
+      was changed to a literature redshift, the cluster parameters are not reliable because they
+      refer to a foreground or background cluster." Section 4.2.2 (Cluster redshifts) gives the 247
+      lit_z rows: (a) 126 outside the LS footprint, (b) 21 without an optical detection, (c) 95
+      whose optical detection is "in projection to the X-ray source", and (d) 5 whose z_lambda is
+      outside the red-sequence calibration range.
+    action:
+      kind: drop_when
+      columns: [Z_LAMBDA, Z_LAMBDA_ERR]
+      when: { column: BEST_Z_TYPE, is: [lit_z] }
+normalization:
+  redshifts:
+    - column: BEST_Z
+      error: BEST_ZERR
+      frame: heliocentric
+      by_code:
+        column: BEST_Z_TYPE
+        codes:
+          photo_z: photometric
+          spec_z_boot: spectroscopic
+          cg_spec_z: spectroscopic
+          lit_z: photometric
+      basis: >-
+        Kluge et al. 2024 (arXiv:2402.08453v2, read 2026-11-03), Section 2: "Redshifts are given in
+        the heliocentric reference frame. No corrections for Virgo infall or the CMB dipole moment
+        have been applied." Section 3.4: "The literature redshift can either be photometric or
+        spectroscopic. We did not distinguish these two cases", so lit_z is taken as the less
+        certain kind, photometric.
+    - column: Z_LAMBDA
+      error: Z_LAMBDA_ERR
+      frame: heliocentric
+      kind: photometric
+      basis: >-
+        Kluge et al. 2024, Sections 2 and 3.2: z_lambda is the eROMaPPer red-sequence photometric
+        redshift, heliocentric as every redshift of the paper.

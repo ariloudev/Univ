@@ -1,0 +1,19 @@
+fixture: cf4-basins-crop.zip
+source: cf4-basins
+source_file: CF4_new_128-z008_watersheds-fits.zip
+url: https://projets.ip2i.in2p3.fr//cosmicflows/CF4_new_128-z008_watersheds-fits.zip
+sha256: 9056733ac715cb59622039703afeda096e88a54c6bb977d8c17166eb4ae1c5cc
+retrieved: 2026-11-03T04:32:02Z
+crop:
+  # Voxel indices along SGX, SGY, SGZ of the published 128^3 grid; stop is exclusive.
+  start: [54, 54, 54]
+  stop: [71, 71, 71]
+  why: >-
+    Holds the observer (voxel 64) and the Laniakea attractor of Dupuy & Courtois 2023 Table 1
+    (voxels 56, 63, 69 with voxel i at (i - 64) x 7.8125 h^-1 Mpc), and every permutation of them.
+how: >-
+  numpy 2.5.3 under python3 -I: for each of the four members, the 2880-byte primary header kept card
+  for card with NAXIS1-3 rewritten to 17; the data read as big-endian float64 [SGZ][SGY][SGX]
+  (NAXIS1 = SGX fastest), cut [54:71, 54:71, 54:71], written back big-endian float64 (BITPIX -64)
+  and zero-padded to a 2880-byte block; the members stored uncompressed under their original names
+  with zipfile. Labels are unchanged.

@@ -63,7 +63,28 @@ mirrors:
 fixes:
   - defect: "e_HV = 0 does not mean zero uncertainty: the ReadMe gives it as zero when the error was not measured."
     change: "e_HV = 0 is read as no uncertainty reported, never as a zero uncertainty."
+    action: { kind: zero_error_is_none_reported, columns: [e_HV] }
     evidence: >-
       J/MNRAS/416/2840 ReadMe and the served column description: "? Total apparent velocity error
       (equal to zero if not measured)" (read from http://vizier.nao.ac.jp/ftp/cats/J/MNRAS/416/2840/ReadMe
       and http://vizieridia.saao.ac.za/viz-bin/asu-tsv?-meta.all&-source=J/MNRAS/416/2840, 2026-11-03).
+normalization:
+  redshifts:
+    - column: HV
+      error: e_HV
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        J/MNRAS/416/2840 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/MNRAS/416/2840/ReadMe,
+        2026-11-03): HV is the "Heliocentric total apparent velocity".
+  rules:
+    - when: { column: Ref, is: [zoa] }
+      leave_out: simulated_object
+      basis: >-
+        ReadMe: Ref is the "Reference bibcode ("zoa" for fake galaxies in the Zone of
+        Avoidance)", filled in by the algorithm of Section 3; they are not galaxies.
+    - when: { column: Cln, is: ["1"] }
+      kind_of_value: { columns: [HV], kind: estimated }
+      basis: >-
+        ReadMe: Cln flags "if the redshift has been obtained by the cloning procedure of Section
+        2.3", an assigned redshift rather than a measurement.

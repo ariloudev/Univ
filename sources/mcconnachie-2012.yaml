@@ -63,3 +63,31 @@ mirrors:
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+normalization:
+  distances:
+    - value: (m-M)
+      error: { asymmetric: { minus: e_(m-M), plus: E_(m-M) } }
+      also_published: { value: D, error: { asymmetric: { minus: e_D, plus: E_D } } }
+      kind: primary_indicator
+      method:
+        mixed:
+          - cepheids
+          - rr_lyrae
+          - tip_of_the_red_giant_branch
+          - horizontal_branch
+          - { other: main-sequence fitting }
+      measure: luminosity
+      kind_of_value: measured
+      basis: >-
+        J/AJ/144/4 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/AJ/144/4/ReadMe,
+        2026-11-03): (m-M) is the distance modulus (m-M)_0 and D the heliocentric distance from
+        it; E_ columns are the positive and e_ the negative errors. Note (7): "All distance moduli
+        are based on resolved stellar population analysis (generally Cepheid, RR Lyrae, or TRGB
+        (tip of the red giant branch) measurements, but also horizontal branch level and
+        main-sequence fitting)"; the table does not say which for each galaxy.
+  rules:
+    - when: { column: u_(m-M), is: [l, ":l"] }
+      kind_of_value: { columns: [(m-M), D], kind: estimated }
+      basis: >-
+        ReadMe Note (5): "l = Assumed to be at M31-M33 distance", an assumed distance, not a
+        measurement of the galaxy. One row (served 2026-11-03) carries ":l".

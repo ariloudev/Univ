@@ -1,15 +1,27 @@
 //! Source definitions: one YAML file per source under `sources/`, read and checked before
 //! anything is fetched.
 
+mod normalization;
+mod rules;
+
+pub use normalization::{
+    Coded, DistanceReading, ErrorColumns, MethodCodes, Normalization, Published, RedshiftCodes,
+    RedshiftReading,
+};
+pub use rules::{
+    Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
+};
+
 use std::collections::HashSet;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use univ_model::ids::SourceId;
 use univ_model::position::{Epoch, Frame};
 use univ_model::units::Unit;
+
+use crate::yaml::{FileError, read_checked, read_dir};
 
 /// A source as its definition in the repository describes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -35,6 +47,10 @@ pub struct SourceDefinition {
     /// Corrections to the source as published, each with its evidence.
     #[serde(default)]
     pub fixes: Vec<Fix>,
+    /// How rows are read beyond the column each field comes from. Its enums are written as
+    /// single-key maps, such as `{ symmetric: e_cz }`, rather than YAML tags.
+    #[serde(default, with = "serde_norway::with::singleton_map_recursive")]
+    pub normalization: Normalization,
 }
 
 /// How a source is fetched from each mirror.
@@ -199,16 +215,14 @@ pub struct Fix {
     pub defect: String,
     pub change: String,
     pub evidence: String,
+    /// The change in the form the normalizer applies; none when the definition's columns
+    /// already express it.
+    #[serde(default)]
+    pub action: Option<FixAction>,
 }
 
 /// A source definition that cannot be used, naming its file, the field and what is wrong.
-#[derive(Debug, Error, PartialEq)]
-#[error("{}: {field}: {problem}", file.display())]
-pub struct DefinitionError {
-    pub file: PathBuf,
-    pub field: String,
-    pub problem: String,
-}
+pub type DefinitionError = FileError;
 
 /// A release refused because it holds a source whose terms forbid redistribution.
 #[derive(Debug, Error, PartialEq)]
@@ -229,37 +243,19 @@ impl SourceDefinition {
     /// Fails, naming the file and field, on YAML that does not parse or a definition that is
     /// incomplete, names an unknown unit, frame or scale domain, or breaks a check below.
     pub fn read(file: &Path) -> Result<Self, DefinitionError> {
-        let fail = |field: &str, problem: String| DefinitionError {
-            file: file.to_path_buf(),
-            field: field.to_owned(),
-            problem,
-        };
-        let text = fs::read_to_string(file).map_err(|e| fail("(file)", e.to_string()))?;
-        let document = serde_norway::Deserializer::from_str(&text);
-        let definition: Self = serde_path_to_error::deserialize(document).map_err(|e| {
-            let path = e.path().to_string();
-            // The YAML error may already lead with the field; say it once.
-            let message = e.into_inner().to_string();
-            let problem = message
-                .strip_prefix(&format!("{path}: "))
-                .unwrap_or(&message);
-            let field = if path == "." { "(top level)" } else { &path };
-            fail(field, problem.to_owned())
-        })?;
-        let stem = file
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or_default();
-        if definition.id.as_str() != stem {
-            return Err(fail(
-                "id",
-                format!("is {} but the file is named {stem}", definition.id),
-            ));
-        }
-        definition
-            .check()
-            .map_err(|(field, problem)| fail(&field, problem))?;
-        Ok(definition)
+        read_checked(file, |definition: &Self| {
+            let stem = file
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or_default();
+            if definition.id.as_str() != stem {
+                return Err((
+                    "id".to_owned(),
+                    format!("is {} but the file is named {stem}", definition.id),
+                ));
+            }
+            definition.check()
+        })
     }
 
     /// The checks serde cannot make, as the field and the problem.
@@ -314,7 +310,7 @@ impl SourceDefinition {
             blank(&format!("fixes[{i}].change"), &fix.change)?;
             blank(&format!("fixes[{i}].evidence"), &fix.evidence)?;
         }
-        Ok(())
+        normalization::check(&self.normalization, &self.columns, &self.fixes)
     }
 
     /// Refuses a source whose terms forbid redistribution, quoting the terms.
@@ -404,18 +400,7 @@ fn distinct_names(files: &[RemoteFile]) -> bool {
 ///
 /// Fails when the directory cannot be read or a definition fails [`SourceDefinition::read`].
 pub fn read_all(dir: &Path) -> Result<Vec<SourceDefinition>, DefinitionError> {
-    let entries = fs::read_dir(dir).map_err(|e| DefinitionError {
-        file: dir.to_path_buf(),
-        field: "(directory)".to_owned(),
-        problem: e.to_string(),
-    })?;
-    let mut files: Vec<PathBuf> = entries
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "yaml"))
-        .collect();
-    files.sort();
-    files
+    read_dir(dir)?
         .iter()
         .map(|file| SourceDefinition::read(file))
         .collect()

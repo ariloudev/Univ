@@ -20,6 +20,8 @@ columns:
   - { column: _DEJ2000, field: declination, unit: degree }
   - { column: DMzp, field: distance_modulus, unit: magnitude }
   - { column: e_DMzp, field: distance_modulus_error, unit: magnitude }
+  - { column: DMav, field: quality, unit: magnitude }
+  - { column: e_DMav, field: quality, unit: magnitude }
   - { column: Vh, field: velocity, unit: kilometre_per_second }
   - { column: SGX, field: supergalactic_x, unit: megaparsec }
   - { column: SGY, field: supergalactic_y, unit: megaparsec }
@@ -70,3 +72,51 @@ fixes:
       table's Dist range is [0.1/773] Mpc. (3) On 2,000 served rows (vizier.idia.ac.za, 2026-11-03)
       sqrt(SGX^2+SGY^2+SGZ^2) equals |Vls| within 2 km/s, e.g. 1PGC 12: Vls = 6669, (SGX, SGY, SGZ) =
       (1848, -6271, 1312), norm 6668; 1PGC 6830: Vls = -157, (40, 141, 56), norm 157.
+    action: { kind: read_as, columns: [SGX, SGY, SGZ], unit: kilometre_per_second }
+normalization:
+  redshifts:
+    - column: Vh
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        J/ApJ/944/94 ReadMe, table4 (read from http://vizier.nao.ac.jp/ftp/cats/J/ApJ/944/94/ReadMe,
+        2026-11-03): Vh is the "Group velocity, relative to the Sun", a mean of its members'
+        spectroscopic velocities cz.
+  distances:
+    - value: DMzp
+      error: { symmetric: e_DMzp }
+      kind: secondary_indicator
+      method:
+        mixed:
+          - fundamental_plane
+          - tully_fisher
+          - surface_brightness_fluctuations
+          - type_ia_supernovae
+          - type_ii_supernovae
+          - tip_of_the_red_giant_branch
+          - cepheids
+          - masers
+      measure: luminosity
+      kind_of_value: measured
+      basis: >-
+        ReadMe table3 Notes (1) and (2): DMzp is the group's weighted average over five methods
+        (FP, TF, SBF, SNIa, SNII), DMav, "set to the scale defined by TRGB, cepheid and maser
+        calibrators", so the kind is that of the five methods; where no five-method measurement
+        exists DMzp is the direct calibration value, which a rule below marks. The abstract calls
+        these "the measured distances". The modulus rests on the calibrators, not on a Hubble
+        constant (the abstract finds the distances compatible with H0 = 74.6 km/s/Mpc). Dist,
+        derived from DMzp, is a "Luminosity distance corresponding ot DMzp" (ReadMe table4).
+  rules:
+    - when: { column: DMav, is: ["0"] }
+      and: [{ column: e_DMav, is: ["0"] }]
+      distance:
+        value: DMzp
+        kind: primary_indicator
+        method: { mixed: [tip_of_the_red_giant_branch, cepheids, masers] }
+      basis: >-
+        ReadMe table3 Note (1): "If column e (DMav) is blank because no five methods measurement
+        is available then the direct calibration value is given." The table writes that blank
+        as DMav = e_DMav = 0 (ranges [0/39.6] and [0/2.11], not marked as nullable), and DMcal is
+        the "Average of all TRGB, CPLR, or MASER calibrators" (Note 4). On every one of the 228
+        rows with DMav = 0 served by vizier.idia.ac.za (2026-11-03), e_DMav is 0 and DMzp equals
+        DMcal, e.g. 1PGC 35: DMzp = DMcal = 29.730.

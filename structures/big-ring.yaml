@@ -1,0 +1,147 @@
+# An annulus of Mg II absorbers on the sky at z ≈ 0.8, about 12° from the Giant Arc.
+name: Big Ring
+alternative_names: ["BR"]
+kind: ring
+status: statistical_claim
+papers:
+  - id: lopez-2024
+    reference: "Lopez, Clowes & Williger 2024, JCAP 07, 055"
+    title: "A Big Ring on the Sky"
+    doi: 10.1088/1475-7516/2024/07/055
+    bibcode: 2024JCAP...07..055L
+    arxiv: "2402.07591"
+    read: "arXiv source (LaTeX and figures) of 2402.07591"
+geometry:
+  kind: members
+  members:
+    frame: icrs
+    tracer: Mg II absorber
+    source:
+      paper: lopez-2024
+      figure: "2"
+      how: >-
+        The plotted points of the raster layers of the figure (topcat_visually_identified.pdf in the
+        arXiv source; one layer each for the ring, the inner filament and the additional absorbers,
+        drawn in that order) found as connected groups of the layers' soft masks above half opacity,
+        their mask-weighted centroids mapped linearly with the figure's axis ticks. A point on the ring
+        layer that a later layer covers is assigned to that later layer. Overlapping points merge
+        into one group; the count column estimates how many points each group holds from its area,
+        against the area of a single point.
+    columns:
+      - { name: lon, header: "RA (deg)", unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 0.02 } }
+      - { name: lat, header: "Dec (deg)", unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 0.02 } }
+      - { name: count, header: "points in the group", unit: dimensionless, kind: estimated, uncertainty: { form: none_reported } }
+    rows:
+      - ["ring-01", 209.687, 50.442, 1]
+      - ["ring-02", 209.940, 50.762, 1]
+      - ["ring-03", 210.194, 51.597, 1]
+      - ["ring-04", 210.376, 50.467, 1]
+      - ["ring-05", 210.484, 49.730, 1]
+      - ["ring-06", 210.630, 52.064, 1]
+      - ["ring-07", 211.573, 52.629, 1]
+      - ["ring-08", 211.681, 49.189, 1]
+      - ["ring-09", 212.044, 48.010, 1]
+      - ["ring-10", 212.878, 46.585, 1]
+      - ["ring-11", 212.987, 47.027, 1]
+      - ["ring-12", 213.241, 52.875, 1]
+      - ["ring-13", 213.350, 47.592, 1]
+      - ["ring-14", 214.220, 46.880, 1]
+      - ["ring-15", 214.293, 46.118, 1]
+      - ["ring-16", 214.293, 53.538, 1]
+      - ["ring-17", 214.681, 45.670, 3]
+      - ["ring-18", 214.764, 46.118, 1]
+      - ["ring-19", 214.982, 46.904, 1]
+      - ["ring-20", 215.199, 46.781, 1]
+      - ["ring-21", 215.199, 52.899, 1]
+      - ["ring-22", 215.199, 53.366, 1]
+      - ["ring-23", 216.179, 47.076, 1]
+      - ["ring-24", 216.215, 53.833, 1]
+      - ["ring-25", 216.614, 53.587, 1]
+      - ["ring-26", 217.339, 46.486, 1]
+      - ["ring-27", 217.593, 47.518, 1]
+      - ["ring-28", 217.593, 52.899, 1]
+      - ["ring-29", 218.246, 53.661, 1]
+      - ["ring-30", 218.754, 47.371, 1]
+      - ["ring-31", 218.863, 47.740, 1]
+      - ["ring-32", 219.225, 48.428, 1]
+      - ["ring-33", 219.479, 52.948, 1]
+      - ["ring-34", 219.661, 52.088, 1]
+      - ["ring-35", 219.697, 50.319, 1]
+      - ["ring-36", 219.733, 48.587, 2]
+      - ["ring-37", 219.806, 51.843, 1]
+      - ["ring-38", 220.205, 52.604, 1]
+      - ["ring-39", 220.350, 49.631, 1]
+      - ["ring-40", 220.459, 51.179, 1]
+      - ["ring-41", 220.676, 50.098, 1]
+      - ["ring-42", 220.749, 49.754, 1]
+      - ["ring-43", 221.184, 51.720, 1]
+      - ["ring-44", 221.220, 50.909, 1]
+      - ["ring-45", 221.293, 50.663, 1]
+      - ["filament-01", 213.821, 50.172, 1]
+      - ["filament-02", 213.966, 49.238, 1]
+      - ["filament-03", 214.075, 51.106, 1]
+      - ["filament-04", 214.184, 51.646, 1]
+      - ["filament-05", 214.692, 48.575, 1]
+      - ["filament-06", 214.946, 47.666, 1]
+      - ["filament-07", 215.272, 52.015, 1]
+      - ["filament-08", 216.142, 51.941, 1]
+      - ["additional-01", 212.334, 50.295, 1]
+      - ["additional-02", 216.759, 49.459, 1]
+      - ["additional-03", 218.500, 50.762, 1]
+values:
+  diameter:
+    value: 400
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: &cosmology
+      cosmology: "proper size at the present epoch; ΩT0 = 1, ΩM0 = 0.27, ΩΛ0 = 0.73, H0 = 70 km/s/Mpc"
+      cite:
+        paper: lopez-2024
+        sentence: "The concordance model is adopted for cosmological calculations, with ΩT0 = 1, ΩM0 = 0.27, ΩΛ0 = 0.73, and H0 = 70 km s-1 Mpc-1. All sizes given are proper sizes at the present epoch."
+    cite:
+      paper: lopez-2024
+      sentence: "The BR is a striking circular, annulus-like, structure of diameter ~ 400 Mpc (proper size, present epoch)."
+  diameter_low_estimate:
+    value: 300
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite:
+      paper: lopez-2024
+      sentence: "From Figure 1 we can estimate the BR diameter is ~ 300 - 400 Mpc"
+  absorber_count:
+    value: 51
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: lopez-2024
+      sentence: "The table is for the 51 visually-identified BR absorber members."
+  redshift:
+    value: 0.802
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: lopez-2024
+      sentence: "The tangent-plane distribution of Mg II absorbers in the redshift slice z = 0.802 ± 0.060."
+  separation_from_giant_arc:
+    value: 12
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: lopez-2024
+      sentence: "In cosmological terms the BR is close to the GA --- at the same redshift z ~ 0.8 and with a separation on the sky of only ~ 12°."
+disputes: []
+notes: >-
+  The paper's Table 5 lists the 51 ring absorbers without coordinates, so the positions are
+  digitised from Figure 2. Some plotted points overlap and are merged into groups, whose count
+  column estimates the points each holds, and some points carry two absorbers seen in one quasar
+  spectrum, so the plotted points are fewer than the absorbers. The inner filament and the
+  additional absorbers inside the ring are rows of their own; the paper does not count either
+  separately. The newsroom atlas recorded a dispute from Sawala et al., but that paper only names
+  the Big Ring among recent claims and tests the Giant Arc; no dispute of the ring itself was
+  found, so none is recorded.

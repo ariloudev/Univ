@@ -1,0 +1,81 @@
+# A large southern supercluster at about 20,000 km/s, surveyed between its clusters with 6dF.
+name: Horologium-Reticulum Supercluster
+alternative_names: ["HRS", "Horologium Supercluster"]
+kind: supercluster
+status: observed
+papers:
+  - id: fleenor-2005
+    reference: "Fleenor, Rose, Christiansen, Hunstead, Johnston-Hollitt, Drinkwater & Saunders 2005, AJ 130, 957"
+    title: "Large-Scale Velocity Structures in the Horologium-Reticulum Supercluster"
+    doi: 10.1086/431972
+    arxiv: "astro-ph/0505361"
+    read: "arXiv source (LaTeX) of astro-ph/0505361"
+position:
+  frame: equatorial_equinox_unstated
+  lon:
+    value: 49.75
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "α = 03h19m"
+    cite: &centre
+      paper: fleenor-2005
+      sentence: "The HRS covers an area of more than 12° × 12° on the sky centered at approximately α = 03h19m, δ = -50°02′."
+  lat:
+    value: -50.0333
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "δ = -50°02′"
+    cite: *centre
+values:
+  extent_on_sky:
+    value: 12
+    unit: degree
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: *centre
+    note: "More than 12° by 12°: the 6dF survey field, centred as above."
+  velocity_low:
+    value: 17000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &range
+      paper: fleenor-2005
+      sentence: "First, the HRS spans at least the redshift range from 17,000 to 22,500 km s-1."
+  velocity_high:
+    value: 22500
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *range
+  intercluster_density_contrast:
+    value: 1.4
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: fleenor-2005
+      sentence: "Second, the overdensity of galaxies in the inter-cluster regions of the HRS in this redshift range is estimated to be 2.4, or δρ/ρ̄ ~ 1.4."
+  peak_separation:
+    value: 2500
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: fleenor-2005
+      sentence: "Fourth, the HRS is bi-modal in redshift with a separation of ~2500 km s-1 (35 Mpc) between the higher and lower redshift peaks."
+  redshift_rise_south_east_to_north_west:
+    value: 1500
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite:
+      paper: fleenor-2005
+      sentence: "Third, we find a systematic trend of increasing redshift along a Southeast-Northwest (SE-NW) spatial axis in the HRS, in that the mean redshift of HRS members increases by more than 1500 km s-1 from SE to NW over a 12° region."
+disputes: []
+notes: >-
+  The centre is the centre of the 12° by 12° field the survey chose from earlier literature, which
+  the paper also gives as the supercluster's approximate centre; the equinox is not stated. The
+  mean redshift of the members rises by more than 1500 km/s from south-east to north-west over 12°.

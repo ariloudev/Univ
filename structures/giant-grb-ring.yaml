@@ -1,0 +1,133 @@
+# Nine gamma-ray bursts at 0.78 < z < 0.86 that outline a ring on the sky.
+name: Giant GRB Ring
+alternative_names: ["Giant Gamma-Ray Burst Ring", "GGR"]
+kind: ring
+status: statistical_claim
+papers:
+  - id: balazs-2015
+    reference: "Balázs, Bagoly, Hakkila, Horváth, Kóbori, Rácz & Tóth 2015, MNRAS 452, 2236"
+    title: "A giant ring-like structure at 0.78 < z < 0.86 displayed by GRBs"
+    doi: 10.1093/mnras/stv1421
+    bibcode: 2015MNRAS.452.2236B
+    arxiv: "1507.00675"
+    read: "arXiv source (LaTeX) of 1507.00675; Table 3 parsed from it"
+  - id: balazs-2018
+    reference: "Balázs, Rejtő & Tusnády 2018, arXiv:1710.01621"
+    title: "Some statistical remarks on the giant GRB ring"
+    doi: 10.48550/arXiv.1710.01621
+    arxiv: "1710.01621"
+    read: "arXiv source (LaTeX) of 1710.01621; its journal publication was not checked"
+  - id: sawala-2025
+    reference: "Sawala, Teeriaho, Frenk, Helly, Jenkins, Racz, Schaller & Schaye 2025, MNRAS Letters 541, L22"
+    title: "The emperor's new arc: gigaparsec patterns abound in a ΛCDM universe"
+    doi: 10.1093/mnrasl/slaf021
+    arxiv: "2502.03515"
+    read: "arXiv source (LaTeX) of 2502.03515"
+geometry:
+  kind: members
+  members:
+    frame: galactic
+    tracer: gamma-ray burst
+    source: { paper: balazs-2015, table: "3" }
+    columns:
+      - { name: lon, header: "l (deg)", unit: degree, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lat, header: "b (deg)", unit: degree, kind: measured, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "redshift", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+      - name: distance
+        header: "distance (Mpc)"
+        unit: megaparsec
+        kind: inferred
+        uncertainty: { form: none_reported }
+        assumes: &cosmology
+          cosmology: "flat ΛCDM, ΩΛ = 0.7, ΩM = 0.3, h = 0.7"
+          cite:
+            paper: balazs-2015
+            sentence: "Assuming the validity of CP, a homogeneous isotropic model and a standard ΛCDM cosmology (ΩΛ=0.7, ΩM=0.3, h=0.7, representing an Euclidean space with ΩΛ+ΩM=0.7+0.3=1) the line element in the 4D space-time is given by"
+    rows:
+      - ["GRB 040924", 149.05, -42.52, 0.859, 2866]
+      - ["GRB 101225A", 114.45, -17.20, 0.847, 2836]
+      - ["GRB 080710", 118.43, -42.96, 0.845, 2831]
+      - ["GRB 050824", 123.46, -39.99, 0.828, 2786]
+      - ["GRB 071112C", 150.37, -28.43, 0.823, 2772]
+      - ["GRB 051022", 106.53, -41.28, 0.809, 2736]
+      - ["GRB 100816A", 101.39, -32.53, 0.804, 2723]
+      - ["GRB 120729A", 123.85, -12.65, 0.800, 2712]
+      - ["GRB 060202", 142.92, -20.54, 0.785, 2672]
+values:
+  major_diameter:
+    value: 43
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &abstract
+      paper: balazs-2015
+      sentence: "The ring has a major diameter of 43° and a minor diameter of 30° at a distance of 2770 Mpc in the 0.78 < z < 0.86 redshift range, with a probability of 2 × 10^-6 of being the result of a random fluctuation in the GRB count rate."
+  minor_diameter:
+    value: 30
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *abstract
+  mean_redshift:
+    value: 0.822
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &mean
+      paper: balazs-2015
+      sentence: "Using the data listed in the Table one can calculate the mean redshift and distance of the ring, along with the standard deviations of these variables, yielding z = 0.822, σz = 0.025 and dc = 2770 Mpc, σd = 65 Mpc."
+  redshift_standard_deviation:
+    value: 0.025
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *mean
+    note: "The spread of the nine bursts' redshifts, not an uncertainty of the mean."
+  mean_comoving_distance:
+    value: 2770
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: *mean
+  comoving_distance_standard_deviation:
+    value: 65
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: *mean
+  proper_diameter:
+    value: 944
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: &size
+      paper: balazs-2015
+      sentence: "Substituting the corresponding values obtained above one gets D = 944 Mpc, corresponding to 1720 Mpc in the comoving frame."
+  comoving_diameter:
+    value: 1720
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: *size
+disputes:
+  - claim: >-
+      The same group's later statistical analysis finds that the burst distribution as a whole,
+      ring included, does not reject the cosmological principle.
+    cite:
+      paper: balazs-2018
+      sentence: "We concluded that despite the existence of local irregularities in the GRBs' spatial distribution (e.g. the GGR) one can not reject the Cosmological Principle, based on their spatial distribution as a whole."
+  - claim: >-
+      Sawala et al. describe the ring as shown to be statistically insignificant by Balázs et al. 2018.
+    cite:
+      paper: sawala-2025
+      sentence: "the \"Giant Ring of Gamma Ray Bursts\" (Balazs et al. 2015) was subsequently shown to be statistically insignificant (Balazs et al. 2018)"
+notes: >-
+  The members are the nine bursts of Table 3 in the Galactic coordinates the paper publishes. The
+  newsroom atlas used the bursts' J2000 positions from the GRBOX table of Horváth et al. 2015 instead,
+  and noted that Balázs's (l, b) sit about a degree east and 0.3° north of them, as if J2000
+  positions had been converted as B1950; the published (l, b) are kept here and the offset is left
+  for the pipeline to weigh. The ring's centre is not stated.

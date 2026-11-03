@@ -1,0 +1,103 @@
+# A claimed angular concentration of gamma-ray bursts at 1.6 ≤ z < 2.1.
+name: Hercules-Corona Borealis Great Wall
+alternative_names: ["Her-CrB GW"]
+kind: overdensity
+status: statistical_claim
+papers:
+  - id: horvath-2014
+    reference: "Horváth, Hakkila & Bagoly 2014, A&A 561, L12"
+    title: "Possible structure in the GRB sky distribution at redshift two"
+    doi: 10.1051/0004-6361/201323020
+    arxiv: "1401.0533"
+    read: "arXiv source (LaTeX) of 1401.0533"
+  - id: horvath-2015
+    reference: "Horváth, Bagoly, Hakkila & Tóth 2015, A&A 584, A48"
+    title: "New data support the existence of the Hercules-Corona Borealis Great Wall"
+    doi: 10.1051/0004-6361/201424829
+    arxiv: "1510.01933"
+    read: "arXiv source (LaTeX) of 1510.01933"
+  - id: ukwatta-2016
+    reference: "Ukwatta & Woźniak 2016, MNRAS 455, 703"
+    title: "Investigation of redshift- and duration-dependent clustering of gamma-ray bursts"
+    doi: 10.1093/mnras/stv2350
+    arxiv: "1507.07117"
+    read: "arXiv source (LaTeX) of 1507.07117"
+unplaced: >-
+  Neither paper gives a centre or boundary for the concentration: only that it covers about an
+  eighth of the sky, all of Hercules and Corona Borealis and half of Boötes, Draco and Lyra, and
+  the circle radii it was tested with. The newsroom atlas listed all 44 bursts of the redshift band
+  as members, which the papers do not; they are left out.
+values:
+  redshift_low:
+    value: 1.6
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &claim
+      paper: horvath-2015
+      sentence: "The larger gamma-ray burst database further supports the existence of a statistically significant gamma-ray burst cluster at 1.6 ≤ z < 2.1 with an estimated angular size of 2000-3000 Mpc."
+  redshift_high:
+    value: 2.1
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *claim
+  size_low:
+    value: 2000
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: &unstated "not stated: neither paper gives the cosmology behind its sizes in Mpc"
+    cite: *claim
+  size_high:
+    value: 3000
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *unstated
+    cite: *claim
+  test_circle_radius:
+    value: 51.3
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &circle
+      paper: horvath-2015
+      sentence: "When the area is chosen to be 0.1875 × 4π (θmax = 51.3°), 25 GRBs out of the 44 lie inside the circle."
+  bursts_inside_test_circle:
+    value: 25
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *circle
+  bursts_in_redshift_band:
+    value: 44
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *circle
+  bursts_in_concentration_2014:
+    value: 14
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &letter
+      paper: horvath-2014
+      sentence: "Subdividing this sample into nine radial parts, each containing 31 GRBs, indicates that the GRB sample having 1.6<z<2.1 differs significantly from the others in that 14 of the 31 GRBs are concentrated in roughly 1/8 of the sky."
+  bursts_in_redshift_band_2014:
+    value: 31
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *letter
+disputes:
+  - claim: >-
+      A clustering analysis of the Swift burst sample finds no significant redshift-dependent
+      clustering.
+    cite:
+      paper: ukwatta-2016
+      sentence: "Therefore, we find no significant evidence of redshift-dependent clustering in the Swift GRB sample."
+notes: >-
+  The 2014 letter found 14 of 31 bursts with 1.6 < z < 2.1 in about an eighth of the sky; the 2015
+  paper repeats the test with 44 bursts. The quoted size is called an angular size in Mpc. The
+  name is popular rather than the authors' own.

@@ -82,6 +82,19 @@ impl Geometry {
                     }))
                 }))
             }
+            Self::GridRegion {
+                origin,
+                cell,
+                cells,
+                ..
+            } => Aabb::around(cells.iter().flat_map(|c| {
+                (0..8).map(move |corner| {
+                    r(std::array::from_fn(|i| {
+                        let near = f64::from(c[i] + u32::from(corner >> i & 1 == 1));
+                        origin[i] + near * cell
+                    }))
+                })
+            })),
         }
     }
 }
@@ -222,6 +235,20 @@ mod tests {
             Aabb {
                 min: [-10.0; 3],
                 max: [10.0, 0.0, -8.0]
+            }
+        );
+        let outlined = Geometry::GridRegion {
+            grid: "cf4pp-density".into(),
+            origin: [-10.0; 3],
+            cell: 2.0,
+            shape: [10, 10, 10],
+            cells: vec![[1, 2, 3], [2, 2, 3]],
+        };
+        assert_eq!(
+            boxed(outlined),
+            Aabb {
+                min: [-8.0, -6.0, -4.0],
+                max: [-4.0, -4.0, -2.0]
             }
         );
         let region = Geometry::SkyRegion {

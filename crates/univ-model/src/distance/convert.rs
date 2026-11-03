@@ -1,72 +1,14 @@
-//! Distances as published, with their kind, method and the Hubble constant they assume.
-
-use serde::{Deserialize, Serialize};
-use thiserror::Error;
+//! Conversions of published distances: a modulus to a length, a length in h⁻¹ Mpc to one for a
+//! chosen Hubble constant, and a length from one Hubble constant to another.
 
 use crate::units::{Dimension, Unit};
-use crate::value::{Quantity, Uncertainty, ValueError, positive};
+use crate::value::{Quantity, Uncertainty, positive};
 
-/// How a distance was obtained, from the most direct to the most model-dependent.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum DistanceKind {
-    Parallax,
-    Geometric,
-    Photogeometric,
-    PrimaryIndicator,
-    SecondaryIndicator,
-    SpectroscopicRedshift,
-    PhotometricRedshift,
-}
-
-/// The indicator or technique behind a distance.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Method {
-    TrigonometricParallax,
-    /// Bailer-Jones et al. 2021, geometric prior.
-    BayesianGeometric,
-    /// Bailer-Jones et al. 2021, photogeometric prior.
-    BayesianPhotogeometric,
-    Cepheids,
-    TipOfTheRedGiantBranch,
-    Masers,
-    TypeIaSupernovae,
-    TypeIiSupernovae,
-    SurfaceBrightnessFluctuations,
-    TullyFisher,
-    FundamentalPlane,
-    Redshift,
-    /// An indicator named by its source that has no variant here.
-    Other(String),
-}
-
-/// A distance as its source published it.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Distance {
-    /// The value as published: a parallax, a distance modulus, a length or a length in h⁻¹ Mpc.
-    pub native: Quantity,
-    pub kind: DistanceKind,
-    pub method: Method,
-    /// The Hubble constant in km/s/Mpc that the value was published for, where it depends on one.
-    pub hubble_constant: Option<f64>,
-}
-
-/// A distance that cannot be derived.
-#[derive(Debug, Error, PartialEq)]
-pub enum DistanceError {
-    #[error("expected a value in {expected:?}, found {found:?}")]
-    WrongUnit { expected: Unit, found: Unit },
-    #[error("{0:?} is not a unit of length, so it does not scale with the Hubble constant")]
-    NotALength(Unit),
-    #[error("the Hubble constant {0} km/s/Mpc is not positive")]
-    BadHubbleConstant(f64),
-    #[error(transparent)]
-    Value(#[from] ValueError),
-}
+use super::DistanceError;
 
 /// The distance in parsecs that a distance modulus `μ` stands for, `10^(μ/5 + 1)`, with its
-/// uncertainty carried through. The modulus itself is not changed; keep it beside the result.
+/// uncertainty carried through exactly: a symmetric error in μ becomes an asymmetric interval.
+/// The modulus itself is not changed; keep it beside the result.
 ///
 /// # Errors
 ///
@@ -81,12 +23,26 @@ pub fn from_modulus(modulus: &Quantity) -> Result<Quantity, DistanceError> {
     let parsecs = |mu: f64| 10f64.powf(mu / 5.0 + 1.0);
     let distance = parsecs(modulus.value);
     let uncertainty = match modulus.uncertainty {
-        Uncertainty::Symmetric { sigma } => Uncertainty::Symmetric {
-            sigma: distance * std::f64::consts::LN_10 / 5.0 * sigma,
+        // A symmetric error in μ is an asymmetric one in distance: μ ± σ spans
+        // d·10^(−σ/5) to d·10^(+σ/5) exactly, wider on the far side.
+        Uncertainty::Symmetric { sigma } => Uncertainty::Asymmetric {
+            minus: distance - parsecs(modulus.value - sigma),
+            plus: parsecs(modulus.value + sigma) - distance,
         },
         Uncertainty::Asymmetric { minus, plus } => Uncertainty::Asymmetric {
             minus: distance - parsecs(modulus.value - minus),
             plus: parsecs(modulus.value + plus) - distance,
+        },
+        // Quantiles of a posterior map through a monotonic function unchanged (Bailer-Jones et
+        // al. 2021, abstract), so the interval's bounds are converted, not its widths.
+        Uncertainty::CredibleInterval {
+            minus,
+            plus,
+            probability,
+        } => Uncertainty::CredibleInterval {
+            minus: distance - parsecs(modulus.value - minus),
+            plus: parsecs(modulus.value + plus) - distance,
+            probability,
         },
         other => other,
     };
@@ -140,7 +96,7 @@ pub fn rescale_hubble(
     )?)
 }
 
-fn checked(hubble_constant: f64) -> Result<f64, DistanceError> {
+pub(super) fn checked(hubble_constant: f64) -> Result<f64, DistanceError> {
     if positive(hubble_constant) {
         Ok(hubble_constant)
     } else {
@@ -161,10 +117,11 @@ mod tests {
         let mu = quantity(0.0, Unit::Magnitude, Uncertainty::Symmetric { sigma: 0.1 });
         let d = from_modulus(&mu).unwrap();
         assert!((d.value - 10.0).abs() < 1e-12);
-        let Uncertainty::Symmetric { sigma } = d.uncertainty else {
-            panic!("symmetric")
+        let Uncertainty::Asymmetric { minus, plus } = d.uncertainty else {
+            panic!("asymmetric")
         };
-        assert!((sigma - 10.0 * std::f64::consts::LN_10 / 5.0 * 0.1).abs() < 1e-12);
+        assert!((minus - (10.0 - 10f64.powf(0.98))).abs() < 1e-12);
+        assert!((plus - (10f64.powf(1.02) - 10.0)).abs() < 1e-12);
     }
 
     #[test]
@@ -219,5 +176,43 @@ mod tests {
         let modulus = quantity(33.0, Unit::Magnitude, Uncertainty::NoneReported);
         let refused = rescale_hubble(&modulus, 75.0, 67.66);
         assert_eq!(refused, Err(DistanceError::NotALength(Unit::Magnitude)));
+    }
+
+    #[test]
+    fn a_credible_interval_on_a_modulus_converts_its_bounds() {
+        let interval = Uncertainty::CredibleInterval {
+            minus: 0.1,
+            plus: 0.1,
+            probability: 0.68,
+        };
+        let d = from_modulus(&quantity(10.0, Unit::Magnitude, interval)).unwrap();
+        let Uncertainty::CredibleInterval { minus, plus, .. } = d.uncertainty else {
+            panic!("an interval")
+        };
+        assert!((d.value - minus - 10f64.powf(2.98)).abs() < 1e-9);
+        assert!((d.value + plus - 10f64.powf(3.02)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval() {
+        for sigma in [2.11, 0.4] {
+            let mu = quantity(35.0, Unit::Magnitude, Uncertainty::Symmetric { sigma });
+            let d = from_modulus(&mu).unwrap();
+            let Uncertainty::Asymmetric { minus, plus } = d.uncertainty else {
+                panic!("σ = {sigma}: asymmetric, not {:?}", d.uncertainty)
+            };
+            let (low, high) = (
+                d.value * 10f64.powf(-sigma / 5.0),
+                d.value * 10f64.powf(sigma / 5.0),
+            );
+            assert!(
+                (d.value - minus - low).abs() < 1e-9 * d.value,
+                "σ = {sigma}"
+            );
+            assert!(
+                (d.value + plus - high).abs() < 1e-9 * d.value,
+                "σ = {sigma}"
+            );
+        }
     }
 }

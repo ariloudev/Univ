@@ -67,7 +67,20 @@ fixes:
     change: >-
       Rows with e_cz = 0 are treated as unsuitable redshifts and left out with that reason; no
       redshift is published with a zero uncertainty.
+    action: { kind: zero_error_leaves_out, columns: [e_cz], reason: unsuitable_redshift }
     evidence: >-
       VII/259 ReadMe Note (3): "6dFGS redshifts deemed unsuitable for extragalactic use (either
       because of measurement uncertainty or spectral classification) have had their uncertainties
       set to 0km/s." (read from http://vizier.nao.ac.jp/ftp/cats/VII/259/ReadMe, 2026-11-03)
+normalization:
+  redshifts:
+    - column: cz
+      error: e_cz
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        VII/259 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/VII/259/ReadMe, 2026-11-03): cz
+        is the "Best available combined recession velocity cz", obtained "by error-weighting
+        individual redshifts" (Note 3), and the per-spectrum z of the same catalogue is
+        "Heliocentric redshift". The ReadMe does not name the frame of cz itself: heliocentric is
+        inferred from its parts.

@@ -60,3 +60,25 @@ mirrors:
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      e_cz = 0 does not mean zero uncertainty: 788 rows give e_cz = 0, almost all with literature
+      redshifts (260 from 2001ApJ...560..566K, 94 from 2005ApJS..160..149S, 28 from
+      1999PASP..111..438F, 25 from RC3, and others), whose sources gave no error.
+    change: "e_cz = 0 is read as no uncertainty reported, never as a zero uncertainty."
+    evidence: >-
+      The query J/ApJS/199/26/table3 with e_cz=0 on vizier.idia.ac.za (2026-11-03) returned 788 rows
+      spread over many r_cz references; the ReadMe describes e_cz only as "? Uncertainty in cz",
+      and a measured redshift never has an uncertainty of exactly zero.
+    action: { kind: zero_error_is_none_reported, columns: [e_cz] }
+normalization:
+  redshifts:
+    - column: cz
+      error: e_cz
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        J/ApJS/199/26 ReadMe, table3 (read from http://vizier.nao.ac.jp/ftp/cats/J/ApJS/199/26/ReadMe,
+        2026-11-03): cz is the "Redshift, corrected to solar system barycenter reference frame".
+        The barycentre moves against the Sun's centre by under 0.02 km/s, far below e_cz, so it is
+        read as heliocentric.

@@ -11,7 +11,7 @@ use std::time::Duration;
 
 use common::rig;
 use univ_ingest::display::{Outcome, SourceState};
-use univ_ingest::run::{FetchOptions, FetchReport, fetch, owner_interrupt};
+use univ_ingest::run::{FetchOptions, RunReport, fetch, owner_interrupt};
 use univ_ingest::source::SourceDefinition;
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -55,7 +55,7 @@ async fn an_interrupted_fetch_names_the_sources_it_ended_and_leaves_the_rest_not
         cache: cache.path().to_owned(),
         sources: Vec::new(),
     };
-    let report = Mutex::new(FetchReport::new(&definitions));
+    let report = Mutex::new(RunReport::new(&definitions));
     let rig = rig(false);
     // The owner interrupts the run once the second source is being fetched.
     let second_asked = async {
@@ -69,7 +69,7 @@ async fn an_interrupted_fetch_names_the_sources_it_ended_and_leaves_the_rest_not
         }
     };
     tokio::select! {
-        () = fetch(&rig.fetcher, &definitions, &options, &report) => {
+        _ = fetch(&rig.fetcher, &definitions, &options, &report) => {
             panic!("the stalled source finished");
         }
         () = second_asked => {}

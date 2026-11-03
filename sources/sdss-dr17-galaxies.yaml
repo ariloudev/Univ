@@ -60,3 +60,12 @@ redistribution:
 scale_domain: cosmic_web
 mirrors:
   - "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch"
+normalization:
+  redshifts:
+    - column: z
+      error: zErr
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        SDSS DR17 spectroscopy basics (https://www.sdss.org/dr17/spectro/spectro_basics/, read
+        2026-11-03): SDSS spectra are on "heliocentric vacuum wavelengths", so z is heliocentric.

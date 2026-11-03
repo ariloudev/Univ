@@ -1,0 +1,71 @@
+# The Bootes Void, found in a redshift survey of three small fields (Kirshner et al. 1981) and
+# confirmed by a survey of 283 fields (Kirshner et al. 1987).
+name: Bootes Void
+alternative_names: ["Boötes Void", "Great Void"]
+kind: void
+status: observed
+papers:
+  - id: kirshner-1987
+    reference: "Kirshner, Oemler, Schechter & Shectman 1987, ApJ 314, 493"
+    title: "A survey of the Bootes void"
+    doi: 10.1086/165080
+    bibcode: 1987ApJ...314..493K
+    read: "ADS scan of the full article (pages 493 and 501 read for these values)"
+  - id: kirshner-1983
+    reference: "Kirshner, Oemler, Schechter & Shectman 1983, IAU Symp. 104, 197"
+    title: "Survey of the Bootes Void"
+    doi: 10.1017/s0074180900038961
+    read: "abstract only (Crossref record)"
+position: &published
+  frame: fk4_b1950
+  lon:
+    value: 222.5
+    unit: degree
+    kind: inferred
+    uncertainty: { form: none_reported }
+    as_published: "α = 14h50m"
+    cite: &centre
+      paper: kirshner-1987
+      sentence: "The largest empty sphere which we can put into our sample has a radius of 63 Mpc (assuming H0 = 50 km s-1 Mpc-1) and is centered at α = 14h50m, δ = +46°, cz = 15,500 km s-1."
+      page: 501
+  lat:
+    value: 46
+    unit: degree
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: *centre
+  velocity:
+    value: 15500
+    unit: kilometre_per_second
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: *centre
+geometry:
+  kind: primitive
+  primitive:
+    form: sphere
+    centre: *published
+    radius:
+      value: 63
+      unit: megaparsec
+      kind: inferred
+      uncertainty: { form: none_reported }
+      assumes: { cosmology: "H0 = 50 km/s/Mpc", cite: *centre }
+      cite: *centre
+      note: "The abstract (page 493) gives a slightly smaller radius; the body's, with its Hubble constant, is used."
+values:
+  diameter_in_velocity:
+    value: 6000
+    unit: kilometre_per_second
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite:
+      paper: kirshner-1983
+      sentence: "The galaxy distribution exhibits a spherical volume 6000 km/s in diameter in which no objects are found."
+disputes: []
+notes: >-
+  The centre's equinox is not restated in the sentence, but every position the 1987 paper tabulates
+  (Table 1 and Table 2) is given for B1950, so the centre is taken as B1950. The radius is the
+  largest empty sphere in the survey's sparse sample of fields, at the paper's H0 = 50 km/s/Mpc.
+  The newsroom atlas had the abstract's radius and an unconfirmed equinox; both are now read from
+  the full text. Tully, Howlett & Pomarède place the void inside the Ho'oleilana shell.

@@ -1,0 +1,95 @@
+# A supercluster behind the Milky Way in Vela, found in redshifts taken in the Zone of Avoidance.
+name: Vela Supercluster
+alternative_names: ["VSCL"]
+kind: supercluster
+status: observed
+papers:
+  - id: kraan-korteweg-2017
+    reference: "Kraan-Korteweg, Cluver, Bilicki, Jarrett, Colless, Elagali, Böhringer & Chon 2017, MNRAS Letters 466, L29"
+    title: "Discovery of a supercluster in the Zone of Avoidance in Vela"
+    doi: 10.1093/mnrasl/slw229
+    arxiv: "1611.04615"
+    read: "arXiv source (LaTeX) of 1611.04615"
+# The centre of the surveyed region, which the overdensity fills; the paper gives no other centre.
+position:
+  frame: galactic
+  lon:
+    value: 272.5
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &survey
+      paper: kraan-korteweg-2017
+      sentence: "We present a preliminary analysis of ~4500 new spectroscopic galaxy redshifts obtained in the ZOA centred on the Vela region (l = 272.5° ± 20°, b = 0° ± 10°)."
+  lat:
+    value: 0
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *survey
+  velocity:
+    value: 18000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: kraan-korteweg-2017
+      sentence: "We report the discovery of a potentially major supercluster that extends across the Galactic Plane in the constellation of Vela, at a mean recessional velocity of ~18 000 km s-1."
+values:
+  extent_longitude:
+    value: 25
+    unit: degree
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    cite: &extent
+      paper: kraan-korteweg-2017
+      sentence: "The presently sparsely-sampled dataset traces an overdensity that covers 25° in Galactic longitude on either side of the Plane, suggesting an extent of 25° × 20°, corresponding to ~115 × 90 h70 Mpc at the supercluster redshift."
+  extent_latitude:
+    value: 20
+    unit: degree
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    cite: *extent
+  extent_long:
+    value: 115
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    assumes: "h70^-1 Mpc: H0 = 70 km/s/Mpc"
+    cite: *extent
+  extent_short:
+    value: 90
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    assumes: "h70^-1 Mpc: H0 = 70 km/s/Mpc"
+    cite: *extent
+  wall_1_velocity:
+    value: 18000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &walls
+      paper: kraan-korteweg-2017
+      sentence: "The overdensity appears to consist of a main broad wall (W1) at cz ~ 18 000 km s-1 and a smaller one (W2) at a slightly higher redshift (cz ~ 22 000 km s-1 ...)."
+  wall_2_velocity:
+    value: 22000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *walls
+  wall_1_extent:
+    value: 120
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    assumes: "h70^-1 Mpc: H0 = 70 km/s/Mpc"
+    cite:
+      paper: kraan-korteweg-2017
+      sentence: "The main wall extends over at least 120 h70 Mpc."
+disputes: []
+notes: >-
+  The extent is preliminary, from sparse sampling behind the Milky Way; the main wall W1 lies both
+  above and below the plane, the second wall W2 only below it. The paper writes its lengths as
+  "h70 Mpc", which is read as h70^-1 Mpc, a length in Mpc at the Hubble constant its subscript
+  names.
