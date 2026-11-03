@@ -9,11 +9,17 @@ access:
 cuts:
   - "The query takes every row of the catalog table (ReadMe table1.dat + table2.dat merged by VizieR), 869 by the ReadMe and as served."
   - >-
-    Only galaxies with a measured distance are kept, after the fetch rather than in the query (the
-    research gives no VizieR constraint for it): rows whose f_Dist is h or h' (Hubble velocity-distance
-    relation at H0 = 73 km/s/Mpc) or txt (likely proximity from texture, 11 dwarfs) are estimates,
-    not measurements, and are left out with that reason.
+    Only measured distances are taken: on rows whose f_Dist is h or h' (Hubble velocity-distance
+    relation at H0 = 73 km/s/Mpc) or txt (likely proximity from texture; the ReadMe, Note (G1), says
+    "One of a small number of dwarf galaxies (N=11)", read from
+    http://vizier.nao.ac.jp/ftp/cats/J/AJ/145/101/ReadMe 2026-11-03, but the table as served
+    marks 20 rows txt) the distance is an estimate, so it is
+    dropped and the row kept, with its position, velocity and magnitude (fixes below).
   - "Dist has no uncertainty in this table; it is marked as none reported (per-measurement e_DM is in table6, not taken)."
+  - >-
+    a26, the "Major angular diameter" at the Holmberg isophote in the B band, in arcmin (ReadMe
+    table1.dat, Note (1)), is taken under quality, as the model has no field for a size: the
+    extent rule of the matching rules reads it as published, and it is blank on rows without one.
 columns:
   - { column: Name, field: identifier, unit: dimensionless }
   - { column: _RAJ2000, field: right_ascension, unit: degree }
@@ -22,6 +28,7 @@ columns:
   - { column: f_Dist, field: quality, unit: dimensionless }
   - { column: HRV, field: velocity, unit: kilometre_per_second }
   - { column: Bmag, field: magnitude, unit: magnitude }
+  - { column: a26, field: quality, unit: arcminute }
 frame: fk5_j2000
 epoch: 2000.0
 citation: >-
@@ -55,6 +62,54 @@ mirrors:
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      Dist mixes measured distances with estimates: on rows whose f_Dist is h or h' it is
+      derived from the velocity by the Hubble relation at H0 = 73 km/s/Mpc, and on rows marked
+      txt it is a guess from the galaxy's texture, not a measurement (110 rows as served).
+    change: >-
+      On those rows Dist is dropped and the entry kept: the galaxy is listed and matched by its
+      position and velocity, and placed only by another source's distance or redshift.
+    evidence: >-
+      J/AJ/145/101 ReadMe Note (G1) (read from http://vizier.nao.ac.jp/ftp/cats/J/AJ/145/101/ReadMe,
+      2026-11-03): h and h' are distances "by the Hubble velocity-distance relation at H0=73
+      km/s/Mpc", and txt marks dwarfs whose "texture ... indicates their likely proximity". The
+      definition keeps only measured distances; the rest of the row is as measured.
+    action:
+      kind: drop_when
+      columns: [Dist]
+      when: { column: f_Dist, is: [h, "h'", txt] }
+  - defect: >-
+      The Milky Way's row gives Dist = 0.01 Mpc (f_Dist geom): the Sun's distance from the
+      Galactic centre rounded to the table's hundredth of a megaparsec, 10 kpc, 22% beyond the
+      8.18 kpc measured.
+    change: >-
+      The row keeps its published Dist and gains, beside it, the geometric distance of the
+      Galactic centre that GRAVITY Collaboration 2019 measured, R0 = 8178 pc with an error of
+      25.6 pc (its 13 pc statistical and 22 pc systematic errors in quadrature); the entry is
+      flagged with the citation. Its position, the direction of Sgr A*, is kept.
+    evidence: >-
+      The row as served by vizier.idia.ac.za on 2026-11-03: Name "Milky Way", _RAJ2000
+      266.416667, _DEJ2000 -29.007778, Dist 0.01, f_Dist geom, HRV 0, Bmag -4.60. GRAVITY
+      Collaboration, Abuter R. et al. 2019, "A geometric distance measurement to the Galactic
+      Center black hole with 0.3% uncertainty", A&A 625, L10 (arXiv 1904.05721), abstract: "Our
+      measurement uses the star S2 on its 16-year orbit around the massive black hole Sgr A*
+      ... this yields a geometric distance estimate: R0 = 8178 +- 13(stat.) +- 22(sys.) pc."
+    action:
+      kind: add_distance
+      key: Name
+      unit: parsec
+      distance_kind: geometric
+      method: { other: orbit of the star S2 about Sgr A* }
+      measure: euclidean
+      mark:
+        flag: distance_source
+        cite: >-
+          The Galactic centre's distance R0 = 8178 +- 13 (stat) +- 22 (sys) pc is GRAVITY
+          Collaboration, Abuter R. et al. 2019, A&A 625, L10, 2019A&A...625L..10G, arXiv
+          1904.05721, beside UNGC's own Dist of 0.01 Mpc
+      values:
+        "Milky Way": [8178.0, 25.6]
 normalization:
   distances:
     - value: Dist
@@ -84,10 +139,3 @@ normalization:
         secondary, is taken. Dist has no error column in this table. The ReadMe calls Dist the
         "Distance to galaxy" without saying which distance, so its measure is unspecified; within
         the 11 Mpc of the catalogue the measures differ by less than 0.3%.
-  rules:
-    - when: { column: f_Dist, is: [h, "h'", txt] }
-      leave_out: distance_not_measured
-      basis: >-
-        ReadMe Note (G1): h and h' are distances "by the Hubble velocity-distance relation at
-        H0=73 km/s/Mpc", and txt marks dwarfs whose "texture ... indicates their likely
-        proximity"; the source definition keeps only measured distances.

@@ -45,7 +45,8 @@ use univ_model::position::Frame;
 use univ_model::tile::{MAX_TILE_BYTES, NodeBox, TileError, TilePoint, encode};
 
 pub use domain::{
-    Assigned, DOMAINS, DomainPoint, DomainPoints, assign, name_of, unit_of, unit_symbol,
+    Assigned, DOMAINS, DomainPoint, DomainPoints, NEARBY_GALAXIES_DEPTH_MPC, assign, domain_of,
+    name_of, unit_of, unit_symbol,
 };
 pub use manifest::{
     Bounds, ENCODING, FORMAT, FRAME, Level, MANIFEST_VERSION, Manifest, NodeEntry, Rotations,
@@ -58,6 +59,7 @@ pub use write::{MANIFEST_FILE, tile_file, write_all};
 use crate::crossmatch::ReleaseObject;
 use crate::fetch::hex;
 use crate::source::{ScaleDomain, SourceDefinition};
+use crate::watch::Watch;
 
 /// Tiles that cannot be built.
 #[derive(Debug, Error, PartialEq)]
@@ -95,6 +97,8 @@ pub enum TilesError {
     NoRotation(Frame),
     #[error("the manifest cannot be written: {0}")]
     Manifest(String),
+    #[error("{0}")]
+    Stopped(String),
 }
 
 /// What a build is made under.
@@ -139,6 +143,19 @@ impl BuiltDomain {
         self.manifest.points
     }
 
+    /// What the domain came to, as a run's line gives it: `nearby galaxies: 1 nodes, 9 points,
+    /// largest tile 201 bytes`.
+    #[must_use]
+    pub fn line(&self) -> String {
+        format!(
+            "{}: {} nodes, {} points, largest tile {} bytes",
+            name_of(self.domain).replace('_', " "),
+            self.nodes.len(),
+            self.points(),
+            self.largest_tile()
+        )
+    }
+
     /// The size of the largest tile, in bytes; 0 for a domain without points.
     #[must_use]
     pub fn largest_tile(&self) -> usize {
@@ -160,15 +177,30 @@ pub struct Built {
 ///
 /// Fails when an object cannot be assigned a domain, or a tile would exceed 1 MiB.
 pub fn build(objects: &[ReleaseObject], context: &Context<'_>) -> Result<Built, TilesError> {
+    build_watched(objects, context, Watch::unwatched())
+}
+
+/// [`build`], telling `watch` of each domain as it is built, and stopping before the next domain
+/// once the owner asks it to.
+///
+/// # Errors
+///
+/// Fails as [`build`] does, or when the owner asked it to stop.
+pub fn build_watched(
+    objects: &[ReleaseObject],
+    context: &Context<'_>,
+    watch: Watch<'_>,
+) -> Result<Built, TilesError> {
     let assigned = assign(objects, context.definitions, context.cosmology)?;
     let none = DomainPoints::default();
-    let domains = DOMAINS
-        .iter()
-        .map(|d| {
-            let points = assigned.domains.get(d).unwrap_or(&none);
-            build_domain(*d, &points.points, &points.sources, context)
-        })
-        .collect::<Result<_, _>>()?;
+    let mut domains = Vec::with_capacity(DOMAINS.len());
+    for d in &DOMAINS {
+        watch.check().map_err(TilesError::Stopped)?;
+        let points = assigned.domains.get(d).unwrap_or(&none);
+        let built = build_domain(*d, &points.points, &points.sources, context)?;
+        watch.step(built.line());
+        domains.push(built);
+    }
     Ok(Built {
         domains,
         unplaced: assigned.unplaced,

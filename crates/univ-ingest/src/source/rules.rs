@@ -1,8 +1,10 @@
 //! Rules on single rows of a source and the machine form of each fix: what the normalizer does
 //! to the rows that meet a condition, and why a row is left out.
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
-use univ_model::distance::{DistanceKind, Method};
+use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
 
@@ -36,6 +38,8 @@ pub enum LeftOutReason {
     UnsuitableRedshift,
     /// Every cell of the row is blank: an empty line inside a table, or a line of empty cells.
     BlankRow,
+    /// A fix shows the row's published position is wrong, and no correct one is cited.
+    WrongPosition,
     /// The identifier is one an earlier row of the source already has: the first row with it is
     /// kept, as an entry's designation must name one entry.
     DuplicateIdentifier,
@@ -87,6 +91,15 @@ pub struct KindOverride {
     pub kind: KindOfValue,
 }
 
+/// The flag an entry whose values a fix replaced carries: its name, and the citation of the
+/// values that replaced the published ones. The entry's flag gives the citation and the fix.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReplacedMark {
+    pub flag: String,
+    pub cite: String,
+}
+
 /// What a fix changes, applied by the normalizer. A fix without one is expressed by the
 /// definition itself, such as a column's unit.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -96,6 +109,9 @@ pub enum FixAction {
     ReadAs { columns: Vec<String>, unit: Unit },
     /// An error of zero in these columns means the error was not reported.
     ZeroErrorIsNoneReported { columns: Vec<String> },
+    /// An error equal to `value` in these columns, a sentinel its source does not document,
+    /// means the error was not reported.
+    SentinelErrorIsNoneReported { columns: Vec<String>, value: f64 },
     /// An error of zero in these columns marks the row, which is left out for `reason`.
     ZeroErrorLeavesOut {
         columns: Vec<String>,
@@ -106,6 +122,35 @@ pub enum FixAction {
     DropWhen {
         columns: Vec<String>,
         when: Condition,
+    },
+    /// On the row whose `key` cell is a key of `values`, the cells of `columns` are replaced
+    /// with the cited values, in the order of `columns`, and the cells of `drop` dropped. The
+    /// entry carries `mark`, so that its replaced values name where they come from.
+    ReplaceByKey {
+        key: String,
+        columns: Vec<String>,
+        #[serde(default)]
+        drop: Vec<String>,
+        mark: ReplacedMark,
+        values: BTreeMap<String, Vec<f64>>,
+    },
+    /// The rows that meet `when` are left out for `reason`.
+    LeaveOutWhen {
+        when: Condition,
+        reason: LeftOutReason,
+    },
+    /// On the row whose `key` cell is a key of `values`, a distance another paper measured is
+    /// added beside the source's own, which is kept: the row's value and symmetric error, in
+    /// `unit`, of `distance_kind`, `method` and `measure`. The entry carries `mark`, naming the
+    /// paper.
+    AddDistance {
+        key: String,
+        unit: Unit,
+        distance_kind: DistanceKind,
+        method: Method,
+        measure: Measure,
+        mark: ReplacedMark,
+        values: BTreeMap<String, [f64; 2]>,
     },
 }
 
@@ -190,11 +235,61 @@ pub(super) fn check_fixes(table: &Columns<'_>, fixes: &[Fix]) -> Result<(), Prob
         for c in action.columns() {
             table.known(&at, c)?;
         }
-        if let FixAction::DropWhen { when, .. } = action {
+        if let FixAction::DropWhen { when, .. } | FixAction::LeaveOutWhen { when, .. } = action {
             let at = format!("fixes[{i}].action.when");
             table.known(&format!("{at}.column"), &when.column)?;
             if when.is.is_empty() {
                 return Err(problem(at, "lists no value"));
+            }
+        }
+        if let FixAction::ReplaceByKey {
+            key,
+            columns,
+            drop,
+            mark,
+            values,
+        } = action
+        {
+            let at = format!("fixes[{i}].action");
+            table.known(&format!("{at}.key"), key)?;
+            if mark.flag.trim().is_empty() || mark.cite.trim().is_empty() {
+                return Err(problem(format!("{at}.mark"), "names no flag or citation"));
+            }
+            for c in drop {
+                table.known(&format!("{at}.drop"), c)?;
+            }
+            if values.is_empty() {
+                return Err(problem(format!("{at}.values"), "lists no row"));
+            }
+            if let Some((k, _)) = values
+                .iter()
+                .find(|(_, v)| v.len() != columns.len() || v.iter().any(|x| !x.is_finite()))
+            {
+                return Err(problem(
+                    format!("{at}.values.{k}"),
+                    "does not give one number for each column",
+                ));
+            }
+        }
+        if let FixAction::AddDistance {
+            mark, values, unit, ..
+        } = action
+        {
+            let at = format!("fixes[{i}].action");
+            if mark.flag.trim().is_empty() || mark.cite.trim().is_empty() {
+                return Err(problem(format!("{at}.mark"), "names no flag or citation"));
+            }
+            if !matches!(unit, Unit::Parsec | Unit::Megaparsec) || values.is_empty() {
+                return Err(problem(at, "adds no row, or a distance not in pc or Mpc"));
+            }
+            if let Some((k, _)) = values
+                .iter()
+                .find(|(_, [v, e])| !(v.is_finite() && *v > 0.0 && e.is_finite() && *e >= 0.0))
+            {
+                return Err(problem(
+                    format!("{at}.values.{k}"),
+                    "is not a positive distance with an error of zero or more",
+                ));
             }
         }
     }
@@ -208,8 +303,12 @@ impl FixAction {
         match self {
             Self::ReadAs { columns, .. }
             | Self::ZeroErrorIsNoneReported { columns }
+            | Self::SentinelErrorIsNoneReported { columns, .. }
             | Self::ZeroErrorLeavesOut { columns, .. }
-            | Self::DropWhen { columns, .. } => columns,
+            | Self::DropWhen { columns, .. }
+            | Self::ReplaceByKey { columns, .. } => columns,
+            Self::LeaveOutWhen { when, .. } => std::slice::from_ref(&when.column),
+            Self::AddDistance { key, .. } => std::slice::from_ref(key),
         }
     }
 }

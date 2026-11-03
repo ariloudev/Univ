@@ -1,13 +1,13 @@
 #
 #   VizieR Astronomical Server vizier.idia.ac.za
-#    Date: 2026-11-03T03:56:28 [V7.6.1]
+#    Date: 2026-11-03T16:22:20 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-03T03:56:28	  Query execution date
-#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz&-out.add=_RAJ%2C_DEJ&-out.max=5	  Full request URL
+#INFO	request_date=2026-11-03T16:22:20	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz%2CRiso&-out.add=_RAJ%2C_DEJ&-out.max=5	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -35,12 +35,13 @@
 #Column	e_cz	(I3)	? Uncertainty in cz	[ucd=stat.error]
 #Column	Kcmag	(F6.3)	Extinction-corrected 2MASS Ks magnitude (1)	[ucd=phot.mag;em.IR.K]
 #Column	r_cz	(A19)	Reference for cz; see table4.dat file	[ucd=meta.ref;pos.frame]
-_RAJ2000	_DEJ2000	ID	cz	e_cz	Kcmag	r_cz
-deg	deg	 	km/s	km/s	mag	
------------	-----------	----------------	-----	---	------	-------------------
-010.6847100	+41.2687500	00424433+4116074	 -300	  4	 0.797	1991RC3.9.C...0000d
-011.8880600	-25.2888000	00473313-2517196	  243	  2	 3.815	2004AJ....128...16K
-148.8882600	+69.0652600	09553318+6903549	  -34	  4	 3.898	1991RC3.9.C...0000d
-201.3656500	-43.0187100	13252775-4301073	  547	  5	 3.948	1978PASP...90..237G
-196.3636600	-49.4679000	13052727-4928044	  563	  3	 4.471	2004AJ....128...16K
+#Column	Riso	(F6.3)	Log of K=20 mag/sq arcsec elliptical isophote semimajor axis	[ucd=phys.angSize;src]
+_RAJ2000	_DEJ2000	ID	cz	e_cz	Kcmag	r_cz	Riso
+deg	deg	 	km/s	km/s	mag	 	[arcsec]
+-----------	-----------	----------------	-----	---	------	-------------------	------
+010.6847100	+41.2687500	00424433+4116074	 -300	  4	 0.797	1991RC3.9.C...0000d	 3.208
+011.8880600	-25.2888000	00473313-2517196	  243	  2	 3.815	2004AJ....128...16K	 2.799
+148.8882600	+69.0652600	09553318+6903549	  -34	  4	 3.898	1991RC3.9.C...0000d	 2.688
+201.3656500	-43.0187100	13252775-4301073	  547	  5	 3.948	1978PASP...90..237G	 2.445
+196.3636600	-49.4679000	13052727-4928044	  563	  3	 4.471	2004AJ....128...16K	 2.627
 

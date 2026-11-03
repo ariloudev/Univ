@@ -1,0 +1,69 @@
+key: 01a1a149-623d-7310-8064-e6497ba7827e
+slug: rank-a-distance-without-an-uncertainty-by-its-method
+title: "Rank a distance without an uncertainty by its method"
+context: "In release 1, the rule of keeping every measurement and preferring the most precise distance ranked a distance published without an uncertainty after every distance with one. 129 objects whose UNGC indicator distances carry no published uncertainty were then placed by their redshift distances: M81 at 0.72 Mpc against its Cepheid distance of 3.63 Mpc, and Centaurus A at 11.85 Mpc against its TRGB distance of 3.75 Mpc. The owner chose method rank first on 2026-11-03."
+state:
+  kind: accepted
+  selectedOption: 01a1a149-623d-7310-8064-e64c5e953132
+  outcome: "A redshift distance above the release's threshold gives way to any indicator distance, and a distance without a published uncertainty wins by a strictly better method rank, with no uncertainty invented."
+drivers:
+  - key: 01a1a149-623d-7310-8064-e64a1f3c5f7b
+    kind: local
+    label: "Provenance"
+    statement: "No value is made up, and every source's value stays visible."
+  - key: 01a1a149-623d-7310-8064-e64b65a62a6f
+    kind: local
+    label: "Accurate placement"
+    statement: "Each object is placed by its best distance."
+options:
+  - key: 01a1a149-623d-7310-8064-e64c5e953132
+    title: "Method rank first"
+    description: "Redshift distances above a threshold are set aside when an indicator distance exists, and a distance without a published uncertainty wins when its method rank is strictly better than every remaining one with an uncertainty."
+  - key: 01a1a149-623d-7310-8064-e64d26e7145b
+    title: "Unreported last"
+    description: "A distance without a published uncertainty ranks after every distance with one, as release 1 did."
+  - key: 01a1a149-623d-7310-8064-e64eb89a3d20
+    title: "Typical uncertainty by method"
+    description: "Each method is given a typical fractional uncertainty from the literature, marked estimated, and every distance ranks by fractional uncertainty."
+assessments:
+  - option: 01a1a149-623d-7310-8064-e64c5e953132
+    driver: 01a1a149-623d-7310-8064-e64a1f3c5f7b
+    rating: supports
+    rationale: "no uncertainty is invented"
+  - option: 01a1a149-623d-7310-8064-e64c5e953132
+    driver: 01a1a149-623d-7310-8064-e64b65a62a6f
+    rating: supports
+    rationale: "M81 and Centaurus A are placed by their Cepheid and TRGB distances"
+  - option: 01a1a149-623d-7310-8064-e64d26e7145b
+    driver: 01a1a149-623d-7310-8064-e64a1f3c5f7b
+    rating: supports
+    rationale: "no uncertainty is invented"
+  - option: 01a1a149-623d-7310-8064-e64d26e7145b
+    driver: 01a1a149-623d-7310-8064-e64b65a62a6f
+    rating: conflicts
+    rationale: "129 objects of release 1 are placed by redshift distances far worse than their indicator distances"
+  - option: 01a1a149-623d-7310-8064-e64eb89a3d20
+    driver: 01a1a149-623d-7310-8064-e64a1f3c5f7b
+    rating: conflicts
+    rationale: "it puts a number on values their sources did not publish"
+  - option: 01a1a149-623d-7310-8064-e64eb89a3d20
+    driver: 01a1a149-623d-7310-8064-e64b65a62a6f
+    rating: supports
+    rationale: "an indicator distance beats a loose redshift distance"
+consequences:
+  - key: 01a1a149-623d-7310-8064-e64f16fc32cf
+    kind: obligation
+    statement: "The redshift threshold is a parameter of the release's ranking rule."
+    subject: 01a19f23-636e-7035-8185-ab9b3e95c24c
+  - key: 01a1a149-623d-7310-8064-e6502ccbc5ca
+    kind: obligation
+    statement: "Each object names the comparison that decided its preferred measurement."
+    subject: 01a19f23-636e-7035-8185-ab9ce127e733
+  - key: 01a1a149-623d-7310-8064-e651369e0bff
+    kind: risk
+    statement: "A distance without a published uncertainty can win over a more precise distance of a worse method rank."
+subjects:
+  - role: affected
+    node: 01a19f23-636e-7035-8185-ab97eb9c2fb9
+  - role: outcome
+    node: 01a19f23-636e-7035-8185-ab988f5d57b7

@@ -8,7 +8,7 @@ use super::{DeriveError, MODEL_VERSION, Release};
 use crate::cosmology::{AssumedCosmology, Cosmology, MAX_REDSHIFT, SPEED_OF_LIGHT};
 use crate::distance::{Distance, Measure};
 use crate::entry::Redshift;
-use crate::redshift::CmbRedshift;
+use crate::redshift::{CmbRedshift, RedshiftFrame};
 use crate::units::{Dimension, Unit};
 use crate::value::{Quantity, Uncertainty};
 
@@ -278,9 +278,12 @@ impl Release {
     /// The radial distance of a CMB-frame redshift: its comoving distance in the release
     /// cosmology, the redshift's error and the peculiar-velocity term, added in quadrature by
     /// [`redshift_sigma`] as the ranking adds them, carried to an asymmetric interval through
-    /// D(z). A redshift with no error reported, a limit, or a credible interval of another
-    /// probability than one sigma keeps its form: the peculiar velocity alone would stand for an
-    /// error the source did not report.
+    /// D(z). A redshift published without an error, or as a limit, still has the
+    /// peculiar-velocity term: the line-of-sight velocity its redshift does not separate from the
+    /// Hubble flow, the pipeline's stated term, not an invented measurement error. A stated
+    /// interval with no probability, or a credible interval of another probability than one
+    /// sigma, has its bounds carried through D(z) as bounds, with no term added in quadrature:
+    /// a bound is not a sigma.
     ///
     /// # Errors
     ///
@@ -298,6 +301,10 @@ impl Release {
         let v = self.peculiar_velocity_km_s();
         let side = |sigma_z: f64| redshift_sigma(z.value, sigma_z, v);
         let uncertainty = match z.uncertainty {
+            Uncertainty::NoneReported | Uncertainty::UpperLimit | Uncertainty::LowerLimit => {
+                let (minus, plus) = interval(side(0.0), side(0.0))?;
+                Uncertainty::Asymmetric { minus, plus }
+            }
             Uncertainty::Symmetric { sigma } => {
                 let (minus, plus) = interval(side(sigma), side(sigma))?;
                 Uncertainty::Asymmetric { minus, plus }
@@ -318,16 +325,35 @@ impl Release {
                     probability,
                 }
             }
-            other => other,
+            Uncertainty::CredibleInterval {
+                minus,
+                plus,
+                probability,
+            } => {
+                let (minus, plus) = interval(minus, plus)?;
+                Uncertainty::CredibleInterval {
+                    minus,
+                    plus,
+                    probability,
+                }
+            }
+            Uncertainty::Interval { minus, plus } => {
+                let (minus, plus) = interval(minus, plus)?;
+                Uncertainty::Interval { minus, plus }
+            }
+            other @ Uncertainty::CredibleRegion { .. } => other,
         };
-        let chain = vec![
-            Transformation::ComovingFromRedshift {
+        let step = match cmb.published {
+            RedshiftFrame::Cmb => Transformation::ComovingFromPublishedCmbRedshift {
+                cmb_redshift: z.value,
+            },
+            _ => Transformation::ComovingFromRedshift {
                 cmb_redshift: z.value,
                 heliocentric_redshift: cmb.heliocentric.value,
                 dipole: cmb.dipole,
-            }
-            .into(),
-        ];
+            },
+        };
+        let chain = vec![step.into()];
         let length = Quantity::new(centre, Unit::Megaparsec, uncertainty)?;
         Ok(self.radial(z, None, length, Measure::Comoving, chain))
     }

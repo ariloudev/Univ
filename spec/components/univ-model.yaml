@@ -19,4 +19,4 @@ constraints:
   - key: 01a19f1e-d177-716d-b124-3cf8ca9db059
     name: "univ-model shall classify every value by its kind of value: measured, estimated, inferred or reconstructed."
   - key: 01a19f1e-d177-716d-b124-3cf9b013bc7c
-    name: "univ-model shall carry each value's uncertainty in a typed form and mark a value with no published uncertainty as having none reported."
+    name: "univ-model shall carry each value's uncertainty in a typed form, keep a stated interval with no probability, given by its lower and upper bounds, apart from a one-sigma error, and mark a value with no published uncertainty as having none reported."

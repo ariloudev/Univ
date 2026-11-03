@@ -5,6 +5,7 @@
 use std::collections::{BTreeMap, HashSet};
 
 use serde::{Deserialize, Serialize};
+use univ_model::cosmology::{Cosmology, CosmologyError};
 use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::entry::RedshiftKind;
 use univ_model::redshift::RedshiftFrame;
@@ -39,8 +40,39 @@ pub struct RedshiftReading {
     /// The kind of each row's redshift, by the code in a column.
     #[serde(default)]
     pub by_code: Option<RedshiftCodes>,
+    /// Where given, a velocity from `from_km_s` up stands for a comoving distance, not for cz.
+    #[serde(default)]
+    pub comoving_velocity: Option<ComovingVelocity>,
     /// Where the source states the frame and the kind, quoted or cited.
     pub basis: String,
+}
+
+/// A velocity column whose values from `from_km_s` up are H0 times a comoving distance in a
+/// flat ΛCDM cosmology, `hubble_constant` and `omega_matter`: read as the redshift at that
+/// distance, not as cz.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ComovingVelocity {
+    pub from_km_s: f64,
+    pub hubble_constant: f64,
+    pub omega_matter: f64,
+    /// The kind of value of a redshift so read: inferred where the source does not state the
+    /// reading and the definition infers it from evidence.
+    pub kind_of_value: KindOfValue,
+    /// Why the values are so read, with the evidence.
+    pub basis: String,
+}
+
+impl ComovingVelocity {
+    /// The velocity it starts from, km/s, its cosmology and the kind of value of what it reads.
+    ///
+    /// # Errors
+    ///
+    /// Fails on a Hubble constant or matter density the cosmology refuses.
+    pub fn read(&self) -> Result<(f64, Cosmology, KindOfValue), CosmologyError> {
+        Cosmology::new("comoving velocity", self.hubble_constant, self.omega_matter)
+            .map(|c| (self.from_km_s, c, self.kind_of_value))
+    }
 }
 
 /// The kind of a redshift by the code a column gives each row.
@@ -251,10 +283,11 @@ fn check_redshift<'a>(
     ) {
         return Err(problem(at, "reads a column that is neither z nor cz"));
     }
-    if r.frame != RedshiftFrame::Heliocentric {
+    if r.frame == RedshiftFrame::LocalGroup {
         return Err(problem(
             format!("{at}.frame"),
-            "only a heliocentric redshift is moved to the CMB frame",
+            "only a heliocentric redshift, moved to the CMB frame, or one published in the CMB \
+             frame is read",
         ));
     }
     if r.kind.is_some() == r.by_code.is_some() {
@@ -262,6 +295,17 @@ fn check_redshift<'a>(
     }
     if let Some(codes) = &r.by_code {
         table.known(&format!("{at}.by_code.column"), &codes.column)?;
+    }
+    if let Some(c) = &r.comoving_velocity {
+        let at = format!("{at}.comoving_velocity");
+        blank(&format!("{at}.basis"), &c.basis)?;
+        if table.unit(&r.column).map(Unit::dimension) != Some(Dimension::Velocity) {
+            return Err(problem(&at, "reads a column that is not a velocity"));
+        }
+        if !(c.from_km_s.is_finite() && c.from_km_s >= 0.0) {
+            return Err(problem(&at, "starts at a velocity that is negative"));
+        }
+        c.read().map_err(|e| problem(&at, e.to_string()))?;
     }
     let mut read = vec![r.column.as_str()];
     if let Some(e) = &r.error {

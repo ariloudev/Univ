@@ -14,6 +14,10 @@ cuts:
   - >-
     r_cz is the per-entry redshift reference (see table4) that the team's terms ask users to cite.
     The model has no reference field, so it is taken under quality.
+  - >-
+    Riso, the "Log of K=20 mag/sq arcsec elliptical isophote semimajor axis" in [arcsec] (ReadMe
+    table3.dat), is taken under quality, as the model has no field for a size: the extent rule
+    of the matching rules reads it as published.
 columns:
   - { column: ID, field: identifier, unit: dimensionless }
   - { column: _RAJ2000, field: right_ascension, unit: degree }
@@ -22,6 +26,7 @@ columns:
   - { column: e_cz, field: velocity_error, unit: kilometre_per_second }
   - { column: Kcmag, field: magnitude, unit: magnitude }
   - { column: r_cz, field: quality, unit: dimensionless }
+  - { column: Riso, field: quality, unit: dimensionless }
 frame: fk5_j2000
 epoch: 2000.0
 citation: >-

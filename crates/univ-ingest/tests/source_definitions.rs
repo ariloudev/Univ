@@ -328,8 +328,11 @@ fn a_reading_or_rule_or_fix_that_names_a_column_not_taken_is_refused() {
         "{VALID}fixes:\n  - defect: d\n    change: c\n    evidence: e\n    action: {{ kind: read_as, columns: [SGX], unit: kilometre_per_second }}\n"
     );
     assert_eq!(refusal(&fix).field, "fixes[0].action.columns");
+    let local = VALID.replace("frame: heliocentric", "frame: local_group");
+    assert_eq!(refusal(&local).field, "normalization.redshifts[0].frame");
+    // A redshift published in the CMB frame is read as published.
     let cmb = VALID.replace("frame: heliocentric", "frame: cmb");
-    assert_eq!(refusal(&cmb).field, "normalization.redshifts[0].frame");
+    assert!(read(&cmb).is_ok());
 }
 
 #[test]

@@ -179,6 +179,7 @@ fn each_uncertainty_is_typed_by_the_form_its_source_published() {
         Uncertainty::NoneReported => "none reported",
         Uncertainty::Symmetric { .. } => "symmetric",
         Uncertainty::Asymmetric { .. } => "asymmetric",
+        Uncertainty::Interval { .. } => "interval",
         Uncertainty::UpperLimit | Uncertainty::LowerLimit => "limit",
         Uncertainty::CredibleRegion { .. } | Uncertainty::CredibleInterval { .. } => "credible",
     };
@@ -409,7 +410,7 @@ fn cosmicflows_sgx_sgy_and_sgz_are_read_as_km_s_though_vizier_labels_them_mpc() 
     );
     let n = normalized_fixture("cosmicflows-4");
     // Row 2, 1PGC 14: SGX 5942, SGY -9967, SGZ 3194.
-    let sg = entry(&n, "14").supergalactic_velocity.unwrap();
+    let sg = entry(&n, "14").supergalactic_velocity.as_deref().unwrap();
     assert_eq!(
         (sg.x.native.value, sg.x.native.unit),
         (5_942.0, Unit::KilometrePerSecond)
@@ -429,8 +430,18 @@ fn cosmicflows_sgx_sgy_and_sgz_are_read_as_km_s_though_vizier_labels_them_mpc() 
 #[test]
 fn the_report_lists_each_fix_applied_with_the_entries_it_changed() {
     let n = normalized_fixture("cosmicflows-4");
-    assert_eq!(n.report.fixes.len(), 1);
+    // The two position fixes and the Milky Way group's are listed with no entry changed: no
+    // recorded row is one of their groups.
+    assert_eq!(n.report.fixes.len(), 4);
     assert_eq!(n.report.fixes[0].entries_changed, 5);
+    assert_eq!(
+        (
+            n.report.fixes[1].entries_changed,
+            n.report.fixes[2].entries_changed,
+            n.report.fixes[3].entries_changed
+        ),
+        (0, 0, 0)
+    );
     assert!(
         n.report.fixes[0]
             .change

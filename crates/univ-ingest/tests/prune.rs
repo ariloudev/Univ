@@ -90,9 +90,20 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
         .cloned()
         .collect();
     store.reset();
+    let built_1 = univ_ingest::release::release_dir(&out, 1);
+    // The local build is deleted last: it is there after every D1 and R2 operation.
+    let watched = built_1.clone();
+    store.observer = Some(Box::new(move |op, _, _| {
+        assert!(watched.exists(), "the local build is gone at {op:?}");
+    }));
 
     let pruned = prune(&mut store).unwrap();
+    assert!(store.ops.iter().any(|o| matches!(o, Op::Delete(_))));
     assert!(!pruned.already);
+    // The local build of release 1 is deleted, and release 2's kept.
+    assert_eq!(pruned.build.as_deref(), Some(built_1.as_path()));
+    assert!(!built_1.exists());
+    assert!(univ_ingest::release::release_dir(&out, 2).exists());
     assert_eq!(pruned.latest, Latest(Some(2)));
     assert!(pruned.rows > 0 && pruned.files > 1);
     assert!(!store.r2.keys().any(|k| k.starts_with(&keys::prefix(1))));
@@ -136,10 +147,12 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     assert!(retired > 0 && retired < ids_of_1.len(), "{retired}");
     assert!(!univ_ingest::publish::journal::file(journals.path(), 1).exists());
 
-    // Pruning again keeps the first pruning time.
+    // Pruning again keeps the first pruning time, its local build already gone.
+    store.reset();
     let again = prune(&mut store).unwrap();
     assert!(again.already);
     assert_eq!(again.pruned_at, pruned.pruned_at);
+    assert_eq!(again.build, None);
 }
 
 #[test]
@@ -178,7 +191,7 @@ fn the_release_latest_points_to_is_not_pruned() {
     assert!(store.ops.iter().all(|o| matches!(o, Op::Query(_))));
     assert_eq!(
         store.int("SELECT COUNT(*) FROM objects WHERE release = 1"),
-        24
+        25
     );
 
     let unknown = pruning(
@@ -255,10 +268,6 @@ fn a_release_never_listed_whose_files_were_uploaded_has_them_deleted() {
     assert_eq!(uploaded.len(), 2);
     assert_eq!(store.int("SELECT COUNT(*) FROM releases"), 0);
     store.reset();
-
-    let pruned = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap();
-    assert!(!pruned.listed);
-    // The keys its journal and its manifest in the build output name, deleted.
     let built = univ_ingest::release::release_dir(out, 1);
     let r2_files = univ_ingest::release::read_manifest(&built, 1)
         .unwrap()
@@ -267,7 +276,13 @@ fn a_release_never_listed_whose_files_were_uploaded_has_them_deleted() {
         .iter()
         .filter(|f| f.key.is_some())
         .count();
+
+    let pruned = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap();
+    assert!(!pruned.listed);
+    // The keys its journal and its manifest in the build output name, deleted, then the build.
     assert_eq!((pruned.files, pruned.rows), (r2_files + 1, 0));
+    assert_eq!(pruned.build.as_deref(), Some(built.as_path()));
+    assert!(!built.exists());
     assert!(store.r2.is_empty(), "{:?}", store.r2.keys());
     assert!(!univ_ingest::publish::journal::file(journals.path(), 1).exists());
     // Nothing is left of it: pruning again finds nothing to prune.

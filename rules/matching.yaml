@@ -20,8 +20,21 @@
 #   An entry joins an object only when it lies within the pair's tolerances of every entry of
 #   that object a pair below compares it with (complete linkage): one close to an entry but too
 #   far from another, which would chain two distinct galaxies, stays apart, linked to it.
-#   3. Galaxy groups (galaxy_groups): a group row is its own object, related to its dominant
-#      galaxy by the scheme its source names it in; nothing is merged across the relation.
+#   Entries a published cross-identification joined (step 1) are one body, whose catalogues may
+#   centre it arcminutes apart (NGC 55: McConnachie 2012 and UNGC 3.2 arcmin): an entry need lie
+#   within the tolerances of one of them only, and an object of two such bodies is compared body
+#   to body. A pair may give a wider angular tolerance to two nearby entries (`nearby`), both of
+#   whose heliocentric cz lie below its velocity.
+#   3. Pieces of nearby galaxies (extents): a galaxy whose entry publishes its angular size and
+#      a heliocentric cz below `below_km_s` takes as its pieces the groups left by steps 1 and 2
+#      whose entries all come from a `pieces` source, all lie within that size of its centre and
+#      all have a cz within `tolerance_km_s` of its own (an entry without one is no piece). A group
+#      holding an entry of an `identities` source never joins a galaxy that holds another entry
+#      of that source. Galaxies are taken largest first; a piece may hold several entries of one
+#      source, and joins through its entry nearest the galaxy's centre (method within_extent).
+#   4. Galaxy groups (galaxy_groups): a group row is its own object, related to its dominant
+#      galaxy by the scheme its source names it in, and to each galaxy a member source assigns
+#      to it; nothing is merged across a relation.
 #
 # Positions are compared as published, at each source's epoch, without propagating proper
 # motions. A star that moved farther than the tolerance between the epochs stays a separate
@@ -90,12 +103,46 @@ cross_identifications:
       - { source: boss-dr17-great-wall, field: identifier }
   - scheme: pgc
     basis: >-
-      The PGC number of HyperLEDA (Makarov et al. 2014, A&A 570, A13). No source defined so far
-      names its own entries by it: UNGC, 2MRS and 2M++ name galaxies otherwise, and the 1PGC of
-      Cosmicflows-4 names a group's dominant galaxy, not the group row (galaxy_groups below). The
-      scheme is kept so that a later galaxy source with PGC numbers joins by them, and so that a
-      group's dominant galaxy is found by its number.
-    members: []
+      The PGC number of HyperLEDA (Makarov et al. 2014, A&A 570, A13). The Cosmicflows-4 galaxies
+      table names each galaxy by it (J/ApJ/944/94 ReadMe, table2: "PGC Principal Galaxies Catalog
+      ID", Note 1: "The Principal Galaxies Catalog identification of the galaxy in HyperLEDA").
+      No other galaxy source defined so far carries it: UNGC, 2MRS, 2M++, 6dFGS and SDSS name
+      galaxies otherwise, and the 1PGC of the Cosmicflows-4 groups names a group's dominant
+      galaxy, not the group row (galaxy_groups below). A later galaxy source with PGC numbers
+      joins by them, and a group's dominant galaxy is found by its number.
+    members:
+      - { source: cosmicflows-4-galaxies, field: identifier }
+  - scheme: common-name
+    compare: common_name
+    basis: >-
+      McConnachie 2012 (AJ 144, 4) and UNGC (Karachentsev et al. 2013, AJ 145, 101) both name
+      their galaxies in their Name column, McConnachie by common names (Fornax, M32, NGC 55) and
+      UNGC by common names or catalogue designations written without a space and zero-padded
+      (Fornax, MESSIER032, NGC0055), as the recorded answers and the served tables show
+      (vizier.idia.ac.za, 2026-11-03). Both list the same Local Group galaxies, whose centres
+      differ between the two by arcminutes (Fornax 4.7 arcmin apart), so a name the two share is
+      one galaxy. Names compare by their key in the names table, with a catalogue number's
+      leading zeros dropped and MESSIER written M; a name only one of them uses (Sag dSph against
+      Sagittarius dSph) is left to the pair rule below.
+    aliases:
+      messier: m
+    aliases_basis: >-
+      UNGC writes Messier objects as MESSIER with a zero-padded number (MESSIER031, MESSIER032,
+      MESSIER081), McConnachie 2012 as M (M32, M33), as the served tables show
+      (vizier.idia.ac.za, 2026-11-03): both are Messier's catalogue, so MESSIER compares as M.
+    angular_tolerance_arcmin: 30
+    tolerance_basis: >-
+      Pipeline choice: a shared name joins two entries only where their centres lie within 30
+      arcmin; a pair farther apart is left apart as a candidate link, with the confidence of a
+      conflicting identifier, as a name alone does not show they are one galaxy. Two catalogues'
+      centres of one dwarf galaxy can differ by up to its half-light radius: McConnachie 2012
+      gives Sextans (I) R2 = 695 pc at D = 86 kpc, 27.8 arcmin, and Fornax 710 pc at 147 kpc, 16.6
+      arcmin (J/AJ/144/4/catalog, columns R2 and D, served by vizier.nao.ac.jp on 2026-11-03).
+      30 arcmin covers these; the farthest pair that release 2 joined by name, Fornax, lies 4.7
+      arcmin apart.
+    members:
+      - { source: mcconnachie-2012, field: identifier }
+      - { source: updated-nearby-galaxies, field: identifier }
 
 # Designations a source gives beside an entry's own identifier, kept with that source.
 designations:
@@ -127,6 +174,13 @@ galaxy_groups:
       directly or inferred from the group catalogs of Kourkchi & Tully 2017, J/ApJ/843/16 or
       Tully 2015, J/AJ/149/171"), read from http://vizier.nao.ac.jp/ftp/cats/J/ApJ/944/94/ReadMe
       on 2026-11-03.
+    members:
+      - source: cosmicflows-4-galaxies
+        field: group_id
+        basis: >-
+          ReadMe table2: each galaxy's 1PGC is the "PGC ID, dominant galaxy in the group" (G1),
+          the same number the groups table gives its group in 1PGC. The galaxy is related to
+          that group as a member; neither lends the other a measurement.
 
 # Common names, such as LMC or Andromeda, attached with the source that published them.
 names:
@@ -209,17 +263,129 @@ pairs:
       is a pipeline choice for the centres of nearby dwarfs, which are diffuse and differ between
       catalogues by tens of arcseconds. 300 km/s is a pipeline choice: UNGC velocities are
       compiled heliocentric velocities that may come from another spectrum than the survey's.
+  - sources: [updated-nearby-galaxies, twompp-catalogue]
+    angular_tolerance_arcsec: 30.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: >-
+      As for UNGC and 2MRS: 2M++ takes its positions from the 2MASS XSC, and goes deeper than
+      2MRS (K = 12.5 against 11.75 where SDSS or 6dFGS redshifts exist; Lavaux & Hudson 2011), so
+      nearby dwarfs that UNGC lists may be in 2M++ alone, such as UGC 7950 (UNGC 0.4 arcsec from
+      2M++ 12465642+5136467, 508 against 497 km/s, and in no 2MRS row). Most UNGC galaxies in
+      both 2MRS and 2M++ join 2M++ by its 2MASX name with 2MRS first.
   - sources: [updated-nearby-galaxies, mcconnachie-2012]
-    angular_tolerance_arcsec: 120.0
+    angular_tolerance_arcsec: 360.0
     line_of_sight: { compare: distance, tolerance_fraction: 0.3 }
     basis: >-
-      Both list Local Group and Local Volume dwarfs, whose published centres differ by up to
-      arcminutes (McConnachie 2012, AJ 144, 4, whose galaxies span up to tens of arcminutes). 120 arcsec and a 30% difference in distance are pipeline choices:
-      wide enough for the centroids, and narrow enough in depth to keep a dwarf apart from a
-      background galaxy on the same line of sight.
+      Both list Local Group and Local Volume dwarfs, whose published centres differ by
+      arcminutes: Fornax 4.7 arcmin, Sagittarius dSph 5.3 arcmin, NGC 55 3.2 arcmin between the
+      two (vizier.idia.ac.za, 2026-11-03). McConnachie 2012 (AJ 144, 4; VizieR J/AJ/144/4,
+      column R1, the half-light radius on the semimajor axis) gives these galaxies half-light
+      radii of 16.60 arcmin (Fornax), 342.00 arcmin (Sagittarius dSph), 11.30 arcmin (Sculptor)
+      and 5.16 arcmin (NGC 55): their centres are uncertain by a fraction of that. 6 arcmin is a
+      pipeline choice, below those radii and wide enough for the centres; the 30% difference in
+      distance keeps a dwarf apart from a background galaxy on the same line of sight. Names the
+      two share join first (common-name above).
   - sources: [mcconnachie-2012, twomrs]
     angular_tolerance_arcsec: 60.0
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
     basis: >-
       Pipeline choice: the brighter Local Group galaxies that 2MRS holds have XSC centroids
       within an arcminute of McConnachie's centres; 300 km/s as for UNGC.
+  - sources: [cosmicflows-4-galaxies, twomrs]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    nearby: &cf4near
+      below_km_s: 1000
+      angular_tolerance_arcsec: 30.0
+      basis: >-
+        Pipeline choice: below a heliocentric cz of 1,000 km/s (within about 15 Mpc) galaxies are
+        large on the sky and few per square degree, and the centre a compilation adopts for one
+        can lie tens of arcseconds from its XSC centroid: IC 342, Cosmicflows-4 PGC 13826 against
+        2MRS 03464851+6805459, 19.5 arcsec at 31 against -61 km/s (Vcmb, 31 heliocentric);
+        NGC 3738, PGC 35856 against 2MRS 11354919+5431249, 12.3 arcsec. 30 arcsec, the tolerance
+        of UNGC against 2MRS, takes them in.
+    basis: &cf4g >-
+      The Cosmicflows-4 galaxies table gives RAdeg and DEdeg to 0.0001 degree (J/ApJ/944/94
+      ReadMe, table2, F8.4), 0.36 arcsec, for galaxies named by their HyperLEDA PGC number; 10
+      arcsec is a pipeline choice for the offset between the centre a compilation adopts and
+      an XSC centroid or a fibre position of an extended galaxy (M87: 0.5 arcsec between
+      Cosmicflows-4 and 2MRS). Its Vcmb, read as its redshift in the CMB frame,
+      compares by the heliocentric cz the normalizer derives back from it with the run's dipole
+      (Planck 2018); 200 km/s as for 2MRS and 2M++.
+  - sources: [cosmicflows-4-galaxies, twompp-catalogue]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    nearby: *cf4near
+    basis: *cf4g
+  - sources: [cosmicflows-4-galaxies, sixdfgs-dr3]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *cf4g
+  - sources: [cosmicflows-4-galaxies, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *cf4g
+  - sources: [cosmicflows-4-galaxies, updated-nearby-galaxies]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: >-
+      As for UNGC and 2MRS: UNGC positions are good to about 1.5 arcsec, and 30 arcsec is a
+      pipeline choice for the centres of nearby dwarfs; 300 km/s for velocities compiled from
+      other spectra. The Cosmicflows-4 Vcmb is moved back to a heliocentric cz first.
+  - sources: [cosmicflows-4-galaxies, mcconnachie-2012]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: >-
+      As for McConnachie 2012 and 2MRS: the brighter Local Group galaxies have centres within
+      an arcminute of McConnachie's; 300 km/s as for UNGC. The Cosmicflows-4 Vcmb is moved back
+      to a heliocentric cz first.
+
+# The extent rule (step 3). Point-source tolerances cannot join the pieces of one extended nearby
+# galaxy: release 4 kept IC 5052 (UNGC a26 = 8.13 arcmin, edge-on, b/a = 0.14) as one object of
+# its UNGC and Cosmicflows-4 entries, one of its 2MRS and 2M++ entry 34 arcsec away, and four of
+# 6dFGS fibres 6 to 28 arcsec from its centre, all within 60 km/s of its 584 km/s; and NGC 1507
+# as two objects of two 2MASX designations 53 arcsec apart, 2MRS 04042714-0211210 against 2M++
+# 04042802-0210254.
+extents:
+  below_km_s: 1000
+  tolerance_km_s: 300
+  basis: >-
+    Pipeline choice. Below a heliocentric cz of 1,000 km/s (within about 15 Mpc) galaxies are large
+    on the sky and few per square degree, as for the nearby tolerance of Cosmicflows-4 against
+    2MRS. Neither UNGC nor 2MRS table3 publishes a position angle, so a galaxy's extent is taken as
+    the circle of its semi-major axis, which holds the ellipse it publishes; a piece must also
+    agree with the galaxy's cz within 300 km/s, the tolerance of UNGC against 2MRS for velocities
+    compiled from other spectra, which also takes in a fibre on a disc's HII region moved from the
+    systemic velocity by the disc's rotation. A galaxy that publishes no size or no cz takes no
+    pieces, and no size is supplied for one.
+  sources:
+    - source: updated-nearby-galaxies
+      column: a26
+      form: diameter
+      unit: arcminute
+      basis: >-
+        J/AJ/145/101 ReadMe, table1.dat bytes 41-46 (read from
+        http://vizier.nao.ac.jp/ftp/cats/J/AJ/145/101/ReadMe, 2026-11-03): "F6.2 arcmin a26
+        [0.1/645.65]? Major angular diameter (1)", Note (1): "Corresponding to the Holmberg
+        isophote (~26.5mag/arcsec^2^) in B band." The radius is half of a26.
+    - source: twomrs
+      column: Riso
+      form: log10_radius
+      unit: arcsecond
+      basis: >-
+        J/ApJS/199/26 ReadMe, table3.dat bytes 142-146 (read from
+        http://vizier.nao.ac.jp/ftp/cats/J/ApJS/199/26/ReadMe, 2026-11-03): "F5.3 [arcsec] Riso Log
+        of K=20 mag/sq arcsec elliptical isophote semimajor axis", the 2MASS XSC isophotal radius
+        (Jarrett et al. 2000, AJ 119, 2498). The radius is ten to the power Riso, in arcseconds.
+  pieces: [twomrs, twompp-catalogue, sixdfgs-dr3, sdss-dr17-galaxies, cosmicflows-4-galaxies]
+  pieces_basis: >-
+    The galaxy surveys and the Cosmicflows-4 galaxies, whose entries are a detection, a fibre
+    target or an adopted centre of a galaxy, so that one large galaxy can stand in them as several
+    entries (IC 5052 and NGC 1507 above). UNGC and McConnachie 2012 list each galaxy once by name
+    and are never pieces; star sources and galaxy-group sources are never pieces.
+  identities: [cosmicflows-4-galaxies, updated-nearby-galaxies, mcconnachie-2012]
+  identities_basis: >-
+    Each lists a galaxy once under its own identity: Cosmicflows-4 by its HyperLEDA PGC number
+    (J/ApJ/944/94 ReadMe, table2, Note 1), UNGC and McConnachie 2012 by name. A companion with an
+    identity of its own, such as NGC 5195 (UNGC a26 = 6.92 arcmin, 455 km/s) 4.6 arcmin from M51
+    (NGC5194, a26 = 15.85 arcmin, 446 km/s) and within its extent, stays apart.

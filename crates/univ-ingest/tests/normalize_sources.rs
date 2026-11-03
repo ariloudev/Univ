@@ -14,7 +14,7 @@ use univ_ingest::normalize::normalize;
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::entry::{CatalogueEntry, PositionUncertainty, RedshiftKind};
 use univ_model::position::{Epoch, Frame, cross, unit_vector};
-use univ_model::redshift::{CmbCorrection, DipoleModel};
+use univ_model::redshift::{CmbCorrection, DipoleModel, RedshiftFrame};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Uncertainty, Value};
 
@@ -118,7 +118,7 @@ fn twompp_rows_keep_their_reference_and_no_group() {
 fn cosmicflows_groups_keep_their_modulus_and_read_sg_coordinates_as_km_s() {
     let n = normalized_fixture("cosmicflows-4");
     assert_eq!(n.report.published, 5);
-    // Row 1: 000.036000 -06.373900 12 34.995 0.410 6532 1848 -6271 1312.
+    // Row 1: 000.036000 -06.373900 12 34.995 0.410 35.142 0.410 6179 1848 -6271 1312.
     let g = entry(&n, "12");
     fk5(g, 0.036, -6.3739);
     let d = &g.distances[0];
@@ -130,25 +130,34 @@ fn cosmicflows_groups_keep_their_modulus_and_read_sg_coordinates_as_km_s() {
     assert_eq!(d.kind, DistanceKind::SecondaryIndicator);
     assert!(matches!(&d.method, Method::Mixed(m) if m.len() == 8));
     assert_eq!(d.hubble_constant(), None);
-    let sg = g.supergalactic_velocity.unwrap();
+    let sg = g.supergalactic_velocity.as_deref().unwrap();
     assert_eq!(
         (sg.x.native.value, sg.y.native.value, sg.z.native.value),
         (1_848.0, -6_271.0, 1_312.0)
     );
     assert_eq!(sg.x.native.unit, Unit::KilometrePerSecond);
-    // Row 4: 000.093800 +39.495500 35 29.730 0.100 335 518 -260 215.
+    // Row 4: 000.093800 +39.495500 35 29.730 0.100 0.000 0.000 28 518 -260 215.
     let g = entry(&n, "35");
     // 10^(29.73/5 + 1) pc = 8.8308 Mpc.
     assert!(near(g.distances[0].normalized.value, 8.830_799_6, 1e-7));
-    assert_eq!(g.redshifts[0].cmb.heliocentric.value, 335.0 / C);
+    // V3k, published in the CMB frame, is the redshift as published: 28 km/s, below 13,000
+    // km/s, a cz.
+    assert_eq!(g.redshifts[0].cmb.value.value, 28.0 / C);
+    assert_eq!(g.redshifts[0].cmb.published, RedshiftFrame::Cmb);
 }
 
 #[test]
 fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances() {
     let n = normalized_fixture("updated-nearby-galaxies");
-    // Row 5, AGC748778, has f_Dist h': a Hubble-flow distance, left out.
-    assert_eq!(n.report.published, 4);
-    assert_eq!(n.report.left_out.len(), 1);
+    // Row 5, AGC748778, has f_Dist h': a Hubble-flow distance, which is dropped; the row is
+    // kept with its position and velocity, and the fix counts it.
+    assert_eq!(n.report.published, 5);
+    assert_eq!(n.report.left_out.len(), 0);
+    let agc = entry(&n, "AGC748778");
+    assert!(agc.distances.is_empty() && agc.position.is_some());
+    assert_eq!(agc.velocity.unwrap().native.value, 258.0);
+    assert_eq!(agc.flags["f_Dist"], "h'");
+    assert_eq!(n.report.fixes[0].entries_changed, 1);
     // Row 1: 000.093750 +39.495556 UGC12894 8.47 TF 335 16.80.
     let g = entry(&n, "UGC12894");
     fk5(g, 0.093_75, 39.495_556);
@@ -237,7 +246,7 @@ fn gaia_rows_keep_icrs_at_2016_their_errors_parallax_and_proper_motion() {
     assert_eq!(plx.normalized.unit, Unit::Degree);
     assert_eq!(s.velocity.unwrap().native.value, -3.105_404);
     assert_eq!(
-        s.proper_motion.unwrap().ra.native.value,
+        s.proper_motion.as_deref().unwrap().ra.native.value,
         -42.073_116_442_981_636
     );
     assert_eq!(s.redshifts, []);
@@ -301,7 +310,7 @@ fn hipparcos_rows_keep_icrs_at_1991_25_and_their_solution_type() {
     assert_eq!(s.flags["Sn"], "5");
     // Row 2: HIP 2, Plx 20.85 ± 1.13, pmRA 182.88, Sn 75.
     let s = entry(&n, "2");
-    assert_eq!(s.proper_motion.unwrap().ra.native.value, 182.88);
+    assert_eq!(s.proper_motion.as_deref().unwrap().ra.native.value, 182.88);
     assert_eq!(s.flags["Sn"], "75");
 }
 

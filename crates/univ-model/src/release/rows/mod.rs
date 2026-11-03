@@ -1,6 +1,42 @@
 //! The rows of the D1 schema: one Rust type per table, whose fields are the table's columns in
 //! order, so a row and its table cannot drift apart. Columns holding JSON are `String`s of what
-//! univ-model serializes; the build fills them, and the Worker hands them on.
+//! univ-model serializes; the build fills them, and the Worker hands them on. A term column
+//! holds a [`TermRow`] id, a `source` column a [`SourceRow`]'s `n` (see the schema).
+
+/// A row type of `$table`, its columns named by its fields.
+macro_rules! row {
+    (
+        $(#[$meta:meta])*
+        $name:ident => $table:literal, scope: $scope:ident,
+        key: [$($key:literal),*], indexes: [$([$($index:literal),*]),*],
+        { $($(#[$fmeta:meta])* $field:ident: $ty:ty),* $(,)? }
+    ) => {
+        $(#[$meta])*
+        #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+        pub struct $name {
+            $($(#[$fmeta])* pub $field: $ty),*
+        }
+
+        impl Row for $name {
+            const TABLE: Table = Table {
+                name: $table,
+                columns: &[$(stringify!($field)),*],
+                kinds: &[$(<$ty as ToSql>::KIND),*],
+                key: &[$($key),*],
+                indexes: &[$(&[$($index),*]),*],
+                scope: Scope::$scope,
+            };
+
+            fn values(&self) -> Vec<SqlValue> {
+                vec![$(self.$field.to_sql()),*]
+            }
+        }
+    };
+}
+
+mod objects;
+
+pub use objects::{ChainRow, DesignationRow, EntryRow, MeasurementRow, NameRow, ObjectRow, PARAMS};
 
 use serde::{Deserialize, Serialize};
 
@@ -76,6 +112,14 @@ impl ToSql for u32 {
     }
 }
 
+impl ToSql for Option<u32> {
+    const KIND: ColumnKind = ColumnKind::Integer;
+
+    fn to_sql(&self) -> SqlValue {
+        self.map_or(SqlValue::Null, |n| n.to_sql())
+    }
+}
+
 impl ToSql for u64 {
     const KIND: ColumnKind = ColumnKind::Integer;
 
@@ -91,37 +135,6 @@ impl ToSql for Option<u64> {
     fn to_sql(&self) -> SqlValue {
         self.map_or(SqlValue::Null, |n| n.to_sql())
     }
-}
-
-/// A row type of `$table`, its columns named by its fields.
-macro_rules! row {
-    (
-        $(#[$meta:meta])*
-        $name:ident => $table:literal, scope: $scope:ident,
-        key: [$($key:literal),*], indexes: [$([$($index:literal),*]),*],
-        { $($(#[$fmeta:meta])* $field:ident: $ty:ty),* $(,)? }
-    ) => {
-        $(#[$meta])*
-        #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-        pub struct $name {
-            $($(#[$fmeta])* pub $field: $ty),*
-        }
-
-        impl Row for $name {
-            const TABLE: Table = Table {
-                name: $table,
-                columns: &[$(stringify!($field)),*],
-                kinds: &[$(<$ty as ToSql>::KIND),*],
-                key: &[$($key),*],
-                indexes: &[$(&[$($index),*]),*],
-                scope: Scope::$scope,
-            };
-
-            fn values(&self) -> Vec<SqlValue> {
-                vec![$(self.$field.to_sql()),*]
-            }
-        }
-    };
 }
 
 row! {
@@ -156,102 +169,6 @@ row! {
 }
 
 row! {
-    /// An object with its preferred measurements and, when placed, its derived position.
-    ObjectRow => "objects", scope: PerRelease, key: ["release", "id"], indexes: [], {
-        release: u32,
-        id: u64,
-        kind: String,
-        /// Its preferred sky position, ICRS degrees, at `epoch` (a Julian year).
-        ra: Option<f64>,
-        dec: Option<f64>,
-        epoch: Option<f64>,
-        placed: bool,
-        /// Why it is not placed, when it is not.
-        not_placed: Option<String>,
-        /// The scale domain of its preferred distance's source, when placed.
-        scale_domain: Option<String>,
-        /// ICRS Cartesian, Mpc, under the release cosmology.
-        x: Option<f64>,
-        y: Option<f64>,
-        z: Option<f64>,
-        distance_mpc: Option<f64>,
-        preferred_distance: Option<String>,
-        preferred_position: Option<String>,
-        /// JSON of the derived position: frames, epoch, cosmology and transformation chain.
-        position: Option<String>,
-        links: String,
-        relations: String,
-    }
-}
-
-row! {
-    /// A catalogue entry of an object.
-    EntryRow => "entries", scope: PerRelease, key: ["release", "source", "identifier"],
-    indexes: [["release", "object_id"]], {
-        release: u32,
-        source: String,
-        identifier: String,
-        object_id: u64,
-        anchor: bool,
-        resolution: String,
-        name: Option<String>,
-        position: Option<String>,
-        group_id: Option<String>,
-        flags: String,
-    }
-}
-
-row! {
-    /// A measurement of an entry: `quantity` is `distance`, `redshift`, `parallax`,
-    /// `velocity`, `proper_motion_ra`, `proper_motion_dec` or `magnitude`, `n` its place among
-    /// the entry's values of that quantity.
-    MeasurementRow => "measurements", scope: PerRelease,
-    key: ["release", "object_id", "source", "identifier", "quantity", "n"], indexes: [], {
-        release: u32,
-        object_id: u64,
-        source: String,
-        identifier: String,
-        quantity: String,
-        n: u32,
-        kind_of_value: String,
-        native_value: f64,
-        native_unit: String,
-        value: f64,
-        unit: String,
-        /// JSON of the native uncertainty.
-        uncertainty: String,
-        /// JSON of the whole univ-model value.
-        detail: String,
-    }
-}
-
-row! {
-    /// A designation an object carries.
-    DesignationRow => "designations", scope: PerRelease,
-    key: ["release", "source", "identifier", "object_id"], indexes: [["release", "object_id"]], {
-        release: u32,
-        source: String,
-        identifier: String,
-        object_id: u64,
-    }
-}
-
-row! {
-    /// A common name of an object, by its key (see [`name_key`]). The name itself is part of
-    /// the primary key: two spellings an object's source gives, such as `M 31` and `M31`, share
-    /// a key and are both kept.
-    NameRow => "names", scope: PerRelease,
-    key: ["release", "key", "object_id", "source", "name"],
-    indexes: [], {
-        release: u32,
-        key: String,
-        object_id: u64,
-        source: String,
-        name: String,
-    }
-}
-
-row! {
     /// The ids a release issued.
     IdsIssuedRow => "ids_issued", scope: Ledger, key: ["release"], indexes: [], {
         release: u32,
@@ -277,7 +194,8 @@ row! {
     ObjectCellRow => "object_cells", scope: PerRelease,
     key: ["release", "domain", "ix", "iy", "iz", "object_id"], indexes: [], {
         release: u32,
-        domain: String,
+        /// Term: its scale domain.
+        domain: u32,
         ix: i64,
         iy: i64,
         iz: i64,
@@ -299,9 +217,22 @@ row! {
 }
 
 row! {
-    /// A source of the release with its citation, terms and query.
-    SourceRow => "sources", scope: PerRelease, key: ["release", "id"], indexes: [], {
+    /// A term of the release: the name univ-model serializes for a value, which term columns
+    /// hold by its id.
+    TermRow => "terms", scope: PerRelease, key: ["release", "id"], indexes: [], {
         release: u32,
+        id: u32,
+        term: String,
+    }
+}
+
+row! {
+    /// A source of the release with its citation, terms and query.
+    SourceRow => "sources", scope: PerRelease, key: ["release", "n"],
+    indexes: [["release", "id"]], {
+        release: u32,
+        /// Its index in the release, which every `source` column of the release holds.
+        n: u32,
         id: String,
         title: String,
         provider: String,
@@ -328,7 +259,7 @@ row! {
     PayloadRow => "payloads", scope: PerRelease, key: ["release", "source", "item"],
     indexes: [], {
         release: u32,
-        source: String,
+        source: u32,
         item: String,
         url: String,
         sha256: String,
@@ -343,7 +274,7 @@ row! {
     NormalizationRow => "normalizations", scope: PerRelease, key: ["release", "source"],
     indexes: [], {
         release: u32,
-        source: String,
+        source: u32,
         published: u64,
         /// JSON map of the entries left out by reason.
         left_out: String,
@@ -370,7 +301,9 @@ row! {
         centre_z: Option<f64>,
         geometry_kind: Option<String>,
         record: String,
-        /// JSON of its member list as resolved at ingest.
+        /// JSON of its member list as resolved at ingest: `shape`, each member an object at its
+        /// derived position or a tracer, and `placed_from_file`, how each tracer was placed from
+        /// the structure file's own sky position and redshift for it.
         members: Option<String>,
         /// JSON of its ICRS bounding box in Mpc, when it has one.
         bounds: Option<String>,
@@ -395,7 +328,7 @@ row! {
     GridRow => "grids", scope: PerRelease, key: ["release", "id"], indexes: [], {
         release: u32,
         id: String,
-        source: String,
+        source: u32,
         unit: String,
         shape: String,
         fields: String,
@@ -404,11 +337,13 @@ row! {
 }
 
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 16] = [
+pub const TABLES: [Table; 18] = [
     ReleaseRow::TABLE,
+    TermRow::TABLE,
     SourceRow::TABLE,
     PayloadRow::TABLE,
     NormalizationRow::TABLE,
+    ChainRow::TABLE,
     ObjectRow::TABLE,
     EntryRow::TABLE,
     MeasurementRow::TABLE,

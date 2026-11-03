@@ -1,0 +1,6 @@
+source: updated-nearby-galaxies
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag%2Ca26&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2CIC5052%2CNGC5194%2CNGC5195
+retrieved: 2026-11-03T16:23:12Z
+sha256: 0e5d7a1fc28e3a782cb961dfc813081d3fd92232cc569e530daf00503f319ebe
+note: >-
+  The source's own query narrowed by Name to IC 5052, an edge-on galaxy 8.13 arcmin long that other catalogues split into pieces, and M51 (NGC5194) with its companion NGC 5195, within M51's extent.

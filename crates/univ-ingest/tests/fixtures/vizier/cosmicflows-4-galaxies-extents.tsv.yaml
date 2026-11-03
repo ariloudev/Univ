@@ -1,0 +1,6 @@
+source: cosmicflows-4-galaxies
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Ftable2&-out=PGC%2C1PGC%2CVcmb%2CDM%2Ce_DM%2CDMsnIa%2CDMtf%2CDMfp%2CDMsbf%2CDMsnII%2CDMtrgb%2CDMceph%2CDMmas&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&PGC=65603%2C47404%2C47413
+retrieved: 2026-11-03T16:23:13Z
+sha256: b3e2986ee7aaa296b65b6b84dafdcfc007175d6830c05b3756759f7ec07f7375
+note: >-
+  The source's own query narrowed by PGC to IC 5052 (65603), M51 (47404) and NGC 5195 (47413).

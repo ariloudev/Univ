@@ -13,7 +13,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use simulated::tiles::{Lcg, context, object, point, rules, stars, uniform};
 use simulated::{entry, with_distance, with_parallax};
-use univ_ingest::tiles::{BuiltDomain, build};
+use univ_ingest::tiles::{BuiltDomain, NEARBY_GALAXIES_DEPTH_MPC, build};
 use univ_model::cosmology::Cosmology;
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::ids::ObjectId;
@@ -120,30 +120,45 @@ fn each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs()
 }
 
 #[test]
-fn an_object_belongs_to_the_domain_of_the_entry_holding_its_preferred_distance() {
-    // SIMULATED: one galaxy listed by UNGC (nearby galaxies) and Cosmicflows-4 (cosmic web);
-    // object 1 is placed by the UNGC distance, object 2 by the Cosmicflows one.
+fn an_object_s_scale_domain_follows_its_placed_distance_and_a_star_stays_a_star() {
+    // SIMULATED, AC-92 as the owner decided on 2026-11-03: M81 at 3.63 Mpc is in nearby
+    // galaxies whether its distance is UNGC's (a nearby-galaxies source) or Cosmicflows-4's (a
+    // cosmic-web source); a Cosmicflows-4 galaxy at 40 Mpc is in cosmic web; a Gaia star stays
+    // in stars. The boundary is the 11 Mpc depth of the Updated Nearby Galaxy Catalog.
+    let (ra, dec) = (148.888, 69.065);
     let ungc = with_distance(
-        entry("updated-nearby-galaxies", "g", 150.0, 5.0),
-        3.0,
-        Some(0.1),
+        entry("updated-nearby-galaxies", "MESSIER081", ra, dec),
+        3.63,
+        None,
         CEPHEIDS,
     );
     let cf4 = with_distance(
-        entry("cosmicflows-4", "g", 150.0, 5.0),
-        3.2,
-        Some(0.3),
+        entry("cosmicflows-4-galaxies", "28630", ra, dec),
+        3.63,
+        Some(0.1),
         CEPHEIDS,
     );
+    let far = with_distance(
+        entry("cosmicflows-4-galaxies", "g", 150.0, 5.0),
+        40.0,
+        Some(4.0),
+        CEPHEIDS,
+    );
+    let star = with_parallax(entry("gaia-dr3-bright", "s", 10.0, 10.0), 10.0, 0.01);
     let by = |e: &univ_model::entry::CatalogueEntry| {
         Some(MeasurementRef::Distance {
             entry: e.designation.clone(),
             index: 0,
         })
     };
+    let parallax = Some(MeasurementRef::Parallax {
+        entry: star.designation.clone(),
+    });
     let objects = vec![
         object(1, vec![ungc.clone(), cf4.clone()], by(&ungc)),
         object(2, vec![ungc.clone(), cf4.clone()], by(&cf4)),
+        object(3, vec![far.clone()], by(&far)),
+        object(4, vec![star], parallax),
     ];
     let rules = rules(100, 50, 8, 7);
     let (cosmology, definitions) = (Cosmology::planck_2018(), common::read_sources());
@@ -155,20 +170,17 @@ fn an_object_belongs_to_the_domain_of_the_entry_holding_its_preferred_distance()
             .map(ObjectId::get)
             .collect()
     };
-    assert_eq!(ids(0), Vec::<u64>::new());
-    assert_eq!(ids(1), [1]);
-    assert_eq!(ids(2), [2]);
-    let cosmic = &built.domains[2].manifest;
-    let point_source = decode(&built.domains[2].nodes[0].tile).unwrap().points[0].source;
-    assert_eq!(
-        cosmic.sources[usize::from(point_source)].id,
-        "cosmicflows-4"
-    );
-    let credited: Vec<_> = cosmic.sources.iter().map(|s| s.id.as_str()).collect();
+    assert_eq!(ids(0), [4], "stars");
+    assert_eq!(ids(1), [1, 2], "nearby galaxies");
+    assert_eq!(ids(2), [3], "cosmic web");
+    assert!((NEARBY_GALAXIES_DEPTH_MPC - 11.0).abs() < 1e-12);
+    // The point keeps the source of its distance, credited in its domain's manifest.
+    let nearby = &built.domains[1].manifest;
+    let credited: Vec<_> = nearby.sources.iter().map(|s| s.id.as_str()).collect();
     assert_eq!(
         credited,
-        ["cosmicflows-4", "updated-nearby-galaxies"],
-        "the sky position's source is credited too"
+        ["updated-nearby-galaxies", "cosmicflows-4-galaxies"],
+        "{credited:?}"
     );
 }
 

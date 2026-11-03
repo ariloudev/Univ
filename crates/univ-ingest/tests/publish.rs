@@ -87,7 +87,7 @@ fn every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last() {
         journal
             .done
             .iter()
-            .any(|d| d.checked == "objects: 24 rows of release 1")
+            .any(|d| d.checked == "objects: 25 rows of release 1")
     );
 
     // AC-104: one single-statement write moves latest, after every upload.

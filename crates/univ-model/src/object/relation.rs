@@ -1,5 +1,6 @@
 //! What an object is, as its sources list it, and the typed relations between objects that
-//! merge nothing: a galaxy group and the galaxy its source names as its dominant member.
+//! merge nothing: a galaxy group, the galaxy its source names as its dominant member, and the
+//! galaxies a galaxy source assigns to it.
 
 use serde::{Deserialize, Serialize};
 
@@ -25,6 +26,10 @@ pub enum RelationKind {
     DominantMember,
     /// The other object is the group this galaxy dominates.
     DominantMemberOf,
+    /// The other object is a galaxy its source assigns to this group.
+    Member,
+    /// The other object is the group this galaxy's source assigns it to.
+    MemberOf,
 }
 
 /// A relation from this object's entry `entry` to the other object's entry `other`, found by

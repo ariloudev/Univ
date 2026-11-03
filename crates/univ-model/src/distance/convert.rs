@@ -33,6 +33,11 @@ pub fn from_modulus(modulus: &Quantity) -> Result<Quantity, DistanceError> {
             minus: distance - parsecs(modulus.value - minus),
             plus: parsecs(modulus.value + plus) - distance,
         },
+        // A stated interval's bounds map through the monotonic function as bounds.
+        Uncertainty::Interval { minus, plus } => Uncertainty::Interval {
+            minus: distance - parsecs(modulus.value - minus),
+            plus: parsecs(modulus.value + plus) - distance,
+        },
         // Quantiles of a posterior map through a monotonic function unchanged (Bailer-Jones et
         // al. 2021, abstract), so the interval's bounds are converted, not its widths.
         Uncertainty::CredibleInterval {

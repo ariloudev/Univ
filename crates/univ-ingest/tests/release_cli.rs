@@ -75,15 +75,23 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     let dir = release_dir(out.path(), 1);
     for line in [
         "Z Stage tiles: 3 items\n".to_owned(),
+        // The build's phases, each a step of its six.
+        "Z Stage build: 6 items\n".to_owned(),
+        "Z Step build: rules: 4 files\n".to_owned(),
+        "Z Step build: tiles: 3 tiles and 3 manifests\n".to_owned(),
+        "Z Step build: volume grids: 0 grids in 0 files\n".to_owned(),
+        "Z Step build: checks: every check passed\n".to_owned(),
+        "Z Step build: manifest: 27 files checked against their SHA-256\n".to_owned(),
+        "Z Stage build done: ".to_owned(),
         format!(
-            "Z Step build: release 1: every check passed; 25 files listed with their SHA-256 in \
+            "Z Step build: release 1: every check passed; 27 files listed with their SHA-256 in \
              {}\n",
             dir.join("manifest.yaml").display()
         ),
-        "Z Step build: cell index: 17 placed objects, 18 of 26 structures with a bounding box\n"
+        "Z Step build: cell index: 16 placed objects, 24 of 26 structures with a bounding box\n"
             .to_owned(),
-        "Z Step build: cell index: 8 structures not indexed: big-ring (56 of its 56 members \
-         are not placed); "
+        "Z Step build: cell index: 2 structures not indexed: hercules-corona-borealis-great-wall \
+         (it publishes no position or geometry); "
             .to_owned(),
         "Z Step build: provisional redistribution review, judged again before any public \
          deployment: cosmicflows-4, hipparcos-2007, mcconnachie-2012, researched-structures, \
@@ -93,6 +101,7 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     ] {
         assert!(log.contains(&line), "{line}in\n{log}");
     }
+    assert!(log.contains("Z Step build: D1 rows: "), "{log}");
     assert!(log.contains("Z Step build: D1: "), "{log}");
     assert!(log.contains(" of the 10 GB cap ("), "{log}");
     assert!(!dir.with_file_name(".building-1").exists());
@@ -100,7 +109,7 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     let text = std::fs::read_to_string(dir.join(keys::MANIFEST)).unwrap();
     let manifest: ReleaseManifest = serde_norway::from_str(&text).unwrap();
     assert_eq!(manifest.release, 1);
-    assert_eq!(manifest.counts.objects, 24);
+    assert_eq!(manifest.counts.objects, 25);
     for file in &manifest.files {
         let bytes = std::fs::read(dir.join(&file.path)).unwrap();
         assert_eq!(file.sha256, sha256(&bytes), "{}", file.path);

@@ -3,13 +3,15 @@
 
 use std::cmp::Ordering;
 
+use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::derive::{Release, inverted_parallax, peculiar_velocity_redshift, redshift_sigma};
 use univ_model::object::{
     Decided, FractionalUncertainty, MeasurementRef, MethodRank, Object, PreferredDistance,
 };
 use univ_model::units::Unit;
-use univ_model::value::{Quantity, Uncertainty};
+use univ_model::value::{KindOfValue, Quantity, Uncertainty};
 
+use super::redshift;
 use super::rules::RankingRules;
 
 /// The probability of a one-sigma interval, which a credible interval must have for half its
@@ -25,6 +27,11 @@ pub struct Candidate {
     pub rank: MethodRank,
     pub distance_mpc: f64,
     pub uncertainty: FractionalUncertainty,
+    /// Whether its value was measured, estimated, inferred or reconstructed.
+    pub kind_of_value: KindOfValue,
+    /// A redshift's published one-sigma velocity error, c times the error of the redshift as
+    /// published, km/s; none for a redshift published without one, and for any other candidate.
+    pub velocity_sigma_km_s: Option<f64>,
 }
 
 /// Which measurement of an entry a candidate is.
@@ -109,6 +116,8 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
                 uncertainty: fraction(&mpc).map_or(FractionalUncertainty::NoneReported, |f| {
                     reported(f, Some(f), None)
                 }),
+                kind_of_value: d.kind_of_value,
+                velocity_sigma_km_s: None,
             });
         }
         let zero_point = rules.zero_point_of(&entry.designation.source);
@@ -124,6 +133,8 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
                 rank: MethodRank::Geometric,
                 distance_mpc: inverted.distance_pc * 1e-6,
                 uncertainty: reported(f, Some(f), None),
+                kind_of_value: p.kind,
+                velocity_sigma_km_s: None,
             });
         }
         for (index, r) in entry.redshifts.iter().enumerate() {
@@ -131,18 +142,17 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
             let Some((d, slope)) = redshift_distance(release, z) else {
                 continue;
             };
-            // A redshift without a one-sigma error, of either kind, has no uncertainty the rule
-            // can compare: the peculiar velocity alone would rank it as though it had one.
-            let uncertainty = sigma(r.cmb.value.uncertainty).map_or(
-                FractionalUncertainty::NoneReported,
-                |sigma_z| {
-                    let v = rules.peculiar_velocity_km_s;
-                    reported(
-                        slope * redshift_sigma(z, sigma_z, v) / d,
-                        Some(slope * sigma_z / d),
-                        Some(slope * peculiar_velocity_redshift(z, v) / d),
-                    )
-                },
+            // A redshift distance's uncertainty always holds the rule's peculiar-velocity term,
+            // the line-of-sight velocity a redshift does not separate from the Hubble flow: in
+            // quadrature with the redshift's one-sigma error where one is published, alone
+            // where none is. The term is the rule's stated one, not an invented error, so even a
+            // redshift published without an error ranks as a candidate with an uncertainty.
+            let v = rules.peculiar_velocity_km_s;
+            let sigma_z = sigma(r.cmb.value.uncertainty);
+            let uncertainty = reported(
+                slope * redshift_sigma(z, sigma_z.unwrap_or(0.0), v) / d,
+                sigma_z.map(|s| slope * s / d),
+                Some(slope * peculiar_velocity_redshift(z, v) / d),
             );
             out.push(Candidate {
                 entry: at,
@@ -150,6 +160,9 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
                 rank: r.kind.into(),
                 distance_mpc: d,
                 uncertainty,
+                kind_of_value: r.kind_of_value,
+                velocity_sigma_km_s: sigma(r.cmb.as_published().uncertainty)
+                    .map(|s| s * SPEED_OF_LIGHT),
             });
         }
     }
@@ -164,37 +177,79 @@ fn sigma_of(q: &Quantity) -> Option<f64> {
     }
 }
 
-/// The candidate the rule prefers, by place in `candidates`, leaving out the one at `excluded`,
-/// and what decided it.
-fn winner(
+/// Whether `rank` is a redshift's.
+pub(super) fn is_redshift(rank: MethodRank) -> bool {
+    matches!(
+        rank,
+        MethodRank::SpectroscopicRedshift | MethodRank::PhotometricRedshift
+    )
+}
+
+/// The candidates by place in `candidates`, leaving out those in `excluded`.
+fn open(candidates: &[Candidate], excluded: &[usize]) -> Vec<usize> {
+    (0..candidates.len())
+        .filter(|i| !excluded.contains(i))
+        .collect()
+}
+
+/// The candidates the rule weighs, by place in `candidates`, leaving out those in `excluded`:
+/// every geometric and indicator candidate, and the leading redshift candidate unless
+/// `threshold` is given, a geometric or indicator candidate exists, and its fractional
+/// uncertainty exceeds it.
+fn remaining(
+    object: &Object,
     candidates: &[Candidate],
-    excluded: Option<usize>,
+    excluded: &[usize],
+    threshold: Option<f64>,
+    rules: &RankingRules,
+) -> Vec<usize> {
+    let open = open(candidates, excluded);
+    let lead = redshift::leading(object, candidates, &open, rules);
+    let indicator = open.iter().any(|&i| !is_redshift(candidates[i].rank));
+    open.into_iter()
+        .filter(|&i| {
+            let c = &candidates[i];
+            let above = threshold.is_some_and(|t| c.uncertainty.total().is_some_and(|f| f > t));
+            !is_redshift(c.rank) || (Some(i) == lead && !(indicator && above))
+        })
+        .collect()
+}
+
+/// The winner among `open` by steps (ii) and (iii) of the rule, and what decided it: the
+/// comparison that set the winner before the candidate ordered next, the last one the rule
+/// needed.
+fn among(
+    object: &Object,
+    candidates: &[Candidate],
+    open: &[usize],
     rules: &RankingRules,
 ) -> Option<(usize, Decided)> {
     let total = |i: usize| candidates[i].uncertainty.total();
-    let by_rank = |a: &usize, b: &usize| {
-        let (x, y) = (&candidates[*a], &candidates[*b]);
-        let t = |i: usize| total(i).unwrap_or(f64::INFINITY);
-        rules
-            .rank_of(x.rank)
-            .cmp(&rules.rank_of(y.rank))
-            .then(t(*a).partial_cmp(&t(*b)).unwrap_or(Ordering::Equal))
-            .then(a.cmp(b))
-    };
-    let open: Vec<usize> = (0..candidates.len())
-        .filter(|&i| Some(i) != excluded)
+    let rank = |i: usize| rules.rank_of(candidates[i].rank);
+    let (reported, unreported): (Vec<usize>, Vec<usize>) =
+        open.iter().partition(|&&i| total(i).is_some());
+    let best_reported = reported.iter().map(|&i| rank(i)).min();
+    let mut qualifying: Vec<usize> = unreported
+        .into_iter()
+        .filter(|&i| best_reported.is_none_or(|best| rank(i) < best))
         .collect();
-    let reported: Vec<usize> = open
-        .iter()
-        .copied()
-        .filter(|&i| total(i).is_some())
-        .collect();
-    if reported.is_empty() {
-        let best = open.iter().copied().min_by(by_rank)?;
-        let decided = if open.len() == 1 {
-            Decided::OnlyCandidate
-        } else {
-            Decided::MethodRankNoneReported
+    if !qualifying.is_empty() {
+        let source = |i: usize| {
+            let entry = &object.entries[candidates[i].entry].entry;
+            rules.source_place(&entry.designation.source)
+        };
+        qualifying.sort_by(|&a, &b| {
+            rank(a)
+                .cmp(&rank(b))
+                .then(source(a).cmp(&source(b)))
+                .then(a.cmp(&b))
+        });
+        let best = qualifying[0];
+        let decided = match qualifying.get(1) {
+            None => Decided::MethodRankNoneReported,
+            Some(&next) if rank(next) != rank(best) => Decided::MethodRankNoneReported,
+            Some(&next) if source(next) != source(best) => Decided::SourceOrder,
+            Some(_) => Decided::EntryOrder,
         };
         return Some((best, decided));
     }
@@ -202,18 +257,67 @@ fn winner(
         .iter()
         .filter_map(|&i| total(i))
         .fold(f64::INFINITY, f64::min);
-    let tied: Vec<usize> = reported
+    let mut tied: Vec<usize> = reported
         .into_iter()
         .filter(|&i| total(i).is_some_and(|t| t <= smallest + rules.tie_tolerance))
         .collect();
-    let best = tied.iter().copied().min_by(by_rank)?;
-    let decided = if open.len() == 1 {
-        Decided::OnlyCandidate
-    } else if tied.len() > 1 {
-        Decided::MethodRank
-    } else {
-        Decided::Uncertainty
+    let t = |i: usize| total(i).unwrap_or(f64::INFINITY);
+    tied.sort_by(|&a, &b| {
+        rank(a)
+            .cmp(&rank(b))
+            .then(t(a).partial_cmp(&t(b)).unwrap_or(Ordering::Equal))
+            .then(a.cmp(&b))
+    });
+    let best = *tied.first()?;
+    let decided = match tied.get(1) {
+        None => Decided::Uncertainty,
+        Some(&next) if rank(next) != rank(best) => Decided::MethodRank,
+        Some(&next) if t(next) > t(best) => Decided::Uncertainty,
+        Some(_) => Decided::EntryOrder,
     };
+    Some((best, decided))
+}
+
+/// The candidate the rule prefers, by place in `candidates`, leaving out those in `excluded`,
+/// and what decided it: the redshift threshold where the winner without it would have been
+/// another; and, for a redshift whose next candidate is a redshift too, the step of the
+/// redshifts' own order that set them apart.
+fn winner(
+    object: &Object,
+    candidates: &[Candidate],
+    excluded: &[usize],
+    rules: &RankingRules,
+) -> Option<(usize, Decided)> {
+    let weighed = |threshold| remaining(object, candidates, excluded, threshold, rules);
+    let open = weighed(Some(rules.redshift_threshold));
+    let (best, decided) = among(object, candidates, &open, rules)?;
+    if self::open(candidates, excluded).len() == 1 {
+        return Some((best, Decided::OnlyCandidate));
+    }
+    let unthresholded = weighed(None);
+    if unthresholded.len() != open.len()
+        && among(object, candidates, &unthresholded, rules).is_some_and(|(b, _)| b != best)
+    {
+        return Some((best, Decided::RedshiftThreshold));
+    }
+    if is_redshift(candidates[best].rank) {
+        let without: Vec<usize> = excluded.iter().copied().chain([best]).collect();
+        let next = remaining(
+            object,
+            candidates,
+            &without,
+            Some(rules.redshift_threshold),
+            rules,
+        );
+        if let Some((next, _)) = among(object, candidates, &next, rules)
+            && is_redshift(candidates[next].rank)
+        {
+            return Some((
+                best,
+                redshift::decided(object, candidates, rules, best, next),
+            ));
+        }
+    }
     Some((best, decided))
 }
 
@@ -225,8 +329,8 @@ pub fn choose(
     candidates: &[Candidate],
     rules: &RankingRules,
 ) -> Option<PreferredDistance> {
-    let (best, decided) = winner(candidates, None, rules)?;
-    let runner_up = winner(candidates, Some(best), rules).map(|(i, _)| {
+    let (best, decided) = winner(object, candidates, &[], rules)?;
+    let runner_up = winner(object, candidates, &[best], rules).map(|(i, _)| {
         let c = &candidates[i];
         (c.measurement(object), c.uncertainty)
     });

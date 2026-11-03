@@ -13,7 +13,9 @@
 //! # Placing a published position
 //!
 //! A redshift, or a recession velocity cz taken as the redshift v / c, becomes the comoving
-//! distance of the release cosmology. A length published for another cosmology (`assumes`, or
+//! distance of the release cosmology: one its paper gives as heliocentric first moves to the CMB
+//! frame with the run's dipole, toward the published direction, as an entry's redshift does; one
+//! whose frame is not stated is taken as published. A length published for another cosmology (`assumes`, or
 //! h⁻¹ Mpc for H0 = 100) is rescaled by the ratio of Hubble constants
 //! (`univ_model::derive::Release::hubble_rescaling`); a length that states none is taken as
 //! published. Cartesian velocities, as the Cosmicflows papers give them, are a direction and a
@@ -29,7 +31,9 @@ use univ_model::cosmology::{AssumedCosmology, SPEED_OF_LIGHT};
 use univ_model::derive::Release;
 use univ_model::geometry::Aabb;
 use univ_model::position::{Frame, Vec3, between, dot, lon_lat, scaled, unit_vector};
+use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::{Dimension, Unit};
+use univ_model::value::{Quantity, Uncertainty};
 
 use crate::crossmatch::MemberPlacement;
 use crate::structures::{
@@ -39,8 +43,8 @@ use crate::structures::{
 /// The samples along each side of a sky region's longitude and latitude ranges.
 const SKY_SAMPLES: u32 = 32;
 
-/// The box of `structure` in the cell index, under `release`, its member list `placed` where
-/// it has one; or why it has none.
+/// The box of `structure` in the cell index, under `release` and the run's dipole
+/// `correction`, its member list `placed` where it has one; or why it has none.
 ///
 /// # Errors
 ///
@@ -51,6 +55,7 @@ pub fn index_bounds(
     structure: &Structure,
     placed: Option<&MemberPlacement>,
     release: &Release,
+    correction: &CmbCorrection,
 ) -> Result<Aabb, String> {
     match &structure.geometry {
         Some(StructureGeometry::Members(_)) => match placed {
@@ -64,7 +69,7 @@ pub fn index_bounds(
                     p.members
                 );
                 match &structure.position {
-                    Some(at) => point(at, release)
+                    Some(at) => point(at, release, correction)
                         .map_err(|e| format!("{unplaced}, and its published position: {e}")),
                     None => Err(unplaced),
                 }
@@ -72,7 +77,7 @@ pub fn index_bounds(
             None => Err("its member list was not resolved".to_owned()),
         },
         Some(StructureGeometry::Primitive(p)) => {
-            let (centre, margin) = place(&p.centre, release)?;
+            let (centre, margin) = place(&p.centre, release, correction)?;
             let radius = match &p.size {
                 SphereSize::Radius(r) => length(r, release)?,
                 SphereSize::Diameter(d) => length(d, release)? / 2.0,
@@ -81,7 +86,7 @@ pub fn index_bounds(
         }
         Some(StructureGeometry::SkyRegion(b)) => sky_region(b, release),
         None => match &structure.position {
-            Some(at) => point(at, release),
+            Some(at) => point(at, release, correction),
             None => Err("it publishes no position or geometry".to_owned()),
         },
     }
@@ -100,11 +105,16 @@ pub fn centre(
     structure: &Structure,
     placed: Option<&MemberPlacement>,
     release: &Release,
+    correction: &CmbCorrection,
 ) -> Result<Vec3, String> {
     let middle = |b: Aabb| -> Vec3 { std::array::from_fn(|k| f64::midpoint(b.min[k], b.max[k])) };
     match &structure.geometry {
-        Some(StructureGeometry::Members(_)) => index_bounds(structure, placed, release).map(middle),
-        Some(StructureGeometry::Primitive(p)) => place(&p.centre, release).map(|(c, _)| c),
+        Some(StructureGeometry::Members(_)) => {
+            index_bounds(structure, placed, release, correction).map(middle)
+        }
+        Some(StructureGeometry::Primitive(p)) => {
+            place(&p.centre, release, correction).map(|(c, _)| c)
+        }
         Some(StructureGeometry::SkyRegion(b)) => {
             let near = radial(&b.near, release)?;
             let far = radial(&b.far, release)?;
@@ -115,7 +125,7 @@ pub fn centre(
             Ok(between(b.frame, Frame::Icrs).apply(scaled(u, f64::midpoint(near, far))))
         }
         None => match &structure.position {
-            Some(at) => place(at, release).map(|(c, _)| c),
+            Some(at) => place(at, release, correction).map(|(c, _)| c),
             None => Err("it publishes no position or geometry".to_owned()),
         },
     }
@@ -138,8 +148,8 @@ fn centred(centre: Vec3, half: f64) -> Aabb {
 }
 
 /// The box of a published position: of no size, or the size of the unstated equinox's angle.
-fn point(at: &Coordinates, release: &Release) -> Result<Aabb, String> {
-    let (p, margin) = place(at, release)?;
+fn point(at: &Coordinates, release: &Release, correction: &CmbCorrection) -> Result<Aabb, String> {
+    let (p, margin) = place(at, release, correction)?;
     Ok(centred(p, margin))
 }
 
@@ -188,6 +198,22 @@ fn length(c: &Cited, release: &Release) -> Result<f64, String> {
         .map_err(|e| e.to_string())
 }
 
+/// The CMB-frame redshift of a heliocentric redshift or velocity `r` toward the ICRS unit
+/// vector `u`, moved with the run's dipole `correction` as an entry's is.
+fn cmb_redshift(r: &Radial, u: Vec3, correction: &CmbCorrection) -> Result<f64, String> {
+    let z = match r {
+        Radial::Redshift(z) => z.value(),
+        Radial::Velocity(v) => km_s(v)? / SPEED_OF_LIGHT,
+        Radial::Distance(_) => return Err("a distance has no redshift frame".to_owned()),
+    };
+    let z = Quantity::new(z, Unit::Dimensionless, Uncertainty::NoneReported)
+        .map_err(|e| e.to_string())?;
+    correction
+        .apply(z, RedshiftFrame::Heliocentric, u)
+        .map(|c| c.value.value)
+        .map_err(|e| e.to_string())
+}
+
 /// A published distance along the line of sight in Mpc of the release cosmology.
 fn radial(r: &Radial, release: &Release) -> Result<f64, String> {
     match r {
@@ -205,7 +231,11 @@ fn margin(frame: Frame, distance: f64) -> f64 {
 }
 
 /// A published position in the ICRS and Mpc, with how much its box grows for its frame.
-fn place(at: &Coordinates, release: &Release) -> Result<(Vec3, f64), String> {
+fn place(
+    at: &Coordinates,
+    release: &Release,
+    correction: &CmbCorrection,
+) -> Result<(Vec3, f64), String> {
     match at {
         Coordinates::Observer => Ok(([0.0; 3], 0.0)),
         Coordinates::Cartesian { frame, x, y, z } => {
@@ -232,17 +262,20 @@ fn place(at: &Coordinates, release: &Release) -> Result<(Vec3, f64), String> {
             lon,
             lat,
             radial: r,
+            redshift_frame,
         } => {
             let r = r
                 .as_ref()
                 .ok_or_else(|| "its published position gives no distance".to_owned())?;
-            let d = radial(r, release)?;
             let lon = lon.as_ref().map_or(Ok(0.0), degrees)?;
-            let u = unit_vector(lon, degrees(lat)?);
-            Ok((
-                between(*frame, Frame::Icrs).apply(scaled(u, d)),
-                margin(*frame, d),
-            ))
+            let u = between(*frame, Frame::Icrs).apply(unit_vector(lon, degrees(lat)?));
+            let d = match (r, redshift_frame) {
+                (Radial::Redshift(_) | Radial::Velocity(_), Some(RedshiftFrame::Heliocentric)) => {
+                    comoving(cmb_redshift(r, u, correction)?, release)?
+                }
+                _ => radial(r, release)?,
+            };
+            Ok((scaled(u, d), margin(*frame, d)))
         }
     }
 }

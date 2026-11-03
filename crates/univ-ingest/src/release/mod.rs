@@ -8,8 +8,8 @@
 //! # No number used up by a failed build (AC-90)
 //!
 //! The number is the next the id ledger gives, `n`, which the cross-match prepared its ids for.
-//! The build checks the release in memory, writes it to `releases/.building-{n}` and checks
-//! every file against the manifest; only then is the directory renamed to `releases/{n}` and the
+//! The build writes the release to `releases/.building-{n}` as it makes its files, streaming
+//! its D1 rows, checks it, and checks every file against the manifest; only then is the directory renamed to `releases/{n}` and the
 //! state the cross-match made, carried in its result, installed as the state directory's
 //! (`crate::state::State::install`): its `current` switched by one rename, which is what uses
 //! the number up. A build that fails at any step removes what it wrote and leaves the state as it
@@ -19,43 +19,51 @@
 //! Publishing refuses such a release, and the next build names it and stops rather than repair
 //! anything: it is removed by hand, or built over with the state that built it.
 
+mod assemble;
 mod cells;
 mod check;
 mod config;
 mod d1;
+mod entries;
 mod files;
 mod grids;
 mod meta;
 mod objects;
 mod place;
+mod terms;
 
 use std::fmt;
 use std::path::{Path, PathBuf};
 
-use univ_model::grid::Grid;
 use univ_model::ids::SourceId;
 use univ_model::release::ReleaseManifest;
 
-pub use cells::{CellRows, cell_rows};
+pub use assemble::{Written, write_release};
+pub use cells::{CellRows, ObjectCell, cell_rows};
 pub use check::{
-    D1_FINITE, D1_KEYS, D1_SIZE, ENTRY_COUNTS, Failed, MANIFEST, REDISTRIBUTION,
-    STRUCTURE_CITATIONS, Subject, TILE_OBJECTS, check_all, decimal_bytes, provisional,
+    D1_DERIVED, D1_FINITE, D1_KEYS, D1_SIZE, ENTRY_COUNTS, Failed, MANIFEST, REDISTRIBUTION,
+    STRUCTURE_CITATIONS, Subject, TILE_OBJECTS, check_all, decimal_bytes, provisional, table_sizes,
 };
 pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
-pub use d1::{D1Rows, MAX_FILE_BYTES};
+pub use d1::{D1Writer, D1Written, InMemory, MAX_FILE_BYTES, PartSink, content_sha256};
 pub use files::{
-    Assembled, RELEASES, ReleaseFile, assemble, list, parse_manifest, read_manifest, release_dir,
-    verify,
+    DirSink, RELEASES, list, parse_manifest, read_manifest, release_dir, verify, write_manifest,
 };
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
 pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
-pub use objects::{ObjectRows, json, ledger_rows, object_rows, snake};
+pub use objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
 pub use place::{centre, index_bounds, sky_region};
+pub use terms::{Chains, SourceIndex, Terms, variant_name};
 
 use crate::crossmatch::CrossMatched;
 use crate::source::SourceDefinition;
 use crate::state::{State, pending};
 use crate::tiles::Built;
+use crate::watch::Watch;
+
+/// The phases of a build its watch is told of: the rules, the tiles, the volume grids, the D1
+/// rows, the checks, and the manifest with every file checked against it.
+pub const PHASES: u64 = 6;
 
 /// What a release is built from. Its rules, release configuration and researched structures
 /// are those the cross-match worked under, which it carries (`crate::crossmatch::Basis`).
@@ -64,8 +72,9 @@ pub struct Inputs<'a> {
     pub tiles: &'a Built,
     /// The definitions of every source the release holds.
     pub definitions: &'a [SourceDefinition],
-    /// The volume grids, each with its source's definition.
-    pub grids: &'a [(SourceDefinition, Grid)],
+    /// The volume grids, each by its source's definition and fetched files, read one at a time
+    /// as the release is written.
+    pub grids: &'a [(SourceDefinition, Vec<PathBuf>)],
     /// The cache, which keeps each source's provenance.
     pub cache: &'a Path,
     /// The build time, RFC 3339 in UTC.
@@ -131,6 +140,22 @@ impl std::error::Error for BuildError {}
 /// state of this release, its directory already exists, a check fails, or a file cannot be
 /// written or checked.
 pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelease, BuildError> {
+    build_watched(inputs, state, out, Watch::unwatched())
+}
+
+/// [`build`], telling `watch` as each of its [`PHASES`] is done. Once the owner asks it to stop,
+/// it stops at its next safe point, before the release is made complete: the directory it was
+/// writing is removed, no number is used up and the state is left as it was.
+///
+/// # Errors
+///
+/// Fails as [`build`] does, or when the owner asked the build to stop.
+pub fn build_watched(
+    inputs: &Inputs<'_>,
+    state: &Path,
+    out: &Path,
+    watch: Watch<'_>,
+) -> Result<BuiltRelease, BuildError> {
     let number = inputs
         .crossed
         .release
@@ -165,22 +190,39 @@ pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelea
         )));
     }
     let dir = release_dir(out, number);
-    let assembled = assemble(inputs, number).map_err(fail)?;
-    if !assembled.failed.is_empty() {
+    let building = out.join(RELEASES).join(format!(".building-{number}"));
+    let written = write_release(inputs, number, &building, watch).map_err(|problem| {
+        let _ = std::fs::remove_dir_all(&building);
+        fail(problem)
+    })?;
+    if let Err(stopped) = watch.check() {
+        let _ = std::fs::remove_dir_all(&building);
+        return Err(fail(stopped));
+    }
+    if !written.failed.is_empty() {
+        let _ = std::fs::remove_dir_all(&building);
         return Err(BuildError::Checks {
             number,
-            failed: assembled.failed,
+            failed: written.failed,
         });
     }
-    let building = out.join(RELEASES).join(format!(".building-{number}"));
-    let written = files::write(&building, &assembled.files, &assembled.manifest)
-        .and_then(|()| files::verify(&building, &assembled.manifest));
-    if let Err(failed) = written {
+    let checked = files::write_manifest(&building, &written.manifest)
+        .and_then(|()| files::verify(&building, &written.manifest));
+    if let Err(failed) = checked {
         let _ = std::fs::remove_dir_all(&building);
         return Err(BuildError::Checks {
             number,
             failed: vec![failed],
         });
+    }
+    watch.step(format!(
+        "manifest: {} files checked against their SHA-256",
+        written.manifest.files.len()
+    ));
+    // The last safe point: from here the release is made complete and its number used up.
+    if let Err(stopped) = watch.check() {
+        let _ = std::fs::remove_dir_all(&building);
+        return Err(fail(stopped));
     }
     std::fs::rename(&building, &dir).map_err(|e| {
         let _ = std::fs::remove_dir_all(&building);
@@ -195,7 +237,7 @@ pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelea
     Ok(BuiltRelease {
         number,
         dir,
-        manifest: assembled.manifest,
+        manifest: written.manifest,
         provisional: provisional(inputs.definitions),
     })
 }

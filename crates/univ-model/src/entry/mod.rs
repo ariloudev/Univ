@@ -28,16 +28,18 @@ pub enum RedshiftKind {
 }
 
 /// A redshift as its source published it, heliocentric, with the CMB-frame redshift derived from
-/// it and the dipole model of the derivation.
+/// it and the dipole model of the derivation; or, where its source publishes only that, in the
+/// CMB frame, kept as published.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawRedshift")]
 pub struct Redshift {
     pub kind: RedshiftKind,
     pub kind_of_value: KindOfValue,
-    /// The velocity cz as published, when the source gives cz rather than z: the heliocentric
-    /// redshift is then cz / c, the definition of cz.
+    /// The velocity cz as published, when the source gives cz rather than z: the redshift in
+    /// its published frame is then cz / c, the definition of cz.
     pub velocity: Option<Quantity>,
-    /// The heliocentric redshift as measured, and the CMB-frame redshift derived from it.
+    /// The heliocentric redshift as measured, and the CMB-frame redshift derived from it; or the
+    /// CMB-frame redshift as published (see [`CmbRedshift::published`]).
     pub cmb: CmbRedshift,
 }
 
@@ -53,7 +55,7 @@ struct RawRedshift {
 impl TryFrom<RawRedshift> for Redshift {
     type Error = EntryError;
     fn try_from(raw: RawRedshift) -> Result<Self, EntryError> {
-        let measured = raw.cmb.heliocentric;
+        let measured = raw.cmb.as_published();
         if measured.unit != Unit::Dimensionless || raw.cmb.value.unit != Unit::Dimensionless {
             return Err(EntryError::Unit("redshift", measured.unit));
         }
@@ -87,19 +89,7 @@ impl Redshift {
         direction: Vec3,
         correction: &CmbCorrection,
     ) -> Result<Self, EntryError> {
-        let (z, velocity) = match measured.unit.dimension() {
-            Dimension::Dimensionless => (measured, None),
-            Dimension::Velocity => {
-                let cz = measured.to(Unit::KilometrePerSecond)?;
-                let z = Quantity::new(
-                    cz.value / SPEED_OF_LIGHT,
-                    Unit::Dimensionless,
-                    cz.uncertainty.scaled(1.0 / SPEED_OF_LIGHT),
-                )?;
-                (z, Some(measured))
-            }
-            _ => return Err(EntryError::Unit("redshift", measured.unit)),
-        };
+        let (z, velocity) = as_redshift(measured)?;
         let cmb = correction.apply(z, RedshiftFrame::Heliocentric, direction)?;
         Ok(Self {
             kind,
@@ -107,6 +97,48 @@ impl Redshift {
             velocity,
             cmb,
         })
+    }
+
+    /// A redshift its source published in the CMB frame, as z or as a velocity cz, kept as
+    /// published: `correction` only derives its heliocentric redshift back, and the dipole step
+    /// is not applied a second time.
+    ///
+    /// # Errors
+    ///
+    /// Fails when `published` is neither dimensionless nor a velocity, or `direction` is not a
+    /// unit vector.
+    pub fn published_cmb(
+        published: Quantity,
+        kind: RedshiftKind,
+        kind_of_value: KindOfValue,
+        direction: Vec3,
+        correction: &CmbCorrection,
+    ) -> Result<Self, EntryError> {
+        let (z, velocity) = as_redshift(published)?;
+        let cmb = correction.published_cmb(z, direction)?;
+        Ok(Self {
+            kind,
+            kind_of_value,
+            velocity,
+            cmb,
+        })
+    }
+}
+
+/// `measured` as a dimensionless z, with the velocity cz it was published as, if it was one.
+fn as_redshift(measured: Quantity) -> Result<(Quantity, Option<Quantity>), EntryError> {
+    match measured.unit.dimension() {
+        Dimension::Dimensionless => Ok((measured, None)),
+        Dimension::Velocity => {
+            let cz = measured.to(Unit::KilometrePerSecond)?;
+            let z = Quantity::new(
+                cz.value / SPEED_OF_LIGHT,
+                Unit::Dimensionless,
+                cz.uncertainty.scaled(1.0 / SPEED_OF_LIGHT),
+            )?;
+            Ok((z, Some(measured)))
+        }
+        _ => Err(EntryError::Unit("redshift", measured.unit)),
     }
 }
 
@@ -155,13 +187,15 @@ pub struct CatalogueEntry {
     pub velocity: Option<Value>,
     /// A parallax, normalized to degrees as every angle is.
     pub parallax: Option<Value>,
-    pub proper_motion: Option<ProperMotion>,
-    pub magnitude: Option<Magnitude>,
+    pub proper_motion: Option<Box<ProperMotion>>,
+    pub magnitude: Option<Box<Magnitude>>,
     pub group_id: Option<String>,
-    pub supergalactic_velocity: Option<SupergalacticVelocity>,
+    pub supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     /// The source's quality columns, by column name, as published.
     pub flags: BTreeMap<String, String>,
 }
+// The largest values an entry may have, which most entries lack, are boxed: an entry is held
+// millions of times over.
 
 /// An entry as read, before its checks.
 #[derive(Deserialize)]
@@ -173,10 +207,10 @@ struct RawCatalogueEntry {
     redshifts: Vec<Redshift>,
     velocity: Option<Value>,
     parallax: Option<Value>,
-    proper_motion: Option<ProperMotion>,
-    magnitude: Option<Magnitude>,
+    proper_motion: Option<Box<ProperMotion>>,
+    magnitude: Option<Box<Magnitude>>,
     group_id: Option<String>,
-    supergalactic_velocity: Option<SupergalacticVelocity>,
+    supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     flags: BTreeMap<String, String>,
 }
 

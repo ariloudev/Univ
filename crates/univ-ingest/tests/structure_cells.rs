@@ -13,11 +13,14 @@ mod common;
 use common::workspace;
 use univ_ingest::release::{centre as structure_centre, index_bounds, structure_rows};
 use univ_ingest::source::ScaleDomain;
-use univ_ingest::structures::{Structure, StructureGeometry, read_all_named};
+use univ_ingest::structures::{Coordinates, Radial, Structure, StructureGeometry, read_all_named};
 use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::derive::Release;
 use univ_model::geometry::Aabb;
 use univ_model::position::{Frame, Vec3, between, dot, unit_vector};
+use univ_model::redshift::{CmbCorrection, DipoleModel, RedshiftFrame};
+use univ_model::units::Unit;
+use univ_model::value::{Quantity, Uncertainty};
 
 fn structure(id: &str) -> Structure {
     read_all_named(&workspace().join("structures"))
@@ -26,6 +29,11 @@ fn structure(id: &str) -> Structure {
         .find(|(i, _)| i == id)
         .unwrap()
         .1
+}
+
+/// The run's dipole, as the pipeline makes it.
+fn dipole() -> CmbCorrection {
+    CmbCorrection::new(DipoleModel::Planck2018)
 }
 
 fn centre(b: &Aabb) -> Vec3 {
@@ -45,7 +53,7 @@ fn a_sphere_is_boxed_about_its_placed_centre_with_its_rescaled_radius() {
     let release = Release::planck_2018();
     let h0 = release.cosmology().hubble_constant;
     // Bootes Void: centred at cz = 15,500 km/s (FK4 B1950), radius 63 Mpc for H0 = 50.
-    let b = index_bounds(&structure("bootes-void"), None, &release).unwrap();
+    let b = index_bounds(&structure("bootes-void"), None, &release, &dipole()).unwrap();
     let distance = release
         .cosmology()
         .comoving_distance(15_500.0 / SPEED_OF_LIGHT)
@@ -60,7 +68,7 @@ fn a_sphere_is_boxed_about_its_placed_centre_with_its_rescaled_radius() {
     assert!(toward > (0.01_f64).to_radians().cos(), "{toward}");
 
     // The KBC void is about the observer: its box is centred on it, 300 Mpc for H0 = 70.
-    let kbc = index_bounds(&structure("kbc-void"), None, &release).unwrap();
+    let kbc = index_bounds(&structure("kbc-void"), None, &release, &dipole()).unwrap();
     assert!(centre(&kbc).iter().all(|c| c.abs() < 1e-9));
     assert!((half(&kbc)[0] - 300.0 * 70.0 / h0).abs() < 1e-9);
 }
@@ -69,7 +77,7 @@ fn a_sphere_is_boxed_about_its_placed_centre_with_its_rescaled_radius() {
 fn a_point_is_boxed_where_it_is_placed_and_an_unstated_equinox_widens_it() {
     let release = Release::planck_2018();
     // The Dipole Repeller: supergalactic velocities (11000, -6000, 10000) km/s.
-    let b = index_bounds(&structure("dipole-repeller"), None, &release).unwrap();
+    let b = index_bounds(&structure("dipole-repeller"), None, &release, &dipole()).unwrap();
     assert_eq!(
         b.min, b.max,
         "a point in a frame that is a rotation of the ICRS"
@@ -82,7 +90,13 @@ fn a_point_is_boxed_where_it_is_placed_and_an_unstated_equinox_widens_it() {
     assert!((dot(b.min, b.min).sqrt() - distance).abs() < 1e-6);
 
     // The Shapley Supercluster's equinox is unstated: its box holds both readings.
-    let shapley = index_bounds(&structure("shapley-supercluster"), None, &release).unwrap();
+    let shapley = index_bounds(
+        &structure("shapley-supercluster"),
+        None,
+        &release,
+        &dipole(),
+    )
+    .unwrap();
     let c = centre(&shapley);
     let reach = dot(c, c).sqrt()
         * Frame::EquatorialEquinoxUnstated
@@ -101,7 +115,7 @@ fn a_sky_region_is_bounded_between_its_near_and_far_distances() {
     let Some(StructureGeometry::SkyRegion(region)) = &wall.geometry else {
         unreachable!()
     };
-    let b = index_bounds(&wall, None, &release).unwrap();
+    let b = index_bounds(&wall, None, &release, &dipole()).unwrap();
     let cosmology = release.cosmology();
     let (near, far) = (
         cosmology.comoving_distance(0.01).unwrap(),
@@ -139,9 +153,64 @@ fn a_structure_that_cannot_be_placed_is_not_indexed_with_the_reason() {
         ),
         ("big-ring", "its member list was not resolved"),
     ] {
-        let refused = index_bounds(&structure(id), None, &release).unwrap_err();
+        let mut s = structure(id);
+        // Horologium-Reticulum now cites its mean velocity; without it, its position gives no
+        // distance.
+        if let Some(Coordinates::Spherical { radial, .. }) = &mut s.position {
+            *radial = None;
+        }
+        let refused = index_bounds(&s, None, &release, &dipole()).unwrap_err();
         assert_eq!(refused, reason, "{id}");
     }
+}
+
+#[test]
+fn horologium_reticulum_is_placed_at_its_cited_mean_velocity() {
+    // Fleenor et al. 2005: mean cz 19,900 km/s, heliocentric ("heliocentric corrections were
+    // applied to all redshifts"), near α = 03h19m, δ = -50°02′. The velocity moves to the CMB
+    // frame toward the centre with the run's dipole, as an entry's does, before it is placed:
+    // 288.3 Mpc, not the 289.5 Mpc of the heliocentric cz.
+    let release = Release::planck_2018();
+    let s = structure("horologium-reticulum-supercluster");
+    let Some(Coordinates::Spherical {
+        frame,
+        lon: Some(lon),
+        lat,
+        radial: Some(Radial::Velocity(v)),
+        redshift_frame,
+    }) = &s.position
+    else {
+        unreachable!()
+    };
+    assert_eq!(v.quantity.value, 19_900.0);
+    assert_eq!(*redshift_frame, Some(RedshiftFrame::Heliocentric));
+    let b = index_bounds(&s, None, &release, &dipole()).unwrap();
+    let centre: Vec3 = std::array::from_fn(|k| b.min[k].midpoint(b.max[k]));
+    let placed = dot(centre, centre).sqrt();
+    let toward = between(*frame, Frame::Icrs).apply(unit_vector(lon.value(), lat.value()));
+    let heliocentric_z = Quantity::new(
+        19_900.0 / SPEED_OF_LIGHT,
+        Unit::Dimensionless,
+        Uncertainty::NoneReported,
+    )
+    .unwrap();
+    let cmb = dipole()
+        .apply(heliocentric_z, RedshiftFrame::Heliocentric, toward)
+        .unwrap();
+    let expected = release
+        .cosmology()
+        .comoving_distance(cmb.value.value)
+        .unwrap();
+    let heliocentric = release
+        .cosmology()
+        .comoving_distance(19_900.0 / SPEED_OF_LIGHT)
+        .unwrap();
+    assert!(
+        (placed - expected).abs() < 1e-6 * expected,
+        "{placed} {expected}"
+    );
+    assert!((placed - 288.3).abs() < 0.1, "{placed}");
+    assert!(heliocentric - placed > 1.0, "{placed} {heliocentric}");
 }
 
 #[test]
@@ -155,7 +224,7 @@ fn a_sky_region_over_every_longitude_spans_all_360_degrees() {
     region.lon[0].quantity.value = 0.0;
     region.lon[1].quantity.value = 360.0;
     let to_icrs = between(region.frame, Frame::Icrs);
-    let b = index_bounds(&wall, None, &release).unwrap();
+    let b = index_bounds(&wall, None, &release, &dipole()).unwrap();
     let far = release.cosmology().comoving_distance(0.05).unwrap();
     for ra in (0..360).step_by(15) {
         let p = to_icrs.apply(unit_vector(f64::from(ra), 0.0).map(|c| c * far));
@@ -172,9 +241,11 @@ fn each_structure_is_in_the_scale_domain_its_published_distance_falls_in() {
     let release = Release::planck_2018();
     let mut checked = 0;
     for (id, s) in read_all_named(&workspace().join("structures")).unwrap() {
-        let distance = match structure_centre(&s, None, &release) {
+        let distance = match structure_centre(&s, None, &release, &dipole()) {
             // About the observer: its published radius, the half side of its box.
-            Ok(c) if dot(c, c) == 0.0 => half(&index_bounds(&s, None, &release).unwrap())[0],
+            Ok(c) if dot(c, c) == 0.0 => {
+                half(&index_bounds(&s, None, &release, &dipole()).unwrap())[0]
+            }
             Ok(c) => dot(c, c).sqrt(),
             // A member list, or a structure published without a placeable position: its papers
             // put each far beyond the nearby galaxies (redshifts from 0.02 to 2.1).
@@ -195,7 +266,7 @@ fn each_structure_is_in_the_scale_domain_its_published_distance_falls_in() {
 fn a_structure_row_gives_its_scale_domain_and_centre_or_none_when_unplaced() {
     let release = Release::planck_2018();
     let named = read_all_named(&workspace().join("structures")).unwrap();
-    let (rows, _) = structure_rows(1, &named, &[], &release).unwrap();
+    let (rows, _) = structure_rows(1, &named, &[], &release, &dipole()).unwrap();
     let row = |id: &str| rows.iter().find(|r| r.id == id).unwrap();
     let bootes = row("bootes-void");
     assert_eq!(bootes.scale_domain, "cosmic_web");
@@ -204,7 +275,8 @@ fn a_structure_row_gives_its_scale_domain_and_centre_or_none_when_unplaced() {
         bootes.centre_y.unwrap(),
         bootes.centre_z.unwrap(),
     ];
-    let boxed = centre(&index_bounds(&structure("bootes-void"), None, &release).unwrap());
+    let boxed =
+        centre(&index_bounds(&structure("bootes-void"), None, &release, &dipole()).unwrap());
     assert!((0..3).all(|k| (at[k] - boxed[k]).abs() < 1e-9), "{at:?}");
     let unplaced = row("hercules-corona-borealis-great-wall");
     assert_eq!(unplaced.scale_domain, "cosmic_web");

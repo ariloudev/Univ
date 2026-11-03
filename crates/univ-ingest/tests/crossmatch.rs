@@ -78,6 +78,9 @@ fn options(state: &Path) -> (FetchOptions, MatchOptions) {
     };
     let state = MatchOptions {
         state: state.to_path_buf(),
+        correction: univ_model::redshift::CmbCorrection::new(
+            univ_model::redshift::DipoleModel::Planck2018,
+        ),
     };
     (fetch, state)
 }
@@ -286,6 +289,9 @@ fn cross(structures: &[Structure]) -> CrossMatched {
     let inputs = Inputs {
         basis: &basis,
         release: &release,
+        correction: &univ_model::redshift::CmbCorrection::new(
+            univ_model::redshift::DipoleModel::Planck2018,
+        ),
         state: &state,
     };
     cross_match(entries, &inputs, &RecordingSink::default()).unwrap()
@@ -398,6 +404,7 @@ fn a_member_whose_position_cannot_be_checked_is_resolved_by_name_alone_and_count
         std::slice::from_ref(&wall),
         &NameIndex::new(&resolved),
         tolerance,
+        None,
     );
     assert_eq!(lists[0].by_name_only, ["Lonely"]);
     assert!(lists[0].shape.is_some() && lists[0].unplaced.is_empty());

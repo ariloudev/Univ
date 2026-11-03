@@ -59,10 +59,10 @@ fn entry() -> CatalogueEntry {
         )),
         parallax: None,
         proper_motion: None,
-        magnitude: Some(Magnitude {
+        magnitude: Some(Box::new(Magnitude {
             band: "Kcmag".to_owned(),
             value: value(0.797, Unit::Magnitude, Unit::Magnitude),
-        }),
+        })),
         group_id: None,
         supergalactic_velocity: None,
         flags: BTreeMap::from([("r_cz".to_owned(), "1991RC3.9.C...0000d".to_owned())]),

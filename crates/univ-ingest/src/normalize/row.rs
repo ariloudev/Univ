@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 
-use univ_model::cosmology::AssumedCosmology;
+use univ_model::cosmology::{AssumedCosmology, Cosmology, SPEED_OF_LIGHT};
 use univ_model::distance::{Distance, DistanceError, DistanceKind, Method};
 use univ_model::entry::{
     CatalogueEntry, EntryError, Magnitude, NativePosition, Position, PositionErrors,
@@ -11,9 +11,11 @@ use univ_model::entry::{
 };
 use univ_model::ids::{Designation, SourceId};
 use univ_model::position::{Epoch, PositionError};
-use univ_model::redshift::CmbCorrection;
+use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
+
+mod fixes;
 
 pub(super) use super::plan::Changed;
 use super::plan::{ByCode, Col, Errors, FixEffect, Measured, Plan, RuleAction};
@@ -37,6 +39,10 @@ struct Row<'a, 'c> {
     methods: Vec<(usize, (DistanceKind, Method))>,
     /// Columns a fix dropped on this row, read as blank.
     dropped: Vec<usize>,
+    /// Cells a fix replaced on this row with cited values, by column.
+    replaced: Vec<(usize, &'a str)>,
+    /// The flags of the fixes that replaced cells: name and text.
+    marks: Vec<(&'a str, &'a str)>,
     changed: Changed,
 }
 
@@ -52,6 +58,8 @@ pub(super) fn read(
         kinds: Vec::new(),
         methods: Vec::new(),
         dropped: Vec::new(),
+        replaced: Vec::new(),
+        marks: Vec::new(),
         changed: 0,
     };
     match row.entry() {
@@ -65,6 +73,9 @@ impl Row<'_, '_> {
     fn cell(&self, index: usize) -> &str {
         if self.dropped.contains(&index) {
             return "";
+        }
+        if let Some((_, value)) = self.replaced.iter().find(|(c, _)| *c == index) {
+            return value;
         }
         self.cells.get(index).map_or("", |c| c.as_ref())
     }
@@ -122,35 +133,43 @@ impl Row<'_, '_> {
         let plan = self.cx.plan;
         self.rules()?;
         self.zero_errors()?;
+        self.leave_out_when()?;
         self.drop_values();
+        self.replace_values();
         let identifier = self
             .text(plan.identifier)
             .ok_or(LeftOutReason::MissingIdentifier)?;
         let position = self.position()?;
         let direction = position.as_ref().map(|p| p.icrs.unit_vector());
-        let mut redshifts = Vec::new();
+        // Sized to the plan: a vector grown from empty takes room for four, and an entry is held
+        // millions of times over.
+        let mut redshifts = Vec::with_capacity(plan.redshifts.len());
         for r in &plan.redshifts {
-            let Some(measured) = self.quantity(&r.measured)? else {
+            let Some(mut measured) = self.quantity(&r.measured)? else {
                 continue;
             };
+            let mut read_as = None;
+            if let Some((from, cosmology, kind_of_value)) = &r.comoving {
+                let comoving;
+                (measured, comoving) = comoving_redshift(measured, *from, cosmology)?;
+                read_as = comoving.then_some(*kind_of_value);
+            }
             let kind = self.by_code(&r.kind)?;
-            let default = match kind {
+            let default = read_as.unwrap_or(match kind {
                 RedshiftKind::Spectroscopic => KindOfValue::Measured,
                 RedshiftKind::Photometric => KindOfValue::Estimated,
-            };
+            });
             let kind_of_value = self.kind(r.measured.value.index, default);
             let direction = direction.ok_or(LeftOutReason::MissingPosition)?;
-            let redshift = Redshift::heliocentric(
-                measured,
-                kind,
-                kind_of_value,
-                direction,
-                self.cx.correction,
-            )
-            .map_err(entry_reason)?;
+            let redshift =
+                match r.frame {
+                    RedshiftFrame::Cmb => Redshift::published_cmb,
+                    _ => Redshift::heliocentric,
+                }(measured, kind, kind_of_value, direction, self.cx.correction)
+                .map_err(entry_reason)?;
             redshifts.push(redshift);
         }
-        let mut distances = Vec::new();
+        let mut distances = Vec::with_capacity(plan.distances.len());
         for (i, d) in plan.distances.iter().enumerate() {
             let Some(native) = self.quantity(&d.measured)? else {
                 continue;
@@ -176,6 +195,7 @@ impl Row<'_, '_> {
             .map_err(distance_reason)?;
             distances.push(distance);
         }
+        distances.extend(self.added_distances()?);
         let entry = CatalogueEntry {
             designation: Designation::new(self.cx.source.clone(), identifier)
                 .map_err(|_| LeftOutReason::MissingIdentifier)?,
@@ -185,14 +205,19 @@ impl Row<'_, '_> {
             redshifts,
             velocity: self.value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?,
             parallax: self.value(plan.parallax.as_ref(), Unit::Degree)?,
-            proper_motion: self.proper_motion()?,
-            magnitude: self.magnitude()?,
+            proper_motion: self.proper_motion()?.map(Box::new),
+            magnitude: self.magnitude()?.map(Box::new),
             group_id: plan.group_id.and_then(|c| self.text(c)),
-            supergalactic_velocity: self.supergalactic()?,
+            supergalactic_velocity: self.supergalactic()?.map(Box::new),
             flags: plan
                 .flags
                 .iter()
                 .filter_map(|c| self.text(c.index).map(|t| (c.name.clone(), t)))
+                .chain(
+                    self.marks
+                        .iter()
+                        .map(|(flag, text)| ((*flag).to_owned(), (*text).to_owned())),
+                )
                 .collect::<BTreeMap<_, _>>(),
         };
         entry.check().map_err(entry_reason)?;
@@ -220,51 +245,6 @@ impl Row<'_, '_> {
             }
         }
         Ok(())
-    }
-
-    /// Leaves the row out when a fix says a zero error in one of its columns marks it.
-    fn zero_errors(&mut self) -> Result<(), LeftOutReason> {
-        for fix in &self.cx.plan.fixes {
-            let FixEffect::ZeroLeavesOut(reason) = fix.effect else {
-                continue;
-            };
-            for column in &fix.columns {
-                if self.number(*column)? == Some(0.0) {
-                    self.changed |= 1 << fix.fix;
-                    return Err(reason);
-                }
-            }
-        }
-        Ok(())
-    }
-
-    /// Drops the values of the columns of each fix whose condition the row meets, marking the
-    /// fix when it dropped a value that was there.
-    fn drop_values(&mut self) {
-        for fix in &self.cx.plan.fixes {
-            let FixEffect::DropWhen { column, when } = &fix.effect else {
-                continue;
-            };
-            if !when.matches(self.cell(*column)) {
-                continue;
-            }
-            if fix.columns.iter().any(|c| !self.cell(*c).trim().is_empty()) {
-                self.changed |= 1 << fix.fix;
-            }
-            self.dropped.extend(&fix.columns);
-        }
-    }
-
-    /// Marks each fix that reads columns in another unit, for an entry that took a value from
-    /// one of them.
-    fn read_as(&mut self) {
-        for fix in &self.cx.plan.fixes {
-            if matches!(fix.effect, FixEffect::ReadAs)
-                && fix.columns.iter().any(|c| !self.cell(*c).is_empty())
-            {
-                self.changed |= 1 << fix.fix;
-            }
-        }
     }
 
     fn position(&mut self) -> Result<Option<Position>, LeftOutReason> {
@@ -348,13 +328,19 @@ impl Row<'_, '_> {
             .map_err(|e| value_reason(&e))
     }
 
-    /// An error in `unit`: none when blank, or when zero and a fix says a zero error was not
-    /// reported.
+    /// An error in `unit`: none when blank, or when zero, or a sentinel value, and a fix says
+    /// such an error was not reported.
+    #[expect(
+        clippy::float_cmp,
+        reason = "a sentinel is the number as written, not a near one"
+    )]
     fn error(&mut self, col: &Col, unit: Unit) -> Result<Option<f64>, LeftOutReason> {
         let Some(sigma) = self.number(col.index)? else {
             return Ok(None);
         };
-        if sigma == 0.0 && self.mark(|e| matches!(e, FixEffect::ZeroIsNoneReported), col.index) {
+        let sentinel =
+            |e: &FixEffect| matches!(e, FixEffect::SentinelIsNoneReported(v) if *v == sigma);
+        if self.mark(sentinel, col.index) {
             return Ok(None);
         }
         if sigma < 0.0 {
@@ -454,4 +440,32 @@ fn entry_reason(error: EntryError) -> LeftOutReason {
         EntryError::Value(e) => value_reason(&e),
         _ => LeftOutReason::UnusableValue,
     }
+}
+
+/// `measured`, a velocity standing for H0 times a comoving distance in `cosmology` from `from`
+/// km/s up, as the redshift at that distance, its uncertainty scaled by dz/dv = E(z) / c, and
+/// true; below `from`, it is as published, a cz, and false.
+fn comoving_redshift(
+    measured: Quantity,
+    from: f64,
+    cosmology: &Cosmology,
+) -> Result<(Quantity, bool), LeftOutReason> {
+    let v = measured
+        .to(Unit::KilometrePerSecond)
+        .map_err(|_| LeftOutReason::UnusableValue)?;
+    if v.value < from {
+        return Ok((measured, false));
+    }
+    let z = cosmology
+        .redshift_at(v.value / cosmology.hubble_constant)
+        .map_err(|_| LeftOutReason::UnusableValue)?;
+    let om = cosmology.omega_matter;
+    let expansion = (om * (1.0 + z).powi(3) + 1.0 - om).sqrt();
+    Quantity::new(
+        z,
+        Unit::Dimensionless,
+        v.uncertainty.scaled(expansion / SPEED_OF_LIGHT),
+    )
+    .map(|q| (q, true))
+    .map_err(|_| LeftOutReason::UnusableValue)
 }

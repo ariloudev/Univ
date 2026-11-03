@@ -72,7 +72,7 @@ fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
             &mut store,
             "SELECT COUNT(*) FROM objects WHERE release = (SELECT release FROM latest)"
         ),
-        24
+        25
     );
     let manifest = store.get(&keys::key(1, keys::MANIFEST)).unwrap().unwrap();
     assert_eq!(

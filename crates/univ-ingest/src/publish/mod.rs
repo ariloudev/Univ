@@ -1,9 +1,10 @@
 //! Publishing a complete release to the local D1 and R2 that `wrangler dev` reads
 //! (publish-a-release-locally), and pruning one (prune-old-releases).
 //!
-//! Both work through a [`Store`], the five D1 and R2 operations they need. [`Wrangler`] runs
-//! them with Wrangler's `--local` commands against a `--persist-to` state directory; tests run
-//! the same logic against an in-memory store.
+//! Both work through a [`Store`], the D1 and R2 operations they need. [`Wrangler`] runs the D1
+//! ones with Wrangler's `--local` commands against a `--persist-to` state directory, and every
+//! R2 one of a run through one [`R2Batch`], a long-running script that opens the same local
+//! bucket as Wrangler does; tests run the same logic against an in-memory store.
 //!
 //! # Publishing
 //!
@@ -41,7 +42,9 @@
 mod check;
 mod error;
 pub mod journal;
+mod progress;
 mod prune;
+mod r2batch;
 mod upload;
 mod wrangler;
 
@@ -50,10 +53,14 @@ use std::path::Path;
 
 use serde_json::{Map, Value};
 
+use crate::tiles::sha256;
+
 pub use check::{Status, published_status, sql_text};
 pub use error::PublishError;
-pub use prune::{PruneError, Pruned, prune};
-pub use upload::{Published, move_latest, publish};
+pub use progress::{FileDone, Lines, Progress};
+pub use prune::{PruneError, Pruned, prune, prune_with};
+pub use r2batch::{R2Batch, SCRIPT};
+pub use upload::{Published, move_latest, publish, publish_with};
 pub use wrangler::{BUCKET, DATABASE, STDERR_LINES, Wrangler, ingest_dir, strip_ansi};
 
 /// Where publishing and pruning find a release and keep their journals, and their clock.
@@ -72,6 +79,15 @@ pub struct StoreOptions<'a> {
 
 /// A row a D1 query returns, each column by name.
 pub type QueryRow = Map<String, Value>;
+
+/// What R2 gave back of an object read back once it was written.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ReadBack {
+    /// Its size in bytes.
+    pub bytes: u64,
+    /// Its SHA-256, in lower-case hexadecimal.
+    pub sha256: String,
+}
 
 /// The D1 and R2 operations publishing and pruning need.
 pub trait Store {
@@ -96,6 +112,20 @@ pub trait Store {
     /// Fails, saying why, when R2 refuses it.
     fn put(&mut self, key: &str, file: &Path) -> Result<(), String>;
 
+    /// Writes the file `file` to R2 at `key` and reads it back, giving the size and SHA-256 of
+    /// what R2 gives back: none when R2 holds nothing at `key` once it was written.
+    ///
+    /// # Errors
+    ///
+    /// Fails, saying why, when R2 refuses the write or the read.
+    fn put_read_back(&mut self, key: &str, file: &Path) -> Result<Option<ReadBack>, String> {
+        self.put(key, file)?;
+        Ok(self.get(key)?.map(|back| ReadBack {
+            bytes: back.len() as u64,
+            sha256: sha256(&back),
+        }))
+    }
+
     /// Reads the object at `key` from R2: none where there is none.
     ///
     /// # Errors
@@ -109,6 +139,15 @@ pub trait Store {
     ///
     /// Fails, saying why, when R2 refuses it.
     fn delete(&mut self, key: &str) -> Result<(), String>;
+
+    /// Deletes the objects at `keys` from R2, those there are.
+    ///
+    /// # Errors
+    ///
+    /// Fails, naming the object and the cause, when R2 refuses one.
+    fn delete_keys(&mut self, keys: &[String]) -> Result<(), String> {
+        keys.iter().try_for_each(|key| self.delete(key))
+    }
 }
 
 /// Where the release `latest` points to was when an operation started.

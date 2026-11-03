@@ -9,12 +9,16 @@ use crate::ranking::RankingRules;
 
 /// Places a ranked object under `release`, giving its derived position. An object that has a
 /// preferred distance but no sky position, or whose distance cannot be derived, is marked not
-/// placed with the reason; one without a preferred distance stays as ranking left it.
+/// placed with the reason; one without a preferred distance, or that ranking left unplaced,
+/// stays as ranking left it.
 pub fn place(
     object: &mut Object,
     release: &Release,
     rules: &RankingRules,
 ) -> Option<DerivedPosition> {
+    if !object.placement.is_placed() {
+        return None;
+    }
     let preferred = object.preferred_distance.as_ref()?;
     let position = object
         .preferred_position

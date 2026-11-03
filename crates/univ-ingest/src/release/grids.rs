@@ -26,7 +26,7 @@ pub const HEADER_VERSION: u32 = 1;
 /// The largest label written exactly as a 32-bit float.
 const MAX_LABEL: u32 = 1 << 24;
 
-/// A grid's files in the release, by path, and its D1 row.
+/// A grid's files in the release, by path, and its D1 row, whose `source` the build numbers.
 #[derive(Debug)]
 pub struct GridFiles {
     pub files: Vec<(String, Vec<u8>)>,
@@ -179,7 +179,7 @@ pub fn grid_files(
     let row = GridRow {
         release,
         id: id.to_owned(),
-        source: id.to_owned(),
+        source: 0,
         unit: snake(&g.unit),
         shape: json(&g.shape)?,
         fields: json(&quantities)?,

@@ -24,8 +24,12 @@ pub enum Uncertainty {
     NoneReported,
     /// A symmetric error, ±`sigma`.
     Symmetric { sigma: f64 },
-    /// An asymmetric interval: the value is `value - minus` to `value + plus`.
+    /// An asymmetric one-sigma error: the value is `value - minus` to `value + plus`.
     Asymmetric { minus: f64, plus: f64 },
+    /// A stated interval with no probability: the source says the value lies between
+    /// `value - minus` and `value + plus`, its lower and upper bounds, such as the redshift slice
+    /// a structure was found in. It is not a one-sigma error, and nothing reads it as one.
+    Interval { minus: f64, plus: f64 },
     /// The value is an upper limit.
     UpperLimit,
     /// The value is a lower limit.
@@ -67,6 +71,10 @@ impl Uncertainty {
                 minus: minus * factor,
                 plus: plus * factor,
             },
+            Self::Interval { minus, plus } => Self::Interval {
+                minus: minus * factor,
+                plus: plus * factor,
+            },
             Self::CredibleInterval {
                 minus,
                 plus,
@@ -97,7 +105,9 @@ impl Uncertainty {
         };
         match self {
             Self::Symmetric { sigma } => error(sigma),
-            Self::Asymmetric { minus, plus } => error(minus).and(error(plus)),
+            Self::Asymmetric { minus, plus } | Self::Interval { minus, plus } => {
+                error(minus).and(error(plus))
+            }
             Self::CredibleRegion { probability } => probable(probability),
             Self::CredibleInterval {
                 minus,
@@ -253,6 +263,18 @@ mod tests {
                 probability: 0.68
             }
         );
+        let slice = Uncertainty::Interval {
+            minus: 0.5,
+            plus: 0.5,
+        };
+        let q = Quantity::new(2.0, Unit::Kiloparsec, slice).unwrap();
+        assert_eq!(
+            q.to(Unit::Parsec).unwrap().uncertainty,
+            Uncertainty::Interval {
+                minus: 500.0,
+                plus: 500.0
+            }
+        );
         let limit = Quantity::new(5.0, Unit::Arcsecond, Uncertainty::UpperLimit).unwrap();
         assert_eq!(
             limit.to(Unit::Degree).unwrap().uncertainty,
@@ -279,6 +301,11 @@ mod tests {
             probability: 0.68,
         };
         assert!(Quantity::new(1.0, Unit::Parsec, interval).is_err());
+        let stated = Uncertainty::Interval {
+            minus: 0.1,
+            plus: f64::NAN,
+        };
+        assert!(Quantity::new(1.0, Unit::Parsec, stated).is_err());
         let q = Quantity::new(1.0, Unit::Degree, none).unwrap();
         assert!(Value::normalize(q, Unit::Parsec, KindOfValue::Measured).is_err());
     }

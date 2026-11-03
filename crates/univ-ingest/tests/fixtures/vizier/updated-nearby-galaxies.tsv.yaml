@@ -1,5 +1,5 @@
 source: updated-nearby-galaxies
-url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag&-out.add=_RAJ%2C_DEJ&-out.max=5
-retrieved: 2026-11-03T03:56:30Z
-sha256: a8fbe220339332b775e04e542d20de6298a72dc651d3d18f52aa175fff83ae0b
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag%2Ca26&-out.add=_RAJ%2C_DEJ&-out.max=5
+retrieved: 2026-11-03T16:22:25Z
+sha256: ca1831f3235ef8e2820ddbb3beed3098d258caf59d29bac93c7947004c47be42
 note: the first chunk's query cut to 5 rows

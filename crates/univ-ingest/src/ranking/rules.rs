@@ -21,6 +21,17 @@ pub struct RankingRules {
     pub method_rank_basis: String,
     pub tie_tolerance: f64,
     pub tie_basis: String,
+    /// Where a geometric or indicator distance is a candidate, every redshift distance whose
+    /// fractional uncertainty exceeds this fraction is set aside.
+    pub redshift_threshold: f64,
+    pub redshift_threshold_basis: String,
+    /// The order of sources that decides between candidates published without an uncertainty
+    /// that share the best method rank; a source not listed comes after every listed one.
+    pub source_order: Vec<SourceId>,
+    pub source_order_basis: String,
+    /// An object whose preferred distance has a fractional uncertainty above this is not placed.
+    pub too_uncertain_above: f64,
+    pub too_uncertain_basis: String,
     pub parallax_max_fractional_error: f64,
     pub parallax_basis: String,
     pub parallax_zero_point: ZeroPointRule,
@@ -79,6 +90,18 @@ impl RankingRules {
         if !(self.tie_tolerance.is_finite() && self.tie_tolerance >= 0.0) {
             return bad("tie_tolerance", "is negative or not a number");
         }
+        let t = self.redshift_threshold;
+        if !(t.is_finite() && t > 0.0) {
+            return bad("redshift_threshold", "is not a positive number");
+        }
+        let u = self.too_uncertain_above;
+        if !(u.is_finite() && u > 0.0) {
+            return bad("too_uncertain_above", "is not a positive number");
+        }
+        let mut seen = std::collections::HashSet::new();
+        if let Some(s) = self.source_order.iter().find(|s| !seen.insert(*s)) {
+            return bad("source_order", &format!("names {s} twice"));
+        }
         let p = self.parallax_max_fractional_error;
         if !(p > 0.0 && p <= 1.0) {
             return bad("parallax_max_fractional_error", "lies outside (0, 1]");
@@ -109,6 +132,16 @@ impl RankingRules {
             .iter()
             .position(|r| *r == rank)
             .unwrap_or(self.method_rank.len())
+    }
+
+    /// The place of `source` in the rule's order of sources, 0 first; a source not listed after
+    /// every listed one.
+    #[must_use]
+    pub fn source_place(&self, source: &SourceId) -> usize {
+        self.source_order
+            .iter()
+            .position(|s| s == source)
+            .unwrap_or(self.source_order.len())
     }
 
     /// The parallax zero point of `source`, mas, where the rule gives it one.

@@ -1,6 +1,6 @@
 //! What local D1 records of a release and of `latest`, and the rows of a release a table holds.
 
-use univ_model::release::fingerprint::{ROWS, alias};
+use univ_model::release::fingerprint::{ROWS, alias, non_null_alias};
 use univ_model::release::manifest::TableEstimate;
 use univ_model::release::{ColumnKind, SqlValue, Table};
 
@@ -122,8 +122,60 @@ pub fn check_rows(
                 column.total
             ));
         }
+        if let Some(want) = column.non_null {
+            let measure = non_null_alias(&column.column);
+            let got = integer(row, &measure)
+                .ok_or_else(|| format!("D1 gave no {measure} of {}", table.name))?;
+            if u64::try_from(got).ok() != Some(want) {
+                return Err(format!(
+                    "D1 holds release {number}'s rows of {} with {got} values of {} that are \
+                     not NULL, the manifest's is {want}: a row was dropped or altered on the way",
+                    table.name, column.column
+                ));
+            }
+        }
+    }
+    if let Some(want) = &want.content_sha256 {
+        check_content(store, table, number, want)?;
     }
     Ok(count)
+}
+
+/// Checks the rows of release `number` that `table` holds by their content: their digest in
+/// the order of the primary key against `want`, the manifest's.
+fn check_content(
+    store: &mut dyn Store,
+    table: &Table,
+    number: u32,
+    want: &str,
+) -> Result<(), String> {
+    let rows = store.query(&table.content_query(&table.scope.filter(number)))?;
+    let values: Vec<Vec<SqlValue>> = rows
+        .iter()
+        .map(|row| {
+            table
+                .columns
+                .iter()
+                .map(|c| match row.get(*c) {
+                    Some(serde_json::Value::String(t)) => SqlValue::Text(t.clone()),
+                    Some(serde_json::Value::Number(n)) => n.as_i64().map_or_else(
+                        || SqlValue::Real(n.as_f64().unwrap_or(f64::NAN)),
+                        SqlValue::Integer,
+                    ),
+                    _ => SqlValue::Null,
+                })
+                .collect()
+        })
+        .collect();
+    let got = crate::release::content_sha256(&values);
+    if got != want {
+        return Err(format!(
+            "D1 holds release {number}'s rows of {} whose content differs from the manifest's \
+             (SHA-256 {got} against {want}): a row was dropped or altered on the way",
+            table.name
+        ));
+    }
+    Ok(())
 }
 
 /// What the fingerprint measures of `column`, as a message names it.

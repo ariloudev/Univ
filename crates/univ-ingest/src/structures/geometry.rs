@@ -8,6 +8,7 @@
 
 use serde::{Deserialize, Serialize};
 use univ_model::position::Frame;
+use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
 
 use super::cited::Cited;
@@ -111,12 +112,16 @@ pub enum Coordinates {
         z: Cited,
     },
     /// A longitude and latitude, with the distance along the line of sight where published. At a
-    /// pole the longitude is undefined and left out.
+    /// pole the longitude is undefined and left out. A redshift or velocity names the frame its
+    /// paper gives it in, where the paper says: a heliocentric one is moved to the CMB frame as
+    /// an entry's is, and one whose frame is not stated is taken as published.
     Spherical {
         frame: Frame,
         lon: Option<Cited>,
         lat: Cited,
         radial: Option<Radial>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        redshift_frame: Option<RedshiftFrame>,
     },
     /// The observer, at the origin of every frame: no number to cite.
     Observer,
@@ -146,6 +151,8 @@ struct RawCoordinates {
     velocity: Option<Cited>,
     #[serde(default)]
     distance: Option<Cited>,
+    #[serde(default)]
+    redshift_frame: Option<RedshiftFrame>,
 }
 
 pub(crate) fn is_angle(c: &Cited) -> bool {
@@ -158,6 +165,15 @@ impl TryFrom<RawCoordinates> for Coordinates {
         let cartesian = raw.x.is_some() || raw.y.is_some() || raw.z.is_some();
         let spherical = raw.lon.is_some() || raw.lat.is_some();
         let radial = radial(raw.redshift, raw.velocity, raw.distance)?;
+        match raw.redshift_frame {
+            Some(_) if !matches!(radial, Some(Radial::Redshift(_) | Radial::Velocity(_))) => {
+                return Err("redshift_frame is given only with a redshift or velocity".to_owned());
+            }
+            Some(RedshiftFrame::LocalGroup) => {
+                return Err("redshift_frame is heliocentric or cmb".to_owned());
+            }
+            _ => {}
+        }
         if raw.observer {
             return if cartesian || spherical || radial.is_some() || raw.frame.is_some() {
                 Err("the observer takes no frame or coordinates".to_owned())
@@ -190,6 +206,7 @@ impl TryFrom<RawCoordinates> for Coordinates {
                     lon,
                     lat,
                     radial,
+                    redshift_frame: raw.redshift_frame,
                 })
             }
             _ => Err(

@@ -6,6 +6,19 @@ body: |
   alone would misplace galaxies: at a recession velocity of 15,000 km/s a Tully-Fisher distance
   carries about 20% error, while a redshift distance, with a peculiar velocity of 300 km/s, carries
   about 2%. So the rule weighs each measurement's uncertainty first and its method second.
+
+  A redshift distance can still be far off: near a cluster, infall moves a galaxy's redshift away
+  from the Hubble flow, and close by, the peculiar velocity outweighs the recession velocity. So a
+  redshift-independent distance beats a redshift distance whose uncertainty passes a threshold,
+  and a distance whose uncertainty exceeds its value places nothing.
+
+  Between two redshift distances of one object, fractional uncertainty always favours the higher
+  redshift, whose 300 km/s term is a smaller fraction of it. In release 5, 154 objects had
+  redshifts that disagree by more than 1,000 km/s, and ESO 460-G001 was placed by 6dFGS's 54,179
+  km/s against 2MRS's 7,520 km/s, the value NED agrees with; 30 objects were placed by a 2M++
+  clone, a redshift copied from a neighbour, though they have a measured one. So redshift
+  distances rank among themselves by what was measured and how precisely, and only the first of
+  them competes with the other distances.
 realizes:
   - 01a19f1e-d177-716d-b124-3cee44add674
   - 01a19f1e-d177-716d-b124-3cef889e66e6
@@ -14,16 +27,40 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Ingest"
-      shall: "choose as an object's preferred distance the measurement with the smallest fractional distance uncertainty."
+      shall: "choose as an object's preferred distance the measurement that ranks first: its leading redshift distance by kind of value and velocity uncertainty, against its other distances by fractional distance uncertainty and method rank."
     criteria:
       - key: 01a19f23-636e-7035-8185-ab998407d632
         name: "The uncertainty of a redshift distance includes a peculiar-velocity term, 300 km/s unless the release's ranking rule sets another."
+      - key: 01a1a24c-8649-746c-8af0-2d33ff182c93
+        name: "Among an object's redshift distances, a measured redshift ranks before an estimated, inferred or reconstructed one, such as a 2M++ clone or a photometric redshift."
+      - key: 01a1a24c-8649-746c-8af0-2d346e01f5b4
+        name: "Among redshift distances alike in being measured or not, the one with the smallest published velocity uncertainty ranks first."
+      - key: 01a1a24c-8649-746c-8af0-2d359227b0b4
+        name: "Among redshift distances alike in being measured or not, one without a published velocity uncertainty ranks after every one with one, and is given none."
+      - key: 01a1a24c-8649-746c-8af0-2d36092547c6
+        name: "Redshift distances that tie on whether they were measured and on their velocity uncertainty, or both lack one, rank by method rank, then by the source the ranking rule lists first."
+      - key: 01a1a24c-8649-746c-8af0-2d37ff3d9739
+        name: "Only the redshift distance that ranks first among the object's redshift distances, its leading redshift distance, is compared with the object's other candidates."
+      - key: 01a1a147-6018-75e1-9409-3f77617e6ee1
+        name: "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, the leading redshift distance is set aside if its fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states."
+      - key: 01a1a147-6018-75e1-9409-3f788275d038
+        name: "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads."
       - key: 01a19f23-636e-7035-8185-ab9ac704109a
         name: "A tie is broken by method rank: geometric, then primary indicator, then secondary indicator, then spectroscopic redshift, then photometric redshift."
+      - key: 01a1a147-6018-75e1-9409-3f79f4feda94
+        name: "A candidate without a published uncertainty wins only if its method rank is strictly better than that of every remaining candidate with a published uncertainty."
+      - key: 01a1a149-623d-7310-8064-e65204c3c532
+        name: "Where no candidate without a published uncertainty wins, the leader among the candidates with a published uncertainty wins."
+      - key: 01a1a149-623d-7310-8064-e653f6590128
+        name: "Where more than one candidate without a published uncertainty qualifies to win, the one with the best method rank wins."
+      - key: 01a1a149-623d-7310-8064-e6548a057bc6
+        name: "Where qualifying candidates without a published uncertainty share the best method rank, the one whose source the ranking rule lists first wins."
+      - key: 01a1a149-623d-7310-8064-e655ca08d473
+        name: "A candidate published without an uncertainty is given none in the ranking, never an invented one."
       - key: 01a19f23-636e-7035-8185-ab9b3e95c24c
         name: "The ranking rule and its parameters are recorded in the release manifest."
       - key: 01a19f23-636e-7035-8185-ab9ce127e733
-        name: "The object names its preferred measurement and the uncertainty that made it win."
+        name: "The object names its preferred measurement and the comparison that made it win: fractional uncertainty, the redshift threshold, method rank, source order, or, between redshift distances, kind of value or velocity uncertainty."
   - key: 01a19f23-636e-7035-8185-ab9dfac6edfe
     statement:
       form: ubiquitous
@@ -35,9 +72,11 @@ requirements:
   - key: 01a19f23-636e-7035-8185-ab9fe065861e
     statement:
       form: unwanted
-      if: "an object has no distance"
+      if: "an object has no distance, or its preferred distance has a fractional uncertainty above 1"
       system: "Univ Ingest"
       shall: "keep the object with its sky position alone and give it no derived three-dimensional position."
     criteria:
       - key: 01a19f23-636e-7035-8185-aba03617706c
         name: "The object can be looked up but appears in no tile and in no bounded volume query."
+      - key: 01a1a147-6018-75e1-9409-3f7a2ff48aad
+        name: "An object whose preferred distance has a fractional uncertainty above 1 (100%) is given no three-dimensional position, with \"distance too uncertain\" as the reason."

@@ -80,7 +80,7 @@ fn every_index_in_the_schema_is_counted_in_the_estimate() {
 fn a_row_gives_its_values_in_column_order() {
     let row = ObjectCellRow {
         release: 3,
-        domain: "stars".into(),
+        domain: 2,
         ix: -1,
         iy: 0,
         iz: 7,
@@ -90,7 +90,7 @@ fn a_row_gives_its_values_in_column_order() {
         row.values(),
         vec![
             SqlValue::Integer(3),
-            SqlValue::from("stars"),
+            SqlValue::Integer(2),
             SqlValue::Integer(-1),
             SqlValue::Integer(0),
             SqlValue::Integer(7),
@@ -103,7 +103,7 @@ fn a_row_gives_its_values_in_column_order() {
         change: "merged_into".into(),
         replaced_by: "[3]".into(),
     };
-    let statements = IdReplacedRow::TABLE.inserts(&[replaced.values()]);
+    let statements = super::sql::inserts(IdReplacedRow::TABLE, &[replaced.values()]);
     assert_eq!(
         statements,
         [

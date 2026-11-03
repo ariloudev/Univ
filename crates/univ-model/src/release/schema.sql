@@ -1,4 +1,4 @@
--- The D1 schema of Univ releases, version 1 (univ_model::release::SCHEMA_VERSION).
+-- The D1 schema of Univ releases, version 2 (univ_model::release::SCHEMA_VERSION).
 --
 -- One database holds every published release. A table that belongs to one release carries a
 -- `release` column that leads its primary key: publishing release n + 1 only inserts rows whose
@@ -10,6 +10,21 @@
 -- written with INSERT OR IGNORE on their primary keys, so a row once written stays as it was
 -- (a release's rows never change, and publishing and pruning set their own columns later).
 --
+-- Compact by design, every fact kept (version 2):
+--
+-- - Terms. A column whose comment says "term" holds the id of a row of `terms`: the name
+--   univ-model serializes for that value, such as 'parsec', 'estimated' or 'credible_interval'.
+--   Each release numbers its own terms; a reader loads a release's terms once.
+-- - Sources. A column named `source` holds the source's `sources.n` in that release.
+-- - Entries. An entry is numbered by its place among its object's entries, from 0: `entry`.
+-- - Uncertainties. Four columns `{prefix}form` (term), `minus`, `plus` and `level` hold one
+--   univ-model Uncertainty: none_reported, upper_limit and lower_limit set none of the three;
+--   symmetric sets minus = plus = sigma; asymmetric minus and plus; credible_region level (its
+--   probability); credible_interval minus, plus and level. NULL in all four, where a comment
+--   says so, means "the same as the native value's".
+-- - Normalized beside native. A measurement keeps its native value, unit and uncertainty; its
+--   normalized ones are NULL when they are the native ones unchanged (the same unit).
+--
 -- Columns holding JSON hold what univ-model serializes for that value, as the API returns it.
 -- Positions are ICRS Cartesian about the Solar System barycentre unless named otherwise.
 
@@ -20,7 +35,8 @@ CREATE TABLE IF NOT EXISTS schema_version (
 -- Every release ever loaded, pruned ones included. A release is published once its
 -- published_at is set, after latest moved to it; until then its rows may be part loaded, so
 -- readers list only the releases whose published_at is set. d1_estimated_bytes is the
--- release's CON-3 estimate, which publishing sums over the releases not pruned.
+-- release's CON-3 estimate, which publishing sums over the releases not pruned. Every derived
+-- position of the release is placed under its cosmology (JSON) by univ-model model_version.
 CREATE TABLE IF NOT EXISTS releases (
   number INTEGER PRIMARY KEY,
   built_at TEXT NOT NULL,
@@ -49,66 +65,231 @@ CREATE TABLE IF NOT EXISTS latest (
   moved_at TEXT NOT NULL
 );
 
+-- The names that term columns hold by id, per release.
+CREATE TABLE IF NOT EXISTS terms (
+  release INTEGER NOT NULL,
+  id INTEGER NOT NULL,
+  term TEXT NOT NULL,
+  PRIMARY KEY (release, id)
+) WITHOUT ROWID;
+
+-- Each source of the release, n its index, which the `source` columns of the release hold.
+CREATE TABLE IF NOT EXISTS sources (
+  release INTEGER NOT NULL,
+  n INTEGER NOT NULL,
+  id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  scale_domain TEXT NOT NULL,
+  citation TEXT NOT NULL,
+  terms_url TEXT NOT NULL,
+  terms_quote TEXT NOT NULL,
+  credit TEXT NOT NULL,
+  redistribution TEXT NOT NULL,
+  review TEXT NOT NULL,
+  entries INTEGER NOT NULL,
+  access TEXT NOT NULL,
+  cuts TEXT NOT NULL,
+  fixes TEXT NOT NULL,
+  PRIMARY KEY (release, n)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS sources_by_id ON sources (release, id);
+
+-- Each payload a source's provenance records, and what normalization made of the source.
+CREATE TABLE IF NOT EXISTS payloads (
+  release INTEGER NOT NULL,
+  source INTEGER NOT NULL,
+  item TEXT NOT NULL,
+  url TEXT NOT NULL,
+  sha256 TEXT NOT NULL,
+  bytes INTEGER NOT NULL,
+  retrieved TEXT NOT NULL,
+  rows INTEGER,
+  PRIMARY KEY (release, source, item)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS normalizations (
+  release INTEGER NOT NULL,
+  source INTEGER NOT NULL,
+  published INTEGER NOT NULL,
+  left_out TEXT NOT NULL,
+  fixes TEXT NOT NULL,
+  PRIMARY KEY (release, source)
+) WITHOUT ROWID;
+
+-- Each distinct transformation chain of the release's derived positions, held once. `steps` is
+-- the JSON array of univ-model steps with each per-object number replaced by the string "$1"
+-- to "$4", filled from the object's chain_p1 to chain_p4, and each copy of the position's
+-- native value by "$native" (see objects). `params` is how many of chain_p1..4 it takes,
+-- `objects` how many objects of the release it derived.
+CREATE TABLE IF NOT EXISTS chains (
+  release INTEGER NOT NULL,
+  id INTEGER NOT NULL,
+  steps TEXT NOT NULL,
+  params INTEGER NOT NULL,
+  objects INTEGER NOT NULL,
+  PRIMARY KEY (release, id)
+) WITHOUT ROWID;
+
+-- An object with its preferred measurements and, when placed, its derived position.
+--
+-- - Sky position: ra, dec (ICRS degrees) at epoch (Julian year), from its preferred position,
+--   the entry position_entry, chosen as position_class (term) with position_uncertainty_mas.
+-- - Preferred distance: the measurement (preferred_entry, preferred_quantity (term),
+--   preferred_n) of the measurements table, ranked preferred_rank (term) at preferred_mpc and
+--   decided by preferred_decided (term); its fractional uncertainty is preferred_total (NULL:
+--   none reported) with its measurement and peculiar-velocity parts. runner_up_* is the
+--   measurement it was preferred over, likewise.
+-- - Derived position, when placed: x, y, z (ICRS Cartesian, Mpc) at distance_mpc, a measure
+--   (term) distance, with its uncertainty (distance_form, ...), in scale_domain (term). Its
+--   direction is its sky position, published in its preferred position entry's frame. Its
+--   native value is that of its preferred measurement: a distance's or a parallax's native
+--   value, a redshift's CMB-frame value (cmb). Its assumed cosmology is the preferred
+--   distance's (measurements.extra). Its cosmology and model version are the release's.
+--   Galactic and supergalactic Cartesian positions are x, y, z rotated as univ-model rotates
+--   them (ESA 1997; Lahav et al. 2000). Its transformation chain is chains.steps of chain,
+--   filled with chain_p1 to chain_p4 and the native value.
+-- - links and relations: JSON arrays, NULL when empty.
 CREATE TABLE IF NOT EXISTS objects (
   release INTEGER NOT NULL,
   id INTEGER NOT NULL,
-  kind TEXT NOT NULL,
+  kind INTEGER NOT NULL,
   ra REAL,
   dec REAL,
   epoch REAL,
+  position_entry INTEGER,
+  position_class INTEGER,
+  position_uncertainty_mas REAL,
   placed INTEGER NOT NULL,
-  not_placed TEXT,
-  scale_domain TEXT,
+  not_placed INTEGER,
+  scale_domain INTEGER,
   x REAL,
   y REAL,
   z REAL,
   distance_mpc REAL,
-  preferred_distance TEXT,
-  preferred_position TEXT,
-  position TEXT,
-  links TEXT NOT NULL,
-  relations TEXT NOT NULL,
+  distance_form INTEGER,
+  distance_minus REAL,
+  distance_plus REAL,
+  distance_level REAL,
+  measure INTEGER,
+  chain INTEGER,
+  chain_p1 REAL,
+  chain_p2 REAL,
+  chain_p3 REAL,
+  chain_p4 REAL,
+  preferred_entry INTEGER,
+  preferred_quantity INTEGER,
+  preferred_n INTEGER,
+  preferred_rank INTEGER,
+  preferred_mpc REAL,
+  preferred_decided INTEGER,
+  preferred_total REAL,
+  preferred_measurement REAL,
+  preferred_velocity REAL,
+  runner_up_entry INTEGER,
+  runner_up_quantity INTEGER,
+  runner_up_n INTEGER,
+  runner_up_total REAL,
+  runner_up_measurement REAL,
+  runner_up_velocity REAL,
+  links TEXT,
+  relations TEXT,
   PRIMARY KEY (release, id)
 ) WITHOUT ROWID;
 
 -- Each catalogue entry resolved to an object, with how it was resolved.
+--
+-- - resolution (term): anchor, cross_identification or match. A cross-identification gives
+--   its scheme (term), the identifier it shares (shared, NULL when the entry's own) and its
+--   confidence; a match gives its method as scheme (term), its separation_arcsec, the
+--   line-of-sight difference (term velocity, delta in km/s, or distance, delta as a fraction)
+--   and its confidence. Each was made through the object's entry via_entry.
+-- - Sky position as published: lon, lat in position_unit (term) in frame (term) at epoch; ra,
+--   dec its ICRS degrees, NULL when the native position is ICRS degrees already. Its published
+--   errors error_ra and error_dec are in error_unit (term), of kind error_kind (term), each with
+--   no uncertainty of its own and normalized to degrees.
+-- - flags: JSON object, NULL when empty. extra: JSON object of what no column holds, NULL when
+--   nothing: "via" (the designation it was resolved through, when not one of the object's
+--   entries) and "position_uncertainty" (when not held by the error columns).
 CREATE TABLE IF NOT EXISTS entries (
   release INTEGER NOT NULL,
-  source TEXT NOT NULL,
-  identifier TEXT NOT NULL,
   object_id INTEGER NOT NULL,
-  anchor INTEGER NOT NULL,
-  resolution TEXT NOT NULL,
+  entry INTEGER NOT NULL,
+  source INTEGER NOT NULL,
+  identifier TEXT NOT NULL,
+  resolution INTEGER NOT NULL,
+  scheme INTEGER,
+  shared TEXT,
+  via_entry INTEGER,
+  confidence REAL,
+  separation_arcsec REAL,
+  difference INTEGER,
+  delta REAL,
   name TEXT,
-  position TEXT,
+  frame INTEGER,
+  lon REAL,
+  lat REAL,
+  position_unit INTEGER,
+  epoch REAL,
+  ra REAL,
+  dec REAL,
+  error_ra REAL,
+  error_dec REAL,
+  error_unit INTEGER,
+  error_kind INTEGER,
   group_id TEXT,
-  flags TEXT NOT NULL,
-  PRIMARY KEY (release, source, identifier)
+  flags TEXT,
+  extra TEXT,
+  PRIMARY KEY (release, object_id, entry)
 ) WITHOUT ROWID;
-CREATE INDEX IF NOT EXISTS entries_by_object ON entries (release, object_id);
 
--- Every measurement of every entry, its native value beside its normalized one.
+-- Every measurement of every entry, its native value beside its normalized one. quantity
+-- (term) is distance, redshift, parallax, velocity, proper_motion_ra, proper_motion_dec,
+-- magnitude, supergalactic_velocity_x, _y or _z; n its place among the entry's values of it.
+--
+-- - native_value, native_unit (term) and native_form, ... as published; value, unit (term) and
+--   form, ... normalized, NULL when the native ones unchanged.
+-- - A distance: kind (term) and method (term) of the distance, its measure (term); extra holds
+--   also_published and assumed_cosmology where it has them.
+-- - A redshift: native is the published velocity cz where the source gives one, else the
+--   heliocentric z; normalized is the heliocentric z (NULL when that is the native value);
+--   cmb and cmb_form, ... its CMB-frame value; kind (term) spectroscopic or photometric;
+--   method (term) the dipole model.
+-- - A magnitude: kind (term) its band.
 CREATE TABLE IF NOT EXISTS measurements (
   release INTEGER NOT NULL,
   object_id INTEGER NOT NULL,
-  source TEXT NOT NULL,
-  identifier TEXT NOT NULL,
-  quantity TEXT NOT NULL,
+  entry INTEGER NOT NULL,
+  quantity INTEGER NOT NULL,
   n INTEGER NOT NULL,
-  kind_of_value TEXT NOT NULL,
+  kind_of_value INTEGER NOT NULL,
   native_value REAL NOT NULL,
-  native_unit TEXT NOT NULL,
-  value REAL NOT NULL,
-  unit TEXT NOT NULL,
-  uncertainty TEXT NOT NULL,
-  detail TEXT NOT NULL,
-  PRIMARY KEY (release, object_id, source, identifier, quantity, n)
+  native_unit INTEGER NOT NULL,
+  native_form INTEGER NOT NULL,
+  native_minus REAL,
+  native_plus REAL,
+  native_level REAL,
+  value REAL,
+  unit INTEGER,
+  form INTEGER,
+  minus REAL,
+  plus REAL,
+  level REAL,
+  kind INTEGER,
+  method INTEGER,
+  measure INTEGER,
+  cmb REAL,
+  cmb_form INTEGER,
+  cmb_minus REAL,
+  cmb_plus REAL,
+  cmb_level REAL,
+  extra TEXT,
+  PRIMARY KEY (release, object_id, entry, quantity, n)
 ) WITHOUT ROWID;
 
 -- Every designation an object carries, an entry's own or one its source gives beside it.
 CREATE TABLE IF NOT EXISTS designations (
   release INTEGER NOT NULL,
-  source TEXT NOT NULL,
+  source INTEGER NOT NULL,
   identifier TEXT NOT NULL,
   object_id INTEGER NOT NULL,
   PRIMARY KEY (release, source, identifier, object_id)
@@ -121,7 +302,7 @@ CREATE TABLE IF NOT EXISTS names (
   release INTEGER NOT NULL,
   key TEXT NOT NULL,
   object_id INTEGER NOT NULL,
-  source TEXT NOT NULL,
+  source INTEGER NOT NULL,
   name TEXT NOT NULL,
   PRIMARY KEY (release, key, object_id, source, name)
 ) WITHOUT ROWID;
@@ -142,11 +323,11 @@ CREATE TABLE IF NOT EXISTS ids_replaced (
 );
 
 -- The cell index of bounded volume queries (univ_model::release::cells). A placed object is in
--- the level-0 cell of its scale domain that holds its position; a structure is in each cell of
--- the structures space, at its level, that its bounding box meets.
+-- the level-0 cell of its scale domain (term) that holds its position; a structure is in each
+-- cell of the structures space, at its level, that its bounding box meets.
 CREATE TABLE IF NOT EXISTS object_cells (
   release INTEGER NOT NULL,
-  domain TEXT NOT NULL,
+  domain INTEGER NOT NULL,
   ix INTEGER NOT NULL,
   iy INTEGER NOT NULL,
   iz INTEGER NOT NULL,
@@ -163,49 +344,12 @@ CREATE TABLE IF NOT EXISTS structure_cells (
   PRIMARY KEY (release, level, ix, iy, iz, structure)
 ) WITHOUT ROWID;
 
-CREATE TABLE IF NOT EXISTS sources (
-  release INTEGER NOT NULL,
-  id TEXT NOT NULL,
-  title TEXT NOT NULL,
-  provider TEXT NOT NULL,
-  scale_domain TEXT NOT NULL,
-  citation TEXT NOT NULL,
-  terms_url TEXT NOT NULL,
-  terms_quote TEXT NOT NULL,
-  credit TEXT NOT NULL,
-  redistribution TEXT NOT NULL,
-  review TEXT NOT NULL,
-  entries INTEGER NOT NULL,
-  access TEXT NOT NULL,
-  cuts TEXT NOT NULL,
-  fixes TEXT NOT NULL,
-  PRIMARY KEY (release, id)
-) WITHOUT ROWID;
-
--- Each payload a source's provenance records, and what normalization made of the source.
-CREATE TABLE IF NOT EXISTS payloads (
-  release INTEGER NOT NULL,
-  source TEXT NOT NULL,
-  item TEXT NOT NULL,
-  url TEXT NOT NULL,
-  sha256 TEXT NOT NULL,
-  bytes INTEGER NOT NULL,
-  retrieved TEXT NOT NULL,
-  rows INTEGER,
-  PRIMARY KEY (release, source, item)
-) WITHOUT ROWID;
-CREATE TABLE IF NOT EXISTS normalizations (
-  release INTEGER NOT NULL,
-  source TEXT NOT NULL,
-  published INTEGER NOT NULL,
-  left_out TEXT NOT NULL,
-  fixes TEXT NOT NULL,
-  PRIMARY KEY (release, source)
-) WITHOUT ROWID;
-
 -- Each researched structure, listed by kind and scale domain. Its centre is ICRS Cartesian
 -- about the barycentre in its scale domain's unit (pc for stars, Mpc otherwise), NULL when it
--- cannot be placed.
+-- cannot be placed. members is JSON of its member list placed whole: "shape", each member an
+-- object at its derived position or a tracer, and "placed_from_file", the redshift, its kind,
+-- where it was cited, its CMB-frame value and the comoving distance of each tracer placed from
+-- the structure file's own sky position and redshift; NULL when the list is not placed whole.
 CREATE TABLE IF NOT EXISTS structures (
   release INTEGER NOT NULL,
   id TEXT NOT NULL,
@@ -239,7 +383,7 @@ CREATE TABLE IF NOT EXISTS scale_domains (
 CREATE TABLE IF NOT EXISTS grids (
   release INTEGER NOT NULL,
   id TEXT NOT NULL,
-  source TEXT NOT NULL,
+  source INTEGER NOT NULL,
   unit TEXT NOT NULL,
   shape TEXT NOT NULL,
   fields TEXT NOT NULL,

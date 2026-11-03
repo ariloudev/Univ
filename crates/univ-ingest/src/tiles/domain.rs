@@ -1,6 +1,8 @@
-//! Which scale domain each placed object belongs to, and its point there: the source definition
-//! of the catalogue entry holding its preferred distance names the domain, and its derived
-//! ICRS Cartesian position is taken into the domain's unit.
+//! Which scale domain each placed object belongs to, and its point there, and its derived ICRS
+//! Cartesian position taken into the domain's unit. An object whose preferred distance comes
+//! from a source whose definition names the stars domain is in stars; any other is in nearby
+//! galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`] of the barycentre and in cosmic web beyond,
+//! whatever source its distance came from (AC-92, the owner's decision of 2026-11-03).
 
 use std::collections::BTreeMap;
 
@@ -21,6 +23,23 @@ pub const DOMAINS: [ScaleDomain; 3] = [
     ScaleDomain::NearbyGalaxies,
     ScaleDomain::CosmicWeb,
 ];
+
+/// The depth of the nearby galaxies domain, Mpc: that of the Updated Nearby Galaxy Catalog
+/// (Karachentsev et al. 2013, AJ 145, 101), the deepest `nearby_galaxies` source, the same
+/// boundary the structure files follow.
+pub const NEARBY_GALAXIES_DEPTH_MPC: f64 = 11.0;
+
+/// The scale domain of an object placed `placed_mpc` from the barycentre whose preferred
+/// distance's source definition names `source_domain`: stars stay stars; any other object is in
+/// nearby galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`], and in cosmic web beyond it.
+#[must_use]
+pub fn domain_of(source_domain: ScaleDomain, placed_mpc: f64) -> ScaleDomain {
+    match source_domain {
+        ScaleDomain::Stars => ScaleDomain::Stars,
+        _ if placed_mpc <= NEARBY_GALAXIES_DEPTH_MPC => ScaleDomain::NearbyGalaxies,
+        _ => ScaleDomain::CosmicWeb,
+    }
+}
 
 /// The unit of a scale domain's positions: parsecs for stars, megaparsecs otherwise.
 #[must_use]
@@ -146,7 +165,6 @@ pub fn assign(
             .as_ref()
             .ok_or(TilesError::NoPreferred(id))?;
         let distance = definition(id, &preferred.measurement.entry().source)?;
-        let domain = definitions[distance].scale_domain;
         if position.cosmology() != cosmology {
             return Err(TilesError::Cosmology {
                 id,
@@ -158,12 +176,16 @@ pub fn assign(
             Some(p) => definition(id, &p.entry.source)?,
             None => distance,
         };
-        let factor = Unit::Megaparsec
-            .factor_to(unit_of(domain))
-            .map_err(|_| TilesError::NotFinite(id))?;
         let mpc = position
             .cartesian(Frame::Icrs)
             .ok_or(TilesError::NotFinite(id))?;
+        let domain = domain_of(
+            definitions[distance].scale_domain,
+            position.distance().value,
+        );
+        let factor = Unit::Megaparsec
+            .factor_to(unit_of(domain))
+            .map_err(|_| TilesError::NotFinite(id))?;
         let at = mpc.map(|c| c * factor);
         if !at.iter().all(|c| c.is_finite()) {
             return Err(TilesError::NotFinite(id));

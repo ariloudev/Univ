@@ -1,7 +1,7 @@
 //! The matching rules of a release, read from `rules/matching.yaml`: the published
 //! cross-identifications, the tolerances of each pair of sources and the confidence rule.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
@@ -11,6 +11,9 @@ use univ_model::object::{LineOfSight, MatchMethod};
 use univ_model::position::separation_degrees;
 
 use crate::yaml::{FileError, read_checked};
+
+pub use super::extent::ExtentRule;
+pub use super::sight::{NearbyTolerance, distance};
 
 /// The matching rules, as the release records them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -23,6 +26,19 @@ pub struct MatchingRules {
     pub names: Vec<NameRule>,
     pub structure_members: MemberRule,
     pub pairs: Vec<PairRule>,
+    /// Where given, the pieces of a nearby galaxy within its published extent join it.
+    #[serde(default)]
+    pub extents: Option<ExtentRule>,
+}
+
+/// A galaxy source whose field names, by the group rule's scheme, the group each galaxy
+/// belongs to: the identifier the group source gives in its `dominant_member` field.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GroupMemberRule {
+    pub source: SourceId,
+    pub field: EntryField,
+    pub basis: String,
 }
 
 /// A source whose rows are galaxy groups, and the field naming each group's dominant galaxy by
@@ -35,6 +51,9 @@ pub struct GalaxyGroupRule {
     pub dominant_member: EntryField,
     pub scheme: String,
     pub member_basis: String,
+    /// Galaxy sources that assign their galaxies to these groups.
+    #[serde(default)]
+    pub members: Vec<GroupMemberRule>,
 }
 
 /// How far a researched structure's member may lie from the object its name resolves to.
@@ -64,6 +83,7 @@ pub struct ConfidenceRule {
 pub enum EntryField {
     Identifier,
     Name,
+    GroupId,
 }
 
 impl EntryField {
@@ -73,6 +93,7 @@ impl EntryField {
         let text = match self {
             Self::Identifier => Some(entry.designation.identifier.as_str()),
             Self::Name => entry.name.as_deref(),
+            Self::GroupId => entry.group_id.as_deref(),
         }?;
         Some(text.trim()).filter(|t| !t.is_empty())
     }
@@ -92,7 +113,38 @@ pub struct SchemeMember {
 pub struct CrossIdentification {
     pub scheme: String,
     pub basis: String,
+    /// How two identifiers of the scheme are compared.
+    #[serde(default)]
+    pub compare: IdentifierForm,
+    /// Where given, two entries that share an identifier join only when their sky positions lie
+    /// within this angle, in arcminutes; a pair farther apart is left apart as a candidate link.
+    /// A pair one of whose entries has no position joins unchecked.
+    #[serde(default)]
+    pub angular_tolerance_arcmin: Option<f64>,
+    /// Why the tolerance is what it is; required with it.
+    #[serde(default)]
+    pub tolerance_basis: Option<String>,
+    /// For a scheme compared as common names, catalogue prefixes written another way, by their
+    /// lower-case letters, and how they are compared: `messier` as `m`.
+    #[serde(default)]
+    pub aliases: BTreeMap<String, String>,
+    /// Where the sources write a catalogue so; required with aliases.
+    #[serde(default)]
+    pub aliases_basis: Option<String>,
     pub members: Vec<SchemeMember>,
+}
+
+/// How the identifiers of a scheme are compared.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum IdentifierForm {
+    /// Trimmed, and a number without its leading zeros.
+    #[default]
+    Identifier,
+    /// As a common name: by its key in the names table (lower case, without white space), with
+    /// a catalogue number's leading zeros dropped and `messier` written `m`, so that `NGC0055`
+    /// and `NGC 55`, or `MESSIER032` and `M32`, agree.
+    CommonName,
 }
 
 /// A designation a source gives beside the entry's own identifier.
@@ -133,6 +185,9 @@ pub struct PairRule {
     pub sources: [SourceId; 2],
     pub angular_tolerance_arcsec: f64,
     pub line_of_sight: LineOfSightRule,
+    /// A wider tolerance for two nearby entries, where given.
+    #[serde(default)]
+    pub nearby: Option<NearbyTolerance>,
     pub basis: String,
 }
 
@@ -178,28 +233,9 @@ impl MatchingRules {
                 return Err(field(&format!("confidence.{name}"), "lies outside [0, 1]"));
             }
         }
-        let mut seen = BTreeSet::new();
-        for (i, pair) in self.pairs.iter().enumerate() {
-            let at = |what: &str| format!("pairs[{i}].{what}");
-            let [a, b] = &pair.sources;
-            if a == b {
-                return Err(field(&at("sources"), "names one source twice"));
-            }
-            if !seen.insert(key(a, b)) {
-                return Err(field(&at("sources"), "is a pair given before"));
-            }
-            if !positive(pair.angular_tolerance_arcsec) {
-                return Err(field(&at("angular_tolerance_arcsec"), "is not positive"));
-            }
-            match pair.line_of_sight {
-                LineOfSightRule::Velocity { tolerance_km_s: t }
-                | LineOfSightRule::Distance {
-                    tolerance_fraction: t,
-                } if !positive(t) => {
-                    return Err(field(&at("line_of_sight"), "has a tolerance not positive"));
-                }
-                _ => {}
-            }
+        self.check_pairs()?;
+        if let Some(extents) = &self.extents {
+            extents.check()?;
         }
         if !positive(self.structure_members.angular_tolerance_arcsec) {
             return Err(field(
@@ -226,6 +262,30 @@ impl MatchingRules {
         }
         let mut members = BTreeSet::new();
         for (i, scheme) in self.cross_identifications.iter().enumerate() {
+            if !scheme.aliases.is_empty()
+                && scheme
+                    .aliases_basis
+                    .as_deref()
+                    .is_none_or(|b| b.trim().is_empty())
+            {
+                return Err(field(
+                    &format!("cross_identifications[{i}].aliases"),
+                    "are given without their aliases_basis",
+                ));
+            }
+            if let Some(t) = scheme.angular_tolerance_arcmin {
+                let at = format!("cross_identifications[{i}].angular_tolerance_arcmin");
+                if !(t.is_finite() && t > 0.0) {
+                    return Err(field(&at, "is not a positive number"));
+                }
+                if scheme
+                    .tolerance_basis
+                    .as_deref()
+                    .is_none_or(|b| b.trim().is_empty())
+                {
+                    return Err(field(&at, "is given without its tolerance_basis"));
+                }
+            }
             for m in &scheme.members {
                 if !members.insert((scheme.scheme.as_str(), m.source.as_str())) {
                     return Err(field(
@@ -233,6 +293,44 @@ impl MatchingRules {
                         &format!("names {} twice", m.source),
                     ));
                 }
+            }
+        }
+        Ok(())
+    }
+
+    /// Each pair given once, of two sources, with positive tolerances.
+    fn check_pairs(&self) -> Result<(), (String, String)> {
+        let mut seen = BTreeSet::new();
+        for (i, pair) in self.pairs.iter().enumerate() {
+            let at = |what: &str| format!("pairs[{i}].{what}");
+            let [a, b] = &pair.sources;
+            if a == b {
+                return Err(field(&at("sources"), "names one source twice"));
+            }
+            if !seen.insert(key(a, b)) {
+                return Err(field(&at("sources"), "is a pair given before"));
+            }
+            if !positive(pair.angular_tolerance_arcsec) {
+                return Err(field(&at("angular_tolerance_arcsec"), "is not positive"));
+            }
+            if pair
+                .nearby
+                .as_ref()
+                .is_some_and(|n| !n.widens(pair.angular_tolerance_arcsec))
+            {
+                return Err(field(
+                    &at("nearby"),
+                    "needs a positive velocity, a tolerance wider than the pair's and a basis",
+                ));
+            }
+            match pair.line_of_sight {
+                LineOfSightRule::Velocity { tolerance_km_s: t }
+                | LineOfSightRule::Distance {
+                    tolerance_fraction: t,
+                } if !positive(t) => {
+                    return Err(field(&at("line_of_sight"), "has a tolerance not positive"));
+                }
+                _ => {}
             }
         }
         Ok(())
@@ -271,7 +369,11 @@ impl MatchingRules {
     pub fn search_radius_degrees(&self) -> f64 {
         self.pairs
             .iter()
-            .map(|p| p.angular_tolerance_arcsec / 3_600.0)
+            .flat_map(|p| {
+                std::iter::once(p.angular_tolerance_arcsec)
+                    .chain(p.nearby.as_ref().map(|n| n.angular_tolerance_arcsec))
+            })
+            .map(|t| t / 3_600.0)
             .fold(0.0, f64::max)
     }
 
@@ -312,7 +414,7 @@ impl MatchingRules {
         b: &CatalogueEntry,
         separation: f64,
     ) -> Option<Comparison> {
-        let theta = pair.angular_tolerance_arcsec;
+        let theta = self.angular_tolerance(pair, a, b);
         if separation > theta {
             return None;
         }
@@ -321,7 +423,7 @@ impl MatchingRules {
             LineOfSightRule::None => (MatchMethod::Position, None, 1.0),
             LineOfSightRule::Velocity {
                 tolerance_km_s: tau,
-            } => match (velocity(a), velocity(b)) {
+            } => match (self.velocity(a), self.velocity(b)) {
                 (Some(va), Some(vb)) => {
                     let delta = (va - vb).abs();
                     if delta > tau {
@@ -389,26 +491,4 @@ fn positive(x: f64) -> bool {
 
 fn field(name: &str, problem: &str) -> (String, String) {
     (name.to_owned(), problem.to_owned())
-}
-
-/// The entry's heliocentric cz in km/s: its first spectroscopic redshift, else its first
-/// redshift, else its published velocity.
-#[must_use]
-pub fn velocity(entry: &CatalogueEntry) -> Option<f64> {
-    let c = univ_model::cosmology::SPEED_OF_LIGHT;
-    entry
-        .preferred_redshift()
-        .map(|r| r.cmb.heliocentric.value * c)
-        .or_else(|| entry.velocity.map(|v| v.normalized.value))
-}
-
-/// The entry's first distance in Mpc.
-#[must_use]
-pub fn distance(entry: &CatalogueEntry) -> Option<f64> {
-    let d = entry.distances.first()?;
-    d.normalized
-        .to(univ_model::units::Unit::Megaparsec)
-        .ok()
-        .map(|q| q.value)
-        .filter(|v| *v > 0.0)
 }

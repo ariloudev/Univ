@@ -8,10 +8,12 @@ use univ_model::release::{D1_CAP_BYTES, ReleaseManifest, TABLES, Table, keys};
 
 use super::check::{check_rows, published_status, schema_version, sql_text};
 use super::journal::{Done, Journal};
+use super::progress::{FileDone, Lines, Progress};
 use super::{Latest, PublishError, Store, StoreOptions};
 use crate::release::{RELEASES, read_manifest, release_dir};
 use crate::state::State;
 use crate::tiles::sha256;
+use crate::watch::STOPPED;
 
 /// A release published.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -125,27 +127,28 @@ fn put_checked(
     bytes: u64,
     sha: &str,
 ) -> Result<(), String> {
-    store.put(key, file)?;
     let back = store
-        .get(key)?
+        .put_read_back(key, file)?
         .ok_or_else(|| format!("R2 holds nothing at {key} once it was written"))?;
-    let got = sha256(&back);
-    if back.len() as u64 == bytes && got == sha {
+    if back.bytes == bytes && back.sha256 == sha {
         Ok(())
     } else {
         Err(format!(
-            "R2 gives {key} back with SHA-256 {got}, not the manifest's {sha}"
+            "R2 gives {key} back with SHA-256 {}, not the manifest's {sha}",
+            back.sha256
         ))
     }
 }
 
-/// Uploads one unit and checks it, giving each of its files as the journal enters it.
+/// Uploads one unit and checks it, telling `progress` of each file as soon as it is done, and
+/// giving each as the journal enters it.
 fn upload(
     store: &mut dyn Store,
     dir: &Path,
     manifest: &ReleaseManifest,
     unit: &Unit<'_>,
     at: &str,
+    progress: &mut dyn Progress,
 ) -> Result<Vec<Done>, String> {
     let n = manifest.release;
     let done = |f: &ManifestFile, checked: String| Done {
@@ -156,6 +159,14 @@ fn upload(
         checked,
         at: at.to_owned(),
     };
+    let mut told = |f: &ManifestFile, said: &str, rows| {
+        progress.file(FileDone {
+            path: &f.path,
+            bytes: f.bytes,
+            line: format!("release {n}: {}: {said}", f.path),
+            rows,
+        });
+    };
     match unit {
         Unit::Schema(f) => {
             let path = dir.join(&f.path);
@@ -163,7 +174,11 @@ fn upload(
             store.execute_file(&path)?;
             let want = i64::from(manifest.versions.d1_schema);
             match schema_version(store)? {
-                Some(v) if v >= want => Ok(vec![done(f, format!("schema version {v}"))]),
+                Some(v) if v >= want => {
+                    let checked = format!("schema version {v}");
+                    told(f, &checked, None);
+                    Ok(vec![done(f, checked)])
+                }
                 v => Err(format!(
                     "D1 records schema version {v:?} once {} ran, not {want}",
                     f.path
@@ -179,14 +194,30 @@ fn upload(
             let path = dir.join(&f.path);
             local(&path, f)?;
             put_checked(store, key, &path, f.bytes, &f.sha256)?;
-            Ok(vec![done(f, "read back with its SHA-256".to_owned())])
+            let checked = "read back with its SHA-256".to_owned();
+            told(f, &checked, None);
+            Ok(vec![done(f, checked)])
         }
         Unit::Table(table, files) => {
-            for f in files {
+            let Some((last, before)) = files.split_last() else {
+                return Ok(vec![]);
+            };
+            // Each file's line as its import finishes; the last's once the table is checked.
+            for (k, f) in before.iter().enumerate() {
                 let path = dir.join(&f.path);
                 local(&path, f)?;
                 store.execute_file(&path)?;
+                let said = format!(
+                    "imported, {} of {} files of {}",
+                    k + 1,
+                    files.len(),
+                    table.name
+                );
+                told(f, &said, None);
             }
+            let path = dir.join(&last.path);
+            local(&path, last)?;
+            store.execute_file(&path)?;
             let want = manifest
                 .d1
                 .tables
@@ -196,6 +227,11 @@ fn upload(
             let rows = check_rows(store, table, n, want)?;
             // The count and fingerprint both matched.
             let checked = format!("{}: {rows} rows of release {n}", table.name);
+            told(
+                last,
+                &format!("imported; {checked}"),
+                Some((table.name, rows)),
+            );
             Ok(files.iter().map(|f| done(f, checked.clone())).collect())
         }
     }
@@ -244,6 +280,23 @@ pub fn publish(
     options: &StoreOptions<'_>,
     progress: &mut dyn FnMut(String),
 ) -> Result<Published, PublishError> {
+    publish_with(store, number, options, &mut Lines(progress))
+}
+
+/// [`publish`], telling `progress` how many files it will upload and each file as soon as it is
+/// done. Once `progress` says the owner asked it to stop, it stops after the unit in hand: the
+/// journal lists every unit done, `latest` is where it was, and publishing the release again
+/// continues from there.
+///
+/// # Errors
+///
+/// Fails as [`publish`] does, and as interrupted when the owner asked it to stop.
+pub fn publish_with(
+    store: &mut dyn Store,
+    number: u32,
+    options: &StoreOptions<'_>,
+    progress: &mut dyn Progress,
+) -> Result<Published, PublishError> {
     let (dir, manifest, manifest_bytes) = read_release(options, number)
         .map_err(|problem| PublishError::NotBuilt { number, problem })?;
     let total = manifest.files.len() + 1;
@@ -289,8 +342,9 @@ pub fn publish(
         Refused::Query(p) => stopped(latest, 0, p),
     })?;
     let journaled = journal.done.len();
+    progress.started(total - journaled);
     if journaled > 0 {
-        progress(format!(
+        progress.note(format!(
             "release {number}: {journaled} of {total} files already uploaded and checked, by \
              the journal"
         ));
@@ -302,12 +356,12 @@ pub fn publish(
         {
             continue;
         }
-        let done = upload(store, &dir, &manifest, unit, &(options.now)())
-            .map_err(|p| stopped(latest, journal.done.len(), p))?;
-        for d in done {
-            progress(format!("release {number}: {}: {}", d.path, d.checked));
-            journal.done.push(d);
+        if progress.stopping() {
+            return Err(stopped(latest, journal.done.len(), STOPPED.to_owned()));
         }
+        let done = upload(store, &dir, &manifest, unit, &(options.now)(), progress)
+            .map_err(|p| stopped(latest, journal.done.len(), p))?;
+        journal.done.extend(done);
         journal
             .write(options.journals)
             .map_err(|e| stopped(latest, journal.done.len(), format!("the journal: {e}")))?;

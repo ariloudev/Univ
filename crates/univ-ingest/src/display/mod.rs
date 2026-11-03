@@ -3,6 +3,7 @@
 
 mod plain;
 mod sink;
+mod stage;
 mod summary;
 mod terminal;
 
@@ -11,10 +12,11 @@ use std::time::{Duration, SystemTime};
 
 use univ_model::ids::SourceId;
 
-use crate::events::{Count, Event, EventSink, RestartReason, Stage};
+use crate::events::{Event, EventSink, RestartReason, Stage};
 
 pub use plain::{PROGRESS_EVERY, PlainTarget};
 pub use sink::{RunSink, Target};
+pub use stage::counted;
 pub use summary::{Outcome, SourceState, SourceSummary, StageCounts, Summary};
 pub use terminal::{IndicatifTarget, REDRAW_EVERY, StatusTarget};
 
@@ -59,12 +61,26 @@ pub struct RunState {
     fetched: u64,
     /// What each stage that ended counted, in the order they ended.
     stages: Vec<StageCounts>,
+    /// Bytes the run has uploaded, in a publish.
+    uploaded: u64,
+    /// When the stage in progress started; none once it ended.
+    stage_started: Option<SystemTime>,
+    /// When the run last printed a line.
+    last_line: Option<SystemTime>,
 }
 
 impl RunState {
     /// Takes in `event`, which happened at `now`, and gives the line it prints, if it prints
     /// one.
     pub fn apply(&mut self, event: &Event, now: SystemTime) -> Option<String> {
+        let line = self.line_of(event, now);
+        if line.is_some() {
+            self.last_line = Some(now);
+        }
+        line
+    }
+
+    fn line_of(&mut self, event: &Event, now: SystemTime) -> Option<String> {
         match event {
             Event::Get { source, item, .. } => {
                 self.started(source, item, now);
@@ -141,7 +157,10 @@ impl RunState {
             | Event::Stepped { .. }
             | Event::Normalized { .. }
             | Event::NormalizeFailed { .. }
-            | Event::MembersUnplaced { .. } => self.stage_event(event),
+            | Event::MembersUnplaced { .. }
+            | Event::Uploaded { .. }
+            | Event::Noted { .. }
+            | Event::Stopping { .. } => self.stage_event(event, now),
             Event::Restarted {
                 source,
                 item,
@@ -157,41 +176,6 @@ impl RunState {
                     why(*reason)
                 ))
             }
-        }
-    }
-
-    /// Takes in an event of a stage's progress, and gives the line it prints.
-    fn stage_event(&mut self, event: &Event) -> Option<String> {
-        match event {
-            Event::StageStarted { stage, items } => {
-                self.stage = Some((*stage, 0, *items));
-                Some(match items {
-                    Some(n) => format!("Stage {}: {n} items", stage_name(*stage)),
-                    None => format!("Stage {}", stage_name(*stage)),
-                })
-            }
-            Event::StageEnded { stage, counts } => {
-                if !counts.is_empty() {
-                    self.stages.push(StageCounts {
-                        stage: *stage,
-                        counts: counts.clone(),
-                    });
-                }
-                Some(format!(
-                    "Stage {} done{}",
-                    stage_name(*stage),
-                    counted(counts)
-                ))
-            }
-            Event::Stepped { stage, step } => {
-                self.advance();
-                Some(format!("Step {}: {step}", stage_name(*stage)))
-            }
-            Event::Normalized { .. } | Event::NormalizeFailed { .. } => {
-                self.advance();
-                outcome_line(event)
-            }
-            _ => outcome_line(event),
         }
     }
 
@@ -212,7 +196,8 @@ impl RunState {
     /// The progress lines of the downloads that have not reported for `every` by `now`, each
     /// marked as reported.
     pub fn progress_due(&mut self, now: SystemTime, every: Duration) -> Vec<String> {
-        self.downloads
+        let due: Vec<String> = self
+            .downloads
             .values_mut()
             .filter(|d| now.duration_since(d.last_reported).unwrap_or_default() >= every)
             .map(|d| {
@@ -222,7 +207,11 @@ impl RunState {
                     .map_or_else(String::new, |t| format!(" of {}", size(t)));
                 format!("Progress {} {} {}{of}", d.source, d.item, size(d.bytes))
             })
-            .collect()
+            .collect();
+        if !due.is_empty() {
+            self.last_line = Some(now);
+        }
+        due
     }
 
     /// The status line after `elapsed`, cut to `width` characters.
@@ -258,10 +247,11 @@ impl RunState {
         } else {
             String::new()
         };
+        let moved = self.moved();
         parts.push(format!(
             "{}{of} {}/s{left}",
-            size(self.fetched),
-            size(rate(self.fetched, elapsed))
+            size(moved),
+            size(rate(moved, elapsed))
         ));
         for (number, d) in &self.downloads {
             let percent = d
@@ -294,58 +284,18 @@ impl RunState {
         number
     }
 
+    /// Bytes the run has moved: fetched, or in a publish uploaded.
+    #[must_use]
+    pub fn moved(&self) -> u64 {
+        self.fetched + self.uploaded
+    }
+
+    /// One more item of the stage is done; a stage never counts more than the items it
+    /// expected, as a step that closes it is no item.
     fn advance(&mut self) {
-        if let Some((_, done, _)) = &mut self.stage {
-            *done += 1;
+        if let Some((_, done, items)) = &mut self.stage {
+            *done = items.map_or(*done + 1, |n| (*done + 1).min(n));
         }
-    }
-}
-
-/// `counts` as a stage's end line gives them: `: 98 objects, 3 merges`, or nothing.
-#[must_use]
-pub fn counted(counts: &[Count]) -> String {
-    if counts.is_empty() {
-        return String::new();
-    }
-    let each: Vec<String> = counts
-        .iter()
-        .map(|c| format!("{} {}", c.n, c.what))
-        .collect();
-    format!(": {}", each.join(", "))
-}
-
-/// The line a normalized source, or a structure whose members cannot all be placed, prints.
-fn outcome_line(event: &Event) -> Option<String> {
-    match event {
-        Event::MembersUnplaced {
-            structure,
-            members,
-            no_object,
-            unplaced,
-            point,
-        } => {
-            let shown = if *point {
-                "shown at its published position"
-            } else {
-                "it publishes no position, so it is not placed"
-            };
-            Some(format!(
-                "Members {structure}: {} of {members} cannot be placed ({no_object} name no \
-                 matched object, {unplaced} an unplaced one); {shown}",
-                no_object + unplaced
-            ))
-        }
-        Event::Normalized {
-            source,
-            published,
-            left_out,
-        } => Some(format!(
-            "Norm {source}: {published} entries, {left_out} left out"
-        )),
-        Event::NormalizeFailed { source, error } => {
-            Some(format!("Err {source} cannot be normalized: {error}"))
-        }
-        _ => None,
     }
 }
 
@@ -368,6 +318,7 @@ pub fn stage_name(stage: Stage) -> &'static str {
         Stage::Tiles => "tiles",
         Stage::Release => "build",
         Stage::Publish => "publish",
+        Stage::Prune => "prune",
     }
 }
 

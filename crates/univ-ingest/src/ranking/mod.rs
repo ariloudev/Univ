@@ -1,8 +1,10 @@
-//! Preferred measurements: the distance that places each object, by the smallest fractional
-//! uncertainty with the method rank breaking ties, and the sky position it takes, under the
-//! release's ranking rule (`rules/ranking.yaml`).
+//! Preferred measurements: the distance that places each object, its redshift distances ordered
+//! among themselves by kind of value and velocity uncertainty and the leading one weighed against
+//! the other distances by the smallest fractional uncertainty with the method rank breaking
+//! ties, and the sky position it takes, under the release's ranking rule (`rules/ranking.yaml`).
 
 mod distance;
+mod redshift;
 pub mod rules;
 
 use univ_model::derive::Release;
@@ -13,18 +15,25 @@ pub use distance::{Candidate, Which, candidates, choose, fraction, redshift_dist
 pub use rules::RankingRules;
 
 /// Ranks `object` under the release cosmology of `release`, whose table of D(z) is built once
-/// per run: its preferred distance and position, and whether it can be placed.
+/// per run: its preferred distance and position, and whether it can be placed. An object whose
+/// preferred distance is more uncertain than the rule's `too_uncertain_above` (100%) keeps it,
+/// for look-ups, but is not placed.
 pub fn rank(object: &mut Object, rules: &RankingRules, release: &Release) {
     let found = candidates(object, rules, release);
     object.preferred_distance = choose(object, &found, rules);
     object.preferred_position = preferred_position(object, rules);
-    object.placement = if object.preferred_distance.is_some() {
-        Placement::Placed
-    } else {
-        Placement::NotPlaced {
-            reason: NotPlacedReason::NoDistance,
+    let reason = match &object.preferred_distance {
+        None => Some(NotPlacedReason::NoDistance),
+        Some(p)
+            if p.uncertainty
+                .total()
+                .is_some_and(|f| f > rules.too_uncertain_above) =>
+        {
+            Some(NotPlacedReason::DistanceTooUncertain)
         }
+        Some(_) => None,
     };
+    object.placement = reason.map_or(Placement::Placed, |reason| Placement::NotPlaced { reason });
 }
 
 /// Ranks every object.

@@ -78,8 +78,13 @@ pub fn parse_checked<T: DeserializeOwned>(
 ///
 /// Fails when the value cannot be written as YAML or the file cannot be written.
 pub fn write<T: Serialize>(file: &Path, value: &T) -> std::io::Result<()> {
-    let yaml = serde_norway::to_string(value).map_err(std::io::Error::other)?;
-    crate::fetch::write_via_part(file, yaml.as_bytes(), || Ok(()))
+    // Streamed to the part file, so a large value, such as the entry ids of millions of
+    // entries, is never held whole as text.
+    crate::fetch::write_via_part_with(
+        file,
+        |out| serde_norway::to_writer(out, value).map_err(std::io::Error::other),
+        || Ok(()),
+    )
 }
 
 /// The `.yaml` files in `dir`, in file-name order.

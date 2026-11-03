@@ -14,6 +14,8 @@ pub enum Outcome {
     Built(u64),
     /// The run published this release.
     Published(u64),
+    /// The run pruned this release.
+    Pruned(u64),
     /// The run stopped at a stage, for a reason.
     Stopped { stage: Stage, reason: String },
 }
@@ -25,6 +27,9 @@ pub enum SourceState {
     Fetched,
     /// The source could not be fetched, for this reason.
     Failed(String),
+    /// The source is on disk and is no table of rows, so it is not normalized; the run used it
+    /// as this says, such as `volume grid, written to release 6`.
+    Used(String),
     /// The run ended before the source did.
     NotReached,
 }
@@ -61,16 +66,32 @@ impl Summary {
     /// The summary's lines.
     #[must_use]
     pub fn lines(&self) -> Vec<String> {
-        let mut lines = vec![format!(
-            "Fetched {} in {} ({}/s)",
-            size(self.bytes),
-            clock(self.elapsed.as_secs()),
-            size(rate(self.bytes, self.elapsed))
-        )];
+        let elapsed = clock(self.elapsed.as_secs());
+        let moved = |what: &str| {
+            format!(
+                "{what} {} in {elapsed} ({}/s)",
+                size(self.bytes),
+                size(rate(self.bytes, self.elapsed))
+            )
+        };
+        let mut lines = vec![match self.outcome {
+            Outcome::Published(_)
+            | Outcome::Stopped {
+                stage: Stage::Publish,
+                ..
+            } => moved("Uploaded"),
+            Outcome::Pruned(_)
+            | Outcome::Stopped {
+                stage: Stage::Prune,
+                ..
+            } => format!("Ran for {elapsed}"),
+            _ => moved("Fetched"),
+        }];
         for s in &self.sources {
             let what = match (&s.state, s.published, s.left_out) {
                 (SourceState::Failed(reason), ..) => format!("failed: {reason}"),
                 (SourceState::NotReached, ..) => "not reached in this run".to_owned(),
+                (SourceState::Used(how), ..) => how.clone(),
                 (SourceState::Fetched, Some(p), Some(l)) => {
                     format!("{p} entries published, {l} left out")
                 }
@@ -85,6 +106,7 @@ impl Summary {
         lines.push(match &self.outcome {
             Outcome::Built(n) => format!("Built release {n}"),
             Outcome::Published(n) => format!("Published release {n}"),
+            Outcome::Pruned(n) => format!("Pruned release {n}"),
             Outcome::Stopped { stage, reason } => {
                 format!("Stopped at {}: {reason}", stage_name(*stage))
             }

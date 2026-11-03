@@ -1,0 +1,7 @@
+source: mcconnachie-2012
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=Name%2C%28m-M%29%2CE_%28m-M%29%2Ce_%28m-M%29%2Cu_%28m-M%29%2CD%2CE_D%2Ce_D%2CHRV%2Ce_HRV%2Cf_HRV%2CVmag&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2CNGC%2055%2CSMC
+retrieved: 2026-11-03T15:32:19Z
+sha256: 55f76a7b8da41ff3f83dd2667d4812a6bb3b07981bf336635169978309a1289a
+note: >-
+  The source's own query narrowed by Name to NGC 55 and the SMC, which UNGC, Cosmicflows-4,
+  2MRS and 2M++ also list (the other *-duplicates.tsv and *-ngc55.tsv recordings).

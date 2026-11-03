@@ -98,8 +98,13 @@ impl DerivedPosition {
     #[must_use]
     pub fn new(direction: Direction, radial: Radial) -> Self {
         let cosmology = radial.cosmology().clone();
-        let mut chain = radial.chain().to_vec();
         let frame = direction.published_in;
+        // Allocated once at its length: a chain is held for each of millions of objects.
+        let more = usize::from(direction.systematic_degrees.is_some())
+            + usize::from(frame != Frame::Icrs)
+            + 3;
+        let mut chain = Vec::with_capacity(radial.chain().len() + more);
+        chain.extend_from_slice(radial.chain());
         // An unstated equinox is first taken as J2000, then moved to the ICRS from there.
         if let Some(systematic_degrees) = direction.systematic_degrees {
             chain.push(Transformation::EquinoxAssumedJ2000 { systematic_degrees }.into());

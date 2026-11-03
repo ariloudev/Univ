@@ -1,6 +1,7 @@
 //! Object ids, source ids and designations.
 
 use std::fmt;
+use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -14,10 +15,11 @@ const MAX_SAFE_INTEGER: u64 = (1 << 53) - 1;
 pub struct ObjectId(u64);
 
 /// A source's id: a slug of lowercase letters, digits and hyphens, starting with a letter, such
-/// as `gaia-dr3` or `cosmicflows-4`.
+/// as `gaia-dr3` or `cosmicflows-4`. Its text is shared by every copy: each of millions of
+/// designations names its source.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
-pub struct SourceId(String);
+pub struct SourceId(Arc<str>);
 
 /// A source's own name for an entry: the source and its identifier, such as Gaia DR3 and a
 /// `source_id`.
@@ -112,7 +114,7 @@ impl SourceId {
     pub fn new(slug: impl Into<String>) -> Result<Self, IdError> {
         let slug = slug.into();
         if is_slug(&slug) {
-            Ok(Self(slug))
+            Ok(Self(Arc::from(slug)))
         } else {
             Err(IdError::SourceId(slug))
         }
@@ -133,7 +135,7 @@ impl TryFrom<String> for SourceId {
 
 impl From<SourceId> for String {
     fn from(id: SourceId) -> Self {
-        id.0
+        id.0.as_ref().to_owned()
     }
 }
 

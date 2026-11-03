@@ -5,14 +5,16 @@ mod common;
 use common::sources_dir;
 use univ_ingest::source::{RedistributionStatus, ScaleDomain, read_all};
 
-/// The sources of the first release, by id, with their scale domains.
-const FIRST_RELEASE: [(&str, ScaleDomain); 18] = [
+/// The sources of the first release, by id, with their scale domains, and the Cosmicflows-4
+/// galaxies added for the second.
+const FIRST_RELEASE: [(&str, ScaleDomain); 19] = [
     ("sdss-dr17-galaxies", ScaleDomain::CosmicWeb),
     ("boss-dr17-great-wall", ScaleDomain::CosmicWeb),
     ("sixdfgs-dr3", ScaleDomain::CosmicWeb),
     ("twomrs", ScaleDomain::CosmicWeb),
     ("twompp-catalogue", ScaleDomain::CosmicWeb),
     ("cosmicflows-4", ScaleDomain::CosmicWeb),
+    ("cosmicflows-4-galaxies", ScaleDomain::CosmicWeb),
     ("mcconnachie-2012", ScaleDomain::NearbyGalaxies),
     ("updated-nearby-galaxies", ScaleDomain::NearbyGalaxies),
     ("gcns", ScaleDomain::Stars),

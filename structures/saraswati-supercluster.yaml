@@ -29,9 +29,13 @@ position:
   redshift:
     value: 0.2772
     unit: dimensionless
-    kind: measured
+    kind: estimated
     uncertainty: { form: none_reported }
     cite: { paper: bagchi-2017, table: "1", row: "1", column: "Redshift" }
+    note: >-
+      Table 1 does not say whether a cluster's redshift is its BCG's spectroscopic or photometric
+      one ("For other clusters (small in number) whose BCG spectra are not available,
+      we used photometric redshifts"), so it is taken as estimated, not measured.
 geometry:
   kind: members
   members:
@@ -41,7 +45,8 @@ geometry:
     columns:
       - { name: lon, header: "R.A. (deg)", unit: degree, kind: measured, uncertainty: { form: none_reported } }
       - { name: lat, header: "Decl. (deg)", unit: degree, kind: measured, uncertainty: { form: none_reported } }
-      - { name: redshift, header: "Redshift", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+      # Spectroscopic or photometric, which Table 1 does not say (see notes): estimated.
+      - { name: redshift, header: "Redshift", unit: dimensionless, kind: estimated, uncertainty: { form: none_reported } }
     rows:
       - ["1 (bound core)", 354.41553, 0.27137, 0.2772]
       - ["2", 355.89862, 0.33093, 0.2694]
@@ -112,7 +117,7 @@ values:
   mean_redshift:
     value: 0.28
     unit: dimensionless
-    kind: measured
+    kind: estimated
     uncertainty: { form: none_reported }
     cite: *body
   mean_density_contrast:
@@ -142,5 +147,10 @@ disputes: []
 notes: >-
   Table 1 lists the 48 WHL clusters within 90 comoving Mpc of Abell 2631, "in and around" the
   supercluster; the paper counts 43 in its main body without flagging which, so all 48 are kept as
-  members. The five marked "bound core" form the bound central core. The masses (about 2 × 10^16
+  members. The five marked "bound core" form the bound central core. The clusters' redshifts are
+  their BCGs' spectroscopic redshifts from SDSS-III where a spectrum exists and the WHL
+  photometric redshifts otherwise: "For other clusters (small in number) whose BCG spectra are not
+  available, we used photometric redshifts", in the section on known clusters and voids near the
+  supercluster). Table 1
+  does not mark which, so every member redshift, and their mean, is taken as estimated. The masses (about 2 × 10^16
   solar masses in all) have no unit in univ-model and are left out.

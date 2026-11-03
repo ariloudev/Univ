@@ -1,0 +1,7 @@
+source: updated-nearby-galaxies
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag%2Ca26&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2CNGC0055%2CSMC%2CMilky%20Way
+retrieved: 2026-11-03T16:22:25Z
+sha256: a4aa03052073adfde219a3988d49df3df363c59def246e0c00a3a2b382e30d7a
+note: >-
+  The source's own query narrowed by Name to NGC0055 and SMC, which McConnachie 2012,
+  Cosmicflows-4, 2MRS and 2M++ also list, and the Milky Way, whose distance a fix completes.

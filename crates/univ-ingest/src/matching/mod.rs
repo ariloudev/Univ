@@ -5,11 +5,14 @@
 
 mod assemble;
 mod cross_id;
+pub mod extent;
 mod groups;
 mod index;
+mod pieces;
 mod positions;
 mod relations;
 pub mod rules;
+mod sight;
 
 use std::collections::HashMap;
 
@@ -61,9 +64,13 @@ pub struct MatchReport {
     pub candidate_links: u64,
     /// Objects of more than one entry.
     pub multi_entry_objects: u64,
-    /// Relations between a galaxy group and its dominant galaxy.
+    /// Relations between a galaxy group and its dominant galaxy or a member galaxy.
     #[serde(default)]
     pub group_relations: u64,
+    /// Groups joined to a nearby galaxy as pieces within its published extent; each is also
+    /// counted among the merges by position.
+    #[serde(default)]
+    pub pieces_within_extent: u64,
 }
 
 /// Why two entries were joined.
@@ -99,7 +106,8 @@ struct Work<'a> {
 }
 
 /// Resolves `entries` into objects under `rules`: cross-identifications, then positions, then
-/// the relations of galaxy groups to their dominant galaxies.
+/// the pieces of nearby galaxies within their published extents, then the relations of galaxy
+/// groups to their dominant galaxies.
 /// Objects are in the order of their first entry, so a run on the same entries gives the same
 /// objects.
 #[must_use]
@@ -133,9 +141,12 @@ pub fn match_entries(rules: &MatchingRules, entries: Vec<CatalogueEntry>) -> Mat
     };
     cross_id::apply(&mut work);
     positions::apply(&mut work);
+    let pieces = pieces::apply(&mut work);
     let plan = assemble::plan(&mut work);
     let relations = relations::find(&work);
-    assemble::build(rules, entries, plan, relations)
+    let mut matched = assemble::build(rules, entries, plan, relations);
+    matched.report.pieces_within_extent = pieces;
+    matched
 }
 
 impl Work<'_> {

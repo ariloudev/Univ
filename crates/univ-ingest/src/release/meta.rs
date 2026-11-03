@@ -6,6 +6,7 @@ use std::path::Path;
 use univ_model::derive::Release;
 use univ_model::geometry::Aabb;
 use univ_model::ids::SourceId;
+use univ_model::redshift::CmbCorrection;
 use univ_model::release::keys;
 use univ_model::release::rows::{
     NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, StructureRow,
@@ -27,8 +28,8 @@ pub struct SourceRows {
     pub normalizations: Vec<NormalizationRow>,
 }
 
-/// The rows of `definitions` in release `release`, each with the entries the release holds
-/// from it and the provenance kept in `cache`.
+/// The rows of `definitions` in release `release`, each numbered by its place among them and
+/// with the entries the release holds from it and the provenance kept in `cache`.
 ///
 /// # Errors
 ///
@@ -40,10 +41,11 @@ pub fn source_rows(
     cache: &Path,
 ) -> Result<SourceRows, String> {
     let mut rows = SourceRows::default();
-    for d in definitions {
+    for (n, d) in (0u32..).zip(definitions) {
         let id = d.id.to_string();
         rows.sources.push(SourceRow {
             release,
+            n,
             id: id.clone(),
             title: d.title.clone(),
             provider: d.provider.clone(),
@@ -64,7 +66,7 @@ pub fn source_rows(
         for p in &provenance.payloads {
             rows.payloads.push(PayloadRow {
                 release,
-                source: id.clone(),
+                source: n,
                 item: p.item.clone(),
                 url: p.url.clone(),
                 sha256: p.sha256.clone(),
@@ -76,7 +78,7 @@ pub fn source_rows(
         if let Some(report) = &provenance.normalization {
             rows.normalizations.push(NormalizationRow {
                 release,
-                source: id.clone(),
+                source: n,
                 published: report.published,
                 left_out: json(&report.left_out)?,
                 fixes: json(&report.fixes)?,
@@ -90,8 +92,9 @@ pub fn source_rows(
 pub type StructureBounds = (String, Result<Aabb, String>);
 
 /// The rows of the release's `structures`, each by its id, with its scale domain and centre and
-/// the member list `placements` resolved for it; and each structure's ICRS bounding box in Mpc under `release`, the box its
-/// row records and the cell index holds (see [`super::place`]), or why it has none.
+/// the member list `placements` resolved for it; and each structure's ICRS bounding box in Mpc
+/// under `release` and the run's dipole `correction`, the box its row records and the cell index
+/// holds (see [`super::place`]), or why it has none.
 ///
 /// # Errors
 ///
@@ -101,20 +104,21 @@ pub fn structure_rows(
     structures: &[(String, Structure)],
     placements: &[MemberPlacement],
     release: &Release,
+    correction: &CmbCorrection,
 ) -> Result<(Vec<StructureRow>, Vec<StructureBounds>), String> {
     let mut rows = Vec::with_capacity(structures.len());
     let mut bounds = Vec::with_capacity(structures.len());
     for (id, s) in structures {
         let placed = placements.iter().find(|p| p.structure == s.name);
         let shape = placed.and_then(|p| p.shape.as_ref());
-        let boxed = index_bounds(s, placed, release);
+        let boxed = index_bounds(s, placed, release, correction);
         // In the domain's unit: pc for stars, Mpc otherwise.
         let per_mpc = if s.scale_domain == ScaleDomain::Stars {
             1e6
         } else {
             1.0
         };
-        let at = centre(s, placed, release)
+        let at = centre(s, placed, release, correction)
             .ok()
             .map(|c| c.map(|v| v * per_mpc));
         rows.push(StructureRow {
@@ -129,7 +133,14 @@ pub fn structure_rows(
             centre_z: at.map(|c| c[2]),
             geometry_kind: s.geometry_kind().map(str::to_owned),
             record: json(s)?,
-            members: shape.map(json).transpose()?,
+            members: shape
+                .map(|shape| {
+                    json(&serde_json::json!({
+                        "shape": shape,
+                        "placed_from_file": placed.map_or(&[][..], |p| p.from_file.as_slice()),
+                    }))
+                })
+                .transpose()?,
             bounds: boxed.as_ref().ok().map(json).transpose()?,
         });
         bounds.push((id.clone(), boxed));

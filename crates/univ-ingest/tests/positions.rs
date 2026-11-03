@@ -51,6 +51,7 @@ fn cmb(z: f64, uncertainty: Uncertainty) -> CmbRedshift {
         value,
         heliocentric: value,
         dipole: DipoleModel::Planck2018,
+        published: univ_model::redshift::RedshiftFrame::Heliocentric,
     }
 }
 

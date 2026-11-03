@@ -6,6 +6,7 @@
 mod basis;
 mod members;
 mod place;
+mod tracers;
 
 use std::collections::BTreeMap;
 
@@ -15,18 +16,21 @@ use univ_model::derive::{DerivedPosition, Release};
 use univ_model::ids::ObjectId;
 use univ_model::ledger::Ledger;
 use univ_model::object::{Object, Placement};
+use univ_model::redshift::{CmbCorrection, DipoleModel};
 
 pub use basis::{Basis, RULES};
 pub use members::{
     MemberPlacement, MemberProblem, NameIndex, Resolved, UnplacedMember, resolve_all,
 };
 pub use place::place;
+pub use tracers::{FilePlacer, FromFile, STRUCTURE_REDSHIFTS};
 
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::ids::{AssignError, Assigned, assign_in_order};
 use crate::matching::{MatchReport, match_entries};
 use crate::ranking::rank_all;
 use crate::state::State;
+use crate::watch::Watch;
 use univ_model::entry::CatalogueEntry;
 
 /// The steps of the stage, which its status line counts.
@@ -38,6 +42,8 @@ pub struct Inputs<'a> {
     pub basis: &'a Basis,
     /// The release cosmology with its D(z) tabulated once for the run.
     pub release: &'a Release,
+    /// The run's one CMB dipole correction, the one its entries were normalized with.
+    pub correction: &'a CmbCorrection,
     pub state: &'a State,
 }
 
@@ -56,6 +62,8 @@ pub struct CrossMatched {
     pub release: String,
     /// The release cosmology every derived position was placed under.
     pub cosmology: Cosmology,
+    /// The run's CMB dipole, which its entries were normalized and its structures placed with.
+    pub dipole: DipoleModel,
     /// The objects, in the order of their first entry.
     pub objects: Vec<ReleaseObject>,
     pub assigned: Assigned,
@@ -73,6 +81,8 @@ pub struct CrossMatched {
 pub enum CrossMatchError {
     #[error("the ids cannot be assigned: {0}")]
     Ids(#[from] AssignError),
+    #[error("{0}")]
+    Stopped(String),
 }
 
 /// The name of the release after those `ledger` lists: one more than their number.
@@ -93,11 +103,26 @@ pub fn cross_match(
     inputs: &Inputs<'_>,
     sink: &dyn EventSink,
 ) -> Result<CrossMatched, CrossMatchError> {
+    cross_match_watched(entries, inputs, sink, Watch::unwatched())
+}
+
+/// [`cross_match`], stopping after the step in hand once the owner asks it to through `watch`.
+///
+/// # Errors
+///
+/// Fails as [`cross_match`] does, or when the owner asked it to stop.
+pub fn cross_match_watched(
+    entries: Vec<CatalogueEntry>,
+    inputs: &Inputs<'_>,
+    sink: &dyn EventSink,
+    watch: Watch<'_>,
+) -> Result<CrossMatched, CrossMatchError> {
     let step = |step: String| {
         sink.emit(Event::Stepped {
             stage: Stage::Match,
             step,
         });
+        watch.check().map_err(CrossMatchError::Stopped)
     };
     let count = entries.len();
     let basis = inputs.basis;
@@ -106,14 +131,14 @@ pub fn cross_match(
     step(format!(
         "matching: {count} entries into {} objects, {} candidate links",
         report.objects, report.candidate_links
-    ));
+    ))?;
     let mut objects = matched.objects;
     rank_all(&mut objects, &basis.ranking, inputs.release);
     let ranked = objects.iter().filter(|o| o.preferred_distance.is_some());
     step(format!(
         "ranking: {} with a preferred distance",
         ranked.count()
-    ));
+    ))?;
 
     let release = next_release(&inputs.state.ledger);
     let mut ledger = inputs.state.ledger.clone();
@@ -129,7 +154,7 @@ pub fn cross_match(
         "ids: release {release}, {} new, {} replaced",
         issued(&assigned),
         assigned.replaced.len()
-    ));
+    ))?;
 
     let mut placed = Vec::with_capacity(objects.len());
     for (mut object, id) in objects.into_iter().zip(ids) {
@@ -141,7 +166,7 @@ pub fn cross_match(
         });
     }
     let count = placed.iter().filter(|o| o.position.is_some()).count();
-    step(format!("positions: {count} placed of {}", placed.len()));
+    step(format!("positions: {count} placed of {}", placed.len()))?;
 
     let resolved: Vec<Resolved<'_>> = placed
         .iter()
@@ -152,7 +177,13 @@ pub fn cross_match(
         })
         .collect();
     let tolerance = basis.matching.structure_members.angular_tolerance_arcsec;
-    let structures = resolve_all(&basis.structures(), &NameIndex::new(&resolved), tolerance);
+    let tracers = FilePlacer::new(inputs.release, inputs.correction);
+    let structures = resolve_all(
+        &basis.structures(),
+        &NameIndex::new(&resolved),
+        tolerance,
+        Some(&tracers),
+    );
     for s in structures.iter().filter(|s| s.shape.is_none()) {
         let (no_object, unplaced) = s.unresolved_and_unplaced();
         sink.emit(Event::MembersUnplaced {
@@ -163,7 +194,12 @@ pub fn cross_match(
             point: s.point.is_some(),
         });
     }
-    step(format!("members: {} member lists", structures.len()));
+    let from_file: usize = structures.iter().map(|s| s.from_file.len()).sum();
+    step(format!(
+        "members: {} member lists, {from_file} members placed from their own cited position and \
+         redshift",
+        structures.len()
+    ))?;
 
     let next = State {
         ledger,
@@ -172,6 +208,7 @@ pub fn cross_match(
     let crossed = CrossMatched {
         release,
         cosmology: inputs.release.cosmology().clone(),
+        dipole: inputs.correction.model(),
         objects: placed,
         assigned,
         next,

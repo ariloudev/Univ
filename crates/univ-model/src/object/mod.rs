@@ -75,6 +75,9 @@ pub enum MatchMethod {
     PositionAndRedshift,
     /// By sky position and distance.
     PositionAndDistance,
+    /// As a piece of a nearby galaxy: within the extent its source publishes, at a heliocentric
+    /// cz agreeing with the galaxy's.
+    WithinExtent,
 }
 
 /// The difference along the line of sight between two matched entries.

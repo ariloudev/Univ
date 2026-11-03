@@ -73,6 +73,34 @@ struct EntryId {
     id: ObjectId,
 }
 
+/// The entry ids as their file holds them, written from the map without a copy of it.
+#[derive(Serialize)]
+struct EntryIdsOut<'a> {
+    version: u32,
+    entries: EntriesOut<'a>,
+}
+
+/// The rows of the entry-id map, one per entry, in its order (sorted).
+struct EntriesOut<'a>(&'a EntryIds);
+
+/// One row of [`EntriesOut`].
+#[derive(Serialize)]
+struct EntryIdOut<'a> {
+    source: &'a SourceId,
+    identifier: &'a str,
+    id: ObjectId,
+}
+
+impl Serialize for EntriesOut<'_> {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.collect_seq(self.0.iter().map(|(entry, id)| EntryIdOut {
+            source: &entry.source,
+            identifier: &entry.identifier,
+            id: *id,
+        }))
+    }
+}
+
 impl State {
     /// The state kept in `dir`: a new ledger and no ids where neither file exists.
     ///
@@ -160,17 +188,9 @@ impl State {
     pub fn write(&self, dir: &Path) -> io::Result<()> {
         std::fs::create_dir_all(dir)?;
         write_ledger(&dir.join(LEDGER), &self.ledger)?;
-        let file = EntryIdsFile {
+        let file = EntryIdsOut {
             version: ENTRY_IDS_VERSION,
-            entries: self
-                .previous
-                .iter()
-                .map(|(entry, id)| EntryId {
-                    source: entry.source.clone(),
-                    identifier: entry.identifier.clone(),
-                    id: *id,
-                })
-                .collect(),
+            entries: EntriesOut(&self.previous),
         };
         write(&dir.join(ENTRY_IDS), &file)
     }

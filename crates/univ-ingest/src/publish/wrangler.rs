@@ -1,12 +1,14 @@
-//! The [`Store`] of local D1 and R2 through Wrangler's `--local` commands, against a
-//! `--persist-to` state directory: what `wrangler dev` reads when given the same directory.
+//! The [`Store`] of local D1 and R2 against a `--persist-to` state directory: what
+//! `wrangler dev` reads when given the same directory. D1 goes through Wrangler's `--local`
+//! commands; every R2 operation of a run goes through one [`R2Batch`], started at the first.
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use serde_json::Value;
 
-use super::{QueryRow, Store};
+use super::r2batch::R2Batch;
+use super::{QueryRow, ReadBack, Store};
 
 /// The D1 database `wrangler.toml` names.
 pub const DATABASE: &str = "univ";
@@ -16,14 +18,14 @@ pub const BUCKET: &str = "univ-releases";
 pub const STDERR_LINES: usize = 20;
 
 /// The directory in Wrangler's local state directory `persist_to` that Univ Ingest keeps its
-/// own files in: the publish journals and Wrangler's read-back scratch file.
+/// own files in: the publish journals and the scratch file an R2 object is read into.
 #[must_use]
 pub fn ingest_dir(persist_to: &Path) -> PathBuf {
     persist_to.join("univ-ingest")
 }
 
-/// Wrangler, run from the repository's `node_modules`.
-#[derive(Clone, Debug)]
+/// Wrangler, run from the repository's `node_modules`, and the R2 batch script beside it.
+#[derive(Debug)]
 pub struct Wrangler {
     program: PathBuf,
     config: PathBuf,
@@ -31,6 +33,10 @@ pub struct Wrangler {
     root: PathBuf,
     persist_to: PathBuf,
     scratch: PathBuf,
+    /// The R2 batch script, once an R2 operation started it.
+    r2: Option<R2Batch>,
+    /// How many times the R2 batch script was started.
+    batches: usize,
 }
 
 /// `path` made absolute, since Wrangler runs in the configuration's directory.
@@ -68,12 +74,31 @@ impl Wrangler {
             root,
             persist_to,
             scratch,
+            r2: None,
+            batches: 0,
         })
+    }
+
+    /// How many times this store started the R2 batch script: once for a run that touched R2.
+    #[must_use]
+    pub fn r2_batches(&self) -> usize {
+        self.batches
+    }
+
+    /// The R2 batch script, started at the first R2 operation.
+    fn r2(&mut self) -> Result<&mut R2Batch, String> {
+        if self.r2.is_none() {
+            self.r2 = Some(R2Batch::start(&self.root, &self.persist_to)?);
+            self.batches += 1;
+        }
+        self.r2
+            .as_mut()
+            .ok_or_else(|| "the R2 batch script did not start".to_owned())
     }
 
     /// Runs Wrangler with `args` and the local options.
     fn run(&self, args: &[&str]) -> Result<Output, String> {
-        Command::new(&self.program)
+        own_group(&mut Command::new(&self.program))
             .current_dir(&self.root)
             .args(args)
             .arg("--local")
@@ -96,10 +121,15 @@ impl Wrangler {
             Err(failure(args, &output))
         }
     }
+}
 
-    fn object(key: &str) -> String {
-        format!("{BUCKET}/{key}")
-    }
+/// `command` in a process group of its own, so that the owner's Ctrl-C reaches only Univ Ingest,
+/// which stops once the unit in hand is done rather than have Wrangler killed part way through
+/// it.
+pub(super) fn own_group(command: &mut Command) -> &mut Command {
+    #[cfg(unix)]
+    std::os::unix::process::CommandExt::process_group(command, 0);
+    command
 }
 
 /// `text` without its ANSI escape sequences: control sequences (`ESC [` … a final byte),
@@ -211,44 +241,33 @@ impl Store for Wrangler {
     }
 
     fn put(&mut self, key: &str, file: &Path) -> Result<(), String> {
+        self.put_read_back(key, file).map(drop)
+    }
+
+    fn put_read_back(&mut self, key: &str, file: &Path) -> Result<Option<ReadBack>, String> {
         let file = absolute(file)?;
-        let (object, file) = (Self::object(key), file.to_string_lossy());
-        self.run_ok(&[
-            "r2",
-            "object",
-            "put",
-            &object,
-            "--file",
-            &file,
-            "--content-type",
-            content_type(key),
-        ])
-        .map(drop)
+        self.r2()?.put(key, &file, content_type(key))
     }
 
     fn get(&mut self, key: &str) -> Result<Option<Vec<u8>>, String> {
         let back = self.scratch.join("read-back");
         let _ = std::fs::remove_file(&back);
-        let (object, file) = (Self::object(key), back.to_string_lossy().into_owned());
-        let args = ["r2", "object", "get", &object, "--file", &file];
-        let output = self.run(&args)?;
-        if output.status.success() {
-            let bytes = std::fs::read(&back).map_err(|e| format!("{}: {e}", back.display()))?;
-            let _ = std::fs::remove_file(&back);
-            return Ok(Some(bytes));
-        }
-        let _ = std::fs::remove_file(&back);
-        let said = strip_ansi(&String::from_utf8_lossy(&output.stderr));
-        if said.contains("The specified key does not exist") {
-            Ok(None)
+        let found = self.r2()?.get(key, &back)?;
+        let bytes = if found {
+            Some(std::fs::read(&back).map_err(|e| format!("{}: {e}", back.display()))?)
         } else {
-            Err(failure(&args, &output))
-        }
+            None
+        };
+        let _ = std::fs::remove_file(&back);
+        Ok(bytes)
     }
 
     fn delete(&mut self, key: &str) -> Result<(), String> {
-        let object = Self::object(key);
-        self.run_ok(&["r2", "object", "delete", &object]).map(drop)
+        self.r2()?.delete(&[key.to_owned()])
+    }
+
+    fn delete_keys(&mut self, keys: &[String]) -> Result<(), String> {
+        self.r2()?.delete(keys)
     }
 }
 

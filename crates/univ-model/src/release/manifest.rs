@@ -13,6 +13,9 @@ pub const FORMAT: &str = "univ-release-manifest";
 pub const MANIFEST_VERSION: u32 = 1;
 /// The most D1 storage one release's tables may take (CON-3: 10 GB, decimal gigabytes).
 pub const D1_CAP_BYTES: u64 = 10_000_000_000;
+/// The most D1 storage a build lets one release take: under half the cap, so release n + 1 is
+/// published beside release n, and checked with it against the cap, before n is pruned.
+pub const RELEASE_BUDGET_BYTES: u64 = 4_500_000_000;
 
 /// A release manifest.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -24,6 +27,10 @@ pub struct ReleaseManifest {
     /// RFC 3339, UTC.
     pub built_at: String,
     pub cosmology: Cosmology,
+    /// What a reader of the release's distances needs to know of its cosmology, with its
+    /// citations: such as the Hubble constant the distance ladder's distances are on.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cosmology_note: Option<String>,
     /// The line-of-sight peculiar velocity in every redshift distance's error, km/s.
     pub peculiar_velocity_km_s: f64,
     pub versions: Versions,
@@ -152,6 +159,10 @@ pub struct TableEstimate {
     pub rows: u64,
     pub estimated_bytes: u64,
     pub fingerprint: Vec<ColumnTotal>,
+    /// For a table checked by its content, the SHA-256, in hex, of its rows in the order of the
+    /// primary key, each in [`super::fingerprint::canonical_row`]'s form.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_sha256: Option<String>,
 }
 
 /// Where a file of the release goes.

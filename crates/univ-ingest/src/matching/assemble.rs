@@ -165,9 +165,14 @@ pub(super) fn build(
         }
         report.group_relations += 1;
         let scheme = &rules.cross_identifications[r.scheme].scheme;
+        let (of_group, of_galaxy) = if r.dominant {
+            (RelationKind::DominantMember, RelationKind::DominantMemberOf)
+        } else {
+            (RelationKind::Member, RelationKind::MemberOf)
+        };
         for (o, kind, from, to) in [
-            (og, RelationKind::DominantMember, r.group, r.galaxy),
-            (ox, RelationKind::DominantMemberOf, r.galaxy, r.group),
+            (og, of_group, r.group, r.galaxy),
+            (ox, of_galaxy, r.galaxy, r.group),
         ] {
             objects[o].relations.push(Relation {
                 kind,

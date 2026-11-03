@@ -74,6 +74,7 @@ impl<C: Clock> Fetcher<C> {
             .await
             .map_err(disk)?;
         let _ = tokio::fs::remove_file(meta_path(item.dest)).await;
+        self.counter.got();
         self.sink.emit(Event::Done {
             source: item.source.clone(),
             item: item.name.to_owned(),
@@ -116,7 +117,7 @@ impl<C: Clock> Fetcher<C> {
         let response = request
             .send()
             .await
-            .map_err(|e| Attempt::Retry(e.to_string()))?;
+            .map_err(|e| Attempt::Retry(super::with_causes(&e)))?;
         let (offset, length) = self.start(&at, &response, have, before.as_ref()).await?;
         let record = PartMeta {
             url: url.clone(),
@@ -235,6 +236,7 @@ impl<C: Clock> Fetcher<C> {
                 Ok(Some(bytes)) => {
                     file.write_all(&bytes).await.map_err(|e| at.disk(&e))?;
                     written += bytes.len() as u64;
+                    self.counter.bytes(bytes.len() as u64);
                     if written - reported >= REPORT_EVERY {
                         reported = written;
                         let (source, item) = at.id();
@@ -247,7 +249,7 @@ impl<C: Clock> Fetcher<C> {
                     }
                 }
                 Ok(None) => break None,
-                Err(error) => break Some(error.to_string()),
+                Err(error) => break Some(super::with_causes(&error)),
             }
         };
         file.flush().await.map_err(|e| at.disk(&e))?;
