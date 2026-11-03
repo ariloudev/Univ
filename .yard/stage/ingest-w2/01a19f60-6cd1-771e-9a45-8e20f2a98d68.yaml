@@ -1,0 +1,164 @@
+key: 01a19f60-6cd1-771e-9a45-8e20f2a98d68
+id: w2
+versions:
+  - key: 01a19f60-6cd1-771e-9a45-8e2b2f7b3e44
+    at: 2026-11-03T03:07:39Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 Acquisition"
+    goal: "All 18 source definitions are validated YAML, and the fetcher retries, resumes chunks and byte ranges, records digests and works offline, tested against a mock server and recorded answers"
+    status: active
+blocks:
+  - key: 01a19f60-6cd1-771e-9a45-8e22f2a7ff09
+    id: w2-t1-source
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e2ddd2a9c88
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Source definitions: schema and validation"
+        detail: "`sources/<id>.yaml` read into a typed definition: id, title, provider, access, query, cuts, columns with units, frame, epoch, citation, terms, credit, scale domain, mirrors, fixes and redistribution status with quoted terms and reasoning. Done when tests show an incomplete definition, or one with an unknown unit, frame or scale domain, refused with its file and field named (AC-1 to AC-9), and a forbidden source blocked from a release."
+        state: active
+  - key: 01a19f60-6cd1-771e-9a45-8e23d1400782
+    id: w2-t2-events
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e2e429e00d0
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run events"
+        detail: "Typed events for W3 to render: Get, Hit, Err, Resumed, Restarted, stage start and end, and bytes received. Done when the fetcher emits them through a sink and a recording sink sees them in order in tests."
+        state: open
+  - key: 01a19f60-6cd1-771e-9a45-8e248b2fb7fe
+    id: w2-t3-fetch
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e2f93c838cc
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Durable fetcher: retries, mirrors and chunks"
+        detail: "At least 4 retries per mirror, with waits doubling from 2 s on an injected clock. A mirror that fails is skipped for the rest of the run. Chunks are written as `.part` then renamed, and a chunk on disk is never fetched again. Done when mock-server tests cover AC-14 to AC-18."
+        state: open
+  - key: 01a19f60-6cd1-771e-9a45-8e251fd8fbfe
+    id: w2-t4-resume
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e305e5768ae
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Byte-range resume and payload checks"
+        detail: "A partial download continues with a Range request. It restarts, with an event saying so, when the server ignores Range or the ETag or length changed. The finished file is checked against the published size and digest. Done when mock-server tests cover AC-19 to AC-23."
+        state: open
+  - key: 01a19f60-6cd1-771e-9a45-8e26ec08770b
+    id: w2-t5-provenance
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e31f695a8bf
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Provenance, failure and offline mode"
+        detail: "A YAML provenance record holds each payload's SHA-256, retrieval time and URL, written before parsing. A failure names the source, the chunk and each mirror's last error, and keeps the chunks. `--offline` makes no request and fails on the first missing chunk. Done when tests cover AC-24 to AC-27."
+        state: open
+  - key: 01a19f60-6cd1-771e-9a45-8e274c17d809
+    id: w2-t6-access
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e3234d20b65
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Access methods: VizieR ASU-TSV, SkyServer SQL, Gaia TAP, file"
+        detail: "Each method turns a definition into the chunk requests and reads its answer format into rows. Done when tests build the expected URLs and read each method's recorded fixture."
+        state: open
+  - key: 01a19f60-6cd1-771e-9a45-8e28e95cc25d
+    id: w2-t7-definitions
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e33da3c1f37
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The 18 source definitions"
+        detail: "Each with researched citation, endpoints and mirrors, columns and units, verbatim terms, credit and redistribution reasoning. This settles the 2M++ reconstruction and eRASS1 URLs and the Gaia G cut, which the owner decides. Done when all 18 validate (AC-10 to AC-13)."
+        state: open
+  - key: 01a19f60-6cd1-771e-9a45-8e29fa1c1059
+    id: w2-t8-fixtures
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e342a80c07b
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "A recorded fixture per source"
+        detail: "A few rows or bytes from the real service, each with a YAML sidecar giving the URL or query, retrieval time and SHA-256. Done when every source has one and its access method's reader parses it."
+        state: open
+  - key: 01a19f60-6cd1-771e-9a45-8e2a57f68569
+    id: w2-t9-gate
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e3558eb8d37
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "Done when `cargo xtask check` passes and AC-1 to AC-27 are linked and accepted, or marked unverified with a reason."
+        state: open
+  - key: 01a19f67-7b44-7257-a73d-e3355772bb36
+    id: w2-q-gaia-cut
+    kind: question
+    versions:
+      - key: 01a19f67-7b44-7257-a73d-e336ae4619e4
+        at: 2026-11-03T03:15:21Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How bright must a Gaia DR3 star be to enter the first release, beyond the 100 pc of the Gaia Catalogue of Nearby Stars?"
+        header: "Gaia G cut"
+        context: |-
+          The **Gaia DR3 bright stars** source takes every `gaia_source` row brighter than a G cut, at epoch J2016.0. These are the stars beyond 100 pc that the GCNS doesn't hold. Counts from the ESA Gaia Archive (`SELECT COUNT(*) FROM gaiadr3.gaia_source WHERE phot_g_mean_mag < G`, queried 2026-11-03):
+
+          | G cut | Stars |
+          |---|---|
+          | < 6 | 6,764 |
+          | < 8 | 62,723 |
+          | < 10 | 482,106 |
+          | < 11 | 1,247,240 |
+          | < 12 | 3,087,821 |
+
+          For scale, Hipparcos holds about 118,000 stars. The GCNS adds 331,312 objects within 100 pc. D1 is capped at 10 GB (CON-3). Each star also gets a Bailer-Jones distance and is cross-matched with Hipparcos, so the cost grows with the cut. The brightest stars (G < ~3) saturate in Gaia, and Hipparcos covers them.
+        options:
+          - label: "G < 10"
+            detail: "About 482k stars. Every star an observer could see in binoculars, and Hipparcos's completeness with room to spare. Its D1 share is small next to the 1.1M SDSS galaxies. I recommend it as the best balance of reach and size."
+            recommended: true
+          - label: "G < 8"
+            detail: "About 63k stars: the naked-eye sky and a bit beyond, smaller than Hipparcos. The cheapest option, but the Milky Way's structure past 100 pc stays thin."
+          - label: "G < 11"
+            detail: "About 1.25M stars, more than the SDSS galaxies. It traces the Galaxy further out, roughly doubling the star share of D1 and the fetch time."
+          - label: "G < 12"
+            detail: "About 3.1M stars, the largest set. It is likely to make stars the biggest part of D1 and of the tiles, and the Bailer-Jones fetch grows with it."
