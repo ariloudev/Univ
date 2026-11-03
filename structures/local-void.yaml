@@ -5,6 +5,7 @@ name: Local Void
 alternative_names: []
 kind: void
 status: reconstructed
+scale_domain: cosmic_web
 papers:
   - id: tully-2019
     reference: "Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24"

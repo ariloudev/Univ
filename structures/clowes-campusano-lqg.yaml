@@ -3,6 +3,7 @@ name: Clowes-Campusano LQG
 alternative_names: ["U1.28", "CCLQG"]
 kind: quasar_group
 status: statistical_claim
+scale_domain: cosmic_web
 papers:
   - id: clowes-2012
     reference: "Clowes, Campusano, Graham & Söchting 2012, MNRAS 419, 556"

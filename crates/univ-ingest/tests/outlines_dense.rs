@@ -29,7 +29,7 @@ fn void_with_rule() -> Structure {
 /// A simulated supercluster published at `at`, supergalactic h⁻¹ Mpc.
 fn supercluster(at: Vec3) -> Structure {
     let text = format!(
-        "name: Simulated Supercluster\nkind: supercluster\nstatus: observed\npapers:\n  - {{ id: simulated, reference: \"SIMULATED for this test: not a paper\", title: simulated, bibcode: simulated, read: \"not read: simulated\" }}\nposition: {}\nnotes: \"SIMULATED.\"\n",
+        "name: Simulated Supercluster\nkind: supercluster\nstatus: observed\nscale_domain: cosmic_web\npapers:\n  - {{ id: simulated, reference: \"SIMULATED for this test: not a paper\", title: simulated, bibcode: simulated, read: \"not read: simulated\" }}\nposition: {}\nnotes: \"SIMULATED.\"\n",
         coordinates(at)
     );
     let dir = tempfile::tempdir().unwrap();

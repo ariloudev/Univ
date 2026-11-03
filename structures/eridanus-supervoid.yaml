@@ -3,6 +3,7 @@ name: Eridanus supervoid
 alternative_names: ["CMB Cold Spot supervoid"]
 kind: void
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: szapudi-2015
     reference: "Szapudi, Kovács, Granett, Frei, Silk, Burgett et al. 2015, MNRAS 450, 288"

@@ -4,6 +4,7 @@ name: Ho'oleilana
 alternative_names: ["Hoʻoleilana"]
 kind: shell
 status: statistical_claim
+scale_domain: cosmic_web
 papers:
   - id: tully-2023
     reference: "Tully, Howlett & Pomarède 2023, ApJ 954, 169"

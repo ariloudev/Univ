@@ -1,0 +1,17 @@
+# Local storage that Univ Ingest publishes releases to: one D1 database and one R2 bucket,
+# written with `wrangler d1 execute --local` and `wrangler r2 object put --local`.
+#
+# There is no Worker entry and there are no routes here, on purpose: Univ Server's Worker is a
+# separate product with its own configuration. This file only names the bindings, so that
+# Wrangler knows which local database and bucket the publisher writes. Nothing is deployed.
+name = "univ-ingest-local"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "univ"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[[r2_buckets]]
+binding = "RELEASES"
+bucket_name = "univ-releases"

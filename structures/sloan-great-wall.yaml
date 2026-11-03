@@ -3,6 +3,7 @@ name: Sloan Great Wall
 alternative_names: ["SDSS Great Wall"]
 kind: wall
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: gott-2005
     reference: "Gott, Jurić, Schlegel, Hoyle, Vogeley, Tegmark, Bahcall & Brinkmann 2005, ApJ 624, 463"

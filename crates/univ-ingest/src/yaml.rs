@@ -43,7 +43,21 @@ pub fn read_checked<T: DeserializeOwned>(
 ) -> Result<T, FileError> {
     let text =
         fs::read_to_string(file).map_err(|e| FileError::new(file, "(file)", e.to_string()))?;
-    let document = serde_norway::Deserializer::from_str(&text);
+    parse_checked(file, &text, check)
+}
+
+/// Parses `text`, read from `file` (a path or another name of where it came from, such as an R2
+/// key), as a `T`, then makes the checks serde cannot, as [`read_checked`] does.
+///
+/// # Errors
+///
+/// Fails when the YAML does not parse as a `T`, naming the field, or `check` refuses it.
+pub fn parse_checked<T: DeserializeOwned>(
+    file: &Path,
+    text: &str,
+    check: impl FnOnce(&T) -> Result<(), (String, String)>,
+) -> Result<T, FileError> {
+    let document = serde_norway::Deserializer::from_str(text);
     let value: T = serde_path_to_error::deserialize(document).map_err(|e| {
         let path = e.path().to_string();
         // The YAML error may already lead with the field; say it once.

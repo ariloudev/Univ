@@ -8,10 +8,17 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use tokio::time::MissedTickBehavior;
 
+mod build;
 mod cross;
+mod publish;
 mod tiles;
 
+pub use build::{BuildOptions, DEFAULT_BUILD, build_stage};
 pub use cross::{MatchOptions, match_stage};
+pub use publish::{
+    DEFAULT_CONFIG, DEFAULT_PERSIST, StoreCommand, StoreRun, now, prune_command, publish_command,
+    store_command,
+};
 pub use tiles::{DEFAULT_TILES, TileOptions, tiles_stage};
 
 use crate::access::item_count;
@@ -91,6 +98,8 @@ pub struct RunReport {
     /// Why a stage that is not a source's failed, such as a cross-match whose rules cannot be
     /// read.
     failure: Option<String>,
+    /// The release the run built, once it is complete.
+    built: Option<u32>,
 }
 
 impl RunReport {
@@ -110,6 +119,7 @@ impl RunReport {
             sources,
             stage: Stage::Fetch,
             failure: None,
+            built: None,
         }
     }
 
@@ -135,10 +145,13 @@ impl RunReport {
         }
     }
 
-    /// The sources and outcome of a run that ran to the end of its last stage, which was asked
-    /// for without a release.
+    /// The sources and outcome of a run that ran to the end of its last stage: the release it
+    /// built, or where it stopped and why.
     #[must_use]
     pub fn ended(&self) -> (Vec<SourceSummary>, Outcome) {
+        if let (Some(n), false) = (self.built, self.failed()) {
+            return (self.sources.clone(), Outcome::Built(u64::from(n)));
+        }
         let failed = self
             .sources
             .iter()

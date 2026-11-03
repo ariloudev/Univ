@@ -19,6 +19,7 @@ terms:
   credit: "Cite the papers each structure file lists."
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     Nothing is fetched from a provider: the structure files hold values stated in published papers,
     each with its citation, which is ordinary scholarly use. Provisional: judged again before any

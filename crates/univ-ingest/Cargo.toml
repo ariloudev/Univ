@@ -31,5 +31,6 @@ rand_chacha = "0.10.0"
 serde_json = "1.0.154"
 
 [dev-dependencies]
+rusqlite = { version = "0.32.1", features = ["bundled"] }
 tempfile = "3.27.0"
 wiremock = "0.6.5"

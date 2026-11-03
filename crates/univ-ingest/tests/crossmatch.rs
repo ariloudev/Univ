@@ -17,7 +17,7 @@ use simulated::{
     designation, entry, matching_rules, offset, ranking_rules, source, with_cz, with_distance,
 };
 use univ_ingest::crossmatch::{
-    CrossMatched, Inputs, MemberProblem, NameIndex, Resolved, cross_match, resolve_all,
+    Basis, CrossMatched, Inputs, MemberProblem, NameIndex, Resolved, cross_match, resolve_all,
 };
 use univ_ingest::display::{PlainTarget, RunDisplay, RunSink};
 use univ_ingest::events::{Count, Event, EventSink, RecordingSink, Stage};
@@ -257,7 +257,7 @@ fn structure(rows: &[(&str, f64, f64)]) -> Structure {
         .collect();
     let rows = rows.concat();
     let yaml = format!(
-        "name: Test Pair\nkind: wall\nstatus: observed\npapers:\n  - id: test-2026\n    reference: \"Test 2026, ApJ 1, 1\"\n    title: \"Simulated\"\n    doi: 10.0000/test\n    read: \"simulated for this test\"\ngeometry:\n  kind: members\n  members:\n    frame: icrs\n    tracer: galaxy\n    source: {{ paper: test-2026, table: \"1\" }}\n    columns:\n      - {{ name: lon, header: \"RA\", unit: degree, kind: measured, uncertainty: {{ form: none_reported }} }}\n      - {{ name: lat, header: \"Dec\", unit: degree, kind: measured, uncertainty: {{ form: none_reported }} }}\n    rows:\n{rows}notes: \"Simulated.\"\n"
+        "name: Test Pair\nkind: wall\nstatus: observed\nscale_domain: cosmic_web\npapers:\n  - id: test-2026\n    reference: \"Test 2026, ApJ 1, 1\"\n    title: \"Simulated\"\n    doi: 10.0000/test\n    read: \"simulated for this test\"\ngeometry:\n  kind: members\n  members:\n    frame: icrs\n    tracer: galaxy\n    source: {{ paper: test-2026, table: \"1\" }}\n    columns:\n      - {{ name: lon, header: \"RA\", unit: degree, kind: measured, uncertainty: {{ form: none_reported }} }}\n      - {{ name: lat, header: \"Dec\", unit: degree, kind: measured, uncertainty: {{ form: none_reported }} }}\n    rows:\n{rows}notes: \"Simulated.\"\n"
     );
     let dir = tempfile::tempdir().unwrap();
     let file = dir.path().join("test-pair.yaml");
@@ -273,14 +273,20 @@ fn cross(structures: &[Structure]) -> CrossMatched {
         Some(0.003),
         CEPHEIDS,
     ));
-    let (matching, ranking) = (matching_rules(), ranking_rules());
+    let basis = Basis {
+        matching: matching_rules(),
+        ranking: ranking_rules(),
+        structures: structures
+            .iter()
+            .map(|s| ("test-pair".to_owned(), s.clone()))
+            .collect(),
+        ..Basis::read(&workspace().join("rules"), &[]).unwrap()
+    };
     let (release, state) = (Release::planck_2018(), State::default());
     let inputs = Inputs {
-        matching: &matching,
-        ranking: &ranking,
+        basis: &basis,
         release: &release,
         state: &state,
-        structures,
     };
     cross_match(entries, &inputs, &RecordingSink::default()).unwrap()
 }

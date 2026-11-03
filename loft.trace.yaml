@@ -678,6 +678,78 @@ links:
       - file: "crates/univ-ingest/tests/ids.rs"
         name: "each_ledger_entry_gives_the_old_id_what_happened_and_the_ids_that_replaced_it"
         body: 96e60c14219c3ba3a426baa6ccabf922bc28d031b582f8595a51ac6ae4c818a8
+  - node: 01a19f23-636f-72bd-b194-151f95aff549
+    reviewed: ae8b7b21e481a63f7b355830db4de4746b958fc2c024350e352b371c4ba11ef9
+    tests:
+      - file: "crates/univ-ingest/tests/release.rs"
+        name: "a_release_records_its_number_build_time_cosmology_versions_and_rules"
+        body: a4efdc9fc79b744991f8fe0c5962a102dee4ff4bc205acb0424cc50a12ad3755
+      - file: "crates/univ-ingest/tests/release.rs"
+        name: "the_release_number_increments_and_the_pending_state_becomes_the_state"
+        body: 188a4a1913fc3a4a51e456038de0c20988a7aaa213516847356653ad6922cdfe
+  - node: 01a19f23-636f-72bd-b194-15208136562d
+    reviewed: 10f363bb231c29778bac7aa91bb7ee9ac102bb9ff617ccc98686c6573f2f26a8
+    tests:
+      - file: "crates/univ-ingest/tests/release.rs"
+        name: "a_release_records_its_number_build_time_cosmology_versions_and_rules"
+        body: a4efdc9fc79b744991f8fe0c5962a102dee4ff4bc205acb0424cc50a12ad3755
+  - node: 01a19f23-636f-72bd-b194-1521b702e5bb
+    reviewed: 0d43dcf305030992e3cfd37fcc8692703a9d5ef4fe180fd3f6595006156412e6
+    tests:
+      - file: "crates/univ-ingest/tests/release.rs"
+        name: "the_manifest_lists_every_file_of_the_release_with_its_sha256"
+        body: 06295a9976607581eaa34c5b6570dc4d1b01de669b3d9914a1b665f71a8d5b59
+  - node: 01a19f23-636f-72bd-b194-1522436dac01
+    reviewed: 05eb9d6915f9e78496a1c9eefe387a01d8b27c5dd7cc50bd09a39f4813499c47
+    tests:
+      - file: "crates/univ-ingest/tests/release.rs"
+        name: "the_cell_index_holds_every_placed_object_in_the_cell_of_its_position"
+        body: 66c70f97bb2e12a27660eac2dbcae58badf46ce7ef44c8cdab3312c045c6ffa1
+      - file: "crates/univ-ingest/tests/structure_cells.rs"
+        name: "a_sky_region_over_every_longitude_spans_all_360_degrees"
+        body: 14a993954ae857d17b8d26a77c0c0414af120f68a3b371bd05d6080fdc1f6748
+  - node: 01a19f23-636f-72bd-b194-15248994b03f
+    reviewed: 531442a7f316a2ed5e8fbade5d8190168bc1fd7e6f311bde2266d6665ab61149
+    tests:
+      - file: "crates/univ-ingest/tests/release_checks.rs"
+        name: "a_tile_holding_an_object_the_release_lacks_fails_the_build"
+        body: 6d763b538985109a972a9a1cd97e37aa8a4fecacaf5345ed0b1719ce77be61d3
+  - node: 01a19f23-636f-72bd-b194-1525435d731d
+    reviewed: 8d8769f361543b71093d108fdf4f04baf8ff8928292ab715cc50037a8f638b24
+    tests:
+      - file: "crates/univ-ingest/tests/release_checks.rs"
+        name: "a_structure_number_citing_no_paper_fails_the_build"
+        body: 848edd695fd7c0a09614551b94a636f8a35ca4fa1a85679435afe20865777402
+  - node: 01a19f23-636f-72bd-b194-152619fffa94
+    reviewed: d3e4bcc1c9d8995decc1dfa2db097eeb0d69f1380daee772129e4d7539266e63
+    tests:
+      - file: "crates/univ-ingest/tests/release_checks.rs"
+        name: "entry_counts_that_differ_from_the_provenance_fail_the_build"
+        body: f07179f3028adf9442beb752a7687f3380c2c9935b97feaab70a9bddc47082e7
+      - file: "crates/univ-ingest/tests/release_checks.rs"
+        name: "two_rows_with_one_primary_key_fail_the_build"
+        body: 769da02dccbcedcf2ddf2f7c8700e6f105d57f4cb7b148aaf9d262ab6f5e1069
+  - node: 01a19f23-636f-72bd-b194-152783fea6de
+    reviewed: 01520aa8d0b35c138f530be5c920d7d64f28673d92b5109bcda577ee5a546ac3
+    tests:
+      - file: "crates/univ-ingest/tests/release_checks.rs"
+        name: "a_source_that_forbids_redistribution_fails_the_build"
+        body: 7402cf040f049ac2f0f1d49a07e23375040993808d3b4be8e8b1145fdb0ffa30
+  - node: 01a19f23-636f-72bd-b194-1529a7954231
+    reviewed: 1dcc21ccac1f29aafe0a1e4afffa7948d4831382f8bfe1171887376478493d89
+    tests:
+      - file: "crates/univ-ingest/tests/release_cli.rs"
+        name: "a_build_in_which_a_source_failed_names_it_and_uses_no_number"
+        body: 538ba1b053f1d81399c4db5360c7d7cafca0b3b7fcfb37295c67ead45eed4477
+      - file: "crates/univ-ingest/tests/release_checks.rs"
+        name: "a_release_directory_already_there_is_never_overwritten"
+        body: f5500d000bc97228d7ae6bc2f26b83bc7bfce401ba4884a62bdcee2a3af7ca9c
+      - file: "crates/univ-ingest/tests/release_checks.rs"
+        name: "a_failure_while_recording_the_state_uses_no_number_and_leaves_no_release_publish_accepts"
+        body: c09ab417580117d96dfcb5f7e57504647a860970d44aeea29c3fd2e65c6b785b
+      - file: "crates/univ-ingest/tests/release_cli.rs"
+        name: "a_second_build_on_one_state_directory_is_refused_by_its_lock"
+        body: 10fc5bb68422d24987907572a67210d22fa1df6b90969ee7843f366653514a3d
   - node: 01a19f23-636f-72bd-b194-152c99726521
     reviewed: 87e70caff91e22db3af9bd64231ab9ce0b69a4a2a61ce1d2f50b32707638c3a8
     tests:
@@ -747,6 +819,69 @@ links:
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "rules_that_would_allow_a_tile_beyond_one_mebibyte_are_refused"
         body: d3bdfc9365ed5a74de896467288f68c278cadedd37776184429da230ae01b9c6
+  - node: 01a19f23-636f-72bd-b194-153927026b4b
+    reviewed: 45de105f2d87e0207a33a91851d9ebe5d790feb9775179cf420bf241520dbd66
+    tests:
+      - file: "crates/univ-ingest/tests/prune.rs"
+        name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+        body: 29aeaf5018a6a6a57bf1af73a6a9563809990487496b5914bd5122fd8f10329e
+  - node: 01a19f23-636f-72bd-b194-153a6cd80c2c
+    reviewed: edecef9bacadbb74a84d828a30602a92afa9efa9fd80bb5a1165ea51d7013adf
+    tests:
+      - file: "crates/univ-ingest/tests/prune.rs"
+        name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+        body: 29aeaf5018a6a6a57bf1af73a6a9563809990487496b5914bd5122fd8f10329e
+      - file: "crates/univ-ingest/tests/prune.rs"
+        name: "with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_it_prunes"
+        body: 785d2b039b143e74fa690daf924ebbb3f258a625a5cbb3a0e85f3004cd39746a
+  - node: 01a19f23-636f-72bd-b194-153c0959ad96
+    reviewed: 923c577f1aecbd3eeffd01ceb1934112a852397c0a1368a013d129c8cf7887f7
+    tests:
+      - file: "crates/univ-ingest/tests/prune.rs"
+        name: "the_release_latest_points_to_is_not_pruned"
+        body: 79ccbb4a297aa264845e328dcf266450e9218564733ae8952c85da9ef9da62ed
+  - node: 01a19f23-636f-72bd-b194-153fb0e0dd43
+    reviewed: 4b050be2a02689e7494e6e0ffca8ebe0c752ad638e1219e36a8e1dd3031f0536
+    tests:
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
+        body: cd0d9b495f6760445da8af02d33ad69ee021f12c8cecfe0960a510cee63af21e
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "a_file_that_reads_back_with_another_sha256_stops_the_publish"
+        body: c7b83958865dedd93b27fffec8020533d7ae587d84751edcd6f29c88bf2d9632
+      - file: "crates/univ-ingest/tests/publish_checks.rs"
+        name: "a_row_altered_on_its_way_to_d1_stops_the_publish_naming_its_table_and_measure"
+        body: a235bb55002de1ab982a39128087f543596a0a3aa6c6fc983831c6b86295de59
+      - file: "crates/univ-ingest/tests/publish_checks.rs"
+        name: "a_text_holding_begin_transaction_reaches_d1_as_it_is"
+        body: 0c4f8ce8c00fd98775f8853596bd04aa319c675db474e52ebf8f45c84a0ce82d
+  - node: 01a19f23-636f-72bd-b194-1540b752f379
+    reviewed: 0283e5fc458a4ed9f2b8906a0a214e155af1075c3ce981ab3c04c4916d2e9851
+    tests:
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "until_latest_moves_reads_that_name_no_release_answer_from_the_previous_release"
+        body: 202c70a3769b58c0ea2d050941f475e3fdb11c7cd9824962c251990ae429d6f5
+  - node: 01a19f23-636f-72bd-b194-154133241de5
+    reviewed: 9bc12f78064a0693282c0f25cff9e2759dedbc7cb4b5e4730f0739875cd3001c
+    tests:
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
+        body: cd0d9b495f6760445da8af02d33ad69ee021f12c8cecfe0960a510cee63af21e
+  - node: 01a19f23-636f-72bd-b194-154384255e3e
+    reviewed: b1716cd28b23d0bf2290e955aa9104a7aa0f13b90ebcf29af60067c06b444d42
+    tests:
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "an_interrupted_publish_leaves_latest_and_continues_from_its_journal"
+        body: e941dcc69fa943f510486180602883508c15c655722d30002fa7a936a09558a2
+  - node: 01a19f23-636f-72bd-b194-1545c890a557
+    reviewed: c2bb537f546551694f7f4d067b2439e9d06527ca8e380dac98675ae6c8876dc9
+    tests:
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "a_release_already_published_is_refused_naming_its_number_and_publication_time"
+        body: a15fb8e593e786bd37580037bec1a655d92320a36e6ed0be8df187b1dce44520
+      - file: "crates/univ-ingest/tests/publish_checks.rs"
+        name: "a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled"
+        body: 00dd947c181fca15d4032ed49d80f7bdc538c376891cb57b439ac10e4b620c76
   - node: 01a19f22-b0bc-76da-bac8-977d3868a411
     reviewed: cc37beca30b495d7bc6ca64117e2a846be04474bbe21d4eebfcd6054cd9631a6
     tests:
@@ -843,6 +978,9 @@ links:
       - file: "crates/univ-ingest/tests/run.rs"
         name: "an_interrupted_fetch_names_the_sources_it_ended_and_leaves_the_rest_not_reached"
         body: 82b975c4785d473109110da1c61fa98f2f1c72ffc16fcea510ab30d1bb3b310e
+      - file: "crates/univ-ingest/tests/release_cli.rs"
+        name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
+        body: cb9354e7610662286660e0683dc44ef5473c81166cfdf4710ce75eae17897769
   - node: 01a19f22-b0bc-76da-bac8-978bd11f8a8a
     reviewed: 8873f5183472621d806a2ca4e2c84abfcc1e0453dbdaf7b1a8d4df1b4699d099
     tests:
@@ -852,6 +990,9 @@ links:
       - file: "crates/univ-ingest/tests/cli.rs"
         name: "an_offline_fetch_prints_plain_lines_and_a_summary_and_fails_on_a_missing_chunk"
         body: 3c4566d86e5e7b71ba175859e0e526267ffd40d0a0c35abcd42232304f8eda7d
+      - file: "crates/univ-ingest/src/publish/wrangler.rs"
+        name: "a_failure_gives_wranglers_standard_error_without_its_escapes"
+        body: fb3233969c3b0a55c726aae02e8cf6bdec7cb47fc1252d96f0717c912178ea25
   - node: 01a19f22-b0bc-76da-bac8-978c8f52c47a
     reviewed: 304e9a5c1577b8e86c9178d0caa43b6d46301ff3eeb41e3cfe485a95def6f62f
     tests:
@@ -866,4 +1007,13 @@ links:
         body: caafbed5a271b1b1584659399e486b0db8beec31fcbde3450f167f09c6a5cc4f
   - node: 01a19f22-b0bc-76da-bac8-978f94c955a4
     reviewed: 4025fbd6294bf8852fa58c38246c3f5c82e5bb568d1493c999acc2aefd87a89f
-    unverified: "No release stage exists before W7; W7's publish test interrupts an upload midway and checks that latest never moves to a half-published release."
+    tests:
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "an_interrupted_publish_leaves_latest_and_continues_from_its_journal"
+        body: e941dcc69fa943f510486180602883508c15c655722d30002fa7a936a09558a2
+      - file: "crates/univ-ingest/tests/release_cli.rs"
+        name: "a_build_in_which_a_source_failed_names_it_and_uses_no_number"
+        body: 538ba1b053f1d81399c4db5360c7d7cafca0b3b7fcfb37295c67ead45eed4477
+      - file: "crates/univ-ingest/tests/release_checks.rs"
+        name: "a_failure_while_recording_the_state_uses_no_number_and_leaves_no_release_publish_accepts"
+        body: c09ab417580117d96dfcb5f7e57504647a860970d44aeea29c3fd2e65c6b785b

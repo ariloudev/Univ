@@ -3,6 +3,7 @@ name: Huge-LQG
 alternative_names: ["U1.27", "Huge Large Quasar Group"]
 kind: quasar_group
 status: statistical_claim
+scale_domain: cosmic_web
 papers:
   - id: clowes-2013
     reference: "Clowes, Harris, Raghunathan, Campusano, Söchting & Graham 2013, MNRAS 429, 2910"

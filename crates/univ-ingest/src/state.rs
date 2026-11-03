@@ -4,9 +4,19 @@
 //! - `ledger.yaml`: the id ledger, every id issued and what became of each id replaced.
 //! - `entry-ids.yaml`: the last release's map from each catalogue entry to its object's id.
 //! - `pending/`: the same two files as a cross-match left them for the release it prepared. A
-//!   cross-match builds no release, so it never touches the files above: the release build takes
-//!   `pending/` as the new state once the release is whole, and a cross-match run again starts
-//!   from the same state and gives the same ids.
+//!   cross-match builds no release, so it never touches the state itself, and a cross-match run
+//!   again starts from the same state and gives the same ids. The build takes the state the
+//!   cross-match made in memory, not this copy, and removes it once the release is whole.
+//! - `univ-ingest.lock`: held by a match, tiles or build run for as long as it runs (see
+//!   [`crate::lock`]).
+//!
+//! # One step makes a release exist
+//!
+//! A build writes each release's state whole into `states/{n}/` (the two files above), and then
+//! switches `current`, a one-line file naming that directory, by writing `current.part` and
+//! renaming it over `current`. The rename is the one step that records release n: before it the
+//! state is release n − 1's, after it release n's. A state directory with no `current` holds the
+//! two files itself, as one written before this layout did.
 //!
 //! Before the first release neither file exists: the ledger is new and no entry has an id. After
 //! it, the two go together: a ledger that lists releases needs the entry ids of the last, and
@@ -32,6 +42,10 @@ pub const LEDGER: &str = "ledger.yaml";
 pub const ENTRY_IDS: &str = "entry-ids.yaml";
 /// The directory, within the state directory, of the state a cross-match prepared.
 pub const PENDING: &str = "pending";
+/// The file naming the directory, within the state directory, of the current state.
+pub const CURRENT: &str = "current";
+/// The directory, within the state directory, of each release's state.
+pub const STATES: &str = "states";
 /// The version of the entry-to-id file read and written here.
 pub const ENTRY_IDS_VERSION: u32 = 1;
 
@@ -67,6 +81,28 @@ impl State {
     /// Fails when a file cannot be read or does not stand, or when the entry ids are kept
     /// without the ledger that issued them.
     pub fn read(dir: &Path) -> Result<Self, FileError> {
+        let current = dir.join(CURRENT);
+        if current.exists() {
+            let named = std::fs::read_to_string(&current)
+                .map_err(|e| FileError::new(&current, "(file)", e.to_string()))?;
+            let named = named.trim();
+            let valid = named
+                .strip_prefix(&format!("{STATES}/"))
+                .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()));
+            if !valid {
+                return Err(FileError::new(
+                    &current,
+                    "(file)",
+                    format!("names {named:?}, not a directory {STATES}/{{n}}"),
+                ));
+            }
+            return Self::read_files(&dir.join(named));
+        }
+        Self::read_files(dir)
+    }
+
+    /// The state whose two files are in `dir` itself.
+    fn read_files(dir: &Path) -> Result<Self, FileError> {
         let (ledger, ids) = (dir.join(LEDGER), dir.join(ENTRY_IDS));
         let ledger = if ledger.exists() {
             read_ledger(&ledger)?
@@ -141,6 +177,38 @@ impl State {
 }
 
 impl State {
+    /// Makes this the state of the state directory `dir` in one step: writes it whole into
+    /// `states/{n}/`, n the releases its ledger records, then renames `current.part`, naming
+    /// that directory, over `current`.
+    ///
+    /// # Errors
+    ///
+    /// Fails, leaving the state of `dir` as it was, when a directory or file cannot be written.
+    pub fn install(&self, dir: &Path) -> io::Result<()> {
+        let name = format!("{STATES}/{}", self.ledger.releases().len());
+        let target = dir.join(&name);
+        let part = dir.join(format!("{name}.part"));
+        if part.exists() {
+            std::fs::remove_dir_all(&part)?;
+        }
+        self.write(&part)?;
+        // A directory of this number that `current` does not name was left by a build that
+        // stopped before it switched `current`.
+        if target.exists() {
+            std::fs::remove_dir_all(&target)?;
+        }
+        std::fs::rename(&part, &target)?;
+        let switched = crate::fetch::write_via_part(
+            &dir.join(CURRENT),
+            format!("{name}\n").as_bytes(),
+            || Ok(()),
+        );
+        if switched.is_err() {
+            let _ = std::fs::remove_dir_all(&target);
+        }
+        switched
+    }
+
     /// Writes the state as the one a cross-match prepared in the state directory `dir`: into
     /// `pending/`, whole, through a directory written beside it and renamed into place.
     ///

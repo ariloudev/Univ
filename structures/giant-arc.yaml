@@ -3,6 +3,7 @@ name: Giant Arc
 alternative_names: ["GA"]
 kind: arc
 status: statistical_claim
+scale_domain: cosmic_web
 papers:
   - id: lopez-2022
     reference: "Lopez, Clowes & Williger 2022, MNRAS 516, 1557"

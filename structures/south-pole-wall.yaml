@@ -3,6 +3,7 @@ name: South Pole Wall
 alternative_names: []
 kind: wall
 status: reconstructed
+scale_domain: cosmic_web
 papers:
   - id: pomarede-2020
     reference: "Pomarède, Tully, Graziani, Courtois, Hoffman & Lezmy 2020, ApJ 897, 133"

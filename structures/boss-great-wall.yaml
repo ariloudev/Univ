@@ -4,6 +4,7 @@ name: BOSS Great Wall
 alternative_names: ["BGW"]
 kind: supercluster_complex
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: lietzen-2016
     reference: "Lietzen, Tempel, Liivamägi, Montero-Dorta, Einasto, Streblyanska et al. 2016, A&A 588, L4"

@@ -1,21 +1,18 @@
 //! The cross-match stage of a run: the entries every source was normalized into, resolved into
 //! the objects of the next release, with the state that release would leave written as pending.
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use univ_model::derive::Release;
 
 use super::{FetchOptions, RunReport, lock};
 use crate::acquire::Acquired;
-use crate::crossmatch::{CrossMatched, Inputs, STEPS, cross_match};
+use crate::crossmatch::{Basis, CrossMatched, Inputs, STEPS, cross_match};
 use crate::events::{Event, EventSink, Stage};
-use crate::matching::MatchingRules;
 use crate::normalize::Normalized;
-use crate::ranking::RankingRules;
 use crate::source::{Access, SourceDefinition};
 use crate::state::State;
-use crate::structures::{Structure, read_all};
 
 /// What a cross-match is asked to do beyond a fetch.
 #[derive(Clone, Debug)]
@@ -24,43 +21,26 @@ pub struct MatchOptions {
     pub state: PathBuf,
 }
 
-/// What the cross-match reads besides the entries.
-struct Read {
-    matching: MatchingRules,
-    ranking: RankingRules,
-    state: State,
-    structures: Vec<Structure>,
-}
-
-/// The rules in the repository's `rules/`, the state in `state`, and the researched structures
-/// of the repository source among `definitions` that the fetch found.
-fn read(
+/// The rules and release configuration in the repository's `rules/`, each read once, and the
+/// researched structures of the repository sources among `definitions` that the fetch found.
+fn basis(
     definitions: &[SourceDefinition],
     acquired: &[Option<Acquired>],
     options: &FetchOptions,
-    state: &Path,
-) -> Result<Read, String> {
-    let rules = options.repository.join("rules");
-    let matching = MatchingRules::read(&rules.join("matching.yaml")).map_err(|e| e.to_string())?;
-    let ranking = RankingRules::read(&rules.join("ranking.yaml")).map_err(|e| e.to_string())?;
-    let state = State::read(state).map_err(|e| e.to_string())?;
-    let mut structures = Vec::new();
-    for (definition, on_disk) in definitions.iter().zip(acquired) {
-        if let (Access::Repository { path }, Some(_)) = (&definition.access, on_disk) {
-            let dir = options.repository.join(path);
-            structures.extend(read_all(&dir).map_err(|e| e.to_string())?);
-        }
-    }
-    Ok(Read {
-        matching,
-        ranking,
-        state,
-        structures,
-    })
+) -> Result<Basis, String> {
+    let dirs: Vec<PathBuf> = definitions
+        .iter()
+        .zip(acquired)
+        .filter_map(|(d, on_disk)| match (&d.access, on_disk) {
+            (Access::Repository { path }, Some(_)) => Some(options.repository.join(path)),
+            _ => None,
+        })
+        .collect();
+    Basis::read(&options.repository.join("rules"), &dirs)
 }
 
 /// Cross-matches the entries of `normalized` under the repository's rules, the release
-/// cosmology tabulated once, the state in `match_options.state` and the researched structures,
+/// cosmology of its release configuration tabulated once, the state in `match_options.state` and the researched structures,
 /// and writes the state it would leave as pending. A stage that fails is reported in `report`,
 /// and gives nothing.
 pub async fn match_stage(
@@ -78,21 +58,21 @@ pub async fn match_stage(
         items: Some(STEPS),
     });
     let dir = match_options.state.clone();
-    let outcome = match read(definitions, acquired, options, &dir) {
+    let read = basis(definitions, acquired, options)
+        .and_then(|b| State::read(&dir).map(|s| (b, s)).map_err(|e| e.to_string()));
+    let outcome = match read {
         Err(error) => Err(error),
-        Ok(inputs) => {
+        Ok((basis, state)) => {
             let events = sink.clone();
             let entries = normalized.into_iter().flat_map(|n| n.entries).collect();
             tokio::task::spawn_blocking(move || {
                 // The ranking and the derived redshift distances share one peculiar velocity.
-                let release = Release::planck_2018()
-                    .with_peculiar_velocity(inputs.ranking.peculiar_velocity_km_s);
+                let release = Release::new(&basis.config.cosmology)
+                    .with_peculiar_velocity(basis.ranking.peculiar_velocity_km_s);
                 let inputs = Inputs {
-                    matching: &inputs.matching,
-                    ranking: &inputs.ranking,
+                    basis: &basis,
                     release: &release,
-                    state: &inputs.state,
-                    structures: &inputs.structures,
+                    state: &state,
                 };
                 let crossed =
                     cross_match(entries, &inputs, events.as_ref()).map_err(|e| e.to_string())?;

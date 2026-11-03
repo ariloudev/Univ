@@ -33,6 +33,7 @@ terms:
   credit: "Cite Carrick, Turnbull, Lavaux & Hudson 2015, MNRAS 450, 317 (doi:10.1093/mnras/stv547)."
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     The download page asks only for the citation and states no licence; it carries the notice
     "© 2014-2020 Guilhem Lavaux, Michael J. Hudson, Jon Carrick & Stephen Turnbull", and nothing

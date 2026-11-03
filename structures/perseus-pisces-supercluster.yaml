@@ -3,6 +3,7 @@ name: Perseus-Pisces Supercluster
 alternative_names: ["Pisces-Perseus Supercluster", "Perseus-Pisces filament"]
 kind: filament
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: haynes-1986
     reference: "Haynes & Giovanelli 1986, ApJ 306, L55"

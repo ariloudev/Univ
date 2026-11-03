@@ -1,9 +1,30 @@
 //! Researched structures: one YAML file per structure under `structures/`, in which every number
 //! is a cited value read from a paper (RQ-20 to RQ-23).
 //!
-//! A structure file names the structure, its kind and status, the papers it cites, its published
-//! position and geometry in a named frame, its other published values, the disputes about it,
-//! and, for a structure outlined from a volume grid, the grid, threshold and test.
+//! A structure file names the structure, its kind and status, its scale domain, the papers it
+//! cites, its published position and geometry in a named frame, its other published values, the
+//! disputes about it, and, for a structure outlined from a volume grid, the grid, threshold and
+//! test.
+//!
+//! # Scale domain
+//!
+//! `scale_domain` is the scale domain a structure is listed and shown in, one of those the
+//! source definitions give their sources. It is a classification, not a published value, set
+//! from the structure's published distance against the boundaries the definitions' domains
+//! imply:
+//!
+//! - `stars`: within the Milky Way, which the stellar catalogues (Hipparcos, Gaia, the GCNS)
+//!   cover;
+//! - `nearby_galaxies`: beyond it, out to 11 Mpc, the depth of the deepest `nearby_galaxies`
+//!   source, the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013);
+//! - `cosmic_web`: beyond 11 Mpc, which the redshift surveys, Cosmicflows and the volume grids
+//!   cover.
+//!
+//! The published distance is that of the structure's published position or the centre of its
+//! geometry; for one about the observer, its published radius; for one whose papers give no
+//! position, the distance or redshift they give it. Every structure of `structures/` lies
+//! beyond 11 Mpc (the nearest, the Local Void's deepest minimum, at about 30 Mpc) and is
+//! `cosmic_web`.
 
 mod check;
 mod citation;
@@ -20,6 +41,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use univ_model::ids::is_slug;
 
+use crate::source::ScaleDomain;
 use crate::yaml::{FileError, read_checked, read_dir};
 
 pub use citation::{Citation, Locator};
@@ -40,6 +62,8 @@ pub struct Structure {
     pub alternative_names: Vec<String>,
     pub kind: StructureKind,
     pub status: Status,
+    /// The scale domain it is listed in, by its published distance (see the module's docs).
+    pub scale_domain: ScaleDomain,
     pub papers: Vec<Paper>,
     /// The published point position: the fallback when an outline fails its test.
     #[serde(default)]
@@ -265,6 +289,15 @@ impl Structure {
 /// Fails when the directory cannot be read, a file name is not a kebab-case slug, or a structure
 /// fails [`Structure::read`].
 pub fn read_all(dir: &Path) -> Result<Vec<Structure>, StructureError> {
+    Ok(read_all_named(dir)?.into_iter().map(|(_, s)| s).collect())
+}
+
+/// [`read_all`], each structure with its id: the slug its file is named by.
+///
+/// # Errors
+///
+/// As [`read_all`].
+pub fn read_all_named(dir: &Path) -> Result<Vec<(String, Structure)>, StructureError> {
     read_dir(dir)?
         .iter()
         .map(|file| {
@@ -279,7 +312,19 @@ pub fn read_all(dir: &Path) -> Result<Vec<Structure>, StructureError> {
                     "is not a kebab-case slug",
                 ));
             }
-            Structure::read(file)
+            Ok((stem.to_owned(), Structure::read(file)?))
         })
         .collect()
+}
+
+impl Structure {
+    /// Checks a structure already read as its loader does: every number cites one of its
+    /// papers, a quoted sentence holds its number, and it is placed or says why not.
+    ///
+    /// # Errors
+    ///
+    /// Gives the field and the problem of the first check that fails.
+    pub fn check_cited(&self) -> Result<(), (String, String)> {
+        self.check()
+    }
 }

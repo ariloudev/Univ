@@ -3,6 +3,7 @@ name: Horologium-Reticulum Supercluster
 alternative_names: ["HRS", "Horologium Supercluster"]
 kind: supercluster
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: fleenor-2005
     reference: "Fleenor, Rose, Christiansen, Hunstead, Johnston-Hollitt, Drinkwater & Saunders 2005, AJ 130, 957"

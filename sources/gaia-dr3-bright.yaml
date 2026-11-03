@@ -53,6 +53,7 @@ terms:
     IGO licence and say what was changed.
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     CC BY-NC 3.0 IGO grants sharing and adaptation subject to attribution and non-commercial use,
     with no share-alike duty, so a non-commercial project may redistribute with the credit above;

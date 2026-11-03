@@ -1,0 +1,13 @@
+# Release configuration: what a release is built under beyond its matching, ranking and tile
+# rules. A release records this file. Read by univ-ingest `release::ReleaseConfig`; when the
+# file is missing, a release is built under Planck 2018, as below.
+
+cosmology:
+  name: "Planck 2018 (A&A 641, A6, Table 2: TT,TE,EE+lowE+lensing+BAO)"
+  hubble_constant: 67.66
+  omega_matter: 0.3111
+cosmology_basis: >-
+  Planck Collaboration 2020, A&A 641, A6, Table 2, last column (TT,TE,EE+lowE+lensing+BAO):
+  H0 = 67.66 km/s/Mpc and Omega_m = 0.3111, flat Lambda-CDM without radiation, the cosmology of
+  every release that names no other. Every derived distance and position of the release, and
+  every tile manifest, records it.

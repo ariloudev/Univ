@@ -12,6 +12,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use tempfile::TempDir;
+use univ_ingest::source::ScaleDomain;
 use univ_ingest::structures::{
     Coordinates, Locator, MemberSource, Side, Structure, StructureError, StructureGeometry,
     read_all,
@@ -30,6 +31,7 @@ const VALID: &str = r#"
 name: Test Void
 kind: void
 status: reconstructed
+scale_domain: cosmic_web
 papers:
   - id: tully-2019
     reference: "Tully et al. 2019, ApJ 880, 24"
@@ -276,6 +278,7 @@ fn digitised(kind: &str) -> String {
 name: Test Arc
 kind: arc
 status: statistical_claim
+scale_domain: cosmic_web
 papers:
   - {{ id: lopez-2022, reference: "Lopez et al. 2022", title: "A Giant Arc on the Sky", doi: 10.1093/mnras/stac2204, read: "arXiv source" }}
 geometry:
@@ -413,4 +416,14 @@ fn a_structure_file_is_named_in_kebab_case() {
     let dir = tempfile::tempdir().unwrap();
     write(&dir, "Test_Void", VALID);
     assert_eq!(read_all(dir.path()).unwrap_err().field, "(file name)");
+}
+
+#[test]
+fn a_structure_names_its_scale_domain_or_is_refused() {
+    let missing = refusal(&VALID.replace("scale_domain: cosmic_web\n", ""));
+    assert!(missing.problem.contains("scale_domain"), "{missing}");
+    let unknown =
+        refusal(&VALID.replace("scale_domain: cosmic_web", "scale_domain: superclusters"));
+    assert_eq!(unknown.field, "scale_domain", "{unknown}");
+    assert_eq!(read(VALID).unwrap().scale_domain, ScaleDomain::CosmicWeb);
 }

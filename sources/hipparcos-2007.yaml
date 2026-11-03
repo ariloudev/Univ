@@ -48,6 +48,7 @@ terms:
     A&AS 143, 23. Cite van Leeuwen 2007, A&A 474, 653.
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     CDS allows use of VizieR data in a scientific context with citation of the author and publisher,
     and the ReadMe states no copyright or licence restriction. The ESA Hipparcos and ESA space

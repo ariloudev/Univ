@@ -57,6 +57,7 @@ terms:
     published in 2000, A&AS 143, 23.
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     GCNS is built on Gaia EDR3, which ESA distributes under CC BY-NC 3.0 IGO: redistribution and
     adaptation are allowed with attribution, for non-commercial use only. Whether the Gaia licence

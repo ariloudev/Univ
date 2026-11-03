@@ -3,6 +3,7 @@ name: Saraswati Supercluster
 alternative_names: []
 kind: supercluster
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: bagchi-2017
     reference: "Bagchi, Sankhyayan, Sarkar, Raychaudhury, Jacob & Dabhade 2017, ApJ 844, 25"

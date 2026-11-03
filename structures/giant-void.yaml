@@ -3,6 +3,7 @@ name: Giant Void
 alternative_names: ["Canes Venatici Supervoid", "AR-Lp 36"]
 kind: void
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: kopylov-2002
     reference: "Kopylov & Kopylova 2002, A&A 382, 389"

@@ -3,6 +3,7 @@ name: CfA2 Great Wall
 alternative_names: ["Great Wall", "Coma Wall"]
 kind: wall
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: geller-1989
     reference: "Geller & Huchra 1989, Science 246, 897"
