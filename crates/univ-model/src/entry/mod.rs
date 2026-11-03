@@ -155,13 +155,15 @@ pub struct CatalogueEntry {
     pub velocity: Option<Value>,
     /// A parallax, normalized to degrees as every angle is.
     pub parallax: Option<Value>,
-    pub proper_motion: Option<ProperMotion>,
-    pub magnitude: Option<Magnitude>,
+    pub proper_motion: Option<Box<ProperMotion>>,
+    pub magnitude: Option<Box<Magnitude>>,
     pub group_id: Option<String>,
-    pub supergalactic_velocity: Option<SupergalacticVelocity>,
+    pub supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     /// The source's quality columns, by column name, as published.
     pub flags: BTreeMap<String, String>,
 }
+// The largest values an entry may have, which most entries lack, are boxed: an entry is held
+// millions of times over.
 
 /// An entry as read, before its checks.
 #[derive(Deserialize)]
@@ -173,10 +175,10 @@ struct RawCatalogueEntry {
     redshifts: Vec<Redshift>,
     velocity: Option<Value>,
     parallax: Option<Value>,
-    proper_motion: Option<ProperMotion>,
-    magnitude: Option<Magnitude>,
+    proper_motion: Option<Box<ProperMotion>>,
+    magnitude: Option<Box<Magnitude>>,
     group_id: Option<String>,
-    supergalactic_velocity: Option<SupergalacticVelocity>,
+    supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     flags: BTreeMap<String, String>,
 }
 

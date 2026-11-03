@@ -64,7 +64,11 @@ pub async fn match_stage(
         Err(error) => Err(error),
         Ok((basis, state)) => {
             let events = sink.clone();
-            let entries = normalized.into_iter().flat_map(|n| n.entries).collect();
+            // Gathered into one vector of its final size, each source's let go as it is moved.
+            let mut entries = Vec::with_capacity(normalized.iter().map(|n| n.entries.len()).sum());
+            for n in normalized {
+                entries.extend(n.entries);
+            }
             tokio::task::spawn_blocking(move || {
                 // The ranking and the derived redshift distances share one peculiar velocity.
                 let release = Release::new(&basis.config.cosmology)

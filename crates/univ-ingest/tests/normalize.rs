@@ -409,7 +409,7 @@ fn cosmicflows_sgx_sgy_and_sgz_are_read_as_km_s_though_vizier_labels_them_mpc() 
     );
     let n = normalized_fixture("cosmicflows-4");
     // Row 2, 1PGC 14: SGX 5942, SGY -9967, SGZ 3194.
-    let sg = entry(&n, "14").supergalactic_velocity.unwrap();
+    let sg = entry(&n, "14").supergalactic_velocity.as_deref().unwrap();
     assert_eq!(
         (sg.x.native.value, sg.x.native.unit),
         (5_942.0, Unit::KilometrePerSecond)

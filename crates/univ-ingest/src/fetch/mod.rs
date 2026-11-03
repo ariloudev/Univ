@@ -378,7 +378,7 @@ fn with_ending(dest: &Path, ending: &str) -> PathBuf {
 }
 
 /// `dest` with `.part` added to its name.
-fn part_path(dest: &Path) -> PathBuf {
+pub(crate) fn part_path(dest: &Path) -> PathBuf {
     with_ending(dest, ".part")
 }
 

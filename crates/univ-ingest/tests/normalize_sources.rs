@@ -130,7 +130,7 @@ fn cosmicflows_groups_keep_their_modulus_and_read_sg_coordinates_as_km_s() {
     assert_eq!(d.kind, DistanceKind::SecondaryIndicator);
     assert!(matches!(&d.method, Method::Mixed(m) if m.len() == 8));
     assert_eq!(d.hubble_constant(), None);
-    let sg = g.supergalactic_velocity.unwrap();
+    let sg = g.supergalactic_velocity.as_deref().unwrap();
     assert_eq!(
         (sg.x.native.value, sg.y.native.value, sg.z.native.value),
         (1_848.0, -6_271.0, 1_312.0)
@@ -237,7 +237,7 @@ fn gaia_rows_keep_icrs_at_2016_their_errors_parallax_and_proper_motion() {
     assert_eq!(plx.normalized.unit, Unit::Degree);
     assert_eq!(s.velocity.unwrap().native.value, -3.105_404);
     assert_eq!(
-        s.proper_motion.unwrap().ra.native.value,
+        s.proper_motion.as_deref().unwrap().ra.native.value,
         -42.073_116_442_981_636
     );
     assert_eq!(s.redshifts, []);
@@ -301,7 +301,7 @@ fn hipparcos_rows_keep_icrs_at_1991_25_and_their_solution_type() {
     assert_eq!(s.flags["Sn"], "5");
     // Row 2: HIP 2, Plx 20.85 ± 1.13, pmRA 182.88, Sn 75.
     let s = entry(&n, "2");
-    assert_eq!(s.proper_motion.unwrap().ra.native.value, 182.88);
+    assert_eq!(s.proper_motion.as_deref().unwrap().ra.native.value, 182.88);
     assert_eq!(s.flags["Sn"], "75");
 }
 

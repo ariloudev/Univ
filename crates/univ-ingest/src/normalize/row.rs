@@ -128,7 +128,9 @@ impl Row<'_, '_> {
             .ok_or(LeftOutReason::MissingIdentifier)?;
         let position = self.position()?;
         let direction = position.as_ref().map(|p| p.icrs.unit_vector());
-        let mut redshifts = Vec::new();
+        // Sized to the plan: a vector grown from empty takes room for four, and an entry is held
+        // millions of times over.
+        let mut redshifts = Vec::with_capacity(plan.redshifts.len());
         for r in &plan.redshifts {
             let Some(measured) = self.quantity(&r.measured)? else {
                 continue;
@@ -150,7 +152,7 @@ impl Row<'_, '_> {
             .map_err(entry_reason)?;
             redshifts.push(redshift);
         }
-        let mut distances = Vec::new();
+        let mut distances = Vec::with_capacity(plan.distances.len());
         for (i, d) in plan.distances.iter().enumerate() {
             let Some(native) = self.quantity(&d.measured)? else {
                 continue;
@@ -185,10 +187,10 @@ impl Row<'_, '_> {
             redshifts,
             velocity: self.value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?,
             parallax: self.value(plan.parallax.as_ref(), Unit::Degree)?,
-            proper_motion: self.proper_motion()?,
-            magnitude: self.magnitude()?,
+            proper_motion: self.proper_motion()?.map(Box::new),
+            magnitude: self.magnitude()?.map(Box::new),
             group_id: plan.group_id.and_then(|c| self.text(c)),
-            supergalactic_velocity: self.supergalactic()?,
+            supergalactic_velocity: self.supergalactic()?.map(Box::new),
             flags: plan
                 .flags
                 .iter()

@@ -85,7 +85,12 @@ pub struct Step {
     pub citation: Cow<'static, str>,
 }
 
-const HOGG: &str = "Hogg 1999, arXiv:astro-ph/9905116";
+/// A citation of Hogg 1999 at `$at`, a static string: a chain is held for millions of objects.
+macro_rules! hogg {
+    ($at:literal) => {
+        concat!("Hogg 1999, arXiv:astro-ph/9905116", $at)
+    };
+}
 
 impl From<Transformation> for Step {
     fn from(transformation: Transformation) -> Self {
@@ -108,17 +113,15 @@ impl From<Transformation> for Step {
                 "the distance modulus, μ = 5 log10(d / 10 pc)".into()
             }
             Transformation::HubbleRescaled { .. } => {
-                format!("{HOGG}, §3: distances scale with the Hubble distance c / H0").into()
+                hogg!(", §3: distances scale with the Hubble distance c / H0").into()
             }
             Transformation::ComovingRescaled { .. }
-            | Transformation::ComovingFromRedshift { .. } => {
-                format!("{HOGG}, eq. 15, flat ΛCDM").into()
-            }
+            | Transformation::ComovingFromRedshift { .. } => hogg!(", eq. 15, flat ΛCDM").into(),
             Transformation::LuminosityToComoving { .. } => {
-                format!("{HOGG}, eq. 16 and 21: D_L = (1 + z) D_M, D_M = D_C when flat").into()
+                hogg!(", eq. 16 and 21: D_L = (1 + z) D_M, D_M = D_C when flat").into()
             }
             Transformation::Euclidean { .. } => {
-                format!("{HOGG}, eq. 21: D_L / D_C − 1 = z ≈ H0 d / c").into()
+                hogg!(", eq. 21: D_L / D_C − 1 = z ≈ H0 d / c").into()
             }
             Transformation::ToIcrs { from } => frame_citation(*from).into(),
             Transformation::EquinoxAssumedJ2000 { .. } => {
