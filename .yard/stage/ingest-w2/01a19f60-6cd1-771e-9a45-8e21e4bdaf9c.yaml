@@ -19,3 +19,102 @@ versions:
     title: "W2 review"
     goal: "/simplify and /code-review findings on wave 2 are fixed, the gate is green and the trace is recorded"
     status: active
+  - key: 01a19f99-59b2-73e0-b855-eaaf5684d90b
+    at: 2026-11-03T04:09:49Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 review"
+    goal: "/simplify and /code-review findings on wave 2 are fixed, the gate is green and the trace is recorded"
+    status: done
+blocks:
+  - key: 01a19f99-59b2-73e0-b855-eaa908ec1a40
+    id: w2-fix-review
+    kind: task
+    versions:
+      - key: 01a19f99-59b2-73e0-b855-eaacff809de3
+        at: 2026-11-03T04:09:49Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the /code-review and /simplify findings"
+        detail: |-
+          Correctness, each with a test that fails without its fix:
+          - a short source drops its chunks so the next run fetches them again;
+          - a body-check failure moves to the next mirror without skipping this one;
+          - provenance is recorded before the rename, and an unrecorded file is fetched again;
+          - an empty VizieR answer is zero rows;
+          - repository sources resolve against the repository root and must exist;
+          - a published-digest mismatch is not retried;
+          - computed VizieR columns pass through to `-out.add`;
+          - two files with one name are refused;
+          - stale chunk files are pruned.
+
+          Efficiency: the check returns the row count, kept in provenance, so no chunk is parsed twice.
+
+          Simplify: one hex, shared test helpers, `acquire_files`/`acquire_chunks`, shared table filtering, `suffix_for`, `step_by` slices, `Payload` stored directly in provenance, named status codes, a unit `OnDisk`, and `fetch::Item`.
+
+          Kept for W3: the stage events. Five non-blocking follow-ups are added to the plan.
+        state: done
+        type: fix
+  - key: 01a19f99-59b2-73e0-b855-eaaaf2410513
+    id: w2-trace
+    kind: loft
+    versions:
+      - key: 01a19f99-59b2-73e0-b855-eaad4aff495e
+        at: 2026-11-03T04:09:49Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: trace
+        note: "F-1 and F-2 (AC-1 to AC-27) are linked to unit, mock-server and recorded-fixture tests, 31 of 293 nodes in all. The row-count test was renamed and taken off AC-26: it now checks that a short source's chunks are dropped, while AC-26 (chunks kept after a fetch failure) stays with the fetch-failure test. AC-20's display half is re-checked in W3."
+        recorded:
+          commit: "e7fd659f62613d22f72a7f00d19ea490d3e8cb6c"
+          branch: "stage/ingest-w2"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T04:09:49Z
+        report: |
+          {
+            "base": "product/ingest",
+            "commit": "74842ab309eb037f453a5264baef3e6436ef7ad6",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 293,
+              "linked": 31,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a19f99-59b2-73e0-b855-eaab459e3c24
+    id: w2-review-summary
+    kind: note
+    versions:
+      - key: 01a19f99-59b2-73e0-b855-eaae6141db94
+        at: 2026-11-03T04:09:49Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Wave 2 reviewed"
+        markdown: |-
+          | Part | Module | Notes |
+          |---|---|---|
+          | Definitions | `source.rs`, `sources/*.yaml` | 18 sources, verbatim terms; G cut, licences and SDSS sample provisional |
+          | Requests | `access.rs` | VizieR integer slices (`recno` is ignored live), SkyServer and TAP placeholders, count queries |
+          | Fetching | `fetch/` | retries 2, 4, 8, 16 s, mirror skip, `.part` rename, Range/If-Range resume, digest checks |
+          | Whole source | `acquire.rs` | rows checked against a count (silent caps of 500k and 50k); provenance first |
+          | Fixtures | `tests/fixtures/` | 17 live recordings, all columns confirmed |
+          | Model | `position.rs` | `Fk5J2000`, matching astropy to 2e-14 |
+
+          **Gate:** 10 gates, 91 tests. **Open:** the owner's three answers, carried to the `product/ingest` log.
+        tone: success
