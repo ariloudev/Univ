@@ -16,6 +16,10 @@ cuts:
     marks 20 rows txt) the distance is an estimate, so it is
     dropped and the row kept, with its position, velocity and magnitude (fixes below).
   - "Dist has no uncertainty in this table; it is marked as none reported (per-measurement e_DM is in table6, not taken)."
+  - >-
+    a26, the "Major angular diameter" at the Holmberg isophote in the B band, in arcmin (ReadMe
+    table1.dat, Note (1)), is taken under quality, as the model has no field for a size: the
+    extent rule of the matching rules reads it as published, and it is blank on rows without one.
 columns:
   - { column: Name, field: identifier, unit: dimensionless }
   - { column: _RAJ2000, field: right_ascension, unit: degree }
@@ -24,6 +28,7 @@ columns:
   - { column: f_Dist, field: quality, unit: dimensionless }
   - { column: HRV, field: velocity, unit: kilometre_per_second }
   - { column: Bmag, field: magnitude, unit: magnitude }
+  - { column: a26, field: quality, unit: arcminute }
 frame: fk5_j2000
 epoch: 2000.0
 citation: >-

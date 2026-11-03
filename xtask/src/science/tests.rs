@@ -199,3 +199,39 @@ fn numbers_are_shown_whole_or_to_four_significant_digits() {
     assert_eq!(num(111.374), "111.37");
     assert_eq!(num(1.25e-6), "1.25e-6");
 }
+
+#[test]
+fn a_query_check_shows_as_many_rows_as_it_asks() {
+    let dir = tempfile::tempdir().unwrap();
+    build(dir.path());
+    let rules = dir.path().join("checks.yaml");
+    let check = |id: &str, shown: &str| {
+        format!(
+            "  - {{ id: {id}, title: t, severity: concern, select: {{ kind: query, sql: \"SELECT id, distance_mpc FROM objects WHERE release = :release ORDER BY id\"{shown} }}, expect: {{ equals: 0 }}, {CITE} }}"
+        )
+    };
+    let body = format!(
+        "checks:\n{}\n{}\n",
+        check("one", ", shown: 1"),
+        check("all", "")
+    );
+    std::fs::write(&rules, body).unwrap();
+    let args = [
+        dir.path().to_string_lossy().into_owned(),
+        "--rules".to_owned(),
+        rules.to_string_lossy().into_owned(),
+    ];
+    let mut out = Vec::new();
+    science(dir.path(), &args, &mut out).unwrap();
+    let out = String::from_utf8(out).unwrap();
+    // The rows listed under a check: the indented lines after its own.
+    let listed = |id: &str| {
+        out.lines()
+            .skip_while(|l| l.split_whitespace().nth(1) != Some(id))
+            .skip(1)
+            .take_while(|l| l.starts_with("          "))
+            .count()
+    };
+    assert!(listed("all") > 1, "{out}");
+    assert_eq!(listed("one"), 1, "{out}");
+}

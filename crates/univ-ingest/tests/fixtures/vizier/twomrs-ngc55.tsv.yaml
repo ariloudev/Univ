@@ -1,6 +1,6 @@
 source: twomrs
-url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&ID=00145360-3911478
-retrieved: 2026-11-03T15:32:23Z
-sha256: 61e925b20be57e48e1a55e5d67d98cc2ddd6e68dad82152a7d8ad13c5062c73d
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz%2CRiso&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&ID=00145360-3911478
+retrieved: 2026-11-03T16:22:22Z
+sha256: 64ad3b46d52dcf361181fc6a07fcd757b5a7e15d3a2294fed19c0ad50a7b945b
 note: >-
   The source's own query narrowed by ID to NGC 55, 2MASX J00145360-3911478.

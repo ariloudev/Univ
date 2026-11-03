@@ -77,6 +77,18 @@ impl Groups {
                 return Err(Refused::Linked);
             }
         }
+        self.absorb(ra, rb);
+        Ok(())
+    }
+
+    /// Joins the groups of `a` and `b` whatever sources they share and whatever links join them:
+    /// the extent rule's pieces of one galaxy, which may be several entries of one source. A link
+    /// between the two becomes one within the group, and is dropped when objects are built.
+    pub fn absorb(&mut self, a: usize, b: usize) {
+        let (ra, rb) = (self.find(a), self.find(b));
+        if ra == rb {
+            return;
+        }
         let (keep, gone) = if ra < rb { (ra, rb) } else { (rb, ra) };
         self.parent[gone] = keep;
         let mut sources = self.sources_of(keep).to_vec();
@@ -85,7 +97,6 @@ impl Groups {
         self.merged[gone] = Vec::new();
         let links = std::mem::take(&mut self.links[gone]);
         self.links[keep].extend(links);
-        Ok(())
     }
 
     /// Records a candidate link between the groups of `a` and `b`, which no join may then cross.
@@ -110,5 +121,18 @@ mod tests {
         assert_eq!(g.join(1, 4), Err(Refused::Linked));
         assert_eq!(g.find(3), g.find(0));
         assert_ne!(g.find(4), g.find(0));
+    }
+
+    #[test]
+    fn an_absorb_crosses_a_shared_source_and_a_link() {
+        let mut g = Groups::new(&[0, 0, 1]);
+        g.link(0, 1);
+        assert_eq!(g.join(0, 1), Err(Refused::SharedSource));
+        g.absorb(1, 0);
+        assert_eq!(g.find(1), g.find(0));
+        // An entry of another source still joins; the group keeps every entry's source.
+        assert_eq!(g.join(2, 0), Ok(()));
+        let root = g.find(2);
+        assert_eq!(g.sources_of(root), [0, 0, 1]);
     }
 }

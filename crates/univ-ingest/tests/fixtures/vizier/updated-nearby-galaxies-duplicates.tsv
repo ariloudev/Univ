@@ -1,13 +1,13 @@
 #
 #   VizieR Astronomical Server vizier.idia.ac.za
-#    Date: 2026-11-03T15:32:20 [V7.6.1]
+#    Date: 2026-11-03T16:22:25 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-03T15:32:20	  Query execution date
-#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2CNGC0055%2CSMC%2CMilky%20Way	  Full request URL
+#INFO	request_date=2026-11-03T16:22:25	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag%2Ca26&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2CNGC0055%2CSMC%2CMilky%20Way	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -35,10 +35,11 @@
 #Column	f_Dist	(A4)	Method used to obtain Dist (G1)	[ucd=meta.code]
 #Column	HRV	(I4)	[-556/2219]? Heliocentric radial velocity (12)	[ucd=spect.dopplerVeloc;pos.heliocentric]
 #Column	Bmag	(F5.2)	[-4.6/21.4]? Apparent integral B band magnitude (4)	[ucd=phot.mag;em.opt.B]
-_RAJ2000	_DEJ2000	Name	Dist	f_Dist	HRV	Bmag
-deg	deg	 	Mpc	 	km/s	mag
-----------	----------	------------------	-----	----	----	-----
-003.785417	-39.220278	NGC0055           	 2.13	TRGB	 129	 8.84
-013.158333	-72.800278	SMC               	 0.06	Cep 	 158	 2.70
-266.416667	-29.007778	Milky Way         	 0.01	geom	   0	-4.60
+#Column	a26	(F6.2)	[0.1/645.65]? Major angular diameter (1)	[ucd=phys.angSize]
+_RAJ2000	_DEJ2000	Name	Dist	f_Dist	HRV	Bmag	a26
+deg	deg	 	Mpc	 	km/s	mag	arcmin
+----------	----------	------------------	-----	----	----	-----	------
+003.785417	-39.220278	NGC0055           	 2.13	TRGB	 129	 8.84	 37.15
+013.158333	-72.800278	SMC               	 0.06	Cep 	 158	 2.70	380.19
+266.416667	-29.007778	Milky Way         	 0.01	geom	   0	-4.60	
 

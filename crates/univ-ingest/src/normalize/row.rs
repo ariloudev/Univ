@@ -148,14 +148,17 @@ impl Row<'_, '_> {
             let Some(mut measured) = self.quantity(&r.measured)? else {
                 continue;
             };
-            if let Some((from, cosmology)) = &r.comoving {
-                measured = comoving_redshift(measured, *from, cosmology)?;
+            let mut read_as = None;
+            if let Some((from, cosmology, kind_of_value)) = &r.comoving {
+                let comoving;
+                (measured, comoving) = comoving_redshift(measured, *from, cosmology)?;
+                read_as = comoving.then_some(*kind_of_value);
             }
             let kind = self.by_code(&r.kind)?;
-            let default = match kind {
+            let default = read_as.unwrap_or(match kind {
                 RedshiftKind::Spectroscopic => KindOfValue::Measured,
                 RedshiftKind::Photometric => KindOfValue::Estimated,
-            };
+            });
             let kind_of_value = self.kind(r.measured.value.index, default);
             let direction = direction.ok_or(LeftOutReason::MissingPosition)?;
             let redshift =
@@ -440,18 +443,18 @@ fn entry_reason(error: EntryError) -> LeftOutReason {
 }
 
 /// `measured`, a velocity standing for H0 times a comoving distance in `cosmology` from `from`
-/// km/s up, as the redshift at that distance, its uncertainty scaled by dz/dv = E(z) / c; below
-/// `from`, it is as published, a cz.
+/// km/s up, as the redshift at that distance, its uncertainty scaled by dz/dv = E(z) / c, and
+/// true; below `from`, it is as published, a cz, and false.
 fn comoving_redshift(
     measured: Quantity,
     from: f64,
     cosmology: &Cosmology,
-) -> Result<Quantity, LeftOutReason> {
+) -> Result<(Quantity, bool), LeftOutReason> {
     let v = measured
         .to(Unit::KilometrePerSecond)
         .map_err(|_| LeftOutReason::UnusableValue)?;
     if v.value < from {
-        return Ok(measured);
+        return Ok((measured, false));
     }
     let z = cosmology
         .redshift_at(v.value / cosmology.hubble_constant)
@@ -463,5 +466,6 @@ fn comoving_redshift(
         Unit::Dimensionless,
         v.uncertainty.scaled(expansion / SPEED_OF_LIGHT),
     )
+    .map(|q| (q, true))
     .map_err(|_| LeftOutReason::UnusableValue)
 }

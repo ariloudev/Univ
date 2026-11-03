@@ -39,7 +39,8 @@ pub fn evaluate(release: &Release<'_>, check: &Check) -> Result<Finding, String>
             sql,
             scalar,
             exceptions,
-        } => query(release, sql, *scalar, exceptions, e),
+            shown,
+        } => query(release, sql, *scalar, exceptions, shown.unwrap_or(SHOWN), e),
         Select::ClosePairs {
             scale_domains,
             kinds,
@@ -167,6 +168,7 @@ fn query(
     sql: &str,
     scalar: bool,
     exceptions: &[Exception],
+    shown: usize,
     e: &Expect,
 ) -> Result<Finding, String> {
     if scalar {
@@ -181,7 +183,7 @@ fn query(
         return Ok(bounded(value, num(value), e, Vec::new()));
     }
     let (skip, notes) = excepted(release, exceptions);
-    let (mut details, kept, left_out) = rows(release, sql, &skip, SHOWN)?;
+    let (mut details, kept, left_out) = rows(release, sql, &skip, shown)?;
     #[expect(clippy::cast_precision_loss, reason = "a row count far below 2^52")]
     let value = kept as f64;
     let found = if exceptions.is_empty() {

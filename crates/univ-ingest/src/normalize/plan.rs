@@ -74,8 +74,9 @@ pub(super) struct RedshiftPlan {
     pub kind: ByCode<RedshiftKind>,
     /// The frame it is published in: heliocentric, or the CMB frame.
     pub frame: RedshiftFrame,
-    /// From this velocity up (km/s), a comoving distance in velocity units in this cosmology.
-    pub comoving: Option<(f64, Cosmology)>,
+    /// From this velocity up (km/s), a comoving distance in velocity units in this cosmology,
+    /// read as a redshift of this kind of value.
+    pub comoving: Option<(f64, Cosmology, KindOfValue)>,
 }
 
 pub(super) struct DistancePlan {

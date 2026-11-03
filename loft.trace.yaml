@@ -342,6 +342,12 @@ links:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "each_value_is_classified_by_its_kind_of_value"
         body: 3b0cd2b58065181d0da0cbaac5cf301bf6dcd7515e1740634c35a8ac4a5ac0d7
+  - node: 01a1a232-7345-778b-a4c5-046f187e8323
+    reviewed: 4a8d69d1f00e45dbaee2c22c4549fce9512fe8c98ce6020a10a2910984562496
+    tests:
+      - file: "crates/univ-ingest/tests/cosmicflows_groups.rs"
+        name: "a_group_velocity_read_as_a_comoving_distance_is_inferred_and_one_read_as_cz_measured"
+        body: ac203044eb64d881270188ddf910fa0db5dd3c457a9873a84f1c297e5d172c20
   - node: 01a19f22-2ad9-716e-876f-186820f4df2c
     reviewed: 4953f7295ce0f7869a5fbd576177bb98d2ac25cb88251ab0057e290fa79990a1
     tests:
@@ -771,6 +777,45 @@ links:
       - file: "crates/univ-ingest/tests/matching_linkage.rs"
         name: "a_galaxy_group_stays_apart_from_its_dominant_galaxy_and_lends_it_nothing"
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
+  - node: 01a1a232-7345-778b-a4c5-0469c4fe9cd9
+    reviewed: 0eff05a813a64954035ad4e563483b1e650bddedaf3f462bcf8285c7ef935c06
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
+        body: ac443a53dd530e602b1ada4bba7429fe2efc255ffe653ab2c0e36163d4854992
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "an_extent_rule_without_a_basis_or_with_a_length_unit_is_refused"
+        body: 69a1ef9ace1b974df80da7e39a6ce8827edcb2e96eadba865940c7df366c697d
+  - node: 01a1a232-7345-778b-a4c5-046a3dc619f9
+    reviewed: d834ddd8cf6e02adcc104350892b3b79336266c0a423cd0d33ec1ca1260f4d18
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_apart"
+        body: 3f0f04cacb853e25d42bf79573c478513184600ebedea46e04771260daf6bf21
+  - node: 01a1a232-7345-778b-a4c5-046bd3dc53bc
+    reviewed: 522dd56411ca97e82d77d14525e7f89ef89d4b75ff303498c0153fdf2d8a077c
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_apart"
+        body: 3f0f04cacb853e25d42bf79573c478513184600ebedea46e04771260daf6bf21
+  - node: 01a1a232-7345-778b-a4c5-046c26fef149
+    reviewed: 20d136aaae9e1a6f000c8cdfad674c3328f23469556e759fb321e470319e7aef
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_companion_with_its_own_identity_stays_apart_within_the_extent"
+        body: 6c589622cc49508c3f0dec34db4c9a2f311e14dd23064c695a00c32a0e4c7a31
+  - node: 01a1a232-7345-778b-a4c5-046dddc4aaba
+    reviewed: e5cb3c02b17b891154c7334adf1eff3704913da2fb58c0a9ed715adb28479229
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
+        body: ac443a53dd530e602b1ada4bba7429fe2efc255ffe653ab2c0e36163d4854992
+  - node: 01a1a232-7345-778b-a4c5-046e89676561
+    reviewed: 51cd1549ea1570d4043561fb0ea9dd27714d222dd97a61ddf3d5656ae9c5abad
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
+        body: ac443a53dd530e602b1ada4bba7429fe2efc255ffe653ab2c0e36163d4854992
   - node: 01a1a147-6018-75e1-9409-3f7cf003d8aa
     reviewed: d84c25e841aaaa925be888e8854088c0ade631f97e5f6365408c13377ad04083
     tests:

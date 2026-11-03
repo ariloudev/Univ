@@ -45,7 +45,7 @@ fn twomrs_with_error(error: &str, fix: bool) -> univ_ingest::normalize::Normaliz
         .map(|line| {
             let mut cells: Vec<&str> = line.split('\t').collect();
             let data = !line.starts_with('#')
-                && cells.len() == 7
+                && cells.len() == 8
                 && cells[3].trim().parse::<f64>().is_ok();
             if data {
                 row += 1;

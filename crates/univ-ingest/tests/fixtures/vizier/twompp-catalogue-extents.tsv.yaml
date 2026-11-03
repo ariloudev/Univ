@@ -1,0 +1,6 @@
+source: twompp-catalogue
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FMNRAS%2F416%2F2840%2Fcatalog&-out=Name%2CHV%2Ce_HV%2CKsmag%2CGID%2CRef%2CCln&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2C20520163-6911359%2C13295269%2B4711429%2C13295958%2B4715580
+retrieved: 2026-11-03T16:23:16Z
+sha256: 739deb0107f89e70a984df7caff4415c29905489a7ada5a9b221b87e16d3b255
+note: >-
+  The source's own query narrowed by Name to the 2MASX entries of IC 5052, M51 and NGC 5195.

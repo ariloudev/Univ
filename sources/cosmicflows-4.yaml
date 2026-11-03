@@ -315,22 +315,27 @@ normalization:
         from_km_s: 13000
         hubble_constant: 67.8
         omega_matter: 0.308
+        kind_of_value: inferred
         basis: >-
-          From 13,000 km/s up V3k is not a cz but H0 times a comoving distance, in the cosmology
-          of the SDSS groups of Tempel et al. 2017 (A&A 602, A100; J/A+A/602/A100 ReadMe, Note G1:
+          An inferred reading, not one the source states: neither the J/ApJ/944/94 ReadMe nor
+          Tully et al. 2023 says that V3k changes meaning, at what velocity, or in which
+          cosmology. This definition infers it from the fit below, and the redshifts so read are
+          marked inferred, not measured. From 13,000 km/s up V3k is read not as a cz but as H0
+          times a comoving distance, in the cosmology of the SDSS groups of Tempel et al. 2017 (A&A 602, A100; J/A+A/602/A100 ReadMe, Note G1:
           "the cosmology assumes H_0=67.8km/s/Mpc, Omega_m=0.308 and Omega_Lambda=0.692"), from
           which Tully et al. 2023 take their groups beyond the 2MASS groups ("If a group
           affiliation is unavailable for a galaxy within the groups described above then we opt
           for memberships in the 2017 Tempel et al. catalog", Sec. II, arXiv 2209.11238). It is
-          read as the redshift whose comoving distance in that cosmology is V3k / 67.8 Mpc.
-          Neither the ReadMe nor the paper says so; the evidence, from the tables served by
+          read as the redshift whose comoving distance in that cosmology is V3k / 67.8 Mpc. The
+          evidence, from the tables served by
           vizier.idia.ac.za and vizier.nao.ac.jp on 2026-11-03: (1) 1PGC 1365066, a group of one
           table2 galaxy, has V3k = 28573 km/s (Vh 28219, fV3k 30679); its galaxy has Vcmb =
           29359, which is c z of its SDSS DR17 redshift in the CMB frame (z = 0.09663755
           heliocentric, 0.0979298 in the CMB frame); its Tempel group, T17 36422, has zcmb =
           0.09754669 and Dist.c = 421.434575 Mpc, and 67.8 x 421.434575 = 28573.5. (2) On 8,381
           groups whose dominant galaxy's T17 group is in Tempel's group table, V3k = 67.8 x
-          Dist.c within the 1 km/s of rounding. (3) Over the 32,549 groups of one table2 galaxy,
+          Dist.c within the 1 km/s of rounding: an exact fit of H0 = 67.8 over 8,381 groups, from
+          which the cosmology (and Omega_m = 0.308, Tempel's) is inferred. (3) Over the 32,549 groups of one table2 galaxy,
           the median of V3k / Vcmb - 1 is -0.06% from 9,000 to 12,000 km/s, a cz (a comoving
           velocity would give -0.81%), then -0.59% from 12,000 to 15,000, and from 15,000 up it
           follows the comoving distance: -1.30% against -1.28% predicted (15,000-18,000 km/s),

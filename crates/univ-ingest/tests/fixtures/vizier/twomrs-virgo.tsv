@@ -1,13 +1,13 @@
 #
 #   VizieR Astronomical Server vizier.idia.ac.za
-#    Date: 2026-11-03T12:17:39 [V7.6.1]
+#    Date: 2026-11-03T16:22:23 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-03T12:17:39	  Query execution date
-#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&ID=%3D%2C12304942%2B1223279%2C12294679%2B0800014%2C12250377%2B1253130	  Full request URL
+#INFO	request_date=2026-11-03T16:22:23	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz%2CRiso&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&ID=%3D%2C12304942%2B1223279%2C12294679%2B0800014%2C12250377%2B1253130	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -35,10 +35,11 @@
 #Column	e_cz	(I3)	? Uncertainty in cz	[ucd=stat.error]
 #Column	Kcmag	(F6.3)	Extinction-corrected 2MASS Ks magnitude (1)	[ucd=phot.mag;em.IR.K]
 #Column	r_cz	(A19)	Reference for cz; see table4.dat file	[ucd=meta.ref;pos.frame]
-_RAJ2000	_DEJ2000	ID	cz	e_cz	Kcmag	r_cz
-deg	deg	 	km/s	km/s	mag	
------------	-----------	----------------	-----	---	------	-------------------
-187.4449900	+08.0004100	12294679+0800014	  997	  7	 5.498	2000MNRAS.313..469S
-187.7059300	+12.3911000	12304942+1223279	 1307	  7	 5.896	2000MNRAS.313..469S
-186.2657500	+12.8869600	12250377+1253130	 1060	  6	 6.333	2000AJ....119.1645T
+#Column	Riso	(F6.3)	Log of K=20 mag/sq arcsec elliptical isophote semimajor axis	[ucd=phys.angSize;src]
+_RAJ2000	_DEJ2000	ID	cz	e_cz	Kcmag	r_cz	Riso
+deg	deg	 	km/s	km/s	mag	 	[arcsec]
+-----------	-----------	----------------	-----	---	------	-------------------	------
+187.4449900	+08.0004100	12294679+0800014	  997	  7	 5.498	2000MNRAS.313..469S	 2.253
+187.7059300	+12.3911000	12304942+1223279	 1307	  7	 5.896	2000MNRAS.313..469S	 2.134
+186.2657500	+12.8869600	12250377+1253130	 1060	  6	 6.333	2000AJ....119.1645T	 2.061
 

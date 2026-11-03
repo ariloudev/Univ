@@ -12,6 +12,7 @@ use univ_model::position::separation_degrees;
 
 use crate::yaml::{FileError, read_checked};
 
+pub use super::extent::ExtentRule;
 pub use super::sight::{NearbyTolerance, distance};
 
 /// The matching rules, as the release records them.
@@ -25,6 +26,9 @@ pub struct MatchingRules {
     pub names: Vec<NameRule>,
     pub structure_members: MemberRule,
     pub pairs: Vec<PairRule>,
+    /// Where given, the pieces of a nearby galaxy within its published extent join it.
+    #[serde(default)]
+    pub extents: Option<ExtentRule>,
 }
 
 /// A galaxy source whose field names, by the group rule's scheme, the group each galaxy
@@ -230,6 +234,9 @@ impl MatchingRules {
             }
         }
         self.check_pairs()?;
+        if let Some(extents) = &self.extents {
+            extents.check()?;
+        }
         if !positive(self.structure_members.angular_tolerance_arcsec) {
             return Err(field(
                 "structure_members.angular_tolerance_arcsec",

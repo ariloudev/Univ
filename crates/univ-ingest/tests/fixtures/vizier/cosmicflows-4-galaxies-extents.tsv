@@ -1,0 +1,52 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-03T16:23:12 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-03T16:23:12	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Ftable2&-out=PGC%2C1PGC%2CVcmb%2CDM%2Ce_DM%2CDMsnIa%2CDMtf%2CDMfp%2CDMsbf%2CDMsnII%2CDMtrgb%2CDMceph%2CDMmas&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&PGC=65603%2C47404%2C47413	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_19440094
+#Name: J/ApJ/944/94
+#Title: Cosmicflows-4 (Tully+, 2023)
+#INFO	ivoid=ivo://cds.vizier/j/apj/944/94	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/apj/944/94	    IVOID of underlying data collection
+#INFO	creator=Tully R.B.	    First author or institution
+#INFO	cites=bibcode:2023ApJ...944...94T	    Article or Data origin sources
+#INFO	journal=ApJ	    Journal name
+#INFO	original_date=2023	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJ/944/94	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.19440094	    Dataset identifier that can be used for citation
+#INFO	publication_date=2025-05-21	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Table	J_ApJ_944_94_table2:
+#Name: J/ApJ/944/94/table2
+#Title: Distances of individual galaxies
+#Column	_RAJ2000	(F10.6)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F10.6)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	PGC	(I7)	[2/9003288] Principal Galaxies Catalog ID (1)	[ucd=meta.id;meta.main]
+#Column	1PGC	(I7)	[12/9003288] PGC ID, dominant galaxy in the group (G1)	[ucd=meta.id.parent]
+#Column	Vcmb	(I5)	[-784/32575] Systemic velocity of the galaxy (2)	[ucd=phys.veloc;pos.cmb]
+#Column	DM	(F6.3)	[18.46/39.53] Distance modulus, all methodologies (3)	[ucd=phot.mag.distMod]
+#Column	e_DM	(F6.3)	[0.01/2.11] Uncertainty in DM	[ucd=stat.error;phot.mag.distMod]
+#Column	DMsnIa	(F6.3)	[28.13/38.45]? Distance modulus, SN Ia, degenerate progenitors (4)	[ucd=phot.mag.distMod]
+#Column	DMtf	(F6.3)	[26/38.5]? Distance modulus, Tully-Fisher relation (4)	[ucd=phot.mag.distMod]
+#Column	DMfp	(F6.3)	[29.46/39.53]? Distance modulus, Fundamental Plane (4)	[ucd=phot.mag.distMod]
+#Column	DMsbf	(F6.3)	[23.83/34.94]? Distance modulus, Surface brightness fluctuations (4)	[ucd=phot.mag.distMod]
+#Column	DMsnII	(F6.3)	[28.19/38.1]? Distance modulus, SNII, core collapse supernovae (4)	[ucd=phot.mag.distMod]
+#Column	DMtrgb	(F5.2)	[21.92/31.67]? Distance modulus, Tip of the Red Giant Branch (4)	[ucd=phot.mag.distMod]
+#Column	DMceph	(F6.3)	[18.46/34.53]? Distance modulus, Cepheid period-luminosity relation (4)	[ucd=phot.mag.distMod]
+#Column	DMmas	(F5.2)	[29.4/35.6]? Distance modulus, geometric masers (4)	[ucd=phot.mag.distMod]
+_RAJ2000	_DEJ2000	PGC	1PGC	Vcmb	DM	e_DM	DMsnIa	DMtf	DMfp	DMsbf	DMsnII	DMtrgb	DMceph	DMmas
+deg	deg	 	 	km/s	mag	mag	mag	mag	mag	mag	mag	mag	mag	mag
+----------	----------	-------	-------	-----	------	------	------	------	------	------	------	-----	------	-----
+202.469500	+47.195100	  47404	  47404	  636	29.606	 0.079	      	      	      	      	29.342	29.61	      	
+202.497600	+47.266100	  47413	  47404	  637	29.354	 0.270	      	      	      	29.354	      	     	      	
+313.021200	-69.201400	  65603	  65603	  524	28.661	 0.059	      	29.135	      	      	      	28.65	      	
+

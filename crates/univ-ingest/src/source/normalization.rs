@@ -56,19 +56,22 @@ pub struct ComovingVelocity {
     pub from_km_s: f64,
     pub hubble_constant: f64,
     pub omega_matter: f64,
+    /// The kind of value of a redshift so read: inferred where the source does not state the
+    /// reading and the definition infers it from evidence.
+    pub kind_of_value: KindOfValue,
     /// Why the values are so read, with the evidence.
     pub basis: String,
 }
 
 impl ComovingVelocity {
-    /// The velocity it starts from, km/s, and its cosmology.
+    /// The velocity it starts from, km/s, its cosmology and the kind of value of what it reads.
     ///
     /// # Errors
     ///
     /// Fails on a Hubble constant or matter density the cosmology refuses.
-    pub fn read(&self) -> Result<(f64, Cosmology), CosmologyError> {
+    pub fn read(&self) -> Result<(f64, Cosmology, KindOfValue), CosmologyError> {
         Cosmology::new("comoving velocity", self.hubble_constant, self.omega_matter)
-            .map(|c| (self.from_km_s, c))
+            .map(|c| (self.from_km_s, c, self.kind_of_value))
     }
 }
 

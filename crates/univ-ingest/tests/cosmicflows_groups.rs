@@ -13,7 +13,7 @@ use univ_model::cosmology::{Cosmology, SPEED_OF_LIGHT};
 use univ_model::derive::Release;
 use univ_model::distance::{DistanceKind, Measure};
 use univ_model::units::Unit;
-use univ_model::value::Uncertainty;
+use univ_model::value::{KindOfValue, Uncertainty};
 
 #[test]
 fn a_group_velocity_beyond_13000_km_s_reads_as_a_comoving_distance_and_meets_its_galaxys() {
@@ -35,6 +35,21 @@ fn a_group_velocity_beyond_13000_km_s_reads_as_a_comoving_distance_and_meets_its
     }
     let z = entry(&groups, "1365066").redshifts[0].cmb.value.value;
     assert!((z - 0.097_55).abs() < 0.000_05, "{z}");
+}
+
+#[test]
+fn a_group_velocity_read_as_a_comoving_distance_is_inferred_and_one_read_as_cz_measured() {
+    // The definition infers the reading from 13,000 km/s up, which neither the ReadMe nor the
+    // paper states; below, V3k is a cz from the members' spectra.
+    let groups = normalized_file("cosmicflows-4", "cosmicflows-4-velocities.tsv");
+    for (pgc, kind) in [
+        ("1365066", KindOfValue::Inferred),
+        ("837279", KindOfValue::Inferred),
+        ("5064336", KindOfValue::Measured),
+    ] {
+        let z = &entry(&groups, pgc).redshifts[0];
+        assert_eq!(z.kind_of_value, kind, "{pgc}");
+    }
 }
 
 #[test]

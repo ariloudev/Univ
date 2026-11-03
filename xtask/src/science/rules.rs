@@ -139,6 +139,9 @@ pub enum Select {
         scalar: bool,
         #[serde(default)]
         exceptions: Vec<Exception>,
+        /// The most rows shown under the check, in the query's order, where not the default.
+        #[serde(default)]
+        shown: Option<usize>,
     },
     /// The pairs of placed objects closer than `radius_arcmin` on the sky whose distances
     /// agree within their uncertainties: the number of pairs.
