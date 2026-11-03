@@ -19,6 +19,7 @@ The specification in `spec/` is the contract. It is published from `develop`.
 | `crates/univ-model` | Shared domain model; no I/O, and builds for `wasm32-unknown-unknown` |
 | `crates/univ-ingest` | The Univ Ingest CLI; recorded provider answers in `tests/fixtures/<provider>/` |
 | `xtask` | Project tasks: the check gate and the 500-line rule |
+| `scripts/r2-batch.mjs` | Every R2 operation of a publish or prune through one Node process, on Wrangler's local bucket |
 
 ## Commands
 

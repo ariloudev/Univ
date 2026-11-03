@@ -63,8 +63,8 @@ enum Command {
     /// publish continues from its journal; a release already published is refused.
     Publish(StoreArgs),
     /// Deletes a release's R2 files and D1 rows, keeping it in the list of releases with its
-    /// pruning time and keeping the id ledger, so every id still resolves. The release latest
-    /// points to is refused.
+    /// pruning time and keeping the id ledger, so every id still resolves, and last its local
+    /// build in the build output. The release latest points to is refused.
     Prune(StoreArgs),
 }
 

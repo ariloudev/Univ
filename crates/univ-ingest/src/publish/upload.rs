@@ -125,16 +125,15 @@ fn put_checked(
     bytes: u64,
     sha: &str,
 ) -> Result<(), String> {
-    store.put(key, file)?;
     let back = store
-        .get(key)?
+        .put_read_back(key, file)?
         .ok_or_else(|| format!("R2 holds nothing at {key} once it was written"))?;
-    let got = sha256(&back);
-    if back.len() as u64 == bytes && got == sha {
+    if back.bytes == bytes && back.sha256 == sha {
         Ok(())
     } else {
         Err(format!(
-            "R2 gives {key} back with SHA-256 {got}, not the manifest's {sha}"
+            "R2 gives {key} back with SHA-256 {}, not the manifest's {sha}",
+            back.sha256
         ))
     }
 }
