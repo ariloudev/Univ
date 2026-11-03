@@ -37,6 +37,15 @@ blocks:
         title: "R2 reads and streamed bodies"
         detail: "The backend reads small R2 files (manifests, headers); a response can stream an R2 object without the Worker decoding it (AC-185). Done when native tests read from an in-memory bucket."
         state: active
+      - key: 01a1a381-8e6d-7109-863a-3895b1606cdd
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "R2 reads and streamed bodies"
+        detail: "In 18670a3. `Body::Object(key)` is handed to the runtime as the R2 object's stream (`ObjectBody::response_body`), so the Worker never reads it (AC-185). `Backend::blob` reads small files such as manifests. One `Kept` store per isolate holds vocabularies and manifest nodes."
+        state: done
   - key: 01a1a37b-e1cc-72fb-b455-e1e267d41352
     id: t3-domains
     kind: task
@@ -50,6 +59,15 @@ blocks:
         title: "Scale domains and their tile manifests"
         detail: "`GET /v1/scale-domains` and `/v1/scale-domains/{name}/manifest`, with a 404 that lists the domains. Done when native tests cover AC-166 to AC-174."
         state: open
+      - key: 01a1a381-8e6d-7109-863a-38968911f130
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Scale domains and their tile manifests"
+        detail: "In 18670a3. The listing gives each domain's radius in its own unit; a manifest is served as published; an unknown domain gives 404 listing the domains. The manifest's contents (AC-168 to AC-173) are checked through the Worker by the e2e test, and by the format agent's round trip."
+        state: done
   - key: 01a1a37b-e1cc-72fb-b455-e1e3b17d6884
     id: t3-tiles
     kind: task
@@ -63,6 +81,15 @@ blocks:
         title: "Tiles streamed from R2"
         detail: "`GET /v1/scale-domains/{name}/tiles/{address}`: only a node the manifest holds, immutable for a year, with an ETag from its SHA-256. Done when native tests cover AC-184 to AC-186 and an e2e test checks every fixture tile's SHA-256 (AC-183)."
         state: open
+      - key: 01a1a381-8e6d-7109-863a-389793e4ac37
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tiles streamed from R2"
+        detail: "In 18670a3. A pinned tile is immutable for a year with its SHA-256 as ETag; an unpinned tile gets a no-store 302 to the pinned URL; an unknown node gives 404 naming its address; HEAD invents no length. The e2e test checks every fixture tile's SHA-256 (AC-183)."
+        state: done
   - key: 01a1a37b-e1cc-72fb-b455-e1e487d01b15
     id: t3-grids
     kind: task
@@ -76,6 +103,15 @@ blocks:
         title: "Volume grids"
         detail: "`GET /v1/grids`, `/v1/grids/{id}` (header) and `/v1/grids/{id}/fields/{field}` (samples streamed). Done when native tests cover AC-175 to AC-182."
         state: open
+      - key: 01a1a381-8e6d-7109-863a-38982af55d5a
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Volume grids"
+        detail: "In 18670a3. The listing gives id, source, unit, shape and each field (index, quantity, kind, unit, samples path); the header and samples are streamed as published; fields are addressed by index because names repeat (two `basin_label` fields); an unknown grid or field gives 404 naming it. The fixture release holds no grid, so grid e2e checks are the listing and the 404."
+        state: done
   - key: 01a1a37b-e1cc-72fb-b455-e1e5b291f426
     id: t3-tile-format
     kind: task
@@ -102,3 +138,12 @@ blocks:
         title: "W3 end-to-end tests"
         detail: "Domains, a manifest, every fixture tile's SHA-256, a grid header and samples, and the tile format, through the Worker."
         state: open
+      - key: 01a1a381-8e6d-7109-863a-38998e520012
+        at: 2026-11-03T22:22:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W3 end-to-end tests"
+        detail: "In 18670a3: every fixture tile's SHA-256, the unpinned redirect, the domain and tile 404s, the grid listing and 404. A tile-format test follows t3-tile-format."
+        state: done
