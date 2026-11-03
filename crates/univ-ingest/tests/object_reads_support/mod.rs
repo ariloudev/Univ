@@ -17,10 +17,9 @@ use univ_model::object::{
     CandidateLink, Confidence, LineOfSight, MatchMethod, MatchRecord, MeasurementRef, Object,
     Resolution,
 };
-use univ_model::release::manifest::Target;
 use univ_model::release::read::{Row, Vocabulary, object};
 
-use crate::release_fixture::{built, cross, fixture, tiles};
+use crate::release_fixture::{built, cross, fixture, loaded, tiles};
 
 /// Each cross-matched object beside the record its rows decode to.
 pub struct Decoded {
@@ -30,16 +29,6 @@ pub struct Decoded {
 struct Loaded {
     pairs: Vec<(ReleaseObject, ObjectRecord)>,
     links: Vec<String>,
-}
-
-/// The release's D1 files executed in path order into a fresh database.
-fn loaded(dir: &std::path::Path, m: &univ_model::release::ReleaseManifest) -> Connection {
-    let db = Connection::open_in_memory().unwrap();
-    for f in m.files.iter().filter(|f| f.target == Target::D1) {
-        let sql = std::fs::read_to_string(dir.join(&f.path)).unwrap();
-        db.execute_batch(&sql).unwrap();
-    }
-    db
 }
 
 /// The rows of `sql` with parameter `id`, as D1 gives them: integers and reals as JSON
@@ -175,7 +164,15 @@ fn load() -> Loaded {
             "SELECT * FROM measurements WHERE release = 1 AND object_id = ?1 ORDER BY n DESC",
             id,
         );
-        let record = object(&v, &one.remove(0), &entries, &measurements)
+        // As Univ Server queries them: each source by its id.
+        let designations = rows(
+            &db,
+            "SELECT s.id AS source, d.identifier FROM designations d JOIN sources s \
+             ON s.release = d.release AND s.n = d.source \
+             WHERE d.release = 1 AND d.object_id = ?1 ORDER BY d.identifier DESC",
+            id,
+        );
+        let record = object(&v, &one.remove(0), &entries, &measurements, &designations)
             .unwrap_or_else(|e| panic!("object {id}: {e}"));
         pairs.push((o, record));
     }

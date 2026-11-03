@@ -225,7 +225,7 @@ fn an_admitted_outline_is_placed_as_its_grid_region_in_mpc_of_the_release_cosmol
     else {
         panic!("the simulated void is admitted: {:?}", result.placed)
     };
-    let placed = admitted(&s, *frame, *unit, region, &release).unwrap();
+    let placed = admitted(&s, (*frame, *unit, None), region, &release).unwrap();
     let shape = &placed.placed.shape;
     assert_eq!(
         (shape.frame, shape.unit),
@@ -254,7 +254,7 @@ fn an_admitted_outline_is_placed_as_its_grid_region_in_mpc_of_the_release_cosmol
         (0..3).all(|k| b.min[k] < centre[k] && centre[k] < b.max[k]),
         "{b:?}"
     );
-    let middle = placed.centre();
+    let middle = placed.centre;
     assert!(
         (0..3).all(|k| (middle[k] - centre[k]).abs() < *cell),
         "{middle:?}"

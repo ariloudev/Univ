@@ -14,8 +14,11 @@ use crate::units::Unit;
 
 const TABLE: &str = "measurements";
 
-/// The measurement's key: (entry, quantity, n).
-pub(super) fn key(v: &Vocabulary, row: &Row) -> Result<(u32, MeasuredQuantity, u32), ReadError> {
+/// A measurement's key: (entry, quantity, n).
+pub(super) type Key = (u32, MeasuredQuantity, u32);
+
+/// The measurement's key.
+pub(super) fn key(v: &Vocabulary, row: &Row) -> Result<Key, ReadError> {
     let c = Columns::new(v, TABLE, row);
     Ok((c.small("entry")?, c.typed("quantity")?, c.small("n")?))
 }
@@ -28,21 +31,18 @@ fn from_extra<T: serde::de::DeserializeOwned>(
 ) -> Result<Option<T>, ReadError> {
     extra
         .get(field)
-        .map(|x| {
-            serde_json::from_value(x.clone())
-                .map_err(|e| c.error("extra", format!("{field} {x}: {e}")))
-        })
+        .map(|x| T::deserialize(x).map_err(|e| c.error("extra", format!("{field} {x}: {e}"))))
         .transpose()
 }
 
-/// One measurement, `heads` the object's entries by number.
+/// The measurement of `row`, its key `key` ([`key`]), `heads` the object's entries by number.
 pub(super) fn measurement(
     v: &Vocabulary,
     row: &Row,
+    (entry, quantity, n): Key,
     heads: &BTreeMap<u32, Designation>,
 ) -> Result<MeasurementRecord, ReadError> {
     let c = Columns::new(v, TABLE, row);
-    let (entry, quantity, n) = key(v, row)?;
     let source = heads
         .get(&entry)
         .ok_or_else(|| c.error("entry", format!("{entry} is none of the object's entries")))?

@@ -15,7 +15,7 @@ mod placed;
 
 use std::collections::{BTreeMap, HashMap};
 
-use crate::api::objects::{Designation, ObjectRecord};
+use crate::api::objects::ObjectRecord;
 use crate::cosmology::Cosmology;
 use columns::Columns;
 
@@ -104,8 +104,12 @@ impl std::fmt::Display for ReadError {
 
 impl std::error::Error for ReadError {}
 
-/// The object of row `object` with its `entries` and `measurements` rows, each every row of the
-/// object in the release, in any order.
+/// The object of row `object` with its `entries`, `measurements` and `designations` rows, each
+/// every row of the object in the release, in any order. A `designations` row holds `source`,
+/// its source's id, and `identifier`, as a join of `designations` with `sources` gives them.
+///
+/// The record's designations are those rows. A release built before the `designations` table
+/// holds none for any object: given no rows, the record gives the entries' own designations.
 ///
 /// # Errors
 ///
@@ -116,6 +120,7 @@ pub fn object(
     object: &Row,
     entries: &[Row],
     measurements: &[Row],
+    designations: &[Row],
 ) -> Result<ObjectRecord, ReadError> {
     let c = Columns::new(v, "objects", object);
     let mut heads = BTreeMap::new();
@@ -123,16 +128,13 @@ pub fn object(
     for row in entries {
         let (n, designation) = entries::head(v, row)?;
         if heads.insert(n, designation).is_some() {
-            return Err(ReadError(format!(
-                "release {} entries.entry: {n} appears twice",
-                v.release()
-            )));
+            let c = Columns::new(v, "entries", row);
+            return Err(c.error("entry", format!("{n} appears twice")));
         }
         sorted_entries.push((n, row));
     }
     sorted_entries.sort_by_key(|(n, _)| *n);
-    let entry_rows: Vec<&Row> = sorted_entries.into_iter().map(|(_, r)| r).collect();
-    let entries = entries::entries(v, &entry_rows, &heads)?;
+    let entries = entries::entries(v, &sorted_entries, &heads)?;
 
     let mut keyed = measurements
         .iter()
@@ -141,7 +143,7 @@ pub fn object(
     keyed.sort_by_key(|(k, _)| *k);
     let measurements = keyed
         .into_iter()
-        .map(|(_, row)| measurements::measurement(v, row, &heads))
+        .map(|(key, row)| measurements::measurement(v, row, key, &heads))
         .collect::<Result<Vec<_>, _>>()?;
 
     let preferred = placed::preferred(&c, v.ranking_rule())?;
@@ -156,15 +158,13 @@ pub fn object(
         )?)
     };
     let id = c.int("id")?;
-    // The entries' own designations; a reader that also holds the `designations` rows of the
-    // object gives those instead, which add the ones sources give beside their entries.
-    let mut designations: Vec<Designation> = entries
-        .iter()
-        .map(|e| Designation {
-            source: e.source.clone(),
-            identifier: e.identifier.clone(),
-        })
-        .collect();
+    // The `designations` rows, which add those sources give beside their entries; the entries'
+    // own for a release from before that table.
+    let mut designations = if designations.is_empty() {
+        heads.into_values().collect()
+    } else {
+        entries::designations(v, designations)?
+    };
     designations.sort();
     designations.dedup();
     Ok(ObjectRecord {

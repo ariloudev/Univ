@@ -3,6 +3,7 @@
 
 use std::collections::BTreeMap;
 
+use serde::Deserialize;
 use serde_json::{Map, Value};
 
 use super::columns::Columns;
@@ -37,22 +38,39 @@ pub(super) fn head(v: &Vocabulary, row: &Row) -> Result<(u32, Designation), Read
     ))
 }
 
-/// Every entry of the object, `rows` sorted by number, `heads` their designations by number.
-pub(super) fn entries(
-    v: &Vocabulary,
-    rows: &[&Row],
-    heads: &BTreeMap<u32, Designation>,
-) -> Result<Vec<EntryRecord>, ReadError> {
-    rows.iter().map(|row| entry(v, row, heads)).collect()
+/// The designations of an object's `designations` rows, each its source's id (`source`) and
+/// `identifier`.
+pub(super) fn designations(v: &Vocabulary, rows: &[Row]) -> Result<Vec<Designation>, ReadError> {
+    rows.iter()
+        .map(|row| {
+            let c = Columns::new(v, "designations", row);
+            designation(&c, c.text("source")?, c.text("identifier")?)
+        })
+        .collect()
 }
 
+/// Every entry of the object: `rows` by number, sorted, `heads` their designations by number.
+pub(super) fn entries(
+    v: &Vocabulary,
+    rows: &[(u32, &Row)],
+    heads: &BTreeMap<u32, Designation>,
+) -> Result<Vec<EntryRecord>, ReadError> {
+    rows.iter()
+        .map(|(number, row)| entry(v, row, *number, heads))
+        .collect()
+}
+
+/// Entry `number`, its row `row`, its own designation among `heads`.
 fn entry(
     v: &Vocabulary,
     row: &Row,
+    number: u32,
     heads: &BTreeMap<u32, Designation>,
 ) -> Result<EntryRecord, ReadError> {
     let c = Columns::new(v, TABLE, row);
-    let (number, own) = head(v, row)?;
+    let own = heads
+        .get(&number)
+        .ok_or_else(|| c.error("entry", format!("{number} has no designation")))?;
     let extra: Map<String, Value> = c.json_opt("extra")?.unwrap_or_default();
     let flags: BTreeMap<String, String> = c.json_opt("flags")?.unwrap_or_default();
     Ok(EntryRecord {
@@ -60,7 +78,7 @@ fn entry(
         source: own.source.as_str().to_owned(),
         identifier: own.identifier.clone(),
         name: c.text_opt("name")?.map(str::to_owned),
-        resolved_by: resolution(&c, &own, &extra, heads)?,
+        resolved_by: resolution(&c, own, &extra, heads)?,
         position: position(&c, &extra)?,
         group_id: c.text_opt("group_id")?.map(str::to_owned),
         flags,
@@ -83,7 +101,7 @@ fn via(
     let via = extra
         .get("via")
         .ok_or_else(|| c.error("via_entry", "is NULL and extra names no via"))?;
-    serde_json::from_value(via.clone()).map_err(|e| c.error("extra", format!("via {via}: {e}")))
+    Designation::deserialize(via).map_err(|e| c.error("extra", format!("via {via}: {e}")))
 }
 
 fn confidence(c: &Columns<'_>) -> Result<Confidence, ReadError> {
@@ -148,7 +166,7 @@ fn position(
         _ => return Err(c.error("ra", "ra and dec are not both NULL or both set")),
     };
     let uncertainty = if let Some(errors) = extra.get("position_uncertainty") {
-        serde_json::from_value(errors.clone())
+        PositionUncertainty::deserialize(errors)
             .map_err(|e| c.error("extra", format!("position_uncertainty {errors}: {e}")))?
     } else if let Some(error_ra) = c.real_opt("error_ra")? {
         let unit: Unit = c.typed("error_unit")?;

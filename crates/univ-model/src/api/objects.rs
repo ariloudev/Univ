@@ -13,6 +13,7 @@ use crate::cosmology::{AssumedCosmology, Cosmology};
 use crate::derive::Step;
 use crate::distance::{DistanceKind, Measure, Method};
 use crate::entry::{PositionUncertainty, RedshiftKind};
+use crate::ids::Designation;
 use crate::object::{
     CandidateLink, Decided, FractionalUncertainty, MethodRank, NotPlacedReason, ObjectKind,
     PositionClass, Relation, Resolution,
@@ -54,16 +55,6 @@ pub struct ObjectRecord {
     pub links: Vec<CandidateLink>,
     /// Typed relations to other objects, such as a group's dominant galaxy.
     pub relations: Vec<Relation>,
-}
-
-/// A designation: a source and the identifier that source gives the object.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-pub struct Designation {
-    /// The source's id, such as `hipparcos-2007`.
-    pub source: String,
-    /// The identifier the source gives.
-    pub identifier: String,
 }
 
 /// A catalogue entry of the object: the designation its source gives it, how it was resolved

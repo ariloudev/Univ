@@ -10,7 +10,7 @@ use univ_model::cosmology::Cosmology;
 use univ_model::ids::{ObjectId, SourceId};
 use univ_model::object::{MeasurementRef, Object};
 use univ_model::position::{Frame, Vec3};
-use univ_model::units::Unit;
+use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::value::KindOfValue;
 
 use super::TilesError;
@@ -41,13 +41,11 @@ pub fn domain_of(source_domain: ScaleDomain, placed_mpc: f64) -> ScaleDomain {
     }
 }
 
-/// The unit of a scale domain's positions: parsecs for stars, megaparsecs otherwise.
+/// The unit of a scale domain's positions, univ-model's rule
+/// ([`univ_model::units::scale_domain_unit`]): parsecs for stars, megaparsecs otherwise.
 #[must_use]
 pub fn unit_of(domain: ScaleDomain) -> Unit {
-    match domain {
-        ScaleDomain::Stars => Unit::Parsec,
-        ScaleDomain::NearbyGalaxies | ScaleDomain::CosmicWeb => Unit::Megaparsec,
-    }
+    scale_domain_unit(name_of(domain))
 }
 
 /// The symbol of a scale domain's unit, as its manifest gives it.

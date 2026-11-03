@@ -34,7 +34,7 @@ fn the_geometry_is_a_univ_model_geometry_in_a_named_frame() {
     assert_eq!(bootes["shape"]["unit"], "megaparsec");
     assert_eq!(bootes["centre"]["frame"], "ICRS equatorial Cartesian");
     assert_eq!(bootes["centre"]["origin"], "Solar System barycentre");
-    assert_eq!(bootes["centre"]["unit"], "Mpc");
+    assert_eq!(bootes["centre"]["unit"], "megaparsec");
 }
 
 #[test]

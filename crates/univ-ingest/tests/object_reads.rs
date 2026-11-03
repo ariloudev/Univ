@@ -75,6 +75,14 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             });
             assert!(own || beside, "{d:?}");
         }
+        // The record's designations are the object's `designations` rows, each once, in order.
+        let rows: std::collections::BTreeSet<_> = o.object.designations.iter().collect();
+        assert!(
+            r.designations.iter().eq(rows.into_iter()),
+            "{}: {:?}",
+            o.id.get(),
+            r.designations
+        );
     }
 }
 

@@ -2,7 +2,8 @@
 //! JavaScript numbers; terms through the release's vocabulary; uncertainties through
 //! [`UncertaintyColumns`]. Every failure names the table, the column and the value.
 
-use serde::de::DeserializeOwned;
+use serde::de::value::Error as PlainError;
+use serde::de::{DeserializeOwned, IntoDeserializer};
 use serde_json::Value;
 
 use super::{ReadError, Row, Vocabulary};
@@ -10,25 +11,13 @@ use crate::release::UncertaintyColumns;
 use crate::units::Unit;
 use crate::value::{Quantity, Uncertainty};
 
-/// The forms an uncertainty's term may name, as [`UncertaintyColumns`] names them.
-const FORMS: [&str; 8] = [
-    "none_reported",
-    "upper_limit",
-    "lower_limit",
-    "symmetric",
-    "asymmetric",
-    "interval",
-    "credible_region",
-    "credible_interval",
-];
-
-/// The value a term names, as univ-model serializes it: a unit variant's name, or the JSON of
-/// another value, such as a mixed distance method.
+/// The value a term names, as univ-model serializes it: a unit variant's name, read from the
+/// term in place, or the JSON of another value, such as a mixed distance method.
 pub(super) fn decode_term<T: DeserializeOwned>(term: &str) -> Option<T> {
     if term.starts_with('{') || term.starts_with('[') {
         serde_json::from_str(term).ok()
     } else {
-        serde_json::from_value(Value::String(term.to_owned())).ok()
+        T::deserialize(IntoDeserializer::<PlainError>::into_deserializer(term)).ok()
     }
 }
 
@@ -189,20 +178,18 @@ impl<'a> Columns<'a> {
         let Some(term) = self.term_opt(&column)? else {
             return Ok(None);
         };
-        let form = FORMS
-            .iter()
-            .find(|f| **f == term)
-            .ok_or_else(|| self.error(&column, format!("{term:?} is not an uncertainty form")))?;
         let columns = UncertaintyColumns {
-            form,
+            form: term,
             minus: self.real_opt(&format!("{prefix}minus"))?,
             plus: self.real_opt(&format!("{prefix}plus"))?,
             level: self.real_opt(&format!("{prefix}level"))?,
         };
-        columns
-            .uncertainty()
-            .map(Some)
-            .ok_or_else(|| self.error(&column, format!("{term} lacks a number it takes")))
+        columns.uncertainty().map(Some).ok_or_else(|| {
+            self.error(
+                &column,
+                format!("{term:?} is no uncertainty form, or lacks a number its form takes"),
+            )
+        })
     }
 
     /// The quantity of `value` in `unit` with the uncertainty of `prefix`, all three required.

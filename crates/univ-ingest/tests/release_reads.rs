@@ -12,24 +12,13 @@ mod release_fixture;
 
 use std::collections::HashMap;
 
-use release_fixture::{build_next, cross, fixture};
+use release_fixture::{build_next, cross, fixture, loaded};
 use rusqlite::{Connection, OptionalExtension, Row};
 use serde_json::{Value, json};
 use univ_model::object::MeasurementRef;
 use univ_model::release::chains::expand;
-use univ_model::release::manifest::Target;
 use univ_model::release::rows::name_key;
 use univ_model::release::{UncertaintyColumns, keys};
-
-/// The release's D1 files executed in path order into a fresh database.
-fn loaded(dir: &std::path::Path, m: &univ_model::release::ReleaseManifest) -> Connection {
-    let db = Connection::open_in_memory().unwrap();
-    for f in m.files.iter().filter(|f| f.target == Target::D1) {
-        let sql = std::fs::read_to_string(dir.join(&f.path)).unwrap();
-        db.execute_batch(&sql).unwrap();
-    }
-    db
-}
 
 /// Release 1's terms by id.
 fn terms(db: &Connection) -> HashMap<i64, String> {
@@ -48,7 +37,7 @@ fn quantity(r: &Row<'_>, value: &str, unit: &str, prefix: &str, t: &HashMap<i64,
     let term = |c: &str| t[&r.get::<_, i64>(c).unwrap()].clone();
     let form = term(&format!("{prefix}form"));
     let columns = UncertaintyColumns {
-        form: Box::leak(form.into_boxed_str()),
+        form: &form,
         minus: r.get(format!("{prefix}minus").as_str()).unwrap(),
         plus: r.get(format!("{prefix}plus").as_str()).unwrap(),
         level: r.get(format!("{prefix}level").as_str()).unwrap(),

@@ -13,15 +13,15 @@ use crate::value::Uncertainty;
 
 /// An uncertainty's columns: its form's name and the numbers the form takes.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct UncertaintyColumns {
+pub struct UncertaintyColumns<'a> {
     /// The form, as univ-model serializes it, such as `credible_interval`.
-    pub form: &'static str,
+    pub form: &'a str,
     pub minus: Option<f64>,
     pub plus: Option<f64>,
     pub level: Option<f64>,
 }
 
-impl From<Uncertainty> for UncertaintyColumns {
+impl From<Uncertainty> for UncertaintyColumns<'static> {
     fn from(u: Uncertainty) -> Self {
         let columns = |form, minus, plus, level| Self {
             form,
@@ -59,7 +59,7 @@ impl From<Uncertainty> for UncertaintyColumns {
     }
 }
 
-impl UncertaintyColumns {
+impl UncertaintyColumns<'_> {
     /// The uncertainty the columns hold: none when the form is unknown or lacks a number it
     /// takes.
     #[must_use]

@@ -17,7 +17,7 @@ use univ_model::release::read;
 
 use self::resolve::{Resolved, by_designation, by_name, replaced};
 use self::vocabulary::vocabulary;
-use crate::backend::{Backend, first, rows_as};
+use crate::backend::{Backend, first};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{RELEASE_PARAM, pinned, resolve};
@@ -206,16 +206,13 @@ async fn record<B: Backend>(
         )
         .await?;
     let vocabulary = vocabulary(backend, release).await?;
-    let mut record =
-        read::object(&vocabulary, &object, &entries, &measurements).map_err(|error| {
+    let record = read::object(&vocabulary, &object, &entries, &measurements, &designations)
+        .map_err(|error| {
             Problem::new(
                 ProblemType::InternalError,
                 format!("Object {id} of release {release} did not read: {error}."),
             )
         })?;
-    if !designations.is_empty() {
-        record.designations = rows_as(designations)?;
-    }
     Ok(Some(pinned(Response::json(&record)?, release)))
 }
 

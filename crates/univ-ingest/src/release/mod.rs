@@ -33,6 +33,7 @@ mod meta;
 mod objects;
 mod outline;
 mod place;
+mod placement;
 mod pointers;
 mod rescaled;
 mod shapes;
@@ -61,8 +62,12 @@ pub use files::{
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
 pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
 pub use objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
-pub use outline::{Admitted, Outlined, admitted, not_drawn, outlines_on, result_record};
+pub use outline::{
+    Admitted, OUTLINE_CENTRE, Outlined, TestCatalogues, admitted, not_drawn, outlines_on,
+    result_record,
+};
 pub use place::{centre, index_bounds, sky_region};
+pub use placement::{Placement, placements};
 pub use rescaled::rescaled;
 pub use shapes::{PlacedShape, Placing, frame_chain, placed_shape};
 pub use sky::{COVERAGE_ORDER, REGION_ORDER, box_cells, cell as healpix_cell, cells_of};
