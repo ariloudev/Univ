@@ -132,6 +132,7 @@ pub fn on_grid(position: &Coordinates, geometry: &GridGeometry) -> Result<Vec3, 
             lon,
             lat,
             radial,
+            ..
         } => {
             let degrees = |c: &Cited| {
                 c.quantity

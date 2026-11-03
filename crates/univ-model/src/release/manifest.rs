@@ -27,6 +27,10 @@ pub struct ReleaseManifest {
     /// RFC 3339, UTC.
     pub built_at: String,
     pub cosmology: Cosmology,
+    /// What a reader of the release's distances needs to know of its cosmology, with its
+    /// citations: such as the Hubble constant the distance ladder's distances are on.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cosmology_note: Option<String>,
     /// The line-of-sight peculiar velocity in every redshift distance's error, km/s.
     pub peculiar_velocity_km_s: f64,
     pub versions: Versions,

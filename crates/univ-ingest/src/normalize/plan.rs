@@ -2,21 +2,24 @@
 //! comes from, the unit it is read in after the fixes, and the readings, rules and fixes that
 //! apply to it.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 
+use univ_model::cosmology::Cosmology;
 use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::entry::RedshiftKind;
 use univ_model::position::Frame;
 use univ_model::redshift::RedshiftFrame;
-
-use crate::table::identifier_key;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
+mod fixes;
+
+pub(super) use fixes::{FixEffect, FixPlan};
+
 use super::NormalizeError;
 use crate::source::{
-    Coded, Condition, DistanceReading, ErrorColumns, Field, FixAction, LeftOutReason, MAX_FIXES,
-    RedshiftReading, Rule, ScaleDomain, SourceDefinition,
+    Coded, ComovingVelocity, Condition, DistanceReading, ErrorColumns, Field, FixAction,
+    LeftOutReason, MAX_FIXES, RedshiftReading, Rule, ScaleDomain, SourceDefinition,
 };
 
 /// The fixes, by index, that changed a row: a bit each, so a definition has at most
@@ -71,6 +74,8 @@ pub(super) struct RedshiftPlan {
     pub kind: ByCode<RedshiftKind>,
     /// The frame it is published in: heliocentric, or the CMB frame.
     pub frame: RedshiftFrame,
+    /// From this velocity up (km/s), a comoving distance in velocity units in this cosmology.
+    pub comoving: Option<(f64, Cosmology)>,
 }
 
 pub(super) struct DistancePlan {
@@ -95,41 +100,6 @@ pub(super) enum RuleAction {
     Kind(Vec<usize>, KindOfValue),
     /// The distance of this index among the plan's distances takes this kind and method.
     Distance(usize, (DistanceKind, Method)),
-}
-
-/// A fix the normalizer applies, by its index among the definition's fixes.
-pub(super) struct FixPlan {
-    pub fix: usize,
-    pub columns: Vec<usize>,
-    pub effect: FixEffect,
-}
-
-pub(super) enum FixEffect {
-    /// The columns are read in another unit, already in each [`Col`].
-    ReadAs,
-    /// An error equal to this value, 0 for a zero error, was not reported.
-    SentinelIsNoneReported(f64),
-    ZeroLeavesOut(LeftOutReason),
-    /// The columns are blank on rows whose cell in `column` meets `when`.
-    DropWhen {
-        column: usize,
-        when: Condition,
-    },
-    /// The columns take the cited values on the row whose `key` cell, as compared, is a key of
-    /// `values`; the `drop` columns are blank there.
-    Replace {
-        key: usize,
-        values: HashMap<String, Vec<String>>,
-        drop: Vec<usize>,
-        /// The flag the entry carries, and its text: the citation and the fix.
-        mark: (String, String),
-    },
-    /// The rows whose cell in `column` meets `when` are left out for `reason`.
-    LeaveOutWhen {
-        column: usize,
-        when: Condition,
-        reason: LeftOutReason,
-    },
 }
 
 /// Everything the row reader needs, resolved once per table.
@@ -265,10 +235,14 @@ impl Resolver<'_> {
             (None, None) => return Err(self.unsupported("a redshift has no kind")),
         };
         let error = r.error.clone().map(ErrorColumns::Symmetric);
+        let comoving = r.comoving_velocity.as_ref().map(ComovingVelocity::read);
         Ok(RedshiftPlan {
             measured: self.reading(&r.column, error.as_ref())?,
             kind,
             frame: r.frame,
+            comoving: comoving
+                .transpose()
+                .map_err(|e| self.unsupported(e.to_string()))?,
         })
     }
 
@@ -327,63 +301,6 @@ impl Resolver<'_> {
             .map(|c| Ok((self.index(&c.column)?, c.clone())))
             .collect::<Result<_, NormalizeError>>()?;
         Ok(RulePlan { conditions, action })
-    }
-
-    fn fix(&self, fix: usize, action: &FixAction) -> Result<FixPlan, NormalizeError> {
-        let columns = action
-            .columns()
-            .iter()
-            .map(|c| self.index(c))
-            .collect::<Result<_, _>>()?;
-        let effect = match action {
-            FixAction::ReadAs { .. } => FixEffect::ReadAs,
-            FixAction::ZeroErrorIsNoneReported { .. } => FixEffect::SentinelIsNoneReported(0.0),
-            FixAction::SentinelErrorIsNoneReported { value, .. } => {
-                FixEffect::SentinelIsNoneReported(*value)
-            }
-            FixAction::ZeroErrorLeavesOut { reason, .. } => FixEffect::ZeroLeavesOut(*reason),
-            FixAction::DropWhen { when, .. } => FixEffect::DropWhen {
-                column: self.index(&when.column)?,
-                when: when.clone(),
-            },
-            FixAction::ReplaceByKey {
-                key,
-                drop,
-                mark,
-                values,
-                ..
-            } => FixEffect::Replace {
-                mark: (
-                    mark.flag.clone(),
-                    format!(
-                        "{} (fixes[{fix}] of the {} definition)",
-                        mark.cite, self.definition.id
-                    ),
-                ),
-                key: self.index(key)?,
-                values: values
-                    .iter()
-                    .map(|(k, v)| {
-                        let key = identifier_key(k).to_owned();
-                        (key, v.iter().map(f64::to_string).collect())
-                    })
-                    .collect(),
-                drop: drop
-                    .iter()
-                    .map(|c| self.index(c))
-                    .collect::<Result<_, _>>()?,
-            },
-            FixAction::LeaveOutWhen { when, reason } => FixEffect::LeaveOutWhen {
-                column: self.index(&when.column)?,
-                when: when.clone(),
-                reason: *reason,
-            },
-        };
-        Ok(FixPlan {
-            fix,
-            columns,
-            effect,
-        })
     }
 
     fn supergalactic(&self) -> Result<Option<[Col; 3]>, NormalizeError> {

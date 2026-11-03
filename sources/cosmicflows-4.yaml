@@ -13,7 +13,10 @@ cuts:
     difference is unexplained.
   - "The individual-galaxy table J/ApJ/944/94/table2 (55,877 galaxies) is the source cosmicflows-4-galaxies."
   - "DMzp is the group distance modulus on the scale of the TRGB, Cepheid and maser calibrators (ReadMe Note 1); Dist, derived from it, is not taken."
-  - "Vh is the group velocity relative to the Sun; the Local Sheet, CMB and peculiar velocities are not taken."
+  - >-
+    V3k, the group velocity relative to the cosmic background, is taken; Vh (relative to the Sun),
+    Vls (the Local Sheet), fV3k (V3k times the curvature adjustment f) and the peculiar velocities
+    are not.
 columns:
   - { column: 1PGC, field: identifier, unit: dimensionless }
   - { column: _RAJ2000, field: right_ascension, unit: degree }
@@ -22,7 +25,7 @@ columns:
   - { column: e_DMzp, field: distance_modulus_error, unit: magnitude }
   - { column: DMav, field: quality, unit: magnitude }
   - { column: e_DMav, field: quality, unit: magnitude }
-  - { column: Vh, field: velocity, unit: kilometre_per_second }
+  - { column: V3k, field: velocity, unit: kilometre_per_second }
   - { column: SGX, field: supergalactic_x, unit: megaparsec }
   - { column: SGY, field: supergalactic_y, unit: megaparsec }
   - { column: SGZ, field: supergalactic_z, unit: megaparsec }
@@ -283,15 +286,71 @@ fixes:
         column: 1PGC
         is: ["27823", "39943", "41361", "42447", "43423", "49514", "51922", "66039", "3845519"]
       reason: wrong_position
+  - defect: >-
+      The group of the Milky Way, 1PGC 5064336, is placed toward the Galactic centre at the
+      average distance of its satellites: its DMzp of 20.369 (0.119 Mpc) is no distance of a
+      group that holds the observer.
+    change: >-
+      On that row DMzp and e_DMzp are dropped and the entry kept, without a distance: the group
+      is listed, related to its members, and not placed.
+    evidence: >-
+      The groups row as served by vizier.nao.ac.jp on 2026-11-03: 1PGC 5064336, Ngal 2, DMzp
+      20.369, DMav 0.000, e_DMav 0.000, o_DMcal 4, DMcal 20.369, e_DMzp 0.100, Dist 0.1 Mpc, Vh
+      10, V3k -15, RAJ2000 266.5276, DEJ2000 -29.9245, GLON 359.2117, GLAT -0.6057: the
+      direction of the Galactic centre, and a modulus averaged over four calibrator galaxies
+      (o_DMcal). Its table2 members are Leo I (PGC 29488, DM 22.050, at RA 152.1166, Dec
+      +12.3064) and Leo II (PGC 34176, DM 21.920, RA 168.3671, Dec +22.1527), satellites of the
+      Milky Way 250 kpc away in another direction. The group's dominant galaxy is the Milky Way,
+      which holds the Sun, 8.18 kpc from its centre.
+    action:
+      kind: drop_when
+      columns: [DMzp, e_DMzp]
+      when: { column: 1PGC, is: ["5064336"] }
 normalization:
   redshifts:
-    - column: Vh
-      frame: heliocentric
+    - column: V3k
+      frame: cmb
       kind: spectroscopic
+      comoving_velocity:
+        from_km_s: 13000
+        hubble_constant: 67.8
+        omega_matter: 0.308
+        basis: >-
+          From 13,000 km/s up V3k is not a cz but H0 times a comoving distance, in the cosmology
+          of the SDSS groups of Tempel et al. 2017 (A&A 602, A100; J/A+A/602/A100 ReadMe, Note G1:
+          "the cosmology assumes H_0=67.8km/s/Mpc, Omega_m=0.308 and Omega_Lambda=0.692"), from
+          which Tully et al. 2023 take their groups beyond the 2MASS groups ("If a group
+          affiliation is unavailable for a galaxy within the groups described above then we opt
+          for memberships in the 2017 Tempel et al. catalog", Sec. II, arXiv 2209.11238). It is
+          read as the redshift whose comoving distance in that cosmology is V3k / 67.8 Mpc.
+          Neither the ReadMe nor the paper says so; the evidence, from the tables served by
+          vizier.idia.ac.za and vizier.nao.ac.jp on 2026-11-03: (1) 1PGC 1365066, a group of one
+          table2 galaxy, has V3k = 28573 km/s (Vh 28219, fV3k 30679); its galaxy has Vcmb =
+          29359, which is c z of its SDSS DR17 redshift in the CMB frame (z = 0.09663755
+          heliocentric, 0.0979298 in the CMB frame); its Tempel group, T17 36422, has zcmb =
+          0.09754669 and Dist.c = 421.434575 Mpc, and 67.8 x 421.434575 = 28573.5. (2) On 8,381
+          groups whose dominant galaxy's T17 group is in Tempel's group table, V3k = 67.8 x
+          Dist.c within the 1 km/s of rounding. (3) Over the 32,549 groups of one table2 galaxy,
+          the median of V3k / Vcmb - 1 is -0.06% from 9,000 to 12,000 km/s, a cz (a comoving
+          velocity would give -0.81%), then -0.59% from 12,000 to 15,000, and from 15,000 up it
+          follows the comoving distance: -1.30% against -1.28% predicted (15,000-18,000 km/s),
+          -1.86% against -1.76% (21,000-24,000) and -2.31% against -2.23% (27,000-30,000).
+          13,000 km/s is where the median turns: a cz read below it as a comoving velocity, or
+          the reverse above it, is off by at most about 1.2%, 160 km/s, under the 300 km/s
+          peculiar velocity a redshift distance carries.
       basis: >-
         J/ApJ/944/94 ReadMe, table4 (read from http://vizier.nao.ac.jp/ftp/cats/J/ApJ/944/94/ReadMe,
-        2026-11-03): Vh is the "Group velocity, relative to the Sun", a mean of its members'
-        spectroscopic velocities cz.
+        2026-11-03): V3k is the "Group velocity, relative to cosmic background", equal on every
+        row to table3's Vcmb, "Systemic velocity of the galaxy" in the CMB frame (Note 3), and
+        V3k - Vh is the CMB dipole in the group's direction (353.5 km/s for 1PGC 1365066 against
+        353.0 from the Planck 2018 dipole). Tully et al. 2023 (arXiv 2209.11238, Appendix, Table
+        3 columns 4-7): "Group velocities in respectively the reference frames of the Sun, the
+        Local Sheet, and the cosmic microwave background. The value in column 7 is the value in
+        column 6 multiplied by the cosmological curvature adjustment parameter f_i", so fV3k,
+        not V3k, is the "modified" velocity with q0 and j0 (Omega_m = 0.27, Omega_Lambda =
+        0.73), and is not taken. V3k is published in the CMB frame: no dipole is applied to it
+        again. Below 13,000 km/s it is a cz from the members' spectra; above, see
+        comoving_velocity.
   distances:
     - value: DMzp
       error: { symmetric: e_DMzp }

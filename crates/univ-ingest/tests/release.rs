@@ -19,6 +19,7 @@ use univ_ingest::tiles::sha256;
 use univ_model::cosmology::Cosmology;
 use univ_model::derive::MODEL_VERSION;
 use univ_model::position::Frame;
+use univ_model::redshift::CmbCorrection;
 use univ_model::release::cells::STRUCTURE_SPAN;
 use univ_model::release::manifest::Target;
 use univ_model::release::{CellSpace, keys};
@@ -108,7 +109,8 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
     let f = fixture();
     let crossed = cross(&f);
     let release = univ_model::derive::Release::new(&crossed.cosmology);
-    let (_, mut bounds) = structure_rows(1, &f.structures, &crossed.structures, &release).unwrap();
+    let (s, dipole) = (&crossed.structures, CmbCorrection::new(crossed.dipole));
+    let (_, mut bounds) = structure_rows(1, &f.structures, s, &release, &dipole).unwrap();
     // SIMULATED: the recorded answers place no member list whole, so a wall 1,500 Mpc long
     // stands in for a structure with a bounding box.
     let wall = univ_model::geometry::Aabb {
@@ -264,4 +266,30 @@ fn a_release_is_built_under_the_rules_and_structures_its_cross_match_read() {
     let row = d1_text(&release.dir, m, "releases");
     assert!(row.contains("peculiar_velocity_km_s: 300") && !row.contains("changed: true"));
     assert_eq!(m.counts.structures, read.structures.len() as u64);
+}
+
+#[test]
+fn the_manifest_notes_the_distance_ladders_hubble_constant_beside_the_release_cosmology() {
+    // The owner's decision: redshift distances keep Planck 2018, and the manifest says that
+    // ladder-calibrated distances are on H0 = 74.6 +- 0.8 (Tully et al. 2023), citing both.
+    let f = fixture();
+    let m = read_manifest(&build_next(&f).dir);
+    let note = m.cosmology_note.as_deref().unwrap();
+    for needle in [
+        "Planck Collaboration 2020, A&A 641, A6",
+        "67.66",
+        "Tully et al. 2023 (ApJ 944, 94",
+        "74.6",
+        "0.8",
+        "about 11%",
+    ] {
+        assert!(note.contains(needle), "{needle}: {note}");
+    }
+    // It sits beside the cosmology in the manifest, as the release configuration gives it.
+    let text = std::fs::read_to_string(release_dir(f.out.path(), 1).join("manifest.yaml")).unwrap();
+    let at = |key: &str| text.find(&format!("\n{key}:")).unwrap();
+    assert!(
+        at("cosmology") < at("cosmology_note")
+            && at("cosmology_note") < at("peculiar_velocity_km_s")
+    );
 }

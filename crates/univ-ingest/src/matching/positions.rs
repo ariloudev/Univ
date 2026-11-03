@@ -4,7 +4,9 @@
 //! merge would put two entries of one source or two linked groups together, or would put an
 //! entry beside one that a pair rule compares it with and finds beyond its tolerances (complete
 //! linkage): that candidate becomes a link instead, so that no chain of close pairs joins two
-//! entries that are far apart.
+//! entries that are far apart. Entries a published cross-identification joined, such as a Local
+//! Group dwarf's two catalogue centres arcminutes apart, are one body: complete linkage asks an
+//! entry to lie within the tolerances of one of them, not of each.
 
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, HashMap};
@@ -71,9 +73,10 @@ pub(super) fn apply(work: &mut Work<'_>) {
             .then((x.i, x.j).cmp(&(y.i, y.j)))
     });
     let mut members = Members::new(work, &groups);
+    let units = units(work);
     for c in clear {
         let (ra, rb) = (work.groups.find(c.a), work.groups.find(c.b));
-        if members.compatible(work, ra, rb) && work.groups.join(c.a, c.b).is_ok() {
+        if members.compatible(work, &units, ra, rb) && work.groups.join(c.a, c.b).is_ok() {
             members.joined(ra, rb, work.groups.find(c.a));
             work.joins.push(edge(c));
         } else {
@@ -102,14 +105,36 @@ impl Members {
             .map_or(std::slice::from_ref(root), Vec::as_slice)
     }
 
-    /// Whether every entry of the group rooted at `ra` lies within the tolerances of every entry
-    /// of the one rooted at `rb` that a pair rule compares it with.
-    fn compatible(&self, work: &Work<'_>, ra: usize, rb: usize) -> bool {
-        self.of(&ra).iter().all(|&x| {
-            self.of(&rb).iter().all(|&y| {
-                let compared =
-                    work.pair(x, y).is_some() && work.units[x].is_some() && work.units[y].is_some();
-                !compared || work.compare(x, y).is_some()
+    /// Whether the groups rooted at `ra` and `rb` may be one: for every body of the one and
+    /// every body of the other (`units`: entries a published cross-identification joined are
+    /// one body), some pair of their entries that a pair rule compares lies within its
+    /// tolerances, or no pair is compared. A body of one entry each is complete linkage.
+    fn compatible(&self, work: &Work<'_>, units: &[u32], ra: usize, rb: usize) -> bool {
+        let (a, b) = (self.of(&ra), self.of(&rb));
+        let bodies = |side: &[usize]| {
+            let mut u: Vec<u32> = side.iter().map(|&e| units[e]).collect();
+            u.sort_unstable();
+            u.dedup();
+            u
+        };
+        let (bodies_a, bodies_b) = (bodies(a), bodies(b));
+        bodies_a.iter().all(|&ua| {
+            bodies_b.iter().all(|&ub| {
+                let mut compared = false;
+                for &x in a.iter().filter(|&&x| units[x] == ua) {
+                    for &y in b.iter().filter(|&&y| units[y] == ub) {
+                        if work.pair(x, y).is_some()
+                            && work.units[x].is_some()
+                            && work.units[y].is_some()
+                        {
+                            if work.compare(x, y).is_some() {
+                                return true;
+                            }
+                            compared = true;
+                        }
+                    }
+                }
+                !compared
             })
         })
     }
@@ -122,6 +147,38 @@ impl Members {
         self.0.remove(&rb);
         self.0.insert(root, all);
     }
+}
+
+/// Each entry's body: the least entry joined to it by published cross-identifications, the only
+/// joins made before this pass, or itself.
+fn units(work: &Work<'_>) -> Vec<u32> {
+    let mut parent: Vec<u32> = (0..work.entries.len())
+        .map(|i| u32::try_from(i).unwrap_or(u32::MAX))
+        .collect();
+    for e in work
+        .joins
+        .iter()
+        .filter(|e| matches!(e.join, Join::Cross { .. }))
+    {
+        let (Ok(a), Ok(b)) = (u32::try_from(e.a), u32::try_from(e.b)) else {
+            continue;
+        };
+        let (ra, rb) = (root(&mut parent, a), root(&mut parent, b));
+        parent[ra.max(rb) as usize] = ra.min(rb);
+    }
+    (0..parent.len())
+        .map(|i| root(&mut parent, u32::try_from(i).unwrap_or(u32::MAX)))
+        .collect()
+}
+
+/// The root of `i` in the forest `parent`, halving the path on the way.
+fn root(parent: &mut [u32], mut i: u32) -> u32 {
+    while parent[i as usize] != i {
+        let up = parent[parent[i as usize] as usize];
+        parent[i as usize] = up;
+        i = up;
+    }
+    i
 }
 
 fn edge(c: &Candidate) -> Edge {

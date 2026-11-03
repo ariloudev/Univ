@@ -14,7 +14,7 @@ use univ_ingest::normalize::normalize;
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::entry::{CatalogueEntry, PositionUncertainty, RedshiftKind};
 use univ_model::position::{Epoch, Frame, cross, unit_vector};
-use univ_model::redshift::{CmbCorrection, DipoleModel};
+use univ_model::redshift::{CmbCorrection, DipoleModel, RedshiftFrame};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Uncertainty, Value};
 
@@ -118,7 +118,7 @@ fn twompp_rows_keep_their_reference_and_no_group() {
 fn cosmicflows_groups_keep_their_modulus_and_read_sg_coordinates_as_km_s() {
     let n = normalized_fixture("cosmicflows-4");
     assert_eq!(n.report.published, 5);
-    // Row 1: 000.036000 -06.373900 12 34.995 0.410 6532 1848 -6271 1312.
+    // Row 1: 000.036000 -06.373900 12 34.995 0.410 35.142 0.410 6179 1848 -6271 1312.
     let g = entry(&n, "12");
     fk5(g, 0.036, -6.3739);
     let d = &g.distances[0];
@@ -136,11 +136,14 @@ fn cosmicflows_groups_keep_their_modulus_and_read_sg_coordinates_as_km_s() {
         (1_848.0, -6_271.0, 1_312.0)
     );
     assert_eq!(sg.x.native.unit, Unit::KilometrePerSecond);
-    // Row 4: 000.093800 +39.495500 35 29.730 0.100 335 518 -260 215.
+    // Row 4: 000.093800 +39.495500 35 29.730 0.100 0.000 0.000 28 518 -260 215.
     let g = entry(&n, "35");
     // 10^(29.73/5 + 1) pc = 8.8308 Mpc.
     assert!(near(g.distances[0].normalized.value, 8.830_799_6, 1e-7));
-    assert_eq!(g.redshifts[0].cmb.heliocentric.value, 335.0 / C);
+    // V3k, published in the CMB frame, is the redshift as published: 28 km/s, below 13,000
+    // km/s, a cz.
+    assert_eq!(g.redshifts[0].cmb.value.value, 28.0 / C);
+    assert_eq!(g.redshifts[0].cmb.published, RedshiftFrame::Cmb);
 }
 
 #[test]

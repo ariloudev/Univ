@@ -20,6 +20,11 @@
 #   An entry joins an object only when it lies within the pair's tolerances of every entry of
 #   that object a pair below compares it with (complete linkage): one close to an entry but too
 #   far from another, which would chain two distinct galaxies, stays apart, linked to it.
+#   Entries a published cross-identification joined (step 1) are one body, whose catalogues may
+#   centre it arcminutes apart (NGC 55: McConnachie 2012 and UNGC 3.2 arcmin): an entry need lie
+#   within the tolerances of one of them only, and an object of two such bodies is compared body
+#   to body. A pair may give a wider angular tolerance to two nearby entries (`nearby`), both of
+#   whose heliocentric cz lie below its velocity.
 #   3. Galaxy groups (galaxy_groups): a group row is its own object, related to its dominant
 #      galaxy by the scheme its source names it in, and to each galaxy a member source assigns
 #      to it; nothing is merged across a relation.
@@ -251,6 +256,15 @@ pairs:
       is a pipeline choice for the centres of nearby dwarfs, which are diffuse and differ between
       catalogues by tens of arcseconds. 300 km/s is a pipeline choice: UNGC velocities are
       compiled heliocentric velocities that may come from another spectrum than the survey's.
+  - sources: [updated-nearby-galaxies, twompp-catalogue]
+    angular_tolerance_arcsec: 30.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: >-
+      As for UNGC and 2MRS: 2M++ takes its positions from the 2MASS XSC, and goes deeper than
+      2MRS (K = 12.5 against 11.75 where SDSS or 6dFGS redshifts exist; Lavaux & Hudson 2011), so
+      nearby dwarfs that UNGC lists may be in 2M++ alone, such as UGC 7950 (UNGC 0.4 arcsec from
+      2M++ 12465642+5136467, 508 against 497 km/s, and in no 2MRS row). Most UNGC galaxies in
+      both 2MRS and 2M++ join 2M++ by its 2MASX name with 2MRS first.
   - sources: [updated-nearby-galaxies, mcconnachie-2012]
     angular_tolerance_arcsec: 360.0
     line_of_sight: { compare: distance, tolerance_fraction: 0.3 }
@@ -273,6 +287,16 @@ pairs:
   - sources: [cosmicflows-4-galaxies, twomrs]
     angular_tolerance_arcsec: 10.0
     line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    nearby: &cf4near
+      below_km_s: 1000
+      angular_tolerance_arcsec: 30.0
+      basis: >-
+        Pipeline choice: below a heliocentric cz of 1,000 km/s (within about 15 Mpc) galaxies are
+        large on the sky and few per square degree, and the centre a compilation adopts for one
+        can lie tens of arcseconds from its XSC centroid: IC 342, Cosmicflows-4 PGC 13826 against
+        2MRS 03464851+6805459, 19.5 arcsec at 31 against -61 km/s (Vcmb, 31 heliocentric);
+        NGC 3738, PGC 35856 against 2MRS 11354919+5431249, 12.3 arcsec. 30 arcsec, the tolerance
+        of UNGC against 2MRS, takes them in.
     basis: &cf4g >-
       The Cosmicflows-4 galaxies table gives RAdeg and DEdeg to 0.0001 degree (J/ApJ/944/94
       ReadMe, table2, F8.4), 0.36 arcsec, for galaxies named by their HyperLEDA PGC number; 10
@@ -284,6 +308,7 @@ pairs:
   - sources: [cosmicflows-4-galaxies, twompp-catalogue]
     angular_tolerance_arcsec: 10.0
     line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    nearby: *cf4near
     basis: *cf4g
   - sources: [cosmicflows-4-galaxies, sixdfgs-dr3]
     angular_tolerance_arcsec: 10.0
@@ -294,7 +319,7 @@ pairs:
     line_of_sight: { compare: velocity, tolerance_km_s: 200 }
     basis: *cf4g
   - sources: [cosmicflows-4-galaxies, updated-nearby-galaxies]
-    angular_tolerance_arcsec: 30.0
+    angular_tolerance_arcsec: 60.0
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
     basis: >-
       As for UNGC and 2MRS: UNGC positions are good to about 1.5 arcsec, and 30 arcsec is a

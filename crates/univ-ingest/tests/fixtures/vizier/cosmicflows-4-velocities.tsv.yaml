@@ -1,0 +1,8 @@
+source: cosmicflows-4
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Fgroups&-out=1PGC%2CDMzp%2Ce_DMzp%2CDMav%2Ce_DMav%2CV3k%2CSGX%2CSGY%2CSGZ&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&1PGC=1365066%2C837279%2C5064336
+retrieved: 2026-11-03T15:32:15Z
+sha256: 768ce3dcbc8fa38649dff0f6aae28ea01b00b3015f7c2e9974a4309f2a3854ca
+note: >-
+  The source's own query narrowed by 1PGC to three groups: 1365066 and 837279, each of one
+  table2 galaxy, beyond 13,000 km/s, whose V3k is H0 times a comoving distance; and 5064336, the
+  group of the Milky Way, whose distance a fix leaves out.

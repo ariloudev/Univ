@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
-use univ_model::distance::{DistanceKind, Method};
+use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
 
@@ -139,6 +139,19 @@ pub enum FixAction {
         when: Condition,
         reason: LeftOutReason,
     },
+    /// On the row whose `key` cell is a key of `values`, a distance another paper measured is
+    /// added beside the source's own, which is kept: the row's value and symmetric error, in
+    /// `unit`, of `distance_kind`, `method` and `measure`. The entry carries `mark`, naming the
+    /// paper.
+    AddDistance {
+        key: String,
+        unit: Unit,
+        distance_kind: DistanceKind,
+        method: Method,
+        measure: Measure,
+        mark: ReplacedMark,
+        values: BTreeMap<String, [f64; 2]>,
+    },
 }
 
 /// The most fixes a definition may have: the normalizer counts the entries each changed with a
@@ -258,6 +271,27 @@ pub(super) fn check_fixes(table: &Columns<'_>, fixes: &[Fix]) -> Result<(), Prob
                 ));
             }
         }
+        if let FixAction::AddDistance {
+            mark, values, unit, ..
+        } = action
+        {
+            let at = format!("fixes[{i}].action");
+            if mark.flag.trim().is_empty() || mark.cite.trim().is_empty() {
+                return Err(problem(format!("{at}.mark"), "names no flag or citation"));
+            }
+            if !matches!(unit, Unit::Parsec | Unit::Megaparsec) || values.is_empty() {
+                return Err(problem(at, "adds no row, or a distance not in pc or Mpc"));
+            }
+            if let Some((k, _)) = values
+                .iter()
+                .find(|(_, [v, e])| !(v.is_finite() && *v > 0.0 && e.is_finite() && *e >= 0.0))
+            {
+                return Err(problem(
+                    format!("{at}.values.{k}"),
+                    "is not a positive distance with an error of zero or more",
+                ));
+            }
+        }
     }
     Ok(())
 }
@@ -274,6 +308,7 @@ impl FixAction {
             | Self::DropWhen { columns, .. }
             | Self::ReplaceByKey { columns, .. } => columns,
             Self::LeaveOutWhen { when, .. } => std::slice::from_ref(&when.column),
+            Self::AddDistance { key, .. } => std::slice::from_ref(key),
         }
     }
 }

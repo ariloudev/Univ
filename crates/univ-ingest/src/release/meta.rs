@@ -6,6 +6,7 @@ use std::path::Path;
 use univ_model::derive::Release;
 use univ_model::geometry::Aabb;
 use univ_model::ids::SourceId;
+use univ_model::redshift::CmbCorrection;
 use univ_model::release::keys;
 use univ_model::release::rows::{
     NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, StructureRow,
@@ -91,8 +92,9 @@ pub fn source_rows(
 pub type StructureBounds = (String, Result<Aabb, String>);
 
 /// The rows of the release's `structures`, each by its id, with its scale domain and centre and
-/// the member list `placements` resolved for it; and each structure's ICRS bounding box in Mpc under `release`, the box its
-/// row records and the cell index holds (see [`super::place`]), or why it has none.
+/// the member list `placements` resolved for it; and each structure's ICRS bounding box in Mpc
+/// under `release` and the run's dipole `correction`, the box its row records and the cell index
+/// holds (see [`super::place`]), or why it has none.
 ///
 /// # Errors
 ///
@@ -102,20 +104,21 @@ pub fn structure_rows(
     structures: &[(String, Structure)],
     placements: &[MemberPlacement],
     release: &Release,
+    correction: &CmbCorrection,
 ) -> Result<(Vec<StructureRow>, Vec<StructureBounds>), String> {
     let mut rows = Vec::with_capacity(structures.len());
     let mut bounds = Vec::with_capacity(structures.len());
     for (id, s) in structures {
         let placed = placements.iter().find(|p| p.structure == s.name);
         let shape = placed.and_then(|p| p.shape.as_ref());
-        let boxed = index_bounds(s, placed, release);
+        let boxed = index_bounds(s, placed, release, correction);
         // In the domain's unit: pc for stars, Mpc otherwise.
         let per_mpc = if s.scale_domain == ScaleDomain::Stars {
             1e6
         } else {
             1.0
         };
-        let at = centre(s, placed, release)
+        let at = centre(s, placed, release, correction)
             .ok()
             .map(|c| c.map(|v| v * per_mpc));
         rows.push(StructureRow {

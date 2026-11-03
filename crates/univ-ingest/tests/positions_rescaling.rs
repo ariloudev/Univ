@@ -200,6 +200,7 @@ fn a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms() {
         lon: Some(lon),
         lat,
         radial: Some(Radial::Velocity(cz)),
+        ..
     }) = &bootes.position
     else {
         panic!("{:?}", bootes.position)

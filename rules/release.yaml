@@ -11,3 +11,15 @@ cosmology_basis: >-
   H0 = 67.66 km/s/Mpc and Omega_m = 0.3111, flat Lambda-CDM without radiation, the cosmology of
   every release that names no other. Every derived distance and position of the release, and
   every tile manifest, records it.
+cosmology_note: >-
+  Two distance scales sit side by side in this release. Redshift distances are comoving distances
+  under the release cosmology, Planck 2018 (Planck Collaboration 2020, A&A 641, A6, Table 2: H0 =
+  67.66 km/s/Mpc), and each one's transformation chain names it. Distances calibrated on the
+  distance ladder (the Cosmicflows-4 moduli, and Cepheid, TRGB and SBF distances) are on the
+  ladder's own scale, which Tully et al. 2023 (ApJ 944, 94, abstract) find "compatible with a
+  value of the Hubble constant of H0=74.6km/s/Mpc with the small statistical error of
+  +/-0.8km/s/Mpc but a large potential systematic error of ~3km/s/Mpc". A ladder distance
+  therefore sits nearer than the redshift distance of the same galaxy: by 67.66 / 74.6 = 0.907 from
+  the two constants alone, and by about 11% in release 3, whose Cosmicflows-4 modulus distances
+  beyond z = 0.05 are a median 0.892 of the redshift distances. This is the Hubble tension, not an
+  error of either; the release keeps both, and an object's preferred distance says which it is.

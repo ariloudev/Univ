@@ -16,7 +16,7 @@ use univ_model::derive::{DerivedPosition, Release};
 use univ_model::ids::ObjectId;
 use univ_model::ledger::Ledger;
 use univ_model::object::{Object, Placement};
-use univ_model::redshift::CmbCorrection;
+use univ_model::redshift::{CmbCorrection, DipoleModel};
 
 pub use basis::{Basis, RULES};
 pub use members::{
@@ -61,6 +61,8 @@ pub struct CrossMatched {
     pub release: String,
     /// The release cosmology every derived position was placed under.
     pub cosmology: Cosmology,
+    /// The run's CMB dipole, which its entries were normalized and its structures placed with.
+    pub dipole: DipoleModel,
     /// The objects, in the order of their first entry.
     pub objects: Vec<ReleaseObject>,
     pub assigned: Assigned,
@@ -188,6 +190,7 @@ pub fn cross_match(
     let crossed = CrossMatched {
         release,
         cosmology: inputs.release.cosmology().clone(),
+        dipole: inputs.correction.model(),
         objects: placed,
         assigned,
         next,

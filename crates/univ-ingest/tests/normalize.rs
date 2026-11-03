@@ -430,16 +430,17 @@ fn cosmicflows_sgx_sgy_and_sgz_are_read_as_km_s_though_vizier_labels_them_mpc() 
 #[test]
 fn the_report_lists_each_fix_applied_with_the_entries_it_changed() {
     let n = normalized_fixture("cosmicflows-4");
-    // The two position fixes are listed with no entry changed: no recorded row is one of
-    // their groups.
-    assert_eq!(n.report.fixes.len(), 3);
+    // The two position fixes and the Milky Way group's are listed with no entry changed: no
+    // recorded row is one of their groups.
+    assert_eq!(n.report.fixes.len(), 4);
     assert_eq!(n.report.fixes[0].entries_changed, 5);
     assert_eq!(
         (
             n.report.fixes[1].entries_changed,
-            n.report.fixes[2].entries_changed
+            n.report.fixes[2].entries_changed,
+            n.report.fixes[3].entries_changed
         ),
-        (0, 0)
+        (0, 0, 0)
     );
     assert!(
         n.report.fixes[0]

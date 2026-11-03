@@ -3469,3 +3469,159 @@ blocks:
           Done when release 3 is published from the real data and the gate passes.
         state: active
         type: fix
+      - key: 01a1a1d2-80d7-752d-97a1-aacfd446447d
+        at: 2026-11-03T14:31:29Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the review findings and apply the domain rule"
+        detail: |-
+          **Commits:** spec `e8c26f9` (domain by placed distance, the interval form, 157), then `2bd2359`, `99c35b2`, `4a730dd` and `b466001`. Each passed the gate.
+
+          **Release 3**, published:
+          - 2,086,261 objects placed; 252 too uncertain.
+          - D1 is 2.33 GB; peak RSS 15.4 GB, which the owner accepts.
+          - Nearby galaxies has 1,270 points.
+          - 106,419 preferred distances changed: 63,194 from the 300 km/s term, 43,225 from CF4 Vcmb redshifts. The median change is 0.03%.
+          - M81 3.63, Cen A 3.75, M87 16.77 and the Virgo group 16.12 Mpc.
+
+          **Pruning releases 1 and 2** was blocked by the permission check and waits for the owner.
+        state: done
+        type: fix
+  - key: 01a1a1d2-80d7-752d-97a1-aace1af50d40
+    id: w8-t6-science-3
+    kind: task
+    versions:
+      - key: 01a1a1d2-80d7-752d-97a1-aad07fe5edc5
+        at: 2026-11-03T14:31:29Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Science re-check on release 3"
+        detail: "Repeat every release 1 check, then add the new ones: CF4 galaxies at D_L/(1+z), the scale domains, the 300 km/s term, and the D1 fingerprints against the database."
+        state: active
+      - key: 01a1a1ed-d842-75bd-a077-67afa3915a22
+        at: 2026-11-03T15:01:21Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Science re-check on release 3"
+        detail: "11 of 13 checks pass. The Local Group duplicates fail, and the CF4 velocity columns are a concern. Both go to the final fix pass, along with Horologium–Reticulum's CMB correction and the Milky Way and its group."
+        state: done
+  - key: 01a1a1e4-01d6-747c-95e3-d082962c9061
+    id: ask-toolu-017jpghn8pxb4y4r2qskrz6n-1
+    kind: question
+    versions:
+      - key: 01a1a1e4-01d6-747c-95e3-d08353f692a7
+        at: 2026-11-03T14:50:36Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Indicator distances (Cepheid, TRGB, SBF, TF, CF4's moduli) are on the local distance ladder's scale, H0 ≈ 75 (Tully et al. 2023 give 74.6 ± 0.8 for CF4). Redshift distances are computed with the release cosmology, Planck 2018 H0 = 67.66. In release 3 the two differ by ~11%: at z > 0.05 CF4 modulus distances are 0.892 × the redshift distances. In one cluster, members placed by an indicator sit ~11% nearer than members placed by redshift (Coma: NGC 4874 at 109 Mpc by redshift, its CF4 distance 96.7 Mpc). This is the Hubble tension, not a bug. Which H0 should redshift distances use?"
+        header: "H0 scale"
+        options:
+          - label: "Planck, state the offset"
+            detail: "Keep Planck 2018 as the spec says. The release manifest and every redshift distance's chain state the ~11% scale difference from ladder-calibrated distances (Hubble tension), with both citations. The cosmology stays defensible and standard, but clusters show the visible spread."
+            recommended: true
+          - label: "Ladder H0 for the atlas"
+            detail: "Make the release cosmology H0 = 74.6 (Tully et al. 2023, CF4's own scale) with Planck's Ωm, so redshift and indicator distances agree locally. A spec change to the release cosmology (CON-6/RQ-13). High-z objects and structures then sit ~9% nearer than under Planck."
+          - label: "Decide later"
+            detail: "Merge W8 with Planck as is, and note the offset as an open science question in the plan."
+        ownWords: true
+    responses:
+      - key: 01a1a1ed-1733-74f0-b03d-4ec51c02f3fb
+        at: 2026-11-03T15:00:32Z
+        revision: 20
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Planck, state the offset"
+  - key: 01a1a1ed-d842-75bd-a077-67aa7e55b087
+    id: w8-d-h0
+    kind: decision
+    number: 5
+    versions:
+      - key: 01a1a1ed-d842-75bd-a077-67ad753a67e1
+        at: 2026-11-03T15:01:21Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Keep Planck 2018 for redshift distances and state the ladder offset"
+        consequence: "Redshift distances keep H0 = 67.66. The release manifest and every redshift distance's chain state that ladder-calibrated distances (CF4, Cepheid, TRGB, SBF; H0 ≈ 74.6, Tully et al. 2023) sit about 11% nearer, citing both. Clusters whose members are placed by different methods show that spread."
+        question: 01a1a1e4-01d6-747c-95e3-d082962c9061
+  - key: 01a1a1ed-d842-75bd-a077-67abefaa4e86
+    id: w8-science-3
+    kind: note
+    versions:
+      - key: 01a1a1ed-d842-75bd-a077-67ae0a8cf35c
+        at: 2026-11-03T15:01:21Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Release 3 science re-check: 11 of 13 pass"
+        markdown: |-
+          **Pass:**
+          - M87 at 16.77 ± 0.31 Mpc, and the Virgo group at the exact KT17 centre, cited.
+          - Ranking: M81, Cen A and NGC 59.
+          - eRASS1 (Virgo and Fornax clusters kept) and UNGC.
+          - Structures; scale domains (1,270 nearby, all ≤ 11 Mpc); the 300 km/s term on all 106,787 redshifts.
+          - All 18 D1 fingerprints match the database; largest tile 554 kB; CON-3 6.86 GB.
+
+          **Fail:** Local Group duplicates. NGC 55, IC 1613, And XX, And XXX, Pegasus dIrr and the SMC are each two objects, linked with confidence of about 0.99999 but not merged (complete linkage against the McConnachie–UNGC pair).
+
+          **Concern:** for the same one-member CF4 group, the groups table gives Vcmb 28,573 and the galaxies table 29,359. Separately, CF4 modulus distances are 0.892 × the Planck redshift distances: the Hubble tension, decided above.
+
+          **Smaller:**
+          - Horologium–Reticulum is not CMB-corrected (289.5 against 288.3 Mpc).
+          - The CF4 Milky Way group is placed 119 kpc toward the Galactic centre.
+          - The Milky Way sits at UNGC's rounded 10 kpc.
+        tone: warning
+  - key: 01a1a1ed-d842-75bd-a077-67ac3ef71af7
+    id: w8-t7-final-fixes
+    kind: task
+    versions:
+      - key: 01a1a1ed-d842-75bd-a077-67b08d2f071a
+        at: 2026-11-03T15:01:21Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Final science fixes and release 4"
+        detail: |-
+          The fixes:
+          - Merge the Local Group duplicates.
+          - Read CF4 velocity columns by their definitions.
+          - Add the H0 offset note to the manifest.
+          - Apply the CMB correction to structure velocities.
+          - Leave the Milky Way group unplaced.
+          - Place the Milky Way at GRAVITY 2019's R0.
+
+          Done when release 4 is published and each fix's test passes.
+        state: active
+        type: fix
+  - key: 01a1a1f6-596c-720e-a742-a455a16876f8
+    id: w8-t8-science-code
+    kind: task
+    versions:
+      - key: 01a1a1f6-596c-720e-a742-a456975db3c8
+        at: 2026-11-03T15:10:38Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Science checks as code"
+        detail: |-
+          `cargo xtask science <release-dir>` loads a built release's D1 SQL into scratch SQLite and runs `rules/science-checks.yaml`. Each check holds the expected value, its tolerance and a quoted citation, and the command exits non-zero on any FAIL. It covers about 25 checks from the release 1 and 3 reports.
+
+          It is built in its own worktree and merged into the W8 branch.
+
+          Done when it runs on the real release 3 in a few minutes, failing the known Local Group duplicates.
+        state: active

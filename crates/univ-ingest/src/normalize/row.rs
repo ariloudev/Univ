@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 
-use univ_model::cosmology::AssumedCosmology;
+use univ_model::cosmology::{AssumedCosmology, Cosmology, SPEED_OF_LIGHT};
 use univ_model::distance::{Distance, DistanceError, DistanceKind, Method};
 use univ_model::entry::{
     CatalogueEntry, EntryError, Magnitude, NativePosition, Position, PositionErrors,
@@ -145,9 +145,12 @@ impl Row<'_, '_> {
         // millions of times over.
         let mut redshifts = Vec::with_capacity(plan.redshifts.len());
         for r in &plan.redshifts {
-            let Some(measured) = self.quantity(&r.measured)? else {
+            let Some(mut measured) = self.quantity(&r.measured)? else {
                 continue;
             };
+            if let Some((from, cosmology)) = &r.comoving {
+                measured = comoving_redshift(measured, *from, cosmology)?;
+            }
             let kind = self.by_code(&r.kind)?;
             let default = match kind {
                 RedshiftKind::Spectroscopic => KindOfValue::Measured,
@@ -189,6 +192,7 @@ impl Row<'_, '_> {
             .map_err(distance_reason)?;
             distances.push(distance);
         }
+        distances.extend(self.added_distances()?);
         let entry = CatalogueEntry {
             designation: Designation::new(self.cx.source.clone(), identifier)
                 .map_err(|_| LeftOutReason::MissingIdentifier)?,
@@ -433,4 +437,31 @@ fn entry_reason(error: EntryError) -> LeftOutReason {
         EntryError::Value(e) => value_reason(&e),
         _ => LeftOutReason::UnusableValue,
     }
+}
+
+/// `measured`, a velocity standing for H0 times a comoving distance in `cosmology` from `from`
+/// km/s up, as the redshift at that distance, its uncertainty scaled by dz/dv = E(z) / c; below
+/// `from`, it is as published, a cz.
+fn comoving_redshift(
+    measured: Quantity,
+    from: f64,
+    cosmology: &Cosmology,
+) -> Result<Quantity, LeftOutReason> {
+    let v = measured
+        .to(Unit::KilometrePerSecond)
+        .map_err(|_| LeftOutReason::UnusableValue)?;
+    if v.value < from {
+        return Ok(measured);
+    }
+    let z = cosmology
+        .redshift_at(v.value / cosmology.hubble_constant)
+        .map_err(|_| LeftOutReason::UnusableValue)?;
+    let om = cosmology.omega_matter;
+    let expansion = (om * (1.0 + z).powi(3) + 1.0 - om).sqrt();
+    Quantity::new(
+        z,
+        Unit::Dimensionless,
+        v.uncertainty.scaled(expansion / SPEED_OF_LIGHT),
+    )
+    .map_err(|_| LeftOutReason::UnusableValue)
 }

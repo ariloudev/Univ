@@ -6,6 +6,7 @@
 use std::path::Path;
 
 use univ_model::derive::{MODEL_VERSION, Release};
+use univ_model::redshift::CmbCorrection;
 use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
     CellIndex, CellSpaceInfo, Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestSource,
@@ -109,6 +110,7 @@ fn d1_rows(
         &crossed.basis.structures,
         &crossed.structures,
         release,
+        &CmbCorrection::new(crossed.dipole),
     )?;
     writer.add_all(&structures)?;
     writer.add_all(&domain_rows(number, inputs.tiles))?;
@@ -238,6 +240,7 @@ pub fn write_release(inputs: &Inputs<'_>, number: u32, dir: &Path) -> Result<Wri
         release: number,
         built_at: inputs.built_at.clone(),
         cosmology: crossed.cosmology.clone(),
+        cosmology_note: crossed.basis.config.cosmology_note.clone(),
         peculiar_velocity_km_s: crossed.basis.ranking.peculiar_velocity_km_s,
         versions: Versions {
             univ_model: MODEL_VERSION.to_owned(),

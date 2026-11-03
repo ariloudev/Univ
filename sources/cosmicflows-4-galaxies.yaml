@@ -82,6 +82,42 @@ mirrors:
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      Vcmb is 0 on 46 rows: dwarf galaxies with a distance but no measured velocity. The column
+      is not marked nullable (ReadMe table2, Vcmb [-784/32575]), so the table writes the missing
+      velocity as 0, which reads as a galaxy at rest in the CMB frame.
+    change: >-
+      On those rows Vcmb is dropped and the entry kept: the galaxy has no velocity or redshift,
+      and is matched by position alone and placed by its distance modulus.
+    evidence: >-
+      An exact 0 on 46 of 55,877 rows, against 24 more within 50 km/s of it, and the 46 cluster
+      where measured velocities are far from 0: 17 are members of the Centaurus A group (1PGC
+      46957, whose galaxy PGC 46957 has Vcmb = 802) and 15 of the M81 group (1PGC 28630), as
+      served by vizier.idia.ac.za on 2026-11-03. Andromeda XX (PGC 5056920, 1PGC 2557, the M31
+      group, whose NGC 147, PGC 2004, has Vcmb = -455) has Vcmb = 0, while UNGC (Karachentsev et
+      al. 2013, J/AJ/145/101) gives it a heliocentric velocity of -456 km/s, about -770 km/s in
+      the CMB frame in its direction.
+    action:
+      kind: drop_when
+      columns: [Vcmb]
+      when: { column: Vcmb, is: ["0"] }
+  - defect: >-
+      Andromeda XXX (PGC 5065056) has Vcmb = 36 km/s, about 430 km/s from its measured velocity.
+    change: >-
+      On that row Vcmb is dropped and the entry kept, matched by position alone and placed by its
+      distance modulus.
+    evidence: >-
+      Collins et al. 2013 (ApJ 768, 172; J/ApJ/768/172/table1, served by vizier.nao.ac.jp on
+      2026-11-03) measure And XXX's heliocentric velocity from 8 member stars as -139.8 (+6.0,
+      -6.6) km/s, and UNGC (Karachentsev et al. 2013, J/AJ/145/101) gives -141 km/s. In its
+      direction (RA 9.145, Dec +49.647) the Planck 2018 dipole moves -139.8 km/s to about -395 km/s
+      in the CMB frame, not 36. The modulus, DM = 24.11 (0.66 Mpc), agrees with UNGC's 0.68 Mpc
+      and Collins et al.'s 681 kpc.
+    action:
+      kind: drop_when
+      columns: [Vcmb]
+      when: { column: PGC, is: ["5065056"] }
 normalization:
   redshifts:
     - column: Vcmb

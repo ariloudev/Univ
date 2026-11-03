@@ -1,0 +1,9 @@
+source: cosmicflows-4-galaxies
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Ftable2&-out=PGC%2C1PGC%2CVcmb%2CDM%2Ce_DM%2CDMsnIa%2CDMtf%2CDMfp%2CDMsbf%2CDMsnII%2CDMtrgb%2CDMceph%2CDMmas&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&PGC=1014%2C3085%2C1365066%2C837279%2C5056920%2C5065056
+retrieved: 2026-11-03T15:32:17Z
+sha256: e5c6bf6ae2b3766e4e60f47d6187add6fc2797575bbcd3617cf257a31e18bc85
+note: >-
+  The source's own query narrowed by PGC to six galaxies: NGC 55 (1014) and the SMC (3085),
+  which McConnachie 2012 and UNGC also list; And XX (5056920), whose Vcmb of 0 a fix drops,
+  and And XXX (5065056), whose wrong Vcmb a fix drops; and the galaxies of the groups 1PGC
+  1365066 and 837279, to compare a group's redshift with its galaxy's.

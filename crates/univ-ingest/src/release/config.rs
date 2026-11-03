@@ -19,6 +19,9 @@ pub struct ReleaseConfig {
     pub cosmology: Cosmology,
     /// Why, with its citation.
     pub cosmology_basis: String,
+    /// A note on the cosmology the release manifest records beside it, with its citations.
+    #[serde(default)]
+    pub cosmology_note: Option<String>,
 }
 
 impl Default for ReleaseConfig {
@@ -29,6 +32,7 @@ impl Default for ReleaseConfig {
             cosmology_basis: "No release configuration was given: Planck 2018 (Planck \
                               Collaboration 2020, A&A 641, A6, Table 2), the default."
                 .to_owned(),
+            cosmology_note: None,
         }
     }
 }
@@ -47,7 +51,7 @@ impl ReleaseConfig {
         read_checked(file, Self::check)
     }
 
-    /// The checks serde cannot make: a basis is given.
+    /// The checks serde cannot make: a basis is given, and a note is not blank.
     ///
     /// # Errors
     ///
@@ -55,6 +59,13 @@ impl ReleaseConfig {
     pub fn check(&self) -> Result<(), (String, String)> {
         if self.cosmology_basis.trim().is_empty() {
             return Err(("cosmology_basis".to_owned(), "is empty".to_owned()));
+        }
+        if self
+            .cosmology_note
+            .as_deref()
+            .is_some_and(|n| n.trim().is_empty())
+        {
+            return Err(("cosmology_note".to_owned(), "is empty".to_owned()));
         }
         Ok(())
     }
