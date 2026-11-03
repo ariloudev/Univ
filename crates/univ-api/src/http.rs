@@ -90,14 +90,17 @@ pub enum Body {
     Bytes(Vec<u8>),
     /// Bytes built once and kept for the isolate's life, such as the OpenAPI document.
     Static(&'static [u8]),
+    /// The object of this key in the releases bucket, which the runtime streams to the client
+    /// without the Worker reading it (fetch-point-tiles).
+    Object(String),
 }
 
 impl Body {
-    /// The body's bytes.
+    /// The body's bytes; none for an object of the bucket, which only the runtime reads.
     #[must_use]
     pub fn as_bytes(&self) -> &[u8] {
         match self {
-            Self::Empty => &[],
+            Self::Empty | Self::Object(_) => &[],
             Self::Bytes(bytes) => bytes,
             Self::Static(bytes) => bytes,
         }

@@ -5,7 +5,7 @@
 use crate::backend::Backend;
 use crate::http::{Method, Request, Response};
 use crate::problem::{Problem, ProblemType};
-use crate::{objects, openapi, releases, sources, structures};
+use crate::{bulk, grids, objects, openapi, releases, sources, structures};
 
 /// The values a route's `{name}` segments took in one request, in the template's order.
 pub type Params = Vec<(&'static str, String)>;
@@ -22,6 +22,12 @@ pub enum Endpoint {
     Structure,
     Objects,
     Object,
+    ScaleDomains,
+    TileManifest,
+    Tile,
+    Grids,
+    GridHeader,
+    GridSamples,
 }
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
@@ -33,7 +39,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 9] = [
+pub static ROUTES: [Route; 15] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -79,6 +85,36 @@ pub static ROUTES: [Route; 9] = [
         path: "/v1/objects/{id}",
         endpoint: Endpoint::Object,
     },
+    Route {
+        method: Method::Get,
+        path: "/v1/scale-domains",
+        endpoint: Endpoint::ScaleDomains,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/scale-domains/{name}/manifest",
+        endpoint: Endpoint::TileManifest,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/scale-domains/{name}/tiles/{address}",
+        endpoint: Endpoint::Tile,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/grids",
+        endpoint: Endpoint::Grids,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/grids/{id}",
+        endpoint: Endpoint::GridHeader,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/grids/{id}/fields/{field}",
+        endpoint: Endpoint::GridSamples,
+    },
 ];
 
 /// The answer of `endpoint` to `request`, a refusal included.
@@ -100,6 +136,28 @@ async fn answer<B: Backend>(
         Endpoint::Structure => structures::get(request, param(params, "id"), backend).await,
         Endpoint::Objects => objects::find(request, backend).await,
         Endpoint::Object => objects::get(request, param(params, "id"), backend).await,
+        Endpoint::ScaleDomains => bulk::domains(request, backend).await,
+        Endpoint::TileManifest => bulk::manifest(request, param(params, "name"), backend).await,
+        Endpoint::Tile => {
+            bulk::tile(
+                request,
+                param(params, "name"),
+                param(params, "address"),
+                backend,
+            )
+            .await
+        }
+        Endpoint::Grids => grids::list(request, backend).await,
+        Endpoint::GridHeader => grids::header(request, param(params, "id"), backend).await,
+        Endpoint::GridSamples => {
+            grids::samples(
+                request,
+                param(params, "id"),
+                param(params, "field"),
+                backend,
+            )
+            .await
+        }
     };
     answered.unwrap_or_else(Problem::into_response)
 }

@@ -1,0 +1,12 @@
+key: 01a1a37b-e1cc-72fb-b455-e1df47bc8d23
+id: w3-close
+versions:
+  - key: 01a1a37b-e1cd-74aa-b3eb-bdaf66d7bc3b
+    at: 2026-11-03T22:16:07Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W3 close: review, gate, trace, merge"
+    goal: "W3's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: planned

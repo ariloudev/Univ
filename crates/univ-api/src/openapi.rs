@@ -26,7 +26,13 @@ use crate::problem::{Problem, ProblemDocument, ProblemType};
         crate::structures::list,
         crate::structures::get,
         crate::objects::find,
-        crate::objects::get
+        crate::objects::get,
+        crate::bulk::domains,
+        crate::bulk::manifest,
+        crate::bulk::tile,
+        crate::grids::list,
+        crate::grids::header,
+        crate::grids::samples
     ),
     components(schemas(ProblemDocument, ProblemType))
 )]

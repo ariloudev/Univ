@@ -256,3 +256,73 @@ fn an_object_is_read_by_id_by_name_and_by_designation_through_the_worker() {
     assert_eq!(missing.status(), StatusCode::NOT_FOUND);
     assert_eq!(json(missing)["looked_up"]["id"], 99_999);
 }
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn every_tile_of_every_scale_domain_matches_the_sha256_its_manifest_gives() {
+    use sha2::{Digest, Sha256};
+    let domains = json(get("/v1/scale-domains?release=2"));
+    let domains = domains["domains"].as_array().unwrap();
+    assert_ne!(domains.len(), 0);
+    let mut tiles = 0;
+    for domain in domains {
+        let name = domain["name"].as_str().unwrap();
+        let manifest = get(&format!("/v1/scale-domains/{name}/manifest?release=2"));
+        assert_eq!(manifest.status(), StatusCode::OK);
+        let manifest = json(manifest);
+        assert_eq!(manifest["frame"]["name"], "ICRS equatorial Cartesian");
+        for node in manifest["nodes"].as_array().unwrap() {
+            let address = node["address"].as_str().unwrap();
+            let tile = get(&format!(
+                "/v1/scale-domains/{name}/tiles/{address}?release=2"
+            ));
+            assert_eq!(tile.status(), StatusCode::OK, "{name}/{address}");
+            assert_eq!(
+                header(&tile, "cache-control"),
+                Some("public, max-age=31536000, immutable")
+            );
+            let bytes = tile.bytes().unwrap();
+            let sha256 = Sha256::digest(&bytes)
+                .iter()
+                .fold(String::new(), |mut hex, b| {
+                    use std::fmt::Write;
+                    let _ = write!(hex, "{b:02x}");
+                    hex
+                });
+            assert_eq!(sha256, node["sha256"].as_str().unwrap(), "{name}/{address}");
+            tiles += 1;
+        }
+    }
+    assert_ne!(tiles, 0);
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn a_tile_read_unpinned_lands_on_the_tile_of_the_latest_release() {
+    let domains = json(get("/v1/scale-domains"));
+    let name = domains["domains"][0]["name"].as_str().unwrap().to_owned();
+    let manifest = json(get(&format!("/v1/scale-domains/{name}/manifest")));
+    let address = manifest["nodes"][0]["address"].as_str().unwrap();
+    let tile = get(&format!("/v1/scale-domains/{name}/tiles/{address}"));
+    assert_eq!(tile.status(), StatusCode::OK);
+    assert!(
+        tile.url().as_str().ends_with("?release=2"),
+        "{}",
+        tile.url()
+    );
+    let missing = get(&format!("/v1/scale-domains/{name}/tiles/nowhere"));
+    assert_eq!(missing.status(), StatusCode::NOT_FOUND);
+    let unknown = json(get("/v1/scale-domains/nowhere/manifest"));
+    assert_ne!(unknown["scale_domains"].as_array().unwrap().len(), 0);
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn the_grids_are_listed_and_an_unknown_grid_answers_404() {
+    let listing = get("/v1/grids");
+    assert_eq!(listing.status(), StatusCode::OK);
+    assert!(json(listing)["grids"].is_array());
+    let missing = get("/v1/grids/nowhere");
+    assert_eq!(missing.status(), StatusCode::NOT_FOUND);
+    assert_eq!(json(missing)["id"], "nowhere");
+}

@@ -27,7 +27,9 @@ pub fn block_on<F: Future>(future: F) -> F::Output {
 /// The release database, with univ-model's schema, in memory.
 pub struct Sqlite {
     connection: rusqlite::Connection,
-    vocabularies: crate::Vocabularies,
+    kept: crate::Kept,
+    /// The releases bucket, by key.
+    pub bucket: std::cell::RefCell<std::collections::HashMap<String, Vec<u8>>>,
     /// How many statements were run, to show what the vocabulary keeping saves.
     pub statements: std::cell::Cell<usize>,
 }
@@ -41,7 +43,8 @@ impl Sqlite {
             .unwrap();
         Self {
             connection,
-            vocabularies: crate::Vocabularies::default(),
+            kept: crate::Kept::default(),
+            bucket: std::cell::RefCell::default(),
             statements: std::cell::Cell::new(0),
         }
     }
@@ -66,6 +69,22 @@ impl Sqlite {
 }
 
 impl Sqlite {
+    /// Puts `bytes` in the bucket at `key`.
+    pub fn put(&self, key: &str, bytes: impl Into<Vec<u8>>) -> &Self {
+        self.bucket
+            .borrow_mut()
+            .insert(key.to_owned(), bytes.into());
+        self
+    }
+
+    /// The bytes a response carries, an object of the bucket read as the runtime would.
+    pub fn bytes_of(&self, response: &Response) -> Vec<u8> {
+        match &response.body {
+            crate::Body::Object(key) => self.bucket.borrow()[key].clone(),
+            body => body.as_bytes().to_vec(),
+        }
+    }
+
     /// The answer to a GET of `path` with the raw query `query`, and the JSON it carries.
     pub fn get_json(&self, path: &str, query: &str) -> (Response, Value) {
         let response = self.get(path, query);
@@ -103,8 +122,12 @@ impl Backend for Sqlite {
         )
     }
 
-    fn vocabularies(&self) -> &crate::Vocabularies {
-        &self.vocabularies
+    fn blob(&self, key: &str) -> impl Future<Output = Result<Option<Vec<u8>>, BackendError>> {
+        std::future::ready(Ok(self.bucket.borrow().get(key).cloned()))
+    }
+
+    fn kept(&self) -> &crate::Kept {
+        &self.kept
     }
 }
 
@@ -264,3 +287,16 @@ INSERT INTO ids_replaced VALUES
 
 /// Release 2 of Univ Ingest's fixture, with every object and the vocabulary it is coded in.
 pub const FIXTURE_OBJECTS: &str = include_str!("testkit_objects.sql");
+
+/// Release 2's volume grid, with the scale domains of [`STRUCTURES`].
+pub const GRIDS: &str = r#"
+INSERT INTO grids VALUES (2, 'cf4-basins', 1, 'megaparsec_over_h', '[128,128,128]',
+  '[{"field":"basin_label","kind":"reconstructed","unit":"dimensionless"},{"field":"basin_label","kind":"reconstructed","unit":"dimensionless"}]',
+  'releases/2/grids/cf4-basins/header.json');
+"#;
+
+/// The cosmic web tile manifest of release 2: two nodes.
+pub const COSMIC_WEB_MANIFEST: &str = r#"{"format":"univ-tile-manifest","release":2,
+  "scale_domain":"cosmic_web","nodes":[
+  {"address":"r","level":0,"bytes":3,"sha256":"aaaa"},
+  {"address":"r07","level":1,"bytes":2,"sha256":"bbbb"}]}"#;
