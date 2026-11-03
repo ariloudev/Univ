@@ -1,0 +1,5 @@
+source: mcconnachie-2012
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=Name%2C%28m-M%29%2CE_%28m-M%29%2Ce_%28m-M%29%2Cu_%28m-M%29%2CD%2CE_D%2Ce_D%2CHRV%2Ce_HRV%2Cf_HRV%2CVmag&-out.add=_RAJ%2C_DEJ&Name=Andromeda
+retrieved: 2026-11-03T06:23:42Z
+sha256: caacca13e7a238ba87413874fc3926fee991a44d907492bd254ee7be42a02739
+note: the source's own query narrowed to the row of M31 (Andromeda), for the derived-position tests

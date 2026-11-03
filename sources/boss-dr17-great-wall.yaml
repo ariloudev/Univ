@@ -1,0 +1,72 @@
+id: boss-dr17-great-wall
+title: "BOSS Great Wall region, SDSS DR17 spectroscopic galaxies"
+provider: skyserver
+access:
+  method: skyserver_sql
+  query: >-
+    SELECT specObjID, ra, dec, z, zErr FROM SpecObj WHERE class = 'GALAXY' AND zWarning = 0
+    AND ra BETWEEN 150 AND 172 AND dec BETWEEN 40 AND 60 AND z BETWEEN 0.42 AND 0.52
+  chunks: 1
+  count: >-
+    SELECT COUNT_BIG(*) AS n FROM SpecObj WHERE class = 'GALAXY' AND zWarning = 0 AND ra BETWEEN
+    150 AND 172 AND dec BETWEEN 40 AND 60 AND z BETWEEN 0.42 AND 0.52
+cuts:
+  - "SpecObj (science-primary spectra), class = 'GALAXY' AND zWarning = 0."
+  - >-
+    Box RA 150-172 deg, Dec 40-60 deg, 0.42 <= z <= 0.52: the region RA 152-170, Dec 42-58,
+    z 0.43-0.51 plus a margin of 2 deg and 0.01 in z. The research gives no margin to add (that box
+    already holds the members plotted in Lietzen et al. 2016 Fig. 1, about RA 154-169 and Dec 45-57,
+    read off the figure, and the stated 0.45 < z < 0.5), so the default margin is used.
+  - >-
+    No CMASS restriction: the box also holds SDSS-I/II and eBOSS galaxies the paper did not use
+    (measured in the unpadded box: boss 7,519, eboss 231, sdss 553). The paper's sample is
+    survey = 'boss' AND (boss_target1 & 2) > 0 (GAL_CMASS, 6,051 in the unpadded box), applied
+    after the fetch if wanted.
+  - "The paper used DR12 reductions; DR17 BOSS spectra use run2d v5_13_2, so redshifts can differ slightly from the paper's."
+columns:
+  - { column: specObjID, field: identifier, unit: dimensionless }
+  - { column: ra, field: right_ascension, unit: degree }
+  - { column: dec, field: declination, unit: degree }
+  - { column: z, field: redshift, unit: dimensionless }
+  - { column: zErr, field: redshift_error, unit: dimensionless }
+# SDSS documents its positions as J2000 and calibrated against UCAC; ICRS is inferred, not stated.
+frame: icrs
+epoch: 2000.0
+citation: >-
+  Lietzen H., Tempel E., Liivamägi L.J., et al. 2016, "Discovery of a massive supercluster system at
+  z ~ 0.47", A&A 588, L4. 2016A&A...588L...4L, doi:10.1051/0004-6361/201628261, arXiv:1602.08498.
+  Data: Abdurro'uf et al. 2022, ApJS 259, 35 (2022ApJS..259...35A, doi:10.3847/1538-4365/ac4414);
+  Eisenstein et al. 2011, AJ 142, 72 (2011AJ....142...72E); Dawson et al. 2013, AJ 145, 10
+  (2013AJ....145...10D); Smee et al. 2013, AJ 146, 32 (2013AJ....146...32S). The SDSS and Lietzen
+  bibcodes were constructed from Crossref-verified journal, volume and page; ADS was not reachable.
+terms:
+  url: "https://www.sdss4.org/collaboration/"
+  quote: "All SDSS data released in our public data releases is considered in the public domain."
+  credit: |-
+    Cite Lietzen et al. 2016, A&A 588, L4, for the structure, and the data papers listed in the citation. SDSS-IV acknowledgement (https://www.sdss4.org/collaboration/citing-sdss/):
+    Funding for the Sloan Digital Sky Survey IV has been provided by the Alfred P. Sloan Foundation, the U.S. Department of Energy Office of Science, and the Participating Institutions. SDSS-IV acknowledges support and resources from the Center for High Performance Computing at the University of Utah. The SDSS website is www.sdss4.org. SDSS-IV is managed by the Astrophysical Research Consortium for the Participating Institutions of the SDSS Collaboration including the Brazilian Participation Group, the Carnegie Institution for Science, Carnegie Mellon University, Center for Astrophysics | Harvard \& Smithsonian, the Chilean Participation Group, the French Participation Group, Instituto de Astrof\'isica de Canarias, The Johns Hopkins University, Kavli Institute for the Physics and Mathematics of the Universe (IPMU) / University of Tokyo, the Korean Participation Group, Lawrence Berkeley National Laboratory, Leibniz Institut f\"ur Astrophysik Potsdam (AIP), Max-Planck-Institut f\"ur Astronomie (MPIA Heidelberg), Max-Planck-Institut f\"ur Astrophysik (MPA Garching), Max-Planck-Institut f\"ur Extraterrestrische Physik (MPE), National Astronomical Observatories of China, New Mexico State University, New York University, University of Notre Dame, Observat\'ario Nacional / MCTI, The Ohio State University, Pennsylvania State University, Shanghai Astronomical Observatory, United Kingdom Participation Group, Universidad Nacional Aut\'onoma de M\'exico, University of Arizona, University of Colorado Boulder, University of Oxford, University of Portsmouth, University of Utah, University of Virginia, University of Washington, University of Wisconsin, Vanderbilt University, and Yale University.
+    SDSS-III acknowledgement, for the BOSS rows (https://www.sdss3.org/collaboration/boiler-plate.php):
+    Funding for SDSS-III has been provided by the Alfred P. Sloan Foundation, the Participating Institutions, the National Science Foundation, and the U.S. Department of Energy Office of Science. The SDSS-III web site is http://www.sdss3.org/. SDSS-III is managed by the Astrophysical Research Consortium for the Participating Institutions of the SDSS-III Collaboration including the University of Arizona, the Brazilian Participation Group, Brookhaven National Laboratory, Carnegie Mellon University, University of Florida, the French Participation Group, the German Participation Group, Harvard University, the Instituto de Astrofisica de Canarias, the Michigan State/Notre Dame/JINA Participation Group, Johns Hopkins University, Lawrence Berkeley National Laboratory, Max Planck Institute for Astrophysics, Max Planck Institute for Extraterrestrial Physics, New Mexico State University, New York University, Ohio State University, Pennsylvania State University, University of Portsmouth, Princeton University, the Spanish Participation Group, University of Tokyo, University of Utah, Vanderbilt University, University of Virginia, University of Washington, and Yale University.
+    SDSS-I/II acknowledgement, for the Legacy rows in the box (https://classic.sdss.org/collaboration/credits.php):
+    Funding for the SDSS and SDSS-II has been provided by the Alfred P. Sloan Foundation, the Participating Institutions, the National Science Foundation, the U.S. Department of Energy, the National Aeronautics and Space Administration, the Japanese Monbukagakusho, the Max Planck Society, and the Higher Education Funding Council for England. The SDSS Web Site is http://www.sdss.org/. The SDSS is managed by the Astrophysical Research Consortium for the Participating Institutions. The Participating Institutions are the American Museum of Natural History, Astrophysical Institute Potsdam, University of Basel, University of Cambridge, Case Western Reserve University, University of Chicago, Drexel University, Fermilab, the Institute for Advanced Study, the Japan Participation Group, Johns Hopkins University, the Joint Institute for Nuclear Astrophysics, the Kavli Institute for Particle Astrophysics and Cosmology, the Korean Scientist Group, the Chinese Academy of Sciences (LAMOST), Los Alamos National Laboratory, the Max-Planck-Institute for Astronomy (MPIA), the Max-Planck-Institute for Astrophysics (MPA), New Mexico State University, Ohio State University, University of Pittsburgh, University of Portsmouth, Princeton University, the United States Naval Observatory, and the University of Washington.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    SDSS states that all data in its public releases is considered in the public domain, so no
+    licence condition limits copying or redistribution; credit goes to Lietzen et al. 2016 for the
+    structure and to the SDSS acknowledgements and papers for the data. The older SDSS-I/II credits
+    page says commercial use needs approval by the Astrophysical Research Consortium, which matters
+    only for commercial use. Provisional: judged again before any public deployment.
+scale_domain: cosmic_web
+mirrors:
+  - "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch"
+normalization:
+  redshifts:
+    - column: z
+      error: zErr
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        SDSS DR17 spectroscopy basics (https://www.sdss.org/dr17/spectro/spectro_basics/, read
+        2026-11-03): SDSS spectra are on "heliocentric vacuum wavelengths", so z is heliocentric.

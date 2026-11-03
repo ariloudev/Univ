@@ -1,0 +1,20 @@
+fixtures: [twompp_density-crop.npy, twompp_velocity-crop.npy]
+source: twompp-reconstruction
+source_files:
+  - file: twompp_density.npy
+    url: https://cosmicflows.iap.fr/assets/data/twompp_density.npy
+    sha256: 5e0b8473628c8ae94540cb6cf36df22f3aa85b262959effaf2c6d16f72a0fdb6
+    retrieved: 2026-11-03T04:32:10Z
+  - file: twompp_velocity.npy
+    url: https://cosmicflows.iap.fr/assets/data/twompp_velocity.npy
+    sha256: 7f041fb8004d6da5bd21292191288ec9ce2a5cce3f5b87ed72e8f7fc719be050
+    retrieved: 2026-11-03T04:32:30Z
+crop:
+  # Cell indices along Galactic X, Y, Z of the published 257^3 grid; stop is exclusive.
+  start: [124, 124, 124]
+  stop: [133, 133, 133]
+  why: "Nine cells on a side around the Local Group, at the centre of cell 128."
+how: >-
+  numpy 2.5.3 under python3 -I: np.load(source, mmap_mode="r", allow_pickle=False); the density
+  cut a[124:133, 124:133, 124:133], the velocity a[:, 124:133, 124:133, 124:133]; each made
+  contiguous and written with np.save (little-endian float64, C order). Values are unchanged.

@@ -1,6 +1,24 @@
-[package]
-name = "univ-server"
+[workspace]
+resolver = "3"
+members = ["crates/univ-model", "crates/univ-ingest", "xtask"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.99"
+publish = false
 
-[dependencies]
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+
+# SQLite is built from source; unoptimised it makes `cargo xtask science` several times slower.
+[profile.dev.package.libsqlite3-sys]
+opt-level = 3

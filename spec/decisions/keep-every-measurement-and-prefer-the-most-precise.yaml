@@ -3,9 +3,10 @@ slug: keep-every-measurement-and-prefer-the-most-precise
 title: "Keep every measurement and prefer the most precise distance"
 context: "Cross-matched catalogues disagree: one galaxy can have several redshifts and a redshift-independent distance, and its position depends on which is used."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 01a19f25-5955-701e-b3cf-ddcae9d1e6d4
   outcome: "Each object keeps every measurement, and the one with the smallest fractional distance uncertainty, counting peculiar velocity for redshifts, places it."
+  successor: 01a1a149-623d-7310-8064-e6497ba7827e
 drivers:
   - key: 01a19f25-5955-701e-b3cf-ddc882d01310
     kind: local

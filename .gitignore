@@ -1,1 +1,6 @@
 /target
+/.cache
+/.claude/worktrees/
+/node_modules/
+/.wrangler/
+.DS_Store

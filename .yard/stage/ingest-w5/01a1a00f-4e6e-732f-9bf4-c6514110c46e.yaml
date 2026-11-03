@@ -1,0 +1,142 @@
+key: 01a1a00f-4e6e-732f-9bf4-c6514110c46e
+id: w5
+versions:
+  - key: 01a1a00f-4e6e-732f-9bf4-c657e55130cb
+    at: 2026-11-03T06:18:40Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W5 Identity and positions"
+    goal: "Catalogue entries resolve into objects through published cross-identifications and rule-driven matching, each object has a preferred measurement, stable ids carry across releases, and every placed object has ICRS, galactic and supergalactic positions under the release cosmology"
+    status: active
+  - key: 01a1a03b-d45f-7662-af36-da14acbe6828
+    at: 2026-11-03T07:07:17Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W5 Identity and positions"
+    goal: "Catalogue entries resolve into objects through published cross-identifications and rule-driven matching, each object has a preferred measurement, stable ids carry across releases, and every placed object has ICRS, galactic and supergalactic positions under the release cosmology"
+    status: done
+blocks:
+  - key: 01a1a00f-4e6e-732f-9bf4-c65373ea6e2f
+    id: w5-t1-positions
+    kind: task
+    versions:
+      - key: 01a1a00f-4e6e-732f-9bf4-c659cc1571cb
+        at: 2026-11-03T06:18:40Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Derived positions"
+        detail: "Release cosmology (Planck 2018 by default), a tabulated D(z), redshift distances as comoving distances of the CMB-frame z, luminosity to comoving, H0 rescaling with sizes scaled alike, ICRS, galactic and supergalactic Cartesian positions with the transformation chain and univ-model version recorded. Also FK4 B1950 and the unstated-equinox frame, and one typed `AssumedCosmology`. Done when tests cover AC-28 to AC-35 and M31 is placed at its McConnachie distance in the right direction."
+        state: active
+      - key: 01a1a026-6bcb-7311-b1d0-751e2b3b8d36
+        at: 2026-11-03T06:43:54Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Derived positions"
+        detail: |-
+          `univ-model` `derive`:
+          - The release cosmology is Planck 2018 unless named, with D_C(z) tabulated at 600 points; it matches astropy to 1e-6 out to z = 10.
+          - Redshift distances are D_C of the CMB-frame z; luminosity distances become D_L/(1+z).
+          - H0 is rescaled through one `AssumedCosmology`, and sizes take the same factor.
+          - Positions are ICRS, galactic and supergalactic Cartesian, each with its typed chain, cosmology and univ-model version.
+          - FK4 B1950 conversion matches ERFA's fk45z to 1e-9°. An unstated equinox is placed as J2000 ± 0.6986°.
+          - M31 sits at 0.783 Mpc and l = 121.17°, b = −21.57°.
+
+          AC-28 to AC-35 are linked; 96 of 293 nodes.
+        state: done
+  - key: 01a1a00f-4e6e-732f-9bf4-c6548773615d
+    id: w5-t2-matching
+    kind: task
+    versions:
+      - key: 01a1a00f-4e6e-732f-9bf4-c65a31d26931
+        at: 2026-11-03T06:18:40Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cross-matching and the preferred measurement"
+        detail: "YAML matching rules with per-pair tolerances and a stated confidence rule. Published cross-identifications (Gaia DR3–Hipparcos-2, PGC) come first, then positional and redshift matching. More than one candidate gives candidate links and no merge. Designations and names keep their source. The ranking rule picks the preferred distance (300 km/s term, method rank for ties) and the position (Gaia over Hipparcos over survey). Done when synthetic pairs, ambiguous triples and far misses, and the TF-versus-redshift crossover at 1,000 and 15,000 km/s, test AC-60 to AC-74."
+        state: active
+      - key: 01a1a021-cf12-7436-b402-4ce5d2af69e1
+        at: 2026-11-03T06:38:52Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cross-matching and the preferred measurement"
+        detail: "`rules/matching.yaml`: published cross-identifications (Gaia source_id, HIP, 2MASX, SDSS specObjID, PGC), then per-pair angular and cz or distance tolerances. Angular tolerances cite published accuracies; the others are marked as pipeline choices. Confidence is c = (1−(s/θ)²)·L. Ambiguous candidates become links with their confidence and are never merged. The sky index is a dec-band/RA-cell grid that matches 2 M entries in 2.4 s. `rules/ranking.yaml`: the smallest fractional uncertainty wins, a redshift distance's uncertainty includes 300 km/s, and ties go by method rank. Positions rank Gaia, then Hipparcos, then survey. A measurement with no published uncertainty ranks last; to be decided with real numbers in W8. AC-60 to AC-74 linked; 90 of 293 nodes."
+        state: done
+  - key: 01a1a00f-4e6e-732f-9bf4-c6553126656e
+    id: w5-t3-ids
+    kind: task
+    versions:
+      - key: 01a1a00f-4e6e-732f-9bf4-c65b3fd3ce2f
+        at: 2026-11-03T06:18:40Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Stable ids and the id ledger"
+        detail: "Id assignment from the previous release's entry-to-object map: kept, merged (the older id wins), split (new ids), lost entries and new objects. A YAML id ledger that never reuses an id. Done when a release-over-release suite tests AC-75 to AC-81."
+        state: active
+      - key: 01a1a017-09db-7772-9009-bfe4480681cf
+        at: 2026-11-03T06:27:06Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Stable ids and the id ledger"
+        detail: |-
+          `ids::assign` works from the previous entry-to-id map and the ledger:
+          - An object that takes one earlier object whole keeps its id.
+          - Merges keep the lower (older) id.
+          - Splits and only-new objects get new ids above the high-water mark.
+          - An object with no entries left is retired, and its id is never reused.
+
+          The YAML ledger (version 1) records each id that left as merged_into, split_into or retired, with the ids that replaced it. Ids come out the same in any input order. A property test runs 200 random sequences of 10 releases. AC-75 to AC-81 are linked; 75 of 293 nodes.
+        state: done
+  - key: 01a1a00f-4e6e-732f-9bf4-c6568fc85949
+    id: w5-t4-integrate
+    kind: task
+    versions:
+      - key: 01a1a00f-4e6e-732f-9bf4-c65c1a767fcb
+        at: 2026-11-03T06:18:40Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Integrate into the run"
+        detail: "A cross-match stage after normalize that resolves objects, assigns ids, places them and resolves structure members. It shows its events and summary counts. Done when `univ-ingest` runs the stage on fixtures offline and the gate passes with AC-28 to AC-35 and AC-60 to AC-81 linked."
+        state: open
+      - key: 01a1a026-6bcb-7311-b1d0-751f53592078
+        at: 2026-11-03T06:43:54Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Integrate into the run"
+        detail: "A cross-match stage after normalize that resolves objects, assigns ids, places them and resolves structure members. It shows its events and summary counts. Done when `univ-ingest` runs the stage on fixtures offline and the gate passes with AC-28 to AC-35 and AC-60 to AC-81 linked."
+        state: active
+      - key: 01a1a03b-d45f-7662-af36-da13e69663f6
+        at: 2026-11-03T07:07:17Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Integrate into the run"
+        detail: |-
+          `univ-ingest match` runs fetch, normalize and then cross-match: matching, ranking (with the tabulated D(z)), ids against a state dir, positions, then structure members.
+          - The state dir holds `ledger.yaml` and `entry-ids.yaml`. A match writes only `pending/`; the release build promotes it.
+          - Each structure member resolves to one object by name, within 60″.
+          - Void outlines are refused when an eRASS1 cluster or a supercluster lies inside.
+          - One `RunSink` serves the terminal and the plain log.
+
+          On the fixtures: 19 entries, 18 objects, 15 placed.
+        state: done

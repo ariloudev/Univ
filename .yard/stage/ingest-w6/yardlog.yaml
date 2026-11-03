@@ -1,0 +1,59 @@
+format: yardlog/1
+key: 01a1a05d-c8c7-7234-baa6-031166a6de2c
+branch: "stage/ingest-w6"
+base: "product/ingest"
+title: "stage/ingest-w6"
+revision: 7
+opened:
+  at: 2026-11-03T07:44:23Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+stages:
+  - key: 01a1a05d-c8c7-7234-baa6-03127b7dbd86
+    id: w6
+  - key: 01a1a05d-c8c7-7234-baa6-0313b3393145
+    id: w6-review
+closed:
+  at: 2026-11-03T08:16:30Z
+  revision: 7
+  by:
+    host: claude-code
+    session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+acts:
+  - at: 2026-11-03T07:44:23Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T08:00:06Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T08:00:08Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T08:00:10Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T08:00:13Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T08:16:30Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T08:16:30Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"

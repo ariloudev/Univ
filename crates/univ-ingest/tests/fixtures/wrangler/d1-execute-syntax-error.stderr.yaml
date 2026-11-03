@@ -1,0 +1,7 @@
+source: wrangler 4.156.2 (node_modules)
+command: >-
+  FORCE_COLOR=1 wrangler d1 execute univ --local --persist-to <scratch>/state
+  --config <scratch>/wrangler.toml --command "SELEC 1"
+retrieved: 2026-11-03T09:15:48Z
+sha256: 0acf4a2c5b94459937dd7c62d8e8e12299390c35ddefb79bdca7dfd75ea77d52
+note: its standard error as written, ANSI colour escapes included; it exited with status 1

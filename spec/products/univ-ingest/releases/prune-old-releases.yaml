@@ -18,6 +18,10 @@ requirements:
         name: "The record of object ids merged, split or retired is kept, so every id still resolves."
       - key: 01a19f23-636f-72bd-b194-153a6cd80c2c
         name: "The pruned release stays in the list of releases with its pruning time."
+      - key: 01a1a25a-c0ef-776c-a6c7-886eb1e11d8f
+        name: "The release's local build in the build output is deleted last, once its R2 files and D1 rows are deleted."
+      - key: 01a1a25a-c0ef-776c-a6c7-886f2de1845d
+        name: "A release whose local build is already gone is pruned all the same."
   - key: 01a19f23-636f-72bd-b194-153bcc1d7e13
     statement:
       form: unwanted

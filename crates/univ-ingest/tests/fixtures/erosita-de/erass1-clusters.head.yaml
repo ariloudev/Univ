@@ -1,0 +1,5 @@
+source: erass1-clusters
+url: https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/BulbulE_DR1/erass1cl_primary_v3.2.fits.tgz
+retrieved: 2026-11-03T03:55:38Z
+sha256: c852e34fd4686d17ad1b6df56dfa1d3af1e183159f4da247f3d90a4691284b9e
+note: the first 4096 bytes of the first file

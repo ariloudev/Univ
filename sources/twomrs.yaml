@@ -1,0 +1,90 @@
+id: twomrs
+title: "2MASS Redshift Survey (2MRS) catalogue, ApJS journal table"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/ApJS/199/26/table3"
+  constraints: []
+  rows: 44599
+cuts:
+  - "No server-side cut: every row of table3 (the 2MRS catalog), 44,599 by the ReadMe and as served."
+  - "This is the VizieR copy of the journal table, not the team's v2.4 files from tdc-www.cfa.harvard.edu."
+  - "cz and e_cz are nullable; a blank cz is a galaxy without a redshift, kept for its position."
+  - "cz is corrected to the solar system barycentre (ReadMe)."
+  - >-
+    r_cz is the per-entry redshift reference (see table4) that the team's terms ask users to cite.
+    The model has no reference field, so it is taken under quality.
+  - >-
+    Riso, the "Log of K=20 mag/sq arcsec elliptical isophote semimajor axis" in [arcsec] (ReadMe
+    table3.dat), is taken under quality, as the model has no field for a size: the extent rule
+    of the matching rules reads it as published.
+columns:
+  - { column: ID, field: identifier, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: cz, field: velocity, unit: kilometre_per_second }
+  - { column: e_cz, field: velocity_error, unit: kilometre_per_second }
+  - { column: Kcmag, field: magnitude, unit: magnitude }
+  - { column: r_cz, field: quality, unit: dimensionless }
+  - { column: Riso, field: quality, unit: dimensionless }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Huchra J.P., Macri L.M., Masters K.L., Jarrett T.H., Berlind P., Calkins M., Crook A.C., Cutri R.,
+  Erdogdu P., Falco E., et al. 2012, "The 2MASS Redshift Survey - Description and data release",
+  ApJS 199, 26. 2012ApJS..199...26H, doi:10.1088/0067-0049/199/2/26. VizieR catalogue
+  J/ApJS/199/26, doi:10.26093/cds/vizier.21990026.
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Huchra et al. 2012, ApJS 199, 26, and each entry's redshift by its r_cz
+    bibliographic code, as the team's README terms (1) and (2) ask.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    The team README (http://tdc-www.cfa.harvard.edu/2mrs/2mrs_readme.html) asks "(3) Please do not
+    redistribute any of these files. This will help us ensure that all users receive the most
+    up-to-date version.", which covers the team's own files and gives version control as its reason,
+    so this source reads the VizieR copy of the ApJS journal table (from the electronic version of
+    the journal, with no catalogue-specific licence) and never the team's files. CDS allows use in a
+    scientific context with citation of authors and publisher, and the per-entry r_cz citations
+    satisfy the team's terms (1)-(2); the AAS copyright policy was not checked. Provisional: judged
+    again before any public deployment.
+scale_domain: cosmic_web
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      e_cz = 0 does not mean zero uncertainty: 788 rows give e_cz = 0, almost all with literature
+      redshifts (260 from 2001ApJ...560..566K, 94 from 2005ApJS..160..149S, 28 from
+      1999PASP..111..438F, 25 from RC3, and others), whose sources gave no error.
+    change: "e_cz = 0 is read as no uncertainty reported, never as a zero uncertainty."
+    evidence: >-
+      The query J/ApJS/199/26/table3 with e_cz=0 on vizier.idia.ac.za (2026-11-03) returned 788 rows
+      spread over many r_cz references; the ReadMe describes e_cz only as "? Uncertainty in cz",
+      and a measured redshift never has an uncertainty of exactly zero.
+    action: { kind: zero_error_is_none_reported, columns: [e_cz] }
+normalization:
+  redshifts:
+    - column: cz
+      error: e_cz
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        J/ApJS/199/26 ReadMe, table3 (read from http://vizier.nao.ac.jp/ftp/cats/J/ApJS/199/26/ReadMe,
+        2026-11-03): cz is the "Redshift, corrected to solar system barycenter reference frame".
+        The barycentre moves against the Sun's centre by under 0.02 km/s, far below e_cz, so it is
+        read as heliocentric.

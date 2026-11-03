@@ -1,0 +1,101 @@
+# The richest concentration of clusters in the nearby universe, behind the Hydra-Centaurus region.
+name: Shapley Supercluster
+alternative_names: ["SSC", "Shapley Concentration"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: proust-2006
+    reference: "Proust, Quintana, Carrasco, Reisenegger, Slezak, Muriel et al. 2006, A&A 447, 133"
+    title: "Structure and dynamics of the Shapley Supercluster"
+    doi: 10.1051/0004-6361:20052838
+    arxiv: "astro-ph/0509903"
+    read: "arXiv source (LaTeX) of astro-ph/0509903"
+position:
+  frame: equatorial_equinox_unstated
+  lon:
+    value: 201.25
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "R.A. = 13h25m"
+    cite: &centre
+      paper: proust-2006
+      sentence: "The Shapley Supercluster (SSC) is a remarkably rich concentration of galaxies centred around R.A. = 13h25m, Dec = -30°, which has been investigated by numerous authors since its discovery in 1930 (see Quintana et al. 1995, 2000)."
+  lat:
+    value: -30
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *centre
+  velocity:
+    value: 14500
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &plane
+      paper: proust-2006
+      sentence: "Our data reveal that the main plane of the SSC (v ≈ 14500 km s-1) extends further than previous estimates, filling the whole extent of our survey region of 12 degrees by 30 degrees on the sky (30 × 75 h^-1 Mpc)."
+    note: "The velocity of the main plane."
+values:
+  redshift_low:
+    value: 0.04
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &range
+      paper: proust-2006
+      sentence: "It consists of many clusters and groups of galaxies in the redshift range 0.04 < z < 0.055."
+  redshift_high:
+    value: 0.055
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *range
+  main_plane_extent_short:
+    value: 30
+    unit: megaparsec_over_h
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: *plane
+  main_plane_extent_long:
+    value: 75
+    unit: megaparsec_over_h
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: *plane
+  main_plane_extent_short_angle:
+    value: 12
+    unit: degree
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: *plane
+  main_plane_extent_long_angle:
+    value: 30
+    unit: degree
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: *plane
+  connecting_structure_velocity:
+    value: 12000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: proust-2006
+      sentence: "There is also a connecting structure associated with the slightly nearer Abell 3571 cluster complex (v ≈ 12000 km s-1)."
+  third_sheet_velocity:
+    value: 15000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: proust-2006
+      sentence: "These galaxies seem to link two previously identified sheets of galaxies and establish a connection with a third one at v̄ = 15000 km s-1 near R.A. = 13h."
+disputes: []
+notes: >-
+  The main plane fills the whole survey region, so its extent is a lower limit; the orientation of
+  the 12° by 30° region is not stated in these sentences. The paper does not state the equinox of
+  the centre (its ESO/UKST survey fields are named on the same grid of 13h25m, -30°). A connecting
+  structure near the Abell 3571 complex (v ≈ 12000 km/s) and a third sheet at 15000 km/s near
+  R.A. 13h are also reported.

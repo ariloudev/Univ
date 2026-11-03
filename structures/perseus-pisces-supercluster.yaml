@@ -1,0 +1,101 @@
+# The ridge of the Perseus-Pisces supercluster in the Arecibo 21 cm and optical redshift surveys.
+name: Perseus-Pisces Supercluster
+alternative_names: ["Pisces-Perseus Supercluster", "Perseus-Pisces filament"]
+kind: filament
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: haynes-1986
+    reference: "Haynes & Giovanelli 1986, ApJ 306, L55"
+    title: "The connection between Pisces-Perseus and the Local Supercluster"
+    doi: 10.1086/184705
+    bibcode: 1986ApJ...306L..55H
+    read: "ADS scan of the full letter (pages L55 and L56 read for these values)"
+# The main ridge north of +30°, from 23h30m to the Perseus cluster at 3h15m, within the surveyed
+# band up to +50°, at the velocities that dominate it.
+geometry:
+  kind: sky_region
+  sky_region:
+    frame: equatorial_equinox_unstated
+    lon:
+      - value: 352.5
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "23h30m"
+        cite: &ridge
+          paper: haynes-1986
+          sentence: "The main ridge of the Pisces-Perseus supercluster, north of +30° declination extends some 45° over the right ascension range from 23h30m to Perseus where it disappears into the zone of avoidance. At a distance of 50 h^-1 Mpc, the structure then is at least 41 h^-1 Mpc long. At the same time, its width, measured as the Gaussian full width at half-maximum in the surface density enhancement, is only about 5° or 4.3 h^-1 Mpc, and its depth, derived from an upper limit to the dispersion of 500 km s^-1 outside of the dynamical units, is less than 10 h^-1 Mpc."
+          page: 56
+      - value: 48.75
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        as_published: "R.A. = 3h15m"
+        cite: &perseus
+          paper: haynes-1986
+          sentence: "The Perseus cluster itself at R.A. = 3h15m, decl. = +41°25′ marks the upper left vertex of the evenly sampled region."
+          page: 56
+    lat:
+      - value: 30
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: *ridge
+      - value: 50
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite:
+          paper: haynes-1986
+          sentence: "Over 2700 galaxies in the region between R.A. 22h and 4h and from the equator to decl. +50° now have measured redshifts."
+          page: 55
+    near:
+      velocity:
+        value: 4000
+        unit: kilometre_per_second
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &velocities
+          paper: haynes-1986
+          sentence: "The canonical Pisces-Perseus supercluster ridge, lying at a redshift of between 4000 and 6500 km s^-1, dominates the region north of decl. +30°."
+          page: 55
+    far:
+      velocity:
+        value: 6500
+        unit: kilometre_per_second
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *velocities
+values:
+  distance:
+    value: 50
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *ridge
+  length:
+    value: 41
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    cite: *ridge
+  width:
+    value: 4.3
+    unit: megaparsec_over_h
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *ridge
+    note: "Gaussian full width at half maximum of the surface-density enhancement, about 5° on the sky."
+  depth:
+    value: 10
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: upper_limit }
+    cite: *ridge
+disputes: []
+notes: >-
+  The newsroom atlas had only the abstract, whose online copy misprints the upper velocity by a
+  factor of ten; the scan of the letter reads 6500 km/s, and its second page gives the ridge's length, width and depth used
+  here. The letter does not state the equinox of its coordinates. Velocities are corrected for the
+  motion with respect to the Local Group (V0).

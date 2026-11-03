@@ -1,0 +1,132 @@
+key: 01a19fad-7f58-7247-ac4b-33911527a39d
+id: w4
+versions:
+  - key: 01a19fad-7f58-7247-ac4b-3398f5ebaea8
+    at: 2026-11-03T04:31:50Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W4 Normalization"
+    goal: "Every tabular source, the researched structures and the three volume grids normalize into univ-model values with native units, typed uncertainties, kinds, CMB-frame redshifts, counted refusals and counted fixes"
+    status: active
+  - key: 01a19fe2-a260-73e4-bc40-b4dbd9163021
+    at: 2026-11-03T05:29:52Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W4 Normalization"
+    goal: "Every tabular source, the researched structures and the three volume grids normalize into univ-model values with native units, typed uncertainties, kinds, CMB-frame redshifts, counted refusals and counted fixes"
+    status: done
+blocks:
+  - key: 01a19fad-7f58-7247-ac4b-3393b868b140
+    id: w4-t1-entries
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339a9e7899dc
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Catalogue entries and the normalizer"
+        detail: "A univ-model `CatalogueEntry` (ICRS position and epoch, native and normalized values, kind of value, typed uncertainty, distances with kind, method, H0 and modulus, heliocentric and CMB-frame redshift with its derivation). A normalizer drives each tabular source's column map through a streaming reader shared with the download check, with FK5 to ICRS, one `CmbCorrection` per run, refusals counted per reason and machine-applied fixes counted, both kept in provenance. Done when per-source fixture rows give the expected entries for all 15 tabular sources and tests cover AC-36 to AC-53."
+        state: active
+      - key: 01a19fe2-7553-74c1-8064-0a368edab1a7
+        at: 2026-11-03T05:29:40Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Catalogue entries and the normalizer"
+        detail: "Model: `univ-model` `entry` (`CatalogueEntry`, a `Distance` with kind, method, H0 and the modulus kept, `CredibleInterval`). Definitions gain a `normalization` block with quoted bases, and fixes applied by machine (`read_as`, `zero_error_is_none_reported`, `zero_error_leaves_out`). One streaming `TableReader` serves both the download check and normalization. All 14 tabular sources, eRASS1 included, normalize their fixtures, with two rows per source checked by hand. Refusals are counted per reason and fixes per entry changed, in provenance. `univ-ingest normalize`. AC-36 to AC-53 linked."
+        state: done
+  - key: 01a19fad-7f58-7247-ac4b-3394a73e711d
+    id: w4-t2-structures
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339ba0b3ac26
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Structure files"
+        detail: "The YAML structure format: every number cites its paper and its sentence, table or figure; digitised values are estimated and cite their figure; geometry is a univ-model kind in a named frame. Port the newsroom's structures, re-checking each citation. Done when the repository's structures all load and tests cover AC-54 to AC-57 (an uncited number is refused, naming the file, field and number)."
+        state: open
+      - key: 01a19fe2-7eb8-70c9-858d-04daf471bc70
+        at: 2026-11-03T05:29:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Structure files"
+        detail: "26 structures in `structures/*.yaml`. Every number is cited (paper with DOI or bibcode, plus a quoted sentence, a table cell or a figure), and digitised values are estimated. Every value was re-checked against the paper. Fixed: the Dipole Repeller's uncertainty, Perseus-Pisces's 6500 km/s, and an unsupported Big Ring dispute. Hercules-Corona Borealis is unplaced, with the reason. AC-54 to AC-57 linked."
+        state: done
+  - key: 01a19fad-7f58-7247-ac4b-3395ec4947ce
+    id: w4-t3-grids
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339c702d9b8c
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Volume grids"
+        detail: "Readers for the CF4++ NPZ, the CF4 basins FITS (axis order explicit) and the 2M++ reconstruction, with small cropped real-data fixtures. Done when the axis order of both CF4 grids is checked against the position of the Laniakea attractor, and the grids load from the fetched files."
+        state: open
+      - key: 01a19fe2-8a40-73c3-a7c9-3560c3ab1e4b
+        at: 2026-11-03T05:29:46Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Volume grids"
+        detail: "NPY/NPZ and FITS image readers sharing one FITS header module, and a univ-model `grid`. Grids: CF4++ 128³ SG [X][Y][Z] at 7.8125 h⁻¹ Mpc; CF4 basins 128³ read [SGZ][SGY][SGX], voxel i at (i−64)·7.8125; 2M++ 257³ galactic at 1.5625 h⁻¹ Mpc. The axis order passes at the Laniakea attractor and fails under every other permutation. All nine attractors land in their basins, and Laniakea's volume is 1.945e6 (h⁻¹ Mpc)³ against 1.9e6 published."
+        state: done
+  - key: 01a19fad-7f58-7247-ac4b-339618787bcb
+    id: w4-t4-outlines
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339d25bfb478
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Grid outlines and their test"
+        detail: "An outline from a volume grid records the grid, threshold and test; the test compares it with the galaxy catalogues covering it; a failed outline falls back to a point at the published position with the reason. Done when tests cover AC-58 and AC-59."
+        state: open
+      - key: 01a19fe2-929a-71c1-8a95-18cc2a6a0798
+        at: 2026-11-03T05:29:48Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Grid outlines and their test"
+        detail: "A face-connected region grown from the seed cell becomes a `GridRegion`, admitted only if every covering catalogue finds it under the rule; otherwise the structure is a point, with the reason. The threshold is cited or marked `chosen` with a why. The real Local Void is a point: δ = −0.16 at its published position. Also the eRASS1 fix: Z_LAMBDA is dropped on lit_z rows (Kluge et al. 2024 App. A), 59 entries. AC-58 and AC-59 linked."
+        state: done
+  - key: 01a19fad-7f58-7247-ac4b-339719556276
+    id: w4-t5-gate
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339e2e796f9f
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "Done when `cargo xtask check` passes and AC-36 to AC-59 are linked and accepted, or marked unverified with the wave that verifies them."
+        state: open
+      - key: 01a19fe2-a260-73e4-bc40-b4da8ead0451
+        at: 2026-11-03T05:29:52Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "`cargo xtask check` passes (10 gates). AC-36 to AC-59 are linked and accepted: 68 of 293 nodes."
+        state: done

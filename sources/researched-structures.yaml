@@ -1,0 +1,28 @@
+id: researched-structures
+title: "Researched structures"
+provider: literature
+access:
+  method: repository
+  path: structures/
+cuts:
+  - "Every structure file under structures/ in this repository; nothing is fetched."
+  - "Each structure's values are read from its papers and keep their kind (measured, estimated or reconstructed), uncertainties and frames as the papers give them."
+columns: []
+frame: supergalactic
+epoch: 2000.0
+citation: >-
+  None for the source as a whole: each structure file gives the full citation, with bibcode, of the
+  papers its values come from, and those papers are cited wherever the structure is shown.
+terms:
+  url: "structures/"
+  quote: "No provider terms: the values are read from published papers, and each structure file cites its papers."
+  credit: "Cite the papers each structure file lists."
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    Nothing is fetched from a provider: the structure files hold values stated in published papers,
+    each with its citation, which is ordinary scholarly use. Provisional: judged again before any
+    public deployment.
+scale_domain: cosmic_web
+mirrors: []

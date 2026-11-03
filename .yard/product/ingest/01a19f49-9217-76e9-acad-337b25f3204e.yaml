@@ -1,0 +1,41 @@
+key: 01a19f49-9217-76e9-acad-337b25f3204e
+id: wave-8
+versions:
+  - key: 01a19f49-9217-76e9-acad-3387b78b1e72
+    at: 2026-11-03T02:42:41Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W8 First real release"
+    goal: "Release 1 is built from the real sources, published locally and checked against the science (stage/ingest-w8)"
+    status: planned
+  - key: 01a1a0d1-71e8-75ea-8392-336e8a6cb3f7
+    at: 2026-11-03T09:50:43Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W8 First real release"
+    goal: "All 18 sources fetched for real, release 1 built and published to local D1 and R2, and its science checked against published values (stage/ingest-w8)"
+    status: active
+blocks:
+  - key: 01a1a0d1-71e8-75ea-8392-336bf985c92c
+    id: wave-8-defaults
+    kind: note
+    versions:
+      - key: 01a1a0d1-71e8-75ea-8392-336fba11ad3b
+        at: 2026-11-03T09:50:43Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Release 1 runs on the recommended defaults"
+        markdown: |-
+          The three questions above are still open. Release 1 is built on the recommended answers:
+          - **Gaia cut:** G < 10.
+          - **Licences:** credit now, re-judged later.
+          - **SDSS:** all spectra.
+
+          If you choose otherwise, the affected sources are fetched again and release 2 is built. Release numbers are cheap and ids stay stable.
+        tone: warning

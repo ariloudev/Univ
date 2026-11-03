@@ -1,0 +1,225 @@
+key: 01a19f49-ed3c-72c2-a26c-3ec608ffaad9
+id: w0
+versions:
+  - key: 01a19f49-ed3c-72c2-a26c-3ecee940cd0a
+    at: 2026-11-03T02:43:04Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W0 Workspace and gate"
+    goal: "The workspace builds, and cargo xtask check runs every gate green on empty crates"
+    status: active
+  - key: 01a19f4c-572e-7122-82c2-57f6d0f91337
+    at: 2026-11-03T02:45:42Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W0 Workspace and gate"
+    goal: "The workspace builds, and cargo xtask check runs every gate green on empty crates"
+    status: done
+blocks:
+  - key: 01a19f49-ed3c-72c2-a26c-3ec85bcbc9df
+    id: w0-t1-workspace
+    kind: task
+    versions:
+      - key: 01a19f49-ed3c-72c2-a26c-3ed0a30e0bff
+        at: 2026-11-03T02:43:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Turn the crate into a virtual workspace"
+        detail: "crates/univ-model (lib), crates/univ-ingest (bin) and xtask, with the root src/main.rs removed. Done when `cargo build --workspace` succeeds."
+        state: open
+      - key: 01a19f4a-444e-7562-8a06-d0972bc1c6ba
+        at: 2026-11-03T02:43:26Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Turn the crate into a virtual workspace"
+        detail: "crates/univ-model (lib), crates/univ-ingest (bin) and xtask, with the root src/main.rs removed. Done when `cargo build --workspace` succeeds."
+        state: active
+      - key: 01a19f4b-6cd3-729c-a778-cf2e0fc77beb
+        at: 2026-11-03T02:44:42Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Turn the crate into a virtual workspace"
+        detail: "crates/univ-model (lib), crates/univ-ingest (bin) and xtask, with the root src/main.rs removed. Done when `cargo build --workspace` succeeds."
+        state: done
+  - key: 01a19f49-ed3c-72c2-a26c-3ec910fcc96b
+    id: w0-t2-lints
+    kind: task
+    versions:
+      - key: 01a19f49-ed3c-72c2-a26c-3ed1cc51c778
+        at: 2026-11-03T02:43:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Set workspace lints, rustfmt and toolchain targets"
+        detail: "[workspace.lints]: clippy pedantic plus unwrap_used, expect_used, panic, dbg_macro and print_stdout, and unsafe_code forbid. clippy.toml allows unwrap and expect in tests, rustfmt.toml uses edition 2024 and width 100, and rust-toolchain.toml adds the wasm32 target. Done when clippy with -D warnings is clean."
+        state: open
+      - key: 01a19f4a-444e-7562-8a06-d098b0224635
+        at: 2026-11-03T02:43:26Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Set workspace lints, rustfmt and toolchain targets"
+        detail: "[workspace.lints]: clippy pedantic plus unwrap_used, expect_used, panic, dbg_macro and print_stdout, and unsafe_code forbid. clippy.toml allows unwrap and expect in tests, rustfmt.toml uses edition 2024 and width 100, and rust-toolchain.toml adds the wasm32 target. Done when clippy with -D warnings is clean."
+        state: active
+      - key: 01a19f4b-6cd3-729c-a778-cf2fd944e317
+        at: 2026-11-03T02:44:42Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Set workspace lints, rustfmt and toolchain targets"
+        detail: "[workspace.lints]: clippy pedantic plus unwrap_used, expect_used, panic, dbg_macro and print_stdout, and unsafe_code forbid. clippy.toml allows unwrap and expect in tests, rustfmt.toml uses edition 2024 and width 100, and rust-toolchain.toml adds the wasm32 target. Done when clippy with -D warnings is clean."
+        state: done
+  - key: 01a19f49-ed3c-72c2-a26c-3eca5fe0236c
+    id: w0-t3-xtask
+    kind: task
+    versions:
+      - key: 01a19f49-ed3c-72c2-a26c-3ed21a0ca871
+        at: 2026-11-03T02:43:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Build cargo xtask check and lines"
+        detail: "`check` runs fmt, clippy, lines, tests, deny, machete, the wasm32 build of univ-model and the loft checks in order, and stops at the first failure, naming it. `lines` fails on any .rs file over 500 lines and skips target/. Done when unit tests show 500 lines pass, 501 fail and target/ is skipped."
+        state: open
+      - key: 01a19f4b-6cd3-729c-a778-cf305cc80214
+        at: 2026-11-03T02:44:42Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Build cargo xtask check and lines"
+        detail: "`check` runs fmt, clippy, lines, tests, deny, machete, the wasm32 build of univ-model and the loft checks in order, and stops at the first failure, naming it. `lines` fails on any .rs file over 500 lines and skips target/. Done when unit tests show 500 lines pass, 501 fail and target/ is skipped. `loft verify` runs only on the publish branch, as Loft's own guidance says, so a wave branch that changes spec/ is not failed by the lock."
+        state: done
+  - key: 01a19f49-ed3c-72c2-a26c-3ecb89301645
+    id: w0-t4-deny
+    kind: task
+    versions:
+      - key: 01a19f49-ed3c-72c2-a26c-3ed3e341b3ff
+        at: 2026-11-03T02:43:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Configure cargo-deny"
+        detail: "deny.toml sets the licence allow-list, advisories, banned crates and duplicates. Done when `cargo deny check` passes."
+        state: open
+      - key: 01a19f4b-6cd3-729c-a778-cf31ddf9231e
+        at: 2026-11-03T02:44:42Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Configure cargo-deny"
+        detail: "deny.toml sets the licence allow-list, advisories, banned crates and duplicates. Done when `cargo deny check` passes."
+        state: active
+      - key: 01a19f4b-9583-742c-b6c2-0e9c4fcc0125
+        at: 2026-11-03T02:44:53Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Configure cargo-deny"
+        detail: "deny.toml sets the licence allow-list, advisories, banned crates and duplicates. Done when `cargo deny check` passes."
+        state: done
+  - key: 01a19f49-ed3c-72c2-a26c-3ecc5ee7e177
+    id: w0-t5-docs
+    kind: task
+    versions:
+      - key: 01a19f49-ed3c-72c2-a26c-3ed4015955ea
+        at: 2026-11-03T02:43:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Write AGENTS.md, the CLAUDE.md link, loft.trace.yaml and the fixtures home"
+        detail: "AGENTS.md covers layout, commands, gates, branches, commits, the science rules and YAML for internal data. Done when the files exist and loft check reads loft.trace.yaml."
+        state: open
+      - key: 01a19f4b-9583-742c-b6c2-0e9d29b3bd74
+        at: 2026-11-03T02:44:53Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Write AGENTS.md, the CLAUDE.md link, loft.trace.yaml and the fixtures home"
+        detail: "AGENTS.md covers layout, commands, gates, branches, commits, the science rules and YAML for internal data. Done when the files exist and loft check reads loft.trace.yaml."
+        state: active
+      - key: 01a19f4b-ef7f-7156-a9d9-90e35ba11bec
+        at: 2026-11-03T02:45:16Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Write AGENTS.md, the CLAUDE.md link, loft.trace.yaml and the fixtures home"
+        detail: "AGENTS.md covers layout, commands, gates, branches, commits, the science rules and YAML for internal data. Done when the files exist and loft check reads loft.trace.yaml."
+        state: done
+  - key: 01a19f49-ed3c-72c2-a26c-3ecddc4771b0
+    id: w0-t6-gate
+    kind: task
+    versions:
+      - key: 01a19f49-ed3c-72c2-a26c-3ed58385f32f
+        at: 2026-11-03T02:43:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run the gate green"
+        detail: "Done when `cargo xtask check` passes end to end."
+        state: open
+      - key: 01a19f4b-ef7f-7156-a9d9-90e492c02391
+        at: 2026-11-03T02:45:16Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run the gate green"
+        detail: "Done when `cargo xtask check` passes end to end."
+        state: active
+      - key: 01a19f4c-572e-7122-82c2-57f4d83b1a45
+        at: 2026-11-03T02:45:42Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run the gate green"
+        detail: "Done when `cargo xtask check` passes end to end. Passed all 10 gates once machete was called as `cargo-machete`: run under `cargo run`, `cargo machete` took its own name as a path."
+        state: done
+  - key: 01a19f4c-572e-7122-82c2-57f376ad33fc
+    id: w0-summary
+    kind: note
+    versions:
+      - key: 01a19f4c-572e-7122-82c2-57f5af23bed9
+        at: 2026-11-03T02:45:42Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Workspace and gate in place"
+        markdown: |-
+          | Gate | Tool |
+          |---|---|
+          | fmt | `cargo fmt --all --check` |
+          | clippy | pedantic plus guard lints, `-D warnings` |
+          | lines | `xtask` 500-line rule (4 unit tests) |
+          | test | `cargo test --workspace` |
+          | deny | cargo-deny 0.20.2 |
+          | machete | cargo-machete 0.9.2 |
+          | wasm32 | `univ-model` for `wasm32-unknown-unknown` |
+          | loft fmt / check | spec gates |
+          | loft verify | publish branch (`develop`) only |
+
+          The workspace has `crates/univ-model`, `crates/univ-ingest` and `xtask`. Also added: `AGENTS.md` and its `CLAUDE.md` link, an empty `loft.trace.yaml`, and a fixtures home.
+        tone: success

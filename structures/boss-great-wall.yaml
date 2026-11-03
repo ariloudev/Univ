@@ -1,0 +1,113 @@
+# A system of four superclusters at z ≈ 0.47 in the BOSS CMASS sample: two walls and two
+# superclusters.
+name: BOSS Great Wall
+alternative_names: ["BGW"]
+kind: supercluster_complex
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: lietzen-2016
+    reference: "Lietzen, Tempel, Liivamägi, Montero-Dorta, Einasto, Streblyanska et al. 2016, A&A 588, L4"
+    title: "Discovery of a massive supercluster system at z ~ 0.47"
+    doi: 10.1051/0004-6361/201628261
+    bibcode: 2016A&A...588L...4L
+    arxiv: "1602.08498"
+    read: "arXiv source (LaTeX and vector figures) of 1602.08498"
+# The sky extent of the plotted member galaxies, digitised from the vector Figure 3 (galaxies in
+# sky coordinates): the paper states no coordinates for the system.
+geometry:
+  kind: sky_region
+  sky_region:
+    frame: equatorial_equinox_unstated
+    lon:
+      - value: 154.2
+        unit: degree
+        kind: estimated
+        uncertainty: { form: symmetric, sigma: 0.2 }
+        cite: &figure
+          paper: lietzen-2016
+          figure: "3"
+          how: "Centres of the galaxy symbols read from the drawing commands of the vector figure (bgw_sky.pdf in the arXiv source) and mapped linearly with its axis ticks; the bounds of all plotted galaxies, uncertain by about the size of a symbol, 0.2°."
+      - value: 168.5
+        unit: degree
+        kind: estimated
+        uncertainty: { form: symmetric, sigma: 0.2 }
+        cite: *figure
+    lat:
+      - value: 45.0
+        unit: degree
+        kind: estimated
+        uncertainty: { form: symmetric, sigma: 0.2 }
+        cite: *figure
+      - value: 56.9
+        unit: degree
+        kind: estimated
+        uncertainty: { form: symmetric, sigma: 0.2 }
+        cite: *figure
+    near:
+      redshift:
+        value: 0.45
+        unit: dimensionless
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &walls
+          paper: lietzen-2016
+          sentence: "We found two walls of galaxies at redshift 0.45 < z < 0.5 that are larger in volume and diameter than any previously known superclusters."
+    far:
+      redshift:
+        value: 0.5
+        unit: dimensionless
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *walls
+values:
+  mean_redshift:
+    value: 0.47
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: lietzen-2016
+      sentence: "As a whole, this system consists of 830 galaxies with the mean redshift 0.47."
+  system_diameter:
+    value: 271.1
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: lietzen-2016, table: "1", row: "Total", column: "Diameter (h^-1 Mpc)" }
+  system_galaxies:
+    value: 830
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: { paper: lietzen-2016, table: "1", row: "Total", column: "Richness N_gal" }
+  supercluster_a_diameter:
+    value: 186.1
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: lietzen-2016, table: "1", row: "A", column: "Diameter (h^-1 Mpc)" }
+  supercluster_b_diameter:
+    value: 172.9
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: lietzen-2016, table: "1", row: "B", column: "Diameter (h^-1 Mpc)" }
+  supercluster_c_diameter:
+    value: 63.8
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: lietzen-2016, table: "1", row: "C", column: "Diameter (h^-1 Mpc)" }
+  supercluster_d_diameter:
+    value: 90.6
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: lietzen-2016, table: "1", row: "D", column: "Diameter (h^-1 Mpc)" }
+disputes: []
+notes: >-
+  Superclusters A and B are the two walls. The paper tabulates no member galaxies, so the sky
+  extent is digitised from Figure 3; the newsroom atlas took it from the figure's axis ranges
+  instead. The equinox of the figure's coordinates is not stated (the data are SDSS DR12). The
+  system is bounded at a luminosity density of five times the mean, its superclusters at six.

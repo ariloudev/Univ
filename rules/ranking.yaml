@@ -1,0 +1,119 @@
+# Ranking rule: which of an object's measurements places it, and which entry's sky position it
+# takes. A release records this file, with its parameters, in its manifest. Read by univ-ingest
+# `ranking::RankingRules`.
+
+rule: measured-redshifts-first-then-indicators-over-uncertain-redshifts-then-uncertainty-then-method
+statement: >-
+  Every distance, usable parallax and positive redshift of an object's entries is a candidate.
+  Each is given a fractional distance uncertainty where its source publishes one the rule can
+  compare: for a published distance, its error over its value (a symmetric sigma, the mean of an
+  asymmetric interval's two sides, or half the width of a 68% credible interval); for a
+  parallax, its error over its value once the zero point below is taken off, the distance being
+  1 / (parallax - Z); for a redshift, the comoving distance D(z) of its CMB-frame value under the
+  release cosmology, with sigma_D = D'(z) * sqrt(sigma_z^2 + ((1 + z) * v_pec / c)^2) over D,
+  where v_pec is the peculiar velocity below and sigma_z the redshift's one-sigma error, taken as
+  0 where none is published: a redshift distance always carries the peculiar-velocity term, the
+  rule's stated term for the motion a redshift does not separate from the Hubble flow, not an
+  invented error of the measurement. Any other candidate (a distance or parallax with no error at
+  all, a limit, or an interval of another probability) has no uncertainty, and none is invented.
+  (0) An object's redshift candidates are first ordered among themselves, and only the first of
+  them, the leading redshift, competes with the other candidates: a measured redshift before an
+  estimated, inferred or reconstructed one (a 2M++ clone, Cln = 1, or a photometric redshift);
+  then the smaller published velocity error sigma_cz, c times the one-sigma error of the
+  redshift as published, a redshift without one after every one with one and given none; then
+  the method rank, then the source listed first in source_order, then the order of the entries.
+  Fractional uncertainty does not order redshifts, because the peculiar-velocity term is a
+  smaller fraction of the higher of two, which would then always win. (i) Where any geometric,
+  primary-indicator or secondary-indicator candidate exists, the leading redshift is set aside
+  if its fractional uncertainty exceeds redshift_threshold.
+  (ii) Among the remaining candidates with an uncertainty, the smallest fraction leads;
+  candidates within the tie tolerance of the smallest are a tie, which the method rank breaks,
+  then the smaller fraction, then the order of the entries. (iii) A remaining candidate without
+  an uncertainty wins only if its method rank is strictly better than that of every remaining
+  candidate with one (or none has one); among several such, the best method rank wins, then the
+  source listed first in source_order, then the order of the entries. Otherwise the leader of
+  (ii) wins. An object with no candidate is not placed, nor is one whose preferred distance has
+  a fractional uncertainty above too_uncertain_above.
+peculiar_velocity_km_s: 300
+peculiar_velocity_basis: >-
+  The value the specification names (choose-the-preferred-measurement: "a peculiar-velocity
+  term, 300 km/s unless the release's ranking rule sets another"): the typical line-of-sight
+  peculiar velocity of a galaxy, which its redshift does not separate from the Hubble flow.
+method_rank: [geometric, primary_indicator, secondary_indicator, spectroscopic_redshift, photometric_redshift]
+method_rank_basis: >-
+  The specification's order. Bailer-Jones photogeometric distances and inverted parallaxes rank
+  as geometric: both rest on the parallax.
+tie_tolerance: 0.001
+tie_basis: >-
+  Pipeline choice: fractions within 0.1 percentage point are a tie. Published errors are rounded
+  to two or three digits, so closer fractions do not tell the measurements apart.
+redshift_threshold: 0.25
+redshift_threshold_basis: >-
+  Pipeline choice: a redshift distance more uncertain than a typical Tully-Fisher distance, the
+  commonest secondary indicator, tells less than any indicator distance does. Cosmicflows-4
+  publishes Tully-Fisher modulus errors e_DMtf of 0.38 to 0.8 mag (Tully et al. 2023, ApJ 944,
+  94, VizieR J/ApJ/944/94 ReadMe, table2: "e_DMtf [0.38/0.8]? Uncertainty in DMtf", read from
+  vizier.nao.ac.jp 2026-11-03); 0.4 mag is a fractional distance error of about 0.185 (the mean
+  of 10^(0.08) - 1 and 1 - 10^(-0.08)), and 0.45 mag about 0.21. 0.25 lies just above that:
+  near a cluster or within a few thousand km/s, where infall and the peculiar velocity move a
+  redshift away from the Hubble flow, a redshift distance worse than this gives way to the
+  indicators.
+source_order:
+  - cosmicflows-4-galaxies
+  - cosmicflows-4
+  - mcconnachie-2012
+  - updated-nearby-galaxies
+  - bailer-jones-2021
+  - gaia-dr3-bright
+  - gcns
+  - hipparcos-2007
+  - twomrs
+  - twompp-catalogue
+  - sixdfgs-dr3
+  - sdss-dr17-galaxies
+  - boss-dr17-great-wall
+  - erass1-clusters
+source_order_basis: >-
+  Pipeline choice, used only between candidates without a published uncertainty that share the
+  best method rank, and between redshifts alike in kind of value, velocity error and method
+  rank: the compilations of redshift-independent distances first, the newest and
+  most homogeneous before the older (Cosmicflows-4 2023, its galaxies before its group means;
+  McConnachie 2012, whose Local Group distances are a curated homogeneous set; then UNGC
+  2013), then the stellar sources, then the redshift surveys.
+too_uncertain_above: 1.0
+too_uncertain_basis: >-
+  The owner's decision of 2026-11-03 and the specification (RQ-26: "its preferred distance has a
+  fractional uncertainty above 1"): a distance more uncertain than itself places the object
+  nowhere in particular along its line of sight, so the object is kept for look-ups with its sky
+  position and given no three-dimensional position.
+parallax_max_fractional_error: 0.1
+parallax_basis: >-
+  Pipeline choice following Bailer-Jones 2015 (PASP 127, 994): inverting a parallax is a fair
+  distance estimate only when its fractional error is small, below about 0.1; a noisier parallax
+  is not a candidate, and the Bailer-Jones et al. 2021 distances serve those stars.
+parallax_zero_point:
+  sources: [gaia-dr3-bright, gcns]
+  zero_point_mas: -0.017
+  basis: >-
+    Lindegren et al. 2021 (A&A 649, A4; arXiv:2012.01742), Sect. 1: "In Gaia EDR3 quasars have a
+    median parallax of about -17 µas, and already a simple plot of the parallaxes versus the G
+    magnitude or colour index reveals systematic variations at a level of ~10 µas". Gaia DR3
+    keeps the EDR3 astrometry (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1) and GCNS
+    takes EDR3 parallaxes, so this global offset Z is taken off both, parallax - Z, before a
+    parallax is inverted. The paper's recipe for Z as a function of magnitude, colour and
+    ecliptic latitude needs nu_eff_used_in_astrometry or pseudocolour, ecl_lat and
+    astrometric_params_solved, which neither source definition takes (the GCNS VizieR table has
+    none of them): the global offset is used, and the variations the sentence names are not
+    corrected. Hipparcos-2 parallaxes (van Leeuwen 2007) are not Gaia's and get no zero point.
+position:
+  statement: >-
+    An object takes the sky position of the entry with the smallest published position error,
+    the root mean square of sigma(alpha cos delta) and sigma(delta). Entries with a published
+    error rank before those without; a tie, or entries without errors, go by class, Gaia then
+    Hipparcos then any survey, then by the order of the entries.
+  gaia: [gaia-dr3-bright, gcns]
+  hipparcos: [hipparcos-2007]
+  basis: >-
+    Gaia DR3 positions are good to 0.01 to 0.5 mas at J2016.0 (Lindegren et al. 2021, A&A 649,
+    A2), Hipparcos-2 ones to about a milliarcsecond at J1991.25 (van Leeuwen 2007, A&A 474, 653),
+    and survey positions publish no error or one of tenths of an arcsecond.

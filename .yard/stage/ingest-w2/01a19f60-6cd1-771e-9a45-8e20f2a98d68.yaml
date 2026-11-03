@@ -1,0 +1,366 @@
+key: 01a19f60-6cd1-771e-9a45-8e20f2a98d68
+id: w2
+versions:
+  - key: 01a19f60-6cd1-771e-9a45-8e2b2f7b3e44
+    at: 2026-11-03T03:07:39Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 Acquisition"
+    goal: "All 18 source definitions are validated YAML, and the fetcher retries, resumes chunks and byte ranges, records digests and works offline, tested against a mock server and recorded answers"
+    status: active
+  - key: 01a19f8e-2591-737c-9656-146ef99f56b5
+    at: 2026-11-03T03:57:35Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 Acquisition"
+    goal: "All 18 source definitions are validated YAML, and the fetcher retries, resumes chunks and byte ranges, records digests and works offline, tested against a mock server and recorded answers"
+    status: done
+blocks:
+  - key: 01a19f60-6cd1-771e-9a45-8e22f2a7ff09
+    id: w2-t1-source
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e2ddd2a9c88
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Source definitions: schema and validation"
+        detail: "`sources/<id>.yaml` read into a typed definition: id, title, provider, access, query, cuts, columns with units, frame, epoch, citation, terms, credit, scale domain, mirrors, fixes and redistribution status with quoted terms and reasoning. Done when tests show an incomplete definition, or one with an unknown unit, frame or scale domain, refused with its file and field named (AC-1 to AC-9), and a forbidden source blocked from a release."
+        state: active
+      - key: 01a19f68-c1d3-71dc-9d65-3802d9258146
+        at: 2026-11-03T03:16:45Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Source definitions: schema and validation"
+        detail: "Done in `source.rs`, with 11 tests in `tests/source_definitions.rs`. A typed definition with `deny_unknown_fields`. Errors name the file and the field path (e.g. `columns[2].unit`) through serde_path_to_error. Also checked: blank fields, an id that matches the file name, a `{chunk}` placeholder in chunked queries, the mirror scheme, and the epoch. `publishable()` refuses a forbidden source, quoting its terms."
+        state: done
+  - key: 01a19f60-6cd1-771e-9a45-8e23d1400782
+    id: w2-t2-events
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e2e429e00d0
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run events"
+        detail: "Typed events for W3 to render: Get, Hit, Err, Resumed, Restarted, stage start and end, and bytes received. Done when the fetcher emits them through a sink and a recording sink sees them in order in tests."
+        state: open
+      - key: 01a19f68-c1d3-71dc-9d65-380373d88584
+        at: 2026-11-03T03:16:45Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run events"
+        detail: "Typed events for W3 to render: Get, Hit, Err, Resumed, Restarted, stage start and end, and bytes received. Done when the fetcher emits them through a sink and a recording sink sees them in order in tests."
+        state: active
+      - key: 01a19f6e-202a-71d1-a099-bd71e0636cf1
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run events"
+        detail: "Done in `events.rs`. Events: Get, Hit, Err (attempt and wait), MirrorSkipped, Received, Resumed, Restarted (range ignored, changed, unsatisfiable), Done, and stage start and end. `RecordingSink` keeps them for tests."
+        state: done
+  - key: 01a19f60-6cd1-771e-9a45-8e248b2fb7fe
+    id: w2-t3-fetch
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e2f93c838cc
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Durable fetcher: retries, mirrors and chunks"
+        detail: "At least 4 retries per mirror, with waits doubling from 2 s on an injected clock. A mirror that fails is skipped for the rest of the run. Chunks are written as `.part` then renamed, and a chunk on disk is never fetched again. Done when mock-server tests cover AC-14 to AC-18."
+        state: open
+      - key: 01a19f68-c1d3-71dc-9d65-38041fe1dad8
+        at: 2026-11-03T03:16:45Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Durable fetcher: retries, mirrors and chunks"
+        detail: "At least 4 retries per mirror, with waits doubling from 2 s on an injected clock. A mirror that fails is skipped for the rest of the run. Chunks are written as `.part` then renamed, and a chunk on disk is never fetched again. Done when mock-server tests cover AC-14 to AC-18."
+        state: active
+      - key: 01a19f6e-202a-71d1-a099-bd72c90822b0
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Durable fetcher: retries, mirrors and chunks"
+        detail: |-
+          Done in `fetch/mod.rs`, with 6 wiremock tests in `tests/fetch_chunks.rs`:
+          - waits of 2, 4, 8 and 16 s, then the next mirror;
+          - a mirror that fails is skipped for the run;
+          - resume from the first chunk not on disk, with no chunk fetched twice;
+          - `.part` then rename, and a body that fails its check never becomes a chunk;
+          - a failure names the source, the chunk and each mirror's last error, and keeps the chunks;
+          - offline runs make no request.
+        state: done
+  - key: 01a19f60-6cd1-771e-9a45-8e251fd8fbfe
+    id: w2-t4-resume
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e305e5768ae
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Byte-range resume and payload checks"
+        detail: "A partial download continues with a Range request. It restarts, with an event saying so, when the server ignores Range or the ETag or length changed. The finished file is checked against the published size and digest. Done when mock-server tests cover AC-19 to AC-23."
+        state: open
+      - key: 01a19f6e-202a-71d1-a099-bd734b806c56
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Byte-range resume and payload checks"
+        detail: |-
+          Done in `fetch/file.rs`, with 6 tests in `tests/fetch_files.rs`:
+          - Range plus If-Range from the byte reached;
+          - start over when the provider ignores the range, the ETag changes, or the length differs;
+          - a raw TCP server cuts the body off at 40 bytes, and the retry continues from them;
+          - size and SHA-256 checked against the published values.
+        state: done
+  - key: 01a19f60-6cd1-771e-9a45-8e26ec08770b
+    id: w2-t5-provenance
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e31f695a8bf
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Provenance, failure and offline mode"
+        detail: "A YAML provenance record holds each payload's SHA-256, retrieval time and URL, written before parsing. A failure names the source, the chunk and each mirror's last error, and keeps the chunks. `--offline` makes no request and fails on the first missing chunk. Done when tests cover AC-24 to AC-27."
+        state: open
+      - key: 01a19f6e-202a-71d1-a099-bd74ef47e987
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Provenance, failure and offline mode"
+        detail: "Done in `provenance.rs`. A YAML record per source holds each payload's item, URL, SHA-256, bytes and retrieval time, written through a rename. Tested in `tests/provenance.rs`. Failure and offline mode are tested with the chunks."
+        state: done
+  - key: 01a19f60-6cd1-771e-9a45-8e274c17d809
+    id: w2-t6-access
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e3234d20b65
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Access methods: VizieR ASU-TSV, SkyServer SQL, Gaia TAP, file"
+        detail: "Each method turns a definition into the chunk requests and reads its answer format into rows. Done when tests build the expected URLs and read each method's recorded fixture."
+        state: open
+      - key: 01a19f6e-202a-71d1-a099-bd75fb64830a
+        at: 2026-11-03T03:22:36Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Access methods: VizieR ASU-TSV, SkyServer SQL, Gaia TAP, file"
+        detail: "Each method turns a definition into the chunk requests and reads its answer format into rows. Done when tests build the expected URLs and read each method's recorded fixture."
+        state: active
+      - key: 01a19f7e-e6bb-7600-a355-5f4e0e6b056a
+        at: 2026-11-03T03:40:56Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Access methods: VizieR ASU-TSV, SkyServer SQL, Gaia TAP, files, repository"
+        detail: |-
+          Done in `access.rs` and `acquire.rs`, with tests in `tests/access.rs` and `tests/acquire.rs`. Live probes changed three things:
+          - VizieR ignores a `recno` constraint (asked for 3 rows, it sent all 124,650), so large tables are sliced by inclusive ranges of an integer column (36 + 15 = 51 rows checked live);
+          - VizieR's computed `_RAJ2000`/`_DEJ2000` are FK5 J2000, so univ-model gained `Frame::Fk5J2000`, matching astropy to 2e-14;
+          - SkyServer and the Gaia archive cap rows silently at 500,000 and 50,000, so a source is checked against a count query and refused as incomplete otherwise.
+
+          Chunk files carry a digest of their query, and an answer missing a column is retried, never kept.
+        state: done
+  - key: 01a19f60-6cd1-771e-9a45-8e28e95cc25d
+    id: w2-t7-definitions
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e33da3c1f37
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The 18 source definitions"
+        detail: "Each with researched citation, endpoints and mirrors, columns and units, verbatim terms, credit and redistribution reasoning. This settles the 2M++ reconstruction and eRASS1 URLs and the Gaia G cut, which the owner decides. Done when all 18 validate (AC-10 to AC-13)."
+        state: open
+      - key: 01a19f7e-e6bb-7600-a355-5f4fd93df2fc
+        at: 2026-11-03T03:40:56Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The 18 source definitions"
+        detail: "Each with researched citation, endpoints and mirrors, columns and units, verbatim terms, credit and redistribution reasoning. An agent drafts them from the three research reports. The choices waiting on the owner (G cut, licence posture, SDSS sample) are filled with the recommended options and marked provisional. Done when `tests/definitions.rs` passes and the drafts are reviewed against the research."
+        state: active
+      - key: 01a19f8e-2591-737c-9656-146be824cd44
+        at: 2026-11-03T03:57:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The 18 source definitions"
+        detail: "Done in `sources/*.yaml`; `tests/definitions.rs` checks all 18 ids, their scale domains, and that none is forbidden. Provisional until the owner answers: G < 10, the SDSS all-spectra sample, and permitted_with_credit everywhere with each caveat stated. A repository source needs no mirror (no invented ADS mirror)."
+        state: done
+  - key: 01a19f60-6cd1-771e-9a45-8e29fa1c1059
+    id: w2-t8-fixtures
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e342a80c07b
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "A recorded fixture per source"
+        detail: "A few rows or bytes from the real service, each with a YAML sidecar giving the URL or query, retrieval time and SHA-256. Done when every source has one and its access method's reader parses it."
+        state: open
+      - key: 01a19f8e-2591-737c-9656-146c479e19c0
+        at: 2026-11-03T03:57:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "A recorded fixture per source"
+        detail: |-
+          17 recordings (140 KiB) in `tests/fixtures/<provider>/`, each with a YAML sidecar of URL, retrieval time and SHA-256:
+          - query sources: their first chunk cut to 5 rows;
+          - file sources: their first 4 KiB.
+
+          Every query answer passed the column check against the live service, so all column names are confirmed. `record_fixtures` is `#[ignore]` and run by hand. The main VizieR host was unreachable, so the IDIA mirror served.
+        state: done
+  - key: 01a19f60-6cd1-771e-9a45-8e2a57f68569
+    id: w2-t9-gate
+    kind: task
+    versions:
+      - key: 01a19f60-6cd1-771e-9a45-8e3558eb8d37
+        at: 2026-11-03T03:07:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "Done when `cargo xtask check` passes and AC-1 to AC-27 are linked and accepted, or marked unverified with a reason."
+        state: open
+      - key: 01a19f8e-2591-737c-9656-146d0bcac618
+        at: 2026-11-03T03:57:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "10 gates passed. AC-1 to AC-27 are linked and accepted, 31 of 293 nodes in all. AC-20's display half is re-checked in W3."
+        state: done
+  - key: 01a19f67-7b44-7257-a73d-e3355772bb36
+    id: w2-q-gaia-cut
+    kind: question
+    versions:
+      - key: 01a19f67-7b44-7257-a73d-e336ae4619e4
+        at: 2026-11-03T03:15:21Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How bright must a Gaia DR3 star be to enter the first release, beyond the 100 pc of the Gaia Catalogue of Nearby Stars?"
+        header: "Gaia G cut"
+        context: |-
+          The **Gaia DR3 bright stars** source takes every `gaia_source` row brighter than a G cut, at epoch J2016.0. These are the stars beyond 100 pc that the GCNS doesn't hold. Counts from the ESA Gaia Archive (`SELECT COUNT(*) FROM gaiadr3.gaia_source WHERE phot_g_mean_mag < G`, queried 2026-11-03):
+
+          | G cut | Stars |
+          |---|---|
+          | < 6 | 6,764 |
+          | < 8 | 62,723 |
+          | < 10 | 482,106 |
+          | < 11 | 1,247,240 |
+          | < 12 | 3,087,821 |
+
+          For scale, Hipparcos holds about 118,000 stars. The GCNS adds 331,312 objects within 100 pc. D1 is capped at 10 GB (CON-3). Each star also gets a Bailer-Jones distance and is cross-matched with Hipparcos, so the cost grows with the cut. The brightest stars (G < ~3) saturate in Gaia, and Hipparcos covers them.
+        options:
+          - label: "G < 10"
+            detail: "About 482k stars. Every star an observer could see in binoculars, and Hipparcos's completeness with room to spare. Its D1 share is small next to the 1.1M SDSS galaxies. I recommend it as the best balance of reach and size."
+            recommended: true
+          - label: "G < 8"
+            detail: "About 63k stars: the naked-eye sky and a bit beyond, smaller than Hipparcos. The cheapest option, but the Milky Way's structure past 100 pc stays thin."
+          - label: "G < 11"
+            detail: "About 1.25M stars, more than the SDSS galaxies. It traces the Galaxy further out, roughly doubling the star share of D1 and the fetch time."
+          - label: "G < 12"
+            detail: "About 3.1M stars, the largest set. It is likely to make stars the biggest part of D1 and of the tiles, and the Bailer-Jones fetch grows with it."
+  - key: 01a19f7a-ff3d-775c-ae84-9afac9b5f698
+    id: w2-q-licences
+    kind: question
+    versions:
+      - key: 01a19f7a-ff3d-775c-ae84-9afcce87498a
+        at: 2026-11-03T03:36:40Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should Univ judge sources whose terms are silent, or limited to scientific or non-commercial use?"
+        header: "Licences"
+        context: |-
+          Every source definition must carry a redistribution status: permitted, permitted_with_credit or forbidden. A forbidden source can't be in any release, and that includes structures outlined from its grid. What the research found (quotes and URLs go in each definition):
+
+          | Source(s) | Terms found |
+          |---|---|
+          | 8 VizieR catalogues | CDS: "free of usage in a scientific context"; cite authors and VizieR. The CDS general terms (2026-01-07) license public datasets as Open Licence, ODbL or CC-BY. No per-catalogue licence. |
+          | Gaia DR3, Hipparcos-2 neighbour table | **CC BY-NC 3.0 IGO**: non-commercial only, credit required. |
+          | Bailer-Jones distances | CC BY 4.0 (GAVO). |
+          | SDSS DR17 | Public domain, with an acknowledgement. |
+          | CF4++ grid, CF4 basins, 2M++ reconstruction | **No terms stated**, only requests to cite the papers. |
+          | eRASS1 clusters | No licence on the DR1 site; the papers are CC BY 4.0. |
+          | 2MRS | The team's own files: "Please do not redistribute any of these files". We take the journal table from VizieR instead. |
+
+          In v1, releases are published only to **local** D1 and R2. Nothing is public until a later deployment.
+        options:
+          - label: "Credit, re-judge later"
+            detail: "All 18 become permitted_with_credit. The reasoning records each caveat: non-commercial for Gaia, a scientific context for VizieR, terms silent for the grids. Each is marked provisional, to be judged again before any public deployment. That deployment step is added to the plan's follow-ups. Univ commits to staying non-commercial. I recommend this, since v1 redistributes nothing beyond your own machine."
+            recommended: true
+          - label: "Strict now"
+            detail: "Sources with silent terms (CF4++, CF4 basins, 2M++ reconstruction, eRASS1) are forbidden until their authors grant permission by email. v1 then ships without volume grids, grid-outlined structures or eRASS1 clusters, and the univ-server grid features wait."
+          - label: "Derived only"
+            detail: "Silent-terms grids may feed derived products (structure outlines, tiles) but are never served raw. This needs a fourth status, `derived_only`, which is a spec change to F-1 and the grid-serving features."
+  - key: 01a19f7a-ff3d-775c-ae84-9afb9140544d
+    id: w2-q-sdss-sample
+    kind: question
+    versions:
+      - key: 01a19f7a-ff3d-775c-ae84-9afd72ffe6d7
+        at: 2026-11-03T03:36:40Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Which SDSS DR17 galaxies should the first release take?"
+        header: "SDSS sample"
+        context: "The spec calls the source \"SDSS DR17 main galaxy sample\", with zWarning = 0, 0.005 < z < 0.35 and \"about 1.1 million galaxies\". Those cuts return **1,097,303** spectra: Legacy, BOSS and eBOSS together, as the newsroom atlas used. The true **Main Galaxy Sample** (Strauss et al. 2002, flux-limited r < 17.77) needs `legacy_target1 & 448 > 0` and gives **687,048**. The name and the count in the spec disagree, so one of them changes."
+        options:
+          - label: "All spectra, renamed"
+            detail: "Keep the 1,097,303 galaxies and rename the source \"SDSS DR17 spectroscopic galaxies\" in the spec, stating that its selection is mixed. This is a minor spec fix, and the most galaxies for the atlas. I recommend it, because the spec's count and the earlier work both used this set."
+            recommended: true
+          - label: "Main Galaxy Sample"
+            detail: "Keep the name and add the target-flag cut, for 687,048 galaxies. The sample is uniformly selected, which suits density statistics, but it has 410k fewer galaxies. The spec's count changes to about 0.69 million."

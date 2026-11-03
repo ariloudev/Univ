@@ -1,0 +1,91 @@
+# A supervoid in the direction of the CMB Cold Spot, found in photometric-redshift tomography.
+name: Eridanus supervoid
+alternative_names: ["CMB Cold Spot supervoid"]
+kind: void
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: szapudi-2015
+    reference: "Szapudi, Kovács, Granett, Frei, Silk, Burgett et al. 2015, MNRAS 450, 288"
+    title: "Detection of a supervoid aligned with the cold spot of the cosmic microwave background"
+    doi: 10.1093/mnras/stv488
+    bibcode: 2015MNRAS.450..288S
+    arxiv: "1405.1566"
+    read: "arXiv source (LaTeX) of 1405.1566"
+  - id: mackenzie-2017
+    reference: "Mackenzie, Shanks, Bremer, Cai, Gunawardhana, Kovács et al. 2017, MNRAS 470, 2328"
+    title: "Evidence against a supervoid causing the CMB Cold Spot"
+    doi: 10.1093/mnras/stx931
+    arxiv: "1704.03814"
+    read: "arXiv source (LaTeX) of 1704.03814"
+# The void is centred on the Cold Spot by construction: the radial profile is taken about it.
+position: &published
+  frame: galactic
+  lon:
+    value: 209
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &cold_spot
+      paper: szapudi-2015
+      sentence: "The Cold Spot (CS) of the Cosmic Microwave Background (CMB) is an exceptionally cold -70μK area centred on (l,b) ≃ (209°,-57°) Galactic coordinates."
+  lat:
+    value: -57
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *cold_spot
+  redshift:
+    value: 0.22
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: symmetric, sigma: 0.03 }
+    cite: &fit
+      paper: szapudi-2015
+      sentence: "Our data, combined with an earlier measurement by Granett et al. (2010), are consistent with a large R_void = (220 ± 50) h^-1 Mpc supervoid with δ_m ≃ -0.14 ± 0.04 centered at z = 0.22 ± 0.03."
+geometry:
+  kind: primitive
+  primitive:
+    form: sphere
+    centre: *published
+    radius:
+      value: 220
+      unit: megaparsec_over_h
+      kind: inferred
+      uncertainty: { form: symmetric, sigma: 50 }
+      cite: *fit
+      note: "The radius of a top-hat void model fitted to the galaxy counts in the paper's test circles about the Cold Spot."
+values:
+  matter_density_contrast:
+    value: -0.14
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: symmetric, sigma: 0.04 }
+    cite: *fit
+  deepest_region_near:
+    value: 0.15
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: &deepest
+      paper: szapudi-2015
+      sentence: "The line-of-sight position of the deepest region of the void is z ≃ 0.15-0.25."
+  deepest_region_far:
+    value: 0.25
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: *deepest
+disputes:
+  - claim: >-
+      A 2dF redshift survey of the centre of the Cold Spot finds smaller voids at z = 0.14, 0.26 and
+      0.30, too small to explain the Cold Spot through the ISW effect. The dispute is about the
+      void's cause of the Cold Spot and its scale, not the photometric underdensity itself.
+    cite:
+      paper: mackenzie-2017
+      sentence: "We have found voids at z = 0.14, 0.26 and 0.30 but they are interspersed with small over-densities and the scale of these voids is insufficient to explain the Cold Spot through the ΛCDM ISW effect."
+notes: >-
+  Found with WISE-2MASS and Pan-STARRS1 photometric redshifts. The paper gives the Cold Spot centre
+  only to the nearest degree, in Galactic coordinates. Tully et al., in their cosmography of the
+  Local Void, reconstruct the nearer
+  "Eridanus Void" as an inner extension of this feature.

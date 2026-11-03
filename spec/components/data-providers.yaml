@@ -12,7 +12,7 @@ components:
     body: "The SQL search service of SDSS DR17."
     components:
       - key: 01a19f22-2ad9-716e-876f-181c48025787
-        name: "SDSS DR17 main galaxy sample"
+        name: "SDSS DR17 spectroscopic galaxies"
         body: "Spectroscopic galaxies of SDSS DR17 (Abdurro'uf et al. 2022, ApJS 259, 35) with zWarning = 0 and 0.005 < z < 0.35: about 1.1 million galaxies over 29% of the sky. Public, with the SDSS acknowledgement."
       - key: 01a19f22-2ad9-716e-876f-181dd6136c68
         name: "BOSS DR17 Great Wall region"
@@ -38,9 +38,15 @@ components:
       - key: 01a19f22-2ad9-716e-876f-182139b89dd9
         name: "Cosmicflows-4 distances"
         body: |
-          Cosmicflows-4 (Tully et al. 2023, ApJ 944, 94; VizieR J/ApJ/944/94): 55,877 galaxies with
-          redshift-independent distances, on H0 = 74.6. Its SGX, SGY and SGZ columns are in km/s
-          although labelled Mpc, and 158 of its group positions are wrong.
+          The groups table of Cosmicflows-4 (Tully et al. 2023, ApJ 944, 94; VizieR J/ApJ/944/94):
+          the redshift-independent distances of 38,053 galaxy groups, each named by the PGC number of
+          its dominant galaxy, on H0 = 74.6. Its SGX, SGY and SGZ columns are in km/s although
+          labelled Mpc, and 157 of its group positions are wrong: 148 are replaced by their Kourkchi &
+          Tully 2017 group centres (ApJ 843, 16; VizieR J/ApJ/843/16), and the 9 groups that catalogue
+          lacks are left out as wrong_position.
+      - key: 01a1a147-6017-72a6-9efa-ce6c1a364ff4
+        name: "Cosmicflows-4 galaxies"
+        body: "The individual-galaxy table of Cosmicflows-4 (Tully et al. 2023, ApJ 944, 94; VizieR J/ApJ/944/94/table2): 55,877 galaxies with redshift-independent distances on H0 = 74.6, each with its group id and PGC number."
       - key: 01a19f22-2ad9-716e-876f-1822e01df492
         name: "McConnachie 2012 Local Group"
         body: "The Local Group and nearby galaxies of McConnachie 2012 (AJ 144, 4; VizieR J/AJ/144/4): 102 galaxies."

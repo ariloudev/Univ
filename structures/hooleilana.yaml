@@ -1,0 +1,89 @@
+# A shell of galaxies at z ≈ 0.068 read as a single baryon acoustic oscillation, with the Boötes
+# supercluster at its core.
+name: Ho'oleilana
+alternative_names: ["Hoʻoleilana"]
+kind: shell
+status: statistical_claim
+scale_domain: cosmic_web
+papers:
+  - id: tully-2023
+    reference: "Tully, Howlett & Pomarède 2023, ApJ 954, 169"
+    title: "Ho'oleilana: An Individual Baryon Acoustic Oscillation?"
+    doi: 10.3847/1538-4357/aceaf3
+    arxiv: "2309.00677"
+    read: "arXiv source (LaTeX) of 2309.00677"
+# Where the BAO bump of the radial distribution of groups is most prominent.
+position: &published
+  frame: supergalactic
+  x:
+    value: -24
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: &h75
+      cosmology: "h75^-1 Mpc: flat ΛCDM, Ωm = 0.31, H0 = 75 h75 km/s/Mpc"
+      cite:
+        paper: tully-2023
+        sentence: "For our first test of the origin of Ho'oleilana, we begin by converting the SDSS PV catalogue from right ascension, declination and redshift to supergalactic cartesian coordinates assuming a fiducial flat Lambda Cold Dark Matter (ΛCDM) cosmological model with matter density Ωm = 0.31 and expansion rate H0 = 75 h75 km s-1 Mpc-1."
+    cite: &centre
+      paper: tully-2023
+      sentence: "the normalised radial distribution of groups at the central location where the supposed BAO 'bump' is most prominent, [SGX, SGY, SGZ] = [-24, 242, 58] h75^-1 Mpc."
+  y:
+    value: 242
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *h75
+    cite: *centre
+  z:
+    value: 58
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *h75
+    cite: *centre
+geometry:
+  kind: primitive
+  primitive:
+    form: sphere
+    centre: *published
+    radius:
+      value: 155
+      unit: megaparsec
+      kind: inferred
+      uncertainty: { form: none_reported }
+      assumes: *h75
+      cite:
+        paper: tully-2023
+        sentence: "The radius of the 3D structure is 155 h75^-1 Mpc."
+values:
+  redshift:
+    value: 0.068
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: asymmetric, minus: 0.007, plus: 0.003 }
+    cite:
+      paper: tully-2023
+      sentence: "we then have a range of possible fiducial distances to the center of Ho'oleilana, which translates to uncertain values for our redshift and fiducial distance ratio of z = 0.068 (+0.003, -0.007) and D_v^fid/r_drag^fid = 1.99 (+0.07, -0.20) respectively."
+  shell_width:
+    value: 27
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *h75
+    cite:
+      paper: tully-2023
+      sentence: "In this same plot we identify with a green cross the values r_BAO = 155 h75^-1 Mpc and s_BAO = 27 h75^-1 Mpc, which result in the largest single value for W_r,s for all BAO-wavelets and grid cells we consider."
+  ring_radius_by_eye:
+    value: 11300
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: tully-2023
+      sentence: "A reasonable by-eye fit to the structure is given by the red ring of radius 11,300 km s-1 centered at SGX_c = -400 km s-1, SGZ_c = 5000 km s-1 in the bottom panel, which we show later in this work is also statistically justified when considering the full 3-dimensional galaxy distribution."
+disputes: []
+notes: >-
+  The paper's fiducial cosmology has H0 = 75 h75 km/s/Mpc and Ωm = 0.31, so its lengths in
+  h75^-1 Mpc are Mpc at H0 = 75. The Sloan Great Wall, the CfA Great Wall and the Hercules complex
+  lie within the shell. No published dispute was looked for.

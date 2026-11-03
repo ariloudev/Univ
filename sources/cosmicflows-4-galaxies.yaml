@@ -1,0 +1,174 @@
+id: cosmicflows-4-galaxies
+title: "Cosmicflows-4 galaxy distances"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/ApJ/944/94/table2"
+  constraints: []
+  rows: 55877
+cuts:
+  - >-
+    No server-side cut: every row of table2 ("Distances of individual galaxies", ReadMe
+    table2.dat), 55,877 by the ReadMe and its abstract ("distances are compiled for 55,877
+    galaxies"). The groups table J/ApJ/944/94/groups is the source cosmicflows-4.
+  - >-
+    DM, the galaxy's own distance modulus "derived from an MCMC analysis incorporating all
+    methodologies" (ReadMe Note 3), is the one distance taken. The eight per-method moduli
+    (DMsnIa, DMtf, DMfp, DMsbf, DMsnII, DMtrgb, DMceph, DMmas, "after registration to a common
+    scale with the MCMC analysis", Note 4) are read only to tell which methods DM combines, and
+    their errors are not taken.
+  - >-
+    Table2 publishes no group distance, no heliocentric velocity and no Cartesian columns: its
+    columns are PGC, 1PGC, T17, Vcmb, DM and e_DM, the eight per-method moduli and their errors,
+    and RAdeg, DEdeg, GLON, GLAT, SGL and SGB (ReadMe, byte-by-byte description of table2.dat).
+    So no SGX-like column needs a fix, and no group value sits on a galaxy's row.
+  - >-
+    Vcmb is the "Systemic velocity of the galaxy in the reference frame of the cosmic microwave
+    background" (Note 2). It is kept as published under velocity, and read as the entry's
+    redshift in the CMB frame, as published: no dipole is applied to it again. That redshift
+    makes DM, a luminosity distance, comoving (D_L / (1 + z)), as a redshift of the same entry
+    does for any source; it also ranks as a candidate like any other redshift. The normalizer
+    derives its heliocentric cz back with the run's dipole, which the matching rules compare
+    with another source's.
+  - "T17, the group of Tempel et al. 2017, and GLON, GLAT, SGL and SGB are not taken."
+columns:
+  - { column: PGC, field: identifier, unit: dimensionless }
+  - { column: 1PGC, field: group_id, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: Vcmb, field: velocity, unit: kilometre_per_second }
+  - { column: DM, field: distance_modulus, unit: magnitude }
+  - { column: e_DM, field: distance_modulus_error, unit: magnitude }
+  - { column: DMsnIa, field: quality, unit: magnitude }
+  - { column: DMtf, field: quality, unit: magnitude }
+  - { column: DMfp, field: quality, unit: magnitude }
+  - { column: DMsbf, field: quality, unit: magnitude }
+  - { column: DMsnII, field: quality, unit: magnitude }
+  - { column: DMtrgb, field: quality, unit: magnitude }
+  - { column: DMceph, field: quality, unit: magnitude }
+  - { column: DMmas, field: quality, unit: magnitude }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Tully R.B., Kourkchi E., Courtois H.M., Anand G.S., Blakeslee J.P., Brout D., de Jaeger T.,
+  Dupuy A., Guinet D., Howlett C., et al. 2023, "Cosmicflows-4", ApJ 944, 94. 2023ApJ...944...94T,
+  doi:10.3847/1538-4357/ac94d8. VizieR catalogue J/ApJ/944/94, table J/ApJ/944/94/table2,
+  doi:10.26093/cds/vizier.19440094.
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Tully et al. 2023, ApJ 944, 94.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    As for the groups table of the same catalogue (cosmicflows-4): CDS allows use of VizieR data in
+    a scientific context with citation of the authors and publisher, and the ReadMe (read from
+    http://vizier.nao.ac.jp/ftp/cats/J/ApJ/944/94/ReadMe, 2026-11-03) carries no
+    catalogue-specific licence. The AAS and Extragalactic Distance Database terms were not checked.
+    Provisional: judged again before any public deployment.
+scale_domain: cosmic_web
+mirrors:
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      Vcmb is 0 on 46 rows: dwarf galaxies with a distance but no measured velocity. The column
+      is not marked nullable (ReadMe table2, Vcmb [-784/32575]), so the table writes the missing
+      velocity as 0, which reads as a galaxy at rest in the CMB frame.
+    change: >-
+      On those rows Vcmb is dropped and the entry kept: the galaxy has no velocity or redshift,
+      and is matched by position alone and placed by its distance modulus.
+    evidence: >-
+      An exact 0 on 46 of 55,877 rows, against 24 more within 50 km/s of it, and the 46 cluster
+      where measured velocities are far from 0: 17 are members of the Centaurus A group (1PGC
+      46957, whose galaxy PGC 46957 has Vcmb = 802) and 15 of the M81 group (1PGC 28630), as
+      served by vizier.idia.ac.za on 2026-11-03. Andromeda XX (PGC 5056920, 1PGC 2557, the M31
+      group, whose NGC 147, PGC 2004, has Vcmb = -455) has Vcmb = 0, while UNGC (Karachentsev et
+      al. 2013, J/AJ/145/101) gives it a heliocentric velocity of -456 km/s, about -770 km/s in
+      the CMB frame in its direction.
+    action:
+      kind: drop_when
+      columns: [Vcmb]
+      when: { column: Vcmb, is: ["0"] }
+  - defect: >-
+      Andromeda XXX (PGC 5065056) has Vcmb = 36 km/s, about 430 km/s from its measured velocity.
+    change: >-
+      On that row Vcmb is dropped and the entry kept, matched by position alone and placed by its
+      distance modulus.
+    evidence: >-
+      Collins et al. 2013 (ApJ 768, 172; J/ApJ/768/172/table1, served by vizier.nao.ac.jp on
+      2026-11-03) measure And XXX's heliocentric velocity from 8 member stars as -139.8 (+6.0,
+      -6.6) km/s, and UNGC (Karachentsev et al. 2013, J/AJ/145/101) gives -141 km/s. In its
+      direction (RA 9.145, Dec +49.647) the Planck 2018 dipole moves -139.8 km/s to about -395 km/s
+      in the CMB frame, not 36. The modulus, DM = 24.11 (0.66 Mpc), agrees with UNGC's 0.68 Mpc
+      and Collins et al.'s 681 kpc.
+    action:
+      kind: drop_when
+      columns: [Vcmb]
+      when: { column: PGC, is: ["5065056"] }
+normalization:
+  redshifts:
+    - column: Vcmb
+      frame: cmb
+      kind: spectroscopic
+      basis: >-
+        J/ApJ/944/94 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/ApJ/944/94/ReadMe,
+        2026-11-03), table2: Vcmb is the "Systemic velocity of the galaxy" in km/s, Note 2:
+        "Systemic velocity of the galaxy in the reference frame of the cosmic microwave
+        background". It is a velocity cz from the galaxies' spectra, published already in the CMB
+        frame, with no error column.
+  distances:
+    - value: DM
+      error: { symmetric: e_DM }
+      kind: secondary_indicator
+      method:
+        mixed:
+          - fundamental_plane
+          - tully_fisher
+          - surface_brightness_fluctuations
+          - type_ia_supernovae
+          - type_ii_supernovae
+          - tip_of_the_red_giant_branch
+          - cepheids
+          - masers
+      measure: luminosity
+      kind_of_value: measured
+      basis: >-
+        J/ApJ/944/94 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/ApJ/944/94/ReadMe,
+        2026-11-03), table2: DM is the "Distance modulus, all methodologies" [18.46/39.53], Note 3:
+        "Distance modulus of the galaxy derived from an MCMC analysis incorporating all
+        methodologies and associated uncertainty", and e_DM the "Uncertainty in DM". Its range
+        starts at the LMC's Cepheid modulus (DMceph [18.46/34.53]), so DM is on the absolute
+        scale of the calibrators ("Cepheid period-luminosity relation and tip of the red giant
+        branch observations ... with the geometric maser distance to NGC 4258 provide the
+        absolute scaling of distances", abstract), not on a Hubble constant. Where any of the
+        five methods FP, TF, SBF, SNIa or SNII contributes, the distance is taken as a secondary
+        indicator, the kind of those methods; a rule below marks the rows that rest on TRGB,
+        Cepheids or masers alone. A modulus gives a luminosity distance.
+  rules:
+    - when: { column: DMsnIa, is: [""] }
+      and:
+        - { column: DMtf, is: [""] }
+        - { column: DMfp, is: [""] }
+        - { column: DMsbf, is: [""] }
+        - { column: DMsnII, is: [""] }
+      distance:
+        value: DM
+        kind: primary_indicator
+        method: { mixed: [tip_of_the_red_giant_branch, cepheids, masers] }
+      basis: >-
+        ReadMe table2: the eight per-method moduli are nullable ("?"); a row whose DMsnIa, DMtf,
+        DMfp, DMsbf and DMsnII are all blank has DM from TRGB, Cepheid or maser moduli alone,
+        the primary indicators of the abstract.

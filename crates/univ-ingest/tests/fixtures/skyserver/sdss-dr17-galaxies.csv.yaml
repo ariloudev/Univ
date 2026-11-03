@@ -1,0 +1,5 @@
+source: sdss-dr17-galaxies
+url: https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=SELECT+TOP+5+specObjID%2C+ra%2C+dec%2C+z%2C+zErr+FROM+SpecObj+WHERE+class+%3D+%27GALAXY%27+AND+zWarning+%3D+0+AND+z+%3E+0.005+AND+z+%3C+0.35+AND+%28specObjID+%25+17%29+%3D+0&format=csv
+retrieved: 2026-11-03T03:56:22Z
+sha256: d8e8603b6752eedd94e4c8c911ff249b941641d03c52f307274263fb9767f93c
+note: the first chunk's query cut to 5 rows

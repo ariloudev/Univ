@@ -1,0 +1,7 @@
+source: mcconnachie-2012
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=Name%2C%28m-M%29%2CE_%28m-M%29%2Ce_%28m-M%29%2Cu_%28m-M%29%2CD%2CE_D%2Ce_D%2CHRV%2Ce_HRV%2Cf_HRV%2CVmag&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2CFornax%2CM32%2CNGC%2055%2CSagittarius%20dSph
+retrieved: 2026-11-03T12:22:54Z
+sha256: d89cfc1befa54cb4dee066818959ba700ab7fa9d2d46740499258f3ebf3ec9ef
+note: >-
+  The source's own query narrowed by Name to the four Local Group galaxies UNGC also lists
+  (updated-nearby-galaxies-local-group.tsv): Sagittarius dSph, Fornax, M32 and NGC 55.
