@@ -45,6 +45,7 @@ pub mod chains;
 pub mod fingerprint;
 pub mod keys;
 pub mod manifest;
+pub mod read;
 pub mod rows;
 pub mod sql;
 pub mod uncertainty;

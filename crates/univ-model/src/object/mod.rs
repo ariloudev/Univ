@@ -19,6 +19,7 @@ use crate::ids::{Designation, SourceId};
 
 /// A confidence in a match, between 0 and 1. Checked when built and when read.
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema), schema(value_type = f64))]
 #[serde(try_from = "f64", into = "f64")]
 pub struct Confidence(f64);
 
@@ -66,6 +67,7 @@ impl From<Confidence> for f64 {
 
 /// How two entries were found to agree along the line of sight.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum MatchMethod {
     /// By sky position alone: the rule checks nothing else, or one entry lacks the value the
@@ -82,6 +84,7 @@ pub enum MatchMethod {
 
 /// The difference along the line of sight between two matched entries.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum LineOfSight {
     /// |Δcz| between the heliocentric velocities, km/s.
@@ -92,6 +95,7 @@ pub enum LineOfSight {
 
 /// A positional match: the entry it was compared with and what the comparison found.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct MatchRecord {
     pub method: MatchMethod,
     /// The entry on the other side of the match.
@@ -106,6 +110,7 @@ pub struct MatchRecord {
 /// How an entry came to belong to its object, tagged by `by`: a match keeps its own `method`
 /// beside the tag, so the tag cannot be `method` too.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "by")]
 pub enum Resolution {
     /// The entry the object was resolved around: the first of its entries in the order read.
@@ -139,6 +144,7 @@ pub struct CommonName {
 /// A candidate match to another object: both stay separate objects, and no measurement is
 /// merged across the link.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct CandidateLink {
     /// The entry of this object that the link starts from.
     pub entry: Designation,

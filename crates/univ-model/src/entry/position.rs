@@ -21,6 +21,7 @@ pub struct NativePosition {
 /// The uncertainty of a position, each error as published beside its value in degrees.
 /// Gaia and Hipparcos publish the error in right ascension as σ(α cos δ).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "form")]
 pub enum PositionUncertainty {
     /// The source published no error for the position, which is not an error of zero.
@@ -30,8 +31,11 @@ pub enum PositionUncertainty {
 
 /// The errors in right ascension and declination, as published and in degrees.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct PositionErrors {
+    #[cfg_attr(feature = "openapi", schema(value_type = crate::value::MeasuredValue))]
     pub ra: Value,
+    #[cfg_attr(feature = "openapi", schema(value_type = crate::value::MeasuredValue))]
     pub dec: Value,
 }
 

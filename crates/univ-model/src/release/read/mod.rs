@@ -1,0 +1,165 @@
+//! Reading an object back from a release's compact D1 rows, with no I/O: the caller queries
+//! the rows and hands them over as JSON maps, as D1 returns them, with the release's
+//! [`Vocabulary`] read once.
+//!
+//! Every code is decoded through the vocabulary (terms, sources and chain templates) and every
+//! uncertainty through [`crate::release::UncertaintyColumns`], so nothing here depends on how a
+//! release numbered its terms. Rows that do not decode are the server's fault, never the
+//! client's: a [`ReadError`] names the table, the column and the value.
+
+mod columns;
+mod entries;
+mod links;
+mod measurements;
+mod placed;
+
+use std::collections::{BTreeMap, HashMap};
+
+use crate::api::objects::ObjectRecord;
+use crate::cosmology::Cosmology;
+use columns::Columns;
+
+/// One D1 row: column names to numbers, strings and nulls.
+pub type Row = serde_json::Map<String, serde_json::Value>;
+
+/// A release's vocabulary: everything the rows' codes need, read once per release.
+#[derive(Clone, Debug)]
+pub struct Vocabulary {
+    release: u32,
+    cosmology: Cosmology,
+    terms: HashMap<i64, String>,
+    chains: HashMap<i64, serde_json::Value>,
+    sources: HashMap<i64, String>,
+}
+
+impl Vocabulary {
+    /// The vocabulary of release `release`, placed under `cosmology`: its `terms` by id, its
+    /// chain templates by id (`chains.steps` parsed), and its sources' ids by `sources.n`.
+    #[must_use]
+    pub fn new(
+        release: u32,
+        cosmology: Cosmology,
+        terms: impl IntoIterator<Item = (i64, String)>,
+        chains: impl IntoIterator<Item = (i64, serde_json::Value)>,
+        sources: impl IntoIterator<Item = (i64, String)>,
+    ) -> Self {
+        Self {
+            release,
+            cosmology,
+            terms: terms.into_iter().collect(),
+            chains: chains.into_iter().collect(),
+            sources: sources.into_iter().collect(),
+        }
+    }
+
+    #[must_use]
+    pub fn release(&self) -> u32 {
+        self.release
+    }
+
+    /// The release cosmology, which every derived position of the release is placed under.
+    #[must_use]
+    pub fn cosmology(&self) -> &Cosmology {
+        &self.cosmology
+    }
+
+    /// The term numbered `id`.
+    #[must_use]
+    pub fn term(&self, id: i64) -> Option<&str> {
+        self.terms.get(&id).map(String::as_str)
+    }
+
+    /// The id of the source numbered `n`.
+    #[must_use]
+    pub fn source(&self, n: i64) -> Option<&str> {
+        self.sources.get(&n).map(String::as_str)
+    }
+
+    /// The template of chain `id`.
+    #[must_use]
+    pub fn chain(&self, id: i64) -> Option<&serde_json::Value> {
+        self.chains.get(&id)
+    }
+}
+
+/// Why rows did not decode: always the server's fault, naming the table, column and value.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReadError(pub String);
+
+impl std::fmt::Display for ReadError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl std::error::Error for ReadError {}
+
+/// The object of row `object` with its `entries` and `measurements` rows, each every row of the
+/// object in the release, in any order.
+///
+/// # Errors
+///
+/// Fails when a row lacks a column, a column holds a value of the wrong type, a code names no
+/// term, source or chain of the release, or the values do not make a valid record.
+pub fn object(
+    v: &Vocabulary,
+    object: &Row,
+    entries: &[Row],
+    measurements: &[Row],
+) -> Result<ObjectRecord, ReadError> {
+    let c = Columns::new(v, "objects", object);
+    let mut heads = BTreeMap::new();
+    let mut sorted_entries = Vec::with_capacity(entries.len());
+    for row in entries {
+        let (n, designation) = entries::head(v, row)?;
+        if heads.insert(n, designation).is_some() {
+            return Err(ReadError(format!(
+                "release {} entries.entry: {n} appears twice",
+                v.release()
+            )));
+        }
+        sorted_entries.push((n, row));
+    }
+    sorted_entries.sort_by_key(|(n, _)| *n);
+    let entry_rows: Vec<&Row> = sorted_entries.into_iter().map(|(_, r)| r).collect();
+    let entries = entries::entries(v, &entry_rows, &heads)?;
+
+    let mut keyed = measurements
+        .iter()
+        .map(|row| Ok((measurements::key(v, row)?, row)))
+        .collect::<Result<Vec<_>, ReadError>>()?;
+    keyed.sort_by_key(|(k, _)| *k);
+    let measurements = keyed
+        .into_iter()
+        .map(|(_, row)| measurements::measurement(v, row, &heads))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let preferred = placed::preferred(&c)?;
+    let position = if c.int("placed")? == 0 {
+        None
+    } else {
+        Some(placed::derived(
+            &c,
+            preferred.as_ref(),
+            &measurements,
+            &entries,
+        )?)
+    };
+    let id = c.int("id")?;
+    Ok(ObjectRecord {
+        release: v.release(),
+        id: u64::try_from(id).map_err(|_| c.error("id", format!("{id} is negative")))?,
+        kind: c.typed("kind")?,
+        sky_position: placed::sky(&c)?,
+        preferred,
+        position,
+        not_placed: c.typed_opt("not_placed")?,
+        links: links::links(&c)?,
+        relations: c.json_opt("relations")?.unwrap_or_default(),
+        entries,
+        measurements,
+    })
+}
+
+#[cfg(test)]
+mod tests;
