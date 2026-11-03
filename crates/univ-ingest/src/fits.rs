@@ -1,17 +1,29 @@
 //! FITS files at the level of their headers: 2880-byte blocks of 80-byte cards ending at `END`,
-//! the data each header announces, and `BSCALE`/`BZERO` (FITS Standard 4.0, Pence et al. 2010,
-//! A&A 524, A42, §§3–4). The image reader of `grids` and the table reader of `normalize` build
-//! on it; it decodes no data itself.
+//! the data each header announces, `BSCALE`/`BZERO`, and the big-endian samples arrays and table
+//! columns store (FITS Standard 4.0, Pence et al. 2010, A&A 524, A42, §§3–5). The image reader of
+//! `grids` and the table reader of `normalize` build on it.
+//!
+//! Files come from the network, so every size a header declares is checked: a missing axis, an
+//! axis count over 999, no groups, or a size past the memory's or the file's is an error.
 
 use std::io::Read;
 use std::ops::Range;
 
 use thiserror::Error;
 
+mod sample;
+
+pub use sample::{Sample, SampleKind, sample};
+
 /// FITS files are written in blocks of this many bytes; a header is 36 cards of 80.
 pub const BLOCK: usize = 2_880;
 /// The bytes of a header card.
 pub const CARD: usize = 80;
+/// The most axes an array has, and the most fields a table has (FITS 4.0 §4.4.1.1, §7.3.1).
+pub const MAX_AXES: usize = 999;
+/// The most bytes a gzipped file or a tar member is unpacked to: 1 GiB, a bound of this reader
+/// far above the catalogues it reads, so that a hostile archive cannot fill the memory.
+pub const MAX_UNPACKED: usize = 1 << 30;
 
 /// A FITS file that cannot be read.
 #[derive(Debug, Error)]
@@ -22,7 +34,7 @@ pub enum FitsError {
     Malformed(String),
 }
 
-fn malformed(reason: impl Into<String>) -> FitsError {
+pub(crate) fn malformed(reason: impl Into<String>) -> FitsError {
     FitsError::Malformed(reason.into())
 }
 
@@ -54,19 +66,28 @@ impl Header {
     ///
     /// # Errors
     ///
-    /// Fails on a reader error, or a file that ends before `END`.
+    /// Fails on a reader error, a card that is not ASCII text, or a file that ends before `END`.
     pub fn read_from(reader: &mut impl Read) -> Result<Option<Self>, FitsError> {
         let mut cards = Vec::new();
         let mut block = vec![0_u8; BLOCK];
+        let mut number = 0;
         loop {
             let filled = fill(reader, &mut block)?;
-            if filled == 0 && cards.is_empty() {
+            if filled == 0 && number == 0 {
                 return Ok(None);
             }
             if filled < BLOCK {
                 return Err(malformed("the header ends without an END card"));
             }
             for raw in block.chunks(CARD) {
+                number += 1;
+                // FITS 4.0 §4.1.1: a card is ASCII text, so each byte below is one character.
+                if !raw.is_ascii() {
+                    return Err(malformed(format!(
+                        "header card {number} ({}) holds a byte that is not ASCII",
+                        String::from_utf8_lossy(&raw[..8]).trim_end()
+                    )));
+                }
                 let text: String = raw.iter().map(|&b| char::from(b)).collect();
                 let keyword = text[..8].trim_end().to_owned();
                 if keyword == "END" {
@@ -83,7 +104,7 @@ impl Header {
     ///
     /// # Errors
     ///
-    /// Fails when the file ends before `END`.
+    /// Fails as [`Self::read_from`] does, or when the file ends before a header.
     pub fn read(fits: &[u8], at: &mut usize) -> Result<Self, FitsError> {
         let mut rest = fits.get(*at..).unwrap_or_default();
         let header = Self::read_from(&mut rest)?
@@ -120,16 +141,43 @@ impl Header {
             .transpose()
     }
 
+    /// The whole number `keyword` holds, if the header has it.
+    ///
+    /// # Errors
+    ///
+    /// Fails when the value is not a whole number.
+    pub fn integer(&self, keyword: &str) -> Result<Option<i64>, FitsError> {
+        self.get(keyword)
+            .map(|v| {
+                v.parse()
+                    .map_err(|_| malformed(format!("{keyword} = {v} is not a whole number")))
+            })
+            .transpose()
+    }
+
     /// The whole number `keyword` holds, or `default` when the header lacks it.
     ///
     /// # Errors
     ///
     /// Fails when the value is not a whole number.
     pub fn whole(&self, keyword: &str, default: i64) -> Result<i64, FitsError> {
-        self.get(keyword).map_or(Ok(default), |v| {
-            v.parse()
-                .map_err(|_| malformed(format!("{keyword} = {v} is not a whole number")))
-        })
+        Ok(self.integer(keyword)?.unwrap_or(default))
+    }
+
+    /// The count `keyword` holds, or `default` when the header lacks it; with no default, a
+    /// missing count is an error.
+    ///
+    /// # Errors
+    ///
+    /// Fails when the count is missing with no default, negative or not a whole number.
+    pub fn count(&self, keyword: &str, default: Option<usize>) -> Result<usize, FitsError> {
+        match (self.integer(keyword)?, default) {
+            (Some(v), _) => {
+                usize::try_from(v).map_err(|_| malformed(format!("{keyword} = {v} is not a count")))
+            }
+            (None, Some(d)) => Ok(d),
+            (None, None) => Err(malformed(format!("{keyword} is missing"))),
+        }
     }
 
     /// `BSCALE` and `BZERO`, 1 and 0 by default: a stored array value `s` stands for
@@ -145,28 +193,60 @@ impl Header {
         ))
     }
 
+    /// The sample type `BITPIX` names.
+    ///
+    /// # Errors
+    ///
+    /// Fails when `BITPIX` is missing or not one of 8, 16, 32, 64, −32 and −64.
+    pub fn sample_kind(&self) -> Result<SampleKind, FitsError> {
+        let bitpix = self
+            .integer("BITPIX")?
+            .ok_or_else(|| malformed("BITPIX is missing"))?;
+        SampleKind::from_bitpix(bitpix)
+            .ok_or_else(|| malformed(format!("BITPIX = {bitpix} is not a FITS sample type")))
+    }
+
+    /// `NAXIS1`, `NAXIS2`, …: the first runs fastest; empty when `NAXIS` is 0.
+    ///
+    /// # Errors
+    ///
+    /// Fails when `NAXIS` or one of its axes is missing or not a count, or `NAXIS` is over 999.
+    pub fn axes(&self) -> Result<Vec<usize>, FitsError> {
+        let n = self.count("NAXIS", None)?;
+        if n > MAX_AXES {
+            return Err(malformed(format!(
+                "NAXIS = {n} is more than the {MAX_AXES} axes FITS allows"
+            )));
+        }
+        (1..=n)
+            .map(|i| self.count(&format!("NAXIS{i}"), None))
+            .collect()
+    }
+
     /// The bytes of data the header announces, before padding:
     /// `|BITPIX| / 8 × GCOUNT × (PCOUNT + NAXIS1 × … × NAXISn)`, none when `NAXIS` is 0.
     ///
     /// # Errors
     ///
-    /// Fails on a negative or malformed axis, count or `BITPIX`.
+    /// Fails on a missing or malformed axis, count or `BITPIX`, on `GCOUNT` = 0, or on a size
+    /// that does not fit in memory.
     pub fn data_bytes(&self) -> Result<usize, FitsError> {
-        let count = |keyword: &str, default: i64| {
-            usize::try_from(self.whole(keyword, default)?)
-                .map_err(|_| malformed(format!("{keyword} is negative")))
-        };
-        let axes = count("NAXIS", 0)?;
-        if axes == 0 {
+        let kind = self.sample_kind()?;
+        let axes = self.axes()?;
+        if axes.is_empty() {
             return Ok(0);
         }
-        let mut elements = 1;
-        for i in 1..=axes {
-            elements *= count(&format!("NAXIS{i}"), 0)?;
+        let groups = self.count("GCOUNT", Some(1))?;
+        if groups == 0 {
+            return Err(malformed("GCOUNT = 0: the unit holds no groups"));
         }
-        let bits = self.whole("BITPIX", 8)?.unsigned_abs();
-        let bytes = usize::try_from(bits / 8).map_err(|_| malformed("BITPIX is too large"))?;
-        Ok(bytes * count("GCOUNT", 1)? * (count("PCOUNT", 0)? + elements))
+        let parameters = self.count("PCOUNT", Some(0))?;
+        axes.iter()
+            .try_fold(1_usize, |n, &a| n.checked_mul(a))
+            .and_then(|elements| elements.checked_add(parameters))
+            .and_then(|n| n.checked_mul(groups))
+            .and_then(|n| n.checked_mul(kind.width()))
+            .ok_or_else(|| malformed("the data the header declares are too large to hold"))
     }
 }
 
@@ -178,18 +258,20 @@ impl Header {
 pub fn next_hdu(fits: &[u8], at: &mut usize) -> Result<Hdu, FitsError> {
     let header = Header::read(fits, at)?;
     let start = *at;
-    let end = start + header.data_bytes()?;
-    if end > fits.len() {
-        return Err(malformed("the file ends inside the data of a header"));
-    }
-    *at = end.div_ceil(BLOCK) * BLOCK;
+    let end = start
+        .checked_add(header.data_bytes()?)
+        .filter(|&end| end <= fits.len())
+        .ok_or_else(|| malformed("the file ends inside the data of a header"))?;
+    // `end` is within the file, so the block after it is too, or just past its end.
+    *at = end.div_ceil(BLOCK).saturating_mul(BLOCK);
     Ok(Hdu {
         header,
         data: start..end,
     })
 }
 
-/// A card's value and comment, when columns 9 and 10 hold the value indicator `= `.
+/// A card's value and comment, when columns 9 and 10 hold the value indicator `= `. `text` is
+/// the 80 ASCII characters of the card.
 fn parse_card(keyword: String, text: &str) -> Card {
     if &text[8..10] != "= " {
         let comment = text[8..].trim();
@@ -238,14 +320,14 @@ fn parse_card(keyword: String, text: &str) -> Card {
 /// # Errors
 ///
 /// Fails on a reader error.
-pub fn fill(reader: &mut impl Read, buf: &mut [u8]) -> Result<usize, FitsError> {
+pub fn fill(reader: &mut (impl Read + ?Sized), buf: &mut [u8]) -> std::io::Result<usize> {
     let mut filled = 0;
     while filled < buf.len() {
         match reader.read(&mut buf[filled..]) {
             Ok(0) => break,
             Ok(n) => filled += n,
             Err(e) if e.kind() == std::io::ErrorKind::Interrupted => {}
-            Err(e) => return Err(e.into()),
+            Err(e) => return Err(e),
         }
     }
     Ok(filled)
@@ -271,32 +353,42 @@ pub fn is_fits(path: &str) -> bool {
 }
 
 /// The FITS file in `bytes`, named `name`: the first `.fits` member of a gzipped tar, a gzipped
-/// file unpacked, or the bytes as they are.
+/// file unpacked, or the bytes as they are. Nothing is unpacked past [`MAX_UNPACKED`] bytes.
 ///
 /// # Errors
 ///
-/// Fails when the archive cannot be read or holds no `.fits` member.
-pub fn unpack(name: &str, bytes: Vec<u8>) -> Result<Vec<u8>, String> {
-    let gunzip = |bytes: &[u8]| {
+/// Fails when the archive cannot be read, unpacks past the bound or holds no `.fits` member.
+pub fn unpack(name: &str, bytes: Vec<u8>) -> Result<Vec<u8>, FitsError> {
+    unpack_within(name, bytes, MAX_UNPACKED)
+}
+
+/// [`unpack`], unpacking no more than `limit` bytes.
+fn unpack_within(name: &str, bytes: Vec<u8>, limit: usize) -> Result<Vec<u8>, FitsError> {
+    let bounded = |reader: &mut dyn Read, what: &str| {
         let mut out = Vec::new();
-        flate2::read::GzDecoder::new(bytes)
+        let cap = u64::try_from(limit).map_or(u64::MAX, |l| l.saturating_add(1));
+        reader
+            .take(cap)
             .read_to_end(&mut out)
-            .map(|_| out)
-            .map_err(|e| format!("it is not gzip: {e}"))
+            .map_err(|e| malformed(format!("{what} cannot be read: {e}")))?;
+        if out.len() > limit {
+            return Err(malformed(format!(
+                "{what} unpacks to more than {limit} bytes"
+            )));
+        }
+        Ok(out)
     };
+    let gunzip = |bytes: &[u8]| bounded(&mut flate2::read::GzDecoder::new(bytes), "the gzip");
     if name.ends_with(".fits.tgz") {
         let tar = gunzip(&bytes)?;
         let mut archive = tar::Archive::new(tar.as_slice());
-        for entry in archive.entries().map_err(|e| e.to_string())? {
-            let mut entry = entry.map_err(|e| e.to_string())?;
-            let path = entry.path().map_err(|e| e.to_string())?;
-            if path.to_string_lossy().ends_with(".fits") {
-                let mut out = Vec::new();
-                entry.read_to_end(&mut out).map_err(|e| e.to_string())?;
-                return Ok(out);
+        for entry in archive.entries()? {
+            let mut entry = entry?;
+            if entry.path()?.to_string_lossy().ends_with(".fits") {
+                return bounded(&mut entry, "the tar member");
             }
         }
-        Err("the archive holds no .fits file".to_owned())
+        Err(malformed("the archive holds no .fits file"))
     } else if name.ends_with(".fits.gz") {
         gunzip(&bytes)
     } else {
@@ -317,58 +409,4 @@ pub(crate) fn header_block(cards: &[&str]) -> Vec<u8> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn a_header_gives_its_values_without_quotes_or_comments_and_ends_its_block() {
-        let fits = header_block(&[
-            "SIMPLE  =                    T / conforms",
-            "BITPIX  =                  -32",
-            "NAXIS   =                    2",
-            "NAXIS1  =                    3",
-            "NAXIS2  =                    2",
-            "BSCALE  =               2.0D0 / a D exponent",
-            "OBJECT  = 'it''s a grid'       / a quote doubled",
-            "COMMENT no value here",
-        ]);
-        let mut at = 0;
-        let header = Header::read(&fits, &mut at).unwrap();
-        assert_eq!(at, BLOCK);
-        assert_eq!(header.get("SIMPLE"), Some("T"));
-        let object = header.card("OBJECT").unwrap();
-        assert_eq!(object.value.as_deref(), Some("it's a grid"));
-        assert_eq!(object.comment.as_deref(), Some("a quote doubled"));
-        assert_eq!(header.get("COMMENT"), None);
-        assert_eq!(header.scaling().unwrap(), (2.0, 0.0));
-        assert_eq!(header.data_bytes().unwrap(), 4 * 3 * 2);
-    }
-
-    #[test]
-    fn each_unit_starts_on_a_block_after_the_padded_data_of_the_last() {
-        let mut fits = header_block(&[
-            "SIMPLE  =                    T",
-            "BITPIX  =                    8",
-            "NAXIS   =                    1",
-            "NAXIS1  =                   10",
-        ]);
-        fits.extend([7; 10]);
-        fits.resize(2 * BLOCK, 0);
-        fits.extend(header_block(&[
-            "XTENSION= 'IMAGE   '",
-            "BITPIX  =                    8",
-            "NAXIS   =                    0",
-        ]));
-        let mut at = 0;
-        let primary = next_hdu(&fits, &mut at).unwrap();
-        assert_eq!((primary.data, at), (BLOCK..BLOCK + 10, 2 * BLOCK));
-        let image = next_hdu(&fits, &mut at).unwrap();
-        assert_eq!(image.header.get("XTENSION"), Some("IMAGE"));
-        assert_eq!((image.data.len(), at), (0, 3 * BLOCK));
-        assert!(
-            next_hdu(&fits[..BLOCK + 5], &mut 0).is_err(),
-            "data past the end"
-        );
-        assert!(Header::read(&fits[..CARD], &mut 0).is_err(), "no END");
-    }
-}
+mod tests;

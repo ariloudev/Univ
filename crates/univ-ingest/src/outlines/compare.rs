@@ -8,13 +8,12 @@
 use std::collections::{BTreeMap, HashMap};
 
 use serde::Serialize;
-use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::entry::{CatalogueEntry, RedshiftKind};
 use univ_model::grid::{Axis, GridGeometry};
 use univ_model::ids::SourceId;
 use univ_model::position::{Frame, between, dot, from_icrs, lon_lat};
 
-use super::region::Region;
+use super::region::{Region, velocity_distance};
 use crate::structures::{OutlineTest, Rule};
 
 /// How coverage is decided: choices of this pipeline, recorded with every outline.
@@ -126,7 +125,7 @@ fn place(geometry: &GridGeometry, entries: &[CatalogueEntry]) -> Placed {
         else {
             continue;
         };
-        let r = z.cmb.value.value * SPEED_OF_LIGHT / 100.0;
+        let r = velocity_distance(z.cmb.value.value);
         distances.push(r);
         let at = rotation.apply(position.icrs.unit_vector()).map(|u| u * r);
         if let Some(i) = geometry.cell_at(at).and_then(|c| geometry.sample_index(c)) {

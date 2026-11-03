@@ -19,7 +19,7 @@ use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
 
 use super::fits::FitsImage;
-use super::{GridReadError, Published, Window, with_member};
+use super::{GridReadError, Published, Window, archive, member};
 
 /// The source definition these grids belong to.
 pub const SOURCE: &str = "cf4-basins";
@@ -68,14 +68,15 @@ const PUBLISHED: Published = Published {
 /// Fails when the archive cannot be read, misses a member, or a member is not a three-axis image
 /// of the grid's shape (or `window` of it) holding whole labels.
 pub fn read_cf4_basins(path: &Path, window: Window) -> Result<Grid, GridReadError> {
+    let mut zip = archive(path)?;
     let mut geometry = None;
     let mut fields = Vec::new();
-    for member in MEMBERS {
+    for name in MEMBERS {
         let layout = |reason: String| GridReadError::Layout {
-            file: member.to_string(),
+            file: name.to_string(),
             reason,
         };
-        let image = with_member(path, member, |r| FitsImage::read_primary(r))?;
+        let image = member(&mut zip, name, |r| FitsImage::read_primary(r))?;
         if image.bitpix != -64 || image.axes.len() != 3 {
             return Err(layout(format!(
                 "BITPIX {} with {} axes, not a cube of float64 labels",
@@ -85,7 +86,7 @@ pub fn read_cf4_basins(path: &Path, window: Window) -> Result<Grid, GridReadErro
         }
         // NAXIS1 runs fastest, so the C-order shape is the FITS axes reversed.
         let shape: Vec<usize> = image.axes.iter().rev().copied().collect();
-        let this = PUBLISHED.geometry(member, &shape, window)?;
+        let this = PUBLISHED.geometry(name, &shape, window)?;
         if geometry.as_ref().is_some_and(|g| *g != this) {
             return Err(layout(format!("its grid differs from {}'s", MEMBERS[0])));
         }
@@ -95,7 +96,7 @@ pub fn read_cf4_basins(path: &Path, window: Window) -> Result<Grid, GridReadErro
             .iter()
             .map(|&x| whole(x).ok_or_else(|| layout(format!("{x} is not a whole label"))))
             .collect::<Result<Vec<_>, _>>()?;
-        let names = if member == MEMBERS[0] {
+        let names = if name == MEMBERS[0] {
             (1..)
                 .zip(CF4_GALAXY_ATTRACTORS)
                 .map(|(label, name)| LabelName {
@@ -107,7 +108,7 @@ pub fn read_cf4_basins(path: &Path, window: Window) -> Result<Grid, GridReadErro
             vec![]
         };
         fields.push(Field {
-            column: member.to_string(),
+            column: name.to_string(),
             field: "basin_label".to_string(),
             unit: Unit::Dimensionless,
             kind: KindOfValue::Reconstructed,
