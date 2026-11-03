@@ -97,25 +97,19 @@ fn manifest_of(
         .map_err(|e| format!("the manifest of release {number}: {e}"))
 }
 
-/// The rows of release `number` in the tables of one release.
+/// The rows of release `number` in the tables of one release, as one sum of counts (D1 limits
+/// the terms of a compound `SELECT`, so no `UNION`).
 fn rows_of(store: &mut dyn Store, number: u32) -> Result<u64, String> {
     let counts: Vec<String> = TABLES
         .iter()
         .filter(|t| t.per_release)
-        .map(|t| {
-            format!(
-                "SELECT COUNT(*) AS n FROM {} WHERE release = {number}",
-                t.name
-            )
-        })
+        .map(|t| format!("(SELECT COUNT(*) FROM {} WHERE release = {number})", t.name))
         .collect();
-    let sql = format!("SELECT SUM(n) AS n FROM ({})", counts.join(" UNION ALL "));
-    let rows = store.query(&sql)?;
-    Ok(rows
-        .first()
+    let rows = store.query(&format!("SELECT {} AS n", counts.join(" + ")))?;
+    rows.first()
         .and_then(|r| r.get("n"))
         .and_then(serde_json::Value::as_u64)
-        .unwrap_or(0))
+        .ok_or_else(|| format!("D1 gave no count of the rows of release {number}"))
 }
 
 /// Prunes release `number` from `store`. `progress` is given a line for each step.
