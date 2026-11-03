@@ -8,46 +8,59 @@
 //! answered, but must be revalidated.
 
 use std::collections::{BTreeSet, HashMap};
+use std::sync::{Arc, LazyLock};
 
 use serde::Deserialize;
-use serde_json::json;
+use serde_json::{Value, json};
 use univ_model::api::bulk::{ScaleDomainList, ScaleDomainSummary, TileFormat};
 use univ_model::tile::format::layout;
-use univ_model::tile::manifest::TileManifest;
+use univ_model::tile::manifest::{TileManifest, TileManifestIndex};
 use univ_model::units::scale_domain_unit;
-use utoipa::PartialSchema;
+use utoipa::{PartialSchema, ToSchema};
 
-use crate::backend::{Backend, Row, column, first};
+use crate::backend::{Backend, rows_as};
 use crate::http::{Body, Request, Response};
 use crate::problem::{Problem, ProblemType};
-use crate::releases::{RELEASE_PARAM, pinned, resolve};
-
-/// The `Cache-Control` of what a pinned read answers: a release's files never change.
-pub const IMMUTABLE: &str = "public, max-age=31536000, immutable";
+use crate::releases::{RELEASE_PARAM, pinned, pinned_file, resolve};
 
 /// What is kept of a scale domain's tile manifest: its encoding version, and each node's
 /// address with its tile's SHA-256.
 pub struct TileNodes {
-    version: u32,
+    version: u16,
     nodes: HashMap<String, String>,
 }
 
-/// What is read of a tile manifest to serve its tiles.
+/// A scale domain of a release, as the release database lists it.
 #[derive(Deserialize)]
-struct ManifestNodes {
-    encoding: ManifestEncoding,
-    nodes: Vec<ManifestNode>,
+pub struct DomainRow {
+    name: String,
+    radius: f64,
+    points: u64,
+    nodes: u64,
+    manifest_key: String,
 }
 
-#[derive(Deserialize)]
-struct ManifestEncoding {
-    version: u32,
-}
+/// The JSON Schema of a tile manifest, built once and whole: the schemas it refers to are its
+/// own `$defs`, so it validates a manifest without the OpenAPI document beside it.
+static MANIFEST_SCHEMA: LazyLock<Result<Value, String>> = LazyLock::new(manifest_schema);
 
-#[derive(Deserialize)]
-struct ManifestNode {
-    address: String,
-    sha256: String,
+fn manifest_schema() -> Result<Value, String> {
+    let mut nested = Vec::new();
+    <TileManifest as ToSchema>::schemas(&mut nested);
+    let mut schema = serde_json::to_value(<TileManifest as PartialSchema>::schema())
+        .map_err(|e| e.to_string())?;
+    let defs = nested
+        .into_iter()
+        .map(|(name, nested)| Ok((name, serde_json::to_value(nested)?)))
+        .collect::<Result<serde_json::Map<String, Value>, serde_json::Error>>()
+        .map_err(|e| e.to_string())?;
+    if let Value::Object(members) = &mut schema {
+        members.insert("$defs".to_owned(), Value::Object(defs));
+    }
+    let text = schema
+        .to_string()
+        .replace("\"#/components/schemas/", "\"#/$defs/");
+    serde_json::from_str(&text).map_err(|e| e.to_string())
 }
 
 /// Lists the scale domains of the release the request reads.
@@ -63,21 +76,18 @@ struct ManifestNode {
 )]
 pub async fn domains<B: Backend>(request: &Request, backend: &B) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
-    let rows = domain_rows(backend, release).await?;
-    let domains = rows
+    let domains = domains_of(backend, release)
+        .await?
         .iter()
-        .map(|row| {
-            let name: String = column(row, "name")?;
-            Ok(ScaleDomainSummary {
-                unit: scale_domain_unit(&name),
-                radius: column(row, "radius")?,
-                points: column(row, "points")?,
-                nodes: column(row, "nodes")?,
-                manifest: format!("/v1/scale-domains/{name}/manifest?release={release}"),
-                name,
-            })
+        .map(|d| ScaleDomainSummary {
+            name: d.name.clone(),
+            unit: scale_domain_unit(&d.name),
+            radius: d.radius,
+            points: d.points,
+            nodes: d.nodes,
+            manifest: format!("/v1/scale-domains/{}/manifest?release={release}", d.name),
         })
-        .collect::<Result<Vec<_>, Problem>>()?;
+        .collect();
     Ok(pinned(
         Response::json(&ScaleDomainList { release, domains })?,
         release,
@@ -105,11 +115,11 @@ pub async fn manifest<B: Backend>(
     backend: &B,
 ) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
-    let key = manifest_key(backend, release, name).await?;
+    let key = domain(backend, release, name).await?.manifest_key.clone();
     let response = Response::empty(200)
         .with_header("content-type", "application/json")
         .with_body(Body::Object(key));
-    Ok(pinned(cached(response, request), release))
+    Ok(pinned_file(response, request, release))
 }
 
 /// Serves one tile of a scale domain, by its octree node's address, as published.
@@ -138,7 +148,8 @@ pub async fn tile<B: Backend>(
     backend: &B,
 ) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
-    let nodes = tile_nodes(backend, release, name).await?;
+    let manifest_key = domain(backend, release, name).await?.manifest_key.clone();
+    let nodes = tile_nodes(backend, release, name, &manifest_key).await?;
     let Some(sha256) = nodes.nodes.get(address) else {
         return Err(Problem::new(
             ProblemType::TileNotFound,
@@ -159,10 +170,9 @@ pub async fn tile<B: Backend>(
         univ_model::release::keys::key(release, &univ_model::release::keys::tile(name, address));
     let response = Response::empty(200)
         .with_header("content-type", "application/octet-stream")
-        .with_header("cache-control", IMMUTABLE)
         .with_header("etag", &format!("\"{sha256}\""))
         .with_body(Body::Object(key));
-    Ok(pinned(response, release))
+    Ok(pinned_file(response, request, release))
 }
 
 /// Describes how to decode the tiles of the release the request reads.
@@ -180,14 +190,17 @@ pub async fn tile<B: Backend>(
 pub async fn tile_format<B: Backend>(request: &Request, backend: &B) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
     let mut versions = BTreeSet::new();
-    for row in domain_rows(backend, release).await? {
-        let name: String = column(&row, "name")?;
-        versions.insert(tile_nodes(backend, release, &name).await?.version);
+    for d in domains_of(backend, release).await?.iter() {
+        versions.insert(
+            tile_nodes(backend, release, &d.name, &d.manifest_key)
+                .await?
+                .version,
+        );
     }
     let encodings = versions
         .into_iter()
         .map(|version| {
-            layout(version).ok_or_else(|| {
+            layout(u32::from(version)).ok_or_else(|| {
                 Problem::new(
                     ProblemType::InternalError,
                     format!("Release {release} uses tile encoding {version}, which this server cannot describe."),
@@ -195,63 +208,42 @@ pub async fn tile_format<B: Backend>(request: &Request, backend: &B) -> Result<R
             })
         })
         .collect::<Result<Vec<_>, Problem>>()?;
-    let manifest_schema =
-        serde_json::to_value(<TileManifest as PartialSchema>::schema()).map_err(|error| {
-            Problem::new(
-                ProblemType::InternalError,
-                format!("The tile manifest's schema did not serialize: {error}."),
-            )
-        })?;
+    let manifest_schema = MANIFEST_SCHEMA.clone().map_err(|error| {
+        Problem::new(
+            ProblemType::InternalError,
+            format!("The tile manifest's schema did not serialize: {error}."),
+        )
+    })?;
     let format = TileFormat {
         release,
         encodings,
         manifest_schema,
     };
-    Ok(pinned(Response::json(&format)?, release))
+    Ok(pinned_file(Response::json(&format)?, request, release))
 }
 
-/// The response, cacheable for good when the request pinned its release, and revalidated on
-/// every use when it did not.
-fn cached(response: Response, request: &Request) -> Response {
-    if request.param(RELEASE_PARAM).is_some() {
-        response.with_header("cache-control", IMMUTABLE)
-    } else {
-        response.with_header("cache-control", "no-cache")
+/// The scale domains of `release`, by name, read once and kept.
+async fn domains_of<B: Backend>(backend: &B, release: u32) -> Result<Arc<Vec<DomainRow>>, Problem> {
+    if let Some(domains) = backend.kept().domains.get(&release) {
+        return Ok(domains);
     }
-}
-
-/// The scale domains of `release`, by name.
-async fn domain_rows<B: Backend>(backend: &B, release: u32) -> Result<Vec<Row>, Problem> {
-    Ok(backend
+    let rows = backend
         .releases(
             "SELECT name, radius, points, nodes, manifest_key FROM scale_domains \
              WHERE release = ?1 ORDER BY name",
             &[json!(release)],
         )
-        .await?)
+        .await?;
+    Ok(backend.kept().domains.keep(release, rows_as(rows)?))
 }
 
-/// The key of the tile manifest of scale domain `name` of `release`, or a 404 that lists the
-/// domains the release has.
-async fn manifest_key<B: Backend>(
-    backend: &B,
-    release: u32,
-    name: &str,
-) -> Result<String, Problem> {
-    let rows = backend
-        .releases(
-            "SELECT manifest_key FROM scale_domains WHERE release = ?1 AND name = ?2",
-            &[json!(release), json!(name)],
-        )
-        .await?;
-    if let Some(row) = first(rows) {
-        return column(&row, "manifest_key");
+/// Scale domain `name` of `release`, or a 404 that lists the domains the release has.
+async fn domain<B: Backend>(backend: &B, release: u32, name: &str) -> Result<DomainRef, Problem> {
+    let domains = domains_of(backend, release).await?;
+    if let Some(index) = domains.iter().position(|d| d.name == name) {
+        return Ok(DomainRef { domains, index });
     }
-    let names = domain_rows(backend, release)
-        .await?
-        .iter()
-        .map(|row| column::<String>(row, "name"))
-        .collect::<Result<Vec<_>, Problem>>()?;
+    let names: Vec<&str> = domains.iter().map(|d| d.name.as_str()).collect();
     Err(Problem::new(
         ProblemType::ScaleDomainNotFound,
         format!(
@@ -264,24 +256,38 @@ async fn manifest_key<B: Backend>(
     .with("scale_domains", names))
 }
 
+/// One scale domain among its release's, as kept.
+struct DomainRef {
+    domains: Arc<Vec<DomainRow>>,
+    index: usize,
+}
+
+impl std::ops::Deref for DomainRef {
+    type Target = DomainRow;
+
+    fn deref(&self) -> &DomainRow {
+        &self.domains[self.index]
+    }
+}
+
 /// The nodes of the tile manifest of scale domain `name` of `release`, read once and kept.
 async fn tile_nodes<B: Backend>(
     backend: &B,
     release: u32,
     name: &str,
-) -> Result<std::sync::Arc<TileNodes>, Problem> {
+    key: &str,
+) -> Result<Arc<TileNodes>, Problem> {
     let kept_key = (release, name.to_owned());
     if let Some(nodes) = backend.kept().tile_nodes.get(&kept_key) {
         return Ok(nodes);
     }
-    let key = manifest_key(backend, release, name).await?;
-    let bytes = backend.blob(&key).await?.ok_or_else(|| {
+    let bytes = backend.blob(key).await?.ok_or_else(|| {
         Problem::new(
             ProblemType::InternalError,
             format!("The releases bucket holds no {key}, which release {release} names."),
         )
     })?;
-    let manifest: ManifestNodes = serde_json::from_slice(&bytes).map_err(|error| {
+    let manifest: TileManifestIndex = serde_json::from_slice(&bytes).map_err(|error| {
         Problem::new(
             ProblemType::InternalError,
             format!("The tile manifest {key} did not read: {error}."),

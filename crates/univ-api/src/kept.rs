@@ -7,13 +7,16 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use univ_model::release::read::Vocabulary;
 
-use crate::bulk::TileNodes;
+use crate::bulk::{DomainRow, TileNodes};
+use crate::grids::GridKeys;
 
 /// Everything a backend keeps, by release.
 #[derive(Default)]
 pub struct Kept {
     pub(crate) vocabularies: Store<u32, Vocabulary>,
     pub(crate) tile_nodes: Store<(u32, String), TileNodes>,
+    pub(crate) domains: Store<u32, Vec<DomainRow>>,
+    pub(crate) grids: Store<(u32, String), GridKeys>,
 }
 
 /// Values read once, by key.

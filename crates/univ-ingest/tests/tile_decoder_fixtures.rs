@@ -26,7 +26,7 @@ use univ_ingest::source::ScaleDomain;
 use univ_ingest::tiles::{BuiltDomain, DomainPoint, assign, build_domain, name_of};
 use univ_model::cosmology::Cosmology;
 use univ_model::ids::ObjectId;
-use univ_model::tile::manifest::TileManifest;
+use univ_model::tile::manifest::{TileManifest, TileManifestIndex};
 use univ_model::tile::{KINDS, decode};
 use univ_model::value::KindOfValue;
 
@@ -181,10 +181,10 @@ fn tiles_file(d: &Domain) -> String {
 /// Each file of the fixtures, by name, with its text.
 fn files() -> Vec<(String, String)> {
     let mut files = Vec::new();
-    for d in domains() {
+    for d in DOMAINS.iter() {
         let manifest = String::from_utf8(d.built.json.clone()).unwrap();
         files.push((format!("{}.manifest.json", d.file), manifest));
-        files.push((format!("{}.tiles.json", d.file), tiles_file(&d)));
+        files.push((format!("{}.tiles.json", d.file), tiles_file(d)));
     }
     files
 }
@@ -228,9 +228,25 @@ fn the_tile_decoders_fixtures_are_what_ingest_builds() {
 
 #[test]
 fn each_written_manifest_reads_back_through_univ_models_type_unchanged() {
-    for d in domains() {
+    for d in DOMAINS.iter() {
         let read: TileManifest = serde_json::from_slice(&d.built.json).unwrap();
         assert_eq!(read, d.built.manifest);
         assert_eq!(read.to_json().unwrap(), d.built.json, "{}", d.file);
+        let index: TileManifestIndex = serde_json::from_slice(&d.built.json).unwrap();
+        assert_eq!(index.encoding.version, read.encoding.version);
+        let nodes: Vec<(&str, &str)> = index
+            .nodes
+            .iter()
+            .map(|n| (n.address.as_str(), n.sha256.as_str()))
+            .collect();
+        let expected: Vec<(&str, &str)> = read
+            .nodes
+            .iter()
+            .map(|n| (n.address.as_str(), n.sha256.as_str()))
+            .collect();
+        assert_eq!(nodes, expected, "{}", d.file);
     }
 }
+
+/// Every domain the fixtures hold, built once for both tests.
+static DOMAINS: std::sync::LazyLock<Vec<Domain>> = std::sync::LazyLock::new(domains);

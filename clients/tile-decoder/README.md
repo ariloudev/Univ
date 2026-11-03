@@ -97,3 +97,10 @@ The step is `edge / 65536`. A coordinate stored as `q` decodes to `min + (q + 0.
 The Rust encoder and reference decoder are in `crates/univ-model/src/tile/`.
 `univ_model::tile::format::layout` gives the same layout as data, for Univ Server's tile format
 answer.
+
+## Read tiles from the release of their manifest
+
+A tile is decoded against the manifest of its own release. Fetch the manifest pinned to a
+release (the scale-domain listing gives that URL), and fetch each tile with the same
+`?release=n`. A tile fetched unpinned is redirected to the latest release's tile, which may be
+a later release than a manifest read a moment before.

@@ -45,8 +45,9 @@ pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
     };
     let response = if request.method == Method::Head {
         if matches!(response.body, Body::Object(_)) {
-            // Its length is the bucket's to know; the handler states it where it can.
-            response.with_body(Body::Empty)
+            // Its length is the bucket's to know: the runtime answers it from the object's
+            // metadata, without its body.
+            response
         } else {
             let length = response.body.as_bytes().len();
             response

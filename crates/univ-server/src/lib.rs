@@ -12,6 +12,7 @@ use worker::{Context, Env, Error, Headers, Request, Response, Result, event};
 
 #[event(fetch)]
 async fn fetch(request: Request, env: Env, _ctx: Context) -> Result<Response> {
+    let head = request.method() == worker::Method::Head;
     let answer = match answer(request, &env).await {
         Ok(answer) => answer,
         Err(error) => univ_api::failure(
@@ -19,7 +20,7 @@ async fn fetch(request: Request, env: Env, _ctx: Context) -> Result<Response> {
             format!("The Worker failed to answer: {error}."),
         ),
     };
-    match respond(answer, &env).await {
+    match respond(answer, &env, head).await {
         Ok(response) => Ok(response),
         Err(error) => {
             respond(
@@ -28,6 +29,7 @@ async fn fetch(request: Request, env: Env, _ctx: Context) -> Result<Response> {
                     format!("The Worker failed to send its answer: {error}."),
                 ),
                 &env,
+                head,
             )
             .await
         }
@@ -64,8 +66,9 @@ async fn answer(mut request: Request, env: &Env) -> Result<univ_api::Response> {
 }
 
 /// The runtime response that carries `answer`. An object of the releases bucket is handed to
-/// the runtime as a stream, which it sends without the Worker reading a byte of it.
-async fn respond(answer: univ_api::Response, env: &Env) -> Result<Response> {
+/// the runtime as a stream, which it sends without the Worker reading a byte of it; to a HEAD
+/// it answers with the object's size, read from its metadata alone.
+async fn respond(answer: univ_api::Response, env: &Env, head: bool) -> Result<Response> {
     let headers = Headers::new();
     for (name, value) in &answer.headers {
         headers.append(name, value)?;
@@ -74,6 +77,15 @@ async fn respond(answer: univ_api::Response, env: &Env) -> Result<Response> {
         univ_api::Body::Empty => Response::empty()?,
         univ_api::Body::Bytes(bytes) => Response::from_bytes(bytes)?,
         univ_api::Body::Static(bytes) => Response::from_bytes(bytes.to_vec())?,
+        univ_api::Body::Object(key) if head => {
+            let object = env
+                .bucket(d1::BUCKET)?
+                .head(key.as_str())
+                .await?
+                .ok_or_else(|| Error::RustError(format!("the releases bucket holds no {key}")))?;
+            headers.set("content-length", &object.size().to_string())?;
+            Response::empty()?
+        }
         univ_api::Body::Object(key) => {
             let object = env
                 .bucket(d1::BUCKET)?

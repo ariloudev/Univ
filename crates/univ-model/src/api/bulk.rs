@@ -70,6 +70,8 @@ pub struct GridField {
     pub unit: Unit,
     /// The path of its samples in the same release.
     pub samples: String,
+    /// The path of the samples of its uncertainty, where it was published with one.
+    pub uncertainty: Option<String>,
 }
 
 /// How to decode a release's tiles (decode-the-tile-format): the byte layout of each tile

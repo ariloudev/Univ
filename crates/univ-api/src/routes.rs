@@ -28,6 +28,7 @@ pub enum Endpoint {
     Grids,
     GridHeader,
     GridSamples,
+    GridUncertainty,
     TileFormat,
 }
 
@@ -40,7 +41,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 16] = [
+pub static ROUTES: [Route; 17] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -118,6 +119,11 @@ pub static ROUTES: [Route; 16] = [
     },
     Route {
         method: Method::Get,
+        path: "/v1/grids/{id}/fields/{field}/uncertainty",
+        endpoint: Endpoint::GridUncertainty,
+    },
+    Route {
+        method: Method::Get,
         path: "/v1/tile-format",
         endpoint: Endpoint::TileFormat,
     },
@@ -155,6 +161,15 @@ async fn answer<B: Backend>(
         }
         Endpoint::Grids => grids::list(request, backend).await,
         Endpoint::TileFormat => bulk::tile_format(request, backend).await,
+        Endpoint::GridUncertainty => {
+            grids::uncertainty(
+                request,
+                param(params, "id"),
+                param(params, "field"),
+                backend,
+            )
+            .await
+        }
         Endpoint::GridHeader => grids::header(request, param(params, "id"), backend).await,
         Endpoint::GridSamples => {
             grids::samples(

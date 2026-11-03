@@ -90,6 +90,21 @@ fn nothing_published() -> Problem {
     )
 }
 
+/// The `Cache-Control` of a release's file read pinned to it: a release's files never change.
+pub const IMMUTABLE: &str = "public, max-age=31536000, immutable";
+
+/// A release's file answered from `release`: cacheable for good when the request pinned its
+/// release, and revalidated on every use when it did not, since `latest` moves.
+#[must_use]
+pub fn pinned_file(response: Response, request: &Request, release: u32) -> Response {
+    let cache = if request.param(RELEASE_PARAM).is_some() {
+        IMMUTABLE
+    } else {
+        "no-cache"
+    };
+    pinned(response.with_header("cache-control", cache), release)
+}
+
 /// The response, marked as answered from `release`.
 #[must_use]
 pub fn pinned(response: Response, release: u32) -> Response {

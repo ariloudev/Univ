@@ -74,8 +74,10 @@ problem_types! {
     ScaleDomainNotFound = "urn:univ:problem:scale-domain-not-found", "No such scale domain", 404;
     /// The scale domain's tile manifest holds no node of that address.
     TileNotFound = "urn:univ:problem:tile-not-found", "No such tile", 404;
-    /// The release has no volume grid of that id, or the grid no field of that index.
+    /// The release has no volume grid of that id.
     GridNotFound = "urn:univ:problem:grid-not-found", "No such volume grid", 404;
+    /// The volume grid has no field of that index, or the field no uncertainty.
+    GridFieldNotFound = "urn:univ:problem:grid-field-not-found", "No such grid field", 404;
     /// The server failed to answer a request it should have answered.
     InternalError = "urn:univ:problem:internal-error", "Internal error", 500;
 }

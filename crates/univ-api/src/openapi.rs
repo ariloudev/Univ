@@ -33,6 +33,7 @@ use crate::problem::{Problem, ProblemDocument, ProblemType};
         crate::grids::list,
         crate::grids::header,
         crate::grids::samples,
+        crate::grids::uncertainty,
         crate::bulk::tile_format
     ),
     components(schemas(ProblemDocument, ProblemType, univ_model::tile::manifest::TileManifest))
