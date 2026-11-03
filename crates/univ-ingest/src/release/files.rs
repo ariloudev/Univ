@@ -7,7 +7,7 @@ use univ_model::derive::{MODEL_VERSION, Release};
 use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
     CellIndex, CellSpaceInfo, Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestFile,
-    ManifestSource, RecordedFile, ReleaseManifest, Target, Versions,
+    ManifestSource, NotIndexed, RecordedFile, ReleaseManifest, Target, Versions,
 };
 use univ_model::release::rows::ReleaseRow;
 use univ_model::release::{SCHEMA_VERSION, keys};
@@ -116,7 +116,8 @@ fn rows(
         &objects.per_source,
         inputs.cache,
     )?;
-    let (structures, bounds) = structure_rows(number, inputs.structures, &crossed.structures)?;
+    let (structures, bounds) =
+        structure_rows(number, inputs.structures, &crossed.structures, &release)?;
     let cells = cell_rows(
         number,
         &crossed.objects,
@@ -287,7 +288,7 @@ fn manifest_of(
             tile_manifest: TILE_MANIFEST_VERSION,
         },
         rules: recorded,
-        cell_index: cell_index(),
+        cell_index: cell_index(&rows.cells),
         sources: inputs
             .definitions
             .iter()
@@ -329,7 +330,7 @@ fn manifest_of(
 }
 
 /// The cell index's scheme, as the manifest records it.
-fn cell_index() -> CellIndex {
+fn cell_index(cells: &CellRows) -> CellIndex {
     CellIndex {
         scheme: "uniform grid of cubes anchored at the origin, cell = floor(coordinate / (edge \
                  * 2^level)); objects at level 0 of their scale domain, structures at the \
@@ -346,6 +347,14 @@ fn cell_index() -> CellIndex {
             .collect(),
         structure_span: STRUCTURE_SPAN,
         max_structure_level: MAX_STRUCTURE_LEVEL,
+        not_indexed: cells
+            .not_indexed
+            .iter()
+            .map(|(structure, reason)| NotIndexed {
+                structure: structure.clone(),
+                reason: reason.clone(),
+            })
+            .collect(),
     }
 }
 

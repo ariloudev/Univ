@@ -104,14 +104,15 @@ fn the_manifest_lists_every_file_of_the_release_with_its_sha256() {
 fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
     let f = fixture();
     let crossed = cross(&f);
-    let (_, mut bounds) = structure_rows(1, &f.structures, &crossed.structures).unwrap();
+    let release = univ_model::derive::Release::new(&crossed.cosmology);
+    let (_, mut bounds) = structure_rows(1, &f.structures, &crossed.structures, &release).unwrap();
     // SIMULATED: the recorded answers place no member list whole, so a wall 1,500 Mpc long
     // stands in for a structure with a bounding box.
     let wall = univ_model::geometry::Aabb {
         min: [-750.0, 100.0, 0.0],
         max: [750.0, 200.0, 10.0],
     };
-    bounds.push(("simulated-wall".to_owned(), Some(wall)));
+    bounds.push(("simulated-wall".to_owned(), Ok(wall)));
     let cells = cell_rows(
         1,
         &crossed.objects,
@@ -161,7 +162,10 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
         assert!(space.range(&query).unwrap().contains(cell));
     }
     // Each structure with a bounding box takes at most 64 cells, which cover its box.
-    for (id, b) in bounds.iter().filter_map(|(id, b)| Some((id, (*b)?))) {
+    for (id, b) in bounds
+        .iter()
+        .filter_map(|(id, b)| Some((id, *b.as_ref().ok()?)))
+    {
         let rows: Vec<_> = cells
             .structures
             .iter()
@@ -180,7 +184,7 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
     }
     assert_eq!(
         cells.structures_indexed,
-        bounds.iter().filter(|(_, b)| b.is_some()).count() as u64
+        bounds.iter().filter(|(_, b)| b.is_ok()).count() as u64
     );
     assert_eq!(
         cells

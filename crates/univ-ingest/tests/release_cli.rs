@@ -75,11 +75,14 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     for line in [
         "Z Stage tiles: 3 items\n".to_owned(),
         format!(
-            "Z Step build: release 1: every check passed; 24 files listed with their SHA-256 in \
+            "Z Step build: release 1: every check passed; 25 files listed with their SHA-256 in \
              {}\n",
             dir.join("manifest.yaml").display()
         ),
-        "Z Step build: cell index: 17 placed objects, 0 of 26 structures with a bounding box\n"
+        "Z Step build: cell index: 17 placed objects, 18 of 26 structures with a bounding box\n"
+            .to_owned(),
+        "Z Step build: cell index: 8 structures not indexed: big-ring (56 of its 56 members \
+         are not placed); "
             .to_owned(),
         "Z Step build: provisional redistribution review, judged again before any public \
          deployment: cosmicflows-4, hipparcos-2007, mcconnachie-2012, researched-structures, \

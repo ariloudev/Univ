@@ -3,6 +3,7 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
+use univ_model::derive::Release;
 use univ_model::geometry::Aabb;
 use univ_model::ids::SourceId;
 use univ_model::release::keys;
@@ -11,6 +12,7 @@ use univ_model::release::rows::{
 };
 
 use super::objects::{json, snake};
+use super::place::index_bounds;
 use crate::crossmatch::MemberPlacement;
 use crate::provenance::Provenance;
 use crate::source::SourceDefinition;
@@ -84,28 +86,30 @@ pub fn source_rows(
     Ok(rows)
 }
 
-/// A structure's id and its ICRS bounding box in Mpc, if it has one.
-pub type StructureBounds = (String, Option<Aabb>);
+/// A structure's id and its ICRS bounding box in Mpc, or why it has none.
+pub type StructureBounds = (String, Result<Aabb, String>);
 
 /// The rows of the release's `structures`, each by its id, with the member list `placements`
-/// resolved for it; and each structure's ICRS bounding box in Mpc, where it has one.
+/// resolved for it; and each structure's ICRS bounding box in Mpc under `release`, the box its
+/// row records and the cell index holds (see [`super::place`]), or why it has none.
 ///
 /// # Errors
 ///
 /// Fails when a value cannot be written as JSON.
 pub fn structure_rows(
-    release: u32,
+    release_number: u32,
     structures: &[(String, Structure)],
     placements: &[MemberPlacement],
+    release: &Release,
 ) -> Result<(Vec<StructureRow>, Vec<StructureBounds>), String> {
     let mut rows = Vec::with_capacity(structures.len());
     let mut bounds = Vec::with_capacity(structures.len());
     for (id, s) in structures {
         let placed = placements.iter().find(|p| p.structure == s.name);
         let shape = placed.and_then(|p| p.shape.as_ref());
-        let boxed = placed.filter(|p| p.shape.is_some()).and_then(|p| p.bounds);
+        let boxed = index_bounds(s, placed, release);
         rows.push(StructureRow {
-            release,
+            release: release_number,
             id: id.clone(),
             name: s.name.clone(),
             kind: snake(&s.kind),
@@ -113,7 +117,7 @@ pub fn structure_rows(
             geometry_kind: s.geometry_kind().map(str::to_owned),
             record: json(s)?,
             members: shape.map(json).transpose()?,
-            bounds: boxed.as_ref().map(json).transpose()?,
+            bounds: boxed.as_ref().ok().map(json).transpose()?,
         });
         bounds.push((id.clone(), boxed));
     }

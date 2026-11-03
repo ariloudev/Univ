@@ -62,6 +62,19 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
             m.counts.object_cells, m.counts.structures_indexed, m.counts.structures
         ),
     ];
+    if !m.cell_index.not_indexed.is_empty() {
+        let each: Vec<String> = m
+            .cell_index
+            .not_indexed
+            .iter()
+            .map(|n| format!("{} ({})", n.structure, n.reason))
+            .collect();
+        lines.push(format!(
+            "cell index: {} structures not indexed: {}",
+            each.len(),
+            each.join("; ")
+        ));
+    }
     if !built.provisional.is_empty() {
         let ids: Vec<String> = built.provisional.iter().map(ToString::to_string).collect();
         lines.push(format!(

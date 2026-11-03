@@ -71,6 +71,17 @@ pub struct CellIndex {
     pub spaces: Vec<CellSpaceInfo>,
     pub structure_span: i64,
     pub max_structure_level: u8,
+    /// Each structure the index does not hold, with the reason.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub not_indexed: Vec<NotIndexed>,
+}
+
+/// A structure the cell index does not hold, and why.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NotIndexed {
+    pub structure: String,
+    pub reason: String,
 }
 
 /// A cell space: its name, unit and level-0 cell edge.
@@ -103,7 +114,7 @@ pub struct Counts {
     pub placed: u64,
     pub entries: u64,
     pub structures: u64,
-    /// Structures with a bounding box, which the cell index holds.
+    /// Structures placed with a bounding box, which the cell index holds.
     pub structures_indexed: u64,
     pub grids: u64,
     pub tiles: u64,

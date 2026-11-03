@@ -3,12 +3,10 @@
 //! position its tile gives it, and each structure with a bounding box in the cells of the
 //! structures space that its box meets.
 //!
-//! A structure has a bounding box once its geometry is placed in three dimensions: in this
-//! release, a member list whose members are all placed, bounded by their positions. A structure
-//! shown at its published position, a primitive solid or a sky region is not yet placed under
-//! the release cosmology, so it is not in the index; the build counts it. A sky region's box is
-//! the sphere of its far distance, far too coarse for an index: when sky regions are placed, they
-//! need a bound of their cone between the near and far distances instead.
+//! A structure enters the index with the box `super::place` gives it under the release
+//! cosmology: a member list placed whole, a point, a sphere, or a sky region bounded between its
+//! near and far distances. One that cannot be placed is not in the index; the build lists it
+//! with the reason.
 
 use univ_model::cosmology::Cosmology;
 use univ_model::geometry::Aabb;
@@ -27,6 +25,8 @@ pub struct CellRows {
     pub structures: Vec<StructureCellRow>,
     /// The structures with a bounding box, which the index holds.
     pub structures_indexed: u64,
+    /// Each structure the index does not hold, by its id, with the reason.
+    pub not_indexed: Vec<(String, String)>,
 }
 
 /// The cell space of the scale domain named `name`.
@@ -36,7 +36,7 @@ fn space(name: &str) -> Option<CellSpace> {
 
 /// The cell index of release `release`: the placed `objects`, in the scale domains
 /// `definitions` give them under `cosmology`, and the `structures`, each by its id with its
-/// ICRS bounding box in Mpc, if it has one.
+/// ICRS bounding box in Mpc or the reason it has none.
 ///
 /// # Errors
 ///
@@ -46,7 +46,7 @@ pub fn cell_rows(
     objects: &[ReleaseObject],
     definitions: &[SourceDefinition],
     cosmology: &Cosmology,
-    structures: &[(String, Option<Aabb>)],
+    structures: &[(String, Result<Aabb, String>)],
 ) -> Result<CellRows, String> {
     let assigned = assign(objects, definitions, cosmology).map_err(|e| e.to_string())?;
     let mut rows = CellRows::default();
@@ -68,7 +68,13 @@ pub fn cell_rows(
         }
     }
     for (id, bounds) in structures {
-        let Some(bounds) = bounds else { continue };
+        let bounds = match bounds {
+            Ok(bounds) => bounds,
+            Err(reason) => {
+                rows.not_indexed.push((id.clone(), reason.clone()));
+                continue;
+            }
+        };
         let (level, range) = structure_cells(bounds)
             .ok_or_else(|| format!("structure {id}'s bounding box has no cells"))?;
         rows.structures_indexed += 1;

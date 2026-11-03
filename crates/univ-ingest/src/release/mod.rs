@@ -22,6 +22,7 @@ mod files;
 mod grids;
 mod meta;
 mod objects;
+mod place;
 
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -39,8 +40,9 @@ pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
 pub use d1::{D1Rows, MAX_FILE_BYTES};
 pub use files::{Assembled, RELEASES, ReleaseFile, assemble, list, release_dir, verify};
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
-pub use meta::{SourceRows, domain_rows, source_rows, structure_rows};
+pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
 pub use objects::{ObjectRows, json, ledger_rows, object_rows, snake};
+pub use place::{index_bounds, sky_region};
 
 use crate::crossmatch::CrossMatched;
 use crate::source::SourceDefinition;
