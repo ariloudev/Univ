@@ -3,7 +3,9 @@
 
 pub mod access;
 pub mod acquire;
+pub mod display;
 pub mod events;
 pub mod fetch;
 pub mod provenance;
+pub mod run;
 pub mod source;

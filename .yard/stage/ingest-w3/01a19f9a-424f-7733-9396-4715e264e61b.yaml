@@ -1,0 +1,114 @@
+key: 01a19f9a-424f-7733-9396-4715e264e61b
+id: w3-review
+versions:
+  - key: 01a19f9a-424f-7733-9396-471d99af6bfb
+    at: 2026-11-03T04:10:49Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W3 review"
+    goal: "/simplify and /code-review findings on wave 3 are fixed, the gate is green and the trace is recorded"
+    status: planned
+  - key: 01a19f9f-dd3c-76dd-bdcf-289a553769f9
+    at: 2026-11-03T04:16:56Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W3 review"
+    goal: "/simplify and /code-review findings on wave 3 are fixed, the gate is green and the trace is recorded"
+    status: active
+  - key: 01a19fac-6898-7299-9cb6-b40b8cb04449
+    at: 2026-11-03T04:30:38Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W3 review"
+    goal: "/simplify and /code-review findings on wave 3 are fixed, the gate is green and the trace is recorded"
+    status: done
+blocks:
+  - key: 01a19fac-6898-7299-9cb6-b4054c72fc27
+    id: w3-fix-review
+    kind: task
+    versions:
+      - key: 01a19fac-6898-7299-9cb6-b4082ed69db9
+        at: 2026-11-03T04:30:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the /code-review and /simplify findings"
+        detail: |-
+          Correctness, each with a test that fails without its fix:
+          - chunks in flight beside a failing one finish and report before the source fails;
+          - resumed downloads count only this run's bytes;
+          - the status line is drawn on a 100 ms tick, lines and status in one draw (indicatif `println` forces a draw, so the status is a template key), so it is never stale and never exceeds 10 draws a second;
+          - a dead mirror is skipped once across concurrent chunks;
+          - the summary names every source as fetched, failed or not reached, including on Ctrl-C;
+          - a Ctrl-C handler that cannot be installed no longer counts as an interrupt.
+
+          Simplify: shared `TestClock::advance`, a `RunDisplay` trait, a sink-built summary, `Fetcher::emit`, downloads keyed by number, one timestamp per written line, and `progress_due` in place of the plain sink's own map.
+
+          Three later items are added to the plan for W4.
+        state: done
+        type: fix
+  - key: 01a19fac-6898-7299-9cb6-b406f1cafdc8
+    id: w3-trace
+    kind: loft
+    versions:
+      - key: 01a19fac-6898-7299-9cb6-b40931cec3d4
+        at: 2026-11-03T04:30:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: trace
+        note: "F-13 (AC-107 to AC-120) is linked to `display.rs`, `interrupt.rs`, `cli.rs` and `run.rs`. AC-15 gains the two concurrent dead-mirror tests. AC-121 (no half-built release) stays unverified until W7 adds releases. 46 of 293 nodes linked."
+        recorded:
+          commit: "580e1a0d2dacf1055fae65f288c36cea8688a779"
+          branch: "stage/ingest-w3"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T04:30:38Z
+        report: |
+          {
+            "base": "product/ingest",
+            "commit": "8b71f63ab02cfc4563e50e9557509a2bbe035b15",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 293,
+              "linked": 46,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a19fac-6898-7299-9cb6-b407c15354f8
+    id: w3-review-summary
+    kind: note
+    versions:
+      - key: 01a19fac-6898-7299-9cb6-b40a92e9c0b8
+        at: 2026-11-03T04:30:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Wave 3 reviewed"
+        markdown: |-
+          | Part | Module | Notes |
+          |---|---|---|
+          | State | `display/mod.rs` | Get/Hit/Err/Resume/Restart lines; status with stage %, bytes of expected, rate, time left, downloads |
+          | Terminal | `display/terminal.rs` | indicatif, drawn on a 100 ms tick, cut to the width |
+          | Plain | `display/plain.rs` | RFC 3339 lines, a progress line a minute |
+          | Summary | `display/summary.rs` | bytes, time, rate; every source fetched, failed or not reached; how the run ended |
+          | Command | `main.rs`, `run.rs` | `univ-ingest fetch`, 3 chunks at once, Ctrl-C keeps everything and exits 130 |
+
+          **Gate:** 10 gates, 109 tests. **Open:** the owner's three answers on `product/ingest`.
+        tone: success

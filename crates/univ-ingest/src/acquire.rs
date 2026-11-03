@@ -5,7 +5,10 @@
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Mutex, PoisonError};
 
+use futures_util::{StreamExt as _, stream};
 use thiserror::Error;
 use univ_model::ids::SourceId;
 
@@ -13,6 +16,10 @@ use crate::access::{ChunkRequest, check_answer, chunk_requests, count_request, r
 use crate::fetch::{Check, Clock, Expected, FetchError, Fetched, Fetcher, Item, Payload};
 use crate::provenance::Provenance;
 use crate::source::{Access, RemoteFile, SourceDefinition};
+
+/// Chunks of one source asked for at once: enough to hide a slow provider's latency, few
+/// enough to stay polite.
+const CHUNKS_AT_ONCE: usize = 3;
 
 /// A source on disk, ready to be read: its chunks or files, in order.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -82,6 +89,7 @@ pub async fn acquire<C: Clock>(
         definition,
         dir,
         known,
+        recording: Mutex::new(()),
     };
     let files = match &definition.access {
         Access::Files { files } => acquire_files(&run, files).await?,
@@ -96,6 +104,8 @@ struct Run<'a, C: Clock> {
     definition: &'a SourceDefinition,
     dir: PathBuf,
     known: Provenance,
+    /// Held while provenance is written, as chunks arrive together.
+    recording: Mutex<()>,
 }
 
 /// Fetches each file of a file source. A file on disk without a record, or whose record or size
@@ -145,13 +155,34 @@ async fn acquire_files<C: Clock>(
 async fn acquire_chunks<C: Clock>(run: &Run<'_, C>) -> Result<Vec<PathBuf>, AcquireError> {
     let definition = run.definition;
     let check = |body: &[u8]| check_answer(definition, body);
-    let mut files = Vec::new();
-    let mut found = 0;
-    for request in chunk_requests(definition) {
-        let (dest, rows) = run.measured(&request, &check).await?;
-        found += rows;
-        files.push(dest);
-    }
+    let requests = chunk_requests(definition);
+    // After the first failure no further chunk starts, but the chunks in flight finish, so
+    // that their events and records land before the error is returned.
+    let failed = AtomicBool::new(false);
+    let outcomes: Vec<Option<Result<(PathBuf, u64), AcquireError>>> = stream::iter(&requests)
+        .map(|request| {
+            let failed = &failed;
+            let check = &check;
+            async move {
+                if failed.load(Ordering::Relaxed) {
+                    return None;
+                }
+                let outcome = run.measured(request, check).await;
+                if outcome.is_err() {
+                    failed.store(true, Ordering::Relaxed);
+                }
+                Some(outcome)
+            }
+        })
+        .buffered(CHUNKS_AT_ONCE)
+        .collect()
+        .await;
+    let fetched = outcomes
+        .into_iter()
+        .flatten()
+        .collect::<Result<Vec<_>, _>>()?;
+    let found = fetched.iter().map(|(_, rows)| rows).sum();
+    let files: Vec<PathBuf> = fetched.into_iter().map(|(dest, _)| dest).collect();
     let mut kept = files.clone();
     let expected = if let Some(request) = count_request(definition) {
         let count = |body: &[u8]| read_count(&definition.access, body);
@@ -190,6 +221,10 @@ impl<C: Clock> Run<'_, C> {
     }
 
     fn record(&self, payload: &Payload) -> std::io::Result<()> {
+        let _held = self
+            .recording
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
         Provenance::record(&self.dir, &self.definition.id, payload)
     }
 

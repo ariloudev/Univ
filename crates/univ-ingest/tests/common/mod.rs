@@ -17,22 +17,41 @@ use univ_ingest::fetch::{Clock, Fetcher, Item, Payload, RetryPolicy};
 use univ_ingest::source::{SourceDefinition, read_all};
 use univ_model::ids::SourceId;
 
-/// A clock that never waits and remembers each wait it was asked for.
-#[derive(Clone, Default)]
-pub struct TestClock(Arc<Mutex<Vec<Duration>>>);
+/// A clock that never waits, remembers each wait it was asked for, and moves only when a test
+/// moves it. Its clones share both.
+#[derive(Clone)]
+pub struct TestClock {
+    waits: Arc<Mutex<Vec<Duration>>>,
+    now: Arc<Mutex<SystemTime>>,
+}
+
+impl Default for TestClock {
+    fn default() -> Self {
+        Self {
+            waits: Arc::default(),
+            // 2026-11-03T00:00:00Z
+            now: Arc::new(Mutex::new(UNIX_EPOCH + Duration::from_hours(20_760 * 24))),
+        }
+    }
+}
 
 impl TestClock {
     pub fn waits(&self) -> Vec<Duration> {
-        self.0
+        self.waits
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
             .clone()
+    }
+
+    /// Moves the clock on by `by`.
+    pub fn advance(&self, by: Duration) {
+        *self.now.lock().unwrap_or_else(PoisonError::into_inner) += by;
     }
 }
 
 impl Clock for TestClock {
     fn sleep(&self, duration: Duration) -> impl Future<Output = ()> + Send {
-        self.0
+        self.waits
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
             .push(duration);
@@ -40,8 +59,7 @@ impl Clock for TestClock {
     }
 
     fn now(&self) -> SystemTime {
-        // 2026-11-03T00:00:00Z
-        UNIX_EPOCH + Duration::from_hours(20_760 * 24)
+        *self.now.lock().unwrap_or_else(PoisonError::into_inner)
     }
 }
 
