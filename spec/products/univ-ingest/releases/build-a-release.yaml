@@ -25,7 +25,7 @@ requirements:
       - key: 01a1a304-4ae3-74cc-a986-969a727616ef
         name: "The release records each source's coverage as a sky region with, where its catalogue entries hold redshifts or distances, the range they span."
       - key: 01a1a304-2788-77fb-8f0d-273ac3c97e3c
-        name: "The release holds each placed structure's geometry as a univ-model geometry in ICRS, beside the geometry its structure file gives."
+        name: "The release holds each placed structure's geometry as a univ-model geometry in a named frame, with its bounds in ICRS, beside the geometry its structure file gives."
       - key: 01a1a304-2788-77fb-8f0d-273b90e08a90
         name: "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline."
       - key: 01a1a304-2788-77fb-8f0d-273c7a6188dc
