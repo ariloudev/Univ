@@ -19,6 +19,15 @@ versions:
     title: "Master plan for Univ Server"
     goal: "An approved, wave-by-wave plan maps every Univ Server criterion to the wave that meets it and the tests that verify it"
     status: active
+  - key: 01a1a2ce-ed8c-7274-88f5-909890168f85
+    at: 2026-11-03T19:07:12Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Master plan for Univ Server"
+    goal: "An approved, wave-by-wave plan maps every Univ Server criterion to the wave that meets it and the tests that verify it"
+    status: done
 blocks:
   - key: 01a1a2b4-fef6-72a3-9bf5-d1a217e55780
     id: plan-context
@@ -577,3 +586,900 @@ blocks:
           email: "ariloudev@local"
         channel: page
         verdict: approved
+  - key: 01a1a2bb-424c-777f-bddc-4ce1b5a70b94
+    id: plan-28-plan-glowing-questing-ullman-01a1a2b1-c372-719d-bf01-77d3c53c215e
+    kind: plan
+    versions:
+      - key: 01a1a2bb-424c-777f-bddc-4ce2bacf793c
+        at: 2026-11-03T18:45:43Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Master plan: build Univ Server in waves"
+        markdown: |
+          # Master plan: build Univ Server in waves
+
+          ## Context
+
+          Univ Ingest is done: release 6 is `latest` in local D1 and R2 under `.cache/univ-ingest/wrangler`, with 2,098,918 objects, 26 structures, 3 grids and 401 tiles. Releases 1–4 are pruned.
+
+          This plan builds **Univ Server**, the Cloudflare Worker that serves those releases and the layers clients write. Its scope:
+
+          - Features F-14 to F-33, with requirements RQ-49 to RQ-112 and criteria AC-122 to AC-292, including the three criteria added by `7b6e6eb` (rate-limit tiers).
+          - QA-2 (object lookup p95 ≤ 200 ms) and QA-3 (first page of a volume query p95 ≤ 500 ms), both `sampled`.
+          - CON-2 (Rust on Workers with workers-rs).
+
+          Ingest already left the Worker most of what it reads:
+
+          - the D1 schema v2 (`crates/univ-model/src/release/schema.sql`), including the `names` lookup key, `designations`, the id ledger (`ids_issued`, `ids_replaced`), the cell index (`object_cells`, `structure_cells`, see `release/cells.rs`), `scale_domains`, `grids`, `releases` and `latest`;
+          - the R2 key layout (`release/keys.rs`);
+          - the tile encoding v1 with its Rust decoder (`tile/mod.rs`, `tile/read.rs`);
+          - the cosmology and frame rotations in univ-model.
+
+          The Worker reads all of this and never writes the release database.
+
+          **Settled on `product/server`:**
+
+          1. **Rate limits:** a key's rate limit is a tier: basic 300, standard 1,200 (the default) or extended 6,000 requests in 60 s. Anonymous clients are limited to 300 in 60 s per address.
+          2. **Databases:** layers and keys live in a D1 database of their own, `univ-layers`.
+          3. **End-to-end tests:** they run as `cargo xtask integration`, once at each wave's end, beside the gate.
+
+          ## Dev process (every wave)
+
+          1. **Branch and log.** Cut `stage/server-wN` from `product/server` and open its Yard Log. Register the wave's tasks there, each with a focused completion check.
+          2. **Build.** Work test-first where a criterion is concrete. Between tasks, run only **focused checks**: `cargo test -p <crate> <filter>`, `cargo clippy -p <crate> --all-targets -- -D warnings`, `cargo fmt --check`, and `loft check` after any spec edit. Commit as `type(scope): summary`, with `.yard/` in every commit.
+          3. **Review.** Run `/simplify` and `/code-review` in parallel on the wave's diff, and fix their findings as tasks.
+          4. **Gate, once at the wave's end.** `cargo xtask check` and `cargo xtask integration` must both pass. Commit on the gate's own exit status.
+          5. **Trace.** Link the wave's tests in `loft.trace.yaml`, run `loft reconcile --accept`, and record a `trace` block.
+          6. **Close.** Close the wave's Yard Log and commit it. The wave merges into `product/server` **only when you ask**.
+
+          A behaviour change found mid-wave goes to `spec/` first, for your approval. Any `.rs` file over 500 lines is split by responsibility.
+
+          ```mermaid
+          flowchart LR
+            W0[W0 Skeleton + harness] --> W1[W1 Releases, sources, structures]
+            W1 --> W2[W2 Objects]
+            W1 --> W3[W3 Bulk data + TS decoder]
+            W0 --> W4[W4 Keys + access]
+            W4 --> W5[W5 Layers]
+            W2 --> W6[W6 Volume + time queries]
+            W3 --> W6
+            W5 --> W6
+            W6 --> W7[W7 Contract + real release]
+          ```
+
+          ## Architecture
+
+          | Part | What it holds |
+          |---|---|
+          | `crates/univ-api` (new lib, native + wasm32) | Routes and their handlers, written against traits: `ReleaseStore`, `LayerStore`, `Blobs`, `Limiter` and `Clock`. Also request parsing and validation, RFC 9457 problem details, cursors, entity tags, and the OpenAPI document (utoipa). Holds no I/O, so every handler is tested natively. |
+          | `crates/univ-api` test support (dev-only) | The same traits over `rusqlite`, using the real `schema.sql`, the layer schema and an in-memory blob map. Fixture rows come from ingest's fixture release. |
+          | `crates/univ-server` (new cdylib, wasm32 only) | A thin workers-rs 0.8.7 (`d1`) entry. It binds `DB` (`univ`), `LAYERS` (`univ-layers`), the `RELEASES` bucket and the rate-limit namespaces `ANON`, `BASIC`, `STANDARD` and `EXTENDED`, and reads `OWNER_SECRET` from `.dev.vars`, which is gitignored. Tiles and grid samples stream from R2 without being decoded (AC-185). |
+          | `crates/univ-server/wrangler.toml` | The Worker's own config (the root `wrangler.toml` stays ingest's). It points at the same `univ` database and bucket, and `cargo xtask serve` runs `wrangler dev --persist-to .cache/univ-ingest/wrangler`. |
+          | `crates/univ-api/migrations/*.sql` | The `univ-layers` schema: `keys`, `layers`, `items`, `item_versions` (JSON body plus bounding-box and time columns for queries) and `changes`. Applied with `wrangler d1 migrations apply --local`. |
+          | `univ-model` | Gains `ToSchema` derives behind a feature named `openapi`, the layer item model with its validation, and a cited UTC→TT conversion: TT = TAI + 32.184 s, with TAI − UTC from IERS Bulletin C. |
+          | `clients/tile-decoder/` | The reference TypeScript decoder. Its tests run with `node --test` on Node 24, which runs `.ts` directly, so there are no npm dependencies. |
+
+          **API surface:** everything is under `/v1`. Release-scoped reads take `?release=n`; without it they read `latest`. Each answer names its release in its body and in a `Univ-Release` header.
+
+          | Group | Routes |
+          |---|---|
+          | Releases | `GET /v1/releases` |
+          | Objects | `GET /v1/objects/{id}`; `GET /v1/objects?source=&designation=`; `GET /v1/objects?name=` |
+          | Sources | `GET /v1/sources`; `GET /v1/sources/{id}`; `GET /v1/sources/{id}/provenance` |
+          | Structures | `GET /v1/structures?kind=&scale_domain=&cursor=`; `GET /v1/structures/{id}` |
+          | Scale domains and tiles | `GET /v1/scale-domains`; `GET /v1/scale-domains/{name}/manifest`; `GET /v1/scale-domains/{name}/tiles/{address}` |
+          | Grids | `GET /v1/grids`; `GET /v1/grids/{id}` (header); `GET /v1/grids/{id}/fields/{field}` (samples) |
+          | Volume queries | `POST /v1/query/volume`: the volume, filters, an optional time interval and a cursor |
+          | Layers | `GET` and `POST /v1/layers`; `GET`, `PATCH` and `DELETE /v1/layers/{id}`; `GET /v1/layers/{id}/changes?since=` |
+          | Items | `POST /v1/layers/{id}/items`; `GET …/items/{item}`; `GET …/items/{item}/versions/{n}`; `POST …/items/{item}/revisions`; `POST …/items/{item}/retraction` |
+          | Owner | `POST` and `GET /v1/owner/keys`; `PATCH /v1/owner/keys/{id}` (quotas, tier); `POST /v1/owner/keys/{id}/revoke` |
+          | Contract | `GET /v1/openapi.json`; `GET /v1/tile-format` |
+
+          ## Waves
+
+          ### W0: Skeleton, contract base and integration harness (`stage/server-w0`)
+
+          **Workspace:**
+
+          - Add `univ-api` and `univ-server` to the workspace.
+          - `univ-server` is excluded from native builds and tests: `default-members`, plus `--exclude` in the gate.
+          - Install `worker-build`, the one new tool, with `cargo install --locked worker-build`.
+
+          **Gate additions to `cargo xtask check`:**
+
+          - a wasm32 check of `univ-api`;
+          - `cargo clippy -p univ-server --target wasm32-unknown-unknown -D warnings`;
+          - `node --test clients/tile-decoder`, once that directory exists (W3).
+
+          **`cargo xtask integration`:**
+
+          1. Build ingest's fixture release twice into a temporary `--persist-to`, publish both, and prune the first, reusing the flow of `crates/univ-ingest/tests/publish_wrangler.rs`.
+          2. Apply the layer migrations.
+          3. Start `wrangler dev` on a free port with a test owner secret.
+          4. Run the `#[ignore]` HTTP tests in `crates/univ-server/tests/` against it, then stop it, also on failure.
+
+          **`cargo xtask serve`:** runs the Worker on the real local state.
+
+          **Behaviour built in W0:**
+
+          - the `/v1` router with a 404 problem for unknown routes;
+          - problem details as `application/problem+json`, each with a typed `type` URI;
+          - CORS on every read and preflight answered without credentials;
+          - `/v1/openapi.json` generated from the router table, with the test "every route served is documented and nothing else" in place from W0, so each later wave keeps it true.
+
+          **Docs:** `AGENTS.md` gains the server layout, the `product/server` and `stage/server-wN` branches, `integration` and `serve`, and the full gate at each wave's end.
+
+          **Covers:** CON-2; F-30 (RQ-104, RQ-105, AC-273–276); F-33's problem details and version path (RQ-111, RQ-112: AC-288–292).
+
+          **Tests:**
+
+          - native: the problem-details shape and the refusal type URIs;
+          - e2e: an anonymous read succeeds, a preflight returns `Access-Control-Allow-Origin: *`, and an unknown route gives a 404 problem.
+
+          ### W1: Releases, sources and structures (`stage/server-w1`)
+
+          **Release resolution for `release-scoped` reads:**
+
+          - a pruned release answers 410 with `pruned_at`, and a release that never existed answers 404;
+          - a read with no `release` reads `latest`;
+          - only releases with `published_at` set are visible;
+          - each release's `terms` are cached per isolate, which is safe because releases are immutable.
+
+          **Releases:** listed newest first, pruned ones included, each with its counts, cosmology and sources.
+
+          **Sources:**
+
+          - the citation (bibcode or DOI), terms of use and credit as defined;
+          - the query and cuts verbatim, and the coverage (sky region, redshift or distance range);
+          - provenance: payloads with SHA-256 and retrieval time, counts fetched and published, counts left out by reason, and the fixes applied.
+
+          **Structures:**
+
+          - each record holds its geometry in a named frame, every number with its citation and kind of value, and its members as object ids or tracers;
+          - a grid-outlined structure names its grid, threshold and test;
+          - H0-rescaled sizes come beside their native values;
+          - listings filter by kind and scale domain, in pages of 500 with a cursor.
+
+          **Covers:** F-14 (AC-122–130), F-16 (AC-147–155), F-17 (AC-156–165).
+
+          **Tests:** native, on fixture rows. E2e:
+
+          - two reads pinned to release 2 return identical bytes (AC-129);
+          - release 1 answers 410;
+          - release 99 answers 404.
+
+          ### W2: Objects (`stage/server-w2`)
+
+          **Lookup by id.** The object comes with:
+
+          - its catalogue entries and designations;
+          - its measurements, each with native value, unit, uncertainty, kind of value and source;
+          - its preferred measurement with the rule that chose it;
+          - its derived positions, each with frame, epoch, cosmology and transformation chain;
+          - its candidate matches with their confidence.
+
+          An object with no distance has a sky position and no 3D position.
+
+          **Lookup by designation and by name.** A designation is `source` plus identifier. A name is matched by `names.key`, so letter case and white space are ignored. A name carried by more than one object answers with the list of those objects.
+
+          **Replaced ids**, from `ids_replaced`, filtered by the read release:
+
+          - an id merged into one object answers 301 to that object in the same release;
+          - an id split into several answers with the list of objects that replaced it;
+          - each answer names the release that replaced the id;
+          - an older pinned release still serves the original object.
+
+          **Not found:** a 404 that names what was looked up.
+
+          **Measuring QA-2:** `cargo xtask bench lookup` times 1,000 random ids against `xtask serve` on release 6.
+
+          **Covers:** F-15 (AC-131–146) and QA-2.
+
+          **Tests:**
+
+          - native: M31 by `m 31`, `M31` and `m31`;
+          - a shared name lists its objects;
+          - merge and split fixtures from ingest's id-ledger tests;
+          - e2e: a merged id redirects.
+
+          ### W3: Bulk data and the TypeScript decoder (`stage/server-w3`)
+
+          **Scale domains:** the list gives each domain's extent, unit and point count. An unknown domain answers 404 with the domains that exist.
+
+          **Tile manifests:** served from R2 as published. A test checks that each manifest names its frame and origin, unit and cosmology, the node table with SHA-256s, the rotations, the sources with their credit, the encoding version and the quantization steps.
+
+          **Tiles:**
+
+          - streamed from R2 unchanged, with `Cache-Control: public, max-age=31536000, immutable`;
+          - a node the manifest doesn't hold answers 404 with its address.
+
+          **Grids:**
+
+          - listed with id, quantity, unit, shape and source;
+          - each header gives the kind of value (reconstructed), the frame, axis order, shape and origin, the native cell size and, for h⁻¹ Mpc, the size rescaled, the label table, and the citation and release;
+          - samples are streamed little-endian `f32`;
+          - an unknown grid answers 404.
+
+          **Tile format:** `GET /v1/tile-format` returns the tile manifest's JSON Schema and the byte layout of each encoding version a release uses.
+
+          **TypeScript decoder:**
+
+          - `clients/tile-decoder/decode.ts` decodes the v1 layout of `tile/mod.rs` into positions, object ids, sources and kinds;
+          - an unknown version fails with an error that names the version.
+
+          The decoder's test fixtures are tiles that the Rust encoder writes. Their expected points are stored as **JSON**, because Node has no YAML parser and the decoder takes no dependencies. That is an exception to the YAML rule, kept to test fixtures of the client.
+
+          **Covers:** F-18 (AC-166–174), F-19 (AC-175–182), F-20 (AC-183–186), F-32 (AC-281–284).
+
+          **Tests:**
+
+          - native, on manifests and headers;
+          - e2e: the SHA-256 of every fixture tile's response matches its manifest;
+          - `node --test`: positions decode within the stated step, and an unknown version is refused.
+
+          ### W4: Keys, owner and write access (`stage/server-w4`)
+
+          **Owner operations** are authenticated by bearer `OWNER_SECRET`, compared in constant time. A missing or wrong secret answers 401 and changes nothing.
+
+          **Issuing keys:**
+
+          - a 256-bit secret from `crypto.getRandomValues`, through `getrandom`'s `wasm_js`;
+          - only its SHA-256 is stored, and the secret is returned once;
+          - default quotas, and the `standard` tier by default.
+
+          **Revoking keys:** the revocation time is recorded. A revoked key's public layers stay readable (checked again in W5).
+
+          **Listing keys:** label, times, quotas, tier and usage (the number of layers and the size of the largest layer), without the secret.
+
+          **API keys:** a bearer key is checked against its SHA-256. A write with no key, an unknown key or a revoked key gets the same 401.
+
+          **Rate limits:**
+
+          - an anonymous client is limited by `CF-Connecting-IP` on `ANON`;
+          - a keyed client by key id on its tier's namespace;
+          - over the limit: 429 with `Retry-After: 60`;
+          - a change of tier applies from the key's next request.
+
+          **Quota checking:** quotas are checked before any write. A refused write names the quota, its limit and the key's usage, and stores nothing.
+
+          **Covers:** F-29 (AC-265–272 plus the new criterion), F-31 (AC-277–280), F-28 (AC-258–264 plus the two new criteria). Quotas are wired to real writes in W5.
+
+          **Tests:**
+
+          - native, with a fake limiter and clock;
+          - e2e: a real 429 from the binding (301 anonymous requests);
+          - keys issued, revoked and moved between tiers.
+
+          ### W5: Layers (`stage/server-w5`)
+
+          **Layers:**
+
+          - create, configure and retire, private by default;
+          - the change sequence starts at 0, and each change advances it by 1;
+          - a retired layer answers 410 to a caller allowed to read it, and otherwise 404;
+          - a retired layer leaves the key's layer quota;
+          - a non-owning key gets 403 on a public layer and 404 on a private one.
+
+          **Items:**
+
+          - the client chooses each item's id;
+          - each item holds title, summary, geometry in a named frame, time records (kind, timescale, uncertainty), kind of value, links and at least one source;
+          - validation lists every failing field by JSON pointer;
+          - an item with no source answers 422;
+          - an id the layer already holds answers 409 with the item's current version.
+
+          **Links:**
+
+          - a link is checked against `ids_issued` of every release, and also against structure ids;
+          - an id no release published is refused;
+          - an id later merged is served with its replacement, beside the id as written.
+
+          **Revisions and retractions:**
+
+          - a revision is the next version, marked as an update or a correction; a correction names the version it corrects and what was wrong;
+          - a retraction is a version that carries its reason;
+          - a stale version number answers 409;
+          - a revision gets the same checks as a publish.
+
+          **Reads:**
+
+          - a layer's current items that aren't retracted, in pages of 500;
+          - an item with all its versions, any of them readable by number;
+          - a private layer is invisible without its owning key.
+
+          **Following changes:**
+
+          - changes since a cursor, at most 1,000 to a page, of the five kinds;
+          - a malformed cursor, or one beyond the sequence, answers 400 with the current sequence;
+          - entity tags come from the layer's sequence, and a matching `If-None-Match` answers 304 with no body.
+
+          **Quotas:** items per layer and bytes per item version are enforced.
+
+          **Open point to bring to you during W5:**
+
+          - how to treat times before 1972, when UTC had no leap seconds: refuse UTC before 1972, or convert with the pre-1972 offset table;
+          - the TT/UTC rules themselves come with citations.
+
+          **Covers:** F-23 (AC-209–218), F-25 (AC-227–239), F-26 (AC-240–245), F-27 (AC-246–257), F-24 (AC-219–226).
+
+          **Tests:**
+
+          - native suites for each requirement, including a check that a refusal leaves the sequence unchanged;
+          - e2e: publish, revise, retract and follow the changes;
+          - e2e: an ETag answers 304;
+          - e2e: a private layer looks absent.
+
+          ### W6: Volume and time queries (`stage/server-w6`)
+
+          **Volumes:**
+
+          - a box, a sphere, or a cone with a distance range;
+          - in ICRS, galactic or supergalactic, through univ-model's rotations;
+          - in pc or Mpc;
+          - a malformed volume answers 400 with a pointer to the faulty field.
+
+          **Matching:**
+
+          - objects are found through `object_cells` and then tested by their derived position;
+          - structures through `structure_cells` and then their geometry;
+          - layer items through their bounding-box columns and then their geometry;
+          - a match is a true intersection, so a structure whose centre lies outside still matches;
+          - private items match only for their owning key;
+          - results can be filtered by kind, source, scale domain and layer.
+
+          **Pages:**
+
+          - 1,000 results to a page and 10,000 in all, after which the result is marked truncated;
+          - results come in a stable order;
+          - each cursor records the release and every layer's sequence, and a layer that changed answers 409 with its current sequence.
+
+          **Covering tiles:** for each domain, the deepest level up to the client's maximum with at most 4,096 intersecting nodes. The answer names the level, and each node address can be fetched directly.
+
+          **Time filter:**
+
+          - by kind: source event, arrival or discovery;
+          - a record matches when its uncertainty interval meets the query interval, compared on TT;
+          - a record with no time of the named kind does not match;
+          - an interval that ends before it starts, or an unknown timescale, answers 400.
+
+          **Measuring QA-3:** `cargo xtask bench volume` runs 50 Mpc spheres 100 Mpc out on release 6.
+
+          **Covers:** F-22 (AC-192–208) and QA-3, F-21 (AC-187–191).
+
+          **Tests:**
+
+          - native geometry tests: a sphere that meets a box only at a corner, and a cone wider than 180° refused;
+          - paging stays stable when nothing changes, and answers 409 after a layer changes;
+          - covering-node counts against a brute-force check;
+          - e2e: one query over the fixture release.
+
+          ### W7: Contract complete and the real release (`stage/server-w7`)
+
+          **OpenAPI checks:**
+
+          - every refusal of every route appears with its status and problem type;
+          - the schemas are generated from univ-model types;
+          - a snapshot test of `openapi.json` refuses any removal or rename within `/v1`, and allows additions only (AC-292).
+
+          **On release 6, through `cargo xtask serve`:**
+
+          - measure QA-2 and QA-3 and record the results as `sampled` evidence;
+          - decode all 401 tiles with the TypeScript decoder and check their SHA-256s (AC-281);
+          - spot-check the science through the API: M31 at about 0.78 Mpc, M87 at 16.77 Mpc, the Virgo group at its KT17 centre, and Laniakea's attractors in their basins;
+          - check that releases 1–4 answer 410.
+
+          Whatever fails is fixed as a task or reported plainly.
+
+          **Covers:** F-33 (AC-285–292) and every criterion again end to end.
+
+          ## Verification
+
+          - **Each wave:** `cargo xtask check` and `cargo xtask integration` are green at the wave's end. `/simplify` and `/code-review` findings are resolved, `loft reconcile --accept` passes, and a `trace` block is recorded.
+          - **End of W7:**
+            - every criterion from AC-122 to AC-292, and the three new ones, is linked to a passing test in `loft.trace.yaml`, or marked `unverified` with its reason;
+            - QA-2 and QA-3 are measured on release 6;
+            - a note records the science spot-checks;
+            - the Worker serves release 6 under `wrangler dev`.
+
+          ## Critical files
+
+          - `Cargo.toml` (members, `default-members`) and `xtask/src/main.rs` (gates, `integration`, `serve`, `bench`); `AGENTS.md`; `.gitignore` (`.dev.vars`)
+          - `crates/univ-api/src/{routes,problem,release,objects,sources,structures,bulk,keys,access,layers,items,changes,query,cursor,openapi}.rs` and `crates/univ-api/migrations/`
+          - `crates/univ-server/{src/lib.rs,src/d1.rs,src/r2.rs,src/limits.rs,wrangler.toml,tests/}`
+          - `crates/univ-model/src/{layer,time}.rs` and the `openapi` feature; reused as they are: `release/{schema.sql,keys.rs,cells.rs}`, `tile/`, `position/`, `geometry/bounds.rs`
+          - `clients/tile-decoder/{decode.ts,decode.test.ts,fixtures/}`
+
+          ## New dependencies, to be confirmed by cargo-deny, machete and the wasm32 check
+
+          - `worker` =0.8.7 (`d1`)
+          - `utoipa` 6
+          - `sha2`
+          - `getrandom` (`wasm_js`)
+          - `base64` (cursors)
+          - `subtle` (constant-time compare)
+          - `worker-build` (a tool, not a crate dependency)
+          - dev-only: `rusqlite` (already in the workspace) and `reqwest` (blocking, for the e2e tests)
+        planMode: true
+      - key: 01a1a2c8-36a8-741b-b3d9-f596f233538b
+        at: 2026-11-03T18:59:52Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Master plan: build Univ Server in waves"
+        markdown: |
+          # Master plan: build Univ Server in waves
+
+          ## Context
+
+          Univ Ingest is done: release 6 is `latest` in local D1 and R2 under `.cache/univ-ingest/wrangler`, with 2,098,918 objects, 26 structures, 3 grids and 401 tiles. Releases 1–4 are pruned.
+
+          This plan builds **Univ Server**, the Cloudflare Worker that serves those releases and the layers clients write. Its scope:
+
+          - Features F-14 to F-33, with requirements RQ-49 to RQ-112 and criteria AC-122 to AC-292, including the three criteria added by `7b6e6eb` (rate-limit tiers).
+          - QA-2 (object lookup p95 ≤ 200 ms) and QA-3 (first page of a volume query p95 ≤ 500 ms), both `sampled`.
+          - CON-2 (Rust on Workers with workers-rs).
+
+          Ingest already left the Worker most of what it reads:
+
+          - the D1 schema v2 (`crates/univ-model/src/release/schema.sql`), including the `names` lookup key, `designations`, the id ledger (`ids_issued`, `ids_replaced`), the cell index (`object_cells`, `structure_cells`, see `release/cells.rs`), `scale_domains`, `grids`, `releases` and `latest`;
+          - the R2 key layout (`release/keys.rs`);
+          - the tile encoding v1 with its Rust decoder (`tile/mod.rs`, `tile/read.rs`);
+          - the cosmology and frame rotations in univ-model.
+
+          The Worker reads all of this and never writes the release database.
+
+          **Settled on `product/server`:**
+
+          1. **Rate limits:** a key's rate limit is a tier: basic 300, standard 1,200 (the default) or extended 6,000 requests in 60 s. Anonymous clients are limited to 300 in 60 s per address.
+          2. **Databases:** layers and keys live in a D1 database of their own, `univ-layers`.
+          3. **End-to-end tests:** they run as `cargo xtask integration`, once at each wave's end, beside the gate.
+
+          ## Transport: HTTP with JSON and binary tiles, not gRPC
+
+          You asked whether to use gRPC. The plan keeps plain HTTP, for these reasons.
+
+          **The spec already fixes it.** These features and decisions all describe HTTP:
+
+          - F-33 and ADR-8 (an OpenAPI 3.1 document, RFC 9457 problem details, routes under `/v1`);
+          - F-30 (CORS for any origin);
+          - F-24 and ADR-7 (entity tags, `304`, polling a change feed);
+          - F-20 and ADR-20 (tiles streamed from R2 unchanged, cacheable for a year);
+          - status codes such as 410 and 429 with `Retry-After`.
+
+          Moving to gRPC would supersede ADR-8 and ADR-20 and rewrite most of the criteria.
+
+          **The main client is a browser.** Browsers cannot speak native gRPC. They need gRPC-Web, or the Connect protocol, plus generated stubs on the client. HTTP with JSON needs only `fetch`, plus a TypeScript client generated from the OpenAPI document.
+
+          **The runtime fits HTTP.** A Worker answers `fetch` events. gRPC relies on HTTP/2 trailers, which a Worker's responses do not support, so only gRPC-Web or Connect would run there.
+
+          **The bulk path doesn't benefit.** Tiles are already compact binary, built once, cached at the edge and streamed without decoding. Protobuf would add a second encoding, and the JSON records are small.
+
+          **Later:** if a native client ever needs typed streaming, a Connect-compatible facade can be added on the same `univ-api` handlers as a new API version. Nothing in this plan blocks that.
+
+          ## Dev process (every wave)
+
+          1. **Branch and log.** Cut `stage/server-wN` from `product/server` and open its Yard Log. Register the wave's tasks there, each with a focused completion check.
+          2. **Build.** Work test-first where a criterion is concrete. Between tasks, run only **focused checks**: `cargo test -p <crate> <filter>`, `cargo clippy -p <crate> --all-targets -- -D warnings`, `cargo fmt --check`, and `loft check` after any spec edit. Commit as `type(scope): summary`, with `.yard/` in every commit.
+          3. **Review.** Run `/simplify` and `/code-review` in parallel on the wave's diff, and fix their findings as tasks.
+          4. **Gate, once at the wave's end.** `cargo xtask check` and `cargo xtask integration` must both pass. Commit on the gate's own exit status.
+          5. **Trace.** Link the wave's tests in `loft.trace.yaml`, run `loft reconcile --accept`, and record a `trace` block.
+          6. **Close.** Close the wave's Yard Log and commit it. The wave merges into `product/server` **only when you ask**.
+
+          A behaviour change found mid-wave goes to `spec/` first, for your approval. Any `.rs` file over 500 lines is split by responsibility.
+
+          ```mermaid
+          flowchart LR
+            W0[W0 Skeleton + harness] --> W1[W1 Releases, sources, structures]
+            W1 --> W2[W2 Objects]
+            W1 --> W3[W3 Bulk data + TS decoder]
+            W0 --> W4[W4 Keys + access]
+            W4 --> W5[W5 Layers]
+            W2 --> W6[W6 Volume + time queries]
+            W3 --> W6
+            W5 --> W6
+            W6 --> W7[W7 Contract + real release]
+          ```
+
+          ## Architecture
+
+          | Part | What it holds |
+          |---|---|
+          | `crates/univ-api` (new lib, native + wasm32) | Routes and their handlers, written against traits: `ReleaseStore`, `LayerStore`, `Blobs`, `Limiter` and `Clock`. Also request parsing and validation, RFC 9457 problem details, cursors, entity tags, and the OpenAPI document (utoipa). Holds no I/O, so every handler is tested natively. |
+          | `crates/univ-api` test support (dev-only) | The same traits over `rusqlite`, using the real `schema.sql`, the layer schema and an in-memory blob map. Fixture rows come from ingest's fixture release. |
+          | `crates/univ-server` (new cdylib, wasm32 only) | A thin workers-rs 0.8.7 (`d1`) entry. It binds `DB` (`univ`), `LAYERS` (`univ-layers`), the `RELEASES` bucket and the rate-limit namespaces `ANON`, `BASIC`, `STANDARD` and `EXTENDED`, and reads `OWNER_SECRET` from `.dev.vars`, which is gitignored. Tiles and grid samples stream from R2 without being decoded (AC-185). |
+          | `crates/univ-server/wrangler.toml` | The Worker's own config (the root `wrangler.toml` stays ingest's). It points at the same `univ` database and bucket, and `cargo xtask serve` runs `wrangler dev --persist-to .cache/univ-ingest/wrangler`. |
+          | `crates/univ-api/migrations/*.sql` | The `univ-layers` schema: `keys`, `layers`, `items`, `item_versions` (JSON body plus bounding-box and time columns for queries) and `changes`. Applied with `wrangler d1 migrations apply --local`. |
+          | `univ-model` | Gains `ToSchema` derives behind a feature named `openapi`, the layer item model with its validation, and a cited UTC→TT conversion: TT = TAI + 32.184 s, with TAI − UTC from IERS Bulletin C. |
+          | `clients/tile-decoder/` | The reference TypeScript decoder. Its tests run with `node --test` on Node 24, which runs `.ts` directly, so there are no npm dependencies. |
+
+          **API surface:** everything is under `/v1`. Release-scoped reads take `?release=n`; without it they read `latest`. Each answer names its release in its body and in a `Univ-Release` header.
+
+          | Group | Routes |
+          |---|---|
+          | Releases | `GET /v1/releases` |
+          | Objects | `GET /v1/objects/{id}`; `GET /v1/objects?source=&designation=`; `GET /v1/objects?name=` |
+          | Sources | `GET /v1/sources`; `GET /v1/sources/{id}`; `GET /v1/sources/{id}/provenance` |
+          | Structures | `GET /v1/structures?kind=&scale_domain=&cursor=`; `GET /v1/structures/{id}` |
+          | Scale domains and tiles | `GET /v1/scale-domains`; `GET /v1/scale-domains/{name}/manifest`; `GET /v1/scale-domains/{name}/tiles/{address}` |
+          | Grids | `GET /v1/grids`; `GET /v1/grids/{id}` (header); `GET /v1/grids/{id}/fields/{field}` (samples) |
+          | Volume queries | `POST /v1/query/volume`: the volume, filters, an optional time interval and a cursor |
+          | Layers | `GET` and `POST /v1/layers`; `GET`, `PATCH` and `DELETE /v1/layers/{id}`; `GET /v1/layers/{id}/changes?since=` |
+          | Items | `POST /v1/layers/{id}/items`; `GET …/items/{item}`; `GET …/items/{item}/versions/{n}`; `POST …/items/{item}/revisions`; `POST …/items/{item}/retraction` |
+          | Owner | `POST` and `GET /v1/owner/keys`; `PATCH /v1/owner/keys/{id}` (quotas, tier); `POST /v1/owner/keys/{id}/revoke` |
+          | Contract | `GET /v1/openapi.json`; `GET /v1/tile-format` |
+
+          ## Waves
+
+          ### W0: Skeleton, contract base and integration harness (`stage/server-w0`)
+
+          **Workspace:**
+
+          - Add `univ-api` and `univ-server` to the workspace.
+          - `univ-server` is excluded from native builds and tests: `default-members`, plus `--exclude` in the gate.
+          - Install `worker-build`, the one new tool, with `cargo install --locked worker-build`.
+
+          **Gate additions to `cargo xtask check`:**
+
+          - a wasm32 check of `univ-api`;
+          - `cargo clippy -p univ-server --target wasm32-unknown-unknown -D warnings`;
+          - `node --test clients/tile-decoder`, once that directory exists (W3).
+
+          **`cargo xtask integration`:**
+
+          1. Build ingest's fixture release twice into a temporary `--persist-to`, publish both, and prune the first, reusing the flow of `crates/univ-ingest/tests/publish_wrangler.rs`.
+          2. Apply the layer migrations.
+          3. Start `wrangler dev` on a free port with a test owner secret.
+          4. Run the `#[ignore]` HTTP tests in `crates/univ-server/tests/` against it, then stop it, also on failure.
+
+          **`cargo xtask serve`:** runs the Worker on the real local state.
+
+          **Behaviour built in W0:**
+
+          - the `/v1` router with a 404 problem for unknown routes;
+          - problem details as `application/problem+json`, each with a typed `type` URI;
+          - CORS on every read and preflight answered without credentials;
+          - `/v1/openapi.json` generated from the router table, with the test "every route served is documented and nothing else" in place from W0, so each later wave keeps it true.
+
+          **Docs:** `AGENTS.md` gains the server layout, the `product/server` and `stage/server-wN` branches, `integration` and `serve`, and the full gate at each wave's end.
+
+          **Covers:** CON-2; F-30 (RQ-104, RQ-105, AC-273–276); F-33's problem details and version path (RQ-111, RQ-112: AC-288–292).
+
+          **Tests:**
+
+          - native: the problem-details shape and the refusal type URIs;
+          - e2e: an anonymous read succeeds, a preflight returns `Access-Control-Allow-Origin: *`, and an unknown route gives a 404 problem.
+
+          ### W1: Releases, sources and structures (`stage/server-w1`)
+
+          **Release resolution for `release-scoped` reads:**
+
+          - a pruned release answers 410 with `pruned_at`, and a release that never existed answers 404;
+          - a read with no `release` reads `latest`;
+          - only releases with `published_at` set are visible;
+          - each release's `terms` are cached per isolate, which is safe because releases are immutable.
+
+          **Releases:** listed newest first, pruned ones included, each with its counts, cosmology and sources.
+
+          **Sources:**
+
+          - the citation (bibcode or DOI), terms of use and credit as defined;
+          - the query and cuts verbatim, and the coverage (sky region, redshift or distance range);
+          - provenance: payloads with SHA-256 and retrieval time, counts fetched and published, counts left out by reason, and the fixes applied.
+
+          **Structures:**
+
+          - each record holds its geometry in a named frame, every number with its citation and kind of value, and its members as object ids or tracers;
+          - a grid-outlined structure names its grid, threshold and test;
+          - H0-rescaled sizes come beside their native values;
+          - listings filter by kind and scale domain, in pages of 500 with a cursor.
+
+          **Covers:** F-14 (AC-122–130), F-16 (AC-147–155), F-17 (AC-156–165).
+
+          **Tests:** native, on fixture rows. E2e:
+
+          - two reads pinned to release 2 return identical bytes (AC-129);
+          - release 1 answers 410;
+          - release 99 answers 404.
+
+          ### W2: Objects (`stage/server-w2`)
+
+          **Lookup by id.** The object comes with:
+
+          - its catalogue entries and designations;
+          - its measurements, each with native value, unit, uncertainty, kind of value and source;
+          - its preferred measurement with the rule that chose it;
+          - its derived positions, each with frame, epoch, cosmology and transformation chain;
+          - its candidate matches with their confidence.
+
+          An object with no distance has a sky position and no 3D position.
+
+          **Lookup by designation and by name.** A designation is `source` plus identifier. A name is matched by `names.key`, so letter case and white space are ignored. A name carried by more than one object answers with the list of those objects.
+
+          **Replaced ids**, from `ids_replaced`, filtered by the read release:
+
+          - an id merged into one object answers 301 to that object in the same release;
+          - an id split into several answers with the list of objects that replaced it;
+          - each answer names the release that replaced the id;
+          - an older pinned release still serves the original object.
+
+          **Not found:** a 404 that names what was looked up.
+
+          **Measuring QA-2:** `cargo xtask bench lookup` times 1,000 random ids against `xtask serve` on release 6.
+
+          **Covers:** F-15 (AC-131–146) and QA-2.
+
+          **Tests:**
+
+          - native: M31 by `m 31`, `M31` and `m31`;
+          - a shared name lists its objects;
+          - merge and split fixtures from ingest's id-ledger tests;
+          - e2e: a merged id redirects.
+
+          ### W3: Bulk data and the TypeScript decoder (`stage/server-w3`)
+
+          **Scale domains:** the list gives each domain's extent, unit and point count. An unknown domain answers 404 with the domains that exist.
+
+          **Tile manifests:** served from R2 as published. A test checks that each manifest names its frame and origin, unit and cosmology, the node table with SHA-256s, the rotations, the sources with their credit, the encoding version and the quantization steps.
+
+          **Tiles:**
+
+          - streamed from R2 unchanged, with `Cache-Control: public, max-age=31536000, immutable`;
+          - a node the manifest doesn't hold answers 404 with its address.
+
+          **Grids:**
+
+          - listed with id, quantity, unit, shape and source;
+          - each header gives the kind of value (reconstructed), the frame, axis order, shape and origin, the native cell size and, for h⁻¹ Mpc, the size rescaled, the label table, and the citation and release;
+          - samples are streamed little-endian `f32`;
+          - an unknown grid answers 404.
+
+          **Tile format:** `GET /v1/tile-format` returns the tile manifest's JSON Schema and the byte layout of each encoding version a release uses.
+
+          **TypeScript decoder:**
+
+          - `clients/tile-decoder/decode.ts` decodes the v1 layout of `tile/mod.rs` into positions, object ids, sources and kinds;
+          - an unknown version fails with an error that names the version.
+
+          The decoder's test fixtures are tiles that the Rust encoder writes. Their expected points are stored as **JSON**, because Node has no YAML parser and the decoder takes no dependencies. That is an exception to the YAML rule, kept to test fixtures of the client.
+
+          **Covers:** F-18 (AC-166–174), F-19 (AC-175–182), F-20 (AC-183–186), F-32 (AC-281–284).
+
+          **Tests:**
+
+          - native, on manifests and headers;
+          - e2e: the SHA-256 of every fixture tile's response matches its manifest;
+          - `node --test`: positions decode within the stated step, and an unknown version is refused.
+
+          ### W4: Keys, owner and write access (`stage/server-w4`)
+
+          **Owner operations** are authenticated by bearer `OWNER_SECRET`, compared in constant time. A missing or wrong secret answers 401 and changes nothing.
+
+          **Issuing keys:**
+
+          - a 256-bit secret from `crypto.getRandomValues`, through `getrandom`'s `wasm_js`;
+          - only its SHA-256 is stored, and the secret is returned once;
+          - default quotas, and the `standard` tier by default.
+
+          **Revoking keys:** the revocation time is recorded. A revoked key's public layers stay readable (checked again in W5).
+
+          **Listing keys:** label, times, quotas, tier and usage (the number of layers and the size of the largest layer), without the secret.
+
+          **API keys:** a bearer key is checked against its SHA-256. A write with no key, an unknown key or a revoked key gets the same 401.
+
+          **Rate limits:**
+
+          - an anonymous client is limited by `CF-Connecting-IP` on `ANON`;
+          - a keyed client by key id on its tier's namespace;
+          - over the limit: 429 with `Retry-After: 60`;
+          - a change of tier applies from the key's next request.
+
+          **Quota checking:** quotas are checked before any write. A refused write names the quota, its limit and the key's usage, and stores nothing.
+
+          **Covers:** F-29 (AC-265–272 plus the new criterion), F-31 (AC-277–280), F-28 (AC-258–264 plus the two new criteria). Quotas are wired to real writes in W5.
+
+          **Tests:**
+
+          - native, with a fake limiter and clock;
+          - e2e: a real 429 from the binding (301 anonymous requests);
+          - keys issued, revoked and moved between tiers.
+
+          ### W5: Layers (`stage/server-w5`)
+
+          **Layers:**
+
+          - create, configure and retire, private by default;
+          - the change sequence starts at 0, and each change advances it by 1;
+          - a retired layer answers 410 to a caller allowed to read it, and otherwise 404;
+          - a retired layer leaves the key's layer quota;
+          - a non-owning key gets 403 on a public layer and 404 on a private one.
+
+          **Items:**
+
+          - the client chooses each item's id;
+          - each item holds title, summary, geometry in a named frame, time records (kind, timescale, uncertainty), kind of value, links and at least one source;
+          - validation lists every failing field by JSON pointer;
+          - an item with no source answers 422;
+          - an id the layer already holds answers 409 with the item's current version.
+
+          **Links:**
+
+          - a link is checked against `ids_issued` of every release, and also against structure ids;
+          - an id no release published is refused;
+          - an id later merged is served with its replacement, beside the id as written.
+
+          **Revisions and retractions:**
+
+          - a revision is the next version, marked as an update or a correction; a correction names the version it corrects and what was wrong;
+          - a retraction is a version that carries its reason;
+          - a stale version number answers 409;
+          - a revision gets the same checks as a publish.
+
+          **Reads:**
+
+          - a layer's current items that aren't retracted, in pages of 500;
+          - an item with all its versions, any of them readable by number;
+          - a private layer is invisible without its owning key.
+
+          **Following changes:**
+
+          - changes since a cursor, at most 1,000 to a page, of the five kinds;
+          - a malformed cursor, or one beyond the sequence, answers 400 with the current sequence;
+          - entity tags come from the layer's sequence, and a matching `If-None-Match` answers 304 with no body.
+
+          **Quotas:** items per layer and bytes per item version are enforced.
+
+          **Open point to bring to you during W5:**
+
+          - how to treat times before 1972, when UTC had no leap seconds: refuse UTC before 1972, or convert with the pre-1972 offset table;
+          - the TT/UTC rules themselves come with citations.
+
+          **Covers:** F-23 (AC-209–218), F-25 (AC-227–239), F-26 (AC-240–245), F-27 (AC-246–257), F-24 (AC-219–226).
+
+          **Tests:**
+
+          - native suites for each requirement, including a check that a refusal leaves the sequence unchanged;
+          - e2e: publish, revise, retract and follow the changes;
+          - e2e: an ETag answers 304;
+          - e2e: a private layer looks absent.
+
+          ### W6: Volume and time queries (`stage/server-w6`)
+
+          **Volumes:**
+
+          - a box, a sphere, or a cone with a distance range;
+          - in ICRS, galactic or supergalactic, through univ-model's rotations;
+          - in pc or Mpc;
+          - a malformed volume answers 400 with a pointer to the faulty field.
+
+          **Matching:**
+
+          - objects are found through `object_cells` and then tested by their derived position;
+          - structures through `structure_cells` and then their geometry;
+          - layer items through their bounding-box columns and then their geometry;
+          - a match is a true intersection, so a structure whose centre lies outside still matches;
+          - private items match only for their owning key;
+          - results can be filtered by kind, source, scale domain and layer.
+
+          **Pages:**
+
+          - 1,000 results to a page and 10,000 in all, after which the result is marked truncated;
+          - results come in a stable order;
+          - each cursor records the release and every layer's sequence, and a layer that changed answers 409 with its current sequence.
+
+          **Covering tiles:** for each domain, the deepest level up to the client's maximum with at most 4,096 intersecting nodes. The answer names the level, and each node address can be fetched directly.
+
+          **Time filter:**
+
+          - by kind: source event, arrival or discovery;
+          - a record matches when its uncertainty interval meets the query interval, compared on TT;
+          - a record with no time of the named kind does not match;
+          - an interval that ends before it starts, or an unknown timescale, answers 400.
+
+          **Measuring QA-3:** `cargo xtask bench volume` runs 50 Mpc spheres 100 Mpc out on release 6.
+
+          **Covers:** F-22 (AC-192–208) and QA-3, F-21 (AC-187–191).
+
+          **Tests:**
+
+          - native geometry tests: a sphere that meets a box only at a corner, and a cone wider than 180° refused;
+          - paging stays stable when nothing changes, and answers 409 after a layer changes;
+          - covering-node counts against a brute-force check;
+          - e2e: one query over the fixture release.
+
+          ### W7: Contract complete and the real release (`stage/server-w7`)
+
+          **OpenAPI checks:**
+
+          - every refusal of every route appears with its status and problem type;
+          - the schemas are generated from univ-model types;
+          - a snapshot test of `openapi.json` refuses any removal or rename within `/v1`, and allows additions only (AC-292).
+
+          **On release 6, through `cargo xtask serve`:**
+
+          - measure QA-2 and QA-3 and record the results as `sampled` evidence;
+          - decode all 401 tiles with the TypeScript decoder and check their SHA-256s (AC-281);
+          - spot-check the science through the API: M31 at about 0.78 Mpc, M87 at 16.77 Mpc, the Virgo group at its KT17 centre, and Laniakea's attractors in their basins;
+          - check that releases 1–4 answer 410.
+
+          Whatever fails is fixed as a task or reported plainly.
+
+          **Covers:** F-33 (AC-285–292) and every criterion again end to end.
+
+          ## Verification
+
+          - **Each wave:** `cargo xtask check` and `cargo xtask integration` are green at the wave's end. `/simplify` and `/code-review` findings are resolved, `loft reconcile --accept` passes, and a `trace` block is recorded.
+          - **End of W7:**
+            - every criterion from AC-122 to AC-292, and the three new ones, is linked to a passing test in `loft.trace.yaml`, or marked `unverified` with its reason;
+            - QA-2 and QA-3 are measured on release 6;
+            - a note records the science spot-checks;
+            - the Worker serves release 6 under `wrangler dev`.
+
+          ## Critical files
+
+          - `Cargo.toml` (members, `default-members`) and `xtask/src/main.rs` (gates, `integration`, `serve`, `bench`); `AGENTS.md`; `.gitignore` (`.dev.vars`)
+          - `crates/univ-api/src/{routes,problem,release,objects,sources,structures,bulk,keys,access,layers,items,changes,query,cursor,openapi}.rs` and `crates/univ-api/migrations/`
+          - `crates/univ-server/{src/lib.rs,src/d1.rs,src/r2.rs,src/limits.rs,wrangler.toml,tests/}`
+          - `crates/univ-model/src/{layer,time}.rs` and the `openapi` feature; reused as they are: `release/{schema.sql,keys.rs,cells.rs}`, `tile/`, `position/`, `geometry/bounds.rs`
+          - `clients/tile-decoder/{decode.ts,decode.test.ts,fixtures/}`
+
+          ## New dependencies, to be confirmed by cargo-deny, machete and the wasm32 check
+
+          - `worker` =0.8.7 (`d1`)
+          - `utoipa` 6
+          - `sha2`
+          - `getrandom` (`wasm_js`)
+          - `base64` (cursors)
+          - `subtle` (constant-time compare)
+          - `worker-build` (a tool, not a crate dependency)
+          - dev-only: `rusqlite` (already in the workspace) and `reqwest` (blocking, for the e2e tests)
+        planMode: true
+    responses:
+      - key: 01a1a2c8-079b-767c-98b9-8790d9a357dc
+        at: 2026-11-03T18:59:40Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: rejected
+        reason: "Should we use gRPC or HTTP or something?"
+      - key: 01a1a2ce-b716-7031-a6ea-e71ac61c7b48
+        at: 2026-11-03T19:06:58Z
+        revision: 11
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1a2ce-ed8c-7274-88f5-9096b7ef8bf0
+    id: master-plan-summary
+    kind: note
+    versions:
+      - key: 01a1a2ce-ed8c-7274-88f5-9097360b4516
+        at: 2026-11-03T19:07:12Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Master plan approved"
+        markdown: |-
+          Eight waves. Each runs on its own `stage/server-wN` branch cut from `product/server`, registers its tasks in its own Yard Log, and merges back only with your approval. The full gate and `cargo xtask integration` run once, at each wave's end.
+
+          | Wave | Covers |
+          |---|---|
+          | W0 Skeleton + harness | CON-2, F-30, F-33's problem details and `/v1` |
+          | W1 Releases, sources, structures | F-14, F-16, F-17 |
+          | W2 Objects | F-15, QA-2 |
+          | W3 Bulk data + TS decoder | F-18, F-19, F-20, F-32 |
+          | W4 Keys + access | F-29, F-31, F-28 |
+          | W5 Layers | F-23–F-27 |
+          | W6 Volume + time queries | F-22, F-21, QA-3 |
+          | W7 Contract + real release | F-33 complete, every criterion on release 6 |
+
+          **Transport:** you asked about gRPC, and the plan keeps HTTP with JSON and binary tiles. The spec fixes HTTP semantics (ADR-8, ADR-20), the main client is a browser, and a Worker's responses carry no HTTP/2 trailers.
+
+          **Open point for W5:** how to treat UTC times before 1972.
+        tone: success
