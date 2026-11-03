@@ -178,7 +178,7 @@ fn the_release_latest_points_to_is_not_pruned() {
     assert!(store.ops.iter().all(|o| matches!(o, Op::Query(_))));
     assert_eq!(
         store.int("SELECT COUNT(*) FROM objects WHERE release = 1"),
-        24
+        25
     );
 
     let unknown = pruning(

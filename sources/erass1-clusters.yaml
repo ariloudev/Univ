@@ -102,6 +102,22 @@ fixes:
       kind: drop_when
       columns: [Z_LAMBDA, Z_LAMBDA_ERR]
       when: { column: BEST_Z_TYPE, is: [lit_z] }
+  - defect: >-
+      BEST_ZERR is -1.0 on 155 rows, all of them lit_z rows, including the Virgo cluster
+      (1eRASS J123049.2+122332, BEST_Z 0.003) and the Fornax cluster (1eRASS J033829.1-352701,
+      BEST_Z 0.005). The data model documents no sentinel: a negative one-sigma error cannot
+      stand, so the rows were left out under bad_uncertainty.
+    change: >-
+      A BEST_ZERR of exactly -1 is read as no error reported: the literature redshift is kept,
+      with its uncertainty marked as none reported, not as zero and not as -1.
+    evidence: >-
+      The data model of the primary file
+      (https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/BulbulE_DR1/erass1cl_primary_v3.2.html,
+      read 2026-11-03) describes the column only as "BEST_ZERR float64 None 1 sigma error of
+      BEST_Z", with no sentinel. In erass1cl_primary_v3.2.fits (fetched 2026-11-03), 155 of the
+      12,247 rows have BEST_ZERR < 0, every one exactly -1.0 and every one with BEST_Z_TYPE
+      lit_z (of 247 lit_z rows); no other negative value occurs.
+    action: { kind: sentinel_error_is_none_reported, columns: [BEST_ZERR], value: -1.0 }
 normalization:
   redshifts:
     - column: BEST_Z

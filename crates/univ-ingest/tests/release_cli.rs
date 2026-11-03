@@ -100,7 +100,7 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     let text = std::fs::read_to_string(dir.join(keys::MANIFEST)).unwrap();
     let manifest: ReleaseManifest = serde_norway::from_str(&text).unwrap();
     assert_eq!(manifest.release, 1);
-    assert_eq!(manifest.counts.objects, 24);
+    assert_eq!(manifest.counts.objects, 25);
     for file in &manifest.files {
         let bytes = std::fs::read(dir.join(&file.path)).unwrap();
         assert_eq!(file.sha256, sha256(&bytes), "{}", file.path);

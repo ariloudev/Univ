@@ -103,6 +103,8 @@ pub(super) enum FixEffect {
     /// The columns are read in another unit, already in each [`Col`].
     ReadAs,
     ZeroIsNoneReported,
+    /// An error equal to this value was not reported.
+    SentinelIsNoneReported(f64),
     ZeroLeavesOut(LeftOutReason),
     /// The columns are blank on rows whose cell in `column` meets `when`.
     DropWhen {
@@ -316,6 +318,9 @@ impl Resolver<'_> {
         let effect = match action {
             FixAction::ReadAs { .. } => FixEffect::ReadAs,
             FixAction::ZeroErrorIsNoneReported { .. } => FixEffect::ZeroIsNoneReported,
+            FixAction::SentinelErrorIsNoneReported { value, .. } => {
+                FixEffect::SentinelIsNoneReported(*value)
+            }
             FixAction::ZeroErrorLeavesOut { reason, .. } => FixEffect::ZeroLeavesOut(*reason),
             FixAction::DropWhen { when, .. } => FixEffect::DropWhen {
                 column: self.index(&when.column)?,

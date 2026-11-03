@@ -96,6 +96,9 @@ pub enum FixAction {
     ReadAs { columns: Vec<String>, unit: Unit },
     /// An error of zero in these columns means the error was not reported.
     ZeroErrorIsNoneReported { columns: Vec<String> },
+    /// An error equal to `value` in these columns, a sentinel its source does not document,
+    /// means the error was not reported.
+    SentinelErrorIsNoneReported { columns: Vec<String>, value: f64 },
     /// An error of zero in these columns marks the row, which is left out for `reason`.
     ZeroErrorLeavesOut {
         columns: Vec<String>,
@@ -208,6 +211,7 @@ impl FixAction {
         match self {
             Self::ReadAs { columns, .. }
             | Self::ZeroErrorIsNoneReported { columns }
+            | Self::SentinelErrorIsNoneReported { columns, .. }
             | Self::ZeroErrorLeavesOut { columns, .. }
             | Self::DropWhen { columns, .. } => columns,
         }

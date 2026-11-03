@@ -146,9 +146,15 @@ fn cosmicflows_groups_keep_their_modulus_and_read_sg_coordinates_as_km_s() {
 #[test]
 fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances() {
     let n = normalized_fixture("updated-nearby-galaxies");
-    // Row 5, AGC748778, has f_Dist h': a Hubble-flow distance, left out.
-    assert_eq!(n.report.published, 4);
-    assert_eq!(n.report.left_out.len(), 1);
+    // Row 5, AGC748778, has f_Dist h': a Hubble-flow distance, which is dropped; the row is
+    // kept with its position and velocity, and the fix counts it.
+    assert_eq!(n.report.published, 5);
+    assert_eq!(n.report.left_out.len(), 0);
+    let agc = entry(&n, "AGC748778");
+    assert!(agc.distances.is_empty() && agc.position.is_some());
+    assert_eq!(agc.velocity.unwrap().native.value, 258.0);
+    assert_eq!(agc.flags["f_Dist"], "h'");
+    assert_eq!(n.report.fixes[0].entries_changed, 1);
     // Row 1: 000.093750 +39.495556 UGC12894 8.47 TF 335 16.80.
     let g = entry(&n, "UGC12894");
     fk5(g, 0.093_75, 39.495_556);

@@ -9,10 +9,10 @@ access:
 cuts:
   - "The query takes every row of the catalog table (ReadMe table1.dat + table2.dat merged by VizieR), 869 by the ReadMe and as served."
   - >-
-    Only galaxies with a measured distance are kept, after the fetch rather than in the query (the
-    research gives no VizieR constraint for it): rows whose f_Dist is h or h' (Hubble velocity-distance
-    relation at H0 = 73 km/s/Mpc) or txt (likely proximity from texture, 11 dwarfs) are estimates,
-    not measurements, and are left out with that reason.
+    Only measured distances are taken: on rows whose f_Dist is h or h' (Hubble velocity-distance
+    relation at H0 = 73 km/s/Mpc) or txt (likely proximity from texture, 11 dwarfs) the distance
+    is an estimate, so it is dropped and the row kept, with its position, velocity and magnitude
+    (fixes below).
   - "Dist has no uncertainty in this table; it is marked as none reported (per-measurement e_DM is in table6, not taken)."
 columns:
   - { column: Name, field: identifier, unit: dimensionless }
@@ -55,6 +55,23 @@ mirrors:
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      Dist mixes measured distances with estimates: on rows whose f_Dist is h or h' it is
+      derived from the velocity by the Hubble relation at H0 = 73 km/s/Mpc, and on rows marked
+      txt it is a guess from the galaxy's texture, not a measurement (110 rows as served).
+    change: >-
+      On those rows Dist is dropped and the entry kept: the galaxy is listed and matched by its
+      position and velocity, and placed only by another source's distance or redshift.
+    evidence: >-
+      J/AJ/145/101 ReadMe Note (G1) (read from http://vizier.nao.ac.jp/ftp/cats/J/AJ/145/101/ReadMe,
+      2026-11-03): h and h' are distances "by the Hubble velocity-distance relation at H0=73
+      km/s/Mpc", and txt marks dwarfs whose "texture ... indicates their likely proximity". The
+      definition keeps only measured distances; the rest of the row is as measured.
+    action:
+      kind: drop_when
+      columns: [Dist]
+      when: { column: f_Dist, is: [h, "h'", txt] }
 normalization:
   distances:
     - value: Dist
@@ -84,10 +101,3 @@ normalization:
         secondary, is taken. Dist has no error column in this table. The ReadMe calls Dist the
         "Distance to galaxy" without saying which distance, so its measure is unspecified; within
         the 11 Mpc of the catalogue the measures differ by less than 0.3%.
-  rules:
-    - when: { column: f_Dist, is: [h, "h'", txt] }
-      leave_out: distance_not_measured
-      basis: >-
-        ReadMe Note (G1): h and h' are distances "by the Hubble velocity-distance relation at
-        H0=73 km/s/Mpc", and txt marks dwarfs whose "texture ... indicates their likely
-        proximity"; the source definition keeps only measured distances.

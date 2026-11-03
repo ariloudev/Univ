@@ -350,13 +350,22 @@ impl Row<'_, '_> {
             .map_err(|e| value_reason(&e))
     }
 
-    /// An error in `unit`: none when blank, or when zero and a fix says a zero error was not
-    /// reported.
+    /// An error in `unit`: none when blank, or when zero, or a sentinel value, and a fix says
+    /// such an error was not reported.
+    #[expect(
+        clippy::float_cmp,
+        reason = "a sentinel is the number as written, not a near one"
+    )]
     fn error(&mut self, col: &Col, unit: Unit) -> Result<Option<f64>, LeftOutReason> {
         let Some(sigma) = self.number(col.index)? else {
             return Ok(None);
         };
         if sigma == 0.0 && self.mark(|e| matches!(e, FixEffect::ZeroIsNoneReported), col.index) {
+            return Ok(None);
+        }
+        let sentinel =
+            |e: &FixEffect| matches!(e, FixEffect::SentinelIsNoneReported(v) if *v == sigma);
+        if self.mark(sentinel, col.index) {
             return Ok(None);
         }
         if sigma < 0.0 {
