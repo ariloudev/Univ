@@ -54,3 +54,36 @@ mirrors:
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+normalization:
+  distances:
+    - value: Dist
+      by_code:
+        column: f_Dist
+        codes:
+          TRGB: { kind: primary_indicator, method: tip_of_the_red_giant_branch }
+          Cep: { kind: primary_indicator, method: cepheids }
+          RR: { kind: primary_indicator, method: rr_lyrae }
+          HB: { kind: primary_indicator, method: horizontal_branch }
+          CMD: { kind: primary_indicator, method: { other: colour-magnitude diagram } }
+          geom: { kind: geometric, method: { other: geometric determination } }
+          SN: { kind: secondary_indicator, method: { other: supernova luminosity } }
+          SBF: { kind: secondary_indicator, method: surface_brightness_fluctuations }
+          TF: { kind: secondary_indicator, method: tully_fisher }
+          FP: { kind: secondary_indicator, method: fundamental_plane }
+          BS: { kind: secondary_indicator, method: { other: brightest stars } }
+          PNLF: { kind: secondary_indicator, method: { other: planetary nebula luminosity function } }
+          mem: { kind: secondary_indicator, method: { other: membership in a group with measured distances } }
+      kind_of_value: measured
+      basis: >-
+        J/AJ/145/101 ReadMe Note (G1) (read from http://vizier.nao.ac.jp/ftp/cats/J/AJ/145/101/ReadMe,
+        2026-11-03) names each code's method. Resolved-star methods (TRGB, Cepheids, RR Lyrae,
+        horizontal branch, CMD) are taken as primary indicators and the methods calibrated on them
+        as secondary. For mem the members' methods are not given here, so the less direct kind,
+        secondary, is taken. Dist has no error column in this table.
+  rules:
+    - when: { column: f_Dist, is: [h, "h'", txt] }
+      leave_out: distance_not_measured
+      basis: >-
+        ReadMe Note (G1): h and h' are distances "by the Hubble velocity-distance relation at
+        H0=73 km/s/Mpc", and txt marks dwarfs whose "texture ... indicates their likely
+        proximity"; the source definition keeps only measured distances.

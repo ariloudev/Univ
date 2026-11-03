@@ -81,3 +81,28 @@ fixes:
       Joined (12,247 rows, 85 columns), while
       https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/BulbulE_DR1/erass1cl_primary_v3.2.html
       says "Filename: erass1cl_main_v3.2.fits".
+normalization:
+  redshifts:
+    - column: BEST_Z
+      error: BEST_ZERR
+      frame: heliocentric
+      by_code:
+        column: BEST_Z_TYPE
+        codes:
+          photo_z: photometric
+          spec_z_boot: spectroscopic
+          cg_spec_z: spectroscopic
+          lit_z: photometric
+      basis: >-
+        Kluge et al. 2024 (arXiv:2402.08453v2, read 2026-11-03), Section 2: "Redshifts are given in
+        the heliocentric reference frame. No corrections for Virgo infall or the CMB dipole moment
+        have been applied." Section 3.4: "The literature redshift can either be photometric or
+        spectroscopic. We did not distinguish these two cases", so lit_z is taken as the less
+        certain kind, photometric.
+    - column: Z_LAMBDA
+      error: Z_LAMBDA_ERR
+      frame: heliocentric
+      kind: photometric
+      basis: >-
+        Kluge et al. 2024, Sections 2 and 3.2: z_lambda is the eROMaPPer red-sequence photometric
+        redshift, heliocentric as every redshift of the paper.

@@ -64,3 +64,25 @@ scale_domain: stars
 # under this table name, so only the ESA archive is listed.
 mirrors:
   - "https://gea.esac.esa.int/tap-server/tap"
+normalization:
+  distances:
+    - value: r_med_geo
+      error: { credible_interval: { low: r_lo_geo, high: r_hi_geo, probability: 0.68 } }
+      kind: geometric
+      method: bayesian_geometric
+      kind_of_value: estimated
+      basis: >-
+        I/352 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/I/352/ReadMe, 2026-11-03): rgeo is
+        the median, b_rgeo and B_rgeo the "16th percentile" and "84th percentile of the geometric
+        distance posterior"; "Geometric distances use only the EDR3 parallaxes" with a
+        direction-dependent prior. Quantiles "transform invariably", so the interval is kept as
+        published.
+    - value: r_med_photogeo
+      error: { credible_interval: { low: r_lo_photogeo, high: r_hi_photogeo, probability: 0.68 } }
+      kind: photogeometric
+      method: bayesian_photogeometric
+      kind_of_value: estimated
+      basis: >-
+        I/352 ReadMe: b_rpgeo and B_rpgeo are the "16th percentile" and "84th percentile of the
+        photogeometric distance posterior"; the photogeometric distance "additionally uses the
+        colour and apparent magnitude of a star".

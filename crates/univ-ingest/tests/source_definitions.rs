@@ -43,6 +43,9 @@ scale_domain: cosmic_web
 mirrors:
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
   - "http://vizieridia.saao.ac.za/viz-bin/asu-tsv"
+normalization:
+  redshifts:
+    - { column: z_helio, frame: heliocentric, kind: spectroscopic, basis: "z_helio is heliocentric" }
 "#;
 
 fn write(dir: &TempDir, id: &str, text: &str) -> PathBuf {
@@ -248,4 +251,71 @@ fn two_files_kept_under_the_same_name_are_refused() {
     let error = refusal(&files);
     assert_eq!(error.field, "access.files");
     assert!(error.problem.contains("same file name"), "{error}");
+}
+
+#[test]
+fn each_fix_names_its_defect_change_and_evidence_or_is_refused() {
+    let fix = |defect: &str, change: &str, evidence: &str| {
+        format!(
+            "{VALID}fixes:\n  - {{ defect: \"{defect}\", change: \"{change}\", evidence: \"{evidence}\" }}\n"
+        )
+    };
+    let d = read(&fix("z is too large", "z is read as cz", "the ReadMe")).unwrap();
+    assert_eq!(d.fixes[0].defect, "z is too large");
+    assert_eq!(d.fixes[0].action, None);
+    assert_eq!(refusal(&fix(" ", "c", "e")).field, "fixes[0].defect");
+    assert_eq!(refusal(&fix("d", "", "e")).field, "fixes[0].change");
+    assert_eq!(refusal(&fix("d", "c", "")).field, "fixes[0].evidence");
+    let without = format!("{VALID}fixes:\n  - {{ defect: d, change: c }}\n");
+    assert!(refusal(&without).problem.contains("evidence"));
+}
+
+#[test]
+fn every_fix_of_the_first_release_names_its_defect_change_and_evidence() {
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../sources");
+    let fixes: Vec<_> = read_all(&dir)
+        .unwrap()
+        .into_iter()
+        .flat_map(|d| d.fixes)
+        .collect();
+    assert!(fixes.len() >= 6, "{} fixes", fixes.len());
+    for fix in fixes {
+        for text in [&fix.defect, &fix.change, &fix.evidence] {
+            assert!(text.split_whitespace().count() >= 5, "{fix:?}");
+        }
+    }
+}
+
+#[test]
+fn a_reading_or_rule_or_fix_that_names_a_column_not_taken_is_refused() {
+    let reading = VALID.replace("column: z_helio, frame", "column: z_cmb, frame");
+    let refused = refusal(&reading);
+    assert_eq!(refused.field, "normalization.redshifts[0].column");
+    assert!(refused.problem.contains("z_cmb"), "{}", refused.problem);
+    let rule = format!(
+        "{VALID}  rules:\n    - {{ when: {{ column: q, is: [\"1\"] }}, leave_out: simulated_object, basis: b }}\n"
+    );
+    assert_eq!(refusal(&rule).field, "normalization.rules[0].when.column");
+    let fix = format!(
+        "{VALID}fixes:\n  - defect: d\n    change: c\n    evidence: e\n    action: {{ kind: read_as, columns: [SGX], unit: kilometre_per_second }}\n"
+    );
+    assert_eq!(refusal(&fix).field, "fixes[0].action.columns");
+    let cmb = VALID.replace("frame: heliocentric", "frame: cmb");
+    assert_eq!(refusal(&cmb).field, "normalization.redshifts[0].frame");
+}
+
+#[test]
+fn a_redshift_or_distance_column_without_a_reading_is_refused() {
+    let unread = VALID.replace(
+        "normalization:\n  redshifts:\n",
+        "normalization:\n  rules: []\n  redshifts_not:\n",
+    );
+    assert!(read(&unread).is_err());
+    let none = VALID.replace(
+        "normalization:\n  redshifts:\n    - { column: z_helio, frame: heliocentric, kind: spectroscopic, basis: \"z_helio is heliocentric\" }\n",
+        "",
+    );
+    let refused = refusal(&none);
+    assert_eq!(refused.field, "normalization");
+    assert!(refused.problem.contains("z_helio"), "{}", refused.problem);
 }
