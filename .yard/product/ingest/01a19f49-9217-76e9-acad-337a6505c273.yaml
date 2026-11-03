@@ -19,3 +19,32 @@ versions:
     title: "W7 Releases"
     goal: "A release is built with its manifest, D1 schema and R2 layout, published to local D1 and R2 through wrangler with latest moved last, and old releases pruned (stage/ingest-w7)"
     status: active
+  - key: 01a1a0d1-71e8-75ea-8392-336cbff4d673
+    at: 2026-11-03T09:50:43Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W7 Releases"
+    goal: "A release is built with its manifest, D1 schema and R2 layout, published to local D1 and R2 through wrangler with latest moved last, and old releases pruned (stage/ingest-w7)"
+    status: done
+blocks:
+  - key: 01a1a0d1-71e8-75ea-8392-336a0dc8a528
+    id: wave-7-merged
+    kind: note
+    versions:
+      - key: 01a1a0d1-71e8-75ea-8392-336d658f3df4
+        at: 2026-11-03T09:50:43Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "W7 merged"
+        markdown: |-
+          `stage/ingest-w7` was merged as `a8aa7b3`. It adds three commands:
+          - `univ-ingest build`: checks the release and builds it atomically under a state lock. A failed build uses no number.
+          - `univ-ingest publish`: uploads to local D1 and R2 with wrangler 4.156.2, checking SHA-256 and D1 fingerprints. It resumes from a journal and moves `latest` in one write.
+          - `univ-ingest prune`: deletes a release while keeping its listing and the id ledger.
+
+          Also: D1 schema v1, a cell index, and CON-3 checked with overflow pages counted. AC-82 to AC-106 and AC-121 are traced: 122 of 293 nodes.
+        tone: success
