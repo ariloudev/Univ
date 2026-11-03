@@ -115,6 +115,13 @@ impl Progress for Shown<'_> {
         });
     }
 
+    fn note(&mut self, line: String) {
+        self.sink.emit(Event::Noted {
+            stage: self.stage,
+            line,
+        });
+    }
+
     fn file(&mut self, file: FileDone<'_>) {
         let kind = kind(file.path);
         match self.files.iter_mut().find(|(k, _)| *k == kind) {
@@ -186,7 +193,7 @@ pub fn publish_command(
     shown: &mut Shown<'_>,
 ) -> Result<Outcome, String> {
     let done = publish_with(store, number, options, shown).map_err(|e| e.to_string())?;
-    shown.line(published_line(&done));
+    shown.note(published_line(&done));
     let mut counts: Vec<Count> = shown
         .files
         .iter()
@@ -228,7 +235,7 @@ pub fn prune_command(
     shown: &mut Shown<'_>,
 ) -> Result<Outcome, String> {
     let done = prune_with(store, number, options, shown).map_err(|e| e.to_string())?;
-    shown.line(pruned_line(&done, options));
+    shown.note(pruned_line(&done, options));
     shown.ended(vec![
         Count::new(done.files as u64, "R2 files deleted"),
         Count::new(done.rows, "rows deleted"),

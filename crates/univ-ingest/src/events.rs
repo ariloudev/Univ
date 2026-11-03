@@ -72,6 +72,12 @@ pub enum Event {
         step: String,
         bytes: u64,
     },
+    /// A line of a stage that is no item of it, such as the files a journal already lists or the
+    /// sentence that closes a publish.
+    Noted {
+        stage: Stage,
+        line: String,
+    },
     /// The owner interrupted the run, which is stopping as `what` says.
     Stopping {
         what: String,

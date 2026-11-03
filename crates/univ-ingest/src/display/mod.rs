@@ -159,6 +159,7 @@ impl RunState {
             | Event::NormalizeFailed { .. }
             | Event::MembersUnplaced { .. }
             | Event::Uploaded { .. }
+            | Event::Noted { .. }
             | Event::Stopping { .. } => self.stage_event(event, now),
             Event::Restarted {
                 source,

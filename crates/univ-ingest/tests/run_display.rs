@@ -22,6 +22,7 @@ use univ_ingest::display::{
     Outcome, PlainTarget, RunDisplay, RunSink, SourceState, SourceSummary, Summary, size,
 };
 use univ_ingest::events::{Count, Event, EventSink, RecordingSink, Stage};
+use univ_ingest::fetch::Clock as _;
 use univ_ingest::publish::StoreOptions;
 use univ_ingest::run::{
     FetchOptions, RunReport, Shown, fetch, normalize_stage, prune_command, publish_command,
@@ -269,5 +270,33 @@ fn a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they
     assert!(
         text.contains(" rows deleted, 1 local builds deleted\n"),
         "{text}"
+    );
+}
+
+#[test]
+fn a_note_of_a_stage_counts_as_no_item_of_it() {
+    let mut state = univ_ingest::display::RunState::default();
+    let now = TestClock::default().now();
+    for e in [
+        Event::StageStarted {
+            stage: Stage::Publish,
+            items: Some(2),
+        },
+        Event::Noted {
+            stage: Stage::Publish,
+            line: "release 2: 174 of 204 files already uploaded and checked, by the journal".into(),
+        },
+        Event::Uploaded {
+            stage: Stage::Publish,
+            step: "release 2: manifest.yaml: read back with its SHA-256".into(),
+            bytes: 1_000,
+        },
+    ] {
+        state.apply(&e, now);
+    }
+    let status = state.status(Duration::from_secs(1), 80);
+    assert!(
+        status.starts_with("50% [publish 1/2] | 1.0 kB "),
+        "{status}"
     );
 }

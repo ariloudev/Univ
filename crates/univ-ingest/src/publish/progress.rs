@@ -21,8 +21,12 @@ pub trait Progress {
     fn started(&mut self, items: usize) {
         let _ = items;
     }
-    /// A step that is no file, such as the files a journal already lists.
+    /// A step that is no file, such as a step of a prune.
     fn line(&mut self, line: String);
+    /// A line that is no item of the run, such as the files a journal already lists.
+    fn note(&mut self, line: String) {
+        self.line(line);
+    }
     /// A file done, as soon as it is.
     fn file(&mut self, file: FileDone<'_>) {
         self.line(file.line);

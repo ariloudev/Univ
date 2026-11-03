@@ -42,6 +42,7 @@ impl RunState {
                 self.uploaded += bytes;
                 Some(format!("Step {}: {step}", stage_name(*stage)))
             }
+            Event::Noted { stage, line } => Some(format!("Step {}: {line}", stage_name(*stage))),
             Event::Stopping { what } => Some(format!("Stopping: {what}")),
             Event::Normalized { .. } | Event::NormalizeFailed { .. } => {
                 self.advance();

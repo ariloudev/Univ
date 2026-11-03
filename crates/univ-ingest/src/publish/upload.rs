@@ -344,7 +344,7 @@ pub fn publish_with(
     let journaled = journal.done.len();
     progress.started(total - journaled);
     if journaled > 0 {
-        progress.line(format!(
+        progress.note(format!(
             "release {number}: {journaled} of {total} files already uploaded and checked, by \
              the journal"
         ));
