@@ -14,7 +14,7 @@ use std::path::PathBuf;
 
 use univ_ingest::grids::{Window, read_cf4pp};
 use univ_ingest::normalize::normalize;
-use univ_ingest::outlines::{Placed, compare, on_grid, place, region, scalar};
+use univ_ingest::outlines::{GridSky, Placed, compare, on_grid, place, region, scalar};
 use univ_ingest::source::{Access, SourceDefinition, read_all as read_sources};
 use univ_ingest::structures::{Structure, read_all};
 use univ_model::entry::CatalogueEntry;
@@ -173,8 +173,9 @@ fn the_local_void_outline_on_the_real_cf4pp_grid_and_catalogues() {
         record.threshold.value(),
         around.touches_edge
     );
+    let sky = GridSky::new(g);
     for (id, entries) in &catalogues {
-        let c = compare(g, &around, id, Some(entries), &record.test);
+        let c = compare(&sky, &around, id, Some(entries), &record.test);
         eprintln!("  {c:?}");
     }
 }

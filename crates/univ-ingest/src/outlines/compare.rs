@@ -40,6 +40,59 @@ pub const COVERAGE: CoverageRule = CoverageRule {
 const RA_BINS: usize = 180;
 const DEC_BINS: usize = 60;
 
+/// What every comparison on one grid needs of each cell, computed once per grid rather than once
+/// per catalogue: the sky patch of its centre's ICRS direction, its centre's distance, and the
+/// distance shell, one cell wide, it falls in. Indexed as the grid's samples.
+pub struct GridSky<'a> {
+    geometry: &'a GridGeometry,
+    patch: Vec<usize>,
+    distance: Vec<f64>,
+    shell: Vec<usize>,
+}
+
+impl<'a> GridSky<'a> {
+    #[must_use]
+    pub fn new(geometry: &'a GridGeometry) -> Self {
+        let to_icrs = between(geometry.frame, Frame::Icrs);
+        let n = geometry.cells();
+        let (mut patch, mut distance, mut shell) = (vec![0; n], vec![0.0; n], vec![0; n]);
+        let along = Axis::XYZ.map(|a| geometry.cells_along(a));
+        for x in 0..along[0] {
+            for y in 0..along[1] {
+                for z in 0..along[2] {
+                    let cell = [x, y, z];
+                    let Some(i) = geometry.sample_index(cell) else {
+                        continue;
+                    };
+                    let centre = geometry.centre(cell);
+                    let r = dot(centre, centre).sqrt();
+                    let (ra, dec) = lon_lat(to_icrs.apply(centre));
+                    patch[i] = sky_patch(ra, dec);
+                    distance[i] = r;
+                    #[expect(
+                        clippy::cast_possible_truncation,
+                        clippy::cast_sign_loss,
+                        reason = "a distance over a positive cell, floored"
+                    )]
+                    let s = (r / geometry.cell).floor() as usize;
+                    shell[i] = s;
+                }
+            }
+        }
+        Self {
+            geometry,
+            patch,
+            distance,
+            shell,
+        }
+    }
+
+    #[must_use]
+    pub fn geometry(&self) -> &'a GridGeometry {
+        self.geometry
+    }
+}
+
 /// Whether a catalogue covers the outline, and if not, why.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case", tag = "is")]
@@ -88,7 +141,7 @@ fn real(n: usize) -> f64 {
 }
 
 /// The equal-area sky patch of an ICRS direction, in degrees.
-fn patch(ra: f64, dec: f64) -> usize {
+fn sky_patch(ra: f64, dec: f64) -> usize {
     #[expect(
         clippy::cast_possible_truncation,
         clippy::cast_sign_loss,
@@ -117,7 +170,7 @@ fn place(geometry: &GridGeometry, entries: &[CatalogueEntry]) -> Placed {
         let Some(position) = &entry.position else {
             continue;
         };
-        footprint[patch(position.icrs.ra, position.icrs.dec)] = true;
+        footprint[sky_patch(position.icrs.ra, position.icrs.dec)] = true;
         let Some(z) = entry
             .redshifts
             .iter()
@@ -160,11 +213,11 @@ struct Shell {
     outside: usize,
 }
 
-/// Compares the outline `region` of a grid with one catalogue: `None` entries when the catalogue
-/// was not given.
+/// Compares the outline `region` of the grid of `sky` with one catalogue: `None` entries when
+/// the catalogue was not given.
 #[must_use]
 pub fn compare(
-    geometry: &GridGeometry,
+    sky: &GridSky<'_>,
     region: &Region,
     source: &SourceId,
     entries: Option<&[CatalogueEntry]>,
@@ -185,13 +238,13 @@ pub fn compare(
     let Some(entries) = entries else {
         return check;
     };
-    let placed = place(geometry, entries);
+    let placed = place(sky.geometry, entries);
     (check.galaxies, check.near, check.far) = (placed.galaxies, placed.near, placed.far);
     if placed.galaxies == 0 {
         check.coverage = Coverage::NoGalaxies;
         return check;
     }
-    let (shells, covered_inside) = shells(geometry, region, &placed);
+    let (shells, covered_inside) = shells(sky, region, &placed);
     let share = real(covered_inside) / real(region.cells.len().max(1));
     if share < COVERAGE.covered_share {
         check.coverage = Coverage::OutsideFootprint {
@@ -227,62 +280,34 @@ pub fn compare(
 
 /// The galaxies and covered cells of each distance shell, one cell wide, that holds a covered
 /// cell of the region, inside and outside the region; and the region's covered cells.
-fn shells(
-    geometry: &GridGeometry,
-    region: &Region,
-    placed: &Placed,
-) -> (BTreeMap<usize, Shell>, usize) {
-    let to_icrs = between(geometry.frame, Frame::Icrs);
-    let covered = |cell: [usize; 3]| {
-        let centre = geometry.centre(cell);
-        let r = dot(centre, centre).sqrt();
-        let (ra, dec) = lon_lat(to_icrs.apply(centre));
-        (placed.near..=placed.far).contains(&r) && placed.footprint[patch(ra, dec)]
+fn shells(sky: &GridSky<'_>, region: &Region, placed: &Placed) -> (BTreeMap<usize, Shell>, usize) {
+    let geometry = sky.geometry;
+    let covered = |i: usize| {
+        (placed.near..=placed.far).contains(&sky.distance[i]) && placed.footprint[sky.patch[i]]
     };
-    let shell_of = |cell: [usize; 3]| {
-        let centre = geometry.centre(cell);
-        #[expect(
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss,
-            reason = "a distance over a positive cell, floored"
-        )]
-        let shell = (dot(centre, centre).sqrt() / geometry.cell).floor() as usize;
-        shell
-    };
-    let count = |cell: [usize; 3]| {
-        geometry
-            .sample_index(cell)
-            .and_then(|i| placed.counts.get(&i).copied())
-            .unwrap_or(0)
-    };
+    let count = |i: usize| placed.counts.get(&i).copied().unwrap_or(0);
     let mut inside = vec![false; geometry.cells()];
     let mut shells: BTreeMap<usize, Shell> = BTreeMap::new();
     let mut covered_inside = 0;
     for &cell in &region.cells {
-        if let Some(i) = geometry.sample_index(cell) {
-            inside[i] = true;
-        }
-        if covered(cell) {
+        let Some(i) = geometry.sample_index(cell) else {
+            continue;
+        };
+        inside[i] = true;
+        if covered(i) {
             covered_inside += 1;
-            let shell = shells.entry(shell_of(cell)).or_default();
-            shell.held += count(cell);
+            let shell = shells.entry(sky.shell[i]).or_default();
+            shell.held += count(i);
             shell.inside += 1;
         }
     }
-    let n = Axis::XYZ.map(|a| geometry.cells_along(a));
-    for x in 0..n[0] {
-        for y in 0..n[1] {
-            for z in 0..n[2] {
-                let cell = [x, y, z];
-                let outside = geometry.sample_index(cell).is_some_and(|i| !inside[i]);
-                if let Some(shell) = shells.get_mut(&shell_of(cell))
-                    && outside
-                    && covered(cell)
-                {
-                    shell.around += count(cell);
-                    shell.outside += 1;
-                }
-            }
+    for (i, _) in inside.iter().enumerate().filter(|(_, inside)| !**inside) {
+        // The cheap test first: most cells lie outside the region, few in its shells.
+        if let Some(shell) = shells.get_mut(&sky.shell[i])
+            && covered(i)
+        {
+            shell.around += count(i);
+            shell.outside += 1;
         }
     }
     (shells, covered_inside)
