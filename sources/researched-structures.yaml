@@ -13,6 +13,11 @@ epoch: 2000.0
 citation: >-
   None for the source as a whole: each structure file gives the full citation, with bibcode, of the
   papers its values come from, and those papers are cited wherever the structure is shown.
+reference:
+  none: >-
+    The researched structures are a compilation with no paper of their own: each structure
+    file cites the papers its values come from, by bibcode and DOI, and those are cited
+    wherever the structure is shown.
 terms:
   url: "structures/"
   quote: "No provider terms: the values are read from published papers, and each structure file cites its papers."
