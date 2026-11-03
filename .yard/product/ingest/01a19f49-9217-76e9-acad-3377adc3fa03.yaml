@@ -19,3 +19,38 @@ versions:
     title: "W4 Normalization"
     goal: "Readers turn every source's rows, structures and grids into univ-model catalogue entries with native values, typed uncertainties, kinds and CMB-frame redshifts (stage/ingest-w4)"
     status: active
+  - key: 01a1a00e-d73e-709d-afc4-271e5482ee7b
+    at: 2026-11-03T06:18:09Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W4 Normalization"
+    goal: "Readers turn every source's rows, structures and grids into univ-model catalogue entries with native values, typed uncertainties, kinds and CMB-frame redshifts (stage/ingest-w4)"
+    status: done
+blocks:
+  - key: 01a1a00e-d73e-709d-afc4-271df1874446
+    id: wave-4-merged
+    kind: note
+    versions:
+      - key: 01a1a00e-d73e-709d-afc4-271f0fdebbc7
+        at: 2026-11-03T06:18:09Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "W4 merged"
+        markdown: |-
+          `stage/ingest-w4` was merged as `8c3bfed`.
+
+          - **Normalization:** 14 tabular sources become typed catalogue entries, with refusals and fixes counted.
+          - **Structures:** 26 files, every number checked against its paper.
+          - **Grids:** CF4++, CF4 basins and 2M++, with the axis order checked at Laniakea.
+          - **Outlines:** a grid outline is admitted only when every covering catalogue agrees.
+          - **Gate:** AC-36 to AC-59 traced; 225 tests pass.
+
+          **Findings from the real data:**
+          - CF4++ shows no void at the Local Void's published position, so it is published as a point.
+          - The structure files correct three newsroom errors.
+          - 228 Cosmicflows-4 groups are direct calibrations.
+        tone: success
