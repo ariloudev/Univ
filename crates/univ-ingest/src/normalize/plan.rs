@@ -120,6 +120,8 @@ pub(super) enum FixEffect {
         key: usize,
         values: HashMap<String, Vec<String>>,
         drop: Vec<usize>,
+        /// The flag the entry carries, and its text: the citation and the fix.
+        mark: (String, String),
     },
     /// The rows whose cell in `column` meets `when` are left out for `reason`.
     LeaveOutWhen {
@@ -355,8 +357,19 @@ impl Resolver<'_> {
                 when: when.clone(),
             },
             FixAction::ReplaceByKey {
-                key, drop, values, ..
+                key,
+                drop,
+                mark,
+                values,
+                ..
             } => FixEffect::Replace {
+                mark: (
+                    mark.flag.clone(),
+                    format!(
+                        "{} (fixes[{fix}] of the {} definition)",
+                        mark.cite, self.definition.id
+                    ),
+                ),
                 key: self.index(key)?,
                 values: values
                     .iter()

@@ -91,6 +91,15 @@ pub struct KindOverride {
     pub kind: KindOfValue,
 }
 
+/// The flag an entry whose values a fix replaced carries: its name, and the citation of the
+/// values that replaced the published ones. The entry's flag gives the citation and the fix.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReplacedMark {
+    pub flag: String,
+    pub cite: String,
+}
+
 /// What a fix changes, applied by the normalizer. A fix without one is expressed by the
 /// definition itself, such as a column's unit.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -115,12 +124,14 @@ pub enum FixAction {
         when: Condition,
     },
     /// On the row whose `key` cell is a key of `values`, the cells of `columns` are replaced
-    /// with the cited values, in the order of `columns`, and the cells of `drop` dropped.
+    /// with the cited values, in the order of `columns`, and the cells of `drop` dropped. The
+    /// entry carries `mark`, so that its replaced values name where they come from.
     ReplaceByKey {
         key: String,
         columns: Vec<String>,
         #[serde(default)]
         drop: Vec<String>,
+        mark: ReplacedMark,
         values: BTreeMap<String, Vec<f64>>,
     },
     /// The rows that meet `when` are left out for `reason`.
@@ -222,11 +233,15 @@ pub(super) fn check_fixes(table: &Columns<'_>, fixes: &[Fix]) -> Result<(), Prob
             key,
             columns,
             drop,
+            mark,
             values,
         } = action
         {
             let at = format!("fixes[{i}].action");
             table.known(&format!("{at}.key"), key)?;
+            if mark.flag.trim().is_empty() || mark.cite.trim().is_empty() {
+                return Err(problem(format!("{at}.mark"), "names no flag or citation"));
+            }
             for c in drop {
                 table.known(&format!("{at}.drop"), c)?;
             }

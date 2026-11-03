@@ -92,3 +92,30 @@ fn a_merge_leaves_the_choice_of_distance_to_the_ranking() {
     let p = of(&objects, "Fornax").preferred_distance.as_ref().unwrap();
     assert_eq!(p.measurement.entry().source.as_str(), "mcconnachie-2012");
 }
+
+#[test]
+fn a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link() {
+    // B6: McConnachie's Fornax, recorded, against a SIMULATED UNGC entry named Fornax 1 degree
+    // away, beyond the scheme's 30 arcmin: two objects and a candidate link, not a merge.
+    let rules = matching_rules();
+    let scheme = rules.scheme("common-name").unwrap();
+    assert_eq!(scheme.angular_tolerance_arcmin, Some(30.0));
+    assert!(scheme.tolerance_basis.as_deref().unwrap().contains("R2"));
+    let fornax = recorded("mcconnachie-2012", "mcconnachie-2012-local-group.tsv")
+        .into_iter()
+        .find(|e| e.designation.identifier == "Fornax")
+        .unwrap();
+    let p = fornax.position.as_ref().unwrap().icrs;
+    let far = simulated::entry("updated-nearby-galaxies", "Fornax", p.ra, p.dec + 1.0);
+    let m = match_entries(&rules, vec![fornax.clone(), far]);
+    assert_eq!(m.objects.len(), 2, "{:#?}", m.objects);
+    let links: Vec<_> = m.objects.iter().flat_map(|o| &o.links).collect();
+    assert_ne!(links.len(), 0);
+    assert!(links.iter().all(|l| matches!(
+        &l.reason,
+        Resolution::CrossIdentification { scheme, .. } if scheme == "common-name"
+    )));
+    // Within the tolerance, 20 arcmin away, the name joins them.
+    let near = simulated::entry("updated-nearby-galaxies", "Fornax", p.ra, p.dec + 1.0 / 3.0);
+    assert_eq!(match_entries(&rules, vec![fornax, near]).objects.len(), 1);
+}

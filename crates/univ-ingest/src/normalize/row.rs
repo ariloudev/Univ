@@ -41,6 +41,8 @@ struct Row<'a, 'c> {
     dropped: Vec<usize>,
     /// Cells a fix replaced on this row with cited values, by column.
     replaced: Vec<(usize, &'a str)>,
+    /// The flags of the fixes that replaced cells: name and text.
+    marks: Vec<(&'a str, &'a str)>,
     changed: Changed,
 }
 
@@ -57,6 +59,7 @@ pub(super) fn read(
         methods: Vec::new(),
         dropped: Vec::new(),
         replaced: Vec::new(),
+        marks: Vec::new(),
         changed: 0,
     };
     match row.entry() {
@@ -203,6 +206,11 @@ impl Row<'_, '_> {
                 .flags
                 .iter()
                 .filter_map(|c| self.text(c.index).map(|t| (c.name.clone(), t)))
+                .chain(
+                    self.marks
+                        .iter()
+                        .map(|(flag, text)| ((*flag).to_owned(), (*text).to_owned())),
+                )
                 .collect::<BTreeMap<_, _>>(),
         };
         entry.check().map_err(entry_reason)?;

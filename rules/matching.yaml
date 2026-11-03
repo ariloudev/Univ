@@ -112,6 +112,16 @@ cross_identifications:
       one galaxy. Names compare by their key in the names table, with a catalogue number's
       leading zeros dropped and MESSIER written M; a name only one of them uses (Sag dSph against
       Sagittarius dSph) is left to the pair rule below.
+    angular_tolerance_arcmin: 30
+    tolerance_basis: >-
+      Pipeline choice: a shared name joins two entries only where their centres lie within 30
+      arcmin; a pair farther apart is left apart as a candidate link, with the confidence of a
+      conflicting identifier, as a name alone does not show they are one galaxy. Two catalogues'
+      centres of one dwarf galaxy can differ by up to its half-light radius: McConnachie 2012
+      gives Sextans (I) R2 = 695 pc at D = 86 kpc, 27.8 arcmin, and Fornax 710 pc at 147 kpc, 16.6
+      arcmin (J/AJ/144/4/catalog, columns R2 and D, served by vizier.nao.ac.jp on 2026-11-03).
+      30 arcmin covers these; the farthest pair that release 2 joined by name, Fornax, lies 4.7
+      arcmin apart.
     members:
       - { source: mcconnachie-2012, field: identifier }
       - { source: updated-nearby-galaxies, field: identifier }

@@ -75,13 +75,20 @@ impl Row<'_, '_> {
     pub(super) fn replace_values(&mut self) {
         let fixes = &self.cx.plan.fixes;
         for fix in fixes {
-            let FixEffect::Replace { key, values, drop } = &fix.effect else {
+            let FixEffect::Replace {
+                key,
+                values,
+                drop,
+                mark,
+            } = &fix.effect
+            else {
                 continue;
             };
             let Some(cited) = values.get(&key_of(self.cell(*key))) else {
                 continue;
             };
             self.changed |= 1 << fix.fix;
+            self.marks.push((mark.0.as_str(), mark.1.as_str()));
             self.dropped.extend(drop);
             for (column, value) in fix.columns.iter().zip(cited) {
                 self.replaced.push((*column, value.as_str()));

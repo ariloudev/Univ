@@ -155,6 +155,10 @@ pub struct TableEstimate {
     pub rows: u64,
     pub estimated_bytes: u64,
     pub fingerprint: Vec<ColumnTotal>,
+    /// For a table checked by its content, the SHA-256, in hex, of its rows in the order of the
+    /// primary key, each in [`super::fingerprint::canonical_row`]'s form.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_sha256: Option<String>,
 }
 
 /// Where a file of the release goes.

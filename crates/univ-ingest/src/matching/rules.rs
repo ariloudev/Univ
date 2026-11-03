@@ -124,6 +124,14 @@ pub struct CrossIdentification {
     /// How two identifiers of the scheme are compared.
     #[serde(default)]
     pub compare: IdentifierForm,
+    /// Where given, two entries that share an identifier join only when their sky positions lie
+    /// within this angle, in arcminutes; a pair farther apart is left apart as a candidate link.
+    /// A pair one of whose entries has no position joins unchecked.
+    #[serde(default)]
+    pub angular_tolerance_arcmin: Option<f64>,
+    /// Why the tolerance is what it is; required with it.
+    #[serde(default)]
+    pub tolerance_basis: Option<String>,
     pub members: Vec<SchemeMember>,
 }
 
@@ -271,6 +279,19 @@ impl MatchingRules {
         }
         let mut members = BTreeSet::new();
         for (i, scheme) in self.cross_identifications.iter().enumerate() {
+            if let Some(t) = scheme.angular_tolerance_arcmin {
+                let at = format!("cross_identifications[{i}].angular_tolerance_arcmin");
+                if !(t.is_finite() && t > 0.0) {
+                    return Err(field(&at, "is not a positive number"));
+                }
+                if scheme
+                    .tolerance_basis
+                    .as_deref()
+                    .is_none_or(|b| b.trim().is_empty())
+                {
+                    return Err(field(&at, "is given without its tolerance_basis"));
+                }
+            }
             for m in &scheme.members {
                 if !members.insert((scheme.scheme.as_str(), m.source.as_str())) {
                     return Err(field(

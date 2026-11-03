@@ -462,6 +462,9 @@ links:
       - file: "crates/univ-ingest/tests/source_definitions.rs"
         name: "every_fix_of_the_first_release_names_its_defect_change_and_evidence"
         body: 5deb87cee6c488fb5c22311f971bea9477f624315e661d74fde6ea9eba072203
+      - file: "crates/univ-ingest/tests/cosmicflows_positions.rs"
+        name: "a_replaced_group_position_names_kourkchi_and_tully_and_the_fix"
+        body: a4db9595640397b45d4136cdab45d303c1ad8cf2d1e18bec8f7528b90412d8e3
   - node: 01a19f22-2ad9-716e-876f-187827977f54
     reviewed: 8d536e278ed4392974c0d26d4330f48c176ff5c8323cd6f57a37e8e73ede4c46
     tests:
@@ -702,6 +705,9 @@ links:
       - file: "crates/univ-ingest/tests/matching_linkage.rs"
         name: "a_cross_identification_two_entries_of_one_source_claim_joins_neither"
         body: 9451d30b56a83313ed6a5dbdf78bb8cebfd95823b78cb50a7b4706a5f4a09203
+      - file: "crates/univ-ingest/tests/local_group.rs"
+        name: "a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link"
+        body: ed3800dca78455357b64827ae9bb1b911da5bdcfe0e0c870cb693990a46e6ef5
   - node: 01a19f23-636f-72bd-b194-150a909c8f0e
     reviewed: 23bd90e2ea5f02a35571b02e6ce29e75659bfc0ec5fbad0cf52bb671fad0fdf0
     tests:
@@ -735,6 +741,9 @@ links:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "an_entry_with_two_candidates_is_kept_apart_and_linked_to_each_with_its_confidence"
         body: d8d4246588d895e233a958065dca1d2f9a2ddfcfb6145fc390dc57827da69a59
+      - file: "crates/univ-ingest/tests/local_group.rs"
+        name: "a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link"
+        body: ed3800dca78455357b64827ae9bb1b911da5bdcfe0e0c870cb693990a46e6ef5
   - node: 01a19f23-636f-72bd-b194-15114b1cd667
     reviewed: 4041399c59e701a49c5982850626ab94b9297b454de46d995d84523ef0dca5eb
     tests:
@@ -1026,6 +1035,15 @@ links:
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_text_holding_begin_transaction_reaches_d1_as_it_is"
         body: 0c4f8ce8c00fd98775f8853596bd04aa319c675db474e52ebf8f45c84a0ce82d
+      - file: "crates/univ-ingest/tests/publish_fingerprint.rs"
+        name: "a_preferred_entry_or_chain_of_0_nulled_on_the_way_stops_the_publish"
+        body: 7eb49789a564f8bb45b9e007190b0d43d49c75f9ad5a739642b29a5f4580db30
+      - file: "crates/univ-ingest/tests/publish_fingerprint.rs"
+        name: "a_scale_domain_nulled_on_the_way_stops_the_publish"
+        body: 734cdcaaa461cede7aacd1ae0749436794a33ba7075c8cd2fa858f9cd7ecf488
+      - file: "crates/univ-ingest/tests/publish_fingerprint.rs"
+        name: "a_lookup_row_renamed_to_a_text_of_the_same_length_stops_the_publish"
+        body: 550da556ddfb7786c47fc5aeed7f2a76baf141036790c10c5db98a6b93afeebe
   - node: 01a19f23-636f-72bd-b194-1540b752f379
     reviewed: 0283e5fc458a4ed9f2b8906a0a214e155af1075c3ce981ab3c04c4916d2e9851
     tests:

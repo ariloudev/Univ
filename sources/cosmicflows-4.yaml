@@ -32,6 +32,9 @@ citation: >-
   Tully R.B., Kourkchi E., Courtois H.M., Anand G.S., Blakeslee J.P., Brout D., de Jaeger T.,
   Dupuy A., Guinet D., Howlett C., et al. 2023, "Cosmicflows-4", ApJ 944, 94. 2023ApJ...944...94T,
   doi:10.3847/1538-4357/ac94d8. VizieR catalogue J/ApJ/944/94, doi:10.26093/cds/vizier.19440094.
+  The positions of 148 groups that the table gives wrongly are those of Kourkchi E. & Tully R.B.
+  2017, "Galaxy groups within 3500 km/s", ApJ 843, 16, 2017ApJ...843...16K, VizieR catalogue
+  J/ApJ/843/16 (fixes below).
 terms:
   url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
   quote: >-
@@ -44,7 +47,8 @@ terms:
   credit: >-
     This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
     10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
-    A&AS 143, 23. Cite Tully et al. 2023, ApJ 944, 94.
+    A&AS 143, 23. Cite Tully et al. 2023, ApJ 944, 94, and Kourkchi & Tully 2017, ApJ 843, 16,
+    for the 148 group positions taken from it.
 redistribution:
   status: permitted_with_credit
   review: provisional
@@ -107,6 +111,13 @@ fixes:
       key: 1PGC
       columns: [_RAJ2000, _DEJ2000]
       drop: [SGX, SGY, SGZ]
+      mark:
+        flag: position_source
+        cite: >-
+          The position is Kourkchi & Tully 2017's group centre, not Cosmicflows-4's wrong one:
+          Kourkchi E. & Tully R.B. 2017, "Galaxy groups within 3500 km/s", ApJ 843, 16,
+          2017ApJ...843...16K; VizieR J/ApJ/843/16/table2, its _RAJ2000 and _DEJ2000 (FK5
+          J2000)
       values:
         "1816": [7.423713, -51.520718]
         "2980": [12.762179, -7.060564]

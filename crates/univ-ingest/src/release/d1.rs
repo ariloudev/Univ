@@ -13,6 +13,8 @@
 use std::collections::{BTreeMap, HashSet};
 use std::hash::{DefaultHasher, Hash, Hasher};
 
+use sha2::{Digest, Sha256};
+use univ_model::release::fingerprint::canonical_row;
 use univ_model::release::manifest::{D1_CAP_BYTES, D1Estimate, TableEstimate};
 use univ_model::release::{
     Fingerprinter, Row, SCHEMA, SCHEMA_VERSION, SqlValue, Statements, TABLES, Table, keys,
@@ -55,6 +57,8 @@ struct TableState {
     rows: u64,
     bytes: u64,
     fingerprint: Fingerprinter,
+    /// The rows of a table checked by its content, kept for their digest: a few hundred.
+    content: Option<Vec<Vec<SqlValue>>>,
     keys: HashSet<u128>,
     repeated: u64,
     first_repeated: Option<String>,
@@ -71,6 +75,7 @@ impl TableState {
             rows: 0,
             bytes: 0,
             fingerprint: Fingerprinter::new(table),
+            content: table.checked_by_content().then(Vec::new),
             keys: HashSet::new(),
             repeated: 0,
             first_repeated: None,
@@ -100,6 +105,16 @@ fn hash128(key: &str) -> u128 {
     0x5eed_u32.hash(&mut b);
     key.hash(&mut b);
     (u128::from(a.finish()) << 64) | u128::from(b.finish())
+}
+
+/// The SHA-256, in hex, of `rows` in their canonical form, in the order given.
+#[must_use]
+pub fn content_sha256(rows: &[Vec<SqlValue>]) -> String {
+    let mut bytes = Vec::new();
+    for row in rows {
+        canonical_row(row, &mut bytes);
+    }
+    crate::fetch::hex(&Sha256::digest(&bytes))
 }
 
 /// The path of part `part` (from 1) of the table at `place` (from 0) in `TABLES`.
@@ -173,6 +188,9 @@ impl<'s> D1Writer<'s> {
         state.rows += 1;
         state.bytes += table.estimated_bytes(values);
         state.fingerprint.add(values);
+        if let Some(content) = &mut state.content {
+            content.push(values.to_vec());
+        }
         if state.not_finite.is_none()
             && let Some((x, column)) =
                 values
@@ -286,6 +304,10 @@ impl<'s> D1Writer<'s> {
                 rows: state.rows,
                 estimated_bytes: state.bytes,
                 fingerprint: state.fingerprint.finish(),
+                content_sha256: state.content.map(|mut rows| {
+                    state.table.sort_by_key(&mut rows);
+                    content_sha256(&rows)
+                }),
             });
         }
         let estimate = D1Estimate {

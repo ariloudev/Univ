@@ -35,6 +35,7 @@ fn the_definition_cites_148_group_centres_and_leaves_9_groups_out() {
                 columns,
                 drop,
                 values,
+                ..
             }) => {
                 assert_eq!(key, "1PGC");
                 assert_eq!(columns, &["_RAJ2000", "_DEJ2000"]);
@@ -98,4 +99,35 @@ fn a_group_kourkchi_tully_does_not_list_is_left_out_for_its_wrong_position() {
     // read SGX, SGY and SGZ as km/s, as the replacement dropped them.
     let changed: Vec<u64> = n.report.fixes.iter().map(|f| f.entries_changed).collect();
     assert_eq!(changed, [0, 3, 1], "{:?}", n.report.fixes);
+}
+
+#[test]
+fn a_replaced_group_position_names_kourkchi_and_tully_and_the_fix() {
+    // B5: the look-up reader sees, on the entry itself, where its position comes from; a group
+    // whose position is as published carries no such flag.
+    let n = recorded();
+    let virgo = entry(&n, "41220");
+    let flag = &virgo.flags["position_source"];
+    for text in [
+        "Kourkchi & Tully 2017",
+        "ApJ 843, 16",
+        "J/ApJ/843/16/table2",
+        "fixes[1] of the cosmicflows-4 definition",
+    ] {
+        assert!(flag.contains(text), "{text} in {flag}");
+    }
+    let published = common::normalized_fixture("cosmicflows-4");
+    assert!(
+        published
+            .entries
+            .iter()
+            .all(|e| !e.flags.contains_key("position_source"))
+    );
+    let d = definition_of("cosmicflows-4");
+    assert!(d.citation.contains("J/ApJ/843/16"), "{}", d.citation);
+    assert!(d.terms.credit.contains("Kourkchi & Tully 2017"));
+    let Some(FixAction::ReplaceByKey { mark, .. }) = &d.fixes[1].action else {
+        panic!("{:?}", d.fixes[1].action)
+    };
+    assert_eq!(mark.flag, "position_source");
 }

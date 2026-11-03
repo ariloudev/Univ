@@ -10,9 +10,11 @@ cuts:
   - "The query takes every row of the catalog table (ReadMe table1.dat + table2.dat merged by VizieR), 869 by the ReadMe and as served."
   - >-
     Only measured distances are taken: on rows whose f_Dist is h or h' (Hubble velocity-distance
-    relation at H0 = 73 km/s/Mpc) or txt (likely proximity from texture, 11 dwarfs) the distance
-    is an estimate, so it is dropped and the row kept, with its position, velocity and magnitude
-    (fixes below).
+    relation at H0 = 73 km/s/Mpc) or txt (likely proximity from texture; the ReadMe, Note (G1), says
+    "One of a small number of dwarf galaxies (N=11)", read from
+    http://vizier.nao.ac.jp/ftp/cats/J/AJ/145/101/ReadMe 2026-11-03, but the table as served
+    marks 20 rows txt) the distance is an estimate, so it is
+    dropped and the row kept, with its position, velocity and magnitude (fixes below).
   - "Dist has no uncertainty in this table; it is marked as none reported (per-measurement e_DM is in table6, not taken)."
 columns:
   - { column: Name, field: identifier, unit: dimensionless }

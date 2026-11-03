@@ -6,6 +6,8 @@
 
 use std::collections::HashMap;
 
+use univ_model::position::separation_degrees;
+
 use super::groups::Refused;
 use super::rules::IdentifierForm;
 use super::{Edge, Join, Work};
@@ -89,9 +91,22 @@ fn apply_one(work: &mut Work<'_>, scheme: usize, id: &str, list: &[usize]) {
         },
     };
     let conflict = work.rules.confidence.cross_identification_conflict;
+    let tolerance = work.rules.cross_identifications[scheme].angular_tolerance_arcmin;
+    // Two entries whose positions lie farther apart than the scheme's tolerance.
+    let apart = |a: usize, b: usize| {
+        tolerance.is_some_and(|t| match (work.units[a], work.units[b]) {
+            (Some(ua), Some(ub)) => separation_degrees(ua, ub) * 60.0 > t,
+            _ => false,
+        })
+    };
     if let Some((&first, rest)) = sole.split_first() {
         for &other in rest {
             if work.groups.find(first) == work.groups.find(other) {
+                continue;
+            }
+            if apart(first, other) {
+                work.groups.link(first, other);
+                work.links.push((edge(first, other), conflict));
                 continue;
             }
             match work.groups.join(first, other) {
