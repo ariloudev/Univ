@@ -3,7 +3,7 @@ key: 01a1a0d1-e441-72be-8ac7-621f4d4a0d7b
 branch: "stage/ingest-w8"
 base: "product/ingest"
 title: "stage/ingest-w8"
-revision: 5
+revision: 15
 opened:
   at: 2026-11-03T09:51:12Z
   revision: 1
@@ -15,6 +15,41 @@ stages:
     id: w8
   - key: 01a1a0d1-e441-72be-8ac7-6221352936f8
     id: w8-review
+submissions:
+  - key: 01a1a141-4d29-7798-8d8a-031552c4a797
+    blocks:
+      - 01a1a141-4d28-753c-9c80-70dd916af763
+      - 01a1a141-4d28-753c-9c80-70de31cd5649
+      - 01a1a141-4d28-753c-9c80-70df2809b60f
+    changes:
+      - what: sent
+        at: 2026-11-03T11:52:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+      - what: answered
+        at: 2026-11-03T11:55:06Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+  - key: 01a1a182-6e06-742f-b98e-5aadf547bd8b
+    blocks:
+      - 01a1a182-6e06-742f-b98e-5aab6db2d481
+    changes:
+      - what: sent
+        at: 2026-11-03T13:04:02Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+      - what: answered
+        at: 2026-11-03T13:04:15Z
+        revision: 13
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
 acts:
   - at: 2026-11-03T09:51:12Z
     revision: 1
@@ -38,6 +73,56 @@ acts:
       session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
   - at: 2026-11-03T11:12:42Z
     revision: 5
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T11:37:12Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T11:52:53Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T11:55:06Z
+    revision: 8
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-03T11:55:27Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T12:02:20Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T12:05:15Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T13:04:02Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T13:04:15Z
+    revision: 13
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-03T13:04:34Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T13:05:09Z
+    revision: 15
     by:
       host: claude-code
       session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"

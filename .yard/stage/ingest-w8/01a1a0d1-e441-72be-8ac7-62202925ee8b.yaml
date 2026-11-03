@@ -55,6 +55,15 @@ blocks:
         title: "Build and publish release 1"
         detail: "`univ-ingest build --offline` then `publish 1` to local D1 and R2. Done when release 1 is published, `latest` points to it, and the D1 size (CON-3) and largest tile (QA-1) are recorded."
         state: active
+      - key: 01a1a132-f196-70f1-9fef-ba23d13be5e8
+        at: 2026-11-03T11:37:12Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Build and publish release 1"
+        detail: "Release 1 was built from the real data in 48.7 s, and every check passed: 528 files and 17,688,993 D1 rows, estimated at 2.2 GB of the 10 GB cap (within the 4.5 GB budget). Peak RSS was 12.08 GB, at the top of the owner's 10–12 GB range. It was published to local D1 and R2 in 12 min (peak 3.5 GB): 529 files uploaded and checked, and `latest` now points to release 1. Largest tile: 554 kB (QA-1)."
+        state: done
   - key: 01a1a0d1-e441-72be-8ac7-6224e4542ef8
     id: w8-t3-science
     kind: task
@@ -77,6 +86,30 @@ blocks:
 
           Done when each result is recorded in a note, failures included.
         state: open
+      - key: 01a1a132-f196-70f1-9fef-ba253d638cda
+        at: 2026-11-03T11:37:12Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Science checks"
+        detail: |-
+          A read-only agent queries a copy of local D1 and the release files.
+
+          **Against published values:**
+          - M31
+          - Virgo and Coma
+          - the Laniakea attractor
+          - 2M++ cross-match rates against 2MRS, 6dFGS and SDSS
+
+          **Open questions on the data:**
+          - Left-out rows: 2M++ 3,813, eRASS1 155, UNGC 110.
+          - The ranking rule's impact on measurements with no published error.
+          - Member redshift frames, against each paper.
+          - Horologium–Reticulum's missing distance.
+
+          **Sanity:** sizes and absurd distances.
+        state: active
   - key: 01a1a0d1-e441-72be-8ac7-6225c2c2db05
     id: w8-t4-fixes
     kind: task
@@ -106,6 +139,19 @@ blocks:
 
           Done when the real build succeeds and release 1 is published locally.
         state: active
+      - key: 01a1a132-f196-70f1-9fef-ba24746da40d
+        at: 2026-11-03T11:37:12Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix what the real data exposes"
+        detail: |-
+          - **D1 schema v2** (`terms`, numbered sources, typed uncertainty columns, `chains` stored once): 18.05 GB → 2.20 GB, with every reader fact kept in D1 and a read-back check added to the build.
+          - **Memory:** peak cut from 65.9 GB to 12.1 GB by streaming D1 rows.
+          - **Structure members:** all 275 are placed from their own cited values, so 23 of 26 structures are now indexed. The member redshift frames are still to be verified against the papers.
+          - **Errors and options:** fetch errors carry their cause chain, and `Until` carries its options.
+        state: done
   - key: 01a1a0ea-fbcc-72c2-b75e-fb620605cde1
     id: w8-first-build
     kind: note
@@ -151,3 +197,1292 @@ blocks:
         title: "Memory target: 10–12 GB, set by the owner"
         markdown: "On 2026-11-03 the owner set the release build's memory target at a peak of 10–12 GB RSS (\"give or take\"), in place of the 8 GB the fix aimed for. The first real build peaked at 62 GB. The streamed build was at 10.1 GB mid-run."
         tone: info
+      - key: 01a1a183-74c8-77ac-957d-2f8be7a6e4f2
+        at: 2026-11-03T13:05:09Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Memory: the current peak is accepted"
+        markdown: "On 2026-11-03 the owner first set a peak of 10–12 GB RSS for the release build, in place of 8 GB. After release 2 peaked at 14.1 GB, they said that memory pressure is fine and needs no further optimization for now. The first real build peaked at 65.9 GB."
+        tone: info
+  - key: 01a1a141-4d28-753c-9c80-70dd916af763
+    id: ask-toolu-01sugxe3fubqukppmvko7n9u-1
+    kind: question
+    versions:
+      - key: 01a1a141-4d28-753c-9c80-70e02708d357
+        at: 2026-11-03T11:52:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "UNGC publishes many indicator distances (Cepheid, TRGB, SBF) with no uncertainty, so the current rule ranks them last. In 129 objects they lose to a redshift distance, e.g. M81 is placed at 0.72 Mpc instead of its Cepheid 3.63 Mpc, and Cen A at 11.85 Mpc instead of TRGB 3.75 Mpc. How should a distance with no published uncertainty rank?"
+        header: "No-error rank"
+        options:
+          - label: "Method rank first"
+            detail: "A geometric, primary or secondary indicator beats any redshift distance whose fractional uncertainty exceeds a stated threshold (e.g. 25%), and otherwise ranks by method. No uncertainty is invented. The rule and threshold go in rules/ranking.yaml and the spec (AC-60/61)."
+            recommended: true
+          - label: "Typical error per method"
+            detail: "Give each method a typical fractional uncertainty from cited literature (e.g. TRGB ~5%, Cepheid ~5%, SBF ~10%, TF ~20%), marked estimated, and keep ranking by fractional uncertainty. Simple, but it puts a number on values the source didn't publish."
+          - label: "Keep it as is"
+            detail: "A distance with no published uncertainty always ranks last. Faithful to the source, but M81, Cen A and 127 others stay badly placed."
+        ownWords: true
+    responses:
+      - key: 01a1a143-52f9-77ae-9fde-d25279560884
+        at: 2026-11-03T11:55:06Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Method rank first"
+  - key: 01a1a141-4d28-753c-9c80-70de31cd5649
+    id: ask-toolu-01sugxe3fubqukppmvko7n9u-2
+    kind: question
+    versions:
+      - key: 01a1a141-4d28-753c-9c80-70e1002247d8
+        at: 2026-11-03T11:52:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "35 galaxies outside the Local Group are placed inside 1 Mpc because their only distance is a tiny redshift (e.g. one at 5 kpc with a fractional uncertainty of 931). What should happen to an object whose only distance is far more uncertain than itself?"
+        header: "Low-z place"
+        options:
+          - label: "Leave unplaced"
+            detail: "An object whose best distance has fractional uncertainty above 1 gets no 3D position (reason: distance too uncertain). It stays in look-ups with its sky position and measurements, as AC-65 already allows for objects with no distance."
+            recommended: true
+          - label: "Place anyway"
+            detail: "Keep placing it. Every derived value carries its uncertainty, so a client could filter, but the tiles and volume queries show these galaxies at nonsensical distances."
+        ownWords: true
+    responses:
+      - key: 01a1a143-52f9-77ae-9fde-d253d2de02e4
+        at: 2026-11-03T11:55:06Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Leave unplaced"
+  - key: 01a1a141-4d28-753c-9c80-70df2809b60f
+    id: ask-toolu-01sugxe3fubqukppmvko7n9u-3
+    kind: question
+    versions:
+      - key: 01a1a141-4d29-7798-8d8a-03149974402b
+        at: 2026-11-03T11:52:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "M87 is placed at 24.2 Mpc from its redshift, against Mei et al. 2007's 16.5 Mpc: Virgo infall makes redshift distances wrong near clusters, and the 300 km/s allowance can't cover it. Cosmicflows-4's individual-galaxy table (J/ApJ/944/94/table2, 55,877 galaxies with group ids) would give M87 and other cluster members their group's measured distance. Should it be added?"
+        header: "CF4 galaxies"
+        options:
+          - label: "Add CF4 galaxies"
+            detail: "Fetch table2, cross-match its galaxies (they carry PGC numbers), and use a member's own CF4 distance or its group's distance as a measured candidate. This fixes Virgo-like cases near the clusters CF4 covers. It's a 19th source, so a minor spec change to the data providers."
+            recommended: true
+          - label: "Not now"
+            detail: "Keep 18 sources. M87 and other galaxies in clusters stay at their redshift distances, with the flow error noted as a known limitation of release 1."
+        ownWords: true
+    responses:
+      - key: 01a1a143-52f9-77ae-9fde-d254d33efff1
+        at: 2026-11-03T11:55:06Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Add CF4 galaxies"
+  - key: 01a1a143-a733-73f1-b2a1-14c7bf128eb0
+    id: w8-science-report
+    kind: note
+    versions:
+      - key: 01a1a143-a733-73f1-b2a1-14cb42b625eb
+        at: 2026-11-03T11:55:27Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Release 1 science check: 4 pass, 2 fail, 3 concerns"
+        markdown: |-
+          | Check | Result |
+          |---|---|
+          | M31 | **pass**: 0.783 ± 0.025 Mpc (McConnachie 2012), l = 121.174°, b = −21.573° |
+          | Virgo | **fail**: M87 is at 24.2 Mpc from its redshift against 16.5 Mpc (Mei et al. 2007). The CF4 Virgo group sits 33° off its galaxies; 155 CF4 group positions as served by VizieR have no member within 5° |
+          | Coma | concern: NGC 4874 at 109.5 Mpc and NGC 4889 at 99.5 Mpc, from redshifts, against 98.5 ± 2.2 Mpc (Scolnic et al. 2024) |
+          | Laniakea | **pass**: all 9 Dupuy & Courtois 2023 attractors fall in their own basins; volume 1.945e6 against 1.9e6 |
+          | 2M++ match | **pass**: 97.3% match a parent; 99% of 6dF- and SDSS-sourced entries match. The rest are fibre clones |
+          | Left out | 2M++ 3,813 ZoA fakes, correct. UNGC 110 are Hubble-relation distances: only the distance should go. **eRASS1 155 fail**: BEST_ZERR = −1 is an undocumented sentinel; Virgo and Fornax are among them |
+          | Ranking | **fail**: in 129 objects an indicator with no published error loses to a redshift distance (M81 at 0.72 Mpc against Cepheid 3.63) |
+          | Members | concern: Saraswati mixes photometric redshifts but stores them as measured; Giant Arc and Big Ring members show false precision |
+          | Horologium–Reticulum | concern: the file omits the cited mean velocity of 19,900 km/s (Fleenor et al. 2005 §3.1) |
+          | Sanity | D1 1.57 GB on disk; largest tile 554 kB; 35 galaxies placed inside 1 Mpc from tiny redshifts; Local Group duplicates (Fornax, M32, NGC 55, Sgr dSph) |
+        tone: warning
+  - key: 01a1a143-a733-73f1-b2a1-14c88ef09610
+    id: w8-d-rank
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a143-a733-73f1-b2a1-14cc5d749d85
+        at: 2026-11-03T11:55:27Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Method rank first for distances without a published uncertainty"
+        consequence: "A geometric, primary or secondary indicator distance beats any redshift distance whose fractional uncertainty exceeds a threshold stated in rules/ranking.yaml; otherwise candidates rank by method. No uncertainty is invented. AC-60 and AC-61 change in the spec."
+        question: 01a1a141-4d28-753c-9c80-70dd916af763
+  - key: 01a1a143-a733-73f1-b2a1-14c91cdaa47f
+    id: w8-d-unplaced
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1a143-a733-73f1-b2a1-14cdc43bae4a
+        at: 2026-11-03T11:55:27Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "An object whose best distance is more than 100% uncertain is left unplaced"
+        consequence: "It gets no 3D position (reason: distance too uncertain), stays in look-ups with its sky position and measurements, and appears in no tile or volume query. A new criterion under RQ-26 in the spec."
+        question: 01a1a141-4d28-753c-9c80-70de31cd5649
+  - key: 01a1a143-a733-73f1-b2a1-14ca0b8678bb
+    id: w8-d-cf4-galaxies
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1a143-a733-73f1-b2a1-14ce6f602be4
+        at: 2026-11-03T11:55:27Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Add Cosmicflows-4's individual-galaxy table as a 19th source"
+        consequence: "J/ApJ/944/94/table2 (55,877 galaxies with group ids and PGC numbers) is fetched and cross-matched. A member's own CF4 distance, or its group's, becomes a measured candidate, which fixes Virgo-like infall cases. It also checks the 155 bad group positions. The data-providers component gains the source."
+        question: 01a1a141-4d28-753c-9c80-70df2809b60f
+  - key: 01a1a149-f447-7033-a444-61233e815d0b
+    id: w8-spec-change
+    kind: loft
+    versions:
+      - key: 01a1a149-f447-7033-a444-61255b6d9d87
+        at: 2026-11-03T12:02:20Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: spec-change
+        note: |-
+          This change records the owner's three W8 decisions and the pre-approved minor items:
+          - **RQ-24 ranking order.** If an indicator distance is present, redshift distances above the threshold are set aside. Otherwise the smallest fractional uncertainty wins. A candidate without an uncertainty wins only with a strictly better method rank. It supersedes ADR-12.
+          - **RQ-26.** An object whose distance is more than 100% uncertain gets no position.
+          - **19th source.** The Cosmicflows-4 galaxies table.
+          - **Minor items.** Distance measure, `blank_row`, FK4 and unstated-equinox frames, assumed cosmology, CON-3 restated for all unpruned releases together, and galaxy groups as their own objects.
+
+          The SDSS rename waits for the owner's answer.
+        recorded:
+          commit: "1b658299997ff47a1b049872204875d88327cea7"
+          branch: "stage/ingest-w8"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T12:02:20Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 2,
+              "graph.diff": 30,
+              "graph.edges": 3,
+              "graph.nodes": 39,
+              "status.base.added": 20,
+              "status.base.changed": 8,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "changed",
+                  "key": "01a19f25-5955-701e-b3cf-ddc75d01acc4",
+                  "kind": "decision",
+                  "label": "ADR-12",
+                  "name": "Keep every measurement and prefer the most precise distance",
+                  "words": {
+                    "after": "Keep every measurement and prefer the most precise distance\n\nEach object keeps every measurement, and the one with the smallest fractional distance uncertainty, counting peculiar velocity for redshifts, places it.",
+                    "before": "Keep every measurement and prefer the most precise distance\n\nEach object keeps every measurement, and the one with the smallest fractional distance uncertainty, counting peculiar velocity for redshifts, places it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e6497ba7827e",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Rank a distance without an uncertainty by its method",
+                  "words": {
+                    "after": "Rank a distance without an uncertainty by its method\n\nA redshift distance above the release's threshold gives way to any indicator distance, and a distance without a published uncertainty wins by a strictly better method rank, with no uncertainty invented."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7f4665912a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A value published for a stated Hubble constant or cosmology records it as an assumed cosmology holding the Hubble constant with whichever of the matter and Λ densities the source states.",
+                  "words": {
+                    "after": "A value published for a stated Hubble constant or cosmology records it as an assumed cosmology holding the Hubble constant with whichever of the matter and Λ densities the source states."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f805f3d0223",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A length published in h⁻¹ Mpc records an assumed cosmology of H0 = 100 km/s/Mpc.",
+                  "words": {
+                    "after": "A length published in h⁻¹ Mpc records an assumed cosmology of H0 = 100 km/s/Mpc."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-185fd835d316",
+                  "kind": "requirement",
+                  "label": "RQ-14",
+                  "name": "Univ Ingest shall transform between frames with the published definitions of the FK4, galactic and supergalactic systems.",
+                  "words": {
+                    "after": "Univ Ingest shall transform between frames with the published definitions of the FK4, galactic and supergalactic systems.",
+                    "before": "Univ Ingest shall transform between frames with the published definitions of the galactic and supergalactic systems."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f8182b395ba",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A position in the frame FK4 B1950 is moved to FK5 J2000 as ERFA's fk45z moves it, with the E-terms of aberration removed and the matrix of Standish 1982 (A&A 115, 20), and from there to ICRS.",
+                  "words": {
+                    "after": "A position in the frame FK4 B1950 is moved to FK5 J2000 as ERFA's fk45z moves it, with the E-terms of aberration removed and the matrix of Standish 1982 (A&A 115, 20), and from there to ICRS."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f820e7bc1c8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A position in the frame \"equatorial, equinox not stated\" is placed as J2000 with a stated systematic uncertainty of 0.6986°, the largest angle between reading it as B1950 and as J2000.",
+                  "words": {
+                    "after": "A position in the frame \"equatorial, equinox not stated\" is placed as J2000 with a stated systematic uncertainty of 0.6986°, the largest angle between reading it as B1950 and as J2000."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                  "kind": "requirement",
+                  "label": "RQ-16",
+                  "name": "Univ Ingest shall record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                  "words": {
+                    "after": "Univ Ingest shall record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                    "before": "Univ Ingest shall record each distance with its kind, its method and, where it depends on one, its Hubble constant or cosmology."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f835cca0e82",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each distance names its measure: luminosity, comoving, Euclidean or unspecified.",
+                  "words": {
+                    "after": "Each distance names its measure: luminosity, comoving, Euclidean or unspecified."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f8400aee970",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A distance derived from a distance modulus is a luminosity distance.",
+                  "words": {
+                    "after": "A distance derived from a distance modulus is a luminosity distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f8501160747",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row whose cells are all blank is left out under the reason `blank_row`.",
+                  "words": {
+                    "after": "A row whose cells are all blank is left out under the reason `blank_row`."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636e-7035-8185-ab97eb9c2fb9",
+                  "kind": "feature",
+                  "label": "F-6",
+                  "name": "Choose the preferred measurement",
+                  "words": {
+                    "after": "Choose the preferred measurement\n\nChoosing which of an object's measurements places it in three dimensions. A ranking by method\nalone would misplace galaxies: at a recession velocity of 15,000 km/s a Tully-Fisher distance\ncarries about 20% error, while a redshift distance, with a peculiar velocity of 300 km/s, carries\nabout 2%. So the rule weighs each measurement's uncertainty first and its method second.\n\nA redshift distance can still be far off: near a cluster, infall moves a galaxy's redshift away\nfrom the Hubble flow, and close by, the peculiar velocity outweighs the recession velocity. So a\nredshift-independent distance beats a redshift distance whose uncertainty passes a threshold,\nand a distance whose uncertainty exceeds its value places nothing.",
+                    "before": "Choose the preferred measurement\n\nChoosing which of an object's measurements places it in three dimensions. A ranking by method\nalone would misplace galaxies: at a recession velocity of 15,000 km/s a Tully-Fisher distance\ncarries about 20% error, while a redshift distance, with a peculiar velocity of 300 km/s, carries\nabout 2%. So the rule weighs each measurement's uncertainty first and its method second."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                  "kind": "requirement",
+                  "label": "RQ-24",
+                  "name": "Univ Ingest shall choose as an object's preferred distance the measurement that ranks first by fractional distance uncertainty and method rank.",
+                  "words": {
+                    "after": "Univ Ingest shall choose as an object's preferred distance the measurement that ranks first by fractional distance uncertainty and method rank.",
+                    "before": "Univ Ingest shall choose as an object's preferred distance the measurement with the smallest fractional distance uncertainty."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f77617e6ee1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, every redshift distance whose fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states is set aside.",
+                  "words": {
+                    "after": "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, every redshift distance whose fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states is set aside."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f788275d038",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads.",
+                  "words": {
+                    "after": "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f79f4feda94",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A candidate without a published uncertainty wins only if its method rank is strictly better than that of every remaining candidate with a published uncertainty.",
+                  "words": {
+                    "after": "A candidate without a published uncertainty wins only if its method rank is strictly better than that of every remaining candidate with a published uncertainty."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e65204c3c532",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where no candidate without a published uncertainty wins, the leader among the candidates with a published uncertainty wins.",
+                  "words": {
+                    "after": "Where no candidate without a published uncertainty wins, the leader among the candidates with a published uncertainty wins."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e653f6590128",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where more than one candidate without a published uncertainty qualifies to win, the one with the best method rank wins.",
+                  "words": {
+                    "after": "Where more than one candidate without a published uncertainty qualifies to win, the one with the best method rank wins."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e6548a057bc6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where qualifying candidates without a published uncertainty share the best method rank, the one whose source the ranking rule lists first wins.",
+                  "words": {
+                    "after": "Where qualifying candidates without a published uncertainty share the best method rank, the one whose source the ranking rule lists first wins."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e655ca08d473",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A candidate published without an uncertainty is given none in the ranking, never an invented one.",
+                  "words": {
+                    "after": "A candidate published without an uncertainty is given none in the ranking, never an invented one."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636e-7035-8185-ab9ce127e733",
+                  "kind": "criterion",
+                  "label": "AC-63",
+                  "name": "The object names its preferred measurement and the comparison that made it win: fractional uncertainty, the redshift threshold or method rank.",
+                  "words": {
+                    "after": "The object names its preferred measurement and the comparison that made it win: fractional uncertainty, the redshift threshold or method rank.",
+                    "before": "The object names its preferred measurement and the uncertainty that made it win."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636e-7035-8185-ab9fe065861e",
+                  "kind": "requirement",
+                  "label": "RQ-26",
+                  "name": "If an object has no distance, or its preferred distance has a fractional uncertainty above 1, then Univ Ingest shall keep the object with its sky position alone and give it no derived three-dimensional position.",
+                  "words": {
+                    "after": "If an object has no distance, or its preferred distance has a fractional uncertainty above 1, then Univ Ingest shall keep the object with its sky position alone and give it no derived three-dimensional position.",
+                    "before": "If an object has no distance, then Univ Ingest shall keep the object with its sky position alone and give it no derived three-dimensional position."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7a2ff48aad",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object whose preferred distance has a fractional uncertainty above 1 (100%) is given no three-dimensional position, with \"distance too uncertain\" as the reason.",
+                  "words": {
+                    "after": "An object whose preferred distance has a fractional uncertainty above 1 (100%) is given no three-dimensional position, with \"distance too uncertain\" as the reason."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7ba5142e0f",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each galaxy group as an object of its own, related to its dominant galaxy.",
+                  "words": {
+                    "after": "Univ Ingest shall keep each galaxy group as an object of its own, related to its dominant galaxy."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7cf003d8aa",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A group's catalogue entry is never merged into the object of its dominant galaxy, even when the group is named by the galaxy's PGC number.",
+                  "words": {
+                    "after": "A group's catalogue entry is never merged into the object of its dominant galaxy, even when the group is named by the galaxy's PGC number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7dc2dcf028",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The group's object records a relation that names its dominant galaxy's object, as the group's source identifies that galaxy.",
+                  "words": {
+                    "after": "The group's object records a relation that names its dominant galaxy's object, as the group's source identifies that galaxy."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7eb363692b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No measurement of the group is lent to its dominant galaxy, and none of the galaxy is lent to the group.",
+                  "words": {
+                    "after": "No measurement of the group is lent to its dominant galaxy, and none of the galaxy is lent to the group."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-182139b89dd9",
+                  "kind": "component",
+                  "label": "CMP-15",
+                  "name": "Cosmicflows-4 distances",
+                  "words": {
+                    "after": "Cosmicflows-4 distances\n\nThe groups table of Cosmicflows-4 (Tully et al. 2023, ApJ 944, 94; VizieR J/ApJ/944/94):\nthe redshift-independent distances of 38,053 galaxy groups, each named by the PGC number of\nits dominant galaxy, on H0 = 74.6. Its SGX, SGY and SGZ columns are in km/s although\nlabelled Mpc, and 158 of its group positions are wrong.",
+                    "before": "Cosmicflows-4 distances\n\nCosmicflows-4 (Tully et al. 2023, ApJ 944, 94; VizieR J/ApJ/944/94): 55,877 galaxies with\nredshift-independent distances, on H0 = 74.6. Its SGX, SGY and SGZ columns are in km/s\nalthough labelled Mpc, and 158 of its group positions are wrong."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6017-72a6-9efa-ce6c1a364ff4",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Cosmicflows-4 galaxies",
+                  "words": {
+                    "after": "Cosmicflows-4 galaxies\n\nThe individual-galaxy table of Cosmicflows-4 (Tully et al. 2023, ApJ 944, 94; VizieR J/ApJ/944/94/table2): 55,877 galaxies with redshift-independent distances on H0 = 74.6, each with its group id and PGC number."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3cf23344602c",
+                  "kind": "constraint",
+                  "label": "CON-3",
+                  "name": "The Release publisher shall keep the D1 tables of every unpruned release together within D1's 10 GB database cap, budgeting each release at 4.5 GB so the next release can be published before the previous one is pruned.",
+                  "words": {
+                    "after": "The Release publisher shall keep the D1 tables of every unpruned release together within D1's 10 GB database cap, budgeting each release at 4.5 GB so the next release can be published before the previous one is pruned.",
+                    "before": "The Release publisher shall keep the D1 tables of one release within 10 GB."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f25-5955-701e-b3cf-ddc75d01acc4",
+                  "kind": "decision",
+                  "label": "ADR-12",
+                  "name": "Keep every measurement and prefer the most precise distance",
+                  "words": {
+                    "after": "Keep every measurement and prefer the most precise distance\n\nEach object keeps every measurement, and the one with the smallest fractional distance uncertainty, counting peculiar velocity for redshifts, places it.",
+                    "before": "Keep every measurement and prefer the most precise distance\n\nEach object keeps every measurement, and the one with the smallest fractional distance uncertainty, counting peculiar velocity for redshifts, places it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e6497ba7827e",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Rank a distance without an uncertainty by its method",
+                  "words": {
+                    "after": "Rank a distance without an uncertainty by its method\n\nA redshift distance above the release's threshold gives way to any indicator distance, and a distance without a published uncertainty wins by a strictly better method rank, with no uncertainty invented."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a19f25-5955-701e-b3cf-ddc75d01acc4",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a19f23-636e-7035-8185-ab97eb9c2fb9"
+                },
+                {
+                  "from": "01a1a149-623d-7310-8064-e6497ba7827e",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a19f23-636e-7035-8185-ab97eb9c2fb9"
+                },
+                {
+                  "from": "01a1a149-623d-7310-8064-e6497ba7827e",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-18530217fadb",
+                  "kind": "feature",
+                  "label": "F-3",
+                  "name": "Derive positions",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-18596dbe801e",
+                  "kind": "requirement",
+                  "label": "RQ-13",
+                  "name": "Univ Ingest shall rescale each distance or size published for another Hubble constant to the release cosmology's Hubble constant.",
+                  "parent": "01a19f22-2ad9-716e-876f-18530217fadb"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7f4665912a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A value published for a stated Hubble constant or cosmology records it as an assumed cosmology holding the Hubble constant with whichever of the matter and Λ densities the source states.",
+                  "parent": "01a19f22-2ad9-716e-876f-18596dbe801e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f805f3d0223",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A length published in h⁻¹ Mpc records an assumed cosmology of H0 = 100 km/s/Mpc.",
+                  "parent": "01a19f22-2ad9-716e-876f-18596dbe801e"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-185fd835d316",
+                  "kind": "requirement",
+                  "label": "RQ-14",
+                  "name": "Univ Ingest shall transform between frames with the published definitions of the FK4, galactic and supergalactic systems.",
+                  "parent": "01a19f22-2ad9-716e-876f-18530217fadb"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f8182b395ba",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A position in the frame FK4 B1950 is moved to FK5 J2000 as ERFA's fk45z moves it, with the E-terms of aberration removed and the matrix of Standish 1982 (A&A 115, 20), and from there to ICRS.",
+                  "parent": "01a19f22-2ad9-716e-876f-185fd835d316"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f820e7bc1c8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A position in the frame \"equatorial, equinox not stated\" is placed as J2000 with a stated systematic uncertainty of 0.6986°, the largest angle between reading it as B1950 and as J2000.",
+                  "parent": "01a19f22-2ad9-716e-876f-185fd835d316"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                  "kind": "requirement",
+                  "label": "RQ-16",
+                  "name": "Univ Ingest shall record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f835cca0e82",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each distance names its measure: luminosity, comoving, Euclidean or unspecified.",
+                  "parent": "01a19f22-2ad9-716e-876f-186a829fb7fa"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f8400aee970",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A distance derived from a distance modulus is a luminosity distance.",
+                  "parent": "01a19f22-2ad9-716e-876f-186a829fb7fa"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                  "kind": "requirement",
+                  "label": "RQ-18",
+                  "name": "If a catalogue entry fails validation, then Univ Ingest shall leave the entry out of the release and count it under its reason.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f8501160747",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row whose cells are all blank is left out under the reason `blank_row`.",
+                  "parent": "01a19f22-2ad9-716e-876f-18734f56d5aa"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65bef1ca65c",
+                  "kind": "feature_group",
+                  "label": "FG-3",
+                  "name": "Identity",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636e-7035-8185-ab97eb9c2fb9",
+                  "kind": "feature",
+                  "label": "F-6",
+                  "name": "Choose the preferred measurement",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                  "kind": "requirement",
+                  "label": "RQ-24",
+                  "name": "Univ Ingest shall choose as an object's preferred distance the measurement that ranks first by fractional distance uncertainty and method rank.",
+                  "parent": "01a19f23-636e-7035-8185-ab97eb9c2fb9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f77617e6ee1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, every redshift distance whose fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states is set aside.",
+                  "parent": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f788275d038",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads.",
+                  "parent": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f79f4feda94",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A candidate without a published uncertainty wins only if its method rank is strictly better than that of every remaining candidate with a published uncertainty.",
+                  "parent": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e65204c3c532",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where no candidate without a published uncertainty wins, the leader among the candidates with a published uncertainty wins.",
+                  "parent": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e653f6590128",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where more than one candidate without a published uncertainty qualifies to win, the one with the best method rank wins.",
+                  "parent": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e6548a057bc6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where qualifying candidates without a published uncertainty share the best method rank, the one whose source the ranking rule lists first wins.",
+                  "parent": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a149-623d-7310-8064-e655ca08d473",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A candidate published without an uncertainty is given none in the ranking, never an invented one.",
+                  "parent": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636e-7035-8185-ab9ce127e733",
+                  "kind": "criterion",
+                  "label": "AC-63",
+                  "name": "The object names its preferred measurement and the comparison that made it win: fractional uncertainty, the redshift threshold or method rank.",
+                  "parent": "01a19f23-636e-7035-8185-ab988f5d57b7"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636e-7035-8185-ab9fe065861e",
+                  "kind": "requirement",
+                  "label": "RQ-26",
+                  "name": "If an object has no distance, or its preferred distance has a fractional uncertainty above 1, then Univ Ingest shall keep the object with its sky position alone and give it no derived three-dimensional position.",
+                  "parent": "01a19f23-636e-7035-8185-ab97eb9c2fb9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7a2ff48aad",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object whose preferred distance has a fractional uncertainty above 1 (100%) is given no three-dimensional position, with \"distance too uncertain\" as the reason.",
+                  "parent": "01a19f23-636e-7035-8185-ab9fe065861e"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636e-7035-8185-aba1fc8f7bbd",
+                  "kind": "feature",
+                  "label": "F-7",
+                  "name": "Cross-match catalogues",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7ba5142e0f",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each galaxy group as an object of its own, related to its dominant galaxy.",
+                  "parent": "01a19f23-636e-7035-8185-aba1fc8f7bbd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7cf003d8aa",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A group's catalogue entry is never merged into the object of its dominant galaxy, even when the group is named by the galaxy's PGC number.",
+                  "parent": "01a1a147-6018-75e1-9409-3f7ba5142e0f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7dc2dcf028",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The group's object records a relation that names its dominant galaxy's object, as the group's source identifies that galaxy.",
+                  "parent": "01a1a147-6018-75e1-9409-3f7ba5142e0f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6018-75e1-9409-3f7eb363692b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No measurement of the group is lent to its dominant galaxy, and none of the galaxy is lent to the group.",
+                  "parent": "01a1a147-6018-75e1-9409-3f7ba5142e0f"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce7c64960ab",
+                  "kind": "component",
+                  "label": "CMP-7",
+                  "name": "Data providers",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce94dbc10f4",
+                  "kind": "component",
+                  "label": "CMP-11",
+                  "name": "VizieR",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-182139b89dd9",
+                  "kind": "component",
+                  "label": "CMP-15",
+                  "name": "Cosmicflows-4 distances",
+                  "parent": "01a19f1e-d177-716d-b124-3ce94dbc10f4"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a147-6017-72a6-9efa-ce6c1a364ff4",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Cosmicflows-4 galaxies",
+                  "parent": "01a19f1e-d177-716d-b124-3ce94dbc10f4"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ceccbdcd63e",
+                  "kind": "component",
+                  "label": "CMP-33",
+                  "name": "Ingest pipeline",
+                  "parent": null
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3cf1defde8b6",
+                  "kind": "component",
+                  "label": "CMP-38",
+                  "name": "Release publisher",
+                  "parent": "01a19f1e-d177-716d-b124-3ceccbdcd63e"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f7f4665912a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "A value published for a stated Hubble constant or cosmology records it as an assumed cosmology holding the Hubble constant with whichever of the matter and Λ densities the source states.",
+                    "path": "spec/products/univ-ingest/normalization/derive-positions.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f805f3d0223",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "A length published in h⁻¹ Mpc records an assumed cosmology of H0 = 100 km/s/Mpc.",
+                    "path": "spec/products/univ-ingest/normalization/derive-positions.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f8182b395ba",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 49,
+                    "name": "A position in the frame FK4 B1950 is moved to FK5 J2000 as ERFA's fk45z moves it, with the E-terms of aberration removed and the matrix of Standish 1982 (A&A 115, 20), and from there to ICRS.",
+                    "path": "spec/products/univ-ingest/normalization/derive-positions.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f820e7bc1c8",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 51,
+                    "name": "A position in the frame \"equatorial, equinox not stated\" is placed as J2000 with a stated systematic uncertainty of 0.6986°, the largest angle between reading it as B1950 and as J2000.",
+                    "path": "spec/products/univ-ingest/normalization/derive-positions.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f835cca0e82",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 41,
+                    "name": "Each distance names its measure: luminosity, comoving, Euclidean or unspecified.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f8400aee970",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "A distance derived from a distance modulus is a luminosity distance.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f8501160747",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 68,
+                    "name": "A row whose cells are all blank is left out under the reason `blank_row`.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f77617e6ee1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 26,
+                    "name": "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, every redshift distance whose fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states is set aside.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f788275d038",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 28,
+                    "name": "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f79f4feda94",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 32,
+                    "name": "A candidate without a published uncertainty wins only if its method rank is strictly better than that of every remaining candidate with a published uncertainty.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a149-623d-7310-8064-e65204c3c532",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 34,
+                    "name": "Where no candidate without a published uncertainty wins, the leader among the candidates with a published uncertainty wins.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a149-623d-7310-8064-e653f6590128",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 36,
+                    "name": "Where more than one candidate without a published uncertainty qualifies to win, the one with the best method rank wins.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a149-623d-7310-8064-e6548a057bc6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 38,
+                    "name": "Where qualifying candidates without a published uncertainty share the best method rank, the one whose source the ranking rule lists first wins.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a149-623d-7310-8064-e655ca08d473",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 40,
+                    "name": "A candidate published without an uncertainty is given none in the ranking, never an invented one.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f7a2ff48aad",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 63,
+                    "name": "An object whose preferred distance has a fractional uncertainty above 1 (100%) is given no three-dimensional position, with \"distance too uncertain\" as the reason.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a147-6018-75e1-9409-3f7ba5142e0f",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 44,
+                    "name": "Univ Ingest shall keep each galaxy group as an object of its own, related to its dominant galaxy.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f7cf003d8aa",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 50,
+                    "name": "A group's catalogue entry is never merged into the object of its dominant galaxy, even when the group is named by the galaxy's PGC number.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f7dc2dcf028",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 52,
+                    "name": "The group's object records a relation that names its dominant galaxy's object, as the group's source identifies that galaxy.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6018-75e1-9409-3f7eb363692b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 54,
+                    "name": "No measurement of the group is lent to its dominant galaxy, and none of the galaxy is lent to the group.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a147-6017-72a6-9efa-ce6c1a364ff4",
+                    "kind": "component",
+                    "label": null,
+                    "line": 45,
+                    "name": "Cosmicflows-4 galaxies",
+                    "path": "spec/components/data-providers.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 10,
+                    "key": "01a19f22-2ad9-716e-876f-185fd835d316",
+                    "kind": "requirement",
+                    "label": "RQ-14",
+                    "line": 39,
+                    "name": "Univ Ingest shall transform between frames with the published definitions of the FK4, galactic and supergalactic systems.",
+                    "path": "spec/products/univ-ingest/normalization/derive-positions.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "kind": "requirement",
+                    "label": "RQ-16",
+                    "line": 27,
+                    "name": "Univ Ingest shall record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a19f23-636e-7035-8185-ab97eb9c2fb9",
+                    "kind": "feature",
+                    "label": "F-6",
+                    "line": 1,
+                    "name": "Choose the preferred measurement",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "kind": "requirement",
+                    "label": "RQ-24",
+                    "line": 18,
+                    "name": "Univ Ingest shall choose as an object's preferred distance the measurement that ranks first by fractional distance uncertainty and method rank.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f23-636e-7035-8185-ab9ce127e733",
+                    "kind": "criterion",
+                    "label": "AC-63",
+                    "line": 44,
+                    "name": "The object names its preferred measurement and the comparison that made it win: fractional uncertainty, the redshift threshold or method rank.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636e-7035-8185-ab9fe065861e",
+                    "kind": "requirement",
+                    "label": "RQ-26",
+                    "line": 54,
+                    "name": "If an object has no distance, or its preferred distance has a fractional uncertainty above 1, then Univ Ingest shall keep the object with its sky position alone and give it no derived three-dimensional position.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f22-2ad9-716e-876f-182139b89dd9",
+                    "kind": "component",
+                    "label": "CMP-15",
+                    "line": 38,
+                    "name": "Cosmicflows-4 distances",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1e-d177-716d-b124-3cf23344602c",
+                    "kind": "constraint",
+                    "label": "CON-3",
+                    "line": 24,
+                    "name": "The Release publisher shall keep the D1 tables of every unpruned release together within D1's 10 GB database cap, budgeting each release at 4.5 GB so the next release can be published before the previous one is pruned.",
+                    "path": "spec/components/ingest-pipeline.yaml"
+                  }
+                ],
+                "commit": "d081393a77563fc6aaaeb7f29c133bf35eb1b45e",
+                "removed": [],
+                "revision": "product/ingest"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 1,
+                "publishedAt": "2026-11-03T02:14:13Z",
+                "stateRoot": "d84d7a436045976e01bbeff555365768c13bebf8ba376ac10b00d03e773d48c7"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/ingest-w8",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a149-f447-7033-a444-61246cbbc4a8
+    id: w8-d-order
+    kind: note
+    versions:
+      - key: 01a1a149-f447-7033-a444-61263d1ff586
+        at: 2026-11-03T12:02:20Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The ranking is a total order"
+        markdown: "The choice 'method rank first' could loop when a measurement without an uncertainty is compared by method rank and all others by fractional uncertainty. The spec now fixes one order, and under it M81's Cepheid and Cen A's TRGB distances win. The option text said 'otherwise ranks by method'. The spec says 'otherwise by fractional uncertainty', so a precise redshift can still beat an imprecise indicator. That reading was flagged to the owner."
+        tone: info
+  - key: 01a1a14c-9e5d-70b7-95c8-32262603bc06
+    id: w8-cf4-positions
+    kind: note
+    versions:
+      - key: 01a1a14c-9e5d-70b7-95c8-322849ba2c50
+        at: 2026-11-03T12:05:15Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cosmicflows-4 group positions: an error in the published catalogue"
+        markdown: |-
+          157 of the 38,053 groups in J/ApJ/944/94 carry wrong directions in every position column (RAdeg/DEdeg, GLON/GLAT, SGL/SGB), and each has no table2 member within 2°. VizieR copies them faithfully.
+
+          | Kind | Groups | Example |
+          |---|---|---|
+          | KT17 galactic angles written into SGL/SGB | 68 | 1PGC 1816: SGL/SGB = KT17 GLON/GLAT 311.03, −65.26 |
+          | 4–119° off, no frame swap | 80 | Virgo 41220 at 220.82, −23.90 against KT17 187.76, +12.41 |
+          | Not in Kourkchi & Tully 2017 | 9 | 43423: 18 members, 41–148° away |
+
+          **Fix:** 148 groups take their Kourkchi & Tully 2017 group centre as a cited fix (CF4 built its groups from KT17). Their CF4 distances are unaffected, so the Virgo group keeps 16.1 Mpc. The 9 groups not in KT17 are left out under `wrong_position`.
+        tone: warning
+  - key: 01a1a14c-9e5d-70b7-95c8-3227b21f51e5
+    id: w8-t4b-decisions
+    kind: task
+    versions:
+      - key: 01a1a14c-9e5d-70b7-95c8-3229d77e1021
+        at: 2026-11-03T12:05:15Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Implement the decisions and the science-check fixes"
+        detail: |-
+          **Decisions and spec:**
+          - RQ-24's total order, with a 0.25 threshold.
+          - RQ-26: distances more than 100% uncertain are left unplaced.
+          - The CF4 galaxies table as a 19th source, which should put M87 at about 16.5 Mpc.
+
+          **Data fixes:**
+          - CF4 group positions from KT17.
+          - eRASS1 BEST_ZERR = −1 read as none reported.
+          - UNGC Hubble-relation rows kept, without their distances.
+          - Horologium–Reticulum's velocity, Saraswati's redshift kind, and Giant Arc and Big Ring members' slice uncertainty.
+          - Local Group duplicates merged.
+
+          Done when release 2 is built from the real data, published, and the science check is rerun.
+        state: active
+        type: fix
+  - key: 01a1a182-6e06-742f-b98e-5aab6db2d481
+    id: ask-toolu-01uwqzzqrwk1uajmegurud2z-1
+    kind: question
+    versions:
+      - key: 01a1a182-6e06-742f-b98e-5aacde7fe1d4
+        at: 2026-11-03T13:04:02Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "An object's scale domain follows the source of its preferred distance (AC-92). Cosmicflows-4 galaxies are defined as cosmic web, so once M81, Cen A and other nearby galaxies take a CF4 distance they tile as cosmic web, and the nearby-galaxies domain shrank from 637 to 426 objects. Structure files already use a distance rule (under 11 Mpc, the Updated Nearby Galaxy Catalog's depth, is nearby). How should a galaxy's scale domain be chosen?"
+        header: "Domain rule"
+        options:
+          - label: "By placed distance"
+            detail: "A galaxy within 11 Mpc (the UNGC depth) is in nearby galaxies, beyond it in cosmic web, whatever source its distance came from; stars stay in the stars domain by source. Matches the structure rule. AC-92 changes (minor spec change)."
+            recommended: true
+          - label: "By source, as now"
+            detail: "Keep AC-92 as written: the domain is the one the preferred distance's source definition names. Nearby galaxies placed by a CF4 distance tile with the cosmic web."
+        ownWords: true
+    responses:
+      - key: 01a1a182-a183-7447-a1c3-ee460a8ee8bf
+        at: 2026-11-03T13:04:15Z
+        revision: 13
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "By placed distance"
+  - key: 01a1a182-eba5-7186-8253-f08ea76acc7e
+    id: w8-release2
+    kind: note
+    versions:
+      - key: 01a1a182-eba5-7186-8253-f09029163f98
+        at: 2026-11-03T13:04:34Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Release 2 built and published"
+        markdown: |-
+          | | Release 1 | Release 2 |
+          |---|---|---|
+          | Entries | 2,909,101 | 2,965,234 |
+          | Objects | 2,095,269 | 2,099,389 (4,229 new ids, 109 replaced) |
+          | Placed | 2,082,458 | 2,086,262; 251 too uncertain; 12,876 with no distance |
+          | D1 | 2.20 GB | 2.32 GB |
+          | Peak RSS | 12.1 GB | **14.1 GB**, above the owner's 10–12 GB |
+          | Structures indexed | 23 of 26 | 24 of 26 |
+
+          **Placements:**
+          - M81 0.72 → 3.63 Mpc (Cepheids)
+          - Cen A 11.85 → 3.75 Mpc (TRGB)
+          - NGC 59 0.94 → 4.79 Mpc
+          - M87 24.2 → 16.86 Mpc (CF4 galaxies)
+          - Virgo group moved to its KT17 centre at 16.12 Mpc
+
+          **Other changes:**
+          - 1,285 preferred distances changed, 1,231 of them to a CF4 galaxy distance.
+          - eRASS1 recovers 155 rows and UNGC 110.
+
+          **Correction:** I expected SN Ia at 5% to beat a TRGB distance with no error. CF4 and UNGC class SN Ia as secondary, so TRGB (primary) wins under the chosen rule.
+        tone: success
+  - key: 01a1a182-eba5-7186-8253-f08f4496b16f
+    id: w8-d-domain
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1a182-eba5-7186-8253-f0915096ab77
+        at: 2026-11-03T13:04:34Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "A galaxy's scale domain follows its placed distance"
+        consequence: "A galaxy within 11 Mpc (the Updated Nearby Galaxy Catalog's depth) is in nearby galaxies, and beyond that in cosmic web, whatever source its distance came from. Stars stay in the stars domain by source. AC-92 changes, as a minor spec change, matching the rule structures already follow."
+        question: 01a1a182-6e06-742f-b98e-5aab6db2d481
