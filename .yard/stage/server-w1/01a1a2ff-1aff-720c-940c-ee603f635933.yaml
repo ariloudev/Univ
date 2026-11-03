@@ -33,3 +33,52 @@ blocks:
         title: "Run /simplify and /code-review on W1's diff"
         detail: "Both run in parallel on product/server..stage/server-w1. Done when every finding is fixed or kept with a reason."
         state: active
+      - key: 01a1a332-4bfa-75a8-8cad-7f0011db8f8b
+        at: 2026-11-03T20:55:44Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Run /simplify and /code-review on W1's diff"
+        detail: "Five reviews ran; their findings are in the w1-findings note. Server-side fixes landed in fc90372 and 88be678. Ingest-side fixes are task t1-review-ingest."
+        state: done
+  - key: 01a1a332-4bfa-75a8-8cad-7efd2373e13e
+    id: w1-findings
+    kind: note
+    versions:
+      - key: 01a1a332-4bfa-75a8-8cad-7eff2d4b2447
+        at: 2026-11-03T20:55:44Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W1 review: findings and what became of them"
+        markdown: |-
+          Five reviews ran in parallel: `/code-review` (high) and the four `/simplify` angles (reuse, simplification, efficiency, altitude).
+
+          | Finding | Outcome |
+          |---|---|
+          | Wrangler's `request.cf` cache, with location data, committed in abe7647 (W0) | Fixed in fc90372: untracked, and `.wrangler/` ignored wherever it lies. **Local only, never pushed**, but it stays in local history |
+          | Pre-v3 releases handled by matching "no such table" | Fixed in 88be678: details joined into one query; `xtask serve` creates the missing tables (checked on the real state: latest still 6, schema version still 2) |
+          | 2 to 4 sequential D1 round trips per read | Fixed in 88be678: source, provenance and structure each one query after release resolution; the listing folds `latest` in |
+          | HEAD: refusals carried bodies, and Content-Length was lost; the e2e HEAD test couldn't fail | Fixed in 88be678; the e2e test now reads the raw socket |
+          | Methods upper-cased (RFC 9110 §9.1) | Fixed |
+          | Problem schema hand-built; four kind lists that must agree | Fixed: one table macro; schema derived from the served document |
+          | Three JSON-column parsers; hand-mapped flat rows; copied test helpers; hand-written query decoding; OpenAPI cloned per request | Fixed |
+          | Ctrl-C orphaned wrangler and workerd | Fixed: a handler stops the process group |
+          | Admitted outlines left as points; untyped JSON contract between ingest and the API; the pc/Mpc rule in 4 places; frame citations differing from objects'; per-entry allocations | Delegated (ingest worktree), with the minor spec wording in b18d365 |
+          | Each route's refusals in OpenAPI (AC-290) | Kept for W7, as planned |
+        tone: info
+  - key: 01a1a332-4bfa-75a8-8cad-7efe9acc95c2
+    id: t1-review-ingest
+    kind: task
+    versions:
+      - key: 01a1a332-4bfa-75a8-8cad-7f0177ad1b37
+        at: 2026-11-03T20:55:44Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Ingest-side review fixes: typed contract, admitted outlines, one unit rule"
+        detail: "Delegated to a worktree agent: univ-model structs for outline, rescaled and derivation; admitted outlines placed as supergalactic Mpc grid regions; unit_of for pc/Mpc; frame citations from univ-model's Step; outline and coverage simplifications; frame-name constants in univ-model. Done when it is merged and univ-api serves the typed fields."
+        state: active
