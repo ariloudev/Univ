@@ -10,6 +10,15 @@ versions:
     title: "W8 First real release"
     goal: "All 18 sources are fetched for real, release 1 is built and published to local D1 and R2, and its science is checked against published values, with what the real data exposes fixed"
     status: active
+  - key: 01a1a2a0-2940-77c7-a6a1-402dd083502c
+    at: 2026-11-03T18:16:07Z
+    revision: 32
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W8 First real release"
+    goal: "All 18 sources are fetched for real, release 1 is built and published to local D1 and R2, and its science is checked against published values, with what the real data exposes fixed"
+    status: done
 blocks:
   - key: 01a1a0d1-e441-72be-8ac7-6222e5815a65
     id: w8-t1-fetch
@@ -3933,3 +3942,2905 @@ blocks:
           Done when tests cover each fix, including Ctrl-C mid-build and mid-publish, and the gate passes.
         state: active
         type: fix
+      - key: 01a1a2a0-2940-77c7-a6a1-402a0423c438
+        at: 2026-11-03T18:16:07Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the display and cancellation for every stage"
+        detail: |-
+          Commits `8cbe51a` and `1c7ec48`.
+
+          **Fixes:**
+          - Ctrl-C stops match, tiles, build and publish at safe points. "Stopped" prints only after the work has ended. A stopped build leaves nothing behind, and a stopped publish keeps its journal.
+          - Publish and prune show stage, steps and summary, plus a progress line each minute during long imports.
+          - Build shows `[build k/6]`. Fetch and normalize end with counts.
+
+          Now linked to tests: AC-109, 115–119 and 121.
+        state: done
+        type: fix
+  - key: 01a1a2a0-2940-77c7-a6a1-4028cd52f226
+    id: w8-trace-final
+    kind: loft
+    versions:
+      - key: 01a1a2a0-2940-77c7-a6a1-402b42671d71
+        at: 2026-11-03T18:16:07Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: trace
+        note: "This is the end of W8: 155 of 326 nodes are linked. The 171 unlinked ones belong to the univ-server product (the Worker), which is not built yet. TR-008 on `blank_row` stays as an info finding."
+        recorded:
+          commit: "1c7ec4808f2a3d078221e0106eafbdee6584ae04"
+          branch: "stage/ingest-w8"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T18:16:07Z
+        report: |
+          {
+            "base": "product/ingest",
+            "commit": "d081393a77563fc6aaaeb7f29c133bf35eb1b45e",
+            "counts": {
+              "features": 6
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-185572e41a3f",
+                    "label": "AC-28",
+                    "name": "The release cosmology is flat ΛCDM with Planck 2018 parameters, H0 = 67.66 km/s/Mpc and Ωm = 0.3111, unless the release names another.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1854a9750478",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 79,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "the_release_cosmology_is_planck_2018_unless_the_release_names_another"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a211-4f38-7751-a3f5-d2946bd18364",
+                    "label": null,
+                    "name": "The release manifest records beside the release cosmology that distances calibrated on the distance ladder are on a scale of H0 = 74.6 ± 0.8 km/s/Mpc (Tully et al. 2023), nearer than redshift distances under the release cosmology, citing both.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1854a9750478",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 273,
+                            "lastLine": 297
+                          }
+                        ],
+                        "name": "the_manifest_notes_the_distance_ladders_hubble_constant_beside_the_release_cosmology"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-185687a92854",
+                    "label": "AC-29",
+                    "name": "A redshift distance is the comoving distance of the CMB-frame redshift.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1854a9750478",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_cells.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 167,
+                            "lastLine": 214
+                          }
+                        ],
+                        "name": "horologium_reticulum_is_placed_at_its_cited_mean_velocity"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 109,
+                            "lastLine": 154
+                          }
+                        ],
+                        "name": "a_redshift_distance_is_the_comoving_distance_of_the_cmb_frame_redshift"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 156,
+                            "lastLine": 191
+                          }
+                        ],
+                        "name": "a_luminosity_distance_at_z_0_1_converts_by_one_over_one_plus_z"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 148,
+                            "lastLine": 174
+                          }
+                        ],
+                        "name": "a_redshift_distance_s_interval_carries_the_peculiar_velocity"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 212,
+                            "lastLine": 268
+                          }
+                        ],
+                        "name": "a_luminosity_distance_takes_its_redshift_s_kind_errors_and_refuses_a_blueshift"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1857a487f288",
+                    "label": "AC-30",
+                    "name": "Each position is given in ICRS equatorial, galactic and supergalactic Cartesian coordinates with the Solar System barycentre as origin.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1854a9750478",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 251
+                          }
+                        ],
+                        "name": "m31_is_placed_at_its_mcconnachie_distance_toward_andromeda"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 253,
+                            "lastLine": 302
+                          }
+                        ],
+                        "name": "the_galactic_centre_and_the_supergalactic_pole_round_trip"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18581d266d87",
+                    "label": "AC-31",
+                    "name": "Each derived value records the release cosmology, its chain of transformations and the version of univ-model that computed it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1854a9750478",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 304,
+                            "lastLine": 351
+                          }
+                        ],
+                        "name": "each_derived_value_records_the_release_cosmology_its_chain_and_the_model_version"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 97,
+                            "lastLine": 146
+                          }
+                        ],
+                        "name": "an_inverted_parallax_starts_from_the_published_parallax_and_its_zero_point"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 270,
+                            "lastLine": 285
+                          }
+                        ],
+                        "name": "an_unstated_equinox_is_taken_as_j2000_before_it_is_moved_to_the_icrs"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-185a4c7f512f",
+                    "label": "AC-32",
+                    "name": "The rescaled value is stored beside the native value and the Hubble constant it was published for.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18596dbe801e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "an_h_inverse_mpc_grid_distance_is_rescaled_and_kept_beside_its_native_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-185b99a202e5",
+                    "label": "AC-33",
+                    "name": "A size is rescaled with the same factor as its structure's distance, so the structure keeps its size relative to its distance.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18596dbe801e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 119,
+                            "lastLine": 161
+                          }
+                        ],
+                        "name": "a_size_is_rescaled_with_the_same_factor_as_its_structures_distance"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 52,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "a_distance_is_rescaled_by_the_rule_its_size_follows"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f7f4665912a",
+                    "label": null,
+                    "name": "A value published for a stated Hubble constant or cosmology records it as an assumed cosmology holding the Hubble constant with whichever of the matter and Λ densities the source states.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18596dbe801e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 163,
+                            "lastLine": 190
+                          }
+                        ],
+                        "name": "every_structure_cosmology_reads_as_a_typed_assumed_cosmology"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 119,
+                            "lastLine": 161
+                          }
+                        ],
+                        "name": "a_size_is_rescaled_with_the_same_factor_as_its_structures_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f805f3d0223",
+                    "label": null,
+                    "name": "A length published in h⁻¹ Mpc records an assumed cosmology of H0 = 100 km/s/Mpc.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18596dbe801e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "an_h_inverse_mpc_grid_distance_is_rescaled_and_kept_beside_its_native_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186064637cbc",
+                    "label": "AC-34",
+                    "name": "Galactic coordinates use the ICRS to galactic transformation of the Hipparcos catalogue (ESA 1997, volume 1, section 1.5.3).",
+                    "requirement": "01a19f22-2ad9-716e-876f-185fd835d316",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/position.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 360,
+                            "lastLine": 382
+                          }
+                        ],
+                        "name": "the_galactic_rotation_matches_the_hipparcos_matrix_and_is_orthonormal"
+                      },
+                      {
+                        "file": "crates/univ-model/src/position.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 384,
+                            "lastLine": 394
+                          }
+                        ],
+                        "name": "the_galactic_centre_and_pole_land_where_hipparcos_puts_them"
+                      },
+                      {
+                        "file": "crates/univ-model/src/position.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 405,
+                            "lastLine": 421
+                          }
+                        ],
+                        "name": "m31_matches_astropy_in_every_frame"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 253,
+                            "lastLine": 302
+                          }
+                        ],
+                        "name": "the_galactic_centre_and_the_supergalactic_pole_round_trip"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18610047a726",
+                    "label": "AC-35",
+                    "name": "Supergalactic coordinates use the pole and origin of Lahav et al. 2000 (MNRAS 312, 166).",
+                    "requirement": "01a19f22-2ad9-716e-876f-185fd835d316",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/position.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 396,
+                            "lastLine": 403
+                          }
+                        ],
+                        "name": "the_supergalactic_pole_and_origin_follow_lahav_2000"
+                      },
+                      {
+                        "file": "crates/univ-model/src/position.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 405,
+                            "lastLine": 421
+                          }
+                        ],
+                        "name": "m31_matches_astropy_in_every_frame"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 253,
+                            "lastLine": 302
+                          }
+                        ],
+                        "name": "the_galactic_centre_and_the_supergalactic_pole_round_trip"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f8182b395ba",
+                    "label": null,
+                    "name": "A position in the frame FK4 B1950 is moved to FK5 J2000 as ERFA's fk45z moves it, with the E-terms of aberration removed and the matrix of Standish 1982 (A&A 115, 20), and from there to ICRS.",
+                    "requirement": "01a19f22-2ad9-716e-876f-185fd835d316",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/position/fk4.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 137,
+                            "lastLine": 162
+                          }
+                        ],
+                        "name": "fk4_b1950_positions_move_as_erfa_fk45z_moves_them"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 236
+                          }
+                        ],
+                        "name": "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f820e7bc1c8",
+                    "label": null,
+                    "name": "A position in the frame \"equatorial, equinox not stated\" is placed as J2000 with a stated systematic uncertainty of 0.6986°, the largest angle between reading it as B1950 and as J2000.",
+                    "requirement": "01a19f22-2ad9-716e-876f-185fd835d316",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/position/fk4.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 164,
+                            "lastLine": 197
+                          }
+                        ],
+                        "name": "an_unstated_equinox_is_placed_as_j2000_with_the_b1950_to_j2000_angle_as_its_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 238,
+                            "lastLine": 271
+                          }
+                        ],
+                        "name": "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f22-2ad9-716e-876f-18530217fadb",
+                "label": "F-3",
+                "name": "Derive positions",
+                "requirements": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1854a9750478",
+                    "label": "RQ-12",
+                    "name": "Univ Ingest shall derive each object's Cartesian position from its preferred measurement under the release cosmology.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "derive each object's Cartesian position from its preferred measurement under the release cosmology.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18596dbe801e",
+                    "label": "RQ-13",
+                    "name": "Univ Ingest shall rescale each distance or size published for another Hubble constant to the release cosmology's Hubble constant.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "rescale each distance or size published for another Hubble constant to the release cosmology's Hubble constant.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-185fd835d316",
+                    "label": "RQ-14",
+                    "name": "Univ Ingest shall transform between frames with the published definitions of the FK4, galactic and supergalactic systems.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "transform between frames with the published definitions of the FK4, galactic and supergalactic systems.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186415c2b2be",
+                    "label": "AC-36",
+                    "name": "Each position is stored in ICRS with the epoch of its source.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 66,
+                            "lastLine": 76
+                          }
+                        ],
+                        "name": "each_position_is_stored_in_icrs_with_the_epoch_of_its_source"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 236
+                          }
+                        ],
+                        "name": "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 238,
+                            "lastLine": 271
+                          }
+                        ],
+                        "name": "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1865763fa63d",
+                    "label": "AC-37",
+                    "name": "Each native value keeps its published unit beside the normalized value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 78,
+                            "lastLine": 117
+                          }
+                        ],
+                        "name": "each_native_value_keeps_its_published_unit_beside_the_normalized_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18663bbd5e71",
+                    "label": "AC-38",
+                    "name": "Normalized values use degrees for angles, km/s for velocities, parsecs for stellar distances and megaparsecs for extragalactic ones.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 119,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "normalized_values_use_degrees_km_s_parsecs_for_stars_and_megaparsecs_beyond"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1867aeb456fd",
+                    "label": "AC-39",
+                    "name": "Each value is classified by its kind of value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 145,
+                            "lastLine": 174
+                          }
+                        ],
+                        "name": "each_value_is_classified_by_its_kind_of_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-046f187e8323",
+                    "label": null,
+                    "name": "A redshift read from a published velocity that its source definition infers, without the source stating it, to stand for a comoving distance is inferred, not measured.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_groups.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "a_group_velocity_read_as_a_comoving_distance_is_inferred_and_one_read_as_cz_measured"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186820f4df2c",
+                    "label": "AC-40",
+                    "name": "Each uncertainty is typed as a symmetric error, an asymmetric interval, a stated interval with no probability, an upper or lower limit, a credible region, or none reported.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 199
+                          }
+                        ],
+                        "name": "each_uncertainty_is_typed_by_the_form_its_source_published"
+                      },
+                      {
+                        "file": "crates/univ-model/src/distance/convert.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 201,
+                            "lastLine": 222
+                          }
+                        ],
+                        "name": "a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_tracers.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 117,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "a_member_placed_at_its_structure_s_redshift_slice_carries_the_slice_s_width"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 210
+                          }
+                        ],
+                        "name": "a_redshift_without_an_error_keeps_the_peculiar_velocity_term_and_a_stated_interval_its_bounds"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186959bf0d6e",
+                    "label": "AC-41",
+                    "name": "A value published without an uncertainty is marked as having none reported, never as having zero uncertainty.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 201,
+                            "lastLine": 226
+                          }
+                        ],
+                        "name": "a_value_published_without_an_error_is_marked_none_reported"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186b82bcfc95",
+                    "label": "AC-42",
+                    "name": "The kinds of distance are parallax, geometric or photogeometric, primary indicator, secondary indicator, spectroscopic redshift and photometric redshift.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 228,
+                            "lastLine": 259
+                          }
+                        ],
+                        "name": "the_kinds_of_distance_are_the_six_the_specification_names"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186c1d4c0f38",
+                    "label": "AC-43",
+                    "name": "The method names the indicator, such as Cepheids, the tip of the red giant branch, masers, type Ia supernovae, surface brightness fluctuations, Tully-Fisher or fundamental plane.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 261,
+                            "lastLine": 291
+                          }
+                        ],
+                        "name": "the_method_names_the_indicator"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 11,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "cosmicflows_groups_without_a_five_method_distance_are_direct_calibrations"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186d9b7a0c04",
+                    "label": "AC-44",
+                    "name": "A distance published in h⁻¹ Mpc or for a stated Hubble constant keeps that constant beside its native value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 293,
+                            "lastLine": 325
+                          }
+                        ],
+                        "name": "a_distance_in_h_inverse_mpc_or_for_a_stated_hubble_constant_keeps_that_constant"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186e940da69e",
+                    "label": "AC-45",
+                    "name": "A distance modulus is kept as published beside the distance derived from it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 327,
+                            "lastLine": 349
+                          }
+                        ],
+                        "name": "a_distance_modulus_is_kept_as_published_beside_the_distance_derived_from_it"
+                      },
+                      {
+                        "file": "crates/univ-model/src/distance/convert.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 201,
+                            "lastLine": 222
+                          }
+                        ],
+                        "name": "a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f835cca0e82",
+                    "label": null,
+                    "name": "Each distance names its measure: luminosity, comoving, Euclidean or unspecified.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 54
+                          }
+                        ],
+                        "name": "a_distance_takes_the_measure_its_definition_states_and_a_modulus_gives_a_luminosity_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f8400aee970",
+                    "label": null,
+                    "name": "A distance derived from a distance modulus is a luminosity distance.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 54
+                          }
+                        ],
+                        "name": "a_distance_takes_the_measure_its_definition_states_and_a_modulus_gives_a_luminosity_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187089f08fa0",
+                    "label": "AC-46",
+                    "name": "A heliocentric redshift is kept as measured.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 11,
+                            "lastLine": 24
+                          }
+                        ],
+                        "name": "a_heliocentric_redshift_is_kept_as_measured"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187151a4aac5",
+                    "label": "AC-47",
+                    "name": "The CMB-frame redshift uses the Planck 2018 dipole of 369.82 km/s toward galactic longitude 264.021° and latitude 48.253°.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 299,
+                            "lastLine": 311
+                          }
+                        ],
+                        "name": "the_planck_2018_dipole_is_used_and_its_apex_matches_astropy_in_icrs"
+                      },
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 313,
+                            "lastLine": 330
+                          }
+                        ],
+                        "name": "cz_rises_toward_the_apex_falls_away_from_it_and_holds_across_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 38
+                          }
+                        ],
+                        "name": "the_cmb_redshift_uses_the_planck_2018_dipole"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1872f4143cd2",
+                    "label": "AC-48",
+                    "name": "The derivation is recorded with the redshift it was derived from.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 332,
+                            "lastLine": 345
+                          }
+                        ],
+                        "name": "the_derivation_keeps_the_measured_redshift_and_the_dipole"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187496ae140f",
+                    "label": "AC-49",
+                    "name": "The source's provenance gives the count of entries left out for each reason.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 173,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "a_failed_normalization_leaves_no_earlier_report_in_the_provenance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18755300ea38",
+                    "label": "AC-50",
+                    "name": "No entry is left out without a reason recorded.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 351,
+                            "lastLine": 381
+                          }
+                        ],
+                        "name": "no_entry_is_left_out_without_a_reason"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 383,
+                            "lastLine": 400
+                          }
+                        ],
+                        "name": "a_simulated_galaxy_and_an_unsuitable_redshift_are_left_out_and_counted"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 87
+                          }
+                        ],
+                        "name": "a_row_repeating_an_identifier_is_left_out_and_counted_and_the_match_goes_on"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f8501160747",
+                    "label": null,
+                    "name": "A row whose cells are all blank is left out under the reason `blank_row`.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [
+                      "TR-008"
+                    ],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1877e0c274f2",
+                    "label": "AC-51",
+                    "name": "Each fix in a source definition names the defect, the change it makes and the evidence for it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 284,
+                            "lastLine": 299
+                          }
+                        ],
+                        "name": "each_fix_names_its_defect_change_and_evidence_or_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 301,
+                            "lastLine": 315
+                          }
+                        ],
+                        "name": "every_fix_of_the_first_release_names_its_defect_change_and_evidence"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 100,
+                            "lastLine": 129
+                          }
+                        ],
+                        "name": "a_replaced_group_position_names_kourkchi_and_tully_and_the_fix"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187827977f54",
+                    "label": "AC-52",
+                    "name": "Cosmicflows-4's SGX, SGY and SGZ columns are read as km/s, as the evidence shows, although VizieR labels them Mpc.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 402,
+                            "lastLine": 428
+                          }
+                        ],
+                        "name": "cosmicflows_sgx_sgy_and_sgz_are_read_as_km_s_though_vizier_labels_them_mpc"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18790159a9dd",
+                    "label": "AC-53",
+                    "name": "The source's provenance lists each fix applied with the number of entries it changed.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 430,
+                            "lastLine": 471
+                          }
+                        ],
+                        "name": "the_report_lists_each_fix_applied_with_the_entries_it_changed"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 127
+                          }
+                        ],
+                        "name": "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                "label": "F-4",
+                "name": "Normalize records",
+                "requirements": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "label": "RQ-15",
+                    "name": "Univ Ingest shall convert each catalogue entry into univ-model values while keeping each native value.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "convert each catalogue entry into univ-model values while keeping each native value.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "label": "RQ-16",
+                    "name": "Univ Ingest shall record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "label": "RQ-17",
+                    "name": "Univ Ingest shall keep each redshift in the frame its source published it in and derive its value in the CMB frame.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep each redshift in the frame its source published it in and derive its value in the CMB frame.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "label": "RQ-18",
+                    "name": "If a catalogue entry fails validation, then Univ Ingest shall leave the entry out of the release and count it under its reason.",
+                    "statement": {
+                      "condition": "a catalogue entry fails validation",
+                      "form": "unwanted",
+                      "shall": "leave the entry out of the release and count it under its reason.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "label": "RQ-19",
+                    "name": "Univ Ingest shall fix a known defect of a source only as its source definition states the fix.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "fix a known defect of a source only as its source definition states the fix.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab998407d632",
+                    "label": "AC-60",
+                    "name": "The uncertainty of a redshift distance includes a peculiar-velocity term, 300 km/s unless the release's ranking rule sets another.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 60,
+                            "lastLine": 95
+                          }
+                        ],
+                        "name": "a_redshift_distance_beats_tully_fisher_at_15000_km_s_and_loses_at_1000"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 97,
+                            "lastLine": 112
+                          }
+                        ],
+                        "name": "the_peculiar_velocity_term_is_the_rule_s_parameter"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_parallax.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 33,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "a_redshift_without_an_error_ranks_by_its_peculiar_velocity_term"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 210
+                          }
+                        ],
+                        "name": "a_redshift_without_an_error_keeps_the_peculiar_velocity_term_and_a_stated_interval_its_bounds"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 277,
+                            "lastLine": 298
+                          }
+                        ],
+                        "name": "a_group_s_redshift_without_an_error_beats_its_uncertain_modulus"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 300,
+                            "lastLine": 324
+                          }
+                        ],
+                        "name": "m81_keeps_its_cepheid_distance_whatever_its_redshift_s_error"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d33ff182c93",
+                    "label": null,
+                    "name": "Among an object's redshift distances, a measured redshift ranks before an estimated, inferred or reconstructed one, such as a 2M++ clone or a photometric redshift.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 114,
+                            "lastLine": 137
+                          }
+                        ],
+                        "name": "a_measured_6dfgs_redshift_beats_a_2mpp_clone"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d346e01f5b4",
+                    "label": null,
+                    "name": "Among redshift distances alike in being measured or not, the one with the smallest published velocity uncertainty ranks first.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 89,
+                            "lastLine": 112
+                          }
+                        ],
+                        "name": "eso_460_g001_is_placed_by_2mrs_s_redshift_with_the_smaller_velocity_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 139,
+                            "lastLine": 157
+                          }
+                        ],
+                        "name": "of_two_measured_redshifts_the_smaller_velocity_error_wins"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d359227b0b4",
+                    "label": null,
+                    "name": "Among redshift distances alike in being measured or not, one without a published velocity uncertainty ranks after every one with one, and is given none.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 159,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "a_redshift_without_a_velocity_error_ranks_after_one_with_one_and_is_given_none"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d36092547c6",
+                    "label": null,
+                    "name": "Redshift distances that tie on whether they were measured and on their velocity uncertainty, or both lack one, rank by method rank, then by the source the ranking rule lists first.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 175,
+                            "lastLine": 192
+                          }
+                        ],
+                        "name": "redshifts_alike_in_kind_and_error_rank_by_method_then_source_order"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d37ff3d9739",
+                    "label": null,
+                    "name": "Only the redshift distance that ranks first among the object's redshift distances, its leading redshift distance, is compared with the object's other candidates.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 194,
+                            "lastLine": 226
+                          }
+                        ],
+                        "name": "only_the_leading_redshift_competes_with_an_indicator_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f77617e6ee1",
+                    "label": null,
+                    "name": "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, the leading redshift distance is set aside if its fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 155,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "a_redshift_above_the_threshold_is_set_aside_for_an_indicator_distance"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 194,
+                            "lastLine": 226
+                          }
+                        ],
+                        "name": "only_the_leading_redshift_competes_with_an_indicator_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f788275d038",
+                    "label": null,
+                    "name": "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 153
+                          }
+                        ],
+                        "name": "no_loop_a_tully_fisher_distance_without_an_error_does_not_beat_a_5_percent_redshift"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 155,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "a_redshift_above_the_threshold_is_set_aside_for_an_indicator_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9ac704109a",
+                    "label": "AC-61",
+                    "name": "A tie is broken by method rank: geometric, then primary indicator, then secondary indicator, then spectroscopic redshift, then photometric redshift.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 114,
+                            "lastLine": 151
+                          }
+                        ],
+                        "name": "a_tie_is_broken_by_method_rank"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f79f4feda94",
+                    "label": null,
+                    "name": "A candidate without a published uncertainty wins only if its method rank is strictly better than that of every remaining candidate with a published uncertainty.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 105
+                          }
+                        ],
+                        "name": "a_trgb_distance_without_an_error_beats_a_ten_percent_redshift_by_method_rank"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 107,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "a_five_percent_distance_of_the_same_method_rank_beats_one_without_an_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 153
+                          }
+                        ],
+                        "name": "no_loop_a_tully_fisher_distance_without_an_error_does_not_beat_a_5_percent_redshift"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a149-623d-7310-8064-e65204c3c532",
+                    "label": null,
+                    "name": "Where no candidate without a published uncertainty wins, the leader among the candidates with a published uncertainty wins.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 107,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "a_five_percent_distance_of_the_same_method_rank_beats_one_without_an_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 153
+                          }
+                        ],
+                        "name": "no_loop_a_tully_fisher_distance_without_an_error_does_not_beat_a_5_percent_redshift"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a149-623d-7310-8064-e653f6590128",
+                    "label": null,
+                    "name": "Where more than one candidate without a published uncertainty qualifies to win, the one with the best method rank wins.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "among_distances_without_an_error_the_best_method_then_the_rule_s_source_order_wins"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a149-623d-7310-8064-e6548a057bc6",
+                    "label": null,
+                    "name": "Where qualifying candidates without a published uncertainty share the best method rank, the one whose source the ranking rule lists first wins.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "among_distances_without_an_error_the_best_method_then_the_rule_s_source_order_wins"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a149-623d-7310-8064-e655ca08d473",
+                    "label": null,
+                    "name": "A candidate published without an uncertainty is given none in the ranking, never an invented one.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "a_cepheid_distance_without_an_error_beats_a_redshift_six_times_uncertain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9b3e95c24c",
+                    "label": "AC-62",
+                    "name": "The ranking rule and its parameters are recorded in the release manifest.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 153,
+                            "lastLine": 172
+                          }
+                        ],
+                        "name": "the_ranking_rule_and_its_parameters_are_recorded_for_the_manifest"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 350,
+                            "lastLine": 366
+                          }
+                        ],
+                        "name": "the_too_uncertain_limit_is_the_rule_s_parameter_recorded_for_the_manifest"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9ce127e733",
+                    "label": "AC-63",
+                    "name": "The object names its preferred measurement and the comparison that made it win: fractional uncertainty, the redshift threshold, method rank, source order, or, between redshift distances, kind of value or velocity uncertainty.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 174,
+                            "lastLine": 202
+                          }
+                        ],
+                        "name": "the_object_names_its_preferred_measurement_and_the_uncertainty_that_made_it_win"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 228,
+                            "lastLine": 244
+                          }
+                        ],
+                        "name": "the_object_names_the_comparison_that_decided"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 368,
+                            "lastLine": 386
+                          }
+                        ],
+                        "name": "the_comparison_recorded_is_the_one_that_decided_between_tied_candidates"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 388,
+                            "lastLine": 406
+                          }
+                        ],
+                        "name": "the_source_order_is_recorded_only_where_the_sources_differ"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 228,
+                            "lastLine": 243
+                          }
+                        ],
+                        "name": "the_object_names_kind_of_value_or_velocity_uncertainty_as_what_decided"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9e42fa2c14",
+                    "label": "AC-64",
+                    "name": "A Gaia position is preferred over a Hipparcos one, and either over a survey position, unless a published uncertainty says otherwise.",
+                    "requirement": "01a19f23-636e-7035-8185-ab9dfac6edfe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 204,
+                            "lastLine": 230
+                          }
+                        ],
+                        "name": "gaia_is_preferred_over_hipparcos_and_either_over_a_survey_unless_an_error_says_otherwise"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-aba03617706c",
+                    "label": "AC-65",
+                    "name": "The object can be looked up but appears in no tile and in no bounded volume query.",
+                    "requirement": "01a19f23-636e-7035-8185-ab9fe065861e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 232,
+                            "lastLine": 253
+                          }
+                        ],
+                        "name": "an_object_without_a_distance_is_found_but_not_placed"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 353,
+                            "lastLine": 372
+                          }
+                        ],
+                        "name": "an_object_without_a_distance_or_a_position_is_not_placed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f7a2ff48aad",
+                    "label": null,
+                    "name": "An object whose preferred distance has a fractional uncertainty above 1 (100%) is given no three-dimensional position, with \"distance too uncertain\" as the reason.",
+                    "requirement": "01a19f23-636e-7035-8185-ab9fe065861e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 246,
+                            "lastLine": 275
+                          }
+                        ],
+                        "name": "an_object_whose_distance_is_more_than_100_percent_uncertain_is_not_placed"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 326,
+                            "lastLine": 348
+                          }
+                        ],
+                        "name": "an_object_placed_only_by_a_redshift_without_an_error_below_300_km_s_is_too_uncertain"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636e-7035-8185-ab97eb9c2fb9",
+                "label": "F-6",
+                "name": "Choose the preferred measurement",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "label": "RQ-24",
+                    "name": "Univ Ingest shall choose as an object's preferred distance the measurement that ranks first: its leading redshift distance by kind of value and velocity uncertainty, against its other distances by fractional distance uncertainty and method rank.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "choose as an object's preferred distance the measurement that ranks first: its leading redshift distance by kind of value and velocity uncertainty, against its other distances by fractional distance uncertainty and method rank.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9dfac6edfe",
+                    "label": "RQ-25",
+                    "name": "Univ Ingest shall take an object's sky position from its catalogue entry with the smallest position uncertainty.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "take an object's sky position from its catalogue entry with the smallest position uncertainty.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9fe065861e",
+                    "label": "RQ-26",
+                    "name": "If an object has no distance, or its preferred distance has a fractional uncertainty above 1, then Univ Ingest shall keep the object with its sky position alone and give it no derived three-dimensional position.",
+                    "statement": {
+                      "condition": "an object has no distance, or its preferred distance has a fractional uncertainty above 1",
+                      "form": "unwanted",
+                      "shall": "keep the object with its sky position alone and give it no derived three-dimensional position.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1509ef3e2d47",
+                    "label": "AC-66",
+                    "name": "A published cross-identification, such as the Gaia DR3 Hipparcos cross-identification or a shared PGC number, is used before a positional match.",
+                    "requirement": "01a19f23-636e-7035-8185-aba27e410ae5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 51,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "a_published_cross_identification_is_used_before_a_closer_positional_candidate"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 122
+                          }
+                        ],
+                        "name": "a_shared_2masx_name_joins_entries_beyond_the_positional_tolerance"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/matching_linkage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 63,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "a_cross_identification_two_entries_of_one_source_claim_joins_neither"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/local_group.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 117
+                          }
+                        ],
+                        "name": "a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/local_group.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 119,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "messier_compares_as_m_by_the_rules_alias_which_names_its_basis"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-150a909c8f0e",
+                    "label": "AC-67",
+                    "name": "The object records the cross-identification as the method that resolved it.",
+                    "requirement": "01a19f23-636e-7035-8185-aba27e410ae5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "the_object_records_the_cross_identification_that_resolved_it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-150cc0a7de4d",
+                    "label": "AC-68",
+                    "name": "The tolerances on angular separation and on redshift or distance are set for each pair of sources in the release's matching rules.",
+                    "requirement": "01a19f23-636f-72bd-b194-150b2d35ea65",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/local_group_duplicates.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 102,
+                            "lastLine": 160
+                          }
+                        ],
+                        "name": "nearby_galaxies_take_the_pairs_wider_tolerance_and_ungc_meets_2mpp"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 124,
+                            "lastLine": 158
+                          }
+                        ],
+                        "name": "each_pair_of_sources_has_its_own_tolerances"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-150dfab9225c",
+                    "label": "AC-69",
+                    "name": "Each merge records its method, the separation, the redshift or distance difference and a confidence between 0 and 1.",
+                    "requirement": "01a19f23-636f-72bd-b194-150b2d35ea65",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 160,
+                            "lastLine": 192
+                          }
+                        ],
+                        "name": "a_merge_records_method_separation_velocity_difference_and_confidence"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/matching_linkage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 20,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "a_chain_of_close_pairs_does_not_join_entries_too_far_apart"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-150e56ac26d6",
+                    "label": "AC-70",
+                    "name": "The release's matching rules state how the confidence is computed.",
+                    "requirement": "01a19f23-636f-72bd-b194-150b2d35ea65",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 194,
+                            "lastLine": 239
+                          }
+                        ],
+                        "name": "the_confidence_rule_is_stated_in_the_rules_and_applied_as_stated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1510f8ea82b8",
+                    "label": "AC-71",
+                    "name": "Each candidate link carries its confidence.",
+                    "requirement": "01a19f23-636f-72bd-b194-150f94f19121",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 260,
+                            "lastLine": 292
+                          }
+                        ],
+                        "name": "an_entry_with_two_candidates_is_kept_apart_and_linked_to_each_with_its_confidence"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/local_group.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 117
+                          }
+                        ],
+                        "name": "a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15114b1cd667",
+                    "label": "AC-72",
+                    "name": "No measurement is merged across a candidate link.",
+                    "requirement": "01a19f23-636f-72bd-b194-150f94f19121",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 294,
+                            "lastLine": 306
+                          }
+                        ],
+                        "name": "no_measurement_is_merged_across_a_candidate_link"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 255,
+                            "lastLine": 279
+                          }
+                        ],
+                        "name": "a_candidate_link_never_lends_its_measurements"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/matching_linkage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "a_galaxy_group_stays_apart_from_its_dominant_galaxy_and_lends_it_nothing"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-0469c4fe9cd9",
+                    "label": null,
+                    "name": "The extent is read from a source that publishes it, as the release's matching rules name the source, its column and its unit.",
+                    "requirement": "01a1a232-7345-778b-a4c5-0468f7140186",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 63,
+                            "lastLine": 123
+                          }
+                        ],
+                        "name": "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 248,
+                            "lastLine": 256
+                          }
+                        ],
+                        "name": "an_extent_rule_without_a_basis_or_with_a_length_unit_is_refused"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-046a3dc619f9",
+                    "label": null,
+                    "name": "A galaxy without a published extent or a velocity takes no pieces.",
+                    "requirement": "01a1a232-7345-778b-a4c5-0468f7140186",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 166,
+                            "lastLine": 246
+                          }
+                        ],
+                        "name": "a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_apart"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-046bd3dc53bc",
+                    "label": null,
+                    "name": "An entry whose velocity differs from the galaxy's by more than the rule's tolerance, or that carries no velocity, stays apart.",
+                    "requirement": "01a1a232-7345-778b-a4c5-0468f7140186",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 166,
+                            "lastLine": 246
+                          }
+                        ],
+                        "name": "a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_apart"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-046c26fef149",
+                    "label": null,
+                    "name": "An object that holds an entry of a source naming its own galaxy, such as a different PGC number or another UNGC galaxy, is never joined as a piece.",
+                    "requirement": "01a1a232-7345-778b-a4c5-0468f7140186",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 125,
+                            "lastLine": 164
+                          }
+                        ],
+                        "name": "a_companion_with_its_own_identity_stays_apart_within_the_extent"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-046dddc4aaba",
+                    "label": null,
+                    "name": "More than one entry of one source may join one galaxy as its pieces, and the preferred measurement is still chosen among all of them.",
+                    "requirement": "01a1a232-7345-778b-a4c5-0468f7140186",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 63,
+                            "lastLine": 123
+                          }
+                        ],
+                        "name": "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-046e89676561",
+                    "label": null,
+                    "name": "Each piece records the rule as its method, its separation from the galaxy's centre and its velocity difference.",
+                    "requirement": "01a1a232-7345-778b-a4c5-0468f7140186",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 63,
+                            "lastLine": 123
+                          }
+                        ],
+                        "name": "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f7cf003d8aa",
+                    "label": null,
+                    "name": "A group's catalogue entry is never merged into the object of its dominant galaxy, even when the group is named by the galaxy's PGC number.",
+                    "requirement": "01a1a147-6018-75e1-9409-3f7ba5142e0f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching_linkage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "a_galaxy_group_stays_apart_from_its_dominant_galaxy_and_lends_it_nothing"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_galaxies.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 148,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f7dc2dcf028",
+                    "label": null,
+                    "name": "The group's object records a relation that names its dominant galaxy's object, as the group's source identifies that galaxy.",
+                    "requirement": "01a1a147-6018-75e1-9409-3f7ba5142e0f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching_linkage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "a_galaxy_group_stays_apart_from_its_dominant_galaxy_and_lends_it_nothing"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_galaxies.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 148,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f7eb363692b",
+                    "label": null,
+                    "name": "No measurement of the group is lent to its dominant galaxy, and none of the galaxy is lent to the group.",
+                    "requirement": "01a1a147-6018-75e1-9409-3f7ba5142e0f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching_linkage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "a_galaxy_group_stays_apart_from_its_dominant_galaxy_and_lends_it_nothing"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_galaxies.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 148,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1513f385222f",
+                    "label": "AC-73",
+                    "name": "Each designation keeps the source that gave it.",
+                    "requirement": "01a19f23-636f-72bd-b194-15129323b215",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 308,
+                            "lastLine": 362
+                          }
+                        ],
+                        "name": "designations_and_common_names_keep_their_sources"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15144dcb948e",
+                    "label": "AC-74",
+                    "name": "A common name, such as M31 or the Large Magellanic Cloud, is attached with the source that published it.",
+                    "requirement": "01a19f23-636f-72bd-b194-15129323b215",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/matching.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 308,
+                            "lastLine": 362
+                          }
+                        ],
+                        "name": "designations_and_common_names_keep_their_sources"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636e-7035-8185-aba1fc8f7bbd",
+                "label": "F-7",
+                "name": "Cross-match catalogues",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636e-7035-8185-aba27e410ae5",
+                    "label": "RQ-27",
+                    "name": "Univ Ingest shall resolve catalogue entries that share a published cross-identification into one object before matching by position.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "resolve catalogue entries that share a published cross-identification into one object before matching by position.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-150b2d35ea65",
+                    "label": "RQ-28",
+                    "name": "Univ Ingest shall merge catalogue entries into one object when they agree within the release's match tolerances and no other candidate does.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "merge catalogue entries into one object when they agree within the release's match tolerances and no other candidate does.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-150f94f19121",
+                    "label": "RQ-29",
+                    "name": "If a catalogue entry has more than one candidate within the match tolerances, then Univ Ingest shall keep the candidates as separate objects linked as candidate matches.",
+                    "statement": {
+                      "condition": "a catalogue entry has more than one candidate within the match tolerances",
+                      "form": "unwanted",
+                      "shall": "keep the candidates as separate objects linked as candidate matches.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-0468f7140186",
+                    "label": null,
+                    "name": "Univ Ingest shall join to a nearby galaxy, as its pieces, the catalogue entries that lie within the galaxy's published extent at a velocity agreeing with its own.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "join to a nearby galaxy, as its pieces, the catalogue entries that lie within the galaxy's published extent at a velocity agreeing with its own.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f7ba5142e0f",
+                    "label": null,
+                    "name": "Univ Ingest shall keep each galaxy group as an object of its own, related to its dominant galaxy.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep each galaxy group as an object of its own, related to its dominant galaxy.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15129323b215",
+                    "label": "RQ-30",
+                    "name": "Univ Ingest shall attach to each object the designations and names its catalogue entries carry.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "attach to each object the designations and names its catalogue entries carry.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152c99726521",
+                    "label": "AC-91",
+                    "name": "Each scale domain has its own root: stars in parsecs, nearby galaxies and cosmic web in megaparsecs.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152dec6f0f74",
+                    "label": "AC-92",
+                    "name": "Each object belongs to one scale domain: stars where the source definition of the catalogue entry that holds its preferred distance names stars, and otherwise nearby galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the distance came from.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 185
+                          }
+                        ],
+                        "name": "an_object_s_scale_domain_follows_its_placed_distance_and_a_star_stays_a_star"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 219,
+                            "lastLine": 257
+                          }
+                        ],
+                        "name": "every_placed_object_s_scale_domain_follows_its_placed_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152e3b4f79ee",
+                    "label": "AC-93",
+                    "name": "A node is split when it holds more points than the release's split threshold, down to the release's maximum depth.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 187,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "a_node_splits_above_the_threshold_down_to_the_maximum_depth"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152f904380b9",
+                    "label": "AC-94",
+                    "name": "Each level holds an even random subsample, and a finer level adds points without repeating those of the levels above it.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 227,
+                            "lastLine": 259
+                          }
+                        ],
+                        "name": "each_level_is_an_even_random_subsample_and_a_finer_level_repeats_no_point"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 285,
+                            "lastLine": 350
+                          }
+                        ],
+                        "name": "every_inner_node_of_a_level_keeps_one_fraction_so_shown_densities_keep_their_ratio"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15306fd09eef",
+                    "label": "AC-95",
+                    "name": "The subsample is drawn with a seed recorded in the tile manifest.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 261,
+                            "lastLine": 278
+                          }
+                        ],
+                        "name": "the_subsample_is_drawn_with_the_seed_the_manifest_records"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15326d1a7654",
+                    "label": "AC-96",
+                    "name": "Positions are quantized relative to their node, with a step no coarser than 1/65,536 of the node's edge.",
+                    "requirement": "01a19f23-636f-72bd-b194-1531af0609ed",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_encoding.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 22,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "positions_are_quantized_within_a_step_of_one_65536th_of_their_node"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1533772ccbaf",
+                    "label": "AC-97",
+                    "name": "The tile manifest states the encoding version and the quantization step of each level.",
+                    "requirement": "01a19f23-636f-72bd-b194-1531af0609ed",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_encoding.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 95
+                          }
+                        ],
+                        "name": "the_manifest_states_the_encoding_version_and_each_levels_step"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 352,
+                            "lastLine": 412
+                          }
+                        ],
+                        "name": "the_source_table_says_whether_each_source_gave_points_their_distance_or_position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153527b1bfc8",
+                    "label": "AC-98",
+                    "name": "Two builds from the same sources, rules and seed give tiles with the same SHA-256.",
+                    "requirement": "01a19f23-636f-72bd-b194-1534af285ad4",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_encoding.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 158
+                          }
+                        ],
+                        "name": "two_builds_from_the_same_inputs_and_seed_give_the_same_bytes"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_cli.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636f-72bd-b194-152a40334d81",
+                "label": "F-10",
+                "name": "Build octree tiles",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "label": "RQ-36",
+                    "name": "Univ Ingest shall build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1531af0609ed",
+                    "label": "RQ-37",
+                    "name": "Univ Ingest shall encode each point of a tile with its position, object id, source and kind of value.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "encode each point of a tile with its position, object id, source and kind of value.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1534af285ad4",
+                    "label": "RQ-38",
+                    "name": "Univ Ingest shall build byte-identical tiles from identical inputs.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "build byte-identical tiles from identical inputs.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153927026b4b",
+                    "label": "AC-99",
+                    "name": "The record of object ids merged, split or retired is kept, so every id still resolves.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 47,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153a6cd80c2c",
+                    "label": "AC-100",
+                    "name": "The pruned release stays in the list of releases with its pruning time.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 47,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 209,
+                            "lastLine": 253
+                          }
+                        ],
+                        "name": "with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_it_prunes"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a25a-c0ef-776c-a6c7-886eb1e11d8f",
+                    "label": null,
+                    "name": "The release's local build in the build output is deleted last, once its R2 files and D1 rows are deleted.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 47,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 255,
+                            "lastLine": 291
+                          }
+                        ],
+                        "name": "a_release_never_listed_whose_files_were_uploaded_has_them_deleted"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/r2_batch.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 154,
+                            "lastLine": 212
+                          }
+                        ],
+                        "name": "a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a25a-c0ef-776c-a6c7-886f2de1845d",
+                    "label": null,
+                    "name": "A release whose local build is already gone is pruned all the same.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 47,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/r2_batch.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 154,
+                            "lastLine": 212
+                          }
+                        ],
+                        "name": "a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153c0959ad96",
+                    "label": "AC-101",
+                    "name": "The message says that latest points to the release.",
+                    "requirement": "01a19f23-636f-72bd-b194-153bcc1d7e13",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 207
+                          }
+                        ],
+                        "name": "the_release_latest_points_to_is_not_pruned"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636f-72bd-b194-15372421c144",
+                "label": "F-11",
+                "name": "Prune old releases",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "label": "RQ-39",
+                    "name": "When the owner prunes a release, Univ Ingest shall delete the release's files and tables and record when it was pruned.",
+                    "statement": {
+                      "condition": "the owner prunes a release",
+                      "form": "event_driven",
+                      "shall": "delete the release's files and tables and record when it was pruned.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153bcc1d7e13",
+                    "label": "RQ-40",
+                    "name": "If the release is the one latest points to, then Univ Ingest shall refuse to prune it.",
+                    "statement": {
+                      "condition": "the release is the one latest points to",
+                      "form": "unwanted",
+                      "shall": "refuse to prune it.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 326,
+              "linked": 155,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a2a0-2940-77c7-a6a1-4029810aa898
+    id: w8-summary
+    kind: note
+    versions:
+      - key: 01a1a2a0-2940-77c7-a6a1-402c81cbbd62
+        at: 2026-11-03T18:16:07Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "W8 result: the first real releases"
+        markdown: |-
+          **Live:** release 6, built from 19 real sources and published to local D1 and R2. Releases 1–4 are pruned with their id ledger kept. `cargo xtask science` gives 27 PASS, 0 FAIL, 3 CONCERN.
+
+          | | Release 1 | Release 6 |
+          |---|---|---|
+          | D1 | 18.05 GB, refused | 2.3 GB |
+          | Peak RSS | 66 GB | ~15 GB (accepted) |
+          | M81 | 0.72 Mpc | 3.63 Mpc (Cepheids) |
+          | Cen A | 11.85 Mpc | 3.75 Mpc (TRGB) |
+          | M87 | 24.2 Mpc | 16.77 Mpc (Mei 2007: 16.5 ± 1.1) |
+          | Virgo group | 33° off | at the KT17 centre |
+          | Publish / prune | 12 min / 4 min | 8 min / 34 s |
+
+          **Owner decisions:**
+          - Memory: the current peak is accepted.
+          - Ranking: method rank first; among redshifts, measured first, then σ_cz.
+          - Distances more than 100% uncertain leave an object unplaced.
+          - CF4 galaxies added as the 19th source.
+          - Scale domain follows the placed distance.
+          - Planck H0 kept, with the ladder offset stated.
+          - Releases 1–4 pruned.
+
+          **Found in published catalogues:** 157 CF4 group positions are wrong (148 are corrected from KT17). eRASS1 uses BEST_ZERR = −1 as a sentinel. CF4's V3k above 13,000 km/s is a comoving distance (inferred).
+
+          **Also built:** `cargo xtask science` with 32 cited checks, batched R2, and Ctrl-C that really stops every stage.
+
+          **Left open (plan follow-ups):**
+          - the 6-min D1 import;
+          - 47 redshift conflicts placed by their higher value;
+          - the loose extent-join tolerance;
+          - AC-119's wording;
+          - release 5's unpublished build;
+          - the SDSS rename question;
+          - licences before any public deployment.
+        tone: success
