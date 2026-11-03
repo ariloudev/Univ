@@ -19,3 +19,26 @@ versions:
     title: "W1 univ-model foundations"
     goal: "univ-model holds the values, units, distances, frames, cosmology, redshifts, geometry and ids, tested against published values (stage/ingest-w1)"
     status: active
+  - key: 01a19f5f-5a82-7152-829c-6fc636db2fb7
+    at: 2026-11-03T03:06:28Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W1 univ-model foundations"
+    goal: "univ-model holds the values, units, distances, frames, cosmology, redshifts, geometry and ids, tested against published values (stage/ingest-w1)"
+    status: done
+blocks:
+  - key: 01a19f5f-5a82-7152-829c-6fc5231532d6
+    id: wave-1-merged
+    kind: note
+    versions:
+      - key: 01a19f5f-5a82-7152-829c-6fc7005b4c82
+        at: 2026-11-03T03:06:28Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "W1 merged"
+        markdown: "`stage/ingest-w1` was merged as `74842ab`. univ-model has 8 modules and 35 tests. AC-34, AC-35, AC-47 and AC-48 are traced. `loft reconcile` is now in the gate."
+        tone: success

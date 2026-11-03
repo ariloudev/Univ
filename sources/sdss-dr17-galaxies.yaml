@@ -1,0 +1,62 @@
+id: sdss-dr17-galaxies
+title: "SDSS DR17 spectroscopic galaxies"
+provider: skyserver
+access:
+  method: skyserver_sql
+  # 17 chunks of about 65,000 rows each, far below SkyServer's silent 500,000-row cap.
+  query: >-
+    SELECT specObjID, ra, dec, z, zErr FROM SpecObj WHERE class = 'GALAXY' AND zWarning = 0
+    AND z > 0.005 AND z < 0.35 AND (specObjID % {chunks}) = {chunk}
+  chunks: 17
+  count: >-
+    SELECT COUNT_BIG(*) AS n FROM SpecObj WHERE class = 'GALAXY' AND zWarning = 0 AND z > 0.005
+    AND z < 0.35
+cuts:
+  - "SpecObj, the DR17 view of science-primary spectra (sciencePrimary = 1; no QA, sky or duplicate spectra)."
+  - "class = 'GALAXY' AND zWarning = 0 AND 0.005 < z < 0.35; the z > 0.005 cut also removes class GALAXY rows with negative z."
+  - >-
+    These cuts take ALL galaxy spectra in DR17, not the Main Galaxy Sample: the selection mixes
+    SDSS-I/II Legacy, BOSS, eBOSS and SEGUE spectra (measured 2026-11-03: 1,097,303 rows; sdss
+    793,076, boss 258,659, eboss 45,164, segue1 347, segue2 57), so its completeness is not that of
+    any one target selection.
+  - "ra/dec are fibre (plug) positions, stored to 5 decimals; z and zErr are float32."
+  - "specObjID exceeds the 64-bit signed range (max 14126937860314781696 in this cut) and is kept as text."
+columns:
+  - { column: specObjID, field: identifier, unit: dimensionless }
+  - { column: ra, field: right_ascension, unit: degree }
+  - { column: dec, field: declination, unit: degree }
+  - { column: z, field: redshift, unit: dimensionless }
+  - { column: zErr, field: redshift_error, unit: dimensionless }
+# SDSS documents its positions as J2000 and calibrated against UCAC; ICRS is inferred, not stated.
+frame: icrs
+epoch: 2000.0
+citation: >-
+  Abdurro'uf et al. 2022, "The Seventeenth Data Release of the Sloan Digital Sky Surveys: Complete
+  Release of MaNGA, MaStar, and APOGEE-2 Data", ApJS 259, 35. 2022ApJS..259...35A,
+  doi:10.3847/1538-4365/ac4414. Survey papers for the rows taken: York et al. 2000, AJ 120, 1579
+  (2000AJ....120.1579Y); Strauss et al. 2002, AJ 124, 1810 (2002AJ....124.1810S); Gunn et al. 2006,
+  AJ 131, 2332 (2006AJ....131.2332G); Smee et al. 2013, AJ 146, 32 (2013AJ....146...32S);
+  Eisenstein et al. 2011, AJ 142, 72 (2011AJ....142...72E); Dawson et al. 2013, AJ 145, 10
+  (2013AJ....145...10D); Dawson et al. 2016, AJ 151, 44 (2016AJ....151...44D). The SDSS bibcodes
+  were constructed from Crossref-verified journal, volume and page; ADS was not reachable.
+terms:
+  url: "https://www.sdss4.org/collaboration/"
+  quote: "All SDSS data released in our public data releases is considered in the public domain."
+  credit: |-
+    Cite Abdurro'uf et al. 2022, ApJS 259, 35, and the survey papers listed in the citation. SDSS-IV acknowledgement (https://www.sdss4.org/collaboration/citing-sdss/):
+    Funding for the Sloan Digital Sky Survey IV has been provided by the Alfred P. Sloan Foundation, the U.S. Department of Energy Office of Science, and the Participating Institutions. SDSS-IV acknowledges support and resources from the Center for High Performance Computing at the University of Utah. The SDSS website is www.sdss4.org. SDSS-IV is managed by the Astrophysical Research Consortium for the Participating Institutions of the SDSS Collaboration including the Brazilian Participation Group, the Carnegie Institution for Science, Carnegie Mellon University, Center for Astrophysics | Harvard \& Smithsonian, the Chilean Participation Group, the French Participation Group, Instituto de Astrof\'isica de Canarias, The Johns Hopkins University, Kavli Institute for the Physics and Mathematics of the Universe (IPMU) / University of Tokyo, the Korean Participation Group, Lawrence Berkeley National Laboratory, Leibniz Institut f\"ur Astrophysik Potsdam (AIP), Max-Planck-Institut f\"ur Astronomie (MPIA Heidelberg), Max-Planck-Institut f\"ur Astrophysik (MPA Garching), Max-Planck-Institut f\"ur Extraterrestrische Physik (MPE), National Astronomical Observatories of China, New Mexico State University, New York University, University of Notre Dame, Observat\'ario Nacional / MCTI, The Ohio State University, Pennsylvania State University, Shanghai Astronomical Observatory, United Kingdom Participation Group, Universidad Nacional Aut\'onoma de M\'exico, University of Arizona, University of Colorado Boulder, University of Oxford, University of Portsmouth, University of Utah, University of Virginia, University of Washington, University of Wisconsin, Vanderbilt University, and Yale University.
+    SDSS-III acknowledgement, for the BOSS and SEGUE-2 rows (https://www.sdss3.org/collaboration/boiler-plate.php):
+    Funding for SDSS-III has been provided by the Alfred P. Sloan Foundation, the Participating Institutions, the National Science Foundation, and the U.S. Department of Energy Office of Science. The SDSS-III web site is http://www.sdss3.org/. SDSS-III is managed by the Astrophysical Research Consortium for the Participating Institutions of the SDSS-III Collaboration including the University of Arizona, the Brazilian Participation Group, Brookhaven National Laboratory, Carnegie Mellon University, University of Florida, the French Participation Group, the German Participation Group, Harvard University, the Instituto de Astrofisica de Canarias, the Michigan State/Notre Dame/JINA Participation Group, Johns Hopkins University, Lawrence Berkeley National Laboratory, Max Planck Institute for Astrophysics, Max Planck Institute for Extraterrestrial Physics, New Mexico State University, New York University, Ohio State University, Pennsylvania State University, University of Portsmouth, Princeton University, the Spanish Participation Group, University of Tokyo, University of Utah, Vanderbilt University, University of Virginia, University of Washington, and Yale University.
+    SDSS-I/II acknowledgement, for the Legacy rows (https://classic.sdss.org/collaboration/credits.php):
+    Funding for the SDSS and SDSS-II has been provided by the Alfred P. Sloan Foundation, the Participating Institutions, the National Science Foundation, the U.S. Department of Energy, the National Aeronautics and Space Administration, the Japanese Monbukagakusho, the Max Planck Society, and the Higher Education Funding Council for England. The SDSS Web Site is http://www.sdss.org/. The SDSS is managed by the Astrophysical Research Consortium for the Participating Institutions. The Participating Institutions are the American Museum of Natural History, Astrophysical Institute Potsdam, University of Basel, University of Cambridge, Case Western Reserve University, University of Chicago, Drexel University, Fermilab, the Institute for Advanced Study, the Japan Participation Group, Johns Hopkins University, the Joint Institute for Nuclear Astrophysics, the Kavli Institute for Particle Astrophysics and Cosmology, the Korean Scientist Group, the Chinese Academy of Sciences (LAMOST), Los Alamos National Laboratory, the Max-Planck-Institute for Astronomy (MPIA), the Max-Planck-Institute for Astrophysics (MPA), New Mexico State University, Ohio State University, University of Pittsburgh, University of Portsmouth, Princeton University, the United States Naval Observatory, and the University of Washington.
+redistribution:
+  status: permitted_with_credit
+  reasoning: >-
+    SDSS states that all data in its public releases is considered in the public domain, so no
+    licence condition limits copying or redistribution; the citations and the SDSS-I/II, SDSS-III and
+    SDSS-IV acknowledgements are requested as scholarly credit. The older SDSS-I/II credits page says
+    commercial use needs approval by the Astrophysical Research Consortium, which matters only for
+    commercial use. Provisional: judged again before any public deployment.
+scale_domain: cosmic_web
+mirrors:
+  - "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch"

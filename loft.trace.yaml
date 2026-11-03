@@ -1,5 +1,179 @@
 format: loft-trace/2
 links:
+  - node: 01a19f22-2ad9-716e-876f-1833afc5c0fc
+    reviewed: c76b8e1211892706df0ac23304b249fca599d95af0e04bfeacc2fcb0d42edcff
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "a_definition_gives_id_title_provider_access_query_and_cuts"
+        body: dd354759dd38af64bbf0ca1a5129d61a45c8e1879c0886b6932af825d4109d87
+  - node: 01a19f22-2ad9-716e-876f-1834e602c6b1
+    reviewed: 52c211a3376b4c083f729fb34808fae2a77b017533f0e8897f111505cec13b58
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "each_column_maps_to_a_model_field_with_its_unit"
+        body: 47fe36d4e6ad3a10cfd0ac9d17ecc1590ec785e6d6c3ca81b1d55db21f1d39ef
+  - node: 01a19f22-2ad9-716e-876f-1835412ca8ed
+    reviewed: 44dd77aab7f9360378c377c8d9025cfab01dd27a76b3d5f84e7a0c77533c3ec7
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "a_definition_names_frame_epoch_citation_terms_credit_and_scale_domain"
+        body: daba1dcea0719572b4705b7e4acdedc8aa1a63677b8e20fd80cab2f9cc770d82
+  - node: 01a19f22-2ad9-716e-876f-1836d60c8672
+    reviewed: cf674e110931b2424d30f200b6b62693bfbc11fbc13ccfe21940eb18e7ca0750
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "a_definition_names_frame_epoch_citation_terms_credit_and_scale_domain"
+        body: daba1dcea0719572b4705b7e4acdedc8aa1a63677b8e20fd80cab2f9cc770d82
+  - node: 01a19f22-2ad9-716e-876f-183725365029
+    reviewed: eea96a3c77c0202708109fb066d41cbb6f267f514484a589f40dd46a2bcbc013
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "mirrors_are_kept_in_the_order_written"
+        body: d77d5376dab7737df6d20cdd56edc7c48b96e29fb6ace9e9b4a87c13867712ba
+  - node: 01a19f22-2ad9-716e-876f-183984aea659
+    reviewed: f06e9080677da8049e4ded0c12c38da1124f219b528f21e855eb86a43b423a2e
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "an_unknown_unit_frame_or_scale_domain_is_refused_naming_the_file_and_field"
+        body: 67b000d510116f7d9355059854c5654b664612cf5dd50d8dbd265db6b0d88aa6
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "an_incomplete_definition_is_refused_naming_the_missing_field"
+        body: fa2573a43f01ef5aa962c61e516935fc97d10b35c638c6be51a580c05e9555c1
+  - node: 01a19f22-2ad9-716e-876f-183b90085a10
+    reviewed: 2e7a6f25b7efb02db5b6cc75688e5cfa3b7d47920d59b5557eead13427f14fac
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
+        body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
+  - node: 01a19f22-2ad9-716e-876f-183ca629c7f8
+    reviewed: 2f1322755357d3f990635c6e93b513eda5ef14fad23d0c687e6e7ef0ecd44c70
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
+        body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
+  - node: 01a19f22-2ad9-716e-876f-183ee3b99b68
+    reviewed: 2f723b0329d6aa47d4eb94775be0f8194410404e044e2333b001edd141c70e64
+    tests:
+      - file: "crates/univ-ingest/tests/source_definitions.rs"
+        name: "a_forbidden_source_blocks_a_release_naming_it_and_quoting_its_terms"
+        body: 14acacf2d3caa870efd1a96cd4f55b3e73299809a0b51f8488e27c803d719a56
+  - node: 01a19f22-2ad9-716e-876f-1840046e9bc8
+    reviewed: 154ee971aa52fb22e0ed45d50e503deca9e95a5033a259c0546de4b194fb3e33
+    tests:
+      - file: "crates/univ-ingest/tests/definitions.rs"
+        name: "every_source_of_the_first_release_has_a_valid_definition"
+        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+  - node: 01a19f22-2ad9-716e-876f-1841361113b6
+    reviewed: 4b38c591f74484626e8ccaf5f74a9e71b5df699fadb8ca4aa11d568db31307af
+    tests:
+      - file: "crates/univ-ingest/tests/definitions.rs"
+        name: "every_source_of_the_first_release_has_a_valid_definition"
+        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+  - node: 01a19f22-2ad9-716e-876f-1842afd6d59e
+    reviewed: 0d8776a8f4b969550ac54807ccb1912c7f8093084a8ade92b371d5ef3193c08d
+    tests:
+      - file: "crates/univ-ingest/tests/definitions.rs"
+        name: "every_source_of_the_first_release_has_a_valid_definition"
+        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+  - node: 01a19f22-2ad9-716e-876f-18439d96b214
+    reviewed: 85ed33936b18f9c512ce245a3e4c097b89d10b39bc5da07bc5bfab10acc5dadf
+    tests:
+      - file: "crates/univ-ingest/tests/definitions.rs"
+        name: "every_source_of_the_first_release_has_a_valid_definition"
+        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+  - node: 01a19f22-2ad9-716e-876f-18463a5dce5c
+    reviewed: 814e7461a598ef1428907f53c73d0af791172f6a799ea9f189754719766b46db
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_chunks.rs"
+        name: "a_request_is_retried_four_times_with_waits_doubling_from_two_seconds"
+        body: 9a882fceca53791f98293e07d76e91dcc68a4eb00a608d6c5854a1ca4be782fe
+  - node: 01a19f22-2ad9-716e-876f-184791f85a52
+    reviewed: 0160432a6347c19ac45eb5ed5a442af22ec3ec59404b2ad02d2e34a1ee27c253
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_chunks.rs"
+        name: "a_mirror_that_fails_all_its_retries_is_skipped_for_the_rest_of_the_run"
+        body: 1c996b6a46543f4f57ca60929ef73a800c76e5f3d9e11e26275126600867475c
+  - node: 01a19f22-2ad9-716e-876f-184902d146a6
+    reviewed: c1e2f65eea6da8f522e92285c37189e4e173ce20343f71632521d78e91474fe9
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_chunks.rs"
+        name: "a_run_resumes_from_the_first_chunk_not_on_disk_and_fetches_no_chunk_twice"
+        body: 1ccc7d24d828e9b37c1a91cb3b2eba0e7c2afd295e3ec6bb26305d0a6f4649dd
+  - node: 01a19f22-2ad9-716e-876f-184a18088c6b
+    reviewed: 99576afaa7a0b44889f6e39325f6ded4501db99e0dd94e0f2c1baffec697dff6
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_chunks.rs"
+        name: "a_chunk_is_renamed_into_place_only_once_complete_and_a_partial_file_is_never_read"
+        body: 66b84b2404e279a4ff15ac29279d97d20d35571fab56ac8da065e1fd660e09e7
+  - node: 01a19f22-2ad9-716e-876f-184b2e4614ad
+    reviewed: 4b752aae8661a477ca5ff03ae43ba8226054ddeea75578a68817bdabb79b3179
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_chunks.rs"
+        name: "a_run_resumes_from_the_first_chunk_not_on_disk_and_fetches_no_chunk_twice"
+        body: 1ccc7d24d828e9b37c1a91cb3b2eba0e7c2afd295e3ec6bb26305d0a6f4649dd
+  - node: 01a19f22-b0bc-76da-bac8-9776aedb5264
+    reviewed: 221be69d172d120fc01c96cd83e4104d6fafe7bd79c162f7fdd094e3ff6f4495
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_files.rs"
+        name: "a_stopped_download_continues_with_a_range_request_from_the_byte_it_reached"
+        body: 1764045259beeb7a4cbd26d6c34dbd519d3156eee7966af29984f3b98149bd98
+      - file: "crates/univ-ingest/tests/fetch_files.rs"
+        name: "the_bytes_of_a_cut_off_download_stay_in_its_partial_file_and_the_retry_continues_from_them"
+        body: 456086f8c885e893867308f03ca719d74a8e6981f243542010e91ede39efe98b
+  - node: 01a19f22-b0bc-76da-bac8-9777e4054f04
+    reviewed: 0c20dfd8300f1c6029cabd966b5222b6384ea0551d08de65f8969b3d91796cde
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_files.rs"
+        name: "a_provider_that_ignores_ranges_makes_the_download_start_over_and_says_so"
+        body: bc2cf6fe947993a033f31de7021a656e42b2b3c794200f0c8ba5c2e66afe0a79
+  - node: 01a19f22-b0bc-76da-bac8-9778f9150cca
+    reviewed: 667d94d7dde6224d014e6b97bbb0831fe43ed97b579b2628c58d079f67f81e53
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_files.rs"
+        name: "a_file_that_changed_since_the_partial_download_starts_over"
+        body: b4aa1187d6fef2ccf9406fcfcf823c1005bf71b94eb78a38211cf7db096cac37
+      - file: "crates/univ-ingest/tests/fetch_files.rs"
+        name: "a_range_answer_with_another_length_starts_over"
+        body: 939a10961dc10cf77e691cc4f1638c159bf38c5d982415411eabb1e556174ad7
+  - node: 01a19f22-b0bc-76da-bac8-9779eea8a5c5
+    reviewed: e6fa2d002fe85bade4ca698d67acfb3c2e0523ed7af3de25532eeddf5cd3b53c
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_files.rs"
+        name: "a_complete_file_is_checked_against_its_published_size_and_digest"
+        body: a58b7f77fcd91c075a7a34bac72173f6e7349be2c485fea35f80475270c42515
+  - node: 01a19f22-b0bc-76da-bac8-977a62f6ff81
+    reviewed: 0cf83f9f5ef5e25d9ab94fe6128b2a0592eca17bbaa7d1311ae8dbd33b68a406
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_files.rs"
+        name: "the_bytes_of_a_cut_off_download_stay_in_its_partial_file_and_the_retry_continues_from_them"
+        body: 456086f8c885e893867308f03ca719d74a8e6981f243542010e91ede39efe98b
+  - node: 01a19f22-2ad9-716e-876f-184dbfdb539d
+    reviewed: 71dfc37c0567cb435db01aefdd75958ebbbf0879357dc3fedfa06eca0522e7e3
+    tests:
+      - file: "crates/univ-ingest/tests/provenance.rs"
+        name: "the_provenance_lists_each_payload_with_its_digest_retrieval_time_and_url"
+        body: 0f47ee30e2e5ae26694100e7c66745c22e89317dbd191c45edd1e601a379dfbe
+      - file: "crates/univ-ingest/tests/acquire.rs"
+        name: "a_source_whose_rows_match_its_count_is_acquired_and_every_payload_recorded"
+        body: f5c83cf46111f98ebe978744d278b8d181583fc3cf5c5d4e7595a6f4f68d9e4c
+  - node: 01a19f22-2ad9-716e-876f-184f18271ab3
+    reviewed: 182bebcb0e3e34fa7e3c3f04d73f7dc496e87cea2f1b41885d34bd956e4adb2b
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_chunks.rs"
+        name: "a_chunk_no_mirror_can_give_fails_naming_the_source_the_chunk_and_each_mirrors_last_error"
+        body: 8a0b54ba6f0a40e99b382dedb835811b3df0289172b2898153f2040ada963956
+  - node: 01a19f22-2ad9-716e-876f-1850f88a0c79
+    reviewed: 9de08056dce3077fa25445e1d4800e73137b787b31eb075b7d6f81b85def78eb
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_chunks.rs"
+        name: "a_chunk_no_mirror_can_give_fails_naming_the_source_the_chunk_and_each_mirrors_last_error"
+        body: 8a0b54ba6f0a40e99b382dedb835811b3df0289172b2898153f2040ada963956
+  - node: 01a19f22-2ad9-716e-876f-185248f45d00
+    reviewed: 041d80b1d18bce7f55263b3c84bd2abcad12a3d83b4e4901c4ae613a84fce73f
+    tests:
+      - file: "crates/univ-ingest/tests/fetch_chunks.rs"
+        name: "an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk"
+        body: 9e7d90f859d51deabd5797cb953f49bd47f2d6da19fe806231b4b13722d7798c
   - node: 01a19f22-2ad9-716e-876f-186064637cbc
     reviewed: 45088d301500263f3d8ddf925252261bbac6057644125800cebe93b857fc49d0
     tests:

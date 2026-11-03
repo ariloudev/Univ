@@ -1,0 +1,5 @@
+source: sixdfgs-dr3
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=VII%2F259%2F6dfgs&-out=6dFGS%2Ccz%2Ce_cz%2Cq_cz%2CbJmag&-out.add=_RAJ%2C_DEJ&-out.max=5&Target=2..30001
+retrieved: 2026-11-03T03:56:26Z
+sha256: 28cd62da1359ccca46ca4d1939cd61b24961f8f592fd5f0963dd556aa1913eaf
+note: the first chunk's query cut to 5 rows

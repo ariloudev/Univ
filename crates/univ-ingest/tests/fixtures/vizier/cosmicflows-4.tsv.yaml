@@ -1,0 +1,5 @@
+source: cosmicflows-4
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Fgroups&-out=1PGC%2CDMzp%2Ce_DMzp%2CVh%2CSGX%2CSGY%2CSGZ&-out.add=_RAJ%2C_DEJ&-out.max=5
+retrieved: 2026-11-03T03:55:38Z
+sha256: bb51fe2e3a86f9f9a4888ce69a9a0d7d9bebe73d97e59b37ba0e514ddd94b171
+note: the first chunk's query cut to 5 rows

@@ -1,0 +1,361 @@
+//! How each access method asks for a chunk and reads the answer: `VizieR` tab-separated tables,
+//! `SkyServer` and TAP CSV.
+
+use sha2::{Digest, Sha256};
+use url::form_urlencoded::Serializer;
+
+use crate::source::{Access, SourceDefinition};
+
+/// One chunk of a query: its name in events and provenance, its file on disk, and what is
+/// appended to each mirror to ask for it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ChunkRequest {
+    pub item: String,
+    pub file: String,
+    pub suffix: String,
+}
+
+/// A table as a provider answered it, every cell kept as text.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Table {
+    pub columns: Vec<String>,
+    pub rows: Vec<Vec<String>>,
+}
+
+/// The chunk requests of a query source, in order; none for a file source.
+#[must_use]
+pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
+    match &definition.access {
+        Access::VizierTsv {
+            table,
+            constraints,
+            slices,
+            ..
+        } => {
+            let ranges: Vec<_> = slices.as_ref().map_or_else(
+                || vec![None],
+                |s| {
+                    let step = usize::try_from(s.step).unwrap_or(usize::MAX);
+                    (s.from..=s.to)
+                        .step_by(step)
+                        .map(|low| {
+                            Some((
+                                s.column.as_str(),
+                                low,
+                                low.saturating_add(s.step - 1).min(s.to),
+                            ))
+                        })
+                        .collect()
+                },
+            );
+            ranges
+                .into_iter()
+                .enumerate()
+                .map(|(i, range)| {
+                    let mut query = vizier_query(definition, table, constraints);
+                    let item = match range {
+                        Some((column, low, high)) => {
+                            query.append_pair(column, &format!("{low}..{high}"));
+                            format!("{column} {low} to {high}")
+                        }
+                        None => "the whole table".to_owned(),
+                    };
+                    request(item, i, "tsv", format!("?{}", query.finish()))
+                })
+                .collect()
+        }
+        Access::SkyserverSql { query, chunks, .. } | Access::Tap { query, chunks, .. } => {
+            suffix_for(&definition.access).map_or_else(Vec::new, |s| split(query, *chunks, s))
+        }
+        Access::Files { .. } | Access::Repository { .. } => Vec::new(),
+    }
+}
+
+/// A `VizieR` query for the definition's columns: the computed ones, whose names start with
+/// `_`, are asked for with `-out.add`, the others with `-out`. `VizieR` answers `_RAJ` and `_DEJ`
+/// as the columns `_RAJ2000` and `_DEJ2000`.
+fn vizier_query(
+    definition: &SourceDefinition,
+    table: &str,
+    constraints: &[String],
+) -> Serializer<'static, String> {
+    let (computed, stored): (Vec<&str>, Vec<&str>) = definition
+        .columns
+        .iter()
+        .map(|c| c.column.as_str())
+        .partition(|c| c.starts_with('_'));
+    let mut query = Serializer::new(String::new());
+    query.append_pair("-source", table);
+    query.append_pair("-out", &stored.join(","));
+    if !computed.is_empty() {
+        let asked: Vec<&str> = computed
+            .iter()
+            .map(|c| match *c {
+                "_RAJ2000" => "_RAJ",
+                "_DEJ2000" => "_DEJ",
+                other => other,
+            })
+            .collect();
+        query.append_pair("-out.add", &asked.join(","));
+    }
+    query.append_pair("-out.max", "unlimited");
+    for constraint in constraints {
+        let (key, value) = constraint.split_once('=').unwrap_or((constraint, ""));
+        query.append_pair(key, value);
+    }
+    query
+}
+
+/// The chunks of a query whose text holds `{chunk}` and `{chunks}`.
+fn split(query: &str, chunks: u32, suffix: fn(&str) -> String) -> Vec<ChunkRequest> {
+    (0..chunks)
+        .map(|i| {
+            let text = query
+                .replace("{chunks}", &chunks.to_string())
+                .replace("{chunk}", &i.to_string());
+            request(
+                format!("chunk {} of {chunks}", i + 1),
+                i,
+                "csv",
+                suffix(&text),
+            )
+        })
+        .collect()
+}
+
+/// A chunk request whose file name carries a digest of what it asks, so that a chunk kept from
+/// a query split another way is never taken for one of this split.
+fn request(
+    item: String,
+    index: impl std::fmt::Display,
+    extension: &str,
+    suffix: String,
+) -> ChunkRequest {
+    let digest = Sha256::digest(suffix.as_bytes());
+    let tag = crate::fetch::hex(&digest[..4]);
+    ChunkRequest {
+        item,
+        file: format!("chunk-{index:0>4}-{tag}.{extension}"),
+        suffix,
+    }
+}
+
+/// What is appended to a mirror to send a query of `access`, for the methods that take one.
+fn suffix_for(access: &Access) -> Option<fn(&str) -> String> {
+    match access {
+        Access::SkyserverSql { .. } => Some(skyserver_suffix),
+        Access::Tap { .. } => Some(tap_suffix),
+        Access::VizierTsv { .. } | Access::Files { .. } | Access::Repository { .. } => None,
+    }
+}
+
+fn skyserver_suffix(sql: &str) -> String {
+    let mut q = Serializer::new(String::new());
+    q.append_pair("cmd", sql);
+    q.append_pair("format", "csv");
+    format!("?{}", q.finish())
+}
+
+fn tap_suffix(adql: &str) -> String {
+    let mut q = Serializer::new(String::new());
+    q.append_pair("REQUEST", "doQuery");
+    q.append_pair("LANG", "ADQL");
+    q.append_pair("FORMAT", "csv");
+    q.append_pair("QUERY", adql);
+    format!("/sync?{}", q.finish())
+}
+
+/// The request for the number of rows a source's chunks must hold, where its definition gives
+/// a count query.
+#[must_use]
+pub fn count_request(definition: &SourceDefinition) -> Option<ChunkRequest> {
+    let (Access::SkyserverSql {
+        count: Some(count), ..
+    }
+    | Access::Tap {
+        count: Some(count), ..
+    }) = &definition.access
+    else {
+        return None;
+    };
+    let suffix = suffix_for(&definition.access)?;
+    Some(request(
+        "row count".to_owned(),
+        "count",
+        "csv",
+        suffix(count),
+    ))
+}
+
+/// The single number a count query answered.
+///
+/// # Errors
+///
+/// Fails when the answer is not one row holding one whole number.
+pub fn read_count(access: &Access, body: &[u8]) -> Result<u64, String> {
+    let table = read_table(access, body)?;
+    match table.rows.as_slice() {
+        [row] if row.len() == 1 => row[0]
+            .parse()
+            .map_err(|e| format!("the count {:?} is not a whole number: {e}", row[0])),
+        _ => Err(format!(
+            "a count answers one row of one column, not {} rows",
+            table.rows.len()
+        )),
+    }
+}
+
+/// Reads an answer of `access` into a table.
+///
+/// # Errors
+///
+/// Fails when the answer is not a table of that format, such as an error page.
+pub fn read_table(access: &Access, body: &[u8]) -> Result<Table, String> {
+    let text = std::str::from_utf8(body).map_err(|e| format!("the answer is not UTF-8: {e}"))?;
+    match access {
+        Access::VizierTsv { .. } => read_vizier_tsv(text),
+        Access::SkyserverSql { .. } | Access::Tap { .. } => read_csv(text),
+        Access::Files { .. } | Access::Repository { .. } => {
+            Err("files are read by their own readers".to_owned())
+        }
+    }
+}
+
+/// Checks that an answer is a table holding every column `definition` takes, so an error page
+/// sent with status 200 is never kept as a chunk, and gives its number of rows. An empty table,
+/// with no header, is a valid answer of no rows.
+///
+/// # Errors
+///
+/// Fails, saying why, when the answer is not such a table.
+pub fn check_answer(definition: &SourceDefinition, body: &[u8]) -> Result<u64, String> {
+    let table = read_table(&definition.access, body)?;
+    if table.columns.is_empty() {
+        return Ok(0);
+    }
+    let missing: Vec<&str> = definition
+        .columns
+        .iter()
+        .map(|c| c.column.as_str())
+        .filter(|name| !table.columns.iter().any(|c| c == name))
+        .collect();
+    if missing.is_empty() {
+        Ok(table.rows.len() as u64)
+    } else {
+        Err(format!(
+            "the answer lacks the columns {}",
+            missing.join(", ")
+        ))
+    }
+}
+
+/// `VizieR`'s `asu-tsv`: `#` comments, then a header, a units line and a line of dashes, then
+/// one tab-separated row per line. An answer of comments only is a table of no rows, unless a
+/// comment reports an error.
+fn read_vizier_tsv(text: &str) -> Result<Table, String> {
+    let mut lines = content_lines(text);
+    let Some(header) = lines.next() else {
+        return match text.lines().find(|l| vizier_error(l)) {
+            Some(line) => Err(format!("VizieR reports an error: {}", line.trim())),
+            None => Ok(Table::default()),
+        };
+    };
+    let columns = cells(header, '\t');
+    lines.next().ok_or("the table has no units line")?;
+    let dashes = lines.next().ok_or("the table has no line of dashes")?;
+    if !dashes.trim_start().starts_with('-') {
+        return Err(format!(
+            "expected a line of dashes under the header, found {dashes:?}"
+        ));
+    }
+    let rows = rows(lines, columns.len(), |line| cells(line, '\t'))?;
+    Ok(Table { columns, rows })
+}
+
+/// A `VizieR` comment that reports an error: an `#INFO` line naming one, or a `#***` line.
+fn vizier_error(line: &str) -> bool {
+    line.starts_with("#***")
+        || (line.starts_with("#INFO") && line.to_ascii_lowercase().contains("error"))
+}
+
+/// CSV as `SkyServer` and TAP services give it: `#` lines skipped, a header, then rows, with
+/// fields in double quotes where they hold a comma.
+fn read_csv(text: &str) -> Result<Table, String> {
+    let mut lines = content_lines(text);
+    let header = lines.next().ok_or("the answer holds no table")?;
+    if header.trim_start().starts_with('<') {
+        return Err(format!(
+            "the answer is markup, not CSV: {}",
+            header.chars().take(120).collect::<String>()
+        ));
+    }
+    let columns = fields(header);
+    let rows = rows(lines, columns.len(), fields)?;
+    Ok(Table { columns, rows })
+}
+
+/// The lines of an answer that are neither `#` comments nor blank.
+fn content_lines(text: &str) -> impl Iterator<Item = &str> {
+    text.lines()
+        .filter(|l| !l.starts_with('#') && !l.trim().is_empty())
+}
+
+/// Each line split into cells by `split`, refusing a line whose width is not `width`.
+fn rows<'a>(
+    lines: impl Iterator<Item = &'a str>,
+    width: usize,
+    split: impl Fn(&str) -> Vec<String>,
+) -> Result<Vec<Vec<String>>, String> {
+    lines
+        .map(|line| {
+            let row = split(line);
+            if row.len() == width {
+                Ok(row)
+            } else {
+                Err(format!(
+                    "a row has {} cells for {width} columns: {line:?}",
+                    row.len()
+                ))
+            }
+        })
+        .collect()
+}
+
+/// The trimmed cells of a line separated by `separator`.
+fn cells(line: &str, separator: char) -> Vec<String> {
+    line.split(separator).map(|c| c.trim().to_owned()).collect()
+}
+
+/// The fields of one CSV line.
+fn fields(line: &str) -> Vec<String> {
+    let mut fields = Vec::new();
+    let mut field = String::new();
+    let mut quoted = false;
+    let mut chars = line.chars().peekable();
+    while let Some(c) = chars.next() {
+        match (c, quoted) {
+            ('"', true) if chars.peek() == Some(&'"') => {
+                field.push('"');
+                chars.next();
+            }
+            ('"', _) => quoted = !quoted,
+            (',', false) => fields.push(std::mem::take(&mut field).trim().to_owned()),
+            _ => field.push(c),
+        }
+    }
+    fields.push(field.trim().to_owned());
+    fields
+}
+
+#[cfg(test)]
+mod tests {
+    use super::fields;
+
+    #[test]
+    fn csv_fields_keep_quoted_commas_and_doubled_quotes() {
+        assert_eq!(
+            fields(r#"1,"a, b","say ""hi""",  2.5 "#),
+            ["1", "a, b", "say \"hi\"", "2.5"]
+        );
+    }
+}

@@ -1,0 +1,5 @@
+source: twomrs
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz&-out.add=_RAJ%2C_DEJ&-out.max=5
+retrieved: 2026-11-03T03:56:29Z
+sha256: 5accf129bfa473347acffaabca2f79b12b14d62ef7cace9eb2bff241be43624d
+note: the first chunk's query cut to 5 rows

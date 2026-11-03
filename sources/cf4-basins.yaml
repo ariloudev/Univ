@@ -1,0 +1,68 @@
+id: cf4-basins
+title: "Cosmicflows-4 basins of attraction and repulsion (watershed label grids)"
+provider: ip2i-cosmicflows
+access:
+  method: files
+  files:
+    # Linked from https://projets.ip2i.in2p3.fr/cosmicflows/ with a double slash, kept in the
+    # mirror base so the URL is exactly the one the page links.
+    - { path: CF4_new_128-z008_watersheds-fits.zip }
+cuts:
+  - >-
+    The whole ZIP: four FITS label grids, basins of attraction (BoA) and repulsion (BoR) for the
+    CF4 individual-galaxy reconstruction (CF4_new_*) and the CF4 groups reconstruction (CF4gp_new_*).
+  - "These are segmentations of a reconstructed velocity field, not measurements."
+  - >-
+    Grid: 128^3 voxels over a 1000 h^-1 Mpc box (7.8125 h^-1 Mpc cells), supergalactic Cartesian,
+    observer at the centre. Label 0 = no basin; label k is the k-th basin in Table 1 of
+    arXiv:2305.02339v2 (the site's "Table A.1"), ignoring blank lines. CF4 galaxies BoA: 1 Laniakea,
+    2 Apus, 3 Hercules, 4 Lepus, 5 Perseus-Pisces, 6 Shapley, 7 SDSS-1a, 8 SDSS-2a, 9 SDSS-2b
+    (observed). The BoR and groups maps follow the same rule but were not checked against the data.
+  - "Seed voxels whose streamlines leave the grid belong to no basin (the grid is not periodic)."
+  - "The voxel-centre convention is unverified: Table 1 suggests (i - 64) * 7.8125, the CF4++ NPZ uses (i + 0.5) * 7.8125 - 500; they differ by half a cell (3.9 h^-1 Mpc)."
+  - "The meaning of z008 in the file names is not stated (probably a z = 0.08 data cut)."
+columns:
+  - { column: CF4_new_128-z008_BoA.fits, field: basin_label, unit: dimensionless }
+  - { column: CF4_new_128-z008_BoR.fits, field: basin_label, unit: dimensionless }
+  - { column: CF4gp_new_128-z008_BoA.fits, field: basin_label, unit: dimensionless }
+  - { column: CF4gp_new_128-z008_BoR.fits, field: basin_label, unit: dimensionless }
+frame: supergalactic
+epoch: 2000.0
+citation: >-
+  Dupuy A., Courtois H.M. 2023, "Dynamic cosmography of the local Universe: Laniakea and five more
+  watershed superclusters", A&A 678, A176. 2023A&A...678A.176D (constructed from the ADS convention;
+  ADS not queried), doi:10.1051/0004-6361/202346802, arXiv:2305.02339.
+terms:
+  url: "https://projets.ip2i.in2p3.fr/cosmicflows/"
+  quote: "If you use this data cite the article above"
+  credit: "Cite Dupuy & Courtois 2023, A&A 678, A176 (doi:10.1051/0004-6361/202346802)."
+redistribution:
+  status: permitted_with_credit
+  reasoning: >-
+    The Cosmicflows page states no licence, copyright or terms, only the request to cite the
+    article; the A&A article's CC BY 4.0 covers the article, not the FITS files. With the terms
+    silent, nothing grants re-hosting the raw files, so they are fetched from their origin and only
+    derived products (basin membership of objects, renders) carry the citation. Provisional: judged
+    again before any public deployment.
+scale_domain: cosmic_web
+mirrors:
+  - "https://projets.ip2i.in2p3.fr//cosmicflows"
+fixes:
+  - defect: >-
+      The FITS headers carry no axis names, WCS or BUNIT, and the axis order is the reverse of the
+      CF4++ NPZ: FITS NAXIS1 = SGX, NAXIS2 = SGY, NAXIS3 = SGZ.
+    change: >-
+      Each label grid is read as array[i_SGZ, i_SGY, i_SGX] in C order (as astropy gives data[k,j,i]),
+      and reindexed to [i_SGX, i_SGY, i_SGZ] before use.
+    evidence: >-
+      For each of the nine CF4-galaxy attractors of Dupuy & Courtois 2023 Table 1, the BoA label read
+      by range request at voxel floor((x + 500) / 7.8125) with C-order index [SGZ][SGY][SGX] equals
+      the expected 1-9 at all nine; with [SGX][SGY][SGZ] it matches none (5, 4, 7, 2, 1, 4, 8, 7, 8).
+      The same group's separate 64^3 CF4 grids are documented as "(SGZ,SGY,SGX)" on
+      https://projets.ip2i.in2p3.fr/cosmicflows/ (observed 2026-11-03).
+  - defect: "The integer basin labels are stored as big-endian float64 (BITPIX = -64)."
+    change: "Labels are cast to integers on reading; a value that is not a whole number is refused."
+    evidence: >-
+      Observed FITS primary headers of all four members: BITPIX = -64, NAXIS = 3, NAXIS1-3 = 128, each
+      member one 16,781,760-byte primary HDU; the site says the grids "are filled with integers from
+      0 to n".

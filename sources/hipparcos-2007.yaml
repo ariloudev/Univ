@@ -1,0 +1,70 @@
+id: hipparcos-2007
+title: "Hipparcos, the new reduction (van Leeuwen 2007)"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "I/311/hip2"
+  constraints: []
+  # HIP is I6 and never blank; the highest served HIP is 120404 (IDIA mirror, 2026-11-03).
+  slices: { column: HIP, from: 1, to: 120404, step: 30000 }
+  rows: 117955
+cuts:
+  - "No server-side cut: every row of I/311/hip2 (the astrometric catalogue), 117,955 by the ReadMe and as served."
+  - >-
+    Positions are RArad/DErad at their own epoch J1991.25 in ICRS, as the ReadMe states; VizieR's
+    header declares "J2000_1991.250: eq_FK5 J2000" for the table, and the ReadMe's ICRS is taken.
+  - "Sn is the solution type of the new reduction (ReadMe Note 1: 10xd+s). The files are those of 16-Sep-2008, which correct errors in the June 2008 version."
+columns:
+  - { column: HIP, field: identifier, unit: dimensionless }
+  - { column: RArad, field: right_ascension, unit: degree }
+  - { column: DErad, field: declination, unit: degree }
+  - { column: e_RArad, field: right_ascension_error, unit: milliarcsecond }
+  - { column: e_DErad, field: declination_error, unit: milliarcsecond }
+  - { column: Plx, field: parallax, unit: milliarcsecond }
+  - { column: e_Plx, field: parallax_error, unit: milliarcsecond }
+  - { column: pmRA, field: proper_motion_ra, unit: milliarcsecond_per_year }
+  - { column: pmDE, field: proper_motion_dec, unit: milliarcsecond_per_year }
+  - { column: Hpmag, field: magnitude, unit: magnitude }
+  - { column: Sn, field: quality, unit: dimensionless }
+frame: icrs
+epoch: 1991.25
+citation: >-
+  van Leeuwen F. 2007, "Validation of the new Hipparcos reduction", A&A 474, 653.
+  2007A&A...474..653V, doi:10.1051/0004-6361:20078357. Catalogue: van Leeuwen F. 2007,
+  "Hipparcos, the New Reduction of the Raw Data", Astrophysics & Space Science Library 350; VizieR
+  catalogue I/311.
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite van Leeuwen 2007, A&A 474, 653.
+redistribution:
+  status: permitted_with_credit
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the author and publisher,
+    and the ReadMe states no copyright or licence restriction. The ESA Hipparcos and ESA space
+    science archive terms were not checked. Provisional: judged again before any public deployment.
+scale_domain: stars
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      RArad and DErad are named and documented in radians (the ReadMe gives unit "rad"), but VizieR
+      serves them in degrees.
+    change: "RArad and DErad are read as degrees, as the answer's units line gives them; no radian conversion is applied."
+    evidence: >-
+      I/311 ReadMe: RArad, DErad "Right Ascension/Declination in ICRS, Ep=1991.25", unit rad. The
+      asu-tsv answer from vizieridia.saao.ac.za (2026-11-03) gives "deg" on its units line for both,
+      and HIP 1 has RArad = 000.00091185, while VizieR's _RAJ2000 for it is 000.0009007898 deg: the
+      difference matches pmRA = -4.55 mas/yr over 8.75 yr only if RArad is in degrees.

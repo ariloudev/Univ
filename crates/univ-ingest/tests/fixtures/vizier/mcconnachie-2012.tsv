@@ -1,0 +1,53 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-03T03:55:44 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-03T03:55:44	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=Name%2C%28m-M%29%2CE_%28m-M%29%2Ce_%28m-M%29%2Cu_%28m-M%29%2CD%2CE_D%2Ce_D%2CHRV%2Ce_HRV%2Cf_HRV%2CVmag&-out.add=_RAJ%2C_DEJ&-out.max=5	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_51440004
+#Name: J/AJ/144/4
+#Title: Properties of dwarf galaxies in the Local Group (McConnachie+, 2012)
+#INFO	ivoid=ivo://cds.vizier/j/aj/144/4	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/aj/144/4	    IVOID of underlying data collection
+#INFO	creator=McConnachie A.W.	    First author or institution
+#INFO	cites=bibcode:2012AJ....144....4M	    Article or Data origin sources
+#INFO	journal=AJ	    Journal name
+#INFO	original_date=2012	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/AJ/144/4	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.51440004	    Dataset identifier that can be used for citation
+#INFO	publication_date=2025-11-24	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Table	J_AJ_144_4_catalog:
+#Name: J/AJ/144/4/catalog
+#Title: Catalog of the observed properties of dwarf galaxies in and around the Local Group (tables 1--5 of paper)
+#Column	_RAJ2000	(F10.6)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F10.6)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	Name	(a29)	Galaxy name	[ucd=meta.id;meta.main]
+#Column	(m-M)	(F5.2)	? Distance modulus (m-M)_0_ (7)	[ucd=phot.mag.distMod]
+#Column	E_(m-M)	(F5.2)	? Positive error in (m-M)	[ucd=stat.error;stat.max]
+#Column	e_(m-M)	(F5.2)	? Negative error in (m-M)	[ucd=stat.error]
+#Column	u_(m-M)	(A2)	[:lbk ] Uncertain or fixed distance (5)	[ucd=meta.code.error]
+#Column	D	(I4)	? Heliocentric distance (7)	[ucd=pos.distance;pos.heliocentric]
+#Column	E_D	(I3)	? Positive error in D	[ucd=stat.error;stat.max]
+#Column	e_D	(I3)	? Negative error in D	[ucd=stat.error]
+#Column	HRV	(F6.1)	? Heliocentric radial velocity (9)	[ucd=spect.dopplerVeloc;pos.heliocentric]
+#Column	e_HRV	(F4.1)	? Error in HRV	[ucd=stat.error]
+#Column	f_HRV	(A1)	[cdfmpr] Flag on HRV (10)	[ucd=meta.code]
+#Column	Vmag	(F4.1)	? Apparent magnitude in V; VEGA system (12)	[ucd=phot.mag;em.opt.V]
+_RAJ2000	_DEJ2000	Name	(m-M)	E_(m-M)	e_(m-M)	u_(m-M)	D	E_D	e_D	HRV	e_HRV	f_HRV	Vmag
+deg	deg	 	mag	mag	mag	 	kpc	kpc	kpc	km/s	km/s	 	mag
+----------	----------	-----------------------------	-----	-----	-----	--	----	---	---	------	----	-	----
+266.416667	-29.007778	The Galaxy                   	     	     	     	  	    	   	   	      	    	 	
+108.145833	-27.666667	Canis Major                  	14.29	 0.30	 0.30	b 	   7	  1	  1	  87.0	 4.0	c	-0.1
+283.831250	-30.545278	Sagittarius dSph             	17.10	 0.15	 0.15	  	  26	  2	  2	 140.0	 2.0	 	 3.6
+151.766667	+16.081944	Segue (I)                    	16.80	 0.20	 0.20	  	  23	  2	  2	 208.5	 0.9	 	15.3
+132.875000	+63.130000	Ursa Major II                	17.50	 0.30	 0.30	  	  32	  4	  4	-116.5	 1.9	 	13.3
+
