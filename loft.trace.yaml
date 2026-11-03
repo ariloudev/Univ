@@ -234,6 +234,9 @@ links:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "each_uncertainty_is_typed_by_the_form_its_source_published"
         body: 0f0e57895fd361411906dacf589aaae82bcf96266b5b7d8ec7d89da31ac40758
+      - file: "crates/univ-model/src/distance/convert.rs"
+        name: "a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval"
+        body: 2a6d5652015f70253dfaaf7d1ea7593131559a630247654c69263819d409a34a
   - node: 01a19f22-2ad9-716e-876f-186959bf0d6e
     reviewed: dca9c0336ee7865b35436f889d52b0de5bd2287a2af545a88f35dcbe157907e6
     tests:
@@ -252,18 +255,24 @@ links:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "the_method_names_the_indicator"
         body: d438af5a89d59be6e2f88ad0e5be9658adce0b187a47549c4945f11ae1c2f793
+      - file: "crates/univ-ingest/tests/normalize_distances.rs"
+        name: "cosmicflows_groups_without_a_five_method_distance_are_direct_calibrations"
+        body: 7a98857d40f35c1e19816910273995849e8615df667d0f81265d81cbbfaef1ce
   - node: 01a19f22-2ad9-716e-876f-186d9b7a0c04
     reviewed: b3f786d959b07585023f2e30a6c4ffc3898a117f8be8bf926a5dd01f51e8b224
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "a_distance_in_h_inverse_mpc_or_for_a_stated_hubble_constant_keeps_that_constant"
-        body: 4ab93e5b3bf945c99784e7088fbbd30d45494d5b75f50825d772e5ae034c7b0c
+        body: 701bb78e23553e9d03ddf84f9b0b1f57d765c7b85fd95fd3aaf9a416dd614618
   - node: 01a19f22-2ad9-716e-876f-186e940da69e
     reviewed: 1d8bccb0d795a431d52ae687bf3690cf819d3e93c617f4818d20132cfa5726a5
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "a_distance_modulus_is_kept_as_published_beside_the_distance_derived_from_it"
         body: b8fb29edf5f3b5956a3b33d9c6dae8b36e583bc2a02c72287d70c6831f452d82
+      - file: "crates/univ-model/src/distance/convert.rs"
+        name: "a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval"
+        body: 2a6d5652015f70253dfaaf7d1ea7593131559a630247654c69263819d409a34a
   - node: 01a19f22-2ad9-716e-876f-187089f08fa0
     reviewed: 7a9ea3a907f131038f9a44583bb36bac3047f6bb5bf4e4bb2a0088ddb73caedf
     tests:
@@ -297,6 +306,9 @@ links:
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
         body: f2d697a5db9dc559ca25cb14fe5942c8f33975f2e53c6c24aa354424c829d11c
+      - file: "crates/univ-ingest/tests/normalize_stage.rs"
+        name: "a_failed_normalization_leaves_no_earlier_report_in_the_provenance"
+        body: 6e1453a5679b1f7aa6c64dab890499b22209b0cc3555e0ae07004c333f845bf8
   - node: 01a19f22-2ad9-716e-876f-18755300ea38
     reviewed: b1bb8aa84cdfe71b7be68a4b2e0ea1c658131ce34dcbb6f60e00ae8b860cacf6
     tests:
@@ -306,6 +318,9 @@ links:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "a_simulated_galaxy_and_an_unsuitable_redshift_are_left_out_and_counted"
         body: b6a9b20dd149cd5a1819c44904e639ad376cd082cf215fdaa575802851ead3d1
+      - file: "crates/univ-ingest/tests/normalize_rows.rs"
+        name: "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
+        body: 58b4f769505e894360d7e0f7464e4680ecb898f6a9650eed34d48683c5422e08
   - node: 01a19f22-2ad9-716e-876f-1877e0c274f2
     reviewed: 05ea7f696d8d63e80d345077a13b6c6efb2bc8ec3f246770e85de49e7562a492
     tests:
@@ -338,16 +353,31 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/structures.rs"
         name: "each_number_cites_its_paper_and_the_sentence_table_or_figure"
-        body: fcd4ec8b7d6cd83fc2f0df69d98fec3c729b388b199fb4301bc573e2d9e2d298
+        body: e87f6e08cca11882acd130f1cc676a26c13db581ba43c9c89b130f522d42a0ea
       - file: "crates/univ-ingest/tests/structures.rs"
         name: "a_quoted_sentence_must_hold_the_number_it_is_cited_for"
         body: 5771384099edb3cd0c83494647e6709ac5ae0f8237a6c222284118884d7c3097
+      - file: "crates/univ-ingest/tests/structures_numbers.rs"
+        name: "a_cited_number_is_a_whole_token_of_its_sentence"
+        body: 1f464b0b35e462dbdb4a11d4644661328df580a22528b8b71bb7748139cbc1a1
+      - file: "crates/univ-ingest/tests/structures_numbers.rs"
+        name: "a_form_as_published_must_stand_for_the_value"
+        body: 4c0c1c39d326ba9ec1df5558dc51ec344f0548befdc66d40e8ea0812ffb0b66e
+      - file: "crates/univ-ingest/tests/structures_numbers.rs"
+        name: "an_uncertainty_appears_in_its_citation_or_cites_its_own"
+        body: ca04af281f3be9cab9789e210846461b453a0e3c38ad603abb71305c9bacc5ce
+      - file: "crates/univ-ingest/tests/structures_numbers.rs"
+        name: "numbers_in_free_text_are_ones_the_file_cites"
+        body: 4bd6894ecf48944a10590e0d49ece4144e5ddee90324bdeb905a5d41e0612669
   - node: 01a19f22-2ad9-716e-876f-187dd6a97fba
     reviewed: 4a6c41db297c073de1c38ad96a3ef9a0a1e280917bc9ab39c64f4ea57abdd9b0
     tests:
       - file: "crates/univ-ingest/tests/structures.rs"
         name: "a_structure_geometry_is_a_univ_model_geometry_kind_in_a_named_frame"
         body: 1dfb03203fe7fb963e2e1d6a97885cff2a551276ca11b5b163bd90fbd9303811
+      - file: "crates/univ-ingest/tests/structures_numbers.rs"
+        name: "latitudes_and_longitudes_lie_in_range"
+        body: 0d2ef7cfff08b887b7f6111d673eff78f354bfcd9a7d7e0f2c930e22d348c9f5
   - node: 01a19f22-2ad9-716e-876f-187fc51a43e0
     reviewed: f3eed80409321274d58d18615200d70fc7989bf5d77f6b6570bc0a58c11e325c
     tests:
@@ -357,6 +387,9 @@ links:
       - file: "crates/univ-ingest/tests/structures.rs"
         name: "a_member_table_without_a_source_names_its_first_number"
         body: 6b89f799a939ce07818de8b8c97c6e1e8d0c82b06ff523714654769dde61b10e
+      - file: "crates/univ-ingest/tests/structures_numbers.rs"
+        name: "a_threshold_refusal_names_its_field_once_and_points_at_the_threshold"
+        body: b7487dd760f1857ab22d13076e62840a96fefdea11e4f011b520913ba7edbb6a
   - node: 01a19f22-2ad9-716e-876f-18814f7bf908
     reviewed: 072c728b5b75dad66bfc15bd1c4883ed569f420301f2badc3aee415b56535b6e
     tests:
