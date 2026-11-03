@@ -36,7 +36,6 @@ impl Sqlite {
         connection
             .execute_batch(univ_model::release::SCHEMA)
             .unwrap();
-        connection.execute_batch(SCHEMA_V3).unwrap();
         Self { connection }
     }
 
@@ -128,19 +127,6 @@ INSERT INTO releases VALUES (3, '2026-11-03T08:00:00Z', NULL, NULL,
   'rules', 'rule', 'name', '["hipparcos-2007"]', 13, 2, 1, 4, 1300);
 INSERT INTO latest VALUES (1, 2, '2026-11-02T08:30:00Z');
 "#;
-
-/// The tables schema v3 adds, as Univ Ingest's schema states them, for the tests to hold until
-/// univ-model's schema has them; `IF NOT EXISTS` leaves them as the schema made them after.
-pub const SCHEMA_V3: &str = "
-CREATE TABLE IF NOT EXISTS source_details (
-  release INTEGER NOT NULL, source INTEGER NOT NULL, bibcode TEXT, doi TEXT,
-  reference_note TEXT, sky TEXT, radial TEXT, PRIMARY KEY (release, source)
-) WITHOUT ROWID;
-CREATE TABLE IF NOT EXISTS structure_details (
-  release INTEGER NOT NULL, id TEXT NOT NULL, shape TEXT, derivation TEXT, outline TEXT,
-  rescaled TEXT, PRIMARY KEY (release, id)
-) WITHOUT ROWID;
-";
 
 /// Release 2's two sources: Hipparcos, fetched in two payloads with a fix and rows left out,
 /// and the researched structures, which have no primary reference and nothing fetched.
