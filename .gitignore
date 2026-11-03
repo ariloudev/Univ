@@ -4,3 +4,5 @@
 /node_modules/
 /.wrangler/
 .DS_Store
+/crates/univ-server/build/
+.dev.vars

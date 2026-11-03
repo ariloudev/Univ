@@ -33,6 +33,15 @@ blocks:
         title: "Add the univ-api and univ-server crates"
         detail: "univ-api (lib, native + wasm32) and univ-server (cdylib, workers-rs =0.8.7 with d1), with univ-server excluded from native builds through default-members. Done when `cargo build --workspace` passes natively and `cargo check -p univ-server --target wasm32-unknown-unknown` passes."
         state: active
+      - key: 01a1a2d9-6895-7417-8161-83a4d48016ed
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Add the univ-api and univ-server crates"
+        detail: "univ-api (lib, native + wasm32) and univ-server (cdylib + rlib, workers-rs =0.8.7 with d1). Done in caac3e1: `cargo build --workspace` passes natively and `cargo clippy -p univ-server --target wasm32-unknown-unknown -D warnings` passes. Change from the plan: workers-rs compiles natively, so univ-server stays an ordinary member; no default-members exclusion is needed."
+        state: done
   - key: 01a1a2cf-3cac-7599-8a58-56d08b399163
     id: t-problem
     kind: task
@@ -46,6 +55,15 @@ blocks:
         title: "RFC 9457 problem details"
         detail: "A Problem type in univ-api: application/problem+json, a `type` URI per kind of refusal, title, status, detail and extension members. Done when its native tests check the content type, the shape and that every type URI is distinct and absolute."
         state: open
+      - key: 01a1a2d9-6895-7417-8161-83a5dbafe755
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "RFC 9457 problem details"
+        detail: "Problem and ProblemType in univ-api: application/problem+json, `urn:univ:problem:<kind>` type URIs, and extensions that cannot overwrite the standard members. Done in caac3e1, with 4 native tests."
+        state: done
   - key: 01a1a2cf-3cac-7599-8a58-56d122cbbaaf
     id: t-router
     kind: task
@@ -59,6 +77,15 @@ blocks:
         title: "The /v1 router with CORS and a 404 problem"
         detail: "A route table under /v1. An unknown path answers 404 with a problem, every read response allows any origin, and an OPTIONS preflight is answered without credentials. Done when native tests cover AC-273–276 and the 404 problem."
         state: open
+      - key: 01a1a2d9-6895-7417-8161-83a67c9ddd53
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The /v1 router with CORS and a 404 problem"
+        detail: "The route table under /v1, a 404 route-not-found problem, a 405 that names the allowed methods, CORS on every response, and a preflight answered without credentials. Done in caac3e1, with 8 native tests (AC-273, AC-275, AC-276, AC-291)."
+        state: done
   - key: 01a1a2cf-3cac-7599-8a58-56d2b0d53e7d
     id: t-openapi
     kind: task
@@ -72,6 +99,15 @@ blocks:
         title: "OpenAPI 3.1 document from the route table"
         detail: "utoipa builds the document. /v1/openapi.json serves it, and each problem type is listed. Done when a native test shows the document's paths equal the router's routes exactly (AC-287), and the version is 3.1."
         state: open
+      - key: 01a1a2d9-6895-7417-8161-83a79221b23b
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "OpenAPI 3.1 document from the route table"
+        detail: "utoipa 6 builds the document, served at /v1/openapi.json, with a Problem schema whose `type` enum lists every problem URI. Done in caac3e1: the document's (method, path) pairs equal ROUTES exactly (AC-287), its version is 3.1.0, and every problem type is listed (AC-289)."
+        state: done
   - key: 01a1a2cf-3cac-7599-8a58-56d3d5fd8449
     id: t-worker
     kind: task
@@ -85,6 +121,15 @@ blocks:
         title: "The Worker entry and its wrangler.toml"
         detail: "univ-server binds DB (univ), LAYERS (univ-layers), RELEASES and the four rate-limit namespaces, reads OWNER_SECRET from .dev.vars (gitignored) and hands requests to univ-api. A first migration of univ-layers. worker-build is installed. Done when `wrangler dev` serves /v1/openapi.json locally."
         state: open
+      - key: 01a1a2d9-6895-7417-8161-83a8b760d64b
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The Worker entry and its wrangler.toml"
+        detail: "univ-server binds DB (univ), LAYERS (univ-layers), RELEASES and the four rate-limit namespaces, reads OWNER_SECRET from .dev.vars (gitignored) and hands requests to univ-api. A first migration of univ-layers. worker-build is installed. Done when `wrangler dev` serves /v1/openapi.json locally."
+        state: active
   - key: 01a1a2cf-3cac-7599-8a58-56d48d5ffe9b
     id: t-gates
     kind: task
