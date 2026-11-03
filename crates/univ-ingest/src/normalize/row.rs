@@ -3,6 +3,7 @@
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 
+use univ_model::cosmology::AssumedCosmology;
 use univ_model::distance::{Distance, DistanceError, DistanceKind, Method};
 use univ_model::entry::{
     CatalogueEntry, EntryError, Magnitude, NativePosition, Position, PositionErrors,
@@ -170,7 +171,7 @@ impl Row<'_, '_> {
                 kind_of_value,
                 how,
                 d.measure,
-                d.hubble_constant,
+                d.hubble_constant.map(AssumedCosmology::hubble),
             )
             .map_err(distance_reason)?;
             distances.push(distance);

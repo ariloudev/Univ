@@ -5,6 +5,7 @@ use std::fmt;
 
 use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
+use univ_model::cosmology::AssumedCosmology;
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty};
 
@@ -29,25 +30,82 @@ pub struct Cited {
     pub note: Option<String>,
 }
 
-/// The cosmology a number depends on: as stated in the file, or cited from the paper, whose
-/// quoted sentence then holds every number of `cosmology`.
+/// The cosmology a number depends on: the words of the file, stated there or cited from the
+/// paper (whose quoted sentence then holds every number of them), and the cosmology they state,
+/// typed.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(try_from = "RawAssumes")]
+pub struct Assumes {
+    /// The Hubble constant and densities the words state, read from `H0 = …` (or `h = …`, as
+    /// 100 h), `Ωm = …` and `ΩΛ = …`; none when they state no Hubble constant, as for a paper
+    /// that does not give its cosmology. Other parameters, such as q0, stay in the words.
+    pub cosmology: Option<AssumedCosmology>,
+    /// The words, as written.
+    pub stated: String,
+    pub cite: Option<Citation>,
+}
+
+/// The cosmology as written: words, or words with a citation.
+#[derive(Deserialize)]
 #[serde(untagged)]
-pub enum Assumes {
+enum RawAssumes {
     Stated(String),
     Cited { cosmology: String, cite: Citation },
 }
 
-impl Assumes {
-    /// The cosmology in words.
-    #[must_use]
-    pub fn cosmology(&self) -> &str {
-        match self {
-            Self::Stated(text)
-            | Self::Cited {
-                cosmology: text, ..
-            } => text,
+impl TryFrom<RawAssumes> for Assumes {
+    type Error = String;
+    fn try_from(raw: RawAssumes) -> Result<Self, String> {
+        let (stated, cite) = match raw {
+            RawAssumes::Stated(text) => (text, None),
+            RawAssumes::Cited { cosmology, cite } => (cosmology, Some(cite)),
+        };
+        Ok(Self {
+            cosmology: stated_cosmology(&stated)?,
+            stated,
+            cite,
+        })
+    }
+}
+
+/// The cosmology that `text` states with `symbol = number`: H0, or h as H0 / 100, and the
+/// densities Ωm (also ΩM, ΩM0) and ΩΛ (also ΩΛ0). Other symbols are left in the words.
+fn stated_cosmology(text: &str) -> Result<Option<AssumedCosmology>, String> {
+    let (mut hubble, mut matter, mut lambda) = (None, None, None);
+    for (at, _) in text.match_indices('=') {
+        let symbol = text[..at]
+            .trim_end()
+            .rsplit(|c: char| c.is_whitespace() || ",;:(".contains(c))
+            .next()
+            .unwrap_or("");
+        let after = text[at + 1..].trim_start();
+        let digits = after
+            .find(|c: char| !(c.is_ascii_digit() || c == '.'))
+            .unwrap_or(after.len());
+        let value = || {
+            after[..digits]
+                .parse::<f64>()
+                .map_err(|_| format!("{symbol} in {text:?} is not followed by a number"))
+        };
+        let (slot, number) = match symbol {
+            "H0" => (&mut hubble, value()?),
+            "h" => (&mut hubble, 100.0 * value()?),
+            "Ωm" | "ΩM" | "Ωm0" | "ΩM0" => (&mut matter, value()?),
+            "ΩΛ" | "ΩΛ0" => (&mut lambda, value()?),
+            _ => continue,
+        };
+        if slot.replace(number).is_some() {
+            return Err(format!("{text:?} states {symbol} twice"));
         }
+    }
+    match hubble {
+        Some(h) => AssumedCosmology::new(h, matter, lambda)
+            .map(Some)
+            .map_err(|e| format!("{text:?}: {e}")),
+        None if matter.is_some() || lambda.is_some() => {
+            Err(format!("{text:?} states densities but no Hubble constant"))
+        }
+        None => Ok(None),
     }
 }
 
@@ -89,7 +147,7 @@ impl TryFrom<RawCited> for Cited {
         }
         for (what, text) in [
             ("as_published", raw.as_published.as_deref()),
-            ("assumes", raw.assumes.as_ref().map(Assumes::cosmology)),
+            ("assumes", raw.assumes.as_ref().map(|a| a.stated.as_str())),
             ("note", raw.note.as_deref()),
         ] {
             if text.is_some_and(|t| t.trim().is_empty()) {

@@ -4,6 +4,7 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::cosmology::AssumedCosmology;
 use crate::position::{Epoch, Frame, Vec3};
 use crate::units::{Dimension, Unit};
 use crate::value::{KindOfValue, Quantity, Uncertainty, ValueError, positive};
@@ -46,9 +47,9 @@ pub struct GridGeometry {
     pub cell: f64,
     /// The position, in frame order (X, Y, Z), of the centre of the cell whose indices are all 0.
     pub origin: Vec3,
-    /// The Hubble constant in km s⁻¹ Mpc⁻¹ that the reconstruction assumed, where its source
-    /// states one: it turns h⁻¹ Mpc into the source's Mpc. `None` when no value is stated.
-    pub assumed_hubble_constant: Option<f64>,
+    /// The cosmology the reconstruction assumed, where its source states one: its Hubble
+    /// constant turns h⁻¹ Mpc into the source's Mpc. `None` when no value is stated.
+    pub assumed_cosmology: Option<AssumedCosmology>,
 }
 
 /// A grid geometry as read, before its checks.
@@ -61,7 +62,7 @@ struct RawGridGeometry {
     shape: [usize; 3],
     cell: f64,
     origin: Vec3,
-    assumed_hubble_constant: Option<f64>,
+    assumed_cosmology: Option<AssumedCosmology>,
 }
 
 impl TryFrom<RawGridGeometry> for GridGeometry {
@@ -75,7 +76,7 @@ impl TryFrom<RawGridGeometry> for GridGeometry {
             shape: raw.shape,
             cell: raw.cell,
             origin: raw.origin,
-            assumed_hubble_constant: raw.assumed_hubble_constant,
+            assumed_cosmology: raw.assumed_cosmology,
         };
         geometry.check()?;
         Ok(geometry)
@@ -119,7 +120,7 @@ impl GridGeometry {
         if Axis::XYZ.iter().any(|a| !self.axes.contains(a)) {
             return Err(GridError::Axes(self.axes));
         }
-        let hubble = self.assumed_hubble_constant.is_none_or(positive);
+        let hubble = self.assumed_cosmology.is_none_or(|a| a.check().is_ok());
         // A vector field holds three samples a cell, and that count must fit in memory.
         let samples = self
             .shape

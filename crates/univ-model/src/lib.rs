@@ -5,6 +5,7 @@
 //! no threads.
 
 pub mod cosmology;
+pub mod derive;
 pub mod distance;
 pub mod entry;
 pub mod geometry;

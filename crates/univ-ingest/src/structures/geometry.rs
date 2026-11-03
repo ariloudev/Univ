@@ -1,46 +1,16 @@
 //! A structure's position and geometry as its papers publish them: one of univ-model's geometry
-//! kinds, in a named frame, with every coordinate a cited value in its published unit. Turning
-//! them into a univ-model shape, which needs a cosmology for redshifts and velocities, is left to
-//! the pipeline.
+//! kinds, in a univ-model frame, with every coordinate a cited value in its published unit.
+//! Equatorial frames carry their equinox: FK4 B1950, FK5 J2000, or an equinox the paper does not
+//! state, which univ-model places as J2000 with the B1950 to J2000 angle as a systematic error.
+//! The epoch of extragalactic positions does not matter, having no proper motion. Turning them
+//! into a univ-model shape, which needs a cosmology for redshifts and velocities, is left to the
+//! pipeline.
 
 use serde::{Deserialize, Serialize};
 use univ_model::position::Frame;
 use univ_model::units::{Dimension, Unit};
 
 use super::cited::Cited;
-
-/// The frame a structure's coordinates are published in. Equatorial frames carry their equinox;
-/// the epoch of extragalactic positions does not matter, having no proper motion.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum StructureFrame {
-    Icrs,
-    Galactic,
-    Supergalactic,
-    #[serde(rename = "fk5_j2000")]
-    Fk5J2000,
-    /// FK4 at equinox B1950, which univ-model does not yet rotate: the pipeline precesses it.
-    #[serde(rename = "fk4_b1950")]
-    Fk4B1950,
-    /// Equatorial coordinates whose paper does not state the equinox. Kept as published: B1950
-    /// and J2000 differ by up to about a degree here, which the pipeline must carry as part of
-    /// the position's uncertainty.
-    EquatorialEquinoxUnstated,
-}
-
-impl StructureFrame {
-    /// The univ-model frame, where univ-model has it.
-    #[must_use]
-    pub fn model(self) -> Option<Frame> {
-        match self {
-            Self::Icrs => Some(Frame::Icrs),
-            Self::Galactic => Some(Frame::Galactic),
-            Self::Supergalactic => Some(Frame::Supergalactic),
-            Self::Fk5J2000 => Some(Frame::Fk5J2000),
-            Self::Fk4B1950 | Self::EquatorialEquinoxUnstated => None,
-        }
-    }
-}
 
 /// A distance along the line of sight as published: a redshift, a recession velocity or a
 /// distance.
@@ -135,7 +105,7 @@ pub enum Coordinates {
     /// Cartesian coordinates, all three in one unit: a length, h⁻¹ Mpc, or a velocity standing
     /// for a distance as in the Cosmicflows papers.
     Cartesian {
-        frame: StructureFrame,
+        frame: Frame,
         x: Cited,
         y: Cited,
         z: Cited,
@@ -143,7 +113,7 @@ pub enum Coordinates {
     /// A longitude and latitude, with the distance along the line of sight where published. At a
     /// pole the longitude is undefined and left out.
     Spherical {
-        frame: StructureFrame,
+        frame: Frame,
         lon: Option<Cited>,
         lat: Cited,
         radial: Option<Radial>,
@@ -157,7 +127,7 @@ pub enum Coordinates {
 #[serde(deny_unknown_fields)]
 struct RawCoordinates {
     #[serde(default)]
-    frame: Option<StructureFrame>,
+    frame: Option<Frame>,
     #[serde(default)]
     observer: bool,
     #[serde(default)]
@@ -241,7 +211,7 @@ impl<'de> Deserialize<'de> for Coordinates {
 impl Coordinates {
     /// The frame, or none for the observer, who is at the origin of all.
     #[must_use]
-    pub fn frame(&self) -> Option<StructureFrame> {
+    pub fn frame(&self) -> Option<Frame> {
         match self {
             Self::Cartesian { frame, .. } | Self::Spherical { frame, .. } => Some(*frame),
             Self::Observer => None,

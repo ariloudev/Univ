@@ -31,7 +31,7 @@ const PUBLISHED: Published = Published {
     cells: [128; 3],
     cell: 1000.0 / 128.0,
     origin: [-500.0 + 500.0 / 128.0; 3],
-    assumed_hubble_constant: None,
+    assumed_cosmology: None,
 };
 
 /// Each field: its mean member, its standard-deviation member, its field in the source

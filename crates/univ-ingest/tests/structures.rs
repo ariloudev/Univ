@@ -11,11 +11,11 @@ use std::path::{Path, PathBuf};
 
 use tempfile::TempDir;
 use univ_ingest::structures::{
-    Coordinates, Locator, MemberSource, Side, Structure, StructureError, StructureFrame,
-    StructureGeometry, read_all,
+    Coordinates, Locator, MemberSource, Side, Structure, StructureError, StructureGeometry,
+    read_all,
 };
 use univ_model::geometry::{Geometry, Member, Primitive};
-use univ_model::position::Rotation;
+use univ_model::position::{Frame, Rotation};
 use univ_model::value::KindOfValue;
 
 /// The structure files of the repository.
@@ -215,12 +215,17 @@ fn a_structure_geometry_is_a_univ_model_geometry_kind_in_a_named_frame() {
         }
     }
     assert!(seen.len() >= 3, "{seen:?}");
-    // A frame is one univ-model rotates, except B1950, kept as published for the pipeline.
+    // Every frame is a univ-model frame, B1950 and an unstated equinox among them.
+    let frames: Vec<Frame> =
+        serde_norway::from_str("[supergalactic, fk4_b1950, equatorial_equinox_unstated]").unwrap();
     assert_eq!(
-        StructureFrame::Supergalactic.model(),
-        Some(univ_model::position::Frame::Supergalactic)
+        frames,
+        [
+            Frame::Supergalactic,
+            Frame::Fk4B1950,
+            Frame::EquatorialEquinoxUnstated
+        ]
     );
-    assert_eq!(StructureFrame::Fk4B1950.model(), None);
     // An unknown kind or frame is refused.
     let e = refusal(&VALID.replace("frame: supergalactic", "frame: ecliptic"));
     assert_eq!(e.field, "position.frame");
