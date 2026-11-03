@@ -2239,7 +2239,13 @@ dependencies = [
 name = "xtask"
 version = "0.1.0"
 dependencies = [
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "serde_norway",
+ "sha2",
  "tempfile",
+ "univ-model",
 ]
 
 [[package]]

@@ -2,8 +2,10 @@
 //!
 //! - `cargo xtask check` runs every gate in order and stops at the first that fails.
 //! - `cargo xtask lines` reports each `.rs` file over the 500-line limit.
+//! - `cargo xtask science <release-dir>` runs the science checks of a built release.
 
 mod lines;
+mod science;
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -110,8 +112,12 @@ fn main() -> ExitCode {
     let passed = match std::env::args().nth(1).as_deref() {
         Some("check") => check(&root),
         Some("lines") => lines_pass(&root),
+        Some("science") => {
+            let args: Vec<String> = std::env::args().skip(2).collect();
+            science::run(&root, &args)
+        }
         _ => {
-            eprintln!("usage: cargo xtask <check|lines>");
+            eprintln!("usage: cargo xtask <check|lines|science <release-dir>>");
             return ExitCode::from(2);
         }
     };

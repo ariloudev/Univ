@@ -28,6 +28,9 @@ Run them from this directory.
   first, and must pass before a merge. `loft verify` runs on the publish branch only, and the
   summary names any gate it skipped.
 - `cargo xtask lines` lists every `.rs` file over 500 lines.
+- `cargo xtask science <release-dir>` loads a built release's D1 rows into a scratch SQLite
+  database and runs the cited checks of `rules/science-checks.yaml`, one line each; it exits
+  non-zero on any FAIL. `--db <file>` keeps the database in a file and reuses it on the next run.
 - `cargo fmt` formats the workspace. Nothing formats automatically, and the gate fails on
   unformatted code.
 
