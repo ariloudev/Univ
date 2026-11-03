@@ -47,6 +47,7 @@ terms:
     A&AS 143, 23. Cite Tully et al. 2023, ApJ 944, 94.
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     CDS allows use of VizieR data in a scientific context with citation of the authors and
     publisher, and the ReadMe and landing-page metadata carry no catalogue-specific licence. The AAS

@@ -45,6 +45,7 @@ terms:
     bibliographic code, as the team's README terms (1) and (2) ask.
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     The team README (http://tdc-www.cfa.harvard.edu/2mrs/2mrs_readme.html) asks "(3) Please do not
     redistribute any of these files. This will help us ensure that all users receive the most

@@ -9,8 +9,8 @@ use std::path::PathBuf;
 
 use tempfile::TempDir;
 use univ_ingest::source::{
-    Access, DefinitionError, Field, MAX_FIXES, RedistributionStatus, ScaleDomain, SourceDefinition,
-    read_all,
+    Access, DefinitionError, Field, MAX_FIXES, RedistributionStatus, Review, ScaleDomain,
+    SourceDefinition, read_all,
 };
 use univ_model::position::Frame;
 use univ_model::units::Unit;
@@ -39,6 +39,7 @@ terms:
   credit: "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg."
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: "The terms permit use with the credit above."
 scale_domain: cosmic_web
 mirrors:
@@ -214,6 +215,32 @@ fn the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning() {
     assert_eq!(unreasoned.field, "redistribution.reasoning");
     let unquoted = refusal(&VALID.replace("quote: \"The data are free to use.\"", "quote: \"\""));
     assert_eq!(unquoted.field, "terms.quote");
+}
+
+#[test]
+fn the_redistribution_review_is_typed_and_every_definition_states_it() {
+    assert_eq!(
+        read(VALID).unwrap().redistribution.review,
+        Review::Provisional
+    );
+    let settled = read(&VALID.replace("review: provisional", "review: settled")).unwrap();
+    assert_eq!(settled.redistribution.review, Review::Settled);
+    let unknown = refusal(&VALID.replace("review: provisional", "review: maybe"));
+    assert_eq!(unknown.field, "redistribution.review");
+    let missing = refusal(&VALID.replace("  review: provisional\n", ""));
+    assert_eq!(missing.field, "redistribution");
+    assert!(missing.problem.contains("review"), "{}", missing.problem);
+    // Every definition of the first release is still provisional: its prose said so, and the
+    // field now carries it.
+    for d in read_all(&PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../sources")).unwrap() {
+        assert_eq!(d.redistribution.review, Review::Provisional, "{}", d.id);
+        assert!(
+            d.redistribution
+                .reasoning
+                .to_lowercase()
+                .contains("provisional")
+        );
+    }
 }
 
 #[test]

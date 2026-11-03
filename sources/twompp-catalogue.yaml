@@ -49,6 +49,7 @@ terms:
     A&AS 143, 23. Cite Lavaux & Hudson 2011, MNRAS 416, 2840.
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     CDS allows use of VizieR data in a scientific context with citation of the authors and
     publisher, and neither the ReadMe nor the landing-page metadata carries a copyright or licence

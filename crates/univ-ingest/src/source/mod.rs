@@ -188,7 +188,44 @@ pub struct Terms {
 #[serde(deny_unknown_fields)]
 pub struct Redistribution {
     pub status: RedistributionStatus,
+    /// Whether the judgement is provisional or settled. Every definition states it.
+    pub review: Review,
     pub reasoning: String,
+}
+
+/// How far the redistribution judgement has been reviewed. A local build reports the sources
+/// whose judgement is provisional and builds with them; refusing them is the public
+/// deployment's gate, not a local build's.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Review {
+    /// Judged from what could be read so far, to be judged again before any public deployment.
+    Provisional,
+    /// Judged again and settled.
+    Settled,
+}
+
+impl Review {
+    /// The review as a definition writes it.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Provisional => "provisional",
+            Self::Settled => "settled",
+        }
+    }
+}
+
+impl RedistributionStatus {
+    /// The status as a definition writes it.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Permitted => "permitted",
+            Self::PermittedWithCredit => "permitted_with_credit",
+            Self::Forbidden => "forbidden",
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]

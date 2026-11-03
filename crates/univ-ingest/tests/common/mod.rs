@@ -157,7 +157,7 @@ pub fn read_sources() -> Vec<SourceDefinition> {
 /// written to `dir` and read as a run reads it.
 pub fn definition(dir: &tempfile::TempDir, access: &str, mirror: &str) -> SourceDefinition {
     let yaml = format!(
-        "id: test-galaxies\ntitle: t\nprovider: p\naccess:\n{access}\ncuts: []\ncolumns:\n  - {{ column: ra, field: right_ascension, unit: degree }}\n  - {{ column: dec, field: declination, unit: degree }}\nframe: icrs\nepoch: 2000.0\ncitation: c\nterms: {{ url: u, quote: q, credit: c }}\nredistribution: {{ status: permitted, reasoning: r }}\nscale_domain: cosmic_web\nmirrors: [\"{mirror}\"]\n"
+        "id: test-galaxies\ntitle: t\nprovider: p\naccess:\n{access}\ncuts: []\ncolumns:\n  - {{ column: ra, field: right_ascension, unit: degree }}\n  - {{ column: dec, field: declination, unit: degree }}\nframe: icrs\nepoch: 2000.0\ncitation: c\nterms: {{ url: u, quote: q, credit: c }}\nredistribution: {{ status: permitted, review: provisional, reasoning: r }}\nscale_domain: cosmic_web\nmirrors: [\"{mirror}\"]\n"
     );
     let path = dir.path().join("test-galaxies.yaml");
     std::fs::write(&path, yaml).expect("written");

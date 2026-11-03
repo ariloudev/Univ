@@ -48,6 +48,7 @@ terms:
     MNRAS 355, 747)."
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     CDS gives VizieR data as free of usage in a scientific context provided the original authors and
     publication are cited, and neither the ReadMe nor the landing-page metadata carries a

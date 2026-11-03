@@ -40,6 +40,7 @@ terms:
   credit: "Cite Courtois et al. 2025, A&A 701, A187 (doi:10.1051/0004-6361/202553677)."
 redistribution:
   status: permitted_with_credit
+  review: provisional
   reasoning: >-
     The Cosmicflows page states no licence, copyright or terms, only the request to cite the
     article; the A&A article's CC BY 4.0 covers the article, not the file. With the terms silent,
