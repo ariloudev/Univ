@@ -84,7 +84,7 @@ fn an_sql_or_adql_query_is_split_by_its_chunk_placeholders() {
 
 #[test]
 fn a_file_source_has_no_chunk_requests() {
-    let d = definition("  method: file\n  path: grids/cf4.npz");
+    let d = definition("  method: files\n  files: [{ path: grids/cf4.npz }]");
     assert_eq!(chunk_requests(&d), []);
 }
 

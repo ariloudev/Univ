@@ -68,21 +68,39 @@ pub async fn acquire<C: Clock>(
         Fetched::OnDisk(_) => Ok(()),
     };
 
-    if let Access::File { path, size, sha256 } = &definition.access {
-        let name = Path::new(path)
-            .file_name()
-            .map_or_else(|| "file".into(), ToOwned::to_owned);
-        let dest = dir.join(name);
-        let expected = Expected {
-            size: *size,
-            sha256: sha256.clone(),
-        };
-        record(
-            &fetcher
-                .file(source, path, &definition.mirrors, path, &dest, &expected)
-                .await?,
-        )?;
-        return Ok(Acquired { files: vec![dest] });
+    match &definition.access {
+        Access::Files { files } => {
+            let mut on_disk = Vec::new();
+            for file in files {
+                let name = Path::new(&file.path)
+                    .file_name()
+                    .map_or_else(|| "file".into(), ToOwned::to_owned);
+                let dest = dir.join(name);
+                let expected = Expected {
+                    size: file.size,
+                    sha256: file.sha256.clone(),
+                };
+                let outcome = fetcher
+                    .file(
+                        source,
+                        &file.path,
+                        &definition.mirrors,
+                        &file.path,
+                        &dest,
+                        &expected,
+                    )
+                    .await?;
+                record(&outcome)?;
+                on_disk.push(dest);
+            }
+            return Ok(Acquired { files: on_disk });
+        }
+        Access::Repository { path } => {
+            return Ok(Acquired {
+                files: vec![PathBuf::from(path)],
+            });
+        }
+        _ => {}
     }
 
     let check = |body: &[u8]| check_answer(definition, body);
@@ -126,24 +144,37 @@ pub async fn acquire<C: Clock>(
     } else {
         None
     };
-    if let Some((expected, basis)) = expected {
-        let mut found = 0;
-        for file in &files {
-            let body = std::fs::read(file).map_err(disk)?;
-            let table = read_table(&definition.access, &body)
-                .map_err(|error| unreadable(source, file, error))?;
-            found += table.rows.len() as u64;
-        }
-        if found != expected {
-            return Err(AcquireError::Incomplete {
-                source_id: source.clone(),
-                expected,
-                found,
-                basis,
-            });
-        }
-    }
+    check_rows(definition, &files, expected)?;
     Ok(Acquired { files })
+}
+
+/// Refuses chunks whose rows differ from the `expected` count, read on the given basis.
+fn check_rows(
+    definition: &SourceDefinition,
+    files: &[PathBuf],
+    expected: Option<(u64, &'static str)>,
+) -> Result<(), AcquireError> {
+    let Some((expected, basis)) = expected else {
+        return Ok(());
+    };
+    let source = &definition.id;
+    let mut found = 0;
+    for file in files {
+        let body = std::fs::read(file).map_err(|e| unreadable(source, file, e.to_string()))?;
+        let table = read_table(&definition.access, &body)
+            .map_err(|error| unreadable(source, file, error))?;
+        found += table.rows.len() as u64;
+    }
+    if found == expected {
+        Ok(())
+    } else {
+        Err(AcquireError::Incomplete {
+            source_id: source.clone(),
+            expected,
+            found,
+            basis,
+        })
+    }
 }
 
 fn unreadable(source: &SourceId, file: &Path, error: String) -> AcquireError {

@@ -66,7 +66,7 @@ pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
         }
         Access::SkyserverSql { query, chunks, .. } => split(query, *chunks, skyserver_suffix),
         Access::Tap { query, chunks, .. } => split(query, *chunks, tap_suffix),
-        Access::File { .. } => Vec::new(),
+        Access::Files { .. } | Access::Repository { .. } => Vec::new(),
     }
 }
 
@@ -195,7 +195,9 @@ pub fn read_table(access: &Access, body: &[u8]) -> Result<Table, String> {
     match access {
         Access::VizierTsv { .. } => read_vizier_tsv(text),
         Access::SkyserverSql { .. } | Access::Tap { .. } => read_csv(text),
-        Access::File { .. } => Err("a file is read by its own reader".to_owned()),
+        Access::Files { .. } | Access::Repository { .. } => {
+            Err("files are read by their own readers".to_owned())
+        }
     }
 }
 

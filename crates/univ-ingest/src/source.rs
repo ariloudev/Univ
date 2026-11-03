@@ -71,14 +71,22 @@ pub enum Access {
         #[serde(default)]
         count: Option<String>,
     },
-    /// A file at `path` under each mirror, with the size and SHA-256 its provider publishes.
-    File {
-        path: String,
-        #[serde(default)]
-        size: Option<u64>,
-        #[serde(default)]
-        sha256: Option<String>,
-    },
+    /// Files under each mirror, each fetched whole and resumable.
+    Files { files: Vec<RemoteFile> },
+    /// Files kept in this repository under `path`, such as the researched structures, which are
+    /// read from their papers rather than fetched.
+    Repository { path: String },
+}
+
+/// A file under each mirror, with the size and SHA-256 its provider publishes, where it does.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RemoteFile {
+    pub path: String,
+    #[serde(default)]
+    pub size: Option<u64>,
+    #[serde(default)]
+    pub sha256: Option<String>,
 }
 
 /// Inclusive ranges `from..from+step-1`, … up to `to`, of an integer column: they meet without
@@ -133,6 +141,19 @@ pub enum Field {
     SupergalacticX,
     SupergalacticY,
     SupergalacticZ,
+    PhotometricRedshift,
+    PhotometricRedshiftError,
+    /// A density contrast δ, or its standard deviation, on a grid.
+    Density,
+    DensityError,
+    /// A radial peculiar velocity, or its standard deviation, on a grid.
+    RadialVelocity,
+    RadialVelocityError,
+    /// A three-component peculiar velocity, or its standard deviation, on a grid.
+    VelocityVector,
+    VelocityVectorError,
+    /// The label of the basin of attraction a grid cell belongs to.
+    BasinLabel,
 }
 
 /// The terms of use a source is published under.
@@ -258,7 +279,7 @@ impl SourceDefinition {
         blank("terms.credit", &self.terms.credit)?;
         blank("redistribution.reasoning", &self.redistribution.reasoning)?;
         self.access.check()?;
-        if self.columns.is_empty() {
+        if self.columns.is_empty() && !matches!(self.access, Access::Repository { .. }) {
             return Err(("columns".to_owned(), "lists no column".to_owned()));
         }
         let mut seen = HashSet::new();
@@ -337,12 +358,24 @@ impl Access {
             Self::SkyserverSql { chunks: 0, .. } | Self::Tap { chunks: 0, .. } => {
                 Some(("access.chunks", "is zero"))
             }
-            Self::File { path, .. } if path.trim().is_empty() => Some(("access.path", "is empty")),
-            Self::File {
-                sha256: Some(digest),
-                ..
-            } if digest.len() != 64 || !digest.bytes().all(|b| b.is_ascii_hexdigit()) => {
-                Some(("access.sha256", "is not 64 hexadecimal digits"))
+            Self::Files { files } if files.is_empty() => Some(("access.files", "lists no file")),
+            Self::Files { files } if files.iter().any(|f| f.path.trim().is_empty()) => {
+                Some(("access.files", "holds a file with an empty path"))
+            }
+            Self::Files { files }
+                if files.iter().any(|f| {
+                    f.sha256
+                        .as_ref()
+                        .is_some_and(|d| d.len() != 64 || !d.bytes().all(|b| b.is_ascii_hexdigit()))
+                }) =>
+            {
+                Some((
+                    "access.files",
+                    "holds a SHA-256 that is not 64 hexadecimal digits",
+                ))
+            }
+            Self::Repository { path } if path.trim().is_empty() => {
+                Some(("access.path", "is empty"))
             }
             _ => None,
         };
