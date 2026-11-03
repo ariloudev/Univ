@@ -165,3 +165,22 @@ fn an_unknown_grid_or_field_answers_404_naming_it() {
         assert_eq!(problem["field"], field);
     }
 }
+
+#[test]
+fn the_tile_format_gives_the_byte_layout_of_each_encoding_the_release_uses() {
+    let db = db();
+    db.put(
+        "releases/2/tiles/stars/manifest.json",
+        r#"{"encoding":{"version":1},"nodes":[]}"#,
+    );
+    let (response, format) = db.get_json("/v1/tile-format", "");
+    assert_eq!(response.status, 200, "{format}");
+    let encodings = format["encodings"].as_array().unwrap();
+    assert_eq!(encodings.len(), 1, "both domains use version 1");
+    assert_eq!(encodings[0]["version"], 1);
+    assert!(encodings[0]["header_bytes"].as_u64().unwrap() > 0);
+    assert!(
+        format["manifest_schema"]["properties"]["nodes"].is_object(),
+        "{format}"
+    );
+}

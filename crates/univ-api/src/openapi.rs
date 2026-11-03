@@ -32,9 +32,10 @@ use crate::problem::{Problem, ProblemDocument, ProblemType};
         crate::bulk::tile,
         crate::grids::list,
         crate::grids::header,
-        crate::grids::samples
+        crate::grids::samples,
+        crate::bulk::tile_format
     ),
-    components(schemas(ProblemDocument, ProblemType))
+    components(schemas(ProblemDocument, ProblemType, univ_model::tile::manifest::TileManifest))
 )]
 struct ApiDoc;
 

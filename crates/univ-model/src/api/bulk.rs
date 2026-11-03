@@ -3,6 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::tile::format::EncodingLayout;
 use crate::units::Unit;
 
 /// The scale domains of a release.
@@ -69,4 +70,17 @@ pub struct GridField {
     pub unit: Unit,
     /// The path of its samples in the same release.
     pub samples: String,
+}
+
+/// How to decode a release's tiles (decode-the-tile-format): the byte layout of each tile
+/// encoding its scale domains use, and the schema of a tile manifest.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct TileFormat {
+    pub release: u32,
+    /// The byte layout of each encoding version the release's tiles use, by version.
+    pub encodings: Vec<EncodingLayout>,
+    /// The JSON Schema of a tile manifest, as the OpenAPI document gives it.
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
+    pub manifest_schema: serde_json::Value,
 }

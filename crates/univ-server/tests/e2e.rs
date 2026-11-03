@@ -326,3 +326,12 @@ fn the_grids_are_listed_and_an_unknown_grid_answers_404() {
     assert_eq!(missing.status(), StatusCode::NOT_FOUND);
     assert_eq!(json(missing)["id"], "nowhere");
 }
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn the_tile_format_describes_each_encoding_the_release_uses() {
+    let format = json(get("/v1/tile-format"));
+    assert_eq!(format["release"], 2);
+    assert_eq!(format["encodings"][0]["version"], 1);
+    assert!(format["manifest_schema"]["properties"]["nodes"].is_object());
+}

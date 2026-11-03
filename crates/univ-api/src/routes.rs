@@ -28,6 +28,7 @@ pub enum Endpoint {
     Grids,
     GridHeader,
     GridSamples,
+    TileFormat,
 }
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
@@ -39,7 +40,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 15] = [
+pub static ROUTES: [Route; 16] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -115,6 +116,11 @@ pub static ROUTES: [Route; 15] = [
         path: "/v1/grids/{id}/fields/{field}",
         endpoint: Endpoint::GridSamples,
     },
+    Route {
+        method: Method::Get,
+        path: "/v1/tile-format",
+        endpoint: Endpoint::TileFormat,
+    },
 ];
 
 /// The answer of `endpoint` to `request`, a refusal included.
@@ -148,6 +154,7 @@ async fn answer<B: Backend>(
             .await
         }
         Endpoint::Grids => grids::list(request, backend).await,
+        Endpoint::TileFormat => bulk::tile_format(request, backend).await,
         Endpoint::GridHeader => grids::header(request, param(params, "id"), backend).await,
         Endpoint::GridSamples => {
             grids::samples(

@@ -7,12 +7,15 @@
 //! the release `latest` names, which a cache must not keep; a manifest read unpinned is
 //! answered, but must be revalidated.
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 
 use serde::Deserialize;
 use serde_json::json;
-use univ_model::api::bulk::{ScaleDomainList, ScaleDomainSummary};
+use univ_model::api::bulk::{ScaleDomainList, ScaleDomainSummary, TileFormat};
+use univ_model::tile::format::layout;
+use univ_model::tile::manifest::TileManifest;
 use univ_model::units::scale_domain_unit;
+use utoipa::PartialSchema;
 
 use crate::backend::{Backend, Row, column, first};
 use crate::http::{Body, Request, Response};
@@ -22,13 +25,23 @@ use crate::releases::{RELEASE_PARAM, pinned, resolve};
 /// The `Cache-Control` of what a pinned read answers: a release's files never change.
 pub const IMMUTABLE: &str = "public, max-age=31536000, immutable";
 
-/// The nodes a scale domain's tile manifest holds: each address with its tile's SHA-256.
-pub struct TileNodes(HashMap<String, String>);
+/// What is kept of a scale domain's tile manifest: its encoding version, and each node's
+/// address with its tile's SHA-256.
+pub struct TileNodes {
+    version: u32,
+    nodes: HashMap<String, String>,
+}
 
 /// What is read of a tile manifest to serve its tiles.
 #[derive(Deserialize)]
 struct ManifestNodes {
+    encoding: ManifestEncoding,
     nodes: Vec<ManifestNode>,
+}
+
+#[derive(Deserialize)]
+struct ManifestEncoding {
+    version: u32,
 }
 
 #[derive(Deserialize)]
@@ -126,7 +139,7 @@ pub async fn tile<B: Backend>(
 ) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
     let nodes = tile_nodes(backend, release, name).await?;
-    let Some(sha256) = nodes.0.get(address) else {
+    let Some(sha256) = nodes.nodes.get(address) else {
         return Err(Problem::new(
             ProblemType::TileNotFound,
             format!("The {name} tile manifest of release {release} holds no node {address:?}."),
@@ -150,6 +163,51 @@ pub async fn tile<B: Backend>(
         .with_header("etag", &format!("\"{sha256}\""))
         .with_body(Body::Object(key));
     Ok(pinned(response, release))
+}
+
+/// Describes how to decode the tiles of the release the request reads.
+///
+/// # Errors
+///
+/// A problem answer: the release refused, an encoding version this server cannot describe
+/// (500), or the release unreadable.
+#[utoipa::path(
+    get,
+    path = "/v1/tile-format",
+    params(("release" = Option<u32>, Query, description = "The release to read; latest when absent")),
+    responses((status = 200, description = "The byte layout of each encoding the release's tiles use, and the tile manifest's schema", body = TileFormat))
+)]
+pub async fn tile_format<B: Backend>(request: &Request, backend: &B) -> Result<Response, Problem> {
+    let release = resolve(request, backend).await?;
+    let mut versions = BTreeSet::new();
+    for row in domain_rows(backend, release).await? {
+        let name: String = column(&row, "name")?;
+        versions.insert(tile_nodes(backend, release, &name).await?.version);
+    }
+    let encodings = versions
+        .into_iter()
+        .map(|version| {
+            layout(version).ok_or_else(|| {
+                Problem::new(
+                    ProblemType::InternalError,
+                    format!("Release {release} uses tile encoding {version}, which this server cannot describe."),
+                )
+            })
+        })
+        .collect::<Result<Vec<_>, Problem>>()?;
+    let manifest_schema =
+        serde_json::to_value(<TileManifest as PartialSchema>::schema()).map_err(|error| {
+            Problem::new(
+                ProblemType::InternalError,
+                format!("The tile manifest's schema did not serialize: {error}."),
+            )
+        })?;
+    let format = TileFormat {
+        release,
+        encodings,
+        manifest_schema,
+    };
+    Ok(pinned(Response::json(&format)?, release))
 }
 
 /// The response, cacheable for good when the request pinned its release, and revalidated on
@@ -229,13 +287,14 @@ async fn tile_nodes<B: Backend>(
             format!("The tile manifest {key} did not read: {error}."),
         )
     })?;
-    let nodes = TileNodes(
-        manifest
+    let nodes = TileNodes {
+        version: manifest.encoding.version,
+        nodes: manifest
             .nodes
             .into_iter()
             .map(|node| (node.address, node.sha256))
             .collect(),
-    );
+    };
     Ok(backend.kept().tile_nodes.keep(kept_key, nodes))
 }
 
