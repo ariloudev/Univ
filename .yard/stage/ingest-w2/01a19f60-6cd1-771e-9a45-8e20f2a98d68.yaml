@@ -24,6 +24,15 @@ blocks:
         title: "Source definitions: schema and validation"
         detail: "`sources/<id>.yaml` read into a typed definition: id, title, provider, access, query, cuts, columns with units, frame, epoch, citation, terms, credit, scale domain, mirrors, fixes and redistribution status with quoted terms and reasoning. Done when tests show an incomplete definition, or one with an unknown unit, frame or scale domain, refused with its file and field named (AC-1 to AC-9), and a forbidden source blocked from a release."
         state: active
+      - key: 01a19f68-c1d3-71dc-9d65-3802d9258146
+        at: 2026-11-03T03:16:45Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Source definitions: schema and validation"
+        detail: "Done in `source.rs`, with 11 tests in `tests/source_definitions.rs`. A typed definition with `deny_unknown_fields`. Errors name the file and the field path (e.g. `columns[2].unit`) through serde_path_to_error. Also checked: blank fields, an id that matches the file name, a `{chunk}` placeholder in chunked queries, the mirror scheme, and the epoch. `publishable()` refuses a forbidden source, quoting its terms."
+        state: done
   - key: 01a19f60-6cd1-771e-9a45-8e23d1400782
     id: w2-t2-events
     kind: task
@@ -37,6 +46,15 @@ blocks:
         title: "Run events"
         detail: "Typed events for W3 to render: Get, Hit, Err, Resumed, Restarted, stage start and end, and bytes received. Done when the fetcher emits them through a sink and a recording sink sees them in order in tests."
         state: open
+      - key: 01a19f68-c1d3-71dc-9d65-380373d88584
+        at: 2026-11-03T03:16:45Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run events"
+        detail: "Typed events for W3 to render: Get, Hit, Err, Resumed, Restarted, stage start and end, and bytes received. Done when the fetcher emits them through a sink and a recording sink sees them in order in tests."
+        state: active
   - key: 01a19f60-6cd1-771e-9a45-8e248b2fb7fe
     id: w2-t3-fetch
     kind: task
@@ -50,6 +68,15 @@ blocks:
         title: "Durable fetcher: retries, mirrors and chunks"
         detail: "At least 4 retries per mirror, with waits doubling from 2 s on an injected clock. A mirror that fails is skipped for the rest of the run. Chunks are written as `.part` then renamed, and a chunk on disk is never fetched again. Done when mock-server tests cover AC-14 to AC-18."
         state: open
+      - key: 01a19f68-c1d3-71dc-9d65-38041fe1dad8
+        at: 2026-11-03T03:16:45Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Durable fetcher: retries, mirrors and chunks"
+        detail: "At least 4 retries per mirror, with waits doubling from 2 s on an injected clock. A mirror that fails is skipped for the rest of the run. Chunks are written as `.part` then renamed, and a chunk on disk is never fetched again. Done when mock-server tests cover AC-14 to AC-18."
+        state: active
   - key: 01a19f60-6cd1-771e-9a45-8e251fd8fbfe
     id: w2-t4-resume
     kind: task

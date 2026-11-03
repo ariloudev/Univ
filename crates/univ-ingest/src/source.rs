@@ -183,7 +183,7 @@ impl SourceDefinition {
             problem,
         };
         let text = fs::read_to_string(file).map_err(|e| fail("(file)", e.to_string()))?;
-        let document = serde_yaml_ng::Deserializer::from_str(&text);
+        let document = serde_norway::Deserializer::from_str(&text);
         let definition: Self = serde_path_to_error::deserialize(document).map_err(|e| {
             let path = e.path().to_string();
             // The YAML error may already lead with the field; say it once.

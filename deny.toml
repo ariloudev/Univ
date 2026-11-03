@@ -18,6 +18,12 @@ confidence-threshold = 0.9
 # The allow-list is policy for crates to come, so an entry no crate uses yet is not a warning.
 unused-allowed-license = "allow"
 
+# The Mozilla root certificates that reqwest's TLS verifier ships are data under the permissive
+# CDLA-Permissive-2.0, which asks only that the licence text travel with the data.
+[[licenses.exceptions]]
+crate = "webpki-root-certs"
+allow = ["CDLA-Permissive-2.0"]
+
 [licenses.private]
 # The workspace's own crates are not published.
 ignore = true
