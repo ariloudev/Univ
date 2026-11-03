@@ -19,7 +19,7 @@ use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
 
 pub use compare::{COVERAGE, CatalogueCheck, Coverage, CoverageRule, GridSky, compare};
-pub use dense::{DenseAt, DenseCheck, DensePlace, dense_places};
+pub use dense::{DenseAt, DenseCheck, DensePlace, OffGrid, dense_places};
 pub use region::{Region, on_grid, on_side, region, scalar};
 
 use crate::structures::{Coordinates, GridOutline, OutlineTest, Side, Structure, Threshold};

@@ -42,6 +42,16 @@ pub struct DenseCheck {
     pub on_grid: usize,
     /// The dense places the region holds, by name.
     pub held: Vec<String>,
+    /// The dense places that could not be put on the grid, each with why: `given − on_grid`
+    /// of them, none dropped unsaid.
+    pub off_grid: Vec<OffGrid>,
+}
+
+/// A dense place the check could not put on the grid, and why.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct OffGrid {
+    pub name: String,
+    pub reason: String,
 }
 
 /// The dense places of `rule` among `objects` and `structures`: every object holding an entry
@@ -93,19 +103,29 @@ pub fn dense_places<'a>(
     places
 }
 
-/// Where `place` lies in velocity space on a grid of `geometry`, h⁻¹ Mpc in its frame.
-fn on(place: &DensePlace, geometry: &GridGeometry) -> Option<Vec3> {
+/// Where `place` lies in velocity space on a grid of `geometry`, h⁻¹ Mpc in its frame, or why
+/// it cannot be put there.
+fn on(place: &DensePlace, geometry: &GridGeometry) -> Result<Vec3, String> {
     match &place.at {
         DenseAt::Entry { icrs, cmb_redshift } => {
             let r = velocity_distance(*cmb_redshift);
-            Some(
-                from_icrs(geometry.frame)
-                    .apply(icrs.unit_vector())
-                    .map(|u| u * r),
-            )
+            Ok(from_icrs(geometry.frame)
+                .apply(icrs.unit_vector())
+                .map(|u| u * r))
         }
-        DenseAt::Published(position) => on_grid(position, geometry).ok(),
+        DenseAt::Published(position) => on_grid(position, geometry),
     }
+}
+
+/// The grid sample `place` falls in, or why it falls in none.
+fn sample_of(place: &DensePlace, geometry: &GridGeometry) -> Result<usize, String> {
+    let at = on(place, geometry)?;
+    let cell = geometry
+        .cell_at(at)
+        .ok_or_else(|| format!("it lies at {at:?} h^-1 Mpc, outside the grid"))?;
+    geometry
+        .sample_index(cell)
+        .ok_or_else(|| "its cell holds no sample of the grid".to_owned())
 }
 
 /// The check of `region` on a grid of `geometry` against the dense places of `rule`.
@@ -123,12 +143,17 @@ pub fn check(
         .collect();
     let mut on_grid = 0;
     let mut held = Vec::new();
+    let mut off_grid = Vec::new();
     for place in places {
-        let Some(i) = on(place, geometry)
-            .and_then(|at| geometry.cell_at(at))
-            .and_then(|c| geometry.sample_index(c))
-        else {
-            continue;
+        let i = match sample_of(place, geometry) {
+            Ok(i) => i,
+            Err(reason) => {
+                off_grid.push(OffGrid {
+                    name: place.name.clone(),
+                    reason,
+                });
+                continue;
+            }
         };
         on_grid += 1;
         if inside.contains(&i) {
@@ -140,5 +165,6 @@ pub fn check(
         given: places.len(),
         on_grid,
         held,
+        off_grid,
     }
 }

@@ -7,7 +7,7 @@ mod plan;
 mod row;
 
 use std::borrow::Cow;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -100,6 +100,8 @@ pub struct Normalizer<'a> {
     definition: &'a SourceDefinition,
     correction: &'a CmbCorrection,
     entries: Vec<CatalogueEntry>,
+    /// The identifiers of the entries kept so far.
+    identifiers: HashSet<String>,
     left_out: BTreeMap<LeftOutReason, u64>,
     /// Entries each fix changed, by the fix's index in the definition.
     changed: Vec<u64>,
@@ -127,6 +129,7 @@ impl<'a> Normalizer<'a> {
             definition,
             correction,
             entries: Vec::new(),
+            identifiers: HashSet::new(),
             left_out: BTreeMap::new(),
             changed: vec![0; definition.fixes.len()],
             cancel: None,
@@ -196,7 +199,15 @@ impl<'a> Normalizer<'a> {
         }
         let changed = match row::read(cx, cells) {
             Ok((entry, changed)) => {
-                self.entries.push(entry);
+                if self
+                    .identifiers
+                    .insert(entry.designation.identifier.clone())
+                {
+                    self.entries.push(entry);
+                } else {
+                    let reason = LeftOutReason::DuplicateIdentifier;
+                    *self.left_out.entry(reason).or_default() += 1;
+                }
                 changed
             }
             Err((reason, changed)) => {

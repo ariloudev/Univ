@@ -110,6 +110,22 @@ fn a_void_whose_dense_places_lie_outside_it_is_admitted() {
 }
 
 #[test]
+fn a_dense_place_off_the_grid_is_recorded_with_why_and_counted() {
+    // A simulated supercluster published far beyond the simulated grid: it cannot be checked
+    // against the region, and the record says so rather than dropping it.
+    let far = [VOID[0] * 1_000.0, VOID[1], VOID[2]];
+    let result = outline(&[object("simulated-clusters", VOID)], &[supercluster(far)]);
+    let check = result.dense.as_ref().unwrap();
+    assert_eq!((check.given, check.on_grid), (2, 1));
+    assert_eq!(check.off_grid.len(), check.given - check.on_grid);
+    let off = &check.off_grid[0];
+    assert_eq!(off.name, "Simulated Supercluster");
+    assert!(off.reason.contains("outside the grid"), "{}", off.reason);
+    let yaml = serde_norway::to_string(&result).unwrap();
+    assert!(yaml.contains("off_grid"), "{yaml}");
+}
+
+#[test]
 fn only_a_void_states_dense_places_and_it_says_why() {
     let above = yaml(VOID, "simulated-full", "")
         .replace("side: below", "side: above")
