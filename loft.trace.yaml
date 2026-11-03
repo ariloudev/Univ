@@ -812,52 +812,52 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: 95c7994967635bbe44c547c229fc7ea19481d25424c5f8cfd1879e6cecfc1e6e
+        body: 29aeaf5018a6a6a57bf1af73a6a9563809990487496b5914bd5122fd8f10329e
   - node: 01a19f23-636f-72bd-b194-153a6cd80c2c
     reviewed: edecef9bacadbb74a84d828a30602a92afa9efa9fd80bb5a1165ea51d7013adf
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: 95c7994967635bbe44c547c229fc7ea19481d25424c5f8cfd1879e6cecfc1e6e
+        body: 29aeaf5018a6a6a57bf1af73a6a9563809990487496b5914bd5122fd8f10329e
   - node: 01a19f23-636f-72bd-b194-153c0959ad96
     reviewed: 923c577f1aecbd3eeffd01ceb1934112a852397c0a1368a013d129c8cf7887f7
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "the_release_latest_points_to_is_not_pruned"
-        body: 86fe1307a04ccd93ae4015cfeaf998ab5141b045d52cd860666b9bbb46602d43
+        body: 79ccbb4a297aa264845e328dcf266450e9218564733ae8952c85da9ef9da62ed
   - node: 01a19f23-636f-72bd-b194-153fb0e0dd43
     reviewed: 4b050be2a02689e7494e6e0ffca8ebe0c752ad638e1219e36a8e1dd3031f0536
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
-        body: 43e6fe243014996c2bc906e69fa77d8ff05be1fa42af43ec1acf018290a97d52
+        body: cd0d9b495f6760445da8af02d33ad69ee021f12c8cecfe0960a510cee63af21e
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "a_file_that_reads_back_with_another_sha256_stops_the_publish"
-        body: f75a60e04185c4da5bd6e97697f2d129b97f9171fb02bd7eb9bfe1d11ece30c5
+        body: c7b83958865dedd93b27fffec8020533d7ae587d84751edcd6f29c88bf2d9632
   - node: 01a19f23-636f-72bd-b194-1540b752f379
     reviewed: 0283e5fc458a4ed9f2b8906a0a214e155af1075c3ce981ab3c04c4916d2e9851
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "until_latest_moves_reads_that_name_no_release_answer_from_the_previous_release"
-        body: 86161b90dda609c5c400fc8c5ad57d2e2b71dd6c77f6b78107ac4d2065220271
+        body: 202c70a3769b58c0ea2d050941f475e3fdb11c7cd9824962c251990ae429d6f5
   - node: 01a19f23-636f-72bd-b194-154133241de5
     reviewed: 9bc12f78064a0693282c0f25cff9e2759dedbc7cb4b5e4730f0739875cd3001c
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
-        body: 43e6fe243014996c2bc906e69fa77d8ff05be1fa42af43ec1acf018290a97d52
+        body: cd0d9b495f6760445da8af02d33ad69ee021f12c8cecfe0960a510cee63af21e
   - node: 01a19f23-636f-72bd-b194-154384255e3e
     reviewed: b1716cd28b23d0bf2290e955aa9104a7aa0f13b90ebcf29af60067c06b444d42
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "an_interrupted_publish_leaves_latest_and_continues_from_its_journal"
-        body: 1ff80c8e53b12644182a2b5db14fa5c6cfb20ac80f885b73fd0cf02a06d3d82c
+        body: e941dcc69fa943f510486180602883508c15c655722d30002fa7a936a09558a2
   - node: 01a19f23-636f-72bd-b194-1545c890a557
     reviewed: c2bb537f546551694f7f4d067b2439e9d06527ca8e380dac98675ae6c8876dc9
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "a_release_already_published_is_refused_naming_its_number_and_publication_time"
-        body: ebc26b2eff0f8e5c4f2cb73015c98dd66ed122aaf17f309688b2c20b358dbe5b
+        body: a15fb8e593e786bd37580037bec1a655d92320a36e6ed0be8df187b1dce44520
   - node: 01a19f22-b0bc-76da-bac8-977d3868a411
     reviewed: cc37beca30b495d7bc6ca64117e2a846be04474bbe21d4eebfcd6054cd9631a6
     tests:
@@ -983,7 +983,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "an_interrupted_publish_leaves_latest_and_continues_from_its_journal"
-        body: 1ff80c8e53b12644182a2b5db14fa5c6cfb20ac80f885b73fd0cf02a06d3d82c
+        body: e941dcc69fa943f510486180602883508c15c655722d30002fa7a936a09558a2
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "a_build_in_which_a_source_failed_names_it_and_uses_no_number"
         body: 538ba1b053f1d81399c4db5360c7d7cafca0b3b7fcfb37295c67ead45eed4477
