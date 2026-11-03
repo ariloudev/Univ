@@ -136,13 +136,19 @@ pub fn object_rows(
                 object_id: id,
             });
         }
-        for n in &object.names {
+        // A name given twice by one source is one row; two spellings of it are two.
+        let names: BTreeSet<(&str, String)> = object
+            .names
+            .iter()
+            .map(|n| (n.name.as_str(), n.source.to_string()))
+            .collect();
+        for (name, source) in names {
             rows.names.push(NameRow {
                 release,
-                key: name_key(&n.name),
+                key: name_key(name),
                 object_id: id,
-                source: n.source.to_string(),
-                name: n.name.clone(),
+                source,
+                name: name.to_owned(),
             });
         }
     }

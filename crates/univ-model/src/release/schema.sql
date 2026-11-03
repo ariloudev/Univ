@@ -17,7 +17,10 @@ CREATE TABLE IF NOT EXISTS schema_version (
   version INTEGER PRIMARY KEY
 );
 
--- Every release ever built and published, pruned ones included.
+-- Every release ever loaded, pruned ones included. A release is published once its
+-- published_at is set, after latest moved to it; until then its rows may be part loaded, so
+-- readers list only the releases whose published_at is set. d1_estimated_bytes is the
+-- release's CON-3 estimate, which publishing sums over the releases not pruned.
 CREATE TABLE IF NOT EXISTS releases (
   number INTEGER PRIMARY KEY,
   built_at TEXT NOT NULL,
@@ -35,7 +38,8 @@ CREATE TABLE IF NOT EXISTS releases (
   objects INTEGER NOT NULL,
   structures INTEGER NOT NULL,
   grids INTEGER NOT NULL,
-  tiles INTEGER NOT NULL
+  tiles INTEGER NOT NULL,
+  d1_estimated_bytes INTEGER NOT NULL
 );
 
 -- The release that reads naming no release answer from: one row, moved in a single write.
@@ -111,14 +115,15 @@ CREATE TABLE IF NOT EXISTS designations (
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS designations_by_object ON designations (release, object_id);
 
--- Common names by their key: lower case with white space removed.
+-- Common names by their key: lower case with white space removed. The name is part of the
+-- primary key, so two spellings one source gives an object ("M 31", "M31") are both kept.
 CREATE TABLE IF NOT EXISTS names (
   release INTEGER NOT NULL,
   key TEXT NOT NULL,
   object_id INTEGER NOT NULL,
   source TEXT NOT NULL,
   name TEXT NOT NULL,
-  PRIMARY KEY (release, key, object_id, source)
+  PRIMARY KEY (release, key, object_id, source, name)
 ) WITHOUT ROWID;
 
 -- The id ledger, kept across releases and never pruned: the ids each release issued, and

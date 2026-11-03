@@ -7,14 +7,15 @@
 //!
 //! # Publishing
 //!
-//! [`publish`] reads release n's manifest from its build directory and checks every local file
-//! against it, then uploads in this order, each unit checked before it is entered in the
-//! journal:
+//! [`publish`] reads release n's manifest from its build directory and refuses the release when
+//! its D1 estimate and those of every release not pruned together pass the CON-3 cap. It then
+//! uploads in this order, each unit checked before it is entered in the journal:
 //!
 //! 1. `d1/0000-schema.sql`, checked by the schema version it records;
 //! 2. each R2 file under `releases/{n}/`, read back and checked against its SHA-256 (AC-102);
-//! 3. each table's D1 files, checked by the rows of release n the table then holds against the
-//!    manifest's count of them;
+//! 3. each table's D1 files, checked by the count and fingerprint of the rows of release n the
+//!    table then holds against the manifest's (`univ_model::release::fingerprint`), so a row
+//!    dropped or altered on its way to D1 stops the publish naming the table and the measure;
 //! 4. `manifest.yaml`, read back and checked against the local file;
 //! 5. `latest`, moved to n by one single-statement write (AC-104), and only then the release's
 //!    `published_at`.
@@ -31,6 +32,7 @@
 //! (AC-105). A journal of another manifest under the same number is refused.
 
 mod check;
+mod error;
 pub mod journal;
 mod prune;
 mod upload;
@@ -42,8 +44,9 @@ use std::path::Path;
 use serde_json::{Map, Value};
 
 pub use check::{Status, published_status, sql_text};
+pub use error::PublishError;
 pub use prune::{PruneError, PruneOptions, Pruned, prune};
-pub use upload::{PublishError, PublishOptions, Published, move_latest, publish};
+pub use upload::{PublishOptions, Published, move_latest, publish};
 pub use wrangler::{BUCKET, DATABASE, STDERR_LINES, Wrangler, ingest_dir, strip_ansi};
 
 /// A row a D1 query returns, each column by name.

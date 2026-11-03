@@ -4,14 +4,15 @@
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::time::SystemTime;
 
 use super::{FetchOptions, RunReport, lock};
 use crate::acquire::Acquired;
 use crate::crossmatch::CrossMatched;
 use crate::display::SourceState;
 use crate::events::{Count, Event, EventSink, Stage};
-use crate::release::{BuiltRelease, CONFIG_FILE, Inputs, ReleaseConfig, build, is_grid, read_grid};
+use crate::release::{
+    BuiltRelease, CONFIG_FILE, Inputs, ReleaseConfig, build, decimal_bytes, is_grid, read_grid,
+};
 use crate::source::{Access, SourceDefinition};
 use crate::structures::read_all_named;
 use crate::tiles::Built;
@@ -28,18 +29,6 @@ pub struct BuildOptions {
     pub out: PathBuf,
 }
 
-/// A size in decimal units, as the D1 cap is given.
-fn decimal(bytes: u64) -> String {
-    #[expect(clippy::cast_precision_loss, reason = "a size shown to three figures")]
-    let b = bytes as f64;
-    match bytes {
-        0..1_000 => format!("{bytes} B"),
-        1_000..1_000_000 => format!("{:.1} kB", b / 1e3),
-        1_000_000..1_000_000_000 => format!("{:.1} MB", b / 1e6),
-        _ => format!("{:.2} GB", b / 1e9),
-    }
-}
-
 /// The lines a complete release adds to the run.
 fn lines(built: &BuiltRelease) -> Vec<String> {
     let m = &built.manifest;
@@ -53,9 +42,10 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
             built.dir.join("manifest.yaml").display()
         ),
         format!(
-            "D1: {} rows estimated at {} of the 10 GB cap ({share:.4}%)",
+            "D1: {} rows estimated at {} of the {} cap ({share:.4}%)",
             m.d1.tables.iter().map(|t| t.rows).sum::<u64>(),
-            decimal(m.d1.estimated_bytes)
+            decimal_bytes(m.d1.estimated_bytes),
+            decimal_bytes(m.d1.cap_bytes)
         ),
         format!(
             "cell index: {} placed objects, {} of {} structures with a bounding box",
@@ -134,7 +124,7 @@ fn assemble_and_build(
         config: &config,
         rules: &rules,
         cache: &options.cache,
-        built_at: humantime::format_rfc3339_seconds(SystemTime::now()).to_string(),
+        built_at: super::now(),
     };
     build(&inputs, &build_options.state, &build_options.out).map_err(|e| e.to_string())
 }

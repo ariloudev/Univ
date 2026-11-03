@@ -33,8 +33,8 @@ use univ_model::release::ReleaseManifest;
 
 pub use cells::{CellRows, cell_rows};
 pub use check::{
-    D1_SIZE, ENTRY_COUNTS, Failed, MANIFEST, REDISTRIBUTION, STRUCTURE_CITATIONS, Subject,
-    TILE_OBJECTS, check_all, provisional,
+    D1_FINITE, D1_KEYS, D1_SIZE, ENTRY_COUNTS, Failed, MANIFEST, REDISTRIBUTION,
+    STRUCTURE_CITATIONS, Subject, TILE_OBJECTS, check_all, decimal_bytes, provisional,
 };
 pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
 pub use d1::{D1Rows, MAX_FILE_BYTES};

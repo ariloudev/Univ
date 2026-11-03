@@ -10,9 +10,9 @@ use univ_model::release::manifest::{
     ManifestSource, NotIndexed, RecordedFile, ReleaseManifest, Target, Versions,
 };
 use univ_model::release::rows::ReleaseRow;
-use univ_model::release::{SCHEMA_VERSION, keys};
+use univ_model::release::{Row, SCHEMA_VERSION, SqlValue, keys};
 
-use super::check::{D1_SIZE, Failed, MANIFEST, Subject, check_all};
+use super::check::{Failed, MANIFEST, Subject, check_all};
 use super::objects::{ObjectRows, json, ledger_rows, object_rows};
 use super::{
     CellRows, D1Rows, GridFiles, Inputs, cell_rows, domain_rows, grid_files, source_rows,
@@ -151,9 +151,11 @@ fn rows(
         structures: structures.len() as u64,
         grids: grids.len() as u64,
         tiles: tile_count(inputs) as u64,
+        // Estimated with the widest integer here, then set to the estimate it is part of,
+        // which therefore errs high by at most a few bytes.
+        d1_estimated_bytes: i64::MAX.unsigned_abs(),
     };
     let mut d1 = D1Rows::default();
-    d1.add(&[row]);
     d1.add(&sources.sources);
     d1.add(&sources.payloads);
     d1.add(&sources.normalizations);
@@ -169,6 +171,12 @@ fn rows(
     d1.add(&grids.iter().map(|g| g.row.clone()).collect::<Vec<_>>());
     d1.add(&cells.objects);
     d1.add(&cells.structures);
+    let own = ReleaseRow::TABLE.estimated_bytes(&row.values());
+    let row = ReleaseRow {
+        d1_estimated_bytes: d1.estimate().estimated_bytes + own,
+        ..row
+    };
+    d1.add(&[row]);
     Ok(Rows {
         d1,
         objects,
@@ -191,8 +199,20 @@ pub fn assemble(inputs: &Inputs<'_>, number: u32) -> Result<Assembled, String> {
         RankingRules::read(&inputs.rules.join("ranking.yaml")).map_err(|e| e.to_string())?;
     let rules = rules(inputs, &ranking)?;
     let rows = rows(inputs, number, &ranking, &rules.texts)?;
-    let estimate = rows.d1.estimate();
-    let mut failed = check_all(&Subject {
+    let mut estimate = rows.d1.estimate();
+    // The release's row records the estimate it is part of, computed with its widest value.
+    estimate.estimated_bytes = rows
+        .d1
+        .table(ReleaseRow::TABLE.name)
+        .first()
+        .and_then(|r| r.last())
+        .and_then(|v| match v {
+            SqlValue::Integer(n) => u64::try_from(*n).ok(),
+            _ => None,
+        })
+        .unwrap_or(estimate.estimated_bytes);
+    let failed = check_all(&Subject {
+        d1: &rows.d1,
         objects: &inputs.crossed.objects,
         tiles: inputs.tiles,
         definitions: inputs.definitions,
@@ -200,15 +220,6 @@ pub fn assemble(inputs: &Inputs<'_>, number: u32) -> Result<Assembled, String> {
         entries: &rows.objects.per_source,
         cache: inputs.cache,
     });
-    if estimate.estimated_bytes > estimate.cap_bytes {
-        failed.push(Failed {
-            check: D1_SIZE,
-            cause: format!(
-                "its rows are estimated at {} bytes, beyond the {} bytes of the cap",
-                estimate.estimated_bytes, estimate.cap_bytes
-            ),
-        });
-    }
     let mut files = rules.files;
     for d in &inputs.tiles.domains {
         let name = name_of(d.domain);

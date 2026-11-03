@@ -4,62 +4,81 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::sql::{Row, SqlValue, Table};
+use super::sql::{ColumnKind, Row, Scope, SqlValue, Table};
 
-/// A field's value as an SQL value.
+/// A field's value as an SQL value, and the type of its column.
 pub trait ToSql {
+    const KIND: ColumnKind;
     fn to_sql(&self) -> SqlValue;
 }
 
 impl ToSql for String {
+    const KIND: ColumnKind = ColumnKind::Text;
+
     fn to_sql(&self) -> SqlValue {
         SqlValue::Text(self.clone())
     }
 }
 
 impl ToSql for Option<String> {
+    const KIND: ColumnKind = ColumnKind::Text;
+
     fn to_sql(&self) -> SqlValue {
         self.clone().into()
     }
 }
 
 impl ToSql for f64 {
+    const KIND: ColumnKind = ColumnKind::Real;
+
     fn to_sql(&self) -> SqlValue {
         SqlValue::Real(*self)
     }
 }
 
 impl ToSql for Option<f64> {
+    const KIND: ColumnKind = ColumnKind::Real;
+
     fn to_sql(&self) -> SqlValue {
         (*self).into()
     }
 }
 
 impl ToSql for bool {
+    const KIND: ColumnKind = ColumnKind::Integer;
+
     fn to_sql(&self) -> SqlValue {
         (*self).into()
     }
 }
 
 impl ToSql for i64 {
+    const KIND: ColumnKind = ColumnKind::Integer;
+
     fn to_sql(&self) -> SqlValue {
         SqlValue::Integer(*self)
     }
 }
 
 impl ToSql for u8 {
+    const KIND: ColumnKind = ColumnKind::Integer;
+
     fn to_sql(&self) -> SqlValue {
         SqlValue::Integer(i64::from(*self))
     }
 }
 
 impl ToSql for u32 {
+    const KIND: ColumnKind = ColumnKind::Integer;
+
     fn to_sql(&self) -> SqlValue {
         SqlValue::Integer(i64::from(*self))
     }
 }
 
 impl ToSql for u64 {
+    const KIND: ColumnKind = ColumnKind::Integer;
+
     fn to_sql(&self) -> SqlValue {
         // Counts and object ids (at most 2^53 - 1) are far below i64::MAX.
         SqlValue::Integer(i64::try_from(*self).unwrap_or(i64::MAX))
@@ -67,6 +86,8 @@ impl ToSql for u64 {
 }
 
 impl ToSql for Option<u64> {
+    const KIND: ColumnKind = ColumnKind::Integer;
+
     fn to_sql(&self) -> SqlValue {
         self.map_or(SqlValue::Null, |n| n.to_sql())
     }
@@ -76,7 +97,7 @@ impl ToSql for Option<u64> {
 macro_rules! row {
     (
         $(#[$meta:meta])*
-        $name:ident => $table:literal, per_release: $per:literal,
+        $name:ident => $table:literal, scope: $scope:ident,
         key: [$($key:literal),*], indexes: [$([$($index:literal),*]),*],
         { $($(#[$fmeta:meta])* $field:ident: $ty:ty),* $(,)? }
     ) => {
@@ -90,9 +111,10 @@ macro_rules! row {
             const TABLE: Table = Table {
                 name: $table,
                 columns: &[$(stringify!($field)),*],
+                kinds: &[$(<$ty as ToSql>::KIND),*],
                 key: &[$($key),*],
                 indexes: &[$(&[$($index),*]),*],
-                per_release: $per,
+                scope: Scope::$scope,
             };
 
             fn values(&self) -> Vec<SqlValue> {
@@ -103,8 +125,10 @@ macro_rules! row {
 }
 
 row! {
-    /// A release as built. Publishing sets its `published_at` and pruning its `pruned_at`.
-    ReleaseRow => "releases", per_release: false, key: ["number"], indexes: [], {
+    /// A release as built. Publishing sets its `published_at` once `latest` has moved to it, and
+    /// pruning its `pruned_at`. A release whose `published_at` is NULL is not published, its
+    /// rows possibly part loaded: readers list only releases with `published_at` set.
+    ReleaseRow => "releases", scope: Releases, key: ["number"], indexes: [], {
         number: u32,
         /// RFC 3339, UTC.
         built_at: String,
@@ -125,12 +149,15 @@ row! {
         structures: u64,
         grids: u64,
         tiles: u64,
+        /// The estimated D1 bytes of the release's rows (CON-3), as its manifest gives it:
+        /// publishing sums those of the releases not pruned against the cap.
+        d1_estimated_bytes: u64,
     }
 }
 
 row! {
     /// An object with its preferred measurements and, when placed, its derived position.
-    ObjectRow => "objects", per_release: true, key: ["release", "id"], indexes: [], {
+    ObjectRow => "objects", scope: PerRelease, key: ["release", "id"], indexes: [], {
         release: u32,
         id: u64,
         kind: String,
@@ -159,7 +186,7 @@ row! {
 
 row! {
     /// A catalogue entry of an object.
-    EntryRow => "entries", per_release: true, key: ["release", "source", "identifier"],
+    EntryRow => "entries", scope: PerRelease, key: ["release", "source", "identifier"],
     indexes: [["release", "object_id"]], {
         release: u32,
         source: String,
@@ -178,7 +205,7 @@ row! {
     /// A measurement of an entry: `quantity` is `distance`, `redshift`, `parallax`,
     /// `velocity`, `proper_motion_ra`, `proper_motion_dec` or `magnitude`, `n` its place among
     /// the entry's values of that quantity.
-    MeasurementRow => "measurements", per_release: true,
+    MeasurementRow => "measurements", scope: PerRelease,
     key: ["release", "object_id", "source", "identifier", "quantity", "n"], indexes: [], {
         release: u32,
         object_id: u64,
@@ -200,7 +227,7 @@ row! {
 
 row! {
     /// A designation an object carries.
-    DesignationRow => "designations", per_release: true,
+    DesignationRow => "designations", scope: PerRelease,
     key: ["release", "source", "identifier", "object_id"], indexes: [["release", "object_id"]], {
         release: u32,
         source: String,
@@ -210,8 +237,11 @@ row! {
 }
 
 row! {
-    /// A common name of an object, by its key (see [`name_key`]).
-    NameRow => "names", per_release: true, key: ["release", "key", "object_id", "source"],
+    /// A common name of an object, by its key (see [`name_key`]). The name itself is part of
+    /// the primary key: two spellings an object's source gives, such as `M 31` and `M31`, share
+    /// a key and are both kept.
+    NameRow => "names", scope: PerRelease,
+    key: ["release", "key", "object_id", "source", "name"],
     indexes: [], {
         release: u32,
         key: String,
@@ -223,7 +253,7 @@ row! {
 
 row! {
     /// The ids a release issued.
-    IdsIssuedRow => "ids_issued", per_release: false, key: ["release"], indexes: [], {
+    IdsIssuedRow => "ids_issued", scope: Ledger, key: ["release"], indexes: [], {
         release: u32,
         first: u64,
         last: u64,
@@ -232,7 +262,7 @@ row! {
 
 row! {
     /// An id that left the releases, in `release`.
-    IdReplacedRow => "ids_replaced", per_release: false, key: ["id"], indexes: [], {
+    IdReplacedRow => "ids_replaced", scope: Ledger, key: ["id"], indexes: [], {
         id: u64,
         release: u32,
         /// `merged_into`, `split_into` or `retired`.
@@ -244,7 +274,7 @@ row! {
 
 row! {
     /// A placed object in its level-0 cell.
-    ObjectCellRow => "object_cells", per_release: true,
+    ObjectCellRow => "object_cells", scope: PerRelease,
     key: ["release", "domain", "ix", "iy", "iz", "object_id"], indexes: [], {
         release: u32,
         domain: String,
@@ -257,7 +287,7 @@ row! {
 
 row! {
     /// A structure in one cell its bounding box meets.
-    StructureCellRow => "structure_cells", per_release: true,
+    StructureCellRow => "structure_cells", scope: PerRelease,
     key: ["release", "level", "ix", "iy", "iz", "structure"], indexes: [], {
         release: u32,
         level: u8,
@@ -270,7 +300,7 @@ row! {
 
 row! {
     /// A source of the release with its citation, terms and query.
-    SourceRow => "sources", per_release: true, key: ["release", "id"], indexes: [], {
+    SourceRow => "sources", scope: PerRelease, key: ["release", "id"], indexes: [], {
         release: u32,
         id: String,
         title: String,
@@ -295,7 +325,7 @@ row! {
 
 row! {
     /// A payload a source's provenance records.
-    PayloadRow => "payloads", per_release: true, key: ["release", "source", "item"],
+    PayloadRow => "payloads", scope: PerRelease, key: ["release", "source", "item"],
     indexes: [], {
         release: u32,
         source: String,
@@ -310,7 +340,7 @@ row! {
 
 row! {
     /// What normalization made of a source's rows.
-    NormalizationRow => "normalizations", per_release: true, key: ["release", "source"],
+    NormalizationRow => "normalizations", scope: PerRelease, key: ["release", "source"],
     indexes: [], {
         release: u32,
         source: String,
@@ -323,7 +353,7 @@ row! {
 
 row! {
     /// A researched structure: its record as its file gives it, every number cited.
-    StructureRow => "structures", per_release: true, key: ["release", "id"], indexes: [], {
+    StructureRow => "structures", scope: PerRelease, key: ["release", "id"], indexes: [], {
         release: u32,
         id: String,
         name: String,
@@ -340,7 +370,7 @@ row! {
 
 row! {
     /// A scale domain's tiles.
-    ScaleDomainRow => "scale_domains", per_release: true, key: ["release", "name"], indexes: [], {
+    ScaleDomainRow => "scale_domains", scope: PerRelease, key: ["release", "name"], indexes: [], {
         release: u32,
         name: String,
         unit: String,
@@ -353,7 +383,7 @@ row! {
 
 row! {
     /// A volume grid.
-    GridRow => "grids", per_release: true, key: ["release", "id"], indexes: [], {
+    GridRow => "grids", scope: PerRelease, key: ["release", "id"], indexes: [], {
         release: u32,
         id: String,
         source: String,

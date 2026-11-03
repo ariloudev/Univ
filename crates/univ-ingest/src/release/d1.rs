@@ -5,7 +5,9 @@
 //! `d1/{nnnn}-{table}-{part}.sql` for each table that has rows, in the order of
 //! `univ_model::release::TABLES`, each at most [`MAX_FILE_BYTES`]. Executed in path order they
 //! load the release; each holds `INSERT OR IGNORE` statements only (D1 runs a file without
-//! explicit transactions), so a file executed twice changes nothing.
+//! explicit transactions), so a file executed twice changes nothing. The build checks that each
+//! table's primary keys are unique and every number finite, so `INSERT OR IGNORE` can only skip
+//! a row written before, identical, and no NULL stands for a number.
 
 use std::collections::BTreeMap;
 
@@ -36,17 +38,25 @@ impl D1Rows {
         self.tables.get(name).map_or(0, Vec::len)
     }
 
-    /// The estimated storage of every row, by table, against the 10 GB cap.
+    /// The values of each row of the table `name`.
+    #[must_use]
+    pub fn table(&self, name: &str) -> &[Vec<SqlValue>] {
+        self.tables.get(name).map_or(&[], Vec::as_slice)
+    }
+
+    /// The estimated storage of every row, by table, against the 10 GB cap, with each table's
+    /// fingerprint.
     #[must_use]
     pub fn estimate(&self) -> D1Estimate {
         let tables: Vec<TableEstimate> = TABLES
             .iter()
             .map(|t| {
-                let rows = self.tables.get(t.name).map_or(&[][..], Vec::as_slice);
+                let rows = self.table(t.name);
                 TableEstimate {
                     table: t.name.to_owned(),
                     rows: rows.len() as u64,
                     estimated_bytes: rows.iter().map(|r| t.estimated_bytes(r)).sum(),
+                    fingerprint: t.fingerprint(rows),
                 }
             })
             .collect();

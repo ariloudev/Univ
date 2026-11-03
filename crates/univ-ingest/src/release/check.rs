@@ -12,8 +12,10 @@ use std::fmt;
 use std::path::Path;
 
 use univ_model::ids::{ObjectId, SourceId};
+use univ_model::release::{D1_CAP_BYTES, SqlValue, TABLES, Table};
 use univ_model::tile::decode;
 
+use super::D1Rows;
 use crate::crossmatch::ReleaseObject;
 use crate::normalize::reads_rows;
 use crate::provenance::Provenance;
@@ -29,8 +31,12 @@ pub const STRUCTURE_CITATIONS: &str = "every number of every structure cites its
 pub const ENTRY_COUNTS: &str = "each source's entries match its provenance";
 /// AC-89.
 pub const REDISTRIBUTION: &str = "no source forbids redistribution";
-/// CON-3.
-pub const D1_SIZE: &str = "the release's D1 rows fit within 10 GB";
+/// CON-3, the cap being `D1_CAP_BYTES`.
+pub const D1_SIZE: &str = "the release's D1 rows fit within the D1 cap";
+/// No NULL is written for a number that is not finite.
+pub const D1_FINITE: &str = "every number of every D1 row is finite";
+/// `INSERT OR IGNORE` skips only a row written before, never another row with the same key.
+pub const D1_KEYS: &str = "each D1 table's primary keys are unique";
 /// AC-84, once written.
 pub const MANIFEST: &str = "every file matches its SHA-256 in the release manifest";
 
@@ -49,6 +55,8 @@ impl fmt::Display for Failed {
 
 /// What the checks look at.
 pub struct Subject<'a> {
+    /// The release's D1 rows.
+    pub d1: &'a D1Rows,
     pub objects: &'a [ReleaseObject],
     pub tiles: &'a Built,
     pub definitions: &'a [SourceDefinition],
@@ -66,6 +74,8 @@ pub fn check_all(subject: &Subject<'_>) -> Vec<Failed> {
     tile_objects(subject, &mut failed);
     structure_citations(subject, &mut failed);
     entry_counts(subject, &mut failed);
+    d1_size(subject.d1, &mut failed);
+    d1_rows(subject.d1, &mut failed);
     for d in subject.definitions {
         if let Err(forbidden) = d.publishable() {
             failed.push(Failed {
@@ -161,6 +171,94 @@ fn entry_counts(subject: &Subject<'_>, failed: &mut Vec<Failed>) {
                 d.id, report.published
             )),
             Ok(Some(_)) => {}
+        }
+    }
+}
+
+/// A size in decimal units, as the D1 cap is given, without trailing zeros: `10 GB` for
+/// [`D1_CAP_BYTES`], `1.25 GB`, `3.5 MB`.
+#[must_use]
+pub fn decimal_bytes(bytes: u64) -> String {
+    #[expect(clippy::cast_precision_loss, reason = "a size shown to three figures")]
+    let b = bytes as f64;
+    let (value, unit) = match bytes {
+        0..1_000 => return format!("{bytes} B"),
+        1_000..1_000_000 => (format!("{:.1}", b / 1e3), "kB"),
+        1_000_000..1_000_000_000 => (format!("{:.1}", b / 1e6), "MB"),
+        _ => (format!("{:.2}", b / 1e9), "GB"),
+    };
+    format!(
+        "{} {unit}",
+        value.trim_end_matches('0').trim_end_matches('.')
+    )
+}
+
+/// CON-3: the estimate of the release's rows against the cap.
+fn d1_size(d1: &D1Rows, failed: &mut Vec<Failed>) {
+    let estimated = d1.estimate().estimated_bytes;
+    if estimated > D1_CAP_BYTES {
+        failed.push(Failed {
+            check: D1_SIZE,
+            cause: format!(
+                "its rows are estimated at {estimated} bytes, beyond the {} cap of {D1_CAP_BYTES} \
+                 bytes",
+                decimal_bytes(D1_CAP_BYTES)
+            ),
+        });
+    }
+}
+
+/// A row's primary key, as its columns and SQL literals.
+fn key_of(table: &Table, row: &[SqlValue]) -> String {
+    let parts: Vec<String> = table
+        .key
+        .iter()
+        .filter_map(|c| {
+            let v = table.position(c).and_then(|i| row.get(i))?;
+            Some(format!("{c} = {}", v.literal()))
+        })
+        .collect();
+    format!("({})", parts.join(", "))
+}
+
+/// Every number finite, naming the table, row key and column of the first that is not in each
+/// table; and every primary key given once in its table.
+fn d1_rows(d1: &D1Rows, failed: &mut Vec<Failed>) {
+    for table in &TABLES {
+        let rows = d1.table(table.name);
+        let not_finite = rows.iter().find_map(|row| {
+            row.iter()
+                .zip(table.columns)
+                .find_map(|(v, column)| match v {
+                    SqlValue::Real(x) if !x.is_finite() => Some((row, column, *x)),
+                    _ => None,
+                })
+        });
+        if let Some((row, column, x)) = not_finite {
+            failed.push(Failed {
+                check: D1_FINITE,
+                cause: format!(
+                    "table {}, row {}, column {column}: {x} is not a finite number",
+                    table.name,
+                    key_of(table, row)
+                ),
+            });
+        }
+        let mut seen = BTreeSet::new();
+        let repeated: Vec<String> = rows
+            .iter()
+            .map(|row| key_of(table, row))
+            .filter(|key| !seen.insert(key.clone()))
+            .collect();
+        if let Some(first) = repeated.first() {
+            failed.push(Failed {
+                check: D1_KEYS,
+                cause: format!(
+                    "table {}: {} row(s) repeat a primary key another row has, from {first}",
+                    table.name,
+                    repeated.len()
+                ),
+            });
         }
     }
 }

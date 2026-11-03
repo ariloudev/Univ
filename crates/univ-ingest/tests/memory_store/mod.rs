@@ -103,6 +103,27 @@ impl MemoryStore {
     }
 }
 
+/// What `wrangler d1 execute --file` does to a file's SQL before D1 runs it (its
+/// `trimSqlQuery`, wrangler 4.156.2): the first `BEGIN TRANSACTION;` and the first `COMMIT;`
+/// removed wherever they stand, inside quotes too, and a file still holding `BEGIN TRANSACTION`
+/// refused.
+pub fn trim_sql_query(sql: &str) -> Result<String, String> {
+    if !sql.contains("BEGIN TRANSACTION") {
+        return Ok(sql.to_owned());
+    }
+    let trimmed = sql
+        .replacen("BEGIN TRANSACTION;", "", 1)
+        .replacen("COMMIT;", "", 1);
+    if trimmed.contains("BEGIN TRANSACTION") {
+        return Err(
+            "Wrangler could not process the provided SQL file, as it contains several \
+                    transactions."
+                .to_owned(),
+        );
+    }
+    Ok(trimmed)
+}
+
 /// The single integer a query of `db` gives.
 pub fn int(db: &Connection, sql: &str) -> i64 {
     db.query_row(sql, [], |r| r.get(0)).unwrap()
@@ -145,7 +166,8 @@ impl Store for MemoryStore {
         let name = file.file_name().unwrap().to_string_lossy().into_owned();
         self.record(Op::Execute(name))?;
         let sql = std::fs::read_to_string(file).map_err(|e| e.to_string())?;
-        let done = self.db.execute_batch(&sql).map_err(|e| e.to_string());
+        let done = trim_sql_query(&sql)
+            .and_then(|sql| self.db.execute_batch(&sql).map_err(|e| e.to_string()));
         self.observe();
         done
     }

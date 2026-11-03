@@ -10,7 +10,7 @@ use std::fmt;
 use std::path::Path;
 
 use univ_model::release::manifest::Target;
-use univ_model::release::{ReleaseManifest, TABLES, keys};
+use univ_model::release::{ReleaseManifest, Scope, TABLES, keys};
 
 use super::check::{published_status, sql_text};
 use super::journal;
@@ -102,7 +102,7 @@ fn manifest_of(
 fn rows_of(store: &mut dyn Store, number: u32) -> Result<u64, String> {
     let counts: Vec<String> = TABLES
         .iter()
-        .filter(|t| t.per_release)
+        .filter(|t| t.scope == Scope::PerRelease)
         .map(|t| format!("(SELECT COUNT(*) FROM {} WHERE release = {number})", t.name))
         .collect();
     let rows = store.query(&format!("SELECT {} AS n", counts.join(" + ")))?;
@@ -154,7 +154,7 @@ pub fn prune(
     let rows = rows_of(store, number).map_err(failed)?;
     let mut statements: Vec<String> = TABLES
         .iter()
-        .filter(|t| t.per_release)
+        .filter(|t| t.scope == Scope::PerRelease)
         .map(|t| format!("DELETE FROM {} WHERE release = {number};", t.name))
         .collect();
     statements.push(format!(

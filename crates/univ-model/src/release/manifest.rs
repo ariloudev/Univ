@@ -4,6 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::fingerprint::ColumnTotal;
 use crate::cosmology::Cosmology;
 
 /// The name a release manifest gives its format.
@@ -134,7 +135,7 @@ pub struct Ids {
 }
 
 /// The estimated D1 storage of the release's rows (see [`super::sql`]) against the cap.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct D1Estimate {
     pub cap_bytes: u64,
@@ -142,13 +143,15 @@ pub struct D1Estimate {
     pub tables: Vec<TableEstimate>,
 }
 
-/// One table's rows and estimated bytes.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+/// One table's rows of the release, their estimated bytes, and their fingerprint, which
+/// publishing compares with what D1 holds once they are loaded (see [`super::fingerprint`]).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TableEstimate {
     pub table: String,
     pub rows: u64,
     pub estimated_bytes: u64,
+    pub fingerprint: Vec<ColumnTotal>,
 }
 
 /// Where a file of the release goes.

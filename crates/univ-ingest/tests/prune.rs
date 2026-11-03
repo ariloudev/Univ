@@ -18,7 +18,7 @@ use release_fixture::{build_next, fixture};
 use univ_ingest::publish::{
     Latest, PruneError, PruneOptions, Pruned, PublishOptions, prune, publish,
 };
-use univ_model::release::{TABLES, keys};
+use univ_model::release::{Scope, TABLES, keys};
 
 fn publishing(store: &mut MemoryStore, number: u32, out: &Path, journals: &Path, clock: &Clock) {
     let now = || clock.now();
@@ -122,7 +122,7 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     assert!(pruned.rows > 0 && pruned.files > 1);
     assert!(!store.r2.keys().any(|k| k.starts_with(&keys::prefix(1))));
     assert!(keys_of_2.iter().all(|k| store.r2.contains_key(k)));
-    for t in TABLES.iter().filter(|t| t.per_release) {
+    for t in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
         let left = store.int(&format!(
             "SELECT COUNT(*) FROM {} WHERE release = 1",
             t.name

@@ -45,10 +45,20 @@ fn every_row_type_matches_its_table_in_the_schema() {
         // A release's rows lead their key with it; the ledger's `ids_issued` is keyed by the
         // release too, but kept across releases.
         assert!(
-            !table.per_release || table.key[0] == "release",
+            table.scope != Scope::PerRelease || table.key[0] == "release",
             "{}",
             table.name
         );
+        // A table whose key is one integer column is a rowid table, every other WITHOUT ROWID.
+        let rowid = table.tree() == Tree::Table;
+        let declared_without = SCHEMA[SCHEMA
+            .find(&format!("TABLE IF NOT EXISTS {} (", table.name))
+            .unwrap()..]
+            .split(';')
+            .next()
+            .unwrap()
+            .contains("WITHOUT ROWID");
+        assert_eq!(rowid, !declared_without, "{}", table.name);
         for index in table.indexes {
             let declared = format!("ON {} ({});", table.name, index.join(", "));
             assert!(SCHEMA.contains(&declared), "{declared}");

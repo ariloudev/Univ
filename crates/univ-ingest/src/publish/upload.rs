@@ -1,15 +1,14 @@
 //! Publishing release n: every file uploaded and checked, entered in the journal, and only then
 //! `latest` moved to it in one write.
 
-use std::fmt;
 use std::path::{Path, PathBuf};
 
 use univ_model::release::manifest::{ManifestFile, Target};
-use univ_model::release::{ReleaseManifest, TABLES, Table, keys};
+use univ_model::release::{D1_CAP_BYTES, ReleaseManifest, TABLES, Table, keys};
 
-use super::check::{published_status, release_rows, schema_version, sql_text};
+use super::check::{check_rows, published_status, schema_version, sql_text};
 use super::journal::{Done, Journal};
-use super::{Latest, Store};
+use super::{Latest, PublishError, Store};
 use crate::release::{RELEASES, release_dir, verify};
 use crate::tiles::sha256;
 
@@ -36,78 +35,6 @@ pub struct Published {
     /// The files the journal listed as uploaded and checked by an earlier run.
     pub journaled: usize,
 }
-
-/// A publish that did not move `latest` to the release.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum PublishError {
-    /// The build output holds no complete release of that number.
-    NotBuilt { number: u32, problem: String },
-    /// The release is already published, and is left as it is.
-    AlreadyPublished {
-        number: u32,
-        published_at: String,
-        latest: Latest,
-    },
-    /// The release was pruned.
-    Pruned { number: u32, pruned_at: String },
-    /// `latest` points to a newer release.
-    NotNewer { number: u32, latest: u32 },
-    /// The journal cannot be used.
-    Journal { number: u32, problem: String },
-    /// An upload or check failed part way; the next run continues from the journal.
-    Interrupted {
-        number: u32,
-        latest: Latest,
-        done: usize,
-        total: usize,
-        problem: String,
-    },
-}
-
-impl fmt::Display for PublishError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::NotBuilt { number, problem } => {
-                write!(f, "release {number} cannot be published: {problem}")
-            }
-            Self::AlreadyPublished {
-                number,
-                published_at,
-                latest,
-            } => write!(
-                f,
-                "release {number} was already published at {published_at}, and is left as it \
-                 is; latest points to {latest}"
-            ),
-            Self::Pruned { number, pruned_at } => write!(
-                f,
-                "release {number} was pruned at {pruned_at} and is not published again"
-            ),
-            Self::NotNewer { number, latest } => write!(
-                f,
-                "release {number} is not published: latest points to release {latest}, which \
-                 is newer"
-            ),
-            Self::Journal { number, problem } => {
-                write!(f, "release {number} is not published: {problem}")
-            }
-            Self::Interrupted {
-                number,
-                latest,
-                done,
-                total,
-                problem,
-            } => write!(
-                f,
-                "release {number} is not completely published: {problem}; latest points to \
-                 {latest}; {done} of {total} files are uploaded and checked, and publishing \
-                 release {number} again continues from there"
-            ),
-        }
-    }
-}
-
-impl std::error::Error for PublishError {}
 
 /// A unit uploaded and checked as one: the schema, an R2 file, or a table's D1 files.
 enum Unit<'m> {
@@ -269,14 +196,9 @@ fn upload(
                 .tables
                 .iter()
                 .find(|t| t.table == table.name)
-                .map_or(0, |t| t.rows);
-            let rows = release_rows(store, table, n)?;
-            if rows != want {
-                return Err(format!(
-                    "D1 holds {rows} rows of release {n} in {}, the manifest lists {want}",
-                    table.name
-                ));
-            }
+                .ok_or_else(|| format!("the manifest gives no fingerprint of {}", table.name))?;
+            let rows = check_rows(store, table, n, want)?;
+            // The count and fingerprint both matched.
             let checked = format!("{}: {rows} rows of release {n}", table.name);
             Ok(files.iter().map(|f| done(f, checked.clone())).collect())
         }
@@ -340,6 +262,10 @@ pub fn publish(
         Refused::Error(e) => e,
         Refused::Query(p) => stopped(Latest(None), 0, p),
     })?;
+    within_cap(store, number, manifest.d1.estimated_bytes).map_err(|e| match e {
+        Refused::Error(e) => e,
+        Refused::Query(p) => stopped(latest, 0, p),
+    })?;
     // The manifest itself goes last, read back against its local bytes.
     let itself = ManifestFile {
         path: keys::MANIFEST.to_owned(),
@@ -392,6 +318,46 @@ pub fn publish(
         uploaded: total - journaled,
         journaled,
     })
+}
+
+/// Checks the estimate `this` of release `number`'s rows, with those of every other release D1
+/// lists that is not pruned, against the cap (CON-3).
+fn within_cap(store: &mut dyn Store, number: u32, this: u64) -> Result<(), Refused> {
+    let status = published_status(store, number).map_err(Refused::Query)?;
+    let (others, releases) = if status.schema {
+        let rows = store
+            .query(&format!(
+                "SELECT total(d1_estimated_bytes) AS bytes, COUNT(*) AS n FROM releases WHERE \
+                 pruned_at IS NULL AND number <> {number}"
+            ))
+            .map_err(Refused::Query)?;
+        let row = rows.first();
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "a sum of byte counts, whole and positive"
+        )]
+        let bytes = row
+            .and_then(|r| r.get("bytes"))
+            .and_then(serde_json::Value::as_f64)
+            .map_or(0, |b| b as u64);
+        let n = row
+            .and_then(|r| r.get("n"))
+            .and_then(serde_json::Value::as_u64)
+            .unwrap_or(0);
+        (bytes, n)
+    } else {
+        (0, 0)
+    };
+    if this + others > D1_CAP_BYTES {
+        return Err(Refused::Error(PublishError::OverCap {
+            number,
+            this,
+            others,
+            releases,
+        }));
+    }
+    Ok(())
 }
 
 /// Why publishing was refused before anything was uploaded.

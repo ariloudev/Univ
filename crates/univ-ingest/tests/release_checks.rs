@@ -15,7 +15,8 @@ use common::normalized_fixture;
 use release_fixture::{Fixture, build_next, built, cross, fixture, record, tiles};
 use univ_ingest::crossmatch::CrossMatched;
 use univ_ingest::release::{
-    BuildError, ENTRY_COUNTS, REDISTRIBUTION, STRUCTURE_CITATIONS, TILE_OBJECTS, list, release_dir,
+    BuildError, D1_FINITE, D1_KEYS, ENTRY_COUNTS, REDISTRIBUTION, STRUCTURE_CITATIONS,
+    TILE_OBJECTS, list, release_dir,
 };
 use univ_ingest::source::{RedistributionStatus, SourceDefinition};
 use univ_ingest::state::{State, pending};
@@ -151,5 +152,51 @@ fn a_release_directory_already_there_is_never_overwritten() {
     assert_eq!(
         State::read(f.state.path()).unwrap().ledger.releases().len(),
         0
+    );
+}
+
+#[test]
+fn a_number_that_is_not_finite_fails_the_build_naming_its_table_row_and_column() {
+    fails_and_uses_no_number(
+        D1_FINITE,
+        "table measurements, row (release = 1, object_id = ",
+        |crossed, _, _, _| {
+            let distance = crossed
+                .objects
+                .iter_mut()
+                .flat_map(|o| o.object.entries.iter_mut())
+                .find_map(|e| e.entry.distances.first_mut())
+                .unwrap();
+            distance.normalized.value = f64::NAN;
+        },
+    );
+    let f = fixture();
+    let mut crossed = cross(&f);
+    let tiles = tiles(&f, &crossed);
+    let entry = crossed
+        .objects
+        .iter_mut()
+        .flat_map(|o| o.object.entries.iter_mut())
+        .find(|e| !e.entry.distances.is_empty())
+        .unwrap();
+    entry.entry.distances[0].normalized.value = f64::INFINITY;
+    let error = built(&f, &crossed, &tiles, &f.definitions, &f.structures).unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains(", column value: inf is not a finite number"),
+        "{error}"
+    );
+}
+
+#[test]
+fn two_rows_with_one_primary_key_fail_the_build() {
+    fails_and_uses_no_number(
+        D1_KEYS,
+        "table objects: 1 row(s) repeat a primary key another row has, from (release = 1, id = ",
+        |crossed, _, _, _| {
+            let twin = crossed.objects[0].clone();
+            crossed.objects.push(twin);
+        },
     );
 }
