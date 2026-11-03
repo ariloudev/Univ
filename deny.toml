@@ -1,0 +1,32 @@
+# cargo-deny: licences, security advisories, banned crates and crate sources.
+# Run by `cargo xtask check`.
+
+[licenses]
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "CC0-1.0",
+    "ISC",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Zlib",
+]
+confidence-threshold = 0.9
+# The allow-list is policy for crates to come, so an entry no crate uses yet is not a warning.
+unused-allowed-license = "allow"
+
+[licenses.private]
+# The workspace's own crates are not published.
+ignore = true
+
+[bans]
+wildcards = "deny"
+# Path dependencies between the workspace's own unpublished crates carry no version.
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
