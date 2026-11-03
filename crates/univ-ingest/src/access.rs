@@ -1,6 +1,7 @@
 //! How each access method asks for a chunk and reads the answer: `VizieR` tab-separated tables,
 //! `SkyServer` and TAP CSV.
 
+use sha2::{Digest, Sha256};
 use url::form_urlencoded::Serializer;
 
 use crate::source::{Access, SourceDefinition};
@@ -59,28 +60,12 @@ pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
                         }
                         None => "the whole table".to_owned(),
                     };
-                    ChunkRequest {
-                        item,
-                        file: format!("chunk-{i:04}.tsv"),
-                        suffix: format!("?{}", query.finish()),
-                    }
+                    request(item, i, "tsv", format!("?{}", query.finish()))
                 })
                 .collect()
         }
-        Access::SkyserverSql { query, chunks } => split(query, *chunks, |sql| {
-            let mut q = Serializer::new(String::new());
-            q.append_pair("cmd", sql);
-            q.append_pair("format", "csv");
-            format!("?{}", q.finish())
-        }),
-        Access::Tap { query, chunks } => split(query, *chunks, |adql| {
-            let mut q = Serializer::new(String::new());
-            q.append_pair("REQUEST", "doQuery");
-            q.append_pair("LANG", "ADQL");
-            q.append_pair("FORMAT", "csv");
-            q.append_pair("QUERY", adql);
-            format!("/sync?{}", q.finish())
-        }),
+        Access::SkyserverSql { query, chunks, .. } => split(query, *chunks, skyserver_suffix),
+        Access::Tap { query, chunks, .. } => split(query, *chunks, tap_suffix),
         Access::File { .. } => Vec::new(),
     }
 }
@@ -112,19 +97,92 @@ fn vizier_query(
 }
 
 /// The chunks of a query whose text holds `{chunk}` and `{chunks}`.
-fn split(query: &str, chunks: u32, suffix: impl Fn(&str) -> String) -> Vec<ChunkRequest> {
+fn split(query: &str, chunks: u32, suffix: fn(&str) -> String) -> Vec<ChunkRequest> {
     (0..chunks)
         .map(|i| {
             let text = query
                 .replace("{chunks}", &chunks.to_string())
                 .replace("{chunk}", &i.to_string());
-            ChunkRequest {
-                item: format!("chunk {} of {chunks}", i + 1),
-                file: format!("chunk-{i:04}.csv"),
-                suffix: suffix(&text),
-            }
+            request(
+                format!("chunk {} of {chunks}", i + 1),
+                i,
+                "csv",
+                suffix(&text),
+            )
         })
         .collect()
+}
+
+/// A chunk request whose file name carries a digest of what it asks, so that a chunk kept from
+/// a query split another way is never taken for one of this split.
+fn request(
+    item: String,
+    index: impl std::fmt::Display,
+    extension: &str,
+    suffix: String,
+) -> ChunkRequest {
+    let digest = Sha256::digest(suffix.as_bytes());
+    let tag = crate::fetch::hex(&digest[..4]);
+    ChunkRequest {
+        item,
+        file: format!("chunk-{index:0>4}-{tag}.{extension}"),
+        suffix,
+    }
+}
+
+fn skyserver_suffix(sql: &str) -> String {
+    let mut q = Serializer::new(String::new());
+    q.append_pair("cmd", sql);
+    q.append_pair("format", "csv");
+    format!("?{}", q.finish())
+}
+
+fn tap_suffix(adql: &str) -> String {
+    let mut q = Serializer::new(String::new());
+    q.append_pair("REQUEST", "doQuery");
+    q.append_pair("LANG", "ADQL");
+    q.append_pair("FORMAT", "csv");
+    q.append_pair("QUERY", adql);
+    format!("/sync?{}", q.finish())
+}
+
+/// The request for the number of rows a source's chunks must hold, where its definition gives
+/// a count query.
+#[must_use]
+pub fn count_request(definition: &SourceDefinition) -> Option<ChunkRequest> {
+    let (count, suffix): (&String, fn(&str) -> String) = match &definition.access {
+        Access::SkyserverSql {
+            count: Some(count), ..
+        } => (count, skyserver_suffix),
+        Access::Tap {
+            count: Some(count), ..
+        } => (count, tap_suffix),
+        _ => return None,
+    };
+    Some(request(
+        "row count".to_owned(),
+        "count",
+        "csv",
+        suffix(count),
+    ))
+}
+
+/// The single number a count query answered.
+///
+/// # Errors
+///
+/// Fails when the answer is not one row holding one whole number.
+pub fn read_count(access: &Access, body: &[u8]) -> Result<u64, String> {
+    let table = read_table(access, body)?;
+    match table.rows.as_slice() {
+        [row] if row.len() == 1 => row[0]
+            .parse()
+            .map_err(|e| format!("the count {:?} is not a whole number: {e}", row[0])),
+        _ => Err(format!(
+            "a count answers one row of one column, not {} rows",
+            table.rows.len()
+        )),
+    }
 }
 
 /// Reads an answer of `access` into a table.

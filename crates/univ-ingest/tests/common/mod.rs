@@ -12,6 +12,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use univ_ingest::events::{Event, RecordingSink};
 use univ_ingest::fetch::{Clock, Fetcher, RetryPolicy};
+use univ_ingest::source::SourceDefinition;
 use univ_model::ids::SourceId;
 
 /// A clock that never waits and remembers each wait it was asked for.
@@ -72,4 +73,15 @@ pub fn source() -> SourceId {
 
 pub fn accept(_: &[u8]) -> Result<(), String> {
     Ok(())
+}
+
+/// A definition of `test-galaxies` with `access`, columns `ra` and `dec`, and one mirror,
+/// written to `dir` and read as a run reads it.
+pub fn definition(dir: &tempfile::TempDir, access: &str, mirror: &str) -> SourceDefinition {
+    let yaml = format!(
+        "id: test-galaxies\ntitle: t\nprovider: p\naccess:\n{access}\ncuts: []\ncolumns:\n  - {{ column: ra, field: right_ascension, unit: degree }}\n  - {{ column: dec, field: declination, unit: degree }}\nframe: icrs\nepoch: 2000.0\ncitation: c\nterms: {{ url: u, quote: q, credit: c }}\nredistribution: {{ status: permitted, reasoning: r }}\nscale_domain: cosmic_web\nmirrors: [\"{mirror}\"]\n"
+    );
+    let path = dir.path().join("test-galaxies.yaml");
+    std::fs::write(&path, yaml).expect("written");
+    SourceDefinition::read(&path).expect("a valid definition")
 }

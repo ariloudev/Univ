@@ -42,8 +42,9 @@ pub struct SourceDefinition {
 #[serde(rename_all = "snake_case", tag = "method", deny_unknown_fields)]
 pub enum Access {
     /// A `VizieR` table through `asu-tsv`, with these constraints. A large table is fetched in
-    /// `slices` of an integer column. `rows` is the row count its `ReadMe` states, checked once
-    /// every slice is read. The computed columns `_RAJ2000` and `_DEJ2000` give decimal degrees.
+    /// `slices` of an integer column. `rows` is the number of rows the whole query must give,
+    /// such as the count a `ReadMe` states for an unfiltered table, checked once every slice is
+    /// read. The computed columns `_RAJ2000` and `_DEJ2000` give decimal degrees.
     VizierTsv {
         table: String,
         constraints: Vec<String>,
@@ -53,9 +54,23 @@ pub enum Access {
         rows: Option<u64>,
     },
     /// An SQL query to `SkyServer`, split into `chunks` by `{chunk}` and `{chunks}` in the query.
-    SkyserverSql { query: String, chunks: u32 },
-    /// An ADQL query to a TAP service, split into `chunks` by `{chunk}` and `{chunks}` in the query.
-    Tap { query: String, chunks: u32 },
+    /// `count` is a query for the number of rows the chunks must hold between them: the service
+    /// stops at 500,000 rows without saying so.
+    SkyserverSql {
+        query: String,
+        chunks: u32,
+        #[serde(default)]
+        count: Option<String>,
+    },
+    /// An ADQL query to a TAP service, split into `chunks` by `{chunk}` and `{chunks}` in the
+    /// query. `count` is a query for the number of rows the chunks must hold between them: the
+    /// ESA Gaia archive stops anonymous answers at 50,000 rows without saying so in CSV.
+    Tap {
+        query: String,
+        chunks: u32,
+        #[serde(default)]
+        count: Option<String>,
+    },
     /// A file at `path` under each mirror, with the size and SHA-256 its provider publishes.
     File {
         path: String,

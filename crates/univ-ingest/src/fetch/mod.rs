@@ -113,7 +113,7 @@ pub(crate) enum Attempt {
 }
 
 /// Checks a body before it is kept, such as a provider's error page sent with status 200.
-pub type Validate = dyn Fn(&[u8]) -> Result<(), String> + Send + Sync;
+pub type Validate<'a> = dyn Fn(&[u8]) -> Result<(), String> + Send + Sync + 'a;
 
 /// Fetches the chunks and files of sources.
 pub struct Fetcher<C: Clock> {
@@ -165,7 +165,7 @@ impl<C: Clock> Fetcher<C> {
         mirrors: &[String],
         suffix: &str,
         dest: &Path,
-        validate: &Validate,
+        validate: &Validate<'_>,
     ) -> Result<Fetched, FetchError> {
         if let Some(on_disk) = self.on_disk(source, item, dest)? {
             return Ok(on_disk);
@@ -221,7 +221,7 @@ impl<C: Clock> Fetcher<C> {
         source: &SourceId,
         item: &str,
         url: String,
-        validate: &Validate,
+        validate: &Validate<'_>,
     ) -> Result<(String, Vec<u8>), Attempt> {
         self.sink.emit(Event::Get {
             source: source.clone(),
@@ -360,7 +360,7 @@ fn disk_error(source: &SourceId, item: &str, error: &std::io::Error) -> FetchErr
 }
 
 /// Lower-case hexadecimal.
-fn hex(bytes: &[u8]) -> String {
+pub(crate) fn hex(bytes: &[u8]) -> String {
     bytes
         .iter()
         .fold(String::with_capacity(bytes.len() * 2), |mut text, byte| {

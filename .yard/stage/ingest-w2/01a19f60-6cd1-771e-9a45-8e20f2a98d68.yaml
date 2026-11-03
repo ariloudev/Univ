@@ -246,3 +246,56 @@ blocks:
             detail: "About 1.25M stars, more than the SDSS galaxies. It traces the Galaxy further out, roughly doubling the star share of D1 and the fetch time."
           - label: "G < 12"
             detail: "About 3.1M stars, the largest set. It is likely to make stars the biggest part of D1 and of the tiles, and the Bailer-Jones fetch grows with it."
+  - key: 01a19f7a-ff3d-775c-ae84-9afac9b5f698
+    id: w2-q-licences
+    kind: question
+    versions:
+      - key: 01a19f7a-ff3d-775c-ae84-9afcce87498a
+        at: 2026-11-03T03:36:40Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should Univ judge sources whose terms are silent, or limited to scientific or non-commercial use?"
+        header: "Licences"
+        context: |-
+          Every source definition must carry a redistribution status: permitted, permitted_with_credit or forbidden. A forbidden source can't be in any release, and that includes structures outlined from its grid. What the research found (quotes and URLs go in each definition):
+
+          | Source(s) | Terms found |
+          |---|---|
+          | 8 VizieR catalogues | CDS: "free of usage in a scientific context"; cite authors and VizieR. The CDS general terms (2026-01-07) license public datasets as Open Licence, ODbL or CC-BY. No per-catalogue licence. |
+          | Gaia DR3, Hipparcos-2 neighbour table | **CC BY-NC 3.0 IGO**: non-commercial only, credit required. |
+          | Bailer-Jones distances | CC BY 4.0 (GAVO). |
+          | SDSS DR17 | Public domain, with an acknowledgement. |
+          | CF4++ grid, CF4 basins, 2M++ reconstruction | **No terms stated**, only requests to cite the papers. |
+          | eRASS1 clusters | No licence on the DR1 site; the papers are CC BY 4.0. |
+          | 2MRS | The team's own files: "Please do not redistribute any of these files". We take the journal table from VizieR instead. |
+
+          In v1, releases are published only to **local** D1 and R2. Nothing is public until a later deployment.
+        options:
+          - label: "Credit, re-judge later"
+            detail: "All 18 become permitted_with_credit. The reasoning records each caveat: non-commercial for Gaia, a scientific context for VizieR, terms silent for the grids. Each is marked provisional, to be judged again before any public deployment. That deployment step is added to the plan's follow-ups. Univ commits to staying non-commercial. I recommend this, since v1 redistributes nothing beyond your own machine."
+            recommended: true
+          - label: "Strict now"
+            detail: "Sources with silent terms (CF4++, CF4 basins, 2M++ reconstruction, eRASS1) are forbidden until their authors grant permission by email. v1 then ships without volume grids, grid-outlined structures or eRASS1 clusters, and the univ-server grid features wait."
+          - label: "Derived only"
+            detail: "Silent-terms grids may feed derived products (structure outlines, tiles) but are never served raw. This needs a fourth status, `derived_only`, which is a spec change to F-1 and the grid-serving features."
+  - key: 01a19f7a-ff3d-775c-ae84-9afb9140544d
+    id: w2-q-sdss-sample
+    kind: question
+    versions:
+      - key: 01a19f7a-ff3d-775c-ae84-9afd72ffe6d7
+        at: 2026-11-03T03:36:40Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Which SDSS DR17 galaxies should the first release take?"
+        header: "SDSS sample"
+        context: "The spec calls the source \"SDSS DR17 main galaxy sample\", with zWarning = 0, 0.005 < z < 0.35 and \"about 1.1 million galaxies\". Those cuts return **1,097,303** spectra: Legacy, BOSS and eBOSS together, as the newsroom atlas used. The true **Main Galaxy Sample** (Strauss et al. 2002, flux-limited r < 17.77) needs `legacy_target1 & 448 > 0` and gives **687,048**. The name and the count in the spec disagree, so one of them changes."
+        options:
+          - label: "All spectra, renamed"
+            detail: "Keep the 1,097,303 galaxies and rename the source \"SDSS DR17 spectroscopic galaxies\" in the spec, stating that its selection is mixed. This is a minor spec fix, and the most galaxies for the atlas. I recommend it, because the spec's count and the earlier work both used this set."
+            recommended: true
+          - label: "Main Galaxy Sample"
+            detail: "Keep the name and add the target-flag cut, for 687,048 galaxies. The sample is uniformly selected, which suits density statistics, but it has 410k fewer galaxies. The spec's count changes to about 0.69 million."

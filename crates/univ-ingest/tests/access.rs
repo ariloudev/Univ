@@ -29,7 +29,12 @@ fn a_vizier_table_is_asked_for_in_slices_of_an_integer_column() {
         items,
         ["cz 1499 to 3498", "cz 3499 to 5498", "cz 5499 to 5999"]
     );
-    assert_eq!(requests[2].file, "chunk-0002.tsv");
+    let (stem, extension) = requests[2].file.rsplit_once('.').unwrap();
+    assert_eq!(extension, "tsv");
+    assert!(
+        stem.starts_with("chunk-0002-") && stem.len() == 19,
+        "{stem}"
+    );
     assert_eq!(
         requests[0].suffix,
         "?-source=VII%2F259%2F6dfgs&-out=ra%2Cdec&-out.max=unlimited&q_cz=3..4&cz=1499..3498"
@@ -88,6 +93,7 @@ fn an_error_page_is_not_read_as_a_table() {
     let tap = Access::Tap {
         query: String::new(),
         chunks: 1,
+        count: None,
     };
     let page =
         b"<?xml version=\"1.0\"?><VOTABLE><INFO name=\"QUERY_STATUS\" value=\"ERROR\"/></VOTABLE>";
