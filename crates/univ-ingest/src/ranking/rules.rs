@@ -29,6 +29,9 @@ pub struct RankingRules {
     /// that share the best method rank; a source not listed comes after every listed one.
     pub source_order: Vec<SourceId>,
     pub source_order_basis: String,
+    /// An object whose preferred distance has a fractional uncertainty above this is not placed.
+    pub too_uncertain_above: f64,
+    pub too_uncertain_basis: String,
     pub parallax_max_fractional_error: f64,
     pub parallax_basis: String,
     pub parallax_zero_point: ZeroPointRule,
@@ -90,6 +93,10 @@ impl RankingRules {
         let t = self.redshift_threshold;
         if !(t.is_finite() && t > 0.0) {
             return bad("redshift_threshold", "is not a positive number");
+        }
+        let u = self.too_uncertain_above;
+        if !(u.is_finite() && u > 0.0) {
+            return bad("too_uncertain_above", "is not a positive number");
         }
         let mut seen = std::collections::HashSet::new();
         if let Some(s) = self.source_order.iter().find(|s| !seen.insert(*s)) {

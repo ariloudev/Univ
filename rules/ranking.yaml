@@ -9,12 +9,14 @@ statement: >-
   compare: for a published distance, its error over its value (a symmetric sigma, the mean of an
   asymmetric interval's two sides, or half the width of a 68% credible interval); for a
   parallax, its error over its value once the zero point below is taken off, the distance being
-  1 / (parallax - Z); for a redshift with a one-sigma error, the comoving distance D(z) of its
-  CMB-frame value under the release cosmology, with
-  sigma_D = D'(z) * sqrt(sigma_z^2 + ((1 + z) * v_pec / c)^2) over D, where v_pec is the
-  peculiar velocity below. Any other candidate (no error at all, a limit, an interval of another
-  probability, or a redshift without a one-sigma error) has no uncertainty, and none is
-  invented. (i) Where any geometric, primary-indicator or secondary-indicator candidate exists,
+  1 / (parallax - Z); for a redshift, the comoving distance D(z) of its CMB-frame value under the
+  release cosmology, with sigma_D = D'(z) * sqrt(sigma_z^2 + ((1 + z) * v_pec / c)^2) over D,
+  where v_pec is the peculiar velocity below and sigma_z the redshift's one-sigma error, taken as
+  0 where none is published: a redshift distance always carries the peculiar-velocity term, the
+  rule's stated term for the motion a redshift does not separate from the Hubble flow, not an
+  invented error of the measurement. Any other candidate (a distance or parallax with no error at
+  all, a limit, or an interval of another probability) has no uncertainty, and none is invented.
+  (i) Where any geometric, primary-indicator or secondary-indicator candidate exists,
   every redshift candidate whose fractional uncertainty exceeds redshift_threshold is set aside.
   (ii) Among the remaining candidates with an uncertainty, the smallest fraction leads;
   candidates within the tie tolerance of the smallest are a tie, which the method rank breaks,
@@ -23,7 +25,7 @@ statement: >-
   candidate with one (or none has one); among several such, the best method rank wins, then the
   source listed first in source_order, then the order of the entries. Otherwise the leader of
   (ii) wins. An object with no candidate is not placed, nor is one whose preferred distance has
-  a fractional uncertainty above 1.
+  a fractional uncertainty above too_uncertain_above.
 peculiar_velocity_km_s: 300
 peculiar_velocity_basis: >-
   The value the specification names (choose-the-preferred-measurement: "a peculiar-velocity
@@ -69,6 +71,12 @@ source_order_basis: >-
   most homogeneous before the older (Cosmicflows-4 2023, its galaxies before its group means;
   McConnachie 2012, whose Local Group distances are a curated homogeneous set; then UNGC
   2013), then the stellar sources, then the redshift surveys.
+too_uncertain_above: 1.0
+too_uncertain_basis: >-
+  The owner's decision of 2026-11-03 and the specification (RQ-26: "its preferred distance has a
+  fractional uncertainty above 1"): a distance more uncertain than itself places the object
+  nowhere in particular along its line of sight, so the object is kept for look-ups with its sky
+  position and given no three-dimensional position.
 parallax_max_fractional_error: 0.1
 parallax_basis: >-
   Pipeline choice following Bailer-Jones 2015 (PASP 127, 994): inverting a parallax is a fair

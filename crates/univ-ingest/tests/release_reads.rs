@@ -215,3 +215,43 @@ fn every_designation_and_name_resolves_to_its_object() {
         }
     }
 }
+
+#[test]
+fn every_placed_object_s_scale_domain_follows_its_placed_distance() {
+    // AC-92: stars where the preferred distance's source is a star source; otherwise nearby
+    // galaxies within 11 Mpc and cosmic web beyond, whatever the source.
+    let fixture = fixture();
+    let Loaded { crossed, db, terms } = load();
+    let domain_of_source = |s: &univ_model::ids::SourceId| {
+        fixture
+            .definitions
+            .iter()
+            .find(|d| &d.id == s)
+            .unwrap()
+            .scale_domain
+    };
+    let mut seen = std::collections::BTreeSet::new();
+    for o in &crossed.objects {
+        let id = i64::try_from(o.id.get()).unwrap();
+        let term: Option<i64> = db
+            .query_row(
+                "SELECT scale_domain FROM objects WHERE release = 1 AND id = ?1",
+                [id],
+                |r| r.get(0),
+            )
+            .unwrap();
+        let Some(position) = &o.position else {
+            assert_eq!(term, None, "{id}");
+            continue;
+        };
+        let source = &o.object.preferred_distance.as_ref().unwrap().measurement;
+        let expected = univ_ingest::tiles::domain_of(
+            domain_of_source(&source.entry().source),
+            position.distance().value,
+        );
+        let name = &terms[&term.unwrap()];
+        assert_eq!(name, univ_ingest::tiles::name_of(expected), "{id}");
+        seen.insert(name.clone());
+    }
+    assert!(seen.len() >= 2, "{seen:?}");
+}

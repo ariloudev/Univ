@@ -49,6 +49,9 @@ pub enum Transformation {
         heliocentric_redshift: f64,
         dipole: DipoleModel,
     },
+    /// The comoving distance in the release cosmology of a redshift its source published in the
+    /// CMB frame, used as published, with no dipole step.
+    ComovingFromPublishedCmbRedshift { cmb_redshift: f64 },
     /// A parallax as its source published it.
     PublishedParallax { native: Quantity },
     /// A parallax zero point subtracted from a parallax: `ϖ − Z`, in mas.
@@ -116,7 +119,10 @@ impl From<Transformation> for Step {
                 hogg!(", §3: distances scale with the Hubble distance c / H0").into()
             }
             Transformation::ComovingRescaled { .. }
-            | Transformation::ComovingFromRedshift { .. } => hogg!(", eq. 15, flat ΛCDM").into(),
+            | Transformation::ComovingFromRedshift { .. }
+            | Transformation::ComovingFromPublishedCmbRedshift { .. } => {
+                hogg!(", eq. 15, flat ΛCDM").into()
+            }
             Transformation::LuminosityToComoving { .. } => {
                 hogg!(", eq. 16 and 21: D_L = (1 + z) D_M, D_M = D_C when flat").into()
             }

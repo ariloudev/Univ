@@ -48,8 +48,9 @@ pub struct FromFile {
     /// The redshift's uncertainty as cited: its column's, or the structure value's, such as
     /// the ±0.060 of the redshift slice the Giant Arc and the Big Ring were found in.
     pub redshift_uncertainty: Uncertainty,
-    /// The comoving distances, Mpc, of the two ends of the redshift's interval (one sigma
-    /// either side, or the cited interval), where the uncertainty gives one.
+    /// The comoving distances, Mpc, of the two ends of the distance's interval as the release
+    /// derives it from the redshift: one sigma either side, the redshift's error and the
+    /// peculiar-velocity term in quadrature, or a cited interval's bounds as bounds.
     pub distance_range_mpc: Option<[f64; 2]>,
     /// The redshift in the CMB frame, toward the member.
     pub cmb_redshift: f64,
@@ -136,30 +137,14 @@ impl<'a> FilePlacer<'a> {
             .apply(z, RedshiftFrame::Heliocentric, direction)
             .ok()?;
         let radial = self.release.radial_from_redshift(&cmb).ok()?;
-        let distance = radial.distance().value;
-        let (minus, plus) = match z.uncertainty {
-            Uncertainty::Symmetric { sigma } => (Some(sigma), Some(sigma)),
+        let d = radial.distance();
+        let distance = d.value;
+        let distance_range_mpc = match d.uncertainty {
             Uncertainty::Asymmetric { minus, plus }
-            | Uncertainty::CredibleInterval { minus, plus, .. } => (Some(minus), Some(plus)),
-            _ => (None, None),
-        };
-        let at = |dz: f64| {
-            let end =
-                Quantity::new(z.value + dz, Unit::Dimensionless, Uncertainty::NoneReported).ok()?;
-            let cmb = self
-                .correction
-                .apply(end, RedshiftFrame::Heliocentric, direction)
-                .ok()?;
-            Some(
-                self.release
-                    .radial_from_redshift(&cmb)
-                    .ok()?
-                    .distance()
-                    .value,
-            )
-        };
-        let distance_range_mpc = match (minus, plus) {
-            (Some(m), Some(p)) => at(-m).zip(at(p)).map(|(low, high)| [low, high]),
+            | Uncertainty::Interval { minus, plus }
+            | Uncertainty::CredibleInterval { minus, plus, .. } => {
+                Some([distance - minus, distance + plus])
+            }
             _ => None,
         };
         let record = FromFile {

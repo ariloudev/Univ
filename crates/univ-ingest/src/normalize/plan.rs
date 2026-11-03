@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, HashMap};
 use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::entry::RedshiftKind;
 use univ_model::position::Frame;
+use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
@@ -66,6 +67,8 @@ pub(super) enum ByCode<T> {
 pub(super) struct RedshiftPlan {
     pub measured: Measured,
     pub kind: ByCode<RedshiftKind>,
+    /// The frame it is published in: heliocentric, or the CMB frame.
+    pub frame: RedshiftFrame,
 }
 
 pub(super) struct DistancePlan {
@@ -273,6 +276,7 @@ impl Resolver<'_> {
         Ok(RedshiftPlan {
             measured: self.reading(&r.column, error.as_ref())?,
             kind,
+            frame: r.frame,
         })
     }
 

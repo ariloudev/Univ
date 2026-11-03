@@ -179,6 +179,7 @@ fn each_uncertainty_is_typed_by_the_form_its_source_published() {
         Uncertainty::NoneReported => "none reported",
         Uncertainty::Symmetric { .. } => "symmetric",
         Uncertainty::Asymmetric { .. } => "asymmetric",
+        Uncertainty::Interval { .. } => "interval",
         Uncertainty::UpperLimit | Uncertainty::LowerLimit => "limit",
         Uncertainty::CredibleRegion { .. } | Uncertainty::CredibleInterval { .. } => "credible",
     };

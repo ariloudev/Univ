@@ -251,10 +251,11 @@ fn check_redshift<'a>(
     ) {
         return Err(problem(at, "reads a column that is neither z nor cz"));
     }
-    if r.frame != RedshiftFrame::Heliocentric {
+    if r.frame == RedshiftFrame::LocalGroup {
         return Err(problem(
             format!("{at}.frame"),
-            "only a heliocentric redshift is moved to the CMB frame",
+            "only a heliocentric redshift, moved to the CMB frame, or one published in the CMB \
+             frame is read",
         ));
     }
     if r.kind.is_some() == r.by_code.is_some() {

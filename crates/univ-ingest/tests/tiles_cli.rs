@@ -122,11 +122,11 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
         "Z Step cross-match: positions: 16 placed of 25\n",
         "Z Stage tiles: 3 items\n",
         "Z Step tiles: stars: 1 nodes, 1 points, largest tile 65 bytes\n",
-        "Z Step tiles: nearby galaxies: 1 nodes, 8 points, largest tile 184 bytes\n",
-        "Z Step tiles: cosmic web: 1 nodes, 7 points, largest tile 167 bytes\n",
+        "Z Step tiles: nearby galaxies: 1 nodes, 9 points, largest tile 201 bytes\n",
+        "Z Step tiles: cosmic web: 1 nodes, 6 points, largest tile 150 bytes\n",
         "Z tiles: 1 stars nodes, 1 stars points, 65 stars largest tile bytes, 1 nearby galaxies \
-         nodes, 8 nearby galaxies points, 184 nearby galaxies largest tile bytes, 1 cosmic web \
-         nodes, 7 cosmic web points, 167 cosmic web largest tile bytes, 9 unplaced objects in no \
+         nodes, 9 nearby galaxies points, 201 nearby galaxies largest tile bytes, 1 cosmic web \
+         nodes, 6 cosmic web points, 150 cosmic web largest tile bytes, 9 unplaced objects in no \
          tile\n",
         "Z Stopped at tiles: tiles only; no release was asked for\n",
     ] {
@@ -136,7 +136,7 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
         .into_iter()
         .map(|d| check_domain(out.path(), d))
         .collect();
-    assert_eq!(points, [1, 8, 7], "the 16 placed objects, each in one tile");
+    assert_eq!(points, [1, 9, 6], "the 16 placed objects, each in one tile");
 
     // The same run again, from a fresh state, writes the same bytes.
     let (again, out_again) = (tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap());

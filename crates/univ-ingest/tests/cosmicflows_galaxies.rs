@@ -7,14 +7,18 @@ mod common;
 mod simulated;
 
 use common::{definition_of, entry, normalize_body, normalized_fixture};
-use simulated::{designation, matching_rules, ranking_rules};
+use simulated::{designation, matching_rules, ranking_rules, with_cz, with_modulus};
+use univ_ingest::crossmatch::place;
 use univ_ingest::matching::match_entries;
 use univ_ingest::normalize::Normalized;
 use univ_ingest::ranking::rank_all;
+use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::derive::Release;
+use univ_model::derive::Transformation;
 use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::entry::CatalogueEntry;
 use univ_model::object::{LineOfSight, MeasurementRef, Object, RelationKind, Resolution};
+use univ_model::redshift::{CmbCorrection, DipoleModel, RedshiftFrame};
 use univ_model::units::Unit;
 
 const M87: &str = "41361";
@@ -56,8 +60,14 @@ fn every_row_reads_with_its_own_modulus_group_and_cmb_velocity() {
     assert!(matches!(&d.method, Method::Mixed(m) if m.len() == 8));
     let mpc = d.normalized.to(Unit::Megaparsec).unwrap().value;
     assert!((mpc - 16.86).abs() < 0.01, "{mpc}");
-    assert!(m87.redshifts.is_empty(), "Vcmb is not read as a redshift");
     assert_eq!(m87.velocity.as_ref().unwrap().normalized.value, 1608.0);
+    // Vcmb is also its redshift, in the CMB frame as published: no dipole is applied again.
+    let [z] = &m87.redshifts[..] else {
+        panic!("{:?}", m87.redshifts)
+    };
+    assert_eq!(z.cmb.published, RedshiftFrame::Cmb);
+    assert_eq!(z.cmb.value.value, 1608.0 / SPEED_OF_LIGHT);
+    assert_eq!(z.velocity.unwrap().value, 1608.0);
     // Centaurus A: 27.804 ± 0.038 mag, 3.64 Mpc.
     let cen_a = entry(&n, "46957");
     let mpc = cen_a.distances[0]
@@ -171,4 +181,59 @@ fn each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan() {
     // M31 and Centaurus A are their own groups' galaxies, whose group rows are not here.
     let cen_a = object_of(&objects, "cosmicflows-4-galaxies", "46957");
     assert_eq!(cen_a.relations, []);
+}
+
+#[test]
+fn a_cosmicflows_4_galaxy_is_placed_at_its_luminosity_distance_over_one_plus_its_cmb_redshift() {
+    // DM is a luminosity distance: M87's 31.134 mag is D_L = 16.858 Mpc, and its Vcmb of
+    // 1608 km/s makes it comoving, D_L / (1 + z), once, with no second dipole step.
+    let mut objects = matched();
+    let release = Release::planck_2018();
+    let at = objects
+        .iter()
+        .position(|o| {
+            o.entry(&designation("cosmicflows-4-galaxies", M87))
+                .is_some()
+        })
+        .unwrap();
+    let placed = place(&mut objects[at], &release, &ranking_rules()).unwrap();
+    let d_l = 10f64.powf(31.134 / 5.0 + 1.0) * 1e-6;
+    let z = 1608.0 / SPEED_OF_LIGHT;
+    let d = placed.distance().value;
+    assert!(
+        (d - d_l / (1.0 + z)).abs() < 1e-9,
+        "{d} against {}",
+        d_l / (1.0 + z)
+    );
+    assert!(placed.chain().iter().any(|s| matches!(
+        s.transformation,
+        Transformation::LuminosityToComoving { cmb_redshift, .. } if (cmb_redshift - z).abs() < 1e-15
+    )));
+    // A group and its galaxy are made comoving alike: a SIMULATED Virgo group row with M87's
+    // modulus and a heliocentric velocity that the dipole takes to the same CMB-frame value is
+    // placed at the same distance.
+    let direction = placed.direction().icrs().unit_vector();
+    let heliocentric = CmbCorrection::new(DipoleModel::Planck2018).heliocentric_of(z, direction);
+    let group = with_cz(
+        with_modulus(
+            virgo_group(),
+            31.134,
+            0.04,
+            (DistanceKind::SecondaryIndicator, Method::TullyFisher),
+        ),
+        heliocentric * SPEED_OF_LIGHT,
+        0.0,
+    );
+    let mut alone = Object::new(vec![univ_model::object::ObjectEntry {
+        entry: group,
+        resolved_by: Resolution::Anchor,
+    }]);
+    univ_ingest::ranking::rank(&mut alone, &ranking_rules(), &release);
+    assert!(matches!(
+        alone.preferred_distance.as_ref().unwrap().measurement,
+        MeasurementRef::Distance { .. }
+    ));
+    let group_placed = place(&mut alone, &release, &ranking_rules()).unwrap();
+    let g = group_placed.distance().value;
+    assert!((g - d).abs() < 1e-6 * d, "group {g} against galaxy {d}");
 }

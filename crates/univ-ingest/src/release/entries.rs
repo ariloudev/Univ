@@ -7,6 +7,7 @@ use univ_model::entry::{CatalogueEntry, Position, PositionUncertainty};
 use univ_model::ids::Designation;
 use univ_model::object::{LineOfSight, ObjectEntry, Resolution};
 use univ_model::position::Frame;
+use univ_model::redshift::RedshiftFrame;
 use univ_model::release::UncertaintyColumns;
 use univ_model::release::rows::{EntryRow, MeasurementRow};
 use univ_model::units::Unit;
@@ -317,15 +318,18 @@ impl Measurements<'_, '_> {
         }
         for (n, z) in entry.redshifts.iter().enumerate() {
             // As published: the velocity cz where the source gives one, else z; normalized to
-            // the heliocentric z, beside its CMB-frame value.
-            let native = z.velocity.as_ref().unwrap_or(&z.cmb.heliocentric);
+            // the z of the frame it was published in, beside its CMB-frame value. A redshift
+            // published in the CMB frame says so, as no dipole moved it there.
+            let published = z.cmb.as_published();
+            let native = z.velocity.as_ref().unwrap_or(&published);
+            let cmb_frame = z.cmb.published == RedshiftFrame::Cmb;
             let terms = &mut numbering.terms;
             let detail = Detail {
                 kind: Some(terms.of(&z.kind)?),
                 method: Some(terms.of(&z.cmb.dipole)?),
                 measure: None,
                 cmb: Some(&z.cmb.value),
-                extra: None,
+                extra: cmb_frame.then(|| r#"{"published_frame":"cmb"}"#.to_owned()),
             };
             self.push(
                 numbering,
@@ -333,7 +337,7 @@ impl Measurements<'_, '_> {
                 n,
                 z.kind_of_value,
                 native,
-                &z.cmb.heliocentric,
+                &published,
                 detail,
             )?;
         }

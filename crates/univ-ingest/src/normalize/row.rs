@@ -11,7 +11,7 @@ use univ_model::entry::{
 };
 use univ_model::ids::{Designation, SourceId};
 use univ_model::position::{Epoch, PositionError};
-use univ_model::redshift::CmbCorrection;
+use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
 
@@ -152,14 +152,12 @@ impl Row<'_, '_> {
             };
             let kind_of_value = self.kind(r.measured.value.index, default);
             let direction = direction.ok_or(LeftOutReason::MissingPosition)?;
-            let redshift = Redshift::heliocentric(
-                measured,
-                kind,
-                kind_of_value,
-                direction,
-                self.cx.correction,
-            )
-            .map_err(entry_reason)?;
+            let redshift =
+                match r.frame {
+                    RedshiftFrame::Cmb => Redshift::published_cmb,
+                    _ => Redshift::heliocentric,
+                }(measured, kind, kind_of_value, direction, self.cx.correction)
+                .map_err(entry_reason)?;
             redshifts.push(redshift);
         }
         let mut distances = Vec::with_capacity(plan.distances.len());

@@ -45,7 +45,8 @@ use univ_model::position::Frame;
 use univ_model::tile::{MAX_TILE_BYTES, NodeBox, TileError, TilePoint, encode};
 
 pub use domain::{
-    Assigned, DOMAINS, DomainPoint, DomainPoints, assign, name_of, unit_of, unit_symbol,
+    Assigned, DOMAINS, DomainPoint, DomainPoints, NEARBY_GALAXIES_DEPTH_MPC, assign, domain_of,
+    name_of, unit_of, unit_symbol,
 };
 pub use manifest::{
     Bounds, ENCODING, FORMAT, FRAME, Level, MANIFEST_VERSION, Manifest, NodeEntry, Rotations,

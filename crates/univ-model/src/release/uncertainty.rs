@@ -5,6 +5,7 @@
 //! | `none_reported`, `upper_limit`, `lower_limit` | | | |
 //! | `symmetric` | sigma | sigma | |
 //! | `asymmetric` | minus | plus | |
+//! | `interval` | minus | plus | |
 //! | `credible_region` | | | probability |
 //! | `credible_interval` | minus | plus | probability |
 
@@ -38,6 +39,9 @@ impl From<Uncertainty> for UncertaintyColumns {
             Uncertainty::Asymmetric { minus, plus } => {
                 columns("asymmetric", Some(minus), Some(plus), None)
             }
+            Uncertainty::Interval { minus, plus } => {
+                columns("interval", Some(minus), Some(plus), None)
+            }
             Uncertainty::CredibleRegion { probability } => {
                 columns("credible_region", None, None, Some(probability))
             }
@@ -69,6 +73,10 @@ impl UncertaintyColumns {
                 minus: self.minus?,
                 plus: self.plus?,
             },
+            "interval" => Uncertainty::Interval {
+                minus: self.minus?,
+                plus: self.plus?,
+            },
             "credible_region" => Uncertainty::CredibleRegion {
                 probability: self.level?,
             },
@@ -96,6 +104,10 @@ mod tests {
             Uncertainty::Asymmetric {
                 minus: 1.5,
                 plus: 2.5,
+            },
+            Uncertainty::Interval {
+                minus: 0.06,
+                plus: 0.06,
             },
             Uncertainty::CredibleRegion { probability: 0.95 },
             Uncertainty::CredibleInterval {

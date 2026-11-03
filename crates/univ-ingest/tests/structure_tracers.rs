@@ -115,8 +115,9 @@ fn a_member_table_without_redshifts_takes_the_structures_cited_redshift_as_an_es
 #[test]
 fn a_member_placed_at_its_structure_s_redshift_slice_carries_the_slice_s_width() {
     // Lopez et al. 2022 and 2024: the Giant Arc and the Big Ring lie in the slice z = 0.802 ±
-    // 0.060. Each absorber placed at 0.802 carries ±0.060, and the comoving distances of the
-    // slice's two ends, not a single distance as though its redshift were known.
+    // 0.060. Each absorber placed at 0.802 carries ±0.060 as a stated interval, not a sigma,
+    // and the comoving distances of the slice's two ends as the bounds of its distance, with no
+    // peculiar-velocity term added to them.
     let (_, lists) = placed();
     let release = Release::planck_2018();
     let (low, high) = (
@@ -129,7 +130,7 @@ fn a_member_placed_at_its_structure_s_redshift_slice_carries_the_slice_s_width()
         for m in &l.from_file {
             assert_eq!(
                 m.redshift_uncertainty,
-                Uncertainty::Asymmetric {
+                Uncertainty::Interval {
                     minus: 0.060,
                     plus: 0.060
                 },
@@ -137,6 +138,11 @@ fn a_member_placed_at_its_structure_s_redshift_slice_carries_the_slice_s_width()
             );
             let [near, far] = m.distance_range_mpc.unwrap();
             assert!(near < m.distance_mpc && m.distance_mpc < far);
+            // The ends are the slice's own, in the CMB frame toward the absorber.
+            let cmb = m.cmb_redshift - m.redshift;
+            let end = |z: f64| release.cosmology().comoving_distance(z + cmb).unwrap();
+            assert!((near - end(0.742)).abs() < 0.002 * near, "{near}");
+            assert!((far - end(0.862)).abs() < 0.002 * far, "{far}");
             // The CMB-frame shift toward each absorber moves the ends by well under 1%.
             assert!((near - low).abs() < 0.01 * low && (far - high).abs() < 0.01 * high);
         }
@@ -153,6 +159,15 @@ fn saraswati_s_cluster_redshifts_are_estimated_as_some_are_photometric() {
     for m in &l.from_file {
         assert_eq!(m.kind, KindOfValue::Estimated, "{}", m.member);
         assert_eq!(m.redshift_uncertainty, Uncertainty::NoneReported);
-        assert_eq!(m.distance_range_mpc, None);
+        // A redshift without an error still has the peculiar-velocity term in its distance.
+        let [near, far] = m.distance_range_mpc.unwrap();
+        let term = 300.0 * (1.0 + m.cmb_redshift) / 299_792.458;
+        let slope = (far - near) / (2.0 * term);
+        assert!(
+            near < m.distance_mpc && m.distance_mpc < far,
+            "{}",
+            m.member
+        );
+        assert!(slope > 0.0 && (far - m.distance_mpc) < 0.01 * m.distance_mpc);
     }
 }

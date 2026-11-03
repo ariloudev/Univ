@@ -28,8 +28,8 @@ use super::d1::D1Writer;
 use super::entries::{Measurements, Numbering, entry_number, entry_row, small};
 use super::terms::Chains;
 use crate::crossmatch::ReleaseObject;
-use crate::source::SourceDefinition;
-use crate::tiles::name_of;
+use crate::source::{ScaleDomain, SourceDefinition};
+use crate::tiles::{domain_of, name_of};
 
 /// `value` as JSON.
 ///
@@ -75,7 +75,7 @@ pub struct ObjectWriter<'a> {
     pub chains: Chains,
     pub counts: ObjectCounts,
     cosmology: &'a Cosmology,
-    domains: HashMap<&'a SourceId, &'static str>,
+    domains: HashMap<&'a SourceId, ScaleDomain>,
 }
 
 /// A preferred measurement as (entry, quantity, n).
@@ -136,7 +136,7 @@ impl<'a> ObjectWriter<'a> {
             cosmology,
             domains: definitions
                 .iter()
-                .map(|d| (&d.id, name_of(d.scale_domain)))
+                .map(|d| (&d.id, d.scale_domain))
                 .collect(),
         }
     }
@@ -198,9 +198,18 @@ impl<'a> ObjectWriter<'a> {
         Ok(())
     }
 
+    /// The scale domain of a placed object: its preferred distance's source's, or, for any
+    /// source but a star source, the one its placed distance falls in.
+    fn domain(&self, o: &ReleaseObject) -> Option<ScaleDomain> {
+        let preferred = o.object.preferred_distance.as_ref()?;
+        let source = self.domains.get(&preferred.measurement.entry().source)?;
+        Some(domain_of(*source, o.position.as_ref()?.distance().value))
+    }
+
     /// The object's own row, its chain numbered, its derived position checked against it.
     fn object_row(&mut self, o: &ReleaseObject) -> Result<ObjectRow, String> {
         let object = &o.object;
+        let domain = self.domain(o);
         let terms = &mut self.numbering.terms;
         let preferred_position = object.preferred_position.as_ref();
         let sky = preferred_position
@@ -215,10 +224,7 @@ impl<'a> ObjectWriter<'a> {
             Placement::Placed => Some(terms.id("not_derivable")),
         };
         let preferred = object.preferred_distance.as_ref();
-        let domain = preferred
-            .filter(|_| placed)
-            .and_then(|p| self.domains.get(&p.measurement.entry().source).copied())
-            .map(|name| terms.id(name));
+        let domain = domain.filter(|_| placed).map(|d| terms.id(name_of(d)));
         let mut row = ObjectRow {
             release: self.numbering.release,
             id: o.id.get(),

@@ -271,3 +271,134 @@ fn an_object_whose_distance_is_more_than_100_percent_uncertain_is_not_placed() {
     assert!(o.placement.is_placed());
     assert!(place(&mut o, &release, &ranking_rules()).is_some());
 }
+
+#[test]
+fn a_group_s_redshift_without_an_error_beats_its_uncertain_modulus() {
+    // Release 2's object 522737, the Cosmicflows-4 group of 1PGC 503048: DM 37.97 ± 2.11 mag
+    // (about 393 Mpc, over 100% uncertain) and Vh = 14,356 km/s with no error published. The
+    // redshift's peculiar-velocity term, about 2%, makes it the candidate with the smaller
+    // uncertainty, and the group is placed by it rather than left unplaced.
+    let (ra, dec) = (204.445_587, -47.333_500);
+    let group = simulated::with_bare_cz(
+        with_modulus(entry("cosmicflows-4", "503048", ra, dec), 37.97, 2.11, TF),
+        14_356.0,
+    );
+    let o = ranked_object(vec![group], &ranking_rules());
+    let p = o.preferred_distance.as_ref().unwrap();
+    assert!(
+        matches!(p.measurement, MeasurementRef::Redshift { .. }),
+        "{p:?}"
+    );
+    assert_eq!(p.decided, Decided::Uncertainty);
+    let f = fraction(p).unwrap();
+    assert!(f > 0.015 && f < 0.025, "{f}");
+    assert!(o.placement.is_placed());
+}
+
+#[test]
+fn m81_keeps_its_cepheid_distance_whatever_its_redshift_s_error() {
+    // M81: UNGC's Cepheid 3.63 Mpc without an error, 2MRS and 2M++ cz = -34 ± 4 km/s, about
+    // +48 km/s in the CMB frame. The redshift distance is several times uncertain, far above the
+    // threshold, with or without its own error.
+    let (ra, dec) = (148.888_25, 69.065_28);
+    let cepheids = with_distance(
+        entry("updated-nearby-galaxies", "MESSIER081", ra, dec),
+        3.63,
+        None,
+        CEPHEIDS,
+    );
+    for bare in [false, true] {
+        let z = if bare {
+            simulated::with_bare_cz(entry("twomrs", "09553318+6903549", ra, dec), -34.0)
+        } else {
+            with_cz(entry("twomrs", "09553318+6903549", ra, dec), -34.0, 4.0)
+        };
+        let p = preferred(vec![z, cepheids.clone()]);
+        assert_eq!(p.rank, MethodRank::PrimaryIndicator, "bare: {bare}");
+        assert!((p.distance_mpc - 3.63).abs() < 1e-12);
+        let lost = p.runner_up.unwrap().1.total().unwrap();
+        assert!(lost > 4.0, "bare: {bare}: {lost}");
+    }
+}
+
+#[test]
+fn an_object_placed_only_by_a_redshift_without_an_error_below_300_km_s_is_too_uncertain() {
+    // cz = 200 km/s published without an error, the only candidate: its 300 km/s
+    // peculiar-velocity term is about 150% of its distance, so it is kept for look-ups but not
+    // placed.
+    let z = simulated::with_bare_cz(entry("twomrs", "z", RA, 0.0), 200.0);
+    let o = ranked_object(vec![z], &ranking_rules());
+    let p = o.preferred_distance.as_ref().unwrap();
+    assert!(fraction(p).unwrap() > 1.0, "{p:?}");
+    assert_eq!(
+        o.placement,
+        Placement::NotPlaced {
+            reason: NotPlacedReason::DistanceTooUncertain
+        }
+    );
+    // At 3,000 km/s the same redshift is placed.
+    let z = simulated::with_bare_cz(entry("twomrs", "z", RA, 0.0), 3_000.0);
+    assert!(
+        ranked_object(vec![z], &ranking_rules())
+            .placement
+            .is_placed()
+    );
+}
+
+#[test]
+fn the_too_uncertain_limit_is_the_rule_s_parameter_recorded_for_the_manifest() {
+    let rules = ranking_rules();
+    assert!((rules.too_uncertain_above - 1.0).abs() < 1e-12);
+    let yaml = rules.record().unwrap();
+    for text in ["too_uncertain_above: 1.0", "too_uncertain_basis:"] {
+        assert!(yaml.contains(text), "{text}");
+    }
+    // A rule with a looser limit places the 150% redshift distance the repository's leaves out.
+    let z = simulated::with_bare_cz(entry("twomrs", "z", RA, 0.0), 200.0);
+    let mut loose = rules.clone();
+    loose.too_uncertain_above = 2.0;
+    assert!(ranked_object(vec![z], &loose).placement.is_placed());
+    let mut bad = rules;
+    bad.too_uncertain_above = 0.0;
+    assert!(bad.check().is_err());
+}
+
+#[test]
+fn the_comparison_recorded_is_the_one_that_decided_between_tied_candidates() {
+    // AC-63: within the tie tolerance (0.001), the method rank decides only where the ranks
+    // differ; between candidates of one rank, the smaller fraction decides, then the order of
+    // the entries.
+    let a = |f: f64| distance("cosmicflows-4", 10.0, Some(10.0 * f), TF);
+    let b = |f: f64| distance("updated-nearby-galaxies", 10.0, Some(10.0 * f), TF);
+    let p = preferred(vec![a(0.1005), b(0.1)]);
+    assert_eq!((p.decided, fraction(&p)), (Decided::Uncertainty, Some(0.1)));
+    let p = preferred(vec![a(0.1), b(0.1)]);
+    assert_eq!(p.decided, Decided::EntryOrder);
+    assert_eq!(p.measurement.entry().source.as_str(), "cosmicflows-4");
+    let cepheids = distance("updated-nearby-galaxies", 10.0, Some(1.005), CEPHEIDS);
+    let p = preferred(vec![a(0.1), cepheids]);
+    assert_eq!(
+        (p.rank, p.decided),
+        (MethodRank::PrimaryIndicator, Decided::MethodRank)
+    );
+}
+
+#[test]
+fn the_source_order_is_recorded_only_where_the_sources_differ() {
+    // Two distances without an error of one method and one source: the entry order decided.
+    let one = distance("updated-nearby-galaxies", 3.0, None, TRGB);
+    let two = with_distance(
+        entry("updated-nearby-galaxies", "e", RA, 0.0),
+        3.1,
+        None,
+        TRGB,
+    );
+    let p = preferred(vec![one.clone(), two]);
+    assert_eq!(p.decided, Decided::EntryOrder);
+    assert!((p.distance_mpc - 3.0).abs() < 1e-12);
+    let lg = with_distance(entry("mcconnachie-2012", "m", RA, 0.0), 3.1, None, TRGB);
+    let p = preferred(vec![one, lg]);
+    assert_eq!(p.decided, Decided::SourceOrder);
+    let yaml = serde_norway::to_string(&Decided::EntryOrder).unwrap();
+    assert_eq!(yaml.trim(), "entry_order");
+}

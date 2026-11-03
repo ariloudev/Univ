@@ -34,6 +34,7 @@ fn redshift(z: f64, uncertainty: Uncertainty, kind: RedshiftKind) -> Redshift {
             value,
             heliocentric: value,
             dipole: DipoleModel::Planck2018,
+            published: univ_model::redshift::RedshiftFrame::Heliocentric,
         },
     }
 }
@@ -170,6 +171,42 @@ fn a_redshift_distance_s_interval_carries_the_peculiar_velocity() {
         panic!("asymmetric")
     };
     assert!(p < 0.6 * plus);
+}
+
+#[test]
+fn a_redshift_without_an_error_keeps_the_peculiar_velocity_term_and_a_stated_interval_its_bounds() {
+    // z = 0.003 published without an error: its distance still carries the 300 km/s term,
+    // D′(z) (1 + z) v / c, never none reported.
+    let release = Release::planck_2018();
+    let z = redshift(
+        0.003,
+        Uncertainty::NoneReported,
+        RedshiftKind::Spectroscopic,
+    );
+    let radial = release.radial_from_redshift(&z.cmb).unwrap();
+    let sigma_d = release.table().slope(0.003).unwrap() * 1.003 * 300.0 / SPEED_OF_LIGHT;
+    let Uncertainty::Asymmetric { minus, plus } = radial.distance().uncertainty else {
+        panic!("{:?}", radial.distance().uncertainty)
+    };
+    assert!(
+        near(minus, sigma_d, 1e-3) && near(plus, sigma_d, 1e-3),
+        "{minus} {plus}"
+    );
+    // The slice z = 0.802 ± 0.060 is a stated interval: its bounds become the distance's, with
+    // nothing added in quadrature.
+    let slice = Uncertainty::Interval {
+        minus: 0.06,
+        plus: 0.06,
+    };
+    let z = redshift(0.802, slice, RedshiftKind::Spectroscopic);
+    let radial = release.radial_from_redshift(&z.cmb).unwrap();
+    let d = radial.distance().value;
+    let Uncertainty::Interval { minus, plus } = radial.distance().uncertainty else {
+        panic!("{:?}", radial.distance().uncertainty)
+    };
+    let table = release.table();
+    assert!(near(d - minus, table.distance(0.742).unwrap(), 1e-9));
+    assert!(near(d + plus, table.distance(0.862).unwrap(), 1e-9));
 }
 
 #[test]

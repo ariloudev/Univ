@@ -5,7 +5,7 @@ mod common;
 mod simulated;
 
 use common::near;
-use simulated::{entry, ranking_rules, with_bare_cz, with_modulus, with_parallax};
+use simulated::{entry, ranking_rules, with_bare_cz, with_distance, with_parallax};
 use univ_ingest::crossmatch::place;
 use univ_ingest::ranking::rank;
 use univ_model::derive::{Release, Transformation};
@@ -31,24 +31,40 @@ fn ranked(entries: Vec<CatalogueEntry>) -> Object {
 }
 
 #[test]
-fn a_spectroscopic_redshift_without_an_error_ranks_after_a_reported_one() {
-    // cz = 15,000 km/s with no error published, beside a Tully-Fisher modulus of ±0.4 mag
-    // (about 18 %). The peculiar velocity alone would give the redshift about 2 %, but the
-    // source reported no error for it: the modulus, which has one, wins.
+fn a_redshift_without_an_error_ranks_by_its_peculiar_velocity_term() {
+    // A 2MRS cz of 10,000 km/s published with a zero error, read as none reported, beside a
+    // Tully-Fisher distance of 25%. The redshift distance still carries the rule's 300 km/s
+    // peculiar-velocity term, about 3%, and wins by it; it has no measurement term.
     let tf = (DistanceKind::SecondaryIndicator, Method::TullyFisher);
     let object = ranked(vec![
-        with_modulus(entry("twomrs", "a", 78.0, 0.0), 35.6, 0.4, tf),
-        with_bare_cz(entry("sixdfgs-dr3", "g", 78.0, 0.0), 15_000.0),
+        with_distance(
+            entry("cosmicflows-4", "a", 78.0, 0.0),
+            140.0,
+            Some(35.0),
+            tf,
+        ),
+        with_bare_cz(entry("twomrs", "g", 78.0, 0.0), 10_000.0),
     ]);
     let preferred = object.preferred_distance.unwrap();
     assert!(
-        matches!(preferred.measurement, MeasurementRef::Distance { .. }),
+        matches!(preferred.measurement, MeasurementRef::Redshift { .. }),
         "{preferred:?}"
     );
     assert_eq!(preferred.decided, Decided::Uncertainty);
+    let FractionalUncertainty::Reported {
+        total,
+        measurement,
+        peculiar_velocity,
+    } = preferred.uncertainty
+    else {
+        panic!("{:?}", preferred.uncertainty)
+    };
+    assert_eq!(measurement, None, "no error of its own is invented");
+    assert_eq!(Some(total), peculiar_velocity);
+    assert!(total > 0.025 && total < 0.035, "{total}");
     let (runner_up, uncertainty) = preferred.runner_up.unwrap();
-    assert!(matches!(runner_up, MeasurementRef::Redshift { .. }));
-    assert_eq!(uncertainty, FractionalUncertainty::NoneReported);
+    assert!(matches!(runner_up, MeasurementRef::Distance { .. }));
+    assert!(near(uncertainty.total().unwrap(), 0.25, 1e-12));
 }
 
 #[test]

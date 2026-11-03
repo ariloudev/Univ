@@ -264,6 +264,7 @@ impl Cited {
         match self.quantity.uncertainty {
             Uncertainty::Symmetric { sigma } => vec![sigma],
             Uncertainty::Asymmetric { minus, plus }
+            | Uncertainty::Interval { minus, plus }
             | Uncertainty::CredibleInterval { minus, plus, .. } => vec![minus, plus],
             _ => vec![],
         }

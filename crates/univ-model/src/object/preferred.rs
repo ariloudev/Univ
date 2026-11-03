@@ -100,7 +100,8 @@ impl FractionalUncertainty {
 pub enum Decided {
     /// It was the object's only candidate.
     OnlyCandidate,
-    /// Its fractional uncertainty was the smallest, beyond the tie tolerance.
+    /// Its fractional uncertainty was the smallest: beyond the tie tolerance, or, within it,
+    /// against candidates of the same method rank.
     Uncertainty,
     /// Its uncertainty tied with another's, and its method ranks higher.
     MethodRank,
@@ -113,6 +114,9 @@ pub enum Decided {
     /// It was published without an uncertainty, shares the best method rank with another such
     /// candidate, and its source comes first in the rule's order of sources.
     SourceOrder,
+    /// Every comparison of the rule tied with another candidate's (the same uncertainty, or
+    /// none, the same method rank and the same source), and its entry comes first in the object.
+    EntryOrder,
 }
 
 /// The measurement that places an object, and the uncertainty that made it win.

@@ -131,18 +131,17 @@ pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> V
             let Some((d, slope)) = redshift_distance(release, z) else {
                 continue;
             };
-            // A redshift without a one-sigma error, of either kind, has no uncertainty the rule
-            // can compare: the peculiar velocity alone would rank it as though it had one.
-            let uncertainty = sigma(r.cmb.value.uncertainty).map_or(
-                FractionalUncertainty::NoneReported,
-                |sigma_z| {
-                    let v = rules.peculiar_velocity_km_s;
-                    reported(
-                        slope * redshift_sigma(z, sigma_z, v) / d,
-                        Some(slope * sigma_z / d),
-                        Some(slope * peculiar_velocity_redshift(z, v) / d),
-                    )
-                },
+            // A redshift distance's uncertainty always holds the rule's peculiar-velocity term,
+            // the line-of-sight velocity a redshift does not separate from the Hubble flow: in
+            // quadrature with the redshift's one-sigma error where one is published, alone
+            // where none is. The term is the rule's stated one, not an invented error, so even a
+            // redshift published without an error ranks as a candidate with an uncertainty.
+            let v = rules.peculiar_velocity_km_s;
+            let sigma_z = sigma(r.cmb.value.uncertainty);
+            let uncertainty = reported(
+                slope * redshift_sigma(z, sigma_z.unwrap_or(0.0), v) / d,
+                sigma_z.map(|s| slope * s / d),
+                Some(slope * peculiar_velocity_redshift(z, v) / d),
             );
             out.push(Candidate {
                 entry: at,
@@ -190,7 +189,9 @@ fn remaining(
     .collect()
 }
 
-/// The winner among `open` by steps (ii) and (iii) of the rule, and what decided it.
+/// The winner among `open` by steps (ii) and (iii) of the rule, and what decided it: the
+/// comparison that set the winner before the candidate ordered next, the last one the rule
+/// needed.
 fn among(
     object: &Object,
     candidates: &[Candidate],
@@ -202,28 +203,27 @@ fn among(
     let (reported, unreported): (Vec<usize>, Vec<usize>) =
         open.iter().partition(|&&i| total(i).is_some());
     let best_reported = reported.iter().map(|&i| rank(i)).min();
-    let qualifying: Vec<usize> = unreported
+    let mut qualifying: Vec<usize> = unreported
         .into_iter()
         .filter(|&i| best_reported.is_none_or(|best| rank(i) < best))
         .collect();
-    if let Some(&best) = qualifying.iter().min_by(|&&a, &&b| {
+    if !qualifying.is_empty() {
         let source = |i: usize| {
             let entry = &object.entries[candidates[i].entry].entry;
             rules.source_place(&entry.designation.source)
         };
-        rank(a)
-            .cmp(&rank(b))
-            .then(source(a).cmp(&source(b)))
-            .then(a.cmp(&b))
-    }) {
-        let shared = qualifying
-            .iter()
-            .filter(|&&i| rank(i) == rank(best))
-            .count();
-        let decided = if shared > 1 {
-            Decided::SourceOrder
-        } else {
-            Decided::MethodRankNoneReported
+        qualifying.sort_by(|&a, &b| {
+            rank(a)
+                .cmp(&rank(b))
+                .then(source(a).cmp(&source(b)))
+                .then(a.cmp(&b))
+        });
+        let best = qualifying[0];
+        let decided = match qualifying.get(1) {
+            None => Decided::MethodRankNoneReported,
+            Some(&next) if rank(next) != rank(best) => Decided::MethodRankNoneReported,
+            Some(&next) if source(next) != source(best) => Decided::SourceOrder,
+            Some(_) => Decided::EntryOrder,
         };
         return Some((best, decided));
     }
@@ -231,21 +231,23 @@ fn among(
         .iter()
         .filter_map(|&i| total(i))
         .fold(f64::INFINITY, f64::min);
-    let tied: Vec<usize> = reported
+    let mut tied: Vec<usize> = reported
         .into_iter()
         .filter(|&i| total(i).is_some_and(|t| t <= smallest + rules.tie_tolerance))
         .collect();
-    let best = tied.iter().copied().min_by(|&a, &b| {
-        let t = |i: usize| total(i).unwrap_or(f64::INFINITY);
+    let t = |i: usize| total(i).unwrap_or(f64::INFINITY);
+    tied.sort_by(|&a, &b| {
         rank(a)
             .cmp(&rank(b))
             .then(t(a).partial_cmp(&t(b)).unwrap_or(Ordering::Equal))
             .then(a.cmp(&b))
-    })?;
-    let decided = if tied.len() > 1 {
-        Decided::MethodRank
-    } else {
-        Decided::Uncertainty
+    });
+    let best = *tied.first()?;
+    let decided = match tied.get(1) {
+        None => Decided::Uncertainty,
+        Some(&next) if rank(next) != rank(best) => Decided::MethodRank,
+        Some(&next) if t(next) > t(best) => Decided::Uncertainty,
+        Some(_) => Decided::EntryOrder,
     };
     Some((best, decided))
 }
