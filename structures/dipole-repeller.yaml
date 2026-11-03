@@ -38,12 +38,17 @@ values:
     value: 16000
     unit: kilometre_per_second
     kind: reconstructed
-    uncertainty: { form: none_reported }
+    uncertainty: { form: symmetric, sigma: 4500 }
     cite:
       paper: hoffman-2017
       table: "1 (arXiv version: Cosmicflows-2 subsamples)"
       row: "full"
       column: "R [km s-1]"
+      cell: "16,000"
+    uncertainty_cite:
+      paper: hoffman-2017
+      sentence: "The uncertainty in μ_bulk changes significantly over the range R = 11,000 to 20,000 km s-1. This again translates to an uncertainty in the radial position of roughly 4,500 km s-1."
+    note: "The abstract gives the same pair: the bulk flow is closely (anti)aligned with the repeller at a distance of 16,000 ± 4,500 km s-1. The uncertainty is the paper's rough one, from the scatter of the bulk flow's direction."
   position_uncertainty:
     value: 4500
     unit: kilometre_per_second
@@ -54,9 +59,11 @@ values:
       sentence: "Assuming that the Repeller is the dominant structure that determines the direction of the bulk flow the scatter in μ_bulk(R) can be translated to uncertainty in the position of the Repeller, ΔR_GR ≈ 4,500 km s-1 (see Methods)."
 disputes: []
 notes: >-
-  A Wiener-filter reconstruction of Cosmicflows-2 peculiar velocities, at the edge of the data. The
-  position is uncertain by about 4,500 km/s, which the paper gives for the position as a whole
-  rather than per coordinate. The paper gives no extent; it predicts a void there, poorly covered
-  by redshift surveys. The newsroom atlas read the 16,000 ± 4,500 km/s of the paper's sentence on
-  the bulk flow as the repeller's distance and its error; the distance is the table's, and the
-  4,500 km/s is the position's uncertainty.
+  A Wiener-filter reconstruction of Cosmicflows-2 peculiar velocities, at the edge of the data.
+  Table 1 gives the repeller's distance and Methods attaches roughly 4,500 km/s to its radial
+  position, as the abstract's 16,000 ± 4,500 km/s does; the same figure, from the scatter of the
+  bulk flow's direction, is also given as the uncertainty of its projected position, so the
+  position is uncertain by about 4,500 km/s in every direction rather than per coordinate as
+  published. The paper gives no extent; it predicts a void there, poorly covered by redshift
+  surveys. The newsroom atlas read the abstract's pair as the repeller's distance and its error,
+  which agrees with the paper.
