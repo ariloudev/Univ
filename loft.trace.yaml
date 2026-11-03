@@ -683,7 +683,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/tiles.rs"
         name: "each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs"
-        body: 3a9568cf0be1788d85df4a3758a4dbf5685c70319467286fd0271d5b6d2ed843
+        body: 43cf0f5f3647a3ca0c2e12412417d837c1a1125aa2fdcc0e2b3bacf6ae0a407b
   - node: 01a19f23-636f-72bd-b194-152dec6f0f74
     reviewed: 28df5847cc86c6116a0c7f237454aac5fcaa22aa14bd92fec391a71658a0e959
     tests:
@@ -695,19 +695,22 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/tiles.rs"
         name: "a_node_splits_above_the_threshold_down_to_the_maximum_depth"
-        body: e0a9dfb204e7d9e01c36e9b95d5bc4ef1399f83c8b9a1724cb4fc1a14b3cfc55
+        body: 7c47f3c0ea6afe2f65472e102843b62c25a1559e487cb9579baedaece4c22d62
   - node: 01a19f23-636f-72bd-b194-152f904380b9
     reviewed: 7d2431096010c48ebc723212fff696cdc87f04830e8a714deb68cef44beafc95
     tests:
       - file: "crates/univ-ingest/tests/tiles.rs"
         name: "each_level_is_an_even_random_subsample_and_a_finer_level_repeats_no_point"
-        body: 1f6d8728dd941ee8e51850a73900398b74c723e651525ad363c7bb76c9ee6935
+        body: fce857707c2b70bce163059ff9fb8cc5d7d085ead94a3dd0bb104dfc06ca6306
+      - file: "crates/univ-ingest/tests/tiles.rs"
+        name: "every_inner_node_of_a_level_keeps_one_fraction_so_shown_densities_keep_their_ratio"
+        body: 7df8ba615b62b1210f183911f1f5d8046e5830fdc52a658de824c6b0cdfba875
   - node: 01a19f23-636f-72bd-b194-15306fd09eef
     reviewed: 211eb666bad386e9ad6411083d3e6514627d0ea6ab4c5138ee94c71818ee57b2
     tests:
       - file: "crates/univ-ingest/tests/tiles.rs"
         name: "the_subsample_is_drawn_with_the_seed_the_manifest_records"
-        body: 8c417779d21dcd9e7baa6a109cfcd839cdbe2f3945ddb07af5b7941b68e0c2d5
+        body: 6e5f58bf9f29fc0139b64bd7d2cf14c85f1c039099de114aeadb77a9d86ba920
   - node: 01a19f23-636f-72bd-b194-15326d1a7654
     reviewed: b701145af69f87f827b433f29f7f727c2ae6c16e5ca1e648b6463bd7887f9328
     tests:
@@ -720,6 +723,9 @@ links:
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "the_manifest_states_the_encoding_version_and_each_levels_step"
         body: 01be2f272c07712f46144f7241ede4b28f574fa2e2bf5a8a63adf14d493473a4
+      - file: "crates/univ-ingest/tests/tiles.rs"
+        name: "the_source_table_says_whether_each_source_gave_points_their_distance_or_position"
+        body: 60e814e89587e17c7ae0f39f0e0774ff8a63c59ae92233c851387c7b9e72bdd5
   - node: 01a19f23-636f-72bd-b194-153527b1bfc8
     reviewed: 01b394cf56e3be520717d6e3aedd5bd7dec4a53014e5dc281727ae06d8e532fd
     tests:
@@ -728,16 +734,16 @@ links:
         body: 375d87ed294516dd46a2432041e40029417dd901de690a52965eba976d84736a
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: f0dfc1bfad8650ea2ca3949fd5fc0f20256df31adf2c45992e9cf39a224cb844
+        body: b9e5f460bcfbc45aa4fa10ecfecdfbffe88d6fd1866ab9e26443191cc6cb855f
   - node: 01a19f23-636f-72bd-b194-1536b3b46eba
     reviewed: 3f558f7729869bcac13551d351b84e16571ee4843004754609970d9b08c111f3
     tests:
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "every_tile_stays_within_one_mebibyte_under_the_repository_rules"
-        body: db4942fe4eb2e6376f5ce22a3f4e6c9e1f3eef06cf193255d638ed91ef161b7a
+        body: 97054eee1aea2463e0d6acf88b853377b74621513cd155de18215f9c75e27d2b
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "a_cell_at_the_maximum_depth_too_full_for_one_tile_refuses_the_build_naming_it"
-        body: 4d4b667c28bd2365a15c8eb4774d38dbf1a3cedad6d9cfb377eac51c0cde502c
+        body: 2d1c4f79556bab2eb54888f998c4289e78c59d48e21efa346180e237a637d893
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "rules_that_would_allow_a_tile_beyond_one_mebibyte_are_refused"
         body: d3bdfc9365ed5a74de896467288f68c278cadedd37776184429da230ae01b9c6
@@ -773,7 +779,7 @@ links:
         body: bba61434f6d49da2d39e82e9e3efcd298358f76ddc7781f0c8da9f6e2c63b5a3
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: f0dfc1bfad8650ea2ca3949fd5fc0f20256df31adf2c45992e9cf39a224cb844
+        body: b9e5f460bcfbc45aa4fa10ecfecdfbffe88d6fd1866ab9e26443191cc6cb855f
   - node: 01a19f22-b0bc-76da-bac8-97803a2ac7b3
     reviewed: 3e35a457eabc0a266e62b03c551f1d2599521cad6be77a3b6e2c6c2e3fc3b71f
     tests:
