@@ -28,28 +28,39 @@ pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
         Access::VizierTsv {
             table,
             constraints,
-            rows,
-            chunk_rows,
+            slices,
+            ..
         } => {
-            let columns: Vec<&str> = std::iter::once("recno")
-                .chain(definition.columns.iter().map(|c| c.column.as_str()))
-                .collect();
-            let chunk_rows = (*chunk_rows).max(1);
-            (0..rows.div_ceil(chunk_rows))
-                .map(|i| {
-                    let first = i * chunk_rows + 1;
-                    let last = ((i + 1) * chunk_rows).min(*rows);
-                    let mut query = Serializer::new(String::new());
-                    query.append_pair("-source", table);
-                    query.append_pair("-out", &columns.join(","));
-                    query.append_pair("-out.max", "unlimited");
-                    for constraint in constraints {
-                        let (key, value) = constraint.split_once('=').unwrap_or((constraint, ""));
-                        query.append_pair(key, value);
+            let ranges = slices.as_ref().map_or_else(
+                || vec![None],
+                |s| {
+                    let mut ranges = Vec::new();
+                    let mut low = s.from;
+                    while low <= s.to {
+                        let high = low.saturating_add(s.step - 1).min(s.to);
+                        ranges.push(Some((s.column.as_str(), low, high)));
+                        low = high.saturating_add(1);
+                        if high == s.to {
+                            break;
+                        }
                     }
-                    query.append_pair("recno", &format!("{first}..{last}"));
+                    ranges
+                },
+            );
+            ranges
+                .into_iter()
+                .enumerate()
+                .map(|(i, range)| {
+                    let mut query = vizier_query(definition, table, constraints);
+                    let item = match range {
+                        Some((column, low, high)) => {
+                            query.append_pair(column, &format!("{low}..{high}"));
+                            format!("{column} {low} to {high}")
+                        }
+                        None => "the whole table".to_owned(),
+                    };
                     ChunkRequest {
-                        item: format!("records {first} to {last}"),
+                        item,
                         file: format!("chunk-{i:04}.tsv"),
                         suffix: format!("?{}", query.finish()),
                     }
@@ -72,6 +83,32 @@ pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
         }),
         Access::File { .. } => Vec::new(),
     }
+}
+
+/// A `VizieR` query for the definition's columns: the computed `_RAJ2000` and `_DEJ2000` are
+/// asked for with `-out.add`, the others with `-out`.
+fn vizier_query(
+    definition: &SourceDefinition,
+    table: &str,
+    constraints: &[String],
+) -> Serializer<'static, String> {
+    let (computed, stored): (Vec<&str>, Vec<&str>) = definition
+        .columns
+        .iter()
+        .map(|c| c.column.as_str())
+        .partition(|c| c.starts_with('_'));
+    let mut query = Serializer::new(String::new());
+    query.append_pair("-source", table);
+    query.append_pair("-out", &stored.join(","));
+    if !computed.is_empty() {
+        query.append_pair("-out.add", "_RAJ,_DEJ");
+    }
+    query.append_pair("-out.max", "unlimited");
+    for constraint in constraints {
+        let (key, value) = constraint.split_once('=').unwrap_or((constraint, ""));
+        query.append_pair(key, value);
+    }
+    query
 }
 
 /// The chunks of a query whose text holds `{chunk}` and `{chunks}`.

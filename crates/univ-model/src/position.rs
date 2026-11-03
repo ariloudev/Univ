@@ -25,6 +25,10 @@ pub enum Frame {
     Galactic,
     /// Supergalactic coordinates with the pole and origin of Lahav et al. 2000 (MNRAS 312, 166).
     Supergalactic,
+    /// FK5 at equinox and epoch J2000, in which `VizieR` gives the positions it computes. It
+    /// differs from the ICRS by tens of milliarcseconds; see [`fk5_to_icrs`].
+    #[serde(rename = "fk5_j2000")]
+    Fk5J2000,
 }
 
 /// The ICRS → galactic rotation as the Hipparcos catalogue prints it (ESA 1997, vol. 1, §1.5.3):
@@ -182,14 +186,45 @@ fn galactic_to_supergalactic() -> Rotation {
 }
 
 /// The rotations from ICRS into each frame, in the order of [`Frame`], computed once.
+/// The FK5 J2000 → ICRS rotation: the orientation of the Hipparcos frame, and so the ICRS,
+/// against FK5 found by Mignard & Froeschlé 2000 (A&A 354, 732), −19.9, −9.1 and +22.9 mas about
+/// x, y and z, built as ERFA's `fk5hip` builds it and as astropy applies it. FK5's spin of about
+/// 0.3 mas a year is left out: it moves a J2000 position by nothing.
+fn fk5_to_icrs() -> Rotation {
+    let mas = |m: f64| (m / 3_600_000.0).to_radians();
+    let vector = [mas(-19.9), mas(-9.1), mas(22.9)];
+    let angle = dot(vector, vector).sqrt();
+    let [ax, ay, az] = vector.map(|c| c / angle);
+    let (sin, cos) = angle.sin_cos();
+    let vers = 1.0 - cos;
+    Rotation([
+        [
+            ax * ax * vers + cos,
+            ax * ay * vers + az * sin,
+            ax * az * vers - ay * sin,
+        ],
+        [
+            ay * ax * vers - az * sin,
+            ay * ay * vers + cos,
+            ay * az * vers + ax * sin,
+        ],
+        [
+            az * ax * vers + ay * sin,
+            az * ay * vers - ax * sin,
+            az * az * vers + cos,
+        ],
+    ])
+}
+
 /// The rotations between every pair of frames, indexed `[from][to]` in the order of [`Frame`],
 /// computed once. A frame to itself is exactly the identity.
-static BETWEEN: LazyLock<[[Rotation; 3]; 3]> = LazyLock::new(|| {
+static BETWEEN: LazyLock<[[Rotation; 4]; 4]> = LazyLock::new(|| {
     let galactic = icrs_to_galactic();
     let from_icrs = [
         Rotation::IDENTITY,
         galactic,
         galactic_to_supergalactic().then_after(&galactic),
+        fk5_to_icrs().transpose(),
     ];
     from_fn(|from| {
         from_fn(|to| {
@@ -323,6 +358,25 @@ mod tests {
         let back = between(Frame::Supergalactic, Frame::Icrs)
             .apply(from_icrs(Frame::Supergalactic).apply(unit_vector(ra, dec)));
         assert_near(lon_lat(back), (ra, dec), 1e-9);
+    }
+
+    #[test]
+    fn fk5_positions_move_to_the_icrs_as_astropy_moves_them() {
+        // astropy 8.0.2: FK5(equinox="J2000") → ICRS, which applies ERFA's fk5hip rotation.
+        let astropy = [
+            [1.0, 1.110_223_371_627e-7, 4.411_803_426_626e-8],
+            [-1.110_223_329_055e-7, 1.0, -9.647_792_746_537e-8],
+            [-4.411_804_498_097e-8, 9.647_792_250_666e-8, 1.0],
+        ];
+        let ours = between(Frame::Fk5J2000, Frame::Icrs);
+        for (row, expected) in ours.0.iter().zip(astropy) {
+            for (value, expected) in row.iter().zip(expected) {
+                assert!((value - expected).abs() < 2e-14, "{value} vs {expected}");
+            }
+        }
+        // A 6dFGS galaxy as VizieR gives it in FK5 J2000.
+        let (ra, dec) = lon_lat(ours.apply(unit_vector(54.430_541_7, -22.908_194_4)));
+        assert_near((ra, dec), (54.430_537_566_576, -22.908_191_374_027), 1e-11);
     }
 
     #[test]

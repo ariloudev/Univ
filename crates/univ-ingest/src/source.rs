@@ -41,13 +41,16 @@ pub struct SourceDefinition {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "method", deny_unknown_fields)]
 pub enum Access {
-    /// A `VizieR` table through `asu-tsv`, with these constraints, fetched in ranges of its
-    /// record number `recno`: `rows` is the table's length and `chunk_rows` each range's.
+    /// A `VizieR` table through `asu-tsv`, with these constraints. A large table is fetched in
+    /// `slices` of an integer column. `rows` is the row count its `ReadMe` states, checked once
+    /// every slice is read. The computed columns `_RAJ2000` and `_DEJ2000` give decimal degrees.
     VizierTsv {
         table: String,
         constraints: Vec<String>,
-        rows: u64,
-        chunk_rows: u64,
+        #[serde(default)]
+        slices: Option<Slices>,
+        #[serde(default)]
+        rows: Option<u64>,
     },
     /// An SQL query to `SkyServer`, split into `chunks` by `{chunk}` and `{chunks}` in the query.
     SkyserverSql { query: String, chunks: u32 },
@@ -61,6 +64,17 @@ pub enum Access {
         #[serde(default)]
         sha256: Option<String>,
     },
+}
+
+/// Inclusive ranges `from..from+step-1`, … up to `to`, of an integer column: they meet without
+/// gap or overlap, as a range of a real-valued column could not.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Slices {
+    pub column: String,
+    pub from: i64,
+    pub to: i64,
+    pub step: i64,
 }
 
 /// A column the source definition takes, mapped to a univ-model field.
@@ -300,8 +314,11 @@ impl Access {
             {
                 Some(("access.query", "is split into chunks but holds no {chunk}"))
             }
-            Self::VizierTsv { rows: 0, .. } => Some(("access.rows", "is zero")),
-            Self::VizierTsv { chunk_rows: 0, .. } => Some(("access.chunk_rows", "is zero")),
+            Self::VizierTsv {
+                slices: Some(s), ..
+            } if s.step < 1 || s.to < s.from => {
+                Some(("access.slices", "needs a positive step and to ≥ from"))
+            }
             Self::SkyserverSql { chunks: 0, .. } | Self::Tap { chunks: 0, .. } => {
                 Some(("access.chunks", "is zero"))
             }

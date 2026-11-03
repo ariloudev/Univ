@@ -19,18 +19,34 @@ fn definition(access: &str) -> SourceDefinition {
 }
 
 #[test]
-fn a_vizier_table_is_asked_for_in_ranges_of_its_record_number() {
+fn a_vizier_table_is_asked_for_in_slices_of_an_integer_column() {
     let d = definition(
-        "  method: vizier_tsv\n  table: VII/259/6dfgs\n  constraints: [\"q_cz=3..4\"]\n  rows: 125071\n  chunk_rows: 50000",
+        "  method: vizier_tsv\n  table: VII/259/6dfgs\n  constraints: [\"q_cz=3..4\"]\n  slices: { column: cz, from: 1499, to: 5999, step: 2000 }\n  rows: 124650",
     );
     let requests = chunk_requests(&d);
-    assert_eq!(requests.len(), 3);
-    assert_eq!(requests[0].item, "records 1 to 50000");
-    assert_eq!(requests[2].item, "records 100001 to 125071");
+    let items: Vec<&str> = requests.iter().map(|r| r.item.as_str()).collect();
+    assert_eq!(
+        items,
+        ["cz 1499 to 3498", "cz 3499 to 5498", "cz 5499 to 5999"]
+    );
     assert_eq!(requests[2].file, "chunk-0002.tsv");
     assert_eq!(
         requests[0].suffix,
-        "?-source=VII%2F259%2F6dfgs&-out=recno%2Cra%2Cdec&-out.max=unlimited&q_cz=3..4&recno=1..50000"
+        "?-source=VII%2F259%2F6dfgs&-out=ra%2Cdec&-out.max=unlimited&q_cz=3..4&cz=1499..3498"
+    );
+}
+
+#[test]
+fn a_small_vizier_table_is_one_request_and_computed_positions_are_added() {
+    let yaml = "  method: vizier_tsv\n  table: J/AJ/144/4/catalog\n  constraints: []";
+    let mut d = definition(yaml);
+    d.columns[0].column = "_RAJ2000".to_owned();
+    let requests = chunk_requests(&d);
+    assert_eq!(requests.len(), 1);
+    assert_eq!(requests[0].item, "the whole table");
+    assert_eq!(
+        requests[0].suffix,
+        "?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=dec&-out.add=_RAJ%2C_DEJ&-out.max=unlimited"
     );
 }
 
@@ -79,8 +95,8 @@ fn an_error_page_is_not_read_as_a_table() {
     let vizier = Access::VizierTsv {
         table: String::new(),
         constraints: vec![],
-        rows: 1,
-        chunk_rows: 1,
+        slices: None,
+        rows: None,
     };
     assert!(read_table(&vizier, b"#INFO\tQUERY_STATUS=ERROR\n").is_err());
 }
