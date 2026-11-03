@@ -1,0 +1,10 @@
+{
+  "name": "univ-tile-decoder",
+  "private": true,
+  "description": "The reference TypeScript decoder of Univ Server's tiles. No dependencies; Node 22.6 or later runs it and its tests directly.",
+  "type": "module",
+  "exports": "./decode.ts",
+  "scripts": {
+    "test": "node --test"
+  }
+}
