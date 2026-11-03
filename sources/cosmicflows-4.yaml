@@ -11,7 +11,7 @@ cuts:
     No server-side cut: every row of the groups table (ReadMe table3.dat + table4.dat, merged by
     VizieR), 38,053 by the ReadMe and as served. The abstract says 38,065 groups; the 12-group
     difference is unexplained.
-  - "The individual-galaxy table J/ApJ/944/94/table2 (55,877 galaxies) is not taken."
+  - "The individual-galaxy table J/ApJ/944/94/table2 (55,877 galaxies) is the source cosmicflows-4-galaxies."
   - "DMzp is the group distance modulus on the scale of the TRGB, Cepheid and maser calibrators (ReadMe Note 1); Dist, derived from it, is not taken."
   - "Vh is the group velocity relative to the Sun; the Local Sheet, CMB and peculiar velocities are not taken."
 columns:
@@ -74,6 +74,204 @@ fixes:
       sqrt(SGX^2+SGY^2+SGZ^2) equals |Vls| within 2 km/s, e.g. 1PGC 12: Vls = 6669, (SGX, SGY, SGZ) =
       (1848, -6271, 1312), norm 6668; 1PGC 6830: Vls = -157, (40, 141, 56), norm 157.
     action: { kind: read_as, columns: [SGX, SGY, SGZ], unit: kilometre_per_second }
+  - defect: >-
+      157 group positions point away from the group in every position column of the groups
+      table: RAdeg/DEdeg (served as _RAJ2000/_DEJ2000), GLON/GLAT, SGL/SGB and the SGX/SGY/SGZ
+      derived from the same direction. No table2 member of these groups lies within 2 degrees of
+      the group, and most lie 4-150 degrees away.
+    change: >-
+      For the 148 of them that share a 1PGC with the group catalogue of Kourkchi & Tully 2017
+      (ApJ 843, 16; VizieR J/ApJ/843/16/table2), from which the paper builds its groups, the
+      position is replaced with Kourkchi & Tully's group centre: the _RAJ2000 and _DEJ2000 that
+      VizieR computes from that table's GLON and GLAT (FK5 J2000), served by vizier.idia.ac.za on
+      2026-11-03 (http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J/ApJ/843/16/table2 with
+      -out=PGC1,GLON,GLAT,SGLON,SGLAT and -out.add=_RAJ,_DEJ, one row for each 1PGC below). SGX,
+      SGY and SGZ, the Local Sheet velocity along the wrong direction, are dropped on those rows
+      rather than recomputed, as the definition does not take Vls: the group keeps its distance,
+      velocity and corrected direction. The other 9 are left out under wrong_position (the next
+      fix).
+    evidence: >-
+      (1) Tully et al. 2023 (Sec. XII) build the groups from Kourkchi & Tully 2017 first, and the
+      ReadMe's Note G1 names it as the source of 1PGC. Of the 2,498 groups that share a 1PGC with
+      KT17 table2, 2,399 have SGL/SGB equal to KT17's; 68 have SGL/SGB equal to KT17's GLON/GLAT
+      (galactic angles written as supergalactic), e.g. 1PGC 1816: KT17 GLON/GLAT
+      311.0300/-65.2643, CF4 SGL/SGB 311.0300/-65.2643, CF4 RA/Dec 79.5961/-8.3090 against its one
+      table2 member at 7.4238/-51.5207 and KT17's centre 7.4237/-51.5207; 80 others differ from
+      KT17 by 4-119 degrees, e.g. 1PGC 41220 (Virgo): CF4 RA/Dec 220.8243/-23.9008, KT17 centre
+      187.7558/+12.4059, M49 (table2) 187.445/+8.000. (2) In every row the six angles and
+      SGX/SGY/SGZ agree with each other (to 0.1 degree; SGX/SGY/SGZ to 1 degree) on the rows
+      served by vizier.idia.ac.za on 2026-11-03, so VizieR computes _RAJ2000/_DEJ2000 correctly
+      from RAdeg/DEdeg: the error is in the published table.
+    action:
+      kind: replace_by_key
+      key: 1PGC
+      columns: [_RAJ2000, _DEJ2000]
+      drop: [SGX, SGY, SGZ]
+      values:
+        "1816": [7.423713, -51.520718]
+        "2980": [12.762179, -7.060564]
+        "4524": [18.816457, -1.613058]
+        "6983": [28.262730, -13.773790]
+        "12838": [51.944587, -21.275534]
+        "13265": [53.621567, -20.322988]
+        "13418": [54.318359, -35.389696]
+        "13419": [54.819585, -23.214126]
+        "13505": [55.120401, -18.604365]
+        "14526": [62.100571, -47.897104]
+        "14558": [62.258089, -45.517682]
+        "14765": [64.371775, -55.781097]
+        "17436": [83.375850, -22.413665]
+        "18147": [89.364975, -19.973761]
+        "18883": [95.244093, -27.259879]
+        "18978": [96.149593, -22.838298]
+        "19127": [97.309400, -17.342702]
+        "19617": [101.725694, -26.827680]
+        "21014": [111.647707, 43.296312]
+        "21542": [115.113157, 23.282561]
+        "23997": [128.399822, -22.882722]
+        "24355": [129.938547, -23.458725]
+        "24789": [132.329243, -19.004193]
+        "24884": [132.887719, 30.868810]
+        "24913": [132.999273, -17.702024]
+        "25067": [133.852802, -3.089299]
+        "25146": [134.263141, -24.682099]
+        "25943": [138.087941, -30.874313]
+        "26151": [139.048305, -16.308988]
+        "26483": [140.345209, -11.954982]
+        "26556": [140.725296, 3.153894]
+        "26601": [140.886971, -23.162674]
+        "26794": [141.735995, -24.782955]
+        "26876": [142.044211, 3.405828]
+        "26981": [142.710516, -30.367229]
+        "27004": [142.668506, -14.746922]
+        "27148": [143.396482, -25.135962]
+        "27882": [146.101119, -28.931600]
+        "27885": [146.040143, -21.092385]
+        "28085": [146.705637, 9.738792]
+        "28845": [150.117818, -34.196712]
+        "28927": [149.980319, -19.628373]
+        "28960": [150.185575, -31.363693]
+        "29220": [151.129757, 60.116890]
+        "29380": [151.672928, -41.118109]
+        "29471": [152.036278, 2.406697]
+        "29527": [152.266390, -11.224460]
+        "29637": [152.692199, -34.844728]
+        "29959": [153.895645, -20.539248]
+        "30204": [155.050374, -21.582389]
+        "30308": [157.074997, -35.113226]
+        "30988": [157.694322, -35.166188]
+        "31472": [159.054349, 13.984915]
+        "31478": [159.086476, -27.562855]
+        "33030": [164.654092, 9.051995]
+        "33418": [165.962429, -20.093011]
+        "33604": [166.633783, 11.385388]
+        "33871": [167.437459, -37.365830]
+        "34028": [167.876652, -18.288802]
+        "34160": [168.322392, -26.786309]
+        "35088": [170.756255, -9.991565]
+        "35417": [172.375691, -36.397995]
+        "35429": [172.498275, -20.582794]
+        "35731": [173.543385, 12.500643]
+        "35754": [173.605784, 33.295892]
+        "36101": [174.172100, -37.888568]
+        "36200": [174.962283, 17.530151]
+        "36304": [175.453156, -6.162650]
+        "36535": [176.116947, 16.519339]
+        "37061": [177.539064, -28.709196]
+        "37093": [177.866903, 35.434412]
+        "37969": [179.878324, -19.041246]
+        "38524": [181.967244, 65.122271]
+        "38950": [183.173419, 1.367976]
+        "39659": [184.897380, 5.894648]
+        "40001": [185.630636, 4.819017]
+        "40375": [186.116952, 8.235981]
+        "40496": [186.686057, -43.365945]
+        "40498": [186.454691, -39.522315]
+        "41220": [187.755781, 12.405941]
+        "42734": [190.675521, 3.046839]
+        "43296": [191.984810, -41.220440]
+        "43557": [192.860723, -26.464249]
+        "44310": [194.360404, -3.490880]
+        "44313": [194.353485, -19.676764]
+        "44340": [194.560637, -27.342522]
+        "44891": [195.332909, -4.543366]
+        "44949": [195.625829, -42.850488]
+        "45174": [195.893199, -30.227749]
+        "45283": [196.382893, -43.615046]
+        "45466": [196.999448, -23.788974]
+        "45606": [197.318357, -5.362201]
+        "45908": [198.214375, -19.503967]
+        "45919": [198.268922, -36.707776]
+        "46247": [198.651610, -16.544634]
+        "46263": [199.281429, 57.539382]
+        "46351": [199.600866, -35.420964]
+        "46409": [200.067488, -47.660159]
+        "46490": [199.914998, -27.222201]
+        "46525": [200.297355, -21.323874]
+        "46618": [199.278371, -43.338742]
+        "47441": [202.385592, 46.637305]
+        "47582": [202.950962, -33.221786]
+        "49205": [207.896947, -48.026578]
+        "49583": [209.156615, -5.469969]
+        "49608": [209.241795, 45.973139]
+        "49673": [209.374028, -43.966981]
+        "49676": [209.318222, -29.273837]
+        "49747": [209.108174, 37.670081]
+        "50191": [211.092943, 55.178905]
+        "50588": [212.500768, 48.676850]
+        "52563": [220.724193, -18.443426]
+        "53724": [225.750834, -13.282657]
+        "53875": [226.396530, -72.432832]
+        "53932": [226.313934, 1.745309]
+        "54364": [228.440528, -14.269832]
+        "54625": [229.642469, -24.079217]
+        "58183": [246.850799, 19.597161]
+        "59111": [252.767137, -60.790929]
+        "61906": [277.242291, -71.702298]
+        "63339": [293.068590, -55.907985]
+        "63620": [296.308544, -54.349694]
+        "63988": [300.297732, -71.219795]
+        "64192": [302.047068, -48.353766]
+        "64607": [305.954607, -19.321526]
+        "65172": [309.885355, -54.303243]
+        "66000": [315.873162, -67.181431]
+        "66069": [316.366136, -52.551975]
+        "66318": [317.960148, -49.270360]
+        "66549": [319.586572, -48.506253]
+        "66934": [323.170550, -44.079694]
+        "67023": [324.624827, -63.966120]
+        "67817": [330.052324, -43.455184]
+        "68291": [333.149148, -68.662080]
+        "68469": [334.125299, -21.414825]
+        "68743": [335.923969, -3.444655]
+        "69733": [341.853443, -22.377413]
+        "69847": [342.648696, -1.537161]
+        "69887": [342.999206, -20.544010]
+        "70094": [344.214953, -43.255691]
+        "70505": [346.757256, -36.273352]
+        "71564": [352.385905, -59.597359]
+        "71730": [353.323093, -45.015694]
+        "71829": [353.870394, -56.012352]
+        "72060": [354.868822, -12.587485]
+        "73126": [359.734996, -55.466284]
+        "771919": [46.032601, -26.059961]
+        "4683839": [186.848584, -50.698246]
+  - defect: >-
+      Nine more groups whose position is wrong in the same way are not in Kourkchi & Tully 2017,
+      so no group centre can be cited for them.
+    change: >-
+      The nine rows are left out under wrong_position, not missing_position: the table publishes
+      a position, and it is wrong.
+    evidence: >-
+      Every table2 member of each of these groups lies 41-148 degrees from the group's published
+      position (vizier.idia.ac.za, 2026-11-03), e.g. 1PGC 43423 (18 members); none of the nine is a
+      PGC1 of J/ApJ/843/16/table2.
+    action:
+      kind: leave_out_when
+      when:
+        column: 1PGC
+        is: ["27823", "39943", "41361", "42447", "43423", "49514", "51922", "66039", "3845519"]
+      reason: wrong_position
 normalization:
   redshifts:
     - column: Vh

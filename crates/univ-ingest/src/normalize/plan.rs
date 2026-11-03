@@ -2,7 +2,7 @@
 //! comes from, the unit it is read in after the fixes, and the readings, rules and fixes that
 //! apply to it.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use univ_model::distance::{DistanceKind, Measure, Method};
 use univ_model::entry::RedshiftKind;
@@ -111,6 +111,30 @@ pub(super) enum FixEffect {
         column: usize,
         when: Condition,
     },
+    /// The columns take the cited values on the row whose `key` cell, as compared, is a key of
+    /// `values`; the `drop` columns are blank there.
+    Replace {
+        key: usize,
+        values: HashMap<String, Vec<String>>,
+        drop: Vec<usize>,
+    },
+    /// The rows whose cell in `column` meets `when` are left out for `reason`.
+    LeaveOutWhen {
+        column: usize,
+        when: Condition,
+        reason: LeftOutReason,
+    },
+}
+
+/// A key cell as compared: trimmed, and a number without its leading zeros.
+pub(super) fn key_of(cell: &str) -> String {
+    let t = cell.trim();
+    if !t.is_empty() && t.bytes().all(|b| b.is_ascii_digit()) {
+        let n = t.trim_start_matches('0');
+        if n.is_empty() { "0" } else { n }.to_owned()
+    } else {
+        t.to_owned()
+    }
 }
 
 /// Everything the row reader needs, resolved once per table.
@@ -326,6 +350,24 @@ impl Resolver<'_> {
                 column: self.index(&when.column)?,
                 when: when.clone(),
             },
+            FixAction::ReplaceByKey {
+                key, drop, values, ..
+            } => FixEffect::Replace {
+                key: self.index(key)?,
+                values: values
+                    .iter()
+                    .map(|(k, v)| (key_of(k), v.iter().map(f64::to_string).collect()))
+                    .collect(),
+                drop: drop
+                    .iter()
+                    .map(|c| self.index(c))
+                    .collect::<Result<_, _>>()?,
+            },
+            FixAction::LeaveOutWhen { when, reason } => FixEffect::LeaveOutWhen {
+                column: self.index(&when.column)?,
+                when: when.clone(),
+                reason: *reason,
+            },
         };
         Ok(FixPlan {
             fix,
@@ -389,7 +431,12 @@ impl Plan {
             .collect::<Result<_, _>>()?;
         let leaving = fixes
             .iter()
-            .filter(|f| matches!(f.effect, FixEffect::ZeroLeavesOut(_)))
+            .filter(|f| {
+                matches!(
+                    f.effect,
+                    FixEffect::ZeroLeavesOut(_) | FixEffect::LeaveOutWhen { .. }
+                )
+            })
             .fold(0, |bits, f| bits | 1 << f.fix);
         Ok(Self {
             identifier,

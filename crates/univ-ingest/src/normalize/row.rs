@@ -15,6 +15,8 @@ use univ_model::redshift::CmbCorrection;
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
 
+mod fixes;
+
 pub(super) use super::plan::Changed;
 use super::plan::{ByCode, Col, Errors, FixEffect, Measured, Plan, RuleAction};
 use crate::source::LeftOutReason;
@@ -37,6 +39,8 @@ struct Row<'a, 'c> {
     methods: Vec<(usize, (DistanceKind, Method))>,
     /// Columns a fix dropped on this row, read as blank.
     dropped: Vec<usize>,
+    /// Cells a fix replaced on this row with cited values, by column.
+    replaced: Vec<(usize, &'a str)>,
     changed: Changed,
 }
 
@@ -52,6 +56,7 @@ pub(super) fn read(
         kinds: Vec::new(),
         methods: Vec::new(),
         dropped: Vec::new(),
+        replaced: Vec::new(),
         changed: 0,
     };
     match row.entry() {
@@ -65,6 +70,9 @@ impl Row<'_, '_> {
     fn cell(&self, index: usize) -> &str {
         if self.dropped.contains(&index) {
             return "";
+        }
+        if let Some((_, value)) = self.replaced.iter().find(|(c, _)| *c == index) {
+            return value;
         }
         self.cells.get(index).map_or("", |c| c.as_ref())
     }
@@ -122,7 +130,9 @@ impl Row<'_, '_> {
         let plan = self.cx.plan;
         self.rules()?;
         self.zero_errors()?;
+        self.leave_out_when()?;
         self.drop_values();
+        self.replace_values();
         let identifier = self
             .text(plan.identifier)
             .ok_or(LeftOutReason::MissingIdentifier)?;
@@ -222,51 +232,6 @@ impl Row<'_, '_> {
             }
         }
         Ok(())
-    }
-
-    /// Leaves the row out when a fix says a zero error in one of its columns marks it.
-    fn zero_errors(&mut self) -> Result<(), LeftOutReason> {
-        for fix in &self.cx.plan.fixes {
-            let FixEffect::ZeroLeavesOut(reason) = fix.effect else {
-                continue;
-            };
-            for column in &fix.columns {
-                if self.number(*column)? == Some(0.0) {
-                    self.changed |= 1 << fix.fix;
-                    return Err(reason);
-                }
-            }
-        }
-        Ok(())
-    }
-
-    /// Drops the values of the columns of each fix whose condition the row meets, marking the
-    /// fix when it dropped a value that was there.
-    fn drop_values(&mut self) {
-        for fix in &self.cx.plan.fixes {
-            let FixEffect::DropWhen { column, when } = &fix.effect else {
-                continue;
-            };
-            if !when.matches(self.cell(*column)) {
-                continue;
-            }
-            if fix.columns.iter().any(|c| !self.cell(*c).trim().is_empty()) {
-                self.changed |= 1 << fix.fix;
-            }
-            self.dropped.extend(&fix.columns);
-        }
-    }
-
-    /// Marks each fix that reads columns in another unit, for an entry that took a value from
-    /// one of them.
-    fn read_as(&mut self) {
-        for fix in &self.cx.plan.fixes {
-            if matches!(fix.effect, FixEffect::ReadAs)
-                && fix.columns.iter().any(|c| !self.cell(*c).is_empty())
-            {
-                self.changed |= 1 << fix.fix;
-            }
-        }
     }
 
     fn position(&mut self) -> Result<Option<Position>, LeftOutReason> {

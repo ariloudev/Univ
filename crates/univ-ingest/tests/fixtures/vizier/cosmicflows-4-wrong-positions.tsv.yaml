@@ -1,0 +1,8 @@
+source: cosmicflows-4
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Fgroups&-out=1PGC%2CDMzp%2Ce_DMzp%2CDMav%2Ce_DMav%2CVh%2CSGX%2CSGY%2CSGZ&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&1PGC=41220%2C1816%2C43423%2C43296
+retrieved: 2026-11-03T12:37:25Z
+sha256: 0e4f9f280917aaa3a94e7bf47a13f3d16edc769304d97e18b444a872e1bc62c6
+note: >-
+  The source's own query narrowed by 1PGC to four groups whose published positions are wrong:
+  1PGC 1816 (KT17's galactic angles written as supergalactic), 41220 (Virgo, 32 degrees off),
+  43296 (Centaurus) and 43423 (not in Kourkchi & Tully 2017), for the position fixes.

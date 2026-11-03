@@ -1,6 +1,8 @@
 //! Rules on single rows of a source and the machine form of each fix: what the normalizer does
 //! to the rows that meet a condition, and why a row is left out.
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::units::Unit;
@@ -36,6 +38,8 @@ pub enum LeftOutReason {
     UnsuitableRedshift,
     /// Every cell of the row is blank: an empty line inside a table, or a line of empty cells.
     BlankRow,
+    /// A fix shows the row's published position is wrong, and no correct one is cited.
+    WrongPosition,
     /// The identifier is one an earlier row of the source already has: the first row with it is
     /// kept, as an entry's designation must name one entry.
     DuplicateIdentifier,
@@ -109,6 +113,20 @@ pub enum FixAction {
     DropWhen {
         columns: Vec<String>,
         when: Condition,
+    },
+    /// On the row whose `key` cell is a key of `values`, the cells of `columns` are replaced
+    /// with the cited values, in the order of `columns`, and the cells of `drop` dropped.
+    ReplaceByKey {
+        key: String,
+        columns: Vec<String>,
+        #[serde(default)]
+        drop: Vec<String>,
+        values: BTreeMap<String, Vec<f64>>,
+    },
+    /// The rows that meet `when` are left out for `reason`.
+    LeaveOutWhen {
+        when: Condition,
+        reason: LeftOutReason,
     },
 }
 
@@ -193,11 +211,36 @@ pub(super) fn check_fixes(table: &Columns<'_>, fixes: &[Fix]) -> Result<(), Prob
         for c in action.columns() {
             table.known(&at, c)?;
         }
-        if let FixAction::DropWhen { when, .. } = action {
+        if let FixAction::DropWhen { when, .. } | FixAction::LeaveOutWhen { when, .. } = action {
             let at = format!("fixes[{i}].action.when");
             table.known(&format!("{at}.column"), &when.column)?;
             if when.is.is_empty() {
                 return Err(problem(at, "lists no value"));
+            }
+        }
+        if let FixAction::ReplaceByKey {
+            key,
+            columns,
+            drop,
+            values,
+        } = action
+        {
+            let at = format!("fixes[{i}].action");
+            table.known(&format!("{at}.key"), key)?;
+            for c in drop {
+                table.known(&format!("{at}.drop"), c)?;
+            }
+            if values.is_empty() {
+                return Err(problem(format!("{at}.values"), "lists no row"));
+            }
+            if let Some((k, _)) = values
+                .iter()
+                .find(|(_, v)| v.len() != columns.len() || v.iter().any(|x| !x.is_finite()))
+            {
+                return Err(problem(
+                    format!("{at}.values.{k}"),
+                    "does not give one number for each column",
+                ));
             }
         }
     }
@@ -213,7 +256,9 @@ impl FixAction {
             | Self::ZeroErrorIsNoneReported { columns }
             | Self::SentinelErrorIsNoneReported { columns, .. }
             | Self::ZeroErrorLeavesOut { columns, .. }
-            | Self::DropWhen { columns, .. } => columns,
+            | Self::DropWhen { columns, .. }
+            | Self::ReplaceByKey { columns, .. } => columns,
+            Self::LeaveOutWhen { when, .. } => std::slice::from_ref(&when.column),
         }
     }
 }
