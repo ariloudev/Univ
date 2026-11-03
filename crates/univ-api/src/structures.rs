@@ -7,6 +7,7 @@
 
 use serde_json::{Value, json};
 use univ_model::api::structures::{Centre, StructureDetail, StructurePage, StructureSummary};
+use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
 
 use crate::backend::{Backend, Row, column, first, json_column};
 use crate::http::{Request, Response};
@@ -15,11 +16,6 @@ use crate::releases::{pinned, published, resolve};
 
 /// The most structures a page of a listing holds.
 pub const PAGE: usize = 500;
-
-/// The frame and origin every placed position of a release is in, as the tile manifests name
-/// them.
-const FRAME: &str = "ICRS equatorial Cartesian";
-const ORIGIN: &str = "Solar System barycentre";
 
 /// Lists the structures of the release the request reads, of the kinds and scale domains it
 /// names (each a comma-separated list; all when absent).
@@ -160,8 +156,8 @@ fn centre(row: &Row) -> Result<Option<Centre>, Problem> {
     let unit: Option<String> = column(row, "unit")?;
     Ok(match (x, y, z) {
         (Some(x), Some(y), Some(z)) => Some(Centre {
-            frame: FRAME.to_owned(),
-            origin: ORIGIN.to_owned(),
+            frame: ICRS_CARTESIAN_NAME.to_owned(),
+            origin: BARYCENTRE.to_owned(),
             unit: unit.unwrap_or_else(|| "Mpc".to_owned()),
             x,
             y,

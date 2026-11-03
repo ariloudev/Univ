@@ -28,8 +28,10 @@ fn structure(id: &str) -> Value {
 #[test]
 fn the_geometry_is_a_univ_model_geometry_in_a_named_frame() {
     let bootes = structure("bootes-void");
-    assert_eq!(bootes["shape"]["kind"], "primitive");
+    assert_eq!(bootes["shape"]["geometry"]["kind"], "primitive");
+    assert_eq!(bootes["shape"]["geometry"]["primitive"]["form"], "sphere");
     assert_eq!(bootes["shape"]["frame"], "icrs");
+    assert_eq!(bootes["shape"]["unit"], "megaparsec");
     assert_eq!(bootes["centre"]["frame"], "ICRS equatorial Cartesian");
     assert_eq!(bootes["centre"]["origin"], "Solar System barycentre");
     assert_eq!(bootes["centre"]["unit"], "Mpc");
@@ -46,7 +48,10 @@ fn each_published_number_cites_its_source_and_where_it_was_taken_from() {
 #[test]
 fn each_number_derived_from_a_published_number_names_its_derivation() {
     let derivation = &structure("bootes-void")["derivation"];
-    assert_eq!(derivation["frame_chain"], json!(["fk4_b1950 -> icrs"]));
+    let step = &derivation["frame_chain"][0];
+    assert_eq!(step["step"], "to_icrs");
+    assert_eq!(step["from"], "fk4_b1950");
+    assert!(step["citation"].as_str().unwrap().contains("Standish 1982"));
     assert!(
         derivation["distance"]["method"]
             .as_str()
@@ -83,7 +88,7 @@ fn each_member_is_an_object_id_or_a_tracer_with_its_position_and_kind() {
 fn a_structure_outlined_from_a_grid_names_the_grid_threshold_and_test() {
     let outline = &structure("local-void")["outline"];
     assert_eq!(outline["grid"], "cf4pp-density");
-    assert_eq!(outline["threshold"], -1.0);
+    assert_eq!(outline["threshold"]["chosen"]["chosen"], -1.0);
     assert_eq!(
         outline["test"]["rule"],
         "underdense_in_every_covering_catalogue"
@@ -96,7 +101,8 @@ fn a_size_published_for_another_hubble_constant_gives_its_native_and_rescaled_va
     let rescaled = &structure("bootes-void")["rescaled"][0];
     assert_eq!(rescaled["native"]["value"], 63.0);
     assert_eq!(rescaled["native"]["hubble_constant"], 50.0);
-    assert_eq!(rescaled["rescaled"]["value"], 46.56);
+    let value = rescaled["rescaled"]["value"].as_f64().unwrap();
+    assert!((value - 63.0 * 50.0 / 67.66).abs() < 1e-9, "{value}");
     assert_eq!(rescaled["method"], "hubble_ratio");
 }
 

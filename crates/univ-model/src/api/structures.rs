@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::derive::Step;
+use crate::geometry::{Aabb, Shape};
 use crate::position::Frame;
 use crate::units::Unit;
 
@@ -66,26 +67,22 @@ pub struct StructureDetail {
     pub record: Value,
     pub centre: Option<Centre>,
     /// The placed geometry's axis-aligned bounds, in the centre's frame and unit.
-    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
-    pub bounds: Option<Value>,
-    /// The placed geometry, one of univ-model's geometry kinds, in ICRS.
-    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
-    pub shape: Option<Value>,
+    pub bounds: Option<Aabb>,
+    /// The placed geometry, one of univ-model's geometry kinds, in a named frame: an admitted
+    /// outline keeps its grid's frame; every other structure is in ICRS.
+    pub shape: Option<Shape>,
     /// How the placed numbers were derived from the published ones.
-    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
-    pub derivation: Option<Value>,
+    pub derivation: Option<Derivation>,
     /// Its members placed whole: objects of the release, or tracers with their own positions
     /// and kinds.
     #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub members: Option<Value>,
     /// For a structure outlined from a volume grid: the grid, the threshold, the test and its
     /// verdict.
-    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
-    pub outline: Option<Value>,
+    pub outline: Option<OutlineRecord>,
     /// Each size published under another cosmology, as published and rescaled to the release
     /// cosmology.
-    #[cfg_attr(feature = "openapi", schema(value_type = Vec<Object>))]
-    pub rescaled: Vec<Value>,
+    pub rescaled: Vec<RescaledLength>,
 }
 
 /// The test of a structure outlined from a volume grid, as `structure_details.outline` records
