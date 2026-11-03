@@ -168,16 +168,24 @@ fn centre(row: &Row) -> Result<Option<Centre>, Problem> {
 }
 
 /// The values of a comma-separated query parameter, as a JSON array for `json_each`, or null
-/// when the parameter is absent.
+/// (no filter) when the parameter is absent or names no value, as a form sends `kind=` when
+/// nothing is chosen.
 fn list_param(request: &Request, name: &str) -> Value {
-    request.param(name).map_or(Value::Null, |text| {
-        json!(
+    let values: Vec<String> = request
+        .param(name)
+        .map(|text| {
             text.split(',')
                 .map(str::trim)
                 .filter(|v| !v.is_empty())
-                .collect::<Vec<_>>()
-        )
-    })
+                .map(str::to_owned)
+                .collect()
+        })
+        .unwrap_or_default();
+    if values.is_empty() {
+        Value::Null
+    } else {
+        json!(values)
+    }
 }
 
 /// The release and the last id a cursor names, or a problem naming the cursor.

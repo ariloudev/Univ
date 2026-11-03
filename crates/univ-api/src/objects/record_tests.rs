@@ -4,7 +4,7 @@
 use serde_json::Value;
 
 use crate::http::Response;
-use crate::testkit::{FIXTURE_OBJECTS, RELEASES, Sqlite, body};
+use crate::testkit::{FIXTURE_OBJECTS, RELEASES, Sqlite};
 
 fn db() -> Sqlite {
     let db = Sqlite::new();
@@ -13,9 +13,7 @@ fn db() -> Sqlite {
 }
 
 fn read(db: &Sqlite, path: &str, query: &str) -> (Response, Value) {
-    let response = db.get(path, query);
-    let document = body(&response);
-    (response, document)
+    db.get_json(path, query)
 }
 
 fn object(id: u64) -> Value {

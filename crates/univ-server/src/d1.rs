@@ -37,6 +37,28 @@ impl Backend for D1 {
             .map_err(error)
     }
 
+    async fn releases_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> Result<Vec<Vec<Row>>, BackendError> {
+        let error = |error: worker::Error| BackendError(error.to_string());
+        let prepared = statements
+            .iter()
+            .map(|(sql, params)| {
+                let params: Vec<JsValue> = params.iter().map(js_value).collect();
+                self.releases.prepare(*sql).bind(&params)
+            })
+            .collect::<worker::Result<Vec<_>>>()
+            .map_err(error)?;
+        self.releases
+            .batch(prepared)
+            .await
+            .map_err(error)?
+            .iter()
+            .map(|result| result.results().map_err(error))
+            .collect()
+    }
+
     fn vocabularies(&self) -> &Vocabularies {
         &VOCABULARIES
     }

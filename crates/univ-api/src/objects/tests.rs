@@ -110,22 +110,22 @@ fn a_designation_is_a_source_and_its_identifier() {
 
 #[test]
 fn a_merged_id_answers_301_to_its_object_in_the_same_release() {
-    let response = db().get("/v1/objects/5", "");
+    let (response, document) = db().get_json("/v1/objects/5", "");
     assert_eq!(response.status, 301);
     assert_eq!(
         response.header("location"),
         Some("/v1/objects/10?release=2")
     );
-    let merged = crate::testkit::body(&response);
+    let merged = document;
     assert_eq!(merged["merged_into"], 10);
     assert_eq!(merged["replaced_in"], 2);
 }
 
 #[test]
 fn a_split_id_answers_300_with_the_objects_that_replaced_it() {
-    let response = db().get("/v1/objects/6", "");
+    let (response, document) = db().get_json("/v1/objects/6", "");
     assert_eq!(response.status, 300);
-    let choices = crate::testkit::body(&response);
+    let choices = document;
     assert_eq!(choices["ambiguity"], "split");
     assert_eq!(choices["replaced_in"], 2);
     assert_eq!(choices["objects"][0]["href"], "/v1/objects/20?release=2");
@@ -134,9 +134,9 @@ fn a_split_id_answers_300_with_the_objects_that_replaced_it() {
 
 #[test]
 fn a_name_more_than_one_object_carries_answers_300_with_each() {
-    let response = db().get("/v1/objects", "name=twins");
+    let (response, document) = db().get_json("/v1/objects", "name=twins");
     assert_eq!(response.status, 300);
-    let choices = crate::testkit::body(&response);
+    let choices = document;
     assert_eq!(choices["ambiguity"], "shared_name");
     assert_eq!(choices["objects"].as_array().unwrap().len(), 2);
     assert_eq!(choices["objects"][0]["names"][0], "Twins");
@@ -144,7 +144,7 @@ fn a_name_more_than_one_object_carries_answers_300_with_each() {
 
 #[test]
 fn a_retired_id_answers_404_naming_the_release_that_retired_it() {
-    let response = db().get("/v1/objects/7", "");
+    let (response, document) = db().get_json("/v1/objects/7", "");
     assert_eq!(response.status, 404);
-    assert_eq!(crate::testkit::body(&response)["retired_in"], 2);
+    assert_eq!(document["retired_in"], 2);
 }

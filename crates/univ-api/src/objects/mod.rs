@@ -65,8 +65,8 @@ pub async fn get<B: Backend>(
                 merged_into: into,
                 href: href(into, release),
             };
-            let mut response = Response::json(&merged)?.with_header("location", &merged.href);
-            response.status = 301;
+            let response =
+                Response::json_with_status(301, &merged)?.with_header("location", &merged.href);
             Ok(pinned(response, release))
         }
         Resolved::Split { into, replaced_in } => choices(
@@ -74,7 +74,7 @@ pub async fn get<B: Backend>(
             looked_up,
             Ambiguity::Split,
             Some(replaced_in),
-            into.into_iter().map(|id| (id, Vec::new())).collect(),
+            into.into_iter().map(|id| (id, Vec::new())),
         ),
         Resolved::Retired { replaced_in } => {
             Err(not_found(release, &looked_up).with("retired_in", replaced_in))
@@ -210,7 +210,7 @@ fn choices(
     looked_up: LookedUp,
     ambiguity: Ambiguity,
     replaced_in: Option<u32>,
-    objects: Vec<(u64, Vec<String>)>,
+    objects: impl IntoIterator<Item = (u64, Vec<String>)>,
 ) -> Result<Response, Problem> {
     let choices = ObjectChoices {
         release,
@@ -226,9 +226,7 @@ fn choices(
             })
             .collect(),
     };
-    let mut response = Response::json(&choices)?;
-    response.status = 300;
-    Ok(pinned(response, release))
+    Ok(pinned(Response::json_with_status(300, &choices)?, release))
 }
 
 /// The path that reads object `id` in `release`.

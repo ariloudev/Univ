@@ -40,34 +40,28 @@ pub async fn present<B: Backend>(backend: &B, release: u32, id: u64) -> Result<b
     Ok(!rows.is_empty())
 }
 
-/// The ledger's change of `id` recorded by a release up to `release`: the release, the change
-/// and the ids that replaced it.
+/// The ledger's change of `id` recorded by a release up to `release`: that release and the ids
+/// that replaced it (none for a retirement).
 async fn change<B: Backend>(
     backend: &B,
     release: u32,
     id: u64,
-) -> Result<Option<(u32, String, Vec<u64>)>, Problem> {
+) -> Result<Option<(u32, Vec<u64>)>, Problem> {
     let rows = backend
         .releases(
-            "SELECT release, change, replaced_by FROM ids_replaced \
+            "SELECT release, replaced_by FROM ids_replaced \
              WHERE id = ?1 AND release <= ?2",
             &[json!(id), json!(release)],
         )
         .await?;
     first(rows)
-        .map(|row| {
-            Ok((
-                column(&row, "release")?,
-                column(&row, "change")?,
-                json_column(&row, "replaced_by")?,
-            ))
-        })
+        .map(|row| Ok((column(&row, "release")?, json_column(&row, "replaced_by")?)))
         .transpose()
 }
 
 /// What `id`, absent from `release`, leads to there.
 pub async fn replaced<B: Backend>(backend: &B, release: u32, id: u64) -> Result<Resolved, Problem> {
-    let Some((replaced_in, _, by)) = change(backend, release, id).await? else {
+    let Some((replaced_in, by)) = change(backend, release, id).await? else {
         return Ok(Resolved::Unknown);
     };
     let mut found: Vec<u64> = Vec::new();
@@ -80,7 +74,7 @@ pub async fn replaced<B: Backend>(backend: &B, release: u32, id: u64) -> Result<
         }
         if present(backend, release, next).await? {
             found.push(next);
-        } else if let Some((_, _, further)) = change(backend, release, next).await? {
+        } else if let Some((_, further)) = change(backend, release, next).await? {
             pending.extend(further);
         }
     }

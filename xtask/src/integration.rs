@@ -285,16 +285,29 @@ impl Drop for Wrangler {
 
 /// Whether the Worker on `port` answers `GET /v1/openapi.json` with 200.
 fn answers(port: u16) -> bool {
-    let Ok(mut stream) = TcpStream::connect(("127.0.0.1", port)) else {
-        return false;
-    };
-    let _ = stream.set_read_timeout(Some(Duration::from_secs(5)));
-    let request = format!(
-        "GET /v1/openapi.json HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n"
-    );
-    if stream.write_all(request.as_bytes()).is_err() {
-        return false;
-    }
-    let mut head = [0_u8; 12];
-    stream.read_exact(&mut head).is_ok() && head.ends_with(b"200")
+    status(port, "/v1/openapi.json", Duration::from_secs(5)) == Ok(200)
+}
+
+/// The status of `GET path` on the Worker at `port`, its answer read to the end within
+/// `timeout`.
+pub(crate) fn status(port: u16, path: &str, timeout: Duration) -> Result<u16, String> {
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).map_err(|e| e.to_string())?;
+    stream
+        .set_read_timeout(Some(timeout))
+        .map_err(|e| e.to_string())?;
+    let request =
+        format!("GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n");
+    stream
+        .write_all(request.as_bytes())
+        .map_err(|e| e.to_string())?;
+    let mut response = Vec::new();
+    stream
+        .read_to_end(&mut response)
+        .map_err(|e| e.to_string())?;
+    let line = response.split(|b| *b == b'\n').next().unwrap_or_default();
+    String::from_utf8_lossy(line)
+        .split_whitespace()
+        .nth(1)
+        .and_then(|status| status.parse().ok())
+        .ok_or_else(|| "no status line".to_owned())
 }

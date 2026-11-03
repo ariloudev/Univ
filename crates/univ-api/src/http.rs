@@ -129,8 +129,20 @@ impl Response {
     ///
     /// An internal-error problem when `value` does not serialize.
     pub fn json<T: serde::Serialize>(value: &T) -> Result<Self, crate::Problem> {
+        Self::json_with_status(200, value)
+    }
+
+    /// A response of `status` holding `value` serialized as JSON.
+    ///
+    /// # Errors
+    ///
+    /// An internal-error problem when `value` does not serialize.
+    pub fn json_with_status<T: serde::Serialize>(
+        status: u16,
+        value: &T,
+    ) -> Result<Self, crate::Problem> {
         serde_json::to_vec(value)
-            .map(|body| Self::bytes(200, "application/json", body))
+            .map(|body| Self::bytes(status, "application/json", body))
             .map_err(|error| {
                 crate::Problem::new(
                     crate::ProblemType::InternalError,

@@ -65,6 +65,15 @@ impl Sqlite {
     }
 }
 
+impl Sqlite {
+    /// The answer to a GET of `path` with the raw query `query`, and the JSON it carries.
+    pub fn get_json(&self, path: &str, query: &str) -> (Response, Value) {
+        let response = self.get(path, query);
+        let document = body(&response);
+        (response, document)
+    }
+}
+
 /// The JSON document a response carries.
 pub fn body(response: &Response) -> Value {
     serde_json::from_slice(response.body.as_bytes())
@@ -79,6 +88,19 @@ impl Backend for Sqlite {
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>> {
         self.statements.set(self.statements.get() + 1);
         std::future::ready(self.query(sql, params))
+    }
+
+    fn releases_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>> {
+        self.statements.set(self.statements.get() + 1);
+        std::future::ready(
+            statements
+                .iter()
+                .map(|(sql, params)| self.query(sql, params))
+                .collect(),
+        )
     }
 
     fn vocabularies(&self) -> &crate::Vocabularies {

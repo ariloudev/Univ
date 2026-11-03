@@ -6,12 +6,10 @@
 //! counted, and prints the 50th, 95th and 99th percentiles. This is the local runtime and its
 //! local D1, so it measures the Worker and its queries, not Cloudflare's network.
 
-use std::io::{Read, Write};
-use std::net::TcpStream;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use crate::integration::{REAL_STATE, migrate, release_tables, start_ready};
+use crate::integration::{REAL_STATE, migrate, release_tables, start_ready, status};
 
 /// How many lookups are timed.
 const SAMPLES: usize = 1_000;
@@ -57,7 +55,7 @@ pub fn lookup(root: &Path) -> bool {
     for (n, id) in ids.iter().enumerate() {
         let path = format!("/v1/objects/{id}");
         let started = Instant::now();
-        let status = get(port, &path);
+        let status = status(port, &path, Duration::from_secs(30));
         let took = started.elapsed();
         match status {
             Ok(200) => {}
@@ -159,29 +157,6 @@ fn release_database(state: &Path) -> Result<PathBuf, String> {
         .filter(|path| path.extension().is_some_and(|ext| ext == "sqlite"))
         .max_by_key(|path| path.metadata().map_or(0, |m| m.len()))
         .ok_or_else(|| format!("{} holds no D1 database", dir.display()))
-}
-
-/// The status of `GET path` on the Worker at `port`, its body read to the end.
-fn get(port: u16, path: &str) -> Result<u16, String> {
-    let mut stream = TcpStream::connect(("127.0.0.1", port)).map_err(|e| e.to_string())?;
-    stream
-        .set_read_timeout(Some(Duration::from_secs(30)))
-        .map_err(|e| e.to_string())?;
-    let request =
-        format!("GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n");
-    stream
-        .write_all(request.as_bytes())
-        .map_err(|e| e.to_string())?;
-    let mut response = Vec::new();
-    stream
-        .read_to_end(&mut response)
-        .map_err(|e| e.to_string())?;
-    let line = response.split(|b| *b == b'\n').next().unwrap_or_default();
-    String::from_utf8_lossy(line)
-        .split_whitespace()
-        .nth(1)
-        .and_then(|status| status.parse().ok())
-        .ok_or_else(|| "no status line".to_owned())
 }
 
 #[cfg(test)]

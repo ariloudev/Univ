@@ -143,6 +143,12 @@ fn the_listing_is_filtered_by_the_kinds_and_scale_domains_named() {
     assert_eq!(both["structures"].as_array().unwrap().len(), 3);
     let none = read(&db(), "/v1/structures", "scale_domain=stars");
     assert_eq!(none["structures"], json!([]));
+    let unfiltered = read(&db(), "/v1/structures", "kind=&scale_domain=+,");
+    assert_eq!(
+        unfiltered["structures"].as_array().unwrap().len(),
+        3,
+        "an empty filter is none"
+    );
 }
 
 #[test]
