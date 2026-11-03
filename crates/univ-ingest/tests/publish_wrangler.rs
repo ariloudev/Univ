@@ -19,12 +19,17 @@ use release_fixture::{build_next, fixture};
 use univ_ingest::publish::{Store, Wrangler};
 use univ_model::release::keys;
 
-fn univ_ingest(command: &str, number: u32, out: &Path, persist: &Path) -> Output {
+/// The fixture's build output and state directory.
+type Dirs<'a> = (&'a Path, &'a Path);
+
+fn univ_ingest(command: &str, number: u32, (out, state): Dirs<'_>, persist: &Path) -> Output {
     Command::new(env!("CARGO_BIN_EXE_univ-ingest"))
         .arg(command)
         .arg(number.to_string())
         .arg("--out")
         .arg(out)
+        .arg("--state")
+        .arg(state)
         .arg("--persist-to")
         .arg(persist)
         .arg("--config")
@@ -34,7 +39,7 @@ fn univ_ingest(command: &str, number: u32, out: &Path, persist: &Path) -> Output
 }
 
 /// Runs the command, echoes its lines, and gives its log.
-fn run_ok(command: &str, number: u32, out: &Path, persist: &Path) -> String {
+fn run_ok(command: &str, number: u32, out: Dirs<'_>, persist: &Path) -> String {
     let run = univ_ingest(command, number, out, persist);
     let log = String::from_utf8(run.stderr).unwrap();
     eprintln!("$ univ-ingest {command} {number}\n{log}");
@@ -54,7 +59,7 @@ fn int(store: &mut Wrangler, sql: &str) -> i64 {
 fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
     let f = fixture();
     let persist = tempfile::tempdir().unwrap();
-    let out = f.out.path();
+    let out = (f.out.path(), f.state.path());
     let built = build_next(&f);
     eprintln!("built release 1: {} files", built.manifest.files.len());
 

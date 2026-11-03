@@ -20,6 +20,7 @@ use super::{
 };
 use crate::ranking::RankingRules;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
+use crate::yaml::{FileError, parse_checked};
 
 /// The directory, within the build output, of the releases.
 pub const RELEASES: &str = "releases";
@@ -390,8 +391,45 @@ pub fn write(dir: &Path, files: &[ReleaseFile], manifest: &ReleaseManifest) -> R
         std::fs::write(&path, &f.bytes).map_err(|e| fail(&path, &e))?;
     }
     let path = dir.join(keys::MANIFEST);
-    let yaml = serde_norway::to_string(manifest).map_err(|e| fail(&path, &e))?;
-    std::fs::write(&path, yaml).map_err(|e| fail(&path, &e))
+    crate::yaml::write(&path, manifest).map_err(|e| fail(&path, &e))
+}
+
+/// The manifest of release `number` as `text`, read from `origin`, checked to be of that
+/// release.
+///
+/// # Errors
+///
+/// Fails, naming where it came from and the field, when it does not parse as a manifest or is
+/// another release's.
+pub fn parse_manifest(
+    origin: &Path,
+    text: &str,
+    number: u32,
+) -> Result<ReleaseManifest, FileError> {
+    parse_checked(origin, text, |m: &ReleaseManifest| {
+        if m.release == number {
+            Ok(())
+        } else {
+            Err((
+                "release".to_owned(),
+                format!("is {}, not {number}", m.release),
+            ))
+        }
+    })
+}
+
+/// The manifest of release `number` in its release directory `dir`, with its bytes as read.
+///
+/// # Errors
+///
+/// As [`parse_manifest`], and when the file cannot be read.
+pub fn read_manifest(dir: &Path, number: u32) -> Result<(ReleaseManifest, Vec<u8>), FileError> {
+    let path = dir.join(keys::MANIFEST);
+    let bytes = std::fs::read(&path).map_err(|e| FileError::new(&path, "(file)", e.to_string()))?;
+    let text =
+        std::str::from_utf8(&bytes).map_err(|e| FileError::new(&path, "(file)", e.to_string()))?;
+    let manifest = parse_manifest(&path, text, number)?;
+    Ok((manifest, bytes))
 }
 
 /// Reads every file the manifest lists back from `dir` and checks its size and SHA-256, and

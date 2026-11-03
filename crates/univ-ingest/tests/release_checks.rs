@@ -7,13 +7,16 @@
 )]
 
 mod common;
+mod memory_store;
 mod release_fixture;
 
 use std::path::Path;
 
 use common::normalized_fixture;
+use memory_store::{Clock, MemoryStore, publishing};
 use release_fixture::{Fixture, build_next, built, cross, fixture, record, tiles};
 use univ_ingest::crossmatch::CrossMatched;
+use univ_ingest::publish::PublishError;
 use univ_ingest::release::{
     BuildError, D1_FINITE, D1_KEYS, ENTRY_COUNTS, REDISTRIBUTION, STRUCTURE_CITATIONS,
     TILE_OBJECTS, list, release_dir,
@@ -199,4 +202,87 @@ fn two_rows_with_one_primary_key_fail_the_build() {
             crossed.objects.push(twin);
         },
     );
+}
+
+#[test]
+fn a_failure_while_recording_the_state_uses_no_number_and_leaves_no_release_publish_accepts() {
+    let f = fixture();
+    let crossed = cross(&f);
+    let laid = tiles(&f, &crossed);
+    // `current` cannot be switched: its part file's place is taken by a directory.
+    let blocked = f.state.path().join("current.part");
+    std::fs::create_dir_all(blocked.join("in-the-way")).unwrap();
+    let error = built(&f, &crossed, &laid, &f.definitions, &f.structures).unwrap_err();
+    let message = error.to_string();
+    assert!(
+        message.contains("number is still free") && message.contains("cannot be recorded"),
+        "{message}"
+    );
+    assert!(!release_dir(f.out.path(), 1).exists());
+    assert_eq!(
+        State::read(f.state.path()).unwrap().ledger.releases().len(),
+        0
+    );
+    assert!(!f.state.path().join("states/1").exists());
+    std::fs::remove_dir_all(&blocked).unwrap();
+    let kept = Fixture {
+        state: f.state,
+        out: f.out,
+        ..fixture()
+    };
+    let again = build_next(&kept);
+    assert_eq!(again.number, 1);
+
+    // A build stopped between its release directory's rename and the state's switch leaves a
+    // release the state does not record: publish refuses it, and the next build names it.
+    let stopped = fixture();
+    let dir = release_dir(stopped.out.path(), 1);
+    std::fs::create_dir_all(dir.parent().unwrap()).unwrap();
+    copy_dir(&again.dir, &dir);
+    let journals = tempfile::tempdir().unwrap();
+    let mut store = MemoryStore::default();
+    let refused = publishing(
+        &mut store,
+        1,
+        stopped.out.path(),
+        stopped.state.path(),
+        journals.path(),
+        &Clock::new(),
+    )
+    .unwrap_err();
+    assert!(
+        matches!(&refused, PublishError::NotBuilt { problem, .. }
+            if problem.contains("does not record it")),
+        "{refused}"
+    );
+    assert_eq!(store.uploaded(), Vec::<String>::new());
+    let crossed = cross(&stopped);
+    let tiles = tiles(&stopped, &crossed);
+    let error = built(
+        &stopped,
+        &crossed,
+        &tiles,
+        &stopped.definitions,
+        &stopped.structures,
+    )
+    .unwrap_err();
+    let message = error.to_string();
+    assert!(
+        message.contains("already exists") && message.contains("Nothing is repaired"),
+        "{message}"
+    );
+    assert!(dir.join("manifest.yaml").exists(), "nothing was removed");
+}
+
+fn copy_dir(from: &Path, to: &Path) {
+    std::fs::create_dir_all(to).unwrap();
+    for entry in std::fs::read_dir(from).unwrap() {
+        let path = entry.unwrap().path();
+        let target = to.join(path.file_name().unwrap());
+        if path.is_dir() {
+            copy_dir(&path, &target);
+        } else {
+            std::fs::copy(&path, &target).unwrap();
+        }
+    }
 }

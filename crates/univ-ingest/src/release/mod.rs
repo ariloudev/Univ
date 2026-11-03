@@ -7,12 +7,17 @@
 //!
 //! # No number used up by a failed build (AC-90)
 //!
-//! The number is the next the id ledger gives, `n`, which the cross-match prepared its ids for
-//! in the state directory's `pending/`. The build checks the release in memory, writes it to
-//! `releases/.building-{n}` and checks every file against the manifest; only then is the
-//! directory renamed to `releases/{n}` and the pending state promoted to the state directory,
-//! which is what uses the number up. A build that fails at any step removes what it wrote and
-//! leaves the state as it was, so the next build gets the same number.
+//! The number is the next the id ledger gives, `n`, which the cross-match prepared its ids for.
+//! The build checks the release in memory, writes it to `releases/.building-{n}` and checks
+//! every file against the manifest; only then is the directory renamed to `releases/{n}` and the
+//! state the cross-match made, carried in its result, installed as the state directory's
+//! (`crate::state::State::install`): its `current` switched by one rename, which is what uses
+//! the number up. A build that fails at any step removes what it wrote and leaves the state as it
+//! was, so the next build gets the same number.
+//!
+//! A build stopped between the two renames leaves a `releases/{n}` the state does not record.
+//! Publishing refuses such a release, and the next build names it and stops rather than repair
+//! anything: it is removed by hand, or built over with the state that built it.
 
 mod cells;
 mod check;
@@ -38,7 +43,10 @@ pub use check::{
 };
 pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
 pub use d1::{D1Rows, MAX_FILE_BYTES};
-pub use files::{Assembled, RELEASES, ReleaseFile, assemble, list, release_dir, verify};
+pub use files::{
+    Assembled, RELEASES, ReleaseFile, assemble, list, parse_manifest, read_manifest, release_dir,
+    verify,
+};
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
 pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
 pub use objects::{ObjectRows, json, ledger_rows, object_rows, snake};
@@ -149,15 +157,19 @@ pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelea
             made + 1
         )));
     }
-    let dir = release_dir(out, number);
-    if dir.exists() {
+    let unrecorded = unrecorded(out, made);
+    if !unrecorded.is_empty() {
+        let dirs: Vec<String> = unrecorded.iter().map(|d| d.display().to_string()).collect();
+        let exists = if dirs.len() == 1 { "exists" } else { "exist" };
         return Err(fail(format!(
-            "{} already exists, but the state in {} does not record release {number}: remove \
-             it, or build with the state that built it",
-            dir.display(),
+            "{} already {exists}, but the state in {} records {made} release(s): a build \
+             stopped before it recorded them, or another state built them. Nothing is \
+             repaired: remove them, or build with the state that built them",
+            dirs.join(", "),
             state.display()
         )));
     }
+    let dir = release_dir(out, number);
     let assembled = assemble(inputs, number).map_err(fail)?;
     if !assembled.failed.is_empty() {
         return Err(BuildError::Checks {
@@ -179,10 +191,12 @@ pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelea
         let _ = std::fs::remove_dir_all(&building);
         fail(format!("{} cannot be made complete: {e}", dir.display()))
     })?;
-    if let Err(problem) = promote(state, number) {
+    if let Err(problem) = record(state, &inputs.crossed.next, number) {
         let _ = std::fs::remove_dir_all(&dir);
         return Err(fail(problem));
     }
+    // The copy the cross-match left; the state just installed is the one it made.
+    let _ = std::fs::remove_dir_all(pending(state));
     Ok(BuiltRelease {
         number,
         dir,
@@ -191,19 +205,32 @@ pub fn build(inputs: &Inputs<'_>, state: &Path, out: &Path) -> Result<BuiltRelea
     })
 }
 
-/// Takes the state the cross-match left pending for release `number` as the state directory's
-/// own, then removes `pending/`.
-fn promote(state: &Path, number: u32) -> Result<(), String> {
-    let dir = pending(state);
-    let next = State::read(&dir).map_err(|e| format!("the pending state cannot be read: {e}"))?;
+/// Each `releases/{k}` under `out` whose number is beyond the `made` releases a state records.
+#[must_use]
+pub fn unrecorded(out: &Path, made: usize) -> Vec<PathBuf> {
+    let Ok(entries) = std::fs::read_dir(out.join(RELEASES)) else {
+        return Vec::new();
+    };
+    let mut found: Vec<(usize, PathBuf)> = entries
+        .filter_map(Result::ok)
+        .filter_map(|e| {
+            let k = e.file_name().to_str()?.parse::<usize>().ok()?;
+            (k > made).then(|| (k, e.path()))
+        })
+        .collect();
+    found.sort();
+    found.into_iter().map(|(_, p)| p).collect()
+}
+
+/// Installs `next`, the state the cross-match made for release `number`, as the state
+/// directory's: the one step that uses the number up.
+fn record(state: &Path, next: &State, number: u32) -> Result<(), String> {
     let last = next.ledger.releases().last().map(|r| r.name.as_str());
     if last != Some(number.to_string().as_str()) {
         return Err(format!(
-            "the pending state in {} is not that of release {number}",
-            dir.display()
+            "the cross-match's state is not that of release {number}"
         ));
     }
-    next.write(state)
-        .map_err(|e| format!("the state cannot be written: {e}"))?;
-    std::fs::remove_dir_all(&dir).map_err(|e| format!("{} cannot be removed: {e}", dir.display()))
+    next.install(state)
+        .map_err(|e| format!("the state cannot be recorded in {}: {e}", state.display()))
 }

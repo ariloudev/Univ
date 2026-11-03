@@ -11,7 +11,9 @@ use std::path::Path;
 use rusqlite::Connection;
 use rusqlite::types::ValueRef;
 use serde_json::{Map, Value};
-use univ_ingest::publish::{QueryRow, Store};
+use univ_ingest::publish::{
+    PruneError, Pruned, PublishError, Published, QueryRow, Store, StoreOptions, prune, publish,
+};
 
 /// An operation the store was asked for.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -221,4 +223,43 @@ impl Clock {
         self.0.set(n + 1);
         format!("2026-11-03T13:{:02}:{:02}Z", n / 60, n % 60)
     }
+}
+
+/// Publishes release `number` of the build output `out`, built under the state directory
+/// `state`, to `store`, its journal in `journals`, reading the time from `clock`.
+pub fn publishing(
+    store: &mut MemoryStore,
+    number: u32,
+    out: &Path,
+    state: &Path,
+    journals: &Path,
+    clock: &Clock,
+) -> Result<Published, PublishError> {
+    let now = || clock.now();
+    let options = StoreOptions {
+        out,
+        state,
+        journals,
+        now: &now,
+    };
+    publish(store, number, &options, &mut |_| {})
+}
+
+/// Prunes release `number` from `store`, as [`publishing`] publishes it.
+pub fn pruning(
+    store: &mut MemoryStore,
+    number: u32,
+    out: &Path,
+    state: &Path,
+    journals: &Path,
+    clock: &Clock,
+) -> Result<Pruned, PruneError> {
+    let now = || clock.now();
+    let options = StoreOptions {
+        out,
+        state,
+        journals,
+        now: &now,
+    };
+    prune(store, number, &options, &mut |_| {})
 }

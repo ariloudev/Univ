@@ -5,7 +5,16 @@
 //! The steps can run again: R2 files are deleted first, the manifest last among them, then
 //! the rows and the pruning time in one file, the time last; an interrupted prune is finished by
 //! the next, which keeps the first pruning time recorded.
+//!
+//! # Which R2 files a release has
+//!
+//! The release's manifest names them: R2's, else the build output's. The publish journal's list
+//! of files uploaded and checked names them too, and is used beside the manifest or without it.
+//! When none of these is left, nothing tells which files R2 holds, and pruning refuses rather
+//! than record a pruning time with no file deleted. A release D1 never listed, whose publish
+//! stopped before its tables were loaded, has its journaled R2 files deleted and reported.
 
+use std::collections::BTreeSet;
 use std::fmt;
 use std::path::Path;
 
@@ -13,27 +22,19 @@ use univ_model::release::manifest::Target;
 use univ_model::release::{ReleaseManifest, Scope, TABLES, keys};
 
 use super::check::{published_status, sql_text};
-use super::journal;
-use super::{Latest, Store};
-use crate::release::release_dir;
-
-/// Where pruning finds a release's files beside R2, and its clock.
-pub struct PruneOptions<'a> {
-    /// The build output, whose manifest of the release names its R2 files when R2 no longer
-    /// holds the manifest.
-    pub out: &'a Path,
-    /// The directory of the publish journals, of which the release's is removed.
-    pub journals: &'a Path,
-    /// The time now, RFC 3339 in UTC.
-    pub now: &'a dyn Fn() -> String,
-}
+use super::journal::{self, Journal};
+use super::{Latest, Store, StoreOptions};
+use crate::release::{parse_manifest, read_manifest, release_dir};
 
 /// A release pruned.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Pruned {
     pub number: u32,
-    /// When it was first pruned, RFC 3339 in UTC.
+    /// When it was first pruned, RFC 3339 in UTC; for a release D1 never listed, when its
+    /// files were deleted.
     pub pruned_at: String,
+    /// Whether D1 listed the release; one it never listed has no pruning time recorded.
+    pub listed: bool,
     /// Whether an earlier prune had already recorded it.
     pub already: bool,
     /// The R2 files deleted, the manifest among them.
@@ -49,8 +50,10 @@ pub struct Pruned {
 pub enum PruneError {
     /// `latest` points to the release.
     Latest { number: u32 },
-    /// Local D1 does not list the release.
+    /// Local D1 does not list the release, and no publish journal lists files of it.
     NotListed { number: u32 },
+    /// Nothing tells which R2 files the release has: no manifest and no journal.
+    NoFileList { number: u32 },
     /// A step failed; pruning again finishes it.
     Failed { number: u32, problem: String },
 }
@@ -65,7 +68,15 @@ impl fmt::Display for PruneError {
             ),
             Self::NotListed { number } => write!(
                 f,
-                "release {number} is not pruned: local D1 does not list it"
+                "release {number} is not pruned: local D1 does not list it, and no publish \
+                 journal lists files of it"
+            ),
+            Self::NoFileList { number } => write!(
+                f,
+                "release {number} is not pruned, and nothing was deleted: neither R2 nor the \
+                 build output holds its manifest, and no publish journal lists its files, so \
+                 nothing tells which R2 files it has; put its manifest back in the build \
+                 output's releases/{number}/ and prune again"
             ),
             Self::Failed { number, problem } => write!(
                 f,
@@ -85,16 +96,62 @@ fn manifest_of(
     out: &Path,
 ) -> Result<Option<ReleaseManifest>, String> {
     let key = keys::key(number, keys::MANIFEST);
-    let bytes = match store.get(&key)? {
-        Some(bytes) => bytes,
-        None => match std::fs::read(release_dir(out, number).join(keys::MANIFEST)) {
-            Ok(bytes) => bytes,
-            Err(_) => return Ok(None),
-        },
-    };
-    serde_norway::from_slice(&bytes)
-        .map(Some)
-        .map_err(|e| format!("the manifest of release {number}: {e}"))
+    if let Some(bytes) = store.get(&key)? {
+        let text = String::from_utf8_lossy(&bytes);
+        return parse_manifest(Path::new(&key), &text, number)
+            .map(Some)
+            .map_err(|e| e.to_string());
+    }
+    let dir = release_dir(out, number);
+    if !dir.join(keys::MANIFEST).exists() {
+        return Ok(None);
+    }
+    read_manifest(&dir, number)
+        .map(|(m, _)| Some(m))
+        .map_err(|e| e.to_string())
+}
+
+/// The R2 keys of release `number` that its manifest and its publish journal name, or none
+/// when neither is left; and whether the journal named any.
+fn r2_keys(
+    store: &mut dyn Store,
+    number: u32,
+    options: &StoreOptions<'_>,
+) -> Result<(Option<BTreeSet<String>>, bool), String> {
+    let prefix = keys::prefix(number);
+    let manifest = manifest_of(store, number, options.out)?;
+    let journal = Journal::read(options.journals, number).map_err(|e| e.to_string())?;
+    if manifest.is_none() && journal.is_none() {
+        return Ok((None, false));
+    }
+    let mut found = BTreeSet::new();
+    if let Some(m) = &manifest {
+        let r2 = m.files.iter().filter(|f| f.target == Target::R2);
+        found.extend(r2.filter_map(|f| f.key.clone()));
+        found.insert(keys::key(number, keys::MANIFEST));
+    }
+    let journaled: Vec<String> = journal
+        .iter()
+        .flat_map(|j| &j.done)
+        .filter(|d| d.target == Target::R2)
+        .filter_map(|d| d.key.clone())
+        .collect();
+    let any_journaled = !journaled.is_empty();
+    found.extend(journaled);
+    found.retain(|k| k.starts_with(&prefix));
+    Ok((Some(found), any_journaled))
+}
+
+/// Deletes `keys`, the release's manifest last.
+fn delete_all(store: &mut dyn Store, number: u32, keys: &BTreeSet<String>) -> Result<(), String> {
+    let manifest = keys::key(number, keys::MANIFEST);
+    for key in keys.iter().filter(|k| **k != manifest) {
+        store.delete(key)?;
+    }
+    if keys.contains(&manifest) {
+        store.delete(&manifest)?;
+    }
+    Ok(())
 }
 
 /// The rows of release `number` in the tables of one release, as one sum of counts (D1 limits
@@ -121,7 +178,7 @@ fn rows_of(store: &mut dyn Store, number: u32) -> Result<u64, String> {
 pub fn prune(
     store: &mut dyn Store,
     number: u32,
-    options: &PruneOptions<'_>,
+    options: &StoreOptions<'_>,
     progress: &mut dyn FnMut(String),
 ) -> Result<Pruned, PruneError> {
     let failed = |problem: String| PruneError::Failed { number, problem };
@@ -130,24 +187,38 @@ pub fn prune(
     if latest.0 == Some(number) {
         return Err(PruneError::Latest { number });
     }
-    if !status.listed {
-        return Err(PruneError::NotListed { number });
-    }
+    let (listing, journaled) = r2_keys(store, number, options).map_err(failed)?;
     let prefix = keys::prefix(number);
-    let mut files = 0;
-    if let Some(manifest) = manifest_of(store, number, options.out).map_err(failed)? {
-        let r2 = manifest.files.iter().filter(|f| f.target == Target::R2);
-        for key in r2.filter_map(|f| f.key.as_deref()) {
-            if key.starts_with(&prefix) {
-                store.delete(key).map_err(failed)?;
-                files += 1;
-            }
-        }
-        store
-            .delete(&keys::key(number, keys::MANIFEST))
-            .map_err(failed)?;
-        files += 1;
+    if !status.listed {
+        let Some(keys) = listing.filter(|_| journaled) else {
+            return Err(PruneError::NotListed { number });
+        };
+        delete_all(store, number, &keys).map_err(failed)?;
+        progress(format!(
+            "release {number}: never listed in D1, but its journal records R2 uploads: the {} \
+             keys under {prefix} its journal and manifest name deleted",
+            keys.len()
+        ));
+        remove_journal(options.journals, number).map_err(failed)?;
+        return Ok(Pruned {
+            number,
+            pruned_at: (options.now)(),
+            listed: false,
+            already: false,
+            files: keys.len(),
+            rows: 0,
+            latest,
+        });
     }
+    let files = match listing {
+        Some(keys) => {
+            delete_all(store, number, &keys).map_err(failed)?;
+            keys.len()
+        }
+        // An earlier prune deleted the files, then the journal: nothing is left to delete.
+        None if status.pruned_at.is_some() => 0,
+        None => return Err(PruneError::NoFileList { number }),
+    };
     progress(format!(
         "release {number}: {files} R2 files under {prefix} deleted"
     ));
@@ -182,16 +253,23 @@ pub fn prune(
     let pruned_at = after
         .pruned_at
         .ok_or_else(|| failed("D1 records no pruning time".to_owned()))?;
-    let journal = journal::file(options.journals, number);
-    if journal.exists() {
-        std::fs::remove_file(&journal).map_err(|e| failed(e.to_string()))?;
-    }
+    remove_journal(options.journals, number).map_err(failed)?;
     Ok(Pruned {
         number,
         pruned_at,
+        listed: true,
         already: status.pruned_at.is_some(),
         files,
         rows,
         latest,
     })
+}
+
+/// Removes release `number`'s publish journal, if there is one.
+fn remove_journal(journals: &Path, number: u32) -> Result<(), String> {
+    let file = journal::file(journals, number);
+    if file.exists() {
+        std::fs::remove_file(&file).map_err(|e| format!("{}: {e}", file.display()))?;
+    }
+    Ok(())
 }

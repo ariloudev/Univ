@@ -8,19 +8,10 @@ use univ_model::release::{D1_CAP_BYTES, ReleaseManifest, TABLES, Table, keys};
 
 use super::check::{check_rows, published_status, schema_version, sql_text};
 use super::journal::{Done, Journal};
-use super::{Latest, PublishError, Store};
-use crate::release::{RELEASES, release_dir, verify};
+use super::{Latest, PublishError, Store, StoreOptions};
+use crate::release::{RELEASES, read_manifest, release_dir};
+use crate::state::State;
 use crate::tiles::sha256;
-
-/// Where publishing reads the release and keeps its journal, and its clock.
-pub struct PublishOptions<'a> {
-    /// The build output, whose `releases/{n}` holds the release.
-    pub out: &'a Path,
-    /// The directory of the publish journals.
-    pub journals: &'a Path,
-    /// The time now, RFC 3339 in UTC.
-    pub now: &'a dyn Fn() -> String,
-}
 
 /// A release published.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -85,29 +76,34 @@ fn units(manifest: &ReleaseManifest) -> Result<Vec<Unit<'_>>, String> {
     Ok(schema)
 }
 
-/// The complete release `number` in the build output: its manifest, read and with every file
-/// checked against it, and the manifest's bytes.
-fn read_release(out: &Path, number: u32) -> Result<(PathBuf, ReleaseManifest, Vec<u8>), String> {
-    let dir = release_dir(out, number);
-    let path = dir.join(keys::MANIFEST);
-    let Ok(bytes) = std::fs::read(&path) else {
-        let building = out.join(RELEASES).join(format!(".building-{number}"));
+/// The complete release `number` in the build output: its directory, its manifest and the
+/// manifest's bytes. Each file is checked against its SHA-256 as it is uploaded, not before.
+fn read_release(
+    options: &StoreOptions<'_>,
+    number: u32,
+) -> Result<(PathBuf, ReleaseManifest, Vec<u8>), String> {
+    let dir = release_dir(options.out, number);
+    if !dir.join(keys::MANIFEST).exists() {
+        let building = options
+            .out
+            .join(RELEASES)
+            .join(format!(".building-{number}"));
         return Err(if building.exists() {
             format!("its build in {} did not finish", building.display())
         } else {
             format!("{} holds no complete release", dir.display())
         });
-    };
-    let manifest: ReleaseManifest =
-        serde_norway::from_slice(&bytes).map_err(|e| format!("{}: {e}", path.display()))?;
-    if manifest.release != number {
+    }
+    let (manifest, bytes) = read_manifest(&dir, number).map_err(|e| e.to_string())?;
+    let state = State::read(options.state).map_err(|e| e.to_string())?;
+    let name = number.to_string();
+    if !state.ledger.releases().iter().any(|r| r.name == name) {
         return Err(format!(
-            "{} is the manifest of release {}",
-            path.display(),
-            manifest.release
+            "the state in {} does not record it: its build stopped before it recorded the \
+             release, or another state built it",
+            options.state.display()
         ));
     }
-    verify(&dir, &manifest).map_err(|f| f.cause)?;
     Ok((dir, manifest, bytes))
 }
 
@@ -245,10 +241,10 @@ fn record_published(store: &mut dyn Store, number: u32, at: &str) -> Result<(), 
 pub fn publish(
     store: &mut dyn Store,
     number: u32,
-    options: &PublishOptions<'_>,
+    options: &StoreOptions<'_>,
     progress: &mut dyn FnMut(String),
 ) -> Result<Published, PublishError> {
-    let (dir, manifest, manifest_bytes) = read_release(options.out, number)
+    let (dir, manifest, manifest_bytes) = read_release(options, number)
         .map_err(|problem| PublishError::NotBuilt { number, problem })?;
     let total = manifest.files.len() + 1;
     let stopped = |latest: Latest, done: usize, problem: String| PublishError::Interrupted {
@@ -258,14 +254,6 @@ pub fn publish(
         total,
         problem,
     };
-    let latest = refuse_published(store, number).map_err(|e| match e {
-        Refused::Error(e) => e,
-        Refused::Query(p) => stopped(Latest(None), 0, p),
-    })?;
-    within_cap(store, number, manifest.d1.estimated_bytes).map_err(|e| match e {
-        Refused::Error(e) => e,
-        Refused::Query(p) => stopped(latest, 0, p),
-    })?;
     // The manifest itself goes last, read back against its local bytes.
     let itself = ManifestFile {
         path: keys::MANIFEST.to_owned(),
@@ -275,6 +263,31 @@ pub fn publish(
         sha256: sha256(&manifest_bytes),
     };
     let mut journal = open_journal(options, number, &itself.sha256)?;
+    let mut units = units(&manifest).map_err(|p| PublishError::NotBuilt { number, problem: p })?;
+    units.push(Unit::R2(&itself));
+    let all_done = units.iter().all(|u| {
+        unit_files(u)
+            .iter()
+            .all(|f| journal.has(&f.path, &f.sha256))
+    });
+    // Once every unit is uploaded and checked, the release is whole: when its publication time
+    // was not recorded, the time latest moved to it (or its last unit's) is.
+    let done_at = all_done
+        .then(|| {
+            journal
+                .latest_moved_at
+                .clone()
+                .or_else(|| journal.done.last().map(|d| d.at.clone()))
+        })
+        .flatten();
+    let latest = refuse_published(store, number, done_at).map_err(|e| match e {
+        Refused::Error(e) => e,
+        Refused::Query(p) => stopped(Latest(None), 0, p),
+    })?;
+    within_cap(store, number, manifest.d1.estimated_bytes).map_err(|e| match e {
+        Refused::Error(e) => e,
+        Refused::Query(p) => stopped(latest, 0, p),
+    })?;
     let journaled = journal.done.len();
     if journaled > 0 {
         progress(format!(
@@ -282,8 +295,6 @@ pub fn publish(
              the journal"
         ));
     }
-    let mut units = units(&manifest).map_err(|p| PublishError::NotBuilt { number, problem: p })?;
-    units.push(Unit::R2(&itself));
     for unit in &units {
         if unit_files(unit)
             .iter()
@@ -367,8 +378,15 @@ enum Refused {
 }
 
 /// Where `latest` points, once release `number` is found neither published nor pruned, nor
-/// older than the release `latest` points to.
-fn refuse_published(store: &mut dyn Store, number: u32) -> Result<Latest, Refused> {
+/// older than the release `latest` points to. A release whose publication time is missing is
+/// recorded as published, and refused as such, when `latest` points to it (at the time it moved
+/// there) or when `done_at` gives the time the journal says it was whole, whatever `latest`
+/// points to.
+fn refuse_published(
+    store: &mut dyn Store,
+    number: u32,
+    done_at: Option<String>,
+) -> Result<Latest, Refused> {
     let status = published_status(store, number).map_err(Refused::Query)?;
     let latest = Latest(status.latest.as_ref().map(|l| l.0));
     let refused = |e| Err(Refused::Error(e));
@@ -382,16 +400,22 @@ fn refuse_published(store: &mut dyn Store, number: u32) -> Result<Latest, Refuse
     if let Some(pruned_at) = status.pruned_at {
         return refused(PublishError::Pruned { number, pruned_at });
     }
+    let recovered = match (&status.latest, done_at) {
+        // Moved by a run stopped before it recorded the publication time.
+        (Some((n, moved_at)), _) if *n == number => Some(moved_at.clone()),
+        // Whole by its journal, and a newer release published since.
+        (Some((n, _)), Some(at)) if *n > number && status.listed => Some(at),
+        _ => None,
+    };
+    if let Some(published_at) = recovered {
+        record_published(store, number, &published_at).map_err(Refused::Query)?;
+        return refused(PublishError::AlreadyPublished {
+            number,
+            published_at,
+            latest,
+        });
+    }
     match status.latest {
-        // Moved by a run stopped before it recorded the publication time: record it now.
-        Some((n, moved_at)) if n == number => {
-            record_published(store, number, &moved_at).map_err(Refused::Query)?;
-            refused(PublishError::AlreadyPublished {
-                number,
-                published_at: moved_at,
-                latest,
-            })
-        }
         Some((n, _)) if n > number => refused(PublishError::NotNewer { number, latest: n }),
         _ => Ok(latest),
     }
@@ -400,7 +424,7 @@ fn refuse_published(store: &mut dyn Store, number: u32) -> Result<Latest, Refuse
 /// The journal of release `number` under the manifest with SHA-256 `manifest_sha`: the one an
 /// earlier run left, or a new one.
 fn open_journal(
-    options: &PublishOptions<'_>,
+    options: &StoreOptions<'_>,
     number: u32,
     manifest_sha: &str,
 ) -> Result<Journal, PublishError> {

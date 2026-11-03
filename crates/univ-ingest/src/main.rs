@@ -10,12 +10,13 @@ use clap::{Args, Parser, Subcommand};
 use univ_ingest::acquire::Acquired;
 use univ_ingest::events::{EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
+use univ_ingest::lock::StateLock;
 use univ_ingest::normalize::Normalized;
 use univ_ingest::run::{
     BuildOptions, DEFAULT_BUILD, DEFAULT_CONFIG, DEFAULT_PERSIST, DEFAULT_TILES, FetchOptions,
-    MatchOptions, RunReport, StoreOptions, TileOptions, build_stage, display_for_stderr, drawing,
-    fetch, interrupted, match_stage, normalize_stage_until, now, owner_interrupt, prune_command,
-    publish_command, select, tiles_stage,
+    MatchOptions, RunReport, StoreCommand, StoreRun, TileOptions, build_stage, display_for_stderr,
+    drawing, fetch, interrupted, match_stage, normalize_stage_until, now, owner_interrupt,
+    prune_command, publish_command, select, store_command, tiles_stage,
 };
 use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::DEFAULT_STATE;
@@ -73,6 +74,10 @@ struct StoreArgs {
     /// The build output, whose `releases/{n}` holds the release.
     #[arg(long, value_name = "DIR", default_value = DEFAULT_BUILD)]
     out: PathBuf,
+    /// The state directory, which records each release built; a release it does not record is
+    /// not published.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_STATE)]
+    state: PathBuf,
     /// Wrangler's local state directory, as `wrangler dev --persist-to` takes it.
     #[arg(long, value_name = "DIR", default_value = DEFAULT_PERSIST)]
     persist_to: PathBuf,
@@ -82,21 +87,17 @@ struct StoreArgs {
     config: PathBuf,
 }
 
-/// Runs the publish or prune command, a plain, timestamped line per step on standard error.
-fn on_store(args: StoreArgs, pruning: bool) -> ExitCode {
-    let options = StoreOptions {
+/// Runs the publish or prune `command`, a plain, timestamped line per step on standard error.
+fn on_store(args: StoreArgs, command: StoreCommand) -> ExitCode {
+    let run = StoreRun {
         number: args.number,
         out: args.out,
+        state: args.state,
         persist_to: args.persist_to,
         config: args.config,
     };
     let mut line = |text: String| eprintln!("{} {text}", now());
-    let outcome = if pruning {
-        prune_command(&options, &mut line)
-    } else {
-        publish_command(&options, &mut line)
-    };
-    match outcome {
+    match store_command(&run, command, &mut line) {
         Ok(closing) => {
             eprintln!("{} {closing}", now());
             ExitCode::SUCCESS
@@ -247,8 +248,19 @@ async fn main() -> ExitCode {
             let m = args.matching;
             (m.fetch, Until::Build, Some(m.state), Some(args.out))
         }
-        Command::Publish(args) => return on_store(args, false),
-        Command::Prune(args) => return on_store(args, true),
+        Command::Publish(args) => return on_store(args, publish_command),
+        Command::Prune(args) => return on_store(args, prune_command),
+    };
+    // A match, tiles or build run holds the state directory's lock until it ends.
+    let _lock = match &state {
+        Some(dir) => match StateLock::take(dir, std::process::id(), &now()) {
+            Ok(lock) => Some(lock),
+            Err(error) => {
+                eprintln!("univ-ingest: {error}");
+                return ExitCode::FAILURE;
+            }
+        },
+        None => None,
     };
     let options = FetchOptions {
         definitions: args.definitions,

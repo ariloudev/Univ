@@ -16,7 +16,8 @@ mod tiles;
 pub use build::{BuildOptions, DEFAULT_BUILD, build_stage};
 pub use cross::{MatchOptions, match_stage};
 pub use publish::{
-    DEFAULT_CONFIG, DEFAULT_PERSIST, StoreOptions, journals, now, prune_command, publish_command,
+    DEFAULT_CONFIG, DEFAULT_PERSIST, StoreCommand, StoreRun, now, prune_command, publish_command,
+    store_command,
 };
 pub use tiles::{DEFAULT_TILES, TileOptions, tiles_stage};
 

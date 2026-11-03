@@ -10,6 +10,7 @@ use common::{copied, workspace};
 use std::path::Path;
 
 use univ_ingest::acquire::acquire;
+use univ_ingest::lock::StateLock;
 use univ_ingest::release::release_dir;
 use univ_ingest::source::Access;
 use univ_ingest::state::{State, pending};
@@ -165,4 +166,31 @@ async fn a_build_in_which_a_source_failed_names_it_and_uses_no_number() {
         State::read(state.path()).unwrap().ledger.releases().len(),
         0
     );
+}
+
+#[test]
+fn a_second_build_on_one_state_directory_is_refused_by_its_lock() {
+    let (definitions, cache) = (tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap());
+    let (state, out) = (tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap());
+    // A build already running holds the lock.
+    let running = StateLock::take(state.path(), 4242, "2026-11-03T12:00:00Z").unwrap();
+    let run = building(definitions.path(), cache.path(), state.path(), out.path());
+    let log = String::from_utf8(run.stderr).unwrap();
+    assert!(!run.status.success(), "{log}");
+    assert!(
+        log.contains("the state directory is locked by process 4242 since 2026-11-03T12:00:00Z"),
+        "{log}"
+    );
+    assert!(
+        log.contains(&format!("remove {}", running.file().display())),
+        "{log}"
+    );
+    assert!(running.file().exists(), "the lock is not taken over");
+    assert!(!out.path().join("releases").exists());
+    drop(running);
+    // With the lock released, the run goes on (and here stops for want of sources).
+    let run = building(definitions.path(), cache.path(), state.path(), out.path());
+    let log = String::from_utf8(run.stderr).unwrap();
+    assert!(!log.contains("locked"), "{log}");
+    assert!(!state.path().join(univ_ingest::lock::FILE).exists());
 }

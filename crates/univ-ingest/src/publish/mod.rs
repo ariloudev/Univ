@@ -7,8 +7,9 @@
 //!
 //! # Publishing
 //!
-//! [`publish`] reads release n's manifest from its build directory and refuses the release when
-//! its D1 estimate and those of every release not pruned together pass the CON-3 cap. It then
+//! [`publish`] reads release n's manifest from its build directory, and refuses the release
+//! when the state directory does not record it (its build stopped before it did) or when its D1
+//! estimate and those of every release not pruned together pass the CON-3 cap. It then
 //! uploads in this order, each unit checked before it is entered in the journal:
 //!
 //! 1. `d1/0000-schema.sql`, checked by the schema version it records;
@@ -29,7 +30,13 @@
 //! Every unit uploaded and checked is entered in `publish-{n}.yaml` in the journal directory,
 //! [`journal::Journal`], with the manifest's SHA-256. An interrupted publish leaves `latest`
 //! where it was; the next run reads the journal and uploads only what it does not list
-//! (AC-105). A journal of another manifest under the same number is refused.
+//! (AC-105). A journal of another manifest under the same number is refused. Each local file
+//! is checked against its SHA-256 once, as its unit is uploaded.
+//!
+//! A run stopped after `latest` moved but before it recorded `published_at` is finished by the
+//! next run of `publish n`, which records it whenever every unit of n is journaled, whatever
+//! `latest` points to by then: the time `latest` moved, as `latest` or the journal gives it, or
+//! else the time its last unit was checked.
 
 mod check;
 mod error;
@@ -45,9 +52,23 @@ use serde_json::{Map, Value};
 
 pub use check::{Status, published_status, sql_text};
 pub use error::PublishError;
-pub use prune::{PruneError, PruneOptions, Pruned, prune};
-pub use upload::{PublishOptions, Published, move_latest, publish};
+pub use prune::{PruneError, Pruned, prune};
+pub use upload::{Published, move_latest, publish};
 pub use wrangler::{BUCKET, DATABASE, STDERR_LINES, Wrangler, ingest_dir, strip_ansi};
+
+/// Where publishing and pruning find a release and keep their journals, and their clock.
+pub struct StoreOptions<'a> {
+    /// The build output, whose `releases/{n}` holds each release: what publishing uploads, and
+    /// the manifest naming a release's R2 files when R2 no longer holds it.
+    pub out: &'a Path,
+    /// The state directory, which records each release built: publishing refuses one it does
+    /// not record.
+    pub state: &'a Path,
+    /// The directory of the publish journals.
+    pub journals: &'a Path,
+    /// The time now, RFC 3339 in UTC.
+    pub now: &'a dyn Fn() -> String,
+}
 
 /// A row a D1 query returns, each column by name.
 pub type QueryRow = Map<String, Value>;

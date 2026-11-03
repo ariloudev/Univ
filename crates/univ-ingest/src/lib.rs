@@ -10,6 +10,7 @@ pub mod fetch;
 pub mod fits;
 pub mod grids;
 pub mod ids;
+pub mod lock;
 pub mod matching;
 pub mod normalize;
 pub mod outlines;
