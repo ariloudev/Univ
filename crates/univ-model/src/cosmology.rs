@@ -157,6 +157,7 @@ impl Cosmology {
 /// where stated, the densities of matter and of Λ today. A length in h⁻¹ Mpc assumes
 /// H0 = 100 km/s/Mpc. Checked when read; a value built in code is checked where it is used.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "RawAssumedCosmology")]
 pub struct AssumedCosmology {
     /// The Hubble constant in km/s/Mpc.
