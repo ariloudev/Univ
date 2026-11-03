@@ -10,9 +10,11 @@
 mod common;
 
 use common::{entry, near, normalized_fixture};
+use univ_ingest::normalize::normalize;
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::entry::{CatalogueEntry, PositionUncertainty, RedshiftKind};
 use univ_model::position::{Epoch, Frame, cross, unit_vector};
+use univ_model::redshift::{CmbCorrection, DipoleModel};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Uncertainty, Value};
 
@@ -391,4 +393,79 @@ fn sdss_and_boss_rows_keep_z_and_derive_the_cmb_redshift() {
             sigma: 7.802_936e-5
         }
     );
+}
+
+#[test]
+fn erass1_clusters_join_the_optical_redshift_and_take_each_rows_redshift_kind() {
+    let definition = common::definition_of("erass1-clusters");
+    let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/erosita-de/erass1-clusters");
+    let files: Vec<_> = [
+        "erass1cl_primary_v3.2.fits.tgz",
+        "eRASS1_clusters_optical.fits.tgz",
+    ]
+    .iter()
+    .map(|f| dir.join(f))
+    .collect();
+    for file in &files {
+        let sidecar = std::fs::read_to_string(file.with_extension("tgz.yaml")).unwrap();
+        let digest = univ_ingest::fetch::hex(&<sha2::Sha256 as sha2::Digest>::digest(
+            std::fs::read(file).unwrap(),
+        ));
+        assert!(
+            sidecar.contains(&format!("sha256: {digest}\n")),
+            "{}",
+            file.display()
+        );
+    }
+    let correction = CmbCorrection::new(DipoleModel::Planck2018);
+    let n = normalize(&definition, &files, &correction).unwrap();
+    assert_eq!((n.report.published, n.report.left_out_total()), (5, 0));
+    // Primary row 1: DETUID em01_002129_020_ML00014_002_c010, NAME 1eRASS J000005.2-383729,
+    // RA 0.021729666982255817, DEC -38.6249030550687, BEST_Z 0.3153 ± 0.0079 photo_z, PCONT
+    // 0.006; optical row 1: Z_LAMBDA 0.31528 ± 0.00794 as float32 (read with a Python reader
+    // of the FITS bytes, scratch script fitsrows.py).
+    let c = entry(&n, "em01_002129_020_ML00014_002_c010");
+    assert_eq!(c.name.as_deref(), Some("1eRASS J000005.2-383729"));
+    assert_eq!(
+        at(c),
+        (
+            0.021_729_666_982_255_817,
+            -38.624_903_055_068_7,
+            Frame::Icrs,
+            Epoch::J2000
+        )
+    );
+    let [best, lambda] = &c.redshifts[..] else {
+        panic!("two redshifts")
+    };
+    assert_eq!(best.cmb.heliocentric.value, 0.3153);
+    assert_eq!(
+        best.cmb.heliocentric.uncertainty,
+        Uncertainty::Symmetric { sigma: 0.0079 }
+    );
+    assert_eq!(
+        (best.kind, best.kind_of_value),
+        (RedshiftKind::Photometric, KindOfValue::Estimated)
+    );
+    assert_eq!(lambda.cmb.heliocentric.value, 0.315_28);
+    assert_eq!(
+        lambda.cmb.heliocentric.uncertainty,
+        Uncertainty::Symmetric { sigma: 0.007_94 }
+    );
+    assert_eq!(
+        (c.flags["BEST_Z_TYPE"].as_str(), c.flags["PCONT"].as_str()),
+        ("photo_z", "0.006")
+    );
+    // Primary row 2: em01_011174_020_ML00047_002_c010, BEST_Z 0.0891 ± 0.0002 cg_spec_z;
+    // optical row 2: Z_LAMBDA 0.08594 ± 0.00976.
+    let c = entry(&n, "em01_011174_020_ML00047_002_c010");
+    let best = &c.redshifts[0];
+    assert_eq!(best.cmb.heliocentric.value, 0.0891);
+    assert_eq!(
+        (best.kind, best.kind_of_value),
+        (RedshiftKind::Spectroscopic, KindOfValue::Measured)
+    );
+    assert_eq!(c.redshifts[1].cmb.heliocentric.value, 0.085_94);
+    assert_eq!(c.flags["PCONT"], "0");
 }

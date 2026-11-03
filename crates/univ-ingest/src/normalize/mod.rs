@@ -2,11 +2,12 @@
 //! the source published, or left out of the release and counted under its reason. The entries
 //! stay in memory for the next stage.
 
+mod fits;
 mod plan;
 mod row;
 
 use std::borrow::Cow;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -15,8 +16,9 @@ use univ_model::entry::CatalogueEntry;
 use univ_model::ids::SourceId;
 use univ_model::redshift::CmbCorrection;
 
-use crate::source::{Access, LeftOutReason, SourceDefinition};
+use crate::source::{Access, Field, LeftOutReason, SourceDefinition};
 use crate::table::TableReader;
+use fits::BinTable;
 use plan::Plan;
 use row::{Changed, Context};
 
@@ -76,14 +78,15 @@ pub enum NormalizeError {
     Unsupported { source_id: SourceId, what: String },
 }
 
-/// Whether the normalizer reads `definition`'s answers as tables of rows: not a source of
-/// files, such as a grid, nor one kept in the repository.
+/// Whether the normalizer reads `definition` as tables of rows: a provider's answers, or files
+/// that are all FITS tables, but not grids nor a source kept in the repository.
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
-    !matches!(
-        definition.access,
-        Access::Files { .. } | Access::Repository { .. }
-    )
+    match &definition.access {
+        Access::Files { files } => files.iter().all(|f| fits::is_fits(&f.path)),
+        Access::Repository { .. } => false,
+        _ => true,
+    }
 }
 
 /// Normalizes a source's tables one at a time, keeping the entries and the counts.
@@ -147,18 +150,106 @@ impl<'a> Normalizer<'a> {
             correction: self.correction,
         };
         while let Some(cells) = table.next_row() {
-            let cells = cells.map_err(malformed)?;
-            let changed = match row::read(&cx, cells) {
-                Ok((entry, changed)) => {
-                    self.entries.push(entry);
-                    changed
+            self.row(&cx, cells.map_err(malformed)?);
+        }
+        Ok(())
+    }
+
+    /// Reads one row: an entry kept, or a reason counted.
+    fn row(&mut self, cx: &Context<'_>, cells: &[Cow<'_, str>]) {
+        let changed = match row::read(cx, cells) {
+            Ok((entry, changed)) => {
+                self.entries.push(entry);
+                changed
+            }
+            Err((reason, changed)) => {
+                *self.left_out.entry(reason).or_default() += 1;
+                changed
+            }
+        };
+        count(&mut self.changed, changed);
+    }
+
+    /// Reads FITS tables as one: each row of the first, joined on the identifier to the rows of
+    /// the others, each column taken from the first table that has it. A row the others lack
+    /// takes their columns as blank.
+    fn fits(&mut self, tables: &[(PathBuf, BinTable)]) -> Result<(), NormalizeError> {
+        let definition = self.definition;
+        let unsupported = |what: String| NormalizeError::Unsupported {
+            source_id: definition.id.clone(),
+            what,
+        };
+        let names: Vec<&str> = definition
+            .columns
+            .iter()
+            .map(|c| c.column.as_str())
+            .collect();
+        let find = |name: &str| {
+            tables.iter().enumerate().find_map(|(t, (_, table))| {
+                table
+                    .columns
+                    .iter()
+                    .find(|c| c.name == name)
+                    .map(|c| (t, c))
+            })
+        };
+        let mut sources = Vec::new();
+        for name in &names {
+            let (t, column) = find(name).ok_or_else(|| NormalizeError::MissingColumn {
+                source_id: definition.id.clone(),
+                column: (*name).to_owned(),
+            })?;
+            if !column.readable() {
+                return Err(unsupported(format!(
+                    "its column {name} is not a single value"
+                )));
+            }
+            sources.push((t, column));
+        }
+        let identifier = definition
+            .columns
+            .iter()
+            .find(|c| c.field == Field::Identifier)
+            .ok_or_else(|| unsupported("its definition maps no identifier column".to_owned()))?;
+        let mut keys: Vec<HashMap<String, usize>> = Vec::new();
+        for (file, table) in tables {
+            let key = table
+                .columns
+                .iter()
+                .find(|c| c.name == identifier.column)
+                .ok_or_else(|| {
+                    unsupported(format!("{} has no {}", file.display(), identifier.column))
+                })?;
+            keys.push(
+                (0..table.rows)
+                    .map(|r| (table.text(r, key).into_owned(), r))
+                    .collect(),
+            );
+        }
+        let plan = Plan::new(definition, &names)?;
+        let cx = Context {
+            plan: &plan,
+            source: &definition.id,
+            epoch: definition.epoch,
+            correction: self.correction,
+        };
+        let Some((_, first)) = tables.first() else {
+            return Ok(());
+        };
+        let key = &sources[plan.identifier].1;
+        let mut cells = Vec::with_capacity(sources.len());
+        for row in 0..first.rows {
+            let id = first.text(row, key);
+            cells.clear();
+            cells.extend(sources.iter().map(|(t, column)| {
+                let (_, table) = &tables[*t];
+                match keys[*t].get(id.as_ref()) {
+                    Some(r) if *t > 0 => table.text(*r, column),
+                    _ if *t > 0 => Cow::Borrowed(""),
+                    _ => table.text(row, column),
                 }
-                Err((reason, changed)) => {
-                    *self.left_out.entry(reason).or_default() += 1;
-                    changed
-                }
-            };
-            count(&mut self.changed, changed);
+            }));
+            self.row(&cx, &cells);
         }
         Ok(())
     }
@@ -210,13 +301,34 @@ pub fn normalize(
     correction: &CmbCorrection,
 ) -> Result<Normalized, NormalizeError> {
     let mut normalizer = Normalizer::new(definition, correction)?;
-    for file in files {
-        let body = std::fs::read(file).map_err(|e| NormalizeError::Read {
+    let read = |file: &PathBuf| {
+        std::fs::read(file).map_err(|e| NormalizeError::Read {
             source_id: definition.id.clone(),
             file: file.clone(),
             error: e.to_string(),
-        })?;
-        normalizer.table(file, &body)?;
+        })
+    };
+    if matches!(definition.access, Access::Files { .. }) {
+        let mut tables = Vec::new();
+        for file in files {
+            let name = file
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            let table = fits::unpack(&name, read(file)?)
+                .and_then(|fits| fits::first_table(&fits))
+                .map_err(|error| NormalizeError::Table {
+                    source_id: definition.id.clone(),
+                    file: file.clone(),
+                    error,
+                })?;
+            tables.push((file.clone(), table));
+        }
+        normalizer.fits(&tables)?;
+    } else {
+        for file in files {
+            normalizer.table(file, &read(file)?)?;
+        }
     }
     Ok(normalizer.finish())
 }
