@@ -4,7 +4,7 @@ use univ_model::release::fingerprint::{ROWS, alias};
 use univ_model::release::manifest::TableEstimate;
 use univ_model::release::{ColumnKind, SqlValue, Table};
 
-use super::{QueryRow, Store};
+use super::{Latest, QueryRow, Store};
 
 /// What local D1 records of one release, and where `latest` points.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -17,6 +17,14 @@ pub struct Status {
     pub listed: bool,
     pub published_at: Option<String>,
     pub pruned_at: Option<String>,
+}
+
+impl Status {
+    /// Where `latest` points.
+    #[must_use]
+    pub fn latest(&self) -> Latest {
+        Latest(self.latest.as_ref().map(|l| l.0))
+    }
 }
 
 /// A text as an SQL literal.

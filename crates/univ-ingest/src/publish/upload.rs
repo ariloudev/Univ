@@ -280,11 +280,11 @@ pub fn publish(
                 .or_else(|| journal.done.last().map(|d| d.at.clone()))
         })
         .flatten();
-    let latest = refuse_published(store, number, done_at).map_err(|e| match e {
+    let (latest, schema) = refuse_published(store, number, done_at).map_err(|e| match e {
         Refused::Error(e) => e,
         Refused::Query(p) => stopped(Latest(None), 0, p),
     })?;
-    within_cap(store, number, manifest.d1.estimated_bytes).map_err(|e| match e {
+    within_cap(store, number, manifest.d1.estimated_bytes, schema).map_err(|e| match e {
         Refused::Error(e) => e,
         Refused::Query(p) => stopped(latest, 0, p),
     })?;
@@ -332,10 +332,9 @@ pub fn publish(
 }
 
 /// Checks the estimate `this` of release `number`'s rows, with those of every other release D1
-/// lists that is not pruned, against the cap (CON-3).
-fn within_cap(store: &mut dyn Store, number: u32, this: u64) -> Result<(), Refused> {
-    let status = published_status(store, number).map_err(Refused::Query)?;
-    let (others, releases) = if status.schema {
+/// lists that is not pruned, against the cap (CON-3); `schema` is whether D1 holds the schema.
+fn within_cap(store: &mut dyn Store, number: u32, this: u64, schema: bool) -> Result<(), Refused> {
+    let (others, releases) = if schema {
         let rows = store
             .query(&format!(
                 "SELECT total(d1_estimated_bytes) AS bytes, COUNT(*) AS n FROM releases WHERE \
@@ -377,8 +376,8 @@ enum Refused {
     Query(String),
 }
 
-/// Where `latest` points, once release `number` is found neither published nor pruned, nor
-/// older than the release `latest` points to. A release whose publication time is missing is
+/// Where `latest` points, and whether D1 holds the schema, once release `number` is found
+/// neither published nor pruned, nor older than the release `latest` points to. A release whose publication time is missing is
 /// recorded as published, and refused as such, when `latest` points to it (at the time it moved
 /// there) or when `done_at` gives the time the journal says it was whole, whatever `latest`
 /// points to.
@@ -386,9 +385,9 @@ fn refuse_published(
     store: &mut dyn Store,
     number: u32,
     done_at: Option<String>,
-) -> Result<Latest, Refused> {
+) -> Result<(Latest, bool), Refused> {
     let status = published_status(store, number).map_err(Refused::Query)?;
-    let latest = Latest(status.latest.as_ref().map(|l| l.0));
+    let latest = status.latest();
     let refused = |e| Err(Refused::Error(e));
     if let Some(published_at) = status.published_at {
         return refused(PublishError::AlreadyPublished {
@@ -417,7 +416,7 @@ fn refuse_published(
     }
     match status.latest {
         Some((n, _)) if n > number => refused(PublishError::NotNewer { number, latest: n }),
-        _ => Ok(latest),
+        _ => Ok((latest, status.schema)),
     }
 }
 

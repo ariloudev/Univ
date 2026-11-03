@@ -18,7 +18,7 @@ use univ_model::units::Unit;
 use univ_model::value::Quantity;
 
 use super::objects::{json, snake};
-use crate::grids::{Window, read_cf4_basins, read_cf4pp, read_twompp};
+use crate::grids::{Window, basins, cf4pp, read_cf4_basins, read_cf4pp, read_twompp, twompp};
 use crate::source::SourceDefinition;
 
 /// The version of the grid header's layout.
@@ -36,10 +36,7 @@ pub struct GridFiles {
 /// Whether `definition` is a volume grid this build reads.
 #[must_use]
 pub fn is_grid(definition: &SourceDefinition) -> bool {
-    matches!(
-        definition.id.as_str(),
-        "cf4pp-density" | "cf4-basins" | "twompp-reconstruction"
-    )
+    [cf4pp::SOURCE, basins::SOURCE, twompp::SOURCE].contains(&definition.id.as_str())
 }
 
 /// The file among `files` whose name is `name`.
@@ -59,14 +56,14 @@ fn named<'a>(files: &'a [PathBuf], name: &str) -> Result<&'a Path, String> {
 pub fn read(definition: &SourceDefinition, files: &[PathBuf]) -> Result<Grid, String> {
     let id = definition.id.as_str();
     let grid = match id {
-        "cf4pp-density" => {
+        cf4pp::SOURCE => {
             read_cf4pp(named(files, "new_CF4pp_mean_std_grids.npz")?, Window::Whole).map(|g| g.grid)
         }
-        "cf4-basins" => read_cf4_basins(
+        basins::SOURCE => read_cf4_basins(
             named(files, "CF4_new_128-z008_watersheds-fits.zip")?,
             Window::Whole,
         ),
-        "twompp-reconstruction" => read_twompp(
+        twompp::SOURCE => read_twompp(
             named(files, "twompp_density.npy")?,
             named(files, "twompp_velocity.npy")?,
             Window::Whole,

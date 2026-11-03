@@ -183,7 +183,7 @@ pub fn prune(
 ) -> Result<Pruned, PruneError> {
     let failed = |problem: String| PruneError::Failed { number, problem };
     let status = published_status(store, number).map_err(failed)?;
-    let latest = Latest(status.latest.as_ref().map(|l| l.0));
+    let latest = status.latest();
     if latest.0 == Some(number) {
         return Err(PruneError::Latest { number });
     }
