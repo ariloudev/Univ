@@ -18,3 +18,7 @@ expect_used = "warn"
 panic = "warn"
 dbg_macro = "warn"
 print_stdout = "warn"
+
+# SQLite is built from source; unoptimised it makes `cargo xtask science` several times slower.
+[profile.dev.package.libsqlite3-sys]
+opt-level = 3
