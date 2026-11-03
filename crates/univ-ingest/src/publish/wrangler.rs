@@ -18,13 +18,21 @@ pub const BUCKET: &str = "univ-releases";
 pub struct Wrangler {
     program: PathBuf,
     config: PathBuf,
+    /// The configuration's directory, which Wrangler runs in and keeps its own cache under.
+    root: PathBuf,
     persist_to: PathBuf,
     scratch: PathBuf,
 }
 
+/// `path` made absolute, since Wrangler runs in the configuration's directory.
+fn absolute(path: &Path) -> Result<PathBuf, String> {
+    std::path::absolute(path).map_err(|e| format!("{}: {e}", path.display()))
+}
+
 impl Wrangler {
     /// Wrangler as `npm install` put it beside `config`, the repository's `wrangler.toml`,
-    /// writing the local state in `persist_to`.
+    /// writing the local state in `persist_to`. Wrangler runs in the configuration's directory,
+    /// where it keeps its cache in `.wrangler/`.
     ///
     /// # Errors
     ///
@@ -33,7 +41,8 @@ impl Wrangler {
         if !config.is_file() {
             return Err(format!("{} does not exist", config.display()));
         }
-        let root = config.parent().unwrap_or(Path::new("."));
+        let (config, persist_to) = (absolute(config)?, absolute(persist_to)?);
+        let root = config.parent().unwrap_or(Path::new("/")).to_path_buf();
         let program = root.join("node_modules").join(".bin").join("wrangler");
         if !program.is_file() {
             return Err(format!(
@@ -46,8 +55,9 @@ impl Wrangler {
         std::fs::create_dir_all(&scratch).map_err(|e| format!("{}: {e}", scratch.display()))?;
         Ok(Self {
             program,
-            config: config.to_path_buf(),
-            persist_to: persist_to.to_path_buf(),
+            config,
+            root,
+            persist_to,
             scratch,
         })
     }
@@ -55,6 +65,7 @@ impl Wrangler {
     /// Runs Wrangler with `args` and the local options.
     fn run(&self, args: &[&str]) -> Result<Output, String> {
         Command::new(&self.program)
+            .current_dir(&self.root)
             .args(args)
             .arg("--local")
             .arg("--persist-to")
@@ -102,6 +113,7 @@ fn content_type(key: &str) -> &'static str {
 
 impl Store for Wrangler {
     fn execute_file(&mut self, file: &Path) -> Result<(), String> {
+        let file = absolute(file)?;
         let file = file.to_string_lossy();
         let args = ["d1", "execute", DATABASE, "--file", &file];
         let output = self.run(&args)?;
@@ -132,6 +144,7 @@ impl Store for Wrangler {
     }
 
     fn put(&mut self, key: &str, file: &Path) -> Result<(), String> {
+        let file = absolute(file)?;
         let (object, file) = (Self::object(key), file.to_string_lossy());
         let args = [
             "r2",
