@@ -8,13 +8,17 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use tokio::time::MissedTickBehavior;
 
+mod cross;
+
+pub use cross::{MatchOptions, match_stage};
+
 use crate::access::item_count;
 use univ_model::redshift::{CmbCorrection, DipoleModel};
 
 use crate::acquire::{Acquired, acquire};
 use crate::display::{
-    IndicatifTarget, Outcome, PlainSink, REDRAW_EVERY, RunDisplay, SourceState, SourceSummary,
-    TerminalSink, stage_name,
+    IndicatifTarget, Outcome, PlainTarget, REDRAW_EVERY, RunDisplay, RunSink, SourceState,
+    SourceSummary, stage_name,
 };
 use crate::events::{Event, EventSink, Stage};
 use crate::fetch::{Clock, Fetcher, SystemClock};
@@ -40,9 +44,12 @@ pub struct FetchOptions {
 #[must_use]
 pub fn display_for_stderr() -> Arc<dyn RunDisplay> {
     if std::io::stderr().is_terminal() {
-        Arc::new(TerminalSink::new(SystemClock, IndicatifTarget::stderr()))
+        Arc::new(RunSink::new(SystemClock, IndicatifTarget::stderr()))
     } else {
-        Arc::new(PlainSink::new(SystemClock, std::io::stderr()))
+        Arc::new(RunSink::new(
+            SystemClock,
+            PlainTarget::new(std::io::stderr()),
+        ))
     }
 }
 
@@ -79,6 +86,9 @@ pub struct RunReport {
     sources: Vec<SourceSummary>,
     /// The stage the run is in, or last ended.
     stage: Stage,
+    /// Why a stage that is not a source's failed, such as a cross-match whose rules cannot be
+    /// read.
+    failure: Option<String>,
 }
 
 impl RunReport {
@@ -97,6 +107,7 @@ impl RunReport {
         Self {
             sources,
             stage: Stage::Fetch,
+            failure: None,
         }
     }
 
@@ -109,9 +120,11 @@ impl RunReport {
     /// Whether some source failed.
     #[must_use]
     pub fn failed(&self) -> bool {
-        self.sources
-            .iter()
-            .any(|s| matches!(s.state, SourceState::Failed(_)))
+        self.failure.is_some()
+            || self
+                .sources
+                .iter()
+                .any(|s| matches!(s.state, SourceState::Failed(_)))
     }
 
     fn set(&mut self, n: usize, state: SourceState) {
@@ -129,7 +142,9 @@ impl RunReport {
             .iter()
             .filter(|s| matches!(s.state, SourceState::Failed(_)))
             .count();
-        let reason = if failed == 0 {
+        let reason = if let Some(failure) = &self.failure {
+            failure.clone()
+        } else if failed == 0 {
             format!("{} only; no release was asked for", stage_name(self.stage))
         } else {
             format!("{failed} of {} sources failed", self.sources.len())
@@ -221,6 +236,7 @@ pub async fn fetch<C: Clock>(
     }
     fetcher.emit(Event::StageEnded {
         stage: Stage::Fetch,
+        counts: vec![],
     });
     acquired
 }
@@ -316,6 +332,7 @@ pub async fn normalize_stage_until(
     }
     sink.emit(Event::StageEnded {
         stage: Stage::Normalize,
+        counts: vec![],
     });
     normalized
 }

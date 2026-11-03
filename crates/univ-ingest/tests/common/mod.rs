@@ -90,8 +90,7 @@ pub fn rig(offline: bool) -> Rig {
     }
 }
 
-static SOURCE: LazyLock<SourceId> =
-    LazyLock::new(|| SourceId::new("test-galaxies").expect("a valid id"));
+static SOURCE: LazyLock<SourceId> = LazyLock::new(|| source_id("test-galaxies"));
 
 pub fn source() -> SourceId {
     SOURCE.clone()
@@ -116,18 +115,36 @@ pub fn keep(_: &Payload) -> std::io::Result<()> {
     Ok(())
 }
 
+/// The workspace root, which holds `sources/`, `structures/` and `rules/`.
+pub fn workspace() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
 /// The repository's `sources/` directory.
 pub fn sources_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../sources")
+    workspace().join("sources")
+}
+
+/// The repository's `structures/` directory.
+pub fn structures_dir() -> PathBuf {
+    workspace().join("structures")
+}
+
+/// The crops of the real volume grids, `tests/fixtures/grids/`.
+pub fn grids_dir() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/grids")
+}
+
+/// The source id `id`.
+pub fn source_id(id: &str) -> SourceId {
+    SourceId::new(id).expect("a valid source id")
 }
 
 /// The ingest cache the tests run by hand read: `UNIV_INGEST_CACHE`, or the workspace's
 /// `.cache/univ-ingest`.
 pub fn cache_dir() -> PathBuf {
-    std::env::var_os("UNIV_INGEST_CACHE").map_or_else(
-        || PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.cache/univ-ingest"),
-        PathBuf::from,
-    )
+    std::env::var_os("UNIV_INGEST_CACHE")
+        .map_or_else(|| workspace().join(".cache/univ-ingest"), PathBuf::from)
 }
 
 /// Every source definition in the repository.

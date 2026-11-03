@@ -224,6 +224,34 @@ pub struct OutlineTest {
     pub min_expected: f64,
     /// Why these numbers: they are this pipeline's choices, not published values.
     pub why: String,
+    /// The dense places a void's region may not hold, where the record states them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dense_places: Option<DensePlaces>,
+}
+
+/// The dense places an outline below its threshold, a void, may not hold: a choice of this
+/// pipeline, said to be one and why. A region that holds one is refused, and the structure is
+/// shown at its published position.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DensePlaces {
+    /// Always `pipeline`: the rule is a choice of this pipeline, not a published one.
+    pub chosen_by: ChosenBy,
+    /// Sources whose matched objects are dense places, such as a catalogue of galaxy clusters:
+    /// each object holding one of their entries, at that entry's CMB-frame redshift.
+    #[serde(default)]
+    pub sources: Vec<SourceId>,
+    /// Kinds of researched structure that are dense places, each at its published position.
+    #[serde(default)]
+    pub structure_kinds: Vec<super::StructureKind>,
+    pub why: String,
+}
+
+/// Who chose a rule.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ChosenBy {
+    Pipeline,
 }
 
 #[derive(Deserialize)]
@@ -267,6 +295,19 @@ impl TryFrom<RawOutline> for GridOutline {
         }
         if test.why.trim().is_empty() {
             return Err("the outline test says why it chose its numbers".into());
+        }
+        if let Some(dense) = &test.dense_places {
+            if raw.side != Side::Below {
+                return Err(
+                    "dense places are a test of a void, an outline below its threshold".into(),
+                );
+            }
+            if dense.sources.is_empty() && dense.structure_kinds.is_empty() {
+                return Err("the dense places name sources or structure kinds".into());
+            }
+            if dense.why.trim().is_empty() {
+                return Err("the dense places say why they were chosen".into());
+            }
         }
         if raw.field.trim().is_empty() || raw.seed.as_ref().is_some_and(|s| s.name.is_empty()) {
             return Err("the field and the seed's name are not empty".into());

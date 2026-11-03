@@ -7,7 +7,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use univ_model::ids::SourceId;
 
-use crate::fetch::{Payload, write_via_part};
+use crate::fetch::Payload;
 use crate::normalize::NormalizationReport;
 
 /// The file name of a source's provenance, in the directory that holds its chunks.
@@ -50,6 +50,9 @@ impl Provenance {
         self.source = Some(source.clone());
         self.payloads.retain(|p| p.item != payload.item);
         self.payloads.push(payload.clone());
+        // Chunks arrive in the order their fetches finish; keep the record in item order, with
+        // numbers compared as numbers, so the same payloads always give the same file.
+        self.payloads.sort_by_cached_key(|p| natural_key(&p.item));
         self.normalization = None;
     }
 
@@ -59,8 +62,7 @@ impl Provenance {
     ///
     /// Fails when the file cannot be written.
     pub fn write(&self, dir: &Path) -> std::io::Result<()> {
-        let yaml = serde_norway::to_string(self).map_err(std::io::Error::other)?;
-        write_via_part(&dir.join(FILE), yaml.as_bytes(), || Ok(()))
+        crate::yaml::write(&dir.join(FILE), self)
     }
 
     /// Records `payload` for `source` in the provenance kept in `dir`.
@@ -104,4 +106,33 @@ impl Provenance {
         }
         Ok(())
     }
+}
+
+/// A key that orders item names with their runs of digits compared as numbers: `chunk 2 of 17`
+/// before `chunk 10 of 17`.
+fn natural_key(item: &str) -> Vec<(String, u64)> {
+    let mut key = Vec::new();
+    let mut text = String::new();
+    let mut digits = String::new();
+    for c in item.chars() {
+        if c.is_ascii_digit() {
+            digits.push(c);
+        } else {
+            if !digits.is_empty() {
+                key.push((
+                    std::mem::take(&mut text),
+                    digits.parse().unwrap_or(u64::MAX),
+                ));
+                digits.clear();
+            }
+            text.push(c);
+        }
+    }
+    let last = if digits.is_empty() {
+        0
+    } else {
+        digits.parse().unwrap_or(u64::MAX)
+    };
+    key.push((text, last));
+    key
 }

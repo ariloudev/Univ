@@ -3,12 +3,12 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::cosmology::{AssumedCosmology, CosmologyError};
 use crate::units::{Dimension, Unit};
 use crate::value::{KindOfValue, Quantity, ValueError};
 
 mod convert;
 
-use convert::checked;
 pub use convert::{from_hubble_scaled, from_modulus, rescale_hubble};
 
 /// How a distance was obtained, from the most direct to the most model-dependent.
@@ -86,9 +86,9 @@ pub struct Distance {
     pub method: Method,
     /// Which distance it is: a luminosity distance for one derived from a modulus.
     pub measure: Measure,
-    /// The Hubble constant in km/s/Mpc that the value was published for, where it depends on
-    /// one: 100 for a length in h⁻¹ Mpc.
-    pub hubble_constant: Option<f64>,
+    /// The cosmology the value was published for, where it depends on one: H0 = 100 km/s/Mpc
+    /// for a length in h⁻¹ Mpc.
+    pub assumed_cosmology: Option<AssumedCosmology>,
 }
 
 /// A distance as read, before its checks.
@@ -101,7 +101,7 @@ struct RawDistance {
     kind: DistanceKind,
     method: Method,
     measure: Measure,
-    hubble_constant: Option<f64>,
+    assumed_cosmology: Option<AssumedCosmology>,
 }
 
 impl TryFrom<RawDistance> for Distance {
@@ -114,7 +114,7 @@ impl TryFrom<RawDistance> for Distance {
             raw.kind_of_value,
             (raw.kind, raw.method),
             raw.measure,
-            raw.hubble_constant,
+            raw.assumed_cosmology,
         )?;
         let (ours, theirs) = (distance.normalized.value, raw.normalized.value);
         if (ours - theirs).abs() > 1e-9 * ours.abs().max(theirs.abs()) {
@@ -127,9 +127,6 @@ impl TryFrom<RawDistance> for Distance {
     }
 }
 
-/// A Hubble-scaled length is the length for H0 = 100 h km/s/Mpc.
-const HUBBLE_SCALED: f64 = 100.0;
-
 impl Distance {
     /// A distance from its value as published, normalized to `unit`: a modulus through
     /// [`from_modulus`], a length in h⁻¹ Mpc as the length for H0 = 100 km/s/Mpc, which it then
@@ -140,7 +137,8 @@ impl Distance {
     /// Fails when `unit` is neither parsecs nor megaparsecs, `native` is not a length, a
     /// Hubble-scaled length or a modulus, `also_published` is neither a length nor a modulus,
     /// a mixed method lists fewer than two methods, a modulus is not given as a luminosity
-    /// distance, or the Hubble constant is not positive or, for a Hubble-scaled length, not 100.
+    /// distance, or the assumed cosmology cannot stand or, for a Hubble-scaled length, has
+    /// another Hubble constant than 100.
     pub fn new(
         native: Quantity,
         also_published: Option<Quantity>,
@@ -148,7 +146,7 @@ impl Distance {
         kind_of_value: KindOfValue,
         (kind, method): (DistanceKind, Method),
         measure: Measure,
-        hubble_constant: Option<f64>,
+        assumed_cosmology: Option<AssumedCosmology>,
     ) -> Result<Self, DistanceError> {
         if native.unit == Unit::Magnitude && measure != Measure::Luminosity {
             return Err(DistanceError::ModulusNotLuminosity(measure));
@@ -156,8 +154,8 @@ impl Distance {
         if !matches!(unit, Unit::Parsec | Unit::Megaparsec) {
             return Err(DistanceError::NormalizedUnit(unit));
         }
-        if let Some(h) = hubble_constant {
-            checked(h)?;
+        if let Some(assumed) = &assumed_cosmology {
+            assumed.check()?;
         }
         if let Method::Mixed(methods) = &method
             && methods.len() < 2
@@ -172,18 +170,19 @@ impl Distance {
         {
             return Err(DistanceError::NotADistance(other.unit));
         }
-        let (normalized, hubble_constant) = match native.unit.dimension() {
-            Dimension::Magnitude => (from_modulus(&native)?.to(unit)?, hubble_constant),
-            Dimension::Length => (native.to(unit)?, hubble_constant),
+        let (normalized, assumed_cosmology) = match native.unit.dimension() {
+            Dimension::Magnitude => (from_modulus(&native)?.to(unit)?, assumed_cosmology),
+            Dimension::Length => (native.to(unit)?, assumed_cosmology),
             Dimension::HubbleScaledLength => {
-                if hubble_constant.is_some_and(|h| h != HUBBLE_SCALED) {
+                let scaled = AssumedCosmology::HUBBLE_SCALED;
+                if assumed_cosmology.is_some_and(|a| !a.is_hubble_scaled()) {
                     return Err(DistanceError::WrongUnit {
                         expected: Unit::Megaparsec,
                         found: native.unit,
                     });
                 }
                 let mpc = Quantity::new(native.value, Unit::Megaparsec, native.uncertainty)?;
-                (mpc.to(unit)?, Some(HUBBLE_SCALED))
+                (mpc.to(unit)?, Some(assumed_cosmology.unwrap_or(scaled)))
             }
             _ => return Err(DistanceError::NotADistance(native.unit)),
         };
@@ -195,8 +194,14 @@ impl Distance {
             kind,
             method,
             measure,
-            hubble_constant,
+            assumed_cosmology,
         })
+    }
+
+    /// The Hubble constant in km/s/Mpc the value was published for, where it depends on one.
+    #[must_use]
+    pub fn hubble_constant(&self) -> Option<f64> {
+        self.assumed_cosmology.map(|a| a.hubble_constant)
     }
 
     /// The distance modulus as published, whether it is the native value or published beside
@@ -230,6 +235,8 @@ pub enum DistanceError {
     #[error("the Hubble constant {0} km/s/Mpc is not positive")]
     BadHubbleConstant(f64),
     #[error(transparent)]
+    Cosmology(#[from] CosmologyError),
+    #[error(transparent)]
     Value(#[from] ValueError),
 }
 
@@ -243,6 +250,7 @@ mod tests {
     }
 
     fn measured(native: Quantity, unit: Unit, h: Option<f64>) -> Result<Distance, DistanceError> {
+        let h = h.map(AssumedCosmology::hubble);
         let how = (DistanceKind::SecondaryIndicator, Method::TullyFisher);
         let measure = if native.unit == Unit::Magnitude {
             Measure::Luminosity
@@ -269,14 +277,14 @@ mod tests {
     fn a_hubble_scaled_length_keeps_h0_100_and_any_other_constant_is_refused() {
         let scaled = quantity(50.0, Unit::MegaparsecOverH, Uncertainty::NoneReported);
         let d = measured(scaled, Unit::Megaparsec, None).unwrap();
-        assert_eq!(d.hubble_constant, Some(100.0));
+        assert_eq!(d.hubble_constant(), Some(100.0));
         assert_eq!(d.normalized.value, 50.0);
         assert!(measured(scaled, Unit::Megaparsec, Some(73.0)).is_err());
         let at_73 = quantity(8.0, Unit::Megaparsec, Uncertainty::NoneReported);
         assert_eq!(
             measured(at_73, Unit::Megaparsec, Some(73.0))
                 .unwrap()
-                .hubble_constant,
+                .hubble_constant(),
             Some(73.0)
         );
     }

@@ -36,6 +36,9 @@ pub enum LeftOutReason {
     UnsuitableRedshift,
     /// Every cell of the row is blank: an empty line inside a table, or a line of empty cells.
     BlankRow,
+    /// The identifier is one an earlier row of the source already has: the first row with it is
+    /// kept, as an entry's designation must name one entry.
+    DuplicateIdentifier,
 }
 
 /// A rule on the rows whose cells meet a condition, and every condition in `and`: they are left

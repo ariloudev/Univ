@@ -3,7 +3,6 @@
 use serde::{Deserialize, Serialize};
 
 use super::{Geometry, Member, Primitive};
-use crate::ids::ObjectId;
 use crate::position::{Rotation, Vec3, dot, scaled, zip};
 
 /// An axis-aligned box.
@@ -36,11 +35,7 @@ impl Aabb {
 
 impl Geometry {
     /// The box in the frame `rotation` takes this geometry's frame to.
-    pub(super) fn bounds(
-        &self,
-        rotation: &Rotation,
-        position: impl Fn(ObjectId) -> Option<Vec3>,
-    ) -> Option<Aabb> {
+    pub(super) fn bounds(&self, rotation: &Rotation) -> Option<Aabb> {
         let r = |v: Vec3| rotation.apply(v);
         match self {
             Self::Point { at } => Aabb::around([r(*at)]),
@@ -59,14 +54,9 @@ impl Geometry {
             } => Aabb::around([r(scaled(*direction, *near)), r(scaled(*direction, *far))]),
             Self::Primitive { primitive } => Some(primitive.bounds(rotation)),
             Self::Path { points } => Aabb::around(points.iter().map(|p| r(*p))),
-            Self::Members { members } => members
-                .iter()
-                .map(|m| match m {
-                    Member::Object { id } => position(*id).map(r),
-                    Member::Tracer { at, .. } => Some(r(*at)),
-                })
-                .collect::<Option<Vec<_>>>()
-                .and_then(Aabb::around),
+            Self::Members { members } => Aabb::around(members.iter().map(|m| match m {
+                Member::Object { at, .. } | Member::Tracer { at, .. } => r(*at),
+            })),
             // Every direction within `far` of the observer: a box around the sphere of that radius.
             Self::SkyRegion { far, .. } => Some(Aabb::centred([0.0; 3], [*far; 3])),
             Self::VolumeGrid {
@@ -134,22 +124,17 @@ impl Primitive {
 mod tests {
     use super::*;
     use crate::geometry::Shape;
+    use crate::ids::ObjectId;
     use crate::position::Frame;
     use crate::units::Unit;
-
-    fn none(_: ObjectId) -> Option<Vec3> {
-        None
-    }
 
     fn shape(geometry: Geometry) -> Shape {
         Shape::new(Frame::Supergalactic, Unit::Megaparsec, geometry).unwrap()
     }
 
-    /// The box of `geometry` in its own frame, where no member can be placed.
+    /// The box of `geometry` in its own frame.
     fn boxed(geometry: Geometry) -> Aabb {
-        shape(geometry)
-            .bounds_in(Frame::Supergalactic, none)
-            .unwrap()
+        shape(geometry).bounds_in(Frame::Supergalactic).unwrap()
     }
 
     fn near(a: Aabb, b: Aabb) -> bool {
@@ -167,6 +152,7 @@ mod tests {
             members: vec![
                 Member::Object {
                     id: ObjectId::new(7).unwrap(),
+                    at: [-2.0, 3.0, 1.0],
                 },
                 Member::Tracer {
                     at: [4.0, -1.0, 0.0],
@@ -207,10 +193,7 @@ mod tests {
 
     #[test]
     fn every_kind_has_a_box() {
-        let at_seven = |id: ObjectId| (id.get() == 7).then_some([-2.0, 3.0, 1.0]);
-        let b = shape(members())
-            .bounds_in(Frame::Supergalactic, at_seven)
-            .unwrap();
+        let b = boxed(members());
         assert_eq!(
             b,
             Aabb {
@@ -262,14 +245,21 @@ mod tests {
 
     #[test]
     fn a_member_list_with_a_member_it_cannot_place_has_no_box() {
-        assert_eq!(shape(members()).bounds_in(Frame::Supergalactic, none), None);
+        // A member's position is resolved at ingest; one that could not be is no shape at all.
+        let unplaced = Geometry::Members {
+            members: vec![Member::Object {
+                id: ObjectId::new(7).unwrap(),
+                at: [f64::NAN, 0.0, 0.0],
+            }],
+        };
+        assert!(Shape::new(Frame::Supergalactic, Unit::Megaparsec, unplaced).is_err());
     }
 
     #[test]
     fn a_point_is_bounded_in_another_frame() {
         let at = [8_000.0, 0.0, 0.0];
         let point = Shape::new(Frame::Galactic, Unit::Parsec, Geometry::Point { at }).unwrap();
-        let b = point.bounds_in(Frame::Icrs, none).unwrap();
+        let b = point.bounds_in(Frame::Icrs).unwrap();
         assert!((dot(b.min, b.min).sqrt() - 8_000.0).abs() < 1e-6);
         assert!(near(b, Aabb::around([b.max]).unwrap()));
     }

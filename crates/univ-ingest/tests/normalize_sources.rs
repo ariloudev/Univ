@@ -129,7 +129,7 @@ fn cosmicflows_groups_keep_their_modulus_and_read_sg_coordinates_as_km_s() {
     assert_eq!(d.normalized.unit, Unit::Megaparsec);
     assert_eq!(d.kind, DistanceKind::SecondaryIndicator);
     assert!(matches!(&d.method, Method::Mixed(m) if m.len() == 8));
-    assert_eq!(d.hubble_constant, None);
+    assert_eq!(d.hubble_constant(), None);
     let sg = g.supergalactic_velocity.unwrap();
     assert_eq!(
         (sg.x.native.value, sg.y.native.value, sg.z.native.value),

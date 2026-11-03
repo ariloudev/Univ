@@ -148,10 +148,13 @@ pub fn on_grid(position: &Coordinates, geometry: &GridGeometry) -> Result<Vec3, 
             (frame, unit_vector(lon, degrees(lat)?).map(|u| u * r))
         }
     };
-    let model = frame.model().ok_or_else(|| {
-        format!("the published position is in {frame:?}, which univ-model does not rotate")
-    })?;
-    Ok(between(model, geometry.frame).apply(v))
+    if let Some(error) = frame.systematic_uncertainty() {
+        return Err(format!(
+            "the published position is in {frame:?}, uncertain by {error:.2}°: too coarse to check \
+             an outline against"
+        ));
+    }
+    Ok(between(*frame, geometry.frame).apply(v))
 }
 
 /// A published coordinate as a distance in velocity space, h⁻¹ Mpc.

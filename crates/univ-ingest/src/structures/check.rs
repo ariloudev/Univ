@@ -95,12 +95,12 @@ impl Structure {
     /// A cited cosmology names a paper of the file, and its quoted sentence holds every number
     /// of the cosmology as written.
     fn check_assumes(&self, field: &str, assumes: &Assumes) -> Result<(), Problem> {
-        let Assumes::Cited { cosmology, cite } = assumes else {
+        let Some(cite) = &assumes.cite else {
             return Ok(());
         };
         self.check_paper(&format!("{field}.cite"), cite)?;
         let texts = shown(cite);
-        if let Some(x) = numbers(cosmology)
+        if let Some(x) = numbers(&assumes.stated)
             .into_iter()
             .find(|x| !texts.iter().any(|t| has_number(t, *x)))
         {
@@ -216,7 +216,7 @@ impl Structure {
         for (_, value) in self.cited_values() {
             cites.push(&value.cite);
             cites.extend(value.uncertainty_cite.as_deref());
-            if let Some(Assumes::Cited { cite, .. }) = value.assumes.as_deref() {
+            if let Some(cite) = value.assumes.as_deref().and_then(|a| a.cite.as_ref()) {
                 cites.push(cite);
             }
         }

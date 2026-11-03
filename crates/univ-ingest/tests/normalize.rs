@@ -314,11 +314,11 @@ fn a_distance_in_h_inverse_mpc_or_for_a_stated_hubble_constant_keeps_that_consta
         (70.5, Unit::MegaparsecOverH)
     );
     assert_eq!(
-        (scaled.normalized.value, scaled.hubble_constant),
+        (scaled.normalized.value, scaled.hubble_constant()),
         (70.5, Some(100.0))
     );
     assert_eq!(
-        (at_73.native.value, at_73.hubble_constant),
+        (at_73.native.value, at_73.hubble_constant()),
         (8.0, Some(73.0))
     );
 }

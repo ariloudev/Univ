@@ -4,8 +4,8 @@ use std::time::Duration;
 
 use univ_model::ids::SourceId;
 
-use super::{clock, rate, size, stage_name};
-use crate::events::Stage;
+use super::{clock, counted, rate, size, stage_name};
+use crate::events::{Count, Stage};
 
 /// How a run ended.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -39,12 +39,21 @@ pub struct SourceSummary {
     pub left_out: Option<u64>,
 }
 
+/// What a stage that ended counted, such as the objects of a cross-match.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct StageCounts {
+    pub stage: Stage,
+    pub counts: Vec<Count>,
+}
+
 /// What a run did.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Summary {
     pub bytes: u64,
     pub elapsed: Duration,
     pub sources: Vec<SourceSummary>,
+    /// The counts of each stage that ended with some, in order.
+    pub stages: Vec<StageCounts>,
     pub outcome: Outcome,
 }
 
@@ -68,6 +77,10 @@ impl Summary {
                 (SourceState::Fetched, ..) => "not normalized in this run".to_owned(),
             };
             lines.push(format!("  {}: {what}", s.source));
+        }
+        for s in &self.stages {
+            let counts = counted(&s.counts);
+            lines.push(format!("  {}{counts}", stage_name(s.stage)));
         }
         lines.push(match &self.outcome {
             Outcome::Built(n) => format!("Built release {n}"),

@@ -1,6 +1,10 @@
-//! Frames and positions: ICRS with an epoch, and rotations between it and FK5 J2000 (Mignard &
-//! Froeschlé 2000), galactic (Hipparcos, ESA 1997) and supergalactic (Lahav et al. 2000)
-//! coordinates.
+//! Frames and positions: ICRS with an epoch, and transformations between it and FK5 J2000
+//! (Mignard & Froeschlé 2000), FK4 B1950 (Standish 1982, with E-terms), galactic (Hipparcos,
+//! ESA 1997) and supergalactic (Lahav et al. 2000) coordinates, and equatorial coordinates whose
+//! equinox is not stated.
+
+mod fk4;
+mod vector;
 
 use std::array::from_fn;
 use std::sync::LazyLock;
@@ -30,6 +34,73 @@ pub enum Frame {
     /// differs from the ICRS by tens of milliarcseconds; see [`fk5_to_icrs`].
     #[serde(rename = "fk5_j2000")]
     Fk5J2000,
+    /// FK4 at equinox B1950 with its E-terms of aberration, as older papers publish positions.
+    /// It moves to FK5 J2000 as ERFA's `fk45z` moves it, assuming zero proper motion in FK5,
+    /// and from there to the ICRS.
+    #[serde(rename = "fk4_b1950")]
+    Fk4B1950,
+    /// Equatorial coordinates whose paper does not state the equinox. They are placed as FK5
+    /// J2000, never silently: [`Frame::systematic_uncertainty`] gives the B1950 to J2000
+    /// precession angle, about 0.7°, which a position in it must carry.
+    EquatorialEquinoxUnstated,
+}
+
+/// The number of frames, the size of the table of transformations.
+const FRAMES: usize = 6;
+
+impl Frame {
+    /// The systematic uncertainty, in degrees, that a direction published in this frame carries
+    /// beyond its own errors: for an unstated equinox, the largest angle between reading it as
+    /// B1950 and as J2000 (see [`equinox_ambiguity`]); none for every other frame.
+    #[must_use]
+    pub fn systematic_uncertainty(self) -> Option<f64> {
+        (self == Self::EquatorialEquinoxUnstated).then(fk4::equinox_ambiguity)
+    }
+}
+
+/// A transformation between frames: a rotation, except to or from FK4 B1950, whose E-terms of
+/// aberration depend on the direction and are removed before the matrix or added after it.
+/// It applies to directions and to Cartesian positions, whose length it keeps.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Transform {
+    matrix: Rotation,
+    remove_e_terms: bool,
+    add_e_terms: bool,
+}
+
+impl Transform {
+    const IDENTITY: Self = Self {
+        matrix: Rotation::IDENTITY,
+        remove_e_terms: false,
+        add_e_terms: false,
+    };
+
+    /// The vector `v` in the target frame.
+    #[must_use]
+    pub fn apply(&self, v: Vec3) -> Vec3 {
+        if !(self.remove_e_terms || self.add_e_terms) {
+            return self.matrix.apply(v);
+        }
+        let length = dot(v, v).sqrt();
+        if length == 0.0 {
+            return v;
+        }
+        let mut u = scaled(v, 1.0 / length);
+        if self.remove_e_terms {
+            u = fk4::remove_e_terms(u);
+        }
+        u = fk4::normalized(self.matrix.apply(u));
+        if self.add_e_terms {
+            u = fk4::add_e_terms(u);
+        }
+        scaled(u, length)
+    }
+
+    /// The rotation, when the transformation is one: when neither frame is FK4 B1950.
+    #[must_use]
+    pub fn rotation(&self) -> Option<Rotation> {
+        (!(self.remove_e_terms || self.add_e_terms)).then_some(self.matrix)
+    }
 }
 
 /// The ICRS → galactic rotation as the Hipparcos catalogue prints it (ESA 1997, vol. 1, §1.5.3):
@@ -216,66 +287,55 @@ fn fk5_to_icrs() -> Rotation {
     ])
 }
 
-/// The rotations between every pair of frames, indexed `[from][to]` in the order of [`Frame`],
-/// computed once. A frame to itself is exactly the identity.
-static BETWEEN: LazyLock<[[Rotation; 4]; 4]> = LazyLock::new(|| {
+/// The transformations between every pair of frames, indexed `[from][to]` in the order of
+/// [`Frame`], computed once. A frame to itself is exactly the identity.
+static BETWEEN: LazyLock<[[Transform; FRAMES]; FRAMES]> = LazyLock::new(|| {
     let galactic = icrs_to_galactic();
-    let from_icrs = [
+    let fk5 = fk5_to_icrs();
+    let fk4_matrix = fk5.then_after(&fk4::fk4_to_fk5());
+    // Each frame's matrix into the ICRS and out of it. Only FK4's is not a rotation.
+    let to_icrs = [
         Rotation::IDENTITY,
-        galactic,
-        galactic_to_supergalactic().then_after(&galactic),
-        fk5_to_icrs().transpose(),
+        galactic.transpose(),
+        galactic_to_supergalactic()
+            .then_after(&galactic)
+            .transpose(),
+        fk5,
+        fk4_matrix,
+        fk5,
     ];
+    let fk4 = Frame::Fk4B1950 as usize;
+    let mut from_icrs = to_icrs.map(|m| m.transpose());
+    from_icrs[fk4] = fk4::inverse(&fk4_matrix);
     from_fn(|from| {
         from_fn(|to| {
             if from == to {
-                Rotation::IDENTITY
+                Transform::IDENTITY
             } else {
-                from_icrs[to].then_after(&from_icrs[from].transpose())
+                Transform {
+                    matrix: from_icrs[to].then_after(&to_icrs[from]),
+                    remove_e_terms: from == fk4,
+                    add_e_terms: to == fk4,
+                }
             }
         })
     })
 });
 
-/// The rotation that takes an ICRS vector into `frame`.
+/// The transformation that takes an ICRS vector into `frame`.
 #[must_use]
-pub fn from_icrs(frame: Frame) -> Rotation {
+pub fn from_icrs(frame: Frame) -> Transform {
     between(Frame::Icrs, frame)
 }
 
-/// The rotation that takes a vector in `from` into `to`.
+/// The transformation that takes a vector in `from` into `to`.
 #[must_use]
-pub fn between(from: Frame, to: Frame) -> Rotation {
+pub fn between(from: Frame, to: Frame) -> Transform {
     BETWEEN[from as usize][to as usize]
 }
 
-/// The dot product.
-#[must_use]
-pub fn dot(a: Vec3, b: Vec3) -> f64 {
-    a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-}
-
-/// `f` applied to the matching components of `a` and `b`.
-#[must_use]
-pub fn zip(a: Vec3, b: Vec3, f: impl Fn(f64, f64) -> f64) -> Vec3 {
-    from_fn(|i| f(a[i], b[i]))
-}
-
-/// `v` times `s`.
-#[must_use]
-pub fn scaled(v: Vec3, s: f64) -> Vec3 {
-    v.map(|c| c * s)
-}
-
-/// The cross product.
-#[must_use]
-pub fn cross(a: Vec3, b: Vec3) -> Vec3 {
-    [
-        a[1] * b[2] - a[2] * b[1],
-        a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0],
-    ]
-}
+pub use fk4::equinox_ambiguity;
+pub use vector::{cross, dot, scaled, separation_degrees, zip};
 
 #[cfg(test)]
 mod tests {
@@ -299,7 +359,7 @@ mod tests {
 
     #[test]
     fn the_galactic_rotation_matches_the_hipparcos_matrix_and_is_orthonormal() {
-        let derived = from_icrs(Frame::Galactic);
+        let derived = from_icrs(Frame::Galactic).rotation().unwrap();
         for (i, row) in derived.0.iter().enumerate() {
             for (j, value) in row.iter().enumerate() {
                 let published = ICRS_TO_GALACTIC.0[i][j];
@@ -368,7 +428,7 @@ mod tests {
             [-1.110_223_329_055e-7, 1.0, -9.647_792_746_537e-8],
             [-4.411_804_498_097e-8, 9.647_792_250_666e-8, 1.0],
         ];
-        let ours = between(Frame::Fk5J2000, Frame::Icrs);
+        let ours = between(Frame::Fk5J2000, Frame::Icrs).rotation().unwrap();
         for (row, expected) in ours.0.iter().zip(astropy) {
             for (value, expected) in row.iter().zip(expected) {
                 assert!((value - expected).abs() < 2e-14, "{value} vs {expected}");

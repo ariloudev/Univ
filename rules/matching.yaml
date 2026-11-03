@@ -1,0 +1,225 @@
+# Matching rules: how Univ Ingest resolves the catalogue entries of several sources into objects.
+# A release records this file (build-a-release). Read by univ-ingest `matching::MatchingRules`.
+#
+# Order of work:
+#   1. Published cross-identifications. Entries that share an identifier of one scheme below
+#      are one object, with confidence 1. A cross-identification that would put two entries of
+#      one source in one object is not applied: an identifier claimed by two or more entries of
+#      one source joins none of them; each claimant stays apart, with a candidate link of
+#      confidence `confidence.cross_identification_conflict` to every entry of another source
+#      that carries the identifier, whatever the order of the entries.
+#   2. Position, and redshift or distance. For each pair of sources below, two entries are
+#      candidates when their ICRS positions lie within `angular_tolerance_arcsec` and, where the
+#      pair names a line of sight, their heliocentric cz or their distances agree within its
+#      tolerance. Entries of one source are never candidates for each other: a source lists a
+#      body once. A candidate is merged only when neither side has another candidate from the
+#      same source; otherwise every candidate of that side becomes a candidate link, and no
+#      measurement is merged across a link. Merges are made in falling confidence and never put
+#      two entries of one source, or two objects joined by a link, into one object.
+#   No pair below: the two sources are never matched by position.
+#   An entry joins an object only when it lies within the pair's tolerances of every entry of
+#   that object a pair below compares it with (complete linkage): one close to an entry but too
+#   far from another, which would chain two distinct galaxies, stays apart, linked to it.
+#   3. Galaxy groups (galaxy_groups): a group row is its own object, related to its dominant
+#      galaxy by the scheme its source names it in; nothing is merged across the relation.
+#
+# Positions are compared as published, at each source's epoch, without propagating proper
+# motions. A star that moved farther than the tolerance between the epochs stays a separate
+# object (a duplicate, never a false merge); Gaia and Hipparcos rely on the published
+# cross-identification for that reason.
+
+confidence:
+  statement: >-
+    The confidence of a positional match is (1 - (s / theta)^p) * L, where s is the angular
+    separation, theta the pair's angular tolerance and p the exponent below. L is
+    (1 - (delta / tau)^p) when the pair compares a line of sight and both entries carry it, with
+    delta the |difference in heliocentric cz| (or the |difference in distance| over the mean of
+    the two distances) and tau its tolerance; L is the unchecked factor when the pair compares a
+    line of sight but an entry lacks the value; and L is 1 when the pair compares none. A match
+    is a candidate only when s <= theta and delta <= tau, so the confidence lies in [0, 1]. A
+    published cross-identification has confidence 1.
+  exponent: 2
+  exponent_basis: >-
+    Pipeline choice: a quadratic falls slowly near zero separation, where the published
+    positional errors dominate, and reaches 0 at the tolerance, so a match at the edge carries
+    little confidence.
+  unchecked_factor: 0.5
+  unchecked_basis: >-
+    Pipeline choice: a match whose depth could not be compared is half as sure as one whose
+    depth agreed exactly; it is still made, as a single candidate on the sky within the
+    tolerance is most often the same galaxy.
+  cross_identification_conflict: 0.5
+  conflict_basis: >-
+    Pipeline choice: a published table that names two entries of one source for one body gives
+    no ground to prefer either.
+
+cross_identifications:
+  - scheme: gaia-source-id
+    basis: >-
+      Gaia DR3 keeps the EDR3 source_id of every source (Gaia Collaboration, Vallenari et al.
+      2023, A&A 674, A1), so the EDR3 ids of Bailer-Jones et al. 2021 (AJ 161, 147) and GCNS
+      (Gaia Collaboration, Smart et al. 2021, A&A 649, A6) name the same sources as Gaia DR3.
+      The Gaia DR3 to Hipparcos-2 table gives the Gaia source_id of each pair.
+    members:
+      - { source: gaia-dr3-bright, field: identifier }
+      - { source: gcns, field: identifier }
+      - { source: bailer-jones-2021, field: identifier }
+      - { source: gaia-dr3-hipparcos2, field: identifier }
+  - scheme: hip
+    basis: >-
+      The HIP number of Hipparcos-2 (van Leeuwen 2007, A&A 474, 653), given in the Gaia DR3
+      to Hipparcos-2 best-neighbour table as original_ext_source_id (Marrese et al. 2019,
+      A&A 621, A144).
+    members:
+      - { source: hipparcos-2007, field: identifier }
+      - { source: gaia-dr3-hipparcos2, field: name }
+  - scheme: 2masx
+    basis: >-
+      2MRS (Huchra et al. 2012, ApJS 199, 26) and 2M++ (Lavaux & Hudson 2011, MNRAS 416, 2840)
+      both name each galaxy by its 2MASS Extended Source Catalog designation (Jarrett et al.
+      2000, AJ 119, 2498), as the recorded answers show (00424433+4116074 in 2MRS).
+    members:
+      - { source: twomrs, field: identifier }
+      - { source: twompp-catalogue, field: identifier }
+  - scheme: sdss-specobjid
+    basis: >-
+      Both sources are queries of the SDSS DR17 SpecObj table (Abdurro'uf et al. 2022, ApJS 259,
+      35), whose specObjID names one spectrum.
+    members:
+      - { source: sdss-dr17-galaxies, field: identifier }
+      - { source: boss-dr17-great-wall, field: identifier }
+  - scheme: pgc
+    basis: >-
+      The PGC number of HyperLEDA (Makarov et al. 2014, A&A 570, A13). No source defined so far
+      names its own entries by it: UNGC, 2MRS and 2M++ name galaxies otherwise, and the 1PGC of
+      Cosmicflows-4 names a group's dominant galaxy, not the group row (galaxy_groups below). The
+      scheme is kept so that a later galaxy source with PGC numbers joins by them, and so that a
+      group's dominant galaxy is found by its number.
+    members: []
+
+# Designations a source gives beside an entry's own identifier, kept with that source.
+designations:
+  - source: gaia-dr3-hipparcos2
+    field: name
+    prefix: "HIP "
+    basis: "original_ext_source_id is the Hipparcos-2 HIP number (source definition)."
+  - source: erass1-clusters
+    field: name
+    prefix: ""
+    basis: "NAME is the eRASS1 cluster name, 1eRASS J... (Bulbul et al. 2024, A&A 685, A106)."
+
+# Sources whose rows are galaxy groups, not galaxies: each row is its own object, of kind
+# galaxy_group, never matched by position to a galaxy, and related to the galaxy its source names
+# as the group's dominant member, which it lends no measurement.
+galaxy_groups:
+  - source: cosmicflows-4
+    basis: >-
+      The definition takes the groups table J/ApJ/944/94/groups (ReadMe table3.dat "Distances of
+      galaxy groups" and table4.dat "Galaxy group distances and peculiar velocities", Tully et
+      al. 2023, ApJ 944, 94): DMzp is the "Group, weighted-average distance modulus" (Note 5,
+      "weighted averaged over all members of the group with measured distance moduli") and Vh
+      the "Group velocity, relative to the Sun". A row's values are the group's, not a galaxy's.
+    dominant_member: identifier
+    scheme: pgc
+    member_basis: >-
+      ReadMe table3 and table4: 1PGC is the "PGC ID, dominant galaxy in the group" (Note G1: "The
+      PGC ID of the dominant galaxy in the group containing the galaxy in question given
+      directly or inferred from the group catalogs of Kourkchi & Tully 2017, J/ApJ/843/16 or
+      Tully 2015, J/AJ/149/171"), read from http://vizier.nao.ac.jp/ftp/cats/J/ApJ/944/94/ReadMe
+      on 2026-11-03.
+
+# Common names, such as LMC or Andromeda, attached with the source that published them.
+names:
+  - source: mcconnachie-2012
+    field: identifier
+    basis: >-
+      The Name column of McConnachie 2012 (AJ 144, 4) is each Local Group galaxy's common name,
+      such as LMC, Andromeda or Canis Major. The UNGC Name column mixes common names with catalogue
+      designations (UGC12894, ESO409-015) and is kept as designations only.
+
+# A researched structure's member, named in its paper, resolves to the matched object carrying
+# that name only when the object's preferred sky position lies within this angle of the
+# member's published position; a member published without a position, or resolving to an
+# object without one, is resolved by name alone, unchecked, and counted.
+structure_members:
+  angular_tolerance_arcsec: 60.0
+  basis: >-
+    Pipeline choice: an arcminute takes in the differences between a paper's member positions,
+    often rounded to tenths of a minute, and a catalogue's centre, while keeping a name that two
+    catalogues share from pulling in an object elsewhere on the sky.
+
+# Angular tolerances come from the published positional accuracies; each line-of-sight
+# tolerance and every allowance for galaxy centroids is a pipeline choice, given with its why.
+pairs:
+  - sources: [gaia-dr3-bright, hipparcos-2007]
+    angular_tolerance_arcsec: 1.7
+    line_of_sight: { compare: none }
+    basis: >-
+      1.7 arcsec is the largest angular_distance in the Gaia DR3 to Hipparcos-2 best-neighbour
+      table (source definition), whose positions agree to about a milliarcsecond at a common epoch
+      (Lindegren et al. 2021, A&A 649, A2; van Leeuwen 2007). Only stars the table leaves out
+      reach this rule, as the table is applied first; stars with no redshift have no line of
+      sight to compare.
+  - sources: [gcns, hipparcos-2007]
+    angular_tolerance_arcsec: 1.7
+    line_of_sight: { compare: none }
+    basis: "As for gaia-dr3-bright: GCNS positions are Gaia EDR3 positions at J2016.0."
+  - sources: [twomrs, twompp-catalogue]
+    angular_tolerance_arcsec: 2.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: &xsc >-
+      Both take positions from the 2MASS XSC, accurate to well under an arcsecond (Jarrett et
+      al. 2000); 2 arcsec is a pipeline choice that leaves room for FK5-to-ICRS rounding. Most
+      pairs join by their shared 2MASX name first. The 200 km/s is a pipeline choice: a few times
+      the per-galaxy cz errors these surveys publish (tens of km/s, as e_cz in the recorded
+      answers shows), and below the velocity spread of a galaxy group, so that two members of
+      a group seen close on the sky are kept apart or linked rather than merged.
+  - sources: [twomrs, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: &sixdf >-
+      6dFGS targets come from the 2MASS XSC and SuperCOSMOS (Jones et al. 2004, MNRAS 355, 747;
+      Jones et al. 2009, MNRAS 399, 683); 5 arcsec is a pipeline choice allowing for the
+      difference between a fibre target and an XSC centroid. 200 km/s as for 2MRS and 2M++.
+  - sources: [twompp-catalogue, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *sixdf
+  - sources: [twomrs, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: &sdss >-
+      SDSS astrometry is good to under 0.1 arcsec per coordinate (Pier et al. 2003, AJ 125,
+      1559); the 5 arcsec is a pipeline choice for the offset between a spectroscopic fibre
+      and an XSC centroid of an extended galaxy. 200 km/s as for 2MRS and 2M++.
+  - sources: [twompp-catalogue, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *sdss
+  - sources: [sixdfgs-dr3, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *sdss
+  - sources: [updated-nearby-galaxies, twomrs]
+    angular_tolerance_arcsec: 30.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: >-
+      UNGC positions are given to 0.1 s in right ascension and 1 arcsec in declination
+      (Karachentsev et al. 2013, AJ 145, 101; VizieR J/AJ/145/101), about 1.5 arcsec; 30 arcsec
+      is a pipeline choice for the centres of nearby dwarfs, which are diffuse and differ between
+      catalogues by tens of arcseconds. 300 km/s is a pipeline choice: UNGC velocities are
+      compiled heliocentric velocities that may come from another spectrum than the survey's.
+  - sources: [updated-nearby-galaxies, mcconnachie-2012]
+    angular_tolerance_arcsec: 120.0
+    line_of_sight: { compare: distance, tolerance_fraction: 0.3 }
+    basis: >-
+      Both list Local Group and Local Volume dwarfs, whose published centres differ by up to
+      arcminutes (McConnachie 2012, AJ 144, 4, whose galaxies span up to tens of arcminutes). 120 arcsec and a 30% difference in distance are pipeline choices:
+      wide enough for the centroids, and narrow enough in depth to keep a dwarf apart from a
+      background galaxy on the same line of sight.
+  - sources: [mcconnachie-2012, twomrs]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: >-
+      Pipeline choice: the brighter Local Group galaxies that 2MRS holds have XSC centroids
+      within an arcminute of McConnachie's centres; 300 km/s as for UNGC.

@@ -11,7 +11,7 @@ use univ_model::ids::SourceId;
 
 use super::{
     Attempt, Clock, FetchError, Fetched, Fetcher, Item, Record, disk_error, hex, judge_status,
-    part_path, with_ending, write_via_part,
+    part_path, with_ending,
 };
 use crate::events::{Event, RestartReason};
 
@@ -123,8 +123,7 @@ impl<C: Clock> Fetcher<C> {
             etag: header(&response, ETAG),
             length,
         };
-        let yaml = serde_norway::to_string(&record).map_err(|e| Attempt::GiveUp(e.to_string()))?;
-        write_via_part(&at.meta, yaml.as_bytes(), || Ok(())).map_err(|e| at.disk(&e))?;
+        crate::yaml::write(&at.meta, &record).map_err(|e| at.disk(&e))?;
         let written = self.stream(&at, response, offset, length).await?;
         let digest = sha256_of(&at.part).await.map_err(|e| at.disk(&e))?;
         let wrong_size = expected.size.is_some_and(|s| s != written);

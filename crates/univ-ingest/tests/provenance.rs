@@ -76,3 +76,39 @@ fn a_payload_recorded_after_normalization_drops_the_report_it_no_longer_matches(
     Provenance::record(dir.path(), &source(), &payload).unwrap();
     assert_eq!(Provenance::read(dir.path()).unwrap().normalization, None);
 }
+
+#[test]
+fn payloads_are_kept_in_item_order_whatever_order_they_arrive_in() {
+    let dir = tempfile::tempdir().unwrap();
+    let payload = |item: &str| univ_ingest::fetch::Payload {
+        item: item.to_owned(),
+        url: "https://example.org/q".to_owned(),
+        sha256: "0".repeat(64),
+        bytes: 3,
+        retrieved: "2026-11-03T00:00:00Z".to_owned(),
+        rows: Some(1),
+    };
+    for item in [
+        "row count",
+        "chunk 10 of 10",
+        "chunk 2 of 10",
+        "chunk 1 of 10",
+    ] {
+        Provenance::record(dir.path(), &source(), &payload(item)).unwrap();
+    }
+    let items: Vec<String> = Provenance::read(dir.path())
+        .unwrap()
+        .payloads
+        .into_iter()
+        .map(|p| p.item)
+        .collect();
+    assert_eq!(
+        items,
+        [
+            "chunk 1 of 10",
+            "chunk 2 of 10",
+            "chunk 10 of 10",
+            "row count"
+        ]
+    );
+}

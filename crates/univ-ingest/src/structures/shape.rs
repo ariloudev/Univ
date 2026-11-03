@@ -5,8 +5,9 @@
 use serde::{Deserialize, Serialize};
 
 use super::cited::Cited;
-use super::geometry::{Coordinates, Radial, StructureFrame, is_angle, is_length};
+use super::geometry::{Coordinates, Radial, is_angle, is_length};
 use super::members::Members;
+use univ_model::position::Frame;
 
 /// A structure's geometry: one of univ-model's geometry kinds, as published. A structure with
 /// only a position has univ-model's `point` geometry.
@@ -71,7 +72,7 @@ impl StructureGeometry {
 
     /// The frame the geometry is published in, or none for a sphere about the observer.
     #[must_use]
-    pub fn frame(&self) -> Option<StructureFrame> {
+    pub fn frame(&self) -> Option<Frame> {
         match self {
             Self::Primitive(p) => p.centre.frame(),
             Self::Members(m) => Some(m.frame),
@@ -183,7 +184,7 @@ impl TryFrom<RawPrimitive> for StructurePrimitive {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawSkyBox")]
 pub struct SkyBox {
-    pub frame: StructureFrame,
+    pub frame: Frame,
     pub lon: [Cited; 2],
     pub lat: [Cited; 2],
     pub near: Radial,
@@ -194,7 +195,7 @@ pub struct SkyBox {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RawSkyBox {
-    frame: StructureFrame,
+    frame: Frame,
     lon: [Cited; 2],
     lat: [Cited; 2],
     near: Radial,

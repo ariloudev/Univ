@@ -5,22 +5,24 @@
 //! other outcome publishes the structure as a point at its published position, with the reason.
 
 mod compare;
+mod dense;
 mod region;
 
 use serde::Serialize;
 use thiserror::Error;
 use univ_model::entry::CatalogueEntry;
 use univ_model::geometry::Geometry;
-use univ_model::grid::{Axis, Grid};
+use univ_model::grid::{Axis, Grid, GridGeometry};
 use univ_model::ids::SourceId;
 use univ_model::position::{Frame, Vec3};
 use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
 
-pub use compare::{COVERAGE, CatalogueCheck, Coverage, CoverageRule, compare};
+pub use compare::{COVERAGE, CatalogueCheck, Coverage, CoverageRule, GridSky, compare};
+pub use dense::{DenseAt, DenseCheck, DensePlace, OffGrid, dense_places};
 pub use region::{Region, on_grid, on_side, region, scalar};
 
-use crate::structures::{Coordinates, OutlineTest, Side, Structure, Threshold};
+use crate::structures::{Coordinates, GridOutline, OutlineTest, Side, Structure, Threshold};
 
 /// What became of a structure outlined from a grid, recorded with it: the grid, threshold and
 /// test, the seed, the region, each catalogue's numbers and the verdict.
@@ -40,6 +42,8 @@ pub struct OutlineResult {
     /// Whether the region reaches a face of the grid, which may cut it.
     pub touches_grid_edge: bool,
     pub catalogues: Vec<CatalogueCheck>,
+    /// What the check of the dense places found, when the record states them.
+    pub dense: Option<DenseCheck>,
     pub placed: Placed,
 }
 
@@ -92,16 +96,39 @@ pub enum OutlineError {
 
 /// Outlines `structure` on `grid` and tests the outline against `catalogues`, the normalized
 /// entries of each catalogue by source; a catalogue of the test not among them does not cover
-/// the outline.
+/// the outline. No dense place is given: see [`place_on`].
+///
+/// # Errors
+///
+/// As [`place_on`].
+pub fn place(
+    structure: &Structure,
+    grid: &Grid,
+    catalogues: &[(SourceId, &[CatalogueEntry])],
+) -> Result<OutlineResult, OutlineError> {
+    place_on(
+        structure,
+        grid,
+        &GridSky::new(&grid.geometry),
+        catalogues,
+        &[],
+    )
+}
+
+/// [`place`] with the grid's cells described once in `sky`, for every structure outlined on it,
+/// and `dense`, the dense places the record's rule picked (see [`dense_places`]): a void whose
+/// region holds one is shown as a point, with the reason.
 ///
 /// # Errors
 ///
 /// Fails when the structure has no outline record, `grid` is not the record's grid, or the grid
 /// lacks the record's field as one real number per cell.
-pub fn place(
+pub fn place_on(
     structure: &Structure,
     grid: &Grid,
+    sky: &GridSky<'_>,
     catalogues: &[(SourceId, &[CatalogueEntry])],
+    dense: &[DensePlace],
 ) -> Result<OutlineResult, OutlineError> {
     let (Some(record), Some(published)) = (&structure.outline, &structure.position) else {
         return Err(OutlineError::NoRecord(structure.name.clone()));
@@ -115,23 +142,7 @@ pub fn place(
     }
     let values = scalar(grid, &record.field).map_err(OutlineError::Field)?;
     let geometry = &grid.geometry;
-    let mut result = OutlineResult {
-        structure: structure.name.clone(),
-        grid: record.grid.clone(),
-        field: record.field.clone(),
-        threshold: record.threshold.clone(),
-        side: record.side,
-        test: record.test.clone(),
-        coverage: COVERAGE,
-        seed: None,
-        cells: 0,
-        touches_grid_edge: false,
-        catalogues: vec![],
-        placed: Placed::Point {
-            position: Box::new(published.clone()),
-            reason: String::new(),
-        },
-    };
+    let mut result = OutlineResult::untested(&structure.name, record, published);
     let point = |mut result: OutlineResult, reason: String| {
         result.placed = Placed::Point {
             position: Box::new(published.clone()),
@@ -169,6 +180,9 @@ pub fn place(
     }
     let outlined = region(geometry, values, cell, threshold, record.side);
     (result.cells, result.touches_grid_edge) = (outlined.cells.len(), outlined.touches_edge);
+    if let Some(why) = holds_dense(&mut result, record, dense, geometry, &outlined) {
+        return point(result, why);
+    }
     result.catalogues = record
         .test
         .catalogues
@@ -177,7 +191,7 @@ pub fn place(
             let entries = catalogues
                 .iter()
                 .find_map(|(id, entries)| (id == source).then_some(*entries));
-            compare(geometry, &outlined, source, entries, &record.test)
+            compare(sky, &outlined, source, entries, &record.test)
         })
         .collect();
     if let Some(why) = refusal(&result.catalogues, &record.test) {
@@ -200,6 +214,52 @@ pub fn place(
         geometry,
     };
     Ok(result)
+}
+
+impl OutlineResult {
+    /// The record of `structure` outlined by `record`, before any test: shown at `published`.
+    fn untested(structure: &str, record: &GridOutline, published: &Coordinates) -> Self {
+        Self {
+            structure: structure.to_owned(),
+            grid: record.grid.clone(),
+            field: record.field.clone(),
+            threshold: record.threshold.clone(),
+            side: record.side,
+            test: record.test.clone(),
+            coverage: COVERAGE,
+            seed: None,
+            cells: 0,
+            touches_grid_edge: false,
+            catalogues: vec![],
+            dense: None,
+            placed: Placed::Point {
+                position: Box::new(published.clone()),
+                reason: String::new(),
+            },
+        }
+    }
+}
+
+/// Records the check of the dense places the record names, and gives why the region may not be
+/// a void when it holds one.
+fn holds_dense(
+    result: &mut OutlineResult,
+    record: &GridOutline,
+    dense: &[DensePlace],
+    geometry: &GridGeometry,
+    outlined: &Region,
+) -> Option<String> {
+    let rule = record.test.dense_places.as_ref()?;
+    let found = dense::check(rule, dense, geometry, outlined);
+    let why = (!found.held.is_empty()).then(|| {
+        format!(
+            "the region holds {} of the dense places a void may not: {}",
+            found.held.len(),
+            found.held.join(", ")
+        )
+    });
+    result.dense = Some(found);
+    why
 }
 
 /// The seed on the grid, or why it cannot be placed there.

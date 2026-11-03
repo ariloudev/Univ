@@ -134,6 +134,17 @@ outline:
       fewer than 0.85 of the galaxies that cells at the same distance outside the outline hold, and
       must expect at least 100 inside it to judge. Cosmicflows-4 is not among the catalogues: CF4++
       is reconstructed from it, so it would test the grid against its own input.
+    dense_places:
+      chosen_by: pipeline
+      sources: [erass1-clusters]
+      structure_kinds: [supercluster, supercluster_complex]
+      why: >-
+        A choice of this pipeline, as in the earlier Univ void outlines, which refused a region
+        that took in a named cluster or group: a region below the threshold that holds a matched
+        object of the eRASS1 cluster catalogue (placed at its CMB-frame redshift in velocity
+        space, as the grid is) or the published position of a researched supercluster or
+        supercluster complex is not taken for the void. eRASS1 covers only the western Galactic
+        hemisphere, so an outline in the eastern one is checked against the superclusters alone.
 notes: >-
   The void lies largely behind the Milky Way's plane. Tully et al. 2019 give density minima and a
   bounding box at the -0.7 isodensity of their Wiener-filter density, not a centre; the position is

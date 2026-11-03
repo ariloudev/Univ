@@ -1,7 +1,8 @@
 //! What a run shows: the state built from its events, the line each event prints and the status
-//! line, all as plain text so that the terminal and plain sinks share them.
+//! line, all as plain text so that the terminal and plain targets share them.
 
 mod plain;
+mod sink;
 mod summary;
 mod terminal;
 
@@ -10,11 +11,12 @@ use std::time::{Duration, SystemTime};
 
 use univ_model::ids::SourceId;
 
-use crate::events::{Event, EventSink, RestartReason, Stage};
+use crate::events::{Count, Event, EventSink, RestartReason, Stage};
 
-pub use plain::PlainSink;
-pub use summary::{Outcome, SourceState, SourceSummary, Summary};
-pub use terminal::{IndicatifTarget, REDRAW_EVERY, StatusTarget, TerminalSink};
+pub use plain::{PROGRESS_EVERY, PlainTarget};
+pub use sink::{RunSink, Target};
+pub use summary::{Outcome, SourceState, SourceSummary, StageCounts, Summary};
+pub use terminal::{IndicatifTarget, REDRAW_EVERY, StatusTarget};
 
 /// A display of a run: the events it is sent, redrawn while the run lasts, and the summary it
 /// prints when the run ends.
@@ -55,6 +57,8 @@ pub struct RunState {
     /// Bytes the run has fetched in all, finished or not, not counting what was already on
     /// disk.
     fetched: u64,
+    /// What each stage that ended counted, in the order they ended.
+    stages: Vec<StageCounts>,
 }
 
 impl RunState {
@@ -62,14 +66,6 @@ impl RunState {
     /// one.
     pub fn apply(&mut self, event: &Event, now: SystemTime) -> Option<String> {
         match event {
-            Event::StageStarted { stage, items } => {
-                self.stage = Some((*stage, 0, *items));
-                Some(match items {
-                    Some(n) => format!("Stage {}: {n} items", stage_name(*stage)),
-                    None => format!("Stage {}", stage_name(*stage)),
-                })
-            }
-            Event::StageEnded { stage } => Some(format!("Stage {} done", stage_name(*stage))),
             Event::Get { source, item, .. } => {
                 self.started(source, item, now);
                 None
@@ -140,10 +136,12 @@ impl RunState {
                 }
                 Some(format!("Resume:{number} {source} {item} from byte {from}"))
             }
-            Event::Normalized { .. } | Event::NormalizeFailed { .. } => {
-                self.advance();
-                normalization_line(event)
-            }
+            Event::StageStarted { .. }
+            | Event::StageEnded { .. }
+            | Event::Stepped { .. }
+            | Event::Normalized { .. }
+            | Event::NormalizeFailed { .. }
+            | Event::MembersUnplaced { .. } => self.stage_event(event),
             Event::Restarted {
                 source,
                 item,
@@ -159,6 +157,41 @@ impl RunState {
                     why(*reason)
                 ))
             }
+        }
+    }
+
+    /// Takes in an event of a stage's progress, and gives the line it prints.
+    fn stage_event(&mut self, event: &Event) -> Option<String> {
+        match event {
+            Event::StageStarted { stage, items } => {
+                self.stage = Some((*stage, 0, *items));
+                Some(match items {
+                    Some(n) => format!("Stage {}: {n} items", stage_name(*stage)),
+                    None => format!("Stage {}", stage_name(*stage)),
+                })
+            }
+            Event::StageEnded { stage, counts } => {
+                if !counts.is_empty() {
+                    self.stages.push(StageCounts {
+                        stage: *stage,
+                        counts: counts.clone(),
+                    });
+                }
+                Some(format!(
+                    "Stage {} done{}",
+                    stage_name(*stage),
+                    counted(counts)
+                ))
+            }
+            Event::Stepped { stage, step } => {
+                self.advance();
+                Some(format!("Step {}: {step}", stage_name(*stage)))
+            }
+            Event::Normalized { .. } | Event::NormalizeFailed { .. } => {
+                self.advance();
+                outcome_line(event)
+            }
+            _ => outcome_line(event),
         }
     }
 
@@ -268,9 +301,40 @@ impl RunState {
     }
 }
 
-/// The line a normalized source prints.
-fn normalization_line(event: &Event) -> Option<String> {
+/// `counts` as a stage's end line gives them: `: 98 objects, 3 merges`, or nothing.
+#[must_use]
+pub fn counted(counts: &[Count]) -> String {
+    if counts.is_empty() {
+        return String::new();
+    }
+    let each: Vec<String> = counts
+        .iter()
+        .map(|c| format!("{} {}", c.n, c.what))
+        .collect();
+    format!(": {}", each.join(", "))
+}
+
+/// The line a normalized source, or a structure whose members cannot all be placed, prints.
+fn outcome_line(event: &Event) -> Option<String> {
     match event {
+        Event::MembersUnplaced {
+            structure,
+            members,
+            no_object,
+            unplaced,
+            point,
+        } => {
+            let shown = if *point {
+                "shown at its published position"
+            } else {
+                "it publishes no position, so it is not placed"
+            };
+            Some(format!(
+                "Members {structure}: {} of {members} cannot be placed ({no_object} name no \
+                 matched object, {unplaced} an unplaced one); {shown}",
+                no_object + unplaced
+            ))
+        }
         Event::Normalized {
             source,
             published,

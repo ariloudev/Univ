@@ -234,6 +234,16 @@ impl From<crate::units::UnitError> for EntryError {
 }
 
 impl CatalogueEntry {
+    /// The redshift that stands for the entry where one is needed: its first spectroscopic
+    /// redshift, else its first.
+    #[must_use]
+    pub fn preferred_redshift(&self) -> Option<&Redshift> {
+        self.redshifts
+            .iter()
+            .find(|z| z.kind == RedshiftKind::Spectroscopic)
+            .or_else(|| self.redshifts.first())
+    }
+
     /// Checks that each value is normalized to its unit: degrees for angles, km/s for
     /// velocities, mas/yr for proper motions, and one of parsecs or megaparsecs for every
     /// distance of the entry.

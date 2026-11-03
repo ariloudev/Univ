@@ -1,9 +1,11 @@
-//! Repository YAML files read with their checks: source definitions and structure files. A file
-//! that cannot be used is refused naming the file, the field and what is wrong.
+//! YAML files read with their checks, such as source definitions and structure files, and
+//! written whole. A file that cannot be used is refused naming the file, the field and what is
+//! wrong.
 
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use serde::Serialize;
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 
@@ -54,6 +56,16 @@ pub fn read_checked<T: DeserializeOwned>(
     })?;
     check(&value).map_err(|(field, problem)| FileError::new(file, &field, problem))?;
     Ok(value)
+}
+
+/// Writes `value` to `file` as YAML through a rename, so that it is never half written.
+///
+/// # Errors
+///
+/// Fails when the value cannot be written as YAML or the file cannot be written.
+pub fn write<T: Serialize>(file: &Path, value: &T) -> std::io::Result<()> {
+    let yaml = serde_norway::to_string(value).map_err(std::io::Error::other)?;
+    crate::fetch::write_via_part(file, yaml.as_bytes(), || Ok(()))
 }
 
 /// The `.yaml` files in `dir`, in file-name order.

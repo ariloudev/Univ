@@ -24,9 +24,11 @@ use crate::yaml::{FileError, read_checked, read_dir};
 
 pub use citation::{Citation, Locator};
 pub use cited::{Assumes, Cited};
-pub use geometry::{Coordinates, Radial, StructureFrame};
+pub use geometry::{Coordinates, Radial};
 pub use members::{Column, ColumnName, Format, MemberSource, Members, Row};
-pub use outline::{Choice, GridOutline, OutlineTest, Rule, Seed, Side, Threshold};
+pub use outline::{
+    Choice, ChosenBy, DensePlaces, GridOutline, OutlineTest, Rule, Seed, Side, Threshold,
+};
 pub use shape::{SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
 
 /// A researched structure as its file describes it.

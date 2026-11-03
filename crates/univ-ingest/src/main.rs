@@ -10,9 +10,10 @@ use clap::{Args, Parser, Subcommand};
 use univ_ingest::events::{EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
 use univ_ingest::run::{
-    FetchOptions, RunReport, display_for_stderr, drawing, fetch, interrupted,
-    normalize_stage_until, owner_interrupt, select,
+    FetchOptions, MatchOptions, RunReport, display_for_stderr, drawing, fetch, interrupted,
+    match_stage, normalize_stage_until, owner_interrupt, select,
 };
+use univ_ingest::state::DEFAULT_STATE;
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
 const INTERRUPTED: u8 = 130;
@@ -34,6 +35,28 @@ enum Command {
     /// Fetches the sources, or with --offline takes them from the cache, and normalizes each
     /// table of rows into catalogue entries.
     Normalize(FetchArgs),
+    /// Fetches and normalizes the sources, then cross-matches the entries into objects with
+    /// their preferred measurements, stable ids and positions, and resolves the researched
+    /// structures' members. The ids it would give are written to the state directory's
+    /// `pending/`; no release is built.
+    Match(MatchArgs),
+}
+
+#[derive(Args)]
+struct MatchArgs {
+    #[command(flatten)]
+    fetch: FetchArgs,
+    /// The state directory: the id ledger and the last release's entry ids, in YAML.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_STATE)]
+    state: PathBuf,
+}
+
+/// How far a run goes.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum Until {
+    Fetch,
+    Normalize,
+    Match,
 }
 
 #[derive(Args)]
@@ -57,9 +80,10 @@ struct FetchArgs {
 
 #[tokio::main]
 async fn main() -> ExitCode {
-    let (args, normalizing) = match Cli::parse().command {
-        Command::Fetch(args) => (args, false),
-        Command::Normalize(args) => (args, true),
+    let (args, until, state) = match Cli::parse().command {
+        Command::Fetch(args) => (args, Until::Fetch, None),
+        Command::Normalize(args) => (args, Until::Normalize, None),
+        Command::Match(args) => (args.fetch, Until::Match, Some(args.state)),
     };
     let options = FetchOptions {
         definitions: args.definitions,
@@ -91,10 +115,27 @@ async fn main() -> ExitCode {
     let cancel = Arc::new(AtomicBool::new(false));
     let run = async {
         let acquired = fetch(&fetcher, &definitions, &options, &report).await;
-        if normalizing {
-            // The entries are held for the stages that follow; this command ends here.
-            let sink = display.as_ref() as &dyn EventSink;
+        if until < Until::Normalize {
+            return;
+        }
+        let sink = display.as_ref() as &dyn EventSink;
+        let normalized =
             normalize_stage_until(sink, &definitions, &acquired, &options, &report, &cancel).await;
+        if let Some(state) = state {
+            // The objects are held for the stages that follow; this command ends here.
+            let sink: Arc<dyn EventSink> = display.clone();
+            let match_options = MatchOptions { state };
+            let (defs, opts) = (&definitions, &options);
+            match_stage(
+                sink,
+                defs,
+                &acquired,
+                normalized,
+                opts,
+                &match_options,
+                &report,
+            )
+            .await;
         }
     };
     let mut run = std::pin::pin!(drawing(display.as_ref(), run));
