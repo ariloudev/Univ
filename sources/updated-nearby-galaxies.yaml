@@ -1,0 +1,56 @@
+id: updated-nearby-galaxies
+title: "Updated Nearby Galaxy Catalog (Karachentsev et al. 2013)"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/AJ/145/101/catalog"
+  constraints: []
+  rows: 869
+cuts:
+  - "The query takes every row of the catalog table (ReadMe table1.dat + table2.dat merged by VizieR), 869 by the ReadMe and as served."
+  - >-
+    Only galaxies with a measured distance are kept, after the fetch rather than in the query (the
+    research gives no VizieR constraint for it): rows whose f_Dist is h or h' (Hubble velocity-distance
+    relation at H0 = 73 km/s/Mpc) or txt (likely proximity from texture, 11 dwarfs) are estimates,
+    not measurements, and are left out with that reason.
+  - "Dist has no uncertainty in this table; it is marked as none reported (per-measurement e_DM is in table6, not taken)."
+columns:
+  - { column: Name, field: identifier, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: Dist, field: distance, unit: megaparsec }
+  - { column: f_Dist, field: quality, unit: dimensionless }
+  - { column: HRV, field: velocity, unit: kilometre_per_second }
+  - { column: Bmag, field: magnitude, unit: magnitude }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Karachentsev I.D., Makarov D.I., Kaisina E.I. 2013, "Updated nearby galaxy catalog", AJ 145, 101.
+  2013AJ....145..101K, doi:10.1088/0004-6256/145/4/101. VizieR catalogue J/AJ/145/101,
+  doi:10.26093/cds/vizier.51450101.
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Karachentsev, Makarov & Kaisina 2013, AJ 145, 101.
+redistribution:
+  status: permitted_with_credit
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the authors and
+    publisher, and the ReadMe and landing-page metadata carry no catalogue-specific licence. The AAS
+    terms were not checked, and "scientific context" is not defined for a public hobby release.
+    Provisional: judged again before any public deployment.
+scale_domain: nearby_galaxies
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"

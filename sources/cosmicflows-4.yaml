@@ -1,0 +1,72 @@
+id: cosmicflows-4
+title: "Cosmicflows-4 group distances"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/ApJ/944/94/groups"
+  constraints: []
+  rows: 38053
+cuts:
+  - >-
+    No server-side cut: every row of the groups table (ReadMe table3.dat + table4.dat, merged by
+    VizieR), 38,053 by the ReadMe and as served. The abstract says 38,065 groups; the 12-group
+    difference is unexplained.
+  - "The individual-galaxy table J/ApJ/944/94/table2 (55,877 galaxies) is not taken."
+  - "DMzp is the group distance modulus on the scale of the TRGB, Cepheid and maser calibrators (ReadMe Note 1); Dist, derived from it, is not taken."
+  - "Vh is the group velocity relative to the Sun; the Local Sheet, CMB and peculiar velocities are not taken."
+columns:
+  - { column: 1PGC, field: identifier, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: DMzp, field: distance_modulus, unit: magnitude }
+  - { column: e_DMzp, field: distance_modulus_error, unit: magnitude }
+  - { column: Vh, field: velocity, unit: kilometre_per_second }
+  - { column: SGX, field: supergalactic_x, unit: megaparsec }
+  - { column: SGY, field: supergalactic_y, unit: megaparsec }
+  - { column: SGZ, field: supergalactic_z, unit: megaparsec }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Tully R.B., Kourkchi E., Courtois H.M., Anand G.S., Blakeslee J.P., Brout D., de Jaeger T.,
+  Dupuy A., Guinet D., Howlett C., et al. 2023, "Cosmicflows-4", ApJ 944, 94. 2023ApJ...944...94T,
+  doi:10.3847/1538-4357/ac94d8. VizieR catalogue J/ApJ/944/94, doi:10.26093/cds/vizier.19440094.
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Tully et al. 2023, ApJ 944, 94.
+redistribution:
+  status: permitted_with_credit
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the authors and
+    publisher, and the ReadMe and landing-page metadata carry no catalogue-specific licence. The AAS
+    and Extragalactic Distance Database terms were not checked (EDD was unreachable). Provisional:
+    judged again before any public deployment.
+scale_domain: cosmic_web
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      SGX, SGY and SGZ are labelled Mpc in the ReadMe and by VizieR, but hold km/s: they are the
+      Local Sheet velocity Vls times the supergalactic unit vector, positions in velocity space.
+    change: >-
+      SGX, SGY and SGZ are read as km/s (velocity-space supergalactic Cartesian coordinates), not as
+      Mpc. No distance is taken from them.
+    evidence: >-
+      (1) The ReadMe contradicts itself: the unit column says Mpc while the description says
+      "Cartesian supergalactic coordinates of group, observed velocity units"; VizieR serves the same
+      unit and description. (2) The stated SGX range [-22455/23499] cannot be Mpc when the same
+      table's Dist range is [0.1/773] Mpc. (3) On 2,000 served rows (vizier.idia.ac.za, 2026-11-03)
+      sqrt(SGX^2+SGY^2+SGZ^2) equals |Vls| within 2 km/s, e.g. 1PGC 12: Vls = 6669, (SGX, SGY, SGZ) =
+      (1848, -6271, 1312), norm 6668; 1PGC 6830: Vls = -157, (40, 141, 56), norm 157.

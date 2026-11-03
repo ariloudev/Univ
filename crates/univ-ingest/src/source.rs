@@ -30,7 +30,7 @@ pub struct SourceDefinition {
     pub terms: Terms,
     pub redistribution: Redistribution,
     pub scale_domain: ScaleDomain,
-    /// The base URLs to try, in order.
+    /// The base URLs to try, in order; none for a source kept in this repository.
     pub mirrors: Vec<String>,
     /// Corrections to the source as published, each with its evidence.
     #[serde(default)]
@@ -298,7 +298,7 @@ impl SourceDefinition {
                 format!("{} is not a Julian year", self.epoch.0),
             ));
         }
-        if self.mirrors.is_empty() {
+        if self.mirrors.is_empty() && !matches!(self.access, Access::Repository { .. }) {
             return Err(("mirrors".to_owned(), "lists no mirror".to_owned()));
         }
         for (i, mirror) in self.mirrors.iter().enumerate() {

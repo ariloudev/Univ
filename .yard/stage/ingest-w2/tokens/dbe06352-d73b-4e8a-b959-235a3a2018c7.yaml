@@ -2,24 +2,30 @@ format: yardtokens/2
 session: dbe06352-d73b-4e8a-b959-235a3a2018c7
 host: claude-code
 firstEnded: 2026-11-03T03:08:20Z
-lastEnded: 2026-11-03T03:40:46Z
+lastEnded: 2026-11-03T03:51:50Z
 tokens:
-  input: 626
-  cacheRead: 63196138
-  cacheWrite: 857482
-  output: 343385
+  input: 712
+  cacheRead: 71264685
+  cacheWrite: 1105641
+  output: 420294
 stages:
   - stage: 01a19f60-6cd1-771e-9a45-8e20f2a98d68
-    input: 626
-    cacheRead: 63196138
-    cacheWrite: 857482
-    output: 343385
+    input: 712
+    cacheRead: 71264685
+    cacheWrite: 1105641
+    output: 420294
     agents:
       - agent: main
-        input: 194
-        cacheRead: 35073357
-        cacheWrite: 179839
-        output: 130950
+        input: 206
+        cacheRead: 37393630
+        cacheWrite: 191986
+        output: 134023
+      - agent: a38e59eecca775ab1
+        type: general-purpose
+        input: 74
+        cacheRead: 5748274
+        cacheWrite: 236012
+        output: 73836
       - agent: a6ee82395c8879751
         type: general-purpose
         input: 120
@@ -41,10 +47,17 @@ stages:
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 194
-    cacheRead: 35073357
-    cacheWrite: 179839
-    output: 130950
+    input: 206
+    cacheRead: 37393630
+    cacheWrite: 191986
+    output: 134023
+  - agent: a38e59eecca775ab1
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 74
+    cacheRead: 5748274
+    cacheWrite: 236012
+    output: 73836
   - agent: a6ee82395c8879751
     type: general-purpose
     model: claude-opus-5-5
@@ -68,12 +81,12 @@ agents:
     output: 63495
 submissions:
   - submission: 01a19f67-7b44-7257-a73d-e3371caf482f
-    input: 472
-    cacheRead: 56270300
-    cacheWrite: 550827
-    output: 279243
+    input: 558
+    cacheRead: 64338847
+    cacheWrite: 798986
+    output: 356152
   - submission: 01a19f7a-ff3d-775c-ae84-9afebb986a1a
-    input: 46
-    cacheRead: 9733512
-    cacheWrite: 32633
-    output: 28897
+    input: 132
+    cacheRead: 17802059
+    cacheWrite: 280792
+    output: 105806

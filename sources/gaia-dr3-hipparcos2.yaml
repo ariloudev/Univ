@@ -1,0 +1,58 @@
+id: gaia-dr3-hipparcos2
+title: "Gaia DR3 to Hipparcos-2 best-neighbour cross-match"
+provider: gaia-archive
+access:
+  method: tap
+  # 99,525 rows (measured COUNT(*) and esatapplus:size) in 4 chunks of about 25,000, under the
+  # ESA archive's silent 50,000-row anonymous cap.
+  query: >-
+    SELECT source_id, original_ext_source_id, angular_distance, xm_flag
+    FROM gaiadr3.hipparcos2_best_neighbour
+    WHERE MOD(original_ext_source_id, {chunks}) = {chunk}
+  chunks: 4
+  count: "SELECT COUNT(*) AS n FROM gaiadr3.hipparcos2_best_neighbour"
+cuts:
+  - "No cut: every row of gaiadr3.hipparcos2_best_neighbour, 99,525 measured on 2026-11-03."
+  - "The cross-match is not symmetric: it searches Hipparcos-2 sources' counterparts in Gaia. original_ext_source_id is the HIP number."
+  - "angular_distance (5.5e-6 to 1.70 arcsec) is read as documented, without assuming an epoch for the Hipparcos side (unverified)."
+  - "xm_flag is a bitmask of cross-match details (multiples, suspected duplicates, resolved in Gaia, special treatment)."
+columns:
+  - { column: source_id, field: identifier, unit: dimensionless }
+  - { column: original_ext_source_id, field: name, unit: dimensionless }
+  - { column: angular_distance, field: quality, unit: arcsecond }
+  - { column: xm_flag, field: quality, unit: dimensionless }
+frame: icrs
+epoch: 2016.0
+citation: >-
+  Gaia Collaboration, Vallenari A., Brown A.G.A., Prusti T., et al. 2023, A&A 674, A1
+  (2023A&A...674A...1G, doi:10.1051/0004-6361/202243940); Gaia Collaboration, Prusti T., et al.
+  2016, A&A 595, A1 (2016A&A...595A...1G, doi:10.1051/0004-6361/201629272). Cross-match method:
+  Marrese P.M., Marinoni S., Fabrizio M., Giuffrida G. 2017, A&A 607, A105 (2017A&A...607A.105M,
+  doi:10.1051/0004-6361/201730965); Marrese P.M., Marinoni S., Fabrizio M., Altavilla G. 2019, A&A
+  621, A144 (2019A&A...621A.144M, doi:10.1051/0004-6361/201834142). Hipparcos-2: van Leeuwen F.
+  2007, A&A 474, 653 (2007A&A...474..653V, doi:10.1051/0004-6361:20078357).
+terms:
+  url: "https://www.cosmos.esa.int/web/gaia-users/license"
+  quote: >-
+    Gaia data are distributed under the CC BY-NC 3.0 IGO  license. For details and guidelines
+    concerning commercial use of the Gaia data, please see the Terms and Conditions for the use of
+    data in the ESA space science archives.
+  credit: >-
+    The Gaia data are open and free to use, provided credit is given to ‘ESA/Gaia/DPAC’. This work
+    has made use of data from the European Space Agency (ESA) mission Gaia (
+    https://www.cosmos.esa.int/gaia ), processed by the Gaia Data Processing and Analysis Consortium
+    (DPAC, https://www.cosmos.esa.int/web/gaia/dpac/consortium ). Funding for the DPAC has been
+    provided by national institutions, in particular the institutions participating in the Gaia
+    Multilateral Agreement. Cite the Gaia mission and DR3 papers and Marrese et al. 2017 and 2019;
+    cite van Leeuwen 2007 for the HIP identifiers (ESA credit line for Hipparcos: "Credit: ESA").
+redistribution:
+  status: permitted_with_credit
+  reasoning: >-
+    This is a Gaia DR3 data product under CC BY-NC 3.0 IGO: redistribution and adaptation are
+    allowed with attribution, for non-commercial use only, with no share-alike. Provisional: judged
+    again before any public deployment.
+scale_domain: stars
+mirrors:
+  - "https://gea.esac.esa.int/tap-server/tap"
+  - "https://gaia.ari.uni-heidelberg.de/tap"
+  - "https://gaia.aip.de/tap"

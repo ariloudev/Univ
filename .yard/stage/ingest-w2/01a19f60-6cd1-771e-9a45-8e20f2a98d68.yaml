@@ -173,6 +173,21 @@ blocks:
         title: "Access methods: VizieR ASU-TSV, SkyServer SQL, Gaia TAP, file"
         detail: "Each method turns a definition into the chunk requests and reads its answer format into rows. Done when tests build the expected URLs and read each method's recorded fixture."
         state: active
+      - key: 01a19f7e-e6bb-7600-a355-5f4e0e6b056a
+        at: 2026-11-03T03:40:56Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Access methods: VizieR ASU-TSV, SkyServer SQL, Gaia TAP, files, repository"
+        detail: |-
+          Done in `access.rs` and `acquire.rs`, with tests in `tests/access.rs` and `tests/acquire.rs`. Live probes changed three things:
+          - VizieR ignores a `recno` constraint (asked for 3 rows, it sent all 124,650), so large tables are sliced by inclusive ranges of an integer column (36 + 15 = 51 rows checked live);
+          - VizieR's computed `_RAJ2000`/`_DEJ2000` are FK5 J2000, so univ-model gained `Frame::Fk5J2000`, matching astropy to 2e-14;
+          - SkyServer and the Gaia archive cap rows silently at 500,000 and 50,000, so a source is checked against a count query and refused as incomplete otherwise.
+
+          Chunk files carry a digest of their query, and an answer missing a column is retried, never kept.
+        state: done
   - key: 01a19f60-6cd1-771e-9a45-8e28e95cc25d
     id: w2-t7-definitions
     kind: task
@@ -186,6 +201,15 @@ blocks:
         title: "The 18 source definitions"
         detail: "Each with researched citation, endpoints and mirrors, columns and units, verbatim terms, credit and redistribution reasoning. This settles the 2M++ reconstruction and eRASS1 URLs and the Gaia G cut, which the owner decides. Done when all 18 validate (AC-10 to AC-13)."
         state: open
+      - key: 01a19f7e-e6bb-7600-a355-5f4fd93df2fc
+        at: 2026-11-03T03:40:56Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The 18 source definitions"
+        detail: "Each with researched citation, endpoints and mirrors, columns and units, verbatim terms, credit and redistribution reasoning. An agent drafts them from the three research reports. The choices waiting on the owner (G cut, licence posture, SDSS sample) are filled with the recommended options and marked provisional. Done when `tests/definitions.rs` passes and the drafts are reviewed against the research."
+        state: active
   - key: 01a19f60-6cd1-771e-9a45-8e29fa1c1059
     id: w2-t8-fixtures
     kind: task
