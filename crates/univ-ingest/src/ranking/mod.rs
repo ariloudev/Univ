@@ -5,16 +5,17 @@
 mod distance;
 pub mod rules;
 
-use univ_model::cosmology::Cosmology;
+use univ_model::derive::Release;
 use univ_model::entry::PositionUncertainty;
 use univ_model::object::{NotPlacedReason, Object, Placement, PreferredPosition};
 
 pub use distance::{Candidate, candidates, choose, fraction, redshift_distance};
 pub use rules::RankingRules;
 
-/// Ranks `object`: its preferred distance and position, and whether it can be placed.
-pub fn rank(object: &mut Object, rules: &RankingRules, cosmology: &Cosmology) {
-    let found = candidates(object, rules, cosmology);
+/// Ranks `object` under the release cosmology of `release`, whose table of D(z) is built once
+/// per run: its preferred distance and position, and whether it can be placed.
+pub fn rank(object: &mut Object, rules: &RankingRules, release: &Release) {
+    let found = candidates(object, rules, release);
     object.preferred_distance = choose(&found, rules);
     object.preferred_position = preferred_position(object, rules);
     object.placement = if object.preferred_distance.is_some() {
@@ -27,9 +28,9 @@ pub fn rank(object: &mut Object, rules: &RankingRules, cosmology: &Cosmology) {
 }
 
 /// Ranks every object.
-pub fn rank_all(objects: &mut [Object], rules: &RankingRules, cosmology: &Cosmology) {
+pub fn rank_all(objects: &mut [Object], rules: &RankingRules, release: &Release) {
     for object in objects {
-        rank(object, rules, cosmology);
+        rank(object, rules, release);
     }
 }
 

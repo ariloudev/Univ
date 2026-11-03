@@ -3,7 +3,8 @@
 
 use std::cmp::Ordering;
 
-use univ_model::cosmology::{Cosmology, SPEED_OF_LIGHT};
+use univ_model::cosmology::SPEED_OF_LIGHT;
+use univ_model::derive::Release;
 use univ_model::entry::RedshiftKind;
 use univ_model::object::{
     Decided, FractionalUncertainty, MeasurementRef, MethodRank, Object, PreferredDistance,
@@ -26,15 +27,13 @@ pub struct Candidate {
     pub uncertainty: FractionalUncertainty,
 }
 
-/// The comoving distance in Mpc of redshift `z` under `cosmology`, and its derivative dD/dz.
-/// The one place redshift distances are computed, so a tabulated D(z) can take its place.
+/// The comoving distance in Mpc of redshift `z` under the release cosmology, read from the
+/// release's table of D(z), and its derivative dD/dz = c / H(z). The one place redshift distances
+/// are computed in ranking.
 #[must_use]
-pub fn redshift_distance(cosmology: &Cosmology, z: f64) -> Option<(f64, f64)> {
-    let d = cosmology.comoving_distance(z).ok()?;
-    let h = 1e-4 * (1.0 + z);
-    let (lo, hi) = ((z - h).max(0.0), z + h);
-    let slope =
-        (cosmology.comoving_distance(hi).ok()? - cosmology.comoving_distance(lo).ok()?) / (hi - lo);
+pub fn redshift_distance(release: &Release, z: f64) -> Option<(f64, f64)> {
+    let table = release.table();
+    let (d, slope) = (table.distance(z).ok()?, table.slope(z).ok()?);
     (d > 0.0).then_some((d, slope))
 }
 
@@ -70,7 +69,7 @@ fn reported(total: f64, measurement: Option<f64>, pv: Option<f64>) -> Fractional
 /// Every candidate of `object`: its entries' distances, parallaxes fine enough to invert, and
 /// positive redshifts, in the order of the entries.
 #[must_use]
-pub fn candidates(object: &Object, rules: &RankingRules, cosmology: &Cosmology) -> Vec<Candidate> {
+pub fn candidates(object: &Object, rules: &RankingRules, release: &Release) -> Vec<Candidate> {
     let mut out = Vec::new();
     for e in &object.entries {
         let entry = &e.entry;
@@ -108,7 +107,7 @@ pub fn candidates(object: &Object, rules: &RankingRules, cosmology: &Cosmology) 
         }
         for (index, r) in entry.redshifts.iter().enumerate() {
             let z = r.cmb.value.value;
-            let Some((d, slope)) = redshift_distance(cosmology, z) else {
+            let Some((d, slope)) = redshift_distance(release, z) else {
                 continue;
             };
             let sigma_z = sigma(r.cmb.value.uncertainty);

@@ -85,6 +85,18 @@ impl ComovingTable {
         ))
     }
 
+    /// The slope `dD_C/dz = c / H(z)` in Mpc at redshift `z`, exact rather than interpolated.
+    ///
+    /// # Errors
+    ///
+    /// Fails on a negative or non-finite redshift, or one beyond [`MAX_REDSHIFT`].
+    pub fn slope(&self, z: f64) -> Result<f64, CosmologyError> {
+        if !(0.0..=MAX_REDSHIFT).contains(&z) {
+            return Err(CosmologyError::Redshift(z));
+        }
+        Ok(self.cosmology.hubble_distance() / self.cosmology.expansion(z))
+    }
+
     /// The redshift whose comoving distance is `distance` Mpc: the inverse interpolation, with
     /// slope `1 / D_C'(z)`, then one Newton step on the forward interpolation.
     ///

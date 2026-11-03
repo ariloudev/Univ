@@ -13,7 +13,7 @@ use simulated::{
 use univ_ingest::matching::match_entries;
 use univ_ingest::normalize::reads_rows;
 use univ_ingest::ranking::{RankingRules, rank, rank_all};
-use univ_model::cosmology::Cosmology;
+use univ_model::derive::Release;
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::entry::CatalogueEntry;
 use univ_model::object::{
@@ -37,7 +37,7 @@ fn object(entries: Vec<CatalogueEntry>) -> Object {
 
 fn ranked(entries: Vec<CatalogueEntry>, rules: &RankingRules) -> Object {
     let mut o = object(entries);
-    rank(&mut o, rules, &Cosmology::planck_2018());
+    rank(&mut o, rules, &Release::planck_2018());
     o
 }
 
@@ -235,7 +235,7 @@ fn an_object_without_a_distance_is_found_but_not_placed() {
     // designation, carries its sky position and is marked `placed: no` with its reason.
     let lone = entry("sixdfgs-dr3", "lone", 300.0, -40.0);
     let mut m = match_entries(&matching_rules(), vec![lone]);
-    rank_all(&mut m.objects, &ranking_rules(), &Cosmology::planck_2018());
+    rank_all(&mut m.objects, &ranking_rules(), &Release::planck_2018());
     let o = m.find(&designation("sixdfgs-dr3", "lone")).unwrap();
     assert_eq!(
         o.placement,
@@ -264,7 +264,7 @@ fn a_candidate_link_never_lends_its_measurements() {
         with_cz(entry("sixdfgs-dr3", "west", w.0, w.1), 7_980.0, 45.0),
     ];
     let mut m = match_entries(&matching_rules(), entries);
-    rank_all(&mut m.objects, &ranking_rules(), &Cosmology::planck_2018());
+    rank_all(&mut m.objects, &ranking_rules(), &Release::planck_2018());
     let a = m.find(&designation("twomrs", "a")).unwrap();
     assert_eq!(a.links.len(), 2);
     assert!(
@@ -289,7 +289,7 @@ fn every_recorded_answer_ranks() {
         }
     }
     let mut m = match_entries(&matching_rules(), entries);
-    rank_all(&mut m.objects, &ranking_rules(), &Cosmology::planck_2018());
+    rank_all(&mut m.objects, &ranking_rules(), &Release::planck_2018());
     let placed = m.objects.iter().filter(|o| o.placement.is_placed()).count();
     assert!(
         placed > 0 && placed < m.objects.len(),
