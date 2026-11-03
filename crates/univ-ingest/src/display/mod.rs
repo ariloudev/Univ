@@ -140,6 +140,10 @@ impl RunState {
                 }
                 Some(format!("Resume:{number} {source} {item} from byte {from}"))
             }
+            Event::Normalized { .. } | Event::NormalizeFailed { .. } => {
+                self.advance();
+                normalization_line(event)
+            }
             Event::Restarted {
                 source,
                 item,
@@ -261,6 +265,23 @@ impl RunState {
         if let Some((_, done, _)) = &mut self.stage {
             *done += 1;
         }
+    }
+}
+
+/// The line a normalized source prints.
+fn normalization_line(event: &Event) -> Option<String> {
+    match event {
+        Event::Normalized {
+            source,
+            published,
+            left_out,
+        } => Some(format!(
+            "Norm {source}: {published} entries, {left_out} left out"
+        )),
+        Event::NormalizeFailed { source, error } => {
+            Some(format!("Err {source} cannot be normalized: {error}"))
+        }
+        _ => None,
     }
 }
 

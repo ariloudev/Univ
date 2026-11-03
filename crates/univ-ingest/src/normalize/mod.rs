@@ -76,6 +76,16 @@ pub enum NormalizeError {
     Unsupported { source_id: SourceId, what: String },
 }
 
+/// Whether the normalizer reads `definition`'s answers as tables of rows: not a source of
+/// files, such as a grid, nor one kept in the repository.
+#[must_use]
+pub fn reads_rows(definition: &SourceDefinition) -> bool {
+    !matches!(
+        definition.access,
+        Access::Files { .. } | Access::Repository { .. }
+    )
+}
+
 /// Normalizes a source's tables one at a time, keeping the entries and the counts.
 pub struct Normalizer<'a> {
     definition: &'a SourceDefinition,
@@ -96,10 +106,7 @@ impl<'a> Normalizer<'a> {
         definition: &'a SourceDefinition,
         correction: &'a CmbCorrection,
     ) -> Result<Self, NormalizeError> {
-        if matches!(
-            definition.access,
-            Access::Files { .. } | Access::Repository { .. }
-        ) {
+        if !reads_rows(definition) {
             return Err(NormalizeError::Unsupported {
                 source_id: definition.id.clone(),
                 what: "it is not a table of rows".to_owned(),

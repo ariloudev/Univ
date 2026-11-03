@@ -1,4 +1,5 @@
-//! A run of Univ Ingest: which display it uses, and the fetch of every source it is asked for.
+//! A run of Univ Ingest: which display it uses, the fetch of every source it is asked for, and
+//! the normalization of each source fetched.
 
 use std::io::IsTerminal as _;
 use std::path::PathBuf;
@@ -7,13 +8,17 @@ use std::sync::{Arc, Mutex, PoisonError};
 use tokio::time::MissedTickBehavior;
 
 use crate::access::item_count;
-use crate::acquire::acquire;
+use univ_model::redshift::{CmbCorrection, DipoleModel};
+
+use crate::acquire::{Acquired, acquire};
 use crate::display::{
     IndicatifTarget, Outcome, PlainSink, REDRAW_EVERY, RunDisplay, SourceState, SourceSummary,
-    TerminalSink,
+    TerminalSink, stage_name,
 };
-use crate::events::{Event, Stage};
+use crate::events::{Event, EventSink, Stage};
 use crate::fetch::{Clock, Fetcher, SystemClock};
+use crate::normalize::{Normalized, normalize, reads_rows};
+use crate::provenance::Provenance;
 use crate::source::{SourceDefinition, read_all};
 
 /// What a fetch is asked to do.
@@ -66,15 +71,17 @@ pub async fn owner_interrupt(signal: impl Future<Output = std::io::Result<()>>) 
     }
 }
 
-/// How far a fetch has taken each source it was asked for, updated as each source ends, so an
-/// interrupted run can still say.
+/// How far a run has taken each source it was asked for, updated as each source ends a stage,
+/// so an interrupted run can still say.
 #[derive(Debug)]
-pub struct FetchReport {
+pub struct RunReport {
     sources: Vec<SourceSummary>,
+    /// The stage the run is in, or last ended.
+    stage: Stage,
 }
 
-impl FetchReport {
-    /// The report of a fetch of `definitions` that has not reached any of them yet.
+impl RunReport {
+    /// The report of a run of `definitions` that has not reached any of them yet.
     #[must_use]
     pub fn new(definitions: &[SourceDefinition]) -> Self {
         let sources = definitions
@@ -86,10 +93,13 @@ impl FetchReport {
                 left_out: None,
             })
             .collect();
-        Self { sources }
+        Self {
+            sources,
+            stage: Stage::Fetch,
+        }
     }
 
-    /// Each source and how far the fetch took it.
+    /// Each source and how far the run took it.
     #[must_use]
     pub fn sources(&self) -> &[SourceSummary] {
         &self.sources
@@ -103,7 +113,14 @@ impl FetchReport {
             .any(|s| matches!(s.state, SourceState::Failed(_)))
     }
 
-    /// The sources and outcome of a fetch that ran to its end.
+    fn set(&mut self, n: usize, state: SourceState) {
+        if let Some(source) = self.sources.get_mut(n) {
+            source.state = state;
+        }
+    }
+
+    /// The sources and outcome of a run that ran to the end of its last stage, which was asked
+    /// for without a release.
     #[must_use]
     pub fn ended(&self) -> (Vec<SourceSummary>, Outcome) {
         let failed = self
@@ -112,23 +129,23 @@ impl FetchReport {
             .filter(|s| matches!(s.state, SourceState::Failed(_)))
             .count();
         let reason = if failed == 0 {
-            "fetch only; no release was asked for".to_owned()
+            format!("{} only; no release was asked for", stage_name(self.stage))
         } else {
             format!("{failed} of {} sources failed", self.sources.len())
         };
         let outcome = Outcome::Stopped {
-            stage: Stage::Fetch,
+            stage: self.stage,
             reason,
         };
         (self.sources.clone(), outcome)
     }
 
-    /// The sources and outcome of a fetch the owner interrupted: the sources it had not ended
-    /// stay not reached.
+    /// The sources and outcome of a run the owner interrupted: the sources it had not ended
+    /// stay as far as they got.
     #[must_use]
     pub fn interrupted(&self) -> (Vec<SourceSummary>, Outcome) {
         let outcome = Outcome::Stopped {
-            stage: Stage::Fetch,
+            stage: self.stage,
             reason: "interrupted by the owner".to_owned(),
         };
         (self.sources.clone(), outcome)
@@ -162,36 +179,115 @@ fn items(definitions: &[SourceDefinition]) -> u64 {
     definitions.iter().map(item_count).sum()
 }
 
-/// Fetches every definition into the cache, marking each source in `report` as it ends. A
-/// source that fails is reported and left out, and the others are still fetched.
+/// An error without the source's id it leads with, as the summary line names the source.
+fn unprefixed(definition: &SourceDefinition, error: &str) -> String {
+    let prefix = format!("{}: ", definition.id);
+    error.strip_prefix(&prefix).unwrap_or(error).to_owned()
+}
+
+/// Fetches every definition into the cache, marking each source in `report` as it ends, and
+/// gives what each source has on disk, or none for a source that failed. A source that fails
+/// is reported and left out, and the others are still fetched.
 pub async fn fetch<C: Clock>(
     fetcher: &Fetcher<C>,
     definitions: &[SourceDefinition],
     options: &FetchOptions,
-    report: &Mutex<FetchReport>,
-) {
+    report: &Mutex<RunReport>,
+) -> Vec<Option<Acquired>> {
+    lock(report).stage = Stage::Fetch;
     fetcher.emit(Event::StageStarted {
         stage: Stage::Fetch,
         items: Some(items(definitions)),
     });
+    let mut acquired = Vec::new();
     for (n, definition) in definitions.iter().enumerate() {
-        let state = match acquire(fetcher, definition, &options.cache, &options.repository).await {
-            Ok(_) => SourceState::Fetched,
-            Err(error) => {
-                let error = error.to_string();
-                // The summary line names the source already.
-                let prefix = format!("{}: ", definition.id);
-                SourceState::Failed(error.strip_prefix(&prefix).unwrap_or(&error).to_owned())
-            }
-        };
-        let mut report = report.lock().unwrap_or_else(PoisonError::into_inner);
-        if let Some(source) = report.sources.get_mut(n) {
-            source.state = state;
-        }
+        let (state, on_disk) =
+            match acquire(fetcher, definition, &options.cache, &options.repository).await {
+                Ok(on_disk) => (SourceState::Fetched, Some(on_disk)),
+                Err(error) => (
+                    SourceState::Failed(unprefixed(definition, &error.to_string())),
+                    None,
+                ),
+            };
+        lock(report).set(n, state);
+        acquired.push(on_disk);
     }
     fetcher.emit(Event::StageEnded {
         stage: Stage::Fetch,
     });
+    acquired
+}
+
+/// Normalizes each source that is a table of rows and that the fetch left whole on disk,
+/// with one CMB correction for the run, and records what became of its rows in its
+/// provenance. It gives each source's entries, kept in memory for the next stage. A source
+/// that fails is reported and left out, and the others are still normalized.
+pub async fn normalize_stage(
+    sink: &dyn EventSink,
+    definitions: &[SourceDefinition],
+    acquired: &[Option<Acquired>],
+    options: &FetchOptions,
+    report: &Mutex<RunReport>,
+) -> Vec<Normalized> {
+    let tables: Vec<(usize, &SourceDefinition, &Acquired)> = definitions
+        .iter()
+        .zip(acquired)
+        .enumerate()
+        .filter_map(|(n, (d, a))| Some((n, d, a.as_ref()?)))
+        .filter(|(_, d, _)| reads_rows(d))
+        .collect();
+    lock(report).stage = Stage::Normalize;
+    sink.emit(Event::StageStarted {
+        stage: Stage::Normalize,
+        items: Some(tables.len() as u64),
+    });
+    let correction = CmbCorrection::new(DipoleModel::Planck2018);
+    let mut normalized = Vec::new();
+    for (n, definition, on_disk) in tables {
+        let (owned, files) = (definition.clone(), on_disk.files.clone());
+        let outcome = tokio::task::spawn_blocking(move || normalize(&owned, &files, &correction))
+            .await
+            .map_err(|e| e.to_string())
+            .and_then(|outcome| outcome.map_err(|e| e.to_string()))
+            .and_then(|done| {
+                let dir = options.cache.join(definition.id.as_str());
+                Provenance::normalized(&dir, &definition.id, &done.report)
+                    .map(|()| done)
+                    .map_err(|e| format!("its provenance cannot be written: {e}"))
+            });
+        let source = definition.id.clone();
+        match outcome {
+            Ok(done) => {
+                let (published, left_out) = (done.report.published, done.report.left_out_total());
+                sink.emit(Event::Normalized {
+                    source,
+                    published,
+                    left_out,
+                });
+                let mut report = lock(report);
+                if let Some(s) = report.sources.get_mut(n) {
+                    (s.published, s.left_out) = (Some(published), Some(left_out));
+                }
+                normalized.push(done);
+            }
+            Err(error) => {
+                let error = unprefixed(definition, &error);
+                sink.emit(Event::NormalizeFailed {
+                    source,
+                    error: error.clone(),
+                });
+                lock(report).set(n, SourceState::Failed(error));
+            }
+        }
+    }
+    sink.emit(Event::StageEnded {
+        stage: Stage::Normalize,
+    });
+    normalized
+}
+
+fn lock(report: &Mutex<RunReport>) -> std::sync::MutexGuard<'_, RunReport> {
+    report.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
 /// What an interrupted run says: where its work is kept, and how to continue.

@@ -88,6 +88,17 @@ pub enum Event {
         item: String,
         bytes: u64,
     },
+    /// A source was normalized into `published` entries, leaving `left_out` rows out.
+    Normalized {
+        source: SourceId,
+        published: u64,
+        left_out: u64,
+    },
+    /// A source could not be normalized.
+    NormalizeFailed {
+        source: SourceId,
+        error: String,
+    },
 }
 
 /// Where a run sends its events.

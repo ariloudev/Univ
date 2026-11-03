@@ -52,3 +52,27 @@ async fn the_provenance_lists_each_payload_with_its_digest_retrieval_time_and_ur
         (3, "2026-11-03T00:00:00Z")
     );
 }
+
+#[test]
+fn a_payload_recorded_after_normalization_drops_the_report_it_no_longer_matches() {
+    let dir = tempfile::tempdir().unwrap();
+    let report = univ_ingest::normalize::NormalizationReport {
+        published: 2,
+        ..Default::default()
+    };
+    Provenance::normalized(dir.path(), &source(), &report).unwrap();
+    assert_eq!(
+        Provenance::read(dir.path()).unwrap().normalization,
+        Some(report)
+    );
+    let payload = univ_ingest::fetch::Payload {
+        item: "chunk 1".to_owned(),
+        url: "https://example.org/q".to_owned(),
+        sha256: "0".repeat(64),
+        bytes: 3,
+        retrieved: "2026-11-03T00:00:00Z".to_owned(),
+        rows: Some(1),
+    };
+    Provenance::record(dir.path(), &source(), &payload).unwrap();
+    assert_eq!(Provenance::read(dir.path()).unwrap().normalization, None);
+}
