@@ -6,6 +6,7 @@ pub mod acquire;
 pub mod display;
 pub mod events;
 pub mod fetch;
+pub mod fits;
 pub mod grids;
 pub mod normalize;
 pub mod provenance;

@@ -2,7 +2,7 @@
 //! the source published, or left out of the release and counted under its reason. The entries
 //! stay in memory for the next stage.
 
-mod fits;
+mod bintable;
 mod plan;
 mod row;
 
@@ -18,7 +18,7 @@ use univ_model::redshift::CmbCorrection;
 
 use crate::source::{Access, Field, LeftOutReason, SourceDefinition};
 use crate::table::TableReader;
-use fits::BinTable;
+use bintable::BinTable;
 use plan::Plan;
 use row::{Changed, Context};
 
@@ -83,7 +83,7 @@ pub enum NormalizeError {
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
     match &definition.access {
-        Access::Files { files } => files.iter().all(|f| fits::is_fits(&f.path)),
+        Access::Files { files } => files.iter().all(|f| crate::fits::is_fits(&f.path)),
         Access::Repository { .. } => false,
         _ => true,
     }
@@ -315,8 +315,8 @@ pub fn normalize(
                 .file_name()
                 .map(|n| n.to_string_lossy().into_owned())
                 .unwrap_or_default();
-            let table = fits::unpack(&name, read(file)?)
-                .and_then(|fits| fits::first_table(&fits))
+            let table = crate::fits::unpack(&name, read(file)?)
+                .and_then(|fits| bintable::first_table(&fits))
                 .map_err(|error| NormalizeError::Table {
                     source_id: definition.id.clone(),
                     file: file.clone(),

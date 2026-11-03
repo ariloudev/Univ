@@ -141,8 +141,13 @@ pub struct CatalogueEntry {
     pub designation: Designation,
     /// A second name the source gives, such as a Hipparcos number beside a Gaia `source_id`.
     pub name: Option<String>,
-    /// None for a source that publishes no position, such as a table of distances that names
-    /// the entries of another source.
+    /// The entry's position, or none when its source publishes no position: a source whose
+    /// definition maps no position columns, such as the Bailer-Jones et al. 2021 distances or
+    /// the Gaia DR3 to Hipparcos-2 cross-match, gives entries without one, and cross-matching
+    /// attaches them by identifier (the Gaia `source_id`) to the entries of a source that has
+    /// one. An entry is never published without a position for a blank cell: where a source
+    /// maps position columns, a row whose position cell is blank is left out as missing its
+    /// position.
     pub position: Option<Position>,
     pub distances: Vec<Distance>,
     pub redshifts: Vec<Redshift>,

@@ -1,52 +1,11 @@
 //! FITS binary tables, as the eRASS1 catalogues publish them in gzipped tar archives: the
 //! first `BINTABLE` extension of a file, its cells read as text so that a row goes through the
 //! same reader as a provider's table (FITS Standard 4.0, Pence et al. 2010, A&A 524, A42, §7.3).
+//! Headers are read by [`crate::fits`].
 
 use std::borrow::Cow;
-use std::io::Read as _;
 
-/// The bytes of a FITS block, header or data.
-const BLOCK: usize = 2_880;
-/// The bytes of a header card.
-const CARD: usize = 80;
-
-/// The file names a FITS table is published under: alone, gzipped, or in a gzipped tar.
-pub(super) fn is_fits(path: &str) -> bool {
-    [".fits", ".fits.gz", ".fits.tgz"]
-        .iter()
-        .any(|e| path.ends_with(e))
-}
-
-/// The FITS file in `bytes`: the first `.fits` member of a gzipped tar, a gzipped file
-/// unpacked, or the bytes as they are.
-pub(super) fn unpack(name: &str, bytes: Vec<u8>) -> Result<Vec<u8>, String> {
-    let gunzip = |bytes: &[u8]| {
-        let mut out = Vec::new();
-        flate2::read::GzDecoder::new(bytes)
-            .read_to_end(&mut out)
-            .map(|_| out)
-            .map_err(|e| format!("it is not gzip: {e}"))
-    };
-    if name.ends_with(".fits.tgz") {
-        let tar = gunzip(&bytes)?;
-        let mut archive = tar::Archive::new(tar.as_slice());
-        let entries = archive.entries().map_err(|e| e.to_string())?;
-        for entry in entries {
-            let mut entry = entry.map_err(|e| e.to_string())?;
-            let path = entry.path().map_err(|e| e.to_string())?;
-            if path.to_string_lossy().ends_with(".fits") {
-                let mut out = Vec::new();
-                entry.read_to_end(&mut out).map_err(|e| e.to_string())?;
-                return Ok(out);
-            }
-        }
-        Err("the archive holds no .fits file".to_owned())
-    } else if name.ends_with(".fits.gz") {
-        gunzip(&bytes)
-    } else {
-        Ok(bytes)
-    }
-}
+use crate::fits::{Header, next_hdu};
 
 /// A column of a binary table.
 #[derive(Clone, Debug)]
@@ -70,49 +29,6 @@ pub(super) struct BinTable {
     data: Vec<u8>,
 }
 
-/// A header's cards as keyword and value.
-fn header(fits: &[u8], at: &mut usize) -> Result<Vec<(String, String)>, String> {
-    let mut cards = Vec::new();
-    loop {
-        let card = fits
-            .get(*at..*at + CARD)
-            .ok_or("the file ends inside a header")?;
-        *at += CARD;
-        let text = std::str::from_utf8(card).map_err(|_| "a header card is not ASCII")?;
-        let keyword = text[..8].trim_end();
-        if keyword == "END" {
-            *at = at.div_ceil(BLOCK) * BLOCK;
-            return Ok(cards);
-        }
-        if &text[8..10] == "= " {
-            cards.push((keyword.to_owned(), value(&text[10..])));
-        }
-    }
-}
-
-/// A card's value: a quoted string with `''` for a quote, or what precedes a `/` comment.
-fn value(text: &str) -> String {
-    let text = text.trim_start();
-    if let Some(quoted) = text.strip_prefix('\'') {
-        let mut out = String::new();
-        let mut chars = quoted.chars().peekable();
-        while let Some(c) = chars.next() {
-            if c == '\'' {
-                if chars.peek() == Some(&'\'') {
-                    out.push('\'');
-                    chars.next();
-                } else {
-                    break;
-                }
-            } else {
-                out.push(c);
-            }
-        }
-        return out.trim_end().to_owned();
-    }
-    text.split('/').next().unwrap_or("").trim().to_owned()
-}
-
 /// The bytes one element of a FITS type takes; `X` counts bits.
 fn width(kind: u8, repeat: usize) -> Option<usize> {
     Some(match kind {
@@ -130,53 +46,30 @@ fn width(kind: u8, repeat: usize) -> Option<usize> {
 pub(super) fn first_table(fits: &[u8]) -> Result<BinTable, String> {
     let mut at = 0;
     while at < fits.len() {
-        let cards = header(fits, &mut at)?;
-        let get = |k: &str| {
-            cards
-                .iter()
-                .find(|(key, _)| key == k)
-                .map(|(_, v)| v.as_str())
-        };
-        let number = |k: &str| -> Result<usize, String> {
-            get(k)
-                .unwrap_or("0")
-                .parse()
-                .map_err(|e| format!("{k} is not a whole number: {e}"))
-        };
-        let axes = number("NAXIS")?;
-        // A header of no axes has no data.
-        let mut size = usize::from(axes != 0);
-        for i in 1..=axes {
-            size *= number(&format!("NAXIS{i}"))?;
+        let hdu = next_hdu(fits, &mut at)?;
+        let header = &hdu.header;
+        if header.get("XTENSION") != Some("BINTABLE") {
+            continue;
         }
-        let bits: i64 = get("BITPIX").unwrap_or("8").parse().map_err(|_| "BITPIX")?;
-        let bytes =
-            size * usize::try_from(bits.unsigned_abs() / 8).unwrap_or(1) + number("PCOUNT")?;
-        if get("XTENSION") == Some("BINTABLE") {
-            let (row_len, rows) = (number("NAXIS1")?, number("NAXIS2")?);
-            let columns = columns(&get, number("TFIELDS")?, row_len)?;
-            let data = fits
-                .get(at..at + row_len * rows)
-                .ok_or("the file ends inside the table")?
-                .to_vec();
-            return Ok(BinTable {
-                columns,
-                rows,
-                row_len,
-                data,
-            });
-        }
-        at += bytes.div_ceil(BLOCK) * BLOCK;
+        let count = |keyword: &str| {
+            usize::try_from(header.whole(keyword, 0)?).map_err(|_| format!("{keyword} is negative"))
+        };
+        let (row_len, rows) = (count("NAXIS1")?, count("NAXIS2")?);
+        let columns = columns(header, count("TFIELDS")?, row_len)?;
+        let data = fits[hdu.data.start..hdu.data.start + row_len * rows].to_vec();
+        return Ok(BinTable {
+            columns,
+            rows,
+            row_len,
+            data,
+        });
     }
     Err("the file holds no binary table".to_owned())
 }
 
 /// The columns a table header describes, checked to fill a row of `row_len` bytes.
-fn columns<'a>(
-    get: &impl Fn(&str) -> Option<&'a str>,
-    fields: usize,
-    row_len: usize,
-) -> Result<Vec<BinColumn>, String> {
+fn columns(header: &Header, fields: usize, row_len: usize) -> Result<Vec<BinColumn>, String> {
+    let get = |keyword: &str| header.get(keyword);
     let mut columns = Vec::new();
     let mut offset = 0;
     for i in 1..=fields {
@@ -292,47 +185,36 @@ impl BinTable {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn card(text: &str) -> String {
-        format!("{text:<80}")
-    }
+    use crate::fits::{BLOCK, header_block};
 
     /// A FITS file of an empty primary header and a table of a 4-byte float and a 3-byte string.
     fn table(rows: &[(f32, &str)]) -> Vec<u8> {
-        let mut text = [
+        let mut bytes = header_block(&[
             "SIMPLE  =                    T",
             "BITPIX  =                    8",
             "NAXIS   =                    0",
-            "END",
-        ]
-        .map(card)
-        .concat();
-        text += &" ".repeat(BLOCK - text.len());
-        let head = [
-            "XTENSION= 'BINTABLE'".to_owned(),
-            "BITPIX  =                    8".to_owned(),
-            "NAXIS   =                    2".to_owned(),
-            "NAXIS1  =                    7".to_owned(),
-            format!("NAXIS2  = {:>20}", rows.len()),
-            "PCOUNT  =                    0".to_owned(),
-            "TFIELDS =                    2".to_owned(),
-            "TTYPE1  = 'Z       '".to_owned(),
-            "TFORM1  = 'E5      '           / extra characters after the type".to_owned(),
-            "TTYPE2  = 'KIND''S '".to_owned(),
-            "TFORM2  = '3A      '".to_owned(),
-            "END".to_owned(),
-        ]
-        .map(|c| card(&c))
-        .concat();
-        let mut bytes = text.into_bytes();
-        bytes.extend(head.as_bytes());
-        bytes.resize(2 * BLOCK, b' ');
+        ]);
+        let naxis2 = format!("NAXIS2  = {:>20}", rows.len());
+        bytes.extend(header_block(&[
+            "XTENSION= 'BINTABLE'",
+            "BITPIX  =                    8",
+            "NAXIS   =                    2",
+            "NAXIS1  =                    7",
+            &naxis2,
+            "PCOUNT  =                    0",
+            "TFIELDS =                    2",
+            "TTYPE1  = 'Z       '",
+            "TFORM1  = 'E5      '           / extra characters after the type",
+            "TTYPE2  = 'KIND''S '",
+            "TFORM2  = '3A      '",
+        ]));
         for (z, kind) in rows {
             bytes.extend(z.to_be_bytes());
             let mut cell = kind.as_bytes().to_vec();
             cell.resize(3, 0);
             bytes.extend(cell);
         }
+        bytes.resize(bytes.len().div_ceil(BLOCK) * BLOCK, 0);
         bytes
     }
 
