@@ -14,11 +14,9 @@ use univ_model::redshift::CmbCorrection;
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
 
+pub(super) use super::plan::Changed;
 use super::plan::{ByCode, Col, Errors, FixEffect, Measured, Plan, RuleAction};
 use crate::source::LeftOutReason;
-
-/// The fixes, by index, that changed a row: a bit each.
-pub(super) type Changed = u64;
 
 /// What the rows of one source share.
 pub(super) struct Context<'a> {
@@ -55,15 +53,7 @@ pub(super) fn read(
     match row.entry() {
         Ok(entry) => Ok((entry, row.changed)),
         // A row left out was changed only by a fix that left it out.
-        Err(reason) => {
-            let leaving: Changed = cx
-                .plan
-                .fixes
-                .iter()
-                .filter(|f| matches!(f.effect, FixEffect::ZeroLeavesOut(_)))
-                .fold(0, |bits, f| bits | 1 << f.fix);
-            Err((reason, row.changed & leaving))
-        }
+        Err(reason) => Err((reason, row.changed & cx.plan.leaving)),
     }
 }
 
@@ -76,8 +66,20 @@ impl Row<'_, '_> {
     }
 
     fn text(&self, index: usize) -> Option<String> {
-        let text = self.cell(index).trim_end_matches(['\0', ' ']);
+        let text = self.cell(index);
         (!text.is_empty()).then(|| text.to_owned())
+    }
+
+    /// What a reading gives this row: its one value, or the value its code column maps the
+    /// row's code to.
+    fn by_code<T: Clone>(&self, how: &ByCode<T>) -> Result<T, LeftOutReason> {
+        match how {
+            ByCode::Fixed(value) => Ok(value.clone()),
+            ByCode::Code { column, codes } => codes
+                .get(self.cell(*column))
+                .cloned()
+                .ok_or(LeftOutReason::UnknownMethodCode),
+        }
     }
 
     /// The number in a cell: none when blank.
@@ -127,12 +129,7 @@ impl Row<'_, '_> {
             let Some(measured) = self.quantity(&r.measured)? else {
                 continue;
             };
-            let kind = match &r.kind {
-                ByCode::Fixed(kind) => *kind,
-                ByCode::Code { column, codes } => *codes
-                    .get(self.cell(*column).trim_end_matches(['\0', ' ']))
-                    .ok_or(LeftOutReason::UnknownMethodCode)?,
-            };
+            let kind = self.by_code(&r.kind)?;
             let default = match kind {
                 RedshiftKind::Spectroscopic => KindOfValue::Measured,
                 RedshiftKind::Photometric => KindOfValue::Estimated,
@@ -154,13 +151,7 @@ impl Row<'_, '_> {
             let Some(native) = self.quantity(&d.measured)? else {
                 continue;
             };
-            let how = match &d.how {
-                ByCode::Fixed(how) => how.clone(),
-                ByCode::Code { column, codes } => codes
-                    .get(self.cell(*column))
-                    .cloned()
-                    .ok_or(LeftOutReason::UnknownMethodCode)?,
-            };
+            let how = self.by_code(&d.how)?;
             let also = match &d.also_published {
                 Some(m) => self.quantity(m)?,
                 None => None,
@@ -242,7 +233,7 @@ impl Row<'_, '_> {
             let FixEffect::DropWhen { column, is } = &fix.effect else {
                 continue;
             };
-            let cell = self.cell(*column).trim_end_matches(['\0', ' ']).trim();
+            let cell = self.cell(*column);
             if !is.iter().any(|v| v == cell) {
                 continue;
             }

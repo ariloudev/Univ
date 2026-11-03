@@ -196,6 +196,10 @@ pub enum FixAction {
     },
 }
 
+/// The most fixes a definition may have: the normalizer counts the entries each changed with a
+/// bit per fix.
+pub const MAX_FIXES: usize = 64;
+
 /// Fields a definition maps at most one column to. Quality columns are kept by name, and the
 /// columns of distances and redshifts are named in `normalization`.
 const SINGLE: [Field; 17] = [
@@ -303,6 +307,12 @@ pub(super) fn check(
     }
     for (i, rule) in normalization.rules.iter().enumerate() {
         check_rule(&table, &format!("normalization.rules[{i}]"), rule)?;
+    }
+    if fixes.len() > MAX_FIXES {
+        return Err(problem(
+            "fixes",
+            format!("lists {} fixes, more than {MAX_FIXES}", fixes.len()),
+        ));
     }
     for (i, fix) in fixes.iter().enumerate() {
         let Some(action) = &fix.action else { continue };

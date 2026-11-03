@@ -211,8 +211,9 @@ impl<'a> Normalizer<'a> {
             .iter()
             .find(|c| c.field == Field::Identifier)
             .ok_or_else(|| unsupported("its definition maps no identifier column".to_owned()))?;
+        // The row of each identifier in each table after the first, which is read in order.
         let mut keys: Vec<HashMap<String, usize>> = Vec::new();
-        for (file, table) in tables {
+        for (t, (file, table)) in tables.iter().enumerate() {
             let key = table
                 .columns
                 .iter()
@@ -220,11 +221,13 @@ impl<'a> Normalizer<'a> {
                 .ok_or_else(|| {
                     unsupported(format!("{} has no {}", file.display(), identifier.column))
                 })?;
-            keys.push(
-                (0..table.rows)
-                    .map(|r| (table.text(r, key).into_owned(), r))
-                    .collect(),
-            );
+            if t > 0 {
+                keys.push(
+                    (0..table.rows)
+                        .map(|r| (table.text(r, key).into_owned(), r))
+                        .collect(),
+                );
+            }
         }
         let plan = Plan::new(definition, &names)?;
         let cx = Context {
@@ -243,11 +246,12 @@ impl<'a> Normalizer<'a> {
             cells.clear();
             cells.extend(sources.iter().map(|(t, column)| {
                 let (_, table) = &tables[*t];
-                match keys[*t].get(id.as_ref()) {
-                    Some(r) if *t > 0 => table.text(*r, column),
-                    _ if *t > 0 => Cow::Borrowed(""),
-                    _ => table.text(row, column),
+                if *t == 0 {
+                    return table.text(row, column);
                 }
+                keys[*t - 1]
+                    .get(id.as_ref())
+                    .map_or(Cow::Borrowed(""), |r| table.text(*r, column))
             }));
             self.row(&cx, &cells);
         }

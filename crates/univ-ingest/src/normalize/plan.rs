@@ -12,9 +12,15 @@ use univ_model::value::KindOfValue;
 
 use super::NormalizeError;
 use crate::source::{
-    Coded, DistanceReading, ErrorColumns, Field, FixAction, LeftOutReason, RedshiftReading, Rule,
-    ScaleDomain, SourceDefinition,
+    Coded, DistanceReading, ErrorColumns, Field, FixAction, LeftOutReason, MAX_FIXES,
+    RedshiftReading, Rule, ScaleDomain, SourceDefinition,
 };
+
+/// The fixes, by index, that changed a row: a bit each, so a definition has at most
+/// [`MAX_FIXES`].
+pub(super) type Changed = u64;
+
+const _: () = assert!(MAX_FIXES <= Changed::BITS as usize);
 
 /// A column as the normalizer reads it.
 #[derive(Clone, Debug)]
@@ -120,6 +126,8 @@ pub(super) struct Plan {
     pub distances: Vec<DistancePlan>,
     pub rules: Vec<RulePlan>,
     pub fixes: Vec<FixPlan>,
+    /// The fixes that leave a row out: the only ones that can have changed a row left out.
+    pub leaving: Changed,
     /// Parsecs for stars, megaparsecs otherwise.
     pub distance_unit: Unit,
 }
@@ -351,12 +359,19 @@ impl Plan {
                 r.unsupported("it reads a redshift but publishes no position to correct it with")
             );
         }
-        let fixes = definition
+        if definition.fixes.len() > MAX_FIXES {
+            return Err(r.unsupported(format!("it has more than {MAX_FIXES} fixes")));
+        }
+        let fixes: Vec<FixPlan> = definition
             .fixes
             .iter()
             .enumerate()
             .filter_map(|(i, f)| f.action.as_ref().map(|a| r.fix(i, a)))
             .collect::<Result<_, _>>()?;
+        let leaving = fixes
+            .iter()
+            .filter(|f| matches!(f.effect, FixEffect::ZeroLeavesOut(_)))
+            .fold(0, |bits, f| bits | 1 << f.fix);
         Ok(Self {
             identifier,
             name: r.field(Field::Name)?.map(|c| c.index),
@@ -391,6 +406,7 @@ impl Plan {
                 .map(|x| r.rule(x))
                 .collect::<Result<_, _>>()?,
             fixes,
+            leaving,
             distance_unit: if definition.scale_domain == ScaleDomain::Stars {
                 Unit::Parsec
             } else {

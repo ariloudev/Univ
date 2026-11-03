@@ -9,7 +9,8 @@ use std::path::PathBuf;
 
 use tempfile::TempDir;
 use univ_ingest::source::{
-    Access, DefinitionError, Field, RedistributionStatus, ScaleDomain, SourceDefinition, read_all,
+    Access, DefinitionError, Field, MAX_FIXES, RedistributionStatus, ScaleDomain, SourceDefinition,
+    read_all,
 };
 use univ_model::position::Frame;
 use univ_model::units::Unit;
@@ -318,4 +319,14 @@ fn a_redshift_or_distance_column_without_a_reading_is_refused() {
     let refused = refusal(&none);
     assert_eq!(refused.field, "normalization");
     assert!(refused.problem.contains("z_helio"), "{}", refused.problem);
+}
+
+#[test]
+fn a_definition_with_more_fixes_than_the_normalizer_counts_is_refused() {
+    let fix = "  - { defect: \"d\", change: \"c\", evidence: \"e\" }\n";
+    let fixes = |n: usize| format!("{VALID}fixes:\n{}", fix.repeat(n));
+    assert_eq!(read(&fixes(MAX_FIXES)).unwrap().fixes.len(), MAX_FIXES);
+    let e = refusal(&fixes(MAX_FIXES + 1));
+    assert_eq!(e.field, "fixes");
+    assert!(e.problem.contains("more than 64"), "{e}");
 }

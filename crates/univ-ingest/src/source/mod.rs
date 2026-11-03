@@ -5,7 +5,7 @@ mod normalization;
 
 pub use normalization::{
     Coded, Condition, DistanceReading, ErrorColumns, FixAction, KindOverride, LeftOutReason,
-    MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading, Rule,
+    MAX_FIXES, MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading, Rule,
 };
 
 use std::collections::HashSet;
