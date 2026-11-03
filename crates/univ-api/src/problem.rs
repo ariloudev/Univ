@@ -20,6 +20,12 @@ pub enum ProblemType {
     MethodNotAllowed,
     /// The request's body could not be read to its end.
     UnreadableBody,
+    /// A query parameter or path segment does not hold a value of its kind.
+    InvalidParameter,
+    /// No release of that number was ever published.
+    ReleaseNotFound,
+    /// The release was pruned: its data is gone.
+    ReleasePruned,
     /// The server failed to answer a request it should have answered.
     InternalError,
 }
@@ -30,6 +36,9 @@ impl ProblemType {
         Self::RouteNotFound,
         Self::MethodNotAllowed,
         Self::UnreadableBody,
+        Self::InvalidParameter,
+        Self::ReleaseNotFound,
+        Self::ReleasePruned,
         Self::InternalError,
     ];
 
@@ -40,6 +49,9 @@ impl ProblemType {
             Self::RouteNotFound => "urn:univ:problem:route-not-found",
             Self::MethodNotAllowed => "urn:univ:problem:method-not-allowed",
             Self::UnreadableBody => "urn:univ:problem:unreadable-body",
+            Self::InvalidParameter => "urn:univ:problem:invalid-parameter",
+            Self::ReleaseNotFound => "urn:univ:problem:release-not-found",
+            Self::ReleasePruned => "urn:univ:problem:release-pruned",
             Self::InternalError => "urn:univ:problem:internal-error",
         }
     }
@@ -51,6 +63,9 @@ impl ProblemType {
             Self::RouteNotFound => "No such route",
             Self::MethodNotAllowed => "Method not allowed",
             Self::UnreadableBody => "Unreadable body",
+            Self::InvalidParameter => "Invalid parameter",
+            Self::ReleaseNotFound => "No such release",
+            Self::ReleasePruned => "Release pruned",
             Self::InternalError => "Internal error",
         }
     }
@@ -59,9 +74,10 @@ impl ProblemType {
     #[must_use]
     pub fn status(self) -> u16 {
         match self {
-            Self::RouteNotFound => 404,
+            Self::RouteNotFound | Self::ReleaseNotFound => 404,
             Self::MethodNotAllowed => 405,
-            Self::UnreadableBody => 400,
+            Self::UnreadableBody | Self::InvalidParameter => 400,
+            Self::ReleasePruned => 410,
             Self::InternalError => 500,
         }
     }

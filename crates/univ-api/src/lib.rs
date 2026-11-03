@@ -4,12 +4,18 @@
 //! The Worker (`univ-server`) turns each runtime request into a [`Request`], calls [`handle`],
 //! and turns the [`Response`] back. Nothing here performs I/O.
 
+mod backend;
 mod cors;
 mod http;
 mod openapi;
 mod problem;
+mod releases;
 mod routes;
+mod sources;
+#[cfg(test)]
+mod testkit;
 
+pub use backend::{Backend, BackendError, Row};
 pub use http::{Body, Method, Request, Response};
 pub use openapi::document;
 pub use problem::{Problem, ProblemType};
@@ -22,13 +28,12 @@ pub fn failure(kind: ProblemType, detail: impl Into<String>) -> Response {
     cors::allow_any_origin(Problem::new(kind, detail).into_response())
 }
 
-/// Answers one request: a CORS preflight, a route of [`ROUTES`], or a problem.
-#[must_use]
-pub fn handle(request: &Request) -> Response {
+/// Answers one request from `backend`: a CORS preflight, a route of [`ROUTES`], or a problem.
+pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
     let response = if request.method == Method::Options {
         cors::preflight()
     } else {
-        routes::dispatch(request)
+        routes::dispatch(request, backend).await
     };
     cors::allow_any_origin(response)
 }
@@ -36,6 +41,11 @@ pub fn handle(request: &Request) -> Response {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::testkit::Sqlite;
+
+    fn handle(request: &Request) -> Response {
+        Sqlite::new().answer(request)
+    }
 
     fn get(path: &str) -> Request {
         Request::new(Method::Get, path)

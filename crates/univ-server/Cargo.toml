@@ -15,7 +15,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 univ-api = { path = "../univ-api" }
 worker = { version = "=0.8.7", features = ["d1"] }
+serde_json = "1.0.154"
 
 [dev-dependencies]
 reqwest = { version = "0.13.5", default-features = false, features = ["rustls", "blocking"] }
-serde_json = "1.0.154"

@@ -5,12 +5,14 @@
 //! request means; that is all `univ_api`'s. A failure of the runtime itself is still answered
 //! as a problem with the CORS headers, so a browser on another origin can read it.
 
+mod d1;
+
 use univ_api::{Method, ProblemType};
 use worker::{Context, Env, Headers, Request, Response, Result, event};
 
 #[event(fetch)]
-async fn fetch(request: Request, _env: Env, _ctx: Context) -> Result<Response> {
-    let answer = match answer(request).await {
+async fn fetch(request: Request, env: Env, _ctx: Context) -> Result<Response> {
+    let answer = match answer(request, &env).await {
         Ok(answer) => answer,
         Err(error) => univ_api::failure(
             ProblemType::InternalError,
@@ -27,7 +29,7 @@ async fn fetch(request: Request, _env: Env, _ctx: Context) -> Result<Response> {
 }
 
 /// `univ_api`'s answer to the runtime request.
-async fn answer(mut request: Request) -> Result<univ_api::Response> {
+async fn answer(mut request: Request, env: &Env) -> Result<univ_api::Response> {
     let url = request.url()?;
     let method = Method::parse(request.method().as_ref());
     // Only a write carries a body; a read's is never read, whatever it sends.
@@ -51,7 +53,8 @@ async fn answer(mut request: Request) -> Result<univ_api::Response> {
         headers: request.headers().entries().collect(),
         body,
     };
-    Ok(univ_api::handle(&api_request))
+    let backend = d1::D1::new(env)?;
+    Ok(univ_api::handle(&api_request, &backend).await)
 }
 
 /// The runtime response that carries `answer`.

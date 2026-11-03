@@ -4,6 +4,7 @@
 //! It compiles both for native targets and for `wasm32-unknown-unknown`, so it holds no I/O and
 //! no threads.
 
+pub mod api;
 pub mod cosmology;
 pub mod derive;
 pub mod distance;

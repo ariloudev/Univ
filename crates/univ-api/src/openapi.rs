@@ -10,9 +10,8 @@ use utoipa::OpenApi;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::schema::{ObjectBuilder, Schema, SchemaFormat, Type};
 
-use crate::http::{Request, Response};
+use crate::http::Response;
 use crate::problem::{Problem, ProblemType};
-use crate::routes::Params;
 
 #[derive(OpenApi)]
 #[openapi(
@@ -20,7 +19,7 @@ use crate::routes::Params;
         title = "Univ Server",
         description = "Real, normalized astronomical and cosmological data, and the layers clients author on top of it."
     ),
-    paths(serve)
+    paths(serve, crate::releases::list, crate::sources::list)
 )]
 struct ApiDoc;
 
@@ -72,7 +71,7 @@ fn problem_schema() -> Schema {
         (status = 200, description = "The OpenAPI 3.1 document of every route served", content_type = "application/json")
     )
 )]
-pub fn serve(_request: &Request, _params: &Params) -> Response {
+pub fn serve() -> Response {
     match &*SERIALIZED {
         Ok(bytes) => Response::bytes(200, "application/json", bytes.clone()),
         Err(error) => Problem::new(

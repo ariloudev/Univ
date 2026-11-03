@@ -2,30 +2,66 @@
 //! (read-the-openapi-document). The OpenAPI document lists exactly these routes, which a test
 //! of `openapi` holds it to.
 
+use crate::backend::Backend;
 use crate::http::{Body, Method, Request, Response};
-use crate::openapi;
 use crate::problem::{Problem, ProblemType};
+use crate::{openapi, releases, sources};
 
 /// The values a route's `{name}` segments took in one request, in the template's order.
 pub type Params = Vec<(&'static str, String)>;
 
+/// What a route does: each names its handler in [`answer`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Endpoint {
+    OpenApi,
+    Releases,
+    Sources,
+}
+
 /// One route: the method it answers, its path template with `{name}` segments, and its
-/// handler. A `GET` route also answers `HEAD`, with the same headers and no body.
+/// endpoint. A `GET` route also answers `HEAD`, with the same headers and no body.
 pub struct Route {
     pub method: Method,
     pub path: &'static str,
-    pub handler: fn(&Request, &Params) -> Response,
+    pub endpoint: Endpoint,
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 1] = [Route {
-    method: Method::Get,
-    path: "/v1/openapi.json",
-    handler: openapi::serve,
-}];
+pub static ROUTES: [Route; 3] = [
+    Route {
+        method: Method::Get,
+        path: "/v1/openapi.json",
+        endpoint: Endpoint::OpenApi,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/releases",
+        endpoint: Endpoint::Releases,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/sources",
+        endpoint: Endpoint::Sources,
+    },
+];
 
-/// Answers a request that is not a preflight: the handler of the route it names, or a problem.
-pub fn dispatch(request: &Request) -> Response {
+/// The answer of `endpoint` to `request`, a refusal included.
+async fn answer<B: Backend>(
+    endpoint: Endpoint,
+    request: &Request,
+    _params: &Params,
+    backend: &B,
+) -> Response {
+    let answered = match endpoint {
+        Endpoint::OpenApi => Ok(openapi::serve()),
+        Endpoint::Releases => releases::list(backend).await,
+        Endpoint::Sources => sources::list(request, backend).await,
+    };
+    answered.unwrap_or_else(Problem::into_response)
+}
+
+/// Answers a request that is not a preflight: the endpoint of the route it names, or a problem.
+pub async fn dispatch<B: Backend>(request: &Request, backend: &B) -> Response {
     let head = request.method == Method::Head;
     let mut allowed: Vec<&str> = Vec::new();
     for route in &ROUTES {
@@ -33,7 +69,7 @@ pub fn dispatch(request: &Request) -> Response {
             continue;
         };
         if route.method == request.method || (head && route.method == Method::Get) {
-            let response = (route.handler)(request, &params);
+            let response = answer(route.endpoint, request, &params, backend).await;
             return if head {
                 response.with_body(Body::Empty)
             } else {
