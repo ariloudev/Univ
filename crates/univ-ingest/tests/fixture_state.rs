@@ -11,22 +11,12 @@
 mod common;
 mod release_fixture;
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-use release_fixture::{build_next, fixture, univ_ingest};
+use release_fixture::{build_next, fixture, run_ok};
 
 /// The variable that names the state directory to write.
 const STATE_VARIABLE: &str = "UNIV_FIXTURE_STATE";
-
-/// Runs `univ-ingest <command> <number>` and fails with its log when it fails.
-fn run_ok(command: &str, number: u32, out: &Path, state: &Path, persist: &Path) {
-    let run = univ_ingest(command, number, out, state, persist);
-    let log = String::from_utf8_lossy(&run.stderr);
-    assert!(
-        run.status.success(),
-        "univ-ingest {command} {number}:\n{log}"
-    );
-}
 
 #[test]
 #[ignore = "writes local D1 and R2 with Wrangler for `cargo xtask integration`"]
