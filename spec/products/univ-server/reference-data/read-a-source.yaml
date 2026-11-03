@@ -23,7 +23,7 @@ requirements:
       - key: 01a19f1e-d177-716d-b124-3d2711844898
         name: "The query and the cuts are the ones the fetch ran, verbatim."
       - key: 01a19f1e-d177-716d-b124-3d2878dbdf48
-        name: "The coverage gives the source's sky footprint as a sky region and the range of redshift or distance it holds."
+        name: "The coverage gives the source's sky footprint as a sky region and, where its catalogue entries hold redshifts or distances, the range they span."
   - key: 01a19f1e-d177-716d-b124-3d29d163748c
     statement:
       form: event_driven
@@ -34,7 +34,7 @@ requirements:
       - key: 01a19f1e-d177-716d-b124-3d2a8487abe5
         name: "Each acquired payload is listed with its SHA-256 and its retrieval time."
       - key: 01a19f1e-d177-716d-b124-3d2beb1e33d9
-        name: "The record gives the number of catalogue entries fetched and published."
+        name: "The record gives the number of catalogue entries published and the number fetched, which is those published and those left out together."
       - key: 01a19f1e-d177-716d-b124-3d2cc2baedfc
         name: "The record gives the number of catalogue entries left out, grouped by the reason each was left out."
       - key: 01a19f1e-d177-716d-b124-3d2df1555360
