@@ -20,6 +20,8 @@ requirements:
         name: "Normalized values use degrees for angles, km/s for velocities, parsecs for stellar distances and megaparsecs for extragalactic ones."
       - key: 01a19f22-2ad9-716e-876f-1867aeb456fd
         name: "Each value is classified by its kind of value."
+      - key: 01a1a232-7345-778b-a4c5-046f187e8323
+        name: "A redshift read from a published velocity that its source definition infers, without the source stating it, to stand for a comoving distance is inferred, not measured."
       - key: 01a19f22-2ad9-716e-876f-186820f4df2c
         name: "Each uncertainty is typed as a symmetric error, an asymmetric interval, a stated interval with no probability, an upper or lower limit, a credible region, or none reported."
       - key: 01a19f22-2ad9-716e-876f-186959bf0d6e

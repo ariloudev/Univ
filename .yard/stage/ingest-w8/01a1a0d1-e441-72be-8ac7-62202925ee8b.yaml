@@ -3607,6 +3607,26 @@ blocks:
           Done when release 4 is published and each fix's test passes.
         state: active
         type: fix
+      - key: 01a1a22b-44bc-74f7-b250-cd8bcf3df4ee
+        at: 2026-11-03T16:08:27Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Final science fixes and release 4"
+        detail: |-
+          Commits `1fa50c4` (spec) and `1e704d5`. Release 4 is published.
+
+          **Fixes:**
+          - **Local Group duplicates:** published cross-ids now act as one body in complete linkage, with wider UNGC↔CF4 and nearby tolerances. NGC 55, IC 1613, And XX and XXX, Pegasus, the SMC, IC 342 and others are now one object each.
+          - **CF4 velocities:** table2 Vcmb is cz. Groups' V3k is inverted as a comoving distance above 13,000 km/s. That cosmology was inferred from the data (H0 67.8, Ωm 0.308).
+          - **Cosmology note:** the manifest now carries the H0 note.
+          - **Horologium–Reticulum:** CMB-corrected, now at 288.33 Mpc.
+          - **The Milky Way:** its CF4 group is left unplaced, and it sits at 8.178 kpc (GRAVITY 2019).
+
+          **Release 4:** merges +391 and candidate links −433 against release 3.
+        state: done
+        type: fix
   - key: 01a1a1f6-596c-720e-a742-a455a16876f8
     id: w8-t8-science-code
     kind: task
@@ -3625,3 +3645,36 @@ blocks:
 
           Done when it runs on the real release 3 in a few minutes, failing the known Local Group duplicates.
         state: active
+      - key: 01a1a22b-44bc-74f7-b250-cd8cf99bc698
+        at: 2026-11-03T16:08:27Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Science checks as code"
+        detail: |-
+          `cargo xtask science` with 30 cited checks in `rules/science-checks.yaml`. It is merged into W8 (`23fbe36`) and runs on release 4 in 65 s, 13 s of it for the checks: 26 PASS, 1 FAIL, 1 CONCERN.
+          - **FAIL:** 25 split nearby galaxies, such as IC 5052 with 6dF fibres, plus HIZSS 3A/3B.
+          - **CONCERN:** NGC 4889, whose motion within Coma shifts its redshift distance.
+        state: done
+  - key: 01a1a22b-44bc-74f7-b250-cd8a0546d2b1
+    id: w8-t9-nearby
+    kind: task
+    versions:
+      - key: 01a1a22b-44bc-74f7-b250-cd8d51519184
+        at: 2026-11-03T16:08:27Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Join extended nearby galaxies and pass every check"
+        detail: |-
+          **Changes:**
+          - Join entries that fall within a nearby galaxy's published optical extent and agree in velocity.
+          - Add HIZSS 3A/3B as a cited exception, if they are distinct galaxies.
+          - Add a new `redshift-conflicts` check for the 2MASX merges whose cz disagree.
+          - Mark the CF4 V3k reading as inferred.
+
+          Done when release 5 is built and `cargo xtask science` shows no FAIL. It is not published until the prune is decided.
+        state: active
+        type: fix
