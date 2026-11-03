@@ -32,6 +32,13 @@
 //! ([`uncertainty`]), a normalized value only where it is not the native one, and each distinct
 //! transformation chain once in `chains` ([`chains`]), so that a release of millions of objects
 //! keeps every row within its B-tree cell.
+//!
+//! # Details (schema version 3)
+//!
+//! Version 3 adds two tables, changing none of version 2's: `source_details`, each source's
+//! primary reference and the sky and radial coverage of its entries, and `structure_details`,
+//! each structure's placed geometry with how it was derived, the test of its outline on a volume
+//! grid, and its sizes published under another cosmology beside their rescaled values.
 
 pub mod cells;
 pub mod chains;
@@ -50,7 +57,7 @@ pub use sql::{ColumnKind, Row, Scope, SqlValue, Statements, Table, Tree};
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].
-pub const SCHEMA_VERSION: u32 = 2;
+pub const SCHEMA_VERSION: u32 = 3;
 
 /// The D1 schema: every table and index, created only where missing.
 pub const SCHEMA: &str = include_str!("schema.sql");
