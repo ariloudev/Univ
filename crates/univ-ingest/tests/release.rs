@@ -135,7 +135,7 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
             .iter()
             .find(|r| r.object_id == o.id.get())
             .unwrap();
-        let space = match row.domain.as_str() {
+        let space = match row.domain {
             "stars" => CellSpace::Stars,
             "nearby_galaxies" => CellSpace::NearbyGalaxies,
             _ => CellSpace::CosmicWeb,
@@ -203,7 +203,7 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
     let m = &release.manifest;
     assert_eq!(m.counts.object_cells, m.counts.placed);
     let rows = d1_text(&release.dir, m, "object_cells");
-    assert_eq!(rows.matches("\n(1, '").count(), cells.objects.len());
+    assert_eq!(rows.matches("\n(1, ").count(), cells.objects.len());
 }
 
 #[test]

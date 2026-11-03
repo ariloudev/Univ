@@ -24,7 +24,7 @@ fn two_spellings_of_a_name_that_share_its_key_are_both_kept() {
         release: 1,
         key: name_key(name),
         object_id: 7,
-        source: "updated-nearby-galaxies".into(),
+        source: 0,
         name: name.into(),
     };
     assert_eq!(name_key("M 31"), name_key("M31"));

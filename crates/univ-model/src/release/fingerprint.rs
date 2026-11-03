@@ -70,57 +70,75 @@ impl Sum {
     }
 }
 
-impl Table {
-    /// The fingerprint of `rows`, each row's values in the order of [`Table::columns`]: one
-    /// total per column.
+/// One column's running total.
+enum Running {
+    Bytes(u64),
+    Sum(i128),
+    Real(Sum, Sum),
+}
+
+/// A table's fingerprint taken one row at a time, so no row need be kept.
+pub struct Fingerprinter {
+    table: Table,
+    totals: Vec<Running>,
+}
+
+impl Fingerprinter {
+    /// An empty fingerprint of `table`.
+    #[must_use]
+    pub fn new(table: Table) -> Self {
+        let totals = table
+            .kinds
+            .iter()
+            .map(|kind| match kind {
+                ColumnKind::Text => Running::Bytes(0),
+                ColumnKind::Integer => Running::Sum(0),
+                ColumnKind::Real => Running::Real(Sum::default(), Sum::default()),
+            })
+            .collect();
+        Self { table, totals }
+    }
+
+    /// Adds a row's values, in the order of [`Table::columns`].
+    pub fn add(&mut self, row: &[SqlValue]) {
+        for (total, value) in self.totals.iter_mut().zip(row) {
+            match (total, value) {
+                (Running::Bytes(b), SqlValue::Text(t)) => *b += t.len() as u64,
+                (Running::Sum(s), SqlValue::Integer(n)) => *s += i128::from(*n),
+                (Running::Real(sum, magnitude), SqlValue::Real(x)) => {
+                    sum.add(*x);
+                    magnitude.add(x.abs());
+                }
+                #[expect(
+                    clippy::cast_precision_loss,
+                    reason = "as SQLite reads an integer into a real column"
+                )]
+                (Running::Real(sum, magnitude), SqlValue::Integer(n)) => {
+                    let x = *n as f64;
+                    sum.add(x);
+                    magnitude.add(x.abs());
+                }
+                _ => {}
+            }
+        }
+    }
+
+    /// One total per column.
     #[must_use]
     #[expect(
         clippy::cast_precision_loss,
         reason = "totals below 2^53 are exact, and those of a release's rows are"
     )]
-    pub fn fingerprint(&self, rows: &[Vec<SqlValue>]) -> Vec<ColumnTotal> {
-        self.columns
+    pub fn finish(&self) -> Vec<ColumnTotal> {
+        self.table
+            .columns
             .iter()
-            .zip(self.kinds)
-            .enumerate()
-            .map(|(i, (column, kind))| {
-                let values = rows.iter().filter_map(|r| r.get(i));
-                let (total, magnitude) = match kind {
-                    ColumnKind::Text => {
-                        let bytes: u64 = values
-                            .map(|v| match v {
-                                SqlValue::Text(t) => t.len() as u64,
-                                _ => 0,
-                            })
-                            .sum();
-                        (bytes as f64, None)
-                    }
-                    ColumnKind::Integer => {
-                        let sum: i128 = values
-                            .map(|v| match v {
-                                SqlValue::Integer(n) => i128::from(*n),
-                                _ => 0,
-                            })
-                            .sum();
-                        (sum as f64, None)
-                    }
-                    ColumnKind::Real => {
-                        let (mut sum, mut magnitude) = (Sum::default(), Sum::default());
-                        for v in values {
-                            let x = match v {
-                                SqlValue::Real(x) => *x,
-                                #[expect(
-                                    clippy::cast_precision_loss,
-                                    reason = "as SQLite reads an integer into a real column"
-                                )]
-                                SqlValue::Integer(n) => *n as f64,
-                                _ => continue,
-                            };
-                            sum.add(x);
-                            magnitude.add(x.abs());
-                        }
-                        (sum.value(), Some(magnitude.value()))
-                    }
+            .zip(&self.totals)
+            .map(|(column, running)| {
+                let (total, magnitude) = match running {
+                    Running::Bytes(b) => (*b as f64, None),
+                    Running::Sum(s) => (*s as f64, None),
+                    Running::Real(sum, magnitude) => (sum.value(), Some(magnitude.value())),
                 };
                 ColumnTotal {
                     column: (*column).to_owned(),
@@ -129,6 +147,19 @@ impl Table {
                 }
             })
             .collect()
+    }
+}
+
+impl Table {
+    /// The fingerprint of `rows`, each row's values in the order of [`Table::columns`]: one
+    /// total per column.
+    #[must_use]
+    pub fn fingerprint(&self, rows: &[Vec<SqlValue>]) -> Vec<ColumnTotal> {
+        let mut f = Fingerprinter::new(*self);
+        for row in rows {
+            f.add(row);
+        }
+        f.finish()
     }
 
     /// The query that gives the fingerprint of the rows `filter` selects, in one row: the count

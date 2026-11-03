@@ -11,17 +11,28 @@
 use univ_model::cosmology::Cosmology;
 use univ_model::geometry::Aabb;
 use univ_model::release::cells::structure_cells;
-use univ_model::release::rows::{ObjectCellRow, StructureCellRow};
+use univ_model::release::rows::StructureCellRow;
 use univ_model::release::{CellSpace, cells::SPACES};
 
 use crate::crossmatch::ReleaseObject;
 use crate::source::SourceDefinition;
 use crate::tiles::{assign, name_of};
 
-/// The rows of a release's cell index.
+/// A placed object in its level-0 cell of its scale domain, `domain`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ObjectCell {
+    pub domain: &'static str,
+    pub ix: i64,
+    pub iy: i64,
+    pub iz: i64,
+    pub object_id: u64,
+}
+
+/// The rows of a release's cell index: the objects' cells, whose rows name their domain by its
+/// term, and the structures' rows.
 #[derive(Debug, Default)]
 pub struct CellRows {
-    pub objects: Vec<ObjectCellRow>,
+    pub objects: Vec<ObjectCell>,
     pub structures: Vec<StructureCellRow>,
     /// The structures with a bounding box, which the index holds.
     pub structures_indexed: u64,
@@ -57,9 +68,8 @@ pub fn cell_rows(
             let cell = space
                 .cell(p.position)
                 .ok_or_else(|| format!("object {}'s position has no cell", p.id))?;
-            rows.objects.push(ObjectCellRow {
-                release,
-                domain: name.to_owned(),
+            rows.objects.push(ObjectCell {
+                domain: name,
                 ix: cell.ix,
                 iy: cell.iy,
                 iz: cell.iz,

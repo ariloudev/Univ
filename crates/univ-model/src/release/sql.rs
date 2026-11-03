@@ -297,37 +297,86 @@ impl Table {
         total
     }
 
+    /// The head of an `INSERT OR IGNORE` statement into the table, naming its columns.
+    #[must_use]
+    pub fn insert_head(&self) -> String {
+        format!(
+            "INSERT OR IGNORE INTO {} ({}) VALUES\n",
+            self.name,
+            self.columns.join(", ")
+        )
+    }
+
     /// `INSERT OR IGNORE` statements for `rows`, each row's values in the order of
     /// [`Table::columns`], several rows to a statement and no statement over
     /// [`MAX_STATEMENT_BYTES`] unless one row alone is longer.
     #[must_use]
     pub fn inserts(&self, rows: &[Vec<SqlValue>]) -> Vec<String> {
-        let head = format!(
-            "INSERT OR IGNORE INTO {} ({}) VALUES\n",
-            self.name,
-            self.columns.join(", ")
-        );
-        let mut statements = Vec::new();
-        let mut current = String::new();
+        let mut statements = Statements::new(*self);
+        let mut out = Vec::new();
         for row in rows {
-            let values: Vec<String> = row.iter().map(SqlValue::literal).collect();
-            let tuple = format!("({})", values.join(", "));
-            if !current.is_empty() && current.len() + tuple.len() + 3 > MAX_STATEMENT_BYTES {
-                current.push_str(";\n");
-                statements.push(std::mem::take(&mut current));
-            }
-            if current.is_empty() {
-                current.push_str(&head);
-            } else {
-                current.push_str(",\n");
-            }
-            current.push_str(&tuple);
+            out.extend(statements.push(row));
         }
-        if !current.is_empty() {
-            current.push_str(";\n");
-            statements.push(current);
+        out.extend(statements.finish());
+        out
+    }
+}
+
+/// A row's values as an SQL tuple: `(1, 'a', NULL)`.
+#[must_use]
+pub fn tuple(values: &[SqlValue]) -> String {
+    let mut out = String::from("(");
+    for (i, v) in values.iter().enumerate() {
+        if i > 0 {
+            out.push_str(", ");
         }
-        statements
+        out.push_str(&v.literal());
+    }
+    out.push(')');
+    out
+}
+
+/// A table's `INSERT OR IGNORE` statements made one row at a time: a statement is given once
+/// the next row would take it over [`MAX_STATEMENT_BYTES`].
+pub struct Statements {
+    head: String,
+    current: String,
+}
+
+impl Statements {
+    /// No statement yet, into `table`.
+    #[must_use]
+    pub fn new(table: Table) -> Self {
+        Self {
+            head: table.insert_head(),
+            current: String::new(),
+        }
+    }
+
+    /// Adds a row, giving the statement it closed, if any.
+    pub fn push(&mut self, row: &[SqlValue]) -> Option<String> {
+        let tuple = tuple(row);
+        let mut closed = None;
+        if !self.current.is_empty() && self.current.len() + tuple.len() + 3 > MAX_STATEMENT_BYTES {
+            self.current.push_str(";\n");
+            closed = Some(std::mem::take(&mut self.current));
+        }
+        if self.current.is_empty() {
+            self.current.push_str(&self.head);
+        } else {
+            self.current.push_str(",\n");
+        }
+        self.current.push_str(&tuple);
+        closed
+    }
+
+    /// The last statement, if a row was added since one was given.
+    pub fn finish(&mut self) -> Option<String> {
+        if self.current.is_empty() {
+            return None;
+        }
+        self.current.push_str(";\n");
+        Some(std::mem::take(&mut self.current))
     }
 }
 

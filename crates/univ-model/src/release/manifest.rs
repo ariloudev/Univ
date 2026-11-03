@@ -13,6 +13,9 @@ pub const FORMAT: &str = "univ-release-manifest";
 pub const MANIFEST_VERSION: u32 = 1;
 /// The most D1 storage one release's tables may take (CON-3: 10 GB, decimal gigabytes).
 pub const D1_CAP_BYTES: u64 = 10_000_000_000;
+/// The most D1 storage a build lets one release take: under half the cap, so release n + 1 is
+/// published beside release n, and checked with it against the cap, before n is pruned.
+pub const RELEASE_BUDGET_BYTES: u64 = 4_500_000_000;
 
 /// A release manifest.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

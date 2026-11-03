@@ -27,8 +27,8 @@ pub struct SourceRows {
     pub normalizations: Vec<NormalizationRow>,
 }
 
-/// The rows of `definitions` in release `release`, each with the entries the release holds
-/// from it and the provenance kept in `cache`.
+/// The rows of `definitions` in release `release`, each numbered by its place among them and
+/// with the entries the release holds from it and the provenance kept in `cache`.
 ///
 /// # Errors
 ///
@@ -40,10 +40,11 @@ pub fn source_rows(
     cache: &Path,
 ) -> Result<SourceRows, String> {
     let mut rows = SourceRows::default();
-    for d in definitions {
+    for (n, d) in (0u32..).zip(definitions) {
         let id = d.id.to_string();
         rows.sources.push(SourceRow {
             release,
+            n,
             id: id.clone(),
             title: d.title.clone(),
             provider: d.provider.clone(),
@@ -64,7 +65,7 @@ pub fn source_rows(
         for p in &provenance.payloads {
             rows.payloads.push(PayloadRow {
                 release,
-                source: id.clone(),
+                source: n,
                 item: p.item.clone(),
                 url: p.url.clone(),
                 sha256: p.sha256.clone(),
@@ -76,7 +77,7 @@ pub fn source_rows(
         if let Some(report) = &provenance.normalization {
             rows.normalizations.push(NormalizationRow {
                 release,
-                source: id.clone(),
+                source: n,
                 published: report.published,
                 left_out: json(&report.left_out)?,
                 fixes: json(&report.fixes)?,

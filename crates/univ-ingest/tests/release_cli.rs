@@ -76,7 +76,7 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     for line in [
         "Z Stage tiles: 3 items\n".to_owned(),
         format!(
-            "Z Step build: release 1: every check passed; 25 files listed with their SHA-256 in \
+            "Z Step build: release 1: every check passed; 27 files listed with their SHA-256 in \
              {}\n",
             dir.join("manifest.yaml").display()
         ),

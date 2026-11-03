@@ -5,12 +5,14 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
+use univ_model::release::RELEASE_BUDGET_BYTES;
+
 use super::{FetchOptions, RunReport, lock};
 use crate::acquire::Acquired;
 use crate::crossmatch::CrossMatched;
 use crate::display::SourceState;
 use crate::events::{Count, Event, EventSink, Stage};
-use crate::release::{BuiltRelease, Inputs, build, decimal_bytes, is_grid, read_grid, table_sizes};
+use crate::release::{BuiltRelease, Inputs, build, decimal_bytes, is_grid, table_sizes};
 use crate::source::SourceDefinition;
 use crate::tiles::Built;
 
@@ -39,10 +41,12 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
             built.dir.join("manifest.yaml").display()
         ),
         format!(
-            "D1: {} rows estimated at {} of the {} cap ({share:.4}%)",
+            "D1: {} rows estimated at {} of the {} cap ({share:.4}%), within the {} budget of a \
+             release",
             m.d1.tables.iter().map(|t| t.rows).sum::<u64>(),
             decimal_bytes(m.d1.estimated_bytes),
-            decimal_bytes(m.d1.cap_bytes)
+            decimal_bytes(m.d1.cap_bytes),
+            decimal_bytes(RELEASE_BUDGET_BYTES)
         ),
         format!("D1 by table: {}", table_sizes(&m.d1).join(", ")),
         format!(
@@ -88,8 +92,8 @@ fn counts(built: &BuiltRelease) -> Vec<Count> {
     ]
 }
 
-/// Reads what the release holds beside the cross-match, its volume grids, and builds it under
-/// the rules, configuration and structures the cross-match worked under.
+/// Builds the release under the rules, configuration and structures the cross-match worked
+/// under, with the volume grids among the fetched sources, each read as it is written.
 fn assemble_and_build(
     definitions: &[SourceDefinition],
     acquired: &[Option<Acquired>],
@@ -104,7 +108,7 @@ fn assemble_and_build(
         let Some(on_disk) = on_disk else { continue };
         held.push(definition.clone());
         if is_grid(definition) {
-            grids.push((definition.clone(), read_grid(definition, &on_disk.files)?));
+            grids.push((definition.clone(), on_disk.files.clone()));
         }
     }
     let inputs = Inputs {
