@@ -201,7 +201,7 @@ async fn the_cross_match_stage_reports_its_steps_and_counts_and_writes_its_ids_a
         "Z Step cross-match: matching: 6 entries into 5 objects, 2 candidate links\n",
         "Z cross-match: 6 entries, 5 objects, 1 merges, 2 candidate links, 5 new ids, 0 ids \
          replaced, 3 placed, 2 not placed (no distance), 0 member lists placed, 0 member lists \
-         shown as points\n",
+         not placed\n",
         "Z Stopped at cross-match: cross-match only; no release was asked for\n",
     ] {
         assert!(text.contains(line), "{line} in\n{text}");
@@ -360,5 +360,5 @@ fn a_member_that_resolves_to_no_object_or_an_unplaced_one_keeps_the_structure_a_
     ));
     assert!(matches!(why[3], ("SMC", MemberProblem::TooFar { arcsec, .. }) if *arcsec > 60.0));
     assert_eq!(placed.unresolved_and_unplaced(), (3, 1));
-    assert_eq!(count(&crossed.counts(), "member lists shown as points"), 1);
+    assert_eq!(count(&crossed.counts(), "member lists not placed"), 1);
 }

@@ -217,7 +217,7 @@ impl CrossMatched {
         let lists = self.structures.len() as u64;
         let whole = self.structures.iter().filter(|s| s.shape.is_some()).count() as u64;
         counts.push(Count::new(whole, "member lists placed"));
-        counts.push(Count::new(lists - whole, "member lists shown as points"));
+        counts.push(Count::new(lists - whole, "member lists not placed"));
         counts
     }
 }
