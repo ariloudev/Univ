@@ -74,6 +74,16 @@ pub enum Geometry {
         cell: f64,
         shape: [u32; 3],
     },
+    /// Some cells of a volume grid: a region of `grid` outlined on its cells, such as a void
+    /// where a density field falls below a threshold. The grid is laid out as for
+    /// [`Geometry::VolumeGrid`]; each cell is given by its indices along X, Y and Z of the frame.
+    GridRegion {
+        grid: String,
+        origin: Vec3,
+        cell: f64,
+        shape: [u32; 3],
+        cells: Vec<[u32; 3]>,
+    },
 }
 
 /// A solid of a simple form.
@@ -167,7 +177,12 @@ impl TryFrom<RawShape> for Shape {
 }
 
 impl Geometry {
-    fn check(&self) -> Result<(), GeometryError> {
+    /// Checks that the geometry can stand, whatever its frame and unit.
+    ///
+    /// # Errors
+    ///
+    /// Fails, naming the kind and what it needs, on a geometry that cannot stand.
+    pub fn check(&self) -> Result<(), GeometryError> {
         let (ok, kind, need) = match self {
             Self::Point { at } => (finite(at), "point", "finite coordinates"),
             Self::Ray {
@@ -225,6 +240,21 @@ impl Geometry {
                 finite(origin) && positive(*cell) && !shape.contains(&0),
                 "volume grid",
                 "a finite origin, a positive cell and shape",
+            ),
+            Self::GridRegion {
+                origin,
+                cell,
+                shape,
+                cells,
+                ..
+            } => (
+                finite(origin)
+                    && positive(*cell)
+                    && !shape.contains(&0)
+                    && !cells.is_empty()
+                    && cells.iter().all(|c| (0..3).all(|k| c[k] < shape[k])),
+                "grid region",
+                "a finite origin, a positive cell and shape, and one or more cells inside it",
             ),
         };
         if ok {
@@ -318,6 +348,20 @@ mod tests {
                     centre: [0.0; 3],
                     radius: -5.0,
                 },
+            },
+            Geometry::GridRegion {
+                grid: "g".into(),
+                origin: [0.0; 3],
+                cell: 1.0,
+                shape: [2, 2, 2],
+                cells: vec![[0, 2, 0]],
+            },
+            Geometry::GridRegion {
+                grid: "g".into(),
+                origin: [0.0; 3],
+                cell: 1.0,
+                shape: [2, 2, 2],
+                cells: vec![],
             },
             Geometry::Primitive {
                 primitive: Primitive::Ellipsoid {
