@@ -168,3 +168,15 @@ pub fn univ_ingest(command: &str, number: u32, out: &Path, state: &Path, persist
         .output()
         .unwrap()
 }
+
+/// Runs [`univ_ingest`], echoes its log, fails with it when the command fails, and gives it.
+pub fn run_ok(command: &str, number: u32, out: &Path, state: &Path, persist: &Path) -> String {
+    let run = univ_ingest(command, number, out, state, persist);
+    let log = String::from_utf8_lossy(&run.stderr).into_owned();
+    eprintln!("$ univ-ingest {command} {number}\n{log}");
+    assert!(
+        run.status.success(),
+        "univ-ingest {command} {number}:\n{log}"
+    );
+    log
+}

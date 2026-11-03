@@ -3,7 +3,7 @@
 
 use std::borrow::Cow;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::cosmology::AssumedCosmology;
 use crate::distance::Measure;
@@ -13,7 +13,8 @@ use crate::redshift::DipoleModel;
 use crate::value::Quantity;
 
 /// One transformation and its parameters.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "step")]
 pub enum Transformation {
     /// The distance as its source published it, and which distance that is.
@@ -65,6 +66,7 @@ pub enum Transformation {
     /// A distance kept as published, with the reason; it is not a comoving distance.
     KeptAsPublished {
         measure: Measure,
+        #[cfg_attr(feature = "openapi", schema(value_type = String))]
         reason: Cow<'static, str>,
     },
     /// A Euclidean distance taken as it is: the cosmological distances differ from it by about
@@ -81,10 +83,12 @@ pub enum Transformation {
 }
 
 /// A step of a chain: the transformation and its citation.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Step {
     #[serde(flatten)]
     pub transformation: Transformation,
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub citation: Cow<'static, str>,
 }
 

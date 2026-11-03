@@ -15,6 +15,7 @@ use crate::value::positive;
 /// A geometry in a named frame, its Cartesian coordinates in one length unit. Checked when built
 /// and when read.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "RawShape")]
 pub struct Shape {
     pub frame: Frame,
@@ -32,20 +33,25 @@ struct RawShape {
 
 /// The shape that places an object, structure or layer item. Meshes are not among them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "kind")]
 pub enum Geometry {
     Point {
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         at: Vec3,
     },
     /// A line of sight from `origin` along the unit vector `direction`, out to `reach`, the edge
     /// of the volume it is drawn in.
     Ray {
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         origin: Vec3,
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         direction: Vec3,
         reach: f64,
     },
     /// A unit `direction` whose distance is known only to lie between `near` and `far`.
     Range {
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         direction: Vec3,
         near: f64,
         far: f64,
@@ -55,6 +61,7 @@ pub enum Geometry {
     },
     /// A polyline through two or more points.
     Path {
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<Vec<f64>>))]
         points: Vec<Vec3>,
     },
     Members {
@@ -70,8 +77,10 @@ pub enum Geometry {
     /// A grid of `shape` cells of edge `cell` from the corner `origin`, axis-aligned in its frame.
     VolumeGrid {
         grid: String,
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         origin: Vec3,
         cell: f64,
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<u32>, min_items = 3, max_items = 3))]
         shape: [u32; 3],
     },
     /// Some cells of a volume grid: a region of `grid` outlined on its cells, such as a void
@@ -79,30 +88,39 @@ pub enum Geometry {
     /// [`Geometry::VolumeGrid`]; each cell is given by its indices along X, Y and Z of the frame.
     GridRegion {
         grid: String,
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         origin: Vec3,
         cell: f64,
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<u32>, min_items = 3, max_items = 3))]
         shape: [u32; 3],
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<Vec<u32>>))]
         cells: Vec<[u32; 3]>,
     },
 }
 
 /// A solid of a simple form.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "form")]
 pub enum Primitive {
     Sphere {
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         centre: Vec3,
         radius: f64,
     },
     /// Semi-axes along the columns of `orientation`, a rotation from the solid's axes to the frame.
     Ellipsoid {
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         centre: Vec3,
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         semi_axes: Vec3,
         orientation: Rotation,
     },
     /// Half-extents along the columns of `orientation`.
     OrientedBox {
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         centre: Vec3,
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
         half_extents: Vec3,
         orientation: Rotation,
     },
@@ -112,10 +130,19 @@ pub enum Primitive {
 /// member carries the position it was resolved to at ingest, in the shape's frame and unit, so a
 /// member list is bounded without looking its objects up.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "member")]
 pub enum Member {
-    Object { id: ObjectId, at: Vec3 },
-    Tracer { at: Vec3, kind: String },
+    Object {
+        id: ObjectId,
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
+        at: Vec3,
+    },
+    Tracer {
+        #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
+        at: Vec3,
+        kind: String,
+    },
 }
 
 /// A geometry that cannot stand.

@@ -18,7 +18,7 @@
 
 use serde::Serialize;
 use univ_model::cosmology::Cosmology;
-use univ_model::position::{Frame, Rotation, from_icrs};
+use univ_model::position::{BARYCENTRE, Frame, ICRS_CARTESIAN_NAME, Rotation, from_icrs};
 use univ_model::tile::{HEADER_BYTES, KINDS, MAX_TILE_BYTES, POINT_BYTES, STEPS, VERSION};
 use univ_model::value::KindOfValue;
 
@@ -67,8 +67,8 @@ pub struct FrameInfo {
 
 /// The frame every manifest names.
 pub const FRAME: FrameInfo = FrameInfo {
-    name: "ICRS equatorial Cartesian",
-    origin: "Solar System barycentre",
+    name: ICRS_CARTESIAN_NAME,
+    origin: BARYCENTRE,
     axes: "x toward (RA, Dec) = (0 deg, 0 deg), y toward (90 deg, 0 deg), z toward Dec = +90 deg",
     epoch: "each object's position at the epoch of its preferred sky position, not propagated",
 };

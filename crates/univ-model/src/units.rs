@@ -10,6 +10,7 @@ const PARSECS_PER_AU: f64 = 4.848_136_811_095_36e-6;
 
 /// A unit that a source publishes a value in, or that a value is normalized to.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Unit {
     Degree,

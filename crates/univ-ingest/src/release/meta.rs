@@ -11,14 +11,16 @@ use univ_model::release::keys;
 use univ_model::release::rows::{
     NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, StructureRow,
 };
+use univ_model::units::Unit;
 
 use super::objects::{json, snake};
+use super::outline::Outlined;
 use super::place::{centre, index_bounds};
 use crate::crossmatch::MemberPlacement;
 use crate::provenance::Provenance;
-use crate::source::{ScaleDomain, SourceDefinition};
+use crate::source::SourceDefinition;
 use crate::structures::Structure;
-use crate::tiles::{Built, name_of, unit_symbol};
+use crate::tiles::{Built, name_of, unit_of, unit_symbol};
 
 /// The rows of a release's sources and their provenance.
 #[derive(Debug, Default)]
@@ -94,7 +96,9 @@ pub type StructureBounds = (String, Result<Aabb, String>);
 /// The rows of the release's `structures`, each by its id, with its scale domain and centre and
 /// the member list `placements` resolved for it; and each structure's ICRS bounding box in Mpc
 /// under `release` and the run's dipole `correction`, the box its row records and the cell index
-/// holds (see [`super::place`]), or why it has none.
+/// holds (see [`super::place`]), or why it has none. A structure whose outline on a volume grid
+/// its test admitted, among `outlines` by its id, is bounded and centred by that outline
+/// ([`super::outline::Admitted`]).
 ///
 /// # Errors
 ///
@@ -103,6 +107,7 @@ pub fn structure_rows(
     release_number: u32,
     structures: &[(String, Structure)],
     placements: &[MemberPlacement],
+    outlines: &BTreeMap<String, Outlined>,
     release: &Release,
     correction: &CmbCorrection,
 ) -> Result<(Vec<StructureRow>, Vec<StructureBounds>), String> {
@@ -111,16 +116,19 @@ pub fn structure_rows(
     for (id, s) in structures {
         let placed = placements.iter().find(|p| p.structure == s.name);
         let shape = placed.and_then(|p| p.shape.as_ref());
-        let boxed = index_bounds(s, placed, release, correction);
-        // In the domain's unit: pc for stars, Mpc otherwise.
-        let per_mpc = if s.scale_domain == ScaleDomain::Stars {
-            1e6
-        } else {
-            1.0
+        let admitted = outlines.get(id).and_then(|o| o.admitted.as_ref());
+        let (boxed, at) = match admitted {
+            Some(a) => (Ok(a.bounds), Ok(a.centre())),
+            None => (
+                index_bounds(s, placed, release, correction),
+                centre(s, placed, release, correction),
+            ),
         };
-        let at = centre(s, placed, release, correction)
-            .ok()
-            .map(|c| c.map(|v| v * per_mpc));
+        // In the domain's unit: pc for stars, Mpc otherwise.
+        let per_mpc = Unit::Megaparsec
+            .factor_to(unit_of(s.scale_domain))
+            .map_err(|e| e.to_string())?;
+        let at = at.ok().map(|c| c.map(|v| v * per_mpc));
         rows.push(StructureRow {
             release: release_number,
             id: id.clone(),

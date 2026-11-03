@@ -61,7 +61,7 @@ pub struct OffGrid {
 pub fn dense_places<'a>(
     rule: &DensePlaces,
     objects: impl IntoIterator<Item = &'a Object>,
-    structures: &[Structure],
+    structures: impl IntoIterator<Item = &'a Structure>,
 ) -> Vec<DensePlace> {
     let mut places = Vec::new();
     for object in objects {

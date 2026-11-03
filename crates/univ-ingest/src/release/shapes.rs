@@ -1,34 +1,38 @@
-//! Each researched structure's placed geometry as a univ-model shape in the ICRS about the
-//! barycentre, in its scale domain's unit, beside the geometry its file gives, with how it was
-//! derived: the cited values used, the frames converted through and how its distance was found.
+//! Each researched structure's placed geometry as a univ-model shape about the barycentre, in its
+//! scale domain's unit, beside the geometry its file gives, with how it was derived: the cited
+//! values used, the frames converted through and how its distance was found.
 //!
 //! The shape is placed as [`super::place`] places the structure's centre and bounds, by the same
-//! functions: a member list whose members are all placed is its member list (`crate::crossmatch`);
-//! one whose members are not is its published position, as is a structure with a position
-//! alone; a sphere is its placed centre and its radius rescaled to the release cosmology; a sky
-//! region is its `HEALPix` cells ([`super::sky::box_cells`]) between its near and far distances.
+//! functions, in the ICRS: a member list whose members are all placed is its member list
+//! (`crate::crossmatch`); one whose members are not is its published position, as is a structure
+//! with a position alone; a sphere is its placed centre and its radius rescaled to the release
+//! cosmology; a sky region is its `HEALPix` cells ([`super::sky::box_cells`]) between its near and
+//! far distances. An outline its grid test admitted is placed instead as its region, in the
+//! grid's frame ([`super::outline`]).
+//!
+//! A frame move is cited as an object's derivation cites it: univ-model's chain steps.
 
-use serde_json::{Value as Json, json};
-use univ_model::derive::Release;
+use univ_model::api::structures::{Derivation, DistanceDerivation};
+use univ_model::derive::{Release, Step, Transformation};
 use univ_model::geometry::{Geometry, Member, Primitive, Shape};
 use univ_model::position::{Frame, Vec3};
-use univ_model::redshift::RedshiftFrame;
+use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::{Dimension, Unit};
 
 use super::objects::snake;
-use super::place::{assumed, length, place, radial};
+use super::place::{assumed, place, radial, sphere_radius};
 use super::pointers::{self, Pointed};
 use super::sky::{REGION_ORDER, box_cells};
 use crate::crossmatch::MemberPlacement;
 use crate::source::ScaleDomain;
-use crate::structures::{Coordinates, Members, Radial, SphereSize, Structure, StructureGeometry};
-use univ_model::redshift::CmbCorrection;
+use crate::structures::{Coordinates, Members, Radial, Structure, StructureGeometry};
+use crate::tiles::unit_of;
 
-/// A structure's shape as placed, and the JSON of its derivation.
+/// A structure's shape as placed, and its derivation.
 #[derive(Clone, Debug, PartialEq)]
 pub struct PlacedShape {
     pub shape: Shape,
-    pub derivation: Json,
+    pub derivation: Derivation,
 }
 
 /// What a structure is placed under: the release, the run's dipole correction and its name.
@@ -39,29 +43,25 @@ pub struct Placing<'a> {
     pub dipole: String,
 }
 
-/// The frames a position in `frame` is converted through to the ICRS.
+/// The steps that move a position in `frame` to the ICRS, as an object's chain gives them: an
+/// unstated equinox first taken as J2000, then the move to the ICRS; none from the ICRS.
 #[must_use]
-pub fn frame_chain(frame: Option<Frame>) -> Vec<String> {
-    let to_icrs = "fk5_j2000 -> icrs".to_owned();
-    match frame {
-        None | Some(Frame::Icrs) => vec![],
-        Some(Frame::Fk5J2000) => vec![to_icrs],
-        Some(Frame::Fk4B1950) => vec![
-            "fk4_b1950 -> fk5_j2000 (E-terms of aberration removed, as ERFA fk45z, zero proper \
-             motion)"
-                .to_owned(),
-            to_icrs,
-        ],
-        Some(Frame::EquatorialEquinoxUnstated) => vec![
-            "equatorial_equinox_unstated -> fk5_j2000 (the equinox read as J2000; the bounds \
-             grow by the B1950 to J2000 angle)"
-                .to_owned(),
-            to_icrs,
-        ],
-        Some(Frame::Galactic) => vec!["galactic -> icrs (Hipparcos, ESA 1997)".to_owned()],
-        Some(Frame::Supergalactic) => {
-            vec!["supergalactic -> icrs (Lahav et al. 2000 pole and origin)".to_owned()]
-        }
+pub fn frame_chain(frame: Option<Frame>) -> Vec<Step> {
+    let Some(frame) = frame.filter(|f| *f != Frame::Icrs) else {
+        return Vec::new();
+    };
+    let mut chain = Vec::with_capacity(2);
+    if let Some(systematic_degrees) = frame.systematic_uncertainty() {
+        chain.push(Transformation::EquinoxAssumedJ2000 { systematic_degrees }.into());
+    }
+    chain.push(Transformation::ToIcrs { from: frame }.into());
+    chain
+}
+
+fn distance(from: impl Into<String>, method: impl Into<String>) -> DistanceDerivation {
+    DistanceDerivation {
+        from: from.into(),
+        method: method.into(),
     }
 }
 
@@ -78,75 +78,97 @@ fn length_method(c: &crate::structures::Cited) -> String {
 }
 
 /// How a published radial value becomes a distance, `frame` the redshift frame its paper gives.
-fn radial_distance(r: &Radial, frame: Option<RedshiftFrame>, dipole: &str) -> Json {
+fn radial_distance(r: &Radial, frame: Option<RedshiftFrame>, dipole: &str) -> DistanceDerivation {
     let (what, z) = match r {
         Radial::Redshift(_) => ("redshift", "the redshift"),
         Radial::Velocity(_) => ("velocity cz", "the redshift z = cz / c"),
-        Radial::Distance(c) => {
-            return json!({"from": "the published distance", "method": length_method(c)});
-        }
+        Radial::Distance(c) => return distance("the published distance", length_method(c)),
     };
     if frame == Some(RedshiftFrame::Heliocentric) {
-        return json!({
-            "from": format!("the heliocentric {what} as published"),
-            "method": format!(
+        return distance(
+            format!("the heliocentric {what} as published"),
+            format!(
                 "comoving distance of the CMB-frame redshift, {z} moved from heliocentric with \
                  the {dipole} dipole toward the published direction, under the release cosmology"
             ),
-        });
+        );
     }
     let frame = frame.map_or_else(|| "its frame not stated".to_owned(), |f| snake(&f));
-    json!({
-        "from": format!("the {what} as published ({frame})"),
-        "method": format!(
+    distance(
+        format!("the {what} as published ({frame})"),
+        format!(
             "comoving distance of {z}, taken as published and not moved, under the release \
              cosmology"
         ),
-    })
+    )
 }
 
 /// How a published position's distance was found.
-fn coordinates_distance(at: &Coordinates, dipole: &str) -> Json {
+fn coordinates_distance(at: &Coordinates, dipole: &str) -> DistanceDerivation {
     match at {
-        Coordinates::Observer => json!({"from": "the observer", "method": "the origin"}),
-        Coordinates::Cartesian { x, .. } if x.unit().dimension() == Dimension::Velocity => json!({
-            "from": "the published Cartesian velocities",
-            "method": "comoving distance of the redshift v / c of their magnitude, taken as \
-                       published, under the release cosmology, along their direction",
-        }),
-        Coordinates::Cartesian { x, .. } => json!({
-            "from": "the published Cartesian lengths",
-            "method": length_method(x),
-        }),
+        Coordinates::Observer => distance("the observer", "the origin"),
+        Coordinates::Cartesian { x, .. } if x.unit().dimension() == Dimension::Velocity => {
+            distance(
+                "the published Cartesian velocities",
+                "comoving distance of the redshift v / c of their magnitude, taken as published, \
+             under the release cosmology, along their direction",
+            )
+        }
+        Coordinates::Cartesian { x, .. } => {
+            distance("the published Cartesian lengths", length_method(x))
+        }
         Coordinates::Spherical {
             radial: r,
             redshift_frame,
             ..
         } => r.as_ref().map_or_else(
-            || json!({"from": "none", "method": "the position gives no distance"}),
+            || distance("none", "the position gives no distance"),
             |r| radial_distance(r, *redshift_frame, dipole),
         ),
     }
 }
 
-fn derivation(from: &[Pointed<'_>], chain: &[String], distance: &Json) -> Json {
-    let from: Vec<&str> = from.iter().map(|(p, _)| p.as_str()).collect();
-    json!({"from": from, "frame_chain": chain, "distance": distance, "cosmology": "release"})
+/// A derivation under the release cosmology.
+pub(super) fn derivation(
+    from: Vec<String>,
+    frame_chain: Vec<Step>,
+    distance: DistanceDerivation,
+) -> Derivation {
+    Derivation {
+        from,
+        frame_chain,
+        distance,
+        cosmology: "release".to_owned(),
+        grid: None,
+    }
+}
+
+fn pointed(from: &[Pointed<'_>]) -> Vec<String> {
+    from.iter().map(|(p, _)| p.clone()).collect()
 }
 
 /// A published position as a point, with its derivation.
-fn point(s: &Structure, at: &Coordinates, p: &Placing<'_>) -> Result<(Geometry, Json), String> {
+fn point(
+    s: &Structure,
+    at: &Coordinates,
+    p: &Placing<'_>,
+) -> Result<(Geometry, Derivation), String> {
     let (centre, _) = place(at, p.release, p.correction)?;
     let derived = derivation(
-        &pointers::position(s),
-        &frame_chain(at.frame()),
-        &coordinates_distance(at, &p.dipole),
+        pointed(&pointers::position(s)),
+        frame_chain(at.frame()),
+        coordinates_distance(at, &p.dipole),
     );
     Ok((Geometry::Point { at: centre }, derived))
 }
 
 /// A member list placed whole, with its derivation.
-fn members(m: &Members, placed: &MemberPlacement, shape: &Shape, dipole: &str) -> (Geometry, Json) {
+fn members(
+    m: &Members,
+    placed: &MemberPlacement,
+    shape: &Shape,
+    dipole: &str,
+) -> (Geometry, Derivation) {
     let mut from = vec!["/geometry/Members".to_owned()];
     for key in crate::crossmatch::STRUCTURE_REDSHIFTS {
         let named = format!("the structure's value {key}");
@@ -154,20 +176,19 @@ fn members(m: &Members, placed: &MemberPlacement, shape: &Shape, dipole: &str) -
             from.push(pointers::value(key));
         }
     }
-    let derived = json!({
-        "from": from,
-        "frame_chain": frame_chain(Some(m.frame)),
-        "distance": {
-            "from": "each member's matched object, or, for a member no object carries, its own \
-                     sky position and redshift in the structure file",
-            "method": format!(
-                "a matched member at its object's derived position; any other member a tracer \
-                 at the comoving distance of its redshift, taken as heliocentric and moved to \
-                 the CMB frame with the {dipole} dipole toward it, under the release cosmology"
+    let derived = derivation(
+        from,
+        frame_chain(Some(m.frame)),
+        distance(
+            "each member's matched object, or, for a member no object carries, its own sky \
+             position and redshift in the structure file",
+            format!(
+                "a matched member at its object's derived position; any other member a tracer at \
+                 the comoving distance of its redshift, taken as heliocentric and moved to the CMB \
+                 frame with the {dipole} dipole toward it, under the release cosmology"
             ),
-        },
-        "cosmology": "release",
-    });
+        ),
+    );
     (shape.geometry.clone(), derived)
 }
 
@@ -207,12 +228,45 @@ fn in_units(geometry: Geometry, per_mpc: f64) -> Geometry {
             near: near * per_mpc,
             far: far * per_mpc,
         },
+        Geometry::GridRegion {
+            grid,
+            origin,
+            cell,
+            shape,
+            cells,
+        } => Geometry::GridRegion {
+            grid,
+            origin: s(origin),
+            cell: cell * per_mpc,
+            shape,
+            cells,
+        },
         other => other,
     }
 }
 
-/// The shape of `s` as placed under `p`, its member list `placed` where it has one, and its
-/// derivation; or why it cannot be placed, as [`super::index_bounds`] says.
+/// `geometry`, placed in Mpc in `frame`, as a shape in the unit of `domain`
+/// (`crate::tiles::unit_of`).
+///
+/// # Errors
+///
+/// Fails when the shape cannot stand.
+pub(super) fn in_domain(
+    frame: Frame,
+    geometry: Geometry,
+    domain: ScaleDomain,
+) -> Result<Shape, String> {
+    let unit = unit_of(domain);
+    let per_mpc = Unit::Megaparsec
+        .factor_to(unit)
+        .map_err(|e| e.to_string())?;
+    Shape::new(frame, unit, in_units(geometry, per_mpc))
+        .map_err(|e| format!("its shape cannot stand: {e}"))
+}
+
+/// The shape of `s` as placed under `p` from the geometry its file gives, its member list
+/// `placed` where it has one, and its derivation; or why it cannot be placed, as
+/// [`super::index_bounds`] says.
 ///
 /// # Errors
 ///
@@ -231,23 +285,20 @@ pub fn placed_shape(
             },
             None => return Err("its member list was not resolved".to_owned()),
         },
-        Some(StructureGeometry::Primitive(sphere)) => {
+        Some(g @ StructureGeometry::Primitive(sphere)) => {
             let (centre, _) = place(&sphere.centre, p.release, p.correction)?;
-            let radius = match &sphere.size {
-                SphereSize::Radius(r) => length(r, p.release)?,
-                SphereSize::Diameter(d) => length(d, p.release)? / 2.0,
-            };
+            let radius = sphere_radius(sphere, p.release)?;
             let geometry = Geometry::Primitive {
                 primitive: Primitive::Sphere { centre, radius },
             };
-            let from = pointers::geometry(s.geometry.as_ref().ok_or_else(no_position)?);
-            let distance = coordinates_distance(&sphere.centre, &p.dipole);
-            (
-                geometry,
-                derivation(&from, &frame_chain(sphere.centre.frame()), &distance),
-            )
+            let derived = derivation(
+                pointed(&pointers::geometry(g)),
+                frame_chain(sphere.centre.frame()),
+                coordinates_distance(&sphere.centre, &p.dipole),
+            );
+            (geometry, derived)
         }
-        Some(StructureGeometry::SkyRegion(b)) => {
+        Some(g @ StructureGeometry::SkyRegion(b)) => {
             let (near, far) = (radial(&b.near, p.release)?, radial(&b.far, p.release)?);
             let geometry = Geometry::SkyRegion {
                 order: REGION_ORDER,
@@ -255,32 +306,23 @@ pub fn placed_shape(
                 near: near.min(far),
                 far: near.max(far),
             };
-            let from = pointers::geometry(s.geometry.as_ref().ok_or_else(no_position)?);
-            let near = radial_distance(&b.near, None, &p.dipole);
-            let distance = json!({
-                "from": format!(
-                    "the published near and far bounds, each {}",
-                    near["from"].as_str().unwrap_or_default()
+            let bound = radial_distance(&b.near, None, &p.dipole);
+            let derived = derivation(
+                pointed(&pointers::geometry(g)),
+                frame_chain(Some(b.frame)),
+                distance(
+                    format!("the published near and far bounds, each {}", bound.from),
+                    format!(
+                        "{}, for each bound; the cells of HEALPix order {REGION_ORDER} whose \
+                         centres fall in the published longitude and latitude box",
+                        bound.method
+                    ),
                 ),
-                "method": format!(
-                    "{}, for each bound; the cells of HEALPix order {REGION_ORDER} whose centres \
-                     fall in the published longitude and latitude box",
-                    near["method"].as_str().unwrap_or_default()
-                ),
-            });
-            (
-                geometry,
-                derivation(&from, &frame_chain(Some(b.frame)), &distance),
-            )
+            );
+            (geometry, derived)
         }
         None => point(s, s.position.as_ref().ok_or_else(no_position)?, p)?,
     };
-    let (unit, per_mpc) = if s.scale_domain == ScaleDomain::Stars {
-        (Unit::Parsec, 1e6)
-    } else {
-        (Unit::Megaparsec, 1.0)
-    };
-    let shape = Shape::new(Frame::Icrs, unit, in_units(geometry, per_mpc))
-        .map_err(|e| format!("its shape cannot stand: {e}"))?;
+    let shape = in_domain(Frame::Icrs, geometry, s.scale_domain)?;
     Ok(PlacedShape { shape, derivation })
 }

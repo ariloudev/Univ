@@ -13,16 +13,15 @@
 //!   its distance at any redshift; otherwise, or without a redshift, by the ratio of Hubble
 //!   constants.
 
-use serde_json::{Value as Json, json};
+use univ_model::api::structures::{Length, NativeLength, RescaledLength, RescalingMethod};
+use univ_model::cosmology::AssumedCosmology;
 use univ_model::derive::{Release, Rescaling};
-use univ_model::units::Unit;
+use univ_model::units::{Dimension, Unit};
 
-use super::objects::snake;
 use super::place::assumed;
-use super::pointers::{self, Pointed};
+use super::pointers;
 use crate::crossmatch::STRUCTURE_REDSHIFTS;
 use crate::structures::{Cited, Structure};
-use univ_model::units::Dimension;
 
 /// Whether `unit` measures a length, plain or in h⁻¹ Mpc.
 fn is_length(unit: Unit) -> bool {
@@ -41,73 +40,74 @@ fn redshift(s: &Structure) -> Option<f64> {
     })
 }
 
-/// One rescaled length's item.
+/// The item of the length `c` at `pointer`, published for `a` and rescaled by `rescaling`.
 fn item(
     pointer: &str,
     c: &Cited,
-    rescaling: Result<Rescaling, String>,
-) -> Result<Option<Json>, String> {
-    let Some(a) = assumed(c) else {
-        return Ok(None);
-    };
-    let rescaling = rescaling?;
+    a: AssumedCosmology,
+    rescaling: &Rescaling,
+) -> Result<RescaledLength, String> {
     let r = rescaling
         .apply(&c.quantity)
         .map_err(|e| format!("{pointer} cannot be rescaled: {e}"))?;
-    let method = if rescaling.redshift.is_some() {
-        "comoving_ratio"
-    } else {
-        "hubble_ratio"
-    };
-    Ok(Some(json!({
-        "value": pointer,
-        "native": {
-            "value": r.native.value,
-            "unit": snake(&r.native.unit),
-            "hubble_constant": a.hubble_constant,
-            "assumed": c.assumes,
+    let stated = c
+        .assumes
+        .as_ref()
+        .map(serde_json::to_value)
+        .transpose()
+        .map_err(|e| format!("{pointer}: its cosmology cannot be written as JSON: {e}"))?;
+    Ok(RescaledLength {
+        value: pointer.to_owned(),
+        native: NativeLength {
+            value: r.native.value,
+            unit: r.native.unit,
+            hubble_constant: a.hubble_constant,
+            assumed: stated,
         },
-        "rescaled": {"value": r.rescaled.value, "unit": snake(&r.rescaled.unit)},
-        "factor": r.factor,
-        "method": method,
-        "redshift": rescaling.redshift,
-    })))
+        rescaled: Length {
+            value: r.rescaled.value,
+            unit: r.rescaled.unit,
+        },
+        factor: r.factor,
+        method: if rescaling.redshift.is_some() {
+            RescalingMethod::ComovingRatio
+        } else {
+            RescalingMethod::HubbleRatio
+        },
+        redshift: rescaling.redshift,
+    })
 }
 
 /// The structure's lengths published under another cosmology, each as published and rescaled to
-/// `release`'s; none when it has none.
+/// `release`'s; empty when it has none.
 ///
 /// # Errors
 ///
 /// Fails when a length's cosmology cannot stand or it cannot be rescaled.
-pub fn rescaled(s: &Structure, release: &Release) -> Result<Option<Json>, String> {
-    let mut placing: Vec<Pointed<'_>> = pointers::position(s);
-    if let Some(g) = &s.geometry {
-        placing.extend(pointers::geometry(g));
-    }
-    placing.retain(|(_, c)| is_length(c.unit()));
-    let mut items = Vec::new();
-    for (pointer, c) in placing {
-        let rule = assumed(c).map(|a| release.hubble_rescaling(a).map_err(|e| e.to_string()));
-        if let Some(rule) = rule {
-            items.extend(item(&pointer, c, rule)?);
-        }
-    }
+pub fn rescaled(s: &Structure, release: &Release) -> Result<Vec<RescaledLength>, String> {
+    // Each length with the redshift its rule rescales at: none, the ratio of Hubble constants,
+    // for those that place the structure; its cited redshift for its other values.
+    let mut lengths: Vec<(String, &Cited, Option<f64>)> = pointers::position(s)
+        .into_iter()
+        .chain(s.geometry.iter().flat_map(pointers::geometry))
+        .map(|(pointer, c)| (pointer, c, None))
+        .collect();
     let z = redshift(s);
-    for (name, c) in &s.values {
-        if !is_length(c.unit()) {
-            continue;
-        }
-        let Some(a) = assumed(c) else { continue };
-        let rule = match z {
-            Some(z) => release.rescaling_at(a, z),
-            None => release.hubble_rescaling(a),
-        };
-        items.extend(item(
-            &pointers::value(name),
-            c,
-            rule.map_err(|e| e.to_string()),
-        )?);
-    }
-    Ok((!items.is_empty()).then_some(Json::Array(items)))
+    lengths.extend(
+        s.values
+            .iter()
+            .map(|(name, c)| (pointers::value(name), c, z)),
+    );
+    lengths
+        .into_iter()
+        .filter(|(_, c, _)| is_length(c.unit()))
+        .filter_map(|(pointer, c, at)| Some((pointer, c, assumed(c)?, at)))
+        .map(|(pointer, c, a, at)| {
+            let rule = match at {
+                Some(z) => release.rescaling_at(a, z),
+                None => release.hubble_rescaling(a),
+            };
+            item(&pointer, c, a, &rule.map_err(|e| e.to_string())?)
+        })
+        .collect()
 }

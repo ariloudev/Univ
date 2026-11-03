@@ -12,6 +12,8 @@ mod release_fixture;
 use release_fixture::{build_next, fixture};
 use rusqlite::Connection;
 use serde_json::Value;
+use univ_model::api::sources::{RadialRange, SkyFootprint};
+use univ_model::api::structures::{Derivation, OutlineRecord, RescaledLength};
 use univ_model::geometry::Shape;
 use univ_model::release::manifest::Target;
 
@@ -27,6 +29,11 @@ fn loaded(dir: &std::path::Path, m: &univ_model::release::ReleaseManifest) -> Co
 
 fn json(text: Option<String>) -> Option<Value> {
     text.map(|t| serde_json::from_str(&t).unwrap())
+}
+
+/// A JSON column read as univ-model's typed contract for it, which it must be.
+fn typed<T: serde::de::DeserializeOwned>(column: Option<&Value>) -> Option<T> {
+    column.map(|v| serde_json::from_value(v.clone()).unwrap())
 }
 
 /// A source's id, bibcode, DOI, reference note, sky and radial columns.
@@ -76,6 +83,10 @@ fn the_fixture_release_records_each_sources_reference_and_coverage() {
             assert!(note.is_some() && sky.is_none() && radial.is_none());
             continue;
         }
+        let footprint: SkyFootprint = typed(sky.as_ref()).unwrap();
+        assert_eq!(footprint.order, 5, "{id}");
+        let ranges: Vec<RadialRange> = typed(radial.as_ref()).unwrap();
+        assert!(!ranges.is_empty(), "{id}");
         let sky = sky.as_ref().unwrap();
         assert_eq!(sky["order"], 5, "{id}");
         let cells = sky["cells"].as_array().unwrap();
@@ -112,6 +123,9 @@ fn the_fixture_release_records_each_structures_shape_outline_and_rescaled_length
         let derivation = json(r.get(4).unwrap());
         let outline = json(r.get(5).unwrap());
         let rescaled = json(r.get(6).unwrap());
+        let _: Option<Derivation> = typed(derivation.as_ref());
+        let _: Option<OutlineRecord> = typed(outline.as_ref());
+        let _: Option<Vec<RescaledLength>> = typed(rescaled.as_ref());
         // A structure with a centre has a shape, which univ-model reads back and checks.
         assert_eq!(centre.is_some(), shape.is_some(), "{id}");
         if let Some(shape) = shape {

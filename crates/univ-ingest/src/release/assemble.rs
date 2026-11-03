@@ -6,8 +6,8 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use serde_json::Value as Json;
 use univ_model::derive::{MODEL_VERSION, Release};
+use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
 use univ_model::redshift::CmbCorrection;
 use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
@@ -22,6 +22,7 @@ use super::d1::{D1Writer, PartSink};
 use super::entries::Numbering;
 use super::files::DirSink;
 use super::objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
+use super::outline::Outlined;
 use super::terms::{SourceIndex, Terms};
 use super::{
     CellRows, Inputs, Placing, StructureBounds, cell_rows, coverages, domain_rows, grid_files,
@@ -199,6 +200,7 @@ fn write_structures(
         number,
         &crossed.basis.structures,
         &crossed.structures,
+        &grids.outlines,
         release,
         &correction,
     )?;
@@ -222,7 +224,7 @@ fn write_structures(
 /// on one of them, by its id.
 struct WrittenGrids {
     rows: Vec<GridRow>,
-    outlines: BTreeMap<String, Json>,
+    outlines: BTreeMap<String, Outlined>,
 }
 
 /// Writes each volume grid's files, one grid at a time: read, written, its structures outlined
@@ -249,7 +251,8 @@ fn write_grids(
             &grid,
             &crossed.basis.structures,
             &crossed.objects,
-        ));
+            release,
+        )?);
         drop(grid);
         for (path, bytes) in &g.files {
             sink.put(path.clone(), bytes)?;
@@ -411,7 +414,7 @@ fn cell_index(cells: &CellRows) -> CellIndex {
                  * 2^level)); objects at level 0 of their scale domain, structures at the \
                  finest level their box meets at most structure_span cells a side"
             .to_owned(),
-        frame: "ICRS equatorial Cartesian, origin the Solar System barycentre".to_owned(),
+        frame: format!("{ICRS_CARTESIAN_NAME}, origin the {BARYCENTRE}"),
         spaces: SPACES
             .iter()
             .map(|s| CellSpaceInfo {

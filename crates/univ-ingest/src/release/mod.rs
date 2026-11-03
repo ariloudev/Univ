@@ -52,7 +52,7 @@ pub use check::{
     STRUCTURE_CITATIONS, Subject, TILE_OBJECTS, check_all, decimal_bytes, provisional, table_sizes,
 };
 pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
-pub use coverage::{Coverage, coverages, distance_unit, source_detail_rows};
+pub use coverage::{Coverage, coverages, source_detail_rows};
 pub use d1::{D1Writer, D1Written, InMemory, MAX_FILE_BYTES, PartSink, content_sha256};
 pub use details::structure_detail_rows;
 pub use files::{
@@ -61,7 +61,7 @@ pub use files::{
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
 pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
 pub use objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
-pub use outline::{not_drawn, outlines_on, result_json};
+pub use outline::{Admitted, Outlined, admitted, not_drawn, outlines_on, result_record};
 pub use place::{centre, index_bounds, sky_region};
 pub use rescaled::rescaled;
 pub use shapes::{PlacedShape, Placing, frame_chain, placed_shape};

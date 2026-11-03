@@ -56,6 +56,7 @@ pub enum Method {
 /// distance of a flat universe; a later stage converts each to the comoving distance with the
 /// release cosmology.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Measure {
     /// A luminosity distance: every distance derived from a distance modulus is one.

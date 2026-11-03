@@ -9,6 +9,9 @@
 //! - **Sky regions** are bounded by the region itself, the directions of their longitude and
 //!   latitude ranges between the near and far distances, rather than by the sphere of the far
 //!   distance; [`sky_region`] gives how.
+//! - **Outlines** a structure's grid test admitted are bounded by their region's cells instead,
+//!   moved to the ICRS ([`super::outline::Admitted`]); the functions here bound the geometry its
+//!   file gives, which places every other structure.
 //!
 //! # Placing a published position
 //!
@@ -38,6 +41,7 @@ use univ_model::value::{Quantity, Uncertainty};
 use crate::crossmatch::MemberPlacement;
 use crate::structures::{
     Cited, Coordinates, Radial, SkyBox, SphereSize, Structure, StructureGeometry,
+    StructurePrimitive,
 };
 
 /// The samples along each side of a sky region's longitude and latitude ranges.
@@ -78,11 +82,7 @@ pub fn index_bounds(
         },
         Some(StructureGeometry::Primitive(p)) => {
             let (centre, margin) = place(&p.centre, release, correction)?;
-            let radius = match &p.size {
-                SphereSize::Radius(r) => length(r, release)?,
-                SphereSize::Diameter(d) => length(d, release)? / 2.0,
-            };
-            Ok(centred(centre, radius + margin))
+            Ok(centred(centre, sphere_radius(p, release)? + margin))
         }
         Some(StructureGeometry::SkyRegion(b)) => sky_region(b, release),
         None => match &structure.position {
@@ -201,6 +201,15 @@ pub(super) fn length(c: &Cited, release: &Release) -> Result<f64, String> {
         .to(Unit::Megaparsec)
         .map(|q| q.value)
         .map_err(|e| e.to_string())
+}
+
+/// A sphere's radius in Mpc of the release cosmology: its published radius, or half its
+/// published diameter.
+pub(super) fn sphere_radius(sphere: &StructurePrimitive, release: &Release) -> Result<f64, String> {
+    match &sphere.size {
+        SphereSize::Radius(r) => length(r, release),
+        SphereSize::Diameter(d) => Ok(length(d, release)? / 2.0),
+    }
 }
 
 /// The CMB-frame redshift of a heliocentric redshift or velocity `r` toward the ICRS unit

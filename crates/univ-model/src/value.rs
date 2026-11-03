@@ -18,6 +18,7 @@ pub enum KindOfValue {
 
 /// The uncertainty of a value, in the form its source published it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "form")]
 pub enum Uncertainty {
     /// The source published no uncertainty: not the same as an uncertainty of zero.
@@ -127,6 +128,7 @@ pub fn positive(x: f64) -> bool {
 
 /// A number with its unit and uncertainty.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "RawQuantity")]
 pub struct Quantity {
     pub value: f64,
