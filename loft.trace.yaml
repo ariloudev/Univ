@@ -600,12 +600,48 @@ links:
       - file: "crates/univ-ingest/tests/ranking_order.rs"
         name: "m81_keeps_its_cepheid_distance_whatever_its_redshift_s_error"
         body: 5df5dbd50e769a1ea6e27123a9ba7007de15594cddd89c8f9f05312f109467ed
+  - node: 01a1a24c-8649-746c-8af0-2d33ff182c93
+    reviewed: 9bc5e677e806ebf96672d31f0a313519b5f2f505a0a37274dae7978511c65598
+    tests:
+      - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
+        name: "a_measured_6dfgs_redshift_beats_a_2mpp_clone"
+        body: 4b1b95d0b9c44b2b6eb01ef6c137fe957c0ab178830331d5d36cf58b0a3bff4d
+  - node: 01a1a24c-8649-746c-8af0-2d346e01f5b4
+    reviewed: 483bbc4d65356fa43aab343025a2da3b08e79aca86c76a14891357227db31819
+    tests:
+      - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
+        name: "eso_460_g001_is_placed_by_2mrs_s_redshift_with_the_smaller_velocity_error"
+        body: 24b76c7c125c8c79db471aa3e01831a8741de42867077006a84f526e8fac1816
+      - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
+        name: "of_two_measured_redshifts_the_smaller_velocity_error_wins"
+        body: 43b16df3d0f473a08cee4cc3cb40f3c6e6161289b13dcfa9f6465b7cf300cd0f
+  - node: 01a1a24c-8649-746c-8af0-2d359227b0b4
+    reviewed: 1f7ce2c92458cd1bf734594fc7f118f56b8892a8cbe6b187e7cb1b471232cabc
+    tests:
+      - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
+        name: "a_redshift_without_a_velocity_error_ranks_after_one_with_one_and_is_given_none"
+        body: ac2d5dc22c08829b7a620f8888be710ed6df0c32369d0201aef26bf7ff266987
+  - node: 01a1a24c-8649-746c-8af0-2d36092547c6
+    reviewed: add68b3894ff7ae765dc2de88433bbf81ea826c1d23cec18c990111ac15c2f55
+    tests:
+      - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
+        name: "redshifts_alike_in_kind_and_error_rank_by_method_then_source_order"
+        body: 97889cabd9829a5031cf12a41c7d7827461aa19cc892fd0010fd3123692194d6
+  - node: 01a1a24c-8649-746c-8af0-2d37ff3d9739
+    reviewed: 3b3804f7e5c1697e37a696f3ccb92ef9b41c287bef76140112f45d7345a418f0
+    tests:
+      - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
+        name: "only_the_leading_redshift_competes_with_an_indicator_distance"
+        body: 81716a682a4fd788c6ff34ba9834e7dbaa9816eebb6f441e448ff86a212d7e55
   - node: 01a1a147-6018-75e1-9409-3f77617e6ee1
-    reviewed: 4c475f61ca5d25014ab78fb1bce670d32840343cc6394a6d3922d7088bc2ad66
+    reviewed: 6a4f68736d464e6407d8c4e5ee9bf6aca2d51f820831655941c3978b155f92ce
     tests:
       - file: "crates/univ-ingest/tests/ranking_order.rs"
         name: "a_redshift_above_the_threshold_is_set_aside_for_an_indicator_distance"
-        body: b74ccdff476ac146012dc72118d2d2d063e8ede3fa4c84880ed609e9c30a0371
+        body: b77d9f515843bc8b2eecb325d1a2b8226f3833ac172bf7688c9a2136bf3233f5
+      - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
+        name: "only_the_leading_redshift_competes_with_an_indicator_distance"
+        body: 81716a682a4fd788c6ff34ba9834e7dbaa9816eebb6f441e448ff86a212d7e55
   - node: 01a1a147-6018-75e1-9409-3f788275d038
     reviewed: 8449297d3d58af667a318db84f0c0521f00a4ffb9f5f53171ebece5c2848d34e
     tests:
@@ -614,7 +650,7 @@ links:
         body: 1cc2ae32378d15857dd57babaeafe6667f335057a7a32bdc35a42afca24793e1
       - file: "crates/univ-ingest/tests/ranking_order.rs"
         name: "a_redshift_above_the_threshold_is_set_aside_for_an_indicator_distance"
-        body: b74ccdff476ac146012dc72118d2d2d063e8ede3fa4c84880ed609e9c30a0371
+        body: b77d9f515843bc8b2eecb325d1a2b8226f3833ac172bf7688c9a2136bf3233f5
   - node: 01a19f23-636e-7035-8185-ab9ac704109a
     reviewed: 7389e1121c9ac1b5c1a533b7a13f1cc4cac71c296739634ec22b1acece13860b
     tests:
@@ -670,7 +706,7 @@ links:
         name: "the_too_uncertain_limit_is_the_rule_s_parameter_recorded_for_the_manifest"
         body: 796f89e8d63037295e1827169b6d0cc3c899972fed62cb5f627b2e948bd523b3
   - node: 01a19f23-636e-7035-8185-ab9ce127e733
-    reviewed: 4f5618f1d9160ff9a9d4666d5dff796aed41192ad98a6878b53524fd71eee765
+    reviewed: bc307d88639a7cbd0124dffbfa10d98f3b63815b96991d5d37802f97d8ac3ac6
     tests:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "the_object_names_its_preferred_measurement_and_the_uncertainty_that_made_it_win"
@@ -684,6 +720,9 @@ links:
       - file: "crates/univ-ingest/tests/ranking_order.rs"
         name: "the_source_order_is_recorded_only_where_the_sources_differ"
         body: fc3adfbdb7710875a0897b4899707b32db2273e4e8daa1406d8b7adc310405d3
+      - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
+        name: "the_object_names_kind_of_value_or_velocity_uncertainty_as_what_decided"
+        body: 1cbaedef77b98b358a66b954701a31dc19645237fe7a5d5dfacd92dd2c44616c
   - node: 01a19f23-636e-7035-8185-ab9e42fa2c14
     reviewed: baabbb6804f2c1935a4addc4630563ce9e8223de199ffaf6a0ed1d09f192362f
     tests:
@@ -920,7 +959,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "a_release_records_its_number_build_time_cosmology_versions_and_rules"
-        body: f1257dfe921d48a7b09b0ce1127b9466167651b43923a2ff725e6ee405e3f29b
+        body: bca919360ca985a72b2539638c286d04a9c75022e89c0cfcb6f8ab2fee55a9aa
       - file: "crates/univ-ingest/tests/release.rs"
         name: "the_release_number_increments_and_the_pending_state_becomes_the_state"
         body: 188a4a1913fc3a4a51e456038de0c20988a7aaa213516847356653ad6922cdfe
@@ -929,7 +968,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "a_release_records_its_number_build_time_cosmology_versions_and_rules"
-        body: f1257dfe921d48a7b09b0ce1127b9466167651b43923a2ff725e6ee405e3f29b
+        body: bca919360ca985a72b2539638c286d04a9c75022e89c0cfcb6f8ab2fee55a9aa
   - node: 01a19f23-636f-72bd-b194-1521b702e5bb
     reviewed: 0d43dcf305030992e3cfd37fcc8692703a9d5ef4fe180fd3f6595006156412e6
     tests:

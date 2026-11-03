@@ -1,8 +1,10 @@
-//! Preferred measurements: the distance that places each object, by the smallest fractional
-//! uncertainty with the method rank breaking ties, and the sky position it takes, under the
-//! release's ranking rule (`rules/ranking.yaml`).
+//! Preferred measurements: the distance that places each object, its redshift distances ordered
+//! among themselves by kind of value and velocity uncertainty and the leading one weighed against
+//! the other distances by the smallest fractional uncertainty with the method rank breaking
+//! ties, and the sky position it takes, under the release's ranking rule (`rules/ranking.yaml`).
 
 mod distance;
+mod redshift;
 pub mod rules;
 
 use univ_model::derive::Release;

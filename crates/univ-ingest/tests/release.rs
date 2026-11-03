@@ -49,12 +49,14 @@ fn a_release_records_its_number_build_time_cosmology_versions_and_rules() {
     let ranking = m.rules.iter().find(|r| r.name == "ranking").unwrap();
     assert_eq!(
         ranking.rule.as_deref(),
-        Some("indicators-over-uncertain-redshifts-then-uncertainty-then-method")
+        Some(
+            "measured-redshifts-first-then-indicators-over-uncertain-redshifts-then-uncertainty-then-method"
+        )
     );
     // The releases row carries them too, for the API.
     let releases = d1_text(&release.dir, &m, "releases");
     assert!(
-        releases.contains("'indicators-over-uncertain-redshifts-then-uncertainty-then-method'")
+        releases.contains("'measured-redshifts-first-then-indicators-over-uncertain-redshifts-then-uncertainty-then-method'")
     );
     assert!(releases.contains(&format!("'{BUILT_AT}'")));
     assert!(

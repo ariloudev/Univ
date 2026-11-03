@@ -103,7 +103,8 @@ pub enum Decided {
     /// Its fractional uncertainty was the smallest: beyond the tie tolerance, or, within it,
     /// against candidates of the same method rank.
     Uncertainty,
-    /// Its uncertainty tied with another's, and its method ranks higher.
+    /// Its uncertainty tied with another's, and its method ranks higher; or, between redshift
+    /// distances alike in kind of value and velocity uncertainty, its method ranks higher.
     MethodRank,
     /// It was published without an uncertainty, and its method ranks strictly better than that
     /// of every remaining candidate with one, or no remaining candidate has one.
@@ -112,8 +113,15 @@ pub enum Decided {
     /// won, and was set aside because an indicator or geometric distance is a candidate.
     RedshiftThreshold,
     /// It was published without an uncertainty, shares the best method rank with another such
-    /// candidate, and its source comes first in the rule's order of sources.
+    /// candidate, and its source comes first in the rule's order of sources; or, between
+    /// redshift distances alike in every earlier step, its source comes first.
     SourceOrder,
+    /// Between redshift distances: it was measured, and the redshift ordered next is estimated,
+    /// inferred or reconstructed, such as a 2M++ clone or a photometric redshift.
+    KindOfValue,
+    /// Between redshift distances alike in being measured or not: its published velocity
+    /// uncertainty is the smaller, or the redshift ordered next has none.
+    VelocityUncertainty,
     /// Every comparison of the rule tied with another candidate's (the same uncertainty, or
     /// none, the same method rank and the same source), and its entry comes first in the object.
     EntryOrder,

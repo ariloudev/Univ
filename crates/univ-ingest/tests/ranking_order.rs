@@ -170,13 +170,15 @@ fn a_redshift_above_the_threshold_is_set_aside_for_an_indicator_distance() {
         .unwrap();
     assert!(matches!(p.measurement, MeasurementRef::Redshift { .. }));
     assert_eq!(p.decided, Decided::Uncertainty);
-    // Without an indicator distance nothing is set aside: two loose redshifts still compete.
+    // Without an indicator distance nothing is set aside: two loose redshifts still compete,
+    // by their own order, and the one listed first of one velocity error places the object.
     let p = preferred(vec![
         redshift(1_000.0),
         with_cz(entry("sixdfgs-dr3", "y", RA, 0.0), 1_100.0, 10.0),
     ]);
     assert!(matches!(p.measurement, MeasurementRef::Redshift { .. }));
-    assert_eq!(p.decided, Decided::Uncertainty);
+    assert_eq!(p.decided, Decided::SourceOrder);
+    assert_eq!(p.measurement.entry().source.as_str(), "twomrs");
 }
 
 #[test]

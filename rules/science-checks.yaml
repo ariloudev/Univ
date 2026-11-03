@@ -473,6 +473,50 @@ checks:
       well above a group's velocity spread. Each row gives every entry's cz and kind of value:
       2M++ clones (Cln = 1) are estimated, not measured. Looked at on release 4 (154 objects).
 
+  - id: redshift-conflicts-placed-high
+    title: No object of a redshift conflict placed by the higher redshift
+    severity: concern
+    select:
+      kind: query
+      shown: 10
+      sql: >-
+        WITH z AS (SELECT m.object_id, m.entry, m.n, m.cmb * 299792.458 AS cz,
+          CASE WHEN m.native_form = term('none_reported') THEN 0.0
+          ELSE (coalesce(m.native_minus, 0.0) + coalesce(m.native_plus, 0.0)) / 2.0
+            * CASE WHEN m.native_unit = term('kilometre_per_second') THEN 1.0 ELSE 299792.458 END
+          END AS sigma
+          FROM measurements m WHERE m.release = :release AND m.quantity = term('redshift')
+          AND m.cmb IS NOT NULL),
+        h AS (SELECT a.object_id, a.entry, a.n, a.cz, max(a.cz - b.cz) AS above FROM z a JOIN z b
+          ON b.object_id = a.object_id AND b.entry <> a.entry
+          WHERE a.cz - b.cz > 1000.0
+          AND (a.cz - b.cz) * (a.cz - b.cz) > 25.0 * (a.sigma * a.sigma + b.sigma * b.sigma)
+          GROUP BY a.object_id, a.entry, a.n)
+        SELECT o.id, round(h.cz) AS placed_cmb_cz, round(h.above) AS above_lowest_km_s,
+          (SELECT s.id || ':' || e.identifier FROM entries e JOIN sources s
+            ON s.release = e.release AND s.n = e.source WHERE e.release = o.release
+            AND e.object_id = o.id AND e.entry = o.preferred_entry) AS placed_by
+        FROM objects o JOIN h ON h.object_id = o.id AND h.entry = o.preferred_entry
+          AND h.n = o.preferred_n
+        WHERE o.release = :release AND o.preferred_quantity = term('redshift')
+        ORDER BY above_lowest_km_s DESC
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, decision Rank redshift distances by kind of value and velocity uncertainty"
+        locator: "spec/decisions/rank-redshift-distances-by-kind-of-value-and-velocity-uncertainty.yaml, context"
+        quote: >-
+          "In the worst five, NED agrees with 2MRS's lower value, yet the higher one placed the
+          object: ESO 460-G001 at 6dFGS's 54,179 km/s against 2MRS's 7,520 km/s."
+        fetched: "this repository, spec/decisions/rank-redshift-distances-by-kind-of-value-and-velocity-uncertainty.yaml"
+    note: >-
+      The objects of redshift-conflicts whose placing redshift is the higher of a conflicting
+      pair, by the same test (1,000 km/s and five times the published errors in quadrature).
+      Fractional distance uncertainty always chose the higher of two redshifts; the ranking now
+      orders redshifts by kind of value and published velocity error, which holds no preference
+      for either value, so what is left here is placed high by a measured redshift with the
+      smaller error. The release holds no independent redshift, such as NED's, to say which of
+      the two is right, so each is listed for a look rather than judged. Release 5: 141 of 154.
+
   - id: nothing-inside-1-mpc-outside-local-group
     title: Nothing outside the Local Group placed inside 1 Mpc
     severity: fail

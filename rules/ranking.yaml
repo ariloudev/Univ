@@ -2,7 +2,7 @@
 # takes. A release records this file, with its parameters, in its manifest. Read by univ-ingest
 # `ranking::RankingRules`.
 
-rule: indicators-over-uncertain-redshifts-then-uncertainty-then-method
+rule: measured-redshifts-first-then-indicators-over-uncertain-redshifts-then-uncertainty-then-method
 statement: >-
   Every distance, usable parallax and positive redshift of an object's entries is a candidate.
   Each is given a fractional distance uncertainty where its source publishes one the rule can
@@ -16,8 +16,16 @@ statement: >-
   rule's stated term for the motion a redshift does not separate from the Hubble flow, not an
   invented error of the measurement. Any other candidate (a distance or parallax with no error at
   all, a limit, or an interval of another probability) has no uncertainty, and none is invented.
-  (i) Where any geometric, primary-indicator or secondary-indicator candidate exists,
-  every redshift candidate whose fractional uncertainty exceeds redshift_threshold is set aside.
+  (0) An object's redshift candidates are first ordered among themselves, and only the first of
+  them, the leading redshift, competes with the other candidates: a measured redshift before an
+  estimated, inferred or reconstructed one (a 2M++ clone, Cln = 1, or a photometric redshift);
+  then the smaller published velocity error sigma_cz, c times the one-sigma error of the
+  redshift as published, a redshift without one after every one with one and given none; then
+  the method rank, then the source listed first in source_order, then the order of the entries.
+  Fractional uncertainty does not order redshifts, because the peculiar-velocity term is a
+  smaller fraction of the higher of two, which would then always win. (i) Where any geometric,
+  primary-indicator or secondary-indicator candidate exists, the leading redshift is set aside
+  if its fractional uncertainty exceeds redshift_threshold.
   (ii) Among the remaining candidates with an uncertainty, the smallest fraction leads;
   candidates within the tie tolerance of the smallest are a tie, which the method rank breaks,
   then the smaller fraction, then the order of the entries. (iii) A remaining candidate without
@@ -67,7 +75,8 @@ source_order:
   - erass1-clusters
 source_order_basis: >-
   Pipeline choice, used only between candidates without a published uncertainty that share the
-  best method rank: the compilations of redshift-independent distances first, the newest and
+  best method rank, and between redshifts alike in kind of value, velocity error and method
+  rank: the compilations of redshift-independent distances first, the newest and
   most homogeneous before the older (Cosmicflows-4 2023, its galaxies before its group means;
   McConnachie 2012, whose Local Group distances are a curated homogeneous set; then UNGC
   2013), then the stellar sources, then the redshift surveys.
