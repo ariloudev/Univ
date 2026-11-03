@@ -1,0 +1,78 @@
+key: 01a19fad-7f58-7247-ac4b-33911527a39d
+id: w4
+versions:
+  - key: 01a19fad-7f58-7247-ac4b-3398f5ebaea8
+    at: 2026-11-03T04:31:50Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W4 Normalization"
+    goal: "Every tabular source, the researched structures and the three volume grids normalize into univ-model values with native units, typed uncertainties, kinds, CMB-frame redshifts, counted refusals and counted fixes"
+    status: active
+blocks:
+  - key: 01a19fad-7f58-7247-ac4b-3393b868b140
+    id: w4-t1-entries
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339a9e7899dc
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Catalogue entries and the normalizer"
+        detail: "A univ-model `CatalogueEntry` (ICRS position and epoch, native and normalized values, kind of value, typed uncertainty, distances with kind, method, H0 and modulus, heliocentric and CMB-frame redshift with its derivation). A normalizer drives each tabular source's column map through a streaming reader shared with the download check, with FK5 to ICRS, one `CmbCorrection` per run, refusals counted per reason and machine-applied fixes counted, both kept in provenance. Done when per-source fixture rows give the expected entries for all 15 tabular sources and tests cover AC-36 to AC-53."
+        state: active
+  - key: 01a19fad-7f58-7247-ac4b-3394a73e711d
+    id: w4-t2-structures
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339ba0b3ac26
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Structure files"
+        detail: "The YAML structure format: every number cites its paper and its sentence, table or figure; digitised values are estimated and cite their figure; geometry is a univ-model kind in a named frame. Port the newsroom's structures, re-checking each citation. Done when the repository's structures all load and tests cover AC-54 to AC-57 (an uncited number is refused, naming the file, field and number)."
+        state: open
+  - key: 01a19fad-7f58-7247-ac4b-3395ec4947ce
+    id: w4-t3-grids
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339c702d9b8c
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Volume grids"
+        detail: "Readers for the CF4++ NPZ, the CF4 basins FITS (axis order explicit) and the 2M++ reconstruction, with small cropped real-data fixtures. Done when the axis order of both CF4 grids is checked against the position of the Laniakea attractor, and the grids load from the fetched files."
+        state: open
+  - key: 01a19fad-7f58-7247-ac4b-339618787bcb
+    id: w4-t4-outlines
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339d25bfb478
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Grid outlines and their test"
+        detail: "An outline from a volume grid records the grid, threshold and test; the test compares it with the galaxy catalogues covering it; a failed outline falls back to a point at the published position with the reason. Done when tests cover AC-58 and AC-59."
+        state: open
+  - key: 01a19fad-7f58-7247-ac4b-339719556276
+    id: w4-t5-gate
+    kind: task
+    versions:
+      - key: 01a19fad-7f58-7247-ac4b-339e2e796f9f
+        at: 2026-11-03T04:31:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "Done when `cargo xtask check` passes and AC-36 to AC-59 are linked and accepted, or marked unverified with the wave that verifies them."
+        state: open
