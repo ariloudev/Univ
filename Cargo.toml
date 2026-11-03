@@ -1,6 +1,12 @@
 [workspace]
 resolver = "3"
-members = ["crates/univ-model", "crates/univ-ingest", "xtask"]
+members = [
+    "crates/univ-model",
+    "crates/univ-ingest",
+    "crates/univ-api",
+    "crates/univ-server",
+    "xtask",
+]
 
 [workspace.package]
 version = "0.1.0"

@@ -1,0 +1,126 @@
+key: 01a1a2cf-3cac-7599-8a58-56cdcf1330f5
+id: w0
+versions:
+  - key: 01a1a2cf-3cac-7599-8a58-56d7f91d777c
+    at: 2026-11-03T19:07:32Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W0: Worker skeleton, contract base and integration harness"
+    goal: "A workers-rs Worker answers under /v1 with problem details, CORS and a generated OpenAPI document, and `cargo xtask integration` tests it inside wrangler dev"
+    status: active
+blocks:
+  - key: 01a1a2cf-3cac-7599-8a58-56cff847bcab
+    id: t-crates
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56d9669ad7fb
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Add the univ-api and univ-server crates"
+        detail: "univ-api (lib, native + wasm32) and univ-server (cdylib, workers-rs =0.8.7 with d1), with univ-server excluded from native builds through default-members. Done when `cargo build --workspace` passes natively and `cargo check -p univ-server --target wasm32-unknown-unknown` passes."
+        state: open
+      - key: 01a1a2cf-4a3d-70bf-a119-c6126771c9b1
+        at: 2026-11-03T19:07:36Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Add the univ-api and univ-server crates"
+        detail: "univ-api (lib, native + wasm32) and univ-server (cdylib, workers-rs =0.8.7 with d1), with univ-server excluded from native builds through default-members. Done when `cargo build --workspace` passes natively and `cargo check -p univ-server --target wasm32-unknown-unknown` passes."
+        state: active
+  - key: 01a1a2cf-3cac-7599-8a58-56d08b399163
+    id: t-problem
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56daa1c77c2a
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "RFC 9457 problem details"
+        detail: "A Problem type in univ-api: application/problem+json, a `type` URI per kind of refusal, title, status, detail and extension members. Done when its native tests check the content type, the shape and that every type URI is distinct and absolute."
+        state: open
+  - key: 01a1a2cf-3cac-7599-8a58-56d122cbbaaf
+    id: t-router
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56db78bce801
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The /v1 router with CORS and a 404 problem"
+        detail: "A route table under /v1. An unknown path answers 404 with a problem, every read response allows any origin, and an OPTIONS preflight is answered without credentials. Done when native tests cover AC-273–276 and the 404 problem."
+        state: open
+  - key: 01a1a2cf-3cac-7599-8a58-56d2b0d53e7d
+    id: t-openapi
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56dc68b9afc3
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "OpenAPI 3.1 document from the route table"
+        detail: "utoipa builds the document. /v1/openapi.json serves it, and each problem type is listed. Done when a native test shows the document's paths equal the router's routes exactly (AC-287), and the version is 3.1."
+        state: open
+  - key: 01a1a2cf-3cac-7599-8a58-56d3d5fd8449
+    id: t-worker
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56dda6456900
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The Worker entry and its wrangler.toml"
+        detail: "univ-server binds DB (univ), LAYERS (univ-layers), RELEASES and the four rate-limit namespaces, reads OWNER_SECRET from .dev.vars (gitignored) and hands requests to univ-api. A first migration of univ-layers. worker-build is installed. Done when `wrangler dev` serves /v1/openapi.json locally."
+        state: open
+  - key: 01a1a2cf-3cac-7599-8a58-56d48d5ffe9b
+    id: t-gates
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56de80d3c383
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Gate steps for the Worker"
+        detail: "`cargo xtask check` gains a wasm32 check of univ-api and clippy for univ-server on wasm32 with -D warnings, and excludes univ-server from the native clippy and test steps. Done when each new step fails on a planted fault and passes without it."
+        state: open
+  - key: 01a1a2cf-3cac-7599-8a58-56d55667850f
+    id: t-integration
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56df3011038d
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask integration` and the first e2e tests"
+        detail: "It builds, publishes and prunes the fixture release in a temporary state, applies the layer migrations, starts wrangler dev on a free port, runs the #[ignore] HTTP tests of univ-server and stops wrangler, also on failure. Done when the e2e tests (an anonymous read, a CORS preflight, a 404 problem) pass through it."
+        state: open
+  - key: 01a1a2cf-3cac-7599-8a58-56d675884a42
+    id: t-serve-docs
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56e07d4fb098
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask serve` and AGENTS.md"
+        detail: "serve runs the Worker on .cache/univ-ingest/wrangler. AGENTS.md gains the server layout, the product/server and stage/server-wN branches, integration and serve, and the full gate at each wave's end. Done when serve answers /v1/openapi.json on release 6's state."
+        state: open
