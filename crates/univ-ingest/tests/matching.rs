@@ -134,8 +134,8 @@ fn each_pair_of_sources_has_its_own_tolerances() {
     };
     assert_eq!(pair("twomrs", "sixdfgs-dr3").angular_tolerance_arcsec, 5.0);
     assert_eq!(
-        pair("cosmicflows-4", "twomrs").angular_tolerance_arcsec,
-        10.0
+        pair("updated-nearby-galaxies", "twomrs").angular_tolerance_arcsec,
+        30.0
     );
     assert!(rules.pairs.iter().all(|p| !p.basis.trim().is_empty()));
     let (ra, dec) = (150.0, 2.0);
@@ -239,7 +239,7 @@ fn the_confidence_rule_is_stated_in_the_rules_and_applied_as_stated() {
 }
 
 /// A 2MRS galaxy with two 6dFGS galaxies 2" either side and within 200 km/s, one 6dFGS galaxy
-/// 60" off, and a Cosmicflows-4 galaxy 1" from the 2MRS one (all simulated).
+/// 60" off, and a 2M++ galaxy 1" from the 2MRS one (all simulated).
 fn triple() -> Vec<CatalogueEntry> {
     let (ra, dec) = (200.0, -10.0);
     let (e, w, far, cf) = (
@@ -253,7 +253,7 @@ fn triple() -> Vec<CatalogueEntry> {
         with_cz(entry("sixdfgs-dr3", "east", e.0, e.1), 8_040.0, 45.0),
         with_cz(entry("sixdfgs-dr3", "west", w.0, w.1), 7_980.0, 45.0),
         with_cz(entry("sixdfgs-dr3", "far", far.0, far.1), 8_000.0, 45.0),
-        with_cz(entry("cosmicflows-4", "99", cf.0, cf.1), 8_010.0, 0.0),
+        with_cz(entry("twompp-catalogue", "99", cf.0, cf.1), 8_010.0, 10.0),
     ]
 }
 
@@ -268,8 +268,8 @@ fn an_entry_with_two_candidates_is_kept_apart_and_linked_to_each_with_its_confid
     );
     let objects: Vec<usize> = [&a, &east, &west].iter().map(|d| at(&m, d)).collect();
     assert!(objects[0] != objects[1] && objects[0] != objects[2] && objects[1] != objects[2]);
-    // The object holding the 2MRS galaxy carries its two links, and those of the Cosmicflows-4
-    // galaxy merged with it (below).
+    // The object holding the 2MRS galaxy carries its two links, and those of the 2M++ galaxy
+    // merged with it (below).
     let links: Vec<_> = m.objects[objects[0]]
         .links
         .iter()
@@ -283,10 +283,10 @@ fn an_entry_with_two_candidates_is_kept_apart_and_linked_to_each_with_its_confid
     // The far miss is neither merged nor linked.
     let far = &m.objects[at(&m, &designation("sixdfgs-dr3", "far"))];
     assert!(far.links.is_empty() && far.entries.len() == 1);
-    // The Cosmicflows-4 galaxy has one 2MRS candidate but two 6dFGS ones: it merges with the
-    // 2MRS galaxy only where neither side has a rival of the same source. Here it has two
-    // 6dFGS rivals, so it is linked to both and merged with the 2MRS galaxy alone.
-    let cf = designation("cosmicflows-4", "99");
+    // The 2M++ galaxy has one 2MRS candidate but two 6dFGS ones: it merges with the 2MRS
+    // galaxy only where neither side has a rival of the same source. Here it has two 6dFGS
+    // rivals, so it is linked to both and merged with the 2MRS galaxy alone.
+    let cf = designation("twompp-catalogue", "99");
     assert_eq!(at(&m, &cf), objects[0]);
     assert_eq!(m.report.candidate_links, 4);
 }

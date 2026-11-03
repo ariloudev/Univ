@@ -8,6 +8,7 @@ mod cross_id;
 mod groups;
 mod index;
 mod positions;
+mod relations;
 pub mod rules;
 
 use std::collections::HashMap;
@@ -21,27 +22,29 @@ pub use index::SkyIndex;
 pub use rules::MatchingRules;
 
 use groups::Groups;
-use rules::Comparison;
+use rules::{Comparison, PairRule};
+use univ_model::position::Vec3;
 
-/// The objects resolved from a set of entries, with a lookup by designation.
+/// The objects resolved from a set of entries.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Matched {
     pub objects: Vec<Object>,
     pub report: MatchReport,
-    lookup: HashMap<Designation, usize>,
 }
 
 impl Matched {
-    /// The object holding the entry `designation`.
+    /// The object holding the entry `designation`, by a scan of the objects.
     #[must_use]
     pub fn find(&self, designation: &Designation) -> Option<&Object> {
-        self.lookup.get(designation).map(|i| &self.objects[*i])
+        self.position_of(designation).map(|i| &self.objects[i])
     }
 
-    /// The place in `objects` of the object holding `designation`.
+    /// The place in `objects` of the object holding `designation`, by a scan of the objects.
     #[must_use]
     pub fn position_of(&self, designation: &Designation) -> Option<usize> {
-        self.lookup.get(designation).copied()
+        self.objects
+            .iter()
+            .position(|o| o.entry(designation).is_some())
     }
 }
 
@@ -58,6 +61,9 @@ pub struct MatchReport {
     pub candidate_links: u64,
     /// Objects of more than one entry.
     pub multi_entry_objects: u64,
+    /// Relations between a galaxy group and its dominant galaxy.
+    #[serde(default)]
+    pub group_relations: u64,
 }
 
 /// Why two entries were joined.
@@ -82,13 +88,18 @@ struct Work<'a> {
     /// Each entry's source number, and the source of each number.
     source_of: Vec<u16>,
     sources: Vec<SourceId>,
+    /// The pair rule of two source numbers `a` and `b`, at `a * sources.len() + b`.
+    pairs: Vec<Option<&'a PairRule>>,
+    /// Each entry's ICRS unit vector, where it has a position.
+    units: Vec<Option<Vec3>>,
     groups: Groups,
     joins: Vec<Edge>,
     /// Candidate links, each with its confidence.
     links: Vec<(Edge, f64)>,
 }
 
-/// Resolves `entries` into objects under `rules`: cross-identifications, then positions.
+/// Resolves `entries` into objects under `rules`: cross-identifications, then positions, then
+/// the relations of galaxy groups to their dominant galaxies.
 /// Objects are in the order of their first entry, so a run on the same entries gives the same
 /// objects.
 #[must_use]
@@ -105,17 +116,42 @@ pub fn match_entries(rules: &MatchingRules, entries: Vec<CatalogueEntry>) -> Mat
             })
         })
         .collect();
+    let units = entries
+        .iter()
+        .map(|e| e.position.as_ref().map(|p| p.icrs.unit_vector()))
+        .collect();
     let mut work = Work {
         rules,
         entries: &entries,
         groups: Groups::new(&source_of),
         source_of,
+        pairs: rules.pair_table(&sources),
         sources,
+        units,
         joins: Vec::new(),
         links: Vec::new(),
     };
     cross_id::apply(&mut work);
     positions::apply(&mut work);
     let plan = assemble::plan(&mut work);
-    assemble::build(rules, entries, plan)
+    let relations = relations::find(&work);
+    assemble::build(rules, entries, plan, relations)
+}
+
+impl Work<'_> {
+    /// The pair rule of the sources of entries `a` and `b`.
+    fn pair(&self, a: usize, b: usize) -> Option<&PairRule> {
+        let n = self.sources.len();
+        self.pairs[usize::from(self.source_of[a]) * n + usize::from(self.source_of[b])]
+    }
+
+    /// Compares entries `a` and `b` under their pair rule: none when no rule pairs their
+    /// sources, either lacks a position, or they lie beyond a tolerance.
+    fn compare(&self, a: usize, b: usize) -> Option<Comparison> {
+        let pair = self.pair(a, b)?;
+        let (ua, ub) = (self.units[a]?, self.units[b]?);
+        let separation = univ_model::position::separation_degrees(ua, ub) * 3_600.0;
+        self.rules
+            .compare_at(pair, &self.entries[a], &self.entries[b], separation)
+    }
 }

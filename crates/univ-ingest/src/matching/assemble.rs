@@ -1,14 +1,16 @@
 //! The last step: the groups made into objects, each entry with how it joined, its
 //! designations, common names and candidate links.
 
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 use univ_model::entry::CatalogueEntry;
 use univ_model::ids::Designation;
 use univ_model::object::{
-    CandidateLink, CommonName, Confidence, MatchRecord, Object, ObjectEntry, Resolution,
+    CandidateLink, CommonName, Confidence, MatchRecord, Object, ObjectEntry, ObjectKind, Relation,
+    RelationKind, Resolution,
 };
 
+use super::relations::GroupRelation;
 use super::rules::MatchingRules;
 use super::{Edge, Join, MatchReport, Matched, Work};
 
@@ -75,11 +77,17 @@ fn resolution(rules: &MatchingRules, via: &Designation, join: Join) -> Resolutio
     }
 }
 
+/// `value` as a confidence, clamped to [0, 1]; a value that is not a number gives no confidence.
 fn confidence(value: f64) -> Confidence {
-    Confidence::new(value.clamp(0.0, 1.0)).unwrap_or(Confidence::CERTAIN)
+    Confidence::new(value.clamp(0.0, 1.0)).unwrap_or(Confidence::NONE)
 }
 
-pub(super) fn build(rules: &MatchingRules, entries: Vec<CatalogueEntry>, plan: Plan) -> Matched {
+pub(super) fn build(
+    rules: &MatchingRules,
+    entries: Vec<CatalogueEntry>,
+    plan: Plan,
+    relations: Vec<GroupRelation>,
+) -> Matched {
     let designations: Vec<Designation> = entries.iter().map(|e| e.designation.clone()).collect();
     let mut slots: Vec<Option<CatalogueEntry>> = entries.into_iter().map(Some).collect();
     let mut object_of = vec![0; slots.len()];
@@ -110,6 +118,9 @@ pub(super) fn build(rules: &MatchingRules, entries: Vec<CatalogueEntry>, plan: P
             report.multi_entry_objects += 1;
         }
         let mut object = Object::new(list);
+        if object.sources().any(|s| rules.galaxy_group(s).is_some()) {
+            object.kind = ObjectKind::GalaxyGroup;
+        }
         attach_names(rules, &mut object);
         objects.push(object);
     }
@@ -147,17 +158,28 @@ pub(super) fn build(rules: &MatchingRules, entries: Vec<CatalogueEntry>, plan: P
             });
         }
     }
-    report.objects = objects.len() as u64;
-    let lookup: HashMap<Designation, usize> = designations
-        .into_iter()
-        .enumerate()
-        .map(|(e, d)| (d, object_of[e]))
-        .collect();
-    Matched {
-        objects,
-        report,
-        lookup,
+    for r in relations {
+        let (og, ox) = (object_of[r.group], object_of[r.galaxy]);
+        if og == ox {
+            continue;
+        }
+        report.group_relations += 1;
+        let scheme = &rules.cross_identifications[r.scheme].scheme;
+        for (o, kind, from, to) in [
+            (og, RelationKind::DominantMember, r.group, r.galaxy),
+            (ox, RelationKind::DominantMemberOf, r.galaxy, r.group),
+        ] {
+            objects[o].relations.push(Relation {
+                kind,
+                entry: designations[from].clone(),
+                other: designations[to].clone(),
+                scheme: scheme.clone(),
+                identifier: r.identifier.clone(),
+            });
+        }
     }
+    report.objects = objects.len() as u64;
+    Matched { objects, report }
 }
 
 /// The designations and common names the object's entries carry beside their own, each with
@@ -185,5 +207,18 @@ fn attach_names(rules: &MatchingRules, object: &mut Object) {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::confidence;
+
+    #[test]
+    fn a_confidence_that_is_not_a_number_is_none() {
+        assert_eq!(confidence(f64::NAN).get(), 0.0);
+        assert_eq!(confidence(1.5).get(), 1.0);
+        assert_eq!(confidence(-0.5).get(), 0.0);
+        assert_eq!(confidence(0.25).get(), 0.25);
     }
 }

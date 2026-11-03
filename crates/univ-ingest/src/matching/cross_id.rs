@@ -1,6 +1,8 @@
 //! The first pass: entries that share an identifier of a published cross-identification scheme
 //! are joined, unless the join would put two entries of one source together, which makes a
-//! candidate link instead.
+//! candidate link instead. An identifier that two or more entries of one source claim is applied
+//! to none of them: each claimant is linked to every entry of another source that carries it,
+//! so the outcome does not hang on the order of the entries.
 
 use std::collections::HashMap;
 
@@ -43,30 +45,51 @@ pub(super) fn apply(work: &mut Work<'_>) {
             list.push(i);
         }
         for id in order {
-            let list = &by_id[&id];
-            let Some((&first, rest)) = list.split_first() else {
+            apply_one(work, s, &id, &by_id[&id]);
+        }
+    }
+}
+
+/// Applies the identifier `id` of scheme `scheme`, which the entries `list` carry.
+fn apply_one(work: &mut Work<'_>, scheme: usize, id: &str, list: &[usize]) {
+    let claims = |e: usize| {
+        list.iter()
+            .filter(|&&o| work.source_of[o] == work.source_of[e])
+            .count()
+    };
+    let (sole, contested): (Vec<usize>, Vec<usize>) = list.iter().partition(|&&e| claims(e) == 1);
+    let edge = |a: usize, b: usize| Edge {
+        a,
+        b,
+        join: Join::Cross {
+            scheme,
+            identifier: id.to_owned(),
+        },
+    };
+    let conflict = work.rules.confidence.cross_identification_conflict;
+    if let Some((&first, rest)) = sole.split_first() {
+        for &other in rest {
+            if work.groups.find(first) == work.groups.find(other) {
                 continue;
-            };
-            for &other in rest {
-                let edge = Edge {
-                    a: first,
-                    b: other,
-                    join: Join::Cross {
-                        scheme: s,
-                        identifier: id.clone(),
-                    },
-                };
-                if work.groups.find(first) == work.groups.find(other) {
-                    continue;
+            }
+            match work.groups.join(first, other) {
+                Ok(()) => work.joins.push(edge(first, other)),
+                Err(Refused::SharedSource | Refused::Linked) => {
+                    work.groups.link(first, other);
+                    work.links.push((edge(first, other), conflict));
                 }
-                match work.groups.join(first, other) {
-                    Ok(()) => work.joins.push(edge),
-                    Err(Refused::SharedSource | Refused::Linked) => {
-                        work.groups.link(first, other);
-                        let c = work.rules.confidence.cross_identification_conflict;
-                        work.links.push((edge, c));
-                    }
-                }
+            }
+        }
+    }
+    // Each claimant of a contested identifier, to every entry of another source carrying it.
+    for &claimant in &contested {
+        for &other in list {
+            let apart = work.source_of[other] != work.source_of[claimant];
+            // A pair of claimants of two contested sources is linked once.
+            let once = !contested.contains(&other) || claimant < other;
+            if apart && once && work.groups.find(claimant) != work.groups.find(other) {
+                work.groups.link(claimant, other);
+                work.links.push((edge(claimant, other), conflict));
             }
         }
     }

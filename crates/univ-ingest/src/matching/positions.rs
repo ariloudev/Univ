@@ -1,13 +1,16 @@
 //! The second pass: the groups the cross-identifications left, matched by position and by
 //! redshift or distance. A group with more than one candidate from one source is linked to each
 //! and merged with none; every other candidate is merged, in falling confidence, unless the
-//! merge would put two entries of one source or two linked groups together.
+//! merge would put two entries of one source or two linked groups together, or would put an
+//! entry beside one that a pair rule compares it with and finds beyond its tolerances (complete
+//! linkage): that candidate becomes a link instead, so that no chain of close pairs joins two
+//! entries that are far apart.
 
 use std::cmp::Ordering;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use super::index::SkyIndex;
-use super::rules::{Comparison, key};
+use super::rules::Comparison;
 use super::{Edge, Join, Work};
 
 /// A group of entries after the first pass: its members and their sources.
@@ -67,13 +70,57 @@ pub(super) fn apply(work: &mut Work<'_>) {
             .unwrap_or(Ordering::Equal)
             .then((x.i, x.j).cmp(&(y.i, y.j)))
     });
+    let mut members = Members::new(work, &groups);
     for c in clear {
-        if work.groups.join(c.a, c.b).is_ok() {
+        let (ra, rb) = (work.groups.find(c.a), work.groups.find(c.b));
+        if members.compatible(work, ra, rb) && work.groups.join(c.a, c.b).is_ok() {
+            members.joined(ra, rb, work.groups.find(c.a));
             work.joins.push(edge(c));
         } else {
             work.groups.link(c.a, c.b);
             work.links.push((edge(c), c.comparison.confidence));
         }
+    }
+}
+
+/// The entries of each group of more than one entry, by its root; a group of one entry is
+/// its root alone.
+struct Members(HashMap<usize, Vec<usize>>);
+
+impl Members {
+    fn new(work: &mut Work<'_>, groups: &[Group]) -> Self {
+        let mut by_root = HashMap::new();
+        for g in groups.iter().filter(|g| g.members.len() > 1) {
+            by_root.insert(work.groups.find(g.members[0]), g.members.clone());
+        }
+        Self(by_root)
+    }
+
+    fn of<'a>(&'a self, root: &'a usize) -> &'a [usize] {
+        self.0
+            .get(root)
+            .map_or(std::slice::from_ref(root), Vec::as_slice)
+    }
+
+    /// Whether every entry of the group rooted at `ra` lies within the tolerances of every entry
+    /// of the one rooted at `rb` that a pair rule compares it with.
+    fn compatible(&self, work: &Work<'_>, ra: usize, rb: usize) -> bool {
+        self.of(&ra).iter().all(|&x| {
+            self.of(&rb).iter().all(|&y| {
+                let compared =
+                    work.pair(x, y).is_some() && work.units[x].is_some() && work.units[y].is_some();
+                !compared || work.compare(x, y).is_some()
+            })
+        })
+    }
+
+    /// Records that the groups rooted at `ra` and `rb` are now one, rooted at `root`.
+    fn joined(&mut self, ra: usize, rb: usize, root: usize) {
+        let mut all = self.of(&ra).to_vec();
+        all.extend_from_slice(self.of(&rb));
+        self.0.remove(&ra);
+        self.0.remove(&rb);
+        self.0.insert(root, all);
     }
 }
 
@@ -113,8 +160,6 @@ fn positioned_groups(work: &mut Work<'_>) -> Vec<Group> {
 /// tolerances, through the pair of their entries with the highest confidence. Every entry with
 /// a position is indexed, so the search radius is the largest tolerance and no more.
 fn candidates(work: &Work<'_>, groups: &[Group]) -> Vec<Candidate> {
-    let rules = work.rules;
-    let pairs = rules.pair_index();
     let mut group_of = Vec::new();
     let mut entry_of = Vec::new();
     let mut positions = Vec::new();
@@ -127,7 +172,7 @@ fn candidates(work: &Work<'_>, groups: &[Group]) -> Vec<Candidate> {
             }
         }
     }
-    let index = SkyIndex::new(&positions, rules.search_radius_degrees());
+    let index = SkyIndex::new(&positions, work.rules.search_radius_degrees());
     let mut near = Vec::new();
     let mut found = Vec::new();
     // The best comparison with each later group, for the group in hand.
@@ -145,12 +190,7 @@ fn candidates(work: &Work<'_>, groups: &[Group]) -> Vec<Candidate> {
                 if j <= i || g.sources.iter().any(|s| h.sources.contains(s)) {
                     continue;
                 }
-                let (sa, sb) = (work.source_of[a], work.source_of[b]);
-                let names = (&work.sources[sa as usize], &work.sources[sb as usize]);
-                let Some(pair) = pairs.get(&key(names.0, names.1)) else {
-                    continue;
-                };
-                let Some(c) = rules.compare(pair, &work.entries[a], &work.entries[b]) else {
+                let Some(c) = work.compare(a, b) else {
                     continue;
                 };
                 let slot = best.entry(j).or_insert((a, b, c));

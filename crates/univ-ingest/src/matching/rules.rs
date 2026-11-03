@@ -1,7 +1,7 @@
 //! The matching rules of a release, read from `rules/matching.yaml`: the published
 //! cross-identifications, the tolerances of each pair of sources and the confidence rule.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::BTreeSet;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
@@ -19,8 +19,30 @@ pub struct MatchingRules {
     pub confidence: ConfidenceRule,
     pub cross_identifications: Vec<CrossIdentification>,
     pub designations: Vec<ExtraDesignation>,
+    pub galaxy_groups: Vec<GalaxyGroupRule>,
     pub names: Vec<NameRule>,
+    pub structure_members: MemberRule,
     pub pairs: Vec<PairRule>,
+}
+
+/// A source whose rows are galaxy groups, and the field naming each group's dominant galaxy by
+/// an identifier of `scheme`.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GalaxyGroupRule {
+    pub source: SourceId,
+    pub basis: String,
+    pub dominant_member: EntryField,
+    pub scheme: String,
+    pub member_basis: String,
+}
+
+/// How far a researched structure's member may lie from the object its name resolves to.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MemberRule {
+    pub angular_tolerance_arcsec: f64,
+    pub basis: String,
 }
 
 /// How a match's confidence is computed, in words and as parameters.
@@ -179,6 +201,29 @@ impl MatchingRules {
                 _ => {}
             }
         }
+        if !positive(self.structure_members.angular_tolerance_arcsec) {
+            return Err(field(
+                "structure_members.angular_tolerance_arcsec",
+                "is not positive",
+            ));
+        }
+        for (i, group) in self.galaxy_groups.iter().enumerate() {
+            if self.scheme(&group.scheme).is_none() {
+                return Err(field(
+                    &format!("galaxy_groups[{i}].scheme"),
+                    &format!(
+                        "names {}, which no cross-identification defines",
+                        group.scheme
+                    ),
+                ));
+            }
+            if self.pairs.iter().any(|p| p.sources.contains(&group.source)) {
+                return Err(field(
+                    &format!("galaxy_groups[{i}].source"),
+                    "is a source of groups, which a pair would match to galaxies by position",
+                ));
+            }
+        }
         let mut members = BTreeSet::new();
         for (i, scheme) in self.cross_identifications.iter().enumerate() {
             for m in &scheme.members {
@@ -193,13 +238,32 @@ impl MatchingRules {
         Ok(())
     }
 
-    /// The pair rules by their sources, in either order.
+    /// The cross-identification scheme named `name`.
     #[must_use]
-    pub fn pair_index(&self) -> HashMap<(SourceId, SourceId), &PairRule> {
-        self.pairs
-            .iter()
-            .map(|p| (key(&p.sources[0], &p.sources[1]), p))
-            .collect()
+    pub fn scheme(&self, name: &str) -> Option<&CrossIdentification> {
+        self.cross_identifications.iter().find(|s| s.scheme == name)
+    }
+
+    /// The galaxy-group rule of `source`, if its rows are groups.
+    #[must_use]
+    pub fn galaxy_group(&self, source: &SourceId) -> Option<&GalaxyGroupRule> {
+        self.galaxy_groups.iter().find(|g| &g.source == source)
+    }
+
+    /// The pair rule of each two of `sources`, in either order, at `a * n + b` for the sources
+    /// numbered `a` and `b` of the `n`.
+    #[must_use]
+    pub fn pair_table(&self, sources: &[SourceId]) -> Vec<Option<&PairRule>> {
+        let n = sources.len();
+        let mut table = vec![None; n * n];
+        for pair in &self.pairs {
+            let at = |s: &SourceId| sources.iter().position(|x| x == s);
+            if let (Some(a), Some(b)) = (at(&pair.sources[0]), at(&pair.sources[1])) {
+                table[a * n + b] = Some(pair);
+                table[b * n + a] = Some(pair);
+            }
+        }
+        table
     }
 
     /// The largest angular tolerance of any pair, degrees: the radius the sky index searches.
@@ -234,7 +298,20 @@ impl MatchingRules {
         b: &CatalogueEntry,
     ) -> Option<Comparison> {
         let (pa, pb) = (a.position.as_ref()?, b.position.as_ref()?);
-        let separation = separation_degrees(pa.icrs.unit_vector(), pb.icrs.unit_vector()) * 3_600.0;
+        let separation = separation_degrees(pa.icrs.unit_vector(), pb.icrs.unit_vector());
+        self.compare_at(pair, a, b, separation * 3_600.0)
+    }
+
+    /// Compares `a` and `b`, `separation` arcseconds apart, under `pair`: none when they lie
+    /// beyond a tolerance.
+    #[must_use]
+    pub fn compare_at(
+        &self,
+        pair: &PairRule,
+        a: &CatalogueEntry,
+        b: &CatalogueEntry,
+        separation: f64,
+    ) -> Option<Comparison> {
         let theta = pair.angular_tolerance_arcsec;
         if separation > theta {
             return None;

@@ -4,8 +4,10 @@
 # Order of work:
 #   1. Published cross-identifications. Entries that share an identifier of one scheme below
 #      are one object, with confidence 1. A cross-identification that would put two entries of
-#      one source in one object is not applied: the two stay apart, joined by a candidate link
-#      of confidence `confidence.cross_identification_conflict`.
+#      one source in one object is not applied: an identifier claimed by two or more entries of
+#      one source joins none of them; each claimant stays apart, with a candidate link of
+#      confidence `confidence.cross_identification_conflict` to every entry of another source
+#      that carries the identifier, whatever the order of the entries.
 #   2. Position, and redshift or distance. For each pair of sources below, two entries are
 #      candidates when their ICRS positions lie within `angular_tolerance_arcsec` and, where the
 #      pair names a line of sight, their heliocentric cz or their distances agree within its
@@ -15,6 +17,11 @@
 #      measurement is merged across a link. Merges are made in falling confidence and never put
 #      two entries of one source, or two objects joined by a link, into one object.
 #   No pair below: the two sources are never matched by position.
+#   An entry joins an object only when it lies within the pair's tolerances of every entry of
+#   that object a pair below compares it with (complete linkage): one close to an entry but too
+#   far from another, which would chain two distinct galaxies, stays apart, linked to it.
+#   3. Galaxy groups (galaxy_groups): a group row is its own object, related to its dominant
+#      galaxy by the scheme its source names it in; nothing is merged across the relation.
 #
 # Positions are compared as published, at each source's epoch, without propagating proper
 # motions. A star that moved farther than the tolerance between the epochs stays a separate
@@ -83,12 +90,12 @@ cross_identifications:
       - { source: boss-dr17-great-wall, field: identifier }
   - scheme: pgc
     basis: >-
-      The PGC number of HyperLEDA (Makarov et al. 2014, A&A 570, A13). Of the sources defined so
-      far only Cosmicflows-4 (Tully et al. 2023, ApJ 944, 94; column 1PGC) carries it: UNGC, 2MRS
-      and 2M++ name galaxies otherwise. The scheme is kept so a later source with PGC numbers
-      joins by them.
-    members:
-      - { source: cosmicflows-4, field: identifier }
+      The PGC number of HyperLEDA (Makarov et al. 2014, A&A 570, A13). No source defined so far
+      names its own entries by it: UNGC, 2MRS and 2M++ name galaxies otherwise, and the 1PGC of
+      Cosmicflows-4 names a group's dominant galaxy, not the group row (galaxy_groups below). The
+      scheme is kept so that a later galaxy source with PGC numbers joins by them, and so that a
+      group's dominant galaxy is found by its number.
+    members: []
 
 # Designations a source gives beside an entry's own identifier, kept with that source.
 designations:
@@ -101,6 +108,26 @@ designations:
     prefix: ""
     basis: "NAME is the eRASS1 cluster name, 1eRASS J... (Bulbul et al. 2024, A&A 685, A106)."
 
+# Sources whose rows are galaxy groups, not galaxies: each row is its own object, of kind
+# galaxy_group, never matched by position to a galaxy, and related to the galaxy its source names
+# as the group's dominant member, which it lends no measurement.
+galaxy_groups:
+  - source: cosmicflows-4
+    basis: >-
+      The definition takes the groups table J/ApJ/944/94/groups (ReadMe table3.dat "Distances of
+      galaxy groups" and table4.dat "Galaxy group distances and peculiar velocities", Tully et
+      al. 2023, ApJ 944, 94): DMzp is the "Group, weighted-average distance modulus" (Note 5,
+      "weighted averaged over all members of the group with measured distance moduli") and Vh
+      the "Group velocity, relative to the Sun". A row's values are the group's, not a galaxy's.
+    dominant_member: identifier
+    scheme: pgc
+    member_basis: >-
+      ReadMe table3 and table4: 1PGC is the "PGC ID, dominant galaxy in the group" (Note G1: "The
+      PGC ID of the dominant galaxy in the group containing the galaxy in question given
+      directly or inferred from the group catalogs of Kourkchi & Tully 2017, J/ApJ/843/16 or
+      Tully 2015, J/AJ/149/171"), read from http://vizier.nao.ac.jp/ftp/cats/J/ApJ/944/94/ReadMe
+      on 2026-11-03.
+
 # Common names, such as LMC or Andromeda, attached with the source that published them.
 names:
   - source: mcconnachie-2012
@@ -109,6 +136,17 @@ names:
       The Name column of McConnachie 2012 (AJ 144, 4) is each Local Group galaxy's common name,
       such as LMC, Andromeda or Canis Major. The UNGC Name column mixes common names with catalogue
       designations (UGC12894, ESO409-015) and is kept as designations only.
+
+# A researched structure's member, named in its paper, resolves to the matched object carrying
+# that name only when the object's preferred sky position lies within this angle of the
+# member's published position; a member published without a position, or resolving to an
+# object without one, is resolved by name alone, unchecked, and counted.
+structure_members:
+  angular_tolerance_arcsec: 60.0
+  basis: >-
+    Pipeline choice: an arcminute takes in the differences between a paper's member positions,
+    often rounded to tenths of a minute, and a catalogue's centre, while keeping a name that two
+    catalogues share from pulling in an object elsewhere on the sky.
 
 # Angular tolerances come from the published positional accuracies; each line-of-sight
 # tolerance and every allowance for galaxy centroids is a pipeline choice, given with its why.
@@ -162,38 +200,15 @@ pairs:
     angular_tolerance_arcsec: 5.0
     line_of_sight: { compare: velocity, tolerance_km_s: 200 }
     basis: *sdss
-  - sources: [cosmicflows-4, twomrs]
-    angular_tolerance_arcsec: 10.0
-    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
-    basis: &cf4 >-
-      Cosmicflows-4 positions are HyperLEDA galaxy centres (Makarov et al. 2014), published to
-      1e-4 degree (0.36 arcsec) in the recorded answer; 10 arcsec is a pipeline choice for the
-      centroid differences of large nearby galaxies. 300 km/s is a pipeline choice: Vh is a
-      compiled heliocentric velocity that may come from another spectrum than the survey's.
-  - sources: [cosmicflows-4, twompp-catalogue]
-    angular_tolerance_arcsec: 10.0
-    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
-    basis: *cf4
-  - sources: [cosmicflows-4, sixdfgs-dr3]
-    angular_tolerance_arcsec: 10.0
-    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
-    basis: *cf4
-  - sources: [cosmicflows-4, sdss-dr17-galaxies]
-    angular_tolerance_arcsec: 10.0
-    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
-    basis: *cf4
-  - sources: [updated-nearby-galaxies, cosmicflows-4]
-    angular_tolerance_arcsec: 30.0
-    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
-    basis: &ungc >-
-      UNGC positions are given to 0.1 s in right ascension and 1 arcsec in declination
-      (Karachentsev et al. 2013, AJ 145, 101; VizieR J/AJ/145/101), about 1.5 arcsec; 30 arcsec
-      is a pipeline choice for the centres of nearby dwarfs, which are diffuse and differ between
-      catalogues by tens of arcseconds. 300 km/s as for Cosmicflows-4.
   - sources: [updated-nearby-galaxies, twomrs]
     angular_tolerance_arcsec: 30.0
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
-    basis: *ungc
+    basis: >-
+      UNGC positions are given to 0.1 s in right ascension and 1 arcsec in declination
+      (Karachentsev et al. 2013, AJ 145, 101; VizieR J/AJ/145/101), about 1.5 arcsec; 30 arcsec
+      is a pipeline choice for the centres of nearby dwarfs, which are diffuse and differ between
+      catalogues by tens of arcseconds. 300 km/s is a pipeline choice: UNGC velocities are
+      compiled heliocentric velocities that may come from another spectrum than the survey's.
   - sources: [updated-nearby-galaxies, mcconnachie-2012]
     angular_tolerance_arcsec: 120.0
     line_of_sight: { compare: distance, tolerance_fraction: 0.3 }
@@ -207,4 +222,4 @@ pairs:
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
     basis: >-
       Pipeline choice: the brighter Local Group galaxies that 2MRS holds have XSC centroids
-      within an arcminute of McConnachie's centres; 300 km/s as for Cosmicflows-4.
+      within an arcminute of McConnachie's centres; 300 km/s as for UNGC.

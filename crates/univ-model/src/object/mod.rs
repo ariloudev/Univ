@@ -3,6 +3,7 @@
 //! designations and names with their sources, and its preferred measurements.
 
 mod preferred;
+mod relation;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -11,6 +12,7 @@ pub use preferred::{
     Decided, FractionalUncertainty, MeasurementRef, MethodRank, NotPlacedReason, Placement,
     PositionClass, PreferredDistance, PreferredPosition,
 };
+pub use relation::{ObjectKind, Relation, RelationKind};
 
 use crate::entry::CatalogueEntry;
 use crate::ids::{Designation, SourceId};
@@ -39,6 +41,9 @@ impl Confidence {
 
     /// Certainty, as a published cross-identification gives.
     pub const CERTAIN: Self = Self(1.0);
+
+    /// No confidence at all.
+    pub const NONE: Self = Self(0.0);
 
     #[must_use]
     pub fn get(self) -> f64 {
@@ -141,9 +146,13 @@ pub struct CandidateLink {
     pub confidence: Confidence,
 }
 
-/// One body resolved from its catalogue entries.
+/// One body resolved from its catalogue entries: a star, a galaxy or a cluster as its sources
+/// list it, or a galaxy group where a source lists groups.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Object {
+    /// What its sources list it as.
+    #[serde(default)]
+    pub kind: ObjectKind,
     /// Its catalogue entries, the anchor first, each with how it was resolved.
     pub entries: Vec<ObjectEntry>,
     /// Each designation its entries carry, with the source that gave it: an entry's own, and
@@ -153,6 +162,10 @@ pub struct Object {
     pub names: Vec<CommonName>,
     /// Candidate matches to other objects.
     pub links: Vec<CandidateLink>,
+    /// Typed relations to other objects, such as a group's dominant galaxy: neither object
+    /// lends the other a measurement.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub relations: Vec<Relation>,
     pub preferred_distance: Option<PreferredDistance>,
     pub preferred_position: Option<PreferredPosition>,
     pub placement: Placement,
@@ -168,10 +181,12 @@ impl Object {
             .map(|e| e.entry.designation.clone())
             .collect();
         Self {
+            kind: ObjectKind::default(),
             entries,
             designations,
             names: Vec::new(),
             links: Vec::new(),
+            relations: Vec::new(),
             preferred_distance: None,
             preferred_position: None,
             placement: Placement::NotPlaced {
