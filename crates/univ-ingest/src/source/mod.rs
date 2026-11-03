@@ -200,7 +200,7 @@ pub enum RedistributionStatus {
 }
 
 /// The range of scales a source belongs to, each with its own octree and unit.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ScaleDomain {
     Stars,

@@ -10,8 +10,8 @@ use clap::{Args, Parser, Subcommand};
 use univ_ingest::events::{EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
 use univ_ingest::run::{
-    FetchOptions, MatchOptions, RunReport, display_for_stderr, drawing, fetch, interrupted,
-    match_stage, normalize_stage_until, owner_interrupt, select,
+    DEFAULT_TILES, FetchOptions, MatchOptions, RunReport, TileOptions, display_for_stderr, drawing,
+    fetch, interrupted, match_stage, normalize_stage_until, owner_interrupt, select, tiles_stage,
 };
 use univ_ingest::state::DEFAULT_STATE;
 
@@ -40,6 +40,19 @@ enum Command {
     /// structures' members. The ids it would give are written to the state directory's
     /// `pending/`; no release is built.
     Match(MatchArgs),
+    /// Fetches, normalizes and cross-matches the sources, then lays out each scale domain's
+    /// placed objects as an octree of tiles under `rules/tiles.yaml`, written with a JSON tile
+    /// manifest per domain under the output directory; no release is built.
+    Tiles(TilesArgs),
+}
+
+#[derive(Args)]
+struct TilesArgs {
+    #[command(flatten)]
+    matching: MatchArgs,
+    /// The directory each scale domain's tiles and manifest are written under.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_TILES)]
+    out: PathBuf,
 }
 
 #[derive(Args)]
@@ -57,6 +70,7 @@ enum Until {
     Fetch,
     Normalize,
     Match,
+    Tiles,
 }
 
 #[derive(Args)]
@@ -80,10 +94,14 @@ struct FetchArgs {
 
 #[tokio::main]
 async fn main() -> ExitCode {
-    let (args, until, state) = match Cli::parse().command {
-        Command::Fetch(args) => (args, Until::Fetch, None),
-        Command::Normalize(args) => (args, Until::Normalize, None),
-        Command::Match(args) => (args.fetch, Until::Match, Some(args.state)),
+    let (args, until, state, out) = match Cli::parse().command {
+        Command::Fetch(args) => (args, Until::Fetch, None, None),
+        Command::Normalize(args) => (args, Until::Normalize, None, None),
+        Command::Match(args) => (args.fetch, Until::Match, Some(args.state), None),
+        Command::Tiles(args) => {
+            let m = args.matching;
+            (m.fetch, Until::Tiles, Some(m.state), Some(args.out))
+        }
     };
     let options = FetchOptions {
         definitions: args.definitions,
@@ -121,21 +139,26 @@ async fn main() -> ExitCode {
         let sink = display.as_ref() as &dyn EventSink;
         let normalized =
             normalize_stage_until(sink, &definitions, &acquired, &options, &report, &cancel).await;
-        if let Some(state) = state {
-            // The objects are held for the stages that follow; this command ends here.
-            let sink: Arc<dyn EventSink> = display.clone();
-            let match_options = MatchOptions { state };
-            let (defs, opts) = (&definitions, &options);
-            match_stage(
-                sink,
-                defs,
-                &acquired,
-                normalized,
-                opts,
-                &match_options,
-                &report,
-            )
-            .await;
+        let Some(state) = state else {
+            return;
+        };
+        let sink: Arc<dyn EventSink> = display.clone();
+        let match_options = MatchOptions { state };
+        let (defs, opts) = (&definitions, &options);
+        let crossed = match_stage(
+            sink.clone(),
+            defs,
+            &acquired,
+            normalized,
+            opts,
+            &match_options,
+            &report,
+        )
+        .await;
+        if let (Some(crossed), Some(out)) = (crossed, out) {
+            // The tiles are held for the release stage that follows; this command ends here.
+            let tile_options = TileOptions { out };
+            tiles_stage(sink, defs, crossed, opts, &tile_options, &report).await;
         }
     };
     let mut run = std::pin::pin!(drawing(display.as_ref(), run));

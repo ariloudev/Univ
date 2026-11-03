@@ -26,6 +26,8 @@ use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
 
 pub use super::common::source_id as source;
 
+pub mod tiles;
+
 pub fn rules_dir() -> PathBuf {
     super::common::workspace().join("rules")
 }

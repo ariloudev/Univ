@@ -1,0 +1,50 @@
+# Tile rules: how each scale domain's points are laid out as an octree of tiles (build-octree-tiles).
+# A release records this file, and each tile manifest records the parameters it was built with.
+# Read by univ-ingest `tiles::TileRules`.
+#
+# How a domain is built (univ-ingest `tiles`):
+#   - Its points are the placed objects whose preferred distance comes from an entry of a source
+#     of that scale domain, at their derived ICRS Cartesian positions (origin the Solar System
+#     barycentre), in pc for stars and Mpc for nearby galaxies and the cosmic web. An object not
+#     placed is in no tile.
+#   - The root is a cube centred on the barycentre whose half-edge is the smallest power of two
+#     of the unit (2^k, k any integer) not below the largest |x|, |y| or |z| of the domain's
+#     points: deterministic, and every node's corner then falls on an exact binary fraction.
+#   - A node that receives more points than `split_threshold`, above `max_depth`, is split: it
+#     keeps an even random subsample of `level_points` of them (every one equally likely, drawn
+#     without replacement) and passes the rest to its eight children by octant. Any other node
+#     is a leaf and keeps every point it receives. So each point is in exactly one node, and a
+#     finer level only adds points to those above it.
+#   - The subsample is drawn with ChaCha20 keyed by `seed` (its eight little-endian bytes, then
+#     24 zero bytes), the stream numbered by the domain (0 stars, 1 nearby galaxies, 2 cosmic
+#     web), node by node in depth-first order of address, children in octant order.
+#   - Every tile is at most 1 MiB (QA-1): a tile of n points is 48 + 17 n bytes, so at most
+#     61,678 points. Both counts below are checked against it when this file is read, and a leaf
+#     at the maximum depth holding more points than that refuses the build, naming the node,
+#     rather than writing it or dropping points.
+
+statement: >-
+  Each scale domain is an octree over its placed objects' derived ICRS Cartesian positions. A
+  node holding more points than the split threshold is split, down to the maximum depth,
+  keeping an even random subsample of the level points; the rest go to its children.
+split_threshold: 32768
+split_basis: >-
+  Pipeline choice. A leaf of 32,768 points is a tile of 557,104 bytes, about half of the 1 MiB
+  bound (QA-1), small enough to load in well under a second on a 10 Mbit/s link, and the
+  headroom up to 61,678 points is what a leaf at the maximum depth may still hold.
+level_points: 16384
+level_points_basis: >-
+  Pipeline choice: the points an inner node keeps, a tile of 278,576 bytes, so the coarse view
+  a client loads first arrives quickly. Half the split threshold, so that a split always passes
+  at least as many points down as it keeps.
+max_depth: 16
+max_depth_basis: >-
+  Pipeline choice. At depth 16 a node's edge is 1/65,536 of the root's: 0.25 pc for a stars
+  root of edge 16,384 pc, 0.125 Mpc for a cosmic web root of 8,192 Mpc, finer than any distance
+  error the sources publish, so a deeper split would sort points by their noise. A node at this
+  depth is never split, and one holding more than 61,678 points refuses the build.
+seed: 1
+seed_basis: >-
+  Any fixed number serves. It is recorded in each tile manifest, and the same seed with the same
+  sources and rules gives byte-identical tiles; another seed draws other subsamples, never other
+  points.
