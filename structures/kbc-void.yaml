@@ -50,12 +50,12 @@ values:
 disputes:
   - claim: >-
       The type Ia supernova distance-redshift relation rules out large local underdensities
-      (|δ| > 20%) at 4 to 5 sigma.
+      (|δ| > 20%) at the 4-5σ confidence level.
     cite:
       paper: kenworthy-2019
       sentence: "We conclude that the SN luminosity distance-redshift relation is inconsistent at the 4-5σ confidence level with large local underdensities (|δ| > 20%, where the density contrast δ = Δρ/ρ) proposed in some galaxy count studies"
 notes: >-
   The underdensity is measured as a function of distance from us, so it is a sphere about the
   observer; the paper gives no offset or anisotropy. Its fields cover only part of the sky
-  (UKIDSS-LAS with SDSS, GAMA and 2dFGRS, and 2M++ at low redshift). Mazurenko et al. 2024 model
+  (UKIDSS-LAS with SDSS, GAMA and 2dFGRS, and 2M++ at low redshift). Mazurenko et al. model
   bulk flows assuming the void is real, which supports rather than disputes it.

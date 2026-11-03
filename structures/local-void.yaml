@@ -76,6 +76,11 @@ values:
     unit: megaparsec
     kind: inferred
     uncertainty: { form: lower_limit }
+    assumes: &h74
+      cosmology: "H0 = 74 km/s/Mpc, the paper's preferred value for peculiar velocities; its sizes rest mostly on distances measured independently of redshift"
+      cite:
+        paper: tully-2008
+        sentence: "In Section 3.4, a weak preference will be found for H0=74 km s-1 Mpc-1."
     cite:
       paper: tully-2008
       sentence: "Simplistically, it could be inferred that the radius of a completely empty Local Void is at least 16 Mpc."
@@ -84,6 +89,7 @@ values:
     unit: megaparsec
     kind: inferred
     uncertainty: { form: lower_limit }
+    assumes: *h74
     cite:
       paper: tully-2008
       sentence: "The large expulsion velocities imply a dimension of the radius to the center of the Local Void at our position of at least 23 Mpc."
@@ -92,6 +98,7 @@ values:
     unit: megaparsec
     kind: estimated
     uncertainty: { form: none_reported }
+    assumes: *h74
     cite:
       paper: tully-2008
       sentence: "Even the smaller void is not so small, with a long dimension of ~35 Mpc."

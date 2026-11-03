@@ -44,7 +44,12 @@ geometry:
       unit: megaparsec
       kind: inferred
       uncertainty: { form: none_reported }
-      assumes: "H0 = 50 km/s/Mpc and q0 = 0.5"
+      assumes: &assumes
+        cosmology: "H0 = 50 km/s/Mpc, q0 = 0.5"
+        cite: &cosmology
+          paper: kopylov-2002
+          sentence: "Corresponding scales are 100–300 Mpc (here and further we use H0 = 50 km s−1 Mpc−1 and q0 = 0.5) and the mass excess (a deficit for voids) may reach 10^16–10^17 M⊙."
+          page: 389
       cite: *centre
 values:
   shell_inner_radius:
@@ -52,7 +57,7 @@ values:
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
-    assumes: "H0 = 50 km/s/Mpc and q0 = 0.5"
+    assumes: *assumes
     cite: &shell
       paper: kopylov-2002
       sentence: "The clusters of galaxies in our sample are selected in a spherical shell centered on the GV, with an inner radius of 150 Mpc and 50 Mpc in thickness."
@@ -62,12 +67,29 @@ values:
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
-    assumes: "H0 = 50 km/s/Mpc and q0 = 0.5"
+    assumes: *assumes
     cite: *shell
+  discovery_size:
+    value: 400
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *assumes
+    cite: &discovery
+      paper: kopylov-2002
+      sentence: "One of the results of the programme “The Northern Cone of Metagalaxy” (Kopylov et al. 1988) was the discovery of the Giant Void (GV) (with a size of 400 Mpc and a redshift of the centre 0.116) in the distribution of very rich (R ≥2) Abell clusters."
+      page: 389
+    note: "The size at discovery, in the distribution of the richer R ≥ 2 clusters, as this paper reports it."
+  discovery_centre_redshift:
+    value: 0.116
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *discovery
 disputes: []
 notes: >-
   The void is defined by rich (R ≥ 1) Abell clusters, not by galaxies: its diameter is that of the
-  largest sphere free of such clusters, at the paper's H0 = 50 km/s/Mpc and q0 = 0.5 (stated on its
-  first page). The 1988 discovery paper gave a size of 400 Mpc and a centre redshift of 0.116. The
-  newsroom atlas listed the 17 shell clusters of Table 1 as members; they bound the void and are not
-  its members, so they are left out here.
+  largest sphere free of such clusters, at the paper's H0 = 50 km/s/Mpc and q0 = 0.5. The 1988
+  discovery found it in the richer R ≥ 2 clusters, with a larger size and a farther centre, given
+  here as this paper reports them. The newsroom atlas listed the shell clusters of Table 1 as
+  members; they bound the void and are not its members, so they are left out here.

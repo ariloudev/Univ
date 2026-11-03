@@ -68,6 +68,7 @@ values:
       table: "Dynamical parameters of clusters (the third table of the arXiv source)"
       row: "A2151"
       column: "v̄ (km s-1)"
+      cell: "11004 ± 59"
   a2152_mean_velocity:
     value: 12942
     unit: kilometre_per_second
@@ -78,6 +79,7 @@ values:
       table: "Dynamical parameters of clusters (the third table of the arXiv source)"
       row: "A2152"
       column: "v̄ (km s-1)"
+      cell: "12942 ± 97"
   a2147_mean_velocity:
     value: 10492
     unit: kilometre_per_second
@@ -88,11 +90,12 @@ values:
       table: "Dynamical parameters of clusters (the third table of the arXiv source)"
       row: "A2147"
       column: "v̄ (km s-1)"
+      cell: "10492 ± 85"
 disputes: []
 notes: >-
   This is the compact core of the supercluster: A2151 (the Hercules cluster) and the double cluster
-  A2147/2152, all near α ~ 16h, δ ~ 17°. At a low density enhancement A2107, A2063 and A2052 also
-  belong to it. The region is given in B1950. The paper also quotes Tarenghi et al. (1980) cluster
+  A2147/2152, all inside the region given. At a low density enhancement A2107, A2063 and A2052 also
+  belong to it. The region is given in B1950. The paper also quotes Tarenghi et al.'s cluster
   centres in J2000, used only as starting points for its own centres, which it does not tabulate;
   the newsroom atlas used those as member positions, and they are left out here. Its upper limit on
   the volume, in h^-3 Mpc^3, has no unit in univ-model and is left out.

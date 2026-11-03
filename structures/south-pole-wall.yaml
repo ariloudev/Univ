@@ -50,8 +50,13 @@ values:
     unit: megaparsec
     kind: estimated
     uncertainty: { form: none_reported }
+    assumes:
+      cosmology: "the model's fiducial ΛCDM, Ωm = 0.3, ΩΛ = 0.7, H0 = 75 km/s/Mpc; the paper does not say which Hubble constant converts 0.11c to this length"
+      cite:
+        paper: pomarede-2020
+        sentence: "where f is the growth rate of structure given the ΛCDM parameters Ωm = 0.3, ΩΛ = 0.7, and H0 = 75 km s-1 Mpc-1."
     cite: *lengths
-    note: "The paper's conversion of 0.11c to a length."
+    note: "The paper's conversion of 0.11c to a length. Its other conversions in the same sentence, and its fitted h_eff a little above one, put the Hubble constant somewhat above the fiducial value."
 disputes: []
 notes: >-
   A reconstruction from Cosmicflows-3 peculiar velocities. The paper names its features by

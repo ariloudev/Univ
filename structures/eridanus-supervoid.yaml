@@ -53,7 +53,7 @@ geometry:
       kind: inferred
       uncertainty: { form: symmetric, sigma: 50 }
       cite: *fit
-      note: "The radius of a top-hat void model fitted to galaxy counts within 15° of the Cold Spot."
+      note: "The radius of a top-hat void model fitted to the galaxy counts in the paper's test circles about the Cold Spot."
 values:
   matter_density_contrast:
     value: -0.14
@@ -77,7 +77,7 @@ values:
     cite: *deepest
 disputes:
   - claim: >-
-      A 2dF redshift survey of the inner 5° of the Cold Spot finds smaller voids at z = 0.14, 0.26 and
+      A 2dF redshift survey of the centre of the Cold Spot finds smaller voids at z = 0.14, 0.26 and
       0.30, too small to explain the Cold Spot through the ISW effect. The dispute is about the
       void's cause of the Cold Spot and its scale, not the photometric underdensity itself.
     cite:
@@ -85,5 +85,6 @@ disputes:
       sentence: "We have found voids at z = 0.14, 0.26 and 0.30 but they are interspersed with small over-densities and the scale of these voids is insufficient to explain the Cold Spot through the ΛCDM ISW effect."
 notes: >-
   Found with WISE-2MASS and Pan-STARRS1 photometric redshifts. The paper gives the Cold Spot centre
-  only to the nearest degree, in Galactic coordinates. Tully et al. 2019 reconstruct the nearer
+  only to the nearest degree, in Galactic coordinates. Tully et al., in their cosmography of the
+  Local Void, reconstruct the nearer
   "Eridanus Void" as an inner extension of this feature.

@@ -105,6 +105,7 @@ fn each_number_cites_its_paper_and_the_sentence_table_or_figure() {
                     number,
                     row,
                     column,
+                    ..
                 } => {
                     assert!(![number, row, column].iter().any(|t| t.is_empty()));
                 }

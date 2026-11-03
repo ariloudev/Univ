@@ -50,9 +50,9 @@ geometry:
       unit: megaparsec
       kind: inferred
       uncertainty: { form: none_reported }
-      assumes: "H0 = 50 km/s/Mpc"
+      assumes: { cosmology: "H0 = 50 km/s/Mpc", cite: *centre }
       cite: *centre
-      note: "The abstract (page 493) gives a radius of 62 Mpc; the body gives 63 Mpc with its Hubble constant."
+      note: "The abstract (page 493) gives a slightly smaller radius; the body's, with its Hubble constant, is used."
 values:
   diameter_in_velocity:
     value: 6000
@@ -65,7 +65,7 @@ values:
 disputes: []
 notes: >-
   The centre's equinox is not restated in the sentence, but every position the 1987 paper tabulates
-  (Tables 1 and 2) is given for 1950, so the centre is taken as B1950. The radius is the largest empty
-  sphere in the survey's sparse sample of fields, at the paper's H0 = 50 km/s/Mpc. The newsroom atlas
-  had the abstract's 62 Mpc and an unconfirmed equinox; both are now read from the full text.
-  Tully, Howlett & Pomarède 2023 place the void inside the Ho'oleilana shell.
+  (Table 1 and Table 2) is given for B1950, so the centre is taken as B1950. The radius is the
+  largest empty sphere in the survey's sparse sample of fields, at the paper's H0 = 50 km/s/Mpc.
+  The newsroom atlas had the abstract's radius and an unconfirmed equinox; both are now read from
+  the full text. Tully, Howlett & Pomarède place the void inside the Ho'oleilana shell.

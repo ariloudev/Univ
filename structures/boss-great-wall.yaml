@@ -26,7 +26,7 @@ geometry:
         cite: &figure
           paper: lietzen-2016
           figure: "3"
-          how: "Centres of the galaxy symbols read from the drawing commands of the vector figure (bgw_sky.pdf in the arXiv source) and mapped with the axis ticks (RA 156 to 168, Dec 44 to 56); the bounds of all plotted galaxies, to the symbol size."
+          how: "Centres of the galaxy symbols read from the drawing commands of the vector figure (bgw_sky.pdf in the arXiv source) and mapped linearly with its axis ticks; the bounds of all plotted galaxies, uncertain by about the size of a symbol, 0.2°."
       - value: 168.5
         unit: degree
         kind: estimated

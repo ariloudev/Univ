@@ -64,13 +64,17 @@ values:
     uncertainty: { form: none_reported }
     cite:
       paper: clowes-2012
-      sentence: "In the DR7QSO data, the LQG has 34 members, with z = 1.28."
+      sentence: "In the DR7QSO data, the LQG has 34 members, with z = 1.28. A new group of 38 members is indicated at z = 1.11 and within ~ 2.0° of the Clowes & Campusano LQG."
   characteristic_size:
     value: 350
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
-    assumes: &cosmology "proper size at the present epoch; H0 = 70 km/s/Mpc, Ωm = 0.27, ΩΛ = 0.73"
+    assumes: &cosmology
+      cosmology: "proper size at the present epoch; ΩT = 1, ΩM = 0.27, ΩΛ = 0.73, H0 = 70 km/s/Mpc"
+      cite:
+        paper: clowes-2012
+        sentence: "Note that the concordance model is adopted for cosmological calculations, with ΩT = 1, ΩM = 0.27, ΩΛ = 0.73, and H0 = 70 km s-1 Mpc-1. All sizes given are proper sizes at the present epoch."
     cite:
       paper: clowes-2012
       sentence: "A simple measure of the characteristic size of the LQGs, which takes no account of morphology, is the cube root of the corrected CHMS volumes, giving ~ 350, 380 Mpc for U1.28 and U1.11 respectively."
@@ -87,5 +91,5 @@ disputes: []
 notes: >-
   The 34 members are the quasars of Table 1, with their SDSS J2000 positions as published; they
   span z = 1.1865 to 1.4232. Its neighbour U1.11 (38 quasars, mean z = 1.11, Table 2 of the same
-  paper) is not ported. No paper disputing this group in particular was read; Nadathur 2013
-  disputes the method for the Huge-LQG.
+  paper) is not ported. No paper disputing this group in particular was read; Nadathur disputes
+  the method for the Huge-LQG.

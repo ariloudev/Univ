@@ -24,7 +24,7 @@ geometry:
         as_published: "23h30m"
         cite: &ridge
           paper: haynes-1986
-          sentence: "The main ridge of the Pisces-Perseus supercluster, north of +30° declination extends some 45° over the right ascension range from 23h30m to Perseus where it disappears into the zone of avoidance. At a distance of 50h^-1 Mpc, the structure then is at least 41h^-1 Mpc long. At the same time, its width, measured as the Gaussian full width at half-maximum in the surface density enhancement, is only about 5° or 4.3h^-1 Mpc, and its depth, derived from an upper limit to the dispersion of 500 km s^-1 outside of the dynamical units, is less than 10h^-1 Mpc."
+          sentence: "The main ridge of the Pisces-Perseus supercluster, north of +30° declination extends some 45° over the right ascension range from 23h30m to Perseus where it disappears into the zone of avoidance. At a distance of 50 h^-1 Mpc, the structure then is at least 41 h^-1 Mpc long. At the same time, its width, measured as the Gaussian full width at half-maximum in the surface density enhancement, is only about 5° or 4.3 h^-1 Mpc, and its depth, derived from an upper limit to the dispersion of 500 km s^-1 outside of the dynamical units, is less than 10 h^-1 Mpc."
           page: 56
       - value: 48.75
         unit: degree
@@ -94,7 +94,7 @@ values:
     cite: *ridge
 disputes: []
 notes: >-
-  The newsroom atlas had only the abstract, whose online copy reads "4000 and 65000 km/s"; the scan
-  of the letter reads 6500 km/s, and its second page gives the ridge's length, width and depth used
+  The newsroom atlas had only the abstract, whose online copy misprints the upper velocity by a
+  factor of ten; the scan of the letter reads 6500 km/s, and its second page gives the ridge's length, width and depth used
   here. The letter does not state the equinox of its coordinates. Velocities are corrected for the
   motion with respect to the Local Group (V0).

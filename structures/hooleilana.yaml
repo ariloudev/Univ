@@ -19,7 +19,11 @@ position: &published
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
-    assumes: &h75 "h75^-1 Mpc: H0 = 75 km/s/Mpc, Ωm = 0.31"
+    assumes: &h75
+      cosmology: "h75^-1 Mpc: flat ΛCDM, Ωm = 0.31, H0 = 75 h75 km/s/Mpc"
+      cite:
+        paper: tully-2023
+        sentence: "For our first test of the origin of Ho'oleilana, we begin by converting the SDSS PV catalogue from right ascension, declination and redshift to supergalactic cartesian coordinates assuming a fiducial flat Lambda Cold Dark Matter (ΛCDM) cosmological model with matter density Ωm = 0.31 and expansion rate H0 = 75 h75 km s-1 Mpc-1."
     cite: &centre
       paper: tully-2023
       sentence: "the normalised radial distribution of groups at the central location where the supposed BAO 'bump' is most prominent, [SGX, SGY, SGZ] = [-24, 242, 58] h75^-1 Mpc."

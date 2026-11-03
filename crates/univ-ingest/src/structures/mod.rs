@@ -5,9 +5,12 @@
 //! position and geometry in a named frame, its other published values, the disputes about it,
 //! and, for a structure outlined from a volume grid, the grid, threshold and test.
 
+mod check;
+mod citation;
 mod cited;
 mod geometry;
 mod members;
+mod numbers;
 mod outline;
 mod shape;
 
@@ -19,7 +22,8 @@ use univ_model::ids::is_slug;
 
 use crate::yaml::{FileError, read_checked, read_dir};
 
-pub use cited::{Citation, Cited, Locator};
+pub use citation::{Citation, Locator};
+pub use cited::{Assumes, Cited};
 pub use geometry::{Coordinates, Radial, StructureFrame};
 pub use members::{Column, ColumnName, Format, MemberSource, Members, Row};
 pub use outline::{Choice, GridOutline, OutlineTest, Rule, Seed, Side, Threshold};
@@ -168,6 +172,7 @@ impl Structure {
         }
         for (field, value) in self.cited_values() {
             self.check_citation(&field, &value.cite, Some(value))?;
+            self.check_value(&field, value)?;
         }
         for (i, dispute) in self.disputes.iter().enumerate() {
             let field = format!("disputes[{i}]");
@@ -181,7 +186,8 @@ impl Structure {
         {
             return problem("geometry.members.source.paper", "is not among the papers");
         }
-        Ok(())
+        self.check_members()?;
+        self.check_free_text()
     }
 
     fn check_citation(
@@ -190,12 +196,7 @@ impl Structure {
         cite: &Citation,
         value: Option<&Cited>,
     ) -> Result<(), (String, String)> {
-        if !self.papers.iter().any(|p| p.id == cite.paper) {
-            return Err((
-                format!("{field}.cite.paper"),
-                format!("{} is not among the papers", cite.paper),
-            ));
-        }
+        self.check_paper(&format!("{field}.cite"), cite)?;
         if let (Some(value), Locator::Sentence { quote, .. }) = (value, &cite.locator)
             && !value.appears_in(quote)
         {
@@ -231,7 +232,7 @@ impl Structure {
         }
         if let Some(outline) = &self.outline {
             if let Threshold::Cited(c) = &outline.threshold {
-                out.push(("outline.threshold".to_owned(), c));
+                out.push(("outline.threshold".to_owned(), c.as_ref()));
             }
             if let Some(seed) = &outline.seed {
                 for (field, c) in seed.position.cited() {

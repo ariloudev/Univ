@@ -47,12 +47,14 @@ values:
     unit: megaparsec
     kind: estimated
     uncertainty: { form: none_reported }
+    assumes: &unstated "not stated: neither paper gives the cosmology behind its sizes in Mpc"
     cite: *claim
   size_high:
     value: 3000
     unit: megaparsec
     kind: estimated
     uncertainty: { form: none_reported }
+    assumes: *unstated
     cite: *claim
   test_circle_radius:
     value: 51.3
@@ -74,6 +76,20 @@ values:
     kind: measured
     uncertainty: { form: none_reported }
     cite: *circle
+  bursts_in_concentration_2014:
+    value: 14
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &letter
+      paper: horvath-2014
+      sentence: "Subdividing this sample into nine radial parts, each containing 31 GRBs, indicates that the GRB sample having 1.6<z<2.1 differs significantly from the others in that 14 of the 31 GRBs are concentrated in roughly 1/8 of the sky."
+  bursts_in_redshift_band_2014:
+    value: 31
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *letter
 disputes:
   - claim: >-
       A clustering analysis of the Swift burst sample finds no significant redshift-dependent

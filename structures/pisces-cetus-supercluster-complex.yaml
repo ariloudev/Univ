@@ -61,6 +61,7 @@ values:
     cite: *plane
 disputes: []
 notes: >-
-  Tully's distances follow from redshifts with H0 = 75 h75 km/s/Mpc and q0 = 1/2 (footnote 1), so
-  a length in h75^-1 Mpc is in Mpc at H0 = 75. The main plane is the supergalactic plane. The
+  Tully's distances follow from redshifts with the Hubble constant and deceleration parameter of
+  his footnote 1, so a length in h75^-1 Mpc is a length in Mpc at the Hubble constant its
+  subscript names. The main plane is the supergalactic plane. The
   newsroom atlas read only the abstract; the scan confirms its values.

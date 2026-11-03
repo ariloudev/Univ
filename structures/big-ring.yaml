@@ -23,10 +23,10 @@ geometry:
         The plotted points of the raster layers of the figure (topcat_visually_identified.pdf in the
         arXiv source; one layer each for the ring, the inner filament and the additional absorbers,
         drawn in that order) found as connected groups of the layers' soft masks above half opacity,
-        their mask-weighted centroids mapped linearly with the axis ticks (RA 208 to 222, Dec 45 to
-        55). A point on the ring layer that a later layer covers is assigned to that later layer.
-        Overlapping points merge into one group; the count column estimates how many points each
-        group holds from its area (37 mask pixels per point).
+        their mask-weighted centroids mapped linearly with the figure's axis ticks. A point on the ring
+        layer that a later layer covers is assigned to that later layer. Overlapping points merge
+        into one group; the count column estimates how many points each group holds from its area,
+        against the area of a single point.
     columns:
       - { name: lon, header: "RA (deg)", unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 0.02 } }
       - { name: lat, header: "Dec (deg)", unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 0.02 } }
@@ -94,7 +94,11 @@ values:
     unit: megaparsec
     kind: estimated
     uncertainty: { form: none_reported }
-    assumes: "proper size at the present epoch"
+    assumes: &cosmology
+      cosmology: "proper size at the present epoch; ΩT0 = 1, ΩM0 = 0.27, ΩΛ0 = 0.73, H0 = 70 km/s/Mpc"
+      cite:
+        paper: lopez-2024
+        sentence: "The concordance model is adopted for cosmological calculations, with ΩT0 = 1, ΩM0 = 0.27, ΩΛ0 = 0.73, and H0 = 70 km s-1 Mpc-1. All sizes given are proper sizes at the present epoch."
     cite:
       paper: lopez-2024
       sentence: "The BR is a striking circular, annulus-like, structure of diameter ~ 400 Mpc (proper size, present epoch)."
@@ -103,9 +107,18 @@ values:
     unit: megaparsec
     kind: estimated
     uncertainty: { form: none_reported }
+    assumes: *cosmology
     cite:
       paper: lopez-2024
       sentence: "From Figure 1 we can estimate the BR diameter is ~ 300 - 400 Mpc"
+  absorber_count:
+    value: 51
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: lopez-2024
+      sentence: "The table is for the 51 visually-identified BR absorber members."
   redshift:
     value: 0.802
     unit: dimensionless
@@ -125,9 +138,10 @@ values:
 disputes: []
 notes: >-
   The paper's Table 5 lists the 51 ring absorbers without coordinates, so the positions are
-  digitised from Figure 2: 45 groups on the ring layer, one of about three points and one of about
-  two, so 48 plotted points; three of them carry two absorbers seen in one quasar spectrum, which
-  makes the 51. The inner filament (8 points) and the additional absorbers inside the ring (3) are
-  rows of their own. The newsroom atlas recorded a dispute from Sawala et al. 2025, but that paper
-  only names the Big Ring among recent claims and tests the Giant Arc; no dispute of the ring itself
-  was found, so none is recorded.
+  digitised from Figure 2. Some plotted points overlap and are merged into groups, whose count
+  column estimates the points each holds, and some points carry two absorbers seen in one quasar
+  spectrum, so the plotted points are fewer than the absorbers. The inner filament and the
+  additional absorbers inside the ring are rows of their own; the paper does not count either
+  separately. The newsroom atlas recorded a dispute from Sawala et al., but that paper only names
+  the Big Ring among recent claims and tests the Giant Arc; no dispute of the ring itself was
+  found, so none is recorded.

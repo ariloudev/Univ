@@ -34,8 +34,7 @@ geometry:
       how: >-
         The circle centres of the 44 black (principal agglomeration) and 11 red (secondary
         agglomeration) markers, read from the drawing commands of the vector figure
-        (CHMS_GA_bigger_FOV.pdf in the arXiv source) and mapped linearly with its axis ticks (RA 200
-        to 225, Dec 30 to 45). The paper does not say whether its axes are linear in RA and Dec or a
+        (CHMS_GA_bigger_FOV.pdf in the arXiv source) and mapped linearly with its axis ticks. The paper does not say whether its axes are linear in RA and Dec or a
         projection; linear axes are assumed. The absorbers' redshifts are not plotted.
     columns:
       - { name: lon, header: "RA", unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 0.01 } }
@@ -117,7 +116,11 @@ values:
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
-    assumes: "proper size at the present epoch, concordance cosmology"
+    assumes: &cosmology
+      cosmology: "proper size at the present epoch; ΩT0 = 1, ΩM0 = 0.27, ΩΛ0 = 0.73, H0 = 70 km/s/Mpc"
+      cite:
+        paper: lopez-2022
+        sentence: "The concordance model is adopted for cosmological calculations, with ΩT0 = 1, ΩM0 = 0.27, ΩΛ0 = 0.73, and H0 = 70 km s-1 Mpc-1. All sizes given are proper sizes at the present epoch."
     cite: *slice
   extent:
     value: 1000
@@ -125,10 +128,33 @@ values:
     kind: estimated
     uncertainty: { form: none_reported }
     as_published: "~1 Gpc"
-    assumes: "proper size at the present epoch, concordance cosmology"
+    assumes: *cosmology
     cite:
       paper: lopez-2022
       sentence: "The Giant Arc (GA) spans ~1 Gpc (proper size, present epoch), and appears to be almost symmetrical on the sky."
+  principal_agglomeration_members:
+    value: 44
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &caption
+      paper: lopez-2022
+      sentence: "There are 44 black points which indicate the principal agglomeration of the Giant Arc — the largest, and most significant agglomeration in the field —, which comprises the majority of the GA. There are 11 red points which indicate the secondary agglomeration of the GA, which, although by itself not statistically significant, is clearly part of the GA."
+  secondary_agglomeration_members:
+    value: 11
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *caption
+  central_cluster_redshift:
+    value: 0.763
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: lopez-2022
+      sentence: "Recall that the SZ cluster B18, z = 0.763 [...], is at the centre of the GA."
+    note: "The redshift of the SZ cluster candidate PSZ2 G069.39+68.05 at the arc's centre, from Burenin et al. as the paper cites them."
 disputes:
   - claim: >-
       Patterns like the Giant Arc are common in a ΛCDM simulation analysed with the same method,

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::{KindOfValue, Quantity, Uncertainty};
 
-use super::cited::uncited;
+use super::cited::{Assumes, uncited};
 use super::geometry::StructureFrame;
 
 /// The members of a structure, with every column's unit, kind of value and uncertainty.
@@ -119,6 +119,9 @@ pub struct Column {
     pub format: Format,
     pub kind: KindOfValue,
     pub uncertainty: Uncertainty,
+    /// The cosmology the paper used for a column of lengths, as for a cited value.
+    #[serde(default)]
+    pub assumes: Option<Assumes>,
 }
 
 /// A member: its name in the paper and its values, one per column, in the column's unit.

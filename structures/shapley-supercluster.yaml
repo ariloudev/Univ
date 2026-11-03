@@ -75,6 +75,22 @@ values:
     kind: measured
     uncertainty: { form: lower_limit }
     cite: *plane
+  connecting_structure_velocity:
+    value: 12000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: proust-2006
+      sentence: "There is also a connecting structure associated with the slightly nearer Abell 3571 cluster complex (v ≈ 12000 km s-1)."
+  third_sheet_velocity:
+    value: 15000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: proust-2006
+      sentence: "These galaxies seem to link two previously identified sheets of galaxies and establish a connection with a third one at v̄ = 15000 km s-1 near R.A. = 13h."
 disputes: []
 notes: >-
   The main plane fills the whole survey region, so its extent is a lower limit; the orientation of

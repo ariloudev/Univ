@@ -129,6 +129,14 @@ values:
     cite:
       paper: bagchi-2017
       sentence: "The spherical collapse model suggests that the central region of radius ~20 Mpc and mass at least 4 × 10^15 M☉ may be collapsing."
+  clusters_within_90_mpc:
+    value: 48
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: bagchi-2017
+      sentence: "Out of the 238 WHL clusters within our analysis region there is a major concentration of 48 clusters within 90 Mpc comoving distance from the center of Saraswati, and 43 of these are associated with the filament/wall-like main structure of the Saraswati supercluster"
 disputes: []
 notes: >-
   Table 1 lists the 48 WHL clusters within 90 comoving Mpc of Abell 2631, "in and around" the

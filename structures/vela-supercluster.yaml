@@ -91,4 +91,5 @@ disputes: []
 notes: >-
   The extent is preliminary, from sparse sampling behind the Milky Way; the main wall W1 lies both
   above and below the plane, the second wall W2 only below it. The paper writes its lengths as
-  "h70 Mpc", which is read as h70^-1 Mpc, that is Mpc at H0 = 70.
+  "h70 Mpc", which is read as h70^-1 Mpc, a length in Mpc at the Hubble constant its subscript
+  names.

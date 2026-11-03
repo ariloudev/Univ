@@ -159,6 +159,6 @@ disputes:
       sentence: "In addition, I show that the algorithm used to identify the Huge-LQG regularly finds even larger clusters of points, extending over Gpc scales, in explicitly homogeneous simulations of a Poisson point process with the same density as the quasar catalogue."
 notes: >-
   The 73 members are the quasars of Table 1, with their SDSS J2000 positions as published. The
-  orientation of the principal axes is not given in numbers. Sawala et al. 2025 also cite Park et
-  al. 2015 and Fujii 2024 as finding the quasar agglomerations consistent with random fluctuations;
-  those papers were not read.
+  orientation of the principal axes is not given in numbers. Sawala et al., in "The emperor's new
+  arc", also cite Park et al. and Fujii as finding the quasar agglomerations consistent with random
+  fluctuations; none of those papers is cited here, and the last two were not read.

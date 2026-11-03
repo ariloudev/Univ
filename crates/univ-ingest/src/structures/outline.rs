@@ -2,12 +2,16 @@
 //! test that must admit the outline. [`crate::outlines`] computes the outline and runs the test;
 //! a structure whose outline fails is published as a point at its published position.
 
-use serde::de::{self, Deserializer};
+use std::fmt;
+
+use serde::de::{self, Deserializer, MapAccess, Visitor};
 use serde::{Deserialize, Serialize};
 use univ_model::ids::SourceId;
 use univ_model::units::Unit;
+use univ_model::value::{KindOfValue, Uncertainty};
 
-use super::cited::Cited;
+use super::citation::Citation;
+use super::cited::{Assumes, Cited, RawCited, uncited};
 use super::geometry::Coordinates;
 
 /// How a structure is outlined from a volume grid.
@@ -34,7 +38,7 @@ pub struct GridOutline {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Threshold {
-    Cited(Cited),
+    Cited(Box<Cited>),
     Chosen(Choice),
 }
 
@@ -73,23 +77,109 @@ impl Threshold {
     }
 }
 
-/// A threshold is chosen when it has `chosen`, and is otherwise read as a cited value, so that a
-/// bare number is refused as citing nothing.
+/// A threshold as written: a choice (`chosen`, `why`) or a cited value, read in one pass so
+/// that a refusal points at the threshold itself.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawThreshold {
+    #[serde(default)]
+    chosen: Option<f64>,
+    #[serde(default)]
+    why: Option<String>,
+    #[serde(default)]
+    value: Option<f64>,
+    #[serde(default)]
+    unit: Option<Unit>,
+    #[serde(default)]
+    kind: Option<KindOfValue>,
+    #[serde(default)]
+    uncertainty: Option<Uncertainty>,
+    #[serde(default)]
+    cite: Option<Citation>,
+    #[serde(default)]
+    as_published: Option<String>,
+    #[serde(default)]
+    uncertainty_cite: Option<Citation>,
+    #[serde(default)]
+    assumes: Option<Assumes>,
+    #[serde(default)]
+    note: Option<String>,
+}
+
+impl TryFrom<RawThreshold> for Threshold {
+    type Error = String;
+    fn try_from(raw: RawThreshold) -> Result<Self, String> {
+        let threshold = if let Some(chosen) = raw.chosen {
+            let cited = raw.value.is_some() || raw.unit.is_some() || raw.cite.is_some();
+            if cited {
+                return Err("a chosen threshold cites nothing: give chosen and why only".into());
+            }
+            Self::Chosen(Choice {
+                chosen,
+                why: raw.why.ok_or("missing field `why`")?,
+            })
+        } else {
+            if raw.why.is_some() {
+                return Err("why is given for a chosen threshold, which needs `chosen`".into());
+            }
+            let missing = |field: &str| format!("missing field `{field}`");
+            let cited = RawCited {
+                value: raw.value.ok_or_else(|| missing("value"))?,
+                unit: raw.unit.ok_or_else(|| missing("unit"))?,
+                kind: raw.kind.ok_or_else(|| missing("kind"))?,
+                uncertainty: raw.uncertainty.ok_or_else(|| missing("uncertainty"))?,
+                cite: raw.cite,
+                as_published: raw.as_published,
+                uncertainty_cite: raw.uncertainty_cite,
+                assumes: raw.assumes,
+                note: raw.note,
+            };
+            Self::Cited(Box::new(Cited::try_from(cited)?))
+        };
+        threshold.check()?;
+        Ok(threshold)
+    }
+}
+
+/// Reads a threshold, and names a bare number as uncited rather than as a type mismatch.
+struct ThresholdVisitor;
+
+impl<'de> Visitor<'de> for ThresholdVisitor {
+    type Value = Threshold;
+
+    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("a cited threshold, or a chosen one with why")
+    }
+
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "only echoed in the refusal message"
+    )]
+    fn visit_i64<E: de::Error>(self, v: i64) -> Result<Threshold, E> {
+        Err(E::custom(uncited(v as f64)))
+    }
+
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "only echoed in the refusal message"
+    )]
+    fn visit_u64<E: de::Error>(self, v: u64) -> Result<Threshold, E> {
+        Err(E::custom(uncited(v as f64)))
+    }
+
+    fn visit_f64<E: de::Error>(self, v: f64) -> Result<Threshold, E> {
+        Err(E::custom(uncited(v)))
+    }
+
+    fn visit_map<A: MapAccess<'de>>(self, map: A) -> Result<Threshold, A::Error> {
+        let raw = RawThreshold::deserialize(de::value::MapAccessDeserializer::new(map))?;
+        Threshold::try_from(raw).map_err(de::Error::custom)
+    }
+}
+
 impl<'de> Deserialize<'de> for Threshold {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let value = serde_norway::Value::deserialize(deserializer)?;
-        let chosen = value.as_mapping().is_some_and(|m| m.contains_key("chosen"));
-        let threshold = if chosen {
-            Choice::deserialize(value)
-                .map(Self::Chosen)
-                .map_err(de::Error::custom)?
-        } else {
-            Cited::deserialize(value)
-                .map(Self::Cited)
-                .map_err(de::Error::custom)?
-        };
-        threshold.check().map_err(de::Error::custom)?;
-        Ok(threshold)
+        deserializer.deserialize_any(ThresholdVisitor)
     }
 }
 

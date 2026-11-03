@@ -33,7 +33,16 @@ geometry:
       - { name: lon, header: "l (deg)", unit: degree, kind: measured, uncertainty: { form: none_reported } }
       - { name: lat, header: "b (deg)", unit: degree, kind: measured, uncertainty: { form: none_reported } }
       - { name: redshift, header: "redshift", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
-      - { name: distance, header: "distance (Mpc)", unit: megaparsec, kind: inferred, uncertainty: { form: none_reported } }
+      - name: distance
+        header: "distance (Mpc)"
+        unit: megaparsec
+        kind: inferred
+        uncertainty: { form: none_reported }
+        assumes: &cosmology
+          cosmology: "flat ΛCDM, ΩΛ = 0.7, ΩM = 0.3, h = 0.7"
+          cite:
+            paper: balazs-2015
+            sentence: "Assuming the validity of CP, a homogeneous isotropic model and a standard ΛCDM cosmology (ΩΛ=0.7, ΩM=0.3, h=0.7, representing an Euclidean space with ΩΛ+ΩM=0.7+0.3=1) the line element in the 4D space-time is given by"
     rows:
       - ["GRB 040924", 149.05, -42.52, 0.859, 2866]
       - ["GRB 101225A", 114.45, -17.20, 0.847, 2836]
@@ -79,18 +88,21 @@ values:
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
+    assumes: *cosmology
     cite: *mean
   comoving_distance_standard_deviation:
     value: 65
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
+    assumes: *cosmology
     cite: *mean
   proper_diameter:
     value: 944
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
+    assumes: *cosmology
     cite: &size
       paper: balazs-2015
       sentence: "Substituting the corresponding values obtained above one gets D = 944 Mpc, corresponding to 1720 Mpc in the comoving frame."
@@ -99,6 +111,7 @@ values:
     unit: megaparsec
     kind: inferred
     uncertainty: { form: none_reported }
+    assumes: *cosmology
     cite: *size
 disputes:
   - claim: >-
