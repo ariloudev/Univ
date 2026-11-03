@@ -1,0 +1,8 @@
+source: updated-nearby-galaxies
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2CFornax%2CMESSIER032%2CNGC0055%2CSag%20dSph
+retrieved: 2026-11-03T12:22:53Z
+sha256: 19e656c51bf9c0324574670883f57846b357c54222af3d8399b5e31cfd477303
+note: >-
+  The source's own query narrowed by Name to four Local Group galaxies that McConnachie 2012 also
+  lists (mcconnachie-2012-local-group.tsv): NGC0055, MESSIER032, Fornax and Sag dSph, for the
+  merging of the two sources' entries of one galaxy.

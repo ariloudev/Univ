@@ -7,6 +7,7 @@
 use std::collections::HashMap;
 
 use super::groups::Refused;
+use super::rules::IdentifierForm;
 use super::{Edge, Join, Work};
 
 /// An identifier as compared: trimmed, and a number without its leading zeros, so that the
@@ -19,6 +20,24 @@ pub(super) fn normalized(identifier: &str) -> String {
     } else {
         t.to_owned()
     }
+}
+
+/// A common name as compared: its key in the names table (lower case, without white space),
+/// then, for a catalogue designation of letters and a number, the number without its leading
+/// zeros and `messier` written `m`. `NGC0055` and `NGC 55` agree, as do `MESSIER032` and `M32`.
+pub(super) fn common_name(name: &str) -> String {
+    let key = univ_model::release::rows::name_key(name);
+    let split = key.find(|c: char| c.is_ascii_digit()).unwrap_or(key.len());
+    let (letters, number) = key.split_at(split);
+    if letters.is_empty()
+        || !letters.chars().all(|c| c.is_ascii_alphabetic())
+        || number.is_empty()
+        || !number.bytes().all(|b| b.is_ascii_digit())
+    {
+        return key;
+    }
+    let letters = if letters == "messier" { "m" } else { letters };
+    format!("{letters}{}", normalized(number))
 }
 
 /// Applies every scheme of the rules, in the order of the file, entries in their order.
@@ -37,7 +56,10 @@ pub(super) fn apply(work: &mut Work<'_>) {
             let Some(text) = member.field.read(entry) else {
                 continue;
             };
-            let id = normalized(text);
+            let id = match scheme.compare {
+                IdentifierForm::Identifier => normalized(text),
+                IdentifierForm::CommonName => common_name(text),
+            };
             let list = by_id.entry(id.clone()).or_default();
             if list.is_empty() {
                 order.push(id);
@@ -97,7 +119,17 @@ fn apply_one(work: &mut Work<'_>, scheme: usize, id: &str, list: &[usize]) {
 
 #[cfg(test)]
 mod tests {
-    use super::normalized;
+    use super::{common_name, normalized};
+
+    #[test]
+    fn common_names_compare_by_key_and_catalogue_number() {
+        assert_eq!(common_name("NGC0055"), common_name("NGC 55"));
+        assert_eq!(common_name("MESSIER032"), common_name("M32"));
+        assert_eq!(common_name("Fornax "), common_name("fornax"));
+        assert_ne!(common_name("Sag dSph"), common_name("Sagittarius dSph"));
+        assert_ne!(common_name("NGC 55"), common_name("NGC 555"));
+        assert_eq!(common_name("And IV"), "andiv");
+    }
 
     #[test]
     fn numbers_compare_without_leading_zeros_or_blanks() {

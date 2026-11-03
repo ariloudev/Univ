@@ -10,6 +10,7 @@ mod index;
 mod positions;
 mod relations;
 pub mod rules;
+mod sight;
 
 use std::collections::HashMap;
 
@@ -61,7 +62,7 @@ pub struct MatchReport {
     pub candidate_links: u64,
     /// Objects of more than one entry.
     pub multi_entry_objects: u64,
-    /// Relations between a galaxy group and its dominant galaxy.
+    /// Relations between a galaxy group and its dominant galaxy or a member galaxy.
     #[serde(default)]
     pub group_relations: u64,
 }

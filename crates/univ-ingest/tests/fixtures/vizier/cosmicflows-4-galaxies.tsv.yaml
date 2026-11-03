@@ -1,0 +1,8 @@
+source: cosmicflows-4-galaxies
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Ftable2&-out=PGC%2C1PGC%2CVcmb%2CDM%2Ce_DM%2CDMsnIa%2CDMtf%2CDMfp%2CDMsbf%2CDMsnII%2CDMtrgb%2CDMceph%2CDMmas&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&PGC=41361%2C41220%2C41327%2C42628%2C40455%2C42831%2C41968%2C2557%2C46957
+retrieved: 2026-11-03T12:17:12Z
+sha256: 57b489452575ae3101b7ab017f3afe53c57d96387e3665bf22554b6f36b3f04e
+note: >-
+  The source's own query narrowed by PGC to nine real rows: M87 (NGC 4486, PGC 41361) and six
+  more members of the Virgo group whose dominant galaxy is M49 (1PGC 41220: NGC 4472 itself, M84,
+  PGC 41327, M89, M59 and M60), with M31 (PGC 2557) and Centaurus A (NGC 5128, PGC 46957).

@@ -109,6 +109,16 @@ impl CmbCorrection {
         self.apex
     }
 
+    /// The heliocentric redshift that this correction moves to the CMB-frame redshift `cmb` in
+    /// the ICRS unit `direction`: the inverse of [`Self::apply`], `1 + z_hel = (1 + z_cmb) /
+    /// (γ (1 + β cos θ))`. For a source that publishes only a CMB-frame value, to compare it with
+    /// heliocentric ones; it is not kept as a measurement.
+    #[must_use]
+    pub fn heliocentric_of(&self, cmb: f64, direction: Vec3) -> f64 {
+        let factor = self.gamma * (1.0 + self.beta * dot(direction, self.apex));
+        (1.0 + cmb) / factor - 1.0
+    }
+
     /// The CMB-frame redshift of a source in the ICRS unit `direction` with the heliocentric
     /// redshift `measured`: `1 + z_cmb = (1 + z_hel) γ (1 + β cos θ)`, θ the angle between the
     /// source and the apex. To first order `cz` gains `(1 + z_hel) v cos θ`. A symmetric error
@@ -179,6 +189,17 @@ mod tests {
             .apply(z(0.01), RedshiftFrame::Heliocentric, direction)
             .unwrap();
         (cmb.value.value - cmb.heliocentric.value) * SPEED_OF_LIGHT
+    }
+
+    #[test]
+    fn heliocentric_of_undoes_the_correction() {
+        let direction = unit_vector(187.7, 12.4);
+        let cmb = planck()
+            .apply(z(0.005), RedshiftFrame::Heliocentric, direction)
+            .unwrap();
+        let back = planck().heliocentric_of(cmb.value.value, direction);
+        assert!((back - 0.005).abs() < 1e-12, "{back}");
+        assert!((cmb.value.value - 0.005).abs() * SPEED_OF_LIGHT > 100.0);
     }
 
     #[test]

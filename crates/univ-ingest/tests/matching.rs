@@ -214,13 +214,13 @@ fn the_confidence_rule_is_stated_in_the_rules_and_applied_as_stated() {
         "{}",
         r.confidence.get()
     );
-    // A distance pair: UNGC and McConnachie, 60" and 10% apart in distance, under 120" and
+    // A distance pair: UNGC and McConnachie, 180" and 10% apart in distance, under 360" and
     // 30%: (1 - 0.25) * (1 - (0.1/0.3)^2) = 0.6667.
     let how = (
         DistanceKind::PrimaryIndicator,
         Method::TipOfTheRedGiantBranch,
     );
-    let b = offset(15.0, -30.0, 60.0, 0.0);
+    let b = offset(15.0, -30.0, 180.0, 0.0);
     let m = match_entries(
         &rules,
         vec![

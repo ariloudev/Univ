@@ -1,0 +1,45 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-03T12:22:52 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-03T12:22:53	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&Name=%3D%2CFornax%2CMESSIER032%2CNGC0055%2CSag%20dSph	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_51450101
+#Name: J/AJ/145/101
+#Title: Updated nearby galaxy catalog (Karachentsev+, 2013)
+#INFO	ivoid=ivo://cds.vizier/j/aj/145/101	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/aj/145/101	    IVOID of underlying data collection
+#INFO	creator=Karachentsev I.D.	    First author or institution
+#INFO	cites=bibcode:2013AJ....145..101K	    Article or Data origin sources
+#INFO	journal=AJ	    Journal name
+#INFO	original_date=2013	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/AJ/145/101	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.51450101	    Dataset identifier that can be used for citation
+#INFO	publication_date=2017-06-12	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Table	J_AJ_145_101_catalog:
+#Name: J/AJ/145/101/catalog
+#Title: Catalog of galaxies in the  the Local Volume
+#Column	_RAJ2000	(F10.6)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F10.6)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	Name	(a18)	Galaxy name in well-known catalogs	[ucd=meta.id;meta.main]
+#Column	Dist	(F5.2)	[0.01/26.2] Distance to galaxy	[ucd=pos.distance;pos.heliocentric]
+#Column	f_Dist	(A4)	Method used to obtain Dist (G1)	[ucd=meta.code]
+#Column	HRV	(I4)	[-556/2219]? Heliocentric radial velocity (12)	[ucd=spect.dopplerVeloc;pos.heliocentric]
+#Column	Bmag	(F5.2)	[-4.6/21.4]? Apparent integral B band magnitude (4)	[ucd=phot.mag;em.opt.B]
+_RAJ2000	_DEJ2000	Name	Dist	f_Dist	HRV	Bmag
+deg	deg	 	Mpc	 	km/s	mag
+----------	----------	------------------	-----	----	----	-----
+003.785417	-39.220278	NGC0055           	 2.13	TRGB	 129	 8.84
+010.675417	+40.866389	MESSIER032        	 0.49	TRGB	-202	 8.89
+039.977917	-34.525833	Fornax            	 0.14	TRGB	  29	 9.28
+283.762917	-30.478333	Sag dSph          	 0.02	TRGB	 140	 4.50
+

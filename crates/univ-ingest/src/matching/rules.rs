@@ -12,6 +12,8 @@ use univ_model::position::separation_degrees;
 
 use crate::yaml::{FileError, read_checked};
 
+pub use super::sight::distance;
+
 /// The matching rules, as the release records them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -23,6 +25,28 @@ pub struct MatchingRules {
     pub names: Vec<NameRule>,
     pub structure_members: MemberRule,
     pub pairs: Vec<PairRule>,
+    /// Sources whose published velocity is in the CMB frame, moved back to a heliocentric cz
+    /// before a pair compares it.
+    #[serde(default)]
+    pub cmb_frame_velocities: Vec<FrameRule>,
+}
+
+/// A source whose velocity column is a CMB-frame cz, with where its source says so.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FrameRule {
+    pub source: SourceId,
+    pub basis: String,
+}
+
+/// A galaxy source whose field names, by the group rule's scheme, the group each galaxy
+/// belongs to: the identifier the group source gives in its `dominant_member` field.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GroupMemberRule {
+    pub source: SourceId,
+    pub field: EntryField,
+    pub basis: String,
 }
 
 /// A source whose rows are galaxy groups, and the field naming each group's dominant galaxy by
@@ -35,6 +59,9 @@ pub struct GalaxyGroupRule {
     pub dominant_member: EntryField,
     pub scheme: String,
     pub member_basis: String,
+    /// Galaxy sources that assign their galaxies to these groups.
+    #[serde(default)]
+    pub members: Vec<GroupMemberRule>,
 }
 
 /// How far a researched structure's member may lie from the object its name resolves to.
@@ -64,6 +91,7 @@ pub struct ConfidenceRule {
 pub enum EntryField {
     Identifier,
     Name,
+    GroupId,
 }
 
 impl EntryField {
@@ -73,6 +101,7 @@ impl EntryField {
         let text = match self {
             Self::Identifier => Some(entry.designation.identifier.as_str()),
             Self::Name => entry.name.as_deref(),
+            Self::GroupId => entry.group_id.as_deref(),
         }?;
         Some(text.trim()).filter(|t| !t.is_empty())
     }
@@ -92,7 +121,23 @@ pub struct SchemeMember {
 pub struct CrossIdentification {
     pub scheme: String,
     pub basis: String,
+    /// How two identifiers of the scheme are compared.
+    #[serde(default)]
+    pub compare: IdentifierForm,
     pub members: Vec<SchemeMember>,
+}
+
+/// How the identifiers of a scheme are compared.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum IdentifierForm {
+    /// Trimmed, and a number without its leading zeros.
+    #[default]
+    Identifier,
+    /// As a common name: by its key in the names table (lower case, without white space), with
+    /// a catalogue number's leading zeros dropped and `messier` written `m`, so that `NGC0055`
+    /// and `NGC 55`, or `MESSIER032` and `M32`, agree.
+    CommonName,
 }
 
 /// A designation a source gives beside the entry's own identifier.
@@ -321,7 +366,7 @@ impl MatchingRules {
             LineOfSightRule::None => (MatchMethod::Position, None, 1.0),
             LineOfSightRule::Velocity {
                 tolerance_km_s: tau,
-            } => match (velocity(a), velocity(b)) {
+            } => match (self.velocity(a), self.velocity(b)) {
                 (Some(va), Some(vb)) => {
                     let delta = (va - vb).abs();
                     if delta > tau {
@@ -389,26 +434,4 @@ fn positive(x: f64) -> bool {
 
 fn field(name: &str, problem: &str) -> (String, String) {
     (name.to_owned(), problem.to_owned())
-}
-
-/// The entry's heliocentric cz in km/s: its first spectroscopic redshift, else its first
-/// redshift, else its published velocity.
-#[must_use]
-pub fn velocity(entry: &CatalogueEntry) -> Option<f64> {
-    let c = univ_model::cosmology::SPEED_OF_LIGHT;
-    entry
-        .preferred_redshift()
-        .map(|r| r.cmb.heliocentric.value * c)
-        .or_else(|| entry.velocity.map(|v| v.normalized.value))
-}
-
-/// The entry's first distance in Mpc.
-#[must_use]
-pub fn distance(entry: &CatalogueEntry) -> Option<f64> {
-    let d = entry.distances.first()?;
-    d.normalized
-        .to(univ_model::units::Unit::Megaparsec)
-        .ok()
-        .map(|q| q.value)
-        .filter(|v| *v > 0.0)
 }

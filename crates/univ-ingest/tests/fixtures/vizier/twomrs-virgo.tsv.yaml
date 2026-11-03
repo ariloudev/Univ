@@ -1,0 +1,8 @@
+source: twomrs
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F199%2F26%2Ftable3&-out=ID%2Ccz%2Ce_cz%2CKcmag%2Cr_cz&-out.add=_RAJ%2C_DEJ&-out.max=unlimited&ID=%3D%2C12304942%2B1223279%2C12294679%2B0800014%2C12250377%2B1253130
+retrieved: 2026-11-03T12:17:40Z
+sha256: 2b259f41ff852822108458a22188bb762d78f5055d918a9c300b4ed7e6d15642
+note: >-
+  The source's own query narrowed by 2MASX name to Virgo galaxies that Cosmicflows-4 table2 also
+  lists (cosmicflows-4-galaxies.tsv): M87, M49 and M84, for the cross-match and ranking of
+  Cosmicflows-4 galaxies against a redshift survey.
