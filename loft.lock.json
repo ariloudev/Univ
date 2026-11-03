@@ -1,0 +1,11 @@
+{
+  "format": "loftspec/1",
+  "algorithm": "sha256-jcs/1",
+  "documentKey": "01a19efc-b4c1-7350-8274-8feccad0e0fb",
+  "stateView": 2,
+  "stateRoot": "d84d7a436045976e01bbeff555365768c13bebf8ba376ac10b00d03e773d48c7",
+  "contentRoot": "bbc3e31f81b2a6029501eec76021b18bffd07d389823bcb56f9e1d19b612d4af",
+  "bindingRoot": "f45929e56d5a6e67db5cb879d59362dea12430492f6f05716d0fa46a5fbc54d7",
+  "publishSequence": 1,
+  "publishedAt": "2026-11-03T02:14:13Z"
+}
