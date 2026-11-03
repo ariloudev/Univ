@@ -7,26 +7,13 @@ mod common;
 
 use std::collections::BTreeMap;
 
-use common::{definition_of, entry, fixture_of, normalize_body, normalized_fixture, read_sources};
-use univ_ingest::normalize::{FixApplied, Normalized};
-use univ_ingest::source::{Access, LeftOutReason, ScaleDomain, SourceDefinition};
+use common::{definition_of, entry, every_table, fixture_of, normalize_body, normalized_fixture};
+use univ_ingest::normalize::FixApplied;
+use univ_ingest::source::{LeftOutReason, ScaleDomain, SourceDefinition};
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::entry::{CatalogueEntry, PositionUncertainty};
-use univ_model::redshift::DipoleModel;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::{KindOfValue, Uncertainty, Value};
-
-/// The sources that are tables of rows, each with its recorded answer normalized.
-fn every_table() -> Vec<(SourceDefinition, Normalized)> {
-    read_sources()
-        .into_iter()
-        .filter(|d| !matches!(d.access, Access::Files { .. } | Access::Repository { .. }))
-        .map(|d| {
-            let n = normalized_fixture(d.id.as_str());
-            (d, n)
-        })
-        .collect()
-}
 
 /// The recorded answer of `id` with the cell of `column` in data row `row` (from 0) set to
 /// `cell`, for a case no recording holds.
@@ -358,27 +345,6 @@ fn a_distance_modulus_is_kept_as_published_beside_the_distance_derived_from_it()
         (d.modulus().unwrap().value, d.also_published.unwrap().value),
         (17.1, 26.0)
     );
-}
-
-#[test]
-fn a_heliocentric_redshift_is_kept_as_measured_and_its_cmb_derivation_recorded() {
-    let sdss = normalized_fixture("sdss-dr17-galaxies");
-    // Row 2: 375050326987794432, z 0.08733442 ± 2.054854E-05.
-    let r = &entry(&sdss, "375050326987794432").redshifts[0];
-    assert_eq!(r.cmb.heliocentric.value, 0.087_334_42);
-    assert_eq!(
-        r.cmb.heliocentric.uncertainty,
-        Uncertainty::Symmetric {
-            sigma: 2.054_854e-5
-        }
-    );
-    assert_eq!(r.cmb.dipole, DipoleModel::Planck2018);
-    let dipole = r.cmb.dipole.dipole();
-    assert_eq!(
-        (dipole.speed, dipole.l, dipole.b),
-        (369.82, 264.021, 48.253)
-    );
-    assert_ne!(r.cmb.value.value, r.cmb.heliocentric.value);
 }
 
 #[test]

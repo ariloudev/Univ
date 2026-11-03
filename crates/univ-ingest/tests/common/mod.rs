@@ -195,3 +195,21 @@ pub fn count_rows(definition: &SourceDefinition) -> u64 {
         .and_then(univ_ingest::table::TableReader::count_rows)
         .expect("a table")
 }
+
+/// The sources that are provider tables, each with its recorded answer normalized.
+pub fn every_table() -> Vec<(SourceDefinition, Normalized)> {
+    read_sources()
+        .into_iter()
+        .filter(|d| {
+            !matches!(
+                d.access,
+                univ_ingest::source::Access::Files { .. }
+                    | univ_ingest::source::Access::Repository { .. }
+            )
+        })
+        .map(|d| {
+            let n = normalized_fixture(d.id.as_str());
+            (d, n)
+        })
+        .collect()
+}
