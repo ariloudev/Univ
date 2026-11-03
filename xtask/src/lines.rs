@@ -4,104 +4,137 @@
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
-/// Directories never searched, besides hidden ones: build output and installed packages.
-const SKIPPED: &[&str] = &["target", "node_modules"];
-
-/// Every `.rs` file under `root` with more than `limit` lines, with its line count, in path order.
+/// Every `.rs` file git sees under `root`, tracked or new but not ignored, with more than `limit`
+/// lines, with its line count, in path order.
 ///
 /// # Errors
 ///
-/// Fails when a directory cannot be listed or a file cannot be read.
+/// Fails when git cannot list the files or a listed file cannot be read; the error names the file.
 pub fn over_limit(root: &Path, limit: usize) -> io::Result<Vec<(PathBuf, usize)>> {
+    let listing = Command::new("git")
+        .args([
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "--",
+            "*.rs",
+        ])
+        .current_dir(root)
+        .output()?;
+    if !listing.status.success() {
+        let reason = String::from_utf8_lossy(&listing.stderr);
+        return Err(io::Error::other(format!(
+            "git ls-files failed: {}",
+            reason.trim()
+        )));
+    }
     let mut found = Vec::new();
-    visit(root, limit, &mut found)?;
+    for name in listing
+        .stdout
+        .split(|byte| *byte == 0)
+        .filter(|name| !name.is_empty())
+    {
+        let path = root.join(String::from_utf8_lossy(name).as_ref());
+        let bytes = match fs::read(&path) {
+            Ok(bytes) => bytes,
+            // A tracked file deleted from the working tree is still listed.
+            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
+            Err(error) => {
+                return Err(io::Error::new(
+                    error.kind(),
+                    format!("{}: {error}", path.display()),
+                ));
+            }
+        };
+        let lines = line_count(&bytes);
+        if lines > limit {
+            found.push((path, lines));
+        }
+    }
     found.sort();
     Ok(found)
 }
 
-fn visit(dir: &Path, limit: usize, found: &mut Vec<(PathBuf, usize)>) -> io::Result<()> {
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
-        if entry.file_type()?.is_dir() {
-            if !name.starts_with('.') && !SKIPPED.contains(&name.as_ref()) {
-                visit(&path, limit, found)?;
-            }
-        } else if path.extension().is_some_and(|extension| extension == "rs") {
-            let lines = fs::read_to_string(&path)?.lines().count();
-            if lines > limit {
-                found.push((path, lines));
-            }
-        }
+/// The number of lines in `bytes`, counting a last line without a newline, whatever the encoding.
+fn line_count(bytes: &[u8]) -> usize {
+    if bytes.is_empty() {
+        return 0;
     }
-    Ok(())
+    bytes.split(|byte| *byte == b'\n').count() - usize::from(bytes.ends_with(b"\n"))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::TempDir;
 
     /// No file over the limit.
     const NONE: Vec<(PathBuf, usize)> = Vec::new();
 
-    /// A directory under the system's temporary directory, removed when dropped.
-    struct TempDir(PathBuf);
-
-    impl TempDir {
-        fn new(tag: &str) -> Self {
-            let path =
-                std::env::temp_dir().join(format!("xtask-lines-{tag}-{}", std::process::id()));
-            let _ = fs::remove_dir_all(&path);
-            fs::create_dir_all(&path).unwrap();
-            Self(path)
-        }
-
-        fn write(&self, relative: &str, lines: usize) -> PathBuf {
-            let path = self.0.join(relative);
-            fs::create_dir_all(path.parent().unwrap()).unwrap();
-            fs::write(&path, "x\n".repeat(lines)).unwrap();
-            path
-        }
+    /// A new git repository in a temporary directory.
+    fn repo() -> TempDir {
+        let dir = tempfile::tempdir().unwrap();
+        let init = Command::new("git")
+            .args(["init", "-q"])
+            .current_dir(dir.path())
+            .status();
+        assert!(init.unwrap().success());
+        dir
     }
 
-    impl Drop for TempDir {
-        fn drop(&mut self) {
-            let _ = fs::remove_dir_all(&self.0);
-        }
+    fn write(repo: &TempDir, relative: &str, contents: &[u8]) -> PathBuf {
+        let path = repo.path().join(relative);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(&path, contents).unwrap();
+        path
+    }
+
+    fn write_lines(repo: &TempDir, relative: &str, lines: usize) -> PathBuf {
+        write(repo, relative, "x\n".repeat(lines).as_bytes())
     }
 
     #[test]
     fn a_file_at_the_limit_passes() {
-        let dir = TempDir::new("at-limit");
-        dir.write("src/ok.rs", 500);
-        assert_eq!(over_limit(&dir.0, 500).unwrap(), NONE);
+        let repo = repo();
+        write_lines(&repo, "src/ok.rs", 500);
+        assert_eq!(over_limit(repo.path(), 500).unwrap(), NONE);
     }
 
     #[test]
-    fn a_file_over_the_limit_is_reported_with_its_count() {
-        let dir = TempDir::new("over-limit");
-        let long = dir.write("crates/a/src/long.rs", 501);
-        dir.write("crates/a/src/short.rs", 10);
-        assert_eq!(over_limit(&dir.0, 500).unwrap(), vec![(long, 501)]);
+    fn a_new_file_over_the_limit_is_reported_with_its_count() {
+        let repo = repo();
+        let long = write_lines(&repo, "crates/a/src/long.rs", 501);
+        write_lines(&repo, "crates/a/src/short.rs", 10);
+        assert_eq!(over_limit(repo.path(), 500).unwrap(), vec![(long, 501)]);
     }
 
     #[test]
-    fn build_output_and_hidden_directories_are_skipped() {
-        let dir = TempDir::new("skipped");
-        dir.write("target/debug/build/generated.rs", 900);
-        dir.write(".git/hooks/odd.rs", 900);
-        dir.write("node_modules/pkg/odd.rs", 900);
-        assert_eq!(over_limit(&dir.0, 500).unwrap(), NONE);
+    fn files_git_ignores_are_skipped_but_a_module_named_target_is_not() {
+        let repo = repo();
+        write(&repo, ".gitignore", b"/target\n");
+        write_lines(&repo, "target/debug/build/generated.rs", 900);
+        let module = write_lines(&repo, "src/target/mod.rs", 900);
+        assert_eq!(over_limit(repo.path(), 500).unwrap(), vec![(module, 900)]);
     }
 
     #[test]
     fn only_rust_files_are_counted() {
-        let dir = TempDir::new("rust-only");
-        dir.write("docs/notes.md", 900);
-        dir.write("sources/sdss.yaml", 900);
-        assert_eq!(over_limit(&dir.0, 500).unwrap(), NONE);
+        let repo = repo();
+        write_lines(&repo, "docs/notes.md", 900);
+        write_lines(&repo, "sources/sdss.yaml", 900);
+        assert_eq!(over_limit(repo.path(), 500).unwrap(), NONE);
+    }
+
+    #[test]
+    fn a_file_that_is_not_utf8_is_still_counted() {
+        let repo = repo();
+        let mut latin1 = b"// caf\xe9\n".repeat(501);
+        latin1.pop();
+        let path = write(&repo, "src/latin1.rs", &latin1);
+        assert_eq!(over_limit(repo.path(), 500).unwrap(), vec![(path, 501)]);
     }
 }

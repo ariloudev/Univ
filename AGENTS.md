@@ -24,10 +24,9 @@ The specification in `spec/` is the contract. It is published from `develop`.
 
 Run them from this directory.
 
-- `cargo xtask check` runs every gate, and it must pass before a merge. In order: `cargo fmt
-  --check`, clippy with `-D warnings`, the 500-line rule, tests, `cargo deny`, `cargo machete`,
-  the wasm32 build of `univ-model`, `loft fmt --check`, `loft check --fail-on warning`, and
-  `loft verify`. `loft verify` runs on the publish branch only.
+- `cargo xtask check` runs every gate listed in `GATES` in `xtask/src/main.rs`, quick ones
+  first, and must pass before a merge. `loft verify` runs on the publish branch only, and the
+  summary names any gate it skipped.
 - `cargo xtask lines` lists every `.rs` file over 500 lines.
 - `cargo fmt` formats the workspace. Nothing formats automatically, and the gate fails on
   unformatted code.

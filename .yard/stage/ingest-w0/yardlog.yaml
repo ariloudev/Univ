@@ -3,7 +3,7 @@ key: 01a19f49-ed3c-72c2-a26c-3ec5be743c7e
 branch: "stage/ingest-w0"
 base: "product/ingest"
 title: "stage/ingest-w0"
-revision: 6
+revision: 8
 opened:
   at: 2026-11-03T02:43:04Z
   revision: 1
@@ -43,6 +43,16 @@ acts:
       session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
   - at: 2026-11-03T02:45:42Z
     revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:47:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+  - at: 2026-11-03T02:49:23Z
+    revision: 8
     by:
       host: claude-code
       session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"

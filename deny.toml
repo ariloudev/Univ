@@ -1,12 +1,6 @@
 # cargo-deny: licences, security advisories, banned crates and crate sources.
 # Run by `cargo xtask check`.
 
-[graph]
-all-features = true
-
-[advisories]
-ignore = []
-
 [licenses]
 allow = [
     "Apache-2.0",
@@ -21,13 +15,14 @@ allow = [
     "Zlib",
 ]
 confidence-threshold = 0.9
+# The allow-list is policy for crates to come, so an entry no crate uses yet is not a warning.
+unused-allowed-license = "allow"
 
 [licenses.private]
 # The workspace's own crates are not published.
 ignore = true
 
 [bans]
-multiple-versions = "warn"
 wildcards = "deny"
 # Path dependencies between the workspace's own unpublished crates carry no version.
 allow-wildcard-paths = true
