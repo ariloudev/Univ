@@ -192,9 +192,7 @@ pub fn structure(at: Vec3, catalogues: &str, extra: &str) -> Structure {
     read(&yaml(at, catalogues, extra)).unwrap()
 }
 
-pub fn id(s: &str) -> SourceId {
-    SourceId::new(s).unwrap()
-}
+pub use super::common::source_id as id;
 
 /// The reason a structure was published as a point; `None` when its outline was admitted.
 pub fn reason(result: &OutlineResult) -> Option<&str> {

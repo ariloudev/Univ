@@ -9,10 +9,10 @@
 mod common;
 mod simulated;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use common::TestClock;
+use common::{TestClock, workspace};
 use simulated::{
     designation, entry, matching_rules, offset, ranking_rules, source, with_cz, with_distance,
 };
@@ -34,10 +34,6 @@ use univ_model::object::{NotPlacedReason, Object, ObjectEntry, Placement, Resolu
 use univ_model::position::Frame;
 
 const CEPHEIDS: (DistanceKind, Method) = (DistanceKind::PrimaryIndicator, Method::Cepheids);
-
-fn workspace() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
 
 /// SIMULATED: the LMC in UNGC and `McConnachie` 40" apart (one object, one merge), a 2MRS galaxy
 /// between two 6dFGS candidates (two candidate links), and a 6dFGS galaxy without a redshift.

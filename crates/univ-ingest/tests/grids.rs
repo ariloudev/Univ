@@ -43,7 +43,7 @@ struct Crop {
 }
 
 fn fixtures() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/grids")
+    common::grids_dir()
 }
 
 /// The window a fixture holds, from its sidecar.

@@ -5,9 +5,11 @@
     reason = "test helpers unwrap: a failure there is the test failing"
 )]
 
+mod common;
+
 use std::collections::HashSet;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use tempfile::TempDir;
 use univ_ingest::structures::{
@@ -20,7 +22,7 @@ use univ_model::value::KindOfValue;
 
 /// The structure files of the repository.
 fn repository_structures() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../structures")
+    common::structures_dir()
 }
 
 /// A complete structure; each test changes one part of it.

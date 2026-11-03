@@ -6,6 +6,7 @@
     reason = "a failed unwrap in a test helper is the test failing"
 )]
 
+mod common;
 mod void;
 
 use univ_ingest::outlines::{GridSky, Placed, dense_places, place_on};

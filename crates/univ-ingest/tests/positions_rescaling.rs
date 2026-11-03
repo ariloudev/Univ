@@ -8,7 +8,7 @@
 
 mod common;
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use common::near;
 use serde::Deserialize;
@@ -22,7 +22,7 @@ use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty};
 
 fn structures() -> Vec<Structure> {
-    read_all(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../../structures")).unwrap()
+    read_all(&common::structures_dir()).unwrap()
 }
 
 fn structure(name: &str) -> Structure {
@@ -40,7 +40,7 @@ struct Crop {
 }
 
 fn grids() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/grids")
+    common::grids_dir()
 }
 
 #[test]

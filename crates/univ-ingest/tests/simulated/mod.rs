@@ -18,14 +18,16 @@ use univ_model::entry::{
     CatalogueEntry, NativePosition, Position, PositionErrors, PositionUncertainty, Redshift,
     RedshiftKind,
 };
-use univ_model::ids::{Designation, SourceId};
+use univ_model::ids::Designation;
 use univ_model::position::{Epoch, Frame, unit_vector};
 use univ_model::redshift::{CmbCorrection, DipoleModel};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
 
+pub use super::common::source_id as source;
+
 pub fn rules_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../rules")
+    super::common::workspace().join("rules")
 }
 
 /// The repository's matching rules.
@@ -36,10 +38,6 @@ pub fn matching_rules() -> MatchingRules {
 /// The repository's ranking rule.
 pub fn ranking_rules() -> RankingRules {
     RankingRules::read(&rules_dir().join("ranking.yaml")).unwrap_or_else(|e| panic!("{e}"))
-}
-
-pub fn source(id: &str) -> SourceId {
-    SourceId::new(id).unwrap()
 }
 
 pub fn designation(src: &str, id: &str) -> Designation {

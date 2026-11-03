@@ -6,6 +6,7 @@
 //! centres with CMB-frame redshifts |r| × 100 / c, and simulated sky-only entries (a position,
 //! no redshift) mark where each simulated survey looked.
 
+mod common;
 mod void;
 
 use univ_ingest::outlines::{Coverage, Placed, place};
@@ -197,8 +198,7 @@ fn a_threshold_chosen_by_this_pipeline_says_so_and_why_and_is_never_read_as_a_ci
         assert!(e.problem.contains(says), "{e}");
     }
     // The Local Void's threshold is this pipeline's choice, said to be one.
-    let structures = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../structures");
-    let local = read_all(&structures)
+    let local = read_all(&common::structures_dir())
         .unwrap()
         .into_iter()
         .find(|s| s.name == "Local Void")

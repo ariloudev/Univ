@@ -8,7 +8,9 @@
 
 mod common;
 
-use std::path::{Path, PathBuf};
+use common::workspace;
+
+use std::path::Path;
 use std::process::Command;
 
 use univ_ingest::acquire::acquire;
@@ -24,10 +26,6 @@ const SOURCES: [&str; 4] = [
     "twomrs",
     "cosmicflows-4",
 ];
-
-fn workspace() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
 
 /// The repository's definition of `id`, written to `dir` with `mirror` as its one mirror and
 /// the rows of its recorded answer as the rows it must give.

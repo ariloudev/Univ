@@ -2,6 +2,7 @@
 //! group could join what is not one body, on SIMULATED entries under the repository's
 //! `rules/matching.yaml`.
 
+mod common;
 mod simulated;
 
 use simulated::{

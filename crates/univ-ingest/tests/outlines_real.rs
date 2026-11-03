@@ -10,6 +10,8 @@
 
 mod common;
 
+use common::workspace;
+
 use std::path::PathBuf;
 
 use univ_ingest::grids::{Window, read_cf4pp};
@@ -21,10 +23,6 @@ use univ_model::entry::CatalogueEntry;
 use univ_model::grid::{Axis, GridGeometry};
 use univ_model::ids::SourceId;
 use univ_model::redshift::{CmbCorrection, DipoleModel};
-
-fn workspace() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
 
 fn env_dir(name: &str, default: PathBuf) -> PathBuf {
     std::env::var_os(name).map_or(default, PathBuf::from)
