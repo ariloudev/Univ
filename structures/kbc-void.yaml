@@ -3,6 +3,7 @@ name: KBC void
 alternative_names: ["Keenan-Barger-Cowie void", "Local Hole"]
 kind: void
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: keenan-2013
     reference: "Keenan, Barger & Cowie 2013, ApJ 775, 62"

@@ -4,6 +4,7 @@ name: Bootes Void
 alternative_names: ["Boötes Void", "Great Void"]
 kind: void
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: kirshner-1987
     reference: "Kirshner, Oemler, Schechter & Shectman 1987, ApJ 314, 493"

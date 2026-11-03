@@ -3,6 +3,7 @@ name: Big Ring
 alternative_names: ["BR"]
 kind: ring
 status: statistical_claim
+scale_domain: cosmic_web
 papers:
   - id: lopez-2024
     reference: "Lopez, Clowes & Williger 2024, JCAP 07, 055"

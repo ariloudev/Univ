@@ -3,6 +3,7 @@ name: Giant GRB Ring
 alternative_names: ["Giant Gamma-Ray Burst Ring", "GGR"]
 kind: ring
 status: statistical_claim
+scale_domain: cosmic_web
 papers:
   - id: balazs-2015
     reference: "Balázs, Bagoly, Hakkila, Horváth, Kóbori, Rácz & Tóth 2015, MNRAS 452, 2236"

@@ -50,7 +50,7 @@ pub use files::{
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
 pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
 pub use objects::{ObjectRows, json, ledger_rows, object_rows, snake};
-pub use place::{index_bounds, sky_region};
+pub use place::{centre, index_bounds, sky_region};
 
 use crate::crossmatch::CrossMatched;
 use crate::source::SourceDefinition;

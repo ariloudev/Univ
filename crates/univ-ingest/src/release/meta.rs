@@ -12,10 +12,10 @@ use univ_model::release::rows::{
 };
 
 use super::objects::{json, snake};
-use super::place::index_bounds;
+use super::place::{centre, index_bounds};
 use crate::crossmatch::MemberPlacement;
 use crate::provenance::Provenance;
-use crate::source::SourceDefinition;
+use crate::source::{ScaleDomain, SourceDefinition};
 use crate::structures::Structure;
 use crate::tiles::{Built, name_of, unit_symbol};
 
@@ -89,8 +89,8 @@ pub fn source_rows(
 /// A structure's id and its ICRS bounding box in Mpc, or why it has none.
 pub type StructureBounds = (String, Result<Aabb, String>);
 
-/// The rows of the release's `structures`, each by its id, with the member list `placements`
-/// resolved for it; and each structure's ICRS bounding box in Mpc under `release`, the box its
+/// The rows of the release's `structures`, each by its id, with its scale domain and centre and
+/// the member list `placements` resolved for it; and each structure's ICRS bounding box in Mpc under `release`, the box its
 /// row records and the cell index holds (see [`super::place`]), or why it has none.
 ///
 /// # Errors
@@ -108,12 +108,25 @@ pub fn structure_rows(
         let placed = placements.iter().find(|p| p.structure == s.name);
         let shape = placed.and_then(|p| p.shape.as_ref());
         let boxed = index_bounds(s, placed, release);
+        // In the domain's unit: pc for stars, Mpc otherwise.
+        let per_mpc = if s.scale_domain == ScaleDomain::Stars {
+            1e6
+        } else {
+            1.0
+        };
+        let at = centre(s, placed, release)
+            .ok()
+            .map(|c| c.map(|v| v * per_mpc));
         rows.push(StructureRow {
             release: release_number,
             id: id.clone(),
             name: s.name.clone(),
             kind: snake(&s.kind),
             status: snake(&s.status),
+            scale_domain: name_of(s.scale_domain).to_owned(),
+            centre_x: at.map(|c| c[0]),
+            centre_y: at.map(|c| c[1]),
+            centre_z: at.map(|c| c[2]),
             geometry_kind: s.geometry_kind().map(str::to_owned),
             record: json(s)?,
             members: shape.map(json).transpose()?,

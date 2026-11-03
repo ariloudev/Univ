@@ -13,6 +13,7 @@ const VALID: &str = r#"
 name: Test Void
 kind: void
 status: reconstructed
+scale_domain: cosmic_web
 papers:
   - id: tully-2019
     reference: "Tully et al. 2019, ApJ 880, 24"

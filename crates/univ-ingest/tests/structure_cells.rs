@@ -11,7 +11,8 @@
 mod common;
 
 use common::workspace;
-use univ_ingest::release::index_bounds;
+use univ_ingest::release::{centre as structure_centre, index_bounds, structure_rows};
+use univ_ingest::source::ScaleDomain;
 use univ_ingest::structures::{Structure, StructureGeometry, read_all_named};
 use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::derive::Release;
@@ -160,4 +161,68 @@ fn a_sky_region_over_every_longitude_spans_all_360_degrees() {
         let p = to_icrs.apply(unit_vector(f64::from(ra), 0.0).map(|c| c * far));
         assert!(contains(&b, p), "RA {ra}: {b:?}");
     }
+}
+
+/// The boundary of the `nearby_galaxies` domain: the 11 Mpc of the Updated Nearby Galaxy
+/// Catalog, its deepest source.
+const NEARBY_GALAXIES_MPC: f64 = 11.0;
+
+#[test]
+fn each_structure_is_in_the_scale_domain_its_published_distance_falls_in() {
+    let release = Release::planck_2018();
+    let mut checked = 0;
+    for (id, s) in read_all_named(&workspace().join("structures")).unwrap() {
+        let distance = match structure_centre(&s, None, &release) {
+            // About the observer: its published radius, the half side of its box.
+            Ok(c) if dot(c, c) == 0.0 => half(&index_bounds(&s, None, &release).unwrap())[0],
+            Ok(c) => dot(c, c).sqrt(),
+            // A member list, or a structure published without a placeable position: its papers
+            // put each far beyond the nearby galaxies (redshifts from 0.02 to 2.1).
+            Err(_) => continue,
+        };
+        let expected = if distance > NEARBY_GALAXIES_MPC {
+            ScaleDomain::CosmicWeb
+        } else {
+            ScaleDomain::NearbyGalaxies
+        };
+        assert_eq!(s.scale_domain, expected, "{id} at {distance} Mpc");
+        checked += 1;
+    }
+    assert!(checked >= 15, "{checked}");
+}
+
+#[test]
+fn a_structure_row_gives_its_scale_domain_and_centre_or_none_when_unplaced() {
+    let release = Release::planck_2018();
+    let named = read_all_named(&workspace().join("structures")).unwrap();
+    let (rows, _) = structure_rows(1, &named, &[], &release).unwrap();
+    let row = |id: &str| rows.iter().find(|r| r.id == id).unwrap();
+    let bootes = row("bootes-void");
+    assert_eq!(bootes.scale_domain, "cosmic_web");
+    let at = [
+        bootes.centre_x.unwrap(),
+        bootes.centre_y.unwrap(),
+        bootes.centre_z.unwrap(),
+    ];
+    let boxed = centre(&index_bounds(&structure("bootes-void"), None, &release).unwrap());
+    assert!((0..3).all(|k| (at[k] - boxed[k]).abs() < 1e-9), "{at:?}");
+    let unplaced = row("hercules-corona-borealis-great-wall");
+    assert_eq!(unplaced.scale_domain, "cosmic_web");
+    assert_eq!(
+        (unplaced.centre_x, unplaced.centre_y, unplaced.centre_z),
+        (None, None, None)
+    );
+    // A sky region's centre lies in its middle direction, halfway between near and far.
+    let wall = row("cfa2-great-wall");
+    let c = [
+        wall.centre_x.unwrap(),
+        wall.centre_y.unwrap(),
+        wall.centre_z.unwrap(),
+    ];
+    let cosmology = release.cosmology();
+    let mid = f64::midpoint(
+        cosmology.comoving_distance(0.01).unwrap(),
+        cosmology.comoving_distance(0.05).unwrap(),
+    );
+    assert!((dot(c, c).sqrt() - mid).abs() < 1e-6);
 }

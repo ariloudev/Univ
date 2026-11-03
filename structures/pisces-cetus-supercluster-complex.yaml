@@ -4,6 +4,7 @@ name: Pisces-Cetus Supercluster Complex
 alternative_names: []
 kind: supercluster_complex
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: tully-1987
     reference: "Tully 1987, ApJ 323, 1"

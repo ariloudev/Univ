@@ -3,6 +3,7 @@ name: Hercules-Corona Borealis Great Wall
 alternative_names: ["Her-CrB GW"]
 kind: overdensity
 status: statistical_claim
+scale_domain: cosmic_web
 papers:
   - id: horvath-2014
     reference: "Horváth, Hakkila & Bagoly 2014, A&A 561, L12"

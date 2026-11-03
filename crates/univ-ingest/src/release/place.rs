@@ -87,6 +87,49 @@ pub fn index_bounds(
     }
 }
 
+/// The centre of `structure`'s geometry in the ICRS about the barycentre, in Mpc under
+/// `release`, its member list `placed` where it has one: its published position for a point or
+/// a member list not all placed, a sphere's centre, the middle of a sky region (its middle
+/// longitude and latitude, halfway between its near and far distances), and the centre of the
+/// box of a member list's placed members; or why it has none.
+///
+/// # Errors
+///
+/// As [`index_bounds`].
+pub fn centre(
+    structure: &Structure,
+    placed: Option<&MemberPlacement>,
+    release: &Release,
+) -> Result<Vec3, String> {
+    let middle = |b: Aabb| -> Vec3 { std::array::from_fn(|k| f64::midpoint(b.min[k], b.max[k])) };
+    match &structure.geometry {
+        Some(StructureGeometry::Members(_)) => index_bounds(structure, placed, release).map(middle),
+        Some(StructureGeometry::Primitive(p)) => place(&p.centre, release).map(|(c, _)| c),
+        Some(StructureGeometry::SkyRegion(b)) => {
+            let near = radial(&b.near, release)?;
+            let far = radial(&b.far, release)?;
+            let lon0 = degrees(&b.lon[0])?;
+            let lon = lon0 + longitude_span(lon0, degrees(&b.lon[1])?) / 2.0;
+            let lat = f64::midpoint(degrees(&b.lat[0])?, degrees(&b.lat[1])?);
+            let u = unit_vector(lon, lat);
+            Ok(between(b.frame, Frame::Icrs).apply(scaled(u, f64::midpoint(near, far))))
+        }
+        None => match &structure.position {
+            Some(at) => place(at, release).map(|(c, _)| c),
+            None => Err("it publishes no position or geometry".to_owned()),
+        },
+    }
+}
+
+/// The span of a longitude range from `lon0` to `lon1`, degrees: a full turn or more, such as
+/// [0, 360], spans every longitude, not none.
+fn longitude_span(lon0: f64, lon1: f64) -> f64 {
+    match lon1 - lon0 {
+        whole if whole >= 360.0 => 360.0,
+        part => part.rem_euclid(360.0),
+    }
+}
+
 fn centred(centre: Vec3, half: f64) -> Aabb {
     Aabb {
         min: centre.map(|c| c - half),
@@ -221,11 +264,7 @@ pub fn sky_region(region: &SkyBox, release: &Release) -> Result<Aabb, String> {
     let far = radial(&region.far, release)?;
     let (near, far) = (near.min(far), near.max(far));
     let lon0 = degrees(&region.lon[0])?;
-    // A range of a full turn or more, such as [0, 360], spans every longitude, not none.
-    let span = match degrees(&region.lon[1])? - lon0 {
-        whole if whole >= 360.0 => 360.0,
-        part => part.rem_euclid(360.0),
-    };
+    let span = longitude_span(lon0, degrees(&region.lon[1])?);
     let (lat_a, lat_b) = (degrees(&region.lat[0])?, degrees(&region.lat[1])?);
     let (lat0, lat1) = (lat_a.min(lat_b), lat_a.max(lat_b));
     let to_icrs = between(region.frame, Frame::Icrs);

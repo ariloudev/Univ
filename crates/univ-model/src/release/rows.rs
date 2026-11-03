@@ -359,6 +359,15 @@ row! {
         name: String,
         kind: String,
         status: String,
+        /// `stars`, `nearby_galaxies` or `cosmic_web`: the scale domain it is listed in.
+        scale_domain: String,
+        /// The centre of its geometry (its published position, a sphere's centre, the middle of
+        /// a sky region, the centre of its placed members' box), ICRS Cartesian about the
+        /// barycentre in its scale domain's unit (pc for `stars`, Mpc otherwise), under the
+        /// release cosmology; none when it cannot be placed.
+        centre_x: Option<f64>,
+        centre_y: Option<f64>,
+        centre_z: Option<f64>,
         geometry_kind: Option<String>,
         record: String,
         /// JSON of its member list as resolved at ingest.

@@ -4,6 +4,7 @@ name: Hercules Supercluster
 alternative_names: []
 kind: supercluster
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: barmby-1998
     reference: "Barmby & Huchra 1998, AJ 115, 6"

@@ -3,6 +3,7 @@ name: Vela Supercluster
 alternative_names: ["VSCL"]
 kind: supercluster
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: kraan-korteweg-2017
     reference: "Kraan-Korteweg, Cluver, Bilicki, Jarrett, Colless, Elagali, Böhringer & Chon 2017, MNRAS Letters 466, L29"

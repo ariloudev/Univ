@@ -3,6 +3,7 @@ name: Shapley Supercluster
 alternative_names: ["SSC", "Shapley Concentration"]
 kind: supercluster
 status: observed
+scale_domain: cosmic_web
 papers:
   - id: proust-2006
     reference: "Proust, Quintana, Carrasco, Reisenegger, Slezak, Muriel et al. 2006, A&A 447, 133"

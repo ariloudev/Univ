@@ -3,6 +3,7 @@ name: Dipole Repeller
 alternative_names: []
 kind: repeller
 status: reconstructed
+scale_domain: cosmic_web
 papers:
   - id: hoffman-2017
     reference: "Hoffman, Pomarède, Tully & Courtois 2017, Nature Astronomy 1, 0036"

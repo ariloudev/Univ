@@ -176,7 +176,7 @@ pub fn coordinates(at: Vec3) -> String {
 /// with these catalogues; `extra` is added to the outline record.
 pub fn yaml(at: Vec3, catalogues: &str, extra: &str) -> String {
     format!(
-        "name: Simulated Void\nkind: void\nstatus: reconstructed\npapers:\n  - {{ id: simulated, reference: \"SIMULATED for this test: not a paper\", title: simulated, bibcode: simulated, read: \"not read: simulated\" }}\nposition: {}\noutline:\n  grid: simulated-density\n  threshold: {{ chosen: -1, why: \"the level of this simulated test\" }}\n  side: below\n{extra}  test:\n    catalogues: [{catalogues}]\n    rule: underdense_in_every_covering_catalogue\n    ratio: 0.85\n    min_expected: 30\n    why: \"the numbers of this simulated test\"\nnotes: \"SIMULATED.\"\n",
+        "name: Simulated Void\nkind: void\nstatus: reconstructed\nscale_domain: cosmic_web\npapers:\n  - {{ id: simulated, reference: \"SIMULATED for this test: not a paper\", title: simulated, bibcode: simulated, read: \"not read: simulated\" }}\nposition: {}\noutline:\n  grid: simulated-density\n  threshold: {{ chosen: -1, why: \"the level of this simulated test\" }}\n  side: below\n{extra}  test:\n    catalogues: [{catalogues}]\n    rule: underdense_in_every_covering_catalogue\n    ratio: 0.85\n    min_expected: 30\n    why: \"the numbers of this simulated test\"\nnotes: \"SIMULATED.\"\n",
         coordinates(at)
     )
 }

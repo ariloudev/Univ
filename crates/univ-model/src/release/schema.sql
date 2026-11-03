@@ -203,12 +203,19 @@ CREATE TABLE IF NOT EXISTS normalizations (
   PRIMARY KEY (release, source)
 ) WITHOUT ROWID;
 
+-- Each researched structure, listed by kind and scale domain. Its centre is ICRS Cartesian
+-- about the barycentre in its scale domain's unit (pc for stars, Mpc otherwise), NULL when it
+-- cannot be placed.
 CREATE TABLE IF NOT EXISTS structures (
   release INTEGER NOT NULL,
   id TEXT NOT NULL,
   name TEXT NOT NULL,
   kind TEXT NOT NULL,
   status TEXT NOT NULL,
+  scale_domain TEXT NOT NULL,
+  centre_x REAL,
+  centre_y REAL,
+  centre_z REAL,
   geometry_kind TEXT,
   record TEXT NOT NULL,
   members TEXT,
