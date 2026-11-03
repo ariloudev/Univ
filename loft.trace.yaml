@@ -410,7 +410,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "cosmicflows_sgx_sgy_and_sgz_are_read_as_km_s_though_vizier_labels_them_mpc"
-        body: 12a02f859eda020787ba2a8661af497d4575802d6d78040a61c7f922b0231fc8
+        body: cd369dbddabfe1a13f2baa7eed71d3244c3781e915097dd544a0b05535d157d1
   - node: 01a19f22-2ad9-716e-876f-18790159a9dd
     reviewed: f72225241e3f0c8d36bba52144a70831e54af3c74040cb04b6efed5d25a1f042
     tests:
@@ -704,7 +704,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "the_cell_index_holds_every_placed_object_in_the_cell_of_its_position"
-        body: 66c70f97bb2e12a27660eac2dbcae58badf46ce7ef44c8cdab3312c045c6ffa1
+        body: d552c87a32083946816911c776be2ca2e45df4a8c8b51e1d2bd1b983fc5b7f9e
       - file: "crates/univ-ingest/tests/structure_cells.rs"
         name: "a_sky_region_over_every_longitude_spans_all_360_degrees"
         body: 14a993954ae857d17b8d26a77c0c0414af120f68a3b371bd05d6080fdc1f6748
@@ -908,7 +908,7 @@ links:
         body: 4da26c9886aacba7e8c52b2f978e57ccb4f41b7212ff3738cfba4e2c5c5e7d81
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
-        body: 9eec4ae315d8f656836c69cfdca2ed6ba1c3d7802ca06133202cbdd7e68e7222
+        body: 1b2a22173b0eea424a59158f1bea99ccbcfb29321f73b80dadbc66ad35aaa1d9
       - file: "crates/univ-ingest/tests/crossmatch.rs"
         name: "the_cross_match_stage_reports_its_steps_and_counts_and_writes_its_ids_as_pending"
         body: bba61434f6d49da2d39e82e9e3efcd298358f76ddc7781f0c8da9f6e2c63b5a3
@@ -980,7 +980,7 @@ links:
         body: 82b975c4785d473109110da1c61fa98f2f1c72ffc16fcea510ab30d1bb3b310e
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: cb9354e7610662286660e0683dc44ef5473c81166cfdf4710ce75eae17897769
+        body: 90f43a9d273f8eae66b9a45facce82eefff20a33d6c1b01428a6f0788b72cab2
   - node: 01a19f22-b0bc-76da-bac8-978bd11f8a8a
     reviewed: 8873f5183472621d806a2ca4e2c84abfcc1e0453dbdaf7b1a8d4df1b4699d099
     tests:
