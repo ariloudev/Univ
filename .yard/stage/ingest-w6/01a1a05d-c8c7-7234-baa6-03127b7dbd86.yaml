@@ -1,0 +1,65 @@
+key: 01a1a05d-c8c7-7234-baa6-03127b7dbd86
+id: w6
+versions:
+  - key: 01a1a05d-c8c7-7234-baa6-03181f62b447
+    at: 2026-11-03T07:44:23Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W6 Octree tiles"
+    goal: "Placed objects become byte-identical octree tiles per scale domain with seeded additive levels of detail, a versioned point codec in univ-model and JSON tile manifests, every tile within 1 MiB"
+    status: active
+blocks:
+  - key: 01a1a05d-c8c7-7234-baa6-031434a35920
+    id: w6-t1-codec
+    kind: task
+    versions:
+      - key: 01a1a05d-c8c7-7234-baa6-031a0136fae2
+        at: 2026-11-03T07:44:23Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Tile codec in univ-model"
+        detail: "A versioned binary point encoding: position quantized relative to its node with a step of at most 1/65,536 of the edge, object id, source and kind of value. An encoder and a decoder, wasm32-clean. Done when round trips hold the quantization error within the step (AC-96)."
+        state: active
+  - key: 01a1a05d-c8c7-7234-baa6-03151d359d35
+    id: w6-t2-octree
+    kind: task
+    versions:
+      - key: 01a1a05d-c8c7-7234-baa6-031bd0690342
+        at: 2026-11-03T07:44:23Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Octree builder and levels of detail"
+        detail: "One root per scale domain: stars in pc, nearby galaxies and cosmic web in Mpc. The domain comes from the source of each object's preferred measurement. Nodes split above the release threshold, down to the maximum depth. Additive subsamples are drawn with a seeded ChaCha RNG. Done when tests cover AC-91 to AC-95 and AC-98 (two builds byte-identical)."
+        state: open
+  - key: 01a1a05d-c8c7-7234-baa6-0316d45efe49
+    id: w6-t3-manifest
+    kind: task
+    versions:
+      - key: 01a1a05d-c8c7-7234-baa6-031c46e32bd8
+        at: 2026-11-03T07:44:23Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Tile manifests and the size bound"
+        detail: "JSON manifests per the spec's client contract: node table, SHA-256s, seed, encoding version and per-level step, and the rotations to galactic and supergalactic. Every tile is at most 1 MiB, proved by construction and by a stress fixture. Done when tests cover AC-97 and QA-1."
+        state: open
+  - key: 01a1a05d-c8c7-7234-baa6-0317795903ac
+    id: w6-t4-gate
+    kind: task
+    versions:
+      - key: 01a1a05d-c8c7-7234-baa6-031dffe01d8a
+        at: 2026-11-03T07:44:23Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Stage, gate and trace"
+        detail: "A tiles stage after cross-match in the run, with events and summary counts. Done when the gate passes and AC-91 to AC-98 and QA-1 are linked."
+        state: open
