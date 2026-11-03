@@ -103,9 +103,10 @@ pub struct MatchRecord {
     pub confidence: Confidence,
 }
 
-/// How an entry came to belong to its object.
+/// How an entry came to belong to its object, tagged by `by`: a match keeps its own `method`
+/// beside the tag, so the tag cannot be `method` too.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "method")]
+#[serde(rename_all = "snake_case", tag = "by")]
 pub enum Resolution {
     /// The entry the object was resolved around: the first of its entries in the order read.
     Anchor,
