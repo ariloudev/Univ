@@ -3,8 +3,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::units::Unit;
-use crate::value::{Quantity, Uncertainty, ValueError};
+use crate::units::{Dimension, Unit};
+use crate::value::{Quantity, Uncertainty, ValueError, positive};
 
 /// How a distance was obtained, from the most direct to the most model-dependent.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -57,6 +57,8 @@ pub struct Distance {
 pub enum DistanceError {
     #[error("expected a value in {expected:?}, found {found:?}")]
     WrongUnit { expected: Unit, found: Unit },
+    #[error("{0:?} is not a unit of length, so it does not scale with the Hubble constant")]
+    NotALength(Unit),
     #[error("the Hubble constant {0} km/s/Mpc is not positive")]
     BadHubbleConstant(f64),
     #[error(transparent)]
@@ -120,12 +122,16 @@ pub fn from_hubble_scaled(
 ///
 /// # Errors
 ///
-/// Fails when either Hubble constant is not positive.
+/// Fails when `length` is not a length, such as a modulus, a parallax or a value in h⁻¹ Mpc,
+/// or either Hubble constant is not positive.
 pub fn rescale_hubble(
     length: &Quantity,
     published: f64,
     target: f64,
 ) -> Result<Quantity, DistanceError> {
+    if length.unit.dimension() != Dimension::Length {
+        return Err(DistanceError::NotALength(length.unit));
+    }
     let factor = checked(published)? / checked(target)?;
     Ok(Quantity::new(
         length.value * factor,
@@ -135,7 +141,7 @@ pub fn rescale_hubble(
 }
 
 fn checked(hubble_constant: f64) -> Result<f64, DistanceError> {
-    if hubble_constant.is_finite() && hubble_constant > 0.0 {
+    if positive(hubble_constant) {
         Ok(hubble_constant)
     } else {
         Err(DistanceError::BadHubbleConstant(hubble_constant))
@@ -210,5 +216,8 @@ mod tests {
         let back = rescale_hubble(&at_planck, 67.66, 75.0).unwrap();
         assert!((back.value - 40.0).abs() < 1e-12);
         assert!(rescale_hubble(&at_75, -1.0, 67.66).is_err());
+        let modulus = quantity(33.0, Unit::Magnitude, Uncertainty::NoneReported);
+        let refused = rescale_hubble(&modulus, 75.0, 67.66);
+        assert_eq!(refused, Err(DistanceError::NotALength(Unit::Magnitude)));
     }
 }

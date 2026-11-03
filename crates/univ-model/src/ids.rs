@@ -22,9 +22,24 @@ pub struct SourceId(String);
 /// A source's own name for an entry: the source and its identifier, such as Gaia DR3 and a
 /// `source_id`.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(try_from = "RawDesignation")]
 pub struct Designation {
     pub source: SourceId,
     pub identifier: String,
+}
+
+/// A designation as read, before its checks.
+#[derive(Deserialize)]
+struct RawDesignation {
+    source: SourceId,
+    identifier: String,
+}
+
+impl TryFrom<RawDesignation> for Designation {
+    type Error = IdError;
+    fn try_from(raw: RawDesignation) -> Result<Self, IdError> {
+        Self::new(raw.source, raw.identifier)
+    }
 }
 
 /// An id that cannot stand.

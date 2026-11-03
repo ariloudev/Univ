@@ -48,6 +48,11 @@ const GATES: &[Gate] = &[
     Gate::Command("loft fmt", "loft", &["fmt", "--check"]),
     Gate::Command("loft check", "loft", &["check", "--fail-on", "warning"]),
     Gate::Command(
+        "loft reconcile",
+        "loft",
+        &["reconcile", "--fail-on", "warning"],
+    ),
+    Gate::Command(
         "clippy",
         "cargo",
         &[

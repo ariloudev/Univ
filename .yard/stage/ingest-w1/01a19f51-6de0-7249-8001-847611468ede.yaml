@@ -10,6 +10,15 @@ versions:
     title: "W1 univ-model foundations"
     goal: "univ-model holds values, units, distances, frames, cosmology, redshifts, geometry and ids, tested against published values, and builds for wasm32"
     status: active
+  - key: 01a19f58-aa0a-776c-8eea-e5aa4e3913eb
+    at: 2026-11-03T02:59:10Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W1 univ-model foundations"
+    goal: "univ-model holds values, units, distances, frames, cosmology, redshifts, geometry and ids, tested against published values, and builds for wasm32"
+    status: done
 blocks:
   - key: 01a19f51-6de0-7249-8001-84789fa6c9ab
     id: w1-t1-value

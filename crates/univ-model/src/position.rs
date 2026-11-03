@@ -1,6 +1,9 @@
 //! Frames and positions: ICRS with an epoch, and rotations to galactic (Hipparcos, ESA 1997) and
 //! supergalactic (Lahav et al. 2000) coordinates.
 
+use std::array::from_fn;
+use std::sync::LazyLock;
+
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -24,7 +27,7 @@ pub enum Frame {
     Supergalactic,
 }
 
-/// The ICRS → galactic rotation of the Hipparcos catalogue (ESA 1997, vol. 1, §1.5.3):
+/// The ICRS → galactic rotation as the Hipparcos catalogue prints it (ESA 1997, vol. 1, §1.5.3):
 /// the transpose of its matrix `A_G`. The rows are the galactic x (toward the centre), y (toward
 /// l = 90°) and z (toward the north galactic pole) axes in ICRS.
 pub const ICRS_TO_GALACTIC: Rotation = Rotation([
@@ -48,10 +51,26 @@ impl Epoch {
 
 /// A direction on the sky in ICRS at the epoch of its source, in degrees.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(try_from = "RawSkyPosition")]
 pub struct SkyPosition {
     pub ra: f64,
     pub dec: f64,
     pub epoch: Epoch,
+}
+
+/// A sky position as read, before its checks.
+#[derive(Deserialize)]
+struct RawSkyPosition {
+    ra: f64,
+    dec: f64,
+    epoch: Epoch,
+}
+
+impl TryFrom<RawSkyPosition> for SkyPosition {
+    type Error = PositionError;
+    fn try_from(raw: RawSkyPosition) -> Result<Self, PositionError> {
+        Self::new(raw.ra, raw.dec, raw.epoch)
+    }
 }
 
 /// A sky position that cannot stand.
@@ -96,7 +115,9 @@ pub fn unit_vector(lon: f64, lat: f64) -> Vec3 {
 /// The longitude in [0, 360) and latitude of a vector, in degrees.
 #[must_use]
 pub fn lon_lat(v: Vec3) -> (f64, f64) {
+    // `rem_euclid` rounds a tiny negative angle up to exactly 360.
     let lon = v[1].atan2(v[0]).to_degrees().rem_euclid(360.0);
+    let lon = if lon >= 360.0 { 0.0 } else { lon };
     let lat = v[2].atan2(v[0].hypot(v[1])).to_degrees();
     (lon, lat)
 }
@@ -107,61 +128,108 @@ impl Rotation {
     /// `self · v`.
     #[must_use]
     pub fn apply(&self, v: Vec3) -> Vec3 {
-        let m = &self.0;
-        [dot(m[0], v), dot(m[1], v), dot(m[2], v)]
+        self.0.map(|row| dot(row, v))
     }
 
     /// The inverse rotation.
     #[must_use]
     pub fn transpose(&self) -> Self {
-        let m = &self.0;
-        Self([
-            [m[0][0], m[1][0], m[2][0]],
-            [m[0][1], m[1][1], m[2][1]],
-            [m[0][2], m[1][2], m[2][2]],
-        ])
+        Self(from_fn(|i| from_fn(|j| self.0[j][i])))
+    }
+
+    /// Whether the rows are orthogonal unit vectors, to 1e-9.
+    #[must_use]
+    pub fn is_orthonormal(&self) -> bool {
+        let product = self.then_after(&self.transpose());
+        product
+            .0
+            .iter()
+            .flatten()
+            .zip(Self::IDENTITY.0.iter().flatten())
+            .all(|(a, b)| (a - b).abs() < 1e-9)
     }
 
     /// `self · other`: `other` applied first.
     #[must_use]
     pub fn then_after(&self, other: &Self) -> Self {
-        let t = other.transpose();
-        let row = |r: [f64; 3]| [dot(r, t.0[0]), dot(r, t.0[1]), dot(r, t.0[2])];
-        Self([row(self.0[0]), row(self.0[1]), row(self.0[2])])
+        let columns = other.transpose();
+        Self(self.0.map(|row| columns.apply(row)))
     }
 }
 
+/// The rotation from equatorial axes to the axes of a frame given by its north pole and the
+/// longitude, in that frame, of the ascending node of its equator on the celestial equator.
+fn from_pole_and_node(pole: Vec3, node_longitude: f64) -> Rotation {
+    let node = unit_vector(lon_lat(pole).0 + 90.0, 0.0);
+    let (sin, cos) = node_longitude.to_radians().sin_cos();
+    let x = zip(node, cross(pole, node), |n, m| cos * n - sin * m);
+    Rotation([x, cross(pole, x), pole])
+}
+
+/// The ICRS → galactic rotation, derived from the angles that define it in the Hipparcos
+/// catalogue (ESA 1997, vol. 1, §1.5.3): the north galactic pole at α = 192.85948°,
+/// δ = +27.12825°, and the ascending node at l = 32.93192°. It agrees with the published
+/// [`ICRS_TO_GALACTIC`] to its 10 digits, and is orthonormal to rounding.
+fn icrs_to_galactic() -> Rotation {
+    from_pole_and_node(unit_vector(192.859_48, 27.128_25), 32.931_92)
+}
+
 /// The galactic → supergalactic rotation, built from the pole and origin of Lahav et al. 2000.
-#[must_use]
-pub fn galactic_to_supergalactic() -> Rotation {
+fn galactic_to_supergalactic() -> Rotation {
     let z = unit_vector(SUPERGALACTIC_POLE.0, SUPERGALACTIC_POLE.1);
     let x = unit_vector(SUPERGALACTIC_ORIGIN.0, SUPERGALACTIC_ORIGIN.1);
     Rotation([x, cross(z, x), z])
 }
 
+/// The rotations from ICRS into each frame, in the order of [`Frame`], computed once.
+/// The rotations between every pair of frames, indexed `[from][to]` in the order of [`Frame`],
+/// computed once. A frame to itself is exactly the identity.
+static BETWEEN: LazyLock<[[Rotation; 3]; 3]> = LazyLock::new(|| {
+    let galactic = icrs_to_galactic();
+    let from_icrs = [
+        Rotation::IDENTITY,
+        galactic,
+        galactic_to_supergalactic().then_after(&galactic),
+    ];
+    from_fn(|from| {
+        from_fn(|to| {
+            if from == to {
+                Rotation::IDENTITY
+            } else {
+                from_icrs[to].then_after(&from_icrs[from].transpose())
+            }
+        })
+    })
+});
+
 /// The rotation that takes an ICRS vector into `frame`.
 #[must_use]
 pub fn from_icrs(frame: Frame) -> Rotation {
-    match frame {
-        Frame::Icrs => Rotation::IDENTITY,
-        Frame::Galactic => ICRS_TO_GALACTIC,
-        Frame::Supergalactic => galactic_to_supergalactic().then_after(&ICRS_TO_GALACTIC),
-    }
+    between(Frame::Icrs, frame)
 }
 
 /// The rotation that takes a vector in `from` into `to`.
 #[must_use]
 pub fn between(from: Frame, to: Frame) -> Rotation {
-    if from == to {
-        return Rotation::IDENTITY;
-    }
-    from_icrs(to).then_after(&from_icrs(from).transpose())
+    BETWEEN[from as usize][to as usize]
 }
 
 /// The dot product.
 #[must_use]
 pub fn dot(a: Vec3, b: Vec3) -> f64 {
     a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+}
+
+/// `f` applied to the matching components of `a` and `b`.
+#[must_use]
+pub fn zip(a: Vec3, b: Vec3, f: impl Fn(f64, f64) -> f64) -> Vec3 {
+    from_fn(|i| f(a[i], b[i]))
+}
+
+/// `v` times `s`.
+#[must_use]
+pub fn scaled(v: Vec3, s: f64) -> Vec3 {
+    v.map(|c| c * s)
 }
 
 /// The cross product.
@@ -195,14 +263,27 @@ mod tests {
     }
 
     #[test]
-    fn the_hipparcos_rotation_is_orthonormal() {
-        let product = ICRS_TO_GALACTIC.then_after(&ICRS_TO_GALACTIC.transpose());
-        for (i, row) in product.0.iter().enumerate() {
+    fn the_galactic_rotation_matches_the_hipparcos_matrix_and_is_orthonormal() {
+        let derived = from_icrs(Frame::Galactic);
+        for (i, row) in derived.0.iter().enumerate() {
             for (j, value) in row.iter().enumerate() {
-                let expected = if i == j { 1.0 } else { 0.0 };
-                assert!((value - expected).abs() < 1e-9, "({i}, {j}) = {value}");
+                let published = ICRS_TO_GALACTIC.0[i][j];
+                assert!(
+                    (value - published).abs() < 1e-9,
+                    "({i}, {j}): {value} vs {published}"
+                );
             }
         }
+        assert!(derived.is_orthonormal());
+        let product = derived.then_after(&derived.transpose());
+        assert!(
+            product
+                .0
+                .iter()
+                .flatten()
+                .zip(Rotation::IDENTITY.0.iter().flatten())
+                .all(|(a, b)| (a - b).abs() < 1e-15)
+        );
     }
 
     #[test]
@@ -241,8 +322,12 @@ mod tests {
         );
         let back = between(Frame::Supergalactic, Frame::Icrs)
             .apply(from_icrs(Frame::Supergalactic).apply(unit_vector(ra, dec)));
-        // The published matrix has 10 digits, so its transpose inverts it to about 1e-10.
-        assert_near(lon_lat(back), (ra, dec), 1e-7);
+        assert_near(lon_lat(back), (ra, dec), 1e-9);
+    }
+
+    #[test]
+    fn a_longitude_just_below_zero_comes_back_as_zero_not_360() {
+        assert_eq!(lon_lat([1.0, -1e-17, 0.0]).0, 0.0);
     }
 
     #[test]

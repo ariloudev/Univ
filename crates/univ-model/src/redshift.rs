@@ -1,10 +1,12 @@
 //! Redshifts as measured and in the frame of the cosmic microwave background.
 
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use crate::cosmology::SPEED_OF_LIGHT;
-use crate::position::{ICRS_TO_GALACTIC, Vec3, dot, unit_vector};
-use crate::value::Quantity;
+use crate::position::{Frame, Vec3, between, dot, unit_vector};
+use crate::units::Unit;
+use crate::value::{Quantity, Uncertainty, ValueError};
 
 /// The frame a redshift is published in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -17,76 +19,147 @@ pub enum RedshiftFrame {
     Cmb,
 }
 
-/// The Sun's motion against the cosmic microwave background.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// A measurement of the Sun's motion against the cosmic microwave background, named in each
+/// redshift derived with it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DipoleModel {
+    /// Planck Collaboration 2020 (A&A 641, A1): 369.82 ± 0.11 km/s toward l = 264.021°,
+    /// b = 48.253°.
+    Planck2018,
+}
+
+/// The parameters of a dipole model.
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Dipole {
-    /// Speed in km/s.
+    /// Speed and its standard error, in km/s.
     pub speed: f64,
+    pub speed_sigma: f64,
     /// The apex in galactic longitude and latitude, degrees.
     pub l: f64,
     pub b: f64,
-    pub citation: String,
+    pub citation: &'static str,
 }
 
-impl Dipole {
-    /// Planck 2018 (Planck Collaboration 2020, A&A 641, A1): 369.82 ± 0.11 km/s toward
-    /// l = 264.021°, b = 48.253°.
+impl DipoleModel {
     #[must_use]
-    pub fn planck_2018() -> Self {
+    pub fn dipole(self) -> Dipole {
+        match self {
+            Self::Planck2018 => Dipole {
+                speed: 369.82,
+                speed_sigma: 0.11,
+                l: 264.021,
+                b: 48.253,
+                citation: "Planck Collaboration 2020, A&A 641, A1",
+            },
+        }
+    }
+}
+
+/// A redshift in the CMB frame, with the measured redshift and dipole model it was derived from.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CmbRedshift {
+    /// The dimensionless CMB-frame redshift.
+    pub value: Quantity,
+    /// The heliocentric redshift it was derived from, as measured.
+    pub heliocentric: Quantity,
+    pub dipole: DipoleModel,
+}
+
+/// A redshift that cannot be moved to the CMB frame.
+#[derive(Debug, Error, PartialEq)]
+pub enum RedshiftError {
+    #[error("only a heliocentric redshift is corrected here, not one in the {0:?} frame")]
+    NotHeliocentric(RedshiftFrame),
+    #[error("a redshift is dimensionless, not in {0:?}")]
+    NotDimensionless(Unit),
+    #[error("the direction is not a unit vector")]
+    NotAUnitVector,
+    #[error(transparent)]
+    Value(#[from] ValueError),
+}
+
+/// The correction of one dipole model, worked out once for many redshifts.
+#[derive(Clone, Copy, Debug)]
+pub struct CmbCorrection {
+    model: DipoleModel,
+    apex: Vec3,
+    beta: f64,
+    beta_sigma: f64,
+    gamma: f64,
+}
+
+impl CmbCorrection {
+    #[must_use]
+    pub fn new(model: DipoleModel) -> Self {
+        let d = model.dipole();
+        let beta = d.speed / SPEED_OF_LIGHT;
         Self {
-            speed: 369.82,
-            l: 264.021,
-            b: 48.253,
-            citation: "Planck Collaboration 2020, A&A 641, A1".to_owned(),
+            model,
+            apex: between(Frame::Galactic, Frame::Icrs).apply(unit_vector(d.l, d.b)),
+            beta,
+            beta_sigma: d.speed_sigma / SPEED_OF_LIGHT,
+            gamma: 1.0 / (1.0 - beta * beta).sqrt(),
         }
     }
 
     /// The unit vector toward the apex in ICRS.
     #[must_use]
     pub fn apex_icrs(&self) -> Vec3 {
-        ICRS_TO_GALACTIC
-            .transpose()
-            .apply(unit_vector(self.l, self.b))
+        self.apex
     }
-}
 
-/// A redshift in the CMB frame, with the measured redshift and dipole it was derived from.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CmbRedshift {
-    /// The dimensionless CMB-frame redshift.
-    pub value: Quantity,
-    /// The heliocentric redshift it was derived from, as measured.
-    pub heliocentric: Quantity,
-    pub dipole: Dipole,
-}
-
-/// The CMB-frame redshift of a source in ICRS direction `direction` (a unit vector) with the
-/// heliocentric redshift `heliocentric`: `1 + z_cmb = (1 + z_hel) · γ (1 + β cos θ)`, where θ is
-/// the angle between the source and the apex. The relativistic Doppler factor composes with the
-/// cosmological redshift; to first order `cz` gains `(1 + z_hel) v cos θ`.
-#[must_use]
-pub fn to_cmb_frame(heliocentric: Quantity, direction: Vec3, dipole: &Dipole) -> CmbRedshift {
-    let beta = dipole.speed / SPEED_OF_LIGHT;
-    let gamma = 1.0 / (1.0 - beta * beta).sqrt();
-    let factor = gamma * (1.0 + beta * dot(direction, dipole.apex_icrs()));
-    let value = Quantity {
-        value: (1.0 + heliocentric.value) * factor - 1.0,
-        unit: heliocentric.unit,
-        uncertainty: heliocentric.uncertainty.scaled(factor),
-    };
-    CmbRedshift {
-        value,
-        heliocentric,
-        dipole: dipole.clone(),
+    /// The CMB-frame redshift of a source in the ICRS unit `direction` with the heliocentric
+    /// redshift `measured`: `1 + z_cmb = (1 + z_hel) γ (1 + β cos θ)`, θ the angle between the
+    /// source and the apex. To first order `cz` gains `(1 + z_hel) v cos θ`. A symmetric error
+    /// gains the dipole's speed error in quadrature; other forms of uncertainty are scaled.
+    ///
+    /// # Errors
+    ///
+    /// Fails on a redshift not heliocentric or not dimensionless, or a direction that is not a
+    /// unit vector.
+    pub fn apply(
+        &self,
+        measured: Quantity,
+        frame: RedshiftFrame,
+        direction: Vec3,
+    ) -> Result<CmbRedshift, RedshiftError> {
+        if frame != RedshiftFrame::Heliocentric {
+            return Err(RedshiftError::NotHeliocentric(frame));
+        }
+        if measured.unit != Unit::Dimensionless {
+            return Err(RedshiftError::NotDimensionless(measured.unit));
+        }
+        if !direction.iter().all(|c| c.is_finite())
+            || (dot(direction, direction) - 1.0).abs() >= 1e-9
+        {
+            return Err(RedshiftError::NotAUnitVector);
+        }
+        let cos = dot(direction, self.apex);
+        let factor = self.gamma * (1.0 + self.beta * cos);
+        let uncertainty = match measured.uncertainty {
+            Uncertainty::Symmetric { sigma } => Uncertainty::Symmetric {
+                sigma: (factor * sigma).hypot((1.0 + measured.value) * cos * self.beta_sigma),
+            },
+            other => other.scaled(factor),
+        };
+        let value = Quantity::new(
+            (1.0 + measured.value) * factor - 1.0,
+            measured.unit,
+            uncertainty,
+        )?;
+        Ok(CmbRedshift {
+            value,
+            heliocentric: measured,
+            dipole: self.model,
+        })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::position::lon_lat;
-    use crate::units::Unit;
-    use crate::value::Uncertainty;
+    use crate::position::{cross, lon_lat};
 
     fn z(value: f64) -> Quantity {
         Quantity::new(
@@ -97,20 +170,25 @@ mod tests {
         .unwrap()
     }
 
+    fn planck() -> CmbCorrection {
+        CmbCorrection::new(DipoleModel::Planck2018)
+    }
+
     fn change_in_cz(direction: Vec3) -> f64 {
-        let dipole = Dipole::planck_2018();
-        let cmb = to_cmb_frame(z(0.01), direction, &dipole);
+        let cmb = planck()
+            .apply(z(0.01), RedshiftFrame::Heliocentric, direction)
+            .unwrap();
         (cmb.value.value - cmb.heliocentric.value) * SPEED_OF_LIGHT
     }
 
     #[test]
     fn the_planck_2018_dipole_is_used_and_its_apex_matches_astropy_in_icrs() {
-        let dipole = Dipole::planck_2018();
+        let dipole = DipoleModel::Planck2018.dipole();
         assert_eq!(
             (dipole.speed, dipole.l, dipole.b),
             (369.82, 264.021, 48.253)
         );
-        let (ra, dec) = lon_lat(dipole.apex_icrs());
+        let (ra, dec) = lon_lat(planck().apex_icrs());
         assert!(
             (ra - 167.941_903).abs() < 1e-4 && (dec + 6.944_260).abs() < 1e-4,
             "{ra} {dec}"
@@ -119,33 +197,53 @@ mod tests {
 
     #[test]
     fn cz_rises_toward_the_apex_falls_away_from_it_and_holds_across_it() {
-        let apex = Dipole::planck_2018().apex_icrs();
+        let apex = planck().apex_icrs();
         let toward = change_in_cz(apex);
         assert!(
             (toward - 1.01 * 369.82).abs() < 0.5,
             "toward the apex: {toward}"
         );
-        let away = change_in_cz([-apex[0], -apex[1], -apex[2]]);
+        let away = change_in_cz(apex.map(|c| -c));
         assert!(
             (away + 1.01 * 369.82).abs() < 0.5,
             "away from the apex: {away}"
         );
         // At 90° only the transverse Doppler term, (1 + z) (γ - 1) c ≈ 0.23 km/s, remains.
-        let across = change_in_cz(
-            crate::position::cross(apex, [0.0, 0.0, 1.0])
-                .map(|c| c / (1.0 - apex[2] * apex[2]).sqrt()),
-        );
+        let side = cross(apex, [0.0, 0.0, 1.0]);
+        let across = change_in_cz(side.map(|c| c / dot(side, side).sqrt()));
         assert!(across.abs() < 0.5, "across the apex: {across}");
     }
 
     #[test]
     fn the_derivation_keeps_the_measured_redshift_and_the_dipole() {
         let measured = z(0.023);
-        let cmb = to_cmb_frame(measured, [1.0, 0.0, 0.0], &Dipole::planck_2018());
+        let cmb = planck()
+            .apply(measured, RedshiftFrame::Heliocentric, [1.0, 0.0, 0.0])
+            .unwrap();
         assert_eq!(cmb.heliocentric, measured);
-        assert_eq!(cmb.dipole, Dipole::planck_2018());
+        assert_eq!(cmb.dipole, DipoleModel::Planck2018);
         let none = Quantity::new(0.02, Unit::Dimensionless, Uncertainty::NoneReported).unwrap();
-        let cmb = to_cmb_frame(none, [1.0, 0.0, 0.0], &Dipole::planck_2018());
+        let cmb = planck()
+            .apply(none, RedshiftFrame::Heliocentric, [1.0, 0.0, 0.0])
+            .unwrap();
         assert_eq!(cmb.value.uncertainty, Uncertainty::NoneReported);
+    }
+
+    #[test]
+    fn redshifts_already_corrected_or_not_dimensionless_are_refused() {
+        let x = [1.0, 0.0, 0.0];
+        let refused = planck().apply(z(0.02), RedshiftFrame::LocalGroup, x);
+        assert_eq!(
+            refused,
+            Err(RedshiftError::NotHeliocentric(RedshiftFrame::LocalGroup))
+        );
+        let cz = Quantity::new(6_000.0, Unit::KilometrePerSecond, Uncertainty::NoneReported);
+        let refused = planck().apply(cz.unwrap(), RedshiftFrame::Heliocentric, x);
+        assert_eq!(
+            refused,
+            Err(RedshiftError::NotDimensionless(Unit::KilometrePerSecond))
+        );
+        let refused = planck().apply(z(0.02), RedshiftFrame::Heliocentric, [2.0, 0.0, 0.0]);
+        assert_eq!(refused, Err(RedshiftError::NotAUnitVector));
     }
 }

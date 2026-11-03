@@ -79,8 +79,15 @@ impl Uncertainty {
     }
 }
 
+/// A finite number above zero.
+#[must_use]
+pub fn positive(x: f64) -> bool {
+    x.is_finite() && x > 0.0
+}
+
 /// A number with its unit and uncertainty.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(try_from = "RawQuantity")]
 pub struct Quantity {
     pub value: f64,
     pub unit: Unit,
@@ -117,6 +124,21 @@ impl Quantity {
             unit,
             uncertainty: self.uncertainty.scaled(factor),
         })
+    }
+}
+
+/// A quantity as read, before its checks.
+#[derive(Deserialize)]
+struct RawQuantity {
+    value: f64,
+    unit: Unit,
+    uncertainty: Uncertainty,
+}
+
+impl TryFrom<RawQuantity> for Quantity {
+    type Error = ValueError;
+    fn try_from(raw: RawQuantity) -> Result<Self, ValueError> {
+        Self::new(raw.value, raw.unit, raw.uncertainty)
     }
 }
 
