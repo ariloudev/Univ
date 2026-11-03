@@ -142,3 +142,22 @@ fn a_structure_that_cannot_be_placed_is_not_indexed_with_the_reason() {
         assert_eq!(refused, reason, "{id}");
     }
 }
+
+#[test]
+fn a_sky_region_over_every_longitude_spans_all_360_degrees() {
+    let release = Release::planck_2018();
+    // The CfA2 Great Wall's region, its right ascension widened to the full circle [0, 360].
+    let mut wall = structure("cfa2-great-wall");
+    let Some(StructureGeometry::SkyRegion(region)) = &mut wall.geometry else {
+        unreachable!()
+    };
+    region.lon[0].quantity.value = 0.0;
+    region.lon[1].quantity.value = 360.0;
+    let to_icrs = between(region.frame, Frame::Icrs);
+    let b = index_bounds(&wall, None, &release).unwrap();
+    let far = release.cosmology().comoving_distance(0.05).unwrap();
+    for ra in (0..360).step_by(15) {
+        let p = to_icrs.apply(unit_vector(f64::from(ra), 0.0).map(|c| c * far));
+        assert!(contains(&b, p), "RA {ra}: {b:?}");
+    }
+}

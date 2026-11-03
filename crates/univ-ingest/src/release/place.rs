@@ -221,7 +221,11 @@ pub fn sky_region(region: &SkyBox, release: &Release) -> Result<Aabb, String> {
     let far = radial(&region.far, release)?;
     let (near, far) = (near.min(far), near.max(far));
     let lon0 = degrees(&region.lon[0])?;
-    let span = (degrees(&region.lon[1])? - lon0).rem_euclid(360.0);
+    // A range of a full turn or more, such as [0, 360], spans every longitude, not none.
+    let span = match degrees(&region.lon[1])? - lon0 {
+        whole if whole >= 360.0 => 360.0,
+        part => part.rem_euclid(360.0),
+    };
     let (lat_a, lat_b) = (degrees(&region.lat[0])?, degrees(&region.lat[1])?);
     let (lat0, lat1) = (lat_a.min(lat_b), lat_a.max(lat_b));
     let to_icrs = between(region.frame, Frame::Icrs);
