@@ -335,3 +335,51 @@ fn the_tile_format_describes_each_encoding_the_release_uses() {
     assert_eq!(format["encodings"][0]["version"], 1);
     assert!(format["manifest_schema"]["properties"]["nodes"].is_object());
 }
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding() {
+    let domains = json(get("/v1/scale-domains?release=2"));
+    for domain in domains["domains"].as_array().unwrap() {
+        let name = domain["name"].as_str().unwrap();
+        let m = json(get(&format!("/v1/scale-domains/{name}/manifest?release=2")));
+        assert_eq!(m["frame"]["name"], "ICRS equatorial Cartesian", "{name}");
+        assert_eq!(m["frame"]["origin"], "Solar System barycentre");
+        assert!(m["unit"].is_string());
+        assert_eq!(m["cosmology"]["hubble_constant"], 67.66);
+        for node in m["nodes"].as_array().unwrap() {
+            for field in ["address", "bounds", "level", "points", "bytes", "sha256"] {
+                assert!(!node[field].is_null(), "{name}: a node gives its {field}");
+            }
+        }
+        for rotation in ["to_galactic", "to_supergalactic"] {
+            assert_eq!(m["rotations"][rotation].as_array().unwrap().len(), 3);
+        }
+        for source in m["sources"].as_array().unwrap() {
+            assert!(source["credit"].is_string(), "{name}: {source}");
+        }
+        assert_eq!(m["encoding"]["version"], 1);
+        for level in m["levels"].as_array().unwrap() {
+            assert!(level["step"].as_f64().unwrap() > 0.0);
+        }
+    }
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn a_head_of_a_tile_gives_its_size_and_no_body() {
+    let domains = json(get("/v1/scale-domains?release=2"));
+    let name = domains["domains"][0]["name"].as_str().unwrap().to_owned();
+    let manifest = json(get(&format!("/v1/scale-domains/{name}/manifest?release=2")));
+    let node = &manifest["nodes"][0];
+    let path = format!(
+        "/v1/scale-domains/{name}/tiles/{}?release=2",
+        node["address"].as_str().unwrap()
+    );
+    let raw = raw_head(&path);
+    let (head, body) = raw.split_once("\r\n\r\n").unwrap();
+    assert!(head.starts_with("HTTP/1.1 200"), "{head}");
+    let length = format!("content-length: {}", node["bytes"]);
+    assert!(head.to_ascii_lowercase().contains(&length), "{head}");
+    assert_eq!(body, "");
+}
