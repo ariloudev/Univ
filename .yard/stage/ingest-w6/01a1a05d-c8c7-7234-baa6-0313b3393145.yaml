@@ -19,3 +19,71 @@ versions:
     title: "W6 review"
     goal: "/simplify and /code-review findings on wave 6 are fixed, the gate is green and the trace is recorded"
     status: active
+  - key: 01a1a07b-30ff-71e2-a972-666775da4957
+    at: 2026-11-03T08:16:30Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W6 review"
+    goal: "/simplify and /code-review findings on wave 6 are fixed, the gate is green and the trace is recorded"
+    status: done
+blocks:
+  - key: 01a1a07b-30ff-71e2-a972-6663a31db3f8
+    id: w6-fix-review
+    kind: task
+    versions:
+      - key: 01a1a07b-30ff-71e2-a972-6665c2435391
+        at: 2026-11-03T08:16:30Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Fix the /code-review and /simplify findings"
+        detail: |-
+          Each fix comes with a test that failed before it.
+          - **AC-94 per level:** each inner node keeps floor(level_points·n/m), one fraction per level, recorded as `levels[].fraction`. Shown densities keep the true 10× ratio within 5%, where they were flattened to 1:1 before.
+          - **Source roles:** each source carries a `role` (distance, position or both), and `encoding.point_source` is documented.
+          - **Decoder:** it names an unknown version before the size bound.
+          - **Nodes:** a node with a non-finite corner or a subnormal step is refused.
+          - **Writes:** atomic, with the manifest written last.
+          - **Cosmology:** carried over from cross-match.
+          - **Simplify:** sources interned to u16, positions no longer copied, one `KINDS` list, shared CLI test helpers.
+        state: done
+        type: fix
+  - key: 01a1a07b-30ff-71e2-a972-66649784d1bf
+    id: w6-trace
+    kind: loft
+    versions:
+      - key: 01a1a07b-30ff-71e2-a972-66661933be19
+        at: 2026-11-03T08:16:30Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: trace
+        note: "F-10 (AC-91 to AC-98) and QA-1 are linked to `tiles.rs`, `tiles_encoding.rs` and `tiles_cli.rs`. QA-1 is proved by construction: the rules are checked against the 61,678-point bound, an overfull leaf refuses the build, and a 300,000-point stress fixture backs it up."
+        recorded:
+          commit: "10c3ea3b681079d5d7dc46a107b5aa8c1ead539c"
+          branch: "stage/ingest-w6"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T08:16:30Z
+        report: |
+          {
+            "base": "product/ingest",
+            "commit": "6a4c2df3fde7ad4f35e8832afd96fe39a378b7cb",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 293,
+              "linked": 105,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
