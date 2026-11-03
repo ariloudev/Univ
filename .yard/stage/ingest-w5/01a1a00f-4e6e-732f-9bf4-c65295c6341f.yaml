@@ -10,3 +10,12 @@ versions:
     title: "W5 review"
     goal: "/simplify and /code-review findings on wave 5 are fixed, the gate is green and the trace is recorded"
     status: planned
+  - key: 01a1a03b-d45f-7662-af36-da15542c2d4d
+    at: 2026-11-03T07:07:17Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W5 review"
+    goal: "/simplify and /code-review findings on wave 5 are fixed, the gate is green and the trace is recorded"
+    status: active

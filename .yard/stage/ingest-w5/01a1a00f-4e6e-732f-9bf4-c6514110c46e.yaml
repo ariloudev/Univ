@@ -10,6 +10,15 @@ versions:
     title: "W5 Identity and positions"
     goal: "Catalogue entries resolve into objects through published cross-identifications and rule-driven matching, each object has a preferred measurement, stable ids carry across releases, and every placed object has ICRS, galactic and supergalactic positions under the release cosmology"
     status: active
+  - key: 01a1a03b-d45f-7662-af36-da14acbe6828
+    at: 2026-11-03T07:07:17Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W5 Identity and positions"
+    goal: "Catalogue entries resolve into objects through published cross-identifications and rule-driven matching, each object has a preferred measurement, stable ids carry across releases, and every placed object has ICRS, galactic and supergalactic positions under the release cosmology"
+    status: done
 blocks:
   - key: 01a1a00f-4e6e-732f-9bf4-c65373ea6e2f
     id: w5-t1-positions
@@ -115,3 +124,19 @@ blocks:
         title: "Integrate into the run"
         detail: "A cross-match stage after normalize that resolves objects, assigns ids, places them and resolves structure members. It shows its events and summary counts. Done when `univ-ingest` runs the stage on fixtures offline and the gate passes with AC-28 to AC-35 and AC-60 to AC-81 linked."
         state: active
+      - key: 01a1a03b-d45f-7662-af36-da13e69663f6
+        at: 2026-11-03T07:07:17Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Integrate into the run"
+        detail: |-
+          `univ-ingest match` runs fetch, normalize and then cross-match: matching, ranking (with the tabulated D(z)), ids against a state dir, positions, then structure members.
+          - The state dir holds `ledger.yaml` and `entry-ids.yaml`. A match writes only `pending/`; the release build promotes it.
+          - Each structure member resolves to one object by name, within 60″.
+          - Void outlines are refused when an eRASS1 cluster or a supercluster lies inside.
+          - One `RunSink` serves the terminal and the plain log.
+
+          On the fixtures: 19 entries, 18 objects, 15 placed.
+        state: done
