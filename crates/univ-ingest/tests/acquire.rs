@@ -3,11 +3,13 @@
 mod common;
 
 use std::path::Path;
+use std::time::Duration;
 
 use common::{rig, source};
 use sha2::{Digest, Sha256};
 use univ_ingest::acquire::{AcquireError, Acquired, acquire};
-use univ_ingest::fetch::{Payload, hex};
+use univ_ingest::display::RunState;
+use univ_ingest::fetch::{Clock, Payload, hex};
 use univ_ingest::provenance::Provenance;
 use univ_ingest::source::SourceDefinition;
 use wiremock::matchers::{method, query_param};
@@ -286,4 +288,57 @@ async fn a_file_on_disk_whose_record_differs_from_the_published_digest_is_fetche
     assert_eq!(recorded.payload("data/grid.npz").unwrap().sha256, digest);
     // Now the record matches, so the next run fetches nothing.
     run(&d, cache.path()).await.unwrap();
+}
+
+#[tokio::test]
+async fn a_failing_chunk_lets_the_chunks_in_flight_finish_and_report_before_the_source_fails() {
+    let server = MockServer::start().await;
+    let sql = |chunk: u32| {
+        QUERY
+            .replace("{chunks}", "3")
+            .replace("{chunk}", &chunk.to_string())
+    };
+    Mock::given(query_param("cmd", sql(0).as_str()))
+        .respond_with(ResponseTemplate::new(404))
+        .mount(&server)
+        .await;
+    for chunk in [1, 2] {
+        Mock::given(query_param("cmd", sql(chunk).as_str()))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_string("#Table1\nra,dec\n1,2\n")
+                    .set_delay(Duration::from_millis(300)),
+            )
+            .mount(&server)
+            .await;
+    }
+    let defs = tempfile::tempdir().unwrap();
+    let access = format!("  method: skyserver_sql\n  query: \"{QUERY}\"\n  chunks: 3");
+    let definition = common::definition(&defs, &access, &server.uri());
+    let cache = tempfile::tempdir().unwrap();
+    let rig = rig(false);
+    let error = acquire(
+        &rig.fetcher,
+        &definition,
+        cache.path(),
+        Path::new("/nonexistent"),
+    )
+    .await
+    .unwrap_err();
+    assert!(error.to_string().contains("chunk 1 of 3"), "{error}");
+
+    let mut state = RunState::default();
+    for event in rig.events() {
+        state.apply(&event, rig.clock.now());
+    }
+    let status = state.status(Duration::from_secs(1), 200);
+    assert!(!status.contains(" | "), "no download in progress: {status}");
+    let provenance = Provenance::read(&cache.path().join("test-galaxies")).unwrap();
+    let mut items: Vec<&str> = provenance
+        .payloads
+        .iter()
+        .map(|p| p.item.as_str())
+        .collect();
+    items.sort_unstable();
+    assert_eq!(items, ["chunk 2 of 3", "chunk 3 of 3"]);
 }

@@ -1,72 +1,51 @@
 //! What a run shows on a terminal and in a log, fed scripted events (F-13).
 
-use std::sync::{Arc, Mutex, PoisonError};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+mod common;
 
+use std::sync::{Arc, Mutex, PoisonError};
+use std::time::{Duration, SystemTime};
+
+use common::{TestClock, source};
 use univ_ingest::display::{
-    Outcome, PlainSink, RunState, SourceSummary, StatusTarget, Summary, TerminalSink,
+    Outcome, PlainSink, RunDisplay, RunState, SourceState, SourceSummary, StatusTarget, Summary,
+    TerminalSink,
 };
 use univ_ingest::events::{Event, EventSink, RestartReason, Stage};
 use univ_ingest::fetch::Clock;
 use univ_model::ids::SourceId;
 
-/// A clock the test moves by hand.
-#[derive(Clone)]
-struct ManualClock(Arc<Mutex<SystemTime>>);
+/// One draw of a terminal: the lines printed above the status line, and the status line.
+type Draw = (Vec<String>, String);
 
-impl ManualClock {
-    fn new() -> Self {
-        Self(Arc::new(Mutex::new(
-            UNIX_EPOCH + Duration::from_hours(20_760 * 24),
-        )))
-    }
-    fn advance(&self, by: Duration) {
-        *self.0.lock().unwrap_or_else(PoisonError::into_inner) += by;
-    }
-}
-
-impl Clock for ManualClock {
-    fn sleep(&self, _: Duration) -> impl Future<Output = ()> + Send {
-        std::future::ready(())
-    }
-    fn now(&self) -> SystemTime {
-        *self.0.lock().unwrap_or_else(PoisonError::into_inner)
-    }
-}
-
-/// A terminal that records what it was asked to draw.
+/// A terminal that records each draw it was asked for.
 #[derive(Clone, Default)]
-struct Screen(Arc<Mutex<(Vec<String>, Vec<String>)>>);
+struct Screen(Arc<Mutex<Vec<Draw>>>);
+
+impl Screen {
+    fn draws(&self) -> Vec<Draw> {
+        self.0
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone()
+    }
+}
 
 impl StatusTarget for Screen {
-    fn line(&self, line: &str) {
+    fn draw(&self, lines: &[String], status: &str) {
         self.0
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
-            .0
-            .push(line.to_owned());
-    }
-    fn status(&self, status: &str) {
-        self.0
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .1
-            .push(status.to_owned());
+            .push((lines.to_vec(), status.to_owned()));
     }
     fn width(&self) -> usize {
-        40
+        80
     }
-    fn finish(&self) {}
-}
-
-fn src() -> SourceId {
-    #[expect(clippy::unwrap_used, reason = "a fixed, valid id")]
-    SourceId::new("test-galaxies").unwrap()
+    fn finish(&self, _: &[String]) {}
 }
 
 fn get(item: &str) -> Event {
     Event::Get {
-        source: src(),
+        source: source(),
         item: item.into(),
         url: format!("https://example.org/{item}"),
     }
@@ -74,15 +53,22 @@ fn get(item: &str) -> Event {
 
 fn done(item: &str, bytes: u64) -> Event {
     Event::Done {
-        source: src(),
+        source: source(),
         item: item.into(),
         bytes,
     }
 }
 
+fn now() -> SystemTime {
+    TestClock::default().now()
+}
+
 fn lines(events: &[Event]) -> Vec<String> {
     let mut state = RunState::default();
-    events.iter().filter_map(|e| state.apply(e)).collect()
+    events
+        .iter()
+        .filter_map(|e| state.apply(e, now()))
+        .collect()
 }
 
 #[test]
@@ -105,7 +91,7 @@ fn a_fetched_chunk_prints_a_get_line_with_its_number_source_chunk_and_size() {
 #[test]
 fn a_chunk_already_on_disk_prints_a_hit_line() {
     let printed = lines(&[Event::Hit {
-        source: src(),
+        source: source(),
         item: "chunk 1 of 2".into(),
     }]);
     assert_eq!(printed, ["Hit:1 test-galaxies chunk 1 of 2"]);
@@ -114,7 +100,7 @@ fn a_chunk_already_on_disk_prints_a_hit_line() {
 #[test]
 fn a_failed_request_prints_an_err_line_with_the_mirror_and_reason() {
     let err = |retry_in| Event::Err {
-        source: src(),
+        source: source(),
         item: "chunk 1 of 2".into(),
         mirror: "https://vizier.cds.unistra.fr/viz-bin/asu-tsv".into(),
         attempt: 1,
@@ -140,12 +126,12 @@ fn a_resumed_download_prints_the_byte_it_continued_from_and_a_restart_says_why()
     let printed = lines(&[
         get("grid.npz"),
         Event::Resumed {
-            source: src(),
+            source: source(),
             item: "grid.npz".into(),
             from: 40,
         },
         Event::Restarted {
-            source: src(),
+            source: source(),
             item: "grid.npz".into(),
             reason: RestartReason::RangeIgnored,
         },
@@ -171,13 +157,13 @@ fn the_status_line_gives_progress_rate_time_left_downloads_and_stage() {
         done("a", 1_000),
         get("b"),
         Event::Received {
-            source: src(),
+            source: source(),
             item: "b".into(),
             bytes: 250,
             total: Some(1_000),
         },
     ] {
-        state.apply(&e);
+        state.apply(&e, now());
     }
     let status = state.status(Duration::from_secs(10), 200);
     assert_eq!(
@@ -189,12 +175,15 @@ fn the_status_line_gives_progress_rate_time_left_downloads_and_stage() {
 #[test]
 fn the_status_line_fits_the_width_and_is_redrawn_at_most_ten_times_a_second() {
     let mut state = RunState::default();
-    state.apply(&Event::StageStarted {
-        stage: Stage::Normalize,
-        items: Some(18),
-    });
+    state.apply(
+        &Event::StageStarted {
+            stage: Stage::Normalize,
+            items: Some(18),
+        },
+        now(),
+    );
     for n in 0..5 {
-        state.apply(&get(&format!("a long chunk name number {n}")));
+        state.apply(&get(&format!("a long chunk name number {n}")), now());
     }
     let status = state.status(Duration::from_secs(1), 40);
     assert_eq!(status.chars().count(), 40);
@@ -203,28 +192,31 @@ fn the_status_line_fits_the_width_and_is_redrawn_at_most_ten_times_a_second() {
         "{status}"
     );
 
-    let clock = ManualClock::new();
+    // Events between two draws are drawn together, in one draw with the status line.
+    let clock = TestClock::default();
     let screen = Screen::default();
     let sink = TerminalSink::new(clock.clone(), screen.clone());
     for n in 0..5 {
         sink.emit(get(&format!("c{n}")));
+        sink.emit(done(&format!("c{n}"), 1_000));
     }
-    clock.advance(Duration::from_millis(99));
-    sink.emit(get("c5"));
-    clock.advance(Duration::from_millis(1));
-    sink.emit(get("c6"));
-    let draws = screen
-        .0
-        .lock()
-        .unwrap_or_else(PoisonError::into_inner)
-        .1
-        .len();
-    assert_eq!(draws, 2, "one draw at the start, one 100 ms later");
+    assert!(screen.draws().is_empty(), "an event alone draws nothing");
+    clock.advance(Duration::from_secs(1));
+    sink.draw();
+    // A draw with no new event still brings the status line up to date.
+    clock.advance(Duration::from_secs(1));
+    sink.draw();
+    let draws = screen.draws();
+    assert_eq!(draws.len(), 2);
+    assert_eq!(draws[0].0.len(), 5, "{draws:?}");
+    assert_eq!(draws[0].1, "5.0 kB of 5.0 kB 5.0 kB/s");
+    assert_eq!(draws[1].0, Vec::<String>::new());
+    assert_eq!(draws[1].1, "5.0 kB of 5.0 kB 2.5 kB/s");
 }
 
 #[test]
 fn each_event_and_stage_prints_as_one_plain_timestamped_line_without_control_codes() {
-    let sink = PlainSink::new(ManualClock::new(), Vec::new());
+    let sink = PlainSink::new(TestClock::default(), Vec::new());
     for e in [
         Event::StageStarted {
             stage: Stage::Fetch,
@@ -248,7 +240,7 @@ fn each_event_and_stage_prints_as_one_plain_timestamped_line_without_control_cod
 
 #[test]
 fn a_download_longer_than_a_minute_prints_one_progress_line_each_minute() {
-    let clock = ManualClock::new();
+    let clock = TestClock::default();
     let sink = PlainSink::new(clock.clone(), Vec::new());
     sink.emit(get("grid.npz"));
     for (after, bytes) in [
@@ -259,7 +251,7 @@ fn a_download_longer_than_a_minute_prints_one_progress_line_each_minute() {
     ] {
         clock.advance(Duration::from_secs(after));
         sink.emit(Event::Received {
-            source: src(),
+            source: source(),
             item: "grid.npz".into(),
             bytes,
             total: Some(80_000_000),
@@ -283,12 +275,14 @@ fn the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended() 
         elapsed: Duration::from_secs(125),
         sources: vec![
             SourceSummary {
-                source: src(),
+                source: source(),
+                state: SourceState::Fetched,
                 published: Some(1_097_100),
                 left_out: Some(203),
             },
             SourceSummary {
                 source: SourceId::new("cf4-basins").unwrap(),
+                state: SourceState::Fetched,
                 published: None,
                 left_out: None,
             },
@@ -320,4 +314,77 @@ fn the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended() 
         ..stopped
     };
     assert_eq!(published.lines().last().unwrap(), "Published release 3");
+}
+
+#[test]
+fn the_summary_names_each_source_fetched_failed_or_not_reached() {
+    let summary = |state| SourceSummary {
+        source: source(),
+        state,
+        published: None,
+        left_out: None,
+    };
+    let lines = Summary {
+        bytes: 0,
+        elapsed: Duration::from_secs(1),
+        sources: vec![
+            summary(SourceState::Fetched),
+            summary(SourceState::Failed("chunk 1 of 2: HTTP 404".into())),
+            summary(SourceState::NotReached),
+        ],
+        outcome: Outcome::Stopped {
+            stage: Stage::Fetch,
+            reason: "interrupted by the owner".into(),
+        },
+    }
+    .lines();
+    assert_eq!(
+        lines[1..4],
+        [
+            "  test-galaxies: not normalized in this run",
+            "  test-galaxies: failed: chunk 1 of 2: HTTP 404",
+            "  test-galaxies: not reached in this run",
+        ]
+    );
+}
+
+#[test]
+fn a_resumed_download_counts_only_the_bytes_this_run_fetched() {
+    let resumed = |from| Event::Resumed {
+        source: source(),
+        item: "grid.npz".into(),
+        from,
+    };
+    let received = |bytes| Event::Received {
+        source: source(),
+        item: "grid.npz".into(),
+        bytes,
+        total: Some(100),
+    };
+    let ten = Duration::from_secs(10);
+    let mut state = RunState::default();
+    for e in [get("grid.npz"), resumed(60), received(80)] {
+        state.apply(&e, now());
+    }
+    assert_eq!(
+        state.status(ten, 200),
+        "20 B of 40 B 2 B/s 10s left | 1:test-galaxies grid.npz 80 B 80%"
+    );
+    state.apply(&done("grid.npz", 100), now());
+    assert_eq!(state.status(ten, 200), "40 B of 40 B 4 B/s");
+
+    let mut state = RunState::default();
+    let restarted = Event::Restarted {
+        source: source(),
+        item: "grid.npz".into(),
+        reason: RestartReason::RangeIgnored,
+    };
+    for e in [get("grid.npz"), resumed(60), restarted, received(50)] {
+        state.apply(&e, now());
+    }
+    assert!(
+        state.status(ten, 200).starts_with("50 B of 100 B "),
+        "{}",
+        state.status(ten, 200)
+    );
 }

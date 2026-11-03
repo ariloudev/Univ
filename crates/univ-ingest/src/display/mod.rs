@@ -5,41 +5,62 @@ mod plain;
 mod summary;
 mod terminal;
 
-use std::collections::BTreeMap;
-use std::time::Duration;
+use std::collections::{BTreeMap, HashMap};
+use std::time::{Duration, SystemTime};
 
 use univ_model::ids::SourceId;
 
-use crate::events::{Event, RestartReason, Stage};
+use crate::events::{Event, EventSink, RestartReason, Stage};
 
 pub use plain::PlainSink;
-pub use summary::{Outcome, SourceSummary, Summary};
-pub use terminal::{IndicatifTarget, StatusTarget, TerminalSink};
+pub use summary::{Outcome, SourceState, SourceSummary, Summary};
+pub use terminal::{IndicatifTarget, REDRAW_EVERY, StatusTarget, TerminalSink};
+
+/// A display of a run: the events it is sent, redrawn while the run lasts, and the summary it
+/// prints when the run ends.
+pub trait RunDisplay: EventSink {
+    /// Brings the display up to date. A display that prints each line as it comes has nothing
+    /// to draw.
+    fn draw(&self) {}
+    /// Prints the summary of the run, which ended with `outcome`: its bytes and time come from
+    /// the display's own count and clock.
+    fn finish(&self, sources: Vec<SourceSummary>, outcome: Outcome);
+}
 
 /// A download in progress, as the status line shows it.
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Download {
-    number: u64,
+    source: SourceId,
+    item: String,
+    /// Bytes on disk when the download started, from a partial download it continues.
+    from: u64,
+    /// Bytes the item's file holds, counting the ones it started from.
     bytes: u64,
+    /// The whole item's size, when the provider gives it.
     total: Option<u64>,
+    /// When the download last reported its progress, or began.
+    last_reported: SystemTime,
 }
 
 /// The state of a run, built from its events.
 #[derive(Debug, Default)]
 pub struct RunState {
-    numbers: BTreeMap<(SourceId, String), u64>,
+    numbers: HashMap<SourceId, HashMap<String, u64>>,
     next: u64,
-    downloads: BTreeMap<(SourceId, String), Download>,
+    /// Downloads in progress by item number, so in the order they were first seen.
+    downloads: BTreeMap<u64, Download>,
     stage: Option<(Stage, u64, Option<u64>)>,
-    /// Bytes of finished items, and their sizes counted as expected.
+    /// Bytes the finished items took in this run, which is what they counted as expected.
     finished: u64,
-    /// Bytes the run has fetched in all, finished or not.
-    pub fetched: u64,
+    /// Bytes the run has fetched in all, finished or not, not counting what was already on
+    /// disk.
+    fetched: u64,
 }
 
 impl RunState {
-    /// Takes in `event` and gives the line it prints, if it prints one.
-    pub fn apply(&mut self, event: &Event) -> Option<String> {
+    /// Takes in `event`, which happened at `now`, and gives the line it prints, if it prints
+    /// one.
+    pub fn apply(&mut self, event: &Event, now: SystemTime) -> Option<String> {
         match event {
             Event::StageStarted { stage, items } => {
                 self.stage = Some((*stage, 0, *items));
@@ -50,15 +71,7 @@ impl RunState {
             }
             Event::StageEnded { stage } => Some(format!("Stage {} done", stage_name(*stage))),
             Event::Get { source, item, .. } => {
-                let number = self.number(source, item);
-                self.downloads.insert(
-                    key(source, item),
-                    Download {
-                        number,
-                        bytes: 0,
-                        total: None,
-                    },
-                );
+                self.started(source, item, now);
                 None
             }
             Event::Received {
@@ -67,7 +80,8 @@ impl RunState {
                 bytes,
                 total,
             } => {
-                if let Some(d) = self.downloads.get_mut(&key(source, item)) {
+                let number = self.number(source, item);
+                if let Some(d) = self.downloads.get_mut(&number) {
                     self.fetched += bytes.saturating_sub(d.bytes);
                     d.bytes = *bytes;
                     d.total = *total;
@@ -80,12 +94,12 @@ impl RunState {
                 bytes,
             } => {
                 let number = self.number(source, item);
-                let streamed = self
+                let (streamed, from) = self
                     .downloads
-                    .remove(&key(source, item))
-                    .map_or(0, |d| d.bytes);
+                    .remove(&number)
+                    .map_or((0, 0), |d| (d.bytes, d.from));
                 self.fetched += bytes.saturating_sub(streamed);
-                self.finished += bytes;
+                self.finished += bytes.saturating_sub(from);
                 self.advance();
                 Some(format!("Get:{number} {source} {item} [{}]", size(*bytes)))
             }
@@ -104,7 +118,7 @@ impl RunState {
             } => {
                 let number = self.number(source, item);
                 if retry_in.is_none() {
-                    self.downloads.remove(&key(source, item));
+                    self.downloads.remove(&number);
                 }
                 let next = retry_in.map_or_else(
                     || "trying the next mirror".to_owned(),
@@ -119,8 +133,10 @@ impl RunState {
             )),
             Event::Resumed { source, item, from } => {
                 let number = self.number(source, item);
-                if let Some(d) = self.downloads.get_mut(&key(source, item)) {
+                if let Some(d) = self.downloads.get_mut(&number) {
+                    d.from = *from;
                     d.bytes = *from;
+                    d.last_reported = now;
                 }
                 Some(format!("Resume:{number} {source} {item} from byte {from}"))
             }
@@ -130,22 +146,56 @@ impl RunState {
                 reason,
             } => {
                 let number = self.number(source, item);
-                let why = match reason {
-                    RestartReason::RangeIgnored => "the provider ignored the range asked for",
-                    RestartReason::Changed => "the file changed since the partial download",
-                    RestartReason::RangeUnsatisfiable => "the provider could not serve the range",
-                };
+                if let Some(d) = self.downloads.get_mut(&number) {
+                    d.from = 0;
+                    d.bytes = 0;
+                }
                 Some(format!(
-                    "Restart:{number} {source} {item} from the first byte: {why}"
+                    "Restart:{number} {source} {item} from the first byte: {}",
+                    why(*reason)
                 ))
             }
         }
     }
 
+    /// A download of the item begins at `now`, from its first byte.
+    fn started(&mut self, source: &SourceId, item: &str, now: SystemTime) {
+        let download = Download {
+            source: source.clone(),
+            item: item.to_owned(),
+            from: 0,
+            bytes: 0,
+            total: None,
+            last_reported: now,
+        };
+        let number = self.number(source, item);
+        self.downloads.insert(number, download);
+    }
+
+    /// The progress lines of the downloads that have not reported for `every` by `now`, each
+    /// marked as reported.
+    pub fn progress_due(&mut self, now: SystemTime, every: Duration) -> Vec<String> {
+        self.downloads
+            .values_mut()
+            .filter(|d| now.duration_since(d.last_reported).unwrap_or_default() >= every)
+            .map(|d| {
+                d.last_reported = now;
+                let of = d
+                    .total
+                    .map_or_else(String::new, |t| format!(" of {}", size(t)));
+                format!("Progress {} {} {}{of}", d.source, d.item, size(d.bytes))
+            })
+            .collect()
+    }
+
     /// The status line after `elapsed`, cut to `width` characters.
     #[must_use]
     pub fn status(&self, elapsed: Duration, width: usize) -> String {
-        let in_flight: u64 = self.downloads.values().filter_map(|d| d.total).sum();
+        let in_flight: u64 = self
+            .downloads
+            .values()
+            .filter_map(|d| d.total.map(|t| t.saturating_sub(d.from)))
+            .sum();
         let expected = self.finished + in_flight;
         let mut parts = Vec::new();
         if let Some((stage, done, items)) = self.stage {
@@ -176,26 +226,35 @@ impl RunState {
             size(self.fetched),
             size(rate(self.fetched, elapsed))
         ));
-        for ((source, item), d) in &self.downloads {
+        for (number, d) in &self.downloads {
             let percent = d
                 .total
                 .filter(|t| *t > 0)
                 .map_or_else(String::new, |t| format!(" {}%", d.bytes * 100 / t));
             parts.push(format!(
-                "{}:{source} {item} {}{percent}",
-                d.number,
+                "{number}:{} {} {}{percent}",
+                d.source,
+                d.item,
                 size(d.bytes)
             ));
         }
         cut(&parts.join(" | "), width)
     }
 
+    /// The item's number, given the first time the run sees it.
     fn number(&mut self, source: &SourceId, item: &str) -> u64 {
-        let next = &mut self.next;
-        *self.numbers.entry(key(source, item)).or_insert_with(|| {
-            *next += 1;
-            *next
-        })
+        if let Some(number) = self.numbers.get(source).and_then(|items| items.get(item)) {
+            return *number;
+        }
+        self.next += 1;
+        let number = self.next;
+        if let Some(items) = self.numbers.get_mut(source) {
+            items.insert(item.to_owned(), number);
+        } else {
+            let items = HashMap::from([(item.to_owned(), number)]);
+            self.numbers.insert(source.clone(), items);
+        }
+        number
     }
 
     fn advance(&mut self) {
@@ -205,8 +264,13 @@ impl RunState {
     }
 }
 
-fn key(source: &SourceId, item: &str) -> (SourceId, String) {
-    (source.clone(), item.to_owned())
+/// Why a download started over, as the owner reads it.
+fn why(reason: RestartReason) -> &'static str {
+    match reason {
+        RestartReason::RangeIgnored => "the provider ignored the range asked for",
+        RestartReason::Changed => "the file changed since the partial download",
+        RestartReason::RangeUnsatisfiable => "the provider could not serve the range",
+    }
 }
 
 /// The stage's name as the owner reads it.

@@ -3,14 +3,14 @@
 
 use std::path::PathBuf;
 use std::process::ExitCode;
-use std::sync::Arc;
-use std::time::Instant;
+use std::sync::{Mutex, PoisonError};
 
 use clap::{Args, Parser, Subcommand};
-use univ_ingest::display::{Outcome, Summary};
-use univ_ingest::events::Stage;
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
-use univ_ingest::run::{Display, FetchOptions, fetch, interrupted, select, summary};
+use univ_ingest::run::{
+    FetchOptions, FetchReport, display_for_stderr, drawing, fetch, interrupted, owner_interrupt,
+    select,
+};
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
 const INTERRUPTED: u8 = 130;
@@ -66,7 +66,7 @@ async fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    let display = Arc::new(Display::for_stderr());
+    let display = display_for_stderr();
     let fetcher = match Fetcher::new(
         SystemClock,
         display.clone(),
@@ -79,22 +79,24 @@ async fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    let started = Instant::now();
-    tokio::select! {
-        report = fetch(&fetcher, display.as_ref(), &definitions, &options) => {
-            let failed = !report.failures.is_empty();
-            display.finish(&summary(report, display.fetched(), started));
-            if failed { ExitCode::FAILURE } else { ExitCode::SUCCESS }
-        }
-        _ = tokio::signal::ctrl_c() => {
-            display.finish(&Summary {
-                bytes: display.fetched(),
-                elapsed: started.elapsed(),
-                sources: Vec::new(),
-                outcome: Outcome::Stopped { stage: Stage::Fetch, reason: "interrupted by the owner".to_owned() },
-            });
-            eprintln!("{}", interrupted(&options));
-            ExitCode::from(INTERRUPTED)
-        }
+    let report = Mutex::new(FetchReport::new(&definitions));
+    let fetching = fetch(&fetcher, &definitions, &options, &report);
+    let interrupted_run = tokio::select! {
+        () = drawing(display.as_ref(), fetching) => false,
+        () = owner_interrupt(tokio::signal::ctrl_c()) => true,
+    };
+    let report = report.lock().unwrap_or_else(PoisonError::into_inner);
+    if interrupted_run {
+        let (sources, outcome) = report.interrupted();
+        display.finish(sources, outcome);
+        eprintln!("{}", interrupted(&options));
+        return ExitCode::from(INTERRUPTED);
+    }
+    let (sources, outcome) = report.ended();
+    display.finish(sources, outcome);
+    if report.failed() {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
     }
 }

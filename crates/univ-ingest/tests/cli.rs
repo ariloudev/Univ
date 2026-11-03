@@ -55,7 +55,8 @@ async fn an_offline_fetch_prints_plain_lines_and_a_summary_and_fails_on_a_missin
         "{log}"
     );
     assert!(
-        log.contains("Z Stopped at fetch: fetch only; no release was asked for\n"),
+        log.contains("Z test-galaxies: not normalized in this run\n")
+            && log.contains("Z Stopped at fetch: fetch only; no release was asked for\n"),
         "{log}"
     );
     assert!(!log.contains('\u{1b}'), "no control codes in a log");
@@ -64,5 +65,14 @@ async fn an_offline_fetch_prints_plain_lines_and_a_summary_and_fails_on_a_missin
     let run = fetch(definitions.path(), empty.path());
     let log = String::from_utf8(run.stderr).unwrap();
     assert!(!run.status.success());
-    assert!(log.contains("1 sources failed: test-galaxies: chunk 1 of 2 is not on disk, and an offline run fetches nothing"), "{log}");
+    assert!(
+        log.contains(
+            "Z test-galaxies: failed: chunk 1 of 2 is not on disk, and an offline run fetches nothing\n"
+        ),
+        "{log}"
+    );
+    assert!(
+        log.contains("Z Stopped at fetch: 1 of 1 sources failed\n"),
+        "{log}"
+    );
 }

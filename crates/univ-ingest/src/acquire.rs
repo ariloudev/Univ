@@ -5,9 +5,10 @@
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, PoisonError};
 
-use futures_util::{StreamExt as _, TryStreamExt as _, stream};
+use futures_util::{StreamExt as _, stream};
 use thiserror::Error;
 use univ_model::ids::SourceId;
 
@@ -155,11 +156,31 @@ async fn acquire_chunks<C: Clock>(run: &Run<'_, C>) -> Result<Vec<PathBuf>, Acqu
     let definition = run.definition;
     let check = |body: &[u8]| check_answer(definition, body);
     let requests = chunk_requests(definition);
-    let fetched: Vec<(PathBuf, u64)> = stream::iter(&requests)
-        .map(|request| run.measured(request, &check))
+    // After the first failure no further chunk starts, but the chunks in flight finish, so
+    // that their events and records land before the error is returned.
+    let failed = AtomicBool::new(false);
+    let outcomes: Vec<Option<Result<(PathBuf, u64), AcquireError>>> = stream::iter(&requests)
+        .map(|request| {
+            let failed = &failed;
+            let check = &check;
+            async move {
+                if failed.load(Ordering::Relaxed) {
+                    return None;
+                }
+                let outcome = run.measured(request, check).await;
+                if outcome.is_err() {
+                    failed.store(true, Ordering::Relaxed);
+                }
+                Some(outcome)
+            }
+        })
         .buffered(CHUNKS_AT_ONCE)
-        .try_collect()
-        .await?;
+        .collect()
+        .await;
+    let fetched = outcomes
+        .into_iter()
+        .flatten()
+        .collect::<Result<Vec<_>, _>>()?;
     let found = fetched.iter().map(|(_, rows)| rows).sum();
     let files: Vec<PathBuf> = fetched.into_iter().map(|(dest, _)| dest).collect();
     let mut kept = files.clone();

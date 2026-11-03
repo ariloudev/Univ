@@ -9,7 +9,7 @@ mod common;
 
 use std::time::Duration;
 
-use common::{item, rig};
+use common::{item, keep, rig};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use univ_ingest::events::Event;
@@ -55,7 +55,6 @@ async fn an_interrupted_download_keeps_its_bytes_and_the_next_run_continues_from
     let part = dir.path().join("grid.npz.part");
     let mirror = stalling().await;
     let first = rig(false);
-    let keep = |_: &univ_ingest::fetch::Payload| Ok(());
     // The owner interrupts the run once 40 bytes have arrived: the fetch is dropped mid-body.
     let grid = item("grid", &dest);
     let mirrors = [mirror.clone()];

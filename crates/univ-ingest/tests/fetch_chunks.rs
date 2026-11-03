@@ -387,3 +387,85 @@ async fn a_chunk_is_recorded_before_it_is_renamed_and_a_failed_record_leaves_no_
         "a chunk without its record is not renamed into place"
     );
 }
+
+#[tokio::test]
+async fn chunks_in_flight_on_a_dead_mirror_skip_it_once_and_stop_trying_it() {
+    // Chunk 0 fails fast and uses up its retries while chunks 1 and 2 still wait for their
+    // first answer.
+    let dead = MockServer::start().await;
+    Mock::given(query_param("chunk", "0"))
+        .respond_with(always(503))
+        .mount(&dead)
+        .await;
+    Mock::given(method("GET"))
+        .respond_with(always(503).set_delay(Duration::from_millis(200)))
+        .mount(&dead)
+        .await;
+    let working = MockServer::start().await;
+    Mock::given(method("GET"))
+        .respond_with(always(200).set_body_string("row\n"))
+        .mount(&working)
+        .await;
+    let dir = tempfile::tempdir().unwrap();
+    let rig = fetch_three(&dir, &dead, &working).await;
+    let events = rig.events();
+    let skipped: Vec<usize> = events
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| matches!(e, Event::MirrorSkipped { .. }))
+        .map(|(n, _)| n)
+        .collect();
+    assert_eq!(skipped.len(), 1, "{events:#?}");
+    let tried_after = events[skipped[0]..]
+        .iter()
+        .any(|e| matches!(e, Event::Get { url, .. } if url.starts_with(&dead.uri())));
+    assert!(!tried_after, "no attempt on the mirror once it is skipped");
+    let requests = dead.received_requests().await.unwrap().len();
+    assert!(requests <= 5 + 2, "{requests} requests to the dead mirror");
+}
+
+#[tokio::test]
+async fn chunks_that_use_up_a_mirror_together_report_its_skip_once() {
+    let dead = MockServer::start().await;
+    Mock::given(method("GET"))
+        .respond_with(always(503))
+        .mount(&dead)
+        .await;
+    let working = MockServer::start().await;
+    Mock::given(method("GET"))
+        .respond_with(always(200).set_body_string("row\n"))
+        .mount(&working)
+        .await;
+    let dir = tempfile::tempdir().unwrap();
+    let rig = fetch_three(&dir, &dead, &working).await;
+    let skipped = rig
+        .events()
+        .iter()
+        .filter(|e| matches!(e, Event::MirrorSkipped { .. }))
+        .count();
+    assert_eq!(skipped, 1);
+}
+
+/// Fetches chunks 0, 1 and 2 into `dir` at once from `dead`, then `working`.
+async fn fetch_three(
+    dir: &tempfile::TempDir,
+    dead: &MockServer,
+    working: &MockServer,
+) -> common::Rig {
+    let rig = rig(false);
+    let mirrors = [dead.uri(), working.uri()];
+    let dests: Vec<_> = (0..3)
+        .map(|n| dir.path().join(format!("chunk-{n}.tsv")))
+        .collect();
+    let names: Vec<String> = (0..3).map(|n| format!("chunk {n}")).collect();
+    let suffixes: Vec<String> = (0..3).map(|n| format!("/q?chunk={n}")).collect();
+    let fetch = |n: usize| {
+        let item = item(&names[n], &dests[n]);
+        let fetcher = &rig.fetcher;
+        let (mirrors, suffix) = (&mirrors, &suffixes[n]);
+        async move { fetcher.chunk(&item, mirrors, suffix, &accept, &keep).await }
+    };
+    let (a, b, c) = tokio::join!(fetch(0), fetch(1), fetch(2));
+    assert!(a.is_ok() && b.is_ok() && c.is_ok());
+    rig
+}

@@ -173,6 +173,11 @@ impl<C: Clock> Fetcher<C> {
         })
     }
 
+    /// Sends `event` to the run's sink.
+    pub fn emit(&self, event: Event) {
+        self.sink.emit(event);
+    }
+
     /// Fetches one chunk of a query: `suffix` is appended to each mirror in turn. The chunk is
     /// written to its file with `.part` added, recorded, then renamed, so a partial chunk is
     /// never read as one. A chunk already on disk is not fetched again.
@@ -253,8 +258,8 @@ impl<C: Clock> Fetcher<C> {
         Ok((url, body.into(), rows))
     }
 
-    /// Tries `attempt` on each mirror in order, with retries, skipping mirrors that failed all
-    /// their retries earlier in the run.
+    /// Tries `attempt` on each mirror in order, with retries. A mirror skipped for the rest of
+    /// the run, even by another item while this one was trying it, gets no further attempt.
     async fn across_mirrors<T, F, Fut>(
         &self,
         item: &Item<'_>,
@@ -267,17 +272,14 @@ impl<C: Clock> Fetcher<C> {
     {
         let mut errors = Vec::new();
         for mirror in mirrors {
-            if self.is_skipped(mirror) {
-                errors.push((
-                    mirror.clone(),
-                    "skipped: it failed all its retries earlier in this run".to_owned(),
-                ));
-                continue;
-            }
             let mut wait = self.policy.first_wait;
-            let mut last = String::new();
+            let mut last = None;
             let mut exhausted = true;
             for n in 0..=self.policy.retries {
+                if self.is_skipped(mirror) {
+                    exhausted = false;
+                    break;
+                }
                 let (error, retry) = match attempt(mirror.clone()).await {
                     Ok(value) => return Ok(value),
                     Err(Attempt::Retry(error)) => (error, n < self.policy.retries),
@@ -294,20 +296,23 @@ impl<C: Clock> Fetcher<C> {
                     error: error.clone(),
                     retry_in: retry.then_some(wait),
                 });
-                last = error;
+                last = Some(error);
                 if !retry {
                     break;
                 }
                 self.clock.sleep(wait).await;
                 wait *= 2;
             }
-            if exhausted {
-                self.skip(mirror);
+            // Only the item whose failure first skips the mirror says so.
+            if exhausted && self.skip(mirror) {
                 self.sink.emit(Event::MirrorSkipped {
                     source: item.source.clone(),
                     mirror: mirror.clone(),
                 });
             }
+            let last = last.unwrap_or_else(|| {
+                "skipped: it failed all its retries earlier in this run".to_owned()
+            });
             errors.push((mirror.clone(), last));
         }
         Err(FetchError::AllMirrorsFailed {
@@ -324,11 +329,12 @@ impl<C: Clock> Fetcher<C> {
             .contains(mirror)
     }
 
-    fn skip(&self, mirror: &str) {
+    /// Skips `mirror` for the rest of the run; true when it was not skipped already.
+    fn skip(&self, mirror: &str) -> bool {
         self.skipped
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
-            .insert(mirror.to_owned());
+            .insert(mirror.to_owned())
     }
 
     fn payload(

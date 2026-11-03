@@ -10,6 +10,15 @@ versions:
     title: "W3 Run display"
     goal: "A run shows an apt-style status line and event lines on a terminal and plain timestamped lines elsewhere, ends with a summary, and stops cleanly on Ctrl-C, with univ-ingest runnable as a fetch command"
     status: active
+  - key: 01a19f9f-dd3c-76dd-bdcf-2899a6c7bcd5
+    at: 2026-11-03T04:16:56Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W3 Run display"
+    goal: "A run shows an apt-style status line and event lines on a terminal and plain timestamped lines elsewhere, ends with a summary, and stops cleanly on Ctrl-C, with univ-ingest runnable as a fetch command"
+    status: done
 blocks:
   - key: 01a19f9a-424f-7733-9396-47164eac4b20
     id: w3-t1-state
@@ -24,6 +33,15 @@ blocks:
         title: "Run state and line rendering"
         detail: "A pure `RunState` fed events: bytes, rate, time left, downloads in progress, stage counts, Get numbering. Pure renderers for the status line (cut to a width), the Get, Hit and Err lines, resume lines and stage lines. Done when snapshot tests cover AC-107 to AC-114 and AC-118."
         state: active
+      - key: 01a19f9f-9df0-72ef-9522-103e90f6891c
+        at: 2026-11-03T04:16:40Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run state and line rendering"
+        detail: "`display::RunState` turns events into Get, Hit, Err, Resume, Restart and stage lines, and a status line with stage percentage, bytes of expected, rate, time left and downloads in progress, cut to the width. Integer arithmetic throughout. 6 tests in `tests/display.rs` cover AC-107 to AC-114 and AC-118."
+        state: done
   - key: 01a19f9a-424f-7733-9396-471763837877
     id: w3-t2-sinks
     kind: task
@@ -37,6 +55,15 @@ blocks:
         title: "Terminal and plain sinks"
         detail: "The terminal sink prints lines above an indicatif status line redrawn at most 10 times a second. The plain sink prints timestamped lines with no control codes, and a progress line each minute for long downloads. Done when plain-mode tests on a scripted clock cover AC-118 and AC-119, and the terminal sink's redraw limit and width are tested (AC-110)."
         state: open
+      - key: 01a19f9f-a905-762f-8dd9-cdce6d457022
+        at: 2026-11-03T04:16:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Terminal and plain sinks"
+        detail: "`TerminalSink` prints lines above an indicatif status line, redrawn at most every 100 ms through a `StatusTarget` (recorded in tests). `PlainSink` writes RFC 3339 timestamped lines and a progress line each minute for long downloads. Tests cover AC-110, AC-118 and AC-119."
+        state: done
   - key: 01a19f9a-424f-7733-9396-4718578c370f
     id: w3-t3-summary
     kind: task
@@ -50,6 +77,15 @@ blocks:
         title: "Run summary"
         detail: "Bytes, time and mean rate; per source, the entries published and left out (filled from W4 on); the release built, or the stage and reason the run stopped. Done when tests cover AC-115 to AC-117."
         state: open
+      - key: 01a19f9f-b2ca-7035-9551-fdec30e91ec7
+        at: 2026-11-03T04:16:45Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run summary"
+        detail: "`display::Summary` prints bytes, time and mean rate, per-source entries published and left out (\"not normalized in this run\" until W4 fills them), and the release built or published, or the stage and reason the run stopped. Tested for AC-115 to AC-117."
+        state: done
   - key: 01a19f9a-424f-7733-9396-471999769c9e
     id: w3-t4-interrupt
     kind: task
@@ -63,6 +99,15 @@ blocks:
         title: "Interrupt and continue"
         detail: "Ctrl-C cancels at once and keeps every chunk and partial file, says how to continue, and leaves no release half built. Done when a test cancels a stalled download, and the next run resumes from the byte it reached (AC-120, AC-121)."
         state: open
+      - key: 01a19f9f-c07e-71f1-9606-e59bfa54a22c
+        at: 2026-11-03T04:16:49Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Interrupt and continue"
+        detail: "Ctrl-C drops the fetch future at once; the `.part` file and its record stay. The command prints the summary, where the cache is and how to continue, and exits 130. `tests/interrupt.rs` stops a download stalled at byte 40 and the next run resumes with `Range: bytes=40-` (AC-120). AC-121 is unverified until W7 adds releases."
+        state: done
   - key: 01a19f9a-424f-7733-9396-471a73c339d3
     id: w3-t5-cli
     kind: task
@@ -76,6 +121,15 @@ blocks:
         title: "The fetch command"
         detail: "`univ-ingest fetch [--offline] [--source ID]... [--cache DIR]` reads the definitions and acquires each source. It picks the terminal or plain display by whether stderr is a terminal. Chunks are fetched 2 or 3 at a time per source, results in order (a W2 follow-up). Done when a CLI test runs `fetch --offline` on a cache dir and gets the plain lines and summary."
         state: open
+      - key: 01a19f9f-cc1e-70e3-a11d-3c50cee72406
+        at: 2026-11-03T04:16:52Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "The fetch command"
+        detail: "`univ-ingest fetch [--source ID]... [--offline] [--cache DIR] [--definitions DIR] [--repository DIR]` (clap). It picks the terminal display when stderr is a terminal and plain lines otherwise. A failing source is reported and the rest are still fetched. Chunks are fetched 3 at a time per source, results in order, with provenance writes behind a mutex. `tests/cli.rs` runs the binary offline on a cache."
+        state: done
   - key: 01a19f9a-424f-7733-9396-471b805686f1
     id: w3-t6-gate
     kind: task
@@ -89,3 +143,12 @@ blocks:
         title: "Gate green, criteria linked"
         detail: "Done when `cargo xtask check` passes and AC-107 to AC-121 are linked and accepted, or marked unverified with the wave that verifies them."
         state: open
+      - key: 01a19f9f-dd3c-76dd-bdcf-2898760b405e
+        at: 2026-11-03T04:16:56Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gate green, criteria linked"
+        detail: "`cargo xtask check` passes (10 gates). AC-107 to AC-120 are linked to tests in `display.rs`, `interrupt.rs` and `cli.rs` and accepted, and AC-20 gains its display test; AC-121 is marked unverified until W7. 46 of 293 nodes linked."
+        state: done
