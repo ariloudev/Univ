@@ -322,10 +322,19 @@ fn outcome_line(event: &Event) -> Option<String> {
             members,
             no_object,
             unplaced,
-        } => Some(format!(
-            "Members {structure}: {} of {members} cannot be placed ({no_object} name no matched              object, {unplaced} an unplaced one); shown at its published position",
-            no_object + unplaced
-        )),
+            point,
+        } => {
+            let shown = if *point {
+                "shown at its published position"
+            } else {
+                "it publishes no position, so it is not placed"
+            };
+            Some(format!(
+                "Members {structure}: {} of {members} cannot be placed ({no_object} name no \
+                 matched object, {unplaced} an unplaced one); {shown}",
+                no_object + unplaced
+            ))
+        }
         Event::Normalized {
             source,
             published,

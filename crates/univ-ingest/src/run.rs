@@ -8,6 +8,10 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use tokio::time::MissedTickBehavior;
 
+mod cross;
+
+pub use cross::{MatchOptions, match_stage};
+
 use crate::access::item_count;
 use univ_model::redshift::{CmbCorrection, DipoleModel};
 
@@ -82,6 +86,9 @@ pub struct RunReport {
     sources: Vec<SourceSummary>,
     /// The stage the run is in, or last ended.
     stage: Stage,
+    /// Why a stage that is not a source's failed, such as a cross-match whose rules cannot be
+    /// read.
+    failure: Option<String>,
 }
 
 impl RunReport {
@@ -100,6 +107,7 @@ impl RunReport {
         Self {
             sources,
             stage: Stage::Fetch,
+            failure: None,
         }
     }
 
@@ -112,9 +120,11 @@ impl RunReport {
     /// Whether some source failed.
     #[must_use]
     pub fn failed(&self) -> bool {
-        self.sources
-            .iter()
-            .any(|s| matches!(s.state, SourceState::Failed(_)))
+        self.failure.is_some()
+            || self
+                .sources
+                .iter()
+                .any(|s| matches!(s.state, SourceState::Failed(_)))
     }
 
     fn set(&mut self, n: usize, state: SourceState) {
@@ -132,7 +142,9 @@ impl RunReport {
             .iter()
             .filter(|s| matches!(s.state, SourceState::Failed(_)))
             .count();
-        let reason = if failed == 0 {
+        let reason = if let Some(failure) = &self.failure {
+            failure.clone()
+        } else if failed == 0 {
             format!("{} only; no release was asked for", stage_name(self.stage))
         } else {
             format!("{failed} of {} sources failed", self.sources.len())

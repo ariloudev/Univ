@@ -66,12 +66,13 @@ pub enum Event {
     },
     /// A structure's member list cannot be placed whole: of `members`, `no_object` name no
     /// matched object and `unplaced` name an object that is not placed, so the structure is
-    /// shown at its published position.
+    /// shown at its published position, when it has one (`point`).
     MembersUnplaced {
         structure: String,
         members: u64,
         no_object: u64,
         unplaced: u64,
+        point: bool,
     },
     /// A request was sent.
     Get {

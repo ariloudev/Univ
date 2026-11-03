@@ -24,6 +24,24 @@ blocks:
         title: "Derived positions"
         detail: "Release cosmology (Planck 2018 by default), a tabulated D(z), redshift distances as comoving distances of the CMB-frame z, luminosity to comoving, H0 rescaling with sizes scaled alike, ICRS, galactic and supergalactic Cartesian positions with the transformation chain and univ-model version recorded. Also FK4 B1950 and the unstated-equinox frame, and one typed `AssumedCosmology`. Done when tests cover AC-28 to AC-35 and M31 is placed at its McConnachie distance in the right direction."
         state: active
+      - key: 01a1a026-6bcb-7311-b1d0-751e2b3b8d36
+        at: 2026-11-03T06:43:54Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Derived positions"
+        detail: |-
+          `univ-model` `derive`:
+          - The release cosmology is Planck 2018 unless named, with D_C(z) tabulated at 600 points; it matches astropy to 1e-6 out to z = 10.
+          - Redshift distances are D_C of the CMB-frame z; luminosity distances become D_L/(1+z).
+          - H0 is rescaled through one `AssumedCosmology`, and sizes take the same factor.
+          - Positions are ICRS, galactic and supergalactic Cartesian, each with its typed chain, cosmology and univ-model version.
+          - FK4 B1950 conversion matches ERFA's fk45z to 1e-9°. An unstated equinox is placed as J2000 ± 0.6986°.
+          - M31 sits at 0.783 Mpc and l = 121.17°, b = −21.57°.
+
+          AC-28 to AC-35 are linked; 96 of 293 nodes.
+        state: done
   - key: 01a1a00f-4e6e-732f-9bf4-c6548773615d
     id: w5-t2-matching
     kind: task
@@ -88,3 +106,12 @@ blocks:
         title: "Integrate into the run"
         detail: "A cross-match stage after normalize that resolves objects, assigns ids, places them and resolves structure members. It shows its events and summary counts. Done when `univ-ingest` runs the stage on fixtures offline and the gate passes with AC-28 to AC-35 and AC-60 to AC-81 linked."
         state: open
+      - key: 01a1a026-6bcb-7311-b1d0-751f53592078
+        at: 2026-11-03T06:43:54Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Integrate into the run"
+        detail: "A cross-match stage after normalize that resolves objects, assigns ids, places them and resolves structure members. It shows its events and summary counts. Done when `univ-ingest` runs the stage on fixtures offline and the gate passes with AC-28 to AC-35 and AC-60 to AC-81 linked."
+        state: active
