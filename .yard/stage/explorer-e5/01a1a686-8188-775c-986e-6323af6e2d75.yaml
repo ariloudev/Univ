@@ -1,0 +1,133 @@
+key: 01a1a686-8188-775c-986e-6323af6e2d75
+id: x5-names
+versions:
+  - key: 01a1a686-8188-775c-986e-632bfbd7fc3c
+    at: 2026-11-04T12:26:35Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E6: names and selection"
+    goal: "An object's panel is headed by its name and gives what it is (star, galaxy, group); a chosen structure's outline, markers and members change colour"
+    status: planned
+blocks:
+  - key: 01a1a697-dbef-72ce-86f4-f501629b9b79
+    id: e6-t-find
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f51bcf5bb443
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Find what a record says an object is"
+        detail: |-
+          **Done when** a note states:
+          - whether release 7's object record holds a type (star, galaxy, galaxy group): the record's `kind` is one entry versus a group, and the volume query's `kinds` filter reads a kind term;
+          - where that term lives;
+          - whether the API returns it.
+
+          If it is not returned, the note says what server or ingest change would return it, and that change moves to R1.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f502c9f2ca20
+    id: e6-t-spec
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f51c9550c1aa
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec: names and the chosen structure's colour"
+        detail: |-
+          **Scope:**
+          - `read-an-object`: the panel is headed by the object's name, the one it was found by or else its first name, with its id beside it, and it says what the object is where the record does;
+          - `see-the-structures`: the chosen structure's outline, markers and members are drawn in a colour of their own until another is chosen or the panel closes.
+
+          **Done when** `loft fmt --check` and `loft check --fail-on warning` pass, and the spec is committed alone with its `spec-change` block.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f50373b8489c
+    id: e6-t-heading
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f51dce90e446
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The panel is headed by the object's name"
+        detail: |-
+          **Done when** `ObjectPanel.test.tsx` shows:
+          - Andromeda found by name is headed "Andromeda", with its id beside it;
+          - an object opened by click is headed by its first name;
+          - an object with no name is headed by its source's designation.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f504a4e7da6c
+    id: e6-t-type
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f51eb142d92c
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The panel says what the object is"
+        detail: "**Done when** `ObjectPanel.test.tsx` shows the type the record gives, such as galaxy or star, and \"galaxy group\" for a group, in place of \"body\". If the record has no type, the task is dropped here and done in R1."
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f5056cb1d709
+    id: e6-t-outline
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f51f640a43e8
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The chosen structure's outline changes colour"
+        detail: |-
+          **Scope:** spheres, ellipsoids, boxes, paths and approximate bounding boxes.
+
+          **Done when:**
+          - a test of `useStructures` shows the chosen structure's lines in the chosen colour and every other structure's in its own;
+          - choosing another structure, or closing the panel, restores the colours;
+          - a live screenshot of the KBC void chosen shows it.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f506ad27fbe3
+    id: e6-t-markers
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f520c096893f
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The chosen structure's markers change colour"
+        detail: |-
+          **Scope:** structures placed by a point, and structures drawn as their members, such as the Big Ring or Huge-LQG.
+
+          **Done when** a test shows the chosen structure's markers in the chosen colour, and a live screenshot of Shapley chosen shows it.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f507a8bfaff6
+    id: e6-t-close
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f521ed006d9c
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge"
+        detail: |-
+          **Done when:**
+          - the new criteria are linked and accepted;
+          - `/simplify` and `/code-review` findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and `stage/explorer-e6` is merged into `product/explorer`.
+        state: open

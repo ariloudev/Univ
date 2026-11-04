@@ -3,6 +3,7 @@
 
 import type { Rotations } from "../api/schemas.ts";
 import { type View, eyeOf } from "./camera.ts";
+import { type Sight, sightOf } from "./frustum.ts";
 import { FLIGHT_MS, between, pan, turn, zoom } from "./controls.ts";
 import type { Drawer } from "./drawing.ts";
 import { type Axes, EQUATORIAL, type Frame, equatorRing, frameOf, ringRadius } from "./frames.ts";
@@ -47,9 +48,10 @@ export class Controller {
     return this.frame.toFrame;
   }
 
-  /** The eye, ICRS megaparsecs. */
-  get eye(): Vec3 {
-    return eyeOf(this.view, this.toFrame);
+  /** What the eye sees on the canvas, in CSS pixels. */
+  get sight(): Sight {
+    const { width, height } = this.around.size();
+    return sightOf(this.view, this.toFrame, width, height);
   }
 
   /** Called whenever the view or the axes change. */

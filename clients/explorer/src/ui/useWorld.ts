@@ -12,7 +12,7 @@ import { viewingDistance } from "../scene/controls.ts";
 import { bindMouse } from "../scene/input.ts";
 import type { Pickable } from "../scene/pick.ts";
 import { NoWebGL, Renderer } from "../scene/renderer.ts";
-import type { Vec3 } from "../scene/vec.ts";
+import { type Vec3, norm, sub } from "../scene/vec.ts";
 import { FIRST_POINTS } from "../firstPoints.ts";
 import type { LabelBox } from "../scene/labels.ts";
 import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts";
@@ -87,15 +87,24 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
   controller.setRotations(rotations);
   const events = {
     onBatch: (batch: Batch) => {
-      renderer.addPoints({ centre: batch.tile.centre, offsets: batch.offsets, kinds: batch.kinds });
-      // The bounding sphere of the tile's cube: half its diagonal.
-      world.pickable.push({ centre: batch.tile.centre, radius: batch.tile.edge * (Math.sqrt(3) / 2), offsets: batch.offsets, batch });
+      const { id, centre } = batch.tile;
+      const { extent } = batch;
+      renderer.addPoints({ id, centre, extent, offsets: batch.offsets, kinds: batch.kinds });
+      // Picking tests a sphere about the tile's centre: the one holding the points' own.
+      const radius = norm(sub(extent.centre, centre)) + extent.radius;
+      world.pickable.push({ centre, radius, offsets: batch.offsets, batch });
+      controller.invalidate();
+    },
+    onDrop: (batch: Batch) => {
+      renderer.removePoints(batch.tile.id);
+      const at = world.pickable.findIndex((p) => p.batch === batch);
+      if (at >= 0) world.pickable.splice(at, 1);
       controller.invalidate();
     },
     onChange: () => controller.invalidate(),
   };
   world.catalogue = new Catalogue(release, domains, events, { signal });
-  world.catalogue.update(controller.eye);
+  world.catalogue.update(controller.sight);
   return rotations;
 }
 
@@ -136,6 +145,8 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
     element.width = Math.round(element.clientWidth * devicePixelRatio);
     element.height = Math.round(element.clientHeight * devicePixelRatio);
     controller.invalidate();
+    // A new size is a new frustum: what the view needs is worked out again.
+    world.catalogue?.update(controller.sight);
   });
   resize.observe(element);
   return () => {
@@ -194,7 +205,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
       .catch((error: unknown) => {
         if (!abort.signal.aborted) setProblem(`The tiles of release ${release} could not be read: ${String(error)}`);
       });
-    const unsubscribe = state.controller.subscribe(() => state.catalogue?.update(state.controller.eye));
+    const unsubscribe = state.controller.subscribe(() => state.catalogue?.update(state.controller.sight));
     const unbind = bindView(element, state, chooseRef);
     const stop = animate(state, overlayRef, around.size);
     return () => {

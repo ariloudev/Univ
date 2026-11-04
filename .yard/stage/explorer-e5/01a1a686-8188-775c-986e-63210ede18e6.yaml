@@ -1,0 +1,228 @@
+key: 01a1a686-8188-775c-986e-63210ede18e6
+id: x5-plan
+versions:
+  - key: 01a1a686-8188-775c-986e-6329b134d1e9
+    at: 2026-11-04T12:26:35Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Plan the next explorer work"
+    goal: "Each of the nine items and the Vela spike is placed in a wave with its spec change and tests, and the items that need a new release have their scope decided by the owner"
+    status: active
+  - key: 01a1a688-990c-75b1-8cef-92144ef94dfc
+    at: 2026-11-04T12:28:52Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Plan the next explorer work"
+    goal: "Each of the nine items and the Vela spike is placed in a wave with its spec change and tests, and the items that need a new release have their scope decided by the owner"
+    status: done
+blocks:
+  - key: 01a1a686-8188-775c-986e-63257fdb5a56
+    id: x5-findings
+    kind: note
+    versions:
+      - key: 01a1a686-8188-775c-986e-632db2f84e3a
+        at: 2026-11-04T12:26:35Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What I found before planning"
+        markdown: |-
+          **Star colours (8).** Nothing in release 7 can colour stars by class:
+          - the sources keep magnitudes only (Hipparcos `Hpmag`, Gaia `phot_g_mean_mag`, GCNS `Gmag`), with no colour index and no spectral type;
+          - a tile carries only position, id, source and the kind of distance value.
+
+          Colouring stars needs three things: ingest reading new columns, a new tile column (encoding v2, which the server streams unchanged), and a release 8.
+
+          **Superstructures (9).** Release 7 has 26 structures:
+          - **Walls and superclusters:** Big Ring, BOSS Great Wall, CfA2 Great Wall, Hercules–Corona Borealis Great Wall, Hercules Supercluster, Ho'oleilana, Horologium–Reticulum, Perseus–Pisces, Pisces–Cetus Complex, Saraswati, Shapley, Sloan Great Wall, South Pole Wall, Vela;
+          - **Quasar and gamma-ray-burst structures:** Clowes–Campusano LQG, Huge-LQG, Giant Arc, Giant GRB Ring;
+          - **Voids:** Bootes, Dipole Repeller, Eridanus supervoid, Giant Void, Hercules Void, KBC, Local Void, Sculptor.
+
+          Not all known superstructures are in. Notable ones missing as structures:
+          - Laniakea (it is in the release only as a basin of the CF4 grid, which the explorer does not draw);
+          - the Virgo or Local Supercluster;
+          - Coma, Hydra–Centaurus, the Great Attractor and Norma, Pavo–Indus, Corona Borealis;
+          - Quipu (Böhringer et al. 2025).
+
+          Each structure file quotes its paper sentence by sentence, so adding them is ingest research work and needs a new release.
+
+          **Andromeda's "body" (5).** The record's `kind` says whether the object is one catalogue entry (`body`) or a galaxy group. It is not what the object is. Whether a star or galaxy class can be shown depends on what the record carries; E6 will find out. The heading "Object 856254" is the explorer's own choice and will become the object's name.
+
+          **Vela (spike).** Vela is placed by a point, but its paper gives a sky extent of 25° × 20° (lower limits) and two walls at cz ≈ 18,000 and 22,000 km/s. That is enough to draw an approximate sky-and-depth sector. The spike will look at every point-placed structure the same way.
+  - key: 01a1a686-8188-775c-986e-6326163d4531
+    id: q-colour
+    kind: question
+    versions:
+      - key: 01a1a686-8188-775c-986e-632e01932a6b
+        at: 2026-11-04T12:26:35Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "How should stars be coloured by class?"
+        header: "Star colour"
+        context: "Release 7 holds no colour or spectral type for any star. Every option except the last needs an ingest wave, tile encoding v2 and a release 8."
+        options:
+          - label: "Colour index"
+            detail: "Ingest reads each catalogue's colour: Gaia BP−RP, Hipparcos B−V (vizier I/311) and GCNS BP/RP. A tile column carries it, and the explorer maps it to the colour of a star of that temperature through a cited table (Pecaut & Mamajek 2013). The panel gives the colour as measured and the class as estimated. This covers almost every star, so I recommend it."
+            recommended: true
+          - label: "Spectral types"
+            detail: "Published spectral classes where a catalogue has them, such as Hipparcos's SpType (about 118,000 stars) and Gaia DR3's ESP-HS classes (hot stars only). Most of the 2 million stars would stay uncoloured."
+          - label: "Both"
+            detail: "Colour comes from the colour index, and the panel names the published spectral type where there is one. This is the most ingest work."
+          - label: "Not now"
+            detail: "Stars keep the kind-of-value colouring, and the waves stay within the explorer."
+    responses:
+      - key: 01a1a688-3bf0-7181-a597-f253d089d5c9
+        at: 2026-11-04T12:28:28Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Both"
+  - key: 01a1a686-8188-775c-986e-63273d56027f
+    id: q-structures
+    kind: question
+    versions:
+      - key: 01a1a686-8188-775c-986e-632f589d10fe
+        at: 2026-11-04T12:26:35Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "Which superstructures should be added?"
+        header: "Structures"
+        context: "Each structure is a YAML file whose every number quotes its paper's sentence, with kinds of value and uncertainties. A fair definition of \"all known\" is needed so the list has an end."
+        options:
+          - label: "Curated list"
+            detail: "Every structure named in a peer-reviewed paper that gives a position, from the two Wikipedia lists (largest cosmic structures; superclusters) checked against their primary papers. That is roughly 20 to 30 more, Laniakea's neighbours included. It means a research-heavy ingest wave and release 8. I recommend it because it gives a list with an end and a source for each entry."
+            recommended: true
+          - label: "Local first"
+            detail: "Only the nearby ones: Laniakea, Virgo, Hydra–Centaurus, the Great Attractor and Norma, Pavo–Indus, Coma, Perseus–Pisces's neighbours. Smaller, and the ones most worth flying to."
+          - label: "Not now"
+            detail: "Keep the 26."
+    responses:
+      - key: 01a1a688-3bf0-7181-a597-f254e538dc46
+        at: 2026-11-04T12:28:28Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Curated list"
+  - key: 01a1a686-8188-775c-986e-6328a92aeec7
+    id: q-branch
+    kind: question
+    versions:
+      - key: 01a1a686-8188-775c-986e-63309ff8c9b0
+        at: 2026-11-04T12:26:35Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "Where should the ingest work for colours and structures go?"
+        header: "Where"
+        context: "Items 1 to 7 and the spike are explorer work and go on product/explorer as waves E5, E6 and S1. Colours and new structures change ingest and the tile format and end in release 8."
+        options:
+          - label: "product/release-8"
+            detail: "A new product branch from develop for the ingest, tile and decoder changes and release 8. The explorer then uses the new tile column on product/explorer once that branch is merged. Each product's history stays readable, so I recommend this."
+            recommended: true
+          - label: "product/explorer"
+            detail: "Everything on one branch as further waves. Simpler to follow, but the explorer's branch then carries ingest changes."
+    responses:
+      - key: 01a1a688-3bf0-7181-a597-f255db693b3b
+        at: 2026-11-04T12:28:28Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "product/release-8"
+  - key: 01a1a688-990c-75b1-8cef-920c4c4c1b12
+    id: d-colour
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a688-990c-75b1-8cef-92108573e3f1
+        at: 2026-11-04T12:28:52Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Stars are coloured by colour index, and the panel names published spectral types"
+        consequence: "Release 8 reads Gaia BP−RP, Hipparcos B−V and GCNS BP/RP, plus spectral types where a catalogue publishes them (Hipparcos SpType, Gaia DR3 ESP-HS). A tile column carries the colour index. The explorer maps it to a star colour through a cited table and labels the class as estimated; a published type is shown as measured."
+        question: 01a1a686-8188-775c-986e-6326163d4531
+  - key: 01a1a688-990c-75b1-8cef-920ddfe27a9d
+    id: d-structures
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1a688-990c-75b1-8cef-9211395d2c47
+        at: 2026-11-04T12:28:52Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Add a curated list of superstructures, each checked against its primary paper"
+        consequence: "The list is every structure named in a peer-reviewed paper that gives a position, from Wikipedia's lists of largest cosmic structures and of superclusters, checked against the papers. Each is a structure file quoting its sentences, published in release 8."
+        question: 01a1a686-8188-775c-986e-63273d56027f
+  - key: 01a1a688-990c-75b1-8cef-920ed191ded2
+    id: d-branch
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1a688-990c-75b1-8cef-9212f578c102
+        at: 2026-11-04T12:28:52Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Ingest work goes on product/release-8, cut from develop"
+        consequence: "The colour and structure waves run on stage/release-8-rN branches. The explorer draws the colour column only after product/release-8 has been merged into develop and develop into product/explorer, and each of those merges waits for the owner to ask."
+        question: 01a1a686-8188-775c-986e-6328a92aeec7
+  - key: 01a1a688-990c-75b1-8cef-920fdd17ae4f
+    id: x5-order
+    kind: note
+    versions:
+      - key: 01a1a688-990c-75b1-8cef-92138c830c8a
+        at: 2026-11-04T12:28:52Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The order of work"
+        markdown: |-
+          | Wave | Branch | Items | Ends with |
+          |---|---|---|---|
+          | E5 | stage/explorer-e5 | 1 frustum culling, 2 eviction, 3 ranking, 4 dynamic refinement | spec change to draw-the-catalogues; lod and renderer tests; a live check with the budget lowered so eviction happens |
+          | E6 | stage/explorer-e6 | 5 names, 6 and 7 the chosen structure's colour | spec change to read-an-object and see-the-structures |
+          | S1 | stage/explorer-s1 | the Vela spike | a recommendation note, and the spec change it implies for release 8 |
+          | R1 | stage/release-8-r1 | 8 star colours and spectral types | ingest columns, tile encoding v2, the TypeScript decoder, the tile-format contract |
+          | R2 | stage/release-8-r2 | 9 curated superstructures (and S1's volumes) | research, structure files, science checks |
+          | R3 | stage/release-8-r3 | build and publish release 8 | the benches and the science checks on it |
+          | E7 | stage/explorer-e7 | stars drawn in their colour | waits for the owner to ask for the merges of release 8 |
+
+          What comes after this needs your approval:
+          - **E5, E6 and S1** are within the explorer, whose spec you pre-approved, so they run without stopping.
+          - **Release 8 changes the tile-format contract and ingest's spec.** I'll send that spec change for your approval before building it.
+  - key: 01a1a6b1-c9f8-72c2-bd2f-15e2d7e7712e
+    id: x5-carry
+    kind: note
+    versions:
+      - key: 01a1a6b1-c9f9-7713-8b21-fba46df63a67
+        at: 2026-11-04T13:13:51Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Where the rest of the plan goes"
+        markdown: "This Yard Log is E5's and is closing now. Each later wave keeps its own log on its own branch, as E0 to E4 did: E6 on `stage/explorer-e6`, S1 on `stage/explorer-s1`, and R1 to R3 on `stage/release-8-rN` under `product/release-8`. Each copies its tasks from the stages planned here as it opens."

@@ -50,9 +50,16 @@ again.
 
 ## How it is built
 
-- **Tiles.** Each scale domain's octree of tiles is fetched root first, then by size on screen,
-  within 3,000,000 points. Each tile is checked against its manifest's SHA-256 and decoded by the
-  reference decoder in `../tile-decoder`; a tile that fails is not drawn and is counted.
+- **Tiles.** Each scale domain is an octree whose inner tiles hold a sample of the points under
+  them. The view wants every root, then, the largest on screen first, the children in view of
+  each wanted tile whose points lie more than 3 px apart on screen, all of a tile's children
+  together, within 3,000,000 points. Tiles are fetched as the view wants them; held tiles it no
+  longer wants are dropped only when the budget needs room, those out of view first, then the
+  smallest on screen, never a root nor a tile whose children are held. Once read, a tile is
+  measured by where its points lie, not by its cube, which can be far larger. Each tile is
+  checked against its manifest's SHA-256 and decoded by the reference decoder in
+  `../tile-decoder`; a tile that fails is not drawn and is counted.
+- **Culling.** Only the tiles whose points' sphere reaches into the view are drawn.
 - **Rendering.** WebGL2, drawn by `src/scene/renderer.ts`: points blended additively, lines for
   rings and outlines. Each tile's points are float32 offsets from its centre, placed relative to
   the eye in double precision, so parsecs stay sharp a hundred megaparsecs out.

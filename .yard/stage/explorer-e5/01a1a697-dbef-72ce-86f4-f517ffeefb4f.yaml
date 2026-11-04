@@ -1,0 +1,60 @@
+key: 01a1a697-dbef-72ce-86f4-f517ffeefb4f
+id: x5-e7
+versions:
+  - key: 01a1a697-dbef-72ce-86f4-f53162ab6cf5
+    at: 2026-11-04T12:45:32Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E7: stars in their colours"
+    goal: "The explorer draws each star in the colour of its colour index and names its class, estimated from the colour, or its published spectral type"
+    status: planned
+blocks:
+  - key: 01a1a697-dbef-72ce-86f4-f51845ee8078
+    id: e7-t-wait
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f5320f6db57c
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Wait for the merges you ask for"
+        detail: "E7 starts once you have asked for product/release-8 to be merged into develop, and develop into product/explorer."
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f519c5248048
+    id: e7-t-colour
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f533e26256ca
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour by colour index"
+        detail: |-
+          **Done when:**
+          - a cited table (Pecaut & Mamajek 2013) maps a colour index to the colour of a star of that temperature, in a tested module;
+          - the renderer draws stars in it, and galaxies keep their kind-of-value colours;
+          - the key explains both colourings;
+          - a screenshot of the Sun's neighbourhood is recorded.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f51a8f6c7e11
+    id: e7-t-panel
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f534cd18d345
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The panel names the class"
+        detail: |-
+          **Done when** tests show:
+          - a published spectral type labelled measured;
+          - otherwise, the class estimated from the colour, labelled estimated with the table cited.
+        state: open
