@@ -2,24 +2,24 @@ format: yardtokens/2
 session: 8a28c3c8-b122-421a-a3de-8664f4b8b6df
 host: claude-code
 firstEnded: 2026-11-04T16:20:22Z
-lastEnded: 2026-11-04T16:45:53Z
+lastEnded: 2026-11-04T16:49:05Z
 tokens:
-  input: 904
-  cacheRead: 91632873
-  cacheWrite: 1050864
-  output: 341172
+  input: 948
+  cacheRead: 96150731
+  cacheWrite: 1238663
+  output: 357409
 stages:
   - stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
-    input: 904
-    cacheRead: 91632873
-    cacheWrite: 1050864
-    output: 341172
+    input: 948
+    cacheRead: 96150731
+    cacheWrite: 1238663
+    output: 357409
     agents:
       - agent: main
-        input: 182
-        cacheRead: 40846858
-        cacheWrite: 169505
-        output: 71990
+        input: 222
+        cacheRead: 45132901
+        cacheWrite: 332976
+        output: 88160
       - agent: a0c4a8dbae72e1ba9
         type: general-purpose
         input: 66
@@ -34,10 +34,10 @@ stages:
         output: 57929
       - agent: a60a7e0d7cc1c2086
         type: general-purpose
-        input: 198
-        cacheRead: 14211724
-        cacheWrite: 231815
-        output: 72321
+        input: 202
+        cacheRead: 14443539
+        cacheWrite: 256143
+        output: 72388
       - agent: a6e13dfdafe06dd52
         type: fork
         input: 30
@@ -65,10 +65,10 @@ stages:
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 182
-    cacheRead: 40846858
-    cacheWrite: 169505
-    output: 71990
+    input: 222
+    cacheRead: 45132901
+    cacheWrite: 332976
+    output: 88160
   - agent: a0c4a8dbae72e1ba9
     type: general-purpose
     model: claude-opus-5-5
@@ -86,10 +86,10 @@ agents:
   - agent: a60a7e0d7cc1c2086
     type: general-purpose
     model: claude-opus-5-5
-    input: 198
-    cacheRead: 14211724
-    cacheWrite: 231815
-    output: 72321
+    input: 202
+    cacheRead: 14443539
+    cacheWrite: 256143
+    output: 72388
   - agent: a6e13dfdafe06dd52
     type: fork
     model: claude-opus-5-5
@@ -139,3 +139,8 @@ submissions:
     cacheRead: 1827875
     cacheWrite: 42631
     output: 15474
+  - submission: 01a1a774-68e4-7515-b2cd-f61e3ad4e180
+    input: 4
+    cacheRead: 1106017
+    cacheWrite: 4973
+    output: 2325

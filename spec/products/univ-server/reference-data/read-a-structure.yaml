@@ -36,6 +36,8 @@ requirements:
         name: "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance."
       - key: 01a1a75d-dddb-74ed-8d5c-c9cbdad20688
         name: "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so."
+      - key: 01a1a776-3b75-725b-96e4-807b84c53c7c
+        name: "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position."
   - key: 01a19f1e-d177-716d-b124-3d3909afed21
     statement:
       form: event_driven
