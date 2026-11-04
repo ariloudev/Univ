@@ -62,6 +62,8 @@ describe("a structure's shape", () => {
     expect(drawing.approximate).toBe(false);
     expect(drawing.outline.markers).toEqual([[10, 0, 0]]);
     expect(drawing.outline.segments).toEqual([[8, 0, 0], [12, 0, 0], [10, -3, 0], [10, 3, 0], [10, 0, -4], [10, 0, 4]]);
+    // Its size, which frames it when chosen, is the diagonal its extents span.
+    expect(drawing.size).toBeCloseTo(Math.hypot(4, 6, 8));
     expect(drawingOf(detail(point), ROTATIONS).outline.segments).toEqual([]);
   });
 

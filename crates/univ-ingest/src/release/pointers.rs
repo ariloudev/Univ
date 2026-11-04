@@ -42,6 +42,24 @@ pub fn coordinates<'a>(prefix: &str, c: &'a Coordinates) -> Vec<Pointed<'a>> {
     }
 }
 
+/// Where a sky region's paper gives it as a lower limit on the structure's extent.
+pub const AT_LEAST: &str = "/geometry/SkyRegion/at_least";
+
+/// Each cited bound of named pairs, at `{at}/{name}/{0 or 1}`.
+fn indexed<'a>(
+    at: &str,
+    pairs: impl IntoIterator<Item = (&'static str, &'a [Cited; 2])>,
+) -> Vec<Pointed<'a>> {
+    pairs
+        .into_iter()
+        .flat_map(|(name, pair)| {
+            pair.iter()
+                .enumerate()
+                .map(move |(i, c)| (format!("{at}/{name}/{i}"), c))
+        })
+        .collect()
+}
+
 /// The cited values of a primitive or a sky region; none for a member list, whose rows cite its
 /// table through its source.
 #[must_use]
@@ -58,25 +76,12 @@ pub fn geometry(g: &StructureGeometry) -> Vec<Pointed<'_>> {
         }
         StructureGeometry::SkyRegion(b) => {
             let at = "/geometry/SkyRegion";
-            let mut out: Vec<Pointed<'_>> = Vec::new();
-            for (name, pair) in b.sides.pairs() {
-                for (i, c) in pair.iter().enumerate() {
-                    out.push((format!("{at}/{name}/{i}"), c));
-                }
-            }
+            let mut out = indexed(at, b.sides.pairs());
             out.push(radial(&format!("{at}/near"), &b.near));
             out.push(radial(&format!("{at}/far"), &b.far));
             out
         }
-        StructureGeometry::AxisBox(b) => b
-            .ranges()
-            .into_iter()
-            .flat_map(|(name, pair)| {
-                pair.iter()
-                    .enumerate()
-                    .map(move |(i, c)| (format!("/geometry/AxisBox/{name}/{i}"), c))
-            })
-            .collect(),
+        StructureGeometry::AxisBox(b) => indexed("/geometry/AxisBox", b.pairs()),
         StructureGeometry::Members(_) => vec![],
     }
 }

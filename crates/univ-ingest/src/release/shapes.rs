@@ -14,8 +14,8 @@
 
 use univ_model::api::structures::{Derivation, DistanceDerivation, Extents};
 use univ_model::derive::{Release, Step, Transformation};
-use univ_model::geometry::{Geometry, Member, Primitive, Shape};
-use univ_model::position::{Frame, Vec3, between};
+use univ_model::geometry::{Geometry, Primitive, Shape};
+use univ_model::position::{Frame, between};
 use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::{Dimension, Unit};
 
@@ -233,73 +233,6 @@ fn members(
     (shape.geometry.clone(), derived)
 }
 
-/// `geometry`, placed in Mpc, in `per_mpc` units of the scale domain per Mpc.
-fn in_units(geometry: Geometry, per_mpc: f64) -> Geometry {
-    if (per_mpc - 1.0).abs() < f64::EPSILON {
-        return geometry;
-    }
-    let s = |v: Vec3| v.map(|c| c * per_mpc);
-    match geometry {
-        Geometry::Point { at } => Geometry::Point { at: s(at) },
-        Geometry::Primitive {
-            primitive: Primitive::Sphere { centre, radius },
-        } => Geometry::Primitive {
-            primitive: Primitive::Sphere {
-                centre: s(centre),
-                radius: radius * per_mpc,
-            },
-        },
-        Geometry::Primitive {
-            primitive:
-                Primitive::OrientedBox {
-                    centre,
-                    half_extents,
-                    orientation,
-                },
-        } => Geometry::Primitive {
-            primitive: Primitive::OrientedBox {
-                centre: s(centre),
-                half_extents: s(half_extents),
-                orientation,
-            },
-        },
-        Geometry::Members { members } => Geometry::Members {
-            members: members
-                .into_iter()
-                .map(|m| match m {
-                    Member::Object { id, at } => Member::Object { id, at: s(at) },
-                    Member::Tracer { at, kind } => Member::Tracer { at: s(at), kind },
-                })
-                .collect(),
-        },
-        Geometry::SkyRegion {
-            order,
-            cells,
-            near,
-            far,
-        } => Geometry::SkyRegion {
-            order,
-            cells,
-            near: near * per_mpc,
-            far: far * per_mpc,
-        },
-        Geometry::GridRegion {
-            grid,
-            origin,
-            cell,
-            shape,
-            cells,
-        } => Geometry::GridRegion {
-            grid,
-            origin: s(origin),
-            cell: cell * per_mpc,
-            shape,
-            cells,
-        },
-        other => other,
-    }
-}
-
 /// `geometry`, placed in Mpc in `frame`, as a shape in the unit of `domain`
 /// (`crate::tiles::unit_of`).
 ///
@@ -315,7 +248,7 @@ pub(super) fn in_domain(
     let per_mpc = Unit::Megaparsec
         .factor_to(unit)
         .map_err(|e| e.to_string())?;
-    Shape::new(frame, unit, in_units(geometry, per_mpc))
+    Shape::new(frame, unit, geometry.scaled(per_mpc))
         .map_err(|e| format!("its shape cannot stand: {e}"))
 }
 
@@ -332,7 +265,7 @@ pub fn placed_shape(
     p: &Placing<'_>,
 ) -> Result<PlacedShape, String> {
     let no_position = || "it publishes no position or geometry".to_owned();
-    let (geometry, derivation) = match &s.geometry {
+    let (geometry, mut derivation) = match &s.geometry {
         Some(StructureGeometry::Members(m)) => match placed {
             Some(pl) => match &pl.shape {
                 Some(shape) => members(m, pl, shape, &p.dipole),
@@ -375,10 +308,7 @@ pub fn placed_shape(
                     ),
                 ),
             );
-            derived.at_least = b
-                .at_least
-                .as_ref()
-                .map(|_| "/geometry/SkyRegion/at_least".to_owned());
+            derived.at_least = b.at_least.as_ref().map(|_| pointers::AT_LEAST.to_owned());
             (geometry, derived)
         }
         Some(g @ StructureGeometry::AxisBox(b)) => {
@@ -391,15 +321,12 @@ pub fn placed_shape(
                      an oriented box whose axes are the frame's, turned into the ICRS",
                 ),
             );
-            let primitive = axis_box(b, p.release)?;
+            let primitive = axis_box(b, p.release)?.into();
             (Geometry::Primitive { primitive }, derived)
         }
         None => point(s, s.position.as_ref().ok_or_else(no_position)?, p)?,
     };
     let shape = in_domain(Frame::Icrs, geometry, s.scale_domain)?;
-    let mut derivation = derivation;
-    if matches!(shape.geometry, Geometry::Point { .. }) {
-        derivation.extents = extents(s, p.release, shape.unit)?;
-    }
+    derivation.extents = extents(s, p.release, shape.unit)?;
     Ok(PlacedShape { shape, derivation })
 }

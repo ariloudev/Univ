@@ -122,16 +122,19 @@ impl Geometry {
 /// smaller than the region, and an axis inside it reaches out to `far`.
 fn sky_region(order: u8, cells: &[u64], near: f64, far: f64, rotation: &Rotation) -> Option<Aabb> {
     let rho = healpix::radius_bound(order);
+    // The reach grows with the cosine, so only each axis's extreme centres set the box.
     let reach = |cos_theta: f64| (cos_theta.clamp(-1.0, 1.0).acos() - rho).max(0.0).cos();
-    let mut high = [f64::NEG_INFINITY; 3];
-    let mut low = [f64::INFINITY; 3];
+    let mut most = [f64::NEG_INFINITY; 3];
+    let mut least = [f64::INFINITY; 3];
     for &cell in cells {
         let c = rotation.apply(healpix::centre(order, cell));
         for k in 0..3 {
-            high[k] = high[k].max(reach(c[k]));
-            low[k] = low[k].min(-reach(-c[k]));
+            most[k] = most[k].max(c[k]);
+            least[k] = least[k].min(c[k]);
         }
     }
+    let high = most.map(reach);
+    let low = least.map(|c| -reach(-c));
     // The largest coordinate is at `far` where the reach is positive, else at `near`, nearer
     // zero; the smallest likewise for a negative reach.
     (!cells.is_empty()).then(|| Aabb {
@@ -333,7 +336,13 @@ mod tests {
         // Every direction of every cell, at both distances, lies in the box.
         let to_icrs = crate::position::between(Frame::Galactic, Frame::Icrs);
         let mut inside = 0;
-        for u in sky_grid().filter(|u| cells.contains(&healpix::hash(order, *u))) {
+        // Every direction of the cells lies within 12° and a cell's radius of the centre; the
+        // cells are sorted.
+        let reach = (12f64.to_radians() + healpix::radius_bound(order)).cos();
+        let in_cells = |u: &Vec3| {
+            dot(*u, centre) > reach && cells.binary_search(&healpix::hash(order, *u)).is_ok()
+        };
+        for u in sky_grid().filter(in_cells) {
             for r in [near, far] {
                 let p = to_icrs.apply(scaled(u, r));
                 assert!(

@@ -319,6 +319,29 @@ blocks:
 
           **Progress:** three agents are writing the batches in parallel. Pisces–Cetus waits for Cartesian member columns, and the Local Supercluster for the box primitive.
         state: active
+      - key: 01a1a79c-6285-766e-9a54-3cb9b96b0666
+        at: 2026-11-04T17:30:06Z
+        revision: 30
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structure files for the included superstructures and supervoids"
+        detail: |-
+          **Scope:** one file for each included structure in the list note, in three batches.
+
+          **Done when** the file checker and the structure tests pass, and I have reviewed each file.
+
+          **Result:**
+          - Committed in `a870209`: 27 files, with the Local Supercluster in `2f0c51a`. The note above lists them.
+          - **Review:**
+            - U1.11's 38 rows, KKL LQG 5's 13 rows and Pisces–Cetus's 36 rows checked against the extraction and the page images;
+            - the placements of the supervoids, Laniakea, Quipu, Sculptor Wall, Coma and Ophiuchus read in full;
+            - three velocity notes corrected to say an unstated frame is placed as heliocentric;
+            - the Boötes and SCL `assumes` made to follow the repository's convention.
+          - The cross-match test now counts member lists from the files.
+          - All 92 suites pass, and clippy is clean.
+          - Hydra–Centaurus is left out: its velocities are in the Local Group frame.
+        state: done
   - key: 01a1a75c-8ab5-713f-a8e7-7c312a77b9d7
     id: r2-t-close
     kind: task
@@ -1846,6 +1869,18 @@ blocks:
 
           **Done when** every finding is fixed or skipped with a reason.
         state: open
+      - key: 01a1a79c-6285-766e-9a54-3cba0c155927
+        at: 2026-11-04T17:30:06Z
+        revision: 30
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "/simplify and /code-review"
+        detail: |-
+          **Scope:** run both in parallel on the wave's diff, `product/release-8...HEAD`, without `.yard/`, `spec/`, `loft.trace.yaml` and the structure files, and fix their findings.
+
+          **Done when** every finding is fixed or skipped with a reason.
+        state: active
   - key: 01a1a779-da64-726e-bcf6-4c93a7bfa5b4
     id: r2-t-gate
     kind: task

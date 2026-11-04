@@ -210,6 +210,22 @@ fn check_columns(columns: &[Column], source: &MemberSource) -> Result<(), String
                 .to_owned(),
         );
     }
+    // Cartesian coordinates give a member's direction only: its redshift places it.
+    if one(&cartesian) {
+        let units: Vec<_> = columns
+            .iter()
+            .filter(|c| cartesian.contains(&c.name))
+            .map(|c| c.unit)
+            .collect();
+        if units.windows(2).any(|w| w[0] != w[1]) {
+            return Err("the x, y and z columns are in one unit".to_owned());
+        }
+        if none(&[ColumnName::Redshift, ColumnName::Velocity]) {
+            return Err(
+                "a member table of x, y and z gives each member's redshift or velocity".to_owned(),
+            );
+        }
+    }
     for (i, c) in columns.iter().enumerate() {
         let dimension = c.unit.dimension();
         let fits = match c.name {

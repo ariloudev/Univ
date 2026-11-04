@@ -10,6 +10,8 @@
 mod common;
 mod void;
 
+use std::sync::LazyLock;
+
 use common::workspace;
 use serde_json::Value;
 use univ_ingest::outlines::{Placed, place};
@@ -27,12 +29,16 @@ use univ_model::redshift::{CmbCorrection, DipoleModel};
 use univ_model::units::Unit;
 use void::{VOID, catalogue, everywhere, geometry, grid, id, structure};
 
+/// The repository's structure files, read once.
+static STRUCTURES: LazyLock<Vec<(String, Structure)>> =
+    LazyLock::new(|| read_all_named(&workspace().join("structures")).unwrap());
+
 fn structures() -> Vec<(String, Structure)> {
-    read_all_named(&workspace().join("structures")).unwrap()
+    STRUCTURES.clone()
 }
 
 fn named(id: &str) -> Structure {
-    structures().into_iter().find(|(i, _)| i == id).unwrap().1
+    STRUCTURES.iter().find(|(i, _)| i == id).unwrap().1.clone()
 }
 
 fn placing<'a>(release: &'a Release, correction: &'a CmbCorrection) -> Placing<'a> {

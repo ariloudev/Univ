@@ -240,4 +240,19 @@ fn a_member_given_by_cartesian_coordinates_lies_in_their_direction_at_its_redshi
     );
     std::fs::write(&file, both).unwrap();
     assert!(Structure::read(&file).is_err());
+    // Coordinates give only the direction, so a table without redshifts is refused, as are
+    // coordinates in two units.
+    let no_redshift = SUPERGALACTIC.replace(
+        "      - { name: redshift, header: \"z\", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }\n",
+        "",
+    ).replace("[\"A1\", 0.03, ", "[\"A1\", ");
+    std::fs::write(&file, no_redshift).unwrap();
+    assert!(Structure::read(&file).is_err());
+    let two_units = SUPERGALACTIC.replacen(
+        "{ name: z, header: \"SGZ\", unit: megaparsec",
+        "{ name: z, header: \"SGZ\", unit: megaparsec_over_h",
+        1,
+    );
+    std::fs::write(&file, two_units).unwrap();
+    assert!(Structure::read(&file).is_err());
 }

@@ -9,6 +9,7 @@ use super::cited::Cited;
 use super::geometry::{Coordinates, Radial, is_angle, is_length};
 use super::members::Members;
 use univ_model::position::Frame;
+use univ_model::units::Unit;
 
 /// A structure's geometry: one of univ-model's geometry kinds, as published. A structure with
 /// only a position has univ-model's `point` geometry.
@@ -110,28 +111,30 @@ impl StructureGeometry {
             }
             Self::Members(_) => vec![],
             Self::SkyRegion(s) => {
-                let mut out = vec![];
-                for (name, pair) in s.sides.pairs() {
-                    for (i, c) in pair.iter().enumerate() {
-                        out.push((format!("sky_region.{name}[{i}]"), c));
-                    }
-                }
+                let mut out = indexed("sky_region", s.sides.pairs());
                 for (name, r) in [("near", &s.near), ("far", &s.far)] {
                     out.push((format!("sky_region.{name}.{}", r.name()), r.cited()));
                 }
                 out
             }
-            Self::AxisBox(b) => b
-                .ranges()
-                .into_iter()
-                .flat_map(|(name, pair)| {
-                    pair.iter()
-                        .enumerate()
-                        .map(move |(i, c)| (format!("box.{name}[{i}]"), c))
-                })
-                .collect(),
+            Self::AxisBox(b) => indexed("box", b.pairs()),
         }
     }
+}
+
+/// Each cited bound of named pairs, with its field path `{at}.{name}[{0 or 1}]`.
+fn indexed<'a>(
+    at: &str,
+    pairs: impl IntoIterator<Item = (&'static str, &'a [Cited; 2])>,
+) -> Vec<(String, &'a Cited)> {
+    pairs
+        .into_iter()
+        .flat_map(|(name, pair)| {
+            pair.iter()
+                .enumerate()
+                .map(move |(i, c)| (format!("{at}.{name}[{i}]"), c))
+        })
+        .collect()
 }
 
 /// The size of a sphere as published: its radius or its diameter.
@@ -294,7 +297,14 @@ impl TryFrom<RawSkyBox> for SkyBox {
                 if !centre.iter().chain(&size).all(is_angle) {
                     return Err("centre and size are angles".into());
                 }
-                let (lat, height) = (centre[1].value(), size[1].value());
+                let degrees =
+                    |c: &Cited| c.value() * c.unit().factor_to(Unit::Degree).unwrap_or(f64::NAN);
+                let (lon, lat, height) =
+                    (degrees(&centre[0]), degrees(&centre[1]), degrees(&size[1]));
+                if !(0.0..360.0).contains(&lon) {
+                    return Err("the centre's longitude lies in 0° to 360°".into());
+                }
+                // A centre within 90° of the equator whose box stays clear of the poles.
                 if size.iter().any(|s| s.value() <= 0.0) || (lat.abs() + height / 2.0) >= 90.0 {
                     return Err(
                         "size is a positive width and height whose box stays clear of the poles"
@@ -333,9 +343,9 @@ pub struct AxisBox {
 }
 
 impl AxisBox {
-    /// Its three ranges, each with its axis's name.
+    /// Its three ranges, each a pair of cited bounds with its axis's name.
     #[must_use]
-    pub fn ranges(&self) -> [(&'static str, &[Cited; 2]); 3] {
+    pub fn pairs(&self) -> [(&'static str, &[Cited; 2]); 3] {
         [("x", &self.x), ("y", &self.y), ("z", &self.z)]
     }
 }
@@ -359,7 +369,7 @@ impl TryFrom<RawAxisBox> for AxisBox {
             y: raw.y,
             z: raw.z,
         };
-        for (name, [low, high]) in b.ranges() {
+        for (name, [low, high]) in b.pairs() {
             if !is_length(low.unit()) || low.unit() != high.unit() {
                 return Err(format!("the box's {name} bounds are lengths in one unit"));
             }

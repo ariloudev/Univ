@@ -174,11 +174,13 @@ fn resolve(
     let mut by_name_only = Vec::new();
     let mut from_file = Vec::new();
     for row in &members.rows {
-        let published = lon
-            .zip(lat)
-            .map(|((i, fi), (j, fj))| unit_vector(row.values[i] * fi, row.values[j] * fj))
-            .or_else(|| direction(cartesian, row))
-            .map(|u| to_icrs.apply(u));
+        // A sky position is precise enough to check a match against; a direction from Cartesian
+        // coordinates, published to the megaparsec, is not, and only places a member no object
+        // carries.
+        let published = lon.zip(lat).map(|((i, fi), (j, fj))| {
+            to_icrs.apply(unit_vector(row.values[i] * fi, row.values[j] * fj))
+        });
+        let toward = published.or_else(|| direction(cartesian, row).map(|u| to_icrs.apply(u)));
         match member(&row.name, published, index, tolerance_arcsec) {
             Ok((m, Checked::Position)) => placed.push(m),
             Ok((m, Checked::NameOnly)) => {
@@ -187,7 +189,7 @@ fn resolve(
             }
             Err(MemberProblem::NoObject)
                 if let Some((at, record)) = from_file_placer
-                    .zip(published)
+                    .zip(toward)
                     .and_then(|(p, toward)| p.place(structure, members, row, toward)) =>
             {
                 placed.push(Member::Tracer {

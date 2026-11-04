@@ -7,6 +7,7 @@ use univ_model::units::{Dimension, Unit};
 
 use super::citation::{Citation, Locator};
 use super::cited::{Assumes, Cited};
+use super::geometry::is_length;
 use super::members::{ColumnName, MemberSource};
 use super::numbers::{has_magnitude, has_number, numbers, stated_numbers};
 use super::{Structure, StructureGeometry};
@@ -112,8 +113,6 @@ impl Structure {
         Ok(())
     }
 
-    /// The member table: a column of lengths in Mpc names its cosmology, and every longitude
-    /// and latitude is in range.
     /// Extents name three of the file's values, each a positive length or velocity, about a
     /// position given in a frame, and only for a structure placed at its position.
     pub(super) fn check_extents(&self) -> Result<(), Problem> {
@@ -140,11 +139,7 @@ impl Structure {
                     format!("names {name}, which is not among the values"),
                 );
             };
-            let dimension = value.unit().dimension();
-            if !matches!(
-                dimension,
-                Dimension::Length | Dimension::HubbleScaledLength | Dimension::Velocity
-            ) {
+            if !(is_length(value.unit()) || value.unit().dimension() == Dimension::Velocity) {
                 return problem(
                     &field,
                     format!("names {name}, which is not a length or a velocity"),
@@ -157,6 +152,8 @@ impl Structure {
         Ok(())
     }
 
+    /// The member table: a column of lengths in Mpc names its cosmology, and every longitude
+    /// and latitude is in range.
     pub(super) fn check_members(&self) -> Result<(), Problem> {
         let Some(StructureGeometry::Members(m)) = &self.geometry else {
             return Ok(());

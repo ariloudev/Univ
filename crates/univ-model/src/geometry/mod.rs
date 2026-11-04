@@ -1,6 +1,7 @@
 //! The closed set of geometry kinds and their checks; [`bounds`] gives each its bounding box.
 
 mod bounds;
+mod scale;
 
 pub use bounds::Aabb;
 

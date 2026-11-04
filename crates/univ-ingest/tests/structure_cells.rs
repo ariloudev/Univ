@@ -10,6 +10,8 @@
 
 mod common;
 
+use std::sync::LazyLock;
+
 use common::workspace;
 use univ_ingest::release::{
     Placing, centre as structure_centre, index_bounds, placements, structure_rows,
@@ -26,13 +28,12 @@ use univ_model::redshift::{CmbCorrection, DipoleModel, RedshiftFrame};
 use univ_model::units::Unit;
 use univ_model::value::{Quantity, Uncertainty};
 
+/// The repository's structure files, read once.
+static STRUCTURES: LazyLock<Vec<(String, Structure)>> =
+    LazyLock::new(|| read_all_named(&workspace().join("structures")).unwrap());
+
 fn structure(id: &str) -> Structure {
-    read_all_named(&workspace().join("structures"))
-        .unwrap()
-        .into_iter()
-        .find(|(i, _)| i == id)
-        .unwrap()
-        .1
+    STRUCTURES.iter().find(|(i, _)| i == id).unwrap().1.clone()
 }
 
 /// The run's dipole, as the pipeline makes it.
@@ -146,17 +147,13 @@ fn a_structure_that_cannot_be_placed_is_not_indexed_with_the_reason() {
             "it publishes no position or geometry",
         ),
         (
-            "horologium-reticulum-supercluster",
+            "south-pole-wall",
             "its published position gives no distance",
         ),
         ("big-ring", "its member list was not resolved"),
     ] {
         let mut s = structure(id);
-        // Horologium-Reticulum is placed by its sky region and cites its mean velocity; without
-        // either, its position gives no distance.
-        if id == "horologium-reticulum-supercluster" {
-            s.geometry = None;
-        }
+        // The South Pole Wall is placed by its position alone; without its distance, nowhere.
         if let Some(Coordinates::Spherical { radial, .. }) = &mut s.position {
             *radial = None;
         }

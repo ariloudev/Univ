@@ -151,6 +151,14 @@ function placed(detail: StructureDetail): { centre: Vec3 | undefined; min: Vec3;
   return { centre, min: scale(detail.bounds.min, k), max: scale(detail.bounds.max, k) };
 }
 
+/** The diagonal of the box a point's published extents span, megaparsecs: its size, since its
+ * bounds are only its point. */
+function extentsSize(detail: StructureDetail): number | undefined {
+  const axes = detail.derivation?.extents?.axes;
+  const k = detail.shape === null ? undefined : toMpc(detail.shape.unit);
+  return axes === undefined || k === undefined ? undefined : norm(axes.reduce<Vec3>((sum, a) => add(sum, scale(a, k)), [0, 0, 0]));
+}
+
 /** The structure's name, with "(at least)" where its papers give its shape as a lower limit on
  * its extent. */
 export function structureName(detail: StructureDetail): string {
@@ -161,7 +169,7 @@ export function structureName(detail: StructureDetail): string {
 export function drawingOf(detail: StructureDetail, rotations: Rotations): StructureDrawing {
   const base = { id: detail.id, name: structureName(detail) };
   const where = placed(detail);
-  const size = where === undefined || detail.bounds === null ? undefined : norm(sub(where.max, where.min));
+  const size = extentsSize(detail) ?? (where === undefined || detail.bounds === null ? undefined : norm(sub(where.max, where.min)));
   const outline = shapeOutline(detail, rotations);
   if (outline !== undefined) return { ...base, centre: where?.centre, size, outline, approximate: false };
   if (where === undefined || detail.bounds === null) return { ...base, centre: undefined, size: undefined, outline: empty(), approximate: false };
