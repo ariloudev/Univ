@@ -102,6 +102,15 @@ blocks:
         title: "POST /v1/query/volume"
         detail: "`query/{mod, request, objects, structures, items, cursor}.rs`, the route, OpenAPI and `QueryLayersChanged`. Done when native tests on a volume fixture cover AC-192 to AC-203 and AC-207 to AC-208, plus the query halves of AC-213 and AC-250."
         state: open
+      - key: 01a1a413-5bcf-7244-955d-ef18b1af9929
+        at: 2026-11-04T01:01:34Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "POST /v1/query/volume"
+        detail: "`query/{mod, request, objects, structures, items, cursor}.rs`, the route, OpenAPI and `QueryLayersChanged`. Done when native tests on a volume fixture cover AC-192 to AC-203 and AC-207 to AC-208, plus the query halves of AC-213 and AC-250."
+        state: active
   - key: 01a1a3fd-1fbf-7477-ba13-660cd894b76a
     id: t6-time
     kind: task
@@ -890,6 +899,15 @@ blocks:
         title: "Item bounds: migration 0004 and the store"
         detail: "Migration 0004 adds `min_x` to `max_z` to `items` (ICRS Mpc), written on publish and revise. Every stored shape rotates into the ICRS, so every current item has bounds. Done when tests cover publish and revise."
         state: active
+      - key: 01a1a413-5bcf-7244-955d-ef175a951657
+        at: 2026-11-04T01:01:34Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Item bounds: migration 0004 and the store"
+        detail: "`0004_item_bounds.sql` adds `min_x` to `max_z` to `items`. Publish and revise write the shape's ICRS box in Mpc, in the same batch, and a retraction keeps it. Tested by publishing SN 1987A's point (kpc to Mpc), revising it to a galactic sphere of 500 pc, then retracting it; 157 univ-api tests pass."
+        state: done
   - key: 01a1a408-af95-72f3-9fc7-cba81c4f142b
     id: w6-spec
     kind: loft

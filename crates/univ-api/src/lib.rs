@@ -45,10 +45,11 @@ pub use routes::{ROUTES, Route};
 
 /// The univ-layers database's migrations, in order, as `migrations/` holds them and Wrangler
 /// applies them.
-pub const MIGRATIONS: [&str; 3] = [
+pub const MIGRATIONS: [&str; 4] = [
     include_str!("../migrations/0001_schema_version.sql"),
     include_str!("../migrations/0002_keys.sql"),
     include_str!("../migrations/0003_layers.sql"),
+    include_str!("../migrations/0004_item_bounds.sql"),
 ];
 
 /// The answer to a request the runtime failed to hand over or to answer, such as a body that
