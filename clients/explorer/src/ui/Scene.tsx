@@ -50,7 +50,7 @@ export function Scene({ release, cosmology }: { release: number; cosmology: stri
         ref={canvas}
         className="block h-full w-full cursor-grab touch-none active:cursor-grabbing"
         role="img"
-        aria-label={`The placed objects of release ${release} around Earth. Drag to turn, scroll to zoom, drag with the right button or Shift to move; click a point to read it, double-click to fly to it.`}
+        aria-label={`The placed objects of release ${release} around Earth. Drag to turn, scroll to zoom, drag with the right button or Shift to move; click a point to read it and centre the view on it, double-click to fly to it.`}
       />
       <Marks overlay={overlay} />
       <StructureNames names={structures.names} overlay={overlay} chosen={structureId} />

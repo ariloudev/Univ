@@ -3273,6 +3273,33 @@ links:
       - file: "clients/explorer/src/scene/input.test.ts"
         name: "moves the focus while the secondary button, or Shift, drags"
         body: 9eaa2c47f35a38587e59e70049a5a3a590bc491dec38980aac5d2efb503e7e01
+  - node: 01a1a8e8-6326-709f-aa5e-460fcd37f83b
+    reviewed: 46333df862d842d48edb695fd01f8d31e4e685cdb8b9d1a8a33a318797d2cdaf
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "centres on a point at the distance it was seen from, and then turns about it"
+        body: decc0c76ed72428159e569036cc4dc234de3f0c683b8392dcad2d6bea828d684
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "keeps the distance a flight under way ends at when centring on a point"
+        body: a14bb66ba866f36cebf91054670415c73b681091973d70818ab7faf27d3ea656
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "chooses what its first click found, though that click has moved the view"
+        body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "centres the view on a point clicked, keeping the distance"
+        body: 38d68c485757b44aac35758e7873c9becbd6eaba176f22c08eba21bdbd714870
+  - node: 01a1a8e8-6326-709f-aa5e-4610311af683
+    reviewed: 1174f20dd1a7c960a058c69bc1a4f4b5ec2af79cfc50772ad17920a33030d44c
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "centres on a point at the distance it was seen from, and then turns about it"
+        body: decc0c76ed72428159e569036cc4dc234de3f0c683b8392dcad2d6bea828d684
+  - node: 01a1a8e8-6326-709f-aa5e-46117cf024e6
+    reviewed: 68f3fa03f97f60cef028710d5e5f305d7030740c79e52efa7708a7fc23475dc9
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "centres on a point at once where reduced motion is asked for"
+        body: 4ebb7f0541e749c05dba904fad44f4921f0be3c1da1ee7533c577af4adfff202
   - node: 01a1a497-e843-728a-bce8-401fac9dd829
     reviewed: c68184c4891492d38fa47942b401a004ebc3d4efe11a6447441464387bc2fef0
     tests:
@@ -3587,7 +3614,7 @@ links:
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "finds an object by name, reads it, and keeps it in the address across a reload"
-        body: 3462ba567f96272e6cecec7478edaf2b948e13fce8b167e92afedc551364aa1e
+        body: e363c4c4b9ab29181f1343aaf167d412ec20093c44d538210190ab40cc1c62bd
       - file: "clients/explorer/src/ui/useChosen.test.tsx"
         name: "is kept in the page's address, read back on reload, marked, and flown to"
         body: 4a642179f5ba6a98df055f4e48e06d9da7e838d3afe83fde1011ee3420f0bb4d
@@ -3683,7 +3710,7 @@ links:
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "chooses a structure by the name it shows in the view, and still zooms over it"
-        body: 3bb8b5402624a23e04c91c9bfe04c01e78059fa373709e91675f6eee6011cd8b
+        body: 1cdbba7e9b65296c56541e89391af9cddd6fa5dc7f4519faedbb199a881610f2
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "draws each structure's name at its centre"
         body: 3058b5f259b766cd4c67628a18fbcc9b6f06a92524ce9be5458831401b6784db

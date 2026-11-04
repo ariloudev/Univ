@@ -264,3 +264,775 @@ blocks:
           email: "ariloudev@local"
         channel: terminal
         verdict: approved
+  - key: 01a1a8ea-428f-7620-8128-eda5a77c8d5f
+    id: plan-28-plan-glowing-questing-ullman-01a1a8e8-8200-7742-b255-ae2b3b1d913c
+    kind: plan
+    versions:
+      - key: 01a1a8ea-428f-7620-8128-eda69426a110
+        at: 2026-11-04T23:34:47Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Plan: E9, a click centres the view on the point (`stage/release-8-e9`)"
+        markdown: |
+          # Plan: E9, a click centres the view on the point (`stage/release-8-e9`)
+
+          ## Context
+
+          You asked that clicking a galaxy put the camera's centre on it, as the view is centred on Earth
+          when it opens. Today:
+          - a single click on a drawn point only opens its record;
+          - a double-click flies to the point, makes it the focus and zooms in close;
+          - *Return to Earth* makes Earth the focus at the current distance.
+
+          The approved change, one new requirement in `the-view/navigate-with-the-mouse`, is committed
+          alone as 949f901. A click on a drawn point makes it the focus and keeps the distance, so that
+          dragging then turns the view about it. Its criteria:
+          1. After a click on a point, the point is at the centre of the view and the distance from the
+             eye to the focus is the one before the click.
+          2. Once a point is the focus, dragging turns the view about the point.
+          3. With reduced motion, the view moves at once instead of flying.
+
+          The change is to Univ Explorer only: the controller already flies to any focus.
+
+          ## Tasks
+
+          | Task | Scope | Done when |
+          |---|---|---|
+          | **e9-t-centre** | `src/scene/controller.ts`: a new `centreOn(focus)`, which is `flyTo(focus, this.view.distance)`; `returnToEarth()` becomes `centreOn(ORIGIN)`. `src/ui/useWorld.ts`: the click handler in `bindView` (`chooser`) calls `controller.centreOn(place)` on a click and keeps `flyTo(place, viewingDistance(…))` on a double-click. Both go through a small exported `focusOn(controller, point, close)`, so they can be tested without a canvas. | `controller.test.ts`: `centreOn` ends with the point at the centre (projected to 400, 300) and the distance unchanged (criterion 1); a turn afterwards leaves the point at the centre, with the focus unchanged (2); with reduced motion it moves at once (3). `useWorld.test.ts`: `focusOn` keeps the distance for a click and flies close for a double-click |
+          | **e9-t-e2e** | `e2e/explorer.spec.ts`, a new test:<br>1. find "canis MAJOR" with the search box, as the existing test does;<br>2. *Return to Earth*, at the same distance;<br>3. click at the chosen object's mark (`data-testid="chosen-mark"`);<br>4. expect the record panel to be open, the distance text unchanged, and the mark at the centre of the canvas, within a few pixels. | the test passes in `cargo xtask integration` |
+          | **e9-t-close** | `/simplify` and `/code-review` run in parallel, then `cargo xtask check` and `cargo xtask integration`. The three criteria are linked in `loft.trace.yaml` and accepted, along with any changed test of the double-click criteria. The Yard Log is closed, and the branch is merged `--no-ff` into `product/release-8`. | as for every wave |
+
+          ## Critical files
+
+          - `clients/explorer/src/scene/controller.ts` and `controller.test.ts`
+          - `clients/explorer/src/ui/useWorld.ts` and `useWorld.test.ts`
+          - `clients/explorer/e2e/explorer.spec.ts`
+
+          **Reused:**
+          - `Controller.flyTo` and its reduced-motion path;
+          - `viewingDistance` (`scene/controls.ts`);
+          - `fakeController()` (`src/test/world.ts`), which uses reduced motion;
+          - the controller tests' `setup()`, with `advance(FLIGHT_MS)`;
+          - `project` from `scene/camera.ts`.
+
+          ## Verification
+
+          - **Unit tests:** `pnpm check` in `clients/explorer`.
+          - **End to end:** `cargo xtask integration`, with the new click test.
+          - **Gate:** `cargo xtask check`.
+          - **Trace:** `loft reconcile`, with the three new criteria linked.
+          - **Live:** release 9 in headless Chromium, clicking a galaxy. The screenshot should show it at the centre at the same distance, and a drag turning the view about it.
+
+          ## Afterwards
+
+          On your ask, merge `product/release-8` into `develop` and run `loft publish`.
+        planMode: true
+    responses:
+      - key: 01a1a8eb-babd-76d2-9d08-05086f1edd65
+        at: 2026-11-04T23:36:23Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
+  - key: 01a1a8eb-e445-7742-89b2-7cc06104343f
+    id: e9-t-centre
+    kind: task
+    versions:
+      - key: 01a1a8eb-e445-7742-89b2-7cc32f3554de
+        at: 2026-11-04T23:36:34Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A click makes the point the focus"
+        detail: "`Controller.centreOn`; the click calls it and the double-click flies in close, through `focusOn`. Done when the controller and world unit tests pass."
+        state: active
+      - key: 01a1a8f0-ab48-75a9-874f-b2e1522bb284
+        at: 2026-11-04T23:41:47Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A click makes the point the focus"
+        detail: "`Controller.centreOn(focus)` keeps the distance, the one a flight under way ends at, and `Controller.approach(place)` flies in close for a double-click and for search. `flyTo` does not start over toward where the view already is or is going. `firstOfDouble` lets the second click and the double-click reuse the thing the first click picked, so a double-click still flies to the point aimed at. The hover label is cleared when a click moves the view."
+        state: done
+  - key: 01a1a8eb-e445-7742-89b2-7cc164a2108d
+    id: e9-t-e2e
+    kind: task
+    versions:
+      - key: 01a1a8eb-e445-7742-89b2-7cc42a5e2ec3
+        at: 2026-11-04T23:36:34Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "End-to-end click test"
+        detail: "Find, return to Earth, click the chosen mark: the record opens, the distance is unchanged, the mark is at the centre."
+        state: open
+      - key: 01a1a8f0-ab48-75a9-874f-b2e27c9517c1
+        at: 2026-11-04T23:41:47Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "End-to-end click test"
+        detail: |-
+          With reduced motion:
+          1. find Canis Major, return to Earth;
+          2. zoom out until its mark is well inside the view;
+          3. click the mark: it moves to the centre, and the distance is unchanged.
+
+          Runs in `cargo xtask integration`.
+        state: active
+      - key: 01a1a8fc-642c-71d6-bdb8-f226ceea1d4b
+        at: 2026-11-04T23:54:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "End-to-end click test"
+        detail: |-
+          With reduced motion:
+          1. hover outward from the centre until the label names a point;
+          2. click it;
+          3. the chosen object's ring moves to the centre, and the distance is unchanged.
+
+          Passes in `cargo xtask integration` (9 Playwright tests). Two earlier versions failed. One waited on a named object being drawn after a zoom, and that object was never pickable on the fixture release. The other measured the mark's container instead of its ring.
+        state: done
+  - key: 01a1a8eb-e445-7742-89b2-7cc213521a73
+    id: e9-t-close
+    kind: task
+    versions:
+      - key: 01a1a8eb-e445-7742-89b2-7cc5e88ed57c
+        at: 2026-11-04T23:36:34Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Reviews, gate, integration, trace, close, merge"
+        detail: "As for every wave."
+        state: open
+      - key: 01a1a8fc-642c-71d6-bdb8-f22750e01ae4
+        at: 2026-11-04T23:54:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Reviews, gate, integration, trace, close, merge"
+        detail: |-
+          On the final code:
+          - `cargo xtask check` passes, 13 gates;
+          - `cargo xtask integration` passes;
+          - the trace links all 444 nodes.
+
+          Live, release 9: a 2MRS galaxy at 58.2 Mpc ends 0.0 px from the centre, the distance stays 400 Mpc, and a drag keeps it there. The live run caught a stale hover label: a pending hover lookup re-picked the galaxy after the click. The click now cancels it, through one `clearHover` shared with pointer-leave.
+        state: active
+  - key: 01a1a8f0-ab48-75a9-874f-b2e0a79abc73
+    id: e9-reviews
+    kind: note
+    versions:
+      - key: 01a1a8f0-ab48-75a9-874f-b2e34be40cdc
+        at: 2026-11-04T23:41:47Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What the reviews changed"
+        markdown: |-
+          **Bugs fixed:**
+
+          | Finding | Fix |
+          |---|---|
+          | The first click of a double-click moved the view, so the double-click picked whatever was then under the pointer | The second click and the double-click reuse the first click's pick (`firstOfDouble`), tested by the click, click, double-click sequence |
+          | A click during a flight kept the distance reached partway, freezing the zoom | `centreOn` keeps the distance the flight ends at |
+          | The e2e test clicked where an off-screen object was, mid-flight | Reduced motion, then a zoom out until the mark is inside the view |
+          | The hover label kept naming the point the view moved away | Cleared on a click |
+          | The canvas description left out the centring | Updated |
+
+          **Cleanups:**
+          - `Controller.approach` is the one fly-close move, shared with search;
+          - `focusOn` and its tests are gone;
+          - a flight is not restarted toward its own target;
+          - shared e2e helpers `centreOf` and `find`;
+          - an `expectCentred` helper in the controller test.
+
+          **Skipped:**
+          - planning tiles once per flight: an older cost, not added here;
+          - clicks on structures: outside this spec.
+        tone: info
+  - key: 01a1a8fc-642c-71d6-bdb8-f2252ab2aeb4
+    id: e9-trace
+    kind: loft
+    versions:
+      - key: 01a1a8fc-642c-71d6-bdb8-f2286e98ab6e
+        at: 2026-11-04T23:54:35Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: |-
+          The three criteria of the click requirement are linked:
+          - to the controller tests: centring keeps the distance and turns about the point, keeps the distance a flight ends at, and moves at once with reduced motion;
+          - to the double-click pick test;
+          - to the e2e click test.
+
+          AC-399 and AC-408 were accepted again: their e2e tests changed only by using the shared `find` and `centreOf` helpers.
+        recorded:
+          commit: "949f901f5a4555e4163f5493f20c5c692efd1cfd"
+          branch: "stage/release-8-e9"
+          loft: 2.3.0-alpha.5
+          at: 2026-11-04T23:54:35Z
+        report: |
+          {
+            "base": "product/release-8",
+            "commit": "fedc9ad32ad058580102a63d313d04df57708953",
+            "counts": {
+              "features": 1
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40155a522828",
+                    "label": "AC-367",
+                    "name": "Dragging sideways turns the view about the pole of the frame whose axes it shows.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 34
+                          }
+                        ],
+                        "name": "turns the view while the primary button drags"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/camera.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "turns about the focus and stops short of either pole"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/camera.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 34
+                          }
+                        ],
+                        "name": "keeps the frame's pole up on the screen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40169a56936b",
+                    "label": "AC-368",
+                    "name": "Dragging up or down tilts the view, stopping short of either pole.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/camera.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "turns about the focus and stops short of either pole"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4017e181b56d",
+                    "label": "AC-369",
+                    "name": "A press that moves less than 6 pixels is a click, not a drag.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 42
+                          }
+                        ],
+                        "name": "calls a press that moves less than 6 pixels a click, and turns nothing"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 45
+                          }
+                        ],
+                        "name": "calls a press that moves less than 6 pixels a click"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40194ffc65db",
+                    "label": "AC-370",
+                    "name": "Each step of the wheel changes the distance from the eye to the focus by the same factor.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 10,
+                            "lastLine": 16
+                          }
+                        ],
+                        "name": "changes the distance by the same factor for each step of the wheel"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 18,
+                            "lastLine": 22
+                          }
+                        ],
+                        "name": "reads a notch of the wheel as one step, in pixels, lines or pages"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 60
+                          }
+                        ],
+                        "name": "zooms in a step for each notch scrolled forward"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401a8b7b26d8",
+                    "label": "AC-371",
+                    "name": "The distance from the eye to the focus stays between 0.1 parsec and 20 gigaparsecs.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 24,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "keeps the eye between 0.1 parsec and 20 gigaparsecs from the focus"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401b318a282a",
+                    "label": "AC-372",
+                    "name": "The view shows the distance from the eye to the focus in parsecs, kiloparsecs, megaparsecs or gigaparsecs, whichever suits it, with light-years beside it.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/format.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 6,
+                            "lastLine": 12
+                          }
+                        ],
+                        "name": "are given in the parsec unit that suits them, with light-years beside"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 87
+                          }
+                        ],
+                        "name": "show the distance from the eye to the focus, and return the focus to Earth"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401d23c750eb",
+                    "label": "AC-373",
+                    "name": "The focus moves in the plane facing the eye, by the distance the pointer moved at the focus's depth.",
+                    "requirement": "01a1a497-e843-728a-bce8-401c96d859c6",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "moves the focus in the plane facing the eye by the distance dragged at its depth"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "moves the focus while the secondary button, or Shift, drags"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a8e8-6326-709f-aa5e-460fcd37f83b",
+                    "label": null,
+                    "name": "After a click on a point, the point is at the centre of the view and the distance from the eye to the focus is the one before the click.",
+                    "requirement": "01a1a8e8-6326-709f-aa5e-460e17bb4f06",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "centres on a point at the distance it was seen from, and then turns about it"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "keeps the distance a flight under way ends at when centring on a point"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useWorld.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 32,
+                            "lastLine": 49
+                          }
+                        ],
+                        "name": "chooses what its first click found, though that click has moved the view"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 67,
+                            "lastLine": 102
+                          }
+                        ],
+                        "name": "centres the view on a point clicked, keeping the distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a8e8-6326-709f-aa5e-4610311af683",
+                    "label": null,
+                    "name": "Once a point is the focus, dragging turns the view about the point.",
+                    "requirement": "01a1a8e8-6326-709f-aa5e-460e17bb4f06",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "centres on a point at the distance it was seen from, and then turns about it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a8e8-6326-709f-aa5e-46117cf024e6",
+                    "label": null,
+                    "name": "Where the person's system asks for reduced motion, the view moves at once instead of flying.",
+                    "requirement": "01a1a8e8-6326-709f-aa5e-460e17bb4f06",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 104,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "centres on a point at once where reduced motion is asked for"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401fac9dd829",
+                    "label": "AC-374",
+                    "name": "The flight ends within 1.5 seconds with the thing at the centre of the view.",
+                    "requirement": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "flies to a thing within the flight's time and ends with it at the centre"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "flies on a double click, and stops listening when unbound"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40204b4131f6",
+                    "label": "AC-375",
+                    "name": "Where the person's system asks for reduced motion, the view moves at once instead of flying.",
+                    "requirement": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "moves at once where reduced motion is asked for"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4022b38915cd",
+                    "label": "AC-376",
+                    "name": "A control on the view returns the focus to Earth.",
+                    "requirement": "01a1a497-e843-728a-bce8-402165709dd6",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "returns the focus to Earth"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 87
+                          }
+                        ],
+                        "name": "show the distance from the eye to the focus, and return the focus to Earth"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4024890baa12",
+                    "label": "AC-377",
+                    "name": "The chosen frame's equator is drawn as a ring around Earth.",
+                    "requirement": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 123,
+                            "lastLine": 135
+                          }
+                        ],
+                        "name": "draws the chosen frame's equator as a ring around Earth"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4025c1c8e956",
+                    "label": "AC-378",
+                    "name": "Changing the axes leaves every point at the same place in space.",
+                    "requirement": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 137,
+                            "lastLine": 149
+                          }
+                        ],
+                        "name": "changes the axes without moving the focus or any point"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 89,
+                            "lastLine": 93
+                          }
+                        ],
+                        "name": "change the axes the view shows"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-4013de790aff",
+                "label": "F-35",
+                "name": "Navigate with the mouse",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "label": "RQ-126",
+                    "name": "When the person drags with the primary button, Univ Explorer shall turn the view about the focus.",
+                    "statement": {
+                      "condition": "the person drags with the primary button",
+                      "form": "event_driven",
+                      "shall": "turn the view about the focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "label": "RQ-127",
+                    "name": "When the person turns the mouse wheel, Univ Explorer shall move the eye toward or away from the focus by the same factor for each step.",
+                    "statement": {
+                      "condition": "the person turns the mouse wheel",
+                      "form": "event_driven",
+                      "shall": "move the eye toward or away from the focus by the same factor for each step.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401c96d859c6",
+                    "label": "RQ-128",
+                    "name": "When the person drags with the secondary button, or with the primary button and Shift held, Univ Explorer shall move the focus across the view.",
+                    "statement": {
+                      "condition": "the person drags with the secondary button, or with the primary button and Shift held",
+                      "form": "event_driven",
+                      "shall": "move the focus across the view.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a8e8-6326-709f-aa5e-460e17bb4f06",
+                    "label": null,
+                    "name": "When the person clicks a drawn point, Univ Explorer shall make the point the focus, keeping the distance from the eye to the focus.",
+                    "statement": {
+                      "condition": "the person clicks a drawn point",
+                      "form": "event_driven",
+                      "shall": "make the point the focus, keeping the distance from the eye to the focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "label": "RQ-129",
+                    "name": "When the person double-clicks a point or a structure, Univ Explorer shall fly to it and make it the focus.",
+                    "statement": {
+                      "condition": "the person double-clicks a point or a structure",
+                      "form": "event_driven",
+                      "shall": "fly to it and make it the focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402165709dd6",
+                    "label": "RQ-130",
+                    "name": "When the person asks to return to Earth, Univ Explorer shall make Earth the focus again.",
+                    "statement": {
+                      "condition": "the person asks to return to Earth",
+                      "form": "event_driven",
+                      "shall": "make Earth the focus again.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "label": "RQ-131",
+                    "name": "When the person chooses the galactic, equatorial or supergalactic axes, Univ Explorer shall turn the view to that frame's axes.",
+                    "statement": {
+                      "condition": "the person chooses the galactic, equatorial or supergalactic axes",
+                      "form": "event_driven",
+                      "shall": "turn the view to that frame's axes.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 444,
+              "linked": 444,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }

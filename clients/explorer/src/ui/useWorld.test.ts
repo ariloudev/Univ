@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { fakeWorld } from "../test/world.ts";
 import type { Overlay } from "./overlay.ts";
 import { FIRST_POINTS } from "../firstPoints.ts";
-import { drawn } from "./useWorld.ts";
+import { fakeWorld } from "../test/world.ts";
+import { DOUBLE_CLICK_MS, drawn, firstOfDouble } from "./useWorld.ts";
 
 const overlay: Overlay = {
   earth: { current: null },
@@ -25,5 +25,32 @@ describe("a frame drawn", () => {
     expect(drawn(world, overlay, SIZE, true)).toBe(true);
     expect(performance.getEntriesByName(FIRST_POINTS)).toHaveLength(1);
     expect(world.frame.get()).toBe(3);
+  });
+});
+
+describe("a double-click", () => {
+  it("chooses what its first click found, though that click has moved the view", () => {
+    let clock = 0;
+    const under = ["the point aimed at", "a point the view moved under the pointer"];
+    const picks: string[] = [];
+    const clicked = firstOfDouble(() => {
+      const found = under.shift();
+      if (found !== undefined) picks.push(found);
+      return found;
+    }, () => clock);
+    expect(clicked(100, 100)).toBe("the point aimed at");
+    clock += 120;
+    expect(clicked(101, 100)).toBe("the point aimed at");
+    clock += 80;
+    expect(clicked(101, 101)).toBe("the point aimed at");
+    expect(picks).toEqual(["the point aimed at"]);
+    clock += DOUBLE_CLICK_MS + 1;
+    expect(clicked(101, 101)).toBe("a point the view moved under the pointer");
+  });
+
+  it("picks again for a click elsewhere", () => {
+    const clicked = firstOfDouble((x) => `at ${x}`, () => 0);
+    expect(clicked(100, 100)).toBe("at 100");
+    expect(clicked(300, 100)).toBe("at 300");
   });
 });

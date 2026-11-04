@@ -5,8 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ApiError } from "../api/client.ts";
 import { type Choices, type ObjectRecord, nameOf, objectOf, placeOf } from "../api/objects.ts";
-import { viewingDistance } from "../scene/controls.ts";
-import { norm } from "../scene/vec.ts";
 import { setInAddress } from "./address.ts";
 import type { World } from "./useWorld.ts";
 
@@ -54,7 +52,7 @@ function arrive(world: World, record: ObjectRecord, fly: boolean): void {
   const place = placeOf(record);
   world.chosen = place;
   world.controller.invalidate();
-  if (fly && place !== undefined) world.controller.flyTo(place, viewingDistance(norm(place)));
+  if (fly && place !== undefined) world.controller.approach(place);
 }
 
 /** The chosen object of `release` in `world`, and the way to choose another. */
