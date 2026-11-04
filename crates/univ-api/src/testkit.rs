@@ -77,9 +77,30 @@ impl Sqlite {
         self
     }
 
-    /// The answer to `request`.
+    /// The answer to `request`. A problem answered on a route must be one the route lists among
+    /// its refusals, which the OpenAPI document describes: every test that meets a refusal
+    /// checks it.
     pub fn answer(&self, request: &Request) -> Response {
-        block_on(crate::handle(request, self))
+        let response = block_on(crate::handle(request, self));
+        // A HEAD's refusal carries no body to read its type from; its GET's is checked.
+        if response.header("content-type") == Some(crate::problem::CONTENT_TYPE)
+            && request.method != Method::Head
+            && let Some(endpoint) = crate::routes::endpoint_of(&request.method, &request.path)
+        {
+            let kind = body(&response)["type"]
+                .as_str()
+                .unwrap_or_default()
+                .to_owned();
+            let listed: Vec<&str> = crate::refusals::refusals(endpoint)
+                .iter()
+                .map(|kind| kind.uri())
+                .collect();
+            assert!(
+                listed.contains(&kind.as_str()),
+                "{endpoint:?} answered {kind}, which its refusals do not list"
+            );
+        }
+        response
     }
 
     /// The answer to `request` sent with the owner secret, and its JSON document.

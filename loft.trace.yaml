@@ -2781,12 +2781,24 @@ links:
       - file: "crates/univ-api/src/openapi.rs"
         name: "the_document_is_openapi_3_1"
         body: 0588411b2d8c68ed0820bbb804fc655d37788c7c7d8adc7019452a54fe9e7bce
+  - node: 01a19f20-8e6c-7039-b16f-ac087a3ea07a
+    reviewed: 5306c00d135dbe8fc3f4bf144a3a73ebe13f9262aacbc246613d39327be98895
+    tests:
+      - file: "crates/univ-api/src/openapi.rs"
+        name: "the_documents_schemas_are_generated_from_univ_models_types"
+        body: 961b808c49195ec498498f3f75884f63aadb0c118dc5faadae5aa5b20b887d7a
   - node: 01a19f20-8e6c-7039-b16f-ac09bec61527
     reviewed: 1101ee170b4cf1e3a80fdabcfddedd284252711243a4121141f6c4bed3dc94da
     tests:
       - file: "crates/univ-api/src/openapi.rs"
         name: "the_document_describes_every_route_served_and_no_other"
         body: 61656f54a0bc2cdabb10954766a2eab188c39bcb6fed5b838e5c492451ad4a50
+  - node: 01a19f20-8e6c-7039-b16f-ac0af2d4fa5d
+    reviewed: ab296c92b027c950d0398c353b294738877fe0820985cc36ab6e83f7cf1b2b5d
+    tests:
+      - file: "crates/univ-api/src/openapi.rs"
+        name: "each_refusal_a_route_can_give_is_described_with_its_status_and_problem_type"
+        body: b9aecdf4a19609e6c2007dce774098077c35f93ef46da88602233bd721d6e738
   - node: 01a19f20-8e6c-7039-b16f-ac0c9f071903
     reviewed: 594ec7d33ac902e675bae6248599f4d55ed3925a41ec3a01e3420f6471d557f2
     tests:
@@ -2814,3 +2826,12 @@ links:
       - file: "crates/univ-api/src/routes.rs"
         name: "every_route_lives_under_the_path_of_its_api_version"
         body: 2612c6dd415a8b9d521f10ce19c37d32e0df5a3e87e6f55e5631ae4c44f07cab
+  - node: 01a19f20-8e6c-7039-b16f-ac103a292bb7
+    reviewed: 299af41210cce696e392ece187cdb89d74cb108b63fa676248788edc9e36e5ed
+    tests:
+      - file: "crates/univ-api/src/openapi_snapshot.rs"
+        name: "within_v1_a_change_adds_to_the_document_and_removes_or_renames_nothing"
+        body: 9ffa5efa1bc739b924ce9424da4f2a210d2f4581eda5136ac856c5dba89165a0
+      - file: "crates/univ-api/src/openapi_snapshot.rs"
+        name: "removing_a_field_a_route_or_a_value_of_an_enumeration_is_caught_and_adding_one_is_not"
+        body: 1259e3edb737828dc800208d33a5e2278e844f386e336cd93d5a4f22a859eac2

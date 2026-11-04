@@ -1,0 +1,91 @@
+key: 01a1a44e-3d9c-738c-a63a-aa3b74b7c37f
+id: w7
+versions:
+  - key: 01a1a44e-3d9c-738c-a63a-aa43ed8f764f
+    at: 2026-11-04T02:05:53Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W7: contract complete and the real release"
+    goal: "Every route's refusals are in the OpenAPI document, a snapshot refuses removals within /v1 (AC-292), and release 7 built with the current ingest is served with QA-2, QA-3, its tiles and the science spot-checks measured on it"
+    status: active
+blocks:
+  - key: 01a1a44e-3d9c-738c-a63a-aa3db0c2beef
+    id: t7-release
+    kind: task
+    versions:
+      - key: 01a1a44e-3d9c-738c-a63a-aa45d67605ae
+        at: 2026-11-04T02:05:53Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build and publish release 7 from cached downloads"
+        detail: "`univ-ingest build --offline`, then `publish 7` to `.cache/univ-ingest/wrangler`, in the background. Done when release 7 is `latest` and release 6 stays readable."
+        state: active
+  - key: 01a1a44e-3d9c-738c-a63a-aa3e3f7bb508
+    id: t7-refusals
+    kind: task
+    versions:
+      - key: 01a1a44e-3d9c-738c-a63a-aa460d3f3c09
+        at: 2026-11-04T02:05:53Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Every refusal of every route in the OpenAPI document"
+        detail: "Done when a test walks the route table and finds each status and problem type a handler can answer documented for its route."
+        state: open
+  - key: 01a1a44e-3d9c-738c-a63a-aa3f9d821596
+    id: t7-snapshot
+    kind: task
+    versions:
+      - key: 01a1a44e-3d9c-738c-a63a-aa472b0d9f61
+        at: 2026-11-04T02:05:53Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "OpenAPI snapshot refusing removals and renames (AC-292)"
+        detail: "Done when a committed snapshot of `openapi.json` is compared by a test that fails on any path, operation, parameter, schema or property removed or renamed within /v1, and passes on additions."
+        state: open
+  - key: 01a1a44e-3d9c-738c-a63a-aa40b20bb6a6
+    id: t7-qa
+    kind: task
+    versions:
+      - key: 01a1a44e-3d9c-738c-a63a-aa4896729093
+        at: 2026-11-04T02:05:53Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-2 and QA-3 on release 7"
+        detail: "Done when `bench lookup` and `bench volume` have run against release 7 and their percentiles are recorded."
+        state: open
+  - key: 01a1a44e-3d9c-738c-a63a-aa41d098b4fd
+    id: t7-tiles
+    kind: task
+    versions:
+      - key: 01a1a44e-3d9c-738c-a63a-aa49f98eaaf6
+        at: 2026-11-04T02:05:53Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "All tiles of release 7 decoded by the TypeScript decoder"
+        detail: "Done when every tile served for release 7 matches its manifest SHA-256 and decodes (AC-281)."
+        state: open
+  - key: 01a1a44e-3d9c-738c-a63a-aa4215580762
+    id: t7-science
+    kind: task
+    versions:
+      - key: 01a1a44e-3d9c-738c-a63a-aa4a0f346bad
+        at: 2026-11-04T02:05:53Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science spot-checks through the API"
+        detail: "Done when M31, M87, the Virgo group and Laniakea's attractors are read through the API on release 7 and compared with their cited values, and releases 1-4 answer 410."
+        state: open

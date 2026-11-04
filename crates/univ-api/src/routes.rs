@@ -358,6 +358,19 @@ pub async fn dispatch<B: Backend>(request: &Request, caller: &Caller, backend: &
     .with_header("allow", &allow)
 }
 
+/// The endpoint of the route that answers `method` on `path`, a HEAD as its GET; none where no
+/// route does.
+#[cfg(test)]
+pub(crate) fn endpoint_of(method: &Method, path: &str) -> Option<Endpoint> {
+    ROUTES
+        .iter()
+        .find(|route| {
+            (route.method == *method || (*method == Method::Head && route.method == Method::Get))
+                && matches(route.path, path).is_some()
+        })
+        .map(|route| route.endpoint)
+}
+
 /// The value of the route's `{name}` segment; every endpoint asks only for segments its own
 /// template has.
 fn param<'a>(params: &'a Params, name: &str) -> &'a str {
