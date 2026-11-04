@@ -9,7 +9,7 @@ use crate::acquire::Acquired;
 use crate::display::SourceState;
 use crate::normalize::reads_rows;
 use crate::release::is_grid;
-use crate::source::{Access, Holds, SourceDefinition};
+use crate::source::{Holds, SourceDefinition};
 
 /// How far a run took the sources that are no table of rows.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -25,13 +25,7 @@ pub enum Reached {
 /// What became of `definition`, which is no table of rows, once the run `reached` a stage.
 fn how(definition: &SourceDefinition, reached: Reached) -> String {
     let grid = is_grid(definition);
-    let structures = matches!(
-        definition.access,
-        Access::Repository {
-            holds: Holds::Structures,
-            ..
-        }
-    );
+    let structures = matches!(definition.access.repository(), Some((Holds::Structures, _)));
     match (grid, structures, reached) {
         (true, _, Reached::Built(n)) => format!("volume grid, read as a grid into release {n}"),
         (true, ..) => "volume grid, not normalized: read as a grid by a build".to_owned(),

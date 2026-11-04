@@ -39,12 +39,11 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use univ_model::ids::is_slug;
 
 use crate::source::ScaleDomain;
-use crate::yaml::{FileError, read_checked, read_dir};
+use crate::yaml::{FileError, read_checked, read_dir, slug_of};
 
-pub(crate) use check::{CitedFile, Problem, shown, uncited_in_text};
+pub(crate) use check::{CitedFile, Evidence, Problem, problem};
 pub use citation::{Citation, Locator};
 pub use cited::{Assumes, Cited};
 pub use geometry::{AxisExtents, Coordinates, Radial};
@@ -196,13 +195,7 @@ impl Structure {
         {
             self.check_citation("geometry.sky_region.at_least", at_least, None)?;
         }
-        for (i, dispute) in self.disputes.iter().enumerate() {
-            let field = format!("disputes[{i}]");
-            if dispute.claim.trim().is_empty() {
-                return problem(&field, "states no claim");
-            }
-            self.check_citation(&format!("{field}.cite"), &dispute.cite, None)?;
-        }
+        self.check_disputes(&self.disputes)?;
         if let Some(StructureGeometry::Members(m)) = &self.geometry
             && !ids.contains(m.source.paper())
         {
@@ -275,20 +268,7 @@ pub fn read_all(dir: &Path) -> Result<Vec<Structure>, StructureError> {
 pub fn read_all_named(dir: &Path) -> Result<Vec<(String, Structure)>, StructureError> {
     read_dir(dir)?
         .iter()
-        .map(|file| {
-            let stem = file
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or_default();
-            if !is_slug(stem) {
-                return Err(FileError::new(
-                    file,
-                    "(file name)",
-                    "is not a kebab-case slug",
-                ));
-            }
-            Ok((stem.to_owned(), Structure::read(file)?))
-        })
+        .map(|file| Ok((slug_of(file)?.to_owned(), Structure::read(file)?)))
         .collect()
 }
 

@@ -27,7 +27,7 @@ papers:
 parallax:
   value: 7.4
   unit: milliarcsecond
-  kind: measured
+  kind: estimated
   uncertainty: { form: symmetric, sigma: 0.2 }
   cite:
     paper: tycner-2011

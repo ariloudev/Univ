@@ -59,10 +59,7 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             assert_eq!(read.name, entry.name);
             assert_eq!(read.group_id, entry.group_id);
             assert_eq!(read.flags, entry.flags);
-            assert_eq!(
-                read.references.as_slice(),
-                entry.references.as_deref().unwrap_or_default()
-            );
+            assert_eq!(read.references.as_slice(), &*entry.references);
             researched += usize::from(!read.references.is_empty());
             assert_eq!(
                 read.spectral_type

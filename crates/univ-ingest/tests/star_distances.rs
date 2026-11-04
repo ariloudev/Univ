@@ -94,7 +94,7 @@ fn a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance() {
     );
     assert!((preferred.distance_mpc * 1e6 - 168.0).abs() < 1e-6);
     assert_eq!(preferred.decided, Decided::OnlyCandidate);
-    let papers = chosen.references.as_deref().unwrap();
+    let papers = &*chosen.references;
     assert_eq!(papers[0].citation, "Test 2020, SIMULATED 1, 1");
 }
 
@@ -126,6 +126,25 @@ fn a_groups_distance_is_inferred_and_cites_the_membership() {
     );
     let dir = dir_of(&[("test-star", star(1, &member))]);
     assert_eq!(read_all(dir.path()).unwrap().len(), 1);
+}
+
+#[test]
+fn a_membership_beside_a_value_that_is_no_groups_distance_is_refused() {
+    let member = format!(
+        "{MODEL}membership:\n  paper: test-2020\n  sentence: \"SIMULATED: the star is a member.\"\n"
+    );
+    let refused = refusal(&star(1, &member));
+    assert!(refused.contains("membership"), "{refused}");
+}
+
+#[test]
+fn a_parallax_the_ranking_could_not_invert_is_refused() {
+    let parallax = "parallax:\n  value: 5.95\n  unit: milliarcsecond\n  kind: measured\n  uncertainty: { form: asymmetric, minus: 0.85, plus: 0.58 }\n  cite:\n    paper: test-2020\n    sentence: \"SIMULATED: a parallax of 5.95^{+0.58}_{-0.85} mas.\"\n  distance_kind: parallax\n  method: \"SIMULATED orbit\"\n";
+    let refused = refusal(&star(1, parallax));
+    assert!(refused.contains("parallax.uncertainty"), "{refused}");
+    let zero = MODEL.replace("value: 168", "value: 0");
+    let refused = refusal(&star(1, &zero));
+    assert!(refused.contains("is not positive"), "{refused}");
 }
 
 #[test]

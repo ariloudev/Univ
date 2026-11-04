@@ -201,7 +201,8 @@ pub struct CatalogueEntry {
     pub flags: BTreeMap<String, String>,
     /// The papers a researched entry's values come from, the paper of its distance first; none
     /// for an entry of a catalogue, which its source's citation covers.
-    pub references: Option<Box<[PaperReference]>>,
+    #[serde(default, skip_serializing_if = "<[_]>::is_empty")]
+    pub references: Box<[PaperReference]>,
 }
 
 /// A paper a researched entry's values come from.
@@ -240,7 +241,7 @@ struct RawCatalogueEntry {
     flags: BTreeMap<String, String>,
     // Absent from entries of catalogues.
     #[serde(default)]
-    references: Option<Box<[PaperReference]>>,
+    references: Box<[PaperReference]>,
 }
 
 impl TryFrom<RawCatalogueEntry> for CatalogueEntry {
@@ -356,12 +357,7 @@ impl CatalogueEntry {
                 return Err(EntryError::Blank(field));
             }
         }
-        if self
-            .references
-            .iter()
-            .flat_map(|r| r.iter())
-            .any(|r| r.citation.trim().is_empty())
-        {
+        if self.references.iter().any(|r| r.citation.trim().is_empty()) {
             return Err(EntryError::Blank("reference"));
         }
         Ok(())

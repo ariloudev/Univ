@@ -13,7 +13,7 @@ use crate::acquire::Acquired;
 use crate::crossmatch::{Basis, CrossMatched, Inputs, STEPS, cross_match_watched};
 use crate::events::{Event, EventSink, Stage};
 use crate::normalize::Normalized;
-use crate::source::{Access, Holds, SourceDefinition};
+use crate::source::{Holds, SourceDefinition};
 use crate::state::State;
 use crate::watch::Watch;
 
@@ -36,14 +36,8 @@ fn basis(
     let dirs: Vec<PathBuf> = definitions
         .iter()
         .zip(acquired)
-        .filter_map(|(d, on_disk)| match (&d.access, on_disk) {
-            (
-                Access::Repository {
-                    path,
-                    holds: Holds::Structures,
-                },
-                Some(_),
-            ) => Some(options.repository.join(path)),
+        .filter_map(|(d, on_disk)| match (d.access.repository(), on_disk) {
+            (Some((Holds::Structures, path)), Some(_)) => Some(options.repository.join(path)),
             _ => None,
         })
         .collect();

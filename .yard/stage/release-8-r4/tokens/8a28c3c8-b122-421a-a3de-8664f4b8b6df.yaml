@@ -2,30 +2,48 @@ format: yardtokens/2
 session: 8a28c3c8-b122-421a-a3de-8664f4b8b6df
 host: claude-code
 firstEnded: 2026-11-04T19:58:07Z
-lastEnded: 2026-11-04T21:10:29Z
+lastEnded: 2026-11-04T21:40:12Z
 tokens:
-  input: 1600
-  cacheRead: 166736368
-  cacheWrite: 3189566
-  output: 626469
+  input: 1906
+  cacheRead: 185189588
+  cacheWrite: 3765919
+  output: 722369
 stages:
   - stage: 01a1a823-e6d7-726d-9f11-d425ed0f6f5a
-    input: 1600
-    cacheRead: 166736368
-    cacheWrite: 3189566
-    output: 626469
+    input: 1906
+    cacheRead: 185189588
+    cacheWrite: 3765919
+    output: 722369
     agents:
       - agent: main
-        input: 398
-        cacheRead: 77691956
-        cacheWrite: 380452
-        output: 129589
+        input: 508
+        cacheRead: 88664279
+        cacheWrite: 479611
+        output: 173750
+      - agent: a1ae7521ec1b8a90a
+        type: general-purpose
+        input: 30
+        cacheRead: 889792
+        cacheWrite: 85830
+        output: 8047
       - agent: a1e00be246f9bfc18
         type: web-fetch
         input: 4
         cacheRead: 3786
         cacheWrite: 36437
         output: 1874
+      - agent: a688e0468702e62cb
+        type: general-purpose
+        input: 36
+        cacheRead: 1164528
+        cacheWrite: 85357
+        output: 7696
+      - agent: a73a2eeb220656ab4
+        type: general-purpose
+        input: 26
+        cacheRead: 708067
+        cacheWrite: 79898
+        output: 4623
       - agent: a7fb1b77ea1c949aa
         type: web-fetch
         input: 32
@@ -38,6 +56,18 @@ stages:
         cacheRead: 102644
         cacheWrite: 12177
         output: 6403
+      - agent: acac10fa47b84a314
+        type: general-purpose
+        input: 28
+        cacheRead: 935445
+        cacheWrite: 89827
+        output: 8752
+      - agent: ad71bbedada2c7b61
+        type: general-purpose
+        input: 76
+        cacheRead: 3783065
+        cacheWrite: 136282
+        output: 22621
       - agent: astars-a-6a2fbe6de04be514
         type: general-purpose
         input: 250
@@ -65,10 +95,17 @@ stages:
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 398
-    cacheRead: 77691956
-    cacheWrite: 380452
-    output: 129589
+    input: 508
+    cacheRead: 88664279
+    cacheWrite: 479611
+    output: 173750
+  - agent: a1ae7521ec1b8a90a
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 30
+    cacheRead: 889792
+    cacheWrite: 85830
+    output: 8047
   - agent: a1e00be246f9bfc18
     type: web-fetch
     model: claude-haiku-5-5
@@ -76,6 +113,20 @@ agents:
     cacheRead: 3786
     cacheWrite: 36437
     output: 1874
+  - agent: a688e0468702e62cb
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 36
+    cacheRead: 1164528
+    cacheWrite: 85357
+    output: 7696
+  - agent: a73a2eeb220656ab4
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 26
+    cacheRead: 708067
+    cacheWrite: 79898
+    output: 4623
   - agent: a7fb1b77ea1c949aa
     type: web-fetch
     model: claude-haiku-5-5
@@ -90,6 +141,20 @@ agents:
     cacheRead: 102644
     cacheWrite: 12177
     output: 6403
+  - agent: acac10fa47b84a314
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 28
+    cacheRead: 935445
+    cacheWrite: 89827
+    output: 8752
+  - agent: ad71bbedada2c7b61
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 76
+    cacheRead: 3783065
+    cacheWrite: 136282
+    output: 22621
   - agent: astars-a-6a2fbe6de04be514
     type: general-purpose
     model: claude-opus-5-5

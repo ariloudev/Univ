@@ -18,16 +18,14 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 use univ_model::distance::{Distance, DistanceKind, Measure, Method};
 use univ_model::entry::{CatalogueEntry, PaperReference};
-use univ_model::ids::{Designation, is_slug};
+use univ_model::ids::Designation;
 use univ_model::units::Unit;
-use univ_model::value::{KindOfValue, Value};
+use univ_model::value::{KindOfValue, Uncertainty, Value};
 
 use crate::normalize::{NormalizationReport, NormalizeError, Normalized};
 use crate::source::{LeftOutReason, SourceDefinition};
-use crate::structures::{
-    Citation, Cited, CitedFile, Dispute, Paper, Problem, shown, uncited_in_text,
-};
-use crate::yaml::{FileError, read_checked, read_dir};
+use crate::structures::{Citation, Cited, CitedFile, Dispute, Evidence, Paper, Problem, problem};
+use crate::yaml::{FileError, read_checked, read_dir, slug_of};
 
 /// A star as its file describes it.
 #[derive(Clone, Debug, PartialEq, Deserialize)]
@@ -59,43 +57,19 @@ pub struct StarFile {
 
 /// A cited distance or parallax, with the kind of distance it is and the method behind it.
 #[derive(Clone, Debug, PartialEq, Deserialize)]
-#[serde(try_from = "RawResearched")]
 pub struct Researched {
+    #[serde(flatten)]
     pub value: Cited,
     pub distance_kind: DistanceKind,
     /// The method in a phrase, such as `interferometric orbit` or `Sco-Cen subgroup distance`.
     pub method: String,
 }
 
-/// A researched value as written: the cited value's fields beside its kind and method.
-#[derive(Deserialize)]
-struct RawResearched {
-    distance_kind: DistanceKind,
-    method: String,
-    #[serde(flatten)]
-    value: BTreeMap<String, serde_norway::Value>,
-}
-
-impl TryFrom<RawResearched> for Researched {
-    type Error = String;
-    fn try_from(raw: RawResearched) -> Result<Self, String> {
-        let mapping = raw
-            .value
-            .into_iter()
-            .map(|(k, v)| (serde_norway::Value::String(k), v))
-            .collect();
-        let value =
-            Cited::deserialize(serde_norway::Value::Mapping(mapping)).map_err(|e| e.to_string())?;
-        Ok(Self {
-            value,
-            distance_kind: raw.distance_kind,
-            method: raw.method,
-        })
-    }
-}
-
 /// A star file that cannot be used, naming the file, the field and what is wrong.
 pub type StarError = FileError;
+
+/// A star file's star, or why it cannot be used.
+type StarRead = Result<StarFile, StarError>;
 
 impl CitedFile for StarFile {
     fn papers(&self) -> &[Paper] {
@@ -116,10 +90,10 @@ impl StarFile {
     }
 
     /// The checks serde cannot make: the papers stand, every citation names one of them and
-    /// holds its number, the star has one distance or parallax or says why not, a distance of
-    /// a group cites the star's membership, and every number of the free text is cited.
+    /// holds its number, the star has one positive distance or parallax or says why not, only
+    /// a group's distance cites the star's membership, and every number of the free text is
+    /// cited.
     fn check(&self) -> Result<(), Problem> {
-        let problem = |field: &str, what: &str| Err((field.to_owned(), what.to_owned()));
         if self.hip == 0 {
             return problem("hip", "is not a Hipparcos number");
         }
@@ -146,6 +120,9 @@ impl StarFile {
             if r.method.trim().is_empty() {
                 return problem(&format!("{field}.method"), "is empty");
             }
+            if r.value.value() <= 0.0 {
+                return problem(field, "is not positive");
+            }
             self.check_citation(field, &r.value.cite, Some(&r.value))?;
             self.check_value(field, &r.value)?;
         }
@@ -153,118 +130,99 @@ impl StarFile {
             if p.value.unit() != Unit::Milliarcsecond {
                 return problem("parallax.unit", "a parallax is given in milliarcseconds");
             }
-            if p.value.kind != KindOfValue::Measured || p.distance_kind != DistanceKind::Parallax {
+            if p.distance_kind != DistanceKind::Parallax || p.value.kind == KindOfValue::Inferred {
                 return problem(
                     "parallax",
-                    "a parallax of the star itself is measured, of kind parallax",
+                    "a parallax of the star itself is of kind parallax, measured or, resting on \
+                     an assumed mass, estimated",
+                );
+            }
+            if !matches!(p.value.quantity.uncertainty, Uncertainty::Symmetric { .. }) {
+                return problem(
+                    "parallax.uncertainty",
+                    "a parallax is inverted only with a symmetric error; give the paper's \
+                     distance instead",
                 );
             }
         }
-        if let Some(d) = &self.distance {
-            if !matches!(d.value.unit(), Unit::Parsec | Unit::Kiloparsec) {
-                return problem(
-                    "distance.unit",
-                    "a star's distance is given in parsecs or kiloparsecs",
-                );
-            }
-            let group = d.value.kind == KindOfValue::Inferred;
-            if group != self.membership.is_some() {
-                return problem(
-                    "membership",
-                    "a group's distance given to a member is inferred and cites the membership; \
-                     only it does",
-                );
-            }
+        if let Some(d) = &self.distance
+            && !matches!(d.value.unit(), Unit::Parsec | Unit::Kiloparsec)
+        {
+            return problem(
+                "distance.unit",
+                "a star's distance is given in parsecs or kiloparsecs",
+            );
+        }
+        let group = self
+            .distance
+            .as_ref()
+            .is_some_and(|d| d.value.kind == KindOfValue::Inferred);
+        if group != self.membership.is_some() {
+            return problem(
+                "membership",
+                "a group's distance given to a member is inferred and cites the membership; only \
+                 it does",
+            );
         }
         if let Some(m) = &self.membership {
             self.check_citation("membership", m, None)?;
         }
-        let mut free: Vec<(String, &str)> = vec![("notes".to_owned(), self.notes.as_str())];
-        free.extend(self.unplaced.as_deref().map(|w| ("unplaced".to_owned(), w)));
-        for (i, d) in self.disputes.iter().enumerate() {
-            let field = format!("disputes[{i}]");
-            if d.claim.trim().is_empty() {
-                return problem(&field, "states no claim");
-            }
-            self.check_citation(&format!("{field}.cite"), &d.cite, None)?;
-            // A dispute's numbers are those of its own citation.
-            uncited_in_text(
-                &[(format!("{field}.claim"), &d.claim)],
-                &shown(&d.cite),
-                &[],
-            )?;
-        }
-        for (field, r) in self.researched() {
-            free.extend(
-                r.value
-                    .note
-                    .as_deref()
-                    .map(|n| (format!("{field}.note"), n)),
-            );
-        }
-        uncited_in_text(&free, &self.cited_text(), &self.cited_numbers())
+        self.check_disputes(&self.disputes)?;
+        self.evidence().check()
     }
 
     /// The distance or parallax, by field.
-    fn researched(&self) -> Vec<(&'static str, &Researched)> {
+    fn researched(&self) -> impl Iterator<Item = (&'static str, &Researched)> {
         [("distance", &self.distance), ("parallax", &self.parallax)]
             .into_iter()
             .filter_map(|(f, r)| Some((f, r.as_ref()?)))
-            .collect()
     }
 
-    /// What the file's citations show: the star's names, the papers' references and every
-    /// quoted text.
-    fn cited_text(&self) -> Vec<&str> {
-        let mut out: Vec<&str> = std::iter::once(self.name.as_str())
-            .chain(self.alternative_names.iter().map(String::as_str))
-            .chain(self.papers.iter().map(|p| p.reference.as_str()))
-            .collect();
-        let cites = self
-            .researched()
-            .into_iter()
-            .flat_map(|(_, r)| {
-                std::iter::once(&r.value.cite).chain(r.value.uncertainty_cite.as_deref())
-            })
-            .chain(self.membership.as_ref());
-        for cite in cites {
-            out.extend(shown(cite));
+    /// The file's free text beside what its citations show: the star's names, the papers'
+    /// references, every citation and the cited values.
+    fn evidence(&self) -> Evidence<'_> {
+        let mut evidence = Evidence::default();
+        evidence.text(&self.name);
+        for name in &self.alternative_names {
+            evidence.text(name);
         }
-        out
-    }
-
-    /// The numbers the file cites: the value, its uncertainty and its form as published.
-    fn cited_numbers(&self) -> Vec<f64> {
-        self.researched()
-            .into_iter()
-            .flat_map(|(_, r)| {
-                let mut n = vec![r.value.value()];
-                n.extend(r.value.uncertainty_numbers());
-                n
-            })
-            .collect()
+        for paper in &self.papers {
+            evidence.text(&paper.reference);
+        }
+        for cite in self
+            .disputes
+            .iter()
+            .map(|d| &d.cite)
+            .chain(&self.membership)
+        {
+            evidence.cite(cite);
+        }
+        evidence.free("notes", &self.notes);
+        if let Some(why) = &self.unplaced {
+            evidence.free("unplaced", why);
+        }
+        for (field, r) in self.researched() {
+            evidence.value(field, &r.value);
+            evidence.free(format!("{field}.method"), &r.method);
+        }
+        evidence
     }
 
     /// The papers the star's values come from, the paper of its distance first, each once.
     fn references(&self) -> Vec<PaperReference> {
-        let mut ids: Vec<&str> = vec![];
-        for (_, r) in self.researched() {
-            ids.push(&r.value.cite.paper);
-            ids.extend(
-                r.value
-                    .uncertainty_cite
-                    .as_deref()
-                    .map(|c| c.paper.as_str()),
-            );
-        }
-        ids.extend(self.membership.as_ref().map(|c| c.paper.as_str()));
-        let mut seen = vec![];
-        ids.into_iter()
-            .filter(|id| {
-                let new = !seen.contains(id);
-                seen.push(id);
-                new
+        let cites = self
+            .researched()
+            .flat_map(|(_, r)| {
+                std::iter::once(&r.value.cite).chain(r.value.uncertainty_cite.as_deref())
             })
+            .chain(&self.membership);
+        let mut ids: Vec<&str> = vec![];
+        for cite in cites {
+            if !ids.contains(&cite.paper.as_str()) {
+                ids.push(&cite.paper);
+            }
+        }
+        ids.into_iter()
             .filter_map(|id| self.papers.iter().find(|p| p.id == id))
             .map(|p| PaperReference {
                 citation: p.reference.clone(),
@@ -286,8 +244,10 @@ impl StarFile {
         }
         let designation = Designation::new(definition.id.clone(), self.hip.to_string())
             .map_err(|e| e.to_string())?;
-        let distances = match &self.distance {
-            Some(d) => vec![
+        let distances = self
+            .distance
+            .as_ref()
+            .map(|d| {
                 Distance::new(
                     d.value.quantity,
                     None,
@@ -297,22 +257,26 @@ impl StarFile {
                     Measure::Euclidean,
                     None,
                 )
-                .map_err(|e| e.to_string())?,
-            ],
-            None => vec![],
-        };
-        let parallax = match &self.parallax {
-            Some(p) => Some(
-                Value::normalize(p.value.quantity, Unit::Degree, p.value.kind)
-                    .map_err(|e| e.to_string())?,
-            ),
-            None => None,
-        };
-        Ok(Some(CatalogueEntry {
+            })
+            .transpose()
+            .map_err(|e| e.to_string())?;
+        let parallax = self
+            .parallax
+            .as_ref()
+            .map(|p| Value::normalize(p.value.quantity, Unit::Degree, p.value.kind))
+            .transpose()
+            .map_err(|e| e.to_string())?;
+        // A parallax keeps its method, as a distance does in its own.
+        let flags = self
+            .parallax
+            .iter()
+            .map(|p| ("method".to_owned(), p.method.clone()))
+            .collect();
+        let entry = CatalogueEntry {
             designation,
             name: Some(self.name.clone()),
             position: None,
-            distances,
+            distances: distances.into_iter().collect(),
             redshifts: vec![],
             velocity: None,
             parallax,
@@ -322,10 +286,36 @@ impl StarFile {
             spectral_type: None,
             group_id: None,
             supergalactic_velocity: None,
-            flags: BTreeMap::new(),
-            references: Some(self.references().into_boxed_slice()),
-        }))
+            flags,
+            references: self.references().into(),
+        };
+        entry.check().map_err(|e| e.to_string())?;
+        Ok(Some(entry))
     }
+}
+
+/// Each star file of `dir` in file-name order, with its star or why it cannot be used: a file
+/// name that is not a kebab-case slug, a star that fails [`StarFile::read`], or a HIP number an
+/// earlier file gives.
+fn read_each(dir: &Path) -> Result<Vec<(PathBuf, StarRead)>, StarError> {
+    let mut hips = BTreeMap::new();
+    Ok(read_dir(dir)?
+        .into_iter()
+        .map(|file| {
+            let star = slug_of(&file).and_then(|slug| {
+                let star = StarFile::read(&file)?;
+                match hips.insert(star.hip, slug.to_owned()) {
+                    Some(other) => Err(FileError::new(
+                        &file,
+                        "hip",
+                        format!("is also the star of {other}"),
+                    )),
+                    None => Ok(star),
+                }
+            });
+            (file, star)
+        })
+        .collect())
 }
 
 /// Reads every star file in `dir`, in file-name order, refusing on the first that cannot be
@@ -336,31 +326,10 @@ impl StarFile {
 /// Fails when the directory cannot be read, a file name is not a kebab-case slug, two files
 /// give one HIP number, or a star fails [`StarFile::read`].
 pub fn read_all(dir: &Path) -> Result<Vec<(PathBuf, StarFile)>, StarError> {
-    let mut hips = BTreeMap::new();
-    let mut out = vec![];
-    for file in read_dir(dir)? {
-        let stem = file
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or_default();
-        if !is_slug(stem) {
-            return Err(FileError::new(
-                &file,
-                "(file name)",
-                "is not a kebab-case slug",
-            ));
-        }
-        let star = StarFile::read(&file)?;
-        if let Some(other) = hips.insert(star.hip, stem.to_owned()) {
-            return Err(FileError::new(
-                &file,
-                "hip",
-                format!("is also the star of {other}"),
-            ));
-        }
-        out.push((file, star));
-    }
-    Ok(out)
+    read_each(dir)?
+        .into_iter()
+        .map(|(file, star)| Ok((file, star?)))
+        .collect()
 }
 
 /// Every problem of the star files in `dir`, one line each, in file-name order: each file's
@@ -370,28 +339,11 @@ pub fn read_all(dir: &Path) -> Result<Vec<(PathBuf, StarFile)>, StarError> {
 ///
 /// Fails when the directory cannot be read.
 pub fn problems(dir: &Path) -> Result<Vec<String>, StarError> {
-    let mut hips: BTreeMap<u32, String> = BTreeMap::new();
-    let mut out = vec![];
-    for file in read_dir(dir)? {
-        let stem = file
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or_default();
-        if !is_slug(stem) {
-            out.push(FileError::new(&file, "(file name)", "is not a kebab-case slug").to_string());
-            continue;
-        }
-        match StarFile::read(&file) {
-            Ok(star) => {
-                if let Some(other) = hips.insert(star.hip, stem.to_owned()) {
-                    let twice = format!("is also the star of {other}");
-                    out.push(FileError::new(&file, "hip", twice).to_string());
-                }
-            }
-            Err(e) => out.push(e.to_string()),
-        }
-    }
-    Ok(out)
+    Ok(read_each(dir)?
+        .into_iter()
+        .filter_map(|(_, star)| star.err())
+        .map(|e| e.to_string())
+        .collect())
 }
 
 /// The researched star distances of `definition`, read from the star files in `dir`: an entry

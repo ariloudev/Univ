@@ -367,7 +367,7 @@ pub fn normalize_until(
     correction: &CmbCorrection,
     cancel: &AtomicBool,
 ) -> Result<Normalized, NormalizeError> {
-    if let (Access::Repository { .. }, [dir]) = (&definition.access, files) {
+    if let (Some((Holds::StarDistances, _)), [dir]) = (definition.access.repository(), files) {
         return crate::stars::normalize(definition, dir);
     }
     let mut normalizer = Normalizer::new(definition, correction)?.cancelled_by(cancel);

@@ -15,7 +15,7 @@ use univ_model::ids::SourceId;
 use crate::access::{ChunkRequest, check_answer, chunk_requests, count_request, read_count};
 use crate::fetch::{Check, Clock, Expected, FetchError, Fetched, Fetcher, Item, Payload};
 use crate::provenance::Provenance;
-use crate::source::{Access, Holds, RemoteFile, SourceDefinition};
+use crate::source::{Access, RemoteFile, SourceDefinition};
 
 /// Chunks of one source asked for at once: enough to hide a slow provider's latency, few
 /// enough to stay polite.
@@ -71,17 +71,13 @@ pub async fn acquire<C: Clock>(
     repository: &Path,
 ) -> Result<Acquired, AcquireError> {
     let source = &definition.id;
-    if let Access::Repository { path, holds } = &definition.access {
+    if let Access::Repository { path, .. } = &definition.access {
         let path = repository.join(path);
         if !path.exists() {
             return Err(AcquireError::NotInRepository {
                 source_id: source.clone(),
                 path,
             });
-        }
-        if *holds == Holds::StarDistances {
-            // Its normalization is recorded in its provenance, kept with the fetched sources'.
-            std::fs::create_dir_all(cache.join(source.as_str())).map_err(|e| disk(source, &e))?;
         }
         return Ok(Acquired { files: vec![path] });
     }

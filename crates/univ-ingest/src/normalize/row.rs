@@ -222,7 +222,7 @@ impl Row<'_, '_> {
                         .map(|(flag, text)| ((*flag).to_owned(), (*text).to_owned())),
                 )
                 .collect::<BTreeMap<_, _>>(),
-            references: None,
+            references: Box::default(),
         };
         entry.check().map_err(entry_reason)?;
         self.read_as();
