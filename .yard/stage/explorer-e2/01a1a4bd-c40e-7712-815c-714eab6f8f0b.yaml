@@ -10,6 +10,15 @@ versions:
     title: "E2: objects and structures"
     goal: "Hovering names a point, clicking reads its object into a panel kept in the address, double-clicking flies to it; search finds by id, designation or name; the release's structures are drawn by their shapes, named without overlap, listed and read"
     status: active
+  - key: 01a1a4db-96c5-7027-afea-cda1578619ae
+    at: 2026-11-04T04:40:16Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E2: objects and structures"
+    goal: "Hovering names a point, clicking reads its object into a panel kept in the address, double-clicking flies to it; search finds by id, designation or name; the release's structures are drawn by their shapes, named without overlap, listed and read"
+    status: done
 blocks:
   - key: 01a1a4bd-c40e-7712-815c-714f0f262fa6
     id: e2-spec
@@ -2794,3 +2803,2017 @@ blocks:
         title: "Simplify and code review of E2, findings fixed"
         detail: "Done when `/simplify` and `/code-review` have run in parallel on the E2 diff and their findings are fixed or skipped with a reason."
         state: active
+      - key: 01a1a4db-96c5-7027-afea-cd9d4a2e0e6a
+        at: 2026-11-04T04:40:16Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Simplify and code review of E2, findings fixed"
+        detail: |-
+          Fixed in `16a37f9`.
+
+          **From code review:**
+          - every uncertainty form the API defines is worded as published: an interval is not an error, and a limit is not a value;
+          - small values keep their significant figures;
+          - bounds are converted by the centre's unit;
+          - structure values keep their uncertainties;
+          - a split id lists its replacements;
+          - picking tests a ray against each sphere, which is correct off-axis;
+          - the hover label clears;
+          - labels no longer flicker;
+          - searches don't race;
+          - one read per choice;
+          - one failed record doesn't hide the other structures.
+
+          **From simplify:**
+          - one units table;
+          - per-frame state lives in stores, so the whole scene doesn't re-render each frame;
+          - rotations are state;
+          - one selection;
+          - the shader's colour table is sized from the kinds;
+          - shared test fakes.
+
+          **Skipped:**
+          - HEALPix outlines for sky regions: the spec marks them approximate;
+          - GPU picking: the ray test is enough at 2.1M points;
+          - one structures document: that is a server change.
+        state: done
+  - key: 01a1a4db-96c5-7027-afea-cd9a5304d804
+    id: e2-gate
+    kind: task
+    versions:
+      - key: 01a1a4db-96c5-7027-afea-cd9e45417889
+        at: 2026-11-04T04:40:16Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration, once"
+        detail: "`cargo xtask check` passed: 13 gates. `cargo xtask integration` passed."
+        state: done
+  - key: 01a1a4db-96c5-7027-afea-cd9b69b66256
+    id: e2-trace
+    kind: loft
+    versions:
+      - key: 01a1a4db-96c5-7027-afea-cd9fe6ed4f69
+        at: 2026-11-04T04:40:16Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "All 22 criteria of read-an-object, find-an-object and see-the-structures are linked and accepted, including the two added by this wave's spec change. So are navigate-with-the-mouse's flight and reduced-motion criteria, now that the double click triggers them. Five links whose tests changed in the review were accepted again. 390 of 390 nodes in scope are linked."
+        recorded:
+          commit: "1cdc1e4b0efcf1c9b33a81d5b303a09b14563202"
+          branch: "stage/explorer-e2"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T04:40:16Z
+        report: |
+          {
+            "base": "develop",
+            "commit": "3a8089a0b94e93718f9ced3a3c90b28a410ee771",
+            "counts": {
+              "features": 6
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4000304272e5",
+                    "label": null,
+                    "name": "Each point is drawn at the ICRS position its tile gives, converted from its scale domain's unit to megaparsecs.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fff6f6d18ce",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/tiles.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 14,
+                            "lastLine": 31
+                          }
+                        ],
+                        "name": "is drawn at the ICRS positions its points give, in megaparsecs"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/tiles.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 33,
+                            "lastLine": 40
+                          }
+                        ],
+                        "name": "is read from a manifest in parsecs or megaparsecs, and no other unit"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40018ecb5def",
+                    "label": null,
+                    "name": "Earth is marked at the origin, which the marker names as the Solar System barycentre, within about 1 AU of Earth.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fff6f6d18ce",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 86,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "marks Earth as the Solar System barycentre, and says when it cannot draw"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40026e7286d2",
+                    "label": null,
+                    "name": "Points of the stars domain and of the galaxy domains are drawn together, each at its own distance.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fff6f6d18ce",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/tiles.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 14,
+                            "lastLine": 31
+                          }
+                        ],
+                        "name": "is drawn at the ICRS positions its points give, in megaparsecs"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40049983aed9",
+                    "label": null,
+                    "name": "The root tile of every scale domain is fetched before any other tile.",
+                    "requirement": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/lod.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 30
+                          }
+                        ],
+                        "name": "fetches the root of every scale domain before any other tile"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400536d8f2b5",
+                    "label": null,
+                    "name": "The tiles not yet fetched are fetched in order of their size on screen, largest first.",
+                    "requirement": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/lod.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 32,
+                            "lastLine": 37
+                          }
+                        ],
+                        "name": "fetches the children of held tiles, the largest on screen first"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/lod.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 43
+                          }
+                        ],
+                        "name": "waits for a tile's parent, and fetches even the smallest on screen in the end"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4006f5c2ce8f",
+                    "label": null,
+                    "name": "No more than 3,000,000 points are held at once.",
+                    "requirement": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/lod.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 45,
+                            "lastLine": 51
+                          }
+                        ],
+                        "name": "holds no more than 3,000,000 points"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40081f3b67cf",
+                    "label": null,
+                    "name": "A tile whose SHA-256 differs from its manifest's is not drawn.",
+                    "requirement": "01a1a497-e843-728a-bce8-400775a8d943",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/tiles.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 42,
+                            "lastLine": 50
+                          }
+                        ],
+                        "name": "whose bytes do not match its SHA-256 is refused"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "leaves a tile that fails its SHA-256 undrawn and counts it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4009e23e1ebc",
+                    "label": null,
+                    "name": "The view states the count of tiles that failed, where any did.",
+                    "requirement": "01a1a497-e843-728a-bce8-400775a8d943",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "leaves a tile that fails its SHA-256 undrawn and counts it"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "does not count a tile Univ Server could not serve as failing its check"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 54,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "state the tiles that failed their check, and those that could not be read"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400b9b581384",
+                    "label": null,
+                    "name": "Measured, estimated, inferred and reconstructed distances are drawn in four distinct colours.",
+                    "requirement": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 6,
+                            "lastLine": 13
+                          }
+                        ],
+                        "name": "are drawn in four distinct colours, in one order whatever a manifest lists"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400c71ad8ebe",
+                    "label": null,
+                    "name": "The key names each colour's kind of value and counts the points drawn in it.",
+                    "requirement": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 42
+                          }
+                        ],
+                        "name": "count the points of each kind of value beside its colour"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400eb0b1b70d",
+                    "label": null,
+                    "name": "The credits list each source of the drawn points with its title, its citation and its required credit.",
+                    "requirement": "01a1a497-e843-728a-bce8-400db24e35a8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 52
+                          }
+                        ],
+                        "name": "credit each source of the drawn points with its title, citation and credit, naming the release"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400fa74e76fc",
+                    "label": null,
+                    "name": "The credits name the release the points come from.",
+                    "requirement": "01a1a497-e843-728a-bce8-400db24e35a8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 52
+                          }
+                        ],
+                        "name": "credit each source of the drawn points with its title, citation and credit, naming the release"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40111a7d5c5f",
+                    "label": null,
+                    "name": "The view names the frame whose axes it shows, the origin, the unit of its distances and the release cosmology.",
+                    "requirement": "01a1a497-e843-728a-bce8-401087e90f86",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 60,
+                            "lastLine": 67
+                          }
+                        ],
+                        "name": "name the frame of the axes, the origin, the units and the cosmology"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3ffe4657fb77",
+                "label": null,
+                "name": "Draw the catalogues",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fff6f6d18ce",
+                    "label": null,
+                    "name": "Univ Explorer shall draw each placed object of every scale domain at the position its tile gives, with Earth at the centre.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw each placed object of every scale domain at the position its tile gives, with Earth at the centre.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                    "label": null,
+                    "name": "When the view changes, Univ Explorer shall fetch the tiles the view needs, the largest on screen first, within a budget of points.",
+                    "statement": {
+                      "condition": "the view changes",
+                      "form": "event_driven",
+                      "shall": "fetch the tiles the view needs, the largest on screen first, within a budget of points.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400775a8d943",
+                    "label": null,
+                    "name": "If a tile's bytes do not match the SHA-256 its manifest gives, or the tile does not decode, then Univ Explorer shall leave the tile undrawn and count it as failed.",
+                    "statement": {
+                      "condition": "a tile's bytes do not match the SHA-256 its manifest gives, or the tile does not decode",
+                      "form": "unwanted",
+                      "shall": "leave the tile undrawn and count it as failed.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                    "label": null,
+                    "name": "Univ Explorer shall colour each point by the kind of value of its distance and show the key to the colours.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "colour each point by the kind of value of its distance and show the key to the colours.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400db24e35a8",
+                    "label": null,
+                    "name": "Univ Explorer shall credit every source whose points are drawn, as the tile manifest gives its credit.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "credit every source whose points are drawn, as the tile manifest gives its credit.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401087e90f86",
+                    "label": null,
+                    "name": "Univ Explorer shall state the frame, origin, units and cosmology of what it draws.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "state the frame, origin, units and cosmology of what it draws.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40155a522828",
+                    "label": null,
+                    "name": "Dragging sideways turns the view about the pole of the frame whose axes it shows.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 34
+                          }
+                        ],
+                        "name": "turns the view while the primary button drags"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/camera.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "turns about the focus and stops short of either pole"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/camera.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 34
+                          }
+                        ],
+                        "name": "keeps the frame's pole up on the screen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40169a56936b",
+                    "label": null,
+                    "name": "Dragging up or down tilts the view, stopping short of either pole.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/camera.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "turns about the focus and stops short of either pole"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4017e181b56d",
+                    "label": null,
+                    "name": "A press that moves less than 6 pixels is a click, not a drag.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 42
+                          }
+                        ],
+                        "name": "calls a press that moves less than 6 pixels a click, and turns nothing"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 45
+                          }
+                        ],
+                        "name": "calls a press that moves less than 6 pixels a click"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40194ffc65db",
+                    "label": null,
+                    "name": "Each step of the wheel changes the distance from the eye to the focus by the same factor.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 10,
+                            "lastLine": 16
+                          }
+                        ],
+                        "name": "changes the distance by the same factor for each step of the wheel"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 18,
+                            "lastLine": 22
+                          }
+                        ],
+                        "name": "reads a notch of the wheel as one step, in pixels, lines or pages"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 60
+                          }
+                        ],
+                        "name": "zooms in a step for each notch scrolled forward"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401a8b7b26d8",
+                    "label": null,
+                    "name": "The distance from the eye to the focus stays between 0.1 parsec and 20 gigaparsecs.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 24,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "keeps the eye between 0.1 parsec and 20 gigaparsecs from the focus"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401b318a282a",
+                    "label": null,
+                    "name": "The view shows the distance from the eye to the focus in parsecs, kiloparsecs, megaparsecs or gigaparsecs, whichever suits it, with light-years beside it.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/format.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 6,
+                            "lastLine": 12
+                          }
+                        ],
+                        "name": "are given in the parsec unit that suits them, with light-years beside"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 69,
+                            "lastLine": 76
+                          }
+                        ],
+                        "name": "show the distance from the eye to the focus, and return the focus to Earth"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401d23c750eb",
+                    "label": null,
+                    "name": "The focus moves in the plane facing the eye, by the distance the pointer moved at the focus's depth.",
+                    "requirement": "01a1a497-e843-728a-bce8-401c96d859c6",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controls.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "moves the focus in the plane facing the eye by the distance dragged at its depth"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "moves the focus while the secondary button, or Shift, drags"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401fac9dd829",
+                    "label": null,
+                    "name": "The flight ends within 1.5 seconds with the thing at the centre of the view.",
+                    "requirement": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "flies to a thing within the flight's time and ends with it at the centre"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/input.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "flies on a double click, and stops listening when unbound"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40204b4131f6",
+                    "label": null,
+                    "name": "Where the person's system asks for reduced motion, the view moves at once instead of flying.",
+                    "requirement": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "moves at once where reduced motion is asked for"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4022b38915cd",
+                    "label": null,
+                    "name": "A control on the view returns the focus to Earth.",
+                    "requirement": "01a1a497-e843-728a-bce8-402165709dd6",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 66
+                          }
+                        ],
+                        "name": "returns the focus to Earth"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 69,
+                            "lastLine": 76
+                          }
+                        ],
+                        "name": "show the distance from the eye to the focus, and return the focus to Earth"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4024890baa12",
+                    "label": null,
+                    "name": "The chosen frame's equator is drawn as a ring around Earth.",
+                    "requirement": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 68,
+                            "lastLine": 80
+                          }
+                        ],
+                        "name": "draws the chosen frame's equator as a ring around Earth"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4025c1c8e956",
+                    "label": null,
+                    "name": "Changing the axes leaves every point at the same place in space.",
+                    "requirement": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 82,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "changes the axes without moving the focus or any point"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Panels.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 78,
+                            "lastLine": 82
+                          }
+                        ],
+                        "name": "change the axes the view shows"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-4013de790aff",
+                "label": null,
+                "name": "Navigate with the mouse",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "label": null,
+                    "name": "When the person drags with the primary button, Univ Explorer shall turn the view about the focus.",
+                    "statement": {
+                      "condition": "the person drags with the primary button",
+                      "form": "event_driven",
+                      "shall": "turn the view about the focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "label": null,
+                    "name": "When the person turns the mouse wheel, Univ Explorer shall move the eye toward or away from the focus by the same factor for each step.",
+                    "statement": {
+                      "condition": "the person turns the mouse wheel",
+                      "form": "event_driven",
+                      "shall": "move the eye toward or away from the focus by the same factor for each step.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401c96d859c6",
+                    "label": null,
+                    "name": "When the person drags with the secondary button, or with the primary button and Shift held, Univ Explorer shall move the focus across the view.",
+                    "statement": {
+                      "condition": "the person drags with the secondary button, or with the primary button and Shift held",
+                      "form": "event_driven",
+                      "shall": "move the focus across the view.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "label": null,
+                    "name": "When the person double-clicks a point or a structure, Univ Explorer shall fly to it and make it the focus.",
+                    "statement": {
+                      "condition": "the person double-clicks a point or a structure",
+                      "form": "event_driven",
+                      "shall": "fly to it and make it the focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402165709dd6",
+                    "label": null,
+                    "name": "When the person asks to return to Earth, Univ Explorer shall make Earth the focus again.",
+                    "statement": {
+                      "condition": "the person asks to return to Earth",
+                      "form": "event_driven",
+                      "shall": "make Earth the focus again.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "label": null,
+                    "name": "When the person chooses the galactic, equatorial or supergalactic axes, Univ Explorer shall turn the view to that frame's axes.",
+                    "statement": {
+                      "condition": "the person chooses the galactic, equatorial or supergalactic axes",
+                      "form": "event_driven",
+                      "shall": "turn the view to that frame's axes.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4028add2863c",
+                    "label": null,
+                    "name": "The explorer reads the list of releases and draws the one latest points to.",
+                    "requirement": "01a1a497-e843-728a-bce8-4027880d6bf0",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 43,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "draws the release latest points to, and names it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4029408477ea",
+                    "label": null,
+                    "name": "The view names the release it draws.",
+                    "requirement": "01a1a497-e843-728a-bce8-4027880d6bf0",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 43,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "draws the release latest points to, and names it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402b1b713ac4",
+                    "label": null,
+                    "name": "Every release that is published and not pruned can be chosen.",
+                    "requirement": "01a1a497-e843-728a-bce8-402aecf36789",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "offers every release not pruned, and draws the one chosen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402c7430235c",
+                    "label": null,
+                    "name": "Every read made after the choice names the chosen release.",
+                    "requirement": "01a1a497-e843-728a-bce8-402aecf36789",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "offers every release not pruned, and draws the one chosen"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/client.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "names the release on every read pinned to one"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402e69057896",
+                    "label": null,
+                    "name": "The message names the address the explorer tried.",
+                    "requirement": "01a1a497-e843-728a-bce8-402de61f7a43",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "says where it looked and how to start Univ Server, and tries again when asked"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/client.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "calls Univ Server unreachable where the explorer's server says so, with its address"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402f2c21ca9d",
+                    "label": null,
+                    "name": "The message gives the command that starts Univ Server and the explorer together.",
+                    "requirement": "01a1a497-e843-728a-bce8-402de61f7a43",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "says where it looked and how to start Univ Server, and tries again when asked"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4030e4feb6a1",
+                    "label": null,
+                    "name": "Trying again reads the releases anew without reloading the page.",
+                    "requirement": "01a1a497-e843-728a-bce8-402de61f7a43",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "says where it looked and how to start Univ Server, and tries again when asked"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 82
+                          }
+                        ],
+                        "name": "names the problem when Univ Server refuses to list its releases, and tries again"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4032ee17e718",
+                    "label": null,
+                    "name": "A read refused with status 429 is made again after the seconds its `Retry-After` header gives.",
+                    "requirement": "01a1a497-e843-728a-bce8-40313c8ccea7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/api/client.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 8,
+                            "lastLine": 16
+                          }
+                        ],
+                        "name": "reads a refused read again after the seconds its Retry-After gives, saying so"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/client.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 25,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "takes Retry-After as seconds, zero included, or as a date, and the window otherwise"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-402682c20f97",
+                "label": null,
+                "name": "Open the explorer",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4027880d6bf0",
+                    "label": null,
+                    "name": "When the person opens the explorer, Univ Explorer shall draw the release that latest points to and name it.",
+                    "statement": {
+                      "condition": "the person opens the explorer",
+                      "form": "event_driven",
+                      "shall": "draw the release that latest points to and name it.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402aecf36789",
+                    "label": null,
+                    "name": "When the person chooses another release, Univ Explorer shall draw that release in place of the one shown.",
+                    "statement": {
+                      "condition": "the person chooses another release",
+                      "form": "event_driven",
+                      "shall": "draw that release in place of the one shown.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402de61f7a43",
+                    "label": null,
+                    "name": "If Univ Server cannot be reached, then Univ Explorer shall say so, say how to start it, and try again when asked.",
+                    "statement": {
+                      "condition": "Univ Server cannot be reached",
+                      "form": "unwanted",
+                      "shall": "say so, say how to start it, and try again when asked.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40313c8ccea7",
+                    "label": null,
+                    "name": "If Univ Server refuses a read because the rate limit was reached, then Univ Explorer shall read it again once the time the server gives has passed.",
+                    "statement": {
+                      "condition": "Univ Server refuses a read because the rate limit was reached",
+                      "form": "unwanted",
+                      "shall": "read it again once the time the server gives has passed.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fde6b42f63b",
+                    "label": null,
+                    "name": "A number is looked up as an object id, `source:identifier` as a designation, and any other text as a name.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fdd9c30a9e7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/api/objects.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 10,
+                            "lastLine": 15
+                          }
+                        ],
+                        "name": "looks a number up as an id, source:identifier as a designation, and anything else as a name"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/objects.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 22
+                          }
+                        ],
+                        "name": "reads the object found, in the release chosen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fdf22d824cf",
+                    "label": null,
+                    "name": "The object found becomes the chosen object and the focus.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fdd9c30a9e7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/SearchBox.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 32
+                          }
+                        ],
+                        "name": "makes the object found the chosen one"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useChosen.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 19,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "is kept in the page's address, read back on reload, marked, and flown to"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe0cf1c756b",
+                    "label": null,
+                    "name": "Where a name belongs to more than one object, they are listed to choose from.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fdd9c30a9e7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/SearchBox.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 34,
+                            "lastLine": 40
+                          }
+                        ],
+                        "name": "lists the objects a name belongs to, to choose from"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/objects.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 24,
+                            "lastLine": 34
+                          }
+                        ],
+                        "name": "lists the objects a name belongs to, to choose from"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe2d2338514",
+                    "label": null,
+                    "name": "The message repeats what was searched for.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe110e49f5b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/SearchBox.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 42,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "repeats what was searched for when nothing is found"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/objects.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "says nothing was found, keeping what was searched for"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fdcc5ac09d5",
+                "label": null,
+                "name": "Find an object",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fdd9c30a9e7",
+                    "label": null,
+                    "name": "When the person searches for an object id, a name, or a designation written as source and identifier, Univ Explorer shall look it up in the release drawn and fly to the object found.",
+                    "statement": {
+                      "condition": "the person searches for an object id, a name, or a designation written as source and identifier",
+                      "form": "event_driven",
+                      "shall": "look it up in the release drawn and fly to the object found.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe110e49f5b",
+                    "label": null,
+                    "name": "If the search finds no object, then Univ Explorer shall say that nothing was found and leave the view as it was.",
+                    "statement": {
+                      "condition": "the search finds no object",
+                      "form": "unwanted",
+                      "shall": "say that nothing was found and leave the view as it was.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe5ca42baa2",
+                    "label": null,
+                    "name": "The label gives the object's id, its scale domain, its distance from Earth and the source and kind of value of that distance.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe4680b13fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/scenePoint.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 54
+                          }
+                        ],
+                        "name": "is known by its id, scale domain, place and distance, and the source and kind of its distance"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/text.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 19,
+                            "lastLine": 23
+                          }
+                        ],
+                        "name": "label a point with its id, scale domain, distance, and the source and kind of its distance"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/scenePoint.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "is found under the pointer, or nothing is"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/pick.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 22,
+                            "lastLine": 26
+                          }
+                        ],
+                        "name": "finds the point under the pointer, across batches"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe7201a1670",
+                    "label": null,
+                    "name": "The panel gives the object's names and designations, each with its source.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/ObjectPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 11,
+                            "lastLine": 16
+                          }
+                        ],
+                        "name": "gives the object's names and designations, each with its source"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe8c93208cf",
+                    "label": null,
+                    "name": "The panel gives the preferred distance with its uncertainty, its kind of value, its source and the rule that preferred it.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/ObjectPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 18,
+                            "lastLine": 24
+                          }
+                        ],
+                        "name": "gives the preferred distance with its uncertainty, kind, source and rule"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/text.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 13,
+                            "lastLine": 17
+                          }
+                        ],
+                        "name": "give the preferred distance with its fractional uncertainty, also as a distance"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/objects.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 60,
+                            "lastLine": 64
+                          }
+                        ],
+                        "name": "picks out the preferred distance's measurement and every other distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe962cd751a",
+                    "label": null,
+                    "name": "The panel lists each other distance measurement of the object beside the preferred one.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/ObjectPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "lists each other distance measurement beside the preferred one"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/text.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 6,
+                            "lastLine": 11
+                          }
+                        ],
+                        "name": "give a published value with its unit and uncertainty as the source gave them"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/text.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "is said in the form its source published it: a range is no error, a limit no value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fea61a8f74f",
+                    "label": null,
+                    "name": "The panel gives the frame and epoch of the object's position.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/ObjectPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "gives the frame and epoch of the object's position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3febf4df9871",
+                    "label": null,
+                    "name": "The chosen object is marked in the view.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/useChosen.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 19,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "is kept in the page's address, read back on reload, marked, and flown to"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 23,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "keeps Earth at the centre while it is the focus, and marks the chosen object where it is"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fec1fe0b4b3",
+                    "label": null,
+                    "name": "The chosen object is kept in the page's address, so that reloading the page shows it again.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/useChosen.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 19,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "is kept in the page's address, read back on reload, marked, and flown to"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useChosen.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "is read from the address only where it names an object id"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useChosen.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 65
+                          }
+                        ],
+                        "name": "is let go of, leaving the address naming none"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fee23d1c65a",
+                    "label": null,
+                    "name": "The panel gives the status and the problem's title that Univ Server answered with.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fedaa2c488c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/ObjectPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 49
+                          }
+                        ],
+                        "name": "gives the status and title Univ Server answered with"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fe32aecd7d3",
+                "label": null,
+                "name": "Read an object",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe4680b13fa",
+                    "label": null,
+                    "name": "When the pointer rests on a drawn point, Univ Explorer shall name the object it stands for.",
+                    "statement": {
+                      "condition": "the pointer rests on a drawn point",
+                      "form": "event_driven",
+                      "shall": "name the object it stands for.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "label": null,
+                    "name": "When the person clicks a drawn point, Univ Explorer shall show the object's record that Univ Server gives.",
+                    "statement": {
+                      "condition": "the person clicks a drawn point",
+                      "form": "event_driven",
+                      "shall": "show the object's record that Univ Server gives.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fedaa2c488c",
+                    "label": null,
+                    "name": "If Univ Server does not give the object's record, then Univ Explorer shall say so in the panel.",
+                    "statement": {
+                      "condition": "Univ Server does not give the object's record",
+                      "form": "unwanted",
+                      "shall": "say so in the panel.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff1ded85aea",
+                    "label": null,
+                    "name": "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 18,
+                            "lastLine": 25
+                          }
+                        ],
+                        "name": "draws a sphere as rings at its radius, in the frame and unit its shape names"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 37
+                          }
+                        ],
+                        "name": "draws an ellipsoid as rings along its axes, and an oriented box as its twelve edges"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff2f42a8c13",
+                    "label": null,
+                    "name": "Paths are drawn as lines, and member lists as their members' positions.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "draws a path as lines, members as markers at their positions, and a point as a marker"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 21,
+                            "lastLine": 26
+                          }
+                        ],
+                        "name": "draws its segments as lines and its markers as points, about its centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a4bd-9644-750a-a678-3906e3189ded",
+                    "label": null,
+                    "name": "A point is drawn as a marker at its place.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "draws a path as lines, members as markers at their positions, and a point as a marker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a4bd-9644-750a-a678-390771cfa729",
+                    "label": null,
+                    "name": "A sky region or a grid is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "draws a sky region, or a structure with no placed shape, as its bounding box, marked approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 53,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "say when a structure is drawn by its bounding box, or not placed at all"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff3a71f35c5",
+                    "label": null,
+                    "name": "A structure with no placed shape is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "draws a sky region, or a structure with no placed shape, as its bounding box, marked approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 62
+                          }
+                        ],
+                        "name": "takes the bounds and centre in the centre's unit"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff4358efffd",
+                    "label": null,
+                    "name": "A structure with neither a shape nor a bounding box is listed but not drawn.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 64,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "lists but does not draw a structure with neither a shape nor a bounding box"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 53,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "say when a structure is drawn by its bounding box, or not placed at all"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff67c685244",
+                    "label": null,
+                    "name": "Each structure's name is drawn at its centre.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 41
+                          }
+                        ],
+                        "name": "draws each structure's name at its centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff70e744c39",
+                    "label": null,
+                    "name": "Names that would overlap are not drawn over one another.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/labels.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 8,
+                            "lastLine": 11
+                          }
+                        ],
+                        "name": "are not drawn over one another: the nearer is kept"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 43,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "hides a structure's name that would overlap a nearer one"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff996141e6c",
+                    "label": null,
+                    "name": "Every structure of the release is listed by name and kind.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 37
+                          }
+                        ],
+                        "name": "are listed by name and kind, each to choose"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 72
+                          }
+                        ],
+                        "name": "is read page after page, each in the release chosen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ffa426590e2",
+                    "label": null,
+                    "name": "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "give a structure's kind, scale domain, how it was placed, and the paper each number is cited from"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 51
+                          }
+                        ],
+                        "name": "name a primitive shape by its form"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                "label": null,
+                "name": "See the structures",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "label": null,
+                    "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw each structure of the release by its placed shape.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "label": null,
+                    "name": "Univ Explorer shall name each drawn structure in the view.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "name each drawn structure in the view.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "label": null,
+                    "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                    "statement": {
+                      "condition": "the person chooses a structure, in the view or from the list of structures",
+                      "form": "event_driven",
+                      "shall": "show its record and fly to it.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 390,
+              "linked": 390,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a4db-96c5-7027-afea-cd9c62eac9c3
+    id: e2-result
+    kind: note
+    versions:
+      - key: 01a1a4db-96c5-7027-afea-cda0fb0b72a2
+        at: 2026-11-04T04:40:16Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What E2 produced"
+        markdown: |-
+          On release 7, the explorer now:
+          - names the point under the pointer;
+          - reads a clicked object into a panel: names, the preferred distance with its fractional uncertainty, kind, source and rule, the other distances, and the frame and epoch;
+          - keeps the chosen object in the address;
+          - flies to a double-clicked point;
+          - finds objects by id, `source:identifier` or name;
+          - draws, names, lists and reads the 26 structures.
+
+          **Science notes found on the way:**
+          - the preferred-distance uncertainty is fractional (Sirius: 0.42 %);
+          - release 7's structures use points, members, spheres and sky regions. Sky regions are drawn as their bounding box, marked approximate, by the spec change in this wave.
+
+          **Next, E3:** Playwright tests with axe inside `cargo xtask integration`, the 3-second first-points measurement over 10 loads, and a README.
+        tone: success
