@@ -1,0 +1,266 @@
+key: 01a1a8e8-8200-7742-b255-ae2b3b1d913c
+id: e9
+versions:
+  - key: 01a1a8e8-8200-7742-b255-ae2f6d1ca5c4
+    at: 2026-11-04T23:32:52Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E9: a click centres the view on the point"
+    goal: "A click on a drawn point makes it the focus at the current distance, so the view turns about it as it does about Earth"
+    status: active
+blocks:
+  - key: 01a1a8e8-8200-7742-b255-ae2d267f074b
+    id: e9-spec
+    kind: loft
+    versions:
+      - key: 01a1a8e8-8200-7742-b255-ae31825699f3
+        at: 2026-11-04T23:32:52Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "One new requirement in `navigate-with-the-mouse`: a click on a drawn point makes it the focus and keeps the distance, as *Return to Earth* does for Earth. A double-click still flies in close, and a click still opens the record (`read-an-object`)."
+        recorded:
+          commit: "fedc9ad32ad058580102a63d313d04df57708953"
+          branch: "stage/release-8-e9"
+          dirty: true
+          loft: 2.3.0-alpha.5
+          at: 2026-11-04T23:32:52Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 5,
+              "graph.edges": 0,
+              "graph.nodes": 7,
+              "status.base.added": 4,
+              "status.base.changed": 1,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-4013de790aff",
+                  "kind": "feature",
+                  "label": "F-35",
+                  "name": "Navigate with the mouse",
+                  "words": {
+                    "after": "Navigate with the mouse\n\nMoving through the view with the mouse alone: turning about the focus, zooming across scales, moving the focus, centring on a point clicked, flying to a thing and back to Earth.",
+                    "before": "Navigate with the mouse\n\nMoving through the view with the mouse alone: turning about the focus, zooming across scales, moving the focus, flying to a thing and back to Earth."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8e8-6326-709f-aa5e-460e17bb4f06",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person clicks a drawn point, Univ Explorer shall make the point the focus, keeping the distance from the eye to the focus.",
+                  "words": {
+                    "after": "When the person clicks a drawn point, Univ Explorer shall make the point the focus, keeping the distance from the eye to the focus."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8e8-6326-709f-aa5e-460fcd37f83b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "After a click on a point, the point is at the centre of the view and the distance from the eye to the focus is the one before the click.",
+                  "words": {
+                    "after": "After a click on a point, the point is at the centre of the view and the distance from the eye to the focus is the one before the click."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8e8-6326-709f-aa5e-4610311af683",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once a point is the focus, dragging turns the view about the point.",
+                  "words": {
+                    "after": "Once a point is the focus, dragging turns the view about the point."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8e8-6326-709f-aa5e-46117cf024e6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where the person's system asks for reduced motion, the view moves at once instead of flying.",
+                  "words": {
+                    "after": "Where the person's system asks for reduced motion, the view moves at once instead of flying."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-4013de790aff",
+                  "kind": "feature",
+                  "label": "F-35",
+                  "name": "Navigate with the mouse",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8e8-6326-709f-aa5e-460e17bb4f06",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person clicks a drawn point, Univ Explorer shall make the point the focus, keeping the distance from the eye to the focus.",
+                  "parent": "01a1a497-e843-728a-bce8-4013de790aff"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8e8-6326-709f-aa5e-460fcd37f83b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "After a click on a point, the point is at the centre of the view and the distance from the eye to the focus is the one before the click.",
+                  "parent": "01a1a8e8-6326-709f-aa5e-460e17bb4f06"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8e8-6326-709f-aa5e-4610311af683",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once a point is the focus, dragging turns the view about the point.",
+                  "parent": "01a1a8e8-6326-709f-aa5e-460e17bb4f06"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8e8-6326-709f-aa5e-46117cf024e6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where the person's system asks for reduced motion, the view moves at once instead of flying.",
+                  "parent": "01a1a8e8-6326-709f-aa5e-460e17bb4f06"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1a8e8-6326-709f-aa5e-460e17bb4f06",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 43,
+                    "name": "When the person clicks a drawn point, Univ Explorer shall make the point the focus, keeping the distance from the eye to the focus.",
+                    "path": "spec/products/univ-explorer/the-view/navigate-with-the-mouse.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8e8-6326-709f-aa5e-460fcd37f83b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 50,
+                    "name": "After a click on a point, the point is at the centre of the view and the distance from the eye to the focus is the one before the click.",
+                    "path": "spec/products/univ-explorer/the-view/navigate-with-the-mouse.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8e8-6326-709f-aa5e-4610311af683",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 52,
+                    "name": "Once a point is the focus, dragging turns the view about the point.",
+                    "path": "spec/products/univ-explorer/the-view/navigate-with-the-mouse.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8e8-6326-709f-aa5e-46117cf024e6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 54,
+                    "name": "Where the person's system asks for reduced motion, the view moves at once instead of flying.",
+                    "path": "spec/products/univ-explorer/the-view/navigate-with-the-mouse.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 6,
+                    "key": "01a1a497-e843-728a-bce8-4013de790aff",
+                    "kind": "feature",
+                    "label": "F-35",
+                    "line": 1,
+                    "name": "Navigate with the mouse",
+                    "path": "spec/products/univ-explorer/the-view/navigate-with-the-mouse.yaml"
+                  }
+                ],
+                "commit": "fedc9ad32ad058580102a63d313d04df57708953",
+                "removed": [],
+                "revision": "product/release-8"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 4,
+                "publishedAt": "2026-11-04T16:14:12Z",
+                "stateRoot": "4577f367600c2ad5b501e5ceb32291471f56b2418d7c671eb11d743f152f960c"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/release-8-e9",
+                "modified": [
+                  "spec/products/univ-explorer/the-view/navigate-with-the-mouse.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a8e8-8200-7742-b255-ae2e86a39047
+    id: e9-approve
+    kind: approval
+    versions:
+      - key: 01a1a8e8-8200-7742-b255-ae3278c04cab
+        at: 2026-11-04T23:32:52Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Approve: a click centres the view on the point"
+        markdown: |-
+          **What changes:** clicking a drawn point, a galaxy or a star, makes it the focus of the view. The camera moves so that the point sits at the centre, at the same distance as before the click. From then on, dragging turns the view about that point, the way it turns about Earth when the view opens.
+
+          **What stays:**
+          - the click still opens the object's record;
+          - a double-click still flies to the point and zooms in close;
+          - *Return to Earth* brings the focus back to Earth.
+
+          **Scope:** Univ Explorer only. The camera already supports any focus, so there is no change to the data, the server or the ingest.
+
+          **Criteria:**
+          1. After a click on a point, the point is at the centre of the view, and the distance from the eye to the focus is the one before the click.
+          2. Once a point is the focus, dragging turns the view about it.
+          3. With reduced motion, the view moves at once instead of flying.
+    responses:
+      - key: 01a1a8e9-79a0-7157-87f8-436db87090c7
+        at: 2026-11-04T23:33:55Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved

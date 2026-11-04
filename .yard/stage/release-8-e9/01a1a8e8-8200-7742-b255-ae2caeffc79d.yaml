@@ -1,0 +1,12 @@
+key: 01a1a8e8-8200-7742-b255-ae2caeffc79d
+id: e9-later
+versions:
+  - key: 01a1a8e8-8200-7742-b255-ae3009ccf31b
+    at: 2026-11-04T23:32:52Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E9 build"
+    goal: "The click centres the view, tested, gated and merged into product/release-8"
+    status: planned
