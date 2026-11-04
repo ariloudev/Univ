@@ -31,6 +31,10 @@ requirements:
         name: "The tiles the view needs are fetched in order of their size on screen, largest first, and a tile wholly outside the view is not fetched."
       - key: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
         name: "A tile's children are fetched only while its points lie farther apart on screen than 3 pixels, so that a region far away or seen whole is not refined beyond what the screen shows."
+      - key: 01a1a6a7-c540-7210-8492-7dfc16d279b8
+        name: "A tile's children in view are fetched together or not at all, so that no part of a region is left coarser than the rest."
+      - key: 01a1a6a7-c540-7210-8492-7dfdf91c2ccf
+        name: "A view that does not change stops fetching and dropping tiles once it holds what it needs."
       - key: 01a1a497-e843-728a-bce8-4006f5c2ce8f
         name: "No more than 3,000,000 points are held at once."
   - key: 01a1a689-0b25-768a-9f1e-cc27109fed3c
@@ -53,7 +57,7 @@ requirements:
       shall: "draw only the held tiles that lie in the view."
     criteria:
       - key: 01a1a689-0b25-768a-9f1e-cc2c484365d4
-        name: "A held tile whose cube lies wholly outside the view is not drawn."
+        name: "A held tile is not drawn while the sphere about its points lies wholly outside the view."
   - key: 01a1a497-e843-728a-bce8-400775a8d943
     statement:
       form: unwanted
