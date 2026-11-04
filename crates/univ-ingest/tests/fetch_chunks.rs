@@ -485,7 +485,7 @@ async fn job_service(result: &str) -> MockServer {
         .and(path("/tap/async/job-1/phase"))
         .respond_with(always(200).set_body_string("EXECUTING"))
         .up_to_n_times(1)
-        .with_priority(1)
+        .with_priority(2)
         .mount(&server)
         .await;
     Mock::given(method("GET"))
@@ -575,4 +575,42 @@ async fn a_job_that_ends_in_error_is_retried_and_then_moved_to_the_next_mirror()
         matches!(e, Event::Err { error, .. } if error.contains("the job ended ERROR: Query timed out"))
     });
     assert!(said, "{:?}", rig.sink.events());
+}
+
+#[tokio::test]
+async fn a_poll_that_fails_is_asked_again_and_the_job_is_not_submitted_again() {
+    let server = job_service("source_id\n1\n").await;
+    // Before the job is seen executing, one poll fails, as a dropped connection does.
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-1/phase"))
+        .respond_with(always(503))
+        .up_to_n_times(1)
+        .with_priority(1)
+        .mount(&server)
+        .await;
+    let rig = rig(false);
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("chunk-0.csv");
+    rig.fetcher
+        .chunk(
+            &item("chunk 0", &dest),
+            &[format!("{}/tap", server.uri())],
+            "/async?REQUEST=doQuery&QUERY=SELECT+1&PHASE=RUN",
+            &accept,
+            &keep,
+        )
+        .await
+        .unwrap();
+    // The submission was made once (the service expects one), and nothing was reported as a
+    // failed attempt.
+    assert!(
+        !rig.sink
+            .events()
+            .iter()
+            .any(|e| matches!(e, Event::Err { .. })),
+        "{:?}",
+        rig.sink.events()
+    );
+    let waits: Vec<u64> = rig.clock.waits().iter().map(Duration::as_secs).collect();
+    assert_eq!(waits, [5, 5]);
 }

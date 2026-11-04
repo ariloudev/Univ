@@ -19,6 +19,10 @@ const POLL: Duration = Duration::from_secs(5);
 /// How many times its phase is asked for before the job is given up on: half an hour.
 const POLLS: u32 = 360;
 
+/// How many polls in a row may fail before the job is given up on: a dropped connection is
+/// asked again, not the job submitted again.
+const MISSED: u32 = 3;
+
 impl<C: Clock> Fetcher<C> {
     /// Runs the job whose form is `form` at the TAP service `base`, and returns its result's URL,
     /// body and rows.
@@ -58,7 +62,7 @@ impl<C: Clock> Fetcher<C> {
         self.until_done(&job).await?;
         let result = format!("{job}/results/result");
         let response = self
-            .client
+            .jobs
             .get(&result)
             .send()
             .await
@@ -75,8 +79,20 @@ impl<C: Clock> Fetcher<C> {
     /// Asks for the phase of `job` until it completes; an error when it ends otherwise or does
     /// not end in time.
     async fn until_done(&self, job: &str) -> Result<(), Attempt> {
+        let mut missed = 0;
         for _ in 0..POLLS {
-            let phase = self.text(&format!("{job}/phase")).await?;
+            let phase = match self.text(&format!("{job}/phase")).await {
+                Ok(phase) => {
+                    missed = 0;
+                    phase
+                }
+                Err(Attempt::Retry(_)) if missed < MISSED => {
+                    missed += 1;
+                    self.clock.sleep(POLL).await;
+                    continue;
+                }
+                Err(e) => return Err(e),
+            };
             match phase.trim() {
                 "COMPLETED" => return Ok(()),
                 ended @ ("ERROR" | "ABORTED") => {
@@ -98,7 +114,7 @@ impl<C: Clock> Fetcher<C> {
 
     async fn text(&self, url: &str) -> Result<String, Attempt> {
         let response = self
-            .client
+            .jobs
             .get(url)
             .send()
             .await

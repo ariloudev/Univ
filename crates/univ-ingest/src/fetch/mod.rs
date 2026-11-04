@@ -144,8 +144,9 @@ pub type Record<'a> = dyn Fn(&Payload) -> io::Result<()> + Send + Sync + 'a;
 /// Fetches the chunks and files of sources.
 pub struct Fetcher<C: Clock> {
     client: reqwest::Client,
-    /// The client that submits a TAP job: it does not follow the redirect to the job, whose
-    /// address it reads.
+    /// The client of a TAP job's requests: it does not follow the redirect to the job, whose
+    /// address it reads, and opens a connection for each request, since a service may close an
+    /// idle one between polls without saying so.
     jobs: reqwest::Client,
     clock: C,
     sink: Arc<dyn EventSink>,
@@ -175,6 +176,7 @@ impl<C: Clock> Fetcher<C> {
             client: builder().build()?,
             jobs: builder()
                 .redirect(reqwest::redirect::Policy::none())
+                .pool_max_idle_per_host(0)
                 .build()?,
             clock,
             sink,
