@@ -54,6 +54,61 @@ describe("the controller", () => {
     expect(controller.view.focus).toEqual([1, 2, 3]);
   });
 
+  it("centres on a point at the distance it was seen from, and then turns about it", () => {
+    const { controller, advance } = setup();
+    const point: Vec3 = [120, -40, 15];
+    const before = controller.view.distance;
+    controller.centreOn(point);
+    advance(FLIGHT_MS);
+    controller.tick();
+    expect(controller.flying).toBe(false);
+    expect(controller.view.distance).toBe(before);
+    const expectCentred = () => {
+      const at = project(controller.view, controller.toFrame, point, 800, 600);
+      expect(at?.x).toBeCloseTo(400);
+      expect(at?.y).toBeCloseTo(300);
+    };
+    expectCentred();
+    controller.turn(120, -40);
+    expect(controller.view.focus).toEqual(point);
+    expectCentred();
+  });
+
+  it("keeps the distance a flight under way ends at when centring on a point", () => {
+    const { controller, advance } = setup();
+    controller.flyTo([10, 0, 0], 0.5);
+    advance(FLIGHT_MS / 2);
+    controller.tick();
+    controller.centreOn([20, 0, 0]);
+    advance(FLIGHT_MS);
+    controller.tick();
+    expect(controller.view).toMatchObject({ focus: [20, 0, 0], distance: 0.5 });
+  });
+
+  it("does not start a flight over toward where it already is or is going", () => {
+    const { controller, advance } = setup();
+    controller.flyTo([10, 0, 0], 0.5);
+    advance(FLIGHT_MS / 2);
+    controller.tick();
+    const halfway = controller.view;
+    controller.centreOn([10, 0, 0]);
+    controller.tick();
+    expect(controller.view).toEqual(halfway);
+    advance(FLIGHT_MS / 2);
+    controller.tick();
+    expect(controller.flying).toBe(false);
+    controller.centreOn([10, 0, 0]);
+    expect(controller.flying).toBe(false);
+  });
+
+  it("centres on a point at once where reduced motion is asked for", () => {
+    const { controller } = setup(true);
+    const before = controller.view.distance;
+    controller.centreOn([1, 2, 3]);
+    expect(controller.flying).toBe(false);
+    expect(controller.view).toMatchObject({ focus: [1, 2, 3], distance: before });
+  });
+
   it("returns the focus to Earth", () => {
     const { controller, advance } = setup();
     controller.flyTo([50, 0, 0], 2);

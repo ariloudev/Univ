@@ -4,10 +4,10 @@
 import type { Rotations } from "../api/schemas.ts";
 import { type View, eyeOf } from "./camera.ts";
 import { type Sight, sightOf } from "./frustum.ts";
-import { FLIGHT_MS, between, pan, turn, zoom } from "./controls.ts";
+import { FLIGHT_MS, between, pan, turn, viewingDistance, zoom } from "./controls.ts";
 import type { Drawer } from "./drawing.ts";
 import { type Axes, EQUATORIAL, type Frame, equatorRing, frameOf, ringRadius } from "./frames.ts";
-import { type Mat3, ORIGIN, type Vec3 } from "./vec.ts";
+import { type Mat3, ORIGIN, type Vec3, norm } from "./vec.ts";
 
 export interface Surroundings {
   /** The canvas's size in CSS pixels and the device's pixels per CSS pixel. */
@@ -107,6 +107,9 @@ export class Controller {
   /** Flies to `focus`, seen from `distance`, or moves there at once for reduced motion. */
   flyTo(focus: Vec3, distance: number): void {
     const to = { ...this.view, focus, distance };
+    // Already there, or on the way: a flight begun again would only start over.
+    const heading = this.flight?.to ?? this.view;
+    if (heading.distance === distance && heading.focus.every((c, i) => c === focus[i])) return;
     if (this.around.reducedMotion()) {
       this.steer(to);
       return;
@@ -115,9 +118,20 @@ export class Controller {
     this.dirty = true;
   }
 
+  /** Makes `focus` the focus, keeping the distance (the one a flight under way ends at): the
+   * view then turns about it. */
+  centreOn(focus: Vec3): void {
+    this.flyTo(focus, (this.flight?.to ?? this.view).distance);
+  }
+
+  /** Flies close to `place`, making it the focus. */
+  approach(place: Vec3): void {
+    this.flyTo(place, viewingDistance(norm(place)));
+  }
+
   /** Makes Earth the focus again, keeping the distance. */
   returnToEarth(): void {
-    this.flyTo(ORIGIN, this.view.distance);
+    this.centreOn(ORIGIN);
   }
 
   /** Whether a flight is under way. */

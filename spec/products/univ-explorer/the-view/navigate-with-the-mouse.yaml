@@ -1,7 +1,7 @@
 key: 01a1a497-e843-728a-bce8-4013de790aff
 slug: navigate-with-the-mouse
 name: "Navigate with the mouse"
-body: "Moving through the view with the mouse alone: turning about the focus, zooming across scales, moving the focus, flying to a thing and back to Earth."
+body: "Moving through the view with the mouse alone: turning about the focus, zooming across scales, moving the focus, centring on a point clicked, flying to a thing and back to Earth."
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
 requirements:
@@ -40,6 +40,19 @@ requirements:
     criteria:
       - key: 01a1a497-e843-728a-bce8-401d23c750eb
         name: "The focus moves in the plane facing the eye, by the distance the pointer moved at the focus's depth."
+  - key: 01a1a8e8-6326-709f-aa5e-460e17bb4f06
+    statement:
+      form: event_driven
+      when: "the person clicks a drawn point"
+      system: "Univ Explorer"
+      shall: "make the point the focus, keeping the distance from the eye to the focus."
+    criteria:
+      - key: 01a1a8e8-6326-709f-aa5e-460fcd37f83b
+        name: "After a click on a point, the point is at the centre of the view and the distance from the eye to the focus is the one before the click."
+      - key: 01a1a8e8-6326-709f-aa5e-4610311af683
+        name: "Once a point is the focus, dragging turns the view about the point."
+      - key: 01a1a8e8-6326-709f-aa5e-46117cf024e6
+        name: "Where the person's system asks for reduced motion, the view moves at once instead of flying."
   - key: 01a1a497-e843-728a-bce8-401e02fe8fb9
     statement:
       form: event_driven

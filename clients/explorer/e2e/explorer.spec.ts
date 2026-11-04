@@ -1,10 +1,24 @@
 import AxeBuilder from "@axe-core/playwright";
-import { type Page, expect, test } from "@playwright/test";
+import { type Locator, type Page, expect, test } from "@playwright/test";
 
 import { firstPointsMs } from "./browser.ts";
 
 /** The first points drawn: the page has drawn some. */
 const firstPoints = (page: Page) => firstPointsMs(page);
+
+/** The centre of what `locator` finds, on the page. */
+async function centreOf(locator: Locator): Promise<{ x: number; y: number }> {
+  const box = await locator.boundingBox();
+  if (box === null) throw new Error("not drawn");
+  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+}
+
+/** Finds `name` with the search box, and waits for its record. */
+async function find(page: Page, name: string): Promise<void> {
+  await page.getByRole("textbox", { name: /Find an object/ }).fill(name);
+  await page.getByRole("button", { name: "Find" }).click();
+  await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("names")).toBeVisible();
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -42,14 +56,49 @@ test("zooms with the wheel, turns with a drag and returns to Earth", async ({ pa
 });
 
 test("finds an object by name, reads it, and keeps it in the address across a reload", async ({ page }) => {
-  await page.getByRole("textbox", { name: /Find an object/ }).fill("canis MAJOR");
-  await page.getByRole("button", { name: "Find" }).click();
+  await find(page, "canis MAJOR");
   const panel = page.getByRole("region", { name: "The chosen object" });
-  await expect(panel.getByTestId("names")).toBeVisible();
   await expect(page).toHaveURL(/\?object=\d+/);
   const heading = await panel.getByRole("heading").first().textContent();
   await page.reload();
   await expect(page.getByRole("region", { name: "The chosen object" }).getByRole("heading").first()).toHaveText(heading ?? "");
+});
+
+test("centres the view on a point clicked, keeping the distance", async ({ page }) => {
+  // The view moves at once, so that where things are drawn can be read without waiting.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await firstPoints(page);
+  const canvas = await centreOf(page.locator("canvas"));
+  const tooltip = page.getByRole("tooltip");
+  // Out from the centre until the pointer is over a point (its label begins with its id), not
+  // over Earth at the focus or a structure's name.
+  let found: { x: number; y: number } | undefined;
+  for (let r = 24; r <= 240 && found === undefined; r += 6) {
+    for (let a = 0; a < 2 * Math.PI && found === undefined; a += 6 / r) {
+      const at = { x: canvas.x + r * Math.cos(a), y: canvas.y + r * Math.sin(a) };
+      await page.mouse.move(at.x, at.y);
+      // The label follows the pointer a frame later: what it names is read once it has.
+      const names = async () => (await tooltip.isVisible()) && /^\d+ · /.test((await tooltip.textContent()) ?? "");
+      if (await names()) {
+        await page.waitForTimeout(50);
+        if (await names()) found = at;
+      }
+    }
+  }
+  if (found === undefined) throw new Error("no point is drawn near the centre");
+  const distance = page.getByTestId("distance");
+  const before = (await distance.textContent()) ?? "";
+  await page.mouse.click(found.x, found.y);
+  await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("names")).toBeVisible();
+  // The ring drawn over the chosen object, centred on it (its box's corner is at the object).
+  const mark = page.getByTestId("chosen-mark").locator("span");
+  await expect
+    .poll(async () => {
+      const now = await centreOf(mark);
+      return Math.hypot(now.x - canvas.x, now.y - canvas.y);
+    })
+    .toBeLessThan(3);
+  await expect(distance).toHaveText(before);
 });
 
 test("finds an object by designation, and says when nothing is found", async ({ page }) => {
@@ -85,11 +134,7 @@ test("chooses a structure by the name it shows in the view, and still zooms over
   });
   const id = (await found.jsonValue()) ?? "";
   const text = page.locator(`[data-structure="${id}"] > span`);
-  const centre = async () => {
-    const box = await text.boundingBox();
-    if (box === null) throw new Error("the name is not drawn");
-    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-  };
+  const centre = () => centreOf(text);
   const distance = page.getByTestId("distance");
   const before = (await distance.textContent()) ?? "";
   let at = await centre();

@@ -11,7 +11,7 @@ import { Controller, type Surroundings } from "../scene/controller.ts";
 import { viewingDistance } from "../scene/controls.ts";
 import { bindMouse } from "../scene/input.ts";
 import { type Masks, NO_MASKS, masksOf, shownIn } from "../scene/masks.ts";
-import type { Pickable } from "../scene/pick.ts";
+import { PICK_SLOP, type Pickable } from "../scene/pick.ts";
 import { NoWebGL, Renderer } from "../scene/renderer.ts";
 import { type Vec3, norm, sub } from "../scene/vec.ts";
 import { FIRST_POINTS } from "../firstPoints.ts";
@@ -138,18 +138,48 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
 const pointAt = (world: World, element: HTMLElement, x: number, y: number): ScenePoint | undefined =>
   pointUnder(world, { width: element.clientWidth, height: element.clientHeight, x, y });
 
+/** The milliseconds within which a second click, or a double-click, near a click is part of it. */
+export const DOUBLE_CLICK_MS = 500;
+
+/** `pick` at the pointer, but for a click soon after another near it, the thing the other found:
+ * a click centres the view on what it found, so a pick at the same pixel in a double-click would
+ * find another thing, or none (navigate-with-the-mouse). */
+export function firstOfDouble<T>(pick: (x: number, y: number) => T | undefined, now: () => number) {
+  let last: { x: number; y: number; at: number; found: T } | undefined;
+  return (x: number, y: number): T | undefined => {
+    const at = now();
+    if (last !== undefined && at - last.at <= DOUBLE_CLICK_MS && Math.hypot(x - last.x, y - last.y) <= PICK_SLOP) {
+      last.at = at;
+      return last.found;
+    }
+    const found = pick(x, y);
+    last = found === undefined ? undefined : { x, y, at, found };
+    return found;
+  };
+}
+
 /** Binds the mouse and the canvas's size to the world, until the returned function. */
 function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<OnChoose>): () => void {
   const { controller, hover } = world;
   let hovering: number | undefined;
-  const chooser = (fly: boolean) => (x: number, y: number) => {
-    const found = under(world, element, x, y);
+  /** Nothing under the pointer, nor any pick a pending frame would make. */
+  const clearHover = () => {
+    if (hovering !== undefined) cancelAnimationFrame(hovering);
+    if (hover.get() !== undefined) hover.set(undefined);
+  };
+  const clicked = firstOfDouble((x, y) => under(world, element, x, y), () => performance.now());
+  // A click centres the view on the point; a double-click flies in close to it.
+  const chooser = (close: boolean) => (x: number, y: number) => {
+    const found = clicked(x, y);
     if (found === undefined) return;
     if ("name" in found) {
       onChoose.current.structure(found.name.id);
       return;
     }
-    if (fly) controller.flyTo(found.point.place, viewingDistance(found.point.distanceMpc));
+    if (close) controller.approach(found.point.place);
+    else controller.centreOn(found.point.place);
+    // The view moves: what was under the pointer is no longer.
+    clearHover();
     onChoose.current.point(found.point);
   };
   const unbind = bindMouse(element, {
@@ -162,10 +192,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
       if (hovering !== undefined) cancelAnimationFrame(hovering);
       hovering = requestAnimationFrame(() => hover.set(under(world, element, x, y)));
     },
-    leave: () => {
-      if (hovering !== undefined) cancelAnimationFrame(hovering);
-      if (hover.get() !== undefined) hover.set(undefined);
-    },
+    leave: clearHover,
   });
   const resize = new ResizeObserver(() => {
     element.width = Math.round(element.clientWidth * devicePixelRatio);
