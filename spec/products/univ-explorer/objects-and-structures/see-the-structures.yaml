@@ -44,6 +44,6 @@ requirements:
       - key: 01a1a497-e843-728a-bce8-3ff996141e6c
         name: "Every structure of the release is listed by name and kind."
       - key: 01a1a6b2-b217-764e-93d0-da8be265b690
-        name: "The chosen structure's outline and markers are drawn in a colour of their own until another structure is chosen or its panel is closed."
+        name: "The chosen structure's outline, markers and name are drawn in a colour of their own, its markers larger, until another structure is chosen or its panel is closed."
       - key: 01a1a497-e843-728a-bce8-3ffa426590e2
         name: "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from."
