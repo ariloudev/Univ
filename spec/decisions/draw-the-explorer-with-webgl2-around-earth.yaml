@@ -1,0 +1,81 @@
+key: 01a1a497-e843-728a-bce8-3fd26944c2c7
+slug: draw-the-explorer-with-webgl2-around-earth
+title: "Draw the explorer with WebGL2 around Earth"
+context: "The explorer draws up to three million points from parsecs to gigaparsecs, and the person moves through them with the mouse. The cosmic-newsroom experiment draws its atlas around Earth with its own WebGL2 point pass; the Univ rules keep its code apart."
+state:
+  kind: accepted
+  selectedOption: 01a1a497-e843-728a-bce8-3fd6d190c2b0
+  outcome: "The explorer draws its points and outlines with its own WebGL2 renderer, in megaparsecs about the Solar System barycentre, with Earth at the centre of the view."
+drivers:
+  - key: 01a1a497-e843-728a-bce8-3fd3ff1c738d
+    kind: local
+    label: "Millions of points"
+    statement: "All placed objects of a release, about two million, can be drawn at once and turned smoothly."
+  - key: 01a1a497-e843-728a-bce8-3fd4b9dbcc15
+    kind: local
+    label: "Testable math"
+    statement: "The camera, projection and picking can be tested without a browser."
+  - key: 01a1a497-e843-728a-bce8-3fd534d91daa
+    kind: local
+    label: "Few dependencies"
+    statement: "The explorer depends on as little as the task needs."
+options:
+  - key: 01a1a497-e843-728a-bce8-3fd6d190c2b0
+    title: "Own WebGL2 renderer"
+    description: "A point pass and a line pass in WebGL2 with the explorer's own camera, as the newsroom experiment draws its atlas."
+  - key: 01a1a497-e843-728a-bce8-3fd7e12d111a
+    title: "three.js"
+    description: "A scene graph library with its own points, lines and orbit controls."
+  - key: 01a1a497-e843-728a-bce8-3fd866457c1a
+    title: "Canvas 2D"
+    description: "Drawing projected points on a 2D canvas each frame."
+assessments:
+  - option: 01a1a497-e843-728a-bce8-3fd6d190c2b0
+    driver: 01a1a497-e843-728a-bce8-3fd3ff1c738d
+    rating: supports
+    rationale: "one draw call per tile, with blending and no depth sorting"
+  - option: 01a1a497-e843-728a-bce8-3fd6d190c2b0
+    driver: 01a1a497-e843-728a-bce8-3fd4b9dbcc15
+    rating: supports
+    rationale: "the camera and picking are plain functions"
+  - option: 01a1a497-e843-728a-bce8-3fd6d190c2b0
+    driver: 01a1a497-e843-728a-bce8-3fd534d91daa
+    rating: supports
+    rationale: "no rendering library"
+  - option: 01a1a497-e843-728a-bce8-3fd7e12d111a
+    driver: 01a1a497-e843-728a-bce8-3fd3ff1c738d
+    rating: supports
+    rationale: "points and buffers are its staple"
+  - option: 01a1a497-e843-728a-bce8-3fd7e12d111a
+    driver: 01a1a497-e843-728a-bce8-3fd4b9dbcc15
+    rating: neutral
+    rationale: "its camera is tested by its authors, the explorer's use of it less easily"
+  - option: 01a1a497-e843-728a-bce8-3fd7e12d111a
+    driver: 01a1a497-e843-728a-bce8-3fd534d91daa
+    rating: conflicts
+    rationale: "a large library for two kinds of mark"
+  - option: 01a1a497-e843-728a-bce8-3fd866457c1a
+    driver: 01a1a497-e843-728a-bce8-3fd3ff1c738d
+    rating: conflicts
+    rationale: "millions of points a frame are too slow on the CPU"
+  - option: 01a1a497-e843-728a-bce8-3fd866457c1a
+    driver: 01a1a497-e843-728a-bce8-3fd4b9dbcc15
+    rating: supports
+    rationale: "the projection is plain functions"
+  - option: 01a1a497-e843-728a-bce8-3fd866457c1a
+    driver: 01a1a497-e843-728a-bce8-3fd534d91daa
+    rating: supports
+    rationale: "the browser's own canvas"
+consequences:
+  - key: 01a1a497-e843-728a-bce8-3fd9e7273895
+    kind: cost
+    statement: "The explorer keeps its own camera, projection and picking code."
+  - key: 01a1a497-e843-728a-bce8-3fdae482f333
+    kind: benefit
+    statement: "Every placed object of a release can be drawn at once."
+  - key: 01a1a497-e843-728a-bce8-3fdbc30cdc5b
+    kind: obligation
+    statement: "The view states that its origin is the Solar System barycentre, within about 1 AU of Earth."
+subjects:
+  - role: outcome
+    node: 01a1a497-e843-728a-bce8-3fcf940bdac0

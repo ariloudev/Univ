@@ -1,0 +1,43 @@
+key: 01a1a497-e843-728a-bce8-3fef08e193da
+slug: see-the-structures
+name: "See the structures"
+body: "Drawing the structures of the release by their placed shapes, naming them, and reading their records."
+realizes:
+  - 01a1a497-e843-728a-bce8-3fcf940bdac0
+  - 01a1a497-e843-728a-bce8-3fd1631f1368
+requirements:
+  - key: 01a1a497-e843-728a-bce8-3ff084b48fab
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw each structure of the release by its placed shape."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-3ff1ded85aea
+        name: "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names."
+      - key: 01a1a497-e843-728a-bce8-3ff2f42a8c13
+        name: "Paths are drawn as lines, and member lists as their members' positions."
+      - key: 01a1a497-e843-728a-bce8-3ff3a71f35c5
+        name: "A structure with no placed shape is drawn as its bounding box, marked as approximate."
+      - key: 01a1a497-e843-728a-bce8-3ff4358efffd
+        name: "A structure with neither a shape nor a bounding box is listed but not drawn."
+  - key: 01a1a497-e843-728a-bce8-3ff56cfa0dc5
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "name each drawn structure in the view."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-3ff67c685244
+        name: "Each structure's name is drawn at its centre."
+      - key: 01a1a497-e843-728a-bce8-3ff70e744c39
+        name: "Names that would overlap are not drawn over one another."
+  - key: 01a1a497-e843-728a-bce8-3ff8d753cd12
+    statement:
+      form: event_driven
+      when: "the person chooses a structure, in the view or from the list of structures"
+      system: "Univ Explorer"
+      shall: "show its record and fly to it."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-3ff996141e6c
+        name: "Every structure of the release is listed by name and kind."
+      - key: 01a1a497-e843-728a-bce8-3ffa426590e2
+        name: "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from."

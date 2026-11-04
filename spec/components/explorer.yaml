@@ -1,0 +1,16 @@
+key: 01a1a497-e843-728a-bce8-3fce2f805984
+slug: explorer
+name: "Explorer app"
+body: "Univ Explorer's web application: a TypeScript single-page app served by Vite, beside Univ Server."
+scopedTo:
+  - 01a1a497-e843-728a-bce8-3ffb8e7533cb
+components:
+  - key: 01a1a497-e843-728a-bce8-3fcf940bdac0
+    name: "Scene renderer"
+    body: "Draws the points, shapes, Earth and the reference rings with WebGL2, and turns mouse input into the view."
+  - key: 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
+    name: "Catalogue loader"
+    body: "Reads the tile manifests, chooses the tiles the view needs, and fetches, checks and decodes them."
+  - key: 01a1a497-e843-728a-bce8-3fd1631f1368
+    name: "Explorer panels"
+    body: "The release, search, object, structure, key and credits panels around the view."

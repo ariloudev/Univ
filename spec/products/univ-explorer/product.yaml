@@ -1,0 +1,32 @@
+key: 01a1a497-e843-728a-bce8-3ffb8e7533cb
+slug: univ-explorer
+name: "Univ Explorer"
+body: |
+  A web application that draws what Univ Server knows in three dimensions, around Earth, and lets
+  a person move through it with the mouse: from the nearest stars to the largest structures of
+  the universe.
+
+  It reads Univ Server's public API alone and draws only what a release placed, each point at the
+  position the release derived for it, coloured by the kind of value of its distance, with the
+  sources credited as their terms require. Clicking a point reads its object; the structures are
+  drawn by their placed shapes.
+
+  The first version runs locally, beside Univ Server under `wrangler dev`. Flying with the
+  keyboard, editing layers, time and phones are outside it.
+featureGroups:
+  - key: 01a1a497-e843-728a-bce8-3ffc32e7ed9d
+    slug: the-view
+    name: "The view"
+    body: "Opening the explorer, drawing the catalogues and moving through them."
+    features:
+      - 01a1a497-e843-728a-bce8-3ffe4657fb77
+      - 01a1a497-e843-728a-bce8-4013de790aff
+      - 01a1a497-e843-728a-bce8-402682c20f97
+  - key: 01a1a497-e843-728a-bce8-3ffdfd7a2e54
+    slug: objects-and-structures
+    name: "Objects and structures"
+    body: "Reading, finding and seeing the objects and structures that the view draws."
+    features:
+      - 01a1a497-e843-728a-bce8-3fdcc5ac09d5
+      - 01a1a497-e843-728a-bce8-3fe32aecd7d3
+      - 01a1a497-e843-728a-bce8-3fef08e193da

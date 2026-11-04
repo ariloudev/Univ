@@ -16,6 +16,9 @@
 - key: 01a19f1e-d177-716d-b124-3d51b8400713
   name: "epoch"
   definition: "The instant a position or an astrometric solution holds for."
+- key: 01a1a497-e843-728a-bce8-403335ef38d6
+  name: "focus"
+  definition: "The point in space that Univ Explorer's view turns about and zooms toward."
 - key: 01a19f1e-d177-716d-b124-3d4f2e341573
   name: "geometry"
   definition: "The shape that places an object, structure or item: a point, ray, range, primitive, path, member list, sky region or volume grid."
