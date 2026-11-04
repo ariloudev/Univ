@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use crate::cosmology::{AssumedCosmology, Cosmology};
 use crate::derive::Step;
 use crate::distance::{DistanceKind, Measure, Method};
-use crate::entry::{PositionUncertainty, RedshiftKind};
+use crate::entry::{PaperReference, PositionUncertainty, RedshiftKind};
 use crate::ids::Designation;
 use crate::object::{
     CandidateLink, Decided, FractionalUncertainty, MethodRank, NotPlacedReason, ObjectKind,
@@ -81,6 +81,10 @@ pub struct EntryRecord {
     /// Its spectral type, character for character as its source publishes it, with its kind
     /// of value.
     pub spectral_type: Option<SpectralTypeRecord>,
+    /// The papers a researched entry's values come from, the paper of its distance first;
+    /// empty for an entry of a catalogue, which its source's citation covers.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub references: Vec<PaperReference>,
     /// Its source's quality columns, by column name, as published.
     pub flags: BTreeMap<String, String>,
 }

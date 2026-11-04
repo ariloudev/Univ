@@ -90,7 +90,8 @@ parallax_max_fractional_error: 0.1
 parallax_basis: >-
   Pipeline choice following Bailer-Jones 2015 (PASP 127, 994): inverting a parallax is a fair
   distance estimate only when its fractional error is small, below about 0.1; a noisier parallax
-  is not a candidate, and the Bailer-Jones et al. 2021 distances serve those stars.
+  is not a candidate, and the Bailer-Jones et al. 2021 distances serve those stars. The brightest
+  stars, to which Gaia gives no parallax, are served by the researched star distances instead.
 parallax_zero_point:
   sources: [gaia-dr3-bright, gcns]
   zero_point_mas: -0.017

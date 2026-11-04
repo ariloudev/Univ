@@ -1,0 +1,47 @@
+# zeta Tauri, B1IVe shell star, single-lined spectroscopic binary: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 26451
+name: zeta Tauri
+alternative_names: ["zet Tau", "123 Tau", "HD 37202", "Tianguan"]
+papers:
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos census of the nearby OB associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, full text extracted with pypdf; Sect. 7.2 Cassiopeia-Taurus (PDF page 28) read"
+  - id: schaefer-2010
+    reference: "Schaefer, Gies, Monnier et al. 2010, AJ 140, 1838"
+    title: "Multi-epoch Near-Infrared Interferometry of the Spatially Resolved Disk Around the Be Star Zeta Tau"
+    bibcode: 2010AJ....140.1838S
+    doi: 10.1088/0004-6256/140/6/1838
+    arxiv: "1009.5425"
+    read: "arXiv PDF of 1009.5425v1, full text extracted with pypdf; introduction read"
+  - id: naze-2024
+    reference: "Nazé, Motch, Rauw, Smith & Robrade 2024, arXiv:2406.15161"
+    title: "X-raying the zeta Tau binary system"
+    doi: 10.48550/arXiv.2406.15161
+    arxiv: "2406.15161"
+    read: "arXiv PDF of 2406.15161v2, full text extracted with pypdf; X-ray luminosity section read; no journal bibcode found, so the arXiv DOI is given"
+unplaced: "No published distance other than ones based on the Hipparcos parallax, whose Hipparcos-2 error is above a tenth of the parallax; no Gaia DR2 or EDR3 parallax, and the star was not selected as a Cas-Tau member."
+disputes:
+  - claim: "Schaefer et al. use the original Hipparcos distance of 128 pc."
+    cite:
+      paper: schaefer-2010
+      page: 2
+      sentence: "Given its brightness (Vmean=3.0, Hmean=3.0) and distance (d=128 pc; Perryman et al. 1997), ζ Tau is an ideal source for studying the structure and dynamics of its circumstellar disk using optical/infrared (IR) interferometry."
+  - claim: "Nazé et al. adopt a distance of 136 pc from earlier work."
+    cite:
+      paper: naze-2024
+      page: 7
+      sentence: "Given the distance and the bolometric luminosity of ζ Tau (136 pc and log(LBOL/L⊙) = 3.75, see Nazé et al. 2022c and references therein), these fluxes convert into X-ray luminosities of 0.6–1.8 × 10^29 erg s−1"
+  - claim: "de Zeeuw et al. do not select ζ Tau (HIP 26451) as a Cas-Tau member, citing indications of binarity."
+    cite:
+      paper: dezeeuw-1999
+      page: 28
+      sentence: "Another three have indications of binarity (HIP4427, HIP18532, HIP26451)."
+notes: >-
+  Identity: HIP 26451 at the stars.tsv position is ζ Tau (SIMBAD Be*), not Hassaleh (ι Aur).
+  Papers use Hipparcos distances only, and the Cas-Tau group would not help anyway, its distances
+  spanning a wide range. The companion is not a strong flux source and no orbital parallax was
+  found. Gaia DR2 and EDR3 have sources at the position without parallaxes.

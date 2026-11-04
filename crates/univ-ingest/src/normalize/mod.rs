@@ -17,7 +17,7 @@ use univ_model::entry::CatalogueEntry;
 use univ_model::ids::SourceId;
 use univ_model::redshift::CmbCorrection;
 
-use crate::source::{Access, Field, LeftOutReason, SourceDefinition};
+use crate::source::{Access, Field, Holds, LeftOutReason, SourceDefinition};
 use crate::table::TableReader;
 use bintable::BinTable;
 use plan::Plan;
@@ -84,13 +84,13 @@ pub enum NormalizeError {
 /// Rows read between two looks at the cancel flag.
 const CANCEL_EVERY: usize = 4096;
 
-/// Whether the normalizer reads `definition` as tables of rows: a provider's answers, or files
-/// that are all FITS tables, but not grids nor a source kept in the repository.
+/// Whether normalization gives `definition` entries: a provider's answers, files that are all
+/// FITS tables, or the researched star distances, but not grids nor the researched structures.
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
     match &definition.access {
         Access::Files { files } => files.iter().all(|f| crate::fits::is_fits(&f.path)),
-        Access::Repository { .. } => false,
+        Access::Repository { holds, .. } => *holds == Holds::StarDistances,
         _ => true,
     }
 }
@@ -367,6 +367,9 @@ pub fn normalize_until(
     correction: &CmbCorrection,
     cancel: &AtomicBool,
 ) -> Result<Normalized, NormalizeError> {
+    if let (Some((Holds::StarDistances, _)), [dir]) = (definition.access.repository(), files) {
+        return crate::stars::normalize(definition, dir);
+    }
     let mut normalizer = Normalizer::new(definition, correction)?.cancelled_by(cancel);
     let read = |file: &PathBuf| {
         std::fs::read(file).map_err(|e| NormalizeError::Read {

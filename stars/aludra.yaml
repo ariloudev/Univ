@@ -1,0 +1,35 @@
+# Aludra, eta Canis Majoris, B5Ia supergiant: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 35904
+name: Aludra
+alternative_names: ["eta Canis Majoris", "eta CMa", "31 CMa", "HD 58350"]
+papers:
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos census of the nearby OB associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, full text extracted with pypdf; Sect. 6.1 Collinder 121 (PDF pages 21-22) read"
+  - id: sanchez-arias-2023
+    reference: "Sánchez Arias, Németh, de Almeida, Ruiz Diaz, Kraus & Haucke 2023, Galaxies 11, 93"
+    title: "Unveiling the evolutionary state of three B supergiant stars: PU Gem, ε CMa and η CMa"
+    doi: 10.3390/galaxies11050093
+    arxiv: "2308.12745"
+    read: "arXiv PDF of 2308.12745v1, full text extracted with pypdf; table of model parameters and the section on HD 58350 (PDF page 20) read; bibcode not verified"
+unplaced: "No usable published distance: the Hipparcos-2 parallax has an error above a tenth of the parallax, de Zeeuw et al. did not select η CMa as a member of their Collinder group, and the only other distance found is an adopted value of uncertain basis with a large error."
+disputes:
+  - claim: "de Zeeuw et al. do not select η CMa as a member of their group because of its Hipparcos parallax, π = 1.02 ± 0.44 mas."
+    cite:
+      paper: dezeeuw-1999
+      page: 22
+      sentence: "The classical member HIP35904 (B5Ia; η CMa) is not selected because of its small, but significant, parallax: π = 1.02 ± 0.44 mas."
+  - claim: "Sánchez Arias et al. adopt a distance of 608 ± 148 pc taken from an earlier study, not determined by them."
+    cite:
+      paper: sanchez-arias-2023
+      page: 20
+      sentence: "Considering its distance D = 608 ± 148 pc [11], we derived an extinction E(B − V) = 0.18 mag."
+notes: >-
+  The distance adopted by Sánchez Arias et al. comes from Haucke et al. (their reference 11),
+  which was not read; it is an adopted value, probably Hipparcos-based, not a determination of
+  their own, and its error is large, so it is not used. No Gaia DR2 or EDR3 parallax: EDR3 has a
+  bright source at the position without one.

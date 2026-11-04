@@ -1,0 +1,42 @@
+# Antares, alpha Scorpii, M1.5Iab red supergiant + B companion: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 80763
+name: Antares
+alternative_names: ["alpha Scorpii", "alf Sco", "21 Sco"]
+papers:
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos census of the nearby OB associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, full text extracted with pypdf; Sect. 4.2 Upper Scorpius read; pages are arXiv PDF pages"
+  - id: miret-roig-2022
+    reference: "Miret-Roig, Galli, Olivares, Bouy, Alves & Barrado 2022, A&A 667, A163"
+    title: "The star formation history of Upper Scorpius and Ophiuchus"
+    bibcode: 2022A&A...667A.163M
+    doi: 10.1051/0004-6361/202244709
+    arxiv: "2209.12938"
+    read: "arXiv PDF of 2209.12938v1, full text extracted with pypdf; Sect. 2.1 and Tables 3 and A.1 read"
+distance:
+  value: 145
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 2 }
+  cite:
+    paper: dezeeuw-1999
+    page: 12
+    sentence: "The mean distance of US is 145 ±2 pc, where the error is the formal error on the mean, and the correction applied for the bias caused by exclusion of stars with negative parallaxes is negligible (§3.6)."
+  distance_kind: geometric
+  method: "mean Hipparcos parallax distance of the Upper Scorpius (US) association applied to a confirmed member"
+membership:
+  paper: dezeeuw-1999
+  page: 12
+  sentence: "We confirm the evolved supergiant Antares (α Sco, HIP80763, M1Ib), as well as the stars ρ Oph (HIP80473, B2V), χ Oph (HIP80569, B2Vne), and 48 Lib (HIP78207, B8Ia/Iab), as members."
+disputes: []
+notes: >-
+  The error is the formal error on the association's mean distance, not the depth of Upper
+  Scorpius, so the star's own distance is less certain than that. The group distance rests on
+  original Hipparcos parallaxes of the members. Miret-Roig et al. found no Gaia DR3 counterpart for
+  Antares ("except for α Sco (Antares) and δ Sco") and define a Gaia DR3 group named α Sco, but
+  they give its median Galactic position, not a distance, so it is not used here (a distance
+  would need arithmetic). No dedicated distance determination for Antares itself was found.

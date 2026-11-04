@@ -106,3 +106,6 @@ components:
       - key: 01a19f22-2ad9-716e-876f-18308cd8dc6c
         name: "Researched structures"
         body: "Structures read from their papers, such as voids, walls, superclusters and their members, with each number cited to the sentence, table or figure it comes from."
+      - key: 01a1a825-fb4e-702c-a84f-bf70efaf8d70
+        name: "Researched star distances"
+        body: "Distances of naked-eye stars that Hipparcos and Gaia leave without a usable one, read from their papers, with each number cited to the sentence or table cell it comes from."

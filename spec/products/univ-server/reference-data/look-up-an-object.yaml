@@ -24,6 +24,8 @@ requirements:
         name: "The response names the preferred measurement and the ranking rule that chose it."
       - key: 01a1a6e4-22e1-765d-b404-020006acc572
         name: "The response lists each spectral type of the object's catalogue entries with its source and kind of value."
+      - key: 01a1a825-fb4e-702c-a84f-bf7cb64ddb9e
+        name: "The response names the paper each researched catalogue entry's values come from."
       - key: 01a19f1e-d177-716d-b124-3d1233780c6e
         name: "Each derived position names its frame, epoch, release cosmology and the transformation that produced it."
       - key: 01a19f1e-d177-716d-b124-3d14e7c5aa1e

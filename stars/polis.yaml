@@ -1,0 +1,23 @@
+# Polis, mu Sagittarii (13 Sgr), B8Iab(e) supergiant (Hipparcos type B2III:): Hipparcos-2 parallax 0.09 ± 0.28 mas is useless, no Gaia DR3 parallax; unplaced.
+hip: 89341
+name: Polis
+alternative_names: ["mu Sagittarii", "mu Sgr", "13 Sgr", "HD 166937", "HR 6812"]
+papers:
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+unplaced: "no usable distance: the Hipparcos-2 and Gaia DR2 parallaxes are both smaller than their errors, Gaia EDR3 gives none, and no paper found both measures a Sgr OB1 (or other group) distance and names mu Sgr as a member, or models the star's distance"
+disputes:
+  - claim: "Gaia DR2 gives source 4093933487667449984 a parallax of 0.6893221444085771 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 4093933487667449984", column: "parallax", cell: "0.6893221444085771" }
+  - claim: "Its Gaia DR2 parallax error is 0.7063092835935992 mas, larger than the parallax."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 4093933487667449984", column: "parallax_error", cell: "0.7063092835935992" }
+notes: >-
+  mu Sgr is often placed in Sgr OB1, but this research found no paper with a group distance and a membership
+  list naming HD 166937 that could be read and quoted. Classical association member lists were not checked,
+  because they are not on arXiv and ADS was blocked. A distance from such a list would also be photometric, not
+  geometric.

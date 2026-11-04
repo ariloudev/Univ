@@ -43,6 +43,8 @@ pub enum LeftOutReason {
     /// The identifier is one an earlier row of the source already has: the first row with it is
     /// kept, as an entry's designation must name one entry.
     DuplicateIdentifier,
+    /// A researched star whose papers publish no distance for it: its file says why.
+    NoPublishedDistance,
 }
 
 /// A rule on the rows whose cells meet a condition, and every condition in `and`: they are left

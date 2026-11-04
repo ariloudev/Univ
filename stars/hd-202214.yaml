@@ -1,0 +1,66 @@
+# HD 202214 (HR 8119), O9.5IV triple, exciting star of Sh 2-129 and the Ou4 outflow: Hipparcos-2 parallax error far above a tenth, no Gaia DR3 parallax; placed by its Cep OB2 subgroup.
+hip: 104642
+name: HD 202214
+alternative_names: ["HR 8119", "BD+59 2334", "ADS 14749 AB"]
+papers:
+  - id: szilagyi-2023
+    reference: "Szilágyi, Kun, Ábrahám & Marton 2023, MNRAS 520, 1390"
+    title: "The Gaia view of the Cepheus OB2 association"
+    bibcode: 2023MNRAS.520.1390S
+    doi: 10.1093/mnras/stad027
+    arxiv: "2301.02346"
+    read: "arXiv HTML of 2301.02346v1, Section 4 (Groups 2 and 4); bibcode and pages checked on SIMBAD's reference page and Crossref"
+  - id: corradi-2014
+    reference: "Corradi, Grosso, Acker, Greimel & Guillout 2014, A&A 570, A105"
+    title: "Gas physical conditions and kinematics of the giant outflow Ou4"
+    bibcode: 2014A&A...570A.105C
+    doi: 10.1051/0004-6361/201322718
+    arxiv: "1407.4617"
+    read: "arXiv HTML of 1407.4617v1, abstract and Section 2.2 (The distance to HR 8119 and Sh 2-129)"
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue tables gaiaedr3.gaia_source and gaiadr3.gaia_source (same astrometry) queried by ADQL on the ESA Gaia archive TAP; queries and rows in texts/gaia-edr3-2021.txt (batch D section)"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; queries and rows in texts/gaia-dr2-2018.txt (batch D section)"
+distance:
+  value: 829
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 13 }
+  cite:
+    paper: szilagyi-2023
+    sentence: "Group 2 is the nearest group with a mean distance of 829 ± 13 pc."
+  distance_kind: geometric
+  method: "mean Gaia DR3 distance of Group 2 of Cep OB2, the cluster at the centre of the H II region the star ionises, applied to the star"
+membership:
+  paper: szilagyi-2023
+  sentence: "Though the distance of HD 202214, projected at the cluster centre is uncertain, its spectral type and brightness suggest its membership."
+disputes:
+  - claim: "Corradi et al. adopt 712 pc for HR 8119 from its dynamical mass and evolutionary tracks, without a stated uncertainty."
+    cite:
+      paper: corradi-2014
+      sentence: "Therefore, we adopt a distance of 712 pc to HR 8119 and Sh 2-129."
+  - claim: "Earlier estimates cited by Corradi et al. are about 870 pc (Acker et al., no extinction) and 400 pc (Georgelin & Georgelin, treating the triple as a single star)."
+    cite:
+      paper: corradi-2014
+      sentence: "Acker et al. (2012) estimated the distance of HR 8119 to be ∼870 pc by assuming no foreground extinction and an absolute magnitude for main-sequence stars, but the distance mostly used in the literature for Sh 2-129 is 400 pc."
+  - claim: "Gaia DR2 gives the star (source 2192287033139966848) a parallax of 2.8199627440988 mas, too imprecise to test the membership."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 2192287033139966848", column: "parallax", cell: "2.8199627440988" }
+  - claim: "Its Gaia DR2 parallax error is 1.2369590271952953 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 2192287033139966848", column: "parallax_error", cell: "1.2369590271952953" }
+notes: >-
+  The distance is that of a Gaia DR3 subgroup of Cep OB2, which Szilágyi et al. find around the star; they
+  call the star's own distance uncertain and base its membership on its spectral type and brightness, so the
+  membership is probable rather than proven. Gaia EDR3 and DR3 give the star only a two-parameter solution,
+  and its Hipparcos-2 and Gaia DR2 parallaxes are too imprecise to confirm or contradict the group distance.
+  Corradi et al. reach a somewhat smaller distance by a model-dependent route with no quoted error; it is
+  kept as a dispute. Both papers place the Ou4 outflow and the H II region the star ionises at the star's distance.

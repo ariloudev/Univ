@@ -1,0 +1,290 @@
+key: 01a1a81d-84aa-7050-93ce-8f6efd069bd6
+id: asked-toolu-01tshizoh3kwlmkd66l2pxqg
+versions:
+  - key: 01a1a81d-84aa-7050-93ce-8f72aab995a2
+    at: 2026-11-04T19:51:09Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Asked in the session"
+    status: active
+blocks:
+  - key: 01a1a81d-84aa-7050-93ce-8f6f1c741bdd
+    id: ask-toolu-01tshizoh3kwlmkd66l2pxqg-1
+    kind: question
+    versions:
+      - key: 01a1a81d-84aa-7050-93ce-8f73a8a11dc1
+        at: 2026-11-04T19:51:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "Release 8 leaves 64 naked-eye stars unplaced, because their Hipparcos parallaxes are too uncertain to invert and Gaia can't measure stars that bright. 14 of them are brighter than Hp 2.5: Betelgeuse, Antares, Deneb, Shaula, all three Orion's Belt stars, Regor, Sargas, Wezen, Almach, Dschubba, Sadr and Aludra. Which should get a cited distance from the literature?"
+        header: "Which stars"
+        options:
+          - label: "The 14 brightest"
+            detail: "Betelgeuse plus the 13 others brighter than Hp 2.5, each from its primary paper, such as Joyce et al. 2020 for Betelgeuse and an association distance for the Belt stars. Fills the obvious holes in Orion, Scorpius and Cygnus. About 14 papers to read and quote."
+            recommended: true
+          - label: "Betelgeuse only"
+            detail: "One cited distance, Joyce et al. 2020, 168 +27/−15 pc. Quickest. Antares, Deneb and the Belt stars stay undrawn."
+          - label: "All 64 naked-eye stars"
+            detail: "Everything brighter than Hp 6. Complete for the naked-eye sky, but several times the research, and many fainter ones have no dedicated distance paper."
+        ownWords: true
+    responses:
+      - key: 01a1a81e-5cc3-77c0-87d7-021384a20c0e
+        at: 2026-11-04T19:52:04Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "All 64 naked-eye stars"
+  - key: 01a1a81d-84aa-7050-93ce-8f70a42990ff
+    id: ask-toolu-01tshizoh3kwlmkd66l2pxqg-2
+    kind: question
+    versions:
+      - key: 01a1a81d-84aa-7050-93ce-8f7412753973
+        at: 2026-11-04T19:51:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "How should a curated distance be written down in the repository?"
+        header: "Format"
+        options:
+          - label: "Cited star files"
+            detail: "One YAML file per star, like the structure files. Each value quotes the sentence it comes from, and the existing checker refuses an uncited or mismatched number. One repository source credits every paper. Joins the Hipparcos object by its HIP number."
+            recommended: true
+          - label: "One table per paper"
+            detail: "A small CSV per paper, each its own source definition with its own citation. Less new code, but a source definition per paper (about 14), and no quoted sentence checked per value."
+        ownWords: true
+    responses:
+      - key: 01a1a81e-5cc3-77c0-87d7-0214624b3abe
+        at: 2026-11-04T19:52:04Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Cited star files"
+  - key: 01a1a81d-84aa-7050-93ce-8f713bcaacb0
+    id: ask-toolu-01tshizoh3kwlmkd66l2pxqg-3
+    kind: question
+    versions:
+      - key: 01a1a81d-84aa-7050-93ce-8f752b92c58a
+        at: 2026-11-04T19:51:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "In E7, stars are drawn in the colour their colour index implies. What colour should a star with no colour index get? 8,412 fainter Hipparcos stars are among those that may have none."
+        header: "No colour"
+        options:
+          - label: "Neutral grey"
+            detail: "Drawn grey and counted in the key as \"no colour index\". Every star colour then means temperature, and galaxies keep their kind-of-value colours."
+            recommended: true
+          - label: "Kind-of-value colour"
+            detail: "Falls back to today's colours, blue for a measured distance and so on. That mixes two meanings among the stars."
+        ownWords: true
+    responses:
+      - key: 01a1a81e-5cc3-77c0-87d7-0215d93b4eac
+        at: 2026-11-04T19:52:04Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Neutral grey"
+  - key: 01a1a81f-7d20-7491-97a7-d1c127624c45
+    id: ask-toolu-01pkpnwwypgx1v7brxbatjza-1
+    kind: question
+    versions:
+      - key: 01a1a81f-7d20-7491-97a7-d1c452d39904
+        at: 2026-11-04T19:53:18Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "Release 8 leaves 64 naked-eye stars (Hp < 6) unplaced. Their Hipparcos parallaxes are too uncertain to invert, and Gaia has no parallax for them: the ones it has are position-only solutions, so Bailer-Jones has no distance either. 14 are brighter than Hp 2.5: Betelgeuse, Antares, Deneb, Shaula, the three Belt stars, Regor, Sargas, Wezen, Almach, Dschubba, Sadr and Aludra. Which should get a distance researched from the literature?"
+        header: "Which stars"
+        options:
+          - label: "The 14 brightest"
+            detail: "Betelgeuse plus the 13 others brighter than Hp 2.5, each from its primary paper. Fills the obvious holes in Orion, Scorpius and Cygnus. About 14 papers to read and quote."
+            recommended: true
+          - label: "Betelgeuse only"
+            detail: "One cited distance, Joyce et al. 2020, 168 +27/−15 pc. Quickest. Antares, Deneb and the Belt stars stay undrawn."
+          - label: "All 64 naked-eye stars"
+            detail: "Everything brighter than Hp 6. Complete for the naked-eye sky, but several times the research. Many fainter ones have no dedicated distance paper, so some would rest on a cluster or association distance, and some would stay unplaced with the reason recorded."
+        ownWords: true
+    responses:
+      - key: 01a1a822-b3cc-7500-aaf6-770b4626c354
+        at: 2026-11-04T19:56:48Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "All 64 naked-eye stars"
+  - key: 01a1a81f-7d20-7491-97a7-d1c2d41dc737
+    id: ask-toolu-01pkpnwwypgx1v7brxbatjza-2
+    kind: question
+    versions:
+      - key: 01a1a81f-7d20-7491-97a7-d1c5ae3e248e
+        at: 2026-11-04T19:53:18Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "How should a researched star distance be written down in the repository?"
+        header: "Format"
+        options:
+          - label: "Cited star files"
+            detail: "One YAML file per star, like the structure files. Each value quotes the sentence it comes from, and the existing checker refuses an uncited or mismatched number. One repository source credits every paper. Joins the Hipparcos object by its HIP number."
+            recommended: true
+          - label: "One table per paper"
+            detail: "A small CSV per paper, each its own source definition with its own citation. Less new code, but a source definition per paper, and no quoted sentence checked per value."
+        ownWords: true
+    responses:
+      - key: 01a1a822-b3cc-7500-aaf6-770cd42fc2f9
+        at: 2026-11-04T19:56:48Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Cited star files"
+  - key: 01a1a81f-7d20-7491-97a7-d1c31b9dda7a
+    id: ask-toolu-01pkpnwwypgx1v7brxbatjza-3
+    kind: question
+    versions:
+      - key: 01a1a81f-7d20-7491-97a7-d1c6cced9a31
+        at: 2026-11-04T19:53:18Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "In E7, stars are drawn in the colour their colour index implies (Pecaut & Mamajek 2013 temperatures). What colour should a star with no colour index get? 8,412 fainter Hipparcos stars are among those that may have none."
+        header: "No colour"
+        options:
+          - label: "Neutral grey"
+            detail: "Drawn grey and counted in the key as \"no colour index\". Every star colour then means temperature, and galaxies keep their kind-of-value colours."
+            recommended: true
+          - label: "Kind-of-value colour"
+            detail: "Falls back to today's colours, blue for a measured distance and so on. That mixes two meanings among the stars."
+        ownWords: true
+    responses:
+      - key: 01a1a822-b3cc-7500-aaf6-770d23e2a72a
+        at: 2026-11-04T19:56:48Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Neutral grey"
+  - key: 01a1a823-430f-72c9-a5b6-2bc56d67fbd9
+    id: plan-28-plan-glowing-questing-ullman-01a1a81d-84aa-7050-93ce-8f6efd069bd6
+    kind: plan
+    versions:
+      - key: 01a1a823-430f-72c9-a5b6-2bc6ad4d24ce
+        at: 2026-11-04T19:57:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Plan: R4 (researched star distances, release 9), then E7 (stars in their colours)"
+        markdown: |
+          # Plan: R4 (researched star distances, release 9), then E7 (stars in their colours)
+
+          ## Context
+
+          R3 finished release 8, and spot-checking it showed Betelgeuse is not placed, so it can't be drawn.
+
+          - **Why:** its Hipparcos-2 parallax is 6.55 ± 0.83 mas. That is a 12.7% error, over the 10% rule (`rules/ranking.yaml` `parallax_max_fractional_error`).
+          - **How many:** release 8 leaves 64 naked-eye stars (Hp < 6) unplaced this way: 14 brighter than Hp 2.5, 8 from 2.5 to 4, and 42 from 4 to 6.
+          - **Gaia doesn't help:** where Gaia DR3 has these stars at all, its solution gives a position with no parallax, so Bailer-Jones 2021 has no distance for them either.
+
+          You decided:
+          - **Stars:** research distances for all 64 naked-eye stars.
+          - **Format:** one cited YAML file per star, checked like the structure files.
+          - **No colour index:** in E7, a star without one is drawn neutral grey.
+
+          **Branches.** `product/release-8` already contains `develop` and `product/explorer`. Both waves are cut from it and merge back into it, so nothing has to reach `develop` first.
+
+          **Merge.** Merging `product/release-8` into `develop`, and `loft publish` there, happens only when you ask, after E7. It is not part of this plan's approval.
+
+          **Process.** Each wave follows the usual steps:
+          1. A stage branch and its Yard Log, with the tasks registered.
+          2. The spec change sent for approval, then committed alone.
+          3. Focused checks between tasks.
+          4. `/simplify` and `/code-review` in parallel, with their findings fixed.
+          5. `cargo xtask check` once, and `cargo xtask integration` once for E7.
+          6. The trace accepted.
+          7. The Yard Log closed, then a `--no-ff` merge into `product/release-8`.
+
+          ## R4: researched star distances and release 9 (`stage/release-8-r4`)
+
+          **The 64 stars,** by Hipparcos number:
+          - **Hp < 2.5:** 27989 (Betelgeuse), 80763 (Antares), 102098 (Deneb), 85927, 26311, 26727, 39953, 86228, 34444, 25930, 9640, 78401, 100453, 35904.
+          - **Hp 2.5–4:** 84345, 26451, 80112, 29655, 75264, 5165, 26549, 89341.
+          - **Hp 4–6:** the 42 listed by the query in the r4-t-list task.
+
+          | Task | Scope | Done when |
+          |---|---|---|
+          | **r4-t-spec** | Spec change for your approval. New feature `normalization/record-a-researched-star-distance.yaml`, beside record-a-researched-structure. Criteria: each value quotes the sentence it comes from; a file joins the Hipparcos object of its HIP number; its kind of value and distance kind are as the file states; a star whose papers give no distance keeps its file, with the reason, and places nothing; the entry names its paper. Also add the source to define-a-source's list of star sources and to `components/data-providers.yaml` under Literature, and add one criterion to univ-server's `look-up-an-object`: "A researched entry names the paper its values come from." | `loft fmt --check` and `loft check --fail-on warning` pass; you approve; committed alone |
+          | **r4-t-reader** | Source `researched-star-distances` (`method: repository`, `path: stars/`). Reuse the structure files' `Cited`, papers and quoted-sentence checker (`crates/univ-ingest/src/structures/cited.rs`, `citation.rs`) for a star file of `hip`, `name`, `papers`, and `distance: Cited` with an asymmetric, symmetric or interval uncertainty, its `kind` and `method`, or else `unplaced:` with a reason. Each file becomes a `CatalogueEntry` with no position and its distance (`entry/mod.rs`, `distance/mod.rs`). `Access::Repository` gains a `holds: structures \| star_distances` field, so `run/cross.rs::basis`, `run/used.rs`, `normalize::reads_rows` and `acquire` take the right reader. The entry's paper goes into the object record (`api/objects.rs` `EntryRecord.reference`, skipped when none). | Tests in `tests/star_distances.rs`: a file joins HIP 27989's object, its distance is preferred as the only candidate and places it; an uncited or mismatched number is refused; a `unplaced:` file places nothing; the record names the paper |
+          | **r4-t-rules** | Add the source to the `hip` scheme of `rules/matching.yaml` (bare HIP numbers). In `rules/ranking.yaml`, reword `parallax_basis`: the brightest stars, which Gaia gives no parallax, are served by the researched distances. | the matching and ranking tests pass |
+          | **r4-t-list** | The query over release 8's local D1 that lists all 64 stars, with name, Hp, spectral type and Hipparcos-2 parallax, kept as a note. | the note is written |
+          | **r4-t-files** | Four research agents in parallel, 16 stars each, then my review of every file. Each star's source is its own published distance: an interferometric, VLBI or orbital parallax; a stellar model; or a cluster or association distance with the paper that makes it a member. The kind of value follows the method: a parallax of the star itself is measured; a group's distance applied to a member is inferred; a model or spectrophotometric distance is estimated. The distance kind is parallax or geometric for a parallax or a group's parallax, otherwise primary or secondary indicator. Every quote is checked against the paper's text. Where no paper gives a distance, the file is `unplaced:` with the reason, never an invented one. | the file checker and `cargo test -p univ-ingest` pass; every file reviewed |
+          | **r4-t-build** | `univ-ingest build` builds release 9, in the background. The Gaia bright-star jobs run once more, since their old records named result addresses. Then `publish 9`. | release 9 built and `latest` |
+          | **r4-t-check** | `cargo xtask science`, every tile through `check-server.ts`, and the three benches. Spot checks: Betelgeuse placed at its cited distance with the paper named; Antares, Deneb and the Belt stars placed; a count of the 64 placed and unplaced. | all pass; the counts recorded |
+          | **r4-t-close** | Trace, reviews, gate, close, merge. | as in the process |
+
+          ## E7: stars in their colours (`stage/release-8-e7`, on release 9)
+
+          | Task | Scope | Done when |
+          |---|---|---|
+          | **e7-t-spec** | Spec change for your approval. In `the-view/draw-the-catalogues.yaml`: a point of the stars domain is drawn in the colour of the temperature its colour index gives (Pecaut & Mamajek 2013), and grey where it has none; every other point keeps its kind-of-value colour; the key explains both and counts each. The two kind-of-value criteria are narrowed to points outside the stars domain, and `product.yaml`'s summary is amended. In `objects-and-structures/read-an-object.yaml`: the panel gives each published spectral type with its own kind of value from the record; where there is none, or only Gaia's "unknown", it gives the class estimated from the colour index, labelled estimated, assuming a main-sequence star, citing Pecaut & Mamajek; it gives the colour index with its bands and uncertainty. | `loft` checks pass; you approve; committed alone |
+          | **e7-t-table** | `clients/explorer/src/scene/starColour.ts`. Mamajek's table of the Pecaut & Mamajek sequence, columns for B−V, BP−RP, Teff and spectral type, is kept as a data file with its URL, version and citation. B−V or BP−RP is interpolated to Teff and to the nearest class. Teff is turned into sRGB through the Planck spectrum and the CIE 1931 colour-matching functions, using Wyman, Sloan & Shirley's 2013 analytic fit, normalised to the brightest channel. | `starColour.test.ts`: the Sun's B−V 0.65 gives about 5,770 K and G2V; B−V 1.50 gives about 3,700 K and early M; B−V −0.30 gives over 25,000 K; out-of-range values are clamped and say so; hot is bluer than cool |
+          | **e7-t-draw** | `catalogue/tiles.ts` `batchOf` keeps each point's colour, and `useWorld.ts` passes it on. The renderer gains a per-point `a_colour` attribute (u8 RGBA): stars-domain points get their temperature colour or grey, and other points alpha 0, which keeps the kind table lookup in `shaders.ts`. Markers are unchanged. | unit tests on the batch and the colour buffer; `pnpm check` passes |
+          | **e7-t-key** | `Panels.tsx` `Key`: a "Stars, by colour index" strip labelled in kelvin, with the count of coloured and grey stars; "Other points, kind of value of each distance" as now. `scenePoint.ts`'s hover label gains the colour index. The e2e key assertion is updated. | `Panels.test.tsx`, `scenePoint.test.ts` and the Playwright test pass |
+          | **e7-t-panel** | `api/objects.ts` reads `spectral_type`, colour-index measurements and `reference`. `ObjectPanel.tsx` shows the spectral types, the colour index, the estimated class with its citation, and the paper of a researched distance. A star fixture is added to `test/objects.ts`. | `ObjectPanel.test.tsx`: Sirius shows "A0m..." as measured; a star with only B−V shows its estimated class, labelled; Gaia's "unknown" falls back to the estimate; Betelgeuse's distance names Joyce et al. |
+          | **e7-t-live** | `cargo xtask explore` on release 9, with screenshots of Orion (Betelgeuse red, Rigel blue-white) and the Sun's neighbourhood, plus Betelgeuse's panel. `bench first-points` stays within 3 s. | screenshots sent to you; bench within bound |
+          | **e7-t-close** | Trace, reviews, gate, integration, close, merge into `product/release-8`. | as in the process |
+
+          ## Verification
+
+          **Code:**
+          - `cargo test -p univ-ingest` (the star-file checker and `tests/star_distances.rs`)
+          - `pnpm check` in `clients/explorer`
+          - `cargo xtask check`
+          - `cargo xtask integration` (Playwright with axe)
+          - the trace accepted with `loft reconcile`
+
+          **Release 9:**
+          - `cargo xtask science`, with no FAIL
+          - every tile decoded with its SHA-256 matched
+          - QA-2, QA-3 and first-points within bounds
+          - the 64 stars counted placed and unplaced, each unplaced one with its file's reason
+
+          **Live:** screenshots of Orion and the Sun's neighbourhood in colour, and Betelgeuse's panel naming its spectral type, colour index and paper.
+
+          ## Afterwards
+
+          On your ask, merge `product/release-8` into `develop` and run `loft publish`. Then the catalogue wave: about 110 catalogued voids and the 22 Einasto 2001 superclusters.
+        planMode: true
+    responses:
+      - key: 01a1a823-9f1f-711c-9f47-dd18c4a6349b
+        at: 2026-11-04T19:57:49Z
+        revision: 6
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved

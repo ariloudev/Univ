@@ -17,9 +17,9 @@ pub fn numbers(text: &str) -> Vec<f64> {
 
 /// Words after which a number names a part of a paper or a catalogued object rather than
 /// stating a value.
-const NAMING: [&str; 17] = [
+const NAMING: [&str; 22] = [
     "table", "tables", "figure", "figures", "fig.", "figs.", "section", "sec.", "eq.", "equation",
-    "footnote", "page", "abell", "aco", "ngc", "ugc", "pgc",
+    "footnote", "page", "abell", "aco", "ngc", "ugc", "pgc", "hip", "hd", "hr", "tic", "source",
 ];
 
 /// The standalone numbers of free text that state values: [`numbers`] without those that name
@@ -68,7 +68,10 @@ fn located(text: &str) -> Vec<(usize, f64)> {
             && !i.checked_sub(2).is_some_and(|p| chars[p].is_ascii_digit());
         let glued_before =
             before.is_some_and(|c| matches!(c, '-' | '+' | '/')) && sign_is_glued(&chars, i - 1);
-        let glued_after = chars.get(end).is_some_and(|c| continues(*c) && *c != '.');
+        // An asymmetric error printed after its value, `168^{+27}_{-15}`, is no power.
+        let error_follows = asymmetric_error_at(&chars, end);
+        let glued_after =
+            !error_follows && chars.get(end).is_some_and(|c| continues(*c) && *c != '.');
         if !glued_before
             && !glued_after
             && let Ok(x) = digits.parse::<f64>()
@@ -78,6 +81,22 @@ fn located(text: &str) -> Vec<(usize, f64)> {
         i = past_word(&chars, end);
     }
     out
+}
+
+/// Whether an asymmetric error starts at `at`, as in `168^{+27}_{-15}`: a signed superscript
+/// and a signed subscript, in either order, and not a lone power such as `10^{-3}`.
+fn asymmetric_error_at(chars: &[char], at: usize) -> bool {
+    let group = |at: usize| -> Option<(char, usize)> {
+        let mark = *chars.get(at)?;
+        let opens = matches!(mark, '^' | '_')
+            && chars.get(at + 1) == Some(&'{')
+            && matches!(chars.get(at + 2), Some('+' | '-'));
+        let close = chars.get(at..)?.iter().position(|c| *c == '}')? + at;
+        opens.then_some((mark, close + 1))
+    };
+    group(at)
+        .and_then(|(first, next)| group(next).filter(|(second, _)| *second != first))
+        .is_some()
 }
 
 /// Whether a number starting after `c` would continue a token: a letter, a digit, a decimal
@@ -347,6 +366,11 @@ mod tests {
             [] as [f64; 0]
         );
         assert_eq!(numbers("G069.39+68.05 (z = 0.763)"), [0.763]);
+        assert_eq!(
+            numbers("a distance of $168^{+27}_{-15}$ pc"),
+            [168.0, 27.0, -15.0]
+        );
+        assert!(!numbers("a contrast of 10^{-3} or 10^{+5}").contains(&10.0));
         assert_eq!(numbers("A2147/2152 cover 1/8 of it"), [1.0, 8.0]);
         assert_eq!(
             numbers("~300 - 400 Mpc, 12°, 5200,3000,4500"),
@@ -356,6 +380,10 @@ mod tests {
         assert_eq!(
             stated_numbers("Table 1 of the paper lists 38 quasars (Fig. 2)."),
             [38.0]
+        );
+        assert_eq!(
+            stated_numbers("HIP 9640 is HD 12533 and Gaia source 4933453324590295000: 8.30 mas"),
+            [8.3]
         );
     }
 

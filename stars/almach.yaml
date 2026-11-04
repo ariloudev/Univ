@@ -1,0 +1,13 @@
+# Almach, gamma1 Andromedae, K2+IIb/K3IIb bright giant: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 9640
+name: Almach
+alternative_names: ["gamma1 Andromedae", "gam01 And", "57 And A", "HD 12533"]
+papers: []
+unplaced: "No published distance other than the Hipparcos parallax, whose Hipparcos-2 error is above a tenth of the parallax; Gaia DR2 and EDR3 give no parallax for γ1 And itself, and no cluster or association membership or dedicated distance determination was found."
+disputes: []
+notes: >-
+  Identity: HIP 9640 at the stars.tsv position is γ1 And (SIMBAD: K2+IIb). The spectral type B8V
+  in stars.tsv belongs to the companion γ2 And, its close neighbour on the sky, not to HIP 9640. Gaia DR2
+  and EDR3 do list a parallax for γ2 And (a separate source; itself a close multiple), but no
+  paper was found that applies it to γ1 And, and the brief forbids applying it ourselves.
+  Searches of arXiv and the web turned up no dedicated distance study of γ1 And.

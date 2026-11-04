@@ -71,7 +71,7 @@ pub async fn acquire<C: Clock>(
     repository: &Path,
 ) -> Result<Acquired, AcquireError> {
     let source = &definition.id;
-    if let Access::Repository { path } = &definition.access {
+    if let Access::Repository { path, .. } = &definition.access {
         let path = repository.join(path);
         if !path.exists() {
             return Err(AcquireError::NotInRepository {

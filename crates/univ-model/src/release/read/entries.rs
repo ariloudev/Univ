@@ -84,6 +84,7 @@ fn entry(
         position: position(&c, &extra)?,
         group_id: c.text_opt("group_id")?.map(str::to_owned),
         spectral_type: spectral_type(&c, &extra)?,
+        references: from_extra(&c, &extra, "references")?.unwrap_or_default(),
         flags,
     })
 }

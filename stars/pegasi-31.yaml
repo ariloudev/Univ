@@ -1,0 +1,30 @@
+# 31 Pegasi (IN Peg, HD 212076), B2IV-V Be star: Hipparcos-2 parallax error 14%, no Gaia parallax; unplaced.
+hip: 110386
+name: 31 Pegasi
+alternative_names: ["31 Peg", "IN Peg", "HD 212076", "HR 8520"]
+papers:
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue table gaiaedr3.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-edr3-2021.txt"
+  - id: klement-2024
+    reference: "Klement, Rivinius, Gies, Baade, Mérand, Monnier, Schaefer, Lanthermann et al. 2024, ApJ 962, 70"
+    title: "The CHARA Array Interferometric Program on the Multiplicity of Classical Be Stars: New Detections and Orbits of Stripped Subdwarf Companions"
+    bibcode: 2024ApJ...962...70K
+    arxiv: "2312.08252"
+    read: "arXiv PDF of 2312.08252v1, text extracted with pdfminer.six and searched for the star's names and HD number (no match); bibcode checked on SIMBAD's reference page"
+unplaced: "no published distance other than the Hipparcos-2 parallax, whose error is above a tenth of its value; Gaia DR2 and EDR3 give source 2730700972271371776 no parallax, and no group membership or modelling distance was found"
+disputes: []
+notes: >-
+  The Klement et al. 2024 CHARA survey of Be binaries does not include 31 Peg. No orbital or group distance was
+  found.

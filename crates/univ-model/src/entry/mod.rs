@@ -199,6 +199,22 @@ pub struct CatalogueEntry {
     pub supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     /// The source's quality columns, by column name, as published.
     pub flags: BTreeMap<String, String>,
+    /// The papers a researched entry's values come from, the paper of its distance first; none
+    /// for an entry of a catalogue, which its source's citation covers.
+    #[serde(default, skip_serializing_if = "<[_]>::is_empty")]
+    pub references: Box<[PaperReference]>,
+}
+
+/// A paper a researched entry's values come from.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct PaperReference {
+    /// Authors, year, journal, volume and page, such as `Joyce et al. 2020, ApJ 902, 63`.
+    pub citation: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub doi: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bibcode: Option<String>,
 }
 // The largest values an entry may have, which most entries lack, are boxed: an entry is held
 // millions of times over.
@@ -223,6 +239,9 @@ struct RawCatalogueEntry {
     group_id: Option<String>,
     supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     flags: BTreeMap<String, String>,
+    // Absent from entries of catalogues.
+    #[serde(default)]
+    references: Box<[PaperReference]>,
 }
 
 impl TryFrom<RawCatalogueEntry> for CatalogueEntry {
@@ -243,6 +262,7 @@ impl TryFrom<RawCatalogueEntry> for CatalogueEntry {
             group_id: raw.group_id,
             supergalactic_velocity: raw.supergalactic_velocity,
             flags: raw.flags,
+            references: raw.references,
         };
         entry.check()?;
         Ok(entry)
@@ -336,6 +356,9 @@ impl CatalogueEntry {
             if text.is_some_and(|t| t.trim().is_empty()) {
                 return Err(EntryError::Blank(field));
             }
+        }
+        if self.references.iter().any(|r| r.citation.trim().is_empty()) {
+            return Err(EntryError::Blank("reference"));
         }
         Ok(())
     }

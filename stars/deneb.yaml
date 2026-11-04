@@ -1,0 +1,39 @@
+# Deneb, alpha Cygni, A2Ia supergiant: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 102098
+name: Deneb
+alternative_names: ["alpha Cygni", "alf Cyg", "50 Cyg", "HD 197345"]
+papers:
+  - id: schiller-2008
+    reference: "Schiller & Przybilla 2008, A&A 479, 849"
+    title: "Quantitative spectroscopy of Deneb"
+    bibcode: 2008A&A...479..849S
+    doi: 10.1051/0004-6361:20078590
+    arxiv: "0712.0040"
+    read: "arXiv PDF of 0712.0040v1, full text extracted with pypdf; Table 2 (PDF page 3) and Sect. 3.3 (PDF page 5) read"
+distance:
+  value: 802
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 66 }
+  cite:
+    paper: schiller-2008
+    table: "2"
+    row: "d"
+    column: "Deneb"
+    cell: "802 ± 66 pc"
+  distance_kind: secondary_indicator
+  method: "mean distance of the Cyg OB7 association (Humphreys, spectroscopic and photometric distances of members) adopted for Deneb as a member"
+membership:
+  paper: schiller-2008
+  page: 5
+  sentence: "Adopting a distance modulus of 9.m52 ± 0.m18 from the affiliation of Deneb to the Cyg OB 7 association (mean value of Humphreys 1978), we derive the absolute visual magnitude and, using a bolometric correction from our model atmosphere computations, the absolute bolometric magnitude."
+disputes: []
+notes: >-
+  Weak placement. The distance in Table 2 of Schiller & Przybilla is not their own determination:
+  it is the Cyg OB7 mean distance modulus of Humphreys (1978), printed as a distance. That group
+  distance is pre-Hipparcos and rests on spectroscopic parallaxes of the members, not on
+  trigonometric parallaxes, hence secondary_indicator. Humphreys (1978) is not on arXiv and was
+  not read. Schiller & Przybilla also infer an independent distance modulus from the
+  flux-weighted gravity-luminosity relationship (FGLR), in good agreement with Humphreys, but
+  give it only as a modulus, so it is not used. No Gaia-era distance of Cyg OB7 naming Deneb as a
+  member was found.
