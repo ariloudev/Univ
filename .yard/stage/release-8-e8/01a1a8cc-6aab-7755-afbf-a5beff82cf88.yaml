@@ -10,6 +10,15 @@ versions:
     title: "E8: choose what is drawn"
     goal: "Univ Explorer offers checkboxes that turn each scale domain, catalogue, kind of value and structure kind on and off, kept in the page's address"
     status: active
+  - key: 01a1a8df-170d-738a-a845-0653a96e7c29
+    at: 2026-11-04T23:22:35Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E8: choose what is drawn"
+    goal: "A panel of checkboxes turns scale domains, catalogues, kinds of value and kinds of structure on and off, kept in the page's address"
+    status: done
 blocks:
   - key: 01a1a8cc-6aab-7755-afbf-a5bfbecca2e9
     id: e8-t-spec
@@ -1762,6 +1771,21 @@ blocks:
         title: "Trace, reviews, gate, integration, close, merge"
         detail: "The trace is accepted: 441 of 441 nodes linked. `cargo xtask check` passes, 13 gates. `cargo xtask integration` passes."
         state: active
+      - key: 01a1a8df-170d-738a-a845-06516212ff31
+        at: 2026-11-04T23:22:35Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, reviews, gate, integration, close, merge"
+        detail: |-
+          Committed in 9538e0e:
+          - the trace is accepted, 441 of 441 nodes linked;
+          - `cargo xtask check` passes, 13 gates;
+          - `cargo xtask integration` passes.
+
+          The Yard Log is closed next, then the branch is merged into `product/release-8`.
+        state: done
   - key: 01a1a8da-7b43-7414-af9c-2cf1508afc0d
     id: e8-reviews
     kind: note
@@ -5525,3 +5549,45 @@ blocks:
               "schema": "loft-reconcile/3"
             }
           }
+  - key: 01a1a8df-170c-71a0-a062-44734a3125f9
+    id: e8-result
+    kind: note
+    versions:
+      - key: 01a1a8df-170d-738a-a845-0652cb821ab4
+        at: 2026-11-04T23:22:35Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What E8 produced"
+        markdown: |-
+          A **Show** panel turns groups of the view on and off:
+          - scale domains;
+          - the catalogues behind each point's distance;
+          - the four kinds of value;
+          - the kinds of structure.
+
+          The groups turned off are kept in one `?hide=` parameter beside `?object=`.
+
+          ```mermaid
+          flowchart LR
+            A["?hide= in the address"] --> H[Hidden, by group]
+            H --> M["masksOf: kind bits, source bits per domain"]
+            M --> R["renderer: domain skipped, shader masks kind and source"]
+            M --> P["pick: hidden points passed over"]
+            M --> C["catalogue: histogram recount, key and credits"]
+            H --> S["useStructures: names, list, renderer.hideNames"]
+          ```
+
+          | Check | Result |
+          |---|---|
+          | `pnpm check` | 193 tests, fallow, build |
+          | `cargo xtask integration` | the server's end-to-end tests and 8 Playwright tests with axe |
+          | `cargo xtask check` | 13 gates |
+          | `bench first-points` | p95 199 ms against 3 s |
+          | Live, release 9 | stars only: 750,109 coloured and 6,946 grey; the cosmic web without SDSS: 818,281 → 169,620 measured; voids only: 10 structures |
+
+          **Left open:**
+          - a source of index 32 or more in a domain can't be masked, and isn't offered; release 9's largest domain has 9 sources;
+          - credits stay per domain, since a point's sky position may come from a source other than its distance's.
+        tone: success
