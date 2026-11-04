@@ -166,7 +166,7 @@ describe("making room", () => {
     expect(next.drop.map((t) => t.id)).not.toContain("web/r7");
   });
 
-  it("keeps a tile in view that is larger on screen than the one that would replace it", () => {
+  it("drops no tile the view still wants, even to fetch another it wants", () => {
     const next = plan(TILES, full([...ROOTS, "web/r1", "web/r7"]), sight(eye), 10);
     expect(next.drop).toEqual([]);
     expect(next.fetch).toEqual([]);
