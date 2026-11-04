@@ -126,13 +126,25 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   };
 }
 
+/** The performance mark of the first frame drawn that holds points: the end of what
+ * explorer.first_points.latency measures from the page's start. */
+export const FIRST_POINTS = "univ:first-points";
+
+/** What follows a frame drawn: the overlay placed, the frame counted, and the first points
+ * marked if these are they; whether the first points are now marked. */
+export function drawn(world: World, overlay: Overlay, size: { width: number; height: number }, marked: boolean): boolean {
+  placeOverlay(world, overlay, size);
+  world.frame.set(world.frame.get() + 1);
+  if (marked || world.pickable.length === 0) return marked;
+  performance.mark(FIRST_POINTS);
+  return true;
+}
+
 /** Draws `world` on every animation frame that needs it, placing its overlay, until stopped. */
 function animate(world: World, overlay: RefObject<Overlay>, size: Surroundings["size"]): () => void {
+  let marked = false;
   let frame = requestAnimationFrame(function loop() {
-    if (world.controller.tick()) {
-      placeOverlay(world, overlay.current, size());
-      world.frame.set(world.frame.get() + 1);
-    }
+    if (world.controller.tick()) marked = drawn(world, overlay.current, size(), marked);
     frame = requestAnimationFrame(loop);
   });
   return () => cancelAnimationFrame(frame);

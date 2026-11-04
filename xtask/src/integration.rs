@@ -17,7 +17,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, Instant};
 
-use crate::command;
+use crate::{Outcome, command};
 
 /// The Worker's crate, from the workspace root, which holds its `wrangler.toml`.
 const WORKER_DIR: &str = "crates/univ-server";
@@ -73,16 +73,22 @@ pub fn integration(root: &Path) -> bool {
         .env("UNIV_E2E_OWNER_SECRET", OWNER_SECRET)
         .status()
         .is_ok_and(|status| status.success());
+    let explorer = passed && {
+        eprintln!("==> the explorer's end-to-end tests");
+        crate::explore::end_to_end(root, port) != Outcome::Failed
+    };
     drop(wrangler);
-    if passed {
+    if passed && explorer {
         eprintln!("integration passed");
+    } else if passed {
+        eprintln!("integration failed at: the explorer's end-to-end tests");
     } else {
         eprintln!(
             "integration failed at: end-to-end tests; Wrangler's log is {}",
             log.display()
         );
     }
-    passed
+    passed && explorer
 }
 
 /// Runs the Worker on the real local state until it is stopped, on the port its

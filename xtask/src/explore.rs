@@ -1,5 +1,7 @@
-//! Univ Explorer's tasks: its gate in `cargo xtask check`, and `cargo xtask explore`, which runs
-//! Univ Server on the real local state with the explorer's dev server beside it.
+//! Univ Explorer's tasks: its gate in `cargo xtask check`; its end-to-end tests, which `cargo
+//! xtask integration` runs against the fixture state; `cargo xtask explore`, which runs Univ
+//! Server on the real local state with the explorer's dev server beside it; and `cargo xtask
+//! bench first-points`, which measures how soon the explorer draws its first points there.
 //!
 //! The dev server passes the explorer's reads on to the Worker, adding an extended-tier key
 //! issued for the run, so that the explorer reads its tiles at the extended rate and the key
@@ -98,4 +100,65 @@ pub fn explore(root: &Path) -> bool {
     };
     drop(wrangler);
     served
+}
+
+/// Runs `pnpm` with `args` in the explorer's directory, reading Univ Server at `port` with `key`.
+fn pnpm_reading(root: &Path, args: &[&str], port: u16, key: &str) -> bool {
+    match command(&root.join(DIR), "pnpm")
+        .args(args)
+        .env("UNIV_SERVER", format!("http://127.0.0.1:{port}"))
+        .env("UNIV_KEY", key)
+        .status()
+    {
+        Ok(status) => status.success(),
+        Err(error) => {
+            eprintln!("could not run pnpm: {error}");
+            false
+        }
+    }
+}
+
+/// The explorer's end-to-end tests against Univ Server at `port`, which serves the fixture
+/// state: Playwright drives Chromium through the explorer's dev server. Read with a key of the
+/// extended tier, as the server's own tests leave the anonymous limit spent. Skipped when pnpm
+/// is not on the path.
+pub fn end_to_end(root: &Path, port: u16) -> Outcome {
+    match pnpm(root, INSTALL) {
+        None => {
+            eprintln!(
+                "skipped: pnpm is not on the path, so the explorer's end-to-end tests did not run"
+            );
+            return Outcome::Skipped;
+        }
+        Some(false) => return Outcome::Failed,
+        Some(true) => {}
+    }
+    let Some(key) = fresh_key(port, "explorer-e2e") else {
+        return Outcome::Failed;
+    };
+    if pnpm_reading(root, &["e2e"], port, &key) {
+        Outcome::Passed
+    } else {
+        Outcome::Failed
+    }
+}
+
+/// Measures the explorer's first points on the real local state (`explorer.first_points.latency`):
+/// 10 loads of its dev server beside Univ Server, the 95th percentile against 3 seconds.
+pub fn first_points(root: &Path) -> bool {
+    if pnpm(root, INSTALL) != Some(true) {
+        eprintln!("bench failed at: installing the explorer's dependencies (is pnpm on the path?)");
+        return false;
+    }
+    let log = root.join("target/bench/wrangler.log");
+    let Some((wrangler, port)) = start_on_real_state(root, &log) else {
+        eprintln!("bench failed at: starting Univ Server");
+        return false;
+    };
+    let Some(key) = fresh_key(port, "bench") else {
+        return false;
+    };
+    let measured = pnpm_reading(root, &["first-points"], port, &key);
+    drop(wrangler);
+    measured
 }

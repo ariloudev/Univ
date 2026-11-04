@@ -1,0 +1,21 @@
+format: yardlog/1
+key: 01a1a4db-c72e-7415-ae38-a18b8467942f
+branch: "stage/explorer-e3"
+base: "develop"
+title: "stage/explorer-e3"
+revision: 1
+opened:
+  at: 2026-11-04T04:40:29Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+stages:
+  - key: 01a1a4db-c72e-7415-ae38-a18cd9091ad5
+    id: xe3
+acts:
+  - at: 2026-11-04T04:40:29Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"

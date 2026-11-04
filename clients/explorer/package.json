@@ -12,7 +12,9 @@
     "typecheck": "tsc -p tsconfig.json --pretty false",
     "test": "vitest run --coverage",
     "fallow": "fallow --quiet --coverage coverage/coverage-final.json",
-    "check": "pnpm typecheck && pnpm test && pnpm fallow && pnpm build"
+    "check": "pnpm typecheck && pnpm test && pnpm fallow && pnpm build",
+    "e2e": "playwright test",
+    "first-points": "node scripts/first-points.ts"
   },
   "dependencies": {
     "react": "19.3.1",
@@ -21,6 +23,8 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.8",
