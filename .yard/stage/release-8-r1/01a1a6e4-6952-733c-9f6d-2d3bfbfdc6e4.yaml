@@ -1,0 +1,819 @@
+key: 01a1a6e4-6952-733c-9f6d-2d3bfbfdc6e4
+id: r1
+versions:
+  - key: 01a1a6e4-6952-733c-9f6d-2d43fe8b52bb
+    at: 2026-11-04T14:09:09Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R1: star colours and spectral types"
+    goal: "Release 8's stars carry the colour indices and spectral types their sources publish, and its tiles (encoding version 2) carry each star's colour index for the explorer"
+    status: active
+blocks:
+  - key: 01a1a6e4-6952-733c-9f6d-2d3c1338f1f3
+    id: r1-t-spec
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d4455876b85
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for colours, spectral types and tile version 2, approved"
+        detail: "**Done when** the spec change passes `loft fmt --check` and `loft check --fail-on warning`, is approved, and is committed alone."
+        state: active
+  - key: 01a1a6e4-6952-733c-9f6d-2d3d3d9ed214
+    id: r1-t-colour
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d45140734b7
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour indices read and kept"
+        detail: |-
+          **Scope:**
+          - the model gains a colour-index measurement naming its two bands;
+          - Hipparcos-2 (I/311) `B-V`, `e_B-V` and `V-I`, and Gaia DR3 `bp_rp`, are read as measured;
+          - GCNS `BPmag` and `RPmag` are read as magnitudes, with BP−RP derived from them.
+
+          **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
+        state: open
+  - key: 01a1a6e4-6952-733c-9f6d-2d3e56facb86
+    id: r1-t-types
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d46c0a1f5c8
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spectral types read and kept"
+        detail: |-
+          **Scope:**
+          - a new source definition for Hipparcos I/239 `hip_main` (HIP, SpType), attached by HIP number and marked measured;
+          - Gaia DR3 `spectraltype_esphs` by a left join of `gaiadr3.astrophysical_parameters`, marked estimated.
+
+          **Done when** fixture tests show the text kept character for character, and the object record lists each spectral type with its source and kind.
+        state: open
+  - key: 01a1a6e4-6952-733c-9f6d-2d3f4b7e0fd5
+    id: r1-t-tiles
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d474810c492
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tile encoding version 2"
+        detail: |-
+          **Scope:**
+          - the Rust encoder writes each star's colour index (Gaia BP−RP, else Hipparcos B−V, else GCNS BP−RP) and its bands, within 0.01 mag;
+          - the reference decoder and the explorer decode versions 1 and 2;
+          - the fixtures are regenerated;
+          - `/v1/tile-format` describes version 2.
+
+          **Done when** the encoder–decoder round-trip tests pass for both versions, version 1 fixtures still decode, and the tile-format contract test passes.
+        state: open
+  - key: 01a1a6e4-6952-733c-9f6d-2d40cf52f0fe
+    id: r1-t-close
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d48ece764bf
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge into product/release-8"
+        detail: |-
+          **Done when:**
+          - the new criteria are linked;
+          - the reviews' findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and `stage/release-8-r1` is merged into `product/release-8`.
+        state: open
+  - key: 01a1a6e4-6952-733c-9f6d-2d41067995c9
+    id: r1-spec
+    kind: loft
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d49ada6cf59
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "Item 8 of your list, as you chose it: both the colour index and the published spectral type."
+        recorded:
+          commit: "3a8089a0b94e93718f9ced3a3c90b28a410ee771"
+          branch: "stage/release-8-r1"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T14:09:09Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 17,
+              "graph.edges": 0,
+              "graph.nodes": 32,
+              "status.base.added": 16,
+              "status.base.changed": 1,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names.",
+                  "words": {
+                    "after": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f30c829322",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands.",
+                  "words": {
+                    "after": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f45f5a703d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported.",
+                  "words": {
+                    "after": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f5d5a8d638",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from.",
+                  "words": {
+                    "after": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives.",
+                  "words": {
+                    "after": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f71d672808",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type is kept character for character as its source publishes it, with that source.",
+                  "words": {
+                    "after": "A spectral type is kept character for character as its source publishes it, with that source."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f809221737",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured.",
+                  "words": {
+                    "after": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f9d5d7fa2d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated.",
+                  "words": {
+                    "after": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one.",
+                  "words": {
+                    "after": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fbef6c729e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between.",
+                  "words": {
+                    "after": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fc7402e820",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point whose object has no colour index carries none, which no colour index encodes.",
+                  "words": {
+                    "after": "A point whose object has no colour index carries none, which no colour index encodes."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fd633d5f44",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index is encoded within 0.01 magnitudes of the value it was built from.",
+                  "words": {
+                    "after": "A colour index is encoded within 0.01 magnitudes of the value it was built from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-020006acc572",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response lists each spectral type of the object's catalogue entries with its source and kind of value.",
+                  "words": {
+                    "after": "The response lists each spectral type of the object's catalogue entries with its source and kind of value."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The decoder decodes tiles of encoding versions 1 and 2.",
+                  "words": {
+                    "after": "The decoder decodes tiles of encoding versions 1 and 2."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01ff442efb73",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none.",
+                  "words": {
+                    "after": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f1b0391589",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Hipparcos spectral types",
+                  "words": {
+                    "after": "Hipparcos spectral types\n\nThe spectral types of the original Hipparcos catalogue (ESA 1997, The Hipparcos and Tycho Catalogues, ESA SP-1200; VizieR I/239/hip_main), attached by HIP number to the stars of the new reduction."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-1826edbc9607",
+                  "kind": "component",
+                  "label": "CMP-21",
+                  "name": "Gaia DR3 bright stars",
+                  "words": {
+                    "after": "Gaia DR3 bright stars\n\nGaia DR3 sources (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1) brighter than the G cut the source definition names, at epoch J2016.0, with their BP−RP colour and the ESP-HS spectral type of the astrophysical parameters table (Creevey et al. 2023, A&A 674, A26) where it gives one.",
+                    "before": "Gaia DR3 bright stars\n\nGaia DR3 sources (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1) brighter than the G cut the source definition names, at epoch J2016.0."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f30c829322",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f2606141e8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f45f5a703d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f2606141e8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f5d5a8d638",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f2606141e8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f71d672808",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type is kept character for character as its source publishes it, with that source.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f6f668422b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f809221737",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f6f668422b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f9d5d7fa2d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f6f668422b"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": "FG-4",
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-152a40334d81",
+                  "kind": "feature",
+                  "label": "F-10",
+                  "name": "Build octree tiles",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one.",
+                  "parent": "01a19f23-636f-72bd-b194-152a40334d81"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fbef6c729e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01fa1bdbef62"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fc7402e820",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point whose object has no colour index carries none, which no colour index encodes.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01fa1bdbef62"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fd633d5f44",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index is encoded within 0.01 magnitudes of the value it was built from.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01fa1bdbef62"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                  "kind": "feature",
+                  "label": "F-15",
+                  "name": "Look up an object",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                  "kind": "requirement",
+                  "label": "RQ-52",
+                  "name": "When a client requests an object by its object id, Univ Server shall return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0d39dc9a3f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-020006acc572",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response lists each spectral type of the object's catalogue entries with its source and kind of value.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0ee7e600ab"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d664d79c25f9",
+                  "kind": "feature_group",
+                  "label": "FG-11",
+                  "name": "API contract",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-abfe741c359f",
+                  "kind": "feature",
+                  "label": "F-32",
+                  "name": "Decode the tile format",
+                  "parent": "01a19f1a-685d-7357-b67e-d664d79c25f9"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                  "kind": "requirement",
+                  "label": "RQ-109",
+                  "name": "The Tile codec shall provide a reference TypeScript decoder that decodes every tile of a release into the points it encodes.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abfe741c359f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The decoder decodes tiles of encoding versions 1 and 2.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01ff442efb73",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce7c64960ab",
+                  "kind": "component",
+                  "label": "CMP-7",
+                  "name": "Data providers",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce94dbc10f4",
+                  "kind": "component",
+                  "label": "CMP-11",
+                  "name": "VizieR",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f1b0391589",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Hipparcos spectral types",
+                  "parent": "01a19f1e-d177-716d-b124-3ce94dbc10f4"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3cea65a86848",
+                  "kind": "component",
+                  "label": "CMP-20",
+                  "name": "ESA Gaia Archive",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-1826edbc9607",
+                  "kind": "component",
+                  "label": "CMP-21",
+                  "name": "Gaia DR3 bright stars",
+                  "parent": "01a19f1e-d177-716d-b124-3cea65a86848"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 59,
+                    "name": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f30c829322",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 65,
+                    "name": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f45f5a703d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 67,
+                    "name": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f5d5a8d638",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 69,
+                    "name": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 71,
+                    "name": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f71d672808",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 77,
+                    "name": "A spectral type is kept character for character as its source publishes it, with that source.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f809221737",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 79,
+                    "name": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f9d5d7fa2d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 81,
+                    "name": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 37,
+                    "name": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01fbef6c729e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01fc7402e820",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 45,
+                    "name": "A point whose object has no colour index carries none, which no colour index encodes.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01fd633d5f44",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 47,
+                    "name": "A colour index is encoded within 0.01 magnitudes of the value it was built from.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-020006acc572",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "The response lists each spectral type of the object's catalogue entries with its source and kind of value.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 30,
+                    "name": "The decoder decodes tiles of encoding versions 1 and 2.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01ff442efb73",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 32,
+                    "name": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f1b0391589",
+                    "kind": "component",
+                    "label": null,
+                    "line": 62,
+                    "name": "Hipparcos spectral types",
+                    "path": "spec/components/data-providers.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a19f22-2ad9-716e-876f-1826edbc9607",
+                    "kind": "component",
+                    "label": "CMP-21",
+                    "line": 69,
+                    "name": "Gaia DR3 bright stars",
+                    "path": "spec/components/data-providers.yaml"
+                  }
+                ],
+                "commit": "3a8089a0b94e93718f9ced3a3c90b28a410ee771",
+                "removed": [],
+                "revision": "develop"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 3,
+                "publishedAt": "2026-11-04T03:15:52Z",
+                "stateRoot": "bfa1564b3c6aaaffd9900d17ab5eadf5e06e0ae5d093a141b2b81cf1fa426f09"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/release-8-r1",
+                "modified": [
+                  "spec/components/data-providers.yaml",
+                  "spec/products/univ-ingest/normalization/normalize-records.yaml",
+                  "spec/products/univ-ingest/releases/build-octree-tiles.yaml",
+                  "spec/products/univ-server/api-contract/decode-the-tile-format.yaml",
+                  "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a6e4-6952-733c-9f6d-2d42714ea436
+    id: r1-approve
+    kind: approval
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d4ad906753b
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8: star colours, spectral types and tile version 2"
+        markdown: |-
+          **What changes (the spec-change above):**
+          - **normalize-records:**
+            - Colour indices are kept as measurements naming their two bands: Hipparcos-2's B−V and V−I, and Gaia's BP−RP, each with its published uncertainty, or marked none reported.
+            - GCNS BP−RP is computed from its two magnitudes, so it is **derived** and names them.
+          - **Spectral types** are kept character for character as published:
+            - the Hipparcos catalogue's, classified from spectra, are **measured**;
+            - Gaia DR3's ESP-HS class, a model fit to BP/RP spectra, is **estimated**.
+          - **look-up-an-object:** the record lists each spectral type with its source and kind.
+          - **build-octree-tiles:** encoding version 2 gives each star point a colour index and its bands (Gaia BP−RP first, then B−V, then GCNS BP−RP), within 0.01 mag, or marks that it has none.
+          - **decode-the-tile-format:** the reference decoder reads versions 1 and 2.
+          - **data-providers:**
+            - a new provider: Hipparcos I/239 for spectral types (ESA 1997), attached by HIP number;
+            - Gaia's entry gains BP−RP and ESP-HS (Creevey et al. 2023).
+
+          **Look at:**
+          - The colour order prefers Gaia's BP−RP. E7 then maps colour to a star's colour through the Pecaut & Mamajek table, which has both BP−RP and B−V columns, so no conversion between bands is needed.
+          - ESP-HS gives a class only for hot stars (O, B and A types); most stars will carry only Hipparcos types or none.
+  - key: 01a1a6e4-aef4-7020-9f2d-2f46abd2aa88
+    id: r1-approve-2
+    kind: approval
+    versions:
+      - key: 01a1a6e4-aef4-7020-9f2d-2f472cb6b7c2
+        at: 2026-11-04T14:09:27Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8: star colours, spectral types and tile version 2"
+        markdown: |-
+          **What changes (the spec-change above):**
+          - **normalize-records:**
+            - Colour indices are kept as measurements naming their two bands: Hipparcos-2's B−V and V−I, and Gaia's BP−RP, each with its published uncertainty, or marked none reported.
+            - GCNS BP−RP is computed from its two magnitudes, so it is **derived** and names them.
+          - **Spectral types** are kept character for character as published:
+            - the Hipparcos catalogue's, classified from spectra, are **measured**;
+            - Gaia DR3's ESP-HS class, a model fit to BP/RP spectra, is **estimated**.
+          - **look-up-an-object:** the record lists each spectral type with its source and kind.
+          - **build-octree-tiles:** encoding version 2 gives each star point a colour index and its bands (Gaia BP−RP first, then B−V, then GCNS BP−RP), within 0.01 mag, or marks that it has none.
+          - **decode-the-tile-format:** the reference decoder reads versions 1 and 2.
+          - **data-providers:**
+            - a new provider: Hipparcos I/239 for spectral types (ESA 1997), attached by HIP number;
+            - Gaia's entry gains BP−RP and ESP-HS (Creevey et al. 2023).
+
+          **Look at:**
+          - The colour order prefers Gaia's BP−RP. E7 then maps colour to a star's colour through the Pecaut & Mamajek table, which has both BP−RP and B−V columns, so no conversion between bands is needed.
+          - ESP-HS gives a class letter only (such as A or K), with no subclass or luminosity class, so it is coarser than the Hipparcos types. Which stars it covers is checked against the archive in R1, before any claim is made about it.
+    responses:
+      - key: 01a1a6ec-a4b1-737e-8526-253643e235df
+        at: 2026-11-04T14:18:08Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
