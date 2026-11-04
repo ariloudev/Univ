@@ -1,0 +1,12 @@
+key: 01a1a686-8188-775c-986e-6323af6e2d75
+id: x5-names
+versions:
+  - key: 01a1a686-8188-775c-986e-632bfbd7fc3c
+    at: 2026-11-04T12:26:35Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E6: names and selection"
+    goal: "An object's panel is headed by its name and gives what it is (star, galaxy, group); a chosen structure's outline, markers and members change colour"
+    status: planned

@@ -1,0 +1,12 @@
+key: 01a1a686-8188-775c-986e-6324337bddfa
+id: x5-spike
+versions:
+  - key: 01a1a686-8188-775c-986e-632c2d2cc008
+    at: 2026-11-04T12:26:35Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "S1 spike: a bounded volume for point-placed structures"
+    goal: "A recommendation, worked on Vela, for drawing a structure placed by a point as the volume its papers describe, with what it needs from ingest"
+    status: planned
