@@ -63,6 +63,8 @@ fn entry() -> CatalogueEntry {
             band: "Kcmag".to_owned(),
             value: value(0.797, Unit::Magnitude, Unit::Magnitude),
         })),
+        colours: Vec::new(),
+        spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
         flags: BTreeMap::from([("r_cz".to_owned(), "1991RC3.9.C...0000d".to_owned())]),
@@ -118,4 +120,31 @@ fn angles_are_normalized_to_degrees_and_distances_to_one_unit() {
     parsecs.normalized = parsecs.normalized.to(Unit::Parsec).unwrap();
     e.distances.push(parsecs);
     assert_eq!(e.check(), Err(EntryError::MixedDistanceUnits));
+}
+
+#[test]
+fn a_colour_index_is_in_magnitudes_and_a_spectral_type_is_never_blank() {
+    let mut e = entry();
+    let colour = |unit| ColourIndex {
+        bands: ["B".to_owned(), "V".to_owned()],
+        value: value(0.65, unit, unit),
+        derived_from: None,
+    };
+    e.colours = vec![colour(Unit::Magnitude)];
+    e.spectral_type = Some(Box::new(SpectralType {
+        text: "G2V".to_owned(),
+        kind: KindOfValue::Measured,
+    }));
+    assert_eq!(e.check(), Ok(()));
+    e.colours = vec![colour(Unit::Dimensionless)];
+    assert_eq!(
+        e.check(),
+        Err(EntryError::Unit("colour index", Unit::Dimensionless))
+    );
+    e.colours.clear();
+    e.spectral_type = Some(Box::new(SpectralType {
+        text: " ".to_owned(),
+        kind: KindOfValue::Measured,
+    }));
+    assert_eq!(e.check(), Err(EntryError::Blank("spectral type")));
 }

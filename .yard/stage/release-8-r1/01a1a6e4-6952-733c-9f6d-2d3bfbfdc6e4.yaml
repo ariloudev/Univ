@@ -1,0 +1,3206 @@
+key: 01a1a6e4-6952-733c-9f6d-2d3bfbfdc6e4
+id: r1
+versions:
+  - key: 01a1a6e4-6952-733c-9f6d-2d43fe8b52bb
+    at: 2026-11-04T14:09:09Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R1: star colours and spectral types"
+    goal: "Release 8's stars carry the colour indices and spectral types their sources publish, and its tiles (encoding version 2) carry each star's colour index for the explorer"
+    status: active
+  - key: 01a1a742-e6e8-7456-9c0f-bf430922a437
+    at: 2026-11-04T15:52:21Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R1: star colours and spectral types"
+    goal: "Release 8's stars carry the colour indices and spectral types their sources publish, and its tiles (encoding version 2) carry each star's colour index for the explorer"
+    status: done
+blocks:
+  - key: 01a1a6e4-6952-733c-9f6d-2d3c1338f1f3
+    id: r1-t-spec
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d4455876b85
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for colours, spectral types and tile version 2, approved"
+        detail: "**Done when** the spec change passes `loft fmt --check` and `loft check --fail-on warning`, is approved, and is committed alone."
+        state: active
+      - key: 01a1a6ec-d762-7554-97be-dcb4e5877982
+        at: 2026-11-04T14:18:21Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for colours, spectral types and tile version 2, approved"
+        detail: |-
+          **Done when** the spec change passes `loft fmt --check` and `loft check --fail-on warning`, is approved, and is committed alone.
+
+          **Result:** approved on the page and committed alone. The first approval was withdrawn before you answered it, to remove an unchecked claim about ESP-HS coverage.
+        state: done
+  - key: 01a1a6e4-6952-733c-9f6d-2d3d3d9ed214
+    id: r1-t-colour
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d45140734b7
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour indices read and kept"
+        detail: |-
+          **Scope:**
+          - the model gains a colour-index measurement naming its two bands;
+          - Hipparcos-2 (I/311) `B-V`, `e_B-V` and `V-I`, and Gaia DR3 `bp_rp`, are read as measured;
+          - GCNS `BPmag` and `RPmag` are read as magnitudes, with BP−RP derived from them.
+
+          **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
+        state: open
+      - key: 01a1a6ec-d762-7554-97be-dcb5cb60d004
+        at: 2026-11-04T14:18:21Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour indices read and kept"
+        detail: |-
+          **Scope:**
+          - the model gains a colour-index measurement naming its two bands;
+          - Hipparcos-2 (I/311) `B-V`, `e_B-V` and `V-I`, and Gaia DR3 `bp_rp`, are read as measured;
+          - GCNS `BPmag` and `RPmag` are read as magnitudes, with BP−RP derived from them.
+
+          **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
+        state: active
+      - key: 01a1a707-0446-72f3-a668-bf1722c5fc8c
+        at: 2026-11-04T14:46:57Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour indices read and kept"
+        detail: |-
+          **Scope:**
+          - the model gains a colour-index measurement naming its two bands;
+          - Hipparcos-2 (I/311) `B-V`, `e_B-V` and `V-I`, and Gaia DR3 `bp_rp`, are read as measured;
+          - GCNS `BPmag` and `RPmag` are read to derive BP−RP.
+
+          **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
+
+          **Progress:**
+          - **Model:** `ColourIndex` and `SpectralType` on the entry.
+          - **Source definitions:** readings in `normalization.colours` and `normalization.spectral_type`, with four new fields.
+          - **Release rows:** a colour is a `colour_index` measurement, its bands as the `kind` term and `derived_from` in `extra`. A spectral type goes in the entry's `extra`, so older releases need no migration.
+          - **API:** `band` and `derived_from` on measurements, `spectral_type` on entries. The OpenAPI snapshot only adds.
+          - **Recorded answers:** being recorded again from the live services.
+        state: active
+      - key: 01a1a71b-8537-71c9-903f-14947902c68d
+        at: 2026-11-04T15:09:21Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour indices read and kept"
+        detail: |-
+          **Scope:**
+          - the model gains a colour-index measurement naming its two bands;
+          - Hipparcos-2 (I/311) `B-V`, `e_B-V` and `V-I`, and Gaia DR3 `bp_rp`, are read as measured;
+          - GCNS `BPmag` and `RPmag` are read to derive BP−RP.
+
+          **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
+
+          **Result:**
+          - The answers were recorded again on 2026-11-04 from VizieR (the NAO and IDIA mirrors; CDS timed out) and the Gaia archive.
+          - `tests/normalize_colours.rs`, against the recorded text:
+            - HIP 1: B−V 0.482 ± 0.025 measured, V−I 0.550 with no uncertainty reported;
+            - HIP 3: B−V −0.019, kept negative;
+            - Gaia: BP−RP 1.2496433 measured;
+            - GCNS: BP−RP 1.0626 derived from BPmag 11.3022 and RPmag 10.2396, naming both; none where both are blank.
+          - `object_reads` reads each colour back as a `colour_index` measurement with its bands and `derived_from`.
+          - The model, ingest and API lint clean. The OpenAPI snapshot only adds.
+        state: done
+  - key: 01a1a6e4-6952-733c-9f6d-2d3e56facb86
+    id: r1-t-types
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d46c0a1f5c8
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spectral types read and kept"
+        detail: |-
+          **Scope:**
+          - a new source definition for Hipparcos I/239 `hip_main` (HIP, SpType), attached by HIP number and marked measured;
+          - Gaia DR3 `spectraltype_esphs` by a left join of `gaiadr3.astrophysical_parameters`, marked estimated.
+
+          **Done when** fixture tests show the text kept character for character, and the object record lists each spectral type with its source and kind.
+        state: open
+      - key: 01a1a71b-9733-7736-b0df-f5f97c2ed763
+        at: 2026-11-04T15:09:25Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spectral types read and kept"
+        detail: |-
+          **Scope:**
+          - a new source definition for Hipparcos I/239 `hip_main` (HIP, SpType), attached by HIP number and marked measured;
+          - Gaia DR3 `spectraltype_esphs` by a left join of `gaiadr3.astrophysical_parameters`, marked estimated.
+
+          **Done when** fixture tests show the text kept character for character, and the object record lists each spectral type with its source and kind.
+
+          **Progress:**
+          - `sources/hipparcos-1997.yaml` is written against the I/239 ReadMe (118,218 records; `r_SpType` kept as a flag), and `rules/matching.yaml` adds it to the `hip` scheme.
+          - `normalize_colours` shows HIP 2 `K3V` and HIP 5 `G8III` measured, and Gaia's `K` and `M` estimated.
+          - The fixture release now includes hipparcos-1997 as its sixth source. `object_reads` shows its five entries attached to the Hipparcos-2 stars of the same HIP number, each with its type read back. The shared fixtures are being regenerated and the ingest suite is running.
+        state: active
+      - key: 01a1a71d-c2c8-77b4-b8bb-9cbdc98efd0e
+        at: 2026-11-04T15:11:47Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spectral types read and kept"
+        detail: |-
+          **Scope:**
+          - a new source definition for Hipparcos I/239 `hip_main` (HIP, SpType), attached by HIP number and marked measured;
+          - Gaia DR3 `spectraltype_esphs` by a left join of `gaiadr3.astrophysical_parameters`, marked estimated.
+
+          **Done when** fixture tests show the text kept character for character, and the object record lists each spectral type with its source and kind.
+
+          **Result (c49beef):**
+          - `sources/hipparcos-1997.yaml` is written against the I/239 ReadMe (118,218 records; `r_SpType` kept as a flag), and `rules/matching.yaml` adds it to the `hip` scheme.
+          - `normalize_colours` shows HIP 2 `K3V` and HIP 5 `G8III` measured, and Gaia's `K` and `M` estimated.
+          - The fixture release includes hipparcos-1997 as its sixth source. `object_reads` shows its five entries attached to the Hipparcos-2 stars of the same HIP number, each read back with its type and kind.
+
+          **Open for the review:** hipparcos-1997's entries hold no position, so `source_details` gives it no sky footprint. The read-a-source criterion asks for one. Should its coverage come from the objects its entries join?
+        state: done
+  - key: 01a1a6e4-6952-733c-9f6d-2d3f4b7e0fd5
+    id: r1-t-tiles
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d474810c492
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tile encoding version 2"
+        detail: |-
+          **Scope:**
+          - the Rust encoder writes each star's colour index (Gaia BP−RP, else Hipparcos B−V, else GCNS BP−RP) and its bands, within 0.01 mag;
+          - the reference decoder and the explorer decode versions 1 and 2;
+          - the fixtures are regenerated;
+          - `/v1/tile-format` describes version 2.
+
+          **Done when** the encoder–decoder round-trip tests pass for both versions, version 1 fixtures still decode, and the tile-format contract test passes.
+        state: open
+      - key: 01a1a71d-de80-76ff-abb7-96a4ed42fdd4
+        at: 2026-11-04T15:11:55Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tile encoding version 2"
+        detail: |-
+          **Scope:**
+          - the Rust encoder writes each star's colour index (Gaia BP−RP, else Hipparcos B−V, else GCNS BP−RP) and its bands, within 0.01 mag;
+          - the reference decoder and the explorer decode versions 1 and 2;
+          - the fixtures are regenerated;
+          - `/v1/tile-format` describes version 2.
+
+          **Done when** the encoder–decoder round-trip tests pass for both versions, version 1 fixtures still decode, and the tile-format contract test passes.
+
+          **Result (c49beef):**
+          - **Layout:** version 2 is version 1 plus two columns, a 20-byte point. The colour is an `i16` in hundredths of a magnitude (−32768 for none), so values round-trip within 0.005 mag. The bands are a `u8` code (0 none, 1 BP−RP, 2 B−V). A decoder refuses a code that the colour value contradicts.
+          - **Limits:** the most points a tile holds is now 52,426, and `rules/tiles.yaml` restates its byte counts for version 2.
+          - **Colour order:** `tiles::colour_of` takes published BP−RP first, then B−V, then derived BP−RP.
+          - **Rust tests:** 16 tile tests pass, including round trip, refusals, and version 1 read back from the same bytes.
+          - **TypeScript tests:** 7 decoder tests pass. `fixtures/v1/` keeps the simulated domain as version 1 wrote it, never rewritten.
+          - **Tile format:** `layout(1)` and `layout(2)` both describe their versions, and `/v1/tile-format` lists each version a release uses. The OpenAPI snapshot only adds.
+
+          **Moved to E7:** the explorer's decoding. Its source is on `product/explorer`, not on this branch cut from `develop`.
+        state: done
+  - key: 01a1a6e4-6952-733c-9f6d-2d40cf52f0fe
+    id: r1-t-close
+    kind: task
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d48ece764bf
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge into product/release-8"
+        detail: |-
+          **Done when:**
+          - the new criteria are linked;
+          - the reviews' findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and `stage/release-8-r1` is merged into `product/release-8`.
+        state: open
+      - key: 01a1a71d-ef05-74be-a392-a5bc8b82f538
+        at: 2026-11-04T15:11:59Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge into product/release-8"
+        detail: |-
+          **Done when:**
+          - the new criteria are linked;
+          - the reviews' findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and `stage/release-8-r1` is merged into `product/release-8`.
+        state: active
+      - key: 01a1a742-c946-7035-be93-5ba93c735bc9
+        at: 2026-11-04T15:52:14Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge into product/release-8"
+        detail: |-
+          **Done when:**
+          - the new criteria are linked;
+          - the reviews' findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and `stage/release-8-r1` is merged into `product/release-8`.
+
+          **Result:**
+          - **Trace:** the twelve criteria are linked, and all 347 nodes are linked. The links the review changed were accepted again (82a9225).
+          - **Reviews:** the findings are fixed or left with a reason; see the review note (96a2a0e).
+          - **Gate:** `cargo xtask check` passed, 12 gates. `loft verify` is skipped off `develop`.
+          - **Integration:** the first run failed two end-to-end tests that still expected encoding version 1 from the fixture releases. They now expect version 2 and its colour bands (5de8e49), and `cargo xtask integration` passes.
+        state: done
+  - key: 01a1a6e4-6952-733c-9f6d-2d41067995c9
+    id: r1-spec
+    kind: loft
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d49ada6cf59
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "Item 8 of your list, as you chose it: both the colour index and the published spectral type."
+        recorded:
+          commit: "3a8089a0b94e93718f9ced3a3c90b28a410ee771"
+          branch: "stage/release-8-r1"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T14:09:09Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 17,
+              "graph.edges": 0,
+              "graph.nodes": 32,
+              "status.base.added": 16,
+              "status.base.changed": 1,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names.",
+                  "words": {
+                    "after": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f30c829322",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands.",
+                  "words": {
+                    "after": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f45f5a703d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported.",
+                  "words": {
+                    "after": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f5d5a8d638",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from.",
+                  "words": {
+                    "after": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives.",
+                  "words": {
+                    "after": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f71d672808",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type is kept character for character as its source publishes it, with that source.",
+                  "words": {
+                    "after": "A spectral type is kept character for character as its source publishes it, with that source."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f809221737",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured.",
+                  "words": {
+                    "after": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f9d5d7fa2d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated.",
+                  "words": {
+                    "after": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one.",
+                  "words": {
+                    "after": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fbef6c729e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between.",
+                  "words": {
+                    "after": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fc7402e820",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point whose object has no colour index carries none, which no colour index encodes.",
+                  "words": {
+                    "after": "A point whose object has no colour index carries none, which no colour index encodes."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fd633d5f44",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index is encoded within 0.01 magnitudes of the value it was built from.",
+                  "words": {
+                    "after": "A colour index is encoded within 0.01 magnitudes of the value it was built from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-020006acc572",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response lists each spectral type of the object's catalogue entries with its source and kind of value.",
+                  "words": {
+                    "after": "The response lists each spectral type of the object's catalogue entries with its source and kind of value."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The decoder decodes tiles of encoding versions 1 and 2.",
+                  "words": {
+                    "after": "The decoder decodes tiles of encoding versions 1 and 2."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01ff442efb73",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none.",
+                  "words": {
+                    "after": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f1b0391589",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Hipparcos spectral types",
+                  "words": {
+                    "after": "Hipparcos spectral types\n\nThe spectral types of the original Hipparcos catalogue (ESA 1997, The Hipparcos and Tycho Catalogues, ESA SP-1200; VizieR I/239/hip_main), attached by HIP number to the stars of the new reduction."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-1826edbc9607",
+                  "kind": "component",
+                  "label": "CMP-21",
+                  "name": "Gaia DR3 bright stars",
+                  "words": {
+                    "after": "Gaia DR3 bright stars\n\nGaia DR3 sources (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1) brighter than the G cut the source definition names, at epoch J2016.0, with their BP−RP colour and the ESP-HS spectral type of the astrophysical parameters table (Creevey et al. 2023, A&A 674, A26) where it gives one.",
+                    "before": "Gaia DR3 bright stars\n\nGaia DR3 sources (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1) brighter than the G cut the source definition names, at epoch J2016.0."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f30c829322",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f2606141e8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f45f5a703d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f2606141e8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f5d5a8d638",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f2606141e8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f71d672808",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type is kept character for character as its source publishes it, with that source.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f6f668422b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f809221737",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f6f668422b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f9d5d7fa2d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01f6f668422b"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": "FG-4",
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-152a40334d81",
+                  "kind": "feature",
+                  "label": "F-10",
+                  "name": "Build octree tiles",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one.",
+                  "parent": "01a19f23-636f-72bd-b194-152a40334d81"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fbef6c729e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01fa1bdbef62"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fc7402e820",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point whose object has no colour index carries none, which no colour index encodes.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01fa1bdbef62"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01fd633d5f44",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index is encoded within 0.01 magnitudes of the value it was built from.",
+                  "parent": "01a1a6e4-22e1-765d-b404-01fa1bdbef62"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                  "kind": "feature",
+                  "label": "F-15",
+                  "name": "Look up an object",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                  "kind": "requirement",
+                  "label": "RQ-52",
+                  "name": "When a client requests an object by its object id, Univ Server shall return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0d39dc9a3f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-020006acc572",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response lists each spectral type of the object's catalogue entries with its source and kind of value.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0ee7e600ab"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d664d79c25f9",
+                  "kind": "feature_group",
+                  "label": "FG-11",
+                  "name": "API contract",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-abfe741c359f",
+                  "kind": "feature",
+                  "label": "F-32",
+                  "name": "Decode the tile format",
+                  "parent": "01a19f1a-685d-7357-b67e-d664d79c25f9"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                  "kind": "requirement",
+                  "label": "RQ-109",
+                  "name": "The Tile codec shall provide a reference TypeScript decoder that decodes every tile of a release into the points it encodes.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abfe741c359f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The decoder decodes tiles of encoding versions 1 and 2.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01ff442efb73",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce7c64960ab",
+                  "kind": "component",
+                  "label": "CMP-7",
+                  "name": "Data providers",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce94dbc10f4",
+                  "kind": "component",
+                  "label": "CMP-11",
+                  "name": "VizieR",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a6e4-22e1-765d-b404-01f1b0391589",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Hipparcos spectral types",
+                  "parent": "01a19f1e-d177-716d-b124-3ce94dbc10f4"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3cea65a86848",
+                  "kind": "component",
+                  "label": "CMP-20",
+                  "name": "ESA Gaia Archive",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-1826edbc9607",
+                  "kind": "component",
+                  "label": "CMP-21",
+                  "name": "Gaia DR3 bright stars",
+                  "parent": "01a19f1e-d177-716d-b124-3cea65a86848"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 59,
+                    "name": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f30c829322",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 65,
+                    "name": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f45f5a703d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 67,
+                    "name": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f5d5a8d638",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 69,
+                    "name": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 71,
+                    "name": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f71d672808",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 77,
+                    "name": "A spectral type is kept character for character as its source publishes it, with that source.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f809221737",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 79,
+                    "name": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f9d5d7fa2d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 81,
+                    "name": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 37,
+                    "name": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01fbef6c729e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01fc7402e820",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 45,
+                    "name": "A point whose object has no colour index carries none, which no colour index encodes.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01fd633d5f44",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 47,
+                    "name": "A colour index is encoded within 0.01 magnitudes of the value it was built from.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-020006acc572",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "The response lists each spectral type of the object's catalogue entries with its source and kind of value.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 30,
+                    "name": "The decoder decodes tiles of encoding versions 1 and 2.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01ff442efb73",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 32,
+                    "name": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01f1b0391589",
+                    "kind": "component",
+                    "label": null,
+                    "line": 62,
+                    "name": "Hipparcos spectral types",
+                    "path": "spec/components/data-providers.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a19f22-2ad9-716e-876f-1826edbc9607",
+                    "kind": "component",
+                    "label": "CMP-21",
+                    "line": 69,
+                    "name": "Gaia DR3 bright stars",
+                    "path": "spec/components/data-providers.yaml"
+                  }
+                ],
+                "commit": "3a8089a0b94e93718f9ced3a3c90b28a410ee771",
+                "removed": [],
+                "revision": "develop"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 3,
+                "publishedAt": "2026-11-04T03:15:52Z",
+                "stateRoot": "bfa1564b3c6aaaffd9900d17ab5eadf5e06e0ae5d093a141b2b81cf1fa426f09"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/release-8-r1",
+                "modified": [
+                  "spec/components/data-providers.yaml",
+                  "spec/products/univ-ingest/normalization/normalize-records.yaml",
+                  "spec/products/univ-ingest/releases/build-octree-tiles.yaml",
+                  "spec/products/univ-server/api-contract/decode-the-tile-format.yaml",
+                  "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a6e4-6952-733c-9f6d-2d42714ea436
+    id: r1-approve
+    kind: approval
+    versions:
+      - key: 01a1a6e4-6952-733c-9f6d-2d4ad906753b
+        at: 2026-11-04T14:09:09Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8: star colours, spectral types and tile version 2"
+        markdown: |-
+          **What changes (the spec-change above):**
+          - **normalize-records:**
+            - Colour indices are kept as measurements naming their two bands: Hipparcos-2's B−V and V−I, and Gaia's BP−RP, each with its published uncertainty, or marked none reported.
+            - GCNS BP−RP is computed from its two magnitudes, so it is **derived** and names them.
+          - **Spectral types** are kept character for character as published:
+            - the Hipparcos catalogue's, classified from spectra, are **measured**;
+            - Gaia DR3's ESP-HS class, a model fit to BP/RP spectra, is **estimated**.
+          - **look-up-an-object:** the record lists each spectral type with its source and kind.
+          - **build-octree-tiles:** encoding version 2 gives each star point a colour index and its bands (Gaia BP−RP first, then B−V, then GCNS BP−RP), within 0.01 mag, or marks that it has none.
+          - **decode-the-tile-format:** the reference decoder reads versions 1 and 2.
+          - **data-providers:**
+            - a new provider: Hipparcos I/239 for spectral types (ESA 1997), attached by HIP number;
+            - Gaia's entry gains BP−RP and ESP-HS (Creevey et al. 2023).
+
+          **Look at:**
+          - The colour order prefers Gaia's BP−RP. E7 then maps colour to a star's colour through the Pecaut & Mamajek table, which has both BP−RP and B−V columns, so no conversion between bands is needed.
+          - ESP-HS gives a class only for hot stars (O, B and A types); most stars will carry only Hipparcos types or none.
+  - key: 01a1a6e4-aef4-7020-9f2d-2f46abd2aa88
+    id: r1-approve-2
+    kind: approval
+    versions:
+      - key: 01a1a6e4-aef4-7020-9f2d-2f472cb6b7c2
+        at: 2026-11-04T14:09:27Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8: star colours, spectral types and tile version 2"
+        markdown: |-
+          **What changes (the spec-change above):**
+          - **normalize-records:**
+            - Colour indices are kept as measurements naming their two bands: Hipparcos-2's B−V and V−I, and Gaia's BP−RP, each with its published uncertainty, or marked none reported.
+            - GCNS BP−RP is computed from its two magnitudes, so it is **derived** and names them.
+          - **Spectral types** are kept character for character as published:
+            - the Hipparcos catalogue's, classified from spectra, are **measured**;
+            - Gaia DR3's ESP-HS class, a model fit to BP/RP spectra, is **estimated**.
+          - **look-up-an-object:** the record lists each spectral type with its source and kind.
+          - **build-octree-tiles:** encoding version 2 gives each star point a colour index and its bands (Gaia BP−RP first, then B−V, then GCNS BP−RP), within 0.01 mag, or marks that it has none.
+          - **decode-the-tile-format:** the reference decoder reads versions 1 and 2.
+          - **data-providers:**
+            - a new provider: Hipparcos I/239 for spectral types (ESA 1997), attached by HIP number;
+            - Gaia's entry gains BP−RP and ESP-HS (Creevey et al. 2023).
+
+          **Look at:**
+          - The colour order prefers Gaia's BP−RP. E7 then maps colour to a star's colour through the Pecaut & Mamajek table, which has both BP−RP and B−V columns, so no conversion between bands is needed.
+          - ESP-HS gives a class letter only (such as A or K), with no subclass or luminosity class, so it is coarser than the Hipparcos types. Which stars it covers is checked against the archive in R1, before any claim is made about it.
+    responses:
+      - key: 01a1a6ec-a4b1-737e-8526-253643e235df
+        at: 2026-11-04T14:18:08Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1a6ec-d762-7554-97be-dcb21ceb3d44
+    id: r1-decision
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a6ec-d762-7554-97be-dcb33d64593b
+        at: 2026-11-04T14:18:21Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8 carries star colours, spectral types and tile version 2"
+        consequence: |-
+          **R1 builds four things, in this order:**
+          1. the colour-index measurement and its readers;
+          2. the spectral-type text and its two sources;
+          3. tile encoding version 2 and its decoders;
+          4. the tile-format contract.
+
+          The explorer's E7 then colours stars from version 2 tiles.
+  - key: 01a1a707-0446-72f3-a668-bf1501da8464
+    id: r1-esphs
+    kind: note
+    versions:
+      - key: 01a1a707-0446-72f3-a668-bf16fe556e42
+        at: 2026-11-04T14:46:57Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What ESP-HS gives over G < 10, measured"
+        markdown: |-
+          I asked the Gaia archive on 2026-11-04 for `spectraltype_esphs` over `gaia_source` joined to `astrophysical_parameters`, with G < 10:
+
+          | Type | Stars |
+          |---|---|
+          | K | 211,248 |
+          | F | 89,418 |
+          | M | 50,417 |
+          | A | 49,198 |
+          | B | 37,905 |
+          | G | 36,724 |
+          | O | 985 |
+          | CSTAR | 886 |
+          | unknown | 1,080 |
+          | blank | 4,109 |
+
+          In all, 481,970 of the 482,106 stars have a row in the table. So ESP-HS gives a class letter for nearly every bright star, not only hot ones. The sentence I withdrew from the first approval was wrong, and the definition records these counts. "unknown" is kept as published, and E7 shows no class for it.
+  - key: 01a1a721-5b9f-7207-a349-9fef48bc06ac
+    id: r1-trace
+    kind: loft
+    versions:
+      - key: 01a1a721-5b9f-7207-a349-9ff021f307d2
+        at: 2026-11-04T15:15:43Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: |-
+          The twelve criteria of the R1 spec change are linked and accepted, and all 347 nodes in scope are linked.
+
+          One test was written for the trace: `tiles_colour` checks the order in which a stars point takes its colour index, and that a point with none carries none.
+
+          The one TR-008 info, on AC-301, predates this wave.
+        recorded:
+          commit: "14a2885fdf906230e651d7616509d4a01d44fae6"
+          branch: "stage/release-8-r1"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T15:15:43Z
+        report: |
+          {
+            "base": "develop",
+            "commit": "3a8089a0b94e93718f9ced3a3c90b28a410ee771",
+            "counts": {
+              "features": 4
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186415c2b2be",
+                    "label": "AC-36",
+                    "name": "Each position is stored in ICRS with the epoch of its source.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 66,
+                            "lastLine": 76
+                          }
+                        ],
+                        "name": "each_position_is_stored_in_icrs_with_the_epoch_of_its_source"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 236
+                          }
+                        ],
+                        "name": "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 238,
+                            "lastLine": 271
+                          }
+                        ],
+                        "name": "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1865763fa63d",
+                    "label": "AC-37",
+                    "name": "Each native value keeps its published unit beside the normalized value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 78,
+                            "lastLine": 117
+                          }
+                        ],
+                        "name": "each_native_value_keeps_its_published_unit_beside_the_normalized_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18663bbd5e71",
+                    "label": "AC-38",
+                    "name": "Normalized values use degrees for angles, km/s for velocities, parsecs for stellar distances and megaparsecs for extragalactic ones.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 119,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "normalized_values_use_degrees_km_s_parsecs_for_stars_and_megaparsecs_beyond"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1867aeb456fd",
+                    "label": "AC-39",
+                    "name": "Each value is classified by its kind of value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 145,
+                            "lastLine": 174
+                          }
+                        ],
+                        "name": "each_value_is_classified_by_its_kind_of_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-046f187e8323",
+                    "label": "AC-298",
+                    "name": "A redshift read from a published velocity that its source definition infers, without the source stating it, to stand for a comoving distance is inferred, not measured.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_groups.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "a_group_velocity_read_as_a_comoving_distance_is_inferred_and_one_read_as_cz_measured"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186820f4df2c",
+                    "label": "AC-40",
+                    "name": "Each uncertainty is typed as a symmetric error, an asymmetric interval, a stated interval with no probability, an upper or lower limit, a credible region, or none reported.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 199
+                          }
+                        ],
+                        "name": "each_uncertainty_is_typed_by_the_form_its_source_published"
+                      },
+                      {
+                        "file": "crates/univ-model/src/distance/convert.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 201,
+                            "lastLine": 222
+                          }
+                        ],
+                        "name": "a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_tracers.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 117,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "a_member_placed_at_its_structure_s_redshift_slice_carries_the_slice_s_width"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 210
+                          }
+                        ],
+                        "name": "a_redshift_without_an_error_keeps_the_peculiar_velocity_term_and_a_stated_interval_its_bounds"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186959bf0d6e",
+                    "label": "AC-41",
+                    "name": "A value published without an uncertainty is marked as having none reported, never as having zero uncertainty.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 201,
+                            "lastLine": 226
+                          }
+                        ],
+                        "name": "a_value_published_without_an_error_is_marked_none_reported"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186b82bcfc95",
+                    "label": "AC-42",
+                    "name": "The kinds of distance are parallax, geometric or photogeometric, primary indicator, secondary indicator, spectroscopic redshift and photometric redshift.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 228,
+                            "lastLine": 259
+                          }
+                        ],
+                        "name": "the_kinds_of_distance_are_the_six_the_specification_names"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186c1d4c0f38",
+                    "label": "AC-43",
+                    "name": "The method names the indicator, such as Cepheids, the tip of the red giant branch, masers, type Ia supernovae, surface brightness fluctuations, Tully-Fisher or fundamental plane.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 261,
+                            "lastLine": 291
+                          }
+                        ],
+                        "name": "the_method_names_the_indicator"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 11,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "cosmicflows_groups_without_a_five_method_distance_are_direct_calibrations"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186d9b7a0c04",
+                    "label": "AC-44",
+                    "name": "A distance published in h⁻¹ Mpc or for a stated Hubble constant keeps that constant beside its native value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 293,
+                            "lastLine": 325
+                          }
+                        ],
+                        "name": "a_distance_in_h_inverse_mpc_or_for_a_stated_hubble_constant_keeps_that_constant"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186e940da69e",
+                    "label": "AC-45",
+                    "name": "A distance modulus is kept as published beside the distance derived from it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 327,
+                            "lastLine": 349
+                          }
+                        ],
+                        "name": "a_distance_modulus_is_kept_as_published_beside_the_distance_derived_from_it"
+                      },
+                      {
+                        "file": "crates/univ-model/src/distance/convert.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 201,
+                            "lastLine": 222
+                          }
+                        ],
+                        "name": "a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f835cca0e82",
+                    "label": "AC-299",
+                    "name": "Each distance names its measure: luminosity, comoving, Euclidean or unspecified.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 54
+                          }
+                        ],
+                        "name": "a_distance_takes_the_measure_its_definition_states_and_a_modulus_gives_a_luminosity_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f8400aee970",
+                    "label": "AC-300",
+                    "name": "A distance derived from a distance modulus is a luminosity distance.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 54
+                          }
+                        ],
+                        "name": "a_distance_takes_the_measure_its_definition_states_and_a_modulus_gives_a_luminosity_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187089f08fa0",
+                    "label": "AC-46",
+                    "name": "A heliocentric redshift is kept as measured.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 11,
+                            "lastLine": 24
+                          }
+                        ],
+                        "name": "a_heliocentric_redshift_is_kept_as_measured"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187151a4aac5",
+                    "label": "AC-47",
+                    "name": "The CMB-frame redshift uses the Planck 2018 dipole of 369.82 km/s toward galactic longitude 264.021° and latitude 48.253°.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 301,
+                            "lastLine": 313
+                          }
+                        ],
+                        "name": "the_planck_2018_dipole_is_used_and_its_apex_matches_astropy_in_icrs"
+                      },
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 315,
+                            "lastLine": 332
+                          }
+                        ],
+                        "name": "cz_rises_toward_the_apex_falls_away_from_it_and_holds_across_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 38
+                          }
+                        ],
+                        "name": "the_cmb_redshift_uses_the_planck_2018_dipole"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1872f4143cd2",
+                    "label": "AC-48",
+                    "name": "The derivation is recorded with the redshift it was derived from.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 334,
+                            "lastLine": 347
+                          }
+                        ],
+                        "name": "the_derivation_keeps_the_measured_redshift_and_the_dipole"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f30c829322",
+                    "label": null,
+                    "name": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "hipparcos_2_keeps_its_b_v_with_its_error_and_its_v_i_with_none_reported"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 117,
+                            "lastLine": 203
+                          }
+                        ],
+                        "name": "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f45f5a703d",
+                    "label": null,
+                    "name": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "hipparcos_2_keeps_its_b_v_with_its_error_and_its_v_i_with_none_reported"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f5d5a8d638",
+                    "label": null,
+                    "name": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "gcns_derives_bp_rp_from_its_two_magnitudes_and_gives_none_where_they_are_blank"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f71d672808",
+                    "label": null,
+                    "name": "A spectral type is kept character for character as its source publishes it, with that source.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_flag"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f809221737",
+                    "label": null,
+                    "name": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_flag"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f9d5d7fa2d",
+                    "label": null,
+                    "name": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187496ae140f",
+                    "label": "AC-49",
+                    "name": "The source's provenance gives the count of entries left out for each reason.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 173,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "a_failed_normalization_leaves_no_earlier_report_in_the_provenance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18755300ea38",
+                    "label": "AC-50",
+                    "name": "No entry is left out without a reason recorded.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 351,
+                            "lastLine": 381
+                          }
+                        ],
+                        "name": "no_entry_is_left_out_without_a_reason"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 383,
+                            "lastLine": 400
+                          }
+                        ],
+                        "name": "a_simulated_galaxy_and_an_unsuitable_redshift_are_left_out_and_counted"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 87
+                          }
+                        ],
+                        "name": "a_row_repeating_an_identifier_is_left_out_and_counted_and_the_match_goes_on"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f8501160747",
+                    "label": "AC-301",
+                    "name": "A row whose cells are all blank is left out under the reason `blank_row`.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [
+                      "TR-008"
+                    ],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1877e0c274f2",
+                    "label": "AC-51",
+                    "name": "Each fix in a source definition names the defect, the change it makes and the evidence for it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 362,
+                            "lastLine": 377
+                          }
+                        ],
+                        "name": "each_fix_names_its_defect_change_and_evidence_or_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 379,
+                            "lastLine": 393
+                          }
+                        ],
+                        "name": "every_fix_of_the_first_release_names_its_defect_change_and_evidence"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 100,
+                            "lastLine": 129
+                          }
+                        ],
+                        "name": "a_replaced_group_position_names_kourkchi_and_tully_and_the_fix"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187827977f54",
+                    "label": "AC-52",
+                    "name": "Cosmicflows-4's SGX, SGY and SGZ columns are read as km/s, as the evidence shows, although VizieR labels them Mpc.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 402,
+                            "lastLine": 428
+                          }
+                        ],
+                        "name": "cosmicflows_sgx_sgy_and_sgz_are_read_as_km_s_though_vizier_labels_them_mpc"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18790159a9dd",
+                    "label": "AC-53",
+                    "name": "The source's provenance lists each fix applied with the number of entries it changed.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 430,
+                            "lastLine": 471
+                          }
+                        ],
+                        "name": "the_report_lists_each_fix_applied_with_the_entries_it_changed"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 127
+                          }
+                        ],
+                        "name": "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                "label": "F-4",
+                "name": "Normalize records",
+                "requirements": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "label": "RQ-15",
+                    "name": "Univ Ingest shall convert each catalogue entry into univ-model values while keeping each native value.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "convert each catalogue entry into univ-model values while keeping each native value.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "label": "RQ-16",
+                    "name": "Univ Ingest shall record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "label": "RQ-17",
+                    "name": "Univ Ingest shall keep each redshift in the frame its source published it in and derive its value in the CMB frame.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep each redshift in the frame its source published it in and derive its value in the CMB frame.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "label": null,
+                    "name": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep each colour index a source publishes for a star, between the two bands the source names.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "label": null,
+                    "name": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep each spectral type a source publishes for a star as the text the source gives.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "label": "RQ-18",
+                    "name": "If a catalogue entry fails validation, then Univ Ingest shall leave the entry out of the release and count it under its reason.",
+                    "statement": {
+                      "condition": "a catalogue entry fails validation",
+                      "form": "unwanted",
+                      "shall": "leave the entry out of the release and count it under its reason.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "label": "RQ-19",
+                    "name": "Univ Ingest shall fix a known defect of a source only as its source definition states the fix.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "fix a known defect of a source only as its source definition states the fix.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152c99726521",
+                    "label": "AC-91",
+                    "name": "Each scale domain has its own root: stars in parsecs, nearby galaxies and cosmic web in megaparsecs.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152dec6f0f74",
+                    "label": "AC-92",
+                    "name": "Each object belongs to one scale domain: stars where the source definition of the catalogue entry that holds its preferred distance names stars, and otherwise nearby galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the distance came from.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 185
+                          }
+                        ],
+                        "name": "an_object_s_scale_domain_follows_its_placed_distance_and_a_star_stays_a_star"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 246
+                          }
+                        ],
+                        "name": "every_placed_object_s_scale_domain_follows_its_placed_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152e3b4f79ee",
+                    "label": "AC-93",
+                    "name": "A node is split when it holds more points than the release's split threshold, down to the release's maximum depth.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 187,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "a_node_splits_above_the_threshold_down_to_the_maximum_depth"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152f904380b9",
+                    "label": "AC-94",
+                    "name": "Each level holds an even random subsample, and a finer level adds points without repeating those of the levels above it.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 227,
+                            "lastLine": 259
+                          }
+                        ],
+                        "name": "each_level_is_an_even_random_subsample_and_a_finer_level_repeats_no_point"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 285,
+                            "lastLine": 350
+                          }
+                        ],
+                        "name": "every_inner_node_of_a_level_keeps_one_fraction_so_shown_densities_keep_their_ratio"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15306fd09eef",
+                    "label": "AC-95",
+                    "name": "The subsample is drawn with a seed recorded in the tile manifest.",
+                    "requirement": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 261,
+                            "lastLine": 278
+                          }
+                        ],
+                        "name": "the_subsample_is_drawn_with_the_seed_the_manifest_records"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15326d1a7654",
+                    "label": "AC-96",
+                    "name": "Positions are quantized relative to their node, with a step no coarser than 1/65,536 of the node's edge.",
+                    "requirement": "01a19f23-636f-72bd-b194-1531af0609ed",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_encoding.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 22,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "positions_are_quantized_within_a_step_of_one_65536th_of_their_node"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1533772ccbaf",
+                    "label": "AC-97",
+                    "name": "The tile manifest states the encoding version and the quantization step of each level.",
+                    "requirement": "01a19f23-636f-72bd-b194-1531af0609ed",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_encoding.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 99
+                          }
+                        ],
+                        "name": "the_manifest_states_the_encoding_version_and_each_levels_step"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 352,
+                            "lastLine": 412
+                          }
+                        ],
+                        "name": "the_source_table_says_whether_each_source_gave_points_their_distance_or_position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01fbef6c729e",
+                    "label": null,
+                    "name": "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_colour.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 54,
+                            "lastLine": 72
+                          }
+                        ],
+                        "name": "a_point_takes_gaia_bp_rp_then_hipparcos_b_v_then_a_derived_bp_rp"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01fc7402e820",
+                    "label": null,
+                    "name": "A point whose object has no colour index carries none, which no colour index encodes.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_colour.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 83
+                          }
+                        ],
+                        "name": "a_point_whose_object_has_no_colour_index_the_tiles_code_carries_none"
+                      },
+                      {
+                        "file": "crates/univ-model/src/tile/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 126,
+                            "lastLine": 155
+                          }
+                        ],
+                        "name": "a_colour_index_round_trips_to_the_nearest_hundredth_with_its_bands_or_none"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01fd633d5f44",
+                    "label": null,
+                    "name": "A colour index is encoded within 0.01 magnitudes of the value it was built from.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/tile/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 126,
+                            "lastLine": 155
+                          }
+                        ],
+                        "name": "a_colour_index_round_trips_to_the_nearest_hundredth_with_its_bands_or_none"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153527b1bfc8",
+                    "label": "AC-98",
+                    "name": "Two builds from the same sources, rules and seed give tiles with the same SHA-256.",
+                    "requirement": "01a19f23-636f-72bd-b194-1534af285ad4",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_encoding.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 126,
+                            "lastLine": 162
+                          }
+                        ],
+                        "name": "two_builds_from_the_same_inputs_and_seed_give_the_same_bytes"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/tiles_cli.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636f-72bd-b194-152a40334d81",
+                "label": "F-10",
+                "name": "Build octree tiles",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "label": "RQ-36",
+                    "name": "Univ Ingest shall build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1531af0609ed",
+                    "label": "RQ-37",
+                    "name": "Univ Ingest shall encode each point of a tile with its position, object id, source and kind of value.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "encode each point of a tile with its position, object id, source and kind of value.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01fa1bdbef62",
+                    "label": null,
+                    "name": "Univ Ingest shall encode, from encoding version 2, each point's colour index where its object has one.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "encode, from encoding version 2, each point's colour index where its object has one.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1534af285ad4",
+                    "label": "RQ-38",
+                    "name": "Univ Ingest shall build byte-identical tiles from identical inputs.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "build byte-identical tiles from identical inputs.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d0f2163e49f",
+                    "label": "AC-131",
+                    "name": "The response lists every catalogue entry resolved to the object, each with its source and the designation that source gives it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 38
+                          }
+                        ],
+                        "name": "every_entry_is_listed_with_its_source_and_designation"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 115
+                          }
+                        ],
+                        "name": "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d100d0beecf",
+                    "label": "AC-132",
+                    "name": "The response lists every measurement with its native value, unit, uncertainty, kind of value and source.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 52
+                          }
+                        ],
+                        "name": "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 117,
+                            "lastLine": 203
+                          }
+                        ],
+                        "name": "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d11207d1f43",
+                    "label": "AC-133",
+                    "name": "The response names the preferred measurement and the ranking rule that chose it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 54,
+                            "lastLine": 63
+                          }
+                        ],
+                        "name": "the_preferred_measurement_names_the_ranking_rule_that_chose_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 205,
+                            "lastLine": 231
+                          }
+                        ],
+                        "name": "the_preferred_measurement_reads_with_the_ranking_that_chose_it"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-020006acc572",
+                    "label": null,
+                    "name": "The response lists each spectral type of the object's catalogue entries with its source and kind of value.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 115
+                          }
+                        ],
+                        "name": "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1233780c6e",
+                    "label": "AC-134",
+                    "name": "Each derived position names its frame, epoch, release cosmology and the transformation that produced it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 65,
+                            "lastLine": 73
+                          }
+                        ],
+                        "name": "a_derived_position_names_its_frame_epoch_cosmology_and_transformation"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 233,
+                            "lastLine": 268
+                          }
+                        ],
+                        "name": "every_derived_position_names_its_frame_epoch_cosmology_and_chain"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d14e7c5aa1e",
+                    "label": "AC-135",
+                    "name": "The response lists each candidate match to another object with its confidence.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 270,
+                            "lastLine": 284
+                          }
+                        ],
+                        "name": "every_candidate_match_reads_with_its_confidence"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 331,
+                            "lastLine": 347
+                          }
+                        ],
+                        "name": "candidate_links_are_written_with_no_duplicate_key"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d15581dbbe1",
+                    "label": "AC-136",
+                    "name": "An object with no distance has a sky position and no derived three-dimensional position.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 75,
+                            "lastLine": 81
+                          }
+                        ],
+                        "name": "an_object_with_no_distance_has_a_sky_position_and_no_derived_position"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 286,
+                            "lastLine": 329
+                          }
+                        ],
+                        "name": "an_object_with_no_distance_has_a_sky_position_and_no_derived_position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d17358a5809",
+                    "label": "AC-137",
+                    "name": "A designation is given as a source and that source's identifier, such as Gaia DR3 and a source_id.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 161,
+                            "lastLine": 174
+                          }
+                        ],
+                        "name": "a_designation_is_a_source_and_its_identifier"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 101
+                          }
+                        ],
+                        "name": "a_designation_resolves_to_its_object"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d187201bad5",
+                    "label": "AC-138",
+                    "name": "A common name such as M31 resolves through the names the sources publish for their catalogue entries.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 83,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "a_common_name_resolves_ignoring_letter_case_and_white_space"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d192b854029",
+                    "label": "AC-139",
+                    "name": "Name matching ignores letter case and whitespace.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 137,
+                            "lastLine": 150
+                          }
+                        ],
+                        "name": "a_name_resolves_ignoring_letter_case_and_white_space"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 83,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "a_common_name_resolves_ignoring_letter_case_and_white_space"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1a9f344b6d",
+                    "label": "AC-140",
+                    "name": "A name that more than one object carries answers with the list of those objects instead of choosing one.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 152,
+                            "lastLine": 159
+                          }
+                        ],
+                        "name": "a_name_more_than_one_object_carries_leads_to_each_of_them"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 200,
+                            "lastLine": 208
+                          }
+                        ],
+                        "name": "a_name_more_than_one_object_carries_answers_300_with_each"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1c08830bee",
+                    "label": "AC-141",
+                    "name": "An id merged into one object answers with a permanent redirect to that object in the same release.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 45,
+                            "lastLine": 51
+                          }
+                        ],
+                        "name": "an_id_merged_into_one_object_leads_to_it_naming_the_release_that_merged_it"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 187
+                          }
+                        ],
+                        "name": "a_merged_id_answers_301_to_its_object_in_the_same_release"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "an_id_replaced_twice_leads_to_the_object_the_read_release_holds_naming_each_change"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1d3700915c",
+                    "label": "AC-142",
+                    "name": "An id split into more than one object answers with the list of objects that replaced it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 53,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "an_id_split_into_more_than_one_object_leads_to_each_of_them"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 189,
+                            "lastLine": 198
+                          }
+                        ],
+                        "name": "a_split_id_answers_300_with_the_objects_that_replaced_it"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 108,
+                            "lastLine": 125
+                          }
+                        ],
+                        "name": "a_split_into_many_objects_lists_every_one"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1e82a3e951",
+                    "label": "AC-143",
+                    "name": "The response names the release in which the id was replaced.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 187
+                          }
+                        ],
+                        "name": "a_merged_id_answers_301_to_its_object_in_the_same_release"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 189,
+                            "lastLine": 198
+                          }
+                        ],
+                        "name": "a_split_id_answers_300_with_the_objects_that_replaced_it"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "a_merge_into_an_object_later_retired_names_both_changes"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2d-251d-77d9-a8e5-ffa62e4598ec",
+                    "label": "AC-144",
+                    "name": "A read of a release in which the id still names an object returns that object, whatever later releases did to it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "a_read_of_a_release_that_still_holds_the_id_returns_it_whatever_later_releases_did"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2075b12616",
+                    "label": "AC-145",
+                    "name": "The response status is 404.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1f02c8bee9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 103,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "a_lookup_that_finds_nothing_answers_404_naming_what_was_looked_up"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 210,
+                            "lastLine": 216
+                          }
+                        ],
+                        "name": "a_retired_id_answers_404_naming_the_release_that_retired_it"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d21ce741ac6",
+                    "label": "AC-146",
+                    "name": "The problem details name the id, designation or name that was looked up.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1f02c8bee9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 103,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "a_lookup_that_finds_nothing_answers_404_naming_what_was_looked_up"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                "label": "F-15",
+                "name": "Look up an object",
+                "requirements": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "label": "RQ-52",
+                    "name": "When a client requests an object by its object id, Univ Server shall return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                    "statement": {
+                      "condition": "a client requests an object by its object id",
+                      "form": "event_driven",
+                      "shall": "return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "label": "RQ-53",
+                    "name": "When a client requests an object by a catalogue designation or a common name, Univ Server shall return the object that the designation or name resolves to.",
+                    "statement": {
+                      "condition": "a client requests an object by a catalogue designation or a common name",
+                      "form": "event_driven",
+                      "shall": "return the object that the designation or name resolves to.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "label": "RQ-54",
+                    "name": "When a client requests an object id that the release it reads from records as merged into another object or split into more than one, Univ Server shall direct the client to the objects of that release that replaced it.",
+                    "statement": {
+                      "condition": "a client requests an object id that the release it reads from records as merged into another object or split into more than one",
+                      "form": "event_driven",
+                      "shall": "direct the client to the objects of that release that replaced it.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1f02c8bee9",
+                    "label": "RQ-55",
+                    "name": "If no object carries the requested id, designation or name, then Univ Server shall answer that the object was not found.",
+                    "statement": {
+                      "condition": "no object carries the requested id, designation or name",
+                      "form": "unwanted",
+                      "shall": "answer that the object was not found.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-ac0049cc05d8",
+                    "label": "AC-281",
+                    "name": "The description gives the byte layout of a tile for each version of the encoding the release uses.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abff12284f64",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 185,
+                            "lastLine": 202
+                          }
+                        ],
+                        "name": "the_tile_format_gives_the_byte_layout_of_each_encoding_the_release_uses"
+                      },
+                      {
+                        "file": "crates/univ-model/src/tile/format_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 81,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "the_layouts_sizes_add_up_to_the_encoders_tile"
+                      },
+                      {
+                        "file": "crates/univ-model/src/tile/format_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 136
+                          }
+                        ],
+                        "name": "reading_a_tile_by_the_layout_gives_what_the_decoder_gives"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 296,
+                            "lastLine": 303
+                          }
+                        ],
+                        "name": "the_tile_format_describes_each_encoding_the_release_uses"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-ac0273b5ac3b",
+                    "label": "AC-282",
+                    "name": "Each decoded position lies within the quantization step the tile manifest states of the position the tile was built from.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/tile-decoder/decode.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 79,
+                            "lastLine": 98
+                          }
+                        ],
+                        "name": "AC-282: each decoded position lies within the stated quantization step of the original"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-ac037abf14fd",
+                    "label": "AC-283",
+                    "name": "Each decoded point gives its object id, its source and its kind of value.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/tile-decoder/decode.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 100,
+                            "lastLine": 111
+                          }
+                        ],
+                        "name": "AC-283: each decoded point gives its object id, its source and its kind of value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-ac04fdc1fabe",
+                    "label": "AC-284",
+                    "name": "A tile with an encoding version the decoder does not know fails with an error that names the version.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/tile-decoder/decode.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 161,
+                            "lastLine": 172
+                          }
+                        ],
+                        "name": "AC-284: a tile of an encoding version the decoder does not know fails naming the version"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                    "label": null,
+                    "name": "The decoder decodes tiles of encoding versions 1 and 2.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/tile-decoder/decode.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 113,
+                            "lastLine": 129
+                          }
+                        ],
+                        "name": "the decoder decodes tiles of encoding versions 1 and 2"
+                      },
+                      {
+                        "file": "crates/univ-model/src/tile/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 157,
+                            "lastLine": 188
+                          }
+                        ],
+                        "name": "a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_colours"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01ff442efb73",
+                    "label": null,
+                    "name": "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/tile-decoder/decode.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 131,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "each decoded point of a version 2 tile gives its colour index and bands, or that it has none"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f20-8e6c-7039-b16f-abfe741c359f",
+                "label": "F-32",
+                "name": "Decode the tile format",
+                "requirements": [
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abff12284f64",
+                    "label": "RQ-108",
+                    "name": "When a client requests the tile format, Univ Server shall return the JSON Schema of the tile manifest and the description of the tile encoding.",
+                    "statement": {
+                      "condition": "a client requests the tile format",
+                      "form": "event_driven",
+                      "shall": "return the JSON Schema of the tile manifest and the description of the tile encoding.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                    "label": "RQ-109",
+                    "name": "The Tile codec shall provide a reference TypeScript decoder that decodes every tile of a release into the points it encodes.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "provide a reference TypeScript decoder that decodes every tile of a release into the points it encodes.",
+                      "system": "The Tile codec"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 347,
+              "linked": 347,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a73b-08ce-715e-a37a-916ba4996305
+    id: r1-review
+    kind: note
+    versions:
+      - key: 01a1a73b-08ce-715e-a37a-916c8a0dac61
+        at: 2026-11-04T15:43:46Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What the reviews found, and what changed (96a2a0e)"
+        markdown: |-
+          `/simplify` (four reviewers) and `/code-review` ran on the wave's diff.
+
+          **Fixed:**
+
+          | Finding | Change |
+          |---|---|
+          | Gaia ESP-HS writes `unknown` for 1,080 bright stars it gave no type; that read as an estimated type | A spectral-type reading lists what its source writes for none; Gaia's `none: [unknown]` cites the DR3 data model |
+          | An entry attached by HIP number gave hipparcos-1997 no sky footprint, against read-a-source | An entry with no position of its own covers its object's position; the test's source-id special case is gone |
+          | At least 263 HIP numbers of I/239 have no Hipparcos-2 star | Stated in the definition's cuts: each stands as an object with its type, no position, found by its HIP designation |
+          | A derived BP−RP skipped `Quantity::new`/`Value::normalize` and took the first magnitude's kind | It goes through both, with the weaker kind of the two |
+          | A band name was free text, so a misspelling would silently drop a tile colour | The definition check refuses a band outside U B V R I G BP RP J H Ks, or one named twice |
+          | A too-large version 1 tile was refused quoting version 2's limit | The error carries the point size; the limit is version 1's own 61,678 |
+          | The known versions, point sizes and colour codes were written in several places | One table each in the codec; `layout`, the decoder and the max-points formula read them; `code` and `of_code` are checked both ways |
+          | `CatalogueEntry::check` ignored the new fields | It checks colours are in magnitudes and a spectral type is not blank |
+          | `colour_of` allocated a string per comparison over up to three passes | One pass with no allocation |
+          | Copies of existing helpers | `from_extra`, `Resolver::reading`, the simulated test builders; extras built as distances build theirs |
+
+          **Left as they are, with the reason:**
+          - **A malformed colour cell drops the row.** That is the pipeline's rule for every numeric column it reads (magnitude, velocity, proper motion), and it is counted by reason in the provenance.
+          - **A colour's `n` counts within its entry.** Distances work the same way, and the row's `kind` term names the bands.
+          - **The colour order is in code, not `rules/tiles.yaml`.** The build-octree-tiles criterion fixes the order, so it is a requirement, not a tunable rule.
+          - **The spectral type stays in `entries.extra`, not in columns.** This was the approved design: it needs no migration of older releases. The schema comments now name it.
+          - **Interning band strings, and boxing `colours`.** These are small per-row savings and would change the model's types.
+        tone: info
+  - key: 01a1a742-e6e8-7456-9c0f-bf413cef2613
+    id: r1-produced
+    kind: note
+    versions:
+      - key: 01a1a742-e6e8-7456-9c0f-bf42351dc4c4
+        at: 2026-11-04T15:52:21Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What R1 produced"
+        markdown: |-
+          **Release 8's ingest now keeps:**
+          - **Colour indices** as measurements naming their two bands:
+            - Hipparcos-2's B−V (with its error) and V−I;
+            - Gaia DR3's BP−RP;
+            - GCNS BP−RP, derived from its two magnitudes and naming them.
+          - **Spectral types** as published text:
+            - the Hipparcos catalogue's (I/239), measured, from a new source attached by HIP number;
+            - Gaia ESP-HS's class letter, estimated, with its `unknown` read as no type.
+
+          **The object record** lists both: `band` and `derived_from` on each measurement, and `spectral_type` on each entry.
+
+          **Tiles are encoding version 2.** Each stars point carries its colour index to the hundredth of a magnitude and its bands. The order is Gaia BP−RP, else B−V, else derived BP−RP. Both decoders still read version 1.
+
+          **For what comes next:**
+          - **R3** builds release 8 with these sources live: Gaia's query now joins `astrophysical_parameters`, and hipparcos-1997 is a new fetch of 118,218 rows.
+          - **E7** needs the explorer's decoder to read version 2. It is on `product/explorer`, so it waits for the merges into `develop` you ask for.
+          - **Open:** at least 263 HIP numbers have no Hipparcos-2 star. They stand as objects with a spectral type and no position, and the definition's cuts say so.
+        tone: success

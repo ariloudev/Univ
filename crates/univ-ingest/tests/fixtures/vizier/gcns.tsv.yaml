@@ -1,5 +1,5 @@
 source: gcns
-url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FA%2BA%2F649%2FA6%2Ftable1c&-out=GaiaEDR3%2CRA_ICRS%2CDE_ICRS%2Ce_RA_ICRS%2Ce_DE_ICRS%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CRV%2Ce_RV%2CDist50%2CDist16%2CDist84%2CGmag%2CGCNSprob&-out.max=5&GaiaEDR3=0..576460752303423487
-retrieved: 2026-11-03T03:55:42Z
-sha256: 7e902f4e1ae01b33008e0d38d93554e932760877bce9e12836f04fad35cfc18b
+url: http://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=J%2FA%2BA%2F649%2FA6%2Ftable1c&-out=GaiaEDR3%2CRA_ICRS%2CDE_ICRS%2Ce_RA_ICRS%2Ce_DE_ICRS%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CRV%2Ce_RV%2CDist50%2CDist16%2CDist84%2CGmag%2CGCNSprob%2CBPmag%2CRPmag&-out.max=5&GaiaEDR3=0..576460752303423487
+retrieved: 2026-11-04T14:55:46Z
+sha256: 1fb137cab5ccaea5e64c921ab2f0f55af888a3ee272fbe81717df616d4921b81
 note: the first chunk's query cut to 5 rows

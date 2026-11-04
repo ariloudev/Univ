@@ -6,7 +6,7 @@
 // unit. Univ Server's tile format route describes the same layout as data.
 //
 // Encoding version 1, every number little-endian, nothing aligned or padded; a tile of
-// n points is 48 + 17 n bytes:
+// n points is 48 + 17 n bytes (version 2 adds two columns after these, below):
 //
 //   0       4 bytes  magic "UVTL"
 //   4       u16      encoding version, 1
@@ -19,6 +19,14 @@
 //   48+6n   n u64    each point's object id, 1 to 2^53 - 1
 //   48+14n  n u16    each point's source: an index into the manifest's sources
 //   48+16n  n u8     each point's kind of value: an index into encoding.kinds
+//
+// Version 2 has the version field 2, and a tile of n points is 48 + 20 n bytes:
+//
+//   48+17n  n i16    each point's colour index in hundredths of a magnitude; -32768 for none
+//   48+19n  n u8     its colour bands: 0 for none, else 1 + an index into encoding.colour_bands
+//
+// A colour index decodes to its value over 100, within 0.005 magnitudes of the value it was
+// built from. A point with -32768 and a code other than 0, or the other way round, is refused.
 //
 // A coordinate decodes to the centre of its step: min + (q + 0.5) * step, with step the
 // node's edge over encoding.steps_per_edge (65,536), the step its level states. It lies
@@ -68,7 +76,12 @@ export interface ManifestEncoding {
   max_tile_bytes: number;
   point_source: string;
   kinds: KindOfValue[];
+  /** The colour bands of version 2, coded by their index plus one; absent before version 2. */
+  colour_bands?: ColourBands[];
 }
+
+/** The two bands a colour index lies between. */
+export type ColourBands = 'BP-RP' | 'B-V';
 
 /** A scale domain's tile manifest: the parts a decoder reads, among others it ignores. */
 export interface TileManifest {
@@ -96,14 +109,19 @@ export interface DecodedPoint {
   source: ManifestSource;
   /** The kind of value of that distance. */
   kind: KindOfValue;
+  /** Its colour index in magnitudes and the bands it lies between; none in a version 1 tile. */
+  colour?: { index: number; bands: ColourBands };
 }
-
-/** The encoding versions this decoder knows. */
-export const VERSIONS: readonly number[] = [1];
 
 const MAGIC = [0x55, 0x56, 0x54, 0x4c]; // "UVTL"
 const HEADER_BYTES = 48;
-const POINT_BYTES = 17;
+/** The bytes a point takes, by encoding version: the versions this decoder knows. */
+const POINT_BYTES: Readonly<Record<number, number>> = { 1: 17, 2: 20 };
+
+/** The encoding versions this decoder knows. */
+export const VERSIONS: readonly number[] = Object.keys(POINT_BYTES).map(Number);
+/** The colour index a version 2 point holds when it has none. */
+const NO_COLOUR = -32_768;
 const MAX_TILE_BYTES = 1_048_576;
 const STEPS = 65_536;
 const TWO_32 = 4_294_967_296;
@@ -135,11 +153,9 @@ export function decodeTile(
     fail(`the tile starts with ${[...bytes.subarray(0, 4)].join(' ')}, not the magic UVTL`);
   }
   const version = view.getUint16(4, true);
-  if (!VERSIONS.includes(version)) {
-    fail(
-      `the tile encoding version ${version} is not one this decoder knows (it knows ${VERSIONS.join(', ')})`,
-    );
-  }
+  const pointBytes =
+    POINT_BYTES[version] ??
+    fail(`the tile encoding version ${version} is not one this decoder knows (it knows ${VERSIONS.join(', ')})`);
   if (manifest.encoding.version !== version) {
     fail(`the tile is of encoding version ${version}, the manifest of ${manifest.encoding.version}`);
   }
@@ -153,7 +169,7 @@ export function decodeTile(
     fail('a reserved field of the tile header is not zero');
   }
   const n = view.getUint32(8, true);
-  const expected = HEADER_BYTES + POINT_BYTES * n;
+  const expected = HEADER_BYTES + pointBytes * n;
   if (bytes.length !== expected) {
     fail(`the tile is ${bytes.length} bytes, not the ${expected} its count of ${n} points gives`);
   }
@@ -183,6 +199,10 @@ export function decodeTile(
   const ids = HEADER_BYTES + 6 * n;
   const sourceColumn = HEADER_BYTES + 14 * n;
   const kindColumn = HEADER_BYTES + 16 * n;
+  // Version 2's columns follow version 1's.
+  const colourColumn = HEADER_BYTES + POINT_BYTES[1] * n;
+  const bandsColumn = colourColumn + 2 * n;
+  const bandNames = manifest.encoding.colour_bands ?? [];
   const points: DecodedPoint[] = new Array(n);
   for (let k = 0; k < n; k++) {
     const at = HEADER_BYTES + 6 * k;
@@ -197,6 +217,20 @@ export function decodeTile(
     const source = sources.get(index) ?? fail(`point ${k} names source ${index}, which the manifest does not list`);
     const code = view.getUint8(kindColumn + k);
     const kind = kinds[code] ?? fail(`point ${k} has the kind of value ${code}, which the manifest does not list`);
+    let colour: DecodedPoint['colour'];
+    if (version >= 2) {
+      const held = view.getInt16(colourColumn + 2 * k, true);
+      const band = bytes[bandsColumn + k];
+      if ((held === NO_COLOUR) !== (band === 0)) {
+        fail(`point ${k} has the colour bands code ${band}, which its colour index contradicts`);
+      }
+      if (band !== 0) {
+        const bands =
+          bandNames[band - 1] ?? fail(`point ${k} has the colour bands code ${band}, which the manifest does not list`);
+        colour = { index: held / 100, bands };
+      }
+    }
+    // Every point has the same properties, colour among them, so they share one shape.
     points[k] = {
       x: coordinate(0),
       y: coordinate(1),
@@ -204,6 +238,7 @@ export function decodeTile(
       id: high * TWO_32 + low,
       source,
       kind,
+      colour,
     };
   }
   return points;

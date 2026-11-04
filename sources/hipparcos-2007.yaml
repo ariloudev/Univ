@@ -14,6 +14,7 @@ cuts:
     Positions are RArad/DErad at their own epoch J1991.25 in ICRS, as the ReadMe states; VizieR's
     header declares "J2000_1991.250: eq_FK5 J2000" for the table, and the ReadMe's ICRS is taken.
   - "Sn is the solution type of the new reduction (ReadMe Note 1: 10xd+s). The files are those of 16-Sep-2008, which correct errors in the June 2008 version."
+  - "B-V (with e_B-V) and V-I are the colour indices the ReadMe lists for the catalogue, in the Johnson B-V and Cousins V-I systems of the original Hipparcos catalogue; V-I has no error column."
 columns:
   - { column: HIP, field: identifier, unit: dimensionless }
   - { column: RArad, field: right_ascension, unit: degree }
@@ -25,6 +26,9 @@ columns:
   - { column: pmRA, field: proper_motion_ra, unit: milliarcsecond_per_year }
   - { column: pmDE, field: proper_motion_dec, unit: milliarcsecond_per_year }
   - { column: Hpmag, field: magnitude, unit: magnitude }
+  - { column: B-V, field: colour_index, unit: magnitude }
+  - { column: e_B-V, field: colour_index_error, unit: magnitude }
+  - { column: V-I, field: colour_index, unit: magnitude }
   - { column: Sn, field: quality, unit: dimensionless }
 frame: icrs
 epoch: 1991.25
@@ -70,3 +74,7 @@ fixes:
       asu-tsv answer from vizieridia.saao.ac.za (2026-11-03) gives "deg" on its units line for both,
       and HIP 1 has RArad = 000.00091185, while VizieR's _RAJ2000 for it is 000.0009007898 deg: the
       difference matches pmRA = -4.55 mas/yr over 8.75 yr only if RArad is in degrees.
+normalization:
+  colours:
+    - { bands: [B, V], column: B-V, error: e_B-V }
+    - { bands: [V, I], column: V-I }

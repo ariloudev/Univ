@@ -1,13 +1,13 @@
 #
-#   VizieR Astronomical Server vizier.idia.ac.za
-#    Date: 2026-11-03T03:55:38 [V7.6.1]
+#   VizieR Astronomical Server vizier.nao.ac.jp
+#    Date: 2026-11-04T14:55:46 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-03T03:55:39	  Query execution date
-#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FA%2BA%2F649%2FA6%2Ftable1c&-out=GaiaEDR3%2CRA_ICRS%2CDE_ICRS%2Ce_RA_ICRS%2Ce_DE_ICRS%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CRV%2Ce_RV%2CDist50%2CDist16%2CDist84%2CGmag%2CGCNSprob&-out.max=5&GaiaEDR3=0..576460752303423487	  Full request URL
+#INFO	request_date=2026-11-04T14:55:46	  Query execution date
+#INFO	request=https://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=J%2FA%2BA%2F649%2FA6%2Ftable1c&-out=GaiaEDR3%2CRA_ICRS%2CDE_ICRS%2Ce_RA_ICRS%2Ce_DE_ICRS%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CRV%2Ce_RV%2CDist50%2CDist16%2CDist84%2CGmag%2CGCNSprob%2CBPmag%2CRPmag&-out.max=5&GaiaEDR3=0..576460752303423487	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -45,12 +45,14 @@
 #Column	Dist84	(F12.5)	? 84% distance (dist_84)	[ucd=pos.distance;stat.error;stat.max]
 #Column	Gmag	(F8.4)	? Gaia G Band magnitude (phot_g_mean_mag)	[ucd=phot.mag;stat.mean;em.opt]
 #Column	GCNSprob	(F6.3)	? Good astrometry probability (GCNS_prob)	[ucd=stat.fit.goodness]
-GaiaEDR3	RA_ICRS	DE_ICRS	e_RA_ICRS	e_DE_ICRS	Plx	e_Plx	pmRA	pmDE	RV	e_RV	Dist50	Dist16	Dist84	Gmag	GCNSprob
- 	deg	deg	mas	mas	mas	mas	mas/yr	mas/yr	km/s	km/s	kpc	kpc	kpc	mag	
--------------------	-----------	-----------	--------	--------	---------	--------	---------	---------	--------	--------	------------	------------	------------	--------	------
- 530861741656374272	000.0056369	+70.8873639	 0.00951	 0.00858	   10.282	 0.01075	  -52.864	   17.787	 -26.204	  0.4477	     0.09726	     0.09716	     0.09736	 10.8521	 1.000
- 530685166960018816	000.0301522	+69.7172332	 0.11495	 0.12211	   17.931	 0.13618	  142.286	    8.544	        	        	     0.05581	     0.05538	     0.05624	 13.0890	 1.000
- 530685166956474752	000.0309765	+69.7169334	 0.03925	 0.04229	   16.983	 0.04578	  133.206	   -4.820	        	        	     0.05888	     0.05872	     0.05903	 13.4464	 0.998
- 528459858505011712	000.0329567	+66.9333239	 0.00985	 0.00992	   15.295	 0.01216	  102.814	  -23.471	        	        	     0.06538	     0.06533	     0.06543	  8.7151	 1.000
- 540420345990174208	000.0356534	+77.9359234	 0.01436	 0.01401	   10.749	 0.01579	  -81.633	  -15.521	        	        	     0.09303	     0.09289	     0.09317	 14.5651	 1.000
+#Column	BPmag	(F8.4)	? Gaia BP Band magnitude (phot_bp_mean_mag)	[ucd=phot.mag;stat.mean;em.opt.B]
+#Column	RPmag	(F8.4)	? Gaia RP Band magnitude (phot_rp_mean_mag)	[ucd=phot.mag;stat.mean;em.opt.R]
+GaiaEDR3	RA_ICRS	DE_ICRS	e_RA_ICRS	e_DE_ICRS	Plx	e_Plx	pmRA	pmDE	RV	e_RV	Dist50	Dist16	Dist84	Gmag	GCNSprob	BPmag	RPmag
+ 	deg	deg	mas	mas	mas	mas	mas/yr	mas/yr	km/s	km/s	kpc	kpc	kpc	mag	 	mag	mag
+-------------------	-----------	-----------	--------	--------	---------	--------	---------	---------	--------	--------	------------	------------	------------	--------	------	--------	--------
+ 530861741656374272	000.0056369	+70.8873639	 0.00951	 0.00858	   10.282	 0.01075	  -52.864	   17.787	 -26.204	  0.4477	     0.09726	     0.09716	     0.09736	 10.8521	 1.000	 11.3022	 10.2396
+ 530685166960018816	000.0301522	+69.7172332	 0.11495	 0.12211	   17.931	 0.13618	  142.286	    8.544	        	        	     0.05581	     0.05538	     0.05624	 13.0890	 1.000	 14.2589	 11.6100
+ 530685166956474752	000.0309765	+69.7169334	 0.03925	 0.04229	   16.983	 0.04578	  133.206	   -4.820	        	        	     0.05888	     0.05872	     0.05903	 13.4464	 0.998	        	
+ 528459858505011712	000.0329567	+66.9333239	 0.00985	 0.00992	   15.295	 0.01216	  102.814	  -23.471	        	        	     0.06538	     0.06533	     0.06543	  8.7151	 1.000	  9.0472	  8.2130
+ 540420345990174208	000.0356534	+77.9359234	 0.01436	 0.01401	   10.749	 0.01579	  -81.633	  -15.521	        	        	     0.09303	     0.09289	     0.09317	 14.5651	 1.000	 15.8737	 13.4388
 

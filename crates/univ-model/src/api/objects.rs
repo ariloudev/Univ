@@ -78,8 +78,21 @@ pub struct EntryRecord {
     pub position: Option<EntryPosition>,
     /// The group its source assigns it to, by that source's group id.
     pub group_id: Option<String>,
+    /// Its spectral type, character for character as its source publishes it, with its kind
+    /// of value.
+    pub spectral_type: Option<SpectralTypeRecord>,
     /// Its source's quality columns, by column name, as published.
     pub flags: BTreeMap<String, String>,
+}
+
+/// A spectral type as its source publishes it.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct SpectralTypeRecord {
+    pub text: String,
+    /// Measured where the source classified the star's spectrum, estimated where it fitted a
+    /// model to it.
+    pub kind_of_value: KindOfValue,
 }
 
 /// An entry's sky position: as published, and in ICRS degrees.
@@ -117,6 +130,8 @@ pub enum MeasuredQuantity {
     ProperMotionDec,
     /// An apparent magnitude in the band `band` names.
     Magnitude,
+    /// A colour index between the two bands `band` names, such as `B-V`.
+    ColourIndex,
     /// Supergalactic Cartesian velocity components (Lahav et al. 2000 axes).
     SupergalacticVelocityX,
     SupergalacticVelocityY,
@@ -145,8 +160,12 @@ pub struct MeasurementRecord {
     pub distance: Option<DistanceDetail>,
     /// What a redshift is, and its CMB-frame value.
     pub redshift: Option<RedshiftDetail>,
-    /// A magnitude's band, as its source names the column, such as `Kcmag`.
+    /// A magnitude's band, as its source names the column, such as `Kcmag`; a colour index's
+    /// two bands, such as `B-V`.
     pub band: Option<String>,
+    /// The two magnitude columns a colour index was computed from, where its source publishes
+    /// the magnitudes and not the colour.
+    pub derived_from: Option<[String; 2]>,
 }
 
 /// What a distance measurement is.

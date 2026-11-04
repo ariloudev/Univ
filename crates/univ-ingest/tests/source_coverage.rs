@@ -38,7 +38,7 @@ fn a_sources_sky_is_the_sorted_order_5_cells_of_its_entries() {
     let directions = [(200.0, -45.0), (0.0, 90.0), (10.0, 20.0), (10.001, 20.001)];
     let mut coverage = Coverage::new(Unit::Megaparsec);
     for (n, (ra, dec)) in directions.iter().enumerate() {
-        coverage.add(&at(n, *ra, *dec));
+        coverage.add(&at(n, *ra, *dec), None);
     }
     let sky = coverage.sky().unwrap();
     assert_eq!(sky.order, 5);
@@ -80,7 +80,7 @@ fn fixture_coverage(id: &str) -> (Vec<CatalogueEntry>, serde_json::Value) {
     let entries = normalized_fixture(id).entries;
     let mut coverage = Coverage::new(unit_of(definition_of(id).scale_domain));
     for e in &entries {
-        coverage.add(e);
+        coverage.add(e, None);
     }
     let radial = serde_json::to_value(coverage.radial().unwrap()).unwrap();
     (entries, radial)

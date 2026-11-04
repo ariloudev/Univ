@@ -121,12 +121,12 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
         // M81's 2MRS redshift alone is about 600% uncertain: it is not placed, and in no tile.
         "Z Step cross-match: positions: 16 placed of 25\n",
         "Z Stage tiles: 3 items\n",
-        "Z Step tiles: stars: 1 nodes, 1 points, largest tile 65 bytes\n",
-        "Z Step tiles: nearby galaxies: 1 nodes, 9 points, largest tile 201 bytes\n",
-        "Z Step tiles: cosmic web: 1 nodes, 6 points, largest tile 150 bytes\n",
-        "Z tiles: 1 stars nodes, 1 stars points, 65 stars largest tile bytes, 1 nearby galaxies \
-         nodes, 9 nearby galaxies points, 201 nearby galaxies largest tile bytes, 1 cosmic web \
-         nodes, 6 cosmic web points, 150 cosmic web largest tile bytes, 9 unplaced objects in no \
+        "Z Step tiles: stars: 1 nodes, 1 points, largest tile 68 bytes\n",
+        "Z Step tiles: nearby galaxies: 1 nodes, 9 points, largest tile 228 bytes\n",
+        "Z Step tiles: cosmic web: 1 nodes, 6 points, largest tile 168 bytes\n",
+        "Z tiles: 1 stars nodes, 1 stars points, 68 stars largest tile bytes, 1 nearby galaxies \
+         nodes, 9 nearby galaxies points, 228 nearby galaxies largest tile bytes, 1 cosmic web \
+         nodes, 6 cosmic web points, 168 cosmic web largest tile bytes, 9 unplaced objects in no \
          tile\n",
         "Z Stage tiles done: 1 stars nodes, ",
         "Z Stopped at tiles: tiles only; no release was asked for\n",

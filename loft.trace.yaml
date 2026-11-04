@@ -438,6 +438,51 @@ links:
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from"
         body: b6efd372f0832aab9d1583dc1ecca6a7a3bcfcf4cc5ffafd94621115eb4b2ef1
+  - node: 01a1a6e4-22e1-765d-b404-01f30c829322
+    reviewed: 60945386f89db68da045a88683c59ffaab382acf891e19b20a8434bacec4ea48
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_colours.rs"
+        name: "hipparcos_2_keeps_its_b_v_with_its_error_and_its_v_i_with_none_reported"
+        body: d718124e1ca54cb0c34ba28adc3621e9498a25587a1ce6292d89e529f6e85612
+      - file: "crates/univ-ingest/tests/normalize_colours.rs"
+        name: "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+        body: b197f00cd66d1b4b402ba6b0f03aec1250b86128b59a4e3d9148ef92e24ac489
+      - file: "crates/univ-ingest/tests/object_reads.rs"
+        name: "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
+        body: 284a9694a515f74decd15afbb2b400280dc7e21f3ab92b3731fa58b82d319835
+  - node: 01a1a6e4-22e1-765d-b404-01f45f5a703d
+    reviewed: 3f1abf092f4639561f40d8ee5b8f7bdd333ebc8c857c4e6b43350494439c2cba
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_colours.rs"
+        name: "hipparcos_2_keeps_its_b_v_with_its_error_and_its_v_i_with_none_reported"
+        body: d718124e1ca54cb0c34ba28adc3621e9498a25587a1ce6292d89e529f6e85612
+  - node: 01a1a6e4-22e1-765d-b404-01f5d5a8d638
+    reviewed: 47c1936ca6c48d40ec9ecc5e57a2db48fc755ddc72d092b300b916217a0ab4d9
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_colours.rs"
+        name: "gcns_derives_bp_rp_from_its_two_magnitudes_and_gives_none_where_they_are_blank"
+        body: e05d80bcc3a2ff9e8f71c74aaf55e4830b8587c6462a8513009c8593af865561
+  - node: 01a1a6e4-22e1-765d-b404-01f71d672808
+    reviewed: 9b97097d265def47d91f843819330a12a91a209da8779822dd23af3eae9a46a0
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_colours.rs"
+        name: "the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_flag"
+        body: 56054f4ea089b93798dee246cd558f8f388a2c12da5103d10b06b15dcaddb76c
+      - file: "crates/univ-ingest/tests/normalize_colours.rs"
+        name: "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+        body: b197f00cd66d1b4b402ba6b0f03aec1250b86128b59a4e3d9148ef92e24ac489
+  - node: 01a1a6e4-22e1-765d-b404-01f809221737
+    reviewed: cc0ddea18080d8550ec85e4b2eef8e1d20f72d6c20dbb10ba7147bb5a6a224cc
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_colours.rs"
+        name: "the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_flag"
+        body: 56054f4ea089b93798dee246cd558f8f388a2c12da5103d10b06b15dcaddb76c
+  - node: 01a1a6e4-22e1-765d-b404-01f9d5d7fa2d
+    reviewed: 351a554d174dfc2bfa6985fef0e34e940dea2b40d7367653be2b82eea7a0feda
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_colours.rs"
+        name: "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+        body: b197f00cd66d1b4b402ba6b0f03aec1250b86128b59a4e3d9148ef92e24ac489
   - node: 01a19f22-2ad9-716e-876f-187496ae140f
     reviewed: 3986c15c272a6f5d16b86090a8a8719e033c11d2edf8ba42797307ec340cae4c
     tests:
@@ -995,13 +1040,13 @@ links:
         body: 95090ff027783519855552b3b82342fbdc451d6b61ca33016dd6047feb2aff8c
       - file: "crates/univ-ingest/tests/release_details.rs"
         name: "the_fixture_release_records_each_sources_reference_and_coverage"
-        body: 7af7c23fad162126e9bb9129776a08e09346fb10c616d85ae3d8c50140283bcd
+        body: 358989dca152c5e5c2b6179a27a3e60923254e88baf3c6a0d6ec2db64b7ccba0
   - node: 01a1a304-4ae3-74cc-a986-969a727616ef
     reviewed: 8f2b05687101297da355fd5f8da38b0aba0230a2cf0d49bb24bfcd6cfe1e6ed6
     tests:
       - file: "crates/univ-ingest/tests/source_coverage.rs"
         name: "a_sources_sky_is_the_sorted_order_5_cells_of_its_entries"
-        body: be36108a62bb90b395980b278b9dca6bc95c4d89aa4954c73a4ab4cdd1418571
+        body: cd0b1381bb767aeafebd494902c191ffa3ccf29f9ce89552952c5dd1220d9d5a
       - file: "crates/univ-ingest/tests/source_coverage.rs"
         name: "the_radial_range_of_2mrs_is_that_of_its_redshifts_as_published"
         body: 222d94095679b250c707de97ca3c7977fef78cc5966ef0ae8093f6671f1b707e
@@ -1010,7 +1055,7 @@ links:
         body: b51698a03ea1d42ad6ca75bb91930927a4d567d69dfe513b3be64fc0ea8fc7b0
       - file: "crates/univ-ingest/tests/release_details.rs"
         name: "the_fixture_release_records_each_sources_reference_and_coverage"
-        body: 7af7c23fad162126e9bb9129776a08e09346fb10c616d85ae3d8c50140283bcd
+        body: 358989dca152c5e5c2b6179a27a3e60923254e88baf3c6a0d6ec2db64b7ccba0
   - node: 01a1a304-2788-77fb-8f0d-273ac3c97e3c
     reviewed: 58a22444377c403d1b68e7e76e812253fd880676ee9903d70e7883594da8fbb0
     tests:
@@ -1127,10 +1172,31 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "the_manifest_states_the_encoding_version_and_each_levels_step"
-        body: 01be2f272c07712f46144f7241ede4b28f574fa2e2bf5a8a63adf14d493473a4
+        body: 6753ece14d7cd160bf22b4e2a5396f262a3879e7f39ac129ea297ab4ffed808b
       - file: "crates/univ-ingest/tests/tiles.rs"
         name: "the_source_table_says_whether_each_source_gave_points_their_distance_or_position"
         body: 60e814e89587e17c7ae0f39f0e0774ff8a63c59ae92233c851387c7b9e72bdd5
+  - node: 01a1a6e4-22e1-765d-b404-01fbef6c729e
+    reviewed: 2d7f8884228bda53a9976d74939a025925bfc6ad74be128a2ec93de75c584875
+    tests:
+      - file: "crates/univ-ingest/tests/tiles_colour.rs"
+        name: "a_point_takes_gaia_bp_rp_then_hipparcos_b_v_then_a_derived_bp_rp"
+        body: 0ac77b9411dc86328134e4e309bef870477a60def909027e89adaaf486d13640
+  - node: 01a1a6e4-22e1-765d-b404-01fc7402e820
+    reviewed: 0791e12de665d399627443267930c2c5b38f2ffdcfcf9b4513ee0c1c0d6bd64a
+    tests:
+      - file: "crates/univ-ingest/tests/tiles_colour.rs"
+        name: "a_point_whose_object_has_no_colour_index_the_tiles_code_carries_none"
+        body: 27a32efde6df508fc009fc906b5007804fc02e2afc62973a860c26d469c8b485
+      - file: "crates/univ-model/src/tile/tests.rs"
+        name: "a_colour_index_round_trips_to_the_nearest_hundredth_with_its_bands_or_none"
+        body: 27060f0f149f24bd00d2d5ed3f1763aa49ceb41712c253b95b421852e99dfca2
+  - node: 01a1a6e4-22e1-765d-b404-01fd633d5f44
+    reviewed: 05d8489d7e5d9c1a4aa67b5a31f0ebfb77a40ea57669f54e4a0215cf82de3f20
+    tests:
+      - file: "crates/univ-model/src/tile/tests.rs"
+        name: "a_colour_index_round_trips_to_the_nearest_hundredth_with_its_bands_or_none"
+        body: 27060f0f149f24bd00d2d5ed3f1763aa49ceb41712c253b95b421852e99dfca2
   - node: 01a19f23-636f-72bd-b194-153527b1bfc8
     reviewed: 01b394cf56e3be520717d6e3aedd5bd7dec4a53014e5dc281727ae06d8e532fd
     tests:
@@ -1139,7 +1205,7 @@ links:
         body: 375d87ed294516dd46a2432041e40029417dd901de690a52965eba976d84736a
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: 3a50615299d0cf2008927c96a087a377c843ac1cf76f93336866dae4a613562b
+        body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
   - node: 01a19f23-636f-72bd-b194-1536b3b46eba
     reviewed: 3f558f7729869bcac13551d351b84e16571ee4843004754609970d9b08c111f3
     tests:
@@ -1283,7 +1349,7 @@ links:
         body: bba61434f6d49da2d39e82e9e3efcd298358f76ddc7781f0c8da9f6e2c63b5a3
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: 3a50615299d0cf2008927c96a087a377c843ac1cf76f93336866dae4a613562b
+        body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
         body: 432bc0143addc9f348a01a091f9c3977772a0f203706c401611b8c484ac6bcb9
@@ -1367,7 +1433,7 @@ links:
         body: ae3a075bbab555b875550fdbb6598d70e8dd5a2bdfd0265a391c33535cf9db8b
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: 3a50615299d0cf2008927c96a087a377c843ac1cf76f93336866dae4a613562b
+        body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
         body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
@@ -1388,7 +1454,7 @@ links:
         body: ae3a075bbab555b875550fdbb6598d70e8dd5a2bdfd0265a391c33535cf9db8b
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: 3a50615299d0cf2008927c96a087a377c843ac1cf76f93336866dae4a613562b
+        body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
         body: 432bc0143addc9f348a01a091f9c3977772a0f203706c401611b8c484ac6bcb9
@@ -1514,7 +1580,7 @@ links:
         body: 5a3aff19cc24e1d793d29fdba67e93c1cc9cb5c2e9818d15efcafeae631c8cd2
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
-        body: d3ae0b653930c89cbe2a524f699f79062ca8960b5d5792daee63e6c786cabe35
+        body: b99646a236e9fed252c4186ffcc6d9046a07e540f08a3096dfc244b0408be712
       - file: "crates/univ-server/tests/e2e.rs"
         name: "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
         body: 435d37c3a828395e58e075c44bf41e7ef6709cf1397a577bfbb3168ddd502aaa
@@ -1526,7 +1592,7 @@ links:
         body: 26283df6ba7360e9baf810bfa9cd288a53b35bc2a78ae948446c101520b44522
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
-        body: f43bf5280387edb8688d20bc30300ce35510ccae103377e159257ac77ae49e70
+        body: 284a9694a515f74decd15afbb2b400280dc7e21f3ab92b3731fa58b82d319835
   - node: 01a19f1e-d177-716d-b124-3d11207d1f43
     reviewed: ac193fa9e2b6b44b02fd3160919b2f8f02210ea2a9316ae3052ac3cf61759587
     tests:
@@ -1539,6 +1605,12 @@ links:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
         body: 435d37c3a828395e58e075c44bf41e7ef6709cf1397a577bfbb3168ddd502aaa
+  - node: 01a1a6e4-22e1-765d-b404-020006acc572
+    reviewed: 3c3bd3fe9d20bedc6418ea1096774dbcb40df50984dffa28f97e0814e6287fd0
+    tests:
+      - file: "crates/univ-ingest/tests/object_reads.rs"
+        name: "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
+        body: b99646a236e9fed252c4186ffcc6d9046a07e540f08a3096dfc244b0408be712
   - node: 01a19f1e-d177-716d-b124-3d1233780c6e
     reviewed: bfc71725b8808dc589e327e577d331796355ed8f9b7069e46a80890d2a9e54dc
     tests:
@@ -2753,10 +2825,10 @@ links:
         body: 40bce44e5f4cb1adcf39faf48e1ae44b19891f9f47974d4faf353de782441246
       - file: "crates/univ-model/src/tile/format_tests.rs"
         name: "the_layouts_sizes_add_up_to_the_encoders_tile"
-        body: 22e901b8d8315171b9c48cce10e8c4d19c810c3ad7e68828479961e715b221fe
+        body: a043352ba5eafbe71c21fced1b109b0a15cd20440259156902161b316416f72c
       - file: "crates/univ-model/src/tile/format_tests.rs"
         name: "reading_a_tile_by_the_layout_gives_what_the_decoder_gives"
-        body: 1ef21b1312eb0db87a613c9096f6aff889da381c70b832ffd09c905b58864811
+        body: 69605ce4b6f56c772a842db7b96ec064168ca2c23054d29489db7b69ed7de97c
       - file: "crates/univ-server/tests/e2e.rs"
         name: "the_tile_format_describes_each_encoding_the_release_uses"
         body: 1ebf217d1bed2810793aa1788427c10d87699e4a562d0952b6cf5c42184e070e
@@ -2777,7 +2849,22 @@ links:
     tests:
       - file: "clients/tile-decoder/decode.test.ts"
         name: "AC-284: a tile of an encoding version the decoder does not know fails naming the version"
-        body: fe17f3186740c9055e64d9471141291dbe541967e0ffe3e44d4c707349b956cd
+        body: 859e6e72928a38209b409fe716e350ee6633c47c071bbe0c2059f6be4a32accd
+  - node: 01a1a6e4-22e1-765d-b404-01feaa3330ef
+    reviewed: 637b2f4a44857c91d51aa64951c5440bfe6f6ce422723794a9ba5285aa09cd7a
+    tests:
+      - file: "clients/tile-decoder/decode.test.ts"
+        name: "the decoder decodes tiles of encoding versions 1 and 2"
+        body: f498937ecb739a5adc7e0ea950c4a1d0aa0922696d3d710ee02f7c9db6c3a3c8
+      - file: "crates/univ-model/src/tile/tests.rs"
+        name: "a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_colours"
+        body: 15154e5d6b3d7407832ae75f30d7a758a823f7ad9d90a461e2a309bc94a22784
+  - node: 01a1a6e4-22e1-765d-b404-01ff442efb73
+    reviewed: 279d1e3ce5238e28b0e8c711c9cbe69fe7cec4d115e2e9537e4ce6dd435dfa3c
+    tests:
+      - file: "clients/tile-decoder/decode.test.ts"
+        name: "each decoded point of a version 2 tile gives its colour index and bands, or that it has none"
+        body: 1e577bee76d8ac7bc99ad17ef0309f1588efd3b3068d57eb25419ed1cf098b1e
   - node: 01a19f20-8e6c-7039-b16f-ac0782b8bf64
     reviewed: cd3d5c598eb5768886cce5b75d25023538b1c09c500dc8d51e4db468635f4520
     tests:

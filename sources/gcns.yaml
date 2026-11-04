@@ -32,6 +32,8 @@ columns:
   - { column: Dist16, field: distance_low, unit: kiloparsec }
   - { column: Dist84, field: distance_high, unit: kiloparsec }
   - { column: Gmag, field: magnitude, unit: magnitude }
+  - { column: BPmag, field: colour_magnitude, unit: magnitude }
+  - { column: RPmag, field: colour_magnitude, unit: magnitude }
   - { column: GCNSprob, field: quality, unit: dimensionless }
 frame: icrs
 epoch: 2016.0
@@ -72,6 +74,10 @@ mirrors:
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
 normalization:
+  colours:
+    # GCNS publishes the BP and RP magnitudes of Gaia EDR3, not their difference: BP-RP is
+    # derived from them.
+    - { bands: [BP, RP], from: [BPmag, RPmag] }
   distances:
     - value: Dist50
       error: { credible_interval: { low: Dist16, high: Dist84, probability: 0.68 } }

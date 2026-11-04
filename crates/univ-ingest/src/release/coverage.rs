@@ -18,7 +18,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use univ_model::api::sources::{RadialRange, SkyFootprint};
-use univ_model::entry::CatalogueEntry;
+use univ_model::entry::{CatalogueEntry, Position};
 use univ_model::ids::SourceId;
 use univ_model::release::rows::SourceDetailRow;
 use univ_model::units::Unit;
@@ -95,9 +95,11 @@ impl Coverage {
         }
     }
 
-    /// Adds `entry`.
-    pub fn add(&mut self, entry: &CatalogueEntry) {
-        if let Some(p) = &entry.position {
+    /// Adds `entry`, on the sky at its own position, else at `object_at`, the position of the
+    /// object it joined: an entry attached by identifier, such as a spectral type by HIP number,
+    /// covers the sky of the stars it describes.
+    pub fn add(&mut self, entry: &CatalogueEntry, object_at: Option<&Position>) {
+        if let Some(p) = entry.position.as_ref().or(object_at) {
             self.cells
                 .insert(cell(COVERAGE_ORDER, p.icrs.ra, p.icrs.dec));
         }
@@ -238,13 +240,19 @@ pub fn coverages(
         .collect();
     let mut out: BTreeMap<SourceId, Coverage> = BTreeMap::new();
     for o in objects {
+        let object_at = o
+            .object
+            .preferred_position
+            .as_ref()
+            .and_then(|p| o.object.entry(&p.entry))
+            .and_then(|e| e.entry.position.as_ref());
         for e in &o.object.entries {
             let source = &e.entry.designation.source;
             out.entry(source.clone())
                 .or_insert_with(|| {
                     Coverage::new(units.get(source).copied().unwrap_or(Unit::Megaparsec))
                 })
-                .add(&e.entry);
+                .add(&e.entry, object_at);
         }
     }
     out

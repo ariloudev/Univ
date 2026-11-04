@@ -23,8 +23,10 @@ The fixtures in `fixtures/` are JSON:
 
 - `<domain>.manifest.json` is a tile manifest exactly as Univ Ingest writes it.
 - `<domain>.tiles.json` holds that domain's tiles in hexadecimal, as the Rust encoder wrote them.
-  Beside each point it gives the position before quantization, the object id, the source and
-  the kind of value.
+  Beside each point it gives the position before quantization, the object id, the source, the
+  kind of value, and the colour index before rounding with its bands, or `null`.
+- `v1/` keeps the SIMULATED domain as encoding version 1 wrote it, before version 2: it is never
+  rewritten, so the decoder keeps reading the tiles of releases built before version 2.
 
 The fixtures cover the three scale domains of Univ Ingest's fixture release, which is real
 data, and one SIMULATED domain (`simulated.*`) with several levels, two sources and every kind
@@ -41,7 +43,7 @@ UPDATE_FIXTURES=1 cargo test -p univ-ingest --test tile_decoder_fixtures
 import { decodeTile, VERSIONS } from './decode.ts';
 
 const points = decodeTile(bytes, node, manifest);
-// [{ x, y, z, id, source, kind }, ...] in the order the tile stores them
+// [{ x, y, z, id, source, kind, colour? }, ...] in the order the tile stores them
 ```
 
 - `bytes: Uint8Array` is the tile of `node`, such as `releases/{n}/tiles/{domain}/{address}.bin`.
@@ -57,7 +59,10 @@ const points = decodeTile(bytes, node, manifest);
     with its title, citation and required credit.
   - `kind`: the kind of value of that distance, one of `measured`, `estimated`, `inferred` or
     `reconstructed`.
-- `VERSIONS` lists the encoding versions the decoder knows; today that is `[1]`.
+  - `colour`, in a version 2 tile where the point's object has one: `{ index, bands }`, its
+    colour index in magnitudes to the hundredth and the bands it lies between, `BP-RP` or
+    `B-V`. Absent in a version 1 tile and for a point with none.
+- `VERSIONS` lists the encoding versions the decoder knows: `[1, 2]`.
 
 `decodeTile` throws an `Error` in these cases:
 

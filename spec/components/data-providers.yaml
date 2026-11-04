@@ -59,13 +59,16 @@ components:
       - key: 01a19f22-2ad9-716e-876f-1825c9086ff6
         name: "Hipparcos new reduction"
         body: "The Hipparcos catalogue as reduced by van Leeuwen 2007 (A&A 474, 653; VizieR I/311), at epoch J1991.25, for the brightest stars."
+      - key: 01a1a6e4-22e1-765d-b404-01f1b0391589
+        name: "Hipparcos spectral types"
+        body: "The spectral types of the original Hipparcos catalogue (ESA 1997, The Hipparcos and Tycho Catalogues, ESA SP-1200; VizieR I/239/hip_main), attached by HIP number to the stars of the new reduction."
   - key: 01a19f1e-d177-716d-b124-3cea65a86848
     name: "ESA Gaia Archive"
     body: "The TAP service of Gaia DR3 and the tables published beside it."
     components:
       - key: 01a19f22-2ad9-716e-876f-1826edbc9607
         name: "Gaia DR3 bright stars"
-        body: "Gaia DR3 sources (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1) brighter than the G cut the source definition names, at epoch J2016.0."
+        body: "Gaia DR3 sources (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1) brighter than the G cut the source definition names, at epoch J2016.0, with their BP−RP colour and the ESP-HS spectral type of the astrophysical parameters table (Creevey et al. 2023, A&A 674, A26) where it gives one."
       - key: 01a19f22-2ad9-716e-876f-18279019d046
         name: "Bailer-Jones 2021 distances"
         body: "Geometric and photogeometric distances to Gaia EDR3 sources (Bailer-Jones et al. 2021, AJ 161, 147), used in place of inverted parallaxes."

@@ -56,6 +56,30 @@ requirements:
         name: "The CMB-frame redshift uses the Planck 2018 dipole of 369.82 km/s toward galactic longitude 264.021° and latitude 48.253°."
       - key: 01a19f22-2ad9-716e-876f-1872f4143cd2
         name: "The derivation is recorded with the redshift it was derived from."
+  - key: 01a1a6e4-22e1-765d-b404-01f2606141e8
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "keep each colour index a source publishes for a star, between the two bands the source names."
+    criteria:
+      - key: 01a1a6e4-22e1-765d-b404-01f30c829322
+        name: "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands."
+      - key: 01a1a6e4-22e1-765d-b404-01f45f5a703d
+        name: "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported."
+      - key: 01a1a6e4-22e1-765d-b404-01f5d5a8d638
+        name: "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from."
+  - key: 01a1a6e4-22e1-765d-b404-01f6f668422b
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "keep each spectral type a source publishes for a star as the text the source gives."
+    criteria:
+      - key: 01a1a6e4-22e1-765d-b404-01f71d672808
+        name: "A spectral type is kept character for character as its source publishes it, with that source."
+      - key: 01a1a6e4-22e1-765d-b404-01f809221737
+        name: "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured."
+      - key: 01a1a6e4-22e1-765d-b404-01f9d5d7fa2d
+        name: "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated."
   - key: 01a19f22-2ad9-716e-876f-18734f56d5aa
     statement:
       form: unwanted

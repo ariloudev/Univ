@@ -82,9 +82,11 @@ cross_identifications:
     basis: >-
       The HIP number of Hipparcos-2 (van Leeuwen 2007, A&A 474, 653), given in the Gaia DR3
       to Hipparcos-2 best-neighbour table as original_ext_source_id (Marrese et al. 2019,
-      A&A 621, A144).
+      A&A 621, A144). The new reduction keeps the HIP numbers of the original catalogue
+      (ESA 1997, ESA SP-1200), whose spectral types are attached by them.
     members:
       - { source: hipparcos-2007, field: identifier }
+      - { source: hipparcos-1997, field: identifier }
       - { source: gaia-dr3-hipparcos2, field: name }
   - scheme: 2masx
     basis: >-

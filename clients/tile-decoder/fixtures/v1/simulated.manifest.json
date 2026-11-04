@@ -1,0 +1,296 @@
+{
+  "format": "univ-tile-manifest",
+  "manifest_version": 1,
+  "release": "1",
+  "scale_domain": "stars",
+  "frame": {
+    "name": "ICRS equatorial Cartesian",
+    "origin": "Solar System barycentre",
+    "axes": "x toward (RA, Dec) = (0 deg, 0 deg), y toward (90 deg, 0 deg), z toward Dec = +90 deg",
+    "epoch": "each object's position at the epoch of its preferred sky position, not propagated"
+  },
+  "unit": "pc",
+  "cosmology": {
+    "name": "Planck 2018 (A&A 641, A6, Table 2: TT,TE,EE+lowE+lensing+BAO)",
+    "hubble_constant": 67.66,
+    "omega_matter": 0.3111
+  },
+  "rotations": {
+    "applied_as": "row-major matrix times the ICRS column vector [x, y, z]",
+    "to_galactic": [
+      [
+        -0.05487556041621561,
+        -0.873437090234885,
+        -0.48383501554871317
+      ],
+      [
+        0.49410942787558354,
+        -0.44482962996001124,
+        0.7469822444972188
+      ],
+      [
+        -0.8676661490190047,
+        -0.1980763734312013,
+        0.45598377617506697
+      ]
+    ],
+    "galactic_basis": "Hipparcos catalogue (ESA 1997, vol. 1, sec. 1.5.3): the transpose of A_G",
+    "to_supergalactic": [
+      [
+        0.37501547780780486,
+        0.3413589618290254,
+        0.861880183426672
+      ],
+      [
+        -0.8983204556165199,
+        -0.09572714072498714,
+        0.4287851134887344
+      ],
+      [
+        0.22887496679521785,
+        -0.9350456532745492,
+        0.27075057870087615
+      ]
+    ],
+    "supergalactic_basis": "Lahav et al. 2000 (MNRAS 312, 166): pole at galactic (47.37, 6.32) deg, origin at (137.37, 0) deg"
+  },
+  "encoding": {
+    "version": 1,
+    "header_bytes": 48,
+    "point_bytes": 17,
+    "steps_per_edge": 65536,
+    "max_tile_bytes": 1048576,
+    "point_source": "the index in sources of the source of the point's preferred distance, which gives its kind of value too",
+    "kinds": [
+      "measured",
+      "estimated",
+      "inferred",
+      "reconstructed"
+    ]
+  },
+  "levels": [
+    {
+      "level": 0,
+      "edge": 1024.0,
+      "step": 0.015625,
+      "fraction": 0.13333333333333333
+    },
+    {
+      "level": 1,
+      "edge": 512.0,
+      "step": 0.0078125,
+      "fraction": 1.0
+    }
+  ],
+  "sampling": {
+    "seed": 5,
+    "generator": "ChaCha20, key the seed's 8 little-endian bytes then 24 zero bytes, stream the domain's number; level by level from the root, the nodes of a level in order of address, an inner node of n points keeps floor(level_points * n / m) of them, m the most points reaching any inner node of its level, drawn by a partial Fisher-Yates shuffle over its points in increasing id; a leaf keeps every point reaching it, the finest level of its region",
+    "stream": 0,
+    "split_threshold": 12,
+    "level_points": 8,
+    "max_depth": 3,
+    "statement": "test rules"
+  },
+  "points": 60,
+  "radius": 440.3703192138384,
+  "sources": [
+    {
+      "index": 0,
+      "id": "gaia-dr3-bright",
+      "role": "distance_and_position",
+      "title": "Gaia DR3 bright stars (G < 10)",
+      "citation": "Gaia Collaboration, Vallenari A., Brown A.G.A., Prusti T., et al. 2023, \"Gaia Data Release 3: Summary of the content and survey properties\", A&A 674, A1. 2023A&A...674A...1G, doi:10.1051/0004-6361/202243940. Gaia Collaboration, Prusti T., de Bruijne J.H.J., et al. 2016, \"The Gaia mission\", A&A 595, A1. 2016A&A...595A...1G, doi:10.1051/0004-6361/201629272.",
+      "credit": "The Gaia data are open and free to use, provided credit is given to ‘ESA/Gaia/DPAC’. This work has made use of data from the European Space Agency (ESA) mission Gaia ( https://www.cosmos.esa.int/gaia ), processed by the Gaia Data Processing and Analysis Consortium (DPAC, https://www.cosmos.esa.int/web/gaia/dpac/consortium ). Funding for the DPAC has been provided by national institutions, in particular the institutions participating in the Gaia Multilateral Agreement. Cite both the Gaia mission paper (Gaia Collaboration, Prusti et al. 2016) and the Gaia DR3 release paper (Gaia Collaboration, Vallenari et al. 2023), link the CC BY-NC 3.0 IGO licence and say what was changed."
+    },
+    {
+      "index": 1,
+      "id": "hipparcos-2007",
+      "role": "distance_and_position",
+      "title": "Hipparcos, the new reduction (van Leeuwen 2007)",
+      "citation": "van Leeuwen F. 2007, \"Validation of the new Hipparcos reduction\", A&A 474, 653. 2007A&A...474..653V, doi:10.1051/0004-6361:20078357. Catalogue: van Leeuwen F. 2007, \"Hipparcos, the New Reduction of the Raw Data\", Astrophysics & Space Science Library 350; VizieR catalogue I/311.",
+      "credit": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23. Cite van Leeuwen 2007, A&A 474, 653."
+    }
+  ],
+  "nodes": [
+    {
+      "address": "r",
+      "level": 0,
+      "bounds": {
+        "min": [
+          -512.0,
+          -512.0,
+          -512.0
+        ],
+        "max": [
+          512.0,
+          512.0,
+          512.0
+        ]
+      },
+      "points": 8,
+      "sampled_from": 60,
+      "bytes": 184,
+      "sha256": "19485ba2c0d0fe49b5bb0d28859e688fc3dcf91872b4f4683dad244bc13e22c0"
+    },
+    {
+      "address": "r0",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -512.0,
+          -512.0,
+          -512.0
+        ],
+        "max": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "points": 9,
+      "sampled_from": 9,
+      "bytes": 201,
+      "sha256": "e833e9fcd75dce2e23e8266060cfd11690a915311de32e7e9e942ed1328f440c"
+    },
+    {
+      "address": "r1",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          -512.0,
+          -512.0
+        ],
+        "max": [
+          512.0,
+          0.0,
+          0.0
+        ]
+      },
+      "points": 8,
+      "sampled_from": 8,
+      "bytes": 184,
+      "sha256": "8dbe72d880ba34b8753af742e9d915d5981570ede23286f448ac5279a09bbc21"
+    },
+    {
+      "address": "r2",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -512.0,
+          0.0,
+          -512.0
+        ],
+        "max": [
+          0.0,
+          512.0,
+          0.0
+        ]
+      },
+      "points": 3,
+      "sampled_from": 3,
+      "bytes": 99,
+      "sha256": "3412a6409df07af330c6721b719a427fc655804a917be2172828f886c729b9c9"
+    },
+    {
+      "address": "r3",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          0.0,
+          -512.0
+        ],
+        "max": [
+          512.0,
+          512.0,
+          0.0
+        ]
+      },
+      "points": 6,
+      "sampled_from": 6,
+      "bytes": 150,
+      "sha256": "685e98084e6cc6bf34efaaeed71cf20cb2509acad7046d38bc76c71b05d95de4"
+    },
+    {
+      "address": "r4",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -512.0,
+          -512.0,
+          0.0
+        ],
+        "max": [
+          0.0,
+          0.0,
+          512.0
+        ]
+      },
+      "points": 6,
+      "sampled_from": 6,
+      "bytes": 150,
+      "sha256": "934606cf60558dbfb3f248993a67684b52dfbc59cfe0ecac385d7bc4af2162a3"
+    },
+    {
+      "address": "r5",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          -512.0,
+          0.0
+        ],
+        "max": [
+          512.0,
+          0.0,
+          512.0
+        ]
+      },
+      "points": 8,
+      "sampled_from": 8,
+      "bytes": 184,
+      "sha256": "d876d2a6222b156a0ac219de1eef9e2142d8258106fa6b298fd10e899278cdd8"
+    },
+    {
+      "address": "r6",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -512.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          0.0,
+          512.0,
+          512.0
+        ]
+      },
+      "points": 6,
+      "sampled_from": 6,
+      "bytes": 150,
+      "sha256": "5142f8611cb264c665a5c5ef4e951e09dc537b2144fd2c3029d4f40f3eb09cbb"
+    },
+    {
+      "address": "r7",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          512.0,
+          512.0,
+          512.0
+        ]
+      },
+      "points": 6,
+      "sampled_from": 6,
+      "bytes": 150,
+      "sha256": "11ad49870dde81e055ec229233db9f12af75f715d93a2aff3e265fa18eb06259"
+    }
+  ]
+}

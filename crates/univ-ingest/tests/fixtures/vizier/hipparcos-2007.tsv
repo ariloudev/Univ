@@ -1,13 +1,13 @@
 #
-#   VizieR Astronomical Server vizier.idia.ac.za
-#    Date: 2026-11-03T03:55:42 [V7.6.1]
+#   VizieR Astronomical Server vizier.nao.ac.jp
+#    Date: 2026-11-04T14:53:57 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-03T03:55:42	  Query execution date
-#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=I%2F311%2Fhip2&-out=HIP%2CRArad%2CDErad%2Ce_RArad%2Ce_DErad%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CHpmag%2CSn&-out.max=5&HIP=1..30000	  Full request URL
+#INFO	request_date=2026-11-04T14:53:57	  Query execution date
+#INFO	request=https://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=I%2F311%2Fhip2&-out=HIP%2CRArad%2CDErad%2Ce_RArad%2Ce_DErad%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CHpmag%2CSn%2CB-V%2Ce_B-V%2CV-I&-out.max=5&HIP=1..30000	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -39,12 +39,15 @@
 #Column	pmDE	(F8.2)	Proper motion in Declination	[ucd=pos.pm;pos.eq.dec]
 #Column	Hpmag	(F7.4)	Hipparcos magnitude	[ucd=phot.mag;em.opt.V]
 #Column	Sn	(I3)	[0,159] Solution type new reduction (1)	[ucd=meta.id;stat.fit]
-HIP	RArad	DErad	e_RArad	e_DErad	Plx	e_Plx	pmRA	pmDE	Hpmag	Sn
- 	deg	deg	mas	mas	mas	mas	mas/yr	mas/yr	mag	
-------	------------	------------	------	------	-------	------	--------	--------	-------	---
-     1	000.00091185	+01.08901332	  1.29	  0.66	   4.55	  1.33	   -4.55	   -1.19	 9.2043	  5
-     2	000.00379738	-19.49883738	  0.95	  0.53	  20.85	  1.13	  182.88	   -1.31	 9.4017	 75
-     3	000.00500794	+38.85928608	  0.31	  0.21	   2.26	  0.36	    4.27	   -3.43	 6.6081	  5
-     4	000.00838188	-51.89354611	  0.40	  0.47	   7.45	  0.77	   62.64	    0.19	 8.1498	  5
-     5	000.00996502	-40.59122445	  0.55	  0.50	   3.88	  0.95	    1.89	    8.06	 8.7077	  5
+#Column	B-V	(F6.3)	Colour index	[ucd=phot.color;em.opt.B;em.opt.V]
+#Column	e_B-V	(F6.3)	Formal error on colour index	[ucd=stat.error;phot.color;em.opt.B]
+#Column	V-I	(F6.3)	V-I colour index	[ucd=phot.color;em.opt.V;em.opt.I]
+HIP	RArad	DErad	e_RArad	e_DErad	Plx	e_Plx	pmRA	pmDE	Hpmag	Sn	B-V	e_B-V	V-I
+ 	deg	deg	mas	mas	mas	mas	mas/yr	mas/yr	mag	 	mag	mag	mag
+------	------------	------------	------	------	-------	------	--------	--------	-------	---	------	------	------
+     1	000.00091185	+01.08901332	  1.29	  0.66	   4.55	  1.33	   -4.55	   -1.19	 9.2043	  5	 0.482	 0.025	 0.550
+     2	000.00379738	-19.49883738	  0.95	  0.53	  20.85	  1.13	  182.88	   -1.31	 9.4017	 75	 0.999	 0.002	 1.040
+     3	000.00500794	+38.85928608	  0.31	  0.21	   2.26	  0.36	    4.27	   -3.43	 6.6081	  5	-0.019	 0.004	 0.000
+     4	000.00838188	-51.89354611	  0.40	  0.47	   7.45	  0.77	   62.64	    0.19	 8.1498	  5	 0.370	 0.009	 0.430
+     5	000.00996502	-40.59122445	  0.55	  0.50	   3.88	  0.95	    1.89	    8.06	 8.7077	  5	 0.902	 0.013	 0.900
 

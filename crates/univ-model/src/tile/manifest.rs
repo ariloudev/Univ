@@ -23,7 +23,9 @@ use std::borrow::Cow;
 
 use serde::{Deserialize, Serialize};
 
-use super::{HEADER_BYTES, KINDS, MAX_TILE_BYTES, POINT_BYTES, STEPS, VERSION};
+use super::{
+    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, MAX_TILE_BYTES, POINT_BYTES, STEPS, VERSION,
+};
 use crate::cosmology::Cosmology;
 use crate::position::{BARYCENTRE, Frame, ICRS_CARTESIAN_NAME, Rotation, from_icrs};
 use crate::value::KindOfValue;
@@ -148,6 +150,9 @@ pub struct Encoding {
         schema(value_type = Vec<KindOfValue>, min_items = 4, max_items = 4)
     )]
     pub kinds: [KindOfValue; 4],
+    /// The colour bands, coded by their index plus one, 0 coding none; absent before version 2.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub colour_bands: Option<[ColourBands; 2]>,
 }
 
 /// The encoding of this version.
@@ -162,6 +167,7 @@ pub const ENCODING: Encoding = Encoding {
          kind of value too",
     ),
     kinds: KINDS,
+    colour_bands: Some(COLOUR_BANDS),
 };
 
 /// A level of the octree: its nodes' edge and its quantization step, in the unit, and the
