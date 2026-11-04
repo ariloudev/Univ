@@ -2841,6 +2841,195 @@ links:
       - file: "crates/univ-api/src/openapi_snapshot.rs"
         name: "removing_renaming_or_narrowing_is_caught_and_adding_is_not"
         body: 17f89eb7191cde1969fd67369147b5f77f6b26966bf15fea2913ee2bb8007511
+  - node: 01a1a497-e843-728a-bce8-4000304272e5
+    reviewed: 49e72271655bbde69ab24eed7fa3ad2a994f25202be641d3d267ed0708e52f5d
+    tests:
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "is drawn at the ICRS positions its points give, in megaparsecs"
+        body: 7f97650638312e76168858e8c0208d2f1cca1d430c3c60ef31b48e7dcee88ad7
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "is read from a manifest in parsecs or megaparsecs, and no other unit"
+        body: 4e8fd4247352f16c31d616ce00c5a9bc97cfd2ad67898fbdd30db21e75153de7
+  - node: 01a1a497-e843-728a-bce8-40018ecb5def
+    reviewed: 0e0b74c27edea48ad2954681c566fa1a56fcd289bd45f24dc16b92027a988edd
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "marks Earth as the Solar System barycentre, and says when it cannot draw"
+        body: 540201203d9e919336a94c7754c572656419fd92d3f69369214769d80ea385c3
+  - node: 01a1a497-e843-728a-bce8-40026e7286d2
+    reviewed: c351be9f44274d24780c20b9925fd09dc4e021d26e7cf3ce0502f2f699a0a1c8
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+        body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "is drawn at the ICRS positions its points give, in megaparsecs"
+        body: 7f97650638312e76168858e8c0208d2f1cca1d430c3c60ef31b48e7dcee88ad7
+  - node: 01a1a497-e843-728a-bce8-40049983aed9
+    reviewed: 60a2b90ff670f3de8d8fe9683d0c4d71ba1b5bfffd53e88f1e14b8a0af170115
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "fetches the root of every scale domain before any other tile"
+        body: 20683afb79adbafd7dbc977db51083ecd1ce58f2504d3ec7da9b3afce941df74
+  - node: 01a1a497-e843-728a-bce8-400536d8f2b5
+    reviewed: 7a67cba693c6bc16a0347260a3c8fedd055c5d4e5867d3dbbbd4ed227b2b5446
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "fetches the children of held tiles, the largest on screen first"
+        body: 4f86811c09080247474a0f9ca8311ea91616db00b176c32930593f6228879a93
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "waits for a tile's parent, and fetches even the smallest on screen in the end"
+        body: ac55815078fffb3254f3c7d517234adc6d557248be5b2099f119f66788911b18
+  - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
+    reviewed: d56d1e83e4cfbb1a73c3bc5393c25caa8ee7bb5c00b587c47d326bf8fd2283fd
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "holds no more than 3,000,000 points"
+        body: 138c74ff098555fd18134736460790fba1439e4ac4d2d3ad2ddd86d32a85bbdf
+  - node: 01a1a497-e843-728a-bce8-40081f3b67cf
+    reviewed: 4f8ef32cdbb2cad0c5d2d944602202510e5b128c1cc259b430218891e03a6900
+    tests:
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "whose bytes do not match its SHA-256 is refused"
+        body: c5f9b6986f159e03690de3c458a7542476f180dc6c6d8cad826d829b3ccbe925
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "leaves a tile that fails its SHA-256 undrawn and counts it"
+        body: 68feb548c02eb5cdf87a0d080d9b98c40857f13bd05e1635c18ebd4891088f2d
+  - node: 01a1a497-e843-728a-bce8-4009e23e1ebc
+    reviewed: 8f07b9fa802b0e4db02d15b333042143534342e209a970f2a499a41fb34c54e4
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "leaves a tile that fails its SHA-256 undrawn and counts it"
+        body: 68feb548c02eb5cdf87a0d080d9b98c40857f13bd05e1635c18ebd4891088f2d
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "does not count a tile Univ Server could not serve as failing its check"
+        body: f3d97e7ccf76e529847e89144040f00332699b8aa8ee63bdb6297188f9675b4c
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "state the tiles that failed their check, and those that could not be read"
+        body: eddaaa991540ec699571322f43e215e0db9a8433185691df244d9880fd03da63
+  - node: 01a1a497-e843-728a-bce8-400b9b581384
+    reviewed: 3321669c8f1ae6d614453311aa8e9477ac27a64ee188df719bc4accc012d2bf9
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn in four distinct colours, in one order whatever a manifest lists"
+        body: 3dc2440a8a8d49922db1fb8f36e716e8a7cd2f948741776057090fdf25326ba3
+  - node: 01a1a497-e843-728a-bce8-400c71ad8ebe
+    reviewed: 28ec7f93a5e7dc872109f9e51747747af7b8f9842acaaaff7069bd08a573fadf
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "count the points of each kind of value beside its colour"
+        body: e82a6a2ee5d1dcf1379228e0432725c6b88ec04841bc9bb61ce0d814c3406f98
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+        body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
+  - node: 01a1a497-e843-728a-bce8-400eb0b1b70d
+    reviewed: 3d68e31733a11b68aac2fed28b4280d13551e8ef4a59c1c64d49e2c245020709
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "credit each source of the drawn points with its title, citation and credit, naming the release"
+        body: b08c754a3ab477a8c567111f9bb1bb599a9aad9301c0de86562c845b4fe93d17
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+        body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
+  - node: 01a1a497-e843-728a-bce8-400fa74e76fc
+    reviewed: 9168a029025acb7360a6987f25e6b6e0f837e534a580e3564723f854f7102b34
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "credit each source of the drawn points with its title, citation and credit, naming the release"
+        body: b08c754a3ab477a8c567111f9bb1bb599a9aad9301c0de86562c845b4fe93d17
+  - node: 01a1a497-e843-728a-bce8-40111a7d5c5f
+    reviewed: 9391d08a6b70a3814402f29ccde8c89b15826c77bdab778cac888088ec830424
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "name the frame of the axes, the origin, the units and the cosmology"
+        body: 963fe1464b95e0bc2280138c5fea671fb3ec5df7bf46beb53f94c0e23cd5d28b
+  - node: 01a1a497-e843-728a-bce8-40155a522828
+    reviewed: 66744c39f5557baae7d2c96f2896819a4b59b904b78a2c2e075e5f05e28f7799
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "turns the view while the primary button drags"
+        body: 680d96a2f377500acdc6986dab28ab0079b06014c00be142faef98485b5b500d
+      - file: "clients/explorer/src/scene/camera.test.ts"
+        name: "turns about the focus and stops short of either pole"
+        body: f392657fb5b60fe11178b40203e7fa5f2c5e129a4d0c4184fbcd6301ba05c63b
+      - file: "clients/explorer/src/scene/camera.test.ts"
+        name: "keeps the frame's pole up on the screen"
+        body: a75d3c1f3787490268b4da5109aea800f6e0c4d3faade75fe85c5fb32273cab6
+  - node: 01a1a497-e843-728a-bce8-40169a56936b
+    reviewed: 1e4755b48629a7c64c1f1300422133d5dbba15e7218fb50aa9fa4b3e835ef8b5
+    tests:
+      - file: "clients/explorer/src/scene/camera.test.ts"
+        name: "turns about the focus and stops short of either pole"
+        body: f392657fb5b60fe11178b40203e7fa5f2c5e129a4d0c4184fbcd6301ba05c63b
+  - node: 01a1a497-e843-728a-bce8-4017e181b56d
+    reviewed: 477dc12816b8066f6756403aaea58ff59abce5ab41b570f1b9e34bafb5e402f7
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "calls a press that moves less than 6 pixels a click, and turns nothing"
+        body: 2b28ec99997db8b2a971fe44b08989d654ddf369f8f3c539d2eeeda1a8c119b4
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "calls a press that moves less than 6 pixels a click"
+        body: a8a5990ea95e1d19e0f689ee2f05eb07de9cfc13a66bc5901a8a31b29d7f65e3
+  - node: 01a1a497-e843-728a-bce8-40194ffc65db
+    reviewed: c8aff6a9f83401a577f93d34de33ac242885f822d2d5ebc4590ed9920673d88b
+    tests:
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "changes the distance by the same factor for each step of the wheel"
+        body: adfac48484e9a7679c93f4923172b262cc9f1976d55318d13fb2b8427d0d3fb9
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "reads a notch of the wheel as one step, in pixels, lines or pages"
+        body: 86486621ae9ce6a6005447635af384c3b0008e35806cf2a797ad081d9b59c0bd
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "zooms in a step for each notch scrolled forward"
+        body: dbe47b5032e725c5ee0ed177ab008793ba38151738e5a9a8e696c17d972a422a
+  - node: 01a1a497-e843-728a-bce8-401a8b7b26d8
+    reviewed: e63edf64132592225f907ce359863ac7bcc0f3ca85c83386e197f4416c3595fb
+    tests:
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "keeps the eye between 0.1 parsec and 20 gigaparsecs from the focus"
+        body: 8ffe2d82a36c6678e954facc6b5824bc2740dc73040ad78bb5dfb5e742b55a1b
+  - node: 01a1a497-e843-728a-bce8-401b318a282a
+    reviewed: e9af2a4cfdb6fc098e6374de23025f30dbdeead06d5f66fe55a1dadf6a5e8276
+    tests:
+      - file: "clients/explorer/src/scene/format.test.ts"
+        name: "are given in the parsec unit that suits them, with light-years beside"
+        body: 1f18e3118e0c19c27f1ae0287717113feaeb78621c321b20e15de1ea71ef56c4
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "show the distance from the eye to the focus, and return the focus to Earth"
+        body: 6a74365ecc0602a62208fb85e208ba537c03c1c02f782c8d50ba46ebff748199
+  - node: 01a1a497-e843-728a-bce8-401d23c750eb
+    reviewed: c8ec4d70631fc753e86ec1a5edec63856a08fdce1788d89bf3b0e6507ff19623
+    tests:
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "moves the focus in the plane facing the eye by the distance dragged at its depth"
+        body: fb8c05532f87fbb5748cbde14ecd1d590c93605379e71f14e2293cbc05c55a40
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "moves the focus while the secondary button, or Shift, drags"
+        body: 63103a8ccc33873a0cb87ca38e093769ebb3b70a307068876d1124322f9b5b04
+  - node: 01a1a497-e843-728a-bce8-4022b38915cd
+    reviewed: 9f4d2d913340f6ae75d603f0802f663728ecef00890f0f7760819c0504346f90
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "returns the focus to Earth"
+        body: 10826eedee5f53f7b5a8e019ea8464a446920db573d5abceefa917aa56625b7a
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "show the distance from the eye to the focus, and return the focus to Earth"
+        body: 6a74365ecc0602a62208fb85e208ba537c03c1c02f782c8d50ba46ebff748199
+  - node: 01a1a497-e843-728a-bce8-4024890baa12
+    reviewed: 176059f23b2324e2edd1a211facdfdc8419a2f4892f352fb4f7d7eac40a27db6
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "draws the chosen frame's equator as a ring around Earth"
+        body: fd56dd1de68c3aab0df0cd06df7979013f9579b8d138854cc3623fa83cdec2db
+  - node: 01a1a497-e843-728a-bce8-4025c1c8e956
+    reviewed: 12e61fd3fe8ded0c57407c82460efdd87cc0a85ed0866a2891a74e1520452311
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "changes the axes without moving the focus or any point"
+        body: af3a664c4e0e8d2bbc5173a8e23b040f16ad29bdc43557b45d00f5c7c8e4b328
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "change the axes the view shows"
+        body: 2833c5d15ba12fac06d2cf0925e2b08d93a7b01c9cfe466a6f90f63b4d906db4
   - node: 01a1a497-e843-728a-bce8-4028add2863c
     reviewed: b29686a60ed981cd31444dd6a3b80ced0fb390848553372211c06393f115159c
     tests:
