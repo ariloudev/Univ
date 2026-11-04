@@ -32,6 +32,10 @@ requirements:
         name: "A structure outlined from a volume grid names the grid, the threshold that outlined it and the test that admitted it."
       - key: 01a19f1e-d177-716d-b124-3d381a2a11dd
         name: "Each size published for another Hubble constant gives its native value beside the value rescaled to the release cosmology."
+      - key: 01a1a75d-dddb-74ed-8d5c-c9cad6ced21c
+        name: "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance."
+      - key: 01a1a75d-dddb-74ed-8d5c-c9cbdad20688
+        name: "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so."
   - key: 01a19f1e-d177-716d-b124-3d3909afed21
     statement:
       form: event_driven

@@ -1,0 +1,99 @@
+session: 8a28c3c8-b122-421a-a3de-8664f4b8b6df
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-04T16:45:52Z
+turns:
+  - started: 2026-11-04T16:20:22Z
+    ended: 2026-11-04T16:40:24Z
+  - started: 2026-11-04T16:44:39Z
+subagents:
+  - agent: a60a7e0d7cc1c2086
+    type: general-purpose
+    started: 2026-11-04T16:21:17Z
+    ended: 2026-11-04T16:36:52Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - agent: a36e21876550fa7db
+    type: general-purpose
+    started: 2026-11-04T16:21:17Z
+    ended: 2026-11-04T16:45:00Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - agent: a0c4a8dbae72e1ba9
+    type: general-purpose
+    started: 2026-11-04T16:21:17Z
+    ended: 2026-11-04T16:25:29Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - agent: a6e13dfdafe06dd52
+    type: fork
+    started: 2026-11-04T16:24:25Z
+    ended: 2026-11-04T16:28:17Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - agent: ac1028a474b72c2c4
+    type: fork
+    started: 2026-11-04T16:24:25Z
+    ended: 2026-11-04T16:31:44Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - agent: aa473807f079449ac
+    type: fork
+    started: 2026-11-04T16:24:25Z
+    ended: 2026-11-04T16:29:54Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - agent: a791a249cf5e91934
+    type: fork
+    started: 2026-11-04T16:32:26Z
+    ended: 2026-11-04T16:41:41Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - agent: a60a7e0d7cc1c2086
+    type: general-purpose
+    started: 2026-11-04T16:41:31Z
+    ended: 2026-11-04T16:41:42Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - agent: a60a7e0d7cc1c2086
+    type: general-purpose
+    started: 2026-11-04T16:41:43Z
+    ended: 2026-11-04T16:44:39Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+loft:
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-04T16:21:48Z
+    ended: 2026-11-04T16:21:50Z
+    failed: false
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-04T16:26:06Z
+    ended: 2026-11-04T16:26:08Z
+    failed: false
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-04T16:45:52Z
+    stage: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
