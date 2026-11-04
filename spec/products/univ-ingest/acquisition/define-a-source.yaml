@@ -64,6 +64,6 @@ requirements:
       - key: 01a19f22-2ad9-716e-876f-1841361113b6
         name: "The Local Group and nearby sources are McConnachie 2012 Local Group and the Updated Nearby Galaxy Catalog."
       - key: 01a19f22-2ad9-716e-876f-1842afd6d59e
-        name: "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification and the Hipparcos new reduction."
+        name: "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances."
       - key: 01a19f22-2ad9-716e-876f-18439d96b214
         name: "The structure and field sources are the CF4++ density grid, CF4 basins of attraction, 2M++ reconstruction, eRASS1 clusters and Researched structures."

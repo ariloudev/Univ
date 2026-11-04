@@ -1,0 +1,44 @@
+key: 01a1a825-fb4e-702c-a84f-bf71f70beb40
+slug: record-a-researched-star-distance
+name: "Record a researched star distance"
+body: |
+  Giving a naked-eye star that Hipparcos and Gaia leave without a usable distance the distance its
+  papers publish for it, without a single uncited number. Such a star is too bright for a Gaia
+  parallax, and its Hipparcos parallax too uncertain to invert.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cee44add674
+  - 01a19f1e-d177-716d-b124-3cf3def064d0
+requirements:
+  - key: 01a1a825-fb4e-702c-a84f-bf728a424bbe
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "read each researched star distance from a star file in which every number cites where it comes from."
+    criteria:
+      - key: 01a1a825-fb4e-702c-a84f-bf7366dc3a34
+        name: "Each number cites its paper and the sentence or table cell it was taken from."
+      - key: 01a1a825-fb4e-702c-a84f-bf74029af338
+        name: "A star file joins the object of the Hipparcos star whose HIP number it gives."
+      - key: 01a1a825-fb4e-702c-a84f-bf7588585aa4
+        name: "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives."
+      - key: 01a1a825-fb4e-702c-a84f-bf76499f0e46
+        name: "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member."
+      - key: 01a1a825-fb4e-702c-a84f-bf77402e4c76
+        name: "The entry of a star file names the paper its values come from."
+  - key: 01a1a825-fb4e-702c-a84f-bf78ded1df98
+    statement:
+      form: unwanted
+      if: "a number in a star file cites nothing, or its quoted sentence does not hold it"
+      system: "Univ Ingest"
+      shall: "refuse the star file and name the number."
+    criteria:
+      - key: 01a1a825-fb4e-702c-a84f-bf793b4b68ec
+        name: "The message names the star file, the field and the number."
+  - key: 01a1a825-fb4e-702c-a84f-bf7a85f10357
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it."
+    criteria:
+      - key: 01a1a825-fb4e-702c-a84f-bf7b361027b4
+        name: "A star file without a distance gives the reason none was found, and adds no distance to its star."

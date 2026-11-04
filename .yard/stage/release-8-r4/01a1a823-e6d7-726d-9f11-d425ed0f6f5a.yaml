@@ -1,0 +1,815 @@
+key: 01a1a823-e6d7-726d-9f11-d425ed0f6f5a
+id: r4
+versions:
+  - key: 01a1a823-e6d7-726d-9f11-d42fe3419be4
+    at: 2026-11-04T19:58:07Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R4: researched star distances and release 9"
+    goal: "The 64 naked-eye stars Hipparcos and Gaia leave without a usable distance each have a cited star file, and release 9 places those with a published distance"
+    status: active
+blocks:
+  - key: 01a1a823-e6d7-726d-9f11-d42798f6f4c6
+    id: r4-t-list
+    kind: task
+    versions:
+      - key: 01a1a823-e6d7-726d-9f11-d431c7cece47
+        at: 2026-11-04T19:58:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "List the 64 unplaced naked-eye stars"
+        detail: |-
+          **Scope:** the query over release 8's local D1 that lists every Hipparcos-2 star brighter than Hp 6 left unplaced, with name, Hp, spectral type and Hipparcos-2 parallax.
+
+          **Done when** the list is kept as a note here.
+        state: active
+      - key: 01a1a825-a48a-7083-bf7d-c69dc0be6cc7
+        at: 2026-11-04T20:00:01Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "List the 64 unplaced naked-eye stars"
+        detail: |-
+          **Scope:** the query over release 8's local D1 that lists every Hipparcos-2 star brighter than Hp 6 left unplaced, with Hp, position, spectral type and Hipparcos-2 parallax.
+
+          **Done when** the list is kept as a note here.
+
+          **Result:** see the note "The 64 stars".
+        state: done
+  - key: 01a1a825-a48a-7083-bf7d-c69cc9f4afa3
+    id: r4-note-list
+    kind: note
+    versions:
+      - key: 01a1a825-a48a-7083-bf7d-c69ea95ded13
+        at: 2026-11-04T20:00:01Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The 64 stars"
+        markdown: |-
+          **The 64 stars.** Hipparcos-2 stars brighter than Hp 6 that release 8 leaves unplaced.
+          - **Why:** each has a parallax error over 10%, and none has a Gaia parallax. Where Gaia DR3 holds one of them, it is a two-parameter solution, a position only.
+          - **Batches:** the stars are split into four, each researched by its own agent from the brief in the scratchpad.
+
+          | Batch | HIP numbers |
+          |---|---|
+          | A (Hp 0.5–2.9) | 27989 Betelgeuse, 80763 Antares, 102098 Deneb, 85927 Shaula, 26311 Alnilam, 26727 Alnitak, 39953 γ Vel, 86228 Sargas, 34444 Wezen, 25930 Mintaka, 9640 Almach, 78401 Dschubba, 100453 Sadr, 35904 Aludra, 84345, 26451 |
+          | B (Hp 2.9–4.8) | 80112, 29655, 75264, 5165, 26549, 89341, 74117, 65936, 5434, 86170, 102589, 75323, 2487, 28413, 41039, 110386 |
+          | C (Hp 4.8–5.6) | 76880, 70264, 10340, 10826, 93867, 101923, 13165, 96957, 34301, 23879, 14376, 26536, 21730, 33048, 104750, 71500 |
+          | D (Hp 5.6–6.0) | 97063, 104642, 74750, 87569, 41621, 116582, 41861, 92027, 71502, 88136, 41250, 29616, 66984, 96840, 8544, 87616 |
+
+          By brightness: 14 are brighter than Hp 2.5, 8 lie between 2.5 and 4, and 42 between 4 and 6.
+
+          **Query.** Run over release 8's D1, read-only. It takes each Hipparcos-2 object's least Hp, keeps those under 6, and joins `objects` where `placed = 0`. All 64 are `no_distance`.
+        tone: info
+  - key: 01a1a823-e6d7-726d-9f11-d4287470abe8
+    id: r4-t-spec
+    kind: task
+    versions:
+      - key: 01a1a823-e6d7-726d-9f11-d43250d92e63
+        at: 2026-11-04T19:58:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec: record a researched star distance"
+        detail: |-
+          **Scope:** a new feature `normalization/record-a-researched-star-distance.yaml`, plus the source in define-a-source's list of star sources and in `components/data-providers.yaml`, and one univ-server criterion: a researched entry names the paper its values come from.
+
+          **Done when** `loft fmt --check` and `loft check --fail-on warning` pass, you approve, and it is committed alone.
+        state: open
+      - key: 01a1a825-a48a-7083-bf7d-c6a0194be296
+        at: 2026-11-04T20:00:01Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec: record a researched star distance"
+        detail: |-
+          **Scope:** a new feature `normalization/record-a-researched-star-distance.yaml`, plus the source in define-a-source's list of star sources and in `components/data-providers.yaml`, and one univ-server criterion: a researched entry names the paper its values come from.
+
+          **Done when** `loft fmt --check` and `loft check --fail-on warning` pass, you approve, and it is committed alone.
+        state: active
+  - key: 01a1a823-e6d7-726d-9f11-d429cf320bf9
+    id: r4-t-reader
+    kind: task
+    versions:
+      - key: 01a1a823-e6d7-726d-9f11-d4337298d9b6
+        at: 2026-11-04T19:58:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Read star files into catalogue entries"
+        detail: |-
+          **Scope:**
+          - Source `researched-star-distances` (`method: repository`, `path: stars/`, `holds: star_distances`).
+          - Star files read with the structure files' `Cited`, papers and quoted-sentence checker.
+          - Each file becomes an entry with no position and its distance, or is `unplaced:` with a reason.
+          - The paper is named in the object record (`EntryRecord.reference`).
+
+          **Done when** `tests/star_distances.rs` passes:
+          - a file joins HIP 27989's object and places it;
+          - an uncited or mismatched number is refused;
+          - an `unplaced:` file places nothing;
+          - the record names the paper.
+        state: open
+  - key: 01a1a823-e6d7-726d-9f11-d42a41b41048
+    id: r4-t-rules
+    kind: task
+    versions:
+      - key: 01a1a823-e6d7-726d-9f11-d4346b10a53f
+        at: 2026-11-04T19:58:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Matching and ranking rules"
+        detail: |-
+          **Scope:**
+          - The source joins the `hip` scheme in `rules/matching.yaml`.
+          - `parallax_basis` in `rules/ranking.yaml` names the researched distances.
+
+          **Done when** the matching and ranking tests pass.
+        state: open
+  - key: 01a1a823-e6d7-726d-9f11-d42b14715276
+    id: r4-t-files
+    kind: task
+    versions:
+      - key: 01a1a823-e6d7-726d-9f11-d43556b5a2aa
+        at: 2026-11-04T19:58:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Research and write the 64 star files"
+        detail: |-
+          **Scope:** four research agents, 16 stars each, then my review of every file.
+          - **Sources:** each star's own published distance, as an interferometric, VLBI or orbital parallax, a stellar model, or a cluster or association distance with its membership paper.
+          - **Kinds of value:**
+            - a parallax of the star itself is measured;
+            - a group's distance applied to a member is inferred;
+            - a model distance is estimated.
+          - **No distance found:** the file is `unplaced:` with the reason.
+
+          **Done when** the file checker and `cargo test -p univ-ingest` pass and every file is reviewed.
+        state: open
+      - key: 01a1a825-a48a-7083-bf7d-c69faf14a0d7
+        at: 2026-11-04T20:00:01Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Research and write the 64 star files"
+        detail: |-
+          **Scope:** four research agents, 16 stars each, then my review of every file.
+          - **Sources:** each star's own published distance, as an interferometric, VLBI or orbital parallax, a stellar model, or a cluster or association distance with its membership paper.
+          - **Kinds of value:**
+            - a parallax of the star itself is measured;
+            - a group's distance applied to a member is inferred;
+            - a model distance is estimated.
+          - **No distance found:** the file is `unplaced:` with the reason.
+
+          **Done when** the file checker and `cargo test -p univ-ingest` pass and every file is reviewed.
+
+          **Progress:** the four agents are researching in the scratchpad (`r4-research/`), each writing star files, the quoted text excerpts and a report.
+        state: active
+  - key: 01a1a823-e6d7-726d-9f11-d42cd8499edc
+    id: r4-t-build
+    kind: task
+    versions:
+      - key: 01a1a823-e6d7-726d-9f11-d436e1806d9e
+        at: 2026-11-04T19:58:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build and publish release 9"
+        detail: |-
+          **Scope:** `univ-ingest build` in the background, then `publish 9`.
+
+          **Done when** release 9 is built and `latest`.
+        state: open
+  - key: 01a1a823-e6d7-726d-9f11-d42d7a0109f4
+    id: r4-t-check
+    kind: task
+    versions:
+      - key: 01a1a823-e6d7-726d-9f11-d43756f33c59
+        at: 2026-11-04T19:58:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Check release 9"
+        detail: |-
+          **Scope:**
+          - `cargo xtask science`.
+          - Every tile through `check-server.ts`.
+          - The three benches.
+          - Spot checks: Betelgeuse at its cited distance with the paper named; Antares, Deneb and the Belt stars placed; the 64 counted placed and unplaced.
+
+          **Done when** all pass and the counts are recorded.
+        state: open
+  - key: 01a1a823-e6d7-726d-9f11-d42ec978ec08
+    id: r4-t-close
+    kind: task
+    versions:
+      - key: 01a1a823-e6d7-726d-9f11-d4389bc31091
+        at: 2026-11-04T19:58:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Review, gate, close and merge"
+        detail: |-
+          **Scope:** the wave's end.
+
+          **Done when:**
+          - `/simplify` and `/code-review` have run in parallel, with their findings fixed;
+          - `cargo xtask check` has passed once;
+          - the trace is accepted;
+          - the Yard Log is closed;
+          - the stage is merged into `product/release-8` with `--no-ff`.
+        state: open
+  - key: 01a1a826-2d5c-73f2-9175-34db5597e0b7
+    id: r4-spec-view
+    kind: loft
+    versions:
+      - key: 01a1a826-2d5c-73f2-9175-34dd65f8e8a0
+        at: 2026-11-04T20:00:36Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "A new ingest feature beside \"Record a researched structure\": star files read like structure files, every number quoted from its paper. Three small edits follow from it: the source joins the list of star sources and the Literature providers, and the object lookup names a researched entry's paper."
+        recorded:
+          commit: "b1998bc95c5036d5ec09c667a23374e8e612b24f"
+          branch: "stage/release-8-r4"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T20:00:36Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 14,
+              "graph.edges": 0,
+              "graph.nodes": 25,
+              "status.base.added": 13,
+              "status.base.changed": 1,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-1842afd6d59e",
+                  "kind": "criterion",
+                  "label": "AC-12",
+                  "name": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                  "words": {
+                    "after": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                    "before": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification and the Hipparcos new reduction."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf71f70beb40",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Record a researched star distance",
+                  "words": {
+                    "after": "Record a researched star distance\n\nGiving a naked-eye star that Hipparcos and Gaia leave without a usable distance the distance its\npapers publish for it, without a single uncited number. Such a star is too bright for a Gaia\nparallax, and its Hipparcos parallax too uncertain to invert."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from.",
+                  "words": {
+                    "after": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7366dc3a34",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                  "words": {
+                    "after": "Each number cites its paper and the sentence or table cell it was taken from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf74029af338",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file joins the object of the Hipparcos star whose HIP number it gives.",
+                  "words": {
+                    "after": "A star file joins the object of the Hipparcos star whose HIP number it gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7588585aa4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives.",
+                  "words": {
+                    "after": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf76499f0e46",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member.",
+                  "words": {
+                    "after": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf77402e4c76",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The entry of a star file names the paper its values come from.",
+                  "words": {
+                    "after": "The entry of a star file names the paper its values come from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf78ded1df98",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number.",
+                  "words": {
+                    "after": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf793b4b68ec",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the star file, the field and the number.",
+                  "words": {
+                    "after": "The message names the star file, the field and the number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7a85f10357",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it.",
+                  "words": {
+                    "after": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7b361027b4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file without a distance gives the reason none was found, and adds no distance to its star.",
+                  "words": {
+                    "after": "A star file without a distance gives the reason none was found, and adds no distance to its star."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7cb64ddb9e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response names the paper each researched catalogue entry's values come from.",
+                  "words": {
+                    "after": "The response names the paper each researched catalogue entry's values come from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf70efaf8d70",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Researched star distances",
+                  "words": {
+                    "after": "Researched star distances\n\nDistances of naked-eye stars that Hipparcos and Gaia leave without a usable one, read from their papers, with each number cited to the sentence or table cell it comes from."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6593dd0cb35",
+                  "kind": "feature_group",
+                  "label": "FG-1",
+                  "name": "Acquisition",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                  "kind": "feature",
+                  "label": "F-1",
+                  "name": "Define a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                  "kind": "requirement",
+                  "label": "RQ-5",
+                  "name": "Univ Ingest shall provide a source definition for each source of the first release.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-1842afd6d59e",
+                  "kind": "criterion",
+                  "label": "AC-12",
+                  "name": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                  "parent": "01a19f22-2ad9-716e-876f-183f79f9ae1c"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf71f70beb40",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Record a researched star distance",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf71f70beb40"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7366dc3a34",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf74029af338",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file joins the object of the Hipparcos star whose HIP number it gives.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7588585aa4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf76499f0e46",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf77402e4c76",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The entry of a star file names the paper its values come from.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf78ded1df98",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf71f70beb40"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf793b4b68ec",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the star file, the field and the number.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf78ded1df98"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7a85f10357",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf71f70beb40"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7b361027b4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file without a distance gives the reason none was found, and adds no distance to its star.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf7a85f10357"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                  "kind": "feature",
+                  "label": "F-15",
+                  "name": "Look up an object",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                  "kind": "requirement",
+                  "label": "RQ-52",
+                  "name": "When a client requests an object by its object id, Univ Server shall return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0d39dc9a3f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7cb64ddb9e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response names the paper each researched catalogue entry's values come from.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0ee7e600ab"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce7c64960ab",
+                  "kind": "component",
+                  "label": "CMP-7",
+                  "name": "Data providers",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-182f41fd2c08",
+                  "kind": "component",
+                  "label": "CMP-31",
+                  "name": "Literature",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf70efaf8d70",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Researched star distances",
+                  "parent": "01a19f22-2ad9-716e-876f-182f41fd2c08"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 6,
+                    "key": "01a1a825-fb4e-702c-a84f-bf71f70beb40",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Record a researched star distance",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 12,
+                    "name": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7366dc3a34",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 18,
+                    "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf74029af338",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 20,
+                    "name": "A star file joins the object of the Hipparcos star whose HIP number it gives.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7588585aa4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 22,
+                    "name": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf76499f0e46",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 24,
+                    "name": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf77402e4c76",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 26,
+                    "name": "The entry of a star file names the paper its values come from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a825-fb4e-702c-a84f-bf78ded1df98",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 28,
+                    "name": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf793b4b68ec",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "The message names the star file, the field and the number.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7a85f10357",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 37,
+                    "name": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7b361027b4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "A star file without a distance gives the reason none was found, and adds no distance to its star.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7cb64ddb9e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 27,
+                    "name": "The response names the paper each researched catalogue entry's values come from.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf70efaf8d70",
+                    "kind": "component",
+                    "label": null,
+                    "line": 109,
+                    "name": "Researched star distances",
+                    "path": "spec/components/data-providers.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a19f22-2ad9-716e-876f-1842afd6d59e",
+                    "kind": "criterion",
+                    "label": "AC-12",
+                    "line": 66,
+                    "name": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  }
+                ],
+                "commit": "b1998bc95c5036d5ec09c667a23374e8e612b24f",
+                "removed": [],
+                "revision": "product/release-8"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 4,
+                "publishedAt": "2026-11-04T16:14:12Z",
+                "stateRoot": "4577f367600c2ad5b501e5ceb32291471f56b2418d7c671eb11d743f152f960c"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/release-8-r4",
+                "modified": [
+                  "spec/components/data-providers.yaml",
+                  "spec/products/univ-ingest/acquisition/define-a-source.yaml",
+                  "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml",
+                  "spec/products/univ-ingest/product.yaml",
+                  "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a826-2d5c-73f2-9175-34dca600218a
+    id: r4-approve-spec
+    kind: approval
+    versions:
+      - key: 01a1a826-2d5c-73f2-9175-34dec45f09c6
+        at: 2026-11-04T20:00:36Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Approve the spec change for researched star distances"
+        markdown: |-
+          **What changes** (shown in the block above):
+
+          - **New feature, Record a researched star distance** (Univ Ingest, normalization). It has three requirements:
+            1. **Every number cites its source.** Each researched star distance is read from a star file in which every number cites where it comes from. The criteria:
+               - each number cites its paper and sentence or table cell;
+               - a file joins the Hipparcos star of its HIP number;
+               - the file's kind of value, uncertainty and method are kept;
+               - a cluster's or association's distance given to a member is *inferred* and cites the membership paper;
+               - the entry names its paper.
+            2. **Uncited numbers are refused.** A star file with an uncited number, or a quote that doesn't hold its number, is refused, and the message names the file, field and number.
+            3. **No distance is never invented.** A star whose papers publish no distance keeps its file with the reason and places nothing.
+          - **Define a source:** the star-source list adds "the researched star distances".
+          - **Data providers:** a new provider under Literature, "Researched star distances".
+          - **Look up an object** (Univ Server): "The response names the paper each researched catalogue entry's values come from."
+
+          **What to look at:**
+          - The kinds of value. A star's own parallax is *measured*, a group's distance given to a member is *inferred*, and a model distance is *estimated*. Only the inferred rule is a criterion; the others follow the existing normalization rules.
+    responses:
+      - key: 01a1a826-a343-76a8-9d36-5cd7f6183c6a
+        at: 2026-11-04T20:01:06Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
