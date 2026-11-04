@@ -21,7 +21,6 @@ use univ_model::ids::SourceId;
 use crate::events::{Event, EventSink};
 
 pub use file::Expected;
-pub use job::JOB;
 pub use tally::Tally;
 
 /// How often and how patiently a request is retried on one mirror.
@@ -75,6 +74,27 @@ pub struct Payload {
     /// gave. None for a file, which has no body check.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rows: Option<u64>,
+}
+
+/// What a chunk asks of a mirror.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Ask {
+    /// A GET of the mirror with this appended.
+    Get(String),
+    /// A TAP query run as a job: this form, submitted to the mirror's `/async`.
+    Job(String),
+}
+
+impl Ask {
+    /// What is appended to a mirror to ask it, and what a payload's URL ends with: for a job, the
+    /// request that ran it, since the address of its result lasts only as long as the job.
+    #[must_use]
+    pub fn suffix(&self) -> String {
+        match self {
+            Self::Get(suffix) => suffix.clone(),
+            Self::Job(form) => format!("{}?{form}", job::JOBS),
+        }
+    }
 }
 
 /// What a fetch came to.
@@ -144,9 +164,8 @@ pub type Record<'a> = dyn Fn(&Payload) -> io::Result<()> + Send + Sync + 'a;
 /// Fetches the chunks and files of sources.
 pub struct Fetcher<C: Clock> {
     client: reqwest::Client,
-    /// The client of a TAP job's requests: it does not follow the redirect to the job, whose
-    /// address it reads, and opens a connection for each request, since a service may close an
-    /// idle one between polls without saying so.
+    /// The client of a TAP job's requests, which opens a connection for each: a service may
+    /// close an idle one between polls without saying so.
     jobs: reqwest::Client,
     clock: C,
     sink: Arc<dyn EventSink>,
@@ -174,10 +193,7 @@ impl<C: Clock> Fetcher<C> {
         };
         Ok(Self {
             client: builder().build()?,
-            jobs: builder()
-                .redirect(reqwest::redirect::Policy::none())
-                .pool_max_idle_per_host(0)
-                .build()?,
+            jobs: builder().pool_max_idle_per_host(0).build()?,
             clock,
             sink,
             policy,
@@ -198,7 +214,7 @@ impl<C: Clock> Fetcher<C> {
         self.counter.tally()
     }
 
-    /// Fetches one chunk of a query: `suffix` is appended to each mirror in turn. The chunk is
+    /// Fetches one chunk of a query, asking each mirror in turn as `ask` says. The chunk is
     /// written to its file with `.part` added, recorded, then renamed, so a partial chunk is
     /// never read as one. A chunk already on disk is not fetched again.
     ///
@@ -210,7 +226,7 @@ impl<C: Clock> Fetcher<C> {
         &self,
         item: &Item<'_>,
         mirrors: &[String],
-        suffix: &str,
+        ask: &Ask,
         check: &Check<'_>,
         record: &Record<'_>,
     ) -> Result<Fetched, FetchError> {
@@ -219,13 +235,18 @@ impl<C: Clock> Fetcher<C> {
         }
         let (url, body, rows) = self
             .across_mirrors(item, mirrors, |mirror| async move {
-                match suffix.strip_prefix(JOB) {
-                    Some(form) => self.job(item, &mirror, form, check).await,
-                    None => {
-                        self.get_chunk(item, format!("{mirror}{suffix}"), check)
-                            .await
-                    }
-                }
+                let url = format!("{mirror}{}", ask.suffix());
+                self.sink.emit(Event::Get {
+                    source: item.source.clone(),
+                    item: item.name.to_owned(),
+                    url: url.clone(),
+                });
+                let body = match ask {
+                    Ask::Get(_) => read(&self.client, &url).await?,
+                    Ask::Job(form) => self.job(&mirror, form).await?,
+                };
+                let rows = check(&body).map_err(Attempt::GiveUp)?;
+                Ok((url, body, rows))
             })
             .await?;
         let bytes = body.len() as u64;
@@ -259,32 +280,6 @@ impl<C: Clock> Fetcher<C> {
             });
         }
         Ok(None)
-    }
-
-    async fn get_chunk(
-        &self,
-        item: &Item<'_>,
-        url: String,
-        check: &Check<'_>,
-    ) -> Result<(String, Vec<u8>, u64), Attempt> {
-        self.sink.emit(Event::Get {
-            source: item.source.clone(),
-            item: item.name.to_owned(),
-            url: url.clone(),
-        });
-        let response = self
-            .client
-            .get(&url)
-            .send()
-            .await
-            .map_err(|e| Attempt::Retry(with_causes(&e)))?;
-        judge_status(response.status())?;
-        let body = response
-            .bytes()
-            .await
-            .map_err(|e| Attempt::Retry(with_causes(&e)))?;
-        let rows = check(&body).map_err(Attempt::GiveUp)?;
-        Ok((url, body.into(), rows))
     }
 
     /// Tries `attempt` on each mirror in order, with retries. A mirror skipped for the rest of
@@ -386,6 +381,21 @@ impl<C: Clock> Fetcher<C> {
 }
 
 /// A status that is not success, as an attempt worth retrying or not.
+/// The body of a GET of `url` by `client`.
+async fn read(client: &reqwest::Client, url: &str) -> Result<Vec<u8>, Attempt> {
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .map_err(|e| Attempt::Retry(with_causes(&e)))?;
+    judge_status(response.status())?;
+    let body = response
+        .bytes()
+        .await
+        .map_err(|e| Attempt::Retry(with_causes(&e)))?;
+    Ok(body.into())
+}
+
 fn judge_status(status: reqwest::StatusCode) -> Result<(), Attempt> {
     if status.is_success() {
         Ok(())

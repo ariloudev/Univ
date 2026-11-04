@@ -119,6 +119,43 @@ blocks:
 
           **Done when** latest is release 8 and every file is checked against its SHA-256.
         state: active
+      - key: 01a1a7f9-3d94-737b-af3e-740b4b0675ed
+        at: 2026-11-04T19:11:31Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Publish release 8 locally"
+        detail: |-
+          **Scope:** `univ-ingest publish 8 --persist-to .cache/univ-ingest/wrangler`, with the root `wrangler.toml` as release 7 was. A first try with the Worker's own config found no Wrangler beside it and stopped before uploading anything.
+
+          **Done when** latest is release 8 and every file is checked against its SHA-256.
+
+          **Result:** published at 19:05:09 UTC. Latest moved from release 7 to 8, and all 541 files were uploaded and checked by this run: 117 D1 files, 15 grid files, 4 rules files, 404 tile files and the manifest.
+        state: done
+  - key: 01a1a7f9-3d94-737b-af3e-740ad696b720
+    id: r3-t-mirrors
+    kind: task
+    versions:
+      - key: 01a1a7f9-3d94-737b-af3e-740c047cff4b
+        at: 2026-11-04T19:11:31Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "VizieR mirrors in the order they answer"
+        detail: |-
+          **Scope:** the build lost time on two slow mirrors while CDS was down; you asked for the source lists to be updated.
+
+          **Done when** every VizieR source lists its mirrors in the order they were found to answer, the reason is stated, and the definitions' tests pass.
+
+          **Result:** committed in `bfd5986`.
+          - **New order, in all ten VizieR sources:** CDS, China-VO, NAO, IDIA.
+          - **Checked on a Hipparcos query:** CDS (back up) and China-VO return the table. NAO returns "The database is not currently reachable". IDIA broke off mid-answer during the build.
+          - **Harvard CfA:** did not connect, so it is not added.
+          - All 79 ingest suites pass.
+        state: done
+        type: fix
   - key: 01a1a7af-c9d5-71fb-aa0f-95d5f035ceb1
     id: r3-t-science
     kind: task
@@ -147,6 +184,49 @@ blocks:
 
           **Done when** every check passes, or a failure is explained and fixed.
         state: active
+      - key: 01a1a7f9-3d94-737b-af3e-740ddb7aea32
+        at: 2026-11-04T19:11:31Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science checks and tile checks"
+        detail: |-
+          **Scope:** `cargo xtask science` on release 8, and every tile checked against its SHA-256.
+
+          **Done when** every check passes, or a failure is explained and fixed.
+
+          **Progress:**
+          - **Science checks:** 32 run: 27 PASS, 0 FAIL, 3 CONCERN and 2 INFO. The concerns are the ones earlier releases carry:
+            - NGC 4889 at 98.8 Mpc against Scolnic et al.'s Coma distance;
+            - 154 redshift conflicts, as on release 4;
+            - 47 of those placed by the higher redshift, as on release 6.
+          - **Tiles:** the publish checked all 404 tile files against their SHA-256. The decode of every tile is next.
+        state: active
+      - key: 01a1a7fc-5ccf-76ec-ad47-a27f7619a09c
+        at: 2026-11-04T19:14:56Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science checks and tile checks"
+        detail: |-
+          **Scope:** `cargo xtask science` on release 8, and every tile checked against its SHA-256.
+
+          **Done when** every check passes, or a failure is explained and fixed.
+
+          **Result:**
+          - **Science checks:** 32 run: 27 PASS, 0 FAIL, 3 CONCERN and 2 INFO. The concerns are the ones earlier releases carry:
+            - NGC 4889 at 98.8 Mpc against Scolnic et al.'s Coma distance;
+            - 154 redshift conflicts, as on release 4;
+            - 47 of those placed by the higher redshift, as on release 6.
+          - **Tiles:** `clients/tile-decoder/check-server.ts` fetched every tile of release 8 through Univ Server, checked each against its manifest's SHA-256 and decoded it:
+            - stars: 139 tiles, 780,441 points;
+            - nearby galaxies: 1 tile, 1,227 points;
+            - cosmic web: 261 tiles, 1,304,141 points.
+
+            All three domains passed.
+        state: done
   - key: 01a1a7af-c9d5-71fb-aa0f-95d6a2baa184
     id: r3-t-spot
     kind: task
@@ -167,6 +247,63 @@ blocks:
 
           **Done when** each is read back and recorded, with a screenshot of the explorer showing the structures.
         state: open
+      - key: 01a1a7fc-5ccf-76ec-ad47-a280d5dca326
+        at: 2026-11-04T19:14:56Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spot checks"
+        detail: |-
+          **Scope:** Sirius, Betelgeuse, Laniakea, Vela and the Hercules Void, read through Univ Server on release 8, and the explorer seen live with a screenshot.
+
+          **Done when** each reads as its sources publish it, and the explorer draws Vela as "(at least)" and the Hercules Void as a marker with three axes.
+
+          **Progress (API):**
+          - **Sirius (HIP 32349):** placed at 2.637 pc from its Hipparcos 2007 parallax of 379.21 ± 1.58 mas.
+            - B−V = 0.009 ± 0.007 and V−I = −0.02, from Hipparcos 2007.
+            - Spectral type "A0m...", from Hipparcos 1997, which is what I/239 prints. The plan's "A1V" is SIMBAD's, not this catalogue's.
+          - **Betelgeuse (HIP 27989):**
+            - B−V = 1.50 ± 0.51 and V−I = 2.32, from Hipparcos 2007. The plan's 1.85 is SIMBAD's; Hipparcos's value carries a large error for this variable.
+            - Spectral type M2Ib.
+            - **Not placed (no distance).** Its parallax of 6.55 ± 0.83 mas has a fractional error of 0.127, above the ranking rule's 0.1, and Gaia has no measure of a star this bright. Release 7 did not place it either.
+          - **Laniakea:** a basin, its point at 72.2 Mpc.
+          - **Vela:** a sky region at 290.7 Mpc, its derivation marked `at_least`.
+          - **Hercules Void:** a point at 95.8 Mpc, with extents of 171.4, 115.3 and 206.9 Mpc.
+          - **Local Supercluster:** an oriented box at 11.1 Mpc.
+          - **Pisces–Cetus:** placed from 36 members.
+        state: active
+      - key: 01a1a7fe-1bf9-7419-a626-6f0a3aee72bc
+        at: 2026-11-04T19:16:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spot checks"
+        detail: |-
+          **Scope:** Sirius, Betelgeuse, Laniakea, Vela and the Hercules Void, read through Univ Server on release 8, and the explorer seen live with a screenshot.
+
+          **Done when** each reads as its sources publish it, and the explorer draws Vela as "(at least)" and the Hercules Void as a marker with three axes.
+
+          **Result:**
+          - **Sirius (HIP 32349):** placed at 2.637 pc from its Hipparcos 2007 parallax of 379.21 ± 1.58 mas.
+            - B−V = 0.009 ± 0.007 and V−I = −0.02, from Hipparcos 2007.
+            - Spectral type "A0m...", as Hipparcos 1997 (I/239) prints it. The plan's "A1V" is SIMBAD's.
+          - **Betelgeuse (HIP 27989):**
+            - B−V = 1.50 ± 0.51 and V−I = 2.32, from Hipparcos 2007. The plan's 1.85 is SIMBAD's.
+            - Spectral type M2Ib.
+            - **Not placed (no distance):** a parallax of 6.55 ± 0.83 mas has a fractional error of 0.127, over the ranking rule's 0.1, and Gaia has no measure of it. Release 7 did not place it either. Raised for E7, whose star colours need it drawn.
+          - **Structures:**
+            - Laniakea: a basin at 72.2 Mpc.
+            - Vela: a sky region marked `at_least`.
+            - Hercules Void: a point with extents of 171.4, 115.3 and 206.9 Mpc.
+            - Local Supercluster: an oriented box.
+            - Pisces–Cetus: placed from 36 members.
+          - **Explorer, live on release 8 (screenshots sent):**
+            - Vela and Horologium–Reticulum are labelled "(at least)".
+            - The Hercules Void, chosen, is drawn as a marker with crossing axis lines and no box.
+            - Its panel gives the sentence on unknown bounds and the three cited extents: 11,600, 7,800 and 14,000 km/s along SGX, SGY and SGZ.
+        state: done
   - key: 01a1a7af-c9d5-71fb-aa0f-95d7382ea444
     id: r3-t-qa
     kind: task
@@ -183,6 +320,38 @@ blocks:
 
           **Done when** both are within their limits.
         state: open
+      - key: 01a1a7fc-5ccf-76ec-ad47-a2818bd697d7
+        at: 2026-11-04T19:14:56Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-2 and QA-3 benches"
+        detail: |-
+          **Scope:** `cargo xtask bench lookup` (QA-2: p95 < 200 ms) and `cargo xtask bench first-points` (p95 < 3 s), on release 8 in the real local state.
+
+          **Done when** both run and their percentiles are recorded against the targets.
+        state: active
+      - key: 01a1a7fe-1bf9-7419-a626-6f0bb22560f0
+        at: 2026-11-04T19:16:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-2 and QA-3 benches"
+        detail: |-
+          **Scope:** the benches on release 8 in the real local state: `cargo xtask bench lookup` (QA-2), `bench volume` (QA-3) and `bench first-points`.
+
+          **Done when** each runs and its percentiles are recorded against the targets.
+
+          **Result:** every bench is within its bound.
+
+          | Bench | p50 | p95 | p99 | Bound at p95 | Requests not 200 |
+          |---|---|---|---|---|---|
+          | Object lookup, 1,000 requests | 5.4 ms | 8.0 ms | 14.2 ms | 200 ms | 0 of 1,020 |
+          | Volume query, first page, 200 requests | 32.3 ms | 47.3 ms | 55.9 ms | 500 ms | 0 of 220 |
+          | Explorer's first points, 10 loads | 173 ms | 210 ms | — | 3,000 ms | — |
+        state: done
   - key: 01a1a7af-c9d5-71fb-aa0f-95d80a3642d3
     id: r3-t-close
     kind: task
@@ -196,3 +365,15 @@ blocks:
         title: "Close and merge into product/release-8"
         detail: "**Done when** the Yard Log is closed and committed and the branch is merged `--no-ff`."
         state: open
+      - key: 01a1a7fe-1bf9-7419-a626-6f0cd603d228
+        at: 2026-11-04T19:16:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Review, gate, close and merge"
+        detail: |-
+          **Scope:** the code this stage changed: TAP jobs, polling on fresh connections, and the VizieR mirrors.
+
+          **Done when** `/simplify` and `/code-review` have run in parallel with their findings fixed, `cargo xtask check` has run once green, Yard Log is closed, and the stage is merged into `product/release-8` with `--no-ff`.
+        state: active

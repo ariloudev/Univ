@@ -1,128 +1,111 @@
 //! A TAP query run as a job (IVOA UWS): submitted to the service's `/async` endpoint with
-//! `PHASE=RUN`, its phase polled until it completes, then its result fetched. A service such as
-//! the ESA Gaia archive answers a join of two large tables this way in seconds, where a
-//! synchronous query of the same rows outlasts any request.
+//! `PHASE=RUN`, its phase polled until it completes, then its result fetched and the job deleted.
+//! A service such as the ESA Gaia archive answers a join of two large tables this way in
+//! seconds, where a synchronous query of the same rows outlasts any request.
 
+use std::future::Future;
 use std::time::Duration;
 
-use reqwest::Url;
+use reqwest::header::CONTENT_TYPE;
 
-use super::{Attempt, Check, Clock, Fetcher, Item, judge_status, with_causes};
-use crate::events::Event;
+use super::{Attempt, Clock, Fetcher, read};
 
-/// What a request's suffix starts with when the request is a job: the rest is its form.
-pub const JOB: &str = "/async?";
+/// Where a TAP service takes jobs, under its base address.
+pub(super) const JOBS: &str = "/async";
 
-/// How often a job's phase is asked for.
+/// How long to wait before each poll of a job's phase.
 const POLL: Duration = Duration::from_secs(5);
 
-/// How many times its phase is asked for before the job is given up on: half an hour.
-const POLLS: u32 = 360;
+/// How long a job may run before it is given up on.
+const PATIENCE: Duration = Duration::from_mins(30);
 
-/// How many polls in a row may fail before the job is given up on: a dropped connection is
-/// asked again, not the job submitted again.
+/// How many times in a row one of a job's requests may fail, as a dropped connection does,
+/// before the job is given up on: the request is made again, not the job submitted again.
 const MISSED: u32 = 3;
 
 impl<C: Clock> Fetcher<C> {
-    /// Runs the job whose form is `form` at the TAP service `base`, and returns its result's URL,
-    /// body and rows.
-    pub(super) async fn job(
-        &self,
-        item: &Item<'_>,
-        base: &str,
-        form: &str,
-        check: &Check<'_>,
-    ) -> Result<(String, Vec<u8>, u64), Attempt> {
-        let submit = format!("{base}/async");
-        self.sink.emit(Event::Get {
-            source: item.source.clone(),
-            item: item.name.to_owned(),
-            url: submit.clone(),
-        });
+    /// Runs the job whose form is `form` at the TAP service `base` and gives its result. A job
+    /// that ends in error, or does not complete in time, sends the fetch to the next mirror:
+    /// the same query submitted again would end the same way.
+    pub(super) async fn job(&self, base: &str, form: &str) -> Result<Vec<u8>, Attempt> {
+        let job = self.submit(base, form).await?;
+        let result = format!("{job}/results/result");
+        let result = match self.until_done(&job).await {
+            Ok(()) => self.again(|| read(&self.jobs, &result)).await,
+            Err(e) => Err(e),
+        };
+        // The service keeps a job and its result until it is deleted or expires; deleting one
+        // still running also stops it. Whether the deletion is honoured changes nothing here.
+        let _ = self.jobs.delete(&job).send().await;
+        result
+    }
+
+    /// Submits the job and gives its address, where the service redirects the submission.
+    async fn submit(&self, base: &str, form: &str) -> Result<String, Attempt> {
+        let submit = format!("{base}{JOBS}");
         let response = self
             .jobs
             .post(&submit)
-            .header("Content-Type", "application/x-www-form-urlencoded")
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(form.to_owned())
             .send()
             .await
-            .map_err(|e| Attempt::Retry(with_causes(&e)))?;
-        if !response.status().is_redirection() {
-            judge_status(response.status())?;
+            .map_err(|e| Attempt::Retry(super::with_causes(&e)))?;
+        super::judge_status(response.status())?;
+        let job = response.url().as_str().trim_end_matches('/');
+        if job == submit {
+            return Err(Attempt::GiveUp(
+                "the service took the job without giving its address".to_owned(),
+            ));
         }
-        let location = response
-            .headers()
-            .get(reqwest::header::LOCATION)
-            .and_then(|l| l.to_str().ok())
-            .ok_or_else(|| Attempt::Retry("the service gave no job to follow".to_owned()))?;
-        let job = Url::parse(&submit)
-            .and_then(|u| u.join(location))
-            .map_err(|e| Attempt::GiveUp(format!("the job's address {location}: {e}")))?
-            .to_string();
-        self.until_done(&job).await?;
-        let result = format!("{job}/results/result");
-        let response = self
-            .jobs
-            .get(&result)
-            .send()
-            .await
-            .map_err(|e| Attempt::Retry(with_causes(&e)))?;
-        judge_status(response.status())?;
-        let body = response
-            .bytes()
-            .await
-            .map_err(|e| Attempt::Retry(with_causes(&e)))?;
-        let rows = check(&body).map_err(Attempt::GiveUp)?;
-        Ok((result, body.into(), rows))
+        Ok(job.to_owned())
     }
 
-    /// Asks for the phase of `job` until it completes; an error when it ends otherwise or does
-    /// not end in time.
+    /// Polls the phase of `job` until it completes; an error when it ends otherwise or does not
+    /// end in time.
     async fn until_done(&self, job: &str) -> Result<(), Attempt> {
-        let mut missed = 0;
-        for _ in 0..POLLS {
-            let phase = match self.text(&format!("{job}/phase")).await {
-                Ok(phase) => {
-                    missed = 0;
-                    phase
-                }
-                Err(Attempt::Retry(_)) if missed < MISSED => {
-                    missed += 1;
-                    self.clock.sleep(POLL).await;
-                    continue;
-                }
-                Err(e) => return Err(e),
-            };
-            match phase.trim() {
+        let phase = format!("{job}/phase");
+        for _ in 0..PATIENCE.as_secs() / POLL.as_secs() {
+            self.clock.sleep(POLL).await;
+            let now = self.again(|| read(&self.jobs, &phase)).await?;
+            match String::from_utf8_lossy(&now).trim() {
                 "COMPLETED" => return Ok(()),
                 ended @ ("ERROR" | "ABORTED") => {
-                    let why = self.text(&format!("{job}/error")).await.unwrap_or_default();
-                    let why: String = why.chars().take(300).collect();
-                    return Err(Attempt::Retry(format!(
-                        "the job ended {ended}: {}",
-                        why.trim()
-                    )));
+                    let why = read(&self.jobs, &format!("{job}/error"))
+                        .await
+                        .unwrap_or_default();
+                    let why: String = String::from_utf8_lossy(&why)
+                        .trim()
+                        .chars()
+                        .take(300)
+                        .collect();
+                    return Err(Attempt::GiveUp(format!("the job ended {ended}: {why}")));
                 }
-                _ => self.clock.sleep(POLL).await,
+                _ => {}
             }
         }
-        Err(Attempt::Retry(format!(
+        Err(Attempt::GiveUp(format!(
             "the job had not completed after {} minutes",
-            POLL.as_secs() * u64::from(POLLS) / 60
+            PATIENCE.as_secs() / 60
         )))
     }
 
-    async fn text(&self, url: &str) -> Result<String, Attempt> {
-        let response = self
-            .jobs
-            .get(url)
-            .send()
-            .await
-            .map_err(|e| Attempt::Retry(with_causes(&e)))?;
-        judge_status(response.status())?;
-        response
-            .text()
-            .await
-            .map_err(|e| Attempt::Retry(with_causes(&e)))
+    /// `request`, made again after a wait while it fails in a way worth retrying, up to
+    /// [`MISSED`] times.
+    async fn again<T, F, Fut>(&self, request: F) -> Result<T, Attempt>
+    where
+        F: Fn() -> Fut,
+        Fut: Future<Output = Result<T, Attempt>>,
+    {
+        let mut missed = 0;
+        loop {
+            match request().await {
+                Err(Attempt::Retry(_)) if missed < MISSED => {
+                    missed += 1;
+                    self.clock.sleep(POLL).await;
+                }
+                done => return done,
+            }
+        }
     }
 }

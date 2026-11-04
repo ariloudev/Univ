@@ -86,13 +86,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "a_request_is_retried_four_times_with_waits_doubling_from_two_seconds"
-        body: 9a882fceca53791f98293e07d76e91dcc68a4eb00a608d6c5854a1ca4be782fe
+        body: 311d5c72a1e33f5c51ee457c98af6c2e403af5913d016c966f37e6269d0c9df9
   - node: 01a19f22-2ad9-716e-876f-184791f85a52
     reviewed: 0160432a6347c19ac45eb5ed5a442af22ec3ec59404b2ad02d2e34a1ee27c253
     tests:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "a_mirror_that_fails_all_its_retries_is_skipped_for_the_rest_of_the_run"
-        body: 1c996b6a46543f4f57ca60929ef73a800c76e5f3d9e11e26275126600867475c
+        body: e46104ea681f3b5ea27d703ef0ddf5e2a7d1b01425892ae355f3cb0ddad70bd3
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "chunks_in_flight_on_a_dead_mirror_skip_it_once_and_stop_trying_it"
         body: 2cb4a5ba73e4250fdab87da82d8f06ffac8005771cd7b57ce110badbcd65e5dc
@@ -104,19 +104,22 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "a_run_resumes_from_the_first_chunk_not_on_disk_and_fetches_no_chunk_twice"
-        body: 1ccc7d24d828e9b37c1a91cb3b2eba0e7c2afd295e3ec6bb26305d0a6f4649dd
+        body: e7240bf43df6074fe5947e3acffb877452a5d0a30fbe6a496c383f866e8200e2
   - node: 01a19f22-2ad9-716e-876f-184a18088c6b
     reviewed: 99576afaa7a0b44889f6e39325f6ded4501db99e0dd94e0f2c1baffec697dff6
     tests:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "a_chunk_is_renamed_into_place_only_once_complete_and_a_partial_file_is_never_read"
-        body: 66b84b2404e279a4ff15ac29279d97d20d35571fab56ac8da065e1fd660e09e7
+        body: 894110fd59e4fe8caacdd568ebc9897dba66848add213232a1580237db0e9569
   - node: 01a19f22-2ad9-716e-876f-184b2e4614ad
     reviewed: 4b752aae8661a477ca5ff03ae43ba8226054ddeea75578a68817bdabb79b3179
     tests:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "a_run_resumes_from_the_first_chunk_not_on_disk_and_fetches_no_chunk_twice"
-        body: 1ccc7d24d828e9b37c1a91cb3b2eba0e7c2afd295e3ec6bb26305d0a6f4649dd
+        body: e7240bf43df6074fe5947e3acffb877452a5d0a30fbe6a496c383f866e8200e2
+      - file: "crates/univ-ingest/tests/fetch_jobs.rs"
+        name: "a_job_kept_on_disk_with_its_record_is_not_run_again"
+        body: b52e2981d3430cf8eb42790dbde6b5273ed3c1798f6299fbe6192e195fd7ebf8
   - node: 01a19f22-b0bc-76da-bac8-9776aedb5264
     reviewed: 221be69d172d120fc01c96cd83e4104d6fafe7bd79c162f7fdd094e3ff6f4495
     tests:
@@ -161,7 +164,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/provenance.rs"
         name: "the_provenance_lists_each_payload_with_its_digest_retrieval_time_and_url"
-        body: 0f47ee30e2e5ae26694100e7c66745c22e89317dbd191c45edd1e601a379dfbe
+        body: 1f66701338bb989c8a737bfe540d3963fbe3e22bc7c0d25ccbb31e32673e85c1
       - file: "crates/univ-ingest/tests/acquire.rs"
         name: "a_source_whose_rows_match_its_count_is_acquired_and_every_payload_recorded"
         body: f5c83cf46111f98ebe978744d278b8d181583fc3cf5c5d4e7595a6f4f68d9e4c
@@ -173,19 +176,19 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "a_chunk_no_mirror_can_give_fails_naming_the_source_the_chunk_and_each_mirrors_last_error"
-        body: 8a0b54ba6f0a40e99b382dedb835811b3df0289172b2898153f2040ada963956
+        body: 76264cc68fc0a49f73b27f244809a3163539c471c0340bb5708b4f2034ac1606
   - node: 01a19f22-2ad9-716e-876f-1850f88a0c79
     reviewed: 9de08056dce3077fa25445e1d4800e73137b787b31eb075b7d6f81b85def78eb
     tests:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "a_chunk_no_mirror_can_give_fails_naming_the_source_the_chunk_and_each_mirrors_last_error"
-        body: 8a0b54ba6f0a40e99b382dedb835811b3df0289172b2898153f2040ada963956
+        body: 76264cc68fc0a49f73b27f244809a3163539c471c0340bb5708b4f2034ac1606
   - node: 01a19f22-2ad9-716e-876f-185248f45d00
     reviewed: 041d80b1d18bce7f55263b3c84bd2abcad12a3d83b4e4901c4ae613a84fce73f
     tests:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk"
-        body: 9e7d90f859d51deabd5797cb953f49bd47f2d6da19fe806231b4b13722d7798c
+        body: 8c389bc75cc026ede3e6b9d1645eeba400f36f98238298da498ce219a2e3cd50
   - node: 01a19f22-2ad9-716e-876f-185572e41a3f
     reviewed: 2d3cb4992519a620162990040dfc76aad5363aa90b920bfcea16ad0b6dd271d9
     tests:

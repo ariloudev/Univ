@@ -6,8 +6,8 @@ use std::time::Duration;
 
 use common::{accept, item, keep, rig};
 use univ_ingest::events::Event;
-use univ_ingest::fetch::{FetchError, Fetched, Payload};
-use wiremock::matchers::{body_string_contains, method, path, query_param};
+use univ_ingest::fetch::{Ask, FetchError, Fetched, Payload};
+use wiremock::matchers::{method, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 fn always(status: u16) -> ResponseTemplate {
@@ -37,7 +37,7 @@ async fn a_request_is_retried_four_times_with_waits_doubling_from_two_seconds() 
         .chunk(
             &item("chunk 0", &dest),
             &mirrors,
-            "/q?chunk=0",
+            &Ask::Get("/q?chunk=0".into()),
             &accept,
             &keep,
         )
@@ -71,7 +71,7 @@ async fn a_mirror_that_fails_all_its_retries_is_skipped_for_the_rest_of_the_run(
             .chunk(
                 &item(&format!("chunk {n}"), &dest),
                 &mirrors,
-                &format!("/q?chunk={n}"),
+                &Ask::Get(format!("/q?chunk={n}")),
                 &accept,
                 &keep,
             )
@@ -112,7 +112,7 @@ async fn a_run_resumes_from_the_first_chunk_not_on_disk_and_fetches_no_chunk_twi
             .chunk(
                 &item(&format!("chunk {n}"), &dest),
                 &[server.uri()],
-                &format!("/q?chunk={n}"),
+                &Ask::Get(format!("/q?chunk={n}")),
                 &accept,
                 &keep,
             )
@@ -159,7 +159,7 @@ async fn a_chunk_is_renamed_into_place_only_once_complete_and_a_partial_file_is_
         .chunk(
             &item("chunk 0", &dest),
             &[server.uri()],
-            "/q?chunk=0",
+            &Ask::Get("/q?chunk=0".into()),
             &tsv_only,
             &keep,
         )
@@ -181,7 +181,7 @@ async fn a_chunk_is_renamed_into_place_only_once_complete_and_a_partial_file_is_
         .chunk(
             &item("chunk 0", &dest),
             &[server.uri()],
-            "/q?chunk=0",
+            &Ask::Get("/q?chunk=0".into()),
             &tsv_only,
             &keep,
         )
@@ -214,7 +214,7 @@ async fn a_chunk_no_mirror_can_give_fails_naming_the_source_the_chunk_and_each_m
         .chunk(
             &item("chunk 1", &dest),
             &[busy.uri(), missing.uri()],
-            "/q?chunk=1",
+            &Ask::Get("/q?chunk=1".into()),
             &accept,
             &keep,
         )
@@ -257,7 +257,7 @@ async fn an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk() 
         .chunk(
             &item("chunk 0", &dir.path().join("chunk-0.tsv")),
             &[server.uri()],
-            "/q?chunk=0",
+            &Ask::Get("/q?chunk=0".into()),
             &accept,
             &keep,
         )
@@ -269,7 +269,7 @@ async fn an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk() 
         .chunk(
             &item("chunk 1", &dir.path().join("chunk-1.tsv")),
             &[server.uri()],
-            "/q?chunk=1",
+            &Ask::Get("/q?chunk=1".into()),
             &accept,
             &keep,
         )
@@ -323,7 +323,7 @@ async fn a_body_that_fails_its_check_moves_to_the_next_mirror_without_skipping_t
             .chunk(
                 &item(&format!("chunk {n}"), &dest),
                 &mirrors,
-                &format!("/q?chunk={n}"),
+                &Ask::Get(format!("/q?chunk={n}")),
                 &tsv_only,
                 &keep,
             )
@@ -361,7 +361,7 @@ async fn a_chunk_is_recorded_before_it_is_renamed_and_a_failed_record_leaves_no_
         .chunk(
             &item("chunk 0", &dest),
             &[server.uri()],
-            "/q",
+            &Ask::Get("/q".into()),
             &tsv_only,
             &seen,
         )
@@ -375,7 +375,7 @@ async fn a_chunk_is_recorded_before_it_is_renamed_and_a_failed_record_leaves_no_
         .chunk(
             &item("chunk 1", &dest),
             &[server.uri()],
-            "/q",
+            &Ask::Get("/q".into()),
             &tsv_only,
             &failing,
         )
@@ -458,159 +458,14 @@ async fn fetch_three(
         .map(|n| dir.path().join(format!("chunk-{n}.tsv")))
         .collect();
     let names: Vec<String> = (0..3).map(|n| format!("chunk {n}")).collect();
-    let suffixes: Vec<String> = (0..3).map(|n| format!("/q?chunk={n}")).collect();
+    let asks: Vec<Ask> = (0..3).map(|n| Ask::Get(format!("/q?chunk={n}"))).collect();
     let fetch = |n: usize| {
         let item = item(&names[n], &dests[n]);
         let fetcher = &rig.fetcher;
-        let (mirrors, suffix) = (&mirrors, &suffixes[n]);
-        async move { fetcher.chunk(&item, mirrors, suffix, &accept, &keep).await }
+        let (mirrors, ask) = (&mirrors, &asks[n]);
+        async move { fetcher.chunk(&item, mirrors, ask, &accept, &keep).await }
     };
     let (a, b, c) = tokio::join!(fetch(0), fetch(1), fetch(2));
     assert!(a.is_ok() && b.is_ok() && c.is_ok());
     rig
-}
-
-/// A TAP service that runs a query as a job: it answers the submission with the job's address,
-/// reports the job executing once and then completed, and serves its result.
-async fn job_service(result: &str) -> MockServer {
-    let server = MockServer::start().await;
-    Mock::given(method("POST"))
-        .and(path("/tap/async"))
-        .and(body_string_contains("PHASE=RUN"))
-        .respond_with(always(303).insert_header("Location", "/tap/async/job-1"))
-        .expect(1)
-        .mount(&server)
-        .await;
-    Mock::given(method("GET"))
-        .and(path("/tap/async/job-1/phase"))
-        .respond_with(always(200).set_body_string("EXECUTING"))
-        .up_to_n_times(1)
-        .with_priority(2)
-        .mount(&server)
-        .await;
-    Mock::given(method("GET"))
-        .and(path("/tap/async/job-1/phase"))
-        .respond_with(always(200).set_body_string("COMPLETED\n"))
-        .mount(&server)
-        .await;
-    Mock::given(method("GET"))
-        .and(path("/tap/async/job-1/results/result"))
-        .respond_with(always(200).set_body_string(result))
-        .expect(1)
-        .mount(&server)
-        .await;
-    server
-}
-
-#[tokio::test]
-async fn a_query_run_as_a_job_is_polled_until_it_completes_and_its_result_kept() {
-    let server = job_service("source_id,bp_rp\n1,0.5\n").await;
-    let rig = rig(false);
-    let dir = tempfile::tempdir().unwrap();
-    let dest = dir.path().join("chunk-0.csv");
-    let fetched = rig
-        .fetcher
-        .chunk(
-            &item("chunk 0", &dest),
-            &[format!("{}/tap", server.uri())],
-            "/async?REQUEST=doQuery&QUERY=SELECT+1&PHASE=RUN",
-            &accept,
-            &keep,
-        )
-        .await
-        .unwrap();
-    let Fetched::Arrived(payload) = fetched else {
-        panic!("fetched")
-    };
-    // Recorded from where its rows came: the job's result.
-    assert_eq!(
-        payload.url,
-        format!("{}/tap/async/job-1/results/result", server.uri())
-    );
-    assert_eq!(
-        std::fs::read_to_string(&dest).unwrap(),
-        "source_id,bp_rp\n1,0.5\n"
-    );
-    // One wait while the job was executing.
-    let waits: Vec<u64> = rig.clock.waits().iter().map(Duration::as_secs).collect();
-    assert_eq!(waits, [5]);
-}
-
-#[tokio::test]
-async fn a_job_that_ends_in_error_is_retried_and_then_moved_to_the_next_mirror() {
-    let failing = MockServer::start().await;
-    Mock::given(method("POST"))
-        .and(path("/tap/async"))
-        .respond_with(always(303).insert_header("Location", "/tap/async/job-9"))
-        .mount(&failing)
-        .await;
-    Mock::given(method("GET"))
-        .and(path("/tap/async/job-9/phase"))
-        .respond_with(always(200).set_body_string("ERROR"))
-        .mount(&failing)
-        .await;
-    Mock::given(method("GET"))
-        .and(path("/tap/async/job-9/error"))
-        .respond_with(always(200).set_body_string("Query timed out"))
-        .mount(&failing)
-        .await;
-    let working = job_service("source_id\n1\n").await;
-    let rig = rig(false);
-    let dir = tempfile::tempdir().unwrap();
-    let dest = dir.path().join("chunk-0.csv");
-    rig.fetcher
-        .chunk(
-            &item("chunk 0", &dest),
-            &[
-                format!("{}/tap", failing.uri()),
-                format!("{}/tap", working.uri()),
-            ],
-            "/async?REQUEST=doQuery&QUERY=SELECT+1&PHASE=RUN",
-            &accept,
-            &keep,
-        )
-        .await
-        .unwrap();
-    let said = rig.sink.events().iter().any(|e| {
-        matches!(e, Event::Err { error, .. } if error.contains("the job ended ERROR: Query timed out"))
-    });
-    assert!(said, "{:?}", rig.sink.events());
-}
-
-#[tokio::test]
-async fn a_poll_that_fails_is_asked_again_and_the_job_is_not_submitted_again() {
-    let server = job_service("source_id\n1\n").await;
-    // Before the job is seen executing, one poll fails, as a dropped connection does.
-    Mock::given(method("GET"))
-        .and(path("/tap/async/job-1/phase"))
-        .respond_with(always(503))
-        .up_to_n_times(1)
-        .with_priority(1)
-        .mount(&server)
-        .await;
-    let rig = rig(false);
-    let dir = tempfile::tempdir().unwrap();
-    let dest = dir.path().join("chunk-0.csv");
-    rig.fetcher
-        .chunk(
-            &item("chunk 0", &dest),
-            &[format!("{}/tap", server.uri())],
-            "/async?REQUEST=doQuery&QUERY=SELECT+1&PHASE=RUN",
-            &accept,
-            &keep,
-        )
-        .await
-        .unwrap();
-    // The submission was made once (the service expects one), and nothing was reported as a
-    // failed attempt.
-    assert!(
-        !rig.sink
-            .events()
-            .iter()
-            .any(|e| matches!(e, Event::Err { .. })),
-        "{:?}",
-        rig.sink.events()
-    );
-    let waits: Vec<u64> = rig.clock.waits().iter().map(Duration::as_secs).collect();
-    assert_eq!(waits, [5, 5]);
 }

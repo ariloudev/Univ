@@ -86,8 +86,9 @@ pub enum Access {
     /// An ADQL query to a TAP service, split into `chunks` by `{chunk}` and `{chunks}` in the
     /// query. `count` is a query for the number of rows the chunks must hold between them: the
     /// ESA Gaia archive stops anonymous answers at 50,000 rows without saying so in CSV. `run`
-    /// says whether each query is answered at once (`sync`) or run as a job (`async`), for a query
-    /// the service cannot answer within a request, such as a join of two large tables.
+    /// says whether each chunk is answered at once (`sync`) or run as a job (`async`), for a
+    /// query the service cannot answer within a request, such as a join of two large tables;
+    /// the count is always answered at once.
     Tap {
         query: String,
         chunks: u32,

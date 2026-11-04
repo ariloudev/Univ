@@ -6,7 +6,8 @@
 
 mod common;
 
-use univ_ingest::access::{check_answer, chunk_requests, read_count};
+use univ_ingest::access::{check_answer, chunk_requests, count_request, read_count};
+use univ_ingest::fetch::Ask;
 use univ_ingest::source::{Access, SourceDefinition, TapRun};
 use univ_ingest::table::TableReader;
 
@@ -34,7 +35,7 @@ fn a_vizier_table_is_asked_for_in_slices_of_an_integer_column() {
         "{stem}"
     );
     assert_eq!(
-        requests[0].suffix,
+        requests[0].ask.suffix(),
         "?-source=VII%2F259%2F6dfgs&-out=ra%2Cdec&-out.max=unlimited&q_cz=3..4&cz=1499..3498"
     );
 }
@@ -48,7 +49,7 @@ fn a_small_vizier_table_is_one_request_and_computed_positions_are_added() {
     assert_eq!(requests.len(), 1);
     assert_eq!(requests[0].item, "the whole table");
     assert_eq!(
-        requests[0].suffix,
+        requests[0].ask.suffix(),
         "?-source=J%2FAJ%2F144%2F4%2Fcatalog&-out=dec&-out.add=_RAJ&-out.max=unlimited"
     );
 }
@@ -61,9 +62,9 @@ fn the_computed_columns_asked_for_are_the_ones_the_definition_takes() {
     d.columns[1].column = "_Glon".to_owned();
     let requests = chunk_requests(&d);
     assert!(
-        requests[0].suffix.contains("&-out.add=_DEJ%2C_Glon&"),
+        requests[0].ask.suffix().contains("&-out.add=_DEJ%2C_Glon&"),
         "{}",
-        requests[0].suffix
+        requests[0].ask.suffix()
     );
 }
 
@@ -102,7 +103,7 @@ fn an_sql_or_adql_query_is_split_by_its_chunk_placeholders() {
     assert_eq!(requests.len(), 17);
     assert_eq!(requests[16].item, "chunk 17 of 17");
     assert_eq!(
-        requests[16].suffix,
+        requests[16].ask.suffix(),
         "?cmd=SELECT+ra%2C+dec+FROM+SpecObj+WHERE+%28specObjID+%25+17%29+%3D+16&format=csv"
     );
     let d = definition(
@@ -112,12 +113,13 @@ fn an_sql_or_adql_query_is_split_by_its_chunk_placeholders() {
     assert_eq!(requests.len(), 4);
     assert!(
         requests[3]
-            .suffix
+            .ask
+            .suffix()
             .starts_with("/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=SELECT"),
         "{}",
-        requests[3].suffix
+        requests[3].ask.suffix()
     );
-    assert!(requests[3].suffix.ends_with("%3D+3"));
+    assert!(requests[3].ask.suffix().ends_with("%3D+3"));
 }
 
 #[test]
@@ -169,16 +171,13 @@ fn a_table_lends_its_rows_and_refuses_a_row_of_the_wrong_width() {
 }
 
 #[test]
-fn a_tap_query_run_as_a_job_is_sent_to_async_with_phase_run() {
-    let sync = definition(
-        "  method: tap\n  query: \"SELECT 1 WHERE MOD(x, {chunks}) = {chunk}\"\n  chunks: 2",
-    );
-    let jobs = definition(
-        "  method: tap\n  query: \"SELECT 1 WHERE MOD(x, {chunks}) = {chunk}\"\n  chunks: 2\n  run: async",
-    );
+fn a_tap_query_run_as_a_job_asks_each_chunk_as_a_job_and_the_count_at_once() {
+    let access = "  method: tap\n  query: \"SELECT 1 WHERE MOD(x, {chunks}) = {chunk}\"\n  chunks: 2\n  count: \"SELECT COUNT(*) AS n FROM t\"";
+    let sync = definition(access);
+    let jobs = definition(&format!("{access}\n  run: async"));
     for r in chunk_requests(&sync) {
         assert!(
-            r.suffix.starts_with("/sync?") && !r.suffix.contains("PHASE"),
+            matches!(&r.ask, Ask::Get(s) if s.starts_with("/sync?")),
             "{r:?}"
         );
     }
@@ -186,10 +185,18 @@ fn a_tap_query_run_as_a_job_is_sent_to_async_with_phase_run() {
     assert_eq!(requests.len(), 2);
     for r in &requests {
         assert!(
-            r.suffix.starts_with("/async?") && r.suffix.ends_with("&PHASE=RUN"),
+            matches!(&r.ask, Ask::Job(f) if f.ends_with("&PHASE=RUN")),
+            "{r:?}"
+        );
+        // A payload records the request that ran the job, and the chunk is matched by it.
+        assert!(
+            r.ask.suffix().starts_with("/async?REQUEST=doQuery&"),
             "{r:?}"
         );
     }
     // A job is kept in its own file: a chunk fetched synchronously is not mistaken for it.
     assert_ne!(requests[0].file, chunk_requests(&sync)[0].file);
+    // The count, one row, is asked at once either way.
+    assert_eq!(count_request(&jobs), count_request(&sync));
+    assert!(matches!(count_request(&jobs).unwrap().ask, Ask::Get(_)));
 }
