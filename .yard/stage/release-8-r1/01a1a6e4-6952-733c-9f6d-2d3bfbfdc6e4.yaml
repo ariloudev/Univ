@@ -154,6 +154,27 @@ blocks:
           - `normalize_colours` shows HIP 2 `K3V` and HIP 5 `G8III` measured, and Gaia's `K` and `M` estimated.
           - The fixture release now includes hipparcos-1997 as its sixth source. `object_reads` shows its five entries attached to the Hipparcos-2 stars of the same HIP number, each with its type read back. The shared fixtures are being regenerated and the ingest suite is running.
         state: active
+      - key: 01a1a71d-c2c8-77b4-b8bb-9cbdc98efd0e
+        at: 2026-11-04T15:11:47Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spectral types read and kept"
+        detail: |-
+          **Scope:**
+          - a new source definition for Hipparcos I/239 `hip_main` (HIP, SpType), attached by HIP number and marked measured;
+          - Gaia DR3 `spectraltype_esphs` by a left join of `gaiadr3.astrophysical_parameters`, marked estimated.
+
+          **Done when** fixture tests show the text kept character for character, and the object record lists each spectral type with its source and kind.
+
+          **Result (c49beef):**
+          - `sources/hipparcos-1997.yaml` is written against the I/239 ReadMe (118,218 records; `r_SpType` kept as a flag), and `rules/matching.yaml` adds it to the `hip` scheme.
+          - `normalize_colours` shows HIP 2 `K3V` and HIP 5 `G8III` measured, and Gaia's `K` and `M` estimated.
+          - The fixture release includes hipparcos-1997 as its sixth source. `object_reads` shows its five entries attached to the Hipparcos-2 stars of the same HIP number, each read back with its type and kind.
+
+          **Open for the review:** hipparcos-1997's entries hold no position, so `source_details` gives it no sky footprint. The read-a-source criterion asks for one. Should its coverage come from the objects its entries join?
+        state: done
   - key: 01a1a6e4-6952-733c-9f6d-2d3f4b7e0fd5
     id: r1-t-tiles
     kind: task
@@ -174,6 +195,32 @@ blocks:
 
           **Done when** the encoder–decoder round-trip tests pass for both versions, version 1 fixtures still decode, and the tile-format contract test passes.
         state: open
+      - key: 01a1a71d-de80-76ff-abb7-96a4ed42fdd4
+        at: 2026-11-04T15:11:55Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tile encoding version 2"
+        detail: |-
+          **Scope:**
+          - the Rust encoder writes each star's colour index (Gaia BP−RP, else Hipparcos B−V, else GCNS BP−RP) and its bands, within 0.01 mag;
+          - the reference decoder and the explorer decode versions 1 and 2;
+          - the fixtures are regenerated;
+          - `/v1/tile-format` describes version 2.
+
+          **Done when** the encoder–decoder round-trip tests pass for both versions, version 1 fixtures still decode, and the tile-format contract test passes.
+
+          **Result (c49beef):**
+          - **Layout:** version 2 is version 1 plus two columns, a 20-byte point. The colour is an `i16` in hundredths of a magnitude (−32768 for none), so values round-trip within 0.005 mag. The bands are a `u8` code (0 none, 1 BP−RP, 2 B−V). A decoder refuses a code that the colour value contradicts.
+          - **Limits:** the most points a tile holds is now 52,426, and `rules/tiles.yaml` restates its byte counts for version 2.
+          - **Colour order:** `tiles::colour_of` takes published BP−RP first, then B−V, then derived BP−RP.
+          - **Rust tests:** 16 tile tests pass, including round trip, refusals, and version 1 read back from the same bytes.
+          - **TypeScript tests:** 7 decoder tests pass. `fixtures/v1/` keeps the simulated domain as version 1 wrote it, never rewritten.
+          - **Tile format:** `layout(1)` and `layout(2)` both describe their versions, and `/v1/tile-format` lists each version a release uses. The OpenAPI snapshot only adds.
+
+          **Moved to E7:** the explorer's decoding. Its source is on `product/explorer`, not on this branch cut from `develop`.
+        state: done
   - key: 01a1a6e4-6952-733c-9f6d-2d40cf52f0fe
     id: r1-t-close
     kind: task
@@ -192,6 +239,20 @@ blocks:
           - `cargo xtask check` and `cargo xtask integration` pass;
           - the Yard Log is closed and `stage/release-8-r1` is merged into `product/release-8`.
         state: open
+      - key: 01a1a71d-ef05-74be-a392-a5bc8b82f538
+        at: 2026-11-04T15:11:59Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge into product/release-8"
+        detail: |-
+          **Done when:**
+          - the new criteria are linked;
+          - the reviews' findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and `stage/release-8-r1` is merged into `product/release-8`.
+        state: active
   - key: 01a1a6e4-6952-733c-9f6d-2d41067995c9
     id: r1-spec
     kind: loft

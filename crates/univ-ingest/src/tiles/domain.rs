@@ -115,6 +115,7 @@ struct Placed {
 /// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
 /// (Gaia DR3's), else a published B−V (Hipparcos-2's), else a BP−RP derived from two magnitudes
 /// (the Gaia Catalogue of Nearby Stars'); the first its entries give of the best of these.
+#[must_use]
 pub fn colour_of(object: &Object) -> Option<PointColour> {
     let colours = || object.entries.iter().flat_map(|e| &e.entry.colours);
     let find = |bands: ColourBands, derived: bool| {
