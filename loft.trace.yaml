@@ -1907,7 +1907,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 9d7d84c2043d56e7559e4f9ab6b38db89a6ba811a04573568050c40b6232e042
+        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
       - file: "crates/univ-api/src/bulk_tests.rs"
         name: "a_tile_manifest_is_served_from_the_bucket_as_published"
         body: 7ec53dfeadfbee11a5850b18e16a889ab908c8555426d647f78a91076d642400
@@ -1916,7 +1916,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 9d7d84c2043d56e7559e4f9ab6b38db89a6ba811a04573568050c40b6232e042
+        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -1925,7 +1925,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 9d7d84c2043d56e7559e4f9ab6b38db89a6ba811a04573568050c40b6232e042
+        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -1934,7 +1934,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 9d7d84c2043d56e7559e4f9ab6b38db89a6ba811a04573568050c40b6232e042
+        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -1943,7 +1943,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 9d7d84c2043d56e7559e4f9ab6b38db89a6ba811a04573568050c40b6232e042
+        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -1952,7 +1952,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 9d7d84c2043d56e7559e4f9ab6b38db89a6ba811a04573568050c40b6232e042
+        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -2831,7 +2831,7 @@ links:
         body: 69605ce4b6f56c772a842db7b96ec064168ca2c23054d29489db7b69ed7de97c
       - file: "crates/univ-server/tests/e2e.rs"
         name: "the_tile_format_describes_each_encoding_the_release_uses"
-        body: 1ebf217d1bed2810793aa1788427c10d87699e4a562d0952b6cf5c42184e070e
+        body: 23ee80f8bcb48909773b8ce96d7a3c070819fe0d2109343af82b9dadb9fe186c
   - node: 01a19f20-8e6c-7039-b16f-ac0273b5ac3b
     reviewed: e34bfd89a87b28a32e7d67f7cc019ff1e2426961b90b938eee299c2800c601c3
     tests:
