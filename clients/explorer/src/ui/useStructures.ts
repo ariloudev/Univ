@@ -77,22 +77,32 @@ async function readAll(release: number, rotations: Rotations, signal: AbortSigna
   };
 }
 
+/** The renderer's name for structure `id`'s outline and markers. */
+const drawnAs = (id: string) => `structure:${id}`;
+
 /** Draws every structure of `structures` into `world`, and hands their names to the overlay. */
 function drawAll(world: World, structures: Structures): void {
   for (const drawing of structures.drawings.values()) {
     const { lines, markers } = rendered(drawing);
-    world.renderer.setLines(`structure:${drawing.id}`, lines);
-    world.renderer.setMarkers(`structure:${drawing.id}`, markers);
+    world.renderer.setLines(drawnAs(drawing.id), lines);
+    world.renderer.setMarkers(drawnAs(drawing.id), markers);
   }
   world.names = [...structures.drawings.values()].flatMap((d) =>
     d.centre === undefined ? [] : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name }],
   );
-  world.controller.invalidate();
 }
 
-/** The structures of `release`, drawn into `world` once the rotations of its frames are read. */
-export function useStructures(release: number, world: World | undefined, rotations: Rotations | undefined): Structures {
+/** The structures of `release`, drawn into `world` once the rotations of its frames are read,
+ * the one `chosen` in the chosen colour. */
+export function useStructures(release: number, world: World | undefined, rotations: Rotations | undefined, chosen?: string): Structures {
   const [structures, setStructures] = useState<Structures>(NONE);
+  // After the render that holds them: a frame drawn before React has added the names' elements
+  // would place none, and a still view draws no other.
+  useEffect(() => {
+    if (world === undefined) return;
+    world.renderer.choose(chosen === undefined ? undefined : drawnAs(chosen));
+    world.controller.invalidate();
+  }, [world, structures, chosen]);
   useEffect(() => {
     if (world === undefined || rotations === undefined) return;
     const abort = new AbortController();

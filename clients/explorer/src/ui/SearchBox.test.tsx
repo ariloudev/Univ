@@ -24,19 +24,19 @@ afterEach(() => {
 });
 
 describe("searching", () => {
-  it("makes the object found the chosen one", async () => {
+  it("makes the object found the chosen one, with the name it was found by", async () => {
     const fetch = answer(200, ANDROMEDA);
     const found = await find("Andromeda");
-    expect(found).toHaveBeenCalledWith(856254, ANDROMEDA);
+    expect(found).toHaveBeenCalledWith(856254, ANDROMEDA, "Andromeda");
     expect(fetch.mock.calls[0]?.[0]).toBe("/v1/objects?name=Andromeda&release=7");
   });
 
-  it("lists the objects a name belongs to, to choose from", async () => {
+  it("lists the objects a name belongs to, to choose from, each chosen with the name it was found by", async () => {
     answer(300, { objects: [{ id: 1, href: "/v1/objects/1", names: ["Twin"] }, { id: 2, href: "/v1/objects/2", names: ["Twin"] }] });
     const found = await find("Twin");
     expect(await screen.findByText("“Twin” names 2 objects:")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "2 (Twin)" }));
-    expect(found).toHaveBeenCalledWith(2);
+    expect(found).toHaveBeenCalledWith(2, undefined, "Twin");
   });
 
   it("repeats what was searched for when nothing is found", async () => {

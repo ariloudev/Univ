@@ -3176,13 +3176,13 @@ links:
         body: 6e3ce3ced261d69f3cbb7c3d63eecfdb0d65fb1e64f162999248c15d0df3f343
       - file: "clients/explorer/src/api/objects.test.ts"
         name: "reads the object found, in the release chosen"
-        body: a5d35a3eeffdd9b72d92da794e53b5ef6969e70b9a87168a647774bda7b6d80b
+        body: 0ee038741868f1434a90ccb8ec015c62a3bf510723724b00d29db0a330bb58e5
   - node: 01a1a497-e843-728a-bce8-3fdf22d824cf
     reviewed: e32249090c437fa7ea136a14441a387aa4a0108f1b89a9bd5c6a2964ae4c507b
     tests:
       - file: "clients/explorer/src/ui/SearchBox.test.tsx"
-        name: "makes the object found the chosen one"
-        body: ceeca880588f6df8b35464494811de8216a37d5bcdea7e3d2bec331471017776
+        name: "makes the object found the chosen one, with the name it was found by"
+        body: 911ad6e25383b29a933e56af5ecdc92a37ecdb8f14d566099879205a62fdf70f
       - file: "clients/explorer/src/ui/useChosen.test.tsx"
         name: "is kept in the page's address, read back on reload, marked, and flown to"
         body: 4a642179f5ba6a98df055f4e48e06d9da7e838d3afe83fde1011ee3420f0bb4d
@@ -3190,8 +3190,8 @@ links:
     reviewed: 162c714ed0630af06daf81bd0d1d4b2852da07847d76571630cf72f430f4a3c9
     tests:
       - file: "clients/explorer/src/ui/SearchBox.test.tsx"
-        name: "lists the objects a name belongs to, to choose from"
-        body: 48f9c3db0861a39460450c2e70cfcffc4c86516bc2915f44516880d1e3ad5a94
+        name: "lists the objects a name belongs to, to choose from, each chosen with the name it was found by"
+        body: 3195d4738b948520e13e9b154efb231500aa6346adca23ccb8ecae950f166e5d
       - file: "clients/explorer/src/api/objects.test.ts"
         name: "lists the objects a name belongs to, to choose from"
         body: 659fd1e62aefeb1e05dc9aa4e22d3d5bc6aef188c1b8a377911cf96ac0882758
@@ -3219,6 +3219,27 @@ links:
       - file: "clients/explorer/src/scene/pick.test.ts"
         name: "finds the point under the pointer, across batches"
         body: 37f02fcb621ce6620054c55f7a57f43067e7079259e99239af4c80c72c60e157
+  - node: 01a1a6b2-b217-764e-93d0-da89ee4e3c67
+    reviewed: 6034ae72796c70435d080c5529759d0ca3761d4a1dc226331d9748dee6376891
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "is headed by the name the object was found by, with its id beside it"
+        body: eecae235cb90df636a321bf44d9b9c154112754adb3836d0ee65b27919585268
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "is headed, when opened from the view, by the first name its entries give, or else its first designation"
+        body: 4dfa6ef9d1cc9cf90bf22bc48ec53d90d63bd60020ffbe636d25bad17e7ce1f8
+      - file: "clients/explorer/src/api/objects.test.ts"
+        name: "is the designation that reads as the name typed, letter case and spaces aside, or else what was typed"
+        body: 16114a85febed8ad6c613b2ed9d85ff5274fcc4f2201393f60b1a76a12c7b6f2
+      - file: "clients/explorer/src/ui/useChosen.test.tsx"
+        name: "keeps the name it was found by in the address, beside its id"
+        body: f5574803b52801858ccf23f9aeb24a9963c605d3e38b4da395e170f9fbb79fae
+  - node: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
+    reviewed: b50e335a6ecb06d3274361f87e0018abb49a097f3871c3fd20358cbc762dd372
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "names a galaxy group as such, and the scale domain of every object, not \"body\""
+        body: 5314d46ab79d66492161d895a945bad596c2c3bc163cb9308957ae0b55866310
   - node: 01a1a497-e843-728a-bce8-3fe7201a1670
     reviewed: 250a2af29b9190f2c99846570ccaca8d0b939fcb1ad77f2be75fd50fcd8c5148
     tests:
@@ -3274,8 +3295,8 @@ links:
         name: "is kept in the page's address, read back on reload, marked, and flown to"
         body: 4a642179f5ba6a98df055f4e48e06d9da7e838d3afe83fde1011ee3420f0bb4d
       - file: "clients/explorer/src/ui/useChosen.test.tsx"
-        name: "is read from the address only where it names an object id"
-        body: 6caf5fe4de95d8a1617b85bbe215c5f386d99ee6f85a4df51e822788898a2a65
+        name: "is read from the address only where it names an object id, with the name it was found by"
+        body: 59f79d815a2a338419122a28e35ac5a4f66732c9bcb25cf8772e5007e8ce1a5a
       - file: "clients/explorer/src/ui/useChosen.test.tsx"
         name: "is let go of, leaving the address naming none"
         body: 76cc124c699310591f32ace5b8d67513819352c57ea278a56e1c8b2d6f508718
@@ -3366,6 +3387,18 @@ links:
       - file: "clients/explorer/src/ui/useStructures.test.ts"
         name: "is read page after page, each in the release chosen"
         body: 6f76bb02efd1f77815b23c4d998ff841b9562c4e196fc7f1b162c93247e7bb4d
+  - node: 01a1a6b2-b217-764e-93d0-da8be265b690
+    reviewed: 59b484dcaac99c15ba902acc8c4cc9eccf0de2b4dd6e4cecd2f0c2c705a33807
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "is the one the renderer draws as chosen, until another is chosen or none"
+        body: c1bd99286408dc25fef02053399d011dabe99ac9fc83aa70dbf6978e119048df
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
+        body: 90c6b0a6f69393e273411eec927bd4870ba6e690fe8e2bdcecfff97259fb143d
+      - file: "clients/explorer/src/ui/SceneOverlay.test.tsx"
+        name: "writes the chosen structure's name in the chosen colour, and the others in the structures' own"
+        body: 0a660037479bd1b47d0abf7efc51c4df4edbe758ed17c4cbe4dc49bcaffe6119
   - node: 01a1a497-e843-728a-bce8-3ffa426590e2
     reviewed: f0b8b7ee41de7be2ce86c64da40f91c05bc36dcc41c0bcfc3c8cb094a930a4c5
     tests:

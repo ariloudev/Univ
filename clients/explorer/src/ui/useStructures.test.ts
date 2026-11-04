@@ -1,8 +1,12 @@
+import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { structuresOf } from "../api/structures.ts";
+import type { Renderer } from "../scene/renderer.ts";
 import type { StructureDrawing } from "../scene/structures.ts";
-import { rendered, settled, structureView } from "./useStructures.ts";
+import { manifestOf } from "../test/fixtures.ts";
+import { fakeWorld } from "../test/world.ts";
+import { rendered, settled, structureView, useStructures } from "./useStructures.ts";
 
 const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing["centre"] = [10, 0, 0]): StructureDrawing => ({
   id: "s",
@@ -69,5 +73,31 @@ describe("the list of structures", () => {
     const list = await structuresOf(7);
     expect(list.map((s) => s.id)).toEqual(["a", "b"]);
     expect(fetch.mock.calls.map((c) => c[0])).toEqual(["/v1/structures?release=7", "/v1/structures?cursor=c1&release=7"]);
+  });
+});
+
+describe("the chosen structure", () => {
+  it("is the one the renderer draws as chosen, until another is chosen or none", () => {
+    const choose = vi.fn();
+    const world = fakeWorld({ renderer: { setLines: vi.fn(), setMarkers: vi.fn(), choose } as unknown as Renderer });
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => undefined)));
+    const hook = renderHook(({ chosen }: { chosen: string | undefined }) => useStructures(7, world, manifestOf("stars").rotations, chosen), {
+      initialProps: { chosen: "kbc-void" as string | undefined },
+    });
+    expect(choose).toHaveBeenLastCalledWith("structure:kbc-void");
+    hook.rerender({ chosen: "shapley-supercluster" });
+    expect(choose).toHaveBeenLastCalledWith("structure:shapley-supercluster");
+    hook.rerender({ chosen: undefined });
+    expect(choose).toHaveBeenLastCalledWith(undefined);
+  });
+
+  it("asks for a frame once the structures read are rendered, so that their names are placed", async () => {
+    vi.stubGlobal("fetch", vi.fn((url: string) => Promise.resolve(Response.json(url.startsWith("/v1/structures?") ? { release: 7, structures: [], next: null } : {}))));
+    const world = fakeWorld();
+    const invalidate = vi.spyOn(world.controller, "invalidate");
+    const hook = renderHook(() => useStructures(7, world, manifestOf("stars").rotations));
+    const before = invalidate.mock.calls.length;
+    await waitFor(() => expect(hook.result.current.list).toEqual([]));
+    await waitFor(() => expect(invalidate.mock.calls.length).toBeGreaterThan(before));
   });
 });

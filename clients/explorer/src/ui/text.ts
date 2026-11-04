@@ -58,3 +58,21 @@ export function preferredText(preferred: NonNullable<ObjectRecord["preferred"]>)
 export function pointText(point: ScenePoint): string {
   return `${point.id} · ${words(point.domain)} · ${formatDistance(point.distanceMpc)} · ${point.source} · ${point.kind}`;
 }
+
+/** The heading of an object's panel: the name it was found by, else the first name its entries
+ * give, else its first designation with its source. */
+export function headingOf(record: ObjectRecord, foundAs?: string): string {
+  if (foundAs !== undefined) return foundAs;
+  const named = record.entries.find((e) => e.name !== null)?.name ?? undefined;
+  if (named !== undefined) return named;
+  const first = record.designations[0];
+  return first === undefined ? `Object ${record.id}` : `${first.identifier} (${first.source})`;
+}
+
+/** What the panel says an object is: a galaxy group where it is one, and its scale domain. */
+export function natureOf(record: ObjectRecord): string {
+  const group = record.kind === "galaxy_group" ? "A galaxy group" : undefined;
+  const domain = record.position === null ? undefined : `the ${words(record.position.scale_domain)} domain`;
+  if (domain === undefined) return group === undefined ? "Not placed, so in no scale domain" : `${group}, not placed`;
+  return group === undefined ? `In ${domain}` : `${group}, in ${domain}`;
+}

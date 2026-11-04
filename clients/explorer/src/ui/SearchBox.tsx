@@ -5,7 +5,7 @@ import { type Found, type ObjectRecord, search } from "../api/objects.ts";
 type State = { kind: "idle" } | { kind: "searching" } | { kind: "failed"; message: string } | Exclude<Found, { kind: "object" }>;
 
 /** Finds an object by id, designation (`source:identifier`) or name (find-an-object). */
-export function SearchBox({ release, onFound }: { release: number; onFound: (id: number, record?: ObjectRecord) => void }) {
+export function SearchBox({ release, onFound }: { release: number; onFound: (id: number, record?: ObjectRecord, as?: string) => void }) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<State>({ kind: "idle" });
   const searching = useRef<AbortController>(undefined);
@@ -22,7 +22,7 @@ export function SearchBox({ release, onFound }: { release: number; onFound: (id:
         if (abort.signal.aborted) return;
         if (found.kind === "object") {
           setState({ kind: "idle" });
-          onFound(found.record.id, found.record);
+          onFound(found.record.id, found.record, found.as);
         } else setState(found);
       })
       .catch((error: unknown) => {
@@ -48,7 +48,7 @@ export function SearchBox({ release, onFound }: { release: number; onFound: (id:
   );
 }
 
-function Outcome({ state, onFound }: { state: State; onFound: (id: number) => void }) {
+function Outcome({ state, onFound }: { state: State; onFound: (id: number, record?: ObjectRecord, as?: string) => void }) {
   switch (state.kind) {
     case "idle":
       return null;
@@ -65,7 +65,7 @@ function Outcome({ state, onFound }: { state: State; onFound: (id: number) => vo
           <ul>
             {state.objects.map((o) => (
               <li key={o.id}>
-                <button type="button" onClick={() => onFound(o.id)} className="text-accent hover:underline">
+                <button type="button" onClick={() => onFound(o.id, undefined, o.names[0])} className="text-accent hover:underline">
                   {o.id}
                   {o.names.length > 0 ? ` (${o.names.join(", ")})` : ""}
                 </button>

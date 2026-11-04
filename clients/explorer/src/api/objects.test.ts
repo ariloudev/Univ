@@ -17,7 +17,7 @@ describe("finding an object", () => {
   it("reads the object found, in the release chosen", async () => {
     const fake = http(200, ANDROMEDA);
     const found = await search("Andromeda", { http: fake, release: 7 });
-    expect(found).toEqual({ kind: "object", record: ANDROMEDA });
+    expect(found).toEqual({ kind: "object", record: ANDROMEDA, as: "Andromeda" });
     expect(fake.urls).toEqual(["/v1/objects?name=Andromeda&release=7"]);
   });
 
@@ -68,5 +68,22 @@ describe("an object's record", () => {
     const star = { ...ANDROMEDA, position: { ...ANDROMEDA.position, unit: "parsec", x: 2, y: 0, z: 0 } } as ObjectRecord;
     expect(placeOf(star)?.[0]).toBeCloseTo(2e-6);
     expect(placeOf({ ...ANDROMEDA, position: null })).toBeUndefined();
+  });
+});
+
+describe("the name an object was found by", () => {
+  it("is the designation that reads as the name typed, letter case and spaces aside, or else what was typed", async () => {
+    const as = async (query: string) => {
+      const found = await search(query, { http: http(200, ANDROMEDA) });
+      return found.kind === "object" ? found.as : "not found";
+    };
+    expect(await as(" andromeda ")).toBe("Andromeda");
+    expect(await as("messier 031")).toBe("MESSIER031");
+    expect(await as("M 31")).toBe("M 31");
+  });
+
+  it("is none for a lookup by id or by designation", async () => {
+    expect(await search("856254", { http: http(200, ANDROMEDA) })).toEqual({ kind: "object", record: ANDROMEDA });
+    expect(await search("mcconnachie-2012:Andromeda", { http: http(200, ANDROMEDA) })).toEqual({ kind: "object", record: ANDROMEDA });
   });
 });

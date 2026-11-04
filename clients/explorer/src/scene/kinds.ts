@@ -36,8 +36,19 @@ export const KIND_COLOURS: readonly Rgba[] = KINDS.map((kind) => COLOURS[kind]);
 export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
 /** The colour of a structure drawn by its bounding box, marked approximate: fainter. */
 export const APPROXIMATE_COLOUR: Rgba = [STRUCTURE_COLOUR[0], STRUCTURE_COLOUR[1], STRUCTURE_COLOUR[2], 0.3];
+/** The colour of the chosen structure's outline, markers and name (see-the-structures): white,
+ * apart from the structures' orange and from every kind of value's colour. */
+export const CHOSEN_COLOUR: Rgba = [1, 1, 1, 1];
 /** The index of `STRUCTURE_COLOUR` in the renderer's table of colours. */
 export const MARKER_INDEX = KINDS.length;
+/** The diameter of a structure's markers, device pixels. */
+const MARKER_SIZE = 6;
+/** The diameter of the chosen structure's markers: a structure placed by a point shows as chosen. */
+const CHOSEN_MARKER_SIZE = 16;
+
+/** How a structure drawn in `colour` is drawn: so, or in the chosen colour, its markers larger. */
+export const structureStyle = (colour: Rgba, chosen: boolean): { colour: Rgba; markerSize: number } =>
+  chosen ? { colour: CHOSEN_COLOUR, markerSize: CHOSEN_MARKER_SIZE } : { colour, markerSize: MARKER_SIZE };
 
 const css = ([r, g, b]: Rgba): string => `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
 
@@ -46,3 +57,6 @@ export const cssColour = (kind: KindOfValue): string => css(COLOURS[kind]);
 
 /** The colour of structures for CSS, as their names are written. */
 export const STRUCTURE_CSS = css(STRUCTURE_COLOUR);
+
+/** The chosen structure's colour for CSS, as its name is written. */
+export const CHOSEN_CSS = css(CHOSEN_COLOUR);

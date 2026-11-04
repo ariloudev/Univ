@@ -1,6 +1,6 @@
 import { type ObjectRecord, distancesOf } from "../api/objects.ts";
 import type { ChosenObject } from "./useChosen.ts";
-import { preferredText, valueText, words } from "./text.ts";
+import { headingOf, natureOf, preferredText, valueText, words } from "./text.ts";
 
 /** The chosen object's record: its names, its preferred and other distances, its frame. */
 export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObject; onChoose: (id: number) => void; onClose: () => void }) {
@@ -8,7 +8,15 @@ export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObjec
   return (
     <section aria-label="The chosen object" className="space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="font-semibold">{chosen.kind === "ready" ? `Object ${chosen.record.id}` : "Object"}</h2>
+        <h2 className="font-semibold">
+          {chosen.kind === "ready" ? (
+            <>
+              {headingOf(chosen.record, chosen.as)} <span className="font-normal text-dim">#{chosen.record.id}</span>
+            </>
+          ) : (
+            "Object"
+          )}
+        </h2>
         <button type="button" onClick={onClose} className="text-dim hover:text-ink" aria-label="Close the object's panel">
           ×
         </button>
@@ -53,7 +61,9 @@ function Record({ record }: { record: ObjectRecord }) {
   const names = record.entries.filter((e) => e.name !== null);
   return (
     <div className="space-y-2">
-      <p className="text-dim">{words(record.kind)}</p>
+      <p className="text-dim" data-testid="nature">
+        {natureOf(record)}
+      </p>
       <div>
         <h3 className="text-xs text-dim">Names and designations</h3>
         <ul data-testid="names">

@@ -37,7 +37,7 @@ export function SidePanels({ world, release, cosmology, structures, selection }:
         {structures.problem === undefined ? null : <p className="w-80 text-xs text-warn">{structures.problem}</p>}
       </div>
       <div className="absolute top-3 right-3 flex w-96 flex-col gap-2">
-        <SearchBox release={release} onFound={(id, record) => selection.object(id, { record, fly: true })} />
+        <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />
         <ObjectPanel chosen={selection.chosen} onChoose={(id) => selection.object(id, { fly: true })} onClose={selection.close} />
         {selection.structure === undefined ? null : (
           <StructurePanel detail={selection.structure} approximate={selection.approximate} onClose={selection.close} />

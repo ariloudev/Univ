@@ -13,6 +13,7 @@ export const ANDROMEDA: ObjectRecord = {
   ],
   designations: [
     { source: "cosmicflows-4-galaxies", identifier: "2557" },
+    { source: "mcconnachie-2012", identifier: "Andromeda" },
     { source: "updated-nearby-galaxies", identifier: "MESSIER031" },
   ],
   measurements: [

@@ -8,6 +8,28 @@ import { ObjectPanel } from "./ObjectPanel.tsx";
 const close = () => undefined;
 
 describe("the chosen object's panel", () => {
+  it("is headed by the name the object was found by, with its id beside it", () => {
+    render(<ObjectPanel chosen={{ kind: "ready", record: ANDROMEDA, as: "Andromeda" }} onChoose={close} onClose={close} />);
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Andromeda #856254");
+  });
+
+  it("is headed, when opened from the view, by the first name its entries give, or else its first designation", () => {
+    render(<ObjectPanel chosen={{ kind: "ready", record: ANDROMEDA }} onChoose={close} onClose={close} />);
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("2557 (cosmicflows-4-galaxies) #856254");
+    const named = { ...ANDROMEDA, entries: [{ source: "hipparcos-2007", identifier: "32349", name: "Sirius" }] };
+    render(<ObjectPanel chosen={{ kind: "ready", record: named }} onChoose={close} onClose={close} />);
+    expect(screen.getAllByRole("heading", { level: 2 })[1]?.textContent).toBe("Sirius #856254");
+  });
+
+  it("names a galaxy group as such, and the scale domain of every object, not \"body\"", () => {
+    render(<ObjectPanel chosen={{ kind: "ready", record: ANDROMEDA }} onChoose={close} onClose={close} />);
+    expect(screen.getByTestId("nature").textContent).toBe("In the nearby galaxies domain");
+    render(<ObjectPanel chosen={{ kind: "ready", record: { ...ANDROMEDA, kind: "galaxy_group" } }} onChoose={close} onClose={close} />);
+    expect(screen.getAllByTestId("nature")[1]?.textContent).toBe("A galaxy group, in the nearby galaxies domain");
+    render(<ObjectPanel chosen={{ kind: "ready", record: { ...ANDROMEDA, position: null } }} onChoose={close} onClose={close} />);
+    expect(screen.getAllByTestId("nature")[2]?.textContent).toBe("Not placed, so in no scale domain");
+  });
+
   it("gives the object's names and designations, each with its source", () => {
     render(<ObjectPanel chosen={{ kind: "ready", record: ANDROMEDA }} onChoose={close} onClose={close} />);
     const names = screen.getByTestId("names").textContent ?? "";
