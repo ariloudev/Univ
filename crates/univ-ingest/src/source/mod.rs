@@ -85,18 +85,33 @@ pub enum Access {
     },
     /// An ADQL query to a TAP service, split into `chunks` by `{chunk}` and `{chunks}` in the
     /// query. `count` is a query for the number of rows the chunks must hold between them: the
-    /// ESA Gaia archive stops anonymous answers at 50,000 rows without saying so in CSV.
+    /// ESA Gaia archive stops anonymous answers at 50,000 rows without saying so in CSV. `run`
+    /// says whether each query is answered at once (`sync`) or run as a job (`async`), for a query
+    /// the service cannot answer within a request, such as a join of two large tables.
     Tap {
         query: String,
         chunks: u32,
         #[serde(default)]
         count: Option<String>,
+        #[serde(default)]
+        run: TapRun,
     },
     /// Files under each mirror, each fetched whole and resumable.
     Files { files: Vec<RemoteFile> },
     /// Files kept in this repository under `path`, such as the researched structures, which are
     /// read from their papers rather than fetched.
     Repository { path: String },
+}
+
+/// How a TAP service is asked a query.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TapRun {
+    /// Answered within the request, at `/sync`.
+    #[default]
+    Sync,
+    /// Run as a job at `/async`, polled until it completes, its result then fetched.
+    Async,
 }
 
 /// A file under each mirror, with the size and SHA-256 its provider publishes, where it does.

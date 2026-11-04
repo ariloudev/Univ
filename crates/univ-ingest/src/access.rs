@@ -4,7 +4,8 @@
 use sha2::{Digest, Sha256};
 use url::form_urlencoded::Serializer;
 
-use crate::source::{Access, SourceDefinition};
+use crate::fetch::JOB;
+use crate::source::{Access, SourceDefinition, TapRun};
 use crate::table::TableReader;
 
 /// One chunk of a query: its name in events and provenance, its file on disk, and what is
@@ -138,7 +139,12 @@ fn request(
 fn suffix_for(access: &Access) -> Option<fn(&str) -> String> {
     match access {
         Access::SkyserverSql { .. } => Some(skyserver_suffix),
-        Access::Tap { .. } => Some(tap_suffix),
+        Access::Tap {
+            run: TapRun::Sync, ..
+        } => Some(tap_suffix),
+        Access::Tap {
+            run: TapRun::Async, ..
+        } => Some(tap_job_suffix),
         Access::VizierTsv { .. } | Access::Files { .. } | Access::Repository { .. } => None,
     }
 }
@@ -151,12 +157,24 @@ fn skyserver_suffix(sql: &str) -> String {
 }
 
 fn tap_suffix(adql: &str) -> String {
+    format!("/sync?{}", tap_form(adql, false))
+}
+
+/// The suffix of a TAP job, which the fetcher sends as a form to `/async` ([`JOB`]).
+fn tap_job_suffix(adql: &str) -> String {
+    format!("{JOB}{}", tap_form(adql, true))
+}
+
+fn tap_form(adql: &str, run: bool) -> String {
     let mut q = Serializer::new(String::new());
     q.append_pair("REQUEST", "doQuery");
     q.append_pair("LANG", "ADQL");
     q.append_pair("FORMAT", "csv");
     q.append_pair("QUERY", adql);
-    format!("/sync?{}", q.finish())
+    if run {
+        q.append_pair("PHASE", "RUN");
+    }
+    q.finish()
 }
 
 /// The request for the number of rows a source's chunks must hold, where its definition gives

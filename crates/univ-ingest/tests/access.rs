@@ -7,7 +7,7 @@
 mod common;
 
 use univ_ingest::access::{check_answer, chunk_requests, read_count};
-use univ_ingest::source::{Access, SourceDefinition};
+use univ_ingest::source::{Access, SourceDefinition, TapRun};
 use univ_ingest::table::TableReader;
 
 /// A definition with `access` and two columns, read from YAML as a run would.
@@ -132,6 +132,7 @@ fn an_error_page_is_not_read_as_a_table() {
         query: String::new(),
         chunks: 1,
         count: None,
+        run: TapRun::Sync,
     };
     let page =
         b"<?xml version=\"1.0\"?><VOTABLE><INFO name=\"QUERY_STATUS\" value=\"ERROR\"/></VOTABLE>";
@@ -153,6 +154,7 @@ fn a_table_lends_its_rows_and_refuses_a_row_of_the_wrong_width() {
         query: String::new(),
         chunks: 1,
         count: None,
+        run: TapRun::Sync,
     };
     assert_eq!(
         TableReader::new(&tap, short)
@@ -164,4 +166,30 @@ fn a_table_lends_its_rows_and_refuses_a_row_of_the_wrong_width() {
     );
     assert_eq!(read_count(&tap, b"n\n482106\n"), Ok(482_106));
     assert!(read_count(&tap, b"n\n1\n2\n").is_err());
+}
+
+#[test]
+fn a_tap_query_run_as_a_job_is_sent_to_async_with_phase_run() {
+    let sync = definition(
+        "  method: tap\n  query: \"SELECT 1 WHERE MOD(x, {chunks}) = {chunk}\"\n  chunks: 2",
+    );
+    let jobs = definition(
+        "  method: tap\n  query: \"SELECT 1 WHERE MOD(x, {chunks}) = {chunk}\"\n  chunks: 2\n  run: async",
+    );
+    for r in chunk_requests(&sync) {
+        assert!(
+            r.suffix.starts_with("/sync?") && !r.suffix.contains("PHASE"),
+            "{r:?}"
+        );
+    }
+    let requests = chunk_requests(&jobs);
+    assert_eq!(requests.len(), 2);
+    for r in &requests {
+        assert!(
+            r.suffix.starts_with("/async?") && r.suffix.ends_with("&PHASE=RUN"),
+            "{r:?}"
+        );
+    }
+    // A job is kept in its own file: a chunk fetched synchronously is not mistaken for it.
+    assert_ne!(requests[0].file, chunk_requests(&sync)[0].file);
 }

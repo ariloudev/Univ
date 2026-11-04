@@ -2,6 +2,7 @@
 //! on disk through an atomic rename, and an offline mode that makes no request.
 
 mod file;
+mod job;
 mod tally;
 
 use std::collections::HashSet;
@@ -20,6 +21,7 @@ use univ_model::ids::SourceId;
 use crate::events::{Event, EventSink};
 
 pub use file::Expected;
+pub use job::JOB;
 pub use tally::Tally;
 
 /// How often and how patiently a request is retried on one mirror.
@@ -142,6 +144,9 @@ pub type Record<'a> = dyn Fn(&Payload) -> io::Result<()> + Send + Sync + 'a;
 /// Fetches the chunks and files of sources.
 pub struct Fetcher<C: Clock> {
     client: reqwest::Client,
+    /// The client that submits a TAP job: it does not follow the redirect to the job, whose
+    /// address it reads.
+    jobs: reqwest::Client,
     clock: C,
     sink: Arc<dyn EventSink>,
     policy: RetryPolicy,
@@ -160,13 +165,17 @@ impl<C: Clock> Fetcher<C> {
         policy: RetryPolicy,
         offline: bool,
     ) -> Result<Self, reqwest::Error> {
-        let client = reqwest::Client::builder()
-            .user_agent(concat!("univ-ingest/", env!("CARGO_PKG_VERSION")))
-            .connect_timeout(Duration::from_secs(30))
-            .read_timeout(Duration::from_secs(120))
-            .build()?;
+        let builder = || {
+            reqwest::Client::builder()
+                .user_agent(concat!("univ-ingest/", env!("CARGO_PKG_VERSION")))
+                .connect_timeout(Duration::from_secs(30))
+                .read_timeout(Duration::from_secs(120))
+        };
         Ok(Self {
-            client,
+            client: builder().build()?,
+            jobs: builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .build()?,
             clock,
             sink,
             policy,
@@ -207,8 +216,14 @@ impl<C: Clock> Fetcher<C> {
             return Ok(on_disk);
         }
         let (url, body, rows) = self
-            .across_mirrors(item, mirrors, |mirror| {
-                self.get_chunk(item, format!("{mirror}{suffix}"), check)
+            .across_mirrors(item, mirrors, |mirror| async move {
+                match suffix.strip_prefix(JOB) {
+                    Some(form) => self.job(item, &mirror, form, check).await,
+                    None => {
+                        self.get_chunk(item, format!("{mirror}{suffix}"), check)
+                            .await
+                    }
+                }
             })
             .await?;
         let bytes = body.len() as u64;

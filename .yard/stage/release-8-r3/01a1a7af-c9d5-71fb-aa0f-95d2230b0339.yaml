@@ -1,0 +1,110 @@
+key: 01a1a7af-c9d5-71fb-aa0f-95d2230b0339
+id: r3
+versions:
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d9a99797f5
+    at: 2026-11-04T17:51:17Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R3: release 8"
+    goal: "Release 8 is built from the current sources and structure files, published locally, and passes its science checks, its tile checks, QA-2 and QA-3, and the spot checks for star colours and the curated structures"
+    status: active
+blocks:
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d3b008aac5
+    id: r3-t-build
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95da98a19090
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build release 8"
+        detail: |-
+          **Scope:** `univ-ingest build` with the defaults, in the background. It fetches the new colour and spectral-type columns R1 added, with every source's provenance.
+
+          **Done when** release 8 is complete under `.cache/univ-ingest/build/releases/8`, with its manifest checked.
+        state: active
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d466f878f5
+    id: r3-t-publish
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95db8fcc673e
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Publish release 8 locally"
+        detail: |-
+          **Scope:** `univ-ingest publish` to the local D1 and R2 that `wrangler dev` reads.
+
+          **Done when** latest is release 8 and every file is checked against its SHA-256.
+        state: open
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d5f035ceb1
+    id: r3-t-science
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95dc1077a22f
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science checks and tile checks"
+        detail: |-
+          **Scope:** `cargo xtask science` on release 8, and every tile decoded and checked against its SHA-256.
+
+          **Done when** every check passes, or a failure is explained and fixed.
+        state: open
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d6a2baa184
+    id: r3-t-spot
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95dd84ef84ad
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spot checks"
+        detail: |-
+          **Scope:** through the API on release 8:
+          - Sirius: B−V ≈ 0.00, spectral type A1V;
+          - Betelgeuse: B−V ≈ 1.85;
+          - Laniakea and Vela present, Vela as a sky region named "(at least)";
+          - the Hercules Void with its extents.
+
+          **Done when** each is read back and recorded, with a screenshot of the explorer showing the structures.
+        state: open
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d7382ea444
+    id: r3-t-qa
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95ded1e0790b
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-2 and QA-3"
+        detail: |-
+          **Scope:** `cargo xtask bench lookup` (95th percentile under 200 ms) and `cargo xtask bench first-points` (95th percentile under 3 s) on release 8.
+
+          **Done when** both are within their limits.
+        state: open
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d80a3642d3
+    id: r3-t-close
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95dffc12a474
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Close and merge into product/release-8"
+        detail: "**Done when** the Yard Log is closed and committed and the branch is merged `--no-ff`."
+        state: open

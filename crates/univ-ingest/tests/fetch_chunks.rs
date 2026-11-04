@@ -7,7 +7,7 @@ use std::time::Duration;
 use common::{accept, item, keep, rig};
 use univ_ingest::events::Event;
 use univ_ingest::fetch::{FetchError, Fetched, Payload};
-use wiremock::matchers::{method, query_param};
+use wiremock::matchers::{body_string_contains, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 fn always(status: u16) -> ResponseTemplate {
@@ -468,4 +468,111 @@ async fn fetch_three(
     let (a, b, c) = tokio::join!(fetch(0), fetch(1), fetch(2));
     assert!(a.is_ok() && b.is_ok() && c.is_ok());
     rig
+}
+
+/// A TAP service that runs a query as a job: it answers the submission with the job's address,
+/// reports the job executing once and then completed, and serves its result.
+async fn job_service(result: &str) -> MockServer {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/tap/async"))
+        .and(body_string_contains("PHASE=RUN"))
+        .respond_with(always(303).insert_header("Location", "/tap/async/job-1"))
+        .expect(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-1/phase"))
+        .respond_with(always(200).set_body_string("EXECUTING"))
+        .up_to_n_times(1)
+        .with_priority(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-1/phase"))
+        .respond_with(always(200).set_body_string("COMPLETED\n"))
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-1/results/result"))
+        .respond_with(always(200).set_body_string(result))
+        .expect(1)
+        .mount(&server)
+        .await;
+    server
+}
+
+#[tokio::test]
+async fn a_query_run_as_a_job_is_polled_until_it_completes_and_its_result_kept() {
+    let server = job_service("source_id,bp_rp\n1,0.5\n").await;
+    let rig = rig(false);
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("chunk-0.csv");
+    let fetched = rig
+        .fetcher
+        .chunk(
+            &item("chunk 0", &dest),
+            &[format!("{}/tap", server.uri())],
+            "/async?REQUEST=doQuery&QUERY=SELECT+1&PHASE=RUN",
+            &accept,
+            &keep,
+        )
+        .await
+        .unwrap();
+    let Fetched::Arrived(payload) = fetched else {
+        panic!("fetched")
+    };
+    // Recorded from where its rows came: the job's result.
+    assert_eq!(
+        payload.url,
+        format!("{}/tap/async/job-1/results/result", server.uri())
+    );
+    assert_eq!(
+        std::fs::read_to_string(&dest).unwrap(),
+        "source_id,bp_rp\n1,0.5\n"
+    );
+    // One wait while the job was executing.
+    let waits: Vec<u64> = rig.clock.waits().iter().map(Duration::as_secs).collect();
+    assert_eq!(waits, [5]);
+}
+
+#[tokio::test]
+async fn a_job_that_ends_in_error_is_retried_and_then_moved_to_the_next_mirror() {
+    let failing = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/tap/async"))
+        .respond_with(always(303).insert_header("Location", "/tap/async/job-9"))
+        .mount(&failing)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-9/phase"))
+        .respond_with(always(200).set_body_string("ERROR"))
+        .mount(&failing)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-9/error"))
+        .respond_with(always(200).set_body_string("Query timed out"))
+        .mount(&failing)
+        .await;
+    let working = job_service("source_id\n1\n").await;
+    let rig = rig(false);
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("chunk-0.csv");
+    rig.fetcher
+        .chunk(
+            &item("chunk 0", &dest),
+            &[
+                format!("{}/tap", failing.uri()),
+                format!("{}/tap", working.uri()),
+            ],
+            "/async?REQUEST=doQuery&QUERY=SELECT+1&PHASE=RUN",
+            &accept,
+            &keep,
+        )
+        .await
+        .unwrap();
+    let said = rig.sink.events().iter().any(|e| {
+        matches!(e, Event::Err { error, .. } if error.contains("the job ended ERROR: Query timed out"))
+    });
+    assert!(said, "{:?}", rig.sink.events());
 }
