@@ -10,3 +10,2985 @@ versions:
     title: "W7 close: review, gate, trace, merge"
     goal: "W7's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
     status: planned
+  - key: 01a1a467-38b3-755e-978c-562f2de0c3ee
+    at: 2026-11-04T02:33:10Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W7 close: review, gate, trace, merge"
+    goal: "W7's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: active
+  - key: 01a1a470-04b7-70f7-b4b3-a92658ede5c2
+    at: 2026-11-04T02:42:47Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W7 close: review, gate, trace, merge"
+    goal: "W7's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: done
+blocks:
+  - key: 01a1a467-38b3-755e-978c-562b6b09942d
+    id: t7-review
+    kind: task
+    versions:
+      - key: 01a1a467-38b3-755e-978c-5630e4ab3b3e
+        at: 2026-11-04T02:33:10Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fix W7's review findings"
+        detail: |-
+          Fixed in `81c7ac8`.
+
+          **Code review** (9 findings):
+          - layer and item reads now list the release refusals, and a test meets each;
+          - the snapshot check treats fields named `title`, `description` or `summary` as fields, keeps required fields required, and refuses a request that gains a required field, a constraint or a required parameter (9 cases);
+          - writing a missing snapshot works;
+          - the tile script pins to the listed release, builds URLs properly and waits out a 429.
+
+          **Simplify:**
+          - the refusal check moved into `routes::answer` (test builds), and `endpoint_of` is gone;
+          - `Signing::of` returns a `Result` and runs only where a cursor is used;
+          - one operation lookup and one `PROBLEM_SCHEMA`;
+          - table-driven tests;
+          - the script no longer repeats the decoder's own checks.
+
+          **Not done, with reasons:**
+          - a mandatory owner secret checked at startup: it would change how a Worker without a secret behaves;
+          - one refusals list per route held in `ROUTES`: the `match` already forces an entry for every endpoint;
+          - concurrent tile fetches: a few seconds locally.
+        state: done
+  - key: 01a1a470-04b7-70f7-b4b3-a920829aca52
+    id: t7-gate
+    kind: task
+    versions:
+      - key: 01a1a470-04b7-70f7-b4b3-a9235de16f3b
+        at: 2026-11-04T02:42:47Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration, once"
+        detail: "`cargo xtask check`: passed, 12 gates (`loft verify` skipped off the publish branch). `cargo xtask integration`: passed, every e2e suite green, on the first run."
+        state: done
+  - key: 01a1a470-04b7-70f7-b4b3-a9219f105b08
+    id: w7-trace
+    kind: loft
+    versions:
+      - key: 01a1a470-04b7-70f7-b4b3-a924e87f77b9
+        at: 2026-11-04T02:42:47Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "W7 links AC-274, AC-286, AC-288 and AC-292. **All 335 criteria in scope are now linked**, with no stale or unreviewed link. The one TR-008, on AC-301, is ingest's."
+        recorded:
+          commit: "34349fc6b80cf0ed7d0f48865ea82962e9d0f639"
+          branch: "stage/server-w7"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T02:42:46Z
+        report: |
+          {
+            "base": "develop",
+            "commit": "607b6eeffbc062d1bdbdd6d219dcca1adf220240",
+            "counts": {
+              "features": 8
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-151f95aff549",
+                    "label": "AC-82",
+                    "name": "The release has the next release number and records its build time, release cosmology, univ-model version and Univ Ingest version.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 80
+                          }
+                        ],
+                        "name": "a_release_records_its_number_build_time_cosmology_versions_and_rules"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 231,
+                            "lastLine": 249
+                          }
+                        ],
+                        "name": "the_release_number_increments_and_the_pending_state_becomes_the_state"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15208136562d",
+                    "label": "AC-83",
+                    "name": "The release records its matching rules and its ranking rule.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 80
+                          }
+                        ],
+                        "name": "a_release_records_its_number_build_time_cosmology_versions_and_rules"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1521b702e5bb",
+                    "label": "AC-84",
+                    "name": "The release manifest lists every file of the release with its SHA-256.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 82,
+                            "lastLine": 111
+                          }
+                        ],
+                        "name": "the_manifest_lists_every_file_of_the_release_with_its_sha256"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1522436dac01",
+                    "label": "AC-85",
+                    "name": "The release holds the cell index that bounded volume queries read.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 127,
+                            "lastLine": 229
+                          }
+                        ],
+                        "name": "the_cell_index_holds_every_placed_object_in_the_cell_of_its_position"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_cells.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 218,
+                            "lastLine": 235
+                          }
+                        ],
+                        "name": "a_sky_region_over_every_longitude_spans_all_360_degrees"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-2788-77fb-8f0d-273901bad9b4",
+                    "label": null,
+                    "name": "The release records each source's primary reference by its bibcode or DOI.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 169,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "a_definition_names_its_primary_reference_by_bibcode_and_doi"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 222,
+                            "lastLine": 244
+                          }
+                        ],
+                        "name": "every_repository_definition_names_a_well_formed_primary_reference"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "the_fixture_release_records_each_sources_reference_and_coverage"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-4ae3-74cc-a986-969a727616ef",
+                    "label": null,
+                    "name": "The release records each source's coverage as a sky region with, where its catalogue entries hold redshifts or distances, the range they span.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_coverage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "a_sources_sky_is_the_sorted_order_5_cells_of_its_entries"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_coverage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 105,
+                            "lastLine": 124
+                          }
+                        ],
+                        "name": "the_radial_range_of_2mrs_is_that_of_its_redshifts_as_published"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_coverage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 126,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "the_radial_ranges_of_hipparcos_and_cosmicflows_4_are_their_parallaxes_and_distances"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "the_fixture_release_records_each_sources_reference_and_coverage"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-2788-77fb-8f0d-273ac3c97e3c",
+                    "label": null,
+                    "name": "The release holds each placed structure's geometry as a univ-model geometry in a named frame, with its bounds in ICRS, beside the geometry its structure file gives.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 45,
+                            "lastLine": 106
+                          }
+                        ],
+                        "name": "a_sky_box_becomes_the_healpix_cells_whose_centres_lie_in_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 213,
+                            "lastLine": 281
+                          }
+                        ],
+                        "name": "an_admitted_outline_is_placed_as_its_grid_region_in_mpc_of_the_release_cosmology"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 154
+                          }
+                        ],
+                        "name": "the_fixture_release_records_each_structures_shape_outline_and_rescaled_lengths"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-2788-77fb-8f0d-273b90e08a90",
+                    "label": null,
+                    "name": "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 172,
+                            "lastLine": 206
+                          }
+                        ],
+                        "name": "an_outline_test_is_recorded_with_its_verdict_numbers_and_checks"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-2788-77fb-8f0d-273c7a6188dc",
+                    "label": null,
+                    "name": "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 137,
+                            "lastLine": 170
+                          }
+                        ],
+                        "name": "a_radius_published_for_h0_50_is_rescaled_by_50_over_67_66"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 113,
+                            "lastLine": 135
+                          }
+                        ],
+                        "name": "every_structure_names_the_cited_values_its_shape_and_rescaled_lengths_come_from"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15248994b03f",
+                    "label": "AC-86",
+                    "name": "Every object id that a tile holds exists among the release's objects.",
+                    "requirement": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 98
+                          }
+                        ],
+                        "name": "a_tile_holding_an_object_the_release_lacks_fails_the_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1525435d731d",
+                    "label": "AC-87",
+                    "name": "Every number of every structure cites its source.",
+                    "requirement": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 100,
+                            "lastLine": 114
+                          }
+                        ],
+                        "name": "a_structure_number_citing_no_paper_fails_the_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152619fffa94",
+                    "label": "AC-88",
+                    "name": "The counts of catalogue entries in the release match the counts in each source's provenance.",
+                    "requirement": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 116,
+                            "lastLine": 127
+                          }
+                        ],
+                        "name": "entry_counts_that_differ_from_the_provenance_fail_the_build"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "two_rows_with_one_primary_key_fail_the_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152783fea6de",
+                    "label": "AC-89",
+                    "name": "No source in the release has a redistribution status of forbidden.",
+                    "requirement": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 129,
+                            "lastLine": 142
+                          }
+                        ],
+                        "name": "a_source_that_forbids_redistribution_fails_the_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1529a7954231",
+                    "label": "AC-90",
+                    "name": "No release number is used up by a build that failed.",
+                    "requirement": "01a19f23-636f-72bd-b194-1528b83f1040",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_cli.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 135,
+                            "lastLine": 178
+                          }
+                        ],
+                        "name": "a_build_in_which_a_source_failed_names_it_and_uses_no_number"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 144,
+                            "lastLine": 159
+                          }
+                        ],
+                        "name": "a_release_directory_already_there_is_never_overwritten"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 207,
+                            "lastLine": 275
+                          }
+                        ],
+                        "name": "a_failure_while_recording_the_state_uses_no_number_and_leaves_no_release_publish_accepts"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_cli.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 180,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "a_second_build_on_one_state_directory_is_refused_by_its_lock"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636f-72bd-b194-151d9fb569d2",
+                "label": "F-9",
+                "name": "Build a release",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "label": "RQ-33",
+                    "name": "When the owner builds a release, Univ Ingest shall assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk.",
+                    "statement": {
+                      "condition": "the owner builds a release",
+                      "form": "event_driven",
+                      "shall": "assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "label": "RQ-34",
+                    "name": "Univ Ingest shall check a release before marking it complete.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "check a release before marking it complete.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1528b83f1040",
+                    "label": "RQ-35",
+                    "name": "If a source fails or a check fails, then Univ Ingest shall mark nothing complete and name the source or the check that failed.",
+                    "statement": {
+                      "condition": "a source fails or a check fails",
+                      "form": "unwanted",
+                      "shall": "mark nothing complete and name the source or the check that failed.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2511599468",
+                    "label": "AC-147",
+                    "name": "The citation gives the bibcode or DOI of the source's primary reference.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d24f2c252fc",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 57
+                          }
+                        ],
+                        "name": "the_citation_gives_the_bibcode_or_doi_of_the_primary_reference"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 175,
+                            "lastLine": 188
+                          }
+                        ],
+                        "name": "a_source_gives_its_primary_reference_and_coverage_from_schema_v3"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d267490d236",
+                    "label": "AC-148",
+                    "name": "The terms of use and the required credit are given as the source definition states them.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d24f2c252fc",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 59,
+                            "lastLine": 72
+                          }
+                        ],
+                        "name": "the_terms_of_use_and_credit_are_given_as_the_definition_states_them"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 130,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "a_source_gives_its_terms_query_and_provenance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2711844898",
+                    "label": "AC-149",
+                    "name": "The query and the cuts are the ones the fetch ran, verbatim.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d24f2c252fc",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 87
+                          }
+                        ],
+                        "name": "the_query_and_the_cuts_are_the_ones_the_fetch_ran_verbatim"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 130,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "a_source_gives_its_terms_query_and_provenance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2878dbdf48",
+                    "label": "AC-150",
+                    "name": "The coverage gives the source's sky footprint as a sky region and, where its catalogue entries hold redshifts or distances, the range they span.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d24f2c252fc",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 89,
+                            "lastLine": 101
+                          }
+                        ],
+                        "name": "the_coverage_gives_the_sky_footprint_and_the_range_of_each_radial_measure"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 175,
+                            "lastLine": 188
+                          }
+                        ],
+                        "name": "a_source_gives_its_primary_reference_and_coverage_from_schema_v3"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2a8487abe5",
+                    "label": "AC-151",
+                    "name": "Each acquired payload is listed with its SHA-256 and its retrieval time.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d29d163748c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 118,
+                            "lastLine": 125
+                          }
+                        ],
+                        "name": "each_acquired_payload_is_listed_with_its_sha256_and_retrieval_time"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2beb1e33d9",
+                    "label": "AC-152",
+                    "name": "The record gives the number of catalogue entries published and the number fetched, which is those published and those left out together.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d29d163748c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 127,
+                            "lastLine": 134
+                          }
+                        ],
+                        "name": "the_record_gives_the_entries_published_and_fetched"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 130,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "a_source_gives_its_terms_query_and_provenance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2cc2baedfc",
+                    "label": "AC-153",
+                    "name": "The record gives the number of catalogue entries left out, grouped by the reason each was left out.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d29d163748c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 136,
+                            "lastLine": 140
+                          }
+                        ],
+                        "name": "the_record_gives_the_entries_left_out_by_reason"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2df1555360",
+                    "label": "AC-154",
+                    "name": "Each fix applied to a known defect of the source is listed with its reason.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d29d163748c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 142,
+                            "lastLine": 151
+                          }
+                        ],
+                        "name": "each_fix_of_a_known_defect_is_listed_with_its_reason"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2fbbf24a08",
+                    "label": "AC-155",
+                    "name": "Each listed source gives its id, title, scale domain and number of published catalogue entries.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d2e26581c44",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/sources/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 25,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "each_listed_source_gives_its_id_title_scale_domain_and_published_entries"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1e-d177-716d-b124-3d23daf70123",
+                "label": "F-16",
+                "name": "Read a source",
+                "requirements": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d24f2c252fc",
+                    "label": "RQ-56",
+                    "name": "When a client requests a source, Univ Server shall return its citation, terms of use, required credit, provider, query, cuts and coverage.",
+                    "statement": {
+                      "condition": "a client requests a source",
+                      "form": "event_driven",
+                      "shall": "return its citation, terms of use, required credit, provider, query, cuts and coverage.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d29d163748c",
+                    "label": "RQ-57",
+                    "name": "When a client requests a source's provenance, Univ Server shall return the record of its acquisition and normalization.",
+                    "statement": {
+                      "condition": "a client requests a source's provenance",
+                      "form": "event_driven",
+                      "shall": "return the record of its acquisition and normalization.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2e26581c44",
+                    "label": "RQ-58",
+                    "name": "When a client lists sources, Univ Server shall return every source of the release with its citation and credit.",
+                    "statement": {
+                      "condition": "a client lists sources",
+                      "form": "event_driven",
+                      "shall": "return every source of the release with its citation and credit.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d325ae1db12",
+                    "label": "AC-156",
+                    "name": "The geometry is one of the geometry kinds univ-model defines, in a named frame.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 38
+                          }
+                        ],
+                        "name": "the_geometry_is_a_univ_model_geometry_in_a_named_frame"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3396424fcd",
+                    "label": "AC-157",
+                    "name": "Each published number cites its source and the table, figure or sentence it was taken from.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "each_published_number_cites_its_source_and_where_it_was_taken_from"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "structures_are_listed_in_pages_and_read_with_their_citations"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-6c1b-7575-8a30-d059e1d0fd0e",
+                    "label": null,
+                    "name": "Each number derived from a published number names its derivation.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 61
+                          }
+                        ],
+                        "name": "each_number_derived_from_a_published_number_names_its_derivation"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d34432eb4b3",
+                    "label": "AC-158",
+                    "name": "A structure outlined from a reconstruction has the kind of value reconstructed.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 63,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "a_structure_outlined_from_a_reconstruction_has_the_kind_of_value_reconstructed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d359cc582f4",
+                    "label": "AC-159",
+                    "name": "A number digitised from a figure has the kind of value estimated.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 70,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "a_number_digitised_from_a_figure_has_the_kind_of_value_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3618ffc2c2",
+                    "label": "AC-160",
+                    "name": "Each member is given as an object id or as a tracer with its own position and kind, such as a quasar or an absorber.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 85
+                          }
+                        ],
+                        "name": "each_member_is_an_object_id_or_a_tracer_with_its_position_and_kind"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3742c0d34b",
+                    "label": "AC-161",
+                    "name": "A structure outlined from a volume grid names the grid, the threshold that outlined it and the test that admitted it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 87,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "a_structure_outlined_from_a_grid_names_the_grid_threshold_and_test"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d381a2a11dd",
+                    "label": "AC-162",
+                    "name": "Each size published for another Hubble constant gives its native value beside the value rescaled to the release cosmology.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "a_size_published_for_another_hubble_constant_gives_its_native_and_rescaled_values"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 190,
+                            "lastLine": 206
+                          }
+                        ],
+                        "name": "a_size_published_under_h0_50_is_served_beside_its_rescaled_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3a3c4e7f9d",
+                    "label": "AC-163",
+                    "name": "Each listed structure gives its id, name, kind, scale domain and the centre of its geometry.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 115,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "each_listed_structure_gives_its_id_name_kind_scale_domain_and_centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3b527de35f",
+                    "label": "AC-164",
+                    "name": "The listing is paginated with at most 500 structures per page and a cursor to the next page.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 154,
+                            "lastLine": 179
+                          }
+                        ],
+                        "name": "the_listing_comes_in_pages_of_at_most_500_with_a_cursor_to_the_next"
+                      },
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 181,
+                            "lastLine": 198
+                          }
+                        ],
+                        "name": "a_cursor_keeps_reading_its_release"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3de5813ad2",
+                    "label": "AC-165",
+                    "name": "The response status is 404 with problem details that name the requested id.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3c531de76d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 207,
+                            "lastLine": 214
+                          }
+                        ],
+                        "name": "an_unknown_structure_answers_404_naming_it"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "structures_are_listed_in_pages_and_read_with_their_citations"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                "label": "F-17",
+                "name": "Read a structure",
+                "requirements": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "label": "RQ-59",
+                    "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                    "statement": {
+                      "condition": "a client requests a structure",
+                      "form": "event_driven",
+                      "shall": "return its geometry, members, kind of value and the citation of each of its numbers.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "label": "RQ-60",
+                    "name": "When a client lists structures, Univ Server shall return the structures of the release, filtered by the kinds and scale domains the client names.",
+                    "statement": {
+                      "condition": "a client lists structures",
+                      "form": "event_driven",
+                      "shall": "return the structures of the release, filtered by the kinds and scale domains the client names.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3c531de76d",
+                    "label": "RQ-61",
+                    "name": "If no structure has the requested id, then Univ Server shall answer that the structure was not found.",
+                    "statement": {
+                      "condition": "no structure has the requested id",
+                      "form": "unwanted",
+                      "shall": "answer that the structure was not found.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cf9a022ff00",
+                    "label": "AC-187",
+                    "name": "The query names the kind of time record compared: source event, arrival or discovery.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_time_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 54,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "the_query_names_the_kind_of_time_record_compared"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cfa90995426",
+                    "label": "AC-188",
+                    "name": "A time record with an uncertainty interval matches when that interval intersects the query's interval.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_time_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "a_record_matches_when_its_uncertainty_interval_meets_the_querys"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cfbeb2181d8",
+                    "label": "AC-189",
+                    "name": "A result with no time record of the named kind does not match.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_time_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 123,
+                            "lastLine": 142
+                          }
+                        ],
+                        "name": "a_result_with_no_time_record_of_the_kind_named_does_not_match"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cfc576674a6",
+                    "label": "AC-190",
+                    "name": "A time given in UTC and a time given in TT are compared on TT.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_time_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 144,
+                            "lastLine": 178
+                          }
+                        ],
+                        "name": "a_time_in_utc_and_one_in_tt_are_compared_on_tt"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d01d38e6cfa",
+                    "label": "AC-191",
+                    "name": "The response status is 400 with problem details that point at the faulty field.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d002ef5c1f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_time_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 180,
+                            "lastLine": 213
+                          }
+                        ],
+                        "name": "a_faulty_interval_answers_400_pointing_at_the_field"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1f-9fd7-7209-b7cb-5cf7de740462",
+                "label": "F-21",
+                "name": "Filter by time",
+                "requirements": [
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "label": "RQ-70",
+                    "name": "When a query names an interval of time records, Univ Server shall return only the results whose time records of the named kind intersect the interval.",
+                    "statement": {
+                      "condition": "a query names an interval of time records",
+                      "form": "event_driven",
+                      "shall": "return only the results whose time records of the named kind intersect the interval.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d002ef5c1f9",
+                    "label": "RQ-71",
+                    "name": "If an interval ends before it starts or names an unknown timescale, then Univ Server shall refuse the query and name the faulty bound or timescale.",
+                    "statement": {
+                      "condition": "an interval ends before it starts or names an unknown timescale",
+                      "form": "unwanted",
+                      "shall": "refuse the query and name the faulty bound or timescale.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d0ef2d0a80a",
+                    "label": "AC-192",
+                    "name": "The volume is a box, a sphere, or a cone with a distance range.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "a_volume_is_a_box_a_sphere_or_a_cone_with_a_distance_range"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/query.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "a_volume_query_finds_objects_structures_by_their_shapes_and_tiles_to_fetch"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d0f00fe2fe8",
+                    "label": "AC-193",
+                    "name": "The volume names its frame, which is ICRS, galactic or supergalactic, and its unit.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 74
+                          }
+                        ],
+                        "name": "a_volume_names_its_frame_and_unit"
+                      },
+                      {
+                        "file": "crates/univ-model/src/volume/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 296,
+                            "lastLine": 318
+                          }
+                        ],
+                        "name": "a_galactic_box_lies_toward_the_galactic_centre_in_the_icrs"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d104c3238b3",
+                    "label": "AC-194",
+                    "name": "An object matches by its derived position under the release cosmology.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 76,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "an_object_matches_by_its_derived_position"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query/objects.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 189,
+                            "lastLine": 261
+                          }
+                        ],
+                        "name": "the_sql_test_of_a_position_is_the_regions_own"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d11ceeb957a",
+                    "label": "AC-195",
+                    "name": "A structure or layer item matches when its geometry intersects the volume, even if its centre lies outside it.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 123
+                          }
+                        ],
+                        "name": "a_structure_or_item_matches_when_its_geometry_meets_the_volume_with_its_centre_outside"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 125,
+                            "lastLine": 139
+                          }
+                        ],
+                        "name": "a_structure_with_no_placed_shape_matches_by_its_members_or_its_bounding_box_and_says_so"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 323,
+                            "lastLine": 345
+                          }
+                        ],
+                        "name": "an_item_stored_before_items_kept_their_box_is_still_found_by_its_shape"
+                      },
+                      {
+                        "file": "crates/univ-model/src/volume/meets_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 239,
+                            "lastLine": 253
+                          }
+                        ],
+                        "name": "a_structure_whose_centre_lies_outside_still_meets"
+                      },
+                      {
+                        "file": "crates/univ-model/src/volume/meets_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 165,
+                            "lastLine": 197
+                          }
+                        ],
+                        "name": "each_geometry_kind_meets_a_region_it_reaches_and_misses_one_it_does_not"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/query.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "a_structure_meets_a_volume_at_its_edge_with_its_centre_outside_and_an_item_is_found"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d12d67f0253",
+                    "label": "AC-196",
+                    "name": "Items of a private layer match only for a request that carries the layer's owning key.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 141,
+                            "lastLine": 158
+                          }
+                        ],
+                        "name": "a_private_layers_items_match_only_with_its_owning_key"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d13540b5b8f",
+                    "label": "AC-197",
+                    "name": "Results can be narrowed to the kinds, sources, scale domains and layers the client names.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 160,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "results_narrow_to_the_kinds_sources_scale_domains_and_layers_named"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d15532c9c3a",
+                    "label": "AC-198",
+                    "name": "Each page carries a cursor to the next page while results remain.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 67,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "each_page_carries_a_cursor_to_the_next_while_results_remain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d164b16f644",
+                    "label": "AC-199",
+                    "name": "Results come in a stable order, so paging a query whose layers have not changed returns the same pages.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 95
+                          }
+                        ],
+                        "name": "paging_a_query_whose_layers_did_not_change_gives_the_same_pages_in_one_order"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d174e903e62",
+                    "label": "AC-200",
+                    "name": "A query that matches more than 10,000 results returns the first 10,000 and states that the result was truncated.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 97,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "a_query_matching_more_than_10000_returns_the_first_10000_and_says_it_was_truncated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22c8f33720f3",
+                    "label": "AC-201",
+                    "name": "Each cursor records the release the query reads and the change sequence of each layer whose items it reads.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 125
+                          }
+                        ],
+                        "name": "a_cursor_records_the_release_read_and_each_layers_change_sequence"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 173,
+                            "lastLine": 193
+                          }
+                        ],
+                        "name": "a_cursor_of_another_query_or_one_no_page_gave_answers_400_and_a_later_page_keeps_its_release"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 222,
+                            "lastLine": 236
+                          }
+                        ],
+                        "name": "a_cursor_changed_by_its_client_is_refused"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22ca5dbce89f",
+                    "label": "AC-202",
+                    "name": "The response status is 409 with problem details that list each changed layer with its current change sequence.",
+                    "requirement": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 127,
+                            "lastLine": 149
+                          }
+                        ],
+                        "name": "a_layer_changed_between_pages_answers_409_naming_it_with_its_current_sequence"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22cbf2d197a5",
+                    "label": "AC-203",
+                    "name": "No page is returned that skips or repeats a result because a layer changed between pages.",
+                    "requirement": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 151,
+                            "lastLine": 171
+                          }
+                        ],
+                        "name": "no_page_skips_or_repeats_a_result_because_a_layer_changed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d19cdceaeab",
+                    "label": "AC-204",
+                    "name": "The nodes of a scale domain are given at the deepest level, no deeper than the client asks for, at which no more than 4,096 nodes intersect the volume.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 105,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "the_level_is_the_deepest_at_which_at_most_4096_nodes_meet_the_volume"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 172
+                          }
+                        ],
+                        "name": "where_the_octree_stops_short_its_leaves_stand_in"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22cc0ddcee28",
+                    "label": "AC-205",
+                    "name": "The response names the level it chose for each scale domain.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 277,
+                            "lastLine": 321
+                          }
+                        ],
+                        "name": "the_first_page_gives_the_tile_nodes_covering_the_volume_each_fetched_by_its_address"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 105,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "the_level_is_the_deepest_at_which_at_most_4096_nodes_meet_the_volume"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1a86501cb8",
+                    "label": "AC-206",
+                    "name": "Each node address can be fetched as a tile without further lookup.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 277,
+                            "lastLine": 321
+                          }
+                        ],
+                        "name": "the_first_page_gives_the_tile_nodes_covering_the_volume_each_fetched_by_its_address"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/query.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "a_volume_query_finds_objects_structures_by_their_shapes_and_tiles_to_fetch"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1c374609bf",
+                    "label": "AC-207",
+                    "name": "A negative or zero size, an unknown frame, an unknown unit or a cone wider than 180 degrees is refused.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d1b5a00f7dd",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/volume/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 168,
+                            "lastLine": 183
+                          }
+                        ],
+                        "name": "a_cone_wider_than_180_degrees_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-model/src/volume/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 185,
+                            "lastLine": 231
+                          }
+                        ],
+                        "name": "each_malformed_member_is_named"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 275
+                          }
+                        ],
+                        "name": "a_malformed_volume_or_filter_answers_400_pointing_at_each_field"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1dc8111c5f",
+                    "label": "AC-208",
+                    "name": "The response status is 400 with problem details that point at the malformed field.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d1b5a00f7dd",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 275
+                          }
+                        ],
+                        "name": "a_malformed_volume_or_filter_answers_400_pointing_at_each_field"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/query.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 157
+                          }
+                        ],
+                        "name": "a_malformed_volume_is_refused_pointing_at_its_fields"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00",
+                "label": "F-22",
+                "name": "Query a bounded volume",
+                "requirements": [
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "label": "RQ-72",
+                    "name": "When a client queries a bounded volume, Univ Server shall return the objects, structures and layer items whose positions or geometries intersect the volume.",
+                    "statement": {
+                      "condition": "a client queries a bounded volume",
+                      "form": "event_driven",
+                      "shall": "return the objects, structures and layer items whose positions or geometries intersect the volume.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "label": "RQ-73",
+                    "name": "Univ Server shall return at most 1,000 results per page and at most 10,000 results per bounded volume query.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "return at most 1,000 results per page and at most 10,000 results per bounded volume query.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                    "label": "RQ-74",
+                    "name": "If a layer that a cursor records has changed since the cursor's first page, then Univ Server shall refuse the next page and name the layers that changed.",
+                    "statement": {
+                      "condition": "a layer that a cursor records has changed since the cursor's first page",
+                      "form": "unwanted",
+                      "shall": "refuse the next page and name the layers that changed.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "label": "RQ-75",
+                    "name": "When a client queries a bounded volume, Univ Server shall return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain.",
+                    "statement": {
+                      "condition": "a client queries a bounded volume",
+                      "form": "event_driven",
+                      "shall": "return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1b5a00f7dd",
+                    "label": "RQ-76",
+                    "name": "If the volume is malformed, then Univ Server shall refuse the query and name what is malformed.",
+                    "statement": {
+                      "condition": "the volume is malformed",
+                      "form": "unwanted",
+                      "shall": "refuse the query and name what is malformed.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f352d3ef9fc",
+                    "label": "AC-227",
+                    "name": "The item holds a title, a summary, a geometry, its time records, its kind of value, its links and its sources.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3603bb663b",
+                    "label": "AC-228",
+                    "name": "The item's id is chosen by the client and is unique within the layer.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 230,
+                            "lastLine": 238
+                          }
+                        ],
+                        "name": "an_id_the_layer_holds_answers_409_with_the_items_current_version"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f37afa7a5f0",
+                    "label": "AC-229",
+                    "name": "The geometry is one of the geometry kinds univ-model defines, in a named frame.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 47
+                          }
+                        ],
+                        "name": "each_failing_member_of_a_geometry_or_time_record_is_named_on_its_own"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f380e7feae0",
+                    "label": "AC-230",
+                    "name": "Each time record names its kind, its timescale and its uncertainty.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "each_time_record_is_stored_on_tt_with_its_uncertainty_interval"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 47
+                          }
+                        ],
+                        "name": "each_failing_member_of_a_geometry_or_time_record_is_named_on_its_own"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "a_time_record_gives_an_instant_or_years_before_j2000_and_not_both"
+                      },
+                      {
+                        "file": "crates/univ-model/src/time/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 152,
+                            "lastLine": 166
+                          }
+                        ],
+                        "name": "a_record_reads_from_json_in_either_form"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f39371a8402",
+                    "label": "AC-231",
+                    "name": "The stored version has the number 1 and the time the server stored it.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3a1008f3a6",
+                    "label": "AC-232",
+                    "name": "The publish advances the layer's change sequence by one.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3c190e7421",
+                    "label": "AC-233",
+                    "name": "Nothing is stored and the layer's change sequence is unchanged.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f3b5f5065f5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 167
+                          }
+                        ],
+                        "name": "an_item_failing_its_checks_is_refused_naming_each_field_and_nothing_is_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3db58503d4",
+                    "label": "AC-234",
+                    "name": "The problem details list each failing field by its JSON pointer, with the reason it failed.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f3b5f5065f5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 167
+                          }
+                        ],
+                        "name": "an_item_failing_its_checks_is_refused_naming_each_field_and_nothing_is_stored"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 47
+                          }
+                        ],
+                        "name": "each_failing_member_of_a_geometry_or_time_record_is_named_on_its_own"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 49,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "a_member_no_type_holds_is_refused_not_dropped"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3f75200dfa",
+                    "label": "AC-235",
+                    "name": "The response status is 422 and nothing is stored.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f3e36b397b1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 169,
+                            "lastLine": 190
+                          }
+                        ],
+                        "name": "an_item_citing_no_source_answers_422_saying_a_source_is_required"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f412ed74190",
+                    "label": "AC-236",
+                    "name": "A link names its relation, such as host, counterpart, member of or located in, and the id of an object or structure.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f40a8b8c250",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "a_link_names_its_relation_and_a_published_object_or_structure"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f42b9073b71",
+                    "label": "AC-237",
+                    "name": "A link to an id that no release has published is refused with the id it names.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f40a8b8c250",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "a_link_names_its_relation_and_a_published_object_or_structure"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "a_link_to_what_only_an_unpublished_release_holds_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 167
+                          }
+                        ],
+                        "name": "an_item_failing_its_checks_is_refused_naming_each_field_and_nothing_is_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f43ab9e950c",
+                    "label": "AC-238",
+                    "name": "A link to an id that a later release merged is served with the id that replaced it, beside the id as written.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f40a8b8c250",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 228
+                          }
+                        ],
+                        "name": "a_link_to_an_id_a_later_release_merged_is_served_with_the_id_that_replaced_it"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 152,
+                            "lastLine": 179
+                          }
+                        ],
+                        "name": "a_read_whose_links_a_new_latest_release_resolves_differently_gets_a_new_entity_tag"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f454b07cdb9",
+                    "label": "AC-239",
+                    "name": "The response status is 409 with problem details that give the item's current version.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f4496bceaf8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 230,
+                            "lastLine": 238
+                          }
+                        ],
+                        "name": "an_id_the_layer_holds_answers_409_with_the_items_current_version"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 135,
+                            "lastLine": 150
+                          }
+                        ],
+                        "name": "an_id_the_layer_holds_answers_409_even_with_the_layer_at_its_quota"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f20-1cb3-7721-97a0-4f33a250acbb",
+                "label": "F-25",
+                "name": "Publish a layer item",
+                "requirements": [
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "label": "RQ-84",
+                    "name": "When the owning key publishes an item to a layer, Univ Server shall validate the item and store it as the item's first version.",
+                    "statement": {
+                      "condition": "the owning key publishes an item to a layer",
+                      "form": "event_driven",
+                      "shall": "validate the item and store it as the item's first version.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3b5f5065f5",
+                    "label": "RQ-85",
+                    "name": "If an item fails validation, then Univ Server shall refuse the item and name each field that failed.",
+                    "statement": {
+                      "condition": "an item fails validation",
+                      "form": "unwanted",
+                      "shall": "refuse the item and name each field that failed.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3e36b397b1",
+                    "label": "RQ-86",
+                    "name": "If an item cites no source, then Univ Server shall refuse the item and say that a source is required.",
+                    "statement": {
+                      "condition": "an item cites no source",
+                      "form": "unwanted",
+                      "shall": "refuse the item and say that a source is required.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f40a8b8c250",
+                    "label": "RQ-87",
+                    "name": "When an item links to a reference object or structure, Univ Server shall store the link with its relation and resolve it against the release a read is answered from.",
+                    "statement": {
+                      "condition": "an item links to a reference object or structure",
+                      "form": "event_driven",
+                      "shall": "store the link with its relation and resolve it against the release a read is answered from.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f4496bceaf8",
+                    "label": "RQ-88",
+                    "name": "If an item uses an id that the layer already holds, then Univ Server shall refuse the publish as a conflict.",
+                    "statement": {
+                      "condition": "an item uses an id that the layer already holds",
+                      "form": "unwanted",
+                      "shall": "refuse the publish as a conflict.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abdaebf630a9",
+                    "label": "AC-258",
+                    "name": "The quotas are layers per key, items per layer and bytes per item version.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abd968a1043e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 359,
+                            "lastLine": 411
+                          }
+                        ],
+                        "name": "a_write_beyond_a_quota_is_refused_naming_it_its_limit_and_the_usage_and_stores_nothing"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/layers.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 191,
+                            "lastLine": 230
+                          }
+                        ],
+                        "name": "a_write_beyond_a_quota_is_refused_and_stores_nothing"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abdb6193c8a7",
+                    "label": "AC-259",
+                    "name": "The problem details give the quota, its limit and the key's current usage.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abd968a1043e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 359,
+                            "lastLine": 411
+                          }
+                        ],
+                        "name": "a_write_beyond_a_quota_is_refused_naming_it_its_limit_and_the_usage_and_stores_nothing"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/layers.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 191,
+                            "lastLine": 230
+                          }
+                        ],
+                        "name": "a_write_beyond_a_quota_is_refused_and_stores_nothing"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abdce6ed0c1d",
+                    "label": "AC-260",
+                    "name": "Nothing is stored.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abd968a1043e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 359,
+                            "lastLine": 411
+                          }
+                        ],
+                        "name": "a_write_beyond_a_quota_is_refused_naming_it_its_limit_and_the_usage_and_stores_nothing"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 109,
+                            "lastLine": 133
+                          }
+                        ],
+                        "name": "a_retraction_is_held_to_the_quota_of_bytes_per_item_version"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abde5a8c8ce0",
+                    "label": "AC-261",
+                    "name": "Anonymous requests are limited per client address, by default to 300 requests in 60 seconds.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abdd6cea244d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/limits_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 33,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "anonymous_requests_are_limited_per_client_address_at_300_in_60_seconds"
+                      },
+                      {
+                        "file": "crates/univ-api/src/limits_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 86,
+                            "lastLine": 102
+                          }
+                        ],
+                        "name": "a_request_whose_credentials_fail_counts_against_its_addresss_limit"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/config.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 93
+                          }
+                        ],
+                        "name": "each_rate_limit_binding_allows_what_its_tier_allows_in_the_same_window"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abdf92323beb",
+                    "label": "AC-262",
+                    "name": "Requests with an API key are limited per key, at the rate of the key's rate-limit tier.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abdd6cea244d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/limits_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 71
+                          }
+                        ],
+                        "name": "requests_with_a_key_are_limited_per_key_at_its_tiers_rate"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/config.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 93
+                          }
+                        ],
+                        "name": "each_rate_limit_binding_allows_what_its_tier_allows_in_the_same_window"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a2b8-447e-752b-832a-974f9a8253a9",
+                    "label": null,
+                    "name": "The rate-limit tiers are basic at 300, standard at 1,200 and extended at 6,000 requests in 60 seconds.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abdd6cea244d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/limits_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "the_tiers_are_basic_300_standard_1200_and_extended_6000_in_60_seconds"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/config.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 93
+                          }
+                        ],
+                        "name": "each_rate_limit_binding_allows_what_its_tier_allows_in_the_same_window"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe06d55345f",
+                    "label": "AC-263",
+                    "name": "The response status is 429 with a Retry-After header.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abdd6cea244d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/limits_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 84
+                          }
+                        ],
+                        "name": "over_the_limit_the_answer_is_429_with_retry_after"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/access.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 82,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "a_basic_key_is_refused_with_429_and_retry_after_past_300_requests_in_a_minute"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe2ec3d6bd7",
+                    "label": "AC-264",
+                    "name": "A quota lowered below a key's current usage refuses the key's next write that would add to that usage, and keeps what the key already stored.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe10a4ee3c8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 359,
+                            "lastLine": 411
+                          }
+                        ],
+                        "name": "a_write_beyond_a_quota_is_refused_naming_it_its_limit_and_the_usage_and_stores_nothing"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a2b8-447e-752b-832a-9750ec8ef08a",
+                    "label": null,
+                    "name": "A key moved to another rate-limit tier is limited at that tier's rate from its next request.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe10a4ee3c8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/limits_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 104,
+                            "lastLine": 125
+                          }
+                        ],
+                        "name": "a_key_moved_to_another_tier_is_limited_at_that_tiers_rate_from_its_next_request"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/access.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 63
+                          }
+                        ],
+                        "name": "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f20-8e6c-7039-b16f-abd83515093c",
+                "label": "F-28",
+                "name": "Enforce quotas and rate limits",
+                "requirements": [
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abd968a1043e",
+                    "label": "RQ-97",
+                    "name": "If a write would take a key beyond one of its quotas, then Univ Server shall refuse the write and name the quota.",
+                    "statement": {
+                      "condition": "a write would take a key beyond one of its quotas",
+                      "form": "unwanted",
+                      "shall": "refuse the write and name the quota.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abdd6cea244d",
+                    "label": "RQ-98",
+                    "name": "If a client exceeds its request rate limit, then Univ Server shall refuse its requests until the limit's window has passed.",
+                    "statement": {
+                      "condition": "a client exceeds its request rate limit",
+                      "form": "unwanted",
+                      "shall": "refuse its requests until the limit's window has passed.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe10a4ee3c8",
+                    "label": "RQ-99",
+                    "name": "When the owner changes a key's quotas or rate-limit tier, Univ Server shall apply the new values from the key's next request.",
+                    "statement": {
+                      "condition": "the owner changes a key's quotas or rate-limit tier",
+                      "form": "event_driven",
+                      "shall": "apply the new values from the key's next request.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe5d0392ce2",
+                    "label": "AC-265",
+                    "name": "The secret holds at least 256 bits of randomness.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 30,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "an_issued_key_holds_256_random_bits_and_only_its_sha256_is_stored"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/access.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 63
+                          }
+                        ],
+                        "name": "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe6140958c5",
+                    "label": "AC-266",
+                    "name": "Only the SHA-256 of the secret is stored.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 30,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "an_issued_key_holds_256_random_bits_and_only_its_sha256_is_stored"
+                      },
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 214,
+                            "lastLine": 226
+                          }
+                        ],
+                        "name": "a_key_is_checked_against_the_sha256_stored_at_its_issuance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe78c0f59b1",
+                    "label": "AC-267",
+                    "name": "The secret is returned in the response that issues it and in no later response.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 58,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "the_secret_is_returned_when_issued_and_in_no_later_response"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/access.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 63
+                          }
+                        ],
+                        "name": "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe824aac9f3",
+                    "label": "AC-268",
+                    "name": "A key issued without quotas gets the default quotas.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 91
+                          }
+                        ],
+                        "name": "a_key_issued_without_quotas_or_tier_gets_the_default_quotas_and_the_standard_tier"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a2b8-447e-752b-832a-975136ea867e",
+                    "label": null,
+                    "name": "A key issued without a rate-limit tier gets the standard tier.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 91
+                          }
+                        ],
+                        "name": "a_key_issued_without_quotas_or_tier_gets_the_default_quotas_and_the_standard_tier"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abeaf5bb032f",
+                    "label": "AC-269",
+                    "name": "The revocation is recorded with its time.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe9617a077f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 137
+                          }
+                        ],
+                        "name": "a_revocation_is_recorded_with_its_time_and_the_key_is_refused_from_then_on"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/access.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 63
+                          }
+                        ],
+                        "name": "a_key_is_issued_read_with_moved_between_tiers_and_revoked"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abeb18eac22e",
+                    "label": "AC-270",
+                    "name": "The revoked key's public layers stay readable, and its private layers stay unreadable.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abe9617a077f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/layers_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 340,
+                            "lastLine": 361
+                          }
+                        ],
+                        "name": "a_revoked_keys_public_layers_stay_readable_and_its_private_ones_unreadable"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abedaa177f5f",
+                    "label": "AC-271",
+                    "name": "Usage gives the key's number of layers and its largest layer's number of items.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abeccca54ce7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 413,
+                            "lastLine": 426
+                          }
+                        ],
+                        "name": "a_keys_usage_gives_its_layers_and_its_largest_layers_items"
+                      },
+                      {
+                        "file": "crates/univ-api/src/layers_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 146,
+                            "lastLine": 180
+                          }
+                        ],
+                        "name": "a_retired_layer_answers_410_to_its_readers_404_to_others_and_leaves_its_keys_quota"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abefcb4ce396",
+                    "label": "AC-272",
+                    "name": "The response status is 401.",
+                    "requirement": "01a19f20-8e6c-7039-b16f-abee0b691d4e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 190
+                          }
+                        ],
+                        "name": "an_owner_operation_without_the_owner_secret_answers_401_and_changes_nothing"
+                      },
+                      {
+                        "file": "crates/univ-api/src/keys_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 198
+                          }
+                        ],
+                        "name": "a_worker_given_no_owner_secret_refuses_every_owner_operation"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/access.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 65,
+                            "lastLine": 80
+                          }
+                        ],
+                        "name": "the_owners_operations_are_refused_without_the_owner_secret"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f20-8e6c-7039-b16f-abe3447e87f6",
+                "label": "F-29",
+                "name": "Issue and revoke keys",
+                "requirements": [
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe4333991f2",
+                    "label": "RQ-100",
+                    "name": "When the owner issues an API key, Univ Server shall create the key with its label, quotas and rate-limit tier and return its secret once.",
+                    "statement": {
+                      "condition": "the owner issues an API key",
+                      "form": "event_driven",
+                      "shall": "create the key with its label, quotas and rate-limit tier and return its secret once.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abe9617a077f",
+                    "label": "RQ-101",
+                    "name": "When the owner revokes an API key, Univ Server shall refuse the key from the next request on.",
+                    "statement": {
+                      "condition": "the owner revokes an API key",
+                      "form": "event_driven",
+                      "shall": "refuse the key from the next request on.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abeccca54ce7",
+                    "label": "RQ-102",
+                    "name": "When the owner lists API keys, Univ Server shall return each key's label, issuance time, revocation time, quotas, rate-limit tier and usage, without its secret.",
+                    "statement": {
+                      "condition": "the owner lists API keys",
+                      "form": "event_driven",
+                      "shall": "return each key's label, issuance time, revocation time, quotas, rate-limit tier and usage, without its secret.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-8e6c-7039-b16f-abee0b691d4e",
+                    "label": "RQ-103",
+                    "name": "If a request to an owner operation lacks the owner secret or carries a wrong one, then Univ Server shall refuse the request and change nothing.",
+                    "statement": {
+                      "condition": "a request to an owner operation lacks the owner secret or carries a wrong one",
+                      "form": "unwanted",
+                      "shall": "refuse the request and change nothing.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 335,
+              "linked": 335,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a470-04b7-70f7-b4b3-a9225a02df47
+    id: w7-result
+    kind: note
+    versions:
+      - key: 01a1a470-04b7-70f7-b4b3-a925da88d30c
+        at: 2026-11-04T02:42:47Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What W7 produced, and where Univ Server stands"
+        markdown: |-
+          **The contract is complete.**
+          - Every route's refusals are in the OpenAPI document by status and problem type, and every refusal any test meets is checked against its route's list.
+          - The schemas are univ-model's, as generated.
+          - `openapi.v1.json` refuses any removal, rename or narrowed request within /v1.
+
+          **Release 7** is built with the current ingest and served as `latest`; release 6 stays readable and releases 1–4 answer 410.
+
+          | Check | Result |
+          |---|---|
+          | QA-2 lookup p95 | 8.5 ms (≤ 200) |
+          | QA-3 volume first page p95 | 86.0 ms (≤ 500) |
+          | Tiles (AC-281) | 401 of 401 match SHA-256 and decode, 2,085,809 points |
+          | Science spot-checks | M31, M87, Virgo at its KT17 centre, Laniakea basins: all as cited |
+          | `xtask science` | 27 PASS, 0 FAIL, 3 CONCERN (ingest's, unchanged) |
+          | Structures | matched by placed shape (15 within 300 Mpc) |
+
+          **Found and fixed on the way:** a Worker without an owner secret signed cursors under a key anyone could derive.
+
+          **Open:**
+          - `?name=M31` answers 404, because only the nearby-galaxies catalogue's names are indexed and it lists M31 as "Andromeda". Messier names are designations, so this is a lookup gap for ingest, not a server fault.
+          - The 3 science concerns are ingest's data questions.
+          - `product/server` goes to `develop` only when the owner asks.
+        tone: success

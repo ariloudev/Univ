@@ -10,6 +10,15 @@ versions:
     title: "W7: contract complete and the real release"
     goal: "Every route's refusals are in the OpenAPI document, a snapshot refuses removals within /v1 (AC-292), and release 7 built with the current ingest is served with QA-2, QA-3, its tiles and the science spot-checks measured on it"
     status: active
+  - key: 01a1a467-38b3-755e-978c-562e8f013ee7
+    at: 2026-11-04T02:33:10Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W7: contract complete and the real release"
+    goal: "Every route's refusals are in the OpenAPI document, a snapshot refuses removals within /v1 (AC-292), and release 7 built with the current ingest is served with QA-2, QA-3, its tiles and the science spot-checks measured on it"
+    status: done
 blocks:
   - key: 01a1a44e-3d9c-738c-a63a-aa3db0c2beef
     id: t7-release
@@ -111,6 +120,23 @@ blocks:
         title: "QA-2 and QA-3 on release 7"
         detail: "Done when `bench lookup` and `bench volume` have run against release 7 and their percentiles are recorded."
         state: open
+      - key: 01a1a467-38b3-755e-978c-562c6eb68d75
+        at: 2026-11-04T02:33:10Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-2 and QA-3 on release 7"
+        detail: |-
+          Release 7, local runtime and D1, `sampled`:
+
+          | | p50 | p95 | p99 | Bound | Requests not 200 |
+          |---|---|---|---|---|---|
+          | QA-2 object lookup (1,000) | 5.7 ms | 8.5 ms | 13.0 ms | 200 ms | 0 of 1,020 |
+          | QA-3 first page of a volume query (200) | 57.1 ms | 86.0 ms | 92.8 ms | 500 ms | 0 of 220 |
+
+          Both met. QA-3 is higher than on release 6 (p95 47.9 ms), most likely because release 7's structures are tested against their placed shapes rather than boxes.
+        state: done
   - key: 01a1a44e-3d9c-738c-a63a-aa41d098b4fd
     id: t7-tiles
     kind: task
@@ -177,6 +203,24 @@ blocks:
 
           Noted, not changed: `?name=M31` is 404 because only the nearby-galaxies names are indexed, where M31 is "Andromeda". The 404's wording was fixed.
         state: active
+      - key: 01a1a467-38b3-755e-978c-562d83a21546
+        at: 2026-11-04T02:33:10Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science spot-checks through the API"
+        detail: |-
+          Through the API on release 7:
+
+          - **M31**, object 856254: 0.747 ± 0.016 Mpc from CF4 (μ = 24.366 ± 0.045), preferred over McConnachie 2012's 0.783 ± 0.025 Mpc on the smaller uncertainty; they agree within 1.2σ.
+          - **M87**, object 2081340: 16.86 ± 0.31 Mpc luminosity distance, 16.77 Mpc comoving (z_CMB = 0.00536, Planck 2018).
+          - **Virgo**, CF4 group 41220: served exactly at the KT17 centre, RA 187.755781°, Dec 12.405941°.
+          - **Laniakea basins:** the observer and all 9 Dupuy & Courtois attractors sit in their own basins in the served grid.
+          - **Releases 1–4** answer 410.
+
+          `cargo xtask science` on release 7: 27 PASS, 0 FAIL, 3 CONCERN, 2 INFO. The concerns are ingest's own, carried over from earlier releases: NGC 4889 is 2.6σ short of Scolnic et al.'s Coma distance; 154 redshift conflicts; 47 of them placed by the higher redshift.
+        state: done
   - key: 01a1a460-4d4a-71d4-9ca5-aa1a07aa9f84
     id: t7-fix-cursor-secret
     kind: task
