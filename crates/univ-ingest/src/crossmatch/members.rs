@@ -27,11 +27,11 @@ use univ_model::derive::DerivedPosition;
 use univ_model::geometry::{Aabb, Geometry, Member, Shape};
 use univ_model::ids::ObjectId;
 use univ_model::object::{NotPlacedReason, Object, Placement};
-use univ_model::position::{Frame, Vec3, between, separation_degrees, unit_vector};
+use univ_model::position::{Frame, Vec3, between, norm, separation_degrees, unit_vector};
 use univ_model::units::Unit;
 
 use super::tracers::{FilePlacer, FromFile};
-use crate::structures::{ColumnName, Coordinates, Members, Structure, StructureGeometry};
+use crate::structures::{ColumnName, Coordinates, Members, Row, Structure, StructureGeometry};
 
 /// A matched object as a member list sees it: its id, the object and its derived position.
 pub struct Resolved<'a> {
@@ -168,14 +168,17 @@ fn resolve(
         Some((i, factor))
     };
     let (lon, lat) = (degrees(ColumnName::Lon), degrees(ColumnName::Lat));
+    let cartesian = [ColumnName::X, ColumnName::Y, ColumnName::Z].map(|name| members.column(name));
     let mut placed = Vec::new();
     let mut unplaced = Vec::new();
     let mut by_name_only = Vec::new();
     let mut from_file = Vec::new();
     for row in &members.rows {
-        let published = lon.zip(lat).map(|((i, fi), (j, fj))| {
-            to_icrs.apply(unit_vector(row.values[i] * fi, row.values[j] * fj))
-        });
+        let published = lon
+            .zip(lat)
+            .map(|((i, fi), (j, fj))| unit_vector(row.values[i] * fi, row.values[j] * fj))
+            .or_else(|| direction(cartesian, row))
+            .map(|u| to_icrs.apply(u));
         match member(&row.name, published, index, tolerance_arcsec) {
             Ok((m, Checked::Position)) => placed.push(m),
             Ok((m, Checked::NameOnly)) => {
@@ -218,6 +221,15 @@ fn resolve(
         by_name_only,
         from_file,
     }
+}
+
+/// The direction of `row`'s Cartesian position, from its `x`, `y` and `z` columns, in the
+/// table's frame; none without them, or at the origin.
+fn direction(columns: [Option<usize>; 3], row: &Row) -> Option<Vec3> {
+    let [x, y, z] = columns;
+    let position = [row.values[x?], row.values[y?], row.values[z?]];
+    let length = norm(position);
+    (length > 0.0).then(|| position.map(|c| c / length))
 }
 
 /// Whether a resolved member's position was checked against its object's.

@@ -132,6 +132,20 @@ blocks:
           - A first draft took `far` on every side, which would have cut the box short on the sides the region does not face; it was caught in review before it ran.
           - Uncommitted until the spec is approved.
         state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b50fbbc01b
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Sky-region bounds from their cells"
+        detail: |-
+          **Scope:** `Geometry::bounds` for a sky region becomes the box around its cells between `near` and `far`.
+
+          **Done when** model tests show the box holds every cell at both distances, is far tighter than the sphere for a small region, and is the sphere's box for the whole sky.
+
+          **Result:** committed in `136d712`. All 92 suites pass in a clean worktree.
+        state: done
   - key: 01a1a75c-8ab5-713f-a8e7-7c2de8941b52
     id: r2-t-label
     kind: task
@@ -170,6 +184,20 @@ blocks:
           - **Explorer:** tests show "Vela Supercluster (at least)" in the drawing's name and in the panel heading.
           - Uncommitted until the spec is approved.
         state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b606f8a4e9
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The \"(at least)\" label"
+        detail: |-
+          **Scope:** a sky region may cite its paper's "at least" sentence; the derivation points at it; the explorer appends "(at least)" in the view and the panel.
+
+          **Done when** the ingest and explorer tests show it.
+
+          **Result:** committed in `136d712`.
+        state: done
   - key: 01a1a75c-8ab5-713f-a8e7-7c2e0aa3b35b
     id: r2-t-volumes
     kind: task
@@ -209,6 +237,20 @@ blocks:
           - **Shapley:** §4.1's surveyed area, "R.A. ≃ 12h40m to ≃ 14h10m and from Dec ≃ −24° to ≃ −38°", and the main body's 13000–18000 km/s. The abstract's "12 degrees by 30 degrees" disagrees with that box; the notes say so and keep the abstract's numbers as published. The A&A site refused automated reads, so the arXiv v1 text ("accepted for publication") is the one checked.
           - **Horologium–Reticulum:** a new centred form of sky region holds "12° × 12° … centered at approximately α = 03h19m, δ = −50°02′", with its width turned into right ascension at its declination (18.68°). Its range is "at least the redshift range from 17,000 to 22,500".
         state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b7880b5518
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Vela, Shapley and Horologium–Reticulum as sky regions"
+        detail: |-
+          **Scope:** each placed by the sky region its paper quotes.
+
+          **Done when** the structure tests pass, and the files' sentences are checked against the papers.
+
+          **Result:** committed in `136d712`. The science checks run on release 8 in R3.
+        state: done
   - key: 01a1a75c-8ab5-713f-a8e7-7c2fe30b0d34
     id: r2-t-voids
     kind: task
@@ -1576,6 +1618,20 @@ blocks:
           - Written, with that test and a file-checker test: a missing value, an angle, or no position is refused.
           - Verifying in a clean worktree, because the file agents' half-written files break any test that reads `structures/`.
         state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b844b624e0
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents in structure files and the derivation"
+        detail: |-
+          **Scope:** `extents: {x, y, z}` naming three cited values; the derivation's `extents` as ICRS vectors; the bounds stay at the point.
+
+          **Done when** the Hercules Void test passes.
+
+          **Result:** committed in `136d712`, with a file-checker test. The OpenAPI snapshot gained `Extents`.
+        state: done
   - key: 01a1a779-da64-726e-bcf6-4c8d1ac78719
     id: r2-t-extents-voids
     kind: task
@@ -1606,6 +1662,20 @@ blocks:
 
           **Progress:** each names its three "extent_sg?_at_isodensity_minus_0_7" values. Verifying with r2-t-extents-ingest.
         state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b989cccd62
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents for the Hercules, Sculptor and Local voids"
+        detail: |-
+          **Scope:** `extents` in the three void files.
+
+          **Done when** the structure file tests pass.
+
+          **Result:** committed in `136d712`.
+        state: done
   - key: 01a1a779-da64-726e-bcf6-4c8e0f2235b7
     id: r2-t-extents-explorer
     kind: task
@@ -1659,6 +1729,22 @@ blocks:
 
           **Done when** a `structure_tracers` test shows a supergalactic member at (0, 100, 0) h75⁻¹ Mpc land at the rescaled ICRS point.
         state: open
+      - key: 01a1a785-2655-772a-8b6f-f9ba44b209ca
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Cartesian member columns"
+        detail: |-
+          **Scope:** member tables may give `x`, `y`, `z` lengths in a Cartesian frame in place of lon and lat. Tully 1987's Pisces–Cetus Supercluster needs it.
+
+          As built, they give only the member's direction. Its distance comes from its row's redshift under the release cosmology, moved to the CMB frame like every other tracer's. Tully's table gives each member's redshift beside SGX, SGY and SGZ, so the h75⁻¹ Mpc coordinates are not rescaled into distances.
+
+          **Done when** a `structure_tracers` test shows a supergalactic member at (0, 100, 0) lies along supergalactic +Y at its redshift's comoving distance, and a table with both a sky position and Cartesian columns is refused.
+
+          **Progress:** written, being tested in the clean worktree.
+        state: active
   - key: 01a1a779-da64-726e-bcf6-4c900419a1d5
     id: r2-t-box
     kind: task
