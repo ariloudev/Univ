@@ -139,6 +139,9 @@ pub fn entry_row(
     if let Some(p) = &entry.position {
         position_columns(terms, &mut row, &mut more, p)?;
     }
+    if let Some(t) = &entry.spectral_type {
+        more.insert("spectral_type".into(), to_json(t)?);
+    }
     row.extra = extra(&more)?;
     Ok(row)
 }
@@ -360,6 +363,28 @@ impl Measurements<'_, '_> {
         if let Some(m) = &entry.magnitude {
             let band = numbering.terms.id(&m.band);
             self.value(numbering, "magnitude", &m.value, Some(band))?;
+        }
+        for (n, c) in entry.colours.iter().enumerate() {
+            // Numbered within the entry, as its distances are; the bands are its kind.
+            let mut more = Map::new();
+            if let Some(from) = &c.derived_from {
+                more.insert("derived_from".into(), to_json(from)?);
+            }
+            let detail = Detail {
+                kind: Some(numbering.terms.id(&c.band_pair())),
+                extra: extra(&more)?,
+                ..Detail::default()
+            };
+            let v = &c.value;
+            self.push(
+                numbering,
+                "colour_index",
+                n,
+                v.kind,
+                &v.native,
+                &v.normalized,
+                detail,
+            )?;
         }
         Ok(())
     }

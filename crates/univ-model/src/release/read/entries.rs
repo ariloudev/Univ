@@ -7,8 +7,10 @@ use serde::Deserialize;
 use serde_json::{Map, Value};
 
 use super::columns::Columns;
+use super::measurements::from_extra;
 use super::{ReadError, Row, Vocabulary};
-use crate::api::objects::{EntryPosition, EntryRecord};
+use crate::api::objects::{EntryPosition, EntryRecord, SpectralTypeRecord};
+use crate::entry::SpectralType;
 use crate::entry::{PositionErrors, PositionUncertainty};
 use crate::ids::{Designation, SourceId};
 use crate::object::{Confidence, LineOfSight, MatchRecord, Resolution};
@@ -81,6 +83,7 @@ fn entry(
         resolved_by: resolution(&c, own, &extra, heads)?,
         position: position(&c, &extra)?,
         group_id: c.text_opt("group_id")?.map(str::to_owned),
+        spectral_type: spectral_type(&c, &extra)?,
         flags,
     })
 }
@@ -147,6 +150,19 @@ fn resolution(
         }
         other => return Err(c.error("resolution", format!("{other:?} is no resolution"))),
     })
+}
+
+/// The spectral type `extra` holds, where its source publishes one.
+fn spectral_type(
+    c: &Columns<'_>,
+    extra: &Map<String, Value>,
+) -> Result<Option<SpectralTypeRecord>, ReadError> {
+    Ok(
+        from_extra::<SpectralType>(c, extra, "spectral_type")?.map(|t| SpectralTypeRecord {
+            text: t.text,
+            kind_of_value: t.kind,
+        }),
+    )
 }
 
 /// The entry's sky position as published, none when it has none.

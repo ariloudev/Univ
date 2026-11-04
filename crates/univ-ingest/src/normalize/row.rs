@@ -15,6 +15,7 @@ use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
 
+mod colour;
 mod fixes;
 
 pub(super) use super::plan::Changed;
@@ -207,6 +208,8 @@ impl Row<'_, '_> {
             parallax: self.value(plan.parallax.as_ref(), Unit::Degree)?,
             proper_motion: self.proper_motion()?.map(Box::new),
             magnitude: self.magnitude()?.map(Box::new),
+            colours: self.colours()?,
+            spectral_type: self.spectral_type().map(Box::new),
             group_id: plan.group_id.and_then(|c| self.text(c)),
             supergalactic_velocity: self.supergalactic()?.map(Box::new),
             flags: plan

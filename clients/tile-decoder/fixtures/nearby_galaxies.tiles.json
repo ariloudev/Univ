@@ -4,7 +4,7 @@
   "tiles": [
     {
       "address": "r",
-      "hex": "5556544c01000000090000000000000000000000000020c000000000000020c000000000000020c0000000000000304005ed2d80dbd9f77f1880f27f1680a57fc97fb07f2a801980d87f2a8073805c8f2680698fa5ec9f82f94593e82b8031d6f58e2080dc7b04000000000000000b000000000000000c000000000000000d000000000000000f000000000000001600000000000000170000000000000018000000000000001900000000000000000001000100010001000200020002000200000000000000000000",
+      "hex": "5556544c02000000090000000000000000000000000020c000000000000020c000000000000020c0000000000000304005ed2d80dbd9f77f1880f27f1680a57fc97fb07f2a801980d87f2a8073805c8f2680698fa5ec9f82f94593e82b8031d6f58e2080dc7b04000000000000000b000000000000000c000000000000000d000000000000000f000000000000001600000000000000170000000000000018000000000000001900000000000000000001000100010001000200020002000200000000000000000000008000800080008000800080008000800080000000000000000000",
       "points": [
         {
           "id": 4,
@@ -14,7 +14,8 @@
             5.616018897543021
           ],
           "source": "cosmicflows-4",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         },
         {
           "id": 11,
@@ -24,7 +25,8 @@
             -0.0033482951221477223
           ],
           "source": "mcconnachie-2012",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         },
         {
           "id": 12,
@@ -34,7 +36,8 @@
             -0.013367526861408288
           ],
           "source": "mcconnachie-2012",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         },
         {
           "id": 13,
@@ -44,7 +47,8 @@
             0.0063459770197582
           ],
           "source": "mcconnachie-2012",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         },
         {
           "id": 15,
@@ -54,7 +58,8 @@
             0.02820860288035591
           ],
           "source": "mcconnachie-2012",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         },
         {
           "id": 22,
@@ -64,7 +69,8 @@
             0.9631559559916126
           ],
           "source": "updated-nearby-galaxies",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         },
         {
           "id": 23,
@@ -74,7 +80,8 @@
             -3.6265613071578713
           ],
           "source": "updated-nearby-galaxies",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         },
         {
           "id": 24,
@@ -84,7 +91,8 @@
             5.387075300519419
           ],
           "source": "updated-nearby-galaxies",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         },
         {
           "id": 25,
@@ -94,7 +102,8 @@
             -0.25858677168479016
           ],
           "source": "updated-nearby-galaxies",
-          "kind": "measured"
+          "kind": "measured",
+          "colour": null
         }
       ]
     }

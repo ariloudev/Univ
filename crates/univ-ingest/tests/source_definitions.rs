@@ -438,3 +438,23 @@ fn a_definition_with_more_fixes_than_the_normalizer_counts_is_refused() {
     assert_eq!(e.field, "fixes");
     assert!(e.problem.contains("more than 64"), "{e}");
 }
+
+#[test]
+fn a_colour_between_a_misspelled_or_repeated_band_is_refused() {
+    let text = fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../sources/hipparcos-2007.yaml"),
+    )
+    .unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let read = |text: &str| SourceDefinition::read(&write(&dir, "hipparcos-2007", text));
+    assert!(read(&text).is_ok());
+    for (bands, problem) in [("[b, V]", "band b"), ("[V, V]", "band V twice")] {
+        let refused = read(&text.replace("bands: [B, V]", &format!("bands: {bands}"))).unwrap_err();
+        assert!(
+            refused.field.starts_with("normalization.colours[0]"),
+            "{}",
+            refused.field
+        );
+        assert!(refused.problem.contains(problem), "{}", refused.problem);
+    }
+}

@@ -25,6 +25,40 @@ pub struct Normalization {
     pub distances: Vec<DistanceReading>,
     #[serde(default)]
     pub rules: Vec<Rule>,
+    #[serde(default)]
+    pub colours: Vec<ColourReading>,
+    #[serde(default)]
+    pub spectral_type: Option<SpectralTypeReading>,
+}
+
+/// A colour index: published in `column`, or derived from the two magnitude columns `from`
+/// where the source publishes magnitudes and not the colour.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ColourReading {
+    /// The two bands, the one subtracted from second, such as `[B, V]`.
+    pub bands: [String; 2],
+    #[serde(default)]
+    pub column: Option<String>,
+    /// The column of its symmetric error, where the source publishes one.
+    #[serde(default)]
+    pub error: Option<String>,
+    #[serde(default)]
+    pub from: Option<[String; 2]>,
+}
+
+/// A spectral type published in `column`, of the kind of value `basis` justifies.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SpectralTypeReading {
+    pub column: String,
+    pub kind_of_value: KindOfValue,
+    /// What the source writes in the column where it gives no type, such as Gaia ESP-HS's
+    /// `unknown`: read as no spectral type, as a blank cell is.
+    #[serde(default)]
+    pub none: Vec<String>,
+    /// Where the source states how it classified its stars, quoted or cited.
+    pub basis: String,
 }
 
 /// A redshift, published as z or as a velocity cz, with the frame its source states.
@@ -175,7 +209,11 @@ const SINGLE: [Field; 17] = [
 ];
 
 /// Fields whose columns a reading in `normalization` must name.
-const READ: [Field; 10] = [
+const READ: [Field; 14] = [
+    Field::ColourIndex,
+    Field::ColourIndexError,
+    Field::ColourMagnitude,
+    Field::SpectralType,
     Field::Distance,
     Field::DistanceLow,
     Field::DistanceHigh,
@@ -208,6 +246,48 @@ impl Columns<'_> {
             .map(|_| ())
             .ok_or_else(|| problem(at, format!("names {name}, which is not a column")))
     }
+}
+
+/// The columns a colour reading names, each a column of the definition in magnitudes.
+/// The photometric bands a colour index may lie between: Johnson–Cousins `U`, `B`, `V`, `R`
+/// and `I`, Gaia's `G`, `BP` and `RP`, and 2MASS's `J`, `H` and `Ks`, as the catalogues name
+/// them. A band outside them is refused, so a misspelling cannot leave a colour unread.
+const BANDS: [&str; 11] = ["U", "B", "V", "R", "I", "G", "BP", "RP", "J", "H", "Ks"];
+
+fn check_colour<'c>(
+    table: &Columns<'_>,
+    at: &str,
+    c: &'c ColourReading,
+) -> Result<Vec<&'c str>, Problem> {
+    if let Some(band) = c.bands.iter().find(|b| !BANDS.contains(&b.as_str())) {
+        return Err(problem(
+            at,
+            format!(
+                "names the band {band}, which is not one of {}",
+                BANDS.join(", ")
+            ),
+        ));
+    }
+    if c.bands[0] == c.bands[1] {
+        return Err(problem(at, format!("names the band {} twice", c.bands[0])));
+    }
+    let names: Vec<&str> = c
+        .column
+        .iter()
+        .chain(&c.error)
+        .chain(c.from.iter().flatten())
+        .map(String::as_str)
+        .collect();
+    for name in &names {
+        table.known(at, name)?;
+        if table.unit(name) != Some(Unit::Magnitude) {
+            return Err(problem(
+                at,
+                format!("names {name}, which is not in magnitudes"),
+            ));
+        }
+    }
+    Ok(names)
 }
 
 /// Checks the normalization block and the fixes' actions against the definition's columns.
@@ -244,6 +324,17 @@ pub(super) fn check(
             &format!("normalization.distances[{i}]"),
             d,
         )?);
+    }
+    for (i, c) in normalization.colours.iter().enumerate() {
+        named.extend(check_colour(
+            &table,
+            &format!("normalization.colours[{i}]"),
+            c,
+        )?);
+    }
+    if let Some(s) = &normalization.spectral_type {
+        table.known("normalization.spectral_type", &s.column)?;
+        named.insert(s.column.as_str());
     }
     if let Some(column) = columns
         .iter()

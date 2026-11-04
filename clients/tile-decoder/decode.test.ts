@@ -7,13 +7,15 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 
 import { VERSIONS, decodeTile } from './decode.ts';
-import type { KindOfValue, ManifestNode, TileManifest, Vec3 } from './decode.ts';
+import type { ColourBands, KindOfValue, ManifestNode, TileManifest, Vec3 } from './decode.ts';
 
 interface Expected {
   id: number;
   position: Vec3;
   source: string;
   kind: KindOfValue;
+  /** The colour index before rounding and its bands; null where the point has none. */
+  colour?: [number, ColourBands] | null;
 }
 
 interface FixtureTile {
@@ -28,17 +30,22 @@ interface Fixture {
   tiles: FixtureTile[];
 }
 
-const dir = new URL('./fixtures/', import.meta.url);
-const read = (file: string): unknown => JSON.parse(readFileSync(new URL(file, dir), 'utf8'));
+/** The fixtures of a directory: the current encoding's in fixtures/, version 1's kept in v1/. */
+const fixturesIn = (path: string): Fixture[] => {
+  const dir = new URL(path, import.meta.url);
+  const read = (file: string): unknown => JSON.parse(readFileSync(new URL(file, dir), 'utf8'));
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.manifest.json'))
+    .sort()
+    .map((f) => {
+      const name = f.slice(0, -'.manifest.json'.length);
+      const tiles = read(`${name}.tiles.json`) as { tiles: FixtureTile[] };
+      return { name, manifest: read(f) as TileManifest, tiles: tiles.tiles };
+    });
+};
 
-const fixtures: Fixture[] = readdirSync(dir)
-  .filter((f) => f.endsWith('.manifest.json'))
-  .sort()
-  .map((f) => {
-    const name = f.slice(0, -'.manifest.json'.length);
-    const tiles = read(`${name}.tiles.json`) as { tiles: FixtureTile[] };
-    return { name, manifest: read(f) as TileManifest, tiles: tiles.tiles };
-  });
+const fixtures = fixturesIn('./fixtures/');
+const version1 = fixturesIn('./fixtures/v1/');
 
 const bytesOf = (hex: string): Uint8Array => Uint8Array.from(Buffer.from(hex, 'hex'));
 
@@ -103,6 +110,47 @@ test("AC-283: each decoded point gives its object id, its source and its kind of
   }
 });
 
+test('the decoder decodes tiles of encoding versions 1 and 2', () => {
+  assert.deepEqual(VERSIONS, [1, 2]);
+  assert.ok(fixtures.every((f) => f.manifest.encoding.version === 2));
+  assert.deepEqual(version1.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 1]]);
+  let checked = 0;
+  for (const f of version1) {
+    for (const tile of f.tiles) {
+      const decoded = decodeTile(bytesOf(tile.hex), nodeOf(f.manifest, tile.address), f.manifest);
+      decoded.forEach((p, k) => {
+        assert.equal(p.id, tile.points[k].id);
+        assert.equal(p.colour, undefined, 'a version 1 point has no colour');
+        checked += 1;
+      });
+    }
+  }
+  assert.ok(checked > 0);
+});
+
+test('each decoded point of a version 2 tile gives its colour index and bands, or that it has none', () => {
+  let coloured = 0;
+  let none = 0;
+  for (const { fixture, manifest, node, tile } of everyTile) {
+    decodeTile(bytesOf(tile.hex), node, manifest).forEach((p, k) => {
+      const expected = tile.points[k].colour ?? null;
+      const at = `${fixture} ${tile.address} point ${k}`;
+      if (expected === null) {
+        assert.equal(p.colour, undefined, `${at}: no colour`);
+        none += 1;
+      } else {
+        assert.ok(p.colour, `${at}: a colour`);
+        assert.ok(Math.abs(p.colour.index - expected[0]) <= 0.005 + 1e-12, `${at}: within 0.005 mag`);
+        assert.equal(p.colour.bands, expected[1], `${at}: bands`);
+        coloured += 1;
+      }
+    });
+  }
+  assert.ok(coloured > 0 && none > 0, `${coloured} coloured, ${none} not`);
+  const bands = new Set(everyTile.flatMap((t) => t.tile.points.flatMap((p) => (p.colour ? [p.colour[1]] : []))));
+  assert.deepEqual([...bands].sort(), ['B-V', 'BP-RP']);
+});
+
 /** The first fixture tile with points, as bytes to alter. */
 const sample = () => {
   const t = everyTile.find((t) => t.tile.points.length > 1);
@@ -111,8 +159,7 @@ const sample = () => {
 };
 
 test('AC-284: a tile of an encoding version the decoder does not know fails naming the version', () => {
-  assert.deepEqual(VERSIONS, [1]);
-  for (const version of [0, 2, 7, 65_535]) {
+  for (const version of [0, 3, 7, 65_535]) {
     const { bytes, node, manifest } = sample();
     new DataView(bytes.buffer).setUint16(4, version, true);
     assert.throws(
@@ -131,7 +178,13 @@ test('a tile that is not what its manifest lists is refused', () => {
     ['a byte short', (b) => b.subarray(0, b.length - 1), /not the \d+ its count/],
     ['an object id of 0', (b) => (b.fill(0, 48 + 6 * pointsOf(b), 48 + 6 * pointsOf(b) + 8), b), /object id 0/],
     ['an object id of 2^53', (b) => (b.set([0, 0, 0, 0, 0, 0, 0x20, 0], 48 + 6 * pointsOf(b)), b), /outside 1 to 2\^53/],
-    ['an unknown kind', (b) => (b.set([4], b.length - 1), b), /kind of value 4/],
+    ['an unknown kind', (b) => (b.set([4], 48 + 16 * pointsOf(b)), b), /kind of value 4/],
+    ['an unknown colour bands code', (b) => (b.set([3], 48 + 19 * pointsOf(b)), b), /colour bands code 3/],
+    [
+      'a colour index with no bands',
+      (b) => (new DataView(b.buffer).setInt16(48 + 17 * pointsOf(b), 100, true), b.set([0], 48 + 19 * pointsOf(b)), b),
+      /colour bands code 0/,
+    ],
     ['an unlisted source', (b) => (b.set([0xff, 0xff], 48 + 14 * pointsOf(b)), b), /source 65535/],
     ['another node', (b) => (new DataView(b.buffer).setFloat64(16, 1e9, true), b), /is not node/],
   ];

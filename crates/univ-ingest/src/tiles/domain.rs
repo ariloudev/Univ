@@ -10,6 +10,7 @@ use univ_model::cosmology::Cosmology;
 use univ_model::ids::{ObjectId, SourceId};
 use univ_model::object::{MeasurementRef, Object};
 use univ_model::position::{Frame, Vec3};
+use univ_model::tile::{ColourBands, PointColour};
 use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::value::KindOfValue;
 
@@ -80,6 +81,8 @@ pub struct DomainPoint {
     pub sky_source: u16,
     /// The kind of value of its preferred distance measurement.
     pub kind: KindOfValue,
+    /// The colour index chosen for it, if its entries give one.
+    pub colour: Option<PointColour>,
 }
 
 /// A scale domain's points, in increasing id, and the sources they index.
@@ -106,6 +109,43 @@ struct Placed {
     distance: usize,
     sky: usize,
     kind: KindOfValue,
+    colour: Option<PointColour>,
+}
+
+/// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
+/// (Gaia DR3's), else a published B−V (Hipparcos-2's), else a BP−RP derived from two magnitudes
+/// (the Gaia Catalogue of Nearby Stars'); of each, the first its entries give.
+#[must_use]
+pub fn colour_of(object: &Object) -> Option<PointColour> {
+    /// The rank of a colour index of `bands`, published or `derived`: lower is preferred.
+    fn rank(bands: ColourBands, derived: bool) -> u8 {
+        match (bands, derived) {
+            (ColourBands::BpRp, false) => 0,
+            (ColourBands::BV, false) => 1,
+            (ColourBands::BpRp, true) => 2,
+            (ColourBands::BV, true) => 3,
+        }
+    }
+    let mut best: Option<(u8, PointColour)> = None;
+    for c in object.entries.iter().flat_map(|e| &e.entry.colours) {
+        let Some(bands) = ColourBands::of(&c.bands) else {
+            continue;
+        };
+        let r = rank(bands, c.derived_from.is_some());
+        if best.is_none_or(|(b, _)| r < b) {
+            best = Some((
+                r,
+                PointColour {
+                    index: c.value.normalized.value,
+                    bands,
+                },
+            ));
+            if r == 0 {
+                break;
+            }
+        }
+    }
+    best.map(|(_, c)| c)
 }
 
 /// The kind of value of the measurement `m` of `object`.
@@ -194,6 +234,7 @@ pub fn assign(
             distance,
             sky,
             kind,
+            colour: colour_of(&o.object),
         });
     }
     let mut domains = BTreeMap::new();
@@ -235,6 +276,7 @@ fn intern(
             source: distance,
             sky_source: sky,
             kind: p.kind,
+            colour: p.colour,
         });
     }
     Ok(interned)

@@ -34,6 +34,18 @@ requirements:
         name: "Positions are quantized relative to their node, with a step no coarser than 1/65,536 of the node's edge."
       - key: 01a19f23-636f-72bd-b194-1533772ccbaf
         name: "The tile manifest states the encoding version and the quantization step of each level."
+  - key: 01a1a6e4-22e1-765d-b404-01fa1bdbef62
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "encode, from encoding version 2, each point's colour index where its object has one."
+    criteria:
+      - key: 01a1a6e4-22e1-765d-b404-01fbef6c729e
+        name: "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between."
+      - key: 01a1a6e4-22e1-765d-b404-01fc7402e820
+        name: "A point whose object has no colour index carries none, which no colour index encodes."
+      - key: 01a1a6e4-22e1-765d-b404-01fd633d5f44
+        name: "A colour index is encoded within 0.01 magnitudes of the value it was built from."
   - key: 01a19f23-636f-72bd-b194-1534af285ad4
     statement:
       form: ubiquitous

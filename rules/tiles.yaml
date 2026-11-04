@@ -36,12 +36,13 @@ statement: >-
   all its points.
 split_threshold: 32768
 split_basis: >-
-  Pipeline choice. A leaf of 32,768 points is a tile of 557,104 bytes, about half of the 1 MiB
-  bound (QA-1), small enough to load in well under a second on a 10 Mbit/s link, and the
-  headroom up to 61,678 points is what a leaf at the maximum depth may still hold.
+  Pipeline choice. A leaf of 32,768 points is a tile of 655,408 bytes in encoding version 2,
+  under two thirds of the 1 MiB bound (QA-1), small enough to load in well under a second on a
+  10 Mbit/s link, and the headroom up to 52,426 points is what a leaf at the maximum depth may
+  still hold.
 level_points: 16384
 level_points_basis: >-
-  Pipeline choice: the most points an inner node keeps, a tile of 278,576 bytes, so the coarse
+  Pipeline choice: the most points an inner node keeps, a tile of 327,728 bytes, so the coarse
   view a client loads first arrives quickly. Half the split threshold, so that a split always passes
   at least as many points down as it keeps.
 max_depth: 16
@@ -49,7 +50,7 @@ max_depth_basis: >-
   Pipeline choice. At depth 16 a node's edge is 1/65,536 of the root's: 0.25 pc for a stars
   root of edge 16,384 pc, 0.125 Mpc for a cosmic web root of 8,192 Mpc, finer than any distance
   error the sources publish, so a deeper split would sort points by their noise. A node at this
-  depth is never split, and one holding more than 61,678 points refuses the build.
+  depth is never split, and one holding more than 52,426 points refuses the build.
 seed: 1
 seed_basis: >-
   Any fixed number serves. It is recorded in each tile manifest, and the same seed with the same

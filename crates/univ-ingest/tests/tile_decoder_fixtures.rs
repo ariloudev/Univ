@@ -27,7 +27,7 @@ use univ_ingest::tiles::{BuiltDomain, DomainPoint, assign, build_domain, name_of
 use univ_model::cosmology::Cosmology;
 use univ_model::ids::ObjectId;
 use univ_model::tile::manifest::{TileManifest, TileManifestIndex};
-use univ_model::tile::{KINDS, decode};
+use univ_model::tile::{COLOUR_BANDS, ColourBands, KINDS, PointColour, decode};
 use univ_model::value::KindOfValue;
 
 /// The variable that asks the test to rewrite the files.
@@ -67,6 +67,8 @@ struct Expected {
     /// The id of the source of its preferred distance.
     source: String,
     kind: KindOfValue,
+    /// Its colour index before rounding, and its bands; none where it has none.
+    colour: Option<(f64, ColourBands)>,
 }
 
 /// A domain's built tiles, the points they were built from and the ids of their sources.
@@ -113,6 +115,11 @@ fn simulated() -> Domain {
             source: n % 2,
             sky_source: n % 2,
             kind: KINDS[usize::from(n) % KINDS.len()],
+            // Every third point has none; the rest alternate between the bands.
+            colour: (n % 3 != 0).then(|| PointColour {
+                index: f64::from(n) / 17.0 - 0.4,
+                bands: COLOUR_BANDS[usize::from(n) % COLOUR_BANDS.len()],
+            }),
         })
         .collect();
     let sources = [source_id("gaia-dr3-bright"), source_id("hipparcos-2007")];
@@ -151,6 +158,7 @@ fn tiles_file(d: &Domain) -> String {
             position: built.position,
             source: d.sources[usize::from(built.source)].clone(),
             kind: built.kind,
+            colour: built.colour.map(|c| (c.index, c.bands)),
         }
     };
     let tiles = d
