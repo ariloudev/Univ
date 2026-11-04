@@ -32,7 +32,7 @@ export function apply(m: Mat3, v: Vec3): Vec3 {
 }
 
 /** The transpose of `m`: the inverse of a rotation. */
-function transpose(m: Mat3): Mat3 {
+export function transpose(m: Mat3): Mat3 {
   return [
     [m[0][0], m[1][0], m[2][0]],
     [m[0][1], m[1][1], m[2][1]],

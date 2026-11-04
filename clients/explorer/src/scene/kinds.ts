@@ -22,6 +22,13 @@ const COLOURS: Record<KindOfValue, Rgba> = {
 /** The colours of `KINDS`, in order, for the renderer. */
 export const KIND_COLOURS: readonly Rgba[] = KINDS.map((kind) => COLOURS[kind]);
 
+/** The colour of structures' outlines and markers, after the kinds' in the renderer's table. */
+export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
+/** The colour of a structure drawn by its bounding box, marked approximate. */
+export const APPROXIMATE_COLOUR: Rgba = [1, 0.55, 0.35, 0.3];
+/** The index of `STRUCTURE_COLOUR` in the renderer's table of colours. */
+export const MARKER_INDEX = KINDS.length;
+
 /** The colour of `kind` for CSS. */
 export function cssColour(kind: KindOfValue): string {
   const [r, g, b] = COLOURS[kind];

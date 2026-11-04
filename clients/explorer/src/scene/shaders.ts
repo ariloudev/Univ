@@ -8,7 +8,7 @@ uniform mat3 u_axes;
 uniform vec3 u_centre;
 uniform mat4 u_projection;
 uniform float u_size;
-uniform vec4 u_colours[4];
+uniform vec4 u_colours[5];
 out vec4 v_colour;
 void main() {
   gl_Position = u_projection * vec4(u_axes * a_offset + u_centre, 1.0);

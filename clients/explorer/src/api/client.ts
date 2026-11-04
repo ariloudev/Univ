@@ -64,6 +64,8 @@ export interface ReadOptions {
   signal?: AbortSignal;
   /** Told the seconds each wait for the rate limit lasts, as it begins. */
   onWait?: (seconds: number) => void;
+  /** Statuses besides 2xx answered with the response rather than as a problem. */
+  accept?: readonly number[];
 }
 
 /** The URL of `path` pinned to `release`, if one is given. */
@@ -117,7 +119,7 @@ export async function read(path: string, options: ReadOptions = {}): Promise<Res
       resumeAt.set(http, Math.max(resumeAt.get(http) ?? 0, until));
       continue;
     }
-    if (!response.ok) throw await problemOf(response);
+    if (!response.ok && options.accept?.includes(response.status) !== true) throw await problemOf(response);
     return response;
   }
 }
