@@ -3109,3 +3109,39 @@ blocks:
               "schema": "loft-reconcile/3"
             }
           }
+  - key: 01a1a73b-08ce-715e-a37a-916ba4996305
+    id: r1-review
+    kind: note
+    versions:
+      - key: 01a1a73b-08ce-715e-a37a-916c8a0dac61
+        at: 2026-11-04T15:43:46Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What the reviews found, and what changed (96a2a0e)"
+        markdown: |-
+          `/simplify` (four reviewers) and `/code-review` ran on the wave's diff.
+
+          **Fixed:**
+
+          | Finding | Change |
+          |---|---|
+          | Gaia ESP-HS writes `unknown` for 1,080 bright stars it gave no type; that read as an estimated type | A spectral-type reading lists what its source writes for none; Gaia's `none: [unknown]` cites the DR3 data model |
+          | An entry attached by HIP number gave hipparcos-1997 no sky footprint, against read-a-source | An entry with no position of its own covers its object's position; the test's source-id special case is gone |
+          | At least 263 HIP numbers of I/239 have no Hipparcos-2 star | Stated in the definition's cuts: each stands as an object with its type, no position, found by its HIP designation |
+          | A derived BP−RP skipped `Quantity::new`/`Value::normalize` and took the first magnitude's kind | It goes through both, with the weaker kind of the two |
+          | A band name was free text, so a misspelling would silently drop a tile colour | The definition check refuses a band outside U B V R I G BP RP J H Ks, or one named twice |
+          | A too-large version 1 tile was refused quoting version 2's limit | The error carries the point size; the limit is version 1's own 61,678 |
+          | The known versions, point sizes and colour codes were written in several places | One table each in the codec; `layout`, the decoder and the max-points formula read them; `code` and `of_code` are checked both ways |
+          | `CatalogueEntry::check` ignored the new fields | It checks colours are in magnitudes and a spectral type is not blank |
+          | `colour_of` allocated a string per comparison over up to three passes | One pass with no allocation |
+          | Copies of existing helpers | `from_extra`, `Resolver::reading`, the simulated test builders; extras built as distances build theirs |
+
+          **Left as they are, with the reason:**
+          - **A malformed colour cell drops the row.** That is the pipeline's rule for every numeric column it reads (magnitude, velocity, proper motion), and it is counted by reason in the provenance.
+          - **A colour's `n` counts within its entry.** Distances work the same way, and the row's `kind` term names the bands.
+          - **The colour order is in code, not `rules/tiles.yaml`.** The build-octree-tiles criterion fixes the order, so it is a requirement, not a tunable rule.
+          - **The spectral type stays in `entries.extra`, not in columns.** This was the approved design: it needs no migration of older releases. The schema comments now name it.
+          - **Interning band strings, and boxing `colours`.** These are small per-row savings and would change the model's types.
+        tone: info
