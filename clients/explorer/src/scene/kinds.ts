@@ -19,6 +19,16 @@ const COLOURS: Record<KindOfValue, Rgba> = {
   reconstructed: [0.42, 1, 0.69, 0.5],
 };
 
+/** Beyond this distance from the focus, megaparsecs, the points grow fainter as the eye
+ * withdraws, so that whole surveys seen from afar add up to their shape rather than to white. */
+const FADE_FROM = 1000;
+/** The faintest the points grow. */
+const FADE_FLOOR = 0.03;
+
+/** The opacity the points are drawn at, of their kind's, with the eye `distance` from the focus:
+ * in proportion to the inverse distance, as the points crowd into fewer pixels. */
+export const pointOpacity = (distance: number): number => Math.max(FADE_FLOOR, Math.min(1, FADE_FROM / distance));
+
 /** The colours of `KINDS`, in order, for the renderer. */
 export const KIND_COLOURS: readonly Rgba[] = KINDS.map((kind) => COLOURS[kind]);
 

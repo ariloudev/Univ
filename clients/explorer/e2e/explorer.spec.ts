@@ -59,11 +59,25 @@ test("finds an object by designation, and says when nothing is found", async ({ 
   await expect(page.getByText("Nothing found for “No such thing anywhere”.")).toBeVisible();
 });
 
-test("lists the release's structures and reads one", async ({ page }) => {
+test("lists the release's structures, reads one, and still turns the view over its name", async ({ page }) => {
+  await firstPoints(page);
   await page.getByText(/^Structures \(\d+\)/).click();
-  const first = page.getByTestId("structures").getByRole("button").first();
-  await first.click();
-  await expect(page.getByRole("region", { name: "The chosen structure" }).getByTestId("structure-kind")).toBeVisible();
+  await page.getByTestId("structures").getByRole("button").first().click();
+  const panel = page.getByRole("region", { name: "The chosen structure" });
+  await expect(panel.getByTestId("structure-kind")).toBeVisible();
+  // Flown to, the structure's name lies at the centre of the view: the wheel there still zooms,
+  // and a click there chooses the structure by its name.
+  await page.waitForTimeout(1500);
+  const distance = page.getByTestId("distance");
+  const before = await distance.textContent();
+  const box = await page.locator("canvas").boundingBox();
+  if (box === null) throw new Error("no canvas");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.wheel(0, -300);
+  await expect(distance).not.toHaveText(before ?? "");
+  await panel.getByRole("button", { name: "Close the structure's panel" }).click();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(panel).toBeVisible();
 });
 
 test("has no serious or critical accessibility violations", async ({ page }) => {

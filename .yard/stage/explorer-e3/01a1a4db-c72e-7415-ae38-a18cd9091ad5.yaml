@@ -24,6 +24,18 @@ blocks:
         title: "Mark the first points drawn"
         detail: "Done when a unit test shows the page records the `univ:first-points` performance mark on the first frame drawn that holds points."
         state: active
+      - key: 01a1a4de-d6bd-71c9-a350-6be2ea018045
+        at: 2026-11-04T04:43:49Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Mark the first points drawn"
+        detail: |-
+          Done when a unit test shows the page records the `univ:first-points` performance mark on the first frame drawn that holds points.
+
+          Result: passes (`useWorld.test.ts`).
+        state: done
   - key: 01a1a4db-c72e-7415-ae38-a18e0d897a32
     id: e3-e2e
     kind: task
@@ -37,6 +49,18 @@ blocks:
         title: "Playwright and axe inside cargo xtask integration"
         detail: "Done when `cargo xtask integration` also runs the explorer's Playwright tests against the fixture release (draw, mouse, search by name and designation, address kept across a reload, structures, no serious or critical axe violations), and they pass."
         state: open
+      - key: 01a1a4de-d6bd-71c9-a350-6be3c2dfdcdb
+        at: 2026-11-04T04:43:49Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Playwright and axe inside cargo xtask integration"
+        detail: |-
+          Done when `cargo xtask integration` also runs the explorer's Playwright tests against the fixture release (draw, mouse, search by name and designation, address kept across a reload, structures, no serious or critical axe violations), and they pass.
+
+          Result: all 6 pass in 4.6 s inside `cargo xtask integration`.
+        state: done
   - key: 01a1a4db-c72e-7415-ae38-a18f394967fb
     id: e3-qa
     kind: task
@@ -50,6 +74,15 @@ blocks:
         title: "Measure first points on release 7"
         detail: "Done when `cargo xtask bench first-points` opens the explorer 10 times on release 7 and reports the p95 against 3 s, and the result is recorded here as sampled evidence."
         state: open
+      - key: 01a1a4de-d6bd-71c9-a350-6be55fbbc564
+        at: 2026-11-04T04:43:49Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Measure first points on release 7"
+        detail: "Done when `cargo xtask bench first-points` opens the explorer 10 times on release 7 and reports the p95 against 3 s, and the result is recorded here as sampled evidence."
+        state: active
   - key: 01a1a4db-c72e-7415-ae38-a1900fd4be33
     id: e3-docs
     kind: task
@@ -63,3 +96,15 @@ blocks:
         title: "README and AGENTS.md"
         detail: "Done when `clients/explorer/README.md` says how to run, use and check the explorer, and AGENTS.md lists the explorer, `cargo xtask explore` and the new bench."
         state: open
+      - key: 01a1a4de-d6bd-71c9-a350-6be4d03456e9
+        at: 2026-11-04T04:43:49Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "README and AGENTS.md"
+        detail: |-
+          Done when `clients/explorer/README.md` says how to run, use and check the explorer, and AGENTS.md lists the explorer, `cargo xtask explore` and the new bench.
+
+          Result: both written.
+        state: done

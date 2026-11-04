@@ -13,7 +13,8 @@ import { bindMouse } from "../scene/input.ts";
 import type { Pickable } from "../scene/pick.ts";
 import { NoWebGL, Renderer } from "../scene/renderer.ts";
 import type { Vec3 } from "../scene/vec.ts";
-import { type NameLabel, type Overlay, placeOverlay } from "./overlay.ts";
+import type { LabelBox } from "../scene/labels.ts";
+import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts";
 import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
 
@@ -30,13 +31,19 @@ export interface World {
   chosen: Vec3 | undefined;
   /** The structures' names, to place over the view. */
   names: NameLabel[];
+  /** The boxes of the names shown on the last frame drawn, for the mouse to choose by. */
+  namesShown: LabelBox[];
   /** Counts the frames drawn, for what shows the view's state. */
   frame: Store<number>;
   hover: Store<Hover>;
 }
 
-/** What the scene tells the page of the mouse: a point clicked, or double-clicked and flown to. */
-export type OnChoose = (point: ScenePoint) => void;
+/** What the scene tells the page of the mouse: a point clicked, or double-clicked and flown to;
+ * a structure whose name was clicked. */
+export interface OnChoose {
+  point: (point: ScenePoint) => void;
+  structure: (id: string) => void;
+}
 
 function surroundings(element: HTMLElement): Surroundings {
   return {
@@ -55,6 +62,7 @@ export function emptyWorld(controller: Controller, renderer: Renderer): World {
     pickable: [],
     chosen: undefined,
     names: [],
+    namesShown: [],
     frame: createStore(0),
     hover: createStore<Hover>(undefined),
   };
@@ -90,10 +98,15 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   const { controller, hover } = world;
   let hovering: number | undefined;
   const chooser = (fly: boolean) => (x: number, y: number) => {
+    const name = nameAt(world, x, y);
+    if (name !== undefined) {
+      onChoose.current.structure(name);
+      return;
+    }
     const point = pointAt(world, element, x, y);
     if (point === undefined) return;
     if (fly) controller.flyTo(point.place, viewingDistance(point.distanceMpc));
-    onChoose.current(point);
+    onChoose.current.point(point);
   };
   const unbind = bindMouse(element, {
     turn: (dx, dy) => controller.turn(dx, dy),
