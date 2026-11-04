@@ -32,6 +32,28 @@ blocks:
 
           The key-handling code moves out of `integration.rs`, which is at 497 lines, into a module of its own.
         state: active
+      - key: 01a1a515-e6ca-703a-9d45-9943e1b19711
+        at: 2026-11-04T05:43:58Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Real-state runs use .dev.vars's owner secret"
+        detail: |-
+          Done when:
+          - `with_real_server` reads `OWNER_SECRET` from `crates/univ-server/.dev.vars` before it starts Wrangler, with a unit test of the reading;
+          - it starts Wrangler without `--var`, so Wrangler loads `.dev.vars` itself;
+          - it issues and revokes keys with that secret;
+          - a missing file or empty secret stops the run, saying how to create the file;
+          - only `integration` passes the test secret.
+
+          The key-handling code moves out of `integration.rs`, which is at 497 lines, into a module of its own.
+
+          Result: done in `aae2018`.
+          - `xtask/src/owner.rs` holds the real-state run and the owner operations. `integration.rs` is down to 393 lines.
+          - Both `secret_in` tests pass.
+          - Checked live on release 7: the test secret gets 401, `.dev.vars`'s secret gets 200, exactly one `explorer` key is standing, and the explorer reads releases through its proxy.
+        state: done
   - key: 01a1a514-0a10-7561-91f4-be8597ceb9a4
     id: e4-check
     kind: task
@@ -50,3 +72,17 @@ blocks:
           - the review findings are fixed;
           - `cargo xtask check` and `cargo xtask integration` pass.
         state: open
+      - key: 01a1a515-e6ca-703a-9d45-994476273a20
+        at: 2026-11-04T05:43:58Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Checked live, reviewed, gated"
+        detail: |-
+          Done when:
+          - `cargo xtask explore` serves release 7 with keys issued under `.dev.vars`'s secret;
+          - the test secret answers 401 on the real-state Worker;
+          - the review findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass.
+        state: active

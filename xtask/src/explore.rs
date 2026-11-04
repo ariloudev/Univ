@@ -12,8 +12,7 @@ use std::io::ErrorKind;
 use std::net::TcpListener;
 use std::path::Path;
 
-use crate::integration::TEST_OWNER_SECRET;
-use crate::owner::{fresh_key, with_real_server};
+use crate::owner::{fresh_key, real_owner, with_real_server};
 use crate::{Outcome, command};
 
 /// The explorer's directory, relative to the workspace.
@@ -94,12 +93,12 @@ pub fn gate(root: &Path) -> Outcome {
 /// The explorer's end-to-end tests against Univ Server at `port`, which serves the fixture
 /// state: Playwright drives Chromium through the explorer's dev server. Read with a key of the
 /// extended tier, as the server's own tests leave the anonymous limit spent. Skipped when pnpm
-/// is not on the path.
-pub fn end_to_end(root: &Path, port: u16) -> Outcome {
+/// is not on the path. `owner` is the owner secret the Worker was started with.
+pub fn end_to_end(root: &Path, port: u16, owner: &str) -> Outcome {
     if let Err(ended) = installed(root, true) {
         return ended;
     }
-    let Some(key) = fresh_key(port, TEST_OWNER_SECRET, "explorer-e2e") else {
+    let Some(key) = fresh_key(port, owner, "explorer-e2e") else {
         return Outcome::Failed;
     };
     outcome(pnpm(root, &["e2e"], Some(&Reading { port, key: &key })))
@@ -112,6 +111,9 @@ pub fn explore(root: &Path) -> bool {
         eprintln!("the explorer's address {ADDRESS} is taken ({error}): stop what holds it");
         return false;
     }
+    let Some(owner) = real_owner(root) else {
+        return false;
+    };
     if installed(root, false).is_err() {
         return false;
     }
@@ -119,7 +121,7 @@ pub fn explore(root: &Path) -> bool {
         "==> Univ Server on the real local state (a first build of the Worker takes minutes)"
     );
     let log = root.join("target/explore/wrangler.log");
-    with_real_server(root, &log, "explorer", |port, key| {
+    with_real_server(root, &owner, &log, "explorer", |port, key| {
         eprintln!("==> Univ Explorer at http://{ADDRESS}/ (Ctrl-C stops both)");
         pnpm(root, &["dev"], Some(&Reading { port, key })) == Some(true)
     })
@@ -129,11 +131,14 @@ pub fn explore(root: &Path) -> bool {
 /// (`explorer.first_points.latency`): a load to warm up, then 10 of its dev server beside Univ
 /// Server, the 95th percentile against 3 seconds.
 pub fn first_points(root: &Path) -> bool {
+    let Some(owner) = real_owner(root) else {
+        return false;
+    };
     if installed(root, true).is_err() {
         return false;
     }
     let log = root.join("target/bench/wrangler.log");
-    with_real_server(root, &log, "bench", |port, key| {
+    with_real_server(root, &owner, &log, "bench", |port, key| {
         pnpm(root, &["first-points"], Some(&Reading { port, key })) == Some(true)
     })
 }

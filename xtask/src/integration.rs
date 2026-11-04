@@ -76,7 +76,7 @@ pub fn integration(root: &Path) -> bool {
         .is_ok_and(|status| status.success());
     let explorer = if passed {
         eprintln!("==> the explorer's end-to-end tests");
-        crate::explore::end_to_end(root, port)
+        crate::explore::end_to_end(root, port, TEST_OWNER_SECRET)
     } else {
         Outcome::Failed
     };
@@ -98,18 +98,28 @@ pub fn integration(root: &Path) -> bool {
 
 /// Runs the Worker on the real local state until it is stopped, on the port its
 /// `wrangler.toml` names for development.
+/// It takes the owner secret of the Worker's `.dev.vars`, and runs without one, refusing
+/// every owner request, where there is none.
 pub fn serve(root: &Path) -> bool {
+    if crate::owner::real_owner(root).is_none() {
+        eprintln!("serving all the same: owner requests will be refused");
+    }
+    prepared_real_state(root)
+        .is_some_and(|state| succeeded(wrangler(root, "dev", &state).status(), "wrangler dev"))
+}
+
+/// The real local state, its release tables and the univ-layers migrations brought up to date;
+/// none, having said why.
+pub(crate) fn prepared_real_state(root: &Path) -> Option<std::path::PathBuf> {
     let state = root.join(REAL_STATE);
     if !state.is_dir() {
         eprintln!(
             "{} holds no published release: run `univ-ingest publish` first",
             state.display()
         );
-        return false;
+        return None;
     }
-    release_tables(root, &state)
-        && migrate(root, &state)
-        && succeeded(wrangler(root, "dev", &state).status(), "wrangler dev")
+    (release_tables(root, &state) && migrate(root, &state)).then_some(state)
 }
 
 /// Creates each table of univ-model's release schema that the release database in `state`
