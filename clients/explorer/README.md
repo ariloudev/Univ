@@ -7,7 +7,8 @@ the `univ-explorer` product in `spec/`.
 
 ## Run it
 
-From the workspace root (`univ-server/`), with a release published by `univ-ingest publish`:
+From the workspace root (`univ-server/`), with a release published by `univ-ingest publish` and
+the owner secret in `crates/univ-server/.dev.vars` (`OWNER_SECRET=...`; git ignores the file):
 
 ```sh
 cargo xtask explore

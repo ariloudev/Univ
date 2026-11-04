@@ -58,6 +58,12 @@ Run them from this directory.
   http://127.0.0.1:5317/, until Ctrl-C. The explorer's dev server passes its reads on to the
   Worker with an extended-tier key it issues for the run (and revokes the keys earlier runs left),
   so the key never reaches the browser. Its Wrangler log is `target/explore/wrangler.log`.
+- Every run on the real state (`serve`, `explore` and the benches) gives the Worker the owner
+  secret of `crates/univ-server/.dev.vars`, which Wrangler reads itself, so the secret never
+  appears in a process's arguments. `explore` and the benches read it too, by the same dotenv
+  rules, to issue their keys, and stop before anything slow where the file holds none; `serve`
+  says so and runs, refusing owner requests. Only `integration`, on the fixture state, starts
+  the Worker with the fixed test secret.
 - `cargo xtask bench first-points` starts Univ Server on the real local state, opens the explorer
   (on port 5319) once to warm up and then 10 times in headless Chromium, and prints the time to
   its first points drawn on the latest release, the 95th percentile against 3 s.

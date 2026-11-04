@@ -15,7 +15,8 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use crate::integration::{Exchange, REAL_STATE, send, with_real_server};
+use crate::integration::{Exchange, REAL_STATE, send};
+use crate::owner::{real_owner, with_real_server};
 
 /// How many lookups are timed.
 const SAMPLES: usize = 1_000;
@@ -109,8 +110,11 @@ fn centres(n: usize, distance: f64) -> Vec<[f64; 3]> {
 /// Starts the Worker, times `requests` after the first [`WARM_UP`], and reports them against
 /// `bound`; true when all answered 200 and the 95th percentile is within it.
 fn bench(root: &Path, what: &str, attribute: &str, requests: &[Timed], bound: Duration) -> bool {
+    let Some(owner) = real_owner(root) else {
+        return false;
+    };
     let log = root.join("target/bench/wrangler.log");
-    with_real_server(root, &log, "bench", |port, key| {
+    with_real_server(root, &owner, &log, "bench", |port, key| {
         let (times, failures) = time(port, key, requests);
         report(what, attribute, &times, &failures, bound, requests.len())
     })
