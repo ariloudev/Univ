@@ -1,0 +1,12 @@
+key: 01a1a3fd-1fbf-7477-ba13-66095a831f9a
+id: w6-close
+versions:
+  - key: 01a1a3fd-1fbf-7477-ba13-6610f4622e00
+    at: 2026-11-04T00:37:17Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W6 close: review, gate, trace, merge"
+    goal: "W6's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: planned

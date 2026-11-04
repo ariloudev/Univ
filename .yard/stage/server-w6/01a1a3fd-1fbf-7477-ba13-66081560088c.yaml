@@ -1,0 +1,835 @@
+key: 01a1a3fd-1fbf-7477-ba13-66081560088c
+id: w6
+versions:
+  - key: 01a1a3fd-1fbf-7477-ba13-660f67dc187f
+    at: 2026-11-04T00:37:17Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W6: volume and time queries"
+    goal: "A client asks for the objects, structures and layer items in a box, sphere or cone (ICRS, galactic or supergalactic), narrowed by kind, source, scale domain, layer and time, in stable pages with cursors that notice changed layers, with the tile nodes that cover the volume (F-21, F-22, QA-3)"
+    status: active
+blocks:
+  - key: 01a1a3fd-1fbf-7477-ba13-660a0951ccbd
+    id: t6-volume
+    kind: task
+    versions:
+      - key: 01a1a3fd-1fbf-7477-ba13-661189f2730d
+        at: 2026-11-04T00:37:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Volumes and their tests against geometries"
+        detail: "univ-model: a box, sphere or cone with a distance range, in a named frame and unit, checked member by member. Exact tests for points, members, segments, spheres and boxes; subdivision for the rest, with exact decisions where possible and a stated tolerance. A HEALPix nested hash for sky regions, checked against cdshealpix. Done when native tests cover a sphere meeting a box at a corner, a cone wider than 180° refused, and each geometry kind."
+        state: active
+      - key: 01a1a406-563c-76cc-bf79-32f8677a582a
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "univ-model volume: request, region, distance, meets"
+        detail: |-
+          Done when native tests cover:
+          - a sphere meeting a box only at a corner (r ± 1e-9);
+          - a 181° cone refused;
+          - each malformed member's pointer;
+          - distance against brute-force sampling for each region;
+          - a galactic box rotated into ICRS;
+          - each geometry kind meeting and missing;
+          - a shape whose centre is outside but which meets.
+        state: open
+  - key: 01a1a3fd-1fbf-7477-ba13-660ba7700559
+    id: t6-query
+    kind: task
+    versions:
+      - key: 01a1a3fd-1fbf-7477-ba13-661248302668
+        at: 2026-11-04T00:37:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "POST /v1/query/volume"
+        detail: "Objects through object_cells, structures through structure_cells, layer items through stored bounds, each then tested by its own position or geometry. Filters for kind, source, scale domain and layer; private items for their key alone. Stable order, pages of 1,000 and at most 10,000 results, cursors that record the release and each layer's sequence (409 when one changed). Done when native tests cover AC-192 to AC-203 and AC-207 to AC-208."
+        state: open
+      - key: 01a1a406-563c-76cc-bf79-32fa93afd4bc
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "POST /v1/query/volume"
+        detail: "`query/{mod, request, objects, structures, items, cursor}.rs`, the route, OpenAPI and `QueryLayersChanged`. Done when native tests on a volume fixture cover AC-192 to AC-203 and AC-207 to AC-208, plus the query halves of AC-213 and AC-250."
+        state: open
+  - key: 01a1a3fd-1fbf-7477-ba13-660cd894b76a
+    id: t6-time
+    kind: task
+    versions:
+      - key: 01a1a3fd-1fbf-7477-ba13-6613916852b4
+        at: 2026-11-04T00:37:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Time filter"
+        detail: "A kind and an interval, in UTC or TT or years before J2000.0, compared on TT against item_times; an interval that ends before it starts, or an unknown timescale, answers 400 pointing at the field. Done when native tests cover AC-187 to AC-191."
+        state: open
+      - key: 01a1a406-563c-76cc-bf79-32fbeeef7bfb
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Time filter"
+        detail: "Matched through `item_times` on TT. Done when native tests cover AC-187 to AC-191."
+        state: open
+  - key: 01a1a3fd-1fbf-7477-ba13-660d0d7166b4
+    id: t6-tiles
+    kind: task
+    versions:
+      - key: 01a1a3fd-1fbf-7477-ba13-661403eacc1c
+        at: 2026-11-04T00:37:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Covering tile nodes"
+        detail: "For each scale domain, the deepest level up to the client's maximum with at most 4,096 nodes meeting the volume, read from the kept manifests. Done when native tests check counts against brute force (AC-204 to AC-206)."
+        state: open
+      - key: 01a1a406-563c-76cc-bf79-32fcbdca60e8
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Covering tile nodes"
+        detail: "The kept manifest nodes gain level, bounds and a leaf flag. The level chosen is the deepest at most `max_level` with no more than 4,096 nodes. Done when counts match a brute-force pass (AC-204 to AC-206)."
+        state: open
+  - key: 01a1a3fd-1fbf-7477-ba13-660e3d820467
+    id: t6-bench
+    kind: task
+    versions:
+      - key: 01a1a3fd-1fbf-7477-ba13-661563f828b5
+        at: 2026-11-04T00:37:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-3 bench and e2e"
+        detail: "`cargo xtask bench volume`: 50 Mpc spheres 100 Mpc out on release 6, p95 of the first page against 500 ms. An end-to-end query over the fixture release."
+        state: open
+      - key: 01a1a406-563c-76cc-bf79-32fdc9ad2b14
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "E2e query and the QA-3 bench"
+        detail: |-
+          Done when:
+          - an e2e query on the fixture release covers objects, structures, an item, paging and a tile fetched by address;
+          - `cargo xtask bench volume` runs 50 Mpc spheres 100 Mpc out on release 6, and the p95 of the first page is reported against 500 ms.
+        state: open
+  - key: 01a1a403-aef5-7328-b16a-bc685063e48e
+    id: ask-toolu-015eknjcccv74r96nowxwq7b-1
+    kind: question
+    versions:
+      - key: 01a1a403-aef5-7328-b16a-bc691c16c3b5
+        at: 2026-11-04T00:44:27Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "Release 6, the real local release, was built before ingest wrote `structure_details`, so none of its 26 structures has a placed shape. It has only their bounding boxes, and member lists for 6 of them. A true intersection test (AC-195: a structure matches when its geometry meets the volume, even with its centre outside) needs those shapes. The fixture release used in tests has them. How should W6 handle structures without a placed shape?"
+        header: "Release 6"
+        options:
+          - label: "Box fallback, labelled"
+            detail: "Use the placed shape where the release holds one. Where it doesn't, match by the bounding box and mark the result `matched_by: bounding_box`, so a client sees it is approximate. W7 rebuilds a release 7 with current ingest, whose shapes are exact, and runs the real-data checks on it. W6 needs no ingest run."
+            recommended: true
+          - label: "Rebuild release 7 now"
+            detail: "Run ingest to build and publish release 7 at the start of W6 (a long background run on cached downloads), so the real data has placed shapes from the first query. No fallback code is needed, but W6 waits on the build, and a release built before the shapes existed would then match no structures."
+          - label: "Skip shapeless ones"
+            detail: "A structure with no placed shape never matches a volume query. This is strict but silent: on release 6, volume queries would return no structures until a rebuild."
+        ownWords: true
+    responses:
+      - key: 01a1a404-0776-7291-b1c4-d0875ae7e94f
+        at: 2026-11-04T00:44:49Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Box fallback, labelled"
+  - key: 01a1a405-a041-71e8-b311-dc377416637b
+    id: plan-28-plan-glowing-questing-ullman-01a1a3fd-1fbf-7477-ba13-66081560088c
+    kind: plan
+    versions:
+      - key: 01a1a405-a041-71e8-b311-dc389e21ed00
+        at: 2026-11-04T00:46:34Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Master plan: build Univ Server in waves"
+        markdown: |
+          # Master plan: build Univ Server in waves
+
+          ## Context
+
+          Univ Ingest is done: release 6 is `latest` in local D1 and R2 under `.cache/univ-ingest/wrangler`, with 2,098,918 objects, 26 structures, 3 grids and 401 tiles. Releases 1–4 are pruned.
+
+          This plan builds **Univ Server**, the Cloudflare Worker that serves those releases and the layers clients write. Its scope:
+
+          - Features F-14 to F-33, with requirements RQ-49 to RQ-112 and criteria AC-122 to AC-292, including the three criteria added by `7b6e6eb` (rate-limit tiers).
+          - QA-2 (object lookup p95 ≤ 200 ms) and QA-3 (first page of a volume query p95 ≤ 500 ms), both `sampled`.
+          - CON-2 (Rust on Workers with workers-rs).
+
+          Ingest already left the Worker most of what it reads:
+
+          - the D1 schema v2 (`crates/univ-model/src/release/schema.sql`), including the `names` lookup key, `designations`, the id ledger (`ids_issued`, `ids_replaced`), the cell index (`object_cells`, `structure_cells`, see `release/cells.rs`), `scale_domains`, `grids`, `releases` and `latest`;
+          - the R2 key layout (`release/keys.rs`);
+          - the tile encoding v1 with its Rust decoder (`tile/mod.rs`, `tile/read.rs`);
+          - the cosmology and frame rotations in univ-model.
+
+          The Worker reads all of this and never writes the release database.
+
+          **Settled on `product/server`:**
+
+          1. **Rate limits:** a key's rate limit is a tier: basic 300, standard 1,200 (the default) or extended 6,000 requests in 60 s. Anonymous clients are limited to 300 in 60 s per address.
+          2. **Databases:** layers and keys live in a D1 database of their own, `univ-layers`.
+          3. **End-to-end tests:** they run as `cargo xtask integration`, once at each wave's end, beside the gate.
+
+          ## Transport: HTTP with JSON and binary tiles, not gRPC
+
+          You asked whether to use gRPC. The plan keeps plain HTTP, for these reasons.
+
+          **The spec already fixes it.** These features and decisions all describe HTTP:
+
+          - F-33 and ADR-8 (an OpenAPI 3.1 document, RFC 9457 problem details, routes under `/v1`);
+          - F-30 (CORS for any origin);
+          - F-24 and ADR-7 (entity tags, `304`, polling a change feed);
+          - F-20 and ADR-20 (tiles streamed from R2 unchanged, cacheable for a year);
+          - status codes such as 410 and 429 with `Retry-After`.
+
+          Moving to gRPC would supersede ADR-8 and ADR-20 and rewrite most of the criteria.
+
+          **The main client is a browser.** Browsers cannot speak native gRPC. They need gRPC-Web, or the Connect protocol, plus generated stubs on the client. HTTP with JSON needs only `fetch`, plus a TypeScript client generated from the OpenAPI document.
+
+          **The runtime fits HTTP.** A Worker answers `fetch` events. gRPC relies on HTTP/2 trailers, which a Worker's responses do not support, so only gRPC-Web or Connect would run there.
+
+          **The bulk path doesn't benefit.** Tiles are already compact binary, built once, cached at the edge and streamed without decoding. Protobuf would add a second encoding, and the JSON records are small.
+
+          **Later:** if a native client ever needs typed streaming, a Connect-compatible facade can be added on the same `univ-api` handlers as a new API version. Nothing in this plan blocks that.
+
+          ## Dev process (every wave)
+
+          1. **Branch and log.** Cut `stage/server-wN` from `product/server` and open its Yard Log. Register the wave's tasks there, each with a focused completion check.
+          2. **Build.** Work test-first where a criterion is concrete. Between tasks, run only **focused checks**: `cargo test -p <crate> <filter>`, `cargo clippy -p <crate> --all-targets -- -D warnings`, `cargo fmt --check`, and `loft check` after any spec edit. Commit as `type(scope): summary`, with `.yard/` in every commit.
+          3. **Review.** Run `/simplify` and `/code-review` in parallel on the wave's diff, and fix their findings as tasks.
+          4. **Gate, once at the wave's end.** `cargo xtask check` and `cargo xtask integration` must both pass. Commit on the gate's own exit status.
+          5. **Trace.** Link the wave's tests in `loft.trace.yaml`, run `loft reconcile --accept`, and record a `trace` block.
+          6. **Close.** Close the wave's Yard Log and commit it. The wave merges into `product/server` **only when you ask**.
+
+          A behaviour change found mid-wave goes to `spec/` first, for your approval. Any `.rs` file over 500 lines is split by responsibility.
+
+          ```mermaid
+          flowchart LR
+            W0[W0 Skeleton + harness] --> W1[W1 Releases, sources, structures]
+            W1 --> W2[W2 Objects]
+            W1 --> W3[W3 Bulk data + TS decoder]
+            W0 --> W4[W4 Keys + access]
+            W4 --> W5[W5 Layers]
+            W2 --> W6[W6 Volume + time queries]
+            W3 --> W6
+            W5 --> W6
+            W6 --> W7[W7 Contract + real release]
+          ```
+
+          ## Architecture
+
+          | Part | What it holds |
+          |---|---|
+          | `crates/univ-api` (new lib, native + wasm32) | Routes and their handlers, written against traits: `ReleaseStore`, `LayerStore`, `Blobs`, `Limiter` and `Clock`. Also request parsing and validation, RFC 9457 problem details, cursors, entity tags, and the OpenAPI document (utoipa). Holds no I/O, so every handler is tested natively. |
+          | `crates/univ-api` test support (dev-only) | The same traits over `rusqlite`, using the real `schema.sql`, the layer schema and an in-memory blob map. Fixture rows come from ingest's fixture release. |
+          | `crates/univ-server` (new cdylib, wasm32 only) | A thin workers-rs 0.8.7 (`d1`) entry. It binds `DB` (`univ`), `LAYERS` (`univ-layers`), the `RELEASES` bucket and the rate-limit namespaces `ANON`, `BASIC`, `STANDARD` and `EXTENDED`, and reads `OWNER_SECRET` from `.dev.vars`, which is gitignored. Tiles and grid samples stream from R2 without being decoded (AC-185). |
+          | `crates/univ-server/wrangler.toml` | The Worker's own config (the root `wrangler.toml` stays ingest's). It points at the same `univ` database and bucket, and `cargo xtask serve` runs `wrangler dev --persist-to .cache/univ-ingest/wrangler`. |
+          | `crates/univ-api/migrations/*.sql` | The `univ-layers` schema: `keys`, `layers`, `items`, `item_versions` (JSON body plus bounding-box and time columns for queries) and `changes`. Applied with `wrangler d1 migrations apply --local`. |
+          | `univ-model` | Gains `ToSchema` derives behind a feature named `openapi`, the layer item model with its validation, and a cited UTC→TT conversion: TT = TAI + 32.184 s, with TAI − UTC from IERS Bulletin C. |
+          | `clients/tile-decoder/` | The reference TypeScript decoder. Its tests run with `node --test` on Node 24, which runs `.ts` directly, so there are no npm dependencies. |
+
+          **API surface:** everything is under `/v1`. Release-scoped reads take `?release=n`; without it they read `latest`. Each answer names its release in its body and in a `Univ-Release` header.
+
+          | Group | Routes |
+          |---|---|
+          | Releases | `GET /v1/releases` |
+          | Objects | `GET /v1/objects/{id}`; `GET /v1/objects?source=&designation=`; `GET /v1/objects?name=` |
+          | Sources | `GET /v1/sources`; `GET /v1/sources/{id}`; `GET /v1/sources/{id}/provenance` |
+          | Structures | `GET /v1/structures?kind=&scale_domain=&cursor=`; `GET /v1/structures/{id}` |
+          | Scale domains and tiles | `GET /v1/scale-domains`; `GET /v1/scale-domains/{name}/manifest`; `GET /v1/scale-domains/{name}/tiles/{address}` |
+          | Grids | `GET /v1/grids`; `GET /v1/grids/{id}` (header); `GET /v1/grids/{id}/fields/{field}` (samples) |
+          | Volume queries | `POST /v1/query/volume`: the volume, filters, an optional time interval and a cursor |
+          | Layers | `GET` and `POST /v1/layers`; `GET`, `PATCH` and `DELETE /v1/layers/{id}`; `GET /v1/layers/{id}/changes?since=` |
+          | Items | `POST /v1/layers/{id}/items`; `GET …/items/{item}`; `GET …/items/{item}/versions/{n}`; `POST …/items/{item}/revisions`; `POST …/items/{item}/retraction` |
+          | Owner | `POST` and `GET /v1/owner/keys`; `PATCH /v1/owner/keys/{id}` (quotas, tier); `POST /v1/owner/keys/{id}/revoke` |
+          | Contract | `GET /v1/openapi.json`; `GET /v1/tile-format` |
+
+          ## Waves
+
+          ### W0: Skeleton, contract base and integration harness (`stage/server-w0`)
+
+          **Workspace:**
+
+          - Add `univ-api` and `univ-server` to the workspace.
+          - `univ-server` is excluded from native builds and tests: `default-members`, plus `--exclude` in the gate.
+          - Install `worker-build`, the one new tool, with `cargo install --locked worker-build`.
+
+          **Gate additions to `cargo xtask check`:**
+
+          - a wasm32 check of `univ-api`;
+          - `cargo clippy -p univ-server --target wasm32-unknown-unknown -D warnings`;
+          - `node --test clients/tile-decoder`, once that directory exists (W3).
+
+          **`cargo xtask integration`:**
+
+          1. Build ingest's fixture release twice into a temporary `--persist-to`, publish both, and prune the first, reusing the flow of `crates/univ-ingest/tests/publish_wrangler.rs`.
+          2. Apply the layer migrations.
+          3. Start `wrangler dev` on a free port with a test owner secret.
+          4. Run the `#[ignore]` HTTP tests in `crates/univ-server/tests/` against it, then stop it, also on failure.
+
+          **`cargo xtask serve`:** runs the Worker on the real local state.
+
+          **Behaviour built in W0:**
+
+          - the `/v1` router with a 404 problem for unknown routes;
+          - problem details as `application/problem+json`, each with a typed `type` URI;
+          - CORS on every read and preflight answered without credentials;
+          - `/v1/openapi.json` generated from the router table, with the test "every route served is documented and nothing else" in place from W0, so each later wave keeps it true.
+
+          **Docs:** `AGENTS.md` gains the server layout, the `product/server` and `stage/server-wN` branches, `integration` and `serve`, and the full gate at each wave's end.
+
+          **Covers:** CON-2; F-30 (RQ-104, RQ-105, AC-273–276); F-33's problem details and version path (RQ-111, RQ-112: AC-288–292).
+
+          **Tests:**
+
+          - native: the problem-details shape and the refusal type URIs;
+          - e2e: an anonymous read succeeds, a preflight returns `Access-Control-Allow-Origin: *`, and an unknown route gives a 404 problem.
+
+          ### W1: Releases, sources and structures (`stage/server-w1`)
+
+          **Release resolution for `release-scoped` reads:**
+
+          - a pruned release answers 410 with `pruned_at`, and a release that never existed answers 404;
+          - a read with no `release` reads `latest`;
+          - only releases with `published_at` set are visible;
+          - each release's `terms` are cached per isolate, which is safe because releases are immutable.
+
+          **Releases:** listed newest first, pruned ones included, each with its counts, cosmology and sources.
+
+          **Sources:**
+
+          - the citation (bibcode or DOI), terms of use and credit as defined;
+          - the query and cuts verbatim, and the coverage (sky region, redshift or distance range);
+          - provenance: payloads with SHA-256 and retrieval time, counts fetched and published, counts left out by reason, and the fixes applied.
+
+          **Structures:**
+
+          - each record holds its geometry in a named frame, every number with its citation and kind of value, and its members as object ids or tracers;
+          - a grid-outlined structure names its grid, threshold and test;
+          - H0-rescaled sizes come beside their native values;
+          - listings filter by kind and scale domain, in pages of 500 with a cursor.
+
+          **Covers:** F-14 (AC-122–130), F-16 (AC-147–155), F-17 (AC-156–165).
+
+          **Tests:** native, on fixture rows. E2e:
+
+          - two reads pinned to release 2 return identical bytes (AC-129);
+          - release 1 answers 410;
+          - release 99 answers 404.
+
+          ### W2: Objects (`stage/server-w2`)
+
+          **Lookup by id.** The object comes with:
+
+          - its catalogue entries and designations;
+          - its measurements, each with native value, unit, uncertainty, kind of value and source;
+          - its preferred measurement with the rule that chose it;
+          - its derived positions, each with frame, epoch, cosmology and transformation chain;
+          - its candidate matches with their confidence.
+
+          An object with no distance has a sky position and no 3D position.
+
+          **Lookup by designation and by name.** A designation is `source` plus identifier. A name is matched by `names.key`, so letter case and white space are ignored. A name carried by more than one object answers with the list of those objects.
+
+          **Replaced ids**, from `ids_replaced`, filtered by the read release:
+
+          - an id merged into one object answers 301 to that object in the same release;
+          - an id split into several answers with the list of objects that replaced it;
+          - each answer names the release that replaced the id;
+          - an older pinned release still serves the original object.
+
+          **Not found:** a 404 that names what was looked up.
+
+          **Measuring QA-2:** `cargo xtask bench lookup` times 1,000 random ids against `xtask serve` on release 6.
+
+          **Covers:** F-15 (AC-131–146) and QA-2.
+
+          **Tests:**
+
+          - native: M31 by `m 31`, `M31` and `m31`;
+          - a shared name lists its objects;
+          - merge and split fixtures from ingest's id-ledger tests;
+          - e2e: a merged id redirects.
+
+          ### W3: Bulk data and the TypeScript decoder (`stage/server-w3`)
+
+          **Scale domains:** the list gives each domain's extent, unit and point count. An unknown domain answers 404 with the domains that exist.
+
+          **Tile manifests:** served from R2 as published. A test checks that each manifest names its frame and origin, unit and cosmology, the node table with SHA-256s, the rotations, the sources with their credit, the encoding version and the quantization steps.
+
+          **Tiles:**
+
+          - streamed from R2 unchanged, with `Cache-Control: public, max-age=31536000, immutable`;
+          - a node the manifest doesn't hold answers 404 with its address.
+
+          **Grids:**
+
+          - listed with id, quantity, unit, shape and source;
+          - each header gives the kind of value (reconstructed), the frame, axis order, shape and origin, the native cell size and, for h⁻¹ Mpc, the size rescaled, the label table, and the citation and release;
+          - samples are streamed little-endian `f32`;
+          - an unknown grid answers 404.
+
+          **Tile format:** `GET /v1/tile-format` returns the tile manifest's JSON Schema and the byte layout of each encoding version a release uses.
+
+          **TypeScript decoder:**
+
+          - `clients/tile-decoder/decode.ts` decodes the v1 layout of `tile/mod.rs` into positions, object ids, sources and kinds;
+          - an unknown version fails with an error that names the version.
+
+          The decoder's test fixtures are tiles that the Rust encoder writes. Their expected points are stored as **JSON**, because Node has no YAML parser and the decoder takes no dependencies. That is an exception to the YAML rule, kept to test fixtures of the client.
+
+          **Covers:** F-18 (AC-166–174), F-19 (AC-175–182), F-20 (AC-183–186), F-32 (AC-281–284).
+
+          **Tests:**
+
+          - native, on manifests and headers;
+          - e2e: the SHA-256 of every fixture tile's response matches its manifest;
+          - `node --test`: positions decode within the stated step, and an unknown version is refused.
+
+          ### W4: Keys, owner and write access (`stage/server-w4`)
+
+          **Owner operations** are authenticated by bearer `OWNER_SECRET`, compared in constant time. A missing or wrong secret answers 401 and changes nothing.
+
+          **Issuing keys:**
+
+          - a 256-bit secret from `crypto.getRandomValues`, through `getrandom`'s `wasm_js`;
+          - only its SHA-256 is stored, and the secret is returned once;
+          - default quotas, and the `standard` tier by default.
+
+          **Revoking keys:** the revocation time is recorded. A revoked key's public layers stay readable (checked again in W5).
+
+          **Listing keys:** label, times, quotas, tier and usage (the number of layers and the size of the largest layer), without the secret.
+
+          **API keys:** a bearer key is checked against its SHA-256. A write with no key, an unknown key or a revoked key gets the same 401.
+
+          **Rate limits:**
+
+          - an anonymous client is limited by `CF-Connecting-IP` on `ANON`;
+          - a keyed client by key id on its tier's namespace;
+          - over the limit: 429 with `Retry-After: 60`;
+          - a change of tier applies from the key's next request.
+
+          **Quota checking:** quotas are checked before any write. A refused write names the quota, its limit and the key's usage, and stores nothing.
+
+          **Covers:** F-29 (AC-265–272 plus the new criterion), F-31 (AC-277–280), F-28 (AC-258–264 plus the two new criteria). Quotas are wired to real writes in W5.
+
+          **Tests:**
+
+          - native, with a fake limiter and clock;
+          - e2e: a real 429 from the binding (301 anonymous requests);
+          - keys issued, revoked and moved between tiers.
+
+          ### W5: Layers (`stage/server-w5`)
+
+          **Layers:**
+
+          - create, configure and retire, private by default;
+          - the change sequence starts at 0, and each change advances it by 1;
+          - a retired layer answers 410 to a caller allowed to read it, and otherwise 404;
+          - a retired layer leaves the key's layer quota;
+          - a non-owning key gets 403 on a public layer and 404 on a private one.
+
+          **Items:**
+
+          - the client chooses each item's id;
+          - each item holds title, summary, geometry in a named frame, time records (kind, timescale, uncertainty), kind of value, links and at least one source;
+          - validation lists every failing field by JSON pointer;
+          - an item with no source answers 422;
+          - an id the layer already holds answers 409 with the item's current version.
+
+          **Links:**
+
+          - a link is checked against `ids_issued` of every release, and also against structure ids;
+          - an id no release published is refused;
+          - an id later merged is served with its replacement, beside the id as written.
+
+          **Revisions and retractions:**
+
+          - a revision is the next version, marked as an update or a correction; a correction names the version it corrects and what was wrong;
+          - a retraction is a version that carries its reason;
+          - a stale version number answers 409;
+          - a revision gets the same checks as a publish.
+
+          **Reads:**
+
+          - a layer's current items that aren't retracted, in pages of 500;
+          - an item with all its versions, any of them readable by number;
+          - a private layer is invisible without its owning key.
+
+          **Following changes:**
+
+          - changes since a cursor, at most 1,000 to a page, of the five kinds;
+          - a malformed cursor, or one beyond the sequence, answers 400 with the current sequence;
+          - entity tags come from the layer's sequence, and a matching `If-None-Match` answers 304 with no body.
+
+          **Quotas:** items per layer and bytes per item version are enforced.
+
+          **Open point to bring to you during W5:**
+
+          - how to treat times before 1972, when UTC had no leap seconds: refuse UTC before 1972, or convert with the pre-1972 offset table;
+          - the TT/UTC rules themselves come with citations.
+
+          **Covers:** F-23 (AC-209–218), F-25 (AC-227–239), F-26 (AC-240–245), F-27 (AC-246–257), F-24 (AC-219–226).
+
+          **Tests:**
+
+          - native suites for each requirement, including a check that a refusal leaves the sequence unchanged;
+          - e2e: publish, revise, retract and follow the changes;
+          - e2e: an ETag answers 304;
+          - e2e: a private layer looks absent.
+
+          ### W6: Volume and time queries (`stage/server-w6`)
+
+          *Detailed plan, written after W5 merged (`d709be3`); the branch `stage/server-w6` and its Yard Log already exist.*
+
+          **Covers:** F-22 (AC-192–208), F-21 (AC-187–191), QA-3, and the query halves of AC-213 and AC-250 left over from W5.
+
+          #### What is already true
+
+          **Release 6:**
+
+          - `object_cells` holds 2,085,809 rows: each placed object in the level-0 cell of its domain. Its key is `(release, domain, ix, iy, iz, object_id)`.
+          - `objects.x/y/z` hold ICRS Cartesian positions about the barycentre, in the domain's unit: pc for stars, Mpc otherwise.
+          - `structure_cells` and `structures.bounds` (ICRS Mpc) hold the structures' cells and boxes. `structures.members` holds the placed member list of 6 structures.
+          - **No `structure_details` rows:** release 6 predates them, so none of its structures has a placed `Shape`. The fixture release has them.
+
+          **univ-model:**
+
+          - `release/cells.rs` gives `CellSpace::range(&Aabb)` and `structure_ranges(&Aabb)`.
+          - `geometry` gives `Shape`, `Geometry`, `Primitive` and `Shape::bounds_in(Frame)`.
+          - `position` gives `between(from, to).rotation()`, `unit_vector`, `dot` and `Rotation`.
+          - `units` gives `Unit::factor_to`.
+          - `time` gives `At`, `Timescale` and `TimeRecord::on_tt`.
+
+          **univ-api:**
+
+          - `releases::resolve` and `releases::pinned`.
+          - `kept.tile_nodes` keeps each manifest's address-to-SHA map; it needs each node's level and bounds added.
+          - `layers::{visible, readable}`.
+          - `item_times(kind, at, earliest, latest)` already holds each item's current time records on TT.
+
+          **Done, not yet committed:** `univ-model/src/healpix.rs`, a nested `hash`, `centre` and `radius_bound`. `univ-ingest/tests/healpix_model.rs` checks it: it agrees exactly with `cdshealpix` on 4,000 directions at 7 orders, and on cell boundaries either of the touching cells is accepted.
+
+          #### The request: `POST /v1/query/volume?release=n`
+
+          ```json
+          {
+            "volume":  {"frame": "galactic", "unit": "Mpc", "form": "sphere", "centre": [0, 100, 0], "radius": 50},
+            "filters": {"kinds": ["galaxy"], "sources": ["2mrs"], "scale_domains": ["cosmic_web"], "layers": ["lay_…"]},
+            "time":    {"kind": "arrival", "from": {"timescale": "utc", "instant": "1987-02-23T00:00:00Z"},
+                                           "to":   {"timescale": "tt", "years_before_j2000": 0}},
+            "tiles":   {"max_level": 6},
+            "cursor":  "…"
+          }
+          ```
+
+          **Volume forms:**
+
+          | Form | Members |
+          |---|---|
+          | `box` | `min` and `max`, axis-aligned in its frame |
+          | `sphere` | `centre` and `radius` |
+          | `cone` | `lon` and `lat` (the axis, in degrees in its frame), `opening_angle` (the full width in degrees, in (0, 180]), and `near` and `far` (distances from the apex) |
+
+          The cone's apex is the frame's origin, the barycentre.
+
+          **Frame and unit:**
+
+          - The frame is `icrs`, `galactic` or `supergalactic`. Any other `Frame` value answers 400 at `/volume/frame`.
+          - The unit is any length unit: pc, kpc, Mpc, ly or au. `Mpc/h` is refused, since it needs the release's h.
+          - Every malformed member answers 400 with its own JSON pointer, collected the way W5 collects them: a zero or negative size, `max ≤ min`, `far ≤ near`, `near < 0`, an opening angle over 180°, or a non-finite number (AC-207, AC-208).
+
+          **Filters** combine with AND. A filter keeps only the results that carry a matching value, so a result that carries none is dropped:
+
+          | Filter | Applies to | Dropped when the filter is given |
+          |---|---|---|
+          | `kinds` | objects (their kind term), structures (`kind`) | items |
+          | `sources` | objects with an entry from that source | structures, items |
+          | `scale_domains` | objects, structures | items |
+          | `layers` | items | objects, structures |
+          | `time` | items only (AC-189) | objects, structures |
+
+          An unknown kind, source, domain or layer answers 400 at its index; a layer the caller cannot read counts as unknown.
+
+          **Time:**
+
+          - Each bound reuses W5's form: `timescale` plus `instant` or `years_before_j2000`, converted with `on_tt`.
+          - A bound with `to < from` answers 400 at `/time/to`; a bad timescale or form answers 400 at its own member (AC-191).
+          - A record matches through `item_times`: `kind = ? AND latest >= from AND earliest <= to`, its uncertainty interval meeting the query's (AC-188, AC-190).
+
+          #### The response
+
+          ```json
+          {"release": 6,
+           "results": [
+             {"type": "object", "id": 123, "kind": "galaxy", "scale_domain": "cosmic_web", "position": {"frame": "icrs", "unit": "Mpc", "x": …, "y": …, "z": …}},
+             {"type": "structure", "id": "bootes-void", "name": "…", "kind": "void", "matched_by": "shape"},
+             {"type": "item", "layer": "lay_…", "item": "sn1987a", "version": 3, "title": "…"}],
+           "served": 1000, "next": "…", "truncated": false,
+           "tiles": [{"scale_domain": "cosmic_web", "level": 4, "nodes": ["r0", "r03", …]}]}
+          ```
+
+          - **`matched_by`** is one of:
+            - `shape`: the placed shape;
+            - `members`: the placed member list;
+            - `bounding_box`: no placed shape; the result is approximate, and labelled so;
+            - `centre`: neither, only a centre.
+
+            A structure with none of these never matches.
+          - **`tiles`** comes on the first page only, for each domain left by the filters.
+          - **Order:** objects by id, then structures by id, then items by (layer, item). The order is total, so pages are stable (AC-199).
+          - **Pages:** 1,000 results each (AC-198). After 10,000 results, `truncated: true` and no `next`; one extra row is read to know whether more remain (AC-200).
+          - The answer carries `Univ-Release` through `releases::pinned`.
+
+          #### Cursors (AC-201–203)
+
+          **Contents:** base64url of the JSON `{v: 1, query, release, layers: {id: sequence}, after: {part, key}, served}`.
+
+          - `query` is the first 16 hex digits of the SHA-256 of the request body with `cursor` removed and keys sorted. A cursor sent with a different query answers 400 at `/cursor`.
+          - `release` is pinned. A `?release=` that differs from it answers 400; a release pruned since answers 410, as any read does.
+          - `layers` holds every layer the query reads items from: those readable to the caller, left by `layers`, and holding at least one current item.
+
+          **Each later page** recomputes that set.
+
+          - A layer whose sequence differs, one now missing (retired, made private or emptied), or one new with items answers 409 with the new problem type `QueryLayersChanged`, listing each such layer with its current sequence, or `retired`.
+          - Since every layer change advances the sequence (W5), no page can skip or repeat a result because of a layer change.
+
+          **Cost:** the cursor grows by about 30 bytes per layer, which is acceptable for v1 and noted in the code.
+
+          #### Matching
+
+          **univ-model `volume/`:** new, with no I/O and native tests.
+
+          - `mod.rs`: the request types (serde, `ToSchema` behind `openapi`). `Volume::region() -> Result<Region, Vec<VolumeError>>`, each error carrying its pointer.
+          - `region.rs`: `Region` in ICRS, in a given unit, with `scaled(factor)`. Its forms:
+            - `Sphere{c, r}`;
+            - `Box{to_frame: Rotation, centre, half}`;
+            - `Sector{axis, half_angle, near, far}`.
+
+            Its operations:
+            - `distance(p)`: the exact Euclidean distance, 0 inside. A sphere gives `|p−c|−r`. A box gives the distance in its own axes. A sector gives the distance in its meridian half-plane: radial inside the angle, otherwise to the boundary segment at `half_angle`.
+            - `bounds()`: the exact AABB. For a box that means its 8 corners rotated; for a sector, the cap's extreme along each axis, times `near` or `far`.
+            - `predicate()`: the region's numbers for the object SQL, given below.
+          - `meets.rs`: `Region::meets(&Shape) -> Meets{Yes, No}`.
+            - **Exact:**
+              - a point or a member list: every point is tested;
+              - a sphere primitive: `distance(c) ≤ r`;
+              - an axis-aligned or oriented box against a sphere: the distance from the centre to the box ≤ r.
+            - **By best-first refinement:** segments (`Ray`, `Range`, `Path` edges), ellipsoids and oriented boxes (their parameter cube), `VolumeGrid` and `GridRegion` cells, and `SkyRegion`, whose pieces are a HEALPix cell between near and far, refined into child cells and halved distance ranges.
+              - A piece is pruned when `distance(centre) > bounding radius`.
+              - A match is proved by a witness point that lies in both the geometry and the region.
+            - **Tolerance:**
+              - a piece smaller than ε = 10⁻⁶ of the region's extent, and still undecided, counts as meeting;
+              - so does a geometry that exhausts a budget of 20,000 pieces;
+              - both are documented as such: a geometry within ε of the volume may match.
+          - The structure shape, members or bounding box, and each item's shape, are first brought to ICRS and Mpc through `between(...).rotation()` and `factor_to`. A shape in FK4 B1950 has no rotation, so the item stores no bounds and never matches a volume, and its publish says so in a `warnings` member. That is a minor addition to the spec body.
+
+          **Objects:** tested in SQL, exactly, by derived position (AC-194).
+
+          - For each domain: `object_cells` within `CellSpace::range(region.scaled(to domain unit).bounds())` as three BETWEENs, joined to `objects`.
+          - The predicate is polynomial, so no `sqrt` is needed:
+            - sphere: `Σ(x−c)² ≤ r²`;
+            - box: `|R_i·p − c_i| ≤ h_i`;
+            - sector: `near² ≤ |p|² ≤ far²`, `a·p ≥ 0` and `(a·p)² ≥ cos²α·|p|²`, with α ≤ 90° by the opening-angle rule.
+          - Kind and source filters are `kind IN (...)` and `EXISTS (entries … source IN (...))`, with terms and source ids resolved through the kept vocabulary.
+          - The domains are joined with `UNION ALL`, then `ORDER BY id`, with `id > after`, and `LIMIT n+1`.
+
+          **Structures:**
+
+          - Candidates come from `structure_ranges(bounds in Mpc)` on `structure_cells`.
+          - Each candidate is loaded with `sd.shape` and `members`, and tested in Rust by shape, then members, then bounding box, then centre, which sets `matched_by`. Then they are sorted by id and paged.
+
+          **Layer items:**
+
+          - Migration `0004_item_bounds.sql` adds `min_x … max_z REAL` (ICRS Mpc, NULL when not placeable) to `items`. `write/store.rs` sets them on publish and revise, and a retraction leaves them.
+          - Candidates: the box overlaps, and:
+            - `retracted = 0`;
+            - the layer is not retired;
+            - the layer is visible: public, or owned by the caller's key (AC-196);
+            - the layers filter;
+            - the time `EXISTS`.
+          - They are then tested exactly on the current version's shape, and ordered by `(layer_id, id)` in chunks of 1,000 candidates until the page is full.
+
+          #### Covering tiles (AC-204–206)
+
+          - `kept.tile_nodes` keeps, for each node, its address, level, bounds, and whether it is a leaf (no node extends its address).
+          - A domain's covering at level L is its level-L nodes plus the shallower leaves whose cube meets the region (scaled to the domain's unit; the manifests are ICRS about the barycentre).
+          - The chosen level is the deepest L ≤ `max_level` (by default the deepest level the manifest holds) whose covering has at most 4,096 nodes.
+          - Each address is the one `GET /v1/scale-domains/{name}/tiles/{address}` serves (AC-206).
+          - A cube meets a sphere or box exactly: by distance for a sphere, by separating axes for a box. It meets a sector by the same refinement.
+
+          #### Spec edits (minor, pre-approved, committed as `spec/` alone)
+
+          The body of `query-a-bounded-volume` gains:
+
+          - the cone's apex and opening angle;
+          - that filters combine with AND, and that a result carrying no value of a filter is dropped by it;
+          - `matched_by`, and the bounding-box fallback, labelled approximate;
+          - the stated tolerance.
+
+          `publish-a-layer-item` gains the FK4 warning. No criterion changes.
+
+          #### Tasks (each registered in Yard; focused checks between tasks)
+
+          | Task | Done when |
+          |---|---|
+          | `t6-healpix` | committed with its cross-check (already passing) |
+          | `t6-spec` | the spec edits above pass `loft fmt --check` and `loft check --fail-on warning`, then are committed |
+          | `t6-volume` | univ-model `volume/` passes its native tests: a sphere that meets a box only at a corner (r ± 10⁻⁹), a 181° cone refused, each pointer of each malformed member, `distance` against brute-force sampling for each region, a galactic box rotated into ICRS, each geometry kind meeting and missing, and a structure whose centre is outside but whose shape meets |
+          | `t6-item-bounds` | migration 0004 and the store write bounds; tests cover publish, revise and an FK4 shape |
+          | `t6-query` | `query/{mod, request, objects, structures, items, cursor}.rs` in univ-api, with the route, OpenAPI and problem types; native tests on a testkit volume fixture (objects placed at chosen positions, cells computed with `CellSpace`) cover AC-192–203 and AC-207–208, and AC-213 and AC-250's query halves |
+          | `t6-time` | the time filter; native tests for AC-187–191 |
+          | `t6-tiles` | covering nodes; tests compare counts with a brute-force pass over the manifest (AC-204–206) |
+          | `t6-e2e-bench` | an e2e query on the fixture release (objects, structures, an item, paging, tiles fetched by address); `cargo xtask bench volume` (50 Mpc spheres 100 Mpc out on release 6, p95 of the first page against 500 ms), with its result reported |
+          | `w6-close` | `/simplify` and `/code-review` run in parallel and their findings fixed; one `cargo xtask check` plus `cargo xtask integration`; trace AC-187–208 and the two W5 halves; close the log; merge `--no-ff` into `product/server` |
+
+          **Files over 500 lines** are split as they grow; `query/` is one file per part from the start.
+
+          **Risks:**
+
+          - **D1 cost of the object SQL on wide volumes.** The bench measures it. If p95 misses, cap the cells read per page and continue through the cursor.
+          - **Refinement time on adversarial item shapes.** It is bounded by the piece budget.
+
+          ### W7: Contract complete and the real release (`stage/server-w7`)
+
+          **OpenAPI checks:**
+
+          - every refusal of every route appears with its status and problem type;
+          - the schemas are generated from univ-model types;
+          - a snapshot test of `openapi.json` refuses any removal or rename within `/v1`, and allows additions only (AC-292).
+
+          **Release 7:** release 6 predates `structure_details`, so W6 matches its structures by bounding box, labelled (decided in W6). W7 builds and publishes a release 7 with the current ingest, from cached downloads, run in the background. Its structures then match by their placed shapes. The checks below run on release 7, with release 6 kept as the previous release.
+
+          **On release 7, through `cargo xtask serve`:**
+
+          - measure QA-2 and QA-3 and record the results as `sampled` evidence;
+          - decode all 401 tiles with the TypeScript decoder and check their SHA-256s (AC-281);
+          - spot-check the science through the API: M31 at about 0.78 Mpc, M87 at 16.77 Mpc, the Virgo group at its KT17 centre, and Laniakea's attractors in their basins;
+          - check that releases 1–4 answer 410.
+
+          Whatever fails is fixed as a task or reported plainly.
+
+          **Covers:** F-33 (AC-285–292) and every criterion again end to end.
+
+          ## Verification
+
+          - **Each wave:** `cargo xtask check` and `cargo xtask integration` are green at the wave's end. `/simplify` and `/code-review` findings are resolved, `loft reconcile --accept` passes, and a `trace` block is recorded.
+          - **End of W7:**
+            - every criterion from AC-122 to AC-292, and the three new ones, is linked to a passing test in `loft.trace.yaml`, or marked `unverified` with its reason;
+            - QA-2 and QA-3 are measured on release 6;
+            - a note records the science spot-checks;
+            - the Worker serves release 6 under `wrangler dev`.
+
+          ## Critical files
+
+          - `Cargo.toml` (members, `default-members`) and `xtask/src/main.rs` (gates, `integration`, `serve`, `bench`); `AGENTS.md`; `.gitignore` (`.dev.vars`)
+          - `crates/univ-api/src/{routes,problem,release,objects,sources,structures,bulk,keys,access,layers,items,changes,query,cursor,openapi}.rs` and `crates/univ-api/migrations/`
+          - `crates/univ-server/{src/lib.rs,src/d1.rs,src/r2.rs,src/limits.rs,wrangler.toml,tests/}`
+          - `crates/univ-model/src/{layer,time}.rs` and the `openapi` feature; reused as they are: `release/{schema.sql,keys.rs,cells.rs}`, `tile/`, `position/`, `geometry/bounds.rs`
+          - `clients/tile-decoder/{decode.ts,decode.test.ts,fixtures/}`
+
+          ## New dependencies, to be confirmed by cargo-deny, machete and the wasm32 check
+
+          - `worker` =0.8.7 (`d1`)
+          - `utoipa` 6
+          - `sha2`
+          - `getrandom` (`wasm_js`)
+          - `base64` (cursors)
+          - `subtle` (constant-time compare)
+          - `worker-build` (a tool, not a crate dependency)
+          - dev-only: `rusqlite` (already in the workspace) and `reqwest` (blocking, for the e2e tests)
+        planMode: true
+    responses:
+      - key: 01a1a406-141d-77e8-87c2-fed7ba262520
+        at: 2026-11-04T00:47:04Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1a406-563c-76cc-bf79-32f16ae02679
+    id: d6-release6
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a406-563c-76cc-bf79-32f5dc25d713
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structures with no placed shape match by their bounding box, labelled"
+        consequence: "On release 6, which has no `structure_details`, a structure is matched by its placed member list where it has one, otherwise by its bounding box. The result then carries `matched_by: bounding_box`, so a client knows it is approximate. W7 builds a release 7 with current ingest, so the real-data checks run on placed shapes."
+        question: 01a1a403-aef5-7328-b16a-bc685063e48e
+  - key: 01a1a406-563c-76cc-bf79-32f2bf1c6458
+    id: t6-healpix
+    kind: task
+    versions:
+      - key: 01a1a406-563c-76cc-bf79-32f63d33764a
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "HEALPix nested scheme in univ-model"
+        detail: "`healpix::{hash, centre, radius_bound}`, following healpix_cxx. `univ-ingest/tests/healpix_model.rs` checks it against cdshealpix: identical cells on 4,000 directions at 7 orders, centres within 1e-12 rad, and every vertex within `radius_bound`. On cell boundaries, either touching cell is accepted."
+        state: done
+  - key: 01a1a406-563c-76cc-bf79-32f3a19f097f
+    id: t6-spec
+    kind: task
+    versions:
+      - key: 01a1a406-563c-76cc-bf79-32f78a6ba5be
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec bodies: cone, filters, matched_by, tolerance, FK4 warning"
+        detail: "Minor edits to the bodies of query-a-bounded-volume and publish-a-layer-item; no criterion changes. Done when `loft fmt --check` and `loft check --fail-on warning` pass and `spec/` is committed alone."
+        state: active
+  - key: 01a1a406-563c-76cc-bf79-32f4c9fdedf0
+    id: t6-item-bounds
+    kind: task
+    versions:
+      - key: 01a1a406-563c-76cc-bf79-32f90d3c26a9
+        at: 2026-11-04T00:47:21Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Item bounds: migration 0004 and the store"
+        detail: "Migration 0004 adds `min_x` to `max_z` to `items` (ICRS Mpc), written on publish and revise. An FK4 shape stores no bounds, and its publish carries a warning. Done when tests cover publish, revise and FK4."
+        state: open

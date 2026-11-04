@@ -12,6 +12,7 @@ pub mod encoding;
 pub mod entry;
 pub mod geometry;
 pub mod grid;
+pub mod healpix;
 pub mod ids;
 pub mod ledger;
 pub mod object;
