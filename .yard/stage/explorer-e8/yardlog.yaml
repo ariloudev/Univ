@@ -3,7 +3,7 @@ key: 01a1a6d6-be07-7656-a0f8-cd9c413d7f52
 branch: "stage/explorer-e8"
 base: "develop"
 title: "stage/explorer-e8"
-revision: 4
+revision: 6
 opened:
   at: 2026-11-04T13:54:13Z
   revision: 1
@@ -13,6 +13,12 @@ opened:
 stages:
   - key: 01a1a6d6-be07-7656-a0f8-cd9d9bdf0670
     id: x8
+closed:
+  at: 2026-11-04T14:06:25Z
+  revision: 6
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
 acts:
   - at: 2026-11-04T13:54:13Z
     revision: 1
@@ -31,6 +37,16 @@ acts:
       session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
   - at: 2026-11-04T13:58:41Z
     revision: 4
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T14:06:25Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T14:06:25Z
+    revision: 6
     by:
       host: claude-code
       session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
