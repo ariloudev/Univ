@@ -10,6 +10,15 @@ versions:
     title: "W6: volume and time queries"
     goal: "A client asks for the objects, structures and layer items in a box, sphere or cone (ICRS, galactic or supergalactic), narrowed by kind, source, scale domain, layer and time, in stable pages with cursors that notice changed layers, with the tile nodes that cover the volume (F-21, F-22, QA-3)"
     status: active
+  - key: 01a1a444-dd29-7145-a3fb-eb96ae098be6
+    at: 2026-11-04T01:55:38Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W6: volume and time queries"
+    goal: "A client asks for the objects, structures and layer items in a box, sphere or cone (ICRS, galactic or supergalactic), narrowed by kind, source, scale domain, layer and time, in stable pages with cursors that notice changed layers, with the tile nodes that cover the volume (F-21, F-22, QA-3)"
+    status: done
 blocks:
   - key: 01a1a3fd-1fbf-7477-ba13-660a0951ccbd
     id: t6-volume
@@ -290,6 +299,18 @@ blocks:
 
           **Cause:** the `ORDER BY id LIMIT` made SQLite walk `objects` by id, about 2 million rows, probing `object_cells` for each, instead of reading the cells first. With `CROSS JOIN` the same query takes 24 ms instead of 1,550 ms. The fix goes in with the review fixes, then the bench runs again.
         state: active
+      - key: 01a1a444-dd29-7145-a3fb-eb95ed287f59
+        at: 2026-11-04T01:55:38Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "E2e query and the QA-3 bench"
+        detail: |-
+          QA-3 on release 6 after the fix: p50 31.5 ms, p95 47.9 ms, p99 58.9 ms, max 63.3 ms; all 220 requests answered 200. **QA-3 met** (bound 500 ms). Before the fix: p95 4,949 ms.
+
+          The e2e tests run with the integration step.
+        state: done
   - key: 01a1a403-aef5-7328-b16a-bc685063e48e
     id: ask-toolu-015eknjcccv74r96nowxwq7b-1
     kind: question
@@ -1209,3 +1230,38 @@ blocks:
 
           **Kept as is, with reasons:** no index on item boxes (layers are small in v1); tile nodes not pruned by parent (401 nodes); awaits not run together (univ-api has no join utility).
         state: active
+      - key: 01a1a444-dd29-7145-a3fb-eb9417919540
+        at: 2026-11-04T01:55:38Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fix W6's review findings"
+        detail: |-
+          Fixed in `032421c`.
+
+          **Code review:**
+          - the cells now drive the object query (`CROSS JOIN`);
+          - cursors are signed with HMAC-SHA256 under a key drawn from the owner secret;
+          - an unreadable layer and a missing one answer alike;
+          - `kinds` takes `body`, `galaxy_group` or a structure kind;
+          - `tiles` is out of the cursor's digest;
+          - items with no box are tested by their shape;
+          - structures are read in chunks, and items only from the layers the cursor records;
+          - the body is read as `VolumeQuery`.
+
+          **Simplify:**
+          - univ-model owns the frame, unit and form rules, and `At::on_tt`;
+          - one shared instant-or-years helper, one readable-layer rule and `key_of`;
+          - typed `HitPosition`;
+          - domains come from `SPACES`;
+          - `Region` is `Copy`;
+          - shared vector helpers and `Aabb` builders;
+          - leaves found from parents;
+          - vocabulary lookups by map;
+          - one octree builder and one `pointers` helper for tests.
+
+          4 new tests: a tampered cursor refused; a later page without tiles; a box-less item found; the SQL predicate equal to `Region::contains` for four regions.
+
+          **Not done, with reasons:** an index on item boxes; pruning tiles by parent; awaiting calls together.
+        state: done

@@ -10,3 +10,12 @@ versions:
     title: "W6 close: review, gate, trace, merge"
     goal: "W6's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
     status: planned
+  - key: 01a1a444-dd29-7145-a3fb-eb97982b8914
+    at: 2026-11-04T01:55:38Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W6 close: review, gate, trace, merge"
+    goal: "W6's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: active
