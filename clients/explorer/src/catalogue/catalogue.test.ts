@@ -53,6 +53,18 @@ const sight = (hidden: (centre: Vec3) => boolean = () => false): Sight => ({
   inView: (centre) => !hidden(centre),
 });
 
+/** Waits until `drawn` has not changed for 50 ms. */
+async function steady(drawn: string[]): Promise<void> {
+  let last = "";
+  let still = 0;
+  for (let i = 0; i < 2000 && still < 50; i += 1) {
+    const now = drawn.join();
+    still = now === last ? still + 1 : 0;
+    last = now;
+    await new Promise((r) => setTimeout(r, 1));
+  }
+}
+
 async function loaded(http: Http, drawn: string[], budget?: number) {
   const domains = await domainsOf(2, { http });
   const events = {
@@ -92,21 +104,36 @@ describe("the catalogue", () => {
   });
 
   it("drops the tiles the view leaves to make room for those it turns to, and counts their points out", async () => {
+    // The simulated domain: a root and eight children, four on each side of it in x; room for the
+    // root and the larger side's children.
+    const http = server(undefined, undefined, ["simulated"]);
+    const tiles = (await domainsOf(2, { http }))[0]?.tiles ?? [];
+    const root = tiles.find((t) => t.parent === undefined);
+    if (root === undefined) throw new Error("no root");
+    const side = (east: boolean) => tiles.filter((t) => t.parent !== undefined && t.centre[0] >= root.centre[0] === east);
+    const points = (ts: typeof tiles) => ts.reduce((sum, t) => sum + t.points, 0);
+    const budget = root.points + Math.max(points(side(true)), points(side(false)));
     const drawn: string[] = [];
-    // The simulated domain: a root of 8 points and eight children of 3 to 9; room for 25 points.
-    const catalogue = await loaded(server(undefined, undefined, ["simulated"]), drawn, 25);
-    await until(() => drawn.length === 3);
-    const first = [...drawn];
+    const events = {
+      onBatch: (b: Batch) => drawn.push(b.tile.id),
+      onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
+      onChange: () => undefined,
+    };
+    const catalogue = new Catalogue(2, await domainsOf(2, { http }), events, { http, budget });
     const total = () => catalogue.kinds.reduce((a, b) => a + b, 0);
-    expect(total()).toBe(25);
-    // Turn away from the children held: they are dropped for others, and the root stays.
-    const held = new Set(first);
-    const tiles = catalogue.domain("simulated")?.tiles ?? [];
-    const away = new Set(tiles.filter((t) => held.has(t.id) && t.parent !== undefined).map((t) => t.centre));
-    catalogue.update(sight((centre) => away.has(centre)));
-    await until(() => drawn.length >= 2 && drawn.every((id) => id === "simulated/r" || !first.includes(id)));
-    expect(drawn).toContain("simulated/r");
-    expect(total()).toBeLessThanOrEqual(25);
+    const looking = (east: boolean) => {
+      const away = new Set(side(!east).map((t) => t.id));
+      return sight((centre) => tiles.some((t) => away.has(t.id) && t.centre[0] === centre[0] && t.centre[1] === centre[1] && t.centre[2] === centre[2]));
+    };
+    catalogue.update(looking(true));
+    await steady(drawn);
+    expect([...drawn].sort()).toEqual([root.id, ...side(true).map((t) => t.id)].sort());
+    expect(total()).toBeLessThanOrEqual(budget);
+    // Turned to the other side: its children replace the first side's, and the root stays.
+    catalogue.update(looking(false));
+    await steady(drawn);
+    expect([...drawn].sort()).toEqual([root.id, ...side(false).map((t) => t.id)].sort());
+    expect(total()).toBeLessThanOrEqual(budget);
   });
 
   it("does not count a tile Univ Server could not serve as failing its check", async () => {

@@ -6,14 +6,13 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 
 import type { Rotations } from "../api/schemas.ts";
 import { Catalogue } from "../catalogue/catalogue.ts";
-import { radiusOf } from "../catalogue/lod.ts";
 import { type Batch, domainsOf } from "../catalogue/tiles.ts";
 import { Controller, type Surroundings } from "../scene/controller.ts";
 import { viewingDistance } from "../scene/controls.ts";
 import { bindMouse } from "../scene/input.ts";
 import type { Pickable } from "../scene/pick.ts";
 import { NoWebGL, Renderer } from "../scene/renderer.ts";
-import type { Vec3 } from "../scene/vec.ts";
+import { type Vec3, norm, sub } from "../scene/vec.ts";
 import { FIRST_POINTS } from "../firstPoints.ts";
 import type { LabelBox } from "../scene/labels.ts";
 import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts";
@@ -89,8 +88,10 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
   const events = {
     onBatch: (batch: Batch) => {
       const { id, centre } = batch.tile;
-      const radius = radiusOf(batch.tile);
-      renderer.addPoints({ id, centre, radius, offsets: batch.offsets, kinds: batch.kinds });
+      const { extent } = batch;
+      renderer.addPoints({ id, centre, extent, offsets: batch.offsets, kinds: batch.kinds });
+      // Picking tests a sphere about the tile's centre: the one holding the points' own.
+      const radius = norm(sub(extent.centre, centre)) + extent.radius;
       world.pickable.push({ centre, radius, offsets: batch.offsets, batch });
       controller.invalidate();
     },

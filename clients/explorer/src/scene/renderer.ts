@@ -14,14 +14,14 @@ import type { Mat3, Vec3 } from "./vec.ts";
 /** The browser cannot draw with WebGL2. */
 export class NoWebGL extends Error {}
 
-/** A tile's points to draw: offsets from `centre`, all within `radius` of it, and each point's
- * kind of value. */
+/** A tile's points to draw: offsets from `centre`, each point's kind of value, and the sphere
+ * they lie in, to leave them undrawn when it is out of view. */
 export interface Points {
   id: string;
   centre: Vec3;
-  radius: number;
   offsets: Float32Array;
   kinds: Uint8Array;
+  extent: { centre: Vec3; radius: number };
 }
 
 /** The diameter of a point, in device pixels. */
@@ -73,8 +73,8 @@ export class Renderer implements Drawer {
   private readonly points: Program;
   private readonly lines: Program;
   private readonly lineColour: WebGLUniformLocation | null;
-  /** Each tile's points, by its id, with the radius they lie within. */
-  private readonly batches = new Map<string, Drawn & { radius: number }>();
+  /** Each tile's points, by its id, with the sphere they lie in. */
+  private readonly batches = new Map<string, Drawn & { extent: Points["extent"] }>();
   private readonly outlines = new Map<string, Outline>();
   private readonly markers = new Map<string, Drawn>();
   private readonly pointSize: WebGLUniformLocation | null;
@@ -126,7 +126,7 @@ export class Renderer implements Drawer {
   /** Adds a tile's points to what is drawn. */
   addPoints(points: Points): void {
     this.removePoints(points.id);
-    this.batches.set(points.id, { ...this.upload(points), radius: points.radius });
+    this.batches.set(points.id, { ...this.upload(points), extent: points.extent });
   }
 
   /** Draws the points of the tile `id` no more. */
@@ -178,7 +178,7 @@ export class Renderer implements Drawer {
     this.use(this.points, frame);
     gl.uniform1f(this.pointSize, POINT_SIZE);
     gl.uniform1f(this.opacity, pointOpacity(view.distance));
-    for (const batch of inSight(this.batches.values(), sightOf(view, toFrame, width, height))) {
+    for (const batch of inSight(this.batches.values(), sightOf(view, toFrame, width, height), (b) => b.extent)) {
       this.drawOne(this.points, frame, batch, gl.POINTS);
     }
     gl.uniform1f(this.pointSize, MARKER_SIZE);

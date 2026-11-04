@@ -82,7 +82,13 @@ export class Catalogue {
     const room = PARALLEL - this.pending.size;
     if (room <= 0) return;
     const pending = this.resting.size === 0 ? this.pending : new Set([...this.pending, ...this.resting]);
-    const holding = { settled: this.settled, drawn: new Set(this.drawn.keys()), pending, points: this.points };
+    const holding = {
+      settled: this.settled,
+      drawn: new Set(this.drawn.keys()),
+      pending,
+      points: this.points,
+      extent: (id: string) => this.drawn.get(id)?.extent,
+    };
     const next = plan(this.tiles, holding, sight, room, this.options.budget);
     for (const tile of next.drop) this.drop(tile);
     for (const tile of next.fetch) {

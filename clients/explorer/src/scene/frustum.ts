@@ -15,9 +15,12 @@ export interface Sight {
   inView(centre: Vec3, radius: number): boolean;
 }
 
-/** The items of `items` in view: those whose sphere about `centre` of `radius` reaches into it. */
-export function inSight<T extends { centre: Vec3; radius: number }>(items: Iterable<T>, sight: Sight): T[] {
-  return [...items].filter((item) => sight.inView(item.centre, item.radius));
+/** The items of `items` in view: those whose sphere, as `sphere` gives it, reaches into it. */
+export function inSight<T>(items: Iterable<T>, sight: Sight, sphere: (item: T) => { centre: Vec3; radius: number }): T[] {
+  return [...items].filter((item) => {
+    const { centre, radius } = sphere(item);
+    return sight.inView(centre, radius);
+  });
 }
 
 /** The sight of `view` on a viewport `width` × `height` pixels. */

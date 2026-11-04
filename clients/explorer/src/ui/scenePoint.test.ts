@@ -18,6 +18,7 @@ function starBatch() {
     kinds: new Uint8Array([1]),
     sources: new Uint16Array([source.index]),
     ids: new Float64Array([42]),
+    extent: { centre: [0, 0, 0] as [number, number, number], radius: 1, core: { centre: [0, 0, 0] as [number, number, number], radius: 1 } },
   };
   return { domain, batch, source };
 }
@@ -44,6 +45,7 @@ describe("a drawn point", () => {
       kinds: new Uint8Array([1]),
       sources: new Uint16Array([source.index]),
       ids: new Float64Array([42]),
+      extent: { centre: [0, 0, 0] as [number, number, number], radius: 1, core: { centre: [0, 0, 0] as [number, number, number], radius: 1 } },
     };
     const point = pointOf((name) => (name === "stars" ? domain : undefined), batch, 0);
     expect(point.id).toBe(42);

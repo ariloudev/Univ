@@ -7,7 +7,7 @@ import { type ReadOptions, read, readJson } from "../api/client.ts";
 import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
 import { add, scale } from "../scene/vec.ts";
-import type { Tile } from "./lod.ts";
+import { type Extent, type Tile, extentOf } from "./lod.ts";
 
 /** A tile of a domain, with the manifest's node for it. */
 export interface DomainTile extends Tile {
@@ -31,6 +31,8 @@ export interface Batch {
   /** Each point's index in the manifest's sources. */
   sources: Uint16Array;
   ids: Float64Array;
+  /** Where the points lie. */
+  extent: Extent;
 }
 
 /** A tile that did not match its manifest's SHA-256, or did not decode. */
@@ -100,7 +102,7 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
     sources[i] = p.source.index;
     ids[i] = p.id;
   });
-  return { tile, offsets, kinds, sources, ids };
+  return { tile, offsets, kinds, sources, ids, extent: extentOf(offsets, tile.centre) };
 }
 
 /** Fetches, checks and decodes the tile of `tile` in `domain` of `release`. */

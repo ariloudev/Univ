@@ -2901,6 +2901,26 @@ blocks:
 
           **State:** written and passing, not yet committed.
         state: active
+      - key: 01a1a698-d561-76c4-9045-02ec4159ab46
+        at: 2026-11-04T12:46:36Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The view's frustum (scene/frustum.ts)"
+        detail: |-
+          **Scope:**
+          - `sightOf(view, toFrame, width, height)`: the eye, the focal length, and a sphere-against-frustum test with no far plane;
+          - `inSight(items, sight)`.
+
+          **Done when** `frustum.test.ts` shows:
+          - a sphere ahead is in view and one behind is not, unless it reaches in front of the eye;
+          - side limits follow the aspect ratio;
+          - the focal length is right;
+          - `inSight` filters.
+
+          **Result:** 4 tests pass. Committed in the E5 feature commit.
+        state: done
   - key: 01a1a697-5449-732e-a894-70f1c9b2eec3
     id: e5-t-plan
     kind: task
@@ -2932,6 +2952,33 @@ blocks:
 
           **State:** written; 9 tests pass; not committed.
         state: active
+      - key: 01a1a698-e591-732f-8be1-c87598d956a5
+        at: 2026-11-04T12:46:40Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Which tiles to fetch and drop (catalogue/lod.ts `plan`)"
+        detail: |-
+          **Scope:**
+          - roots first;
+          - children only of tiles in view whose points lie more than 3 px apart on screen;
+          - children wholly outside the view are not fetched;
+          - the largest on screen first;
+          - the budget counts the points on their way;
+          - room is made by dropping drawn tiles that are needed less than the tile wanted: outside the view first, then the smallest on screen. A root, a tile with a child drawn or on its way, or the parent of a tile being fetched is never dropped.
+
+          **Done when** `lod.test.ts` has a test for each of these criteria:
+          - ranking;
+          - refinement stopping at 3 px;
+          - the budget with points on their way;
+          - dropping out of view first;
+          - never a root or a parent;
+          - keeping a larger tile in view;
+          - fetching a dropped tile again.
+
+          **Result:** 9 tests pass. Committed as `12ae17e`.
+        state: done
   - key: 01a1a697-5449-732e-a894-70f2bfb14888
     id: e5-t-catalogue
     kind: task
@@ -2958,6 +3005,28 @@ blocks:
 
           **State:** written and passing, not committed.
         state: active
+      - key: 01a1a698-fa0a-732b-b2fc-2d965f358cb4
+        at: 2026-11-04T12:46:45Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The catalogue fetches and drops by the plan"
+        detail: |-
+          **Scope:**
+          - `Catalogue.update(sight)`;
+          - `onDrop` events;
+          - the kind counts go down when a tile is dropped;
+          - failed tiles are never dropped or asked for again;
+          - a `budget` option for tests.
+
+          **Done when** `catalogue.test.ts` shows, on the fixture's simulated domain with a budget of 25 points:
+          - the tiles the view leaves are dropped for those it turns to;
+          - the root stays;
+          - the counts stay within the budget.
+
+          **Result:** the test passes. Committed as `12ae17e`.
+        state: done
   - key: 01a1a697-5449-732e-a894-70f3d45453e7
     id: e5-t-render
     kind: task
@@ -3003,6 +3072,24 @@ blocks:
           - in one run with the budget lowered to 300,000 points (a local edit, never committed), tiles are dropped and fetched again as the view turns, and the counts never exceed 300,000;
           - `cargo xtask bench first-points` stays within 3 s.
         state: open
+      - key: 01a1a698-fa0a-732b-b2fc-2d97c72752bc
+        at: 2026-11-04T12:46:45Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Live check on release 7"
+        detail: |-
+          **Done when** `cargo xtask explore` shows, with screenshots and the key's counts:
+          - at the opening 400 Mpc view, fewer points held than the release's 2,085,809, and no hole in the view;
+          - zoomed out to 2.3 Gpc, refinement stops early;
+          - near Earth, the stars are refined;
+          - turning the view fetches what comes into view.
+
+          It also shows:
+          - in one run with the budget lowered to 300,000 points (a local edit, never committed), tiles are dropped and fetched again as the view turns, and the counts never exceed 300,000;
+          - `cargo xtask bench first-points` stays within 3 s.
+        state: active
   - key: 01a1a697-5449-732e-a894-70f5c6f763d1
     id: e5-t-trace
     kind: task
