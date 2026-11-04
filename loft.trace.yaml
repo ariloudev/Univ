@@ -2180,7 +2180,7 @@ links:
         body: decfe7fb2fb70d72f6a46d26208973f43f0bceda1e0b5c468b557c80e1db2fd0
       - file: "crates/univ-server/tests/query.rs"
         name: "a_volume_query_finds_objects_structures_by_their_shapes_and_tiles_to_fetch"
-        body: df6d646cec1181d93d1d8dba79924115b9cddc94d7f0b72d20a8a12166607bb7
+        body: c226d1f1683228f4dc69e6b531054d4b5bdf2eb8d32432f07e2cefdbf9cc15a8
   - node: 01a19f1f-9fd7-7209-b7cb-5d0f00fe2fe8
     reviewed: c3483934c5e6a7418635125b0897ca42ada722d5de9764a826c04d5c563c94a2
     tests:
@@ -2300,7 +2300,7 @@ links:
         body: 78efd53374f37278ab45aab66d2f85d440e63b329ec6ae9af480c1c3df5662ac
       - file: "crates/univ-server/tests/query.rs"
         name: "a_volume_query_finds_objects_structures_by_their_shapes_and_tiles_to_fetch"
-        body: df6d646cec1181d93d1d8dba79924115b9cddc94d7f0b72d20a8a12166607bb7
+        body: c226d1f1683228f4dc69e6b531054d4b5bdf2eb8d32432f07e2cefdbf9cc15a8
   - node: 01a19f1f-9fd7-7209-b7cb-5d1c374609bf
     reviewed: 528b035877a494456521c3fb7d4a31c40c7c42ed37ecc5aa9233a5adbcd6f2ac
     tests:

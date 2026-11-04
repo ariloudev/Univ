@@ -176,6 +176,15 @@ blocks:
 
           **Done when** the matching and ranking tests pass.
         state: open
+      - key: 01a1a89b-b65a-7733-98b6-e9b71886c0c3
+        at: 2026-11-04T22:08:59Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Matching and ranking rules for the researched stars"
+        detail: "The `hip` scheme of `rules/matching.yaml` takes the researched source's bare HIP numbers; `parallax_basis` in `rules/ranking.yaml` names the researched distances. The matching and ranking tests pass in the workspace run."
+        state: done
   - key: 01a1a823-e6d7-726d-9f11-d42b14715276
     id: r4-t-files
     kind: task
@@ -329,6 +338,20 @@ blocks:
         title: "Build and publish release 9"
         detail: "`univ-ingest build` in the background, then `publish 9`."
         state: active
+      - key: 01a1a89b-b65a-7733-98b6-e9b8951c7f42
+        at: 2026-11-04T22:08:59Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build and publish release 9"
+        detail: |-
+          Release 9 built and published locally (3.7 GB uploaded).
+
+          **Fetch:** 3 items fetched, 96 served from disk. The first attempt was re-fetching all 16 Gaia DR3 bright-star chunks, because R3's change to how an async job is recorded left release 8's records unmatched. The 10 intact cached chunks (SHA-256 verified) were relabelled with the query they were fetched by; only chunks 4 and 6, lost to ESA aborts, and the row count were fetched again.
+
+          **The interrupted first build** ran code from before the review fixes and was restarted on `e842068`.
+        state: done
   - key: 01a1a823-e6d7-726d-9f11-d42d7a0109f4
     id: r4-t-check
     kind: task
@@ -349,6 +372,24 @@ blocks:
 
           **Done when** all pass and the counts are recorded.
         state: open
+      - key: 01a1a89b-b65a-7733-98b6-e9b9e84113c4
+        at: 2026-11-04T22:08:59Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Check release 9"
+        detail: |-
+          **Science:** 38 checks, 33 PASS, 0 FAIL, 3 CONCERN (the same three as release 8), 2 INFO. Six new cited checks (committed `9c83f7c`): Betelgeuse at 168 pc, placed by its star file naming Joyce et al. 2020; Antares at 145 ± 2 pc; σ Ori at 387.5 ± 1.3 pc from its orbital parallax; exactly 16 stars placed by star files; every researched entry names its papers.
+
+          **Tiles:** all 402 decode with their SHA-256 matched (stars 140, nearby galaxies 1, cosmic web 261).
+
+          **Benches:** QA-2 lookup p95 4.4 ms (bound 200 ms); QA-3 volume p95 52.6 ms (500 ms); first points p95 222 ms (3 s).
+
+          **API:** Betelgeuse's record gives 168 pc with its 3σ range as an interval, decided as the only candidate, and its entry names Joyce et al. 2020.
+
+          **The 64 naked-eye stars:** 16 placed by star files; 48 remain unplaced (35 with a file saying why, 13 without a file after the research was stopped).
+        state: done
   - key: 01a1a823-e6d7-726d-9f11-d42ec978ec08
     id: r4-t-close
     kind: task
