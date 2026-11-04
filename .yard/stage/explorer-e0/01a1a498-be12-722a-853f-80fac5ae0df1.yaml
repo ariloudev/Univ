@@ -10,6 +10,15 @@ versions:
     title: "E0: scaffold, API client, releases"
     goal: "clients/explorer builds and tests under the gate; it reads Univ Server's releases and says plainly when the server is unreachable; cargo xtask explore starts server and explorer together"
     status: active
+  - key: 01a1a4a9-8b3d-703e-af58-3845bdfd2bf2
+    at: 2026-11-04T03:45:37Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E0: scaffold, API client, releases"
+    goal: "clients/explorer builds and tests under the gate; it reads Univ Server's releases and says plainly when the server is unreachable; cargo xtask explore starts server and explorer together"
+    status: done
 blocks:
   - key: 01a1a498-be12-722a-853f-80fb16c88855
     id: e0-scaffold
@@ -121,3 +130,1069 @@ blocks:
 
           Verified live: 310 reads in a row through the proxy all answered 200, past the anonymous limit of 300, so the key is in use. `cargo xtask check` gains the `explorer` gate (`pnpm install --frozen-lockfile`, then `pnpm check`).
         state: done
+  - key: 01a1a4a9-8b3d-703e-af58-383d4d124e66
+    id: e0-review
+    kind: task
+    versions:
+      - key: 01a1a4a9-8b3d-703e-af58-3841057660a6
+        at: 2026-11-04T03:45:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fix E0's review findings"
+        detail: |-
+          Fixed in `dcd78cb`.
+
+          **From the reviews:**
+          - unreachable is now reported by the dev proxy itself as a problem with its address, rather than guessed from any 5xx;
+          - `Retry-After` reads as seconds (zero included) or as an HTTP date;
+          - one rate-limit pause is shared by all reads, the page says it is waiting, and an aborted read stops waiting;
+          - a failed release list offers Try again;
+          - `explore` checks its port before building the Worker and revokes the keys earlier runs left (the bench does the same with its own label);
+          - a pnpm failure is told apart from pnpm being missing.
+
+          **Simplify:** one shared start on the real state; one listen config; Playwright, `define` and `fs.allow` removed until used.
+
+          **Kept:** `pnpm build` in the gate (seconds).
+        state: done
+  - key: 01a1a4a9-8b3d-703e-af58-383e3d759912
+    id: e0-gate
+    kind: task
+    versions:
+      - key: 01a1a4a9-8b3d-703e-af58-384228c4557e
+        at: 2026-11-04T03:45:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration, once"
+        detail: "`cargo xtask check` passed: 13 gates, including the new `explorer` gate (`loft verify` skipped off `develop`). `cargo xtask integration` passed."
+        state: done
+  - key: 01a1a4a9-8b3d-703e-af58-383f0bb9585a
+    id: e0-trace
+    kind: loft
+    versions:
+      - key: 01a1a4a9-8b3d-703e-af58-384308d85c45
+        at: 2026-11-04T03:45:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "All 8 criteria of open-the-explorer are linked to Vitest tests and accepted. Every criterion still unlinked is an explorer criterion of a later wave."
+        recorded:
+          commit: "317f54fbc5cd71c0b3332d66487c8cd95ba7a2e1"
+          branch: "stage/explorer-e0"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T03:45:36Z
+        report: |
+          {
+            "base": "develop",
+            "commit": "3a8089a0b94e93718f9ced3a3c90b28a410ee771",
+            "counts": {
+              "features": 6
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4000304272e5",
+                    "label": null,
+                    "name": "Each point is drawn at the ICRS position its tile gives, converted from its scale domain's unit to megaparsecs.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fff6f6d18ce",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40018ecb5def",
+                    "label": null,
+                    "name": "Earth is marked at the origin, which the marker names as the Solar System barycentre, within about 1 AU of Earth.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fff6f6d18ce",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40026e7286d2",
+                    "label": null,
+                    "name": "Points of the stars domain and of the galaxy domains are drawn together, each at its own distance.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fff6f6d18ce",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40049983aed9",
+                    "label": null,
+                    "name": "The root tile of every scale domain is fetched before any other tile.",
+                    "requirement": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400536d8f2b5",
+                    "label": null,
+                    "name": "The tiles not yet fetched are fetched in order of their size on screen, largest first.",
+                    "requirement": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4006f5c2ce8f",
+                    "label": null,
+                    "name": "No more than 3,000,000 points are held at once.",
+                    "requirement": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40081f3b67cf",
+                    "label": null,
+                    "name": "A tile whose SHA-256 differs from its manifest's is not drawn.",
+                    "requirement": "01a1a497-e843-728a-bce8-400775a8d943",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4009e23e1ebc",
+                    "label": null,
+                    "name": "The view states the count of tiles that failed, where any did.",
+                    "requirement": "01a1a497-e843-728a-bce8-400775a8d943",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400b9b581384",
+                    "label": null,
+                    "name": "Measured, estimated, inferred and reconstructed distances are drawn in four distinct colours.",
+                    "requirement": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400c71ad8ebe",
+                    "label": null,
+                    "name": "The key names each colour's kind of value and counts the points drawn in it.",
+                    "requirement": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400eb0b1b70d",
+                    "label": null,
+                    "name": "The credits list each source of the drawn points with its title, its citation and its required credit.",
+                    "requirement": "01a1a497-e843-728a-bce8-400db24e35a8",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400fa74e76fc",
+                    "label": null,
+                    "name": "The credits name the release the points come from.",
+                    "requirement": "01a1a497-e843-728a-bce8-400db24e35a8",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40111a7d5c5f",
+                    "label": null,
+                    "name": "The view names the frame whose axes it shows, the origin, the unit of its distances and the release cosmology.",
+                    "requirement": "01a1a497-e843-728a-bce8-401087e90f86",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3ffe4657fb77",
+                "label": null,
+                "name": "Draw the catalogues",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fff6f6d18ce",
+                    "label": null,
+                    "name": "Univ Explorer shall draw each placed object of every scale domain at the position its tile gives, with Earth at the centre.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw each placed object of every scale domain at the position its tile gives, with Earth at the centre.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                    "label": null,
+                    "name": "When the view changes, Univ Explorer shall fetch the tiles the view needs, the largest on screen first, within a budget of points.",
+                    "statement": {
+                      "condition": "the view changes",
+                      "form": "event_driven",
+                      "shall": "fetch the tiles the view needs, the largest on screen first, within a budget of points.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400775a8d943",
+                    "label": null,
+                    "name": "If a tile's bytes do not match the SHA-256 its manifest gives, or the tile does not decode, then Univ Explorer shall leave the tile undrawn and count it as failed.",
+                    "statement": {
+                      "condition": "a tile's bytes do not match the SHA-256 its manifest gives, or the tile does not decode",
+                      "form": "unwanted",
+                      "shall": "leave the tile undrawn and count it as failed.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                    "label": null,
+                    "name": "Univ Explorer shall colour each point by the kind of value of its distance and show the key to the colours.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "colour each point by the kind of value of its distance and show the key to the colours.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-400db24e35a8",
+                    "label": null,
+                    "name": "Univ Explorer shall credit every source whose points are drawn, as the tile manifest gives its credit.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "credit every source whose points are drawn, as the tile manifest gives its credit.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401087e90f86",
+                    "label": null,
+                    "name": "Univ Explorer shall state the frame, origin, units and cosmology of what it draws.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "state the frame, origin, units and cosmology of what it draws.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40155a522828",
+                    "label": null,
+                    "name": "Dragging sideways turns the view about the pole of the frame whose axes it shows.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40169a56936b",
+                    "label": null,
+                    "name": "Dragging up or down tilts the view, stopping short of either pole.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4017e181b56d",
+                    "label": null,
+                    "name": "A press that moves less than 6 pixels is a click, not a drag.",
+                    "requirement": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40194ffc65db",
+                    "label": null,
+                    "name": "Each step of the wheel changes the distance from the eye to the focus by the same factor.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401a8b7b26d8",
+                    "label": null,
+                    "name": "The distance from the eye to the focus stays between 0.1 parsec and 20 gigaparsecs.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401b318a282a",
+                    "label": null,
+                    "name": "The view shows the distance from the eye to the focus in parsecs, kiloparsecs, megaparsecs or gigaparsecs, whichever suits it, with light-years beside it.",
+                    "requirement": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401d23c750eb",
+                    "label": null,
+                    "name": "The focus moves in the plane facing the eye, by the distance the pointer moved at the focus's depth.",
+                    "requirement": "01a1a497-e843-728a-bce8-401c96d859c6",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401fac9dd829",
+                    "label": null,
+                    "name": "The flight ends within 1.5 seconds with the thing at the centre of the view.",
+                    "requirement": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40204b4131f6",
+                    "label": null,
+                    "name": "Where the person's system asks for reduced motion, the view moves at once instead of flying.",
+                    "requirement": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4022b38915cd",
+                    "label": null,
+                    "name": "A control on the view returns the focus to Earth.",
+                    "requirement": "01a1a497-e843-728a-bce8-402165709dd6",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4024890baa12",
+                    "label": null,
+                    "name": "The chosen frame's equator is drawn as a ring around Earth.",
+                    "requirement": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4025c1c8e956",
+                    "label": null,
+                    "name": "Changing the axes leaves every point at the same place in space.",
+                    "requirement": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-4013de790aff",
+                "label": null,
+                "name": "Navigate with the mouse",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4014d5bf7fe9",
+                    "label": null,
+                    "name": "When the person drags with the primary button, Univ Explorer shall turn the view about the focus.",
+                    "statement": {
+                      "condition": "the person drags with the primary button",
+                      "form": "event_driven",
+                      "shall": "turn the view about the focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40189c79db07",
+                    "label": null,
+                    "name": "When the person turns the mouse wheel, Univ Explorer shall move the eye toward or away from the focus by the same factor for each step.",
+                    "statement": {
+                      "condition": "the person turns the mouse wheel",
+                      "form": "event_driven",
+                      "shall": "move the eye toward or away from the focus by the same factor for each step.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401c96d859c6",
+                    "label": null,
+                    "name": "When the person drags with the secondary button, or with the primary button and Shift held, Univ Explorer shall move the focus across the view.",
+                    "statement": {
+                      "condition": "the person drags with the secondary button, or with the primary button and Shift held",
+                      "form": "event_driven",
+                      "shall": "move the focus across the view.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-401e02fe8fb9",
+                    "label": null,
+                    "name": "When the person double-clicks a point or a structure, Univ Explorer shall fly to it and make it the focus.",
+                    "statement": {
+                      "condition": "the person double-clicks a point or a structure",
+                      "form": "event_driven",
+                      "shall": "fly to it and make it the focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402165709dd6",
+                    "label": null,
+                    "name": "When the person asks to return to Earth, Univ Explorer shall make Earth the focus again.",
+                    "statement": {
+                      "condition": "the person asks to return to Earth",
+                      "form": "event_driven",
+                      "shall": "make Earth the focus again.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40239ca6b61d",
+                    "label": null,
+                    "name": "When the person chooses the galactic, equatorial or supergalactic axes, Univ Explorer shall turn the view to that frame's axes.",
+                    "statement": {
+                      "condition": "the person chooses the galactic, equatorial or supergalactic axes",
+                      "form": "event_driven",
+                      "shall": "turn the view to that frame's axes.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4028add2863c",
+                    "label": null,
+                    "name": "The explorer reads the list of releases and draws the one latest points to.",
+                    "requirement": "01a1a497-e843-728a-bce8-4027880d6bf0",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 43,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "draws the release latest points to, and names it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4029408477ea",
+                    "label": null,
+                    "name": "The view names the release it draws.",
+                    "requirement": "01a1a497-e843-728a-bce8-4027880d6bf0",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 43,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "draws the release latest points to, and names it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402b1b713ac4",
+                    "label": null,
+                    "name": "Every release that is published and not pruned can be chosen.",
+                    "requirement": "01a1a497-e843-728a-bce8-402aecf36789",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "offers every release not pruned, and draws the one chosen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402c7430235c",
+                    "label": null,
+                    "name": "Every read made after the choice names the chosen release.",
+                    "requirement": "01a1a497-e843-728a-bce8-402aecf36789",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "offers every release not pruned, and draws the one chosen"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/client.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 66
+                          }
+                        ],
+                        "name": "names the release on every read pinned to one"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402e69057896",
+                    "label": null,
+                    "name": "The message names the address the explorer tried.",
+                    "requirement": "01a1a497-e843-728a-bce8-402de61f7a43",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "says where it looked and how to start Univ Server, and tries again when asked"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/client.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 75,
+                            "lastLine": 80
+                          }
+                        ],
+                        "name": "calls Univ Server unreachable where the explorer's server says so, with its address"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402f2c21ca9d",
+                    "label": null,
+                    "name": "The message gives the command that starts Univ Server and the explorer together.",
+                    "requirement": "01a1a497-e843-728a-bce8-402de61f7a43",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "says where it looked and how to start Univ Server, and tries again when asked"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4030e4feb6a1",
+                    "label": null,
+                    "name": "Trying again reads the releases anew without reloading the page.",
+                    "requirement": "01a1a497-e843-728a-bce8-402de61f7a43",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "says where it looked and how to start Univ Server, and tries again when asked"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/App.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 82
+                          }
+                        ],
+                        "name": "names the problem when Univ Server refuses to list its releases, and tries again"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4032ee17e718",
+                    "label": null,
+                    "name": "A read refused with status 429 is made again after the seconds its `Retry-After` header gives.",
+                    "requirement": "01a1a497-e843-728a-bce8-40313c8ccea7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/api/client.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 43
+                          }
+                        ],
+                        "name": "reads a refused read again after the seconds its Retry-After gives, saying so"
+                      },
+                      {
+                        "file": "clients/explorer/src/api/client.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 52,
+                            "lastLine": 60
+                          }
+                        ],
+                        "name": "takes Retry-After as seconds, zero included, or as a date, and the window otherwise"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-402682c20f97",
+                "label": null,
+                "name": "Open the explorer",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-4027880d6bf0",
+                    "label": null,
+                    "name": "When the person opens the explorer, Univ Explorer shall draw the release that latest points to and name it.",
+                    "statement": {
+                      "condition": "the person opens the explorer",
+                      "form": "event_driven",
+                      "shall": "draw the release that latest points to and name it.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402aecf36789",
+                    "label": null,
+                    "name": "When the person chooses another release, Univ Explorer shall draw that release in place of the one shown.",
+                    "statement": {
+                      "condition": "the person chooses another release",
+                      "form": "event_driven",
+                      "shall": "draw that release in place of the one shown.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-402de61f7a43",
+                    "label": null,
+                    "name": "If Univ Server cannot be reached, then Univ Explorer shall say so, say how to start it, and try again when asked.",
+                    "statement": {
+                      "condition": "Univ Server cannot be reached",
+                      "form": "unwanted",
+                      "shall": "say so, say how to start it, and try again when asked.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-40313c8ccea7",
+                    "label": null,
+                    "name": "If Univ Server refuses a read because the rate limit was reached, then Univ Explorer shall read it again once the time the server gives has passed.",
+                    "statement": {
+                      "condition": "Univ Server refuses a read because the rate limit was reached",
+                      "form": "unwanted",
+                      "shall": "read it again once the time the server gives has passed.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fde6b42f63b",
+                    "label": null,
+                    "name": "A number is looked up as an object id, `source:identifier` as a designation, and any other text as a name.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fdd9c30a9e7",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fdf22d824cf",
+                    "label": null,
+                    "name": "The object found becomes the chosen object and the focus.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fdd9c30a9e7",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe0cf1c756b",
+                    "label": null,
+                    "name": "Where a name belongs to more than one object, they are listed to choose from.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fdd9c30a9e7",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe2d2338514",
+                    "label": null,
+                    "name": "The message repeats what was searched for.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe110e49f5b",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fdcc5ac09d5",
+                "label": null,
+                "name": "Find an object",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fdd9c30a9e7",
+                    "label": null,
+                    "name": "When the person searches for an object id, a name, or a designation written as source and identifier, Univ Explorer shall look it up in the release drawn and fly to the object found.",
+                    "statement": {
+                      "condition": "the person searches for an object id, a name, or a designation written as source and identifier",
+                      "form": "event_driven",
+                      "shall": "look it up in the release drawn and fly to the object found.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe110e49f5b",
+                    "label": null,
+                    "name": "If the search finds no object, then Univ Explorer shall say that nothing was found and leave the view as it was.",
+                    "statement": {
+                      "condition": "the search finds no object",
+                      "form": "unwanted",
+                      "shall": "say that nothing was found and leave the view as it was.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe5ca42baa2",
+                    "label": null,
+                    "name": "The label gives the object's id, its scale domain, its distance from Earth and the source and kind of value of that distance.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe4680b13fa",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe7201a1670",
+                    "label": null,
+                    "name": "The panel gives the object's names and designations, each with its source.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe8c93208cf",
+                    "label": null,
+                    "name": "The panel gives the preferred distance with its uncertainty, its kind of value, its source and the rule that preferred it.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe962cd751a",
+                    "label": null,
+                    "name": "The panel lists each other distance measurement of the object beside the preferred one.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fea61a8f74f",
+                    "label": null,
+                    "name": "The panel gives the frame and epoch of the object's position.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3febf4df9871",
+                    "label": null,
+                    "name": "The chosen object is marked in the view.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fec1fe0b4b3",
+                    "label": null,
+                    "name": "The chosen object is kept in the page's address, so that reloading the page shows it again.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fee23d1c65a",
+                    "label": null,
+                    "name": "The panel gives the status and the problem's title that Univ Server answered with.",
+                    "requirement": "01a1a497-e843-728a-bce8-3fedaa2c488c",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fe32aecd7d3",
+                "label": null,
+                "name": "Read an object",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe4680b13fa",
+                    "label": null,
+                    "name": "When the pointer rests on a drawn point, Univ Explorer shall name the object it stands for.",
+                    "statement": {
+                      "condition": "the pointer rests on a drawn point",
+                      "form": "event_driven",
+                      "shall": "name the object it stands for.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                    "label": null,
+                    "name": "When the person clicks a drawn point, Univ Explorer shall show the object's record that Univ Server gives.",
+                    "statement": {
+                      "condition": "the person clicks a drawn point",
+                      "form": "event_driven",
+                      "shall": "show the object's record that Univ Server gives.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3fedaa2c488c",
+                    "label": null,
+                    "name": "If Univ Server does not give the object's record, then Univ Explorer shall say so in the panel.",
+                    "statement": {
+                      "condition": "Univ Server does not give the object's record",
+                      "form": "unwanted",
+                      "shall": "say so in the panel.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff1ded85aea",
+                    "label": null,
+                    "name": "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff2f42a8c13",
+                    "label": null,
+                    "name": "Paths are drawn as lines, and member lists as their members' positions.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff3a71f35c5",
+                    "label": null,
+                    "name": "A structure with no placed shape is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff4358efffd",
+                    "label": null,
+                    "name": "A structure with neither a shape nor a bounding box is listed but not drawn.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff67c685244",
+                    "label": null,
+                    "name": "Each structure's name is drawn at its centre.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff70e744c39",
+                    "label": null,
+                    "name": "Names that would overlap are not drawn over one another.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff996141e6c",
+                    "label": null,
+                    "name": "Every structure of the release is listed by name and kind.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ffa426590e2",
+                    "label": null,
+                    "name": "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                "label": null,
+                "name": "See the structures",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "label": null,
+                    "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw each structure of the release by its placed shape.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "label": null,
+                    "name": "Univ Explorer shall name each drawn structure in the view.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "name each drawn structure in the view.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "label": null,
+                    "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                    "statement": {
+                      "condition": "the person chooses a structure, in the view or from the list of structures",
+                      "form": "event_driven",
+                      "shall": "show its record and fly to it.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 388,
+              "linked": 343,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a4a9-8b3d-703e-af58-38404f57266b
+    id: e0-result
+    kind: note
+    versions:
+      - key: 01a1a4a9-8b3d-703e-af58-384417d3d189
+        at: 2026-11-04T03:45:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What E0 produced"
+        markdown: |-
+          - `clients/explorer` builds and tests under the gate: 14 unit tests, fallow clean.
+          - The explorer opens on the latest release (7, Planck 2018) and offers every release not pruned. When the server is down it names the address it tried and the command to run, and tries again.
+          - `cargo xtask explore` starts everything on `127.0.0.1:5317`, with a fresh extended-tier key that only the proxy holds.
+
+          **Next, E1:** the scene. Its pure modules are drafted already: camera, controls, LOD, tiles, catalogue, renderer, controller.
+        tone: success
