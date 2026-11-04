@@ -21,6 +21,8 @@ export interface Points {
   centre: Vec3;
   offsets: Float32Array;
   kinds: Uint8Array;
+  /** Each point's own colour as RGBA bytes, for a star; none for a point drawn by its kind. */
+  colours?: Uint8Array | undefined;
   extent: Sphere;
 }
 
@@ -93,12 +95,21 @@ export class Renderer implements Drawer {
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
+    // A batch without colours of its own leaves `a_colour` at this constant: no colour, so that
+    // its points take their kind's (WebGL's default would be opaque black).
+    gl.vertexAttrib4f(gl.getAttribLocation(this.points.program, "a_colour"), 0, 0, 0, 0);
     const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
     gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
     this.markerColour = gl.getUniformLocation(this.points.program, `u_colours[${MARKER_INDEX}]`);
   }
 
-  private buffer(program: WebGLProgram, name: string, data: Float32Array | Uint8Array, size: number): WebGLBuffer {
+  private buffer(
+    program: WebGLProgram,
+    name: string,
+    data: Float32Array | Uint8Array,
+    size: number,
+    normalized = false,
+  ): WebGLBuffer {
     const gl = this.gl;
     const buffer = gl.createBuffer();
     const location = gl.getAttribLocation(program, name);
@@ -106,7 +117,7 @@ export class Renderer implements Drawer {
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(location);
     const type = data instanceof Uint8Array ? gl.UNSIGNED_BYTE : gl.FLOAT;
-    gl.vertexAttribPointer(location, size, type, false, 0, 0);
+    gl.vertexAttribPointer(location, size, type, normalized, 0, 0);
     return buffer;
   }
 
@@ -115,13 +126,14 @@ export class Renderer implements Drawer {
     for (const buffer of drawn.buffers) this.gl.deleteBuffer(buffer);
   }
 
-  private upload(points: Pick<Points, "centre" | "offsets" | "kinds">): Drawn {
+  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours">): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
       this.buffer(this.points.program, "a_offset", points.offsets, 3),
       this.buffer(this.points.program, "a_kind", points.kinds, 1),
     ];
+    if (points.colours !== undefined) buffers.push(this.buffer(this.points.program, "a_colour", points.colours, 4, true));
     this.gl.bindVertexArray(null);
     return { vao, buffers, centre: points.centre, count: points.kinds.length };
   }

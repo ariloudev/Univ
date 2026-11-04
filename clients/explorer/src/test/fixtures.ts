@@ -1,6 +1,7 @@
 // The tile decoder's fixtures, which the Rust encoder writes: manifests of three scale domains
 // and their tiles, each with the points it holds.
 
+import type { ColourBands } from "univ-tile-decoder";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,7 +22,7 @@ export const manifestOf = (domain: string): ExplorerManifest =>
 export interface FixtureTile {
   address: string;
   hex: string;
-  points: { position: [number, number, number]; id: number; kind: string }[];
+  points: { position: [number, number, number]; id: number; kind: string; colour?: [number, ColourBands] }[];
 }
 
 /** The tiles of `domain`, with the points each holds. */

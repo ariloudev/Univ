@@ -11,9 +11,12 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByText(/^Drawing release \d+/)).toBeVisible();
 });
 
-test("draws the latest release's points around Earth, counted by kind and credited", async ({ page }) => {
+test("draws the latest release's points around Earth, stars by colour and the rest by kind, credited", async ({ page }) => {
   // How soon is measured by `cargo xtask bench first-points`, on the real release.
   expect(await firstPoints(page)).toBeGreaterThan(0);
+  const stars = page.getByTestId("star-key");
+  await expect(stars).toContainText("30,000 K");
+  await expect(stars).toContainText(/[1-9][\d,]* stars in the colour of the temperature their colour index gives/);
   const key = page.getByTestId("key");
   await expect(key).toContainText(/measured: [\d,]+ points/);
   await page.getByText(/Credits: the sources of release \d+/).click();

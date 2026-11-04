@@ -50,8 +50,10 @@ export class Catalogue {
   /** The points of the tiles drawn and on their way. */
   private points = 0;
   private sight: Sight | undefined;
-  /** Points drawn of each kind of value, by its index in `KINDS`. */
+  /** Points drawn outside the stars domain of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
+  /** Stars drawn in the colour of their colour index, and in grey for want of one. */
+  readonly stars = { coloured: 0, grey: 0 };
   /** The points drawn of each domain. */
   private readonly domainPoints = new Map<string, number>();
   /** Tiles that failed their SHA-256 or did not decode. */
@@ -145,9 +147,15 @@ export class Catalogue {
     }, RETRY_MS);
   }
 
-  /** Counts `batch`'s points into the kinds of value and its domain, or out of them where `by` is −1. */
+  /** Counts `batch`'s points into the stars' colours or the kinds of value, and into its domain,
+   * or out of them where `by` is −1. */
   private tally(batch: Batch, by: 1 | -1): void {
-    for (const kind of batch.kinds) this.kinds[kind] = (this.kinds[kind] ?? 0) + by;
+    if (batch.stars !== undefined) {
+      this.stars.coloured += by * batch.stars.coloured;
+      this.stars.grey += by * (batch.ids.length - batch.stars.coloured);
+    } else {
+      for (const kind of batch.kinds) this.kinds[kind] = (this.kinds[kind] ?? 0) + by;
+    }
     const domain = batch.tile.domain;
     this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * batch.kinds.length);
   }

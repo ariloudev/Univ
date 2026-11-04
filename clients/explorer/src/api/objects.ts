@@ -24,6 +24,10 @@ const Measurement = z.looseObject({
   kind_of_value: z.string(),
   native: Value,
   normalized: Value.nullable().optional(),
+  /** The band of a magnitude, or the bands of a colour index such as `B-V`. */
+  band: z.string().nullable().optional(),
+  /** The two magnitudes a colour index was computed from, where its source publishes no colour. */
+  derived_from: z.array(z.string()).nullable().optional(),
 });
 export type Measurement = z.infer<typeof Measurement>;
 
@@ -53,7 +57,17 @@ const ObjectRecord = z.looseObject({
   release: z.number().int(),
   id: z.number().int(),
   kind: z.string(),
-  entries: z.array(z.looseObject({ source: z.string(), identifier: z.string(), name: z.string().nullable() })),
+  entries: z.array(
+    z.looseObject({
+      source: z.string(),
+      identifier: z.string(),
+      name: z.string().nullable(),
+      spectral_type: z.looseObject({ text: z.string(), kind_of_value: z.string() }).nullable().optional(),
+      references: z
+        .array(z.looseObject({ citation: z.string(), doi: z.string().nullable().optional(), bibcode: z.string().nullable().optional() }))
+        .optional(),
+    }),
+  ),
   designations: z.array(z.looseObject({ source: z.string(), identifier: z.string() })),
   measurements: z.array(Measurement),
   preferred: Preferred.nullable(),

@@ -34,6 +34,14 @@ requirements:
         name: "The panel lists each other distance measurement of the object beside the preferred one."
       - key: 01a1a497-e843-728a-bce8-3fea61a8f74f
         name: "The panel gives the frame and epoch of the object's position."
+      - key: 01a1a8ac-052e-72b3-a33e-b33a18c5c77c
+        name: "The panel gives each spectral type the object's sources publish, as published, with its source and its kind of value."
+      - key: 01a1a8ac-052e-72b3-a33e-b33ba7b45072
+        name: "The panel gives each colour index of the object with its bands, its uncertainty and its source."
+      - key: 01a1a8ac-052e-72b3-a33e-b33c05d6a7a7
+        name: "Where no source publishes a spectral type, or only an unknown one, the panel gives the class the colour index suggests, labelled as estimated for a main-sequence star and citing Pecaut & Mamajek 2013."
+      - key: 01a1a8ac-052e-72b3-a33e-b33dc8e38c1d
+        name: "The panel names the papers of each researched entry of the object."
       - key: 01a1a497-e843-728a-bce8-3febf4df9871
         name: "The chosen object is marked in the view."
       - key: 01a1a497-e843-728a-bce8-3fec1fe0b4b3

@@ -3142,7 +3142,7 @@ links:
         name: "state the tiles that failed their check, and those that could not be read"
         body: eddaaa991540ec699571322f43e215e0db9a8433185691df244d9880fd03da63
   - node: 01a1a497-e843-728a-bce8-400b9b581384
-    reviewed: 3321669c8f1ae6d614453311aa8e9477ac27a64ee188df719bc4accc012d2bf9
+    reviewed: 1284393bdcb4d4bcc3f01b8681b95b35941e9431cc7a4c5d80027f3a379f83fa
     tests:
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "are drawn in four distinct colours, in one order whatever a manifest lists"
@@ -3156,6 +3156,39 @@ links:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
         body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
+  - node: 01a1a8ac-052e-72b3-a33e-b33fb69a707c
+    reviewed: f26a20dff54fee212a9c0e3c108e2e6a2b30d4e2536b72730304a1b5518b68c1
+    tests:
+      - file: "clients/explorer/src/scene/starColour.test.ts"
+        name: "gives the Sun's colour index about 5,770 K and G2V"
+        body: c8e061935a394b5a28fe9d3b3cfec1276d341b26c7c76d72bb790a09f6d7544f
+      - file: "clients/explorer/src/scene/starColour.test.ts"
+        name: "reads BP−RP along its own column"
+        body: 43b7ed6c0a7ea1f8ab8de5eb4e2c300ebb59f2b6a09e0df3197eef01081623c8
+      - file: "clients/explorer/src/scene/starColour.test.ts"
+        name: "draws a hot star bluer than a cool one"
+        body: 3ce41de51be292c112400e8f35d90acc6a655bffeaf588b8647ff3a4345ea45f
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "gives each star the colour of its colour index, and every other point none of its own"
+        body: 5e5e62dfbd4b85c9c059f990adfe5ce771c8ca0079109281b66308e89b46c523
+  - node: 01a1a8ac-052e-72b3-a33e-b340d68ae618
+    reviewed: 592b26cb582bfd4c216d62c46c77b3faf26dcb2c07df87a001a4b24792c48b71
+    tests:
+      - file: "clients/explorer/src/scene/starColour.test.ts"
+        name: "takes an index beyond the sequence at its end, and says which"
+        body: 16718afe4ca49b14c5db72eb937502c78f07abedf938038ce2f15445dadf994c
+  - node: 01a1a8ac-052e-72b3-a33e-b3413483ba01
+    reviewed: f46c7252e8e4ed6e9b3a7cd3c2430231a00965c95dcf3143f79a16da80601523
+    tests:
+      - file: "clients/explorer/src/scene/starColour.test.ts"
+        name: "draws a star without a colour index in neutral grey"
+        body: 0d7c83b4b64c22f092d9417fa603d96ca1278368e68e4f47624afc5712b35972
+  - node: 01a1a8ac-052e-72b3-a33e-b3422af21b30
+    reviewed: a0605df15f8c7d660212ce3c809f35a76ef7a68375db144329f5d012d9f46977
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "show the stars' colours by temperature and count the stars in colour and in grey"
+        body: 97671c7710752e113d5520e5895df60e70a80694c8f623088e7eb637111b5658
   - node: 01a1a497-e843-728a-bce8-400eb0b1b70d
     reviewed: 3d68e31733a11b68aac2fed28b4280d13551e8ef4a59c1c64d49e2c245020709
     tests:
@@ -3379,11 +3412,11 @@ links:
     reviewed: 49c262781350cb4b1df043dc95a352f9e0b379e71bc3685640eac885b0b650c3
     tests:
       - file: "clients/explorer/src/ui/scenePoint.test.ts"
-        name: "is known by its id, scale domain, place and distance, and the source and kind of its distance"
-        body: f7c3edf604354e112e6dd103e473d6e4be084bcb3d3700f3c7712d6a775d51ef
+        name: "is known by its id, scale domain, place and distance, the source and kind of its distance, and its colour index"
+        body: b0070ff0c203edda8224d5492760c963ac2fa43d5e0609c13a01525e8770f9c4
       - file: "clients/explorer/src/ui/text.test.ts"
         name: "label a point with its id, scale domain, distance, and the source and kind of its distance"
-        body: eca811556d8ac6d96febb5dff917a5b5ac42db4e6e40fa1498fb6346e064e8d9
+        body: 7ff258700eb7cccdd4b78ebf6cacb49a317eccee6f8253952279257cd9a27408
       - file: "clients/explorer/src/ui/scenePoint.test.ts"
         name: "is found under the pointer, or nothing is"
         body: d2e67af0e2d29ae5a46eb54d97aa55f5f1c5ff6f5426748463c89abbb3c26602
@@ -3447,6 +3480,36 @@ links:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives the frame and epoch of the object's position"
         body: aaae8cd5260df5e924d616314d66d9eb8efe8f6bb99fb78b9d4589970a0eac66
+  - node: 01a1a8ac-052e-72b3-a33e-b33a18c5c77c
+    reviewed: a857c08bdb5e21ea214e3f8302445ce55a94d8356a19e3940766f27d24ecd6eb
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives each published spectral type with its source and kind of value, and each colour index with its bands"
+        body: 24e8575d34f3e00f8e9549d2e18036b91f680c47c825dcabbe44e3fdffcbfbe9
+  - node: 01a1a8ac-052e-72b3-a33e-b33ba7b45072
+    reviewed: cd1f1fdec9fc545b1871c21fbb28200c5e346ecd256855588620f98b3dbcede7
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives each published spectral type with its source and kind of value, and each colour index with its bands"
+        body: 24e8575d34f3e00f8e9549d2e18036b91f680c47c825dcabbe44e3fdffcbfbe9
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "estimates the class from the colour index the star is drawn by, and marks a derived index"
+        body: e177d3871da820e2aca198d59a168ff915ccc6d15b8e406ee431dac94ba089fd
+  - node: 01a1a8ac-052e-72b3-a33e-b33c05d6a7a7
+    reviewed: 9e0a95b550b6a6dc530ccc09911e7659b04dca6ec0a020f27a0b29d2e0918f28
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives the class a colour index suggests, labelled as estimated and cited, where no source gives a type"
+        body: 3bf27e914802d5a223bc723b5200c94de36fdeb7108357969987e573dc398aba
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "estimates the class from the colour index the star is drawn by, and marks a derived index"
+        body: e177d3871da820e2aca198d59a168ff915ccc6d15b8e406ee431dac94ba089fd
+  - node: 01a1a8ac-052e-72b3-a33e-b33dc8e38c1d
+    reviewed: 26f8226d5312ee5196c5413ac8f2e7f932a5dabcd59b752f7b23d97e2aaa5df3
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "names the papers of a researched entry"
+        body: 5fcf382c89971b8e739cf816c83c824d01a915bd5c1c77eb0ec433ecba5c7097
   - node: 01a1a497-e843-728a-bce8-3febf4df9871
     reviewed: bca7d8b112819f648054c466978ba0a83c9a97cb103d987537d411ecf16209af
     tests:

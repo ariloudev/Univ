@@ -43,7 +43,11 @@ export type Rotations = z.infer<typeof Rotations>;
 const ManifestCheck = z.looseObject({
   unit: z.enum(["pc", "Mpc"]),
   rotations: Rotations,
-  encoding: z.looseObject({ kinds: z.array(z.enum(["measured", "estimated", "inferred", "reconstructed"])) }),
+  encoding: z.looseObject({
+    kinds: z.array(z.enum(["measured", "estimated", "inferred", "reconstructed"])),
+    /** The bands a point's colour index may lie between, by their code less one. */
+    colour_bands: z.array(z.enum(["BP-RP", "B-V"])).optional(),
+  }),
   sources: z.array(
     z.looseObject({ index: z.number().int(), id: z.string(), title: z.string(), citation: z.string(), credit: z.string() }),
   ),
