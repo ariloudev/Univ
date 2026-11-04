@@ -216,7 +216,7 @@ fn a_malformed_volume_or_filter_answers_400_pointing_at_each_field() {
         ),
         (
             json!({"frame": "icrs", "unit": "furlong", "form": "sphere", "centre": [0, 0, 0], "radius": 0}),
-            vec!["/volume/unit"],
+            vec!["/volume/radius", "/volume/unit"],
         ),
         (
             json!({"frame": "icrs", "unit": "megaparsec", "form": "sphere", "centre": [0, 0, 0], "radius": -1}),
@@ -224,7 +224,7 @@ fn a_malformed_volume_or_filter_answers_400_pointing_at_each_field() {
         ),
         (
             json!({"frame": "icrs", "unit": "degree", "form": "box", "min": [0, 0, 0], "max": [1, 0, 1]}),
-            vec!["/volume/unit"],
+            vec!["/volume/max", "/volume/unit"],
         ),
         (
             json!({"frame": "icrs", "unit": "megaparsec", "form": "box", "min": [0, 0, 0], "max": [1, 0, 1]}),

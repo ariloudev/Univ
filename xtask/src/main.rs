@@ -6,6 +6,7 @@
 //! - `cargo xtask integration` runs Univ Server's end-to-end tests inside `wrangler dev`.
 //! - `cargo xtask serve` runs Univ Server on the real local state.
 //! - `cargo xtask bench lookup` times object lookups through it (QA-2).
+//! - `cargo xtask bench volume` times the first pages of volume queries through it (QA-3).
 
 mod bench;
 mod integration;
@@ -151,13 +152,17 @@ fn main() -> ExitCode {
             integration::stop_on_interrupt();
             bench::lookup(&root)
         }
+        Some("bench") if std::env::args().nth(2).as_deref() == Some("volume") => {
+            integration::stop_on_interrupt();
+            bench::volume(&root)
+        }
         Some("science") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             science::run(&root, &args)
         }
         _ => {
             eprintln!(
-                "usage: cargo xtask <check|lines|integration|serve|bench lookup|science <release-dir>>"
+                "usage: cargo xtask <check|lines|integration|serve|bench lookup|bench volume|science <release-dir>>"
             );
             return ExitCode::from(2);
         }

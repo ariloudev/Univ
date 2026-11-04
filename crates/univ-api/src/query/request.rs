@@ -119,17 +119,19 @@ fn volume(value: Option<&Value>, failures: &mut Failures) -> Option<Volume> {
     if !members.contains_key("unit") {
         failures.add("/volume/unit", "is required");
     }
-    let form = form(members, failures);
+    let form = form(members, failures)?;
+    // The form is checked even where the frame or unit failed, against stand-ins for them,
+    // so that every malformed member is named at once.
     let volume = Volume {
-        frame: frame?,
-        unit: unit?,
-        form: form?,
+        frame: frame.unwrap_or(Frame::Icrs),
+        unit: unit.unwrap_or(Unit::Megaparsec),
+        form,
     };
     let errors = volume.check();
     for error in &errors {
         failures.add(pointer(at, error.member), error.reason.clone());
     }
-    errors.is_empty().then_some(volume)
+    (errors.is_empty() && frame.is_some() && unit.is_some()).then_some(volume)
 }
 
 fn form(members: &Map<String, Value>, failures: &mut Failures) -> Option<VolumeForm> {
