@@ -172,6 +172,27 @@ blocks:
           - every outline point lies at `near` or `far`, or between them on a radial edge;
           - the frame's rotation is applied.
         state: active
+      - key: 01a1a6da-d406-73e3-a507-fd89d44c1c78
+        at: 2026-11-04T13:58:41Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Draw a sky region from its cells"
+        detail: |-
+          **Scope:** `scene/structures.ts`: a `sky_region` shape gives:
+          - its boundary at `near` and at `far`;
+          - radial edges at the 4 boundary corners furthest along two axes across the region.
+
+          It is no longer approximate.
+
+          **Done when** `structures.test.ts` shows:
+          - a one-cell region at 10 to 20 Mpc gives 8 edges, plus 4 radial ones;
+          - every outline point lies at `near` or `far`, or between them on a radial edge;
+          - the frame's rotation is applied.
+
+          **Result:** the tests pass, 155 in all. The criterion is linked (401 of 401). The old approximate test now covers grids. The centre and size still come from the API's centre and bounds, which are already the region's own.
+        state: done
   - key: 01a1a6d6-be07-7656-a0f8-cda255148f70
     id: e8-t-live
     kind: task
@@ -185,6 +206,22 @@ blocks:
         title: "Live: the five sky regions of release 7"
         detail: "**Done when** screenshots show the Hercules SC, the CfA2, Sloan and BOSS Great Walls, and Perseus–Pisces each drawn as a curved slab at its distance, no longer a box about Earth, and none is named \"approximate\"."
         state: open
+      - key: 01a1a6da-d406-73e3-a507-fd8a843cd4cf
+        at: 2026-11-04T13:58:41Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Live: the five sky regions of release 7"
+        detail: |-
+          **Done when** screenshots show the Hercules SC, the CfA2, Sloan and BOSS Great Walls, and Perseus–Pisces each drawn as a curved slab at its distance, no longer a box about Earth, and none is named "approximate".
+
+          **Result:** each is drawn at its own distance:
+          - the BOSS Great Wall as a slab 1.78–1.95 Gpc out, lying over the BOSS galaxies;
+          - the Hercules SC as a narrow wedge at 125–212 Mpc.
+
+          Wide regions such as CfA2 and Sloan show stepped edges, from HEALPix order-6 cells (about 0.9°) that don't follow RA/Dec lines. The steps are true to the release's cells.
+        state: done
   - key: 01a1a6d6-be07-7656-a0f8-cda340617d3d
     id: e8-t-close
     kind: task
@@ -203,6 +240,20 @@ blocks:
           - `cargo xtask check` and `cargo xtask integration` pass;
           - the Yard Log is closed and the branch merged into `product/explorer`.
         state: open
+      - key: 01a1a6da-d406-73e3-a507-fd8b7d8d3bb7
+        at: 2026-11-04T13:58:41Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge"
+        detail: |-
+          **Done when:**
+          - the new criterion is linked and accepted;
+          - `/simplify` and `/code-review` findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and the branch merged into `product/explorer`.
+        state: active
   - key: 01a1a6d7-4e68-7096-a9ea-f04f661367aa
     id: e8-spec
     kind: loft

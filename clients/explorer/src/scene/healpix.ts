@@ -57,32 +57,40 @@ export function corners(order: number, cell: number): [Vec3, Vec3, Vec3, Vec3] {
 /** The centre of cell `cell` of `order`. */
 export const centreOf = (order: number, cell: number): Vec3 => across(order, cell, 0.5, 0.5);
 
-/** A cell's edges, from corner to corner across it, south-east, north-east, north-west, south-west. */
-const EDGES: readonly (readonly [number, number, number, number])[] = [
-  [0, 0, 1, 0],
-  [1, 0, 1, 1],
-  [1, 1, 0, 1],
-  [0, 1, 0, 0],
+/** A cell's corners across it, south, east, north and west; its edges run from each to the next. */
+const CORNERS: readonly (readonly [number, number])[] = [
+  [0, 0],
+  [1, 0],
+  [1, 1],
+  [0, 1],
 ];
 
 /** A point as a key that two cells meeting there agree on, to well within a cell. */
 const keyOf = (v: Vec3) => v.map((c) => Math.round(c * 1e9)).join(",");
 
+/** The key of the edge between the points keyed `a` and `b`, either way round. */
+const edgeKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+
 /** The edges of `cells` of `order` that no two of them share, which outline the region they
  * cover; each a line of `steps` pieces along the cell's own edge. */
 export function boundary(order: number, cells: readonly number[], steps = 3): Vec3[][] {
-  const edges = new Map<string, Vec3[] | undefined>();
-  for (const cell of cells) {
-    for (const [u0, v0, u1, v1] of EDGES) {
-      const ends = [keyOf(across(order, cell, u0, v0)), keyOf(across(order, cell, u1, v1))].sort().join("|");
-      // An edge met twice lies between two cells of the region, inside it.
-      if (edges.has(ends)) {
-        edges.set(ends, undefined);
-        continue;
-      }
-      const line = Array.from({ length: steps + 1 }, (_, i) => across(order, cell, u0 + ((u1 - u0) * i) / steps, v0 + ((v1 - v0) * i) / steps));
-      edges.set(ends, line);
-    }
-  }
-  return [...edges.values()].filter((line) => line !== undefined);
+  const side = 2 ** order;
+  const placed = cells.map((cell) => {
+    const { face, ix, iy } = located(order, cell);
+    const point = (u: number, v: number) => onFace(face, (ix + u) / side, (iy + v) / side);
+    const keys = CORNERS.map(([u, v]) => keyOf(point(u, v)));
+    const edges = keys.map((key, i) => edgeKey(key, keys[(i + 1) % 4] ?? key));
+    return { point, edges };
+  });
+  // An edge met twice lies between two cells of the region, inside it.
+  const met = new Map<string, number>();
+  for (const { edges } of placed) for (const edge of edges) met.set(edge, (met.get(edge) ?? 0) + 1);
+  return placed.flatMap(({ point, edges }) =>
+    edges.flatMap((edge, i) => {
+      if (met.get(edge) !== 1) return [];
+      const [u0, v0] = CORNERS[i] ?? [0, 0];
+      const [u1, v1] = CORNERS[(i + 1) % 4] ?? [0, 0];
+      return [Array.from({ length: steps + 1 }, (_, j) => point(u0 + ((u1 - u0) * j) / steps, v0 + ((v1 - v0) * j) / steps))];
+    }),
+  );
 }

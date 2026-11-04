@@ -6,7 +6,7 @@
 import type { Rotations } from "../api/schemas.ts";
 import type { Geometry, StructureDetail } from "../api/structures.ts";
 import { frameOf } from "./frames.ts";
-import { boundary, centreOf } from "./healpix.ts";
+import { boundary } from "./healpix.ts";
 import { type Outline, boundsEdges, boxEdges, empty, lines, polyline, rings } from "./outline.ts";
 import { toMpc } from "./units.ts";
 import { type Mat3, type Vec3, add, cross, dot, norm, normalize, scale, sub, transpose, unapply } from "./vec.ts";
@@ -59,19 +59,40 @@ type SkyRegion = Extract<Geometry, { kind: "sky_region" }>;
 function extremes(points: readonly Vec3[], towards: Vec3): Vec3[] {
   const across = normalize(cross(towards, Math.abs(towards[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0]));
   const up = cross(towards, across);
-  const furthest = (axis: Vec3, sign: number) =>
-    points.reduce((best, p) => (sign * dot(p, axis) > sign * dot(best, axis) ? p : best), points[0] ?? towards);
+  const furthest = (axis: Vec3, sign: number) => {
+    let best = points[0] ?? towards;
+    let most = -Infinity;
+    for (const p of points) {
+      const along = sign * dot(p, axis);
+      if (along > most) [best, most] = [p, along];
+    }
+    return best;
+  };
   return [furthest(across, 1), furthest(across, -1), furthest(up, 1), furthest(up, -1)];
 }
 
+/** The finest order whose cells the explorer outlines: finer cells' numbers and corners are
+ * beyond its arithmetic. Univ Ingest makes regions of order 6. */
+const FINEST_ORDER = 20;
+
+/** How far the boundary's mean direction must reach, of its points', for the region to have
+ * extremes: a band about the sky has none. */
+const LEANING = 0.05;
+
 /** A sky region: the boundary of its cells on the spheres of its near and far distances, joined
- * by radial edges at its extremes. Its cells' directions lie in the shape's frame. */
-function skyRegionOutline(region: SkyRegion, turn: Turn, k: number): Outline {
+ * by radial edges at its extremes. Its cells' directions lie in the shape's frame. None where it
+ * has no boundary, the whole sky, or its cells are too fine: it is drawn by its box. */
+function skyRegionOutline(region: SkyRegion, turn: Turn, k: number): Outline | undefined {
+  if (region.order > FINEST_ORDER) return undefined;
   const edges = boundary(region.order, region.cells).map((line) => line.map(turn));
+  if (edges.length === 0) return undefined;
   const near = region.near * k;
   const far = region.far * k;
-  const mean = region.cells.reduce<Vec3>((sum, cell) => add(sum, centreOf(region.order, cell)), [0, 0, 0]);
-  const radial = extremes(edges.flat(), turn(normalize(mean))).flatMap((p) => [scale(p, near), scale(p, far)]);
+  // The boundary's mean direction is enough to set the axes across the region.
+  const points = edges.flat();
+  const mean = points.reduce<Vec3>((sum, p) => add(sum, p), [0, 0, 0]);
+  const leaning = norm(mean) / points.length >= LEANING;
+  const radial = leaning ? extremes(points, normalize(mean)).flatMap((p) => [scale(p, near), scale(p, far)]) : [];
   const shells = [near, far].flatMap((r) => edges.flatMap((line) => polyline(line.map((p) => scale(p, r)))));
   return lines([...shells, ...radial]);
 }
@@ -92,7 +113,7 @@ function outlineOf(geometry: Geometry, place: Place, turn: Turn, k: number): Out
     case "members":
       return { segments: [], markers: geometry.members.map((m) => place(m.at)) };
     case "sky_region":
-      return geometry.cells.length === 0 ? undefined : skyRegionOutline(geometry, turn, k);
+      return skyRegionOutline(geometry, turn, k);
     default:
       return undefined;
   }

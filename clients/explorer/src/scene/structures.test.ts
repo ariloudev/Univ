@@ -68,6 +68,17 @@ describe("a structure's shape", () => {
     for (const [i, r] of reach.slice(48).entries()) expect(r).toBeCloseTo(i % 2 === 0 ? 10 : 20, 9);
   });
 
+  it("draws by its box a sky region with no boundary to draw, and gives a band about the sky no radial edges", () => {
+    const sky = (order: number, cells: number[]) => shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "sky_region", order, cells, near: 1, far: 2 } });
+    // The whole sky has no boundary; a region of order 21 is finer than the explorer outlines.
+    for (const shape of [sky(0, Array.from({ length: 12 }, (_, i) => i)), sky(21, [0])]) {
+      expect(drawingOf(detail(shape), ROTATIONS).approximate).toBe(true);
+    }
+    // The four equatorial base cells: a band about the equator, its mean direction nowhere.
+    // They meet only at corners: sixteen edges, in three pieces each, on two shells, and no more.
+    expect(drawingOf(detail(sky(0, [4, 5, 6, 7])), ROTATIONS).outline.segments).toHaveLength(16 * 3 * 2 * 2);
+  });
+
   it("turns a sky region's cells from the frame its shape names", () => {
     const geometry = { kind: "sky_region" as const, order: 0, cells: [4], near: 1, far: 2 };
     const icrs = drawingOf(detail(shapeOf({ frame: "icrs", unit: "megaparsec", geometry })), ROTATIONS).outline.segments;

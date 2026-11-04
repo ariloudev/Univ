@@ -3348,6 +3348,9 @@ links:
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "turns a sky region's cells from the frame its shape names"
         body: b5322b1b976f3c255d7f983631c0d611620c2ffc645035d5e585d526ae69aa30
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws by its box a sky region with no boundary to draw, and gives a band about the sky no radial edges"
+        body: 640f4d0c5644e0b112599c61256b2d465110fe38e22d85c90e651ada774ba759
       - file: "clients/explorer/src/scene/healpix.test.ts"
         name: "of one cell is its four edges, each from corner to corner"
         body: 86cf75c32de27e842814197b918b7c2b3ae6e650ff363eec49d8a134b2f33315
