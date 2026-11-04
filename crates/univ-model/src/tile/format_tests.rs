@@ -18,6 +18,10 @@ fn tile(n: u32) -> (NodeBox, Vec<u8>) {
                 id: ObjectId::new(u64::from(k) * 7_919).unwrap(),
                 source: u16::try_from(k % 3).unwrap(),
                 kind: KINDS[usize::try_from(k % 4).unwrap()],
+                colour: (k % 2 == 0).then_some(PointColour {
+                    index: 0.65,
+                    bands: ColourBands::BpRp,
+                }),
             }
         })
         .collect();
@@ -25,7 +29,8 @@ fn tile(n: u32) -> (NodeBox, Vec<u8>) {
     (node, bytes)
 }
 
-fn v1() -> EncodingLayout {
+/// The layout of the version the encoder writes.
+fn current() -> EncodingLayout {
     layout(u32::from(VERSION)).unwrap()
 }
 
@@ -35,17 +40,23 @@ fn field<'a>(layout: &'a EncodingLayout, name: &str) -> &'a HeaderField {
 
 #[test]
 fn every_listed_version_has_a_layout_and_no_other_does() {
-    assert_eq!(VERSIONS, &[1]);
+    assert_eq!(VERSIONS, &[1, 2]);
     for v in VERSIONS {
         assert_eq!(layout(*v).unwrap().version, *v);
     }
     assert!(layout(0).is_none());
-    assert!(layout(2).is_none());
+    assert!(layout(3).is_none());
+    // Version 1 is described as it was: 17 bytes a point and no colour.
+    let one = layout(1).unwrap();
+    assert_eq!(one.point_bytes, 17);
+    assert_eq!(one.max_points, 61_678);
+    assert_eq!(one.colour_bands, Vec::new());
+    assert!(one.points.iter().all(|f| !f.name.starts_with("colour")));
 }
 
 #[test]
 fn the_fields_fill_the_header_and_each_point_without_gaps() {
-    let l = v1();
+    let l = current();
     let mut at = 0;
     for f in &l.header {
         assert_eq!(
@@ -69,7 +80,7 @@ fn the_fields_fill_the_header_and_each_point_without_gaps() {
 
 #[test]
 fn the_layouts_sizes_add_up_to_the_encoders_tile() {
-    let l = v1();
+    let l = current();
     let header: usize = l.header.iter().map(|f| f.bytes).sum();
     let point: usize = l.points.iter().map(|f| f.bytes).sum();
     for n in [0, 1, 37] {
@@ -87,7 +98,7 @@ fn number(bytes: &[u8], at: usize, ty: FieldType) -> u64 {
 
 #[test]
 fn reading_a_tile_by_the_layout_gives_what_the_decoder_gives() {
-    let l = v1();
+    let l = current();
     let (node, bytes) = tile(37);
     let decoded = decode(&bytes).unwrap();
     let n = decoded.points.len();
@@ -126,10 +137,12 @@ fn reading_a_tile_by_the_layout_gives_what_the_decoder_gives() {
 
 #[test]
 fn the_layout_serializes_its_types_as_clients_name_them() {
-    let json = serde_json::to_value(v1()).unwrap();
+    let json = serde_json::to_value(current()).unwrap();
     assert_eq!(json["header"][0]["type"], "ascii");
     assert_eq!(json["header"][0]["value"], "UVTL");
-    assert_eq!(json["header"][1]["value"], 1);
+    assert_eq!(json["header"][1]["value"], 2);
+    assert_eq!(json["colour_bands"], serde_json::json!(["BP-RP", "B-V"]));
+    assert_eq!(json["points"][4]["type"], "i16le");
     assert_eq!(json["points"][0]["type"], "u16le");
     assert_eq!(json["points"][1]["type"], "u64le");
     assert_eq!(json["kinds"][3], "reconstructed");

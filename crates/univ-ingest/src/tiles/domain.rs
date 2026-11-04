@@ -10,6 +10,7 @@ use univ_model::cosmology::Cosmology;
 use univ_model::ids::{ObjectId, SourceId};
 use univ_model::object::{MeasurementRef, Object};
 use univ_model::position::{Frame, Vec3};
+use univ_model::tile::{ColourBands, PointColour};
 use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::value::KindOfValue;
 
@@ -80,6 +81,8 @@ pub struct DomainPoint {
     pub sky_source: u16,
     /// The kind of value of its preferred distance measurement.
     pub kind: KindOfValue,
+    /// The colour index chosen for it, if its entries give one.
+    pub colour: Option<PointColour>,
 }
 
 /// A scale domain's points, in increasing id, and the sources they index.
@@ -106,6 +109,28 @@ struct Placed {
     distance: usize,
     sky: usize,
     kind: KindOfValue,
+    colour: Option<PointColour>,
+}
+
+/// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
+/// (Gaia DR3's), else a published B−V (Hipparcos-2's), else a BP−RP derived from two magnitudes
+/// (the Gaia Catalogue of Nearby Stars'); the first its entries give of the best of these.
+pub fn colour_of(object: &Object) -> Option<PointColour> {
+    let colours = || object.entries.iter().flat_map(|e| &e.entry.colours);
+    let find = |bands: ColourBands, derived: bool| {
+        colours()
+            .find(|c| {
+                ColourBands::of(&c.band_pair()) == Some(bands)
+                    && c.derived_from.is_some() == derived
+            })
+            .map(|c| PointColour {
+                index: c.value.normalized.value,
+                bands,
+            })
+    };
+    find(ColourBands::BpRp, false)
+        .or_else(|| find(ColourBands::BV, false))
+        .or_else(|| find(ColourBands::BpRp, true))
 }
 
 /// The kind of value of the measurement `m` of `object`.
@@ -194,6 +219,7 @@ pub fn assign(
             distance,
             sky,
             kind,
+            colour: colour_of(&o.object),
         });
     }
     let mut domains = BTreeMap::new();
@@ -235,6 +261,7 @@ fn intern(
             source: distance,
             sky_source: sky,
             kind: p.kind,
+            colour: p.colour,
         });
     }
     Ok(interned)

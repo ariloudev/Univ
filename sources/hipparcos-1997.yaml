@@ -1,0 +1,61 @@
+id: hipparcos-1997
+title: "Hipparcos main catalogue spectral types (ESA 1997)"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "I/239/hip_main"
+  constraints: []
+  # HIP is I6 (ReadMe); the slices run past any HIP, and the row count checks every row is read.
+  slices: { column: HIP, from: 1, to: 150000, step: 30000 }
+  rows: 118218
+cuts:
+  - "No server-side cut: every row of I/239/hip_main, 118,218 by the ReadMe (hip_main.dat, 118218 records)."
+  - >-
+    Only HIP and SpType are taken: the spectral type of field H76 of the original Hipparcos
+    catalogue, as published; the astrometry of the new reduction (van Leeuwen 2007) is taken from
+    hipparcos-2007, to which each row is attached by its HIP number.
+columns:
+  - { column: HIP, field: identifier, unit: dimensionless }
+  - { column: SpType, field: spectral_type, unit: dimensionless }
+  - { column: r_SpType, field: quality, unit: dimensionless }
+frame: icrs
+epoch: 1991.25
+citation: >-
+  ESA 1997, The Hipparcos and Tycho Catalogues, ESA SP-1200 (1997ESASP1200.....E).
+reference: { bibcode: "1997ESASP1200.....E" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite ESA 1997, The Hipparcos and Tycho Catalogues, ESA SP-1200 ("Credit: ESA").
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the author and publisher,
+    and the ReadMe states no copyright or licence restriction. The ESA Hipparcos and ESA space
+    science archive terms were not checked. Provisional: judged again before any public deployment.
+scale_domain: stars
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+normalization:
+  spectral_type:
+    column: SpType
+    kind_of_value: measured
+    basis: >-
+      I/239 ReadMe: SpType is "Spectral type (H76)", and r_SpType (H77) names its source: "1 to 4:
+      Michigan catalogue for the HD stars, vols. 1 to 4 (Houk+)", "G : updated after publication of
+      the HIC", "K : General Catalog of Variable Stars, 4th Ed.", "S : SIMBAD data-base", "X :
+      Miscellaneous". These are classifications of the stars' spectra, so the type is measured;
+      r_SpType is kept beside it as a quality column.

@@ -1,5 +1,5 @@
 source: hipparcos-2007
-url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=I%2F311%2Fhip2&-out=HIP%2CRArad%2CDErad%2Ce_RArad%2Ce_DErad%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CHpmag%2CSn&-out.max=5&HIP=1..30000
-retrieved: 2026-11-03T03:55:44Z
-sha256: a64f909483aaa7f9926aaf557f372fc84bda8529f3c1f01a2e33931f89e91719
+url: http://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=I%2F311%2Fhip2&-out=HIP%2CRArad%2CDErad%2Ce_RArad%2Ce_DErad%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CHpmag%2CSn%2CB-V%2Ce_B-V%2CV-I&-out.max=5&HIP=1..30000
+retrieved: 2026-11-04T14:53:59Z
+sha256: 273896b62284ed8520ced06b0e4eb41c311502d92f130deed6a1bad1f35ca73e
 note: the first chunk's query cut to 5 rows

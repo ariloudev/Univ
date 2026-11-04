@@ -55,9 +55,9 @@
     "supergalactic_basis": "Lahav et al. 2000 (MNRAS 312, 166): pole at galactic (47.37, 6.32) deg, origin at (137.37, 0) deg"
   },
   "encoding": {
-    "version": 1,
+    "version": 2,
     "header_bytes": 48,
-    "point_bytes": 17,
+    "point_bytes": 20,
     "steps_per_edge": 65536,
     "max_tile_bytes": 1048576,
     "point_source": "the index in sources of the source of the point's preferred distance, which gives its kind of value too",
@@ -66,6 +66,10 @@
       "estimated",
       "inferred",
       "reconstructed"
+    ],
+    "colour_bands": [
+      "BP-RP",
+      "B-V"
     ]
   },
   "levels": [
@@ -129,8 +133,8 @@
       },
       "points": 8,
       "sampled_from": 60,
-      "bytes": 184,
-      "sha256": "19485ba2c0d0fe49b5bb0d28859e688fc3dcf91872b4f4683dad244bc13e22c0"
+      "bytes": 208,
+      "sha256": "376b7ac5faed8d2a83c0e4eff67a2adfeeb22af7d6de765d7b4a408b90c94ab0"
     },
     {
       "address": "r0",
@@ -149,8 +153,8 @@
       },
       "points": 9,
       "sampled_from": 9,
-      "bytes": 201,
-      "sha256": "e833e9fcd75dce2e23e8266060cfd11690a915311de32e7e9e942ed1328f440c"
+      "bytes": 228,
+      "sha256": "f8161e504bcdf95b07c8aa63e6471a49295e6ddfee0a272ac85c8fc5d5443f76"
     },
     {
       "address": "r1",
@@ -169,8 +173,8 @@
       },
       "points": 8,
       "sampled_from": 8,
-      "bytes": 184,
-      "sha256": "8dbe72d880ba34b8753af742e9d915d5981570ede23286f448ac5279a09bbc21"
+      "bytes": 208,
+      "sha256": "055265e9ef853e882ab9858d14cb5316a97c7d6c06c578789a8d92edf47a7b6e"
     },
     {
       "address": "r2",
@@ -189,8 +193,8 @@
       },
       "points": 3,
       "sampled_from": 3,
-      "bytes": 99,
-      "sha256": "3412a6409df07af330c6721b719a427fc655804a917be2172828f886c729b9c9"
+      "bytes": 108,
+      "sha256": "2865e9389274fb0d33af57be03e68d4d56d8d14e5b8e2f251fd0bc963a6f5cd9"
     },
     {
       "address": "r3",
@@ -209,8 +213,8 @@
       },
       "points": 6,
       "sampled_from": 6,
-      "bytes": 150,
-      "sha256": "685e98084e6cc6bf34efaaeed71cf20cb2509acad7046d38bc76c71b05d95de4"
+      "bytes": 168,
+      "sha256": "be739e9616d50d7236fd635034663b742302d872dbfcf86a84f1775f669388d9"
     },
     {
       "address": "r4",
@@ -229,8 +233,8 @@
       },
       "points": 6,
       "sampled_from": 6,
-      "bytes": 150,
-      "sha256": "934606cf60558dbfb3f248993a67684b52dfbc59cfe0ecac385d7bc4af2162a3"
+      "bytes": 168,
+      "sha256": "c15040be5de44167585202726bf63b6f0d01a5b9060d52beddf61bf2836d5fc7"
     },
     {
       "address": "r5",
@@ -249,8 +253,8 @@
       },
       "points": 8,
       "sampled_from": 8,
-      "bytes": 184,
-      "sha256": "d876d2a6222b156a0ac219de1eef9e2142d8258106fa6b298fd10e899278cdd8"
+      "bytes": 208,
+      "sha256": "e776daecdfca9aaa2db9b41e8d81ef34cd397fc7ff37ce457489868deddca503"
     },
     {
       "address": "r6",
@@ -269,8 +273,8 @@
       },
       "points": 6,
       "sampled_from": 6,
-      "bytes": 150,
-      "sha256": "5142f8611cb264c665a5c5ef4e951e09dc537b2144fd2c3029d4f40f3eb09cbb"
+      "bytes": 168,
+      "sha256": "43e0c96e3a7f8cf3a926f0ee6f3c5a90342512362c2309bf2fa745592ecae6d4"
     },
     {
       "address": "r7",
@@ -289,8 +293,8 @@
       },
       "points": 6,
       "sampled_from": 6,
-      "bytes": 150,
-      "sha256": "11ad49870dde81e055ec229233db9f12af75f715d93a2aff3e265fa18eb06259"
+      "bytes": 168,
+      "sha256": "73741101e787ff01a7173ebfbff1d3e16bd09d9728fb6487336a8769077d9fd3"
     }
   ]
 }

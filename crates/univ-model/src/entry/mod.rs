@@ -1,6 +1,7 @@
 //! A catalogue entry: one row of a source, normalized, with each value kept as published beside
 //! its normalized form.
 
+mod colour;
 mod position;
 
 use std::collections::BTreeMap;
@@ -8,6 +9,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub use colour::{ColourIndex, SpectralType};
 pub use position::{NativePosition, Position, PositionErrors, PositionUncertainty};
 
 use crate::cosmology::SPEED_OF_LIGHT;
@@ -190,6 +192,9 @@ pub struct CatalogueEntry {
     pub parallax: Option<Value>,
     pub proper_motion: Option<Box<ProperMotion>>,
     pub magnitude: Option<Box<Magnitude>>,
+    /// The colour indices its source publishes, or derives from two of its magnitudes.
+    pub colours: Vec<ColourIndex>,
+    pub spectral_type: Option<Box<SpectralType>>,
     pub group_id: Option<String>,
     pub supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     /// The source's quality columns, by column name, as published.
@@ -210,6 +215,11 @@ struct RawCatalogueEntry {
     parallax: Option<Value>,
     proper_motion: Option<Box<ProperMotion>>,
     magnitude: Option<Box<Magnitude>>,
+    // Absent from entries normalized before colours were read.
+    #[serde(default)]
+    colours: Vec<ColourIndex>,
+    #[serde(default)]
+    spectral_type: Option<Box<SpectralType>>,
     group_id: Option<String>,
     supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     flags: BTreeMap<String, String>,
@@ -228,6 +238,8 @@ impl TryFrom<RawCatalogueEntry> for CatalogueEntry {
             parallax: raw.parallax,
             proper_motion: raw.proper_motion,
             magnitude: raw.magnitude,
+            colours: raw.colours,
+            spectral_type: raw.spectral_type,
             group_id: raw.group_id,
             supergalactic_velocity: raw.supergalactic_velocity,
             flags: raw.flags,

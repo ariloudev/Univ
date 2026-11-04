@@ -63,6 +63,8 @@ fn entry() -> CatalogueEntry {
             band: "Kcmag".to_owned(),
             value: value(0.797, Unit::Magnitude, Unit::Magnitude),
         })),
+        colours: Vec::new(),
+        spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
         flags: BTreeMap::from([("r_cz".to_owned(), "1991RC3.9.C...0000d".to_owned())]),

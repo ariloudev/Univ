@@ -278,6 +278,14 @@
         ],
         "type": "object"
       },
+      "ColourBands": {
+        "description": "The two bands a colour index lies between.",
+        "enum": [
+          "BP-RP",
+          "B-V"
+        ],
+        "type": "string"
+      },
       "Confidence": {
         "description": "A confidence in a match, between 0 and 1. Checked when built and when read.",
         "format": "double",
@@ -606,6 +614,16 @@
       "Encoding": {
         "description": "The tile encoding the manifest's tiles use.",
         "properties": {
+          "colour_bands": {
+            "description": "The colour bands, coded by their index plus one, 0 coding none; absent before version 2.",
+            "items": {
+              "$ref": "#/components/schemas/ColourBands"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "header_bytes": {
             "minimum": 0,
             "type": "integer"
@@ -659,6 +677,13 @@
         "properties": {
           "byte_order": {
             "type": "string"
+          },
+          "colour_bands": {
+            "description": "The colour bands, coded by their index plus one, 0 coding none; none before version 2.",
+            "items": {
+              "$ref": "#/components/schemas/ColourBands"
+            },
+            "type": "array"
           },
           "dequantization": {
             "description": "How a quantized position becomes a position in the manifest's frame and unit.",
@@ -872,6 +897,17 @@
           "source": {
             "description": "Its source's id, such as `gaia-dr3-bright`.",
             "type": "string"
+          },
+          "spectral_type": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SpectralTypeRecord",
+                "description": "Its spectral type, character for character as its source publishes it, with its kind\nof value."
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -888,6 +924,7 @@
         "enum": [
           "ascii",
           "u8",
+          "i16le",
           "u16le",
           "u32le",
           "u64le",
@@ -2323,6 +2360,7 @@
           "proper_motion_ra",
           "proper_motion_dec",
           "magnitude",
+          "colour_index",
           "supergalactic_velocity_x",
           "supergalactic_velocity_y",
           "supergalactic_velocity_z"
@@ -2377,9 +2415,19 @@
         "description": "One measurement of an entry, its native value beside its normalized one.",
         "properties": {
           "band": {
-            "description": "A magnitude's band, as its source names the column, such as `Kcmag`.",
+            "description": "A magnitude's band, as its source names the column, such as `Kcmag`; a colour index's\ntwo bands, such as `B-V`.",
             "type": [
               "string",
+              "null"
+            ]
+          },
+          "derived_from": {
+            "description": "The two magnitude columns a colour index was computed from, where its source publishes\nthe magnitudes and not the colour.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
               "null"
             ]
           },
@@ -4530,6 +4578,23 @@
           "entries",
           "citation",
           "credit"
+        ],
+        "type": "object"
+      },
+      "SpectralTypeRecord": {
+        "description": "A spectral type as its source publishes it.",
+        "properties": {
+          "kind_of_value": {
+            "$ref": "#/components/schemas/KindOfValue",
+            "description": "Measured where the source classified the star's spectrum, estimated where it fitted a\nmodel to it."
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "kind_of_value"
         ],
         "type": "object"
       },

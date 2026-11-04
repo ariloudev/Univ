@@ -71,6 +71,12 @@ fn the_fixture_release_records_each_sources_reference_and_coverage() {
             assert!(note.is_some() && sky.is_none() && radial.is_none());
             continue;
         }
+        if id == "hipparcos-1997" {
+            // Spectral types attached by HIP number: its entries place nothing on the sky and
+            // hold no distance, so it has no footprint or range of its own.
+            assert!(sky.is_none() && radial.is_none(), "{id}");
+            continue;
+        }
         let footprint: SkyFootprint = typed(sky.as_ref()).unwrap();
         assert_eq!(footprint.order, 5, "{id}");
         let ranges: Vec<RadialRange> = typed(radial.as_ref()).unwrap();

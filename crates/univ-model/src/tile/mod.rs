@@ -33,6 +33,21 @@
 //! last step. It decodes to the centre of its step, `min + (q + 0.5) · step`, which lies within
 //! half a step of `p` on each axis.
 //!
+//! # Version 2
+//!
+//! Version 2 is version 1 with the version field 2 and two columns more, after the kinds of
+//! value, so a tile of `n` points is `48 + 20 n` bytes:
+//!
+//! | Offset | Bytes | Field |
+//! |---|---|---|
+//! | 48 + 17 n | 2 n | Each point's colour index in hundredths of a magnitude, `i16`; −32768 for none |
+//! | 48 + 19 n | n | Each point's colour bands, `u8`: 0 for none, else 1 + its index in [`COLOUR_BANDS`] |
+//!
+//! A point carries the colour index chosen for its object (build-octree-tiles), rounded to the
+//! nearest hundredth of a magnitude, so it decodes within 0.005 magnitudes of the value it was
+//! built from. A point with no colour index has both −32768 and 0, and a decoder refuses a point
+//! with one and not the other.
+//!
 //! A decoder refuses a tile with another magic, a version it does not know (naming it), a
 //! reserved field that is not zero, fewer or more bytes than its count gives, more than
 //! [`MAX_TILE_BYTES`], a node that cannot stand (see [`NodeBox::new`]), an object id outside 1
@@ -48,7 +63,7 @@ mod read;
 #[cfg(test)]
 mod tests;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub use read::decode;
@@ -59,16 +74,74 @@ use crate::value::KindOfValue;
 
 /// The magic a tile starts with.
 pub const MAGIC: [u8; 4] = *b"UVTL";
-/// The version of the encoding this module writes and reads.
-pub const VERSION: u16 = 1;
+/// The version of the encoding this module writes. It reads this one and version 1.
+pub const VERSION: u16 = 2;
 /// The bytes before the first point.
 pub const HEADER_BYTES: usize = 48;
-/// The bytes each point takes: 6 of position, 8 of object id, 2 of source, 1 of kind of value.
-pub const POINT_BYTES: usize = 17;
+/// The bytes each point takes in version 1: 6 of position, 8 of object id, 2 of source, 1 of
+/// kind of value.
+pub const V1_POINT_BYTES: usize = 17;
+/// The bytes each point takes in version 2: version 1's, then 2 of colour index and 1 of its
+/// bands.
+pub const POINT_BYTES: usize = 20;
 /// The largest tile a release may hold: 1 MiB, the release's quality bound.
 pub const MAX_TILE_BYTES: usize = 1_048_576;
-/// The most points a tile may hold within [`MAX_TILE_BYTES`]: 61,678.
+/// The most points a version 2 tile may hold within [`MAX_TILE_BYTES`]: 52,426.
 pub const MAX_POINTS: usize = (MAX_TILE_BYTES - HEADER_BYTES) / POINT_BYTES;
+
+/// The bytes each point takes in tiles of `version`, if a version this module reads.
+#[must_use]
+pub const fn point_bytes(version: u16) -> Option<usize> {
+    match version {
+        1 => Some(V1_POINT_BYTES),
+        2 => Some(POINT_BYTES),
+        _ => None,
+    }
+}
+
+/// The colour index a version 2 point holds when it has none.
+pub const NO_COLOUR: i16 = i16::MIN;
+
+/// The two bands a colour index lies between.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub enum ColourBands {
+    #[serde(rename = "BP-RP")]
+    BpRp,
+    #[serde(rename = "B-V")]
+    BV,
+}
+
+/// The colour bands of version 2, each coded as its index plus one; 0 codes none.
+pub const COLOUR_BANDS: [ColourBands; 2] = [ColourBands::BpRp, ColourBands::BV];
+
+impl ColourBands {
+    /// The bands a pair such as `B-V` names, if version 2 codes them.
+    #[must_use]
+    pub fn of(pair: &str) -> Option<Self> {
+        match pair {
+            "BP-RP" => Some(Self::BpRp),
+            "B-V" => Some(Self::BV),
+            _ => None,
+        }
+    }
+
+    /// The code version 2 gives the bands: their index in [`COLOUR_BANDS`] plus one.
+    #[must_use]
+    pub fn code(self) -> u8 {
+        match self {
+            Self::BpRp => 1,
+            Self::BV => 2,
+        }
+    }
+}
+
+/// A point's colour index, in magnitudes, and the bands it lies between.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct PointColour {
+    pub index: f64,
+    pub bands: ColourBands,
+}
 /// The quantization steps along each axis of a node's edge.
 pub const STEPS: u32 = 65_536;
 
@@ -169,6 +242,8 @@ pub struct TilePoint {
     pub id: ObjectId,
     pub source: u16,
     pub kind: KindOfValue,
+    /// The colour index chosen for its object, if it has one.
+    pub colour: Option<PointColour>,
 }
 
 /// A decoded point: its position at the centre of its quantization step, the step it was
@@ -180,6 +255,8 @@ pub struct DecodedPoint {
     pub id: ObjectId,
     pub source: u16,
     pub kind: KindOfValue,
+    /// Its colour index to the hundredth of a magnitude; none in a version 1 tile.
+    pub colour: Option<PointColour>,
 }
 
 /// A decoded tile: its node and its points, in the order stored.
@@ -214,14 +291,24 @@ pub enum TileError {
     Oversized(usize),
     #[error("the tile starts with {0:?}, not the magic UVTL")]
     Magic([u8; 4]),
-    #[error("the tile encoding version {0} is not one this decoder knows (it knows {VERSION})")]
+    #[error("the tile encoding version {0} is not one this decoder knows (it knows 1 and 2)")]
     UnknownVersion(u16),
     #[error("a reserved field of the tile header is not zero")]
     Reserved,
     #[error("point {point} has the object id {id}, outside 1 to 2^53 - 1")]
     ObjectId { point: usize, id: u64 },
-    #[error("point {point} has the kind of value {code}, which version 1 does not define")]
+    #[error("point {point} has the kind of value {code}, which the encoding does not define")]
     Kind { point: usize, code: u8 },
+    #[error(
+        "point {point} has the colour bands code {code}, which the encoding does not define or \
+         its colour index contradicts"
+    )]
+    Colour { point: usize, code: u8 },
+    #[error(
+        "object {id}'s colour index {index} lies beyond the -327.67 to 327.67 magnitudes a tile \
+         holds"
+    )]
+    ColourRange { id: ObjectId, index: f64 },
 }
 
 /// The kinds of value of version 1, each coded as its index.
@@ -259,12 +346,23 @@ fn quantize(p: f64, min: f64, step: f64) -> u16 {
     ((p - min) / step).floor().clamp(0.0, f64::from(u16::MAX)) as u16
 }
 
-/// Encodes `points` as a version 1 tile of `node`, in the order given.
+/// A colour index in hundredths of a magnitude, if a tile can hold it.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "the value is checked to lie within i16's range, above NO_COLOUR, before the cast"
+)]
+fn hundredths(index: f64) -> Option<i16> {
+    let h = (index * 100.0).round();
+    (h.is_finite() && h > f64::from(NO_COLOUR) && h <= f64::from(i16::MAX)).then_some(h as i16)
+}
+
+/// Encodes `points` as a version 2 tile of `node`, in the order given.
 ///
 /// # Errors
 ///
 /// Fails on a node that cannot stand (a child cube may halve below a normal step), more points
-/// than [`MAX_POINTS`], or a point outside the node or not finite.
+/// than [`MAX_POINTS`], a point outside the node or not finite, or a colour index beyond what
+/// a tile holds.
 pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError> {
     let node = NodeBox::new(node.min, node.edge)?;
     let n = points.len();
@@ -301,5 +399,20 @@ pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError
         bytes.extend_from_slice(&p.source.to_le_bytes());
     }
     bytes.extend(points.iter().map(|p| kind_code(p.kind)));
+    for p in points {
+        let held = match p.colour {
+            None => NO_COLOUR,
+            Some(c) => hundredths(c.index).ok_or(TileError::ColourRange {
+                id: p.id,
+                index: c.index,
+            })?,
+        };
+        bytes.extend_from_slice(&held.to_le_bytes());
+    }
+    bytes.extend(
+        points
+            .iter()
+            .map(|p| p.colour.map_or(0, |c| c.bands.code())),
+    );
     Ok(bytes)
 }

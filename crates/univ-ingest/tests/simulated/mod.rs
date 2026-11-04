@@ -88,6 +88,8 @@ pub fn bare(src: &str, id: &str) -> CatalogueEntry {
         parallax: None,
         proper_motion: None,
         magnitude: None,
+        colours: Vec::new(),
+        spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
         flags: BTreeMap::new(),

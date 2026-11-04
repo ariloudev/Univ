@@ -22,9 +22,11 @@ use univ_model::derive::Release;
 use univ_model::release::manifest::Target;
 use univ_model::release::{ReleaseManifest, keys};
 
-/// Sources each fetched in one query: Hipparcos stars, nearby galaxies and cosmic web galaxies.
-pub const SOURCES: [&str; 5] = [
+/// Sources each fetched in one query: Hipparcos stars with the spectral types the Hipparcos
+/// catalogue gives them, nearby galaxies and cosmic web galaxies.
+pub const SOURCES: [&str; 6] = [
     "hipparcos-2007",
+    "hipparcos-1997",
     "mcconnachie-2012",
     "updated-nearby-galaxies",
     "twomrs",

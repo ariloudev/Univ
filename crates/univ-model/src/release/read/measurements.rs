@@ -66,6 +66,7 @@ pub(super) fn measurement(
         distance: None,
         redshift: None,
         band: None,
+        derived_from: None,
     };
     match quantity {
         MeasuredQuantity::Distance => {
@@ -88,6 +89,10 @@ pub(super) fn measurement(
             });
         }
         MeasuredQuantity::Magnitude => record.band = Some(c.term("kind")?.to_owned()),
+        MeasuredQuantity::ColourIndex => {
+            record.band = Some(c.term("kind")?.to_owned());
+            record.derived_from = from_extra(&c, &extra, "derived_from")?;
+        }
         _ => {}
     }
     Ok(record)

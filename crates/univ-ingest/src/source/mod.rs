@@ -8,8 +8,8 @@ mod rules;
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
-    Coded, ComovingVelocity, DistanceReading, ErrorColumns, MethodCodes, Normalization, Published,
-    RedshiftCodes, RedshiftReading,
+    Coded, ColourReading, ComovingVelocity, DistanceReading, ErrorColumns, MethodCodes,
+    Normalization, Published, RedshiftCodes, RedshiftReading, SpectralTypeReading,
 };
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
@@ -157,6 +157,13 @@ pub enum Field {
     ProperMotionRa,
     ProperMotionDec,
     Magnitude,
+    /// A colour index, or its error, as published; read as `normalization.colours` names it.
+    ColourIndex,
+    ColourIndexError,
+    /// A magnitude read only to derive a colour index from, as `normalization.colours` names it.
+    ColourMagnitude,
+    /// A spectral type as published; read as `normalization.spectral_type` names it.
+    SpectralType,
     GroupId,
     Quality,
     SupergalacticX,

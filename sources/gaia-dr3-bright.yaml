@@ -6,15 +6,23 @@ access:
   # 482,106 rows (measured 2026-11-03) in 16 chunks of about 30,000, well under the ESA archive's
   # silent 50,000-row anonymous cap.
   query: >-
-    SELECT source_id, ra, dec, ra_error, dec_error, parallax, parallax_error, pmra, pmdec,
-    radial_velocity, radial_velocity_error, phot_g_mean_mag FROM gaiadr3.gaia_source
-    WHERE phot_g_mean_mag < 10 AND MOD(random_index, {chunks}) = {chunk}
+    SELECT g.source_id, g.ra, g.dec, g.ra_error, g.dec_error, g.parallax, g.parallax_error,
+    g.pmra, g.pmdec, g.radial_velocity, g.radial_velocity_error, g.phot_g_mean_mag, g.bp_rp,
+    a.spectraltype_esphs FROM gaiadr3.gaia_source AS g
+    LEFT OUTER JOIN gaiadr3.astrophysical_parameters AS a ON a.source_id = g.source_id
+    WHERE g.phot_g_mean_mag < 10 AND MOD(g.random_index, {chunks}) = {chunk}
   chunks: 16
   count: "SELECT COUNT(*) AS n FROM gaiadr3.gaia_source WHERE phot_g_mean_mag < 10"
 cuts:
   - "phot_g_mean_mag < 10 (PROVISIONAL: the owner is deciding the magnitude limit). Measured 2026-11-03: 482,106 rows."
   - "Rows with no G magnitude are excluded by the cut. These are gaia_source rows, not stars: duplicates and spurious bright sources are not removed."
   - "Gaia is incomplete at the bright end (the brightest EDR3/DR3 source is at G = 1.73, and bright stars are missing at G < 7), so the bright end is a lower bound on the true sky counts."
+  - >-
+    bp_rp is BP-RP as gaia_source publishes it, with no error column; it is null where BP or RP is.
+    spectraltype_esphs comes from gaiadr3.astrophysical_parameters by a left join on source_id:
+    ESP-HS's spectral type tag (Creevey et al. 2023, A&A 674, A26), a class letter (O to M, CSTAR)
+    or "unknown", kept as published. Measured 2026-11-04 over G < 10: 481,970 rows joined, 4,109
+    blank and 1,080 "unknown".
   - "parallax, pmra and pmdec are null for 2-parameter solutions; radial_velocity is null for most sources. ra_error is sigma(alpha*) = sigma(alpha) cos(dec); pmra is mu_alpha* = mu_alpha cos(dec)."
 columns:
   - { column: source_id, field: identifier, unit: dimensionless }
@@ -29,6 +37,8 @@ columns:
   - { column: radial_velocity, field: velocity, unit: kilometre_per_second }
   - { column: radial_velocity_error, field: velocity_error, unit: kilometre_per_second }
   - { column: phot_g_mean_mag, field: magnitude, unit: magnitude }
+  - { column: bp_rp, field: colour_index, unit: magnitude }
+  - { column: spectraltype_esphs, field: spectral_type, unit: dimensionless }
 frame: icrs
 epoch: 2016.0
 citation: >-
@@ -65,3 +75,14 @@ mirrors:
   - "https://gea.esac.esa.int/tap-server/tap"
   - "https://gaia.ari.uni-heidelberg.de/tap"
   - "https://gaia.aip.de/tap"
+normalization:
+  colours:
+    - { bands: [BP, RP], column: bp_rp }
+  spectral_type:
+    column: spectraltype_esphs
+    kind_of_value: estimated
+    basis: >-
+      ESP-HS assigns its spectral type tag from the BP/RP spectrum, by the module's own
+      classification ahead of fitting hot-star models (Creevey et al. 2023, A&A 674, A26, the
+      ESP-HS section of Gaia DR3's astrophysical parameters): a model estimate, not a
+      classification of the star's spectrum by a spectroscopist, so it is estimated.

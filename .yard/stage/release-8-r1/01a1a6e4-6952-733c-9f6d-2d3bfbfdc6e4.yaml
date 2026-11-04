@@ -24,6 +24,18 @@ blocks:
         title: "Spec change for colours, spectral types and tile version 2, approved"
         detail: "**Done when** the spec change passes `loft fmt --check` and `loft check --fail-on warning`, is approved, and is committed alone."
         state: active
+      - key: 01a1a6ec-d762-7554-97be-dcb4e5877982
+        at: 2026-11-04T14:18:21Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for colours, spectral types and tile version 2, approved"
+        detail: |-
+          **Done when** the spec change passes `loft fmt --check` and `loft check --fail-on warning`, is approved, and is committed alone.
+
+          **Result:** approved on the page and committed alone. The first approval was withdrawn before you answered it, to remove an unchecked claim about ESP-HS coverage.
+        state: done
   - key: 01a1a6e4-6952-733c-9f6d-2d3d3d9ed214
     id: r1-t-colour
     kind: task
@@ -43,6 +55,68 @@ blocks:
 
           **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
         state: open
+      - key: 01a1a6ec-d762-7554-97be-dcb5cb60d004
+        at: 2026-11-04T14:18:21Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour indices read and kept"
+        detail: |-
+          **Scope:**
+          - the model gains a colour-index measurement naming its two bands;
+          - Hipparcos-2 (I/311) `B-V`, `e_B-V` and `V-I`, and Gaia DR3 `bp_rp`, are read as measured;
+          - GCNS `BPmag` and `RPmag` are read as magnitudes, with BP−RP derived from them.
+
+          **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
+        state: active
+      - key: 01a1a707-0446-72f3-a668-bf1722c5fc8c
+        at: 2026-11-04T14:46:57Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour indices read and kept"
+        detail: |-
+          **Scope:**
+          - the model gains a colour-index measurement naming its two bands;
+          - Hipparcos-2 (I/311) `B-V`, `e_B-V` and `V-I`, and Gaia DR3 `bp_rp`, are read as measured;
+          - GCNS `BPmag` and `RPmag` are read to derive BP−RP.
+
+          **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
+
+          **Progress:**
+          - **Model:** `ColourIndex` and `SpectralType` on the entry.
+          - **Source definitions:** readings in `normalization.colours` and `normalization.spectral_type`, with four new fields.
+          - **Release rows:** a colour is a `colour_index` measurement, its bands as the `kind` term and `derived_from` in `extra`. A spectral type goes in the entry's `extra`, so older releases need no migration.
+          - **API:** `band` and `derived_from` on measurements, `spectral_type` on entries. The OpenAPI snapshot only adds.
+          - **Recorded answers:** being recorded again from the live services.
+        state: active
+      - key: 01a1a71b-8537-71c9-903f-14947902c68d
+        at: 2026-11-04T15:09:21Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Colour indices read and kept"
+        detail: |-
+          **Scope:**
+          - the model gains a colour-index measurement naming its two bands;
+          - Hipparcos-2 (I/311) `B-V`, `e_B-V` and `V-I`, and Gaia DR3 `bp_rp`, are read as measured;
+          - GCNS `BPmag` and `RPmag` are read to derive BP−RP.
+
+          **Done when** fixture tests of each source show the values, bands, uncertainties and kinds, and `/v1/objects/{id}` lists them as measurements.
+
+          **Result:**
+          - The answers were recorded again on 2026-11-04 from VizieR (the NAO and IDIA mirrors; CDS timed out) and the Gaia archive.
+          - `tests/normalize_colours.rs`, against the recorded text:
+            - HIP 1: B−V 0.482 ± 0.025 measured, V−I 0.550 with no uncertainty reported;
+            - HIP 3: B−V −0.019, kept negative;
+            - Gaia: BP−RP 1.2496433 measured;
+            - GCNS: BP−RP 1.0626 derived from BPmag 11.3022 and RPmag 10.2396, naming both; none where both are blank.
+          - `object_reads` reads each colour back as a `colour_index` measurement with its bands and `derived_from`.
+          - The model, ingest and API lint clean. The OpenAPI snapshot only adds.
+        state: done
   - key: 01a1a6e4-6952-733c-9f6d-2d3e56facb86
     id: r1-t-types
     kind: task
@@ -61,6 +135,25 @@ blocks:
 
           **Done when** fixture tests show the text kept character for character, and the object record lists each spectral type with its source and kind.
         state: open
+      - key: 01a1a71b-9733-7736-b0df-f5f97c2ed763
+        at: 2026-11-04T15:09:25Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spectral types read and kept"
+        detail: |-
+          **Scope:**
+          - a new source definition for Hipparcos I/239 `hip_main` (HIP, SpType), attached by HIP number and marked measured;
+          - Gaia DR3 `spectraltype_esphs` by a left join of `gaiadr3.astrophysical_parameters`, marked estimated.
+
+          **Done when** fixture tests show the text kept character for character, and the object record lists each spectral type with its source and kind.
+
+          **Progress:**
+          - `sources/hipparcos-1997.yaml` is written against the I/239 ReadMe (118,218 records; `r_SpType` kept as a flag), and `rules/matching.yaml` adds it to the `hip` scheme.
+          - `normalize_colours` shows HIP 2 `K3V` and HIP 5 `G8III` measured, and Gaia's `K` and `M` estimated.
+          - The fixture release now includes hipparcos-1997 as its sixth source. `object_reads` shows its five entries attached to the Hipparcos-2 stars of the same HIP number, each with its type read back. The shared fixtures are being regenerated and the ingest suite is running.
+        state: active
   - key: 01a1a6e4-6952-733c-9f6d-2d3f4b7e0fd5
     id: r1-t-tiles
     kind: task
@@ -817,3 +910,51 @@ blocks:
           email: "ariloudev@local"
         channel: page
         verdict: approved
+  - key: 01a1a6ec-d762-7554-97be-dcb21ceb3d44
+    id: r1-decision
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a6ec-d762-7554-97be-dcb33d64593b
+        at: 2026-11-04T14:18:21Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8 carries star colours, spectral types and tile version 2"
+        consequence: |-
+          **R1 builds four things, in this order:**
+          1. the colour-index measurement and its readers;
+          2. the spectral-type text and its two sources;
+          3. tile encoding version 2 and its decoders;
+          4. the tile-format contract.
+
+          The explorer's E7 then colours stars from version 2 tiles.
+  - key: 01a1a707-0446-72f3-a668-bf1501da8464
+    id: r1-esphs
+    kind: note
+    versions:
+      - key: 01a1a707-0446-72f3-a668-bf16fe556e42
+        at: 2026-11-04T14:46:57Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What ESP-HS gives over G < 10, measured"
+        markdown: |-
+          I asked the Gaia archive on 2026-11-04 for `spectraltype_esphs` over `gaia_source` joined to `astrophysical_parameters`, with G < 10:
+
+          | Type | Stars |
+          |---|---|
+          | K | 211,248 |
+          | F | 89,418 |
+          | M | 50,417 |
+          | A | 49,198 |
+          | B | 37,905 |
+          | G | 36,724 |
+          | O | 985 |
+          | CSTAR | 886 |
+          | unknown | 1,080 |
+          | blank | 4,109 |
+
+          In all, 481,970 of the 482,106 stars have a row in the table. So ESP-HS gives a class letter for nearly every bright star, not only hot ones. The sentence I withdrew from the first approval was wrong, and the definition records these counts. "unknown" is kept as published, and E7 shows no class for it.

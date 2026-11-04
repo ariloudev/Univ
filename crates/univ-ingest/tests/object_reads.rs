@@ -36,8 +36,20 @@ fn find(
 fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
     // AC-131.
     let Decoded { pairs } = decoded();
+    let mut types = 0;
     for (o, r) in pairs {
         assert_eq!(r.entries.len(), o.object.entries.len(), "{}", o.id.get());
+        // A Hipparcos catalogue entry attaches to the Hipparcos-2 star of the same HIP number.
+        for e in r.entries.iter().filter(|e| e.source == "hipparcos-1997") {
+            assert!(
+                r.entries
+                    .iter()
+                    .any(|s| s.source == "hipparcos-2007" && s.identifier == e.identifier),
+                "HIP {} in object {} with no Hipparcos-2 entry",
+                e.identifier,
+                o.id.get()
+            );
+        }
         for ((n, e), read) in (0u32..).zip(&o.object.entries).zip(&r.entries) {
             let entry = &e.entry;
             assert_eq!(read.entry, n);
@@ -47,6 +59,18 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             assert_eq!(read.name, entry.name);
             assert_eq!(read.group_id, entry.group_id);
             assert_eq!(read.flags, entry.flags);
+            assert_eq!(
+                read.spectral_type
+                    .as_ref()
+                    .map(|t| (t.text.as_str(), t.kind_of_value)),
+                entry
+                    .spectral_type
+                    .as_ref()
+                    .map(|t| (t.text.as_str(), t.kind)),
+                "{}",
+                o.id.get()
+            );
+            types += usize::from(read.spectral_type.is_some());
             match (&read.position, &entry.position) {
                 (None, None) => {}
                 (Some(p), Some(q)) => {
@@ -84,6 +108,10 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             r.designations
         );
     }
+    assert_eq!(
+        types, 5,
+        "the five Hipparcos catalogue entries read with their spectral types"
+    );
 }
 
 #[test]
@@ -91,6 +119,7 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
     // AC-132.
     let Decoded { pairs } = decoded();
     let mut redshifts = 0;
+    let mut colours = 0;
     for (o, r) in pairs {
         let mut count = 0;
         for (e, entry) in (0u32..).zip(&o.object.entries) {
@@ -158,10 +187,19 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
                 let m = find(&r.measurements, e, MeasuredQuantity::Magnitude, 0);
                 assert_eq!(m.band.as_deref(), Some(mag.band.as_str()));
             }
+            for (n, c) in (0u32..).zip(&entry.colours) {
+                let m = find(&r.measurements, e, MeasuredQuantity::ColourIndex, n);
+                check(m, &c.value.native, &c.value.normalized, c.value.kind);
+                assert_eq!(m.band.as_deref(), Some(c.band_pair().as_str()));
+                assert_eq!(m.derived_from, c.derived_from);
+                colours += 1;
+                count += 1;
+            }
         }
         assert_eq!(r.measurements.len(), count, "{}", o.id.get());
     }
     assert!(redshifts > 0);
+    assert!(colours > 0, "the fixture release reads colour indices back");
 }
 
 #[test]
