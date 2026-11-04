@@ -17,7 +17,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, Instant};
 
-use crate::command;
+use crate::{Outcome, command};
 
 /// The Worker's crate, from the workspace root, which holds its `wrangler.toml`.
 const WORKER_DIR: &str = "crates/univ-server";
@@ -73,16 +73,26 @@ pub fn integration(root: &Path) -> bool {
         .env("UNIV_E2E_OWNER_SECRET", OWNER_SECRET)
         .status()
         .is_ok_and(|status| status.success());
+    let explorer = if passed {
+        eprintln!("==> the explorer's end-to-end tests");
+        crate::explore::end_to_end(root, port)
+    } else {
+        Outcome::Failed
+    };
     drop(wrangler);
-    if passed {
+    if explorer == Outcome::Passed {
         eprintln!("integration passed");
+    } else if explorer == Outcome::Skipped {
+        eprintln!("integration passed, skipped: the explorer's end-to-end tests");
+    } else if passed {
+        eprintln!("integration failed at: the explorer's end-to-end tests");
     } else {
         eprintln!(
             "integration failed at: end-to-end tests; Wrangler's log is {}",
             log.display()
         );
     }
-    passed
+    explorer != Outcome::Failed
 }
 
 /// Runs the Worker on the real local state until it is stopped, on the port its
@@ -429,7 +439,7 @@ fn revoke_labelled(port: u16, label: &str) -> Result<usize, String> {
 
 /// Univ Server on the real local state, its tables and migrations brought up to date, its
 /// Wrangler log at `log`; the running Wrangler and its port, or none, having said why.
-pub(crate) fn start_on_real_state(root: &Path, log: &Path) -> Option<(Wrangler, u16)> {
+fn start_on_real_state(root: &Path, log: &Path) -> Option<(Wrangler, u16)> {
     let state = root.join(REAL_STATE);
     if !state.is_dir() {
         eprintln!(
@@ -461,4 +471,27 @@ pub(crate) fn fresh_key(port: u16, label: &str) -> Option<String> {
     let key = revoke_labelled(port, label).and_then(|_| issue_key(port, "extended", label));
     key.map_err(|error| eprintln!("could not issue a {label} key: {error}"))
         .ok()
+}
+
+/// Runs `run` with the port of Univ Server on the real local state and a fresh key labelled
+/// `label`, its Wrangler log at `log`, then stops the server; whether all of it succeeded.
+pub(crate) fn with_real_server(
+    root: &Path,
+    log: &Path,
+    label: &str,
+    run: impl FnOnce(u16, &str) -> bool,
+) -> bool {
+    let Some((wrangler, port)) = start_on_real_state(root, log) else {
+        eprintln!(
+            "failed at: starting Univ Server; its log is {}",
+            log.display()
+        );
+        return false;
+    };
+    let Some(key) = fresh_key(port, label) else {
+        return false;
+    };
+    let succeeded = run(port, &key);
+    drop(wrangler);
+    succeeded
 }

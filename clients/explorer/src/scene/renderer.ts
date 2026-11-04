@@ -5,7 +5,7 @@
 
 import { type View, eyeAxes, eyeOf } from "./camera.ts";
 import type { Drawer, Lines } from "./drawing.ts";
-import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR } from "./kinds.ts";
+import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, pointOpacity } from "./kinds.ts";
 import { projection } from "./projection.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
@@ -73,6 +73,7 @@ export class Renderer implements Drawer {
   private readonly outlines = new Map<string, Outline>();
   private readonly markers = new Map<string, Drawn>();
   private readonly pointSize: WebGLUniformLocation | null;
+  private readonly opacity: WebGLUniformLocation | null;
 
   constructor(canvas: HTMLCanvasElement) {
     // No multisampling: the points soften their own edges, and samples multiply blending's cost.
@@ -84,6 +85,7 @@ export class Renderer implements Drawer {
     this.lineColour = gl.getUniformLocation(this.lines.program, "u_colour");
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
+    this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
     const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
     gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
   }
@@ -161,8 +163,10 @@ export class Renderer implements Drawer {
     }
     this.use(this.points, frame);
     gl.uniform1f(this.pointSize, POINT_SIZE);
+    gl.uniform1f(this.opacity, pointOpacity(view.distance));
     for (const batch of this.batches) this.drawOne(this.points, frame, batch, gl.POINTS);
     gl.uniform1f(this.pointSize, MARKER_SIZE);
+    gl.uniform1f(this.opacity, 1);
     for (const marker of this.markers.values()) this.drawOne(this.points, frame, marker, gl.POINTS);
   }
 

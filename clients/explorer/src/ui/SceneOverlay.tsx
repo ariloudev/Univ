@@ -24,33 +24,32 @@ export function Marks({ overlay }: { overlay: Overlay }) {
   );
 }
 
-/** Each placed structure's name, kept at its centre and clear of the others; each to choose. */
-export function StructureNames({ names, overlay, onChoose }: { names: readonly NameLabel[]; overlay: Overlay; onChoose: (id: string) => void }) {
+/** Each placed structure's name, kept at its centre and clear of the others. The names take no
+ * pointer: the view's mouse chooses a structure by its name (and the list does, by keyboard). */
+export function StructureNames({ names, overlay }: { names: readonly NameLabel[]; overlay: Overlay }) {
   return (
-    <div ref={overlay.names}>
+    <div ref={overlay.names} className="pointer-events-none">
       {names.map((name) => (
-        <button
+        <span
           key={name.id}
-          type="button"
           data-structure={name.id}
-          onClick={() => onChoose(name.id)}
-          className="absolute top-0 left-0 text-xs whitespace-nowrap hover:underline"
+          className="absolute top-0 left-0 text-xs whitespace-nowrap"
           style={{ display: "none", color: STRUCTURE_CSS }}
         >
           <span className="block -translate-x-1/2 -translate-y-1/2">{name.text}</span>
-        </button>
+        </span>
       ))}
     </div>
   );
 }
 
-/** The label of the point under the pointer. */
+/** The label of what is under the pointer: a structure's name, which a click reads, or a point. */
 export function HoverLabel({ world }: { world: World }) {
   const hover = useStore(world.hover);
   if (hover === undefined) return null;
   return (
     <p role="tooltip" className="pointer-events-none absolute rounded bg-panel px-2 py-1 text-xs" style={{ left: hover.x + 12, top: hover.y + 12 }}>
-      {pointText(hover.point)}
+      {"name" in hover ? `${hover.name.text}. Click to read the structure.` : pointText(hover.point)}
     </p>
   );
 }

@@ -8,6 +8,7 @@
 //! - `cargo xtask explore` runs Univ Server and Univ Explorer beside it on the real local state.
 //! - `cargo xtask bench lookup` times object lookups through it (QA-2).
 //! - `cargo xtask bench volume` times the first pages of volume queries through it (QA-3).
+//! - `cargo xtask bench first-points` measures how soon Univ Explorer draws its first points.
 
 mod bench;
 mod explore;
@@ -159,30 +160,33 @@ fn main() -> ExitCode {
             integration::stop_on_interrupt();
             explore::explore(&root)
         }
-        Some("bench") if std::env::args().nth(2).as_deref() == Some("lookup") => {
+        Some("bench") => {
             integration::stop_on_interrupt();
-            bench::lookup(&root)
-        }
-        Some("bench") if std::env::args().nth(2).as_deref() == Some("volume") => {
-            integration::stop_on_interrupt();
-            bench::volume(&root)
+            match std::env::args().nth(2).as_deref() {
+                Some("lookup") => bench::lookup(&root),
+                Some("volume") => bench::volume(&root),
+                Some("first-points") => explore::first_points(&root),
+                _ => return usage(),
+            }
         }
         Some("science") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             science::run(&root, &args)
         }
-        _ => {
-            eprintln!(
-                "usage: cargo xtask <check|lines|integration|serve|explore|bench lookup|bench volume|science <release-dir>>"
-            );
-            return ExitCode::from(2);
-        }
+        _ => return usage(),
     };
     if passed {
         ExitCode::SUCCESS
     } else {
         ExitCode::FAILURE
     }
+}
+
+fn usage() -> ExitCode {
+    eprintln!(
+        "usage: cargo xtask <check|lines|integration|serve|explore|bench lookup|bench volume|bench first-points|science <release-dir>>"
+    );
+    ExitCode::from(2)
 }
 
 /// The workspace root: the parent of this crate's directory.

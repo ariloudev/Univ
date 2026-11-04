@@ -1,12 +1,14 @@
 # univ-server
 
 Real, normalized astronomical and cosmological data for clients such as a TypeScript web app, and
-layers that clients author on top of it. Two products share one Rust workspace:
+layers that clients author on top of it. Three products share this repository:
 
 - **Univ Ingest:** a local CLI. It downloads public sky data, normalizes and cross-matches it, and
   publishes immutable releases to D1 and R2.
 - **Univ Server:** a Cloudflare Worker that serves those releases and the client layers. It runs
   locally under `wrangler dev` in the first version.
+- **Univ Explorer:** a web app in `clients/explorer` that draws a release in 3D around Earth,
+  for the mouse, and reads its objects and structures from Univ Server.
 
 The specification in `spec/` is the contract. It is published from `develop`.
 
@@ -14,13 +16,15 @@ The specification in `spec/` is the contract. It is published from `develop`.
 
 | Path | What it holds |
 |---|---|
-| `spec/` | Loft specification: Products `univ-server` and `univ-ingest`, Components, decisions |
+| `spec/` | Loft specification: Products `univ-server`, `univ-ingest` and `univ-explorer`, Components, decisions |
 | `loft.trace.yaml` | Links from acceptance criteria to the tests that verify them |
 | `crates/univ-model` | Shared domain model; no I/O, and builds for `wasm32-unknown-unknown` |
 | `crates/univ-ingest` | The Univ Ingest CLI; recorded provider answers in `tests/fixtures/<provider>/` |
 | `crates/univ-api` | Univ Server's routes, handlers and HTTP contract as plain values, with no I/O; native and wasm32. `migrations/` holds the univ-layers database |
 | `crates/univ-server` | The Worker: workers-rs bindings of D1, R2 and the rate limiters around `univ-api`; its own `wrangler.toml`; end-to-end tests in `tests/e2e.rs` |
-| `xtask` | Project tasks: the check gate, the 500-line rule, the science checks, and the Worker's `integration` and `serve` |
+| `xtask` | Project tasks: the check gate, the 500-line rule, the science checks, the Worker's `integration` and `serve`, the benches, and `explore` |
+| `clients/tile-decoder` | The reference TypeScript tile decoder and its fixtures, which the Rust encoder writes |
+| `clients/explorer` | Univ Explorer: Vite, React, TypeScript and its own WebGL2 renderer; see its `README.md` |
 | `scripts/r2-batch.mjs` | Every R2 operation of a publish or prune through one Node process, on Wrangler's local bucket |
 
 ## Commands
@@ -37,7 +41,9 @@ Run them from this directory.
 - `cargo xtask integration` runs Univ Server's end-to-end tests: it writes the fixture state
   (ingest's fixture releases, the first pruned) into `target/integration/state`, applies the
   univ-layers migrations, starts `wrangler dev` on a free port and runs the ignored tests of
-  `crates/univ-server/tests/` against it. Wrangler's log is `target/integration/wrangler.log`.
+  `crates/univ-server/tests/` against it, then the explorer's Playwright tests (with axe) through
+  its dev server on port 5318. It installs Playwright's Chromium where it is missing; without
+  pnpm it skips the explorer's tests and says so. Wrangler's log is `target/integration/wrangler.log`.
 - `cargo xtask serve` runs Univ Server under `wrangler dev` on the real local state,
   `.cache/univ-ingest/wrangler`, where `univ-ingest publish` puts releases. It first creates any
   table of univ-model's release schema that state lacks (a release built before the schema grew
@@ -48,6 +54,15 @@ Run them from this directory.
   99th percentiles against QA-2's 200 ms at the 95th. It reads with an extended-tier key it
   issues itself, since anonymous reads are limited to 300 a minute. It measures the local
   runtime and D1.
+- `cargo xtask explore` runs Univ Server on the real local state and Univ Explorer beside it at
+  http://127.0.0.1:5317/, until Ctrl-C. The explorer's dev server passes its reads on to the
+  Worker with an extended-tier key it issues for the run (and revokes the keys earlier runs left),
+  so the key never reaches the browser. Its Wrangler log is `target/explore/wrangler.log`.
+- `cargo xtask bench first-points` starts Univ Server on the real local state, opens the explorer
+  (on port 5319) once to warm up and then 10 times in headless Chromium, and prints the time to
+  its first points drawn on the latest release, the 95th percentile against 3 s.
+- The explorer's own gate, `pnpm check` in `clients/explorer` (typecheck, Vitest with coverage,
+  fallow, build), runs in `cargo xtask check` when pnpm is on the path.
 - `cargo fmt` formats the workspace. Nothing formats automatically, and the gate fails on
   unformatted code.
 
@@ -65,16 +80,16 @@ Run them from this directory.
   exempted.
 - **No network in tests.** Tests read small recorded provider answers. Tests that fetch live are
   `#[ignore]` and run by hand.
-- **Branches.** `product/ingest` gathered the ingest work and `product/server` gathers the
-  server's. Each wave is a `stage/ingest-wN` or `stage/server-wN` branch cut from its product
+- **Branches.** Each product gathers its work on `product/ingest`, `product/server` or
+  `product/explorer`. Each wave is a `stage/<product>-<wave>` branch cut from its product
   branch, and each branch keeps a Yard Log under `.yard/` (use the `loft:yard` skill). Merges
   happen only when the owner asks.
 - **Checks during a wave, the gate at its end.** Between tasks, run focused checks on what
   changed: `cargo test -p <crate> <filter>`, `cargo clippy -p <crate> --all-targets -- -D
   warnings`, `cargo fmt --check`, and `loft check` after a spec edit. A wave ends with
   `/simplify` and `/code-review` run in parallel and their findings fixed, then the full gate
-  (`cargo xtask check`) and, for the server, `cargo xtask integration`, each run once and
-  green. Commit on a command's own exit status, never through a pipe.
+  (`cargo xtask check`) and, for the server and the explorer, `cargo xtask integration`, each
+  run once and green. Commit on a command's own exit status, never through a pipe.
 - **Commits.** `type(scope): summary` in lower case, such as `feat(model): …`, `fix(ingest): …`,
   `spec: …`, `test(trace): …` or `chore: …`. Merges are `merge: …`. Commit `.yard/` with the
   work.

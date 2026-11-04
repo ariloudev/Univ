@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { fakeWorld } from "../test/world.ts";
 import type { Vec3 } from "../scene/vec.ts";
-import { type Overlay, labelSize, placeOverlay } from "./overlay.ts";
+import { type Overlay, labelSize, nameAt, placeOverlay } from "./overlay.ts";
 
 const div = () => document.createElement("div");
 
@@ -38,6 +38,13 @@ describe("the overlay", () => {
     const [x, y] = numbers(marks.names.current?.firstElementChild);
     expect(x).toBeCloseTo(400);
     expect(y).toBeCloseTo(300);
+  });
+
+  it("lets the mouse choose a structure by the name it shows", () => {
+    const world = fakeWorld({ names: [{ id: "kbc", centre: [0, 0, 0], text: "KBC void" }] });
+    placeOverlay(world, overlay(["kbc"]), { width: 800, height: 600 });
+    expect(nameAt(world, 405, 302)?.id).toBe("kbc");
+    expect(nameAt(world, 600, 302)).toBeUndefined();
   });
 
   it("hides a structure's name that would overlap a nearer one", () => {

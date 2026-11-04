@@ -14,11 +14,12 @@ uniform vec3 u_centre;
 uniform mat4 u_projection;
 uniform float u_size;
 uniform vec4 u_colours[${COLOURS}];
+uniform float u_opacity;
 out vec4 v_colour;
 void main() {
   gl_Position = u_projection * vec4(u_axes * a_offset + u_centre, 1.0);
   gl_PointSize = u_size;
-  v_colour = u_colours[int(a_kind)];
+  v_colour = u_colours[int(a_kind)] * vec4(1.0, 1.0, 1.0, u_opacity);
 }`;
 
 export const POINT_FRAGMENT = `#version 300 es

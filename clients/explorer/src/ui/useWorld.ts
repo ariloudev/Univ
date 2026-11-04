@@ -13,12 +13,23 @@ import { bindMouse } from "../scene/input.ts";
 import type { Pickable } from "../scene/pick.ts";
 import { NoWebGL, Renderer } from "../scene/renderer.ts";
 import type { Vec3 } from "../scene/vec.ts";
-import { type NameLabel, type Overlay, placeOverlay } from "./overlay.ts";
+import { FIRST_POINTS } from "../firstPoints.ts";
+import type { LabelBox } from "../scene/labels.ts";
+import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts";
 import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
 
-/** The point under the pointer, where the pointer is. */
-export type Hover = { x: number; y: number; point: ScenePoint } | undefined;
+/** What is under the pointer, where the pointer is: a structure's name, which a click
+ * chooses, or else a point. */
+export type Hover = ({ x: number; y: number } & ({ name: NameLabel } | { point: ScenePoint })) | undefined;
+
+/** What is under the pointer at `x`, `y`: a name before a point, as a click chooses. */
+function under(world: World, element: HTMLCanvasElement, x: number, y: number): Hover {
+  const name = nameAt(world, x, y);
+  if (name !== undefined) return { x, y, name };
+  const point = pointAt(world, element, x, y);
+  return point === undefined ? undefined : { x, y, point };
+}
 
 export interface World {
   controller: Controller;
@@ -30,13 +41,19 @@ export interface World {
   chosen: Vec3 | undefined;
   /** The structures' names, to place over the view. */
   names: NameLabel[];
+  /** The boxes of the names shown on the last frame drawn, for the mouse to choose by. */
+  namesShown: LabelBox[];
   /** Counts the frames drawn, for what shows the view's state. */
   frame: Store<number>;
   hover: Store<Hover>;
 }
 
-/** What the scene tells the page of the mouse: a point clicked, or double-clicked and flown to. */
-export type OnChoose = (point: ScenePoint) => void;
+/** What the scene tells the page of the mouse: a point clicked, or double-clicked and flown to;
+ * a structure whose name was clicked. */
+export interface OnChoose {
+  point: (point: ScenePoint) => void;
+  structure: (id: string) => void;
+}
 
 function surroundings(element: HTMLElement): Surroundings {
   return {
@@ -55,6 +72,7 @@ export function emptyWorld(controller: Controller, renderer: Renderer): World {
     pickable: [],
     chosen: undefined,
     names: [],
+    namesShown: [],
     frame: createStore(0),
     hover: createStore<Hover>(undefined),
   };
@@ -90,10 +108,14 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   const { controller, hover } = world;
   let hovering: number | undefined;
   const chooser = (fly: boolean) => (x: number, y: number) => {
-    const point = pointAt(world, element, x, y);
-    if (point === undefined) return;
-    if (fly) controller.flyTo(point.place, viewingDistance(point.distanceMpc));
-    onChoose.current(point);
+    const found = under(world, element, x, y);
+    if (found === undefined) return;
+    if ("name" in found) {
+      onChoose.current.structure(found.name.id);
+      return;
+    }
+    if (fly) controller.flyTo(found.point.place, viewingDistance(found.point.distanceMpc));
+    onChoose.current.point(found.point);
   };
   const unbind = bindMouse(element, {
     turn: (dx, dy) => controller.turn(dx, dy),
@@ -103,10 +125,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
     doubleClick: chooser(true),
     hover: (x, y) => {
       if (hovering !== undefined) cancelAnimationFrame(hovering);
-      hovering = requestAnimationFrame(() => {
-        const point = pointAt(world, element, x, y);
-        hover.set(point === undefined ? undefined : { x, y, point });
-      });
+      hovering = requestAnimationFrame(() => hover.set(under(world, element, x, y)));
     },
     leave: () => {
       if (hovering !== undefined) cancelAnimationFrame(hovering);
@@ -126,13 +145,21 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   };
 }
 
+/** What follows a frame drawn: the overlay placed, the frame counted, and the first points
+ * marked if these are they; whether the first points are now marked. */
+export function drawn(world: World, overlay: Overlay, size: { width: number; height: number }, marked: boolean): boolean {
+  placeOverlay(world, overlay, size);
+  world.frame.set(world.frame.get() + 1);
+  if (marked || world.pickable.length === 0) return marked;
+  performance.mark(FIRST_POINTS);
+  return true;
+}
+
 /** Draws `world` on every animation frame that needs it, placing its overlay, until stopped. */
 function animate(world: World, overlay: RefObject<Overlay>, size: Surroundings["size"]): () => void {
+  let marked = false;
   let frame = requestAnimationFrame(function loop() {
-    if (world.controller.tick()) {
-      placeOverlay(world, overlay.current, size());
-      world.frame.set(world.frame.get() + 1);
-    }
+    if (world.controller.tick()) marked = drawn(world, overlay.current, size(), marked);
     frame = requestAnimationFrame(loop);
   });
   return () => cancelAnimationFrame(frame);

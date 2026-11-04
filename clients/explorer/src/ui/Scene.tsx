@@ -10,7 +10,10 @@ import { useWorld } from "./useWorld.ts";
 export function Scene({ release, cosmology }: { release: number; cosmology: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [structureId, setStructureId] = useState<string>();
-  const { world, rotations, overlay, problem } = useWorld(release, canvas, (point) => selection.object(point.id));
+  const { world, rotations, overlay, problem } = useWorld(release, canvas, {
+    point: (point) => selection.object(point.id),
+    structure: (id) => selection.structureById(id),
+  });
   const { chosen, choose } = useChosen(release, world);
   const structures = useStructures(release, world, rotations);
   const selection: Selection = {
@@ -41,7 +44,7 @@ export function Scene({ release, cosmology }: { release: number; cosmology: stri
         aria-label={`The placed objects of release ${release} around Earth. Drag to turn, scroll to zoom, drag with the right button or Shift to move; click a point to read it, double-click to fly to it.`}
       />
       <Marks overlay={overlay} />
-      <StructureNames names={world?.names ?? []} overlay={overlay} onChoose={selection.structureById} />
+      <StructureNames names={world?.names ?? []} overlay={overlay} />
       {world === undefined ? null : <HoverLabel world={world} />}
       {problem === undefined ? null : (
         <p role="alert" className="absolute inset-x-0 top-4 mx-auto w-fit rounded bg-panel px-3 py-2 text-warn">

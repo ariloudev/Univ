@@ -3204,6 +3204,9 @@ links:
   - node: 01a1a497-e843-728a-bce8-3fec1fe0b4b3
     reviewed: 070e93b2a2c9bc1c818701d067f6eb55530c025aa159bdfdc9da9505f55a95cc
     tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "finds an object by name, reads it, and keeps it in the address across a reload"
+        body: 3462ba567f96272e6cecec7478edaf2b948e13fce8b167e92afedc551364aa1e
       - file: "clients/explorer/src/ui/useChosen.test.tsx"
         name: "is kept in the page's address, read back on reload, marked, and flown to"
         body: 4a642179f5ba6a98df055f4e48e06d9da7e838d3afe83fde1011ee3420f0bb4d
@@ -3273,6 +3276,9 @@ links:
   - node: 01a1a497-e843-728a-bce8-3ff67c685244
     reviewed: 3f1fbafea052dd7d47b3269446bec7bd56c5d4224cf50d6423b90eb5625c0475
     tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "chooses a structure by the name it shows in the view, and still zooms over it"
+        body: 3bb8b5402624a23e04c91c9bfe04c01e78059fa373709e91675f6eee6011cd8b
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "draws each structure's name at its centre"
         body: 3058b5f259b766cd4c67628a18fbcc9b6f06a92524ce9be5458831401b6784db
@@ -3281,13 +3287,16 @@ links:
     tests:
       - file: "clients/explorer/src/scene/labels.test.ts"
         name: "are not drawn over one another: the nearer is kept"
-        body: 9ecec2991610cf9226652faffa6a0229b3544b2fb2a01765704af67b88ce9d99
+        body: 7938b772b1d77ac40a363877dd61c8119d5936195b74d7482cfb47ad879f2f89
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "hides a structure's name that would overlap a nearer one"
         body: e8922b92aad908d2334513eaa572736a5a6fa0b85791b1a592bb8d3b5984cf3a
   - node: 01a1a497-e843-728a-bce8-3ff996141e6c
     reviewed: 8bbf3b8f19a86fd4634f08d612679436835df6f69b55574a5a50cead55b4e775
     tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the release's structures and reads one"
+        body: 6ce61adb5ce3e3db07b94eb2ca97a45663c1287ef954e4ecf86e57c9fae0d975
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "are listed by name and kind, each to choose"
         body: 18250f2dbee4a7acda13e53b2cde3fd88dd345982c1daf909bef710e8332d1cb
