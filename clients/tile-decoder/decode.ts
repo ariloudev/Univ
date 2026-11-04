@@ -110,13 +110,15 @@ export interface DecodedPoint {
   /** The kind of value of that distance. */
   kind: KindOfValue;
   /** Its colour index in magnitudes and the bands it lies between; none in a version 1 tile. */
-  colour?: { index: number; bands: ColourBands };
+  colour?: { index: number; bands: ColourBands } | undefined;
 }
 
 const MAGIC = [0x55, 0x56, 0x54, 0x4c]; // "UVTL"
 const HEADER_BYTES = 48;
+/** The bytes a point of version 1 takes; version 2's columns follow version 1's. */
+const V1_POINT_BYTES = 17;
 /** The bytes a point takes, by encoding version: the versions this decoder knows. */
-const POINT_BYTES: Readonly<Record<number, number>> = { 1: 17, 2: 20 };
+const POINT_BYTES: Readonly<Record<number, number>> = { 1: V1_POINT_BYTES, 2: 20 };
 
 /** The encoding versions this decoder knows. */
 export const VERSIONS: readonly number[] = Object.keys(POINT_BYTES).map(Number);
@@ -200,7 +202,7 @@ export function decodeTile(
   const sourceColumn = HEADER_BYTES + 14 * n;
   const kindColumn = HEADER_BYTES + 16 * n;
   // Version 2's columns follow version 1's.
-  const colourColumn = HEADER_BYTES + POINT_BYTES[1] * n;
+  const colourColumn = HEADER_BYTES + V1_POINT_BYTES * n;
   const bandsColumn = colourColumn + 2 * n;
   const bandNames = manifest.encoding.colour_bands ?? [];
   const points: DecodedPoint[] = new Array(n);
@@ -220,7 +222,8 @@ export function decodeTile(
     let colour: DecodedPoint['colour'];
     if (version >= 2) {
       const held = view.getInt16(colourColumn + 2 * k, true);
-      const band = bytes[bandsColumn + k];
+      // Within the tile: its length was checked against its count above.
+      const band = bytes[bandsColumn + k] ?? 0;
       if ((held === NO_COLOUR) !== (band === 0)) {
         fail(`point ${k} has the colour bands code ${band}, which its colour index contradicts`);
       }
