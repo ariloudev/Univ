@@ -23,3 +23,4 @@ pub mod tile;
 pub mod time;
 pub mod units;
 pub mod value;
+pub mod volume;

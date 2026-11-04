@@ -58,6 +58,28 @@ blocks:
           - each geometry kind meeting and missing;
           - a shape whose centre is outside but which meets.
         state: active
+      - key: 01a1a411-7c63-712e-a865-bdc6e10f858e
+        at: 2026-11-04T00:59:31Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "univ-model volume: request, region, distance, meets"
+        detail: |-
+          `volume/{mod, region, meets, refine}.rs`, with 11 tests:
+          - a sphere meeting a box only at its corner, at r ± 1e-9, through the exact paths: box against sphere, sphere against box, and a tile cube;
+          - a 181° cone refused;
+          - each malformed member named;
+          - distance checked against 20,000 surface samples for five regions, and bounds that hold and touch each region;
+          - a galactic box placed toward RA 266.405°, Dec −28.936°;
+          - each geometry kind reaching and missing;
+          - refinement on both sides of a cone's edge;
+          - a sphere whose centre lies outside a box still meeting it;
+          - separating axes on a box turned 45°;
+          - shapes placed in the ICRS and in the region's unit.
+
+          Found on the way: the cone's edge distance lost digits to a difference of squares, so it is now taken along and across the edge. `Shape::new` already refuses FK4 shapes, so the FK4 warning came back out of the spec (`3c7e99a`).
+        state: done
   - key: 01a1a3fd-1fbf-7477-ba13-660ba7700559
     id: t6-query
     kind: task
@@ -859,6 +881,15 @@ blocks:
         title: "Item bounds: migration 0004 and the store"
         detail: "Migration 0004 adds `min_x` to `max_z` to `items` (ICRS Mpc), written on publish and revise. An FK4 shape stores no bounds, and its publish carries a warning. Done when tests cover publish, revise and FK4."
         state: open
+      - key: 01a1a411-7c63-712e-a865-bdc73770bcfb
+        at: 2026-11-04T00:59:31Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Item bounds: migration 0004 and the store"
+        detail: "Migration 0004 adds `min_x` to `max_z` to `items` (ICRS Mpc), written on publish and revise. Every stored shape rotates into the ICRS, so every current item has bounds. Done when tests cover publish and revise."
+        state: active
   - key: 01a1a408-af95-72f3-9fc7-cba81c4f142b
     id: w6-spec
     kind: loft
