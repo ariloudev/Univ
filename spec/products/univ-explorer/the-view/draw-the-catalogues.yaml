@@ -1,7 +1,7 @@
 key: 01a1a497-e843-728a-bce8-3ffe4657fb77
 slug: draw-the-catalogues
 name: "Draw the catalogues"
-body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs."
+body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least."
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
   - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
@@ -23,14 +23,37 @@ requirements:
       form: event_driven
       when: "the view changes"
       system: "Univ Explorer"
-      shall: "fetch the tiles the view needs, the largest on screen first, within a budget of points."
+      shall: "fetch the tiles the view needs, those in view and the largest on screen first, within a budget of points."
     criteria:
       - key: 01a1a497-e843-728a-bce8-40049983aed9
         name: "The root tile of every scale domain is fetched before any other tile."
       - key: 01a1a497-e843-728a-bce8-400536d8f2b5
-        name: "The tiles not yet fetched are fetched in order of their size on screen, largest first."
+        name: "The tiles the view needs are fetched in order of their size on screen, largest first, and a tile wholly outside the view is not fetched."
+      - key: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
+        name: "A tile's children are fetched only while its points lie farther apart on screen than 3 pixels, so that a region far away or seen whole is not refined beyond what the screen shows."
       - key: 01a1a497-e843-728a-bce8-4006f5c2ce8f
         name: "No more than 3,000,000 points are held at once."
+  - key: 01a1a689-0b25-768a-9f1e-cc27109fed3c
+    statement:
+      form: event_driven
+      when: "a tile the view needs would take the points held beyond the budget"
+      system: "Univ Explorer"
+      shall: "drop the held tiles the view needs least until the tile fits."
+    criteria:
+      - key: 01a1a689-0b25-768a-9f1e-cc28566a82e6
+        name: "Tiles wholly outside the view are dropped before tiles in view, and among them the smallest on screen first."
+      - key: 01a1a689-0b25-768a-9f1e-cc29da0f0de4
+        name: "A root tile, and a tile whose children are held, is never dropped, so that no region loses the sample its children refine."
+      - key: 01a1a689-0b25-768a-9f1e-cc2a53831ad9
+        name: "A dropped tile is fetched again when the view needs it again."
+  - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw only the held tiles that lie in the view."
+    criteria:
+      - key: 01a1a689-0b25-768a-9f1e-cc2c484365d4
+        name: "A held tile whose cube lies wholly outside the view is not drawn."
   - key: 01a1a497-e843-728a-bce8-400775a8d943
     statement:
       form: unwanted
