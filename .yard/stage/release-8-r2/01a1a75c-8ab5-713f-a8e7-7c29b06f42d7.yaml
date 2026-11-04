@@ -1745,6 +1745,20 @@ blocks:
 
           **Progress:** written, being tested in the clean worktree.
         state: active
+      - key: 01a1a78c-1cd7-741f-be62-0436f85a43f7
+        at: 2026-11-04T17:12:19Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Cartesian member columns"
+        detail: |-
+          **Scope:** member tables may give `x`, `y`, `z` in a Cartesian frame in place of lon and lat. They give only the member's direction; its distance comes from its row's redshift under the release cosmology, as every tracer's does.
+
+          **Done when** the `structure_tracers` test passes.
+
+          **Result:** committed in `bae89db`. A supergalactic member at (0, 100, 0) lies along supergalactic +Y at its redshift's comoving distance, and a table with both a sky position and Cartesian columns is refused. The members agent was told it can write Pisces–Cetus.
+        state: done
   - key: 01a1a779-da64-726e-bcf6-4c900419a1d5
     id: r2-t-box
     kind: task
@@ -1761,6 +1775,23 @@ blocks:
 
           **Done when** a `structure_details` test shows the Local Supercluster's half-extents (10, 7.5, 10) h⁻¹ Mpc, rescaled.
         state: open
+      - key: 01a1a78c-1cd7-741f-be62-0437ff40dceb
+        at: 2026-11-04T17:12:19Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A box primitive from published axis ranges"
+        detail: |-
+          **Scope:** a structure geometry `box`, given by the published range along each Cartesian axis of its frame, placed as univ-model's oriented box in the ICRS.
+
+          **Done when** a test shows the Local Supercluster's half-extents (10, 7.5, 10) h⁻¹ Mpc, rescaled.
+
+          **Result:**
+          - Committed in `2f0c51a`, with `structures/local-supercluster.yaml`. I wrote that file myself: it quotes Tully 1982 p. 390, checked against the page image, since the scan's OCR garbles each h⁻¹.
+          - The test also checks the centre (0, 7.5, 0) h⁻¹ Mpc turned into the ICRS, and the orientation.
+          - The two tests that pinned 26 structure files now count the files and their unplaced ones.
+        state: done
   - key: 01a1a779-da64-726e-bcf6-4c914e9c1b59
     id: r2-t-trace
     kind: task
@@ -1777,6 +1808,28 @@ blocks:
 
           **Done when** `loft reconcile` reports none stale and the trace view is recorded.
         state: open
+      - key: 01a1a78c-9d6a-705f-a6fa-57c172184ca0
+        at: 2026-11-04T17:12:52Z
+        revision: 28
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace the new criteria"
+        detail: |-
+          **Scope:** link the tests to the six new criteria and accept them.
+
+          **Done when** `loft reconcile` reports none stale and the trace view is recorded.
+
+          **Progress:**
+          - All six are linked in `loft.trace.yaml`:
+            - sky-region bounds, to univ-model's bounds test;
+            - the lower-limit derivation, to `structure_details`;
+            - the "(at least)" name, to the explorer's scene and panel tests;
+            - extents in the record, to `structure_details` and the file checker;
+            - extents drawn, to the explorer's scene test;
+            - the panel's sentence, to the panel test.
+          - `loft reconcile` finds every test; 419 of 419 nodes are linked. Acceptance waits until after the reviews.
+        state: active
   - key: 01a1a779-da64-726e-bcf6-4c922059772f
     id: r2-t-review
     kind: task
@@ -1806,3 +1859,39 @@ blocks:
         title: "Full gate and integration"
         detail: "**Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green."
         state: open
+  - key: 01a1a792-993c-74c5-b00f-53ac9781e90a
+    id: r2-note-files
+    kind: note
+    versions:
+      - key: 01a1a792-993d-7044-a574-dea1170951c2
+        at: 2026-11-04T17:19:24Z
+        revision: 29
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The structure files written, and what was left out"
+        markdown: |-
+          27 new files, 53 in all. Every number is cited, and every quote was checked against the paper's text. Scanned pages were checked on their images.
+
+          | Placed by | Structures |
+          |---|---|
+          | Members | U1.11 LQG (38 quasars); KKL LQGs 2, 5, 8, 11 and 12; Perseus–Pegasus Filament (20 clusters); Pisces–Cetus Supercluster (36 clusters, supergalactic X/Y/Z); Hyperion (7 peaks); COSMOS-z3.1-A (10 peaks); Lynx (2 clusters); MS 0302+17 (3 clusters) |
+          | Point | King Ghidorah; Laniakea (attractor centroid); Einasto Supercluster; Boötes Supercluster; Corona Borealis; Coma (at the Coma cluster, so labelled); Sculptor Wall; Ophiuchus (at its cD cluster) |
+          | Sphere | Northern and Southern Local Supervoids (Einasto 1994's empty-sphere diameters, which the paper takes as minor axes) |
+          | Sky region | Quipu (the box holding its members); Bahcall–Soneira void (its most depleted volume) |
+          | Box | Local Supercluster (Tully 1982) |
+          | Unplaced, with values | SCL @ 1604+43 (only a member's position is printed); SA 68 Supercluster, SCL @ 0018+16 (its ellipse centre comes from a field the structure runs off) |
+
+          **Corrections to the survey:**
+          - Pisces–Cetus has 36 clusters, not 35. A281 was checked on the page image.
+          - Laniakea's frame is read from the Extended Data captions.
+          - The Coma and Ophiuchus notes now say their velocities are placed as heliocentric, which is how the pipeline reads an unstated frame.
+
+          **Left out, with reasons:**
+          - **Hydra–Centaurus.** Chincarini & Rood give Local Group-frame velocities, and the pipeline refuses that frame everywhere, sources included, because it has no cited Local Group apex. It moves to the catalogue wave, with a cited correction.
+          - **COSMOS-z3.1-A's per-peak position errors.** A member column holds one uncertainty. The file says so.
+          - **U1.11's 2.95σ and Perseus–Pegasus's "310h⁻¹".** The number reader cannot read a number printed glued to its symbol. Perseus–Pegasus keeps the abstract's "over 300".
+          - **Masses, areas and densities.** univ-model has no units for them.
+
+          **Shared name:** the Northern Local Supervoid (Einasto 1994) and the Hercules Void (Tully 2019) both carry "Northern Local Void". The supervoid's notes say they are kept apart, each as its paper places it.
+        tone: info

@@ -1,0 +1,59 @@
+# The southern of the two local supervoids, empty of rich Abell clusters, catalogued by Einasto
+# et al. 1994 (their void 9).
+name: Southern Local Supervoid
+alternative_names: ["SLV", "Southern Local void"]
+kind: void
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: einasto-1994
+    reference: "Einasto, Einasto, Tago, Dalton & Andernach 1994, MNRAS 269, 301"
+    title: "The structure of the Universe traced by rich clusters of galaxies"
+    doi: 10.1093/mnras/269.2.301
+    bibcode: 1994MNRAS.269..301E
+    read: "ADS scan of the full article (Table 5 on page 313 and the text of pages 313 and 314 read on page images)"
+# The centre of the largest empty sphere the paper's empty-sphere search finds in the void.
+position: &published
+  frame: equatorial_equinox_unstated
+  lon:
+    value: 121.7
+    unit: degree
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: einasto-1994, table: "5", row: "9", column: "(2) α_C", cell: "121.7" }
+  lat:
+    value: -1.5
+    unit: degree
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: einasto-1994, table: "5", row: "9", column: "(3) δ_C", cell: "-1.5" }
+  distance:
+    value: 96
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: einasto-1994, table: "5", row: "9", column: "(4) D_C (h^-1 Mpc)", cell: "96" }
+geometry:
+  kind: primitive
+  primitive:
+    form: sphere
+    centre: *published
+    diameter:
+      value: 112
+      unit: megaparsec_over_h
+      kind: inferred
+      uncertainty: { form: none_reported }
+      cite: { paper: einasto-1994, table: "5", row: "9", column: "(5) Diam. (h^-1 Mpc)", cell: "112" }
+      note: "The diameter of the empty sphere the paper's search finds, which the paper takes as the void's minor axis."
+disputes: []
+notes: >-
+  Void 9 of Table 5 of Einasto et al., commented SLV, "Southern Local void". The paper finds
+  voids as empty spheres among rich clusters and gives each void's size as the diameter of its
+  empty sphere; since several voids are elongated, it takes these sizes as minor axes ("the
+  sizes of voids in Table 5 correspond to minor axes of empty regions"), so the void extends at
+  least over the sphere drawn. The table prints no equinox for its centres. The paper notes that
+  "The zone of avoidance crosses local supervoids near their centres", and keeps the two local
+  voids in its catalogue although it drops every other void that enters the zone of avoidance,
+  arguing from the difference between the distributions of nearby and distant clusters that
+  they are real. It names the Leo and Sextans superclusters and the Lepus wall as the void's
+  borders. The Wikipedia article on the void drops the h from the lengths.

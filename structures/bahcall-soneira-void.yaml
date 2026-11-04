@@ -1,0 +1,216 @@
+# An apparent void of nearby rich Abell clusters in the northern galactic hemisphere, reported by
+# Bahcall & Soneira 1982 and later found broken into several cluster-defined voids.
+name: Bahcall-Soneira Void
+alternative_names: ["Bahcall & Soneira 1982 void", "BS82", "B&B Abell-9 void"]
+kind: void
+status: statistical_claim
+scale_domain: cosmic_web
+papers:
+  - id: bahcall-soneira-1982
+    reference: "Bahcall & Soneira 1982, ApJ 262, 419"
+    title: "A ~300 Mpc void of rich clusters of galaxies?"
+    doi: 10.1086/160436
+    bibcode: 1982ApJ...262..419B
+    read: "ADS scan of the full article (pages 419, 422 and 423 read on page images)"
+  - id: batuski-burns-1985
+    reference: "Batuski & Burns 1985, AJ 90, 1413"
+    title: "Finding lists of candidate superclusters and voids of Abell clusters"
+    doi: 10.1086/113849
+    bibcode: 1985AJ.....90.1413B
+    read: "ADS scan of the full article (pages 1414 and 1421 read on page images)"
+  - id: einasto-1994
+    reference: "Einasto, Einasto, Tago, Dalton & Andernach 1994, MNRAS 269, 301"
+    title: "The structure of the Universe traced by rich clusters of galaxies"
+    doi: 10.1093/mnras/269.2.301
+    bibcode: 1994MNRAS.269..301E
+    read: "ADS scan of the full article (Table 5 on page 313 and the text of page 314 read on page images)"
+# The volume Section IIIb finds most depleted of clusters of every richness, R ≥ 0.
+geometry:
+  kind: sky_region
+  sky_region:
+    frame: galactic
+    lon:
+      - value: 150
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "150°"
+        cite: &depleted
+          paper: bahcall-soneira-1982
+          sentence: "The volume most depleted of R ≥ 0 clusters is the region bounded by l^II ≈ 150°–240°, b^II ≈ 35°–50°, and z ≈ 0.03–0.08."
+          page: 422
+      - value: 240
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "240°"
+        cite: *depleted
+    lat:
+      - value: 35
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "35°"
+        cite: *depleted
+      - value: 50
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "50°"
+        cite: *depleted
+    near:
+      redshift:
+        value: 0.03
+        unit: dimensionless
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: *depleted
+    far:
+      redshift:
+        value: 0.08
+        unit: dimensionless
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: *depleted
+values:
+  extent_on_sky:
+    value: 100
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &abstract
+      paper: bahcall-soneira-1982
+      sentence: "This apparent void is ~100° across the sky (~300 h^-1 Mpc) and ~150 h^-1 Mpc deep."
+      page: 419
+  extent_long:
+    value: 300
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *abstract
+  depth:
+    value: 150
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *abstract
+  extent_short:
+    value: 60
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    cite:
+      paper: bahcall-soneira-1982
+      sentence: "At the mean distance of the D ≤ 4 clusters, the void appears to extend, in projection, ~300 h^-1 Mpc by ≳60 h^-1 Mpc and is ~150 h^-1 Mpc deep."
+      page: 423
+  rich_cluster_void_longitude_low:
+    value: 140
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "140°"
+    cite: &summary
+      paper: bahcall-soneira-1982
+      sentence: "An apparent void of rich Abell clusters of galaxies in the direction l^II ≈ 140°–240°, b^II ≈ 30°–50°, with z ≈ 0.03–0.08 is observed."
+      page: 423
+  rich_cluster_void_longitude_high:
+    value: 240
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "240°"
+    cite: *summary
+  rich_cluster_void_latitude_low:
+    value: 30
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "30°"
+    cite: *summary
+  rich_cluster_void_latitude_high:
+    value: 50
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "50°"
+    cite: *summary
+  batuski_burns_major_axis:
+    value: 300
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    assumes: &bb_h0
+      cosmology: "h75^-1 Mpc: H0 = 75 km/s/Mpc"
+      cite:
+        paper: batuski-burns-1985
+        sentence: "In all calculations, H0 = 75 km/s/Mpc (h = H0/75 km/s/Mpc)."
+        page: 1414
+    cite: &pieces
+      paper: batuski-burns-1985
+      sentence: "Voids 7 through 11 appear to be pieces of the Bahcall and Soneira (1982) void, broken up partly because of unmeasured redshift clusters whose estimated redshifts would place them deep in the void. ... Nevertheless, this is an extremely large region of very low cluster density, at least 300 h^-1 Mpc along its major axis by ~100-150 h^-1 Mpc in the perpendicular directions."
+      page: 1421
+  batuski_burns_perpendicular_extent_low:
+    value: 100
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *bb_h0
+    cite: *pieces
+  batuski_burns_perpendicular_extent_high:
+    value: 150
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *bb_h0
+    cite: *pieces
+  einasto_centre_right_ascension:
+    value: 130.0
+    unit: degree
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: einasto-1994, table: "5", row: "10", column: "(2) α_C", cell: "130.0" }
+    note: "The centre of the largest empty sphere of rich clusters in the void; no equinox is printed."
+  einasto_centre_declination:
+    value: 49.3
+    unit: degree
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: einasto-1994, table: "5", row: "10", column: "(3) δ_C", cell: "49.3" }
+  einasto_centre_distance:
+    value: 246
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: einasto-1994, table: "5", row: "10", column: "(4) D_C (h^-1 Mpc)", cell: "246" }
+  einasto_minor_axis:
+    value: 144
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: einasto-1994, table: "5", row: "10", column: "(5) Diam. (h^-1 Mpc)", cell: "144" }
+    note: "The diameter of the empty sphere the paper's search finds, which the paper takes as the void's minor axis."
+  einasto_major_axis:
+    value: 300
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1994
+      sentence: "For some well-known voids we indicate in Table 5 their common names: the Northern and Southern Local voids, the Bootes void and a giant void, which was first described by BS82 and which corresponds to BB void No. 9. The length of the major axis of this void may exceed 300 h^-1 Mpc."
+      page: 314
+    note: "The paper says the major axis may exceed this length; it is not given as a bound."
+disputes: []
+notes: >-
+  Bahcall & Soneira call it an apparent void and title their paper as a question. It is an
+  absence of nearby rich Abell clusters, with poorer clusters depleted but present and more
+  distant rich clusters at their expected numbers, which they take to rule out absorption in the
+  Galaxy; they leave open whether it is a physical void or a statistical fluctuation, and ask
+  for galaxy redshifts in it. The region drawn is the volume their Section IIIb finds most
+  depleted of clusters of every richness; the wider area empty of rich clusters, from their
+  Summary, is kept among the values. Their approximate equatorial centre of that wider area is
+  left out: it is rounded to the hour and degree and prints no equinox. Their lengths are in
+  h^-1 Mpc at H0 = 100h. Batuski & Burns 1985 find the region broken into their voids 7 through
+  11, partly by clusters with only estimated redshifts, and give its size in their own h, at
+  H0 = 75. Einasto et al. 1994 list it as the BS82 void in their Table 5 and identify it with
+  void No. 9 of Batuski & Burns; their empty-sphere centre lies near the far end of the
+  redshift range of Bahcall & Soneira. Lists that give its size in light-years drop the h.

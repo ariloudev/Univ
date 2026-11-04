@@ -1,0 +1,143 @@
+# A supercluster around the Ophiuchus cluster, behind the Galactic Centre, found in a galaxy survey
+# and redshifts of a 12° by 17° field in the Zone of Avoidance.
+name: Ophiuchus Supercluster
+alternative_names: []
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: hasegawa-2000
+    reference: "Hasegawa, Wakamatsu, Malkan, Sekiguchi, Menzies, Parker, Jugaku, Karoji & Okamura 2000, MNRAS 316, 326"
+    title: "Large-scale structure of galaxies in the Ophiuchus region"
+    doi: 10.1046/j.1365-8711.2000.03531.x
+    bibcode: 2000MNRAS.316..326H
+    read: "ADS full-text PDF of 2000MNRAS.316..326H (the publisher's pages): abstract, Sections 1, 2.1, 4.4, 4.5 and 5.1, and Tables 4 and 5 read on the page images"
+# The Ophiuchus cD cluster, the supercluster's richest member and not a centre of it, which the
+# paper does not give: its position for equinox 1950.0 from Table 4 and the mean velocity of its
+# galaxies within the Abell radius from Table 5.
+position:
+  frame: fk4_b1950
+  lon:
+    value: 257.3375
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "17h09m21s"
+    cite:
+      paper: hasegawa-2000
+      table: "4"
+      row: "cD (the Ophiuchus cluster)"
+      column: "RA(1950)"
+      cell: "17h09m21s"
+  lat:
+    value: -23.3333
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "−23°20′"
+    cite:
+      paper: hasegawa-2000
+      table: "4"
+      row: "cD (the Ophiuchus cluster)"
+      column: "Dec.(1950)"
+      cell: "−23°20′"
+  velocity:
+    value: 8626
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: hasegawa-2000
+      table: "5"
+      row: "cD"
+      column: "v̄, the mean recession velocity of galaxies within the Abell radius"
+      cell: "8626"
+    note: "From the velocities of eighteen galaxies; the paper names no velocity frame, so it is placed as a heliocentric velocity."
+values:
+  extent_east_west:
+    value: 12
+    unit: degree
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: &extent
+      paper: hasegawa-2000
+      sentence: "This structure extends for at least 12° in the east–west direction and for at least 17° in the north–south direction, which corresponds to 18 Mpc × 26 Mpc in linear size."
+      page: 335
+    note: "At least the whole survey field, which the structure fills."
+  extent_north_south:
+    value: 17
+    unit: degree
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite: *extent
+  extent_east_west_linear:
+    value: 18
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    assumes: &h100
+      cosmology: "H0 = 100 km/s/Mpc"
+      cite:
+        paper: hasegawa-2000
+        sentence: "We take the Hubble constant as 100 km s−1 Mpc−1 throughout this paper."
+        page: 327
+    cite: *extent
+  extent_north_south_linear:
+    value: 26
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    assumes: *h100
+    cite: *extent
+  cluster_velocity:
+    value: 9000
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &abstract
+      paper: hasegawa-2000
+      sentence: "The Ophiuchus cluster, two newly identified clusters, and four groups are all concentrated at 9000 km s−1. Field galaxies are also distributed centred at 8500 km s−1."
+      page: 326
+  field_galaxy_velocity:
+    value: 8500
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *abstract
+  peak_cluster_density_contrast:
+    value: 470
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &peak
+      paper: hasegawa-2000
+      sentence: "In the case of the Ophiuchus supercluster, three clusters, namely the Ophiuchus cD cluster and clusters II and III, reside within 7 Mpc, giving a peak cluster density of 470 times the mean density."
+      page: 336
+    note: "The peak space density of clusters over the mean; the definition of superclusters the paper follows asks for twenty."
+  core_cluster_separation:
+    value: 7
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *h100
+    cite: *peak
+  galaxy_overdensity:
+    value: 2.6
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: hasegawa-2000
+      sentence: "We estimate this overdensity for galaxies with MC 1 to 2 as 2.6 after correction for Galactic extinction according to equation (3)."
+      page: 336
+    note: "Sensitive to the luminosity function and the Galactic extinction adopted, as the paper says."
+disputes: []
+notes: >-
+  The paper finds that the Ophiuchus cluster, two new clusters and four groups lie at nearly the
+  same recession velocity as the field galaxies around them, all over its survey field near the
+  Galactic Centre, and calls the whole a large-scale structure of supercluster size. It gives no
+  centre for the supercluster, and the survey field it fills is a lower limit on its size, not a
+  bound, so the point is the Ophiuchus cD cluster, labelled as such. Its lengths are in Mpc for
+  a Hubble constant of a hundred, equal to h^-1 Mpc. In front of it the paper finds a void, with
+  a quarter of the mean density of galaxies. Earlier notes read the paper only through a summary
+  of the publisher's page; every number here is from the full text.

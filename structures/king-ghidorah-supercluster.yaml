@@ -1,0 +1,105 @@
+# A supercluster at z ≈ 0.55 found as the largest overdensity in the projected galaxy density map
+# of the Subaru HSC-SSP, with weak-lensing peaks along it.
+name: King Ghidorah Supercluster
+alternative_names: ["KGSc"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: shimakawa-2023
+    reference: "Shimakawa, Okabe, Shirasaki & Tanaka 2023, MNRAS Letters 519, L45"
+    title: "King Ghidorah Supercluster: Mapping the light and dark matter in a new supercluster at z = 0.55 using the Subaru Hyper Suprime-Cam"
+    doi: 10.1093/mnrasl/slac150
+    arxiv: "2211.11970"
+    read: "arXiv PDF of 2211.11970, text extracted: abstract, Sections 1, 2 and 4 read"
+# The place the paper gives the supercluster in its projected density map, at the redshift of
+# its summary; the redshift is the middle of the photometric-redshift slice it was found in.
+position:
+  frame: equatorial_equinox_unstated
+  lon:
+    value: 216.2
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &found
+      paper: shimakawa-2023
+      sentence: "Consequently, we identified the largest supercluster at RA=216.2° and Dec=−0.34° with an Areaσ>3 = 1321 cMpc2, referred to as the King Ghidorah Supercluster (KGSc), which is more than three times larger than any other overdense regions at the same redshift."
+  lat:
+    value: -0.34
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *found
+  redshift:
+    value: 0.55
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: shimakawa-2023
+      sentence: "In summary, we discovered a supercluster, termed as the KGSc, at z = 0.55."
+    note: "Photometric: the paper selects the supercluster in a slice of photometric redshift and gives no spectroscopic redshift for it."
+values:
+  redshift_low:
+    value: 0.50
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &abstract
+      paper: shimakawa-2023
+      sentence: "This paper reports our discovery of the most massive supercluster, termed the King Ghidorah Supercluster (KGSc), at z = 0.50 − 0.64 in the Third Public Data Release of the Hyper Suprime-Cam Subaru Strategic Program (HSC-SSP PDR3) over 690 deg2, as well as an initial result for a galaxy and dark matter mapping."
+  redshift_high:
+    value: 0.64
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *abstract
+  weak_lensing_peaks_extent:
+    value: 70
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: &cosmology
+      cosmology: "ΩM = 0.279, ΩΛ = 0.721, h = 0.7, flat ΛCDM; comoving"
+      cite:
+        paper: shimakawa-2023
+        sentence: "In line with relevant previous studies (Takahashi et al. 2017; Shirasaki et al. 2017; Shimakawa et al. 2021b,a), we assume the following values for cosmological parameters, ΩM = 0.279, ΩΛ = 0.721, and h = 0.7, in a flat lambda cold dark matter model, which are consistent with those obtained from the WMAP nine-year data (Hinshaw et al. 2013)."
+    cite:
+      paper: shimakawa-2023
+      sentence: "The primary structure of the KGSc comprises triple broad weak-lensing (WL) peaks over 70 comoving Mpc."
+    note: "The comoving extent of the main structure's three weak-lensing peaks."
+  associated_structures_scale:
+    value: 400
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite:
+      paper: shimakawa-2023
+      sentence: "This supercluster not only hosts 15 red-sequence clusters within Δz = 0.1 but also involves multiple other structures, including two massive filaments across a 400 cMpc scale."
+    note: "The comoving scale of the supercluster with the structures it is contiguous with, including two filaments to the north-east and south-east; not the size of the supercluster alone."
+  red_sequence_clusters:
+    value: 15
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: shimakawa-2023
+      sentence: "This supercluster not only hosts 15 red-sequence clusters within Δz = 0.1 but also involves multiple other structures, including two massive filaments across a 400 cMpc scale."
+  red_sequence_cluster_overdensity:
+    value: 14.7
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: symmetric, sigma: 4.5 }
+    cite:
+      paper: shimakawa-2023
+      sentence: "The entire field has a notable overdensity (δ = 14.7 ± 4.5) of red-sequence clusters."
+disputes: []
+notes: >-
+  Found as the largest area above three sigma in the projected density of HSC-SSP galaxies in a
+  slice of photometric redshift, and confirmed in the CAMIRA red-sequence clusters and in
+  weak-lensing mass maps. Every redshift here is photometric, so the position along the line of
+  sight is estimated. The paper prints no equinox for its position. Its area above three sigma is
+  in square comoving Mpc and its total mass, from simulations, in solar masses; neither has a
+  unit in univ-model, so both are left out. Foreground underdensities lie along the same line of
+  sight. The paper names no dispute.
