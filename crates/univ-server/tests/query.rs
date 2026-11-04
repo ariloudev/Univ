@@ -92,15 +92,20 @@ fn a_volume_query_finds_objects_structures_by_their_shapes_and_tiles_to_fetch() 
 #[test]
 #[ignore = "needs the Worker: run `cargo xtask integration`"]
 fn a_structure_meets_a_volume_at_its_edge_with_its_centre_outside_and_an_item_is_found() {
-    // The Bootes Void's placed sphere reaches x = -68.9 Mpc; its centre is near x = -115.5.
+    // The Bootes Void's placed sphere reaches x = -68.9 Mpc; its centre is near x = -115.5,
+    // outside this box. The box lies within the KBC void too, and reaches Ho'oleilana.
+    let structures = |page: &Value| -> Vec<String> {
+        of_type(page, "structure")
+            .iter()
+            .map(|s| s["id"].as_str().unwrap().to_owned())
+            .collect()
+    };
     let edge = json!({"volume": {"frame": "icrs", "unit": "megaparsec", "form": "box",
         "min": [-75.0, -110.0, 160.0], "max": [-70.0, -105.0, 165.0]}});
-    let page = json(query(&edge, None));
-    let ids: Vec<&str> = of_type(&page, "structure")
-        .iter()
-        .map(|s| s["id"].as_str().unwrap())
-        .collect();
-    assert_eq!(ids, ["bootes-void"]);
+    assert!(structures(&json(query(&edge, None))).contains(&"bootes-void".to_owned()));
+    let beyond = json!({"volume": {"frame": "icrs", "unit": "megaparsec", "form": "box",
+        "min": [-68.0, -110.0, 160.0], "max": [-60.0, -105.0, 165.0]}});
+    assert!(!structures(&json(query(&beyond, None))).contains(&"bootes-void".to_owned()));
     let (_, key) = issue("e2e query", "extended");
     let layer = CLIENT.post(url("/v1/layers")).bearer_auth(&key);
     let created = json(
@@ -111,7 +116,7 @@ fn a_structure_meets_a_volume_at_its_edge_with_its_centre_outside_and_an_item_is
     let layer = created["id"].as_str().unwrap();
     let item = json!({"id": "probe", "title": "A probe", "summary": "A TEST FIXTURE point.",
         "geometry": {"frame": "galactic", "unit": "megaparsec", "geometry": {"kind": "point", "at": [500.0, 0.0, 0.0]}},
-        "kind_of_value": "estimated", "sources": [{"title": "A test"}]});
+        "kind_of_value": "estimated", "sources": [{"title": "A test fixture", "url": "https://example.org/univ-test-fixture"}]});
     let published = with_json(
         CLIENT
             .post(url(&format!("/v1/layers/{layer}/items")))
