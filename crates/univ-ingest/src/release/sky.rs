@@ -16,7 +16,7 @@ use std::f64::consts::TAU;
 
 use univ_model::position::{Frame, between, lon_lat, unit_vector};
 
-use super::place::{degrees, longitude_span};
+use super::place::{SkyRanges, ranges};
 use crate::structures::SkyBox;
 
 /// The order of a source's coverage: 12,288 cells of about 3.4 square degrees (1.8° across),
@@ -53,9 +53,12 @@ pub fn centre(order: u8, cell: u64) -> (f64, f64) {
 ///
 /// Fails when a bound of the box is not an angle.
 pub fn box_cells(region: &SkyBox, order: u8) -> Result<Vec<u64>, String> {
-    let lon0 = degrees(&region.lon[0])?;
-    let span = longitude_span(lon0, degrees(&region.lon[1])?);
-    let (lat0, lat1) = (degrees(&region.lat[0])?, degrees(&region.lat[1])?);
+    let SkyRanges {
+        lon0,
+        span,
+        lat0,
+        lat1,
+    } = ranges(region)?;
     let into_box = between(Frame::Icrs, region.frame);
     let inside = |(ra, dec): (f64, f64)| {
         let (lon, lat) = lon_lat(into_box.apply(unit_vector(ra, dec)));

@@ -241,6 +241,42 @@ blocks:
 
           **Done when** the structure tests pass, `cargo xtask science` passes on a release built from the fixtures, and each file's sentences are checked against its paper.
         state: open
+      - key: 01a1a779-da64-726e-bcf6-4c9998c9933a
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structure files for the included superstructures and supervoids"
+        detail: |-
+          **Scope:** one file for each included structure in the list note, in three batches:
+          - members;
+          - points, regions and the box;
+          - supervoids.
+
+          Every quote is checked against the paper's text. A structure whose paper prints no single place is `unplaced`, with the reason.
+
+          **Done when** the file checker and the structure tests pass, and I have reviewed each file.
+        state: open
+      - key: 01a1a77a-0632-72e5-b062-86ecf28020a1
+        at: 2026-11-04T16:52:34Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structure files for the included superstructures and supervoids"
+        detail: |-
+          **Scope:** one file for each included structure in the list note, in three batches:
+          - members;
+          - points, regions and the box;
+          - supervoids.
+
+          Every quote is checked against the paper's text. A structure whose paper prints no single place is `unplaced`, with the reason.
+
+          **Done when** the file checker and the structure tests pass, and I have reviewed each file.
+
+          **Progress:** three agents are writing the batches in parallel. Pisces–Cetus waits for Cartesian member columns, and the Local Supercluster for the box primitive.
+        state: active
   - key: 01a1a75c-8ab5-713f-a8e7-7c312a77b9d7
     id: r2-t-close
     kind: task
@@ -258,6 +294,15 @@ blocks:
           - the reviews' findings are fixed;
           - `cargo xtask check` and `cargo xtask integration` pass;
           - the Yard Log is closed and `stage/release-8-r2` is merged into `product/release-8`.
+        state: open
+      - key: 01a1a779-da64-726e-bcf6-4c9d95538107
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Close and merge into product/release-8"
+        detail: "**Done when** the Yard Log is closed and committed, and the branch is merged `--no-ff`."
         state: open
   - key: 01a1a75c-aa7f-71dc-9419-dec3498c9651
     id: r2-q-voids
@@ -1355,3 +1400,323 @@ blocks:
 
           **Wikipedia errors found:** most light-year sizes drop h; KKL citations point to unrelated papers; "1994EEDTAWSS" is Einasto 1994's Table 5; IRAS void 1's X is −10.7, not −10.4; the "SSRS2" void list is Einasto 1994's Table 5.
         tone: info
+  - key: 01a1a776-ef6a-70d7-977d-5c28c064b0b7
+    id: r2-decision-extents
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1a776-ef6a-70d7-977d-5c296aebbc98
+        at: 2026-11-04T16:49:12Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A structure with published extents but no bounds is a marker with three lines along its extents' axes"
+        consequence: |-
+          **What follows:**
+          - A structure file may give `extents` along its position's frame axes, each one cited.
+          - The release turns them into ICRS megaparsec vectors beside the point, with the frame they were published in.
+          - The bounds stay at the point.
+          - The explorer draws the three lines centred on the marker, and the panel says the bounds are unknown.
+          - The set of geometry kinds stays as it is.
+
+          The spec change was approved and committed alone. The build is planned in plan mode next.
+  - key: 01a1a779-15a7-718e-b164-bc1be61f4d6d
+    id: plan-28-plan-glowing-questing-ullman-01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+    kind: plan
+    versions:
+      - key: 01a1a779-15a7-718e-b164-bc1c68367423
+        at: 2026-11-04T16:51:32Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Plan: R2, building release 8's curated superstructures"
+        markdown: |
+          # Plan: R2, building release 8's curated superstructures
+
+          ## Context
+
+          The plan you approved earlier (E5, E6, S1, release 8, E7) is unchanged in its order. E5, E6, S1,
+          R1 and the develop merge and publish 4 are done. This plan replaces only R2's tasks, because your
+          answers in the Yard Log changed R2's scope:
+
+          - **Scope:** the superstructures each paper places, from both Wikipedia lists, plus the named
+            supervoids, as hand-cited structure files. That is about 27 files. The catalogued voids
+            (about 110) and the 22 Einasto 2001 catalogue superclusters move to a later wave that reads
+            them as catalogue sources.
+          - **Voids with unknown bounds:** drawn as a marker with three lines along their published
+            extents, and no box. The spec change is approved and committed (`3d5545b`).
+          - **Sky-region bounds and "(at least)":** the spec change is approved and committed
+            (`1d49952`). Its code is written and tested but not committed yet.
+
+          Branch `stage/release-8-r2` (cut from `product/release-8`), Yard Log open, stage `r2`.
+
+          ## Tasks
+
+          | Task | Scope | Done when |
+          |---|---|---|
+          | **r2-t-bounds**, **r2-t-label**, **r2-t-volumes** (written) | Commit the uncommitted code. It covers: univ-model sky-region bounds from cells (`geometry/bounds.rs`); `Derivation.at_least`; the structure file's `at_least`, centred sky regions (`Sides`) and the `\|x\| < N` rule; Vela, Shapley and Horologium–Reticulum as sky regions; the explorer's "(at least)" (`structureName` in `scene/structures.ts`) | the background run of every workspace test and `pnpm check` is green; fixtures and the OpenAPI snapshot regenerated; one commit with `.yard/` |
+          | **r2-t-extents-ingest** | A structure file may give `extents: {x, y, z}` (each `Cited`, a length or a velocity) along its position's Cartesian frame axes. `structures/check.rs` checks the citations. `release/shapes.rs::point` sets `Derivation.extents = {frame, axes: [Vec3; 3], from}`, each axis the frame's unit vector turned to ICRS (the frame rotation `between(frame, Icrs)`) times the full extent in Mpc. A velocity extent is divided by the release H0, as the paper itself converts it; a length is rescaled with `place.rs::length`. Bounds stay at the point (`place.rs::point` unchanged). New `Extents` type in `univ-model/src/api/structures.rs`, `skip_serializing_if` none | `structure_details` test: the Hercules Void's SGX axis has ICRS length 11600/H0 Mpc and points along supergalactic X; its bounds are its point's; a structure without extents serializes none |
+          | **r2-t-extents-voids** | `extents` in hercules-, sculptor- and local-void.yaml, citing the sentences already in the files | the structure file tests pass |
+          | **r2-t-extents-explorer** | `api/structures.ts` reads `derivation.extents`; `drawingOf` adds three segments, centre ± axis/2, to a point's marker; the panel adds "Its bounds are unknown: the lines are its published extents about its position, which need not be its middle." | `structures.test.ts`: three segments of the given lengths centred on the marker, and no box; `StructuresPanel.test.tsx`: the sentence appears only with extents |
+          | **r2-t-member-xyz** | Member tables may give `x`, `y`, `z` columns (lengths, h-scaled allowed) in a Cartesian frame such as supergalactic, in place of lon/lat/redshift. `structures/members.rs` validates them; `crossmatch/members.rs` places such a row as a tracer at the rotated, rescaled point. Needed for Tully 1987's Pisces–Cetus Supercluster, whose table gives only SGX/SGY/SGZ | `structure_tracers` test: a supergalactic member at (0, 100, 0) h75⁻¹ Mpc lands at the rescaled ICRS point |
+          | **r2-t-box** | A structure primitive `box` given by published ranges along its frame's Cartesian axes, placed as univ-model's oriented box (`Primitive::Box`), its bounds the box. Needed for the Local Supercluster: Tully 1982's "roughly enclosed by the limits −10 < SGX < +10, 0 < SGY < +15, −10 < SGZ < +10 h⁻¹ Mpc" | a `structure_details` test on the Local Supercluster's half-extents (10, 7.5, 10) h⁻¹ Mpc, rescaled |
+          | **r2-t-files** (in three batches, by three agents in parallel, then reviewed by me file by file) | One file per included structure, following the existing files' format. Every quote is checked against the paper text in the scratchpad's `r2-research/` (or fetched again where only a summary was read, such as Ophiuchus). Positions use the frame as published (`fk4_b1950`, `icrs` for J2000, `equatorial_equinox_unstated`, `galactic`, `supergalactic`). Where a paper prints no single place, the file uses `unplaced:` with the reason, never an invented centre. | `cargo test -p univ-ingest --test structures` (the file checker) passes, and so do the structure tests |
+          | **r2-t-trace**, **r2-t-review**, **r2-t-gate**, **r2-t-close** | Link the tests to the five new criteria. Run `/simplify` and `/code-review` in parallel and fix their findings. Then `cargo xtask check` and `cargo xtask integration` once each, `loft reconcile --accept`, the trace view recorded, the Yard Log closed, and a `--no-ff` merge into `product/release-8` | each green once; the merge commit |
+
+          ### The three file batches
+
+          - **Members (tracers from tables):**
+            - U1.11 LQG (38 quasars, Clowes 2012 Table 2);
+            - KKL LQGs 2, 5, 8, 11 and 12 (KKL96 Table 1; equinox unstated);
+            - Perseus–Pegasus Filament (Batuski & Burns 1985, 20 clusters, galactic, z);
+            - Pisces–Cetus Supercluster (Tully 1987, 35 clusters, supergalactic xyz);
+            - Hyperion (Cucciati 2018, 7 peaks);
+            - COSMOS-z3.1-A (10 peaks);
+            - Hydra–Centaurus (Chincarini & Rood 1979, 8 groups, l, b and V0 in the Local Group frame);
+            - Lynx (Rosati 1999, 2 clusters);
+            - MS 0302+17 (Kaiser 1998, 3 clusters).
+          - **Points, sky regions and the box:**
+            - Quipu (sky region of its Table 1 RA, Dec and z ranges, which hold every member);
+            - King Ghidorah (point);
+            - Laniakea (point at the attractor centroid, supergalactic, km/s);
+            - Einasto Supercluster (point);
+            - Boötes Supercluster (Einasto 1997 SCL 138, B1950, h⁻¹ Mpc);
+            - Corona Borealis (Einasto 2001 SCl 158 point; Postman 1988 values);
+            - Coma (Gregory & Thompson 1978);
+            - Sculptor Wall (da Costa 1988);
+            - Ophiuchus (Hasegawa 2000);
+            - SCL @ 1604+43 and SCL @ 0018+16;
+            - the Local Supercluster (box).
+          - **Supervoids:**
+            - Bahcall & Soneira 1982 void (sky region of l 150°–240°, b 35°–50°, z 0.03–0.08);
+            - the Northern and Southern Local Supervoids (Einasto 1994 Table 5 points; the minor axis as a value).
+
+          Each file decides its own geometry from what its paper prints. The list above is the expected
+          outcome, not a licence to place a structure the paper does not place.
+
+          **Left out, as in the list note:** Pavo–Indus (no source names it so), and the ones the note lists.
+
+          ## Order
+
+          1. Commit the written code once the background run is green.
+          2. r2-t-extents-ingest, r2-t-member-xyz and r2-t-box in sequence: they share `shapes.rs` and `place.rs`.
+          3. The file agents start when the formats they need are in place. The member batch waits for
+             xyz, the points batch for the box. The supervoid batch can start at once.
+          4. Meanwhile: r2-t-extents-explorer and r2-t-extents-voids.
+          5. Review every file, then trace, reviews, gate, integration, close, merge.
+
+          Each task is marked active and done in the Yard Log as it runs. Focused checks between tasks:
+          `cargo test -p <crate> <filter>`, clippy on the crate, `pnpm vitest` on the touched explorer
+          files, and `cargo fmt`.
+
+          ## Verification
+
+          - **Files:** `cargo test -p univ-ingest` runs the file checker. It refuses an uncited number in
+            notes, an `as_published` that doesn't parse or match its quote, and a missing citation.
+          - **Placement:** `cargo test -p univ-ingest --test structure_details --test structure_cells
+            --test structure_tracers`.
+          - **Explorer:** `pnpm check` in `clients/explorer`.
+          - **Wave end:** `cargo xtask check` and `cargo xtask integration`, each once and green, with
+            the trace accepted.
+          - **After R3 builds release 8 (outside this wave):** `cargo xtask science` and the spot checks.
+            Laniakea and Vela must be present, Vela as a sky region labelled "(at least)", and the Hercules
+            Void drawn as a marker with three axes, checked live with a screenshot.
+
+          ## After R2
+
+          R3 (build release 8, science checks, spot checks), then E7 (star colours), as approved. The
+          catalogue wave for the voids and Einasto superclusters is planned when R3 is done.
+        planMode: true
+    responses:
+      - key: 01a1a779-a388-7318-a3da-6d80f25f51f3
+        at: 2026-11-04T16:52:09Z
+        revision: 22
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1a779-da64-726e-bcf6-4c8c0dcb1893
+    id: r2-t-extents-ingest
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c946a83dd69
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents in structure files and the derivation"
+        detail: |-
+          **Scope:**
+          - a structure file may give `extents: {x, y, z}`, each cited, along its position's Cartesian frame axes;
+          - the derivation carries `extents`: the frame, three ICRS axis vectors in Mpc (velocities divided by the release H0, lengths rescaled), and pointers;
+          - the bounds stay at the point.
+
+          **Done when** a `structure_details` test shows the Hercules Void's SGX axis has length 11600/H0 and points along supergalactic X, its bounds are its point's, and a structure without extents has none.
+        state: open
+      - key: 01a1a782-bd30-76ba-82d2-6c2c56820d52
+        at: 2026-11-04T17:02:05Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents in structure files and the derivation"
+        detail: |-
+          **Scope:**
+          - a structure file may give `extents: {x, y, z}`, naming three of its cited values, along its position's frame axes;
+          - the derivation carries `extents`: the frame, three ICRS axis vectors in the shape's unit (velocities divided by the release H0, lengths rescaled), and pointers;
+          - the bounds stay at the point.
+
+          **Done when** a `structure_details` test shows the Hercules Void's SGX axis has length 11600/H0 and points along supergalactic X, its bounds are its point's, and a structure without extents has none.
+
+          **Progress:**
+          - Written, with that test and a file-checker test: a missing value, an angle, or no position is refused.
+          - Verifying in a clean worktree, because the file agents' half-written files break any test that reads `structures/`.
+        state: active
+  - key: 01a1a779-da64-726e-bcf6-4c8d1ac78719
+    id: r2-t-extents-voids
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c95d04f195d
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents for the Hercules, Sculptor and Local voids"
+        detail: |-
+          **Scope:** `extents` in the three void files, citing the sentences they already hold.
+
+          **Done when** the structure file tests pass.
+        state: open
+      - key: 01a1a782-bd30-76ba-82d2-6c2d674dd393
+        at: 2026-11-04T17:02:05Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents for the Hercules, Sculptor and Local voids"
+        detail: |-
+          **Scope:** `extents` in the three void files, citing the sentences they already hold.
+
+          **Done when** the structure file tests pass.
+
+          **Progress:** each names its three "extent_sg?_at_isodensity_minus_0_7" values. Verifying with r2-t-extents-ingest.
+        state: active
+  - key: 01a1a779-da64-726e-bcf6-4c8e0f2235b7
+    id: r2-t-extents-explorer
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9647551e78
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The explorer draws extents as three lines through the marker"
+        detail: |-
+          **Scope:**
+          - three segments, centre ± axis/2, beside a point's marker, and no box;
+          - the panel says the bounds are unknown and that the lines are the published extents about the position, which need not be its middle.
+
+          **Done when** the scene and panel tests show both, and `pnpm check` passes.
+        state: open
+      - key: 01a1a782-bd30-76ba-82d2-6c2ec5caf924
+        at: 2026-11-04T17:02:05Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The explorer draws extents as three lines through the marker"
+        detail: |-
+          **Scope:**
+          - three segments, centre ± axis/2, beside a point's marker, and no box;
+          - the panel says the bounds are unknown and that the lines are the published extents about the position, which need not be its middle.
+
+          **Done when** the scene and panel tests show both, and `pnpm check` passes.
+
+          **Result:**
+          - `structures.test.ts`: a point with extents (4, 6, 8) has six segment ends at ±2, ±3 and ±4 about its marker, is not approximate, and a point without extents has no segments.
+          - `StructuresPanel.test.tsx`: the sentence appears only with extents.
+          - Typecheck is clean; `pnpm check` runs with the gate.
+        state: done
+  - key: 01a1a779-da64-726e-bcf6-4c8f87fe38ff
+    id: r2-t-member-xyz
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9779e411dd
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Cartesian member columns"
+        detail: |-
+          **Scope:** member tables may give `x`, `y`, `z` lengths in a Cartesian frame (h-scaled allowed); such a row is placed as a tracer at the rotated, rescaled point. Tully 1987's Pisces–Cetus Supercluster needs it.
+
+          **Done when** a `structure_tracers` test shows a supergalactic member at (0, 100, 0) h75⁻¹ Mpc land at the rescaled ICRS point.
+        state: open
+  - key: 01a1a779-da64-726e-bcf6-4c900419a1d5
+    id: r2-t-box
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9893da6a1f
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A box primitive from published axis ranges"
+        detail: |-
+          **Scope:** a structure primitive `box` given by ranges along its frame's Cartesian axes, placed as univ-model's oriented box. Tully 1982's Local Supercluster needs it.
+
+          **Done when** a `structure_details` test shows the Local Supercluster's half-extents (10, 7.5, 10) h⁻¹ Mpc, rescaled.
+        state: open
+  - key: 01a1a779-da64-726e-bcf6-4c914e9c1b59
+    id: r2-t-trace
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9a2cce2925
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace the new criteria"
+        detail: |-
+          **Scope:** link the tests to the five new criteria and accept them.
+
+          **Done when** `loft reconcile` reports none stale and the trace view is recorded.
+        state: open
+  - key: 01a1a779-da64-726e-bcf6-4c922059772f
+    id: r2-t-review
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9ba30e7c5e
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "/simplify and /code-review"
+        detail: |-
+          **Scope:** run both in parallel on the wave's diff and fix their findings.
+
+          **Done when** every finding is fixed or skipped with a reason.
+        state: open
+  - key: 01a1a779-da64-726e-bcf6-4c93a7bfa5b4
+    id: r2-t-gate
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9c95afacb6
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration"
+        detail: "**Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green."
+        state: open

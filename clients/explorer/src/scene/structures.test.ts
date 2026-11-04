@@ -14,6 +14,16 @@ function detail(shape: StructureDetail["shape"], bounds: StructureDetail["bounds
 
 const distances = (from: Vec3, points: Vec3[]) => points.map((p) => norm(sub(p, from)));
 
+describe("a structure's name", () => {
+  it("is followed by \"(at least)\" where its papers give its shape as a lower limit on its extent", () => {
+    const point = shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "point", at: [1, 0, 0] } });
+    const plain = { ...detail(point), name: "Vela Supercluster" };
+    expect(drawingOf(plain, ROTATIONS).name).toBe("Vela Supercluster");
+    const atLeast = { ...plain, derivation: { from: [], at_least: "/geometry/SkyRegion/at_least" } };
+    expect(drawingOf(atLeast, ROTATIONS).name).toBe("Vela Supercluster (at least)");
+  });
+});
+
 describe("a structure's shape", () => {
   it("draws a sphere as rings at its radius, in the frame and unit its shape names", () => {
     const shape = shapeOf({ frame: "galactic", unit: "kiloparsec", geometry: { kind: "primitive", primitive: { form: "sphere", centre: [1000, 0, 0], radius: 500 } } });
@@ -43,6 +53,16 @@ describe("a structure's shape", () => {
     expect(drawingOf(detail(members), ROTATIONS).outline.markers).toEqual([[5, 0, 0], [0, 5, 0]]);
     const point = shapeOf({ frame: "icrs", unit: "parsec", geometry: { kind: "point", at: [2e6, 0, 0] } });
     expect(drawingOf(detail(point), ROTATIONS).outline.markers).toEqual([[2, 0, 0]]);
+  });
+
+  it("draws a point's published extents as a line along each, centred on its marker, and no box", () => {
+    const point = shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "point", at: [10, 0, 0] } });
+    const axes: [[number, number, number], [number, number, number], [number, number, number]] = [[4, 0, 0], [0, 6, 0], [0, 0, 8]];
+    const drawing = drawingOf({ ...detail(point), derivation: { from: [], extents: { frame: "supergalactic", axes } } }, ROTATIONS);
+    expect(drawing.approximate).toBe(false);
+    expect(drawing.outline.markers).toEqual([[10, 0, 0]]);
+    expect(drawing.outline.segments).toEqual([[8, 0, 0], [12, 0, 0], [10, -3, 0], [10, 3, 0], [10, 0, -4], [10, 0, 4]]);
+    expect(drawingOf(detail(point), ROTATIONS).outline.segments).toEqual([]);
   });
 
   it("draws a grid, or a structure with no placed shape, as its bounding box, marked approximate", () => {

@@ -40,7 +40,7 @@ use univ_model::value::{Quantity, Uncertainty};
 
 use crate::crossmatch::MemberPlacement;
 use crate::structures::{
-    Cited, Coordinates, Radial, SkyBox, SphereSize, Structure, StructureGeometry,
+    Cited, Coordinates, Radial, Sides, SkyBox, SphereSize, Structure, StructureGeometry,
     StructurePrimitive,
 };
 
@@ -117,16 +117,57 @@ pub fn centre(
         Some(StructureGeometry::SkyRegion(b)) => {
             let near = radial(&b.near, release)?;
             let far = radial(&b.far, release)?;
-            let lon0 = degrees(&b.lon[0])?;
-            let lon = lon0 + longitude_span(lon0, degrees(&b.lon[1])?) / 2.0;
-            let lat = f64::midpoint(degrees(&b.lat[0])?, degrees(&b.lat[1])?);
-            let u = unit_vector(lon, lat);
+            let r = ranges(b)?;
+            let u = unit_vector(r.lon0 + r.span / 2.0, f64::midpoint(r.lat0, r.lat1));
             Ok(between(b.frame, Frame::Icrs).apply(scaled(u, f64::midpoint(near, far))))
         }
         None => match &structure.position {
             Some(at) => place(at, release, correction).map(|(c, _)| c),
             None => Err("it publishes no position or geometry".to_owned()),
         },
+    }
+}
+
+/// A sky region's sides as ranges, degrees in its frame: longitude from `lon0` eastward over
+/// `span`, latitude from `lat0` to `lat1`.
+#[derive(Clone, Copy, Debug)]
+pub struct SkyRanges {
+    pub lon0: f64,
+    pub span: f64,
+    pub lat0: f64,
+    pub lat1: f64,
+}
+
+/// The ranges of `region`'s sides: as published, or, for a centre with a width and height on
+/// the sky, the height about the centre's latitude and the half-width over the cosine of that
+/// latitude either side of its longitude.
+///
+/// # Errors
+///
+/// Fails when a side is not an angle.
+pub fn ranges(region: &SkyBox) -> Result<SkyRanges, String> {
+    match &region.sides {
+        Sides::Ranges { lon, lat } => {
+            let lon0 = degrees(&lon[0])?;
+            let (a, b) = (degrees(&lat[0])?, degrees(&lat[1])?);
+            Ok(SkyRanges {
+                lon0,
+                span: longitude_span(lon0, degrees(&lon[1])?),
+                lat0: a.min(b),
+                lat1: a.max(b),
+            })
+        }
+        Sides::Centred { centre, size } => {
+            let (lon, lat) = (degrees(&centre[0])?, degrees(&centre[1])?);
+            let (width, height) = (degrees(&size[0])?, degrees(&size[1])?);
+            let span = (width / lat.to_radians().cos()).min(360.0);
+            Ok(SkyRanges {
+                lon0: (lon - span / 2.0).rem_euclid(360.0),
+                span,
+                lat0: lat - height / 2.0,
+                lat1: lat + height / 2.0,
+            })
+        }
     }
 }
 
@@ -160,7 +201,7 @@ pub(super) fn comoving(z: f64, release: &Release) -> Result<f64, String> {
         .map_err(|e| e.to_string())
 }
 
-fn km_s(c: &Cited) -> Result<f64, String> {
+pub(super) fn km_s(c: &Cited) -> Result<f64, String> {
     c.quantity
         .to(Unit::KilometrePerSecond)
         .map(|q| q.value)
@@ -309,10 +350,12 @@ pub fn sky_region(region: &SkyBox, release: &Release) -> Result<Aabb, String> {
     let near = radial(&region.near, release)?;
     let far = radial(&region.far, release)?;
     let (near, far) = (near.min(far), near.max(far));
-    let lon0 = degrees(&region.lon[0])?;
-    let span = longitude_span(lon0, degrees(&region.lon[1])?);
-    let (lat_a, lat_b) = (degrees(&region.lat[0])?, degrees(&region.lat[1])?);
-    let (lat0, lat1) = (lat_a.min(lat_b), lat_a.max(lat_b));
+    let SkyRanges {
+        lon0,
+        span,
+        lat0,
+        lat1,
+    } = ranges(region)?;
     let to_icrs = between(region.frame, Frame::Icrs);
     let n = f64::from(SKY_SAMPLES);
     let mut lo = [f64::INFINITY; 3];

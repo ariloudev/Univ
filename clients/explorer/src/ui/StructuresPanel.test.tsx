@@ -45,6 +45,26 @@ describe("the structures", () => {
     expect(values).toContain("reconstructed; Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24");
   });
 
+  it("name a structure whose shape is a lower limit on its extent \"(at least)\" in the panel", () => {
+    const vela = { ...LOCAL_VOID, name: "Vela Supercluster", derivation: { from: [], at_least: "/geometry/SkyRegion/at_least" } };
+    const { unmount } = render(<StructurePanel detail={vela} approximate={false} onClose={() => undefined} />);
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Vela Supercluster (at least)");
+    unmount();
+    render(<StructurePanel detail={LOCAL_VOID} approximate={false} onClose={() => undefined} />);
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Local Void");
+  });
+
+  it("say a structure drawn by its extents has unknown bounds, and only then", () => {
+    const axes: [[number, number, number], [number, number, number], [number, number, number]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+    const { unmount } = render(<StructurePanel detail={{ ...LOCAL_VOID, derivation: { from: [], extents: { frame: "supergalactic", axes } } }} approximate={false} onClose={() => undefined} />);
+    expect(screen.getByTestId("structure-extents").textContent).toBe(
+      "Its bounds are unknown: the lines are its published extents about its position, which need not be its middle.",
+    );
+    unmount();
+    render(<StructurePanel detail={LOCAL_VOID} approximate={false} onClose={() => undefined} />);
+    expect(screen.queryByTestId("structure-extents")).toBeNull();
+  });
+
   it("name a primitive shape by its form", () => {
     const sphere = shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "primitive", primitive: { form: "sphere", centre: [0, 0, 0], radius: 1 } } });
     expect(matchedText({ ...LOCAL_VOID, shape: sphere, derivation: null }, false)).toBe("a sphere in icrs");

@@ -3,7 +3,7 @@
 //! assumes; and every number written in free text (notes, how a figure was read, why a structure
 //! is unplaced, a dispute's claim) is one the file cites.
 
-use univ_model::units::Unit;
+use univ_model::units::{Dimension, Unit};
 
 use super::citation::{Citation, Locator};
 use super::cited::{Assumes, Cited};
@@ -114,6 +114,49 @@ impl Structure {
 
     /// The member table: a column of lengths in Mpc names its cosmology, and every longitude
     /// and latitude is in range.
+    /// Extents name three of the file's values, each a positive length or velocity, about a
+    /// position given in a frame, and only for a structure placed at its position.
+    pub(super) fn check_extents(&self) -> Result<(), Problem> {
+        let Some(extents) = &self.extents else {
+            return Ok(());
+        };
+        if self.geometry.is_some()
+            || self
+                .position
+                .as_ref()
+                .and_then(super::geometry::Coordinates::frame)
+                .is_none()
+        {
+            return problem(
+                "extents",
+                "extents lie about a position given in a frame, for a structure placed at it",
+            );
+        }
+        for (axis, name) in ["x", "y", "z"].into_iter().zip(extents.names()) {
+            let field = format!("extents.{axis}");
+            let Some(value) = self.values.get(name) else {
+                return problem(
+                    &field,
+                    format!("names {name}, which is not among the values"),
+                );
+            };
+            let dimension = value.unit().dimension();
+            if !matches!(
+                dimension,
+                Dimension::Length | Dimension::HubbleScaledLength | Dimension::Velocity
+            ) {
+                return problem(
+                    &field,
+                    format!("names {name}, which is not a length or a velocity"),
+                );
+            }
+            if value.value() <= 0.0 {
+                return problem(&field, format!("names {name}, which is not positive"));
+            }
+        }
+        Ok(())
+    }
+
     pub(super) fn check_members(&self) -> Result<(), Problem> {
         let Some(StructureGeometry::Members(m)) = &self.geometry else {
             return Ok(());

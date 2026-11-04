@@ -66,7 +66,7 @@ pub use outline::{
     Admitted, OUTLINE_CENTRE, Outlined, TestCatalogues, admitted, not_drawn, outlines_on,
     result_record,
 };
-pub use place::{centre, index_bounds, sky_region};
+pub use place::{SkyRanges, centre, index_bounds, ranges, sky_region};
 pub use placement::{Placement, placements};
 pub use rescaled::rescaled;
 pub use shapes::{PlacedShape, Placing, frame_chain, placed_shape};

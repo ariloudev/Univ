@@ -13,7 +13,7 @@ use std::path::PathBuf;
 use common::near;
 use serde::Deserialize;
 use univ_ingest::grids::{Window, read_cf4_basins};
-use univ_ingest::structures::{Coordinates, Radial, Structure, StructureGeometry, read_all};
+use univ_ingest::structures::{Coordinates, Radial, Sides, Structure, StructureGeometry, read_all};
 use univ_model::cosmology::{AssumedCosmology, Cosmology};
 use univ_model::derive::{DerivedPosition, Direction, Release, Transformation};
 use univ_model::distance::{Distance, DistanceKind, Measure, Method};
@@ -244,7 +244,10 @@ fn an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error() {
         panic!("a sky region")
     };
     assert_eq!(region.frame, Frame::EquatorialEquinoxUnstated);
-    let (lon, lat) = (region.lon[0].value(), region.lat[0].value());
+    let Sides::Ranges { lon, lat } = &region.sides else {
+        panic!("published as ranges")
+    };
+    let (lon, lat) = (lon[0].value(), lat[0].value());
     let direction = Direction::new(region.frame, lon, lat, Epoch::J2000).unwrap();
     let as_j2000 = Direction::new(Frame::Fk5J2000, lon, lat, Epoch::J2000).unwrap();
     assert_eq!(direction.icrs(), as_j2000.icrs());

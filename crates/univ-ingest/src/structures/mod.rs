@@ -46,12 +46,12 @@ use crate::yaml::{FileError, read_checked, read_dir};
 
 pub use citation::{Citation, Locator};
 pub use cited::{Assumes, Cited};
-pub use geometry::{Coordinates, Radial};
+pub use geometry::{AxisExtents, Coordinates, Radial};
 pub use members::{Column, ColumnName, Format, MemberSource, Members, Row};
 pub use outline::{
     Choice, ChosenBy, DensePlaces, GridOutline, OutlineTest, Rule, Seed, Side, Threshold,
 };
-pub use shape::{SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
+pub use shape::{Sides, SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
 
 /// A researched structure as its file describes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -70,6 +70,10 @@ pub struct Structure {
     pub position: Option<Coordinates>,
     #[serde(default)]
     pub geometry: Option<StructureGeometry>,
+    /// Its published extents along the axes of its position's frame, where its papers do not
+    /// say where it ends; it is placed at its position, with these about it.
+    #[serde(default)]
+    pub extents: Option<AxisExtents>,
     /// Why a structure has neither position nor geometry, when its papers give neither.
     #[serde(default)]
     pub unplaced: Option<String>,
@@ -200,6 +204,11 @@ impl Structure {
             self.check_citation(&field, &value.cite, Some(value))?;
             self.check_value(&field, value)?;
         }
+        if let Some(StructureGeometry::SkyRegion(b)) = &self.geometry
+            && let Some(at_least) = &b.at_least
+        {
+            self.check_citation("geometry.sky_region.at_least", at_least, None)?;
+        }
         for (i, dispute) in self.disputes.iter().enumerate() {
             let field = format!("disputes[{i}]");
             if dispute.claim.trim().is_empty() {
@@ -213,6 +222,7 @@ impl Structure {
             return problem("geometry.members.source.paper", "is not among the papers");
         }
         self.check_members()?;
+        self.check_extents()?;
         self.check_free_text()
     }
 

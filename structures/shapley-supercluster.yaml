@@ -37,6 +37,59 @@ position:
       paper: proust-2006
       sentence: "Our data reveal that the main plane of the SSC (v ≈ 14500 km s-1) extends further than previous estimates, filling the whole extent of our survey region of 12 degrees by 30 degrees on the sky (30 × 75 h^-1 Mpc)."
     note: "The velocity of the main plane."
+# The area the paper surveyed, which its main plane fills, between the ends of the velocity range
+# of the supercluster's main body (Section 4.1).
+geometry:
+  kind: sky_region
+  sky_region:
+    frame: equatorial_equinox_unstated
+    lon:
+      - value: 190
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "12h40m"
+        cite: &area
+          paper: proust-2006
+          sentence: "The transverse dimensions of the area surveyed are defined from R.A. ≃ 12h40m to ≃ 14h10m and from Dec ≃ -24° to ≃ -38°, corresponding to at least 40 × 25 h^-1 Mpc."
+      - value: 212.5
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "14h10m"
+        cite: *area
+    lat:
+      - value: -38
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "-38°"
+        cite: *area
+      - value: -24
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "-24°"
+        cite: *area
+    near:
+      velocity:
+        value: 13000
+        unit: kilometre_per_second
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &body
+          paper: proust-2006
+          sentence: "The main body of the SSC is represented by the highest peak, which is centered at ≃ 15000 km s-1 and extends over the velocity range 13000 - 18000 km s-1."
+    far:
+      velocity:
+        value: 18000
+        unit: kilometre_per_second
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *body
+    at_least:
+      paper: proust-2006
+      sentence: "Our data reveal that the main plane of the SSC (v ≈ 14500 km s-1) extends further than previous estimates, filling the whole extent of our survey region of 12 degrees by 30 degrees on the sky (30 × 75 h^-1 Mpc)."
 values:
   redshift_low:
     value: 0.04
@@ -94,8 +147,14 @@ values:
       sentence: "These galaxies seem to link two previously identified sheets of galaxies and establish a connection with a third one at v̄ = 15000 km s-1 near R.A. = 13h."
 disputes: []
 notes: >-
-  The main plane fills the whole survey region, so its extent is a lower limit; the orientation of
-  the 12° by 30° region is not stated in these sentences. The paper does not state the equinox of
+  The region drawn is the area surveyed as Section 4.1 bounds it, which the main plane fills, so
+  the structure extends at least over it; its velocities are the main body's range in Section
+  4.1, where the paper also takes a wider range, down to the nearer A3571 concentration, for the
+  supercluster as a whole. The paper disagrees with itself on the area: the abstract's "12
+  degrees by 30 degrees" is not the box of Section 4.1, which is wider in right ascension on the
+  sky than in declination and smaller in area; the box of Section 4.1 is drawn, and the
+  abstract's numbers are kept as published below. The orientation of the 12° by 30° region is not stated in
+  these sentences. The paper does not state the equinox of
   the centre (its ESO/UKST survey fields are named on the same grid of 13h25m, -30°). A connecting
   structure near the Abell 3571 complex (v ≈ 12000 km/s) and a third sheet at 15000 km/s near
   R.A. 13h are also reported.

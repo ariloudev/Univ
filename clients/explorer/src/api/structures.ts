@@ -52,7 +52,17 @@ const StructureDetail = z.looseObject({
   centre: Centre.nullable(),
   bounds: z.looseObject({ min: Triple, max: Triple }).nullable(),
   shape: Shape.nullable(),
-  derivation: z.looseObject({ from: z.array(z.string()).optional() }).nullable().optional(),
+  derivation: z
+    .looseObject({
+      from: z.array(z.string()).optional(),
+      /** Where its papers give the shape as a lower limit on its extent: a pointer into the record. */
+      at_least: z.string().optional(),
+      /** Its published extents about its point, where its papers give no bounds: each axis of
+       * their frame as a whole-extent vector in the ICRS, in the shape's unit. */
+      extents: z.looseObject({ frame: z.string(), axes: z.tuple([Triple, Triple, Triple]) }).optional(),
+    })
+    .nullable()
+    .optional(),
   record: z.looseObject({
     papers: z.array(Paper).optional(),
     values: z.record(z.string(), Cited).optional(),

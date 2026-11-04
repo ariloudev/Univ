@@ -59,7 +59,7 @@ pub fn geometry(g: &StructureGeometry) -> Vec<Pointed<'_>> {
         StructureGeometry::SkyRegion(b) => {
             let at = "/geometry/SkyRegion";
             let mut out: Vec<Pointed<'_>> = Vec::new();
-            for (name, pair) in [("lon", &b.lon), ("lat", &b.lat)] {
+            for (name, pair) in b.sides.pairs() {
                 for (i, c) in pair.iter().enumerate() {
                     out.push((format!("{at}/{name}/{i}"), c));
                 }

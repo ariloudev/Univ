@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{Geometry, Member, Primitive};
+use crate::healpix;
 use crate::position::{Rotation, Vec3, dot, scaled, zip};
 
 /// An axis-aligned box.
@@ -77,8 +78,12 @@ impl Geometry {
             Self::Members { members } => Aabb::around(members.iter().map(|m| match m {
                 Member::Object { at, .. } | Member::Tracer { at, .. } => r(*at),
             })),
-            // Every direction within `far` of the observer: a box around the sphere of that radius.
-            Self::SkyRegion { far, .. } => Some(Aabb::centred([0.0; 3], [*far; 3])),
+            Self::SkyRegion {
+                order,
+                cells,
+                near,
+                far,
+            } => sky_region(*order, cells, *near, *far, rotation),
             Self::VolumeGrid {
                 origin,
                 cell,
@@ -107,6 +112,32 @@ impl Geometry {
             })),
         }
     }
+}
+
+/// The box around the directions of `cells` between `near` and `far`, in the frame `rotation`
+/// takes the region's frame to; none for no cells.
+///
+/// Every direction of a cell lies within [`healpix::radius_bound`] (ρ) of its centre, so along
+/// an axis at angle θ from the centre it reaches at most cos(max(0, θ − ρ)): the box is never
+/// smaller than the region, and an axis inside it reaches out to `far`.
+fn sky_region(order: u8, cells: &[u64], near: f64, far: f64, rotation: &Rotation) -> Option<Aabb> {
+    let rho = healpix::radius_bound(order);
+    let reach = |cos_theta: f64| (cos_theta.clamp(-1.0, 1.0).acos() - rho).max(0.0).cos();
+    let mut high = [f64::NEG_INFINITY; 3];
+    let mut low = [f64::INFINITY; 3];
+    for &cell in cells {
+        let c = rotation.apply(healpix::centre(order, cell));
+        for k in 0..3 {
+            high[k] = high[k].max(reach(c[k]));
+            low[k] = low[k].min(-reach(-c[k]));
+        }
+    }
+    // The largest coordinate is at `far` where the reach is positive, else at `near`, nearer
+    // zero; the smallest likewise for a negative reach.
+    (!cells.is_empty()).then(|| Aabb {
+        min: low.map(|u| if u < 0.0 { far * u } else { near * u }),
+        max: high.map(|u| if u > 0.0 { far * u } else { near * u }),
+    })
 }
 
 impl Primitive {
@@ -254,13 +285,67 @@ mod tests {
                 max: [-4.0, -4.0, -2.0]
             }
         );
-        let region = Geometry::SkyRegion {
-            order: 3,
-            cells: vec![12],
-            near: 0.0,
+        let whole_sky = Geometry::SkyRegion {
+            order: 1,
+            cells: (0..48).collect(),
+            near: 10.0,
             far: 50.0,
         };
-        assert_eq!(boxed(region).min, [-50.0; 3]);
+        assert_eq!(boxed(whole_sky), Aabb::centred([0.0; 3], [50.0; 3]));
+    }
+
+    /// Directions on a fine grid over the sphere: every 0.25° in latitude and in longitude.
+    fn sky_grid() -> impl Iterator<Item = Vec3> {
+        (0..=720).flat_map(|i| {
+            let lat = (f64::from(i) / 4.0 - 90.0).to_radians();
+            (0..1_440).map(move |j| {
+                let lon = f64::from(j).to_radians() / 4.0;
+                [lat.cos() * lon.cos(), lat.cos() * lon.sin(), lat.sin()]
+            })
+        })
+    }
+
+    #[test]
+    fn a_sky_region_is_bounded_by_its_cells_between_its_distances() {
+        // About Vela's slab: the cells of order 6 around l 270°, b 0° in the galactic frame,
+        // between 237 and 350 Mpc, boxed in the ICRS.
+        let order = 6;
+        let centre = crate::position::unit_vector(270.0, 0.0);
+        let cells: Vec<u64> = sky_grid()
+            .filter(|u| dot(*u, centre) > 12f64.to_radians().cos())
+            .map(|u| healpix::hash(order, u))
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .collect();
+        let (near, far) = (237.0, 350.0);
+        let region = Shape::new(
+            Frame::Galactic,
+            Unit::Megaparsec,
+            Geometry::SkyRegion {
+                order,
+                cells: cells.clone(),
+                near,
+                far,
+            },
+        )
+        .unwrap();
+        let b = region.bounds_in(Frame::Icrs).unwrap();
+        // Every direction of every cell, at both distances, lies in the box.
+        let to_icrs = crate::position::between(Frame::Galactic, Frame::Icrs);
+        let mut inside = 0;
+        for u in sky_grid().filter(|u| cells.contains(&healpix::hash(order, *u))) {
+            for r in [near, far] {
+                let p = to_icrs.apply(scaled(u, r));
+                assert!(
+                    (0..3).all(|k| b.min[k] <= p[k] && p[k] <= b.max[k]),
+                    "{p:?} {b:?}"
+                );
+            }
+            inside += 1;
+        }
+        assert!(inside > 1_000, "{inside} directions checked");
+        // About 24° across at 350 Mpc, not the 700 Mpc of the sphere of its far distance.
+        assert!((0..3).all(|k| b.max[k] - b.min[k] < 300.0), "{b:?}");
     }
 
     #[test]

@@ -4,6 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::citation::Citation;
 use super::cited::Cited;
 use super::geometry::{Coordinates, Radial, is_angle, is_length};
 use super::members::Members;
@@ -96,7 +97,7 @@ impl StructureGeometry {
             Self::Members(_) => vec![],
             Self::SkyRegion(s) => {
                 let mut out = vec![];
-                for (name, pair) in [("lon", &s.lon), ("lat", &s.lat)] {
+                for (name, pair) in s.sides.pairs() {
                     for (i, c) in pair.iter().enumerate() {
                         out.push((format!("sky_region.{name}[{i}]"), c));
                     }
@@ -179,16 +180,59 @@ impl TryFrom<RawPrimitive> for StructurePrimitive {
     }
 }
 
-/// A longitude range from `lon[0]` eastward to `lon[1]` (wrapping through 0 where `lon[0]` is
-/// larger), a latitude range and radial bounds.
+/// A region of the sky between radial bounds: its sides as its paper gives them, and, where
+/// the paper says the structure extends at least over it, where it says so.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawSkyBox")]
 pub struct SkyBox {
     pub frame: Frame,
-    pub lon: [Cited; 2],
-    pub lat: [Cited; 2],
+    #[serde(flatten)]
+    pub sides: Sides,
     pub near: Radial,
     pub far: Radial,
+    /// The sentence in which the paper gives the region as a lower limit on the structure's
+    /// extent, such as "at least 25° × 20°".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub at_least: Option<Citation>,
+}
+
+/// The sides of a sky region as published.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(untagged)]
+pub enum Sides {
+    /// A longitude range from `lon[0]` eastward to `lon[1]` (wrapping through 0 where `lon[0]`
+    /// is larger) and a latitude range.
+    Ranges { lon: [Cited; 2], lat: [Cited; 2] },
+    /// A centre, longitude and latitude, and the width and height on the sky about it: the
+    /// width an angle along the sky at the centre, not a span of longitude.
+    Centred {
+        centre: [Cited; 2],
+        size: [Cited; 2],
+    },
+}
+
+impl Sides {
+    /// Its two pairs of cited angles, each with its field name.
+    #[must_use]
+    pub fn pairs(&self) -> [(&'static str, &[Cited; 2]); 2] {
+        match self {
+            Self::Ranges { lon, lat } => [("lon", lon), ("lat", lat)],
+            Self::Centred { centre, size } => [("centre", centre), ("size", size)],
+        }
+    }
+
+    /// How the region's cells are chosen from these sides, for its derivation.
+    #[must_use]
+    pub fn described(&self) -> &'static str {
+        match self {
+            Self::Ranges { .. } => "the published longitude and latitude box",
+            Self::Centred { .. } => {
+                "the box of the published width and height about the published centre, its \
+                 latitude the height about the centre's and its longitude the half-width over \
+                 the cosine of the centre's latitude either side of the centre's"
+            }
+        }
+    }
 }
 
 /// A sky box as written.
@@ -196,21 +240,48 @@ pub struct SkyBox {
 #[serde(deny_unknown_fields)]
 struct RawSkyBox {
     frame: Frame,
-    lon: [Cited; 2],
-    lat: [Cited; 2],
+    #[serde(default)]
+    lon: Option<[Cited; 2]>,
+    #[serde(default)]
+    lat: Option<[Cited; 2]>,
+    #[serde(default)]
+    centre: Option<[Cited; 2]>,
+    #[serde(default)]
+    size: Option<[Cited; 2]>,
     near: Radial,
     far: Radial,
+    #[serde(default)]
+    at_least: Option<Citation>,
 }
 
 impl TryFrom<RawSkyBox> for SkyBox {
     type Error = String;
     fn try_from(raw: RawSkyBox) -> Result<Self, String> {
-        if !raw.lon.iter().chain(&raw.lat).all(is_angle) {
-            return Err("lon and lat bounds are angles".into());
-        }
-        if raw.lat[0].value() > raw.lat[1].value() {
-            return Err("lat runs from the lower bound to the upper".into());
-        }
+        let sides = match (raw.lon, raw.lat, raw.centre, raw.size) {
+            (Some(lon), Some(lat), None, None) => {
+                if !lon.iter().chain(&lat).all(is_angle) {
+                    return Err("lon and lat bounds are angles".into());
+                }
+                if lat[0].value() > lat[1].value() {
+                    return Err("lat runs from the lower bound to the upper".into());
+                }
+                Sides::Ranges { lon, lat }
+            }
+            (None, None, Some(centre), Some(size)) => {
+                if !centre.iter().chain(&size).all(is_angle) {
+                    return Err("centre and size are angles".into());
+                }
+                let (lat, height) = (centre[1].value(), size[1].value());
+                if size.iter().any(|s| s.value() <= 0.0) || (lat.abs() + height / 2.0) >= 90.0 {
+                    return Err(
+                        "size is a positive width and height whose box stays clear of the poles"
+                            .into(),
+                    );
+                }
+                Sides::Centred { centre, size }
+            }
+            _ => return Err("a sky region gives lon and lat, or centre and size".into()),
+        };
         if raw.near.name() != raw.far.name() || raw.near.cited().unit() != raw.far.cited().unit() {
             return Err("near and far are the same measure in the same unit".into());
         }
@@ -219,10 +290,10 @@ impl TryFrom<RawSkyBox> for SkyBox {
         }
         Ok(Self {
             frame: raw.frame,
-            lon: raw.lon,
-            lat: raw.lat,
+            sides,
             near: raw.near,
             far: raw.far,
+            at_least: raw.at_least,
         })
     }
 }

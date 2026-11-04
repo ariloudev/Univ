@@ -1,4 +1,5 @@
 import type { Geometry, StructureDetail, StructureSummary } from "../api/structures.ts";
+import { structureName } from "../scene/structures.ts";
 import { valueText, words } from "./text.ts";
 
 /** Every structure of the release by name and kind, each to choose. */
@@ -47,7 +48,7 @@ export function StructurePanel({ detail, approximate, onClose }: { detail: Struc
   return (
     <section aria-label="The chosen structure" className="max-h-[50vh] space-y-2 overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="font-semibold">{detail.name}</h2>
+        <h2 className="font-semibold">{structureName(detail)}</h2>
         <button type="button" onClick={onClose} className="text-dim hover:text-ink" aria-label="Close the structure's panel">
           ×
         </button>
@@ -58,6 +59,11 @@ export function StructurePanel({ detail, approximate, onClose }: { detail: Struc
       <p className="text-xs text-dim" data-testid="structure-matched">
         Placed by {matchedText(detail, approximate)}.
       </p>
+      {detail.derivation?.extents === undefined ? null : (
+        <p className="text-xs text-dim" data-testid="structure-extents">
+          Its bounds are unknown: the lines are its published extents about its position, which need not be its middle.
+        </p>
+      )}
       <ul className="space-y-1" data-testid="structure-values">
         {values.map(([name, value]) => (
           <li key={name}>

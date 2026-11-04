@@ -427,3 +427,27 @@ fn a_structure_names_its_scale_domain_or_is_refused() {
     assert_eq!(unknown.field, "scale_domain", "{unknown}");
     assert_eq!(read(VALID).unwrap().scale_domain, ScaleDomain::CosmicWeb);
 }
+
+#[test]
+fn extents_name_lengths_or_velocities_among_the_values_about_a_placed_position() {
+    let with = |extents: &str| VALID.replace("values:\n", &format!("{extents}values:\n"));
+    let ok = read(&with("extents: { x: extent, y: extent, z: extent }\n")).unwrap();
+    assert_eq!(ok.extents.unwrap().names(), ["extent"; 3]);
+    let missing = refusal(&with("extents: { x: extent, y: depth, z: extent }\n"));
+    assert_eq!(missing.field, "extents.y");
+    assert!(missing.problem.contains("depth"), "{}", missing.problem);
+    let angle = with("extents: { x: extent, y: extent, z: extent }\n").replace(
+        "unit: kilometre_per_second\n    kind: estimated",
+        "unit: degree\n    kind: estimated",
+    );
+    assert_eq!(refusal(&angle).field, "extents.x");
+    let text = with("extents: { x: extent, y: extent, z: extent }\n");
+    let (head, tail) = (
+        &text[..text.find("position:").unwrap()],
+        &text[text.find("extents:").unwrap()..],
+    );
+    let unplaced = refusal(&format!(
+        "{head}unplaced: \"No position is published.\"\n{tail}"
+    ));
+    assert_eq!(unplaced.field, "extents");
+}

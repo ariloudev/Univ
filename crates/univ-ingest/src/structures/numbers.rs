@@ -193,13 +193,29 @@ pub struct Published {
     pub value: f64,
     pub half_step: f64,
     pub unit: Option<Unit>,
+    /// Whether it stands for the value and its negative alike: a bound on a magnitude, such as
+    /// `|b| < 10°`, the bound of both ends of a range about zero.
+    pub either_sign: bool,
 }
 
 /// The number `text` stands for: a decimal (`0.060`, `~1 Gpc`), hours of right ascension
 /// (`16.7h`, `13h01m`, `α = 03h19m`), degrees with minutes and seconds (`-50°02′`, `38◦45′`),
-/// or a celestial pole (latitude ±90°). A label up to `=` and a leading `~` are skipped.
+/// or a celestial pole (latitude ±90°). A label up to `=` and a leading `~` are skipped. A bound
+/// on a magnitude, `|b| < 10°` or `|b| ≤ 10°`, stands for 10° and −10° alike.
 #[must_use]
 pub fn published(text: &str) -> Option<Published> {
+    if let Some(bound) = text
+        .trim()
+        .strip_prefix('|')
+        .and_then(|t| t.split_once('|'))
+        .map(|(_, rest)| rest.trim())
+        .and_then(|rest| ["≤", "<=", "<"].iter().find_map(|op| rest.strip_prefix(op)))
+    {
+        return published(bound).map(|p| Published {
+            either_sign: true,
+            ..p
+        });
+    }
     let lower = text.to_lowercase();
     if lower.contains("pole") {
         let value = match (lower.contains("south"), lower.contains("north")) {
@@ -211,6 +227,7 @@ pub fn published(text: &str) -> Option<Published> {
             value,
             half_step: 0.0,
             unit: Some(Unit::Degree),
+            either_sign: false,
         });
     }
     let text = text.rsplit_once('=').map_or(text, |(_, t)| t);
@@ -251,6 +268,7 @@ pub fn published(text: &str) -> Option<Published> {
         value: value * factor,
         half_step: half_step * factor,
         unit,
+        either_sign: false,
     }))
 }
 
@@ -286,6 +304,7 @@ fn sexagesimal(text: &str, units: &[char; 3], scale: f64) -> Option<Published> {
         value: value * scale,
         half_step: half_step * scale,
         unit: Some(Unit::Degree),
+        either_sign: false,
     })
 }
 
@@ -298,8 +317,8 @@ pub fn consistent(value: f64, unit: Unit, published: &Published) -> bool {
         Some(p) if p.dimension() == unit.dimension() => unit.factor_to(p).ok().map(|f| value * f),
         Some(_) => None,
     };
-    in_published
-        .is_some_and(|v| (v - published.value).abs() <= published.half_step * (1.0 + 1e-9) + 1e-12)
+    let close = |v: f64| (v - published.value).abs() <= published.half_step * (1.0 + 1e-9) + 1e-12;
+    in_published.is_some_and(|v| close(v) || (published.either_sign && close(-v)))
 }
 
 #[cfg(test)]
@@ -370,5 +389,18 @@ mod tests {
         assert!(!contains_whole("about 1650 km/s", "165"));
         assert!(!contains_whole("about 2165 km/s", "165"));
         assert_eq!(published("2 x 10^5"), None);
+    }
+
+    #[test]
+    fn a_bound_on_a_magnitude_stands_for_both_ends_of_its_range() {
+        for text in ["|b| < 10°", "|b| ≤ 10°"] {
+            let p = published(text).unwrap();
+            assert!(consistent(10.0, Unit::Degree, &p), "{text}");
+            assert!(consistent(-10.0, Unit::Degree, &p), "{text}");
+            assert!(!consistent(-9.0, Unit::Degree, &p), "{text}");
+        }
+        // A plain number keeps its sign.
+        let ten = published("10°").unwrap();
+        assert!(!consistent(-10.0, Unit::Degree, &ten));
     }
 }

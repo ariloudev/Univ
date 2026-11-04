@@ -119,7 +119,13 @@ function outlineOf(geometry: Geometry, place: Place, turn: Turn, k: number): Out
   }
 }
 
-/** The shape's outline in ICRS megaparsecs; none where its frame, unit or kind can't be drawn. */
+/** One line along each of a point's published extents, centred on the point. */
+function extentLines(at: Vec3, axes: readonly Vec3[], place: Place): Vec3[] {
+  return axes.flatMap((axis) => [place(sub(at, scale(axis, 0.5))), place(add(at, scale(axis, 0.5)))]);
+}
+
+/** The shape's outline in ICRS megaparsecs; none where its frame, unit or kind can't be drawn.
+ * A point with published extents has a line through it along each. */
 function shapeOutline(detail: StructureDetail, rotations: Rotations): Outline | undefined {
   const shape = detail.shape;
   if (shape === null) return undefined;
@@ -127,7 +133,11 @@ function shapeOutline(detail: StructureDetail, rotations: Rotations): Outline | 
   const toFrame = toFrameOf(shape.frame, rotations);
   if (k === undefined || toFrame === undefined) return undefined;
   const turn: Turn = (v) => unapply(toFrame, v);
-  return outlineOf(shape.geometry, (v) => turn(scale(v, k)), turn, k);
+  const place: Place = (v) => turn(scale(v, k));
+  const outline = outlineOf(shape.geometry, place, turn, k);
+  const extents = detail.derivation?.extents;
+  if (outline === undefined || shape.geometry.kind !== "point" || extents === undefined) return outline;
+  return { ...outline, segments: extentLines(shape.geometry.at, extents.axes, place) };
 }
 
 /** The structure's centre and bounds in ICRS megaparsecs: both are given in the centre's unit
@@ -141,9 +151,15 @@ function placed(detail: StructureDetail): { centre: Vec3 | undefined; min: Vec3;
   return { centre, min: scale(detail.bounds.min, k), max: scale(detail.bounds.max, k) };
 }
 
+/** The structure's name, with "(at least)" where its papers give its shape as a lower limit on
+ * its extent. */
+export function structureName(detail: StructureDetail): string {
+  return detail.derivation?.at_least === undefined ? detail.name : `${detail.name} (at least)`;
+}
+
 /** How `detail` is drawn, its shape turned into the ICRS by `rotations`. */
 export function drawingOf(detail: StructureDetail, rotations: Rotations): StructureDrawing {
-  const base = { id: detail.id, name: detail.name };
+  const base = { id: detail.id, name: structureName(detail) };
   const where = placed(detail);
   const size = where === undefined || detail.bounds === null ? undefined : norm(sub(where.max, where.min));
   const outline = shapeOutline(detail, rotations);

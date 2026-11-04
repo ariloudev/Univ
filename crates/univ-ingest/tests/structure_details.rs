@@ -14,9 +14,10 @@ use common::workspace;
 use serde_json::Value;
 use univ_ingest::outlines::{Placed, place};
 use univ_ingest::release::{
-    Placing, REGION_ORDER, admitted, not_drawn, placed_shape, rescaled, result_record,
+    Placing, REGION_ORDER, SkyRanges, admitted, not_drawn, placed_shape, ranges, rescaled,
+    result_record,
 };
-use univ_ingest::structures::{Structure, read_all_named};
+use univ_ingest::structures::{Structure, StructureGeometry, read_all_named};
 use univ_model::api::structures::{OutlineVerdict, RescalingMethod};
 use univ_model::cosmology::AssumedCosmology;
 use univ_model::derive::{Release, Transformation};
@@ -77,8 +78,12 @@ fn a_sky_box_becomes_the_healpix_cells_whose_centres_lie_in_it() {
         );
         assert!(cells.windows(2).all(|w| w[0] < w[1]));
         assert!(0.0 < *near && near < far, "{id}: {near} {far}");
-        let lon0 = b.lon[0].value();
-        let span = (b.lon[1].value() - lon0).rem_euclid(360.0);
+        let SkyRanges {
+            lon0,
+            span,
+            lat0,
+            lat1,
+        } = ranges(b).unwrap();
         let into_box = between(Frame::Icrs, b.frame);
         for &c in cells {
             let (ra, dec) = cdshealpix::nested::center(*order, c);
@@ -88,10 +93,7 @@ fn a_sky_box_becomes_the_healpix_cells_whose_centres_lie_in_it() {
                 (lon - lon0).rem_euclid(360.0) <= span,
                 "{id}: cell {c} at lon {lon}"
             );
-            assert!(
-                (b.lat[0].value()..=b.lat[1].value()).contains(&lat),
-                "{id}: {c} at {lat}"
-            );
+            assert!((lat0..=lat1).contains(&lat), "{id}: {c} at {lat}");
         }
         // The last step moves the box's frame to the ICRS, cited as an object's chain cites it.
         let chain = &placed.derivation.frame_chain;
@@ -124,6 +126,13 @@ fn every_structure_names_the_cited_values_its_shape_and_rescaled_lengths_come_fr
             shapes += 1;
             let d = &placed.derivation;
             assert!(resolves(&record, &d.from), "{id}: {d:?}");
+            if let Some(at) = &d.at_least {
+                // A citation of the paper's own "at least" sentence.
+                assert!(
+                    record.pointer(at).unwrap()["locator"]["quote"].is_string(),
+                    "{id}: {at}"
+                );
+            }
             assert_eq!(d.cosmology, "release", "{id}");
             assert!(!d.distance.method.is_empty(), "{id}: {d:?}");
         }
@@ -132,6 +141,84 @@ fn every_structure_names_the_cited_values_its_shape_and_rescaled_lengths_come_fr
         }
     }
     assert!(shapes >= 15, "{shapes}");
+}
+
+#[test]
+fn a_region_published_as_a_centre_and_size_spans_its_height_and_its_width_on_the_sky() {
+    // Fleenor et al. 2005: "more than 12° × 12° on the sky centered at approximately
+    // α = 03h19m, δ = -50°02′". 12° along the sky at δ = -50.0333° is 12° / cos δ = 18.68° of
+    // right ascension.
+    let Some(StructureGeometry::SkyRegion(b)) = named("horologium-reticulum-supercluster").geometry
+    else {
+        panic!("a sky region")
+    };
+    let r = ranges(&b).unwrap();
+    assert!(
+        (r.lat0 + 56.0333).abs() < 1e-9 && (r.lat1 + 44.0333).abs() < 1e-9,
+        "{r:?}"
+    );
+    assert!((r.span - 18.68).abs() < 0.01, "{r:?}");
+    assert!((r.lon0 + r.span / 2.0 - 49.75).abs() < 1e-9, "{r:?}");
+}
+
+#[test]
+fn a_shape_its_paper_gives_as_a_lower_limit_on_the_extent_says_where() {
+    let (release, correction) = (
+        Release::planck_2018(),
+        CmbCorrection::new(DipoleModel::Planck2018),
+    );
+    let derived = |id: &str| {
+        placed_shape(&named(id), None, &placing(&release, &correction))
+            .unwrap()
+            .derivation
+    };
+    // Kraan-Korteweg et al. 2017: "an overall extent of at least 25° × 20°".
+    assert_eq!(
+        derived("vela-supercluster").at_least.as_deref(),
+        Some("/geometry/SkyRegion/at_least")
+    );
+    // Barmby & Huchra 1998 give their region as the region they surveyed, not a lower limit.
+    assert_eq!(derived("hercules-supercluster").at_least, None);
+}
+
+#[test]
+fn a_void_with_extents_but_no_bounds_gives_them_about_its_point_and_is_bounded_by_it() {
+    let (release, correction) = (
+        Release::planck_2018(),
+        CmbCorrection::new(DipoleModel::Planck2018),
+    );
+    let p = placing(&release, &correction);
+    // Tully et al. 2019: "ΔSGX,SGY,SGZ = 11600,7800,14000 km s-1" about no published centre.
+    let hercules = placed_shape(&named("hercules-void"), None, &p).unwrap();
+    let Geometry::Point { at } = hercules.shape.geometry else {
+        panic!("the Hercules Void is placed at its point")
+    };
+    let extents = hercules.derivation.extents.unwrap();
+    assert_eq!(extents.frame, Frame::Supergalactic);
+    assert_eq!(
+        extents.from,
+        ["x", "y", "z"].map(|a| format!("/values/extent_sg{a}_at_isodensity_minus_0_7"))
+    );
+    let h0 = release.cosmology().hubble_constant;
+    let to_icrs = between(Frame::Supergalactic, Frame::Icrs);
+    for (k, km_s) in [11_600.0, 7_800.0, 14_000.0].into_iter().enumerate() {
+        let mut along = [0.0; 3];
+        along[k] = 1.0;
+        let expected = to_icrs.apply(along).map(|u| u * km_s / h0);
+        for (got, want) in extents.axes[k].iter().zip(expected) {
+            assert!(
+                (got - want).abs() < 1e-9,
+                "{:?} vs {expected:?}",
+                extents.axes[k]
+            );
+        }
+    }
+    // Its bounds stay its point's: nothing says where it ends.
+    let bounds = hercules.shape.bounds_in(Frame::Icrs).unwrap();
+    assert_eq!((bounds.min, bounds.max), (at, at));
+    // A structure that gives no extents has none.
+    let wall = placed_shape(&named("south-pole-wall"), None, &p).unwrap();
+    assert_eq!(wall.derivation.extents, None);
 }
 
 #[test]

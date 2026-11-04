@@ -254,3 +254,22 @@ impl Coordinates {
         }
     }
 }
+
+/// A structure's published extents along each Cartesian axis of its position's frame, where its
+/// papers do not say where it ends: the names of the three values, in `values`, that give them,
+/// each a length or a velocity.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AxisExtents {
+    pub x: String,
+    pub y: String,
+    pub z: String,
+}
+
+impl AxisExtents {
+    /// The value names, in the order of the frame's axes.
+    #[must_use]
+    pub fn names(&self) -> [&str; 3] {
+        [&self.x, &self.y, &self.z]
+    }
+}
