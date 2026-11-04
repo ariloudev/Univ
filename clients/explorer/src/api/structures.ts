@@ -27,7 +27,7 @@ const Geometry = z.discriminatedUnion("kind", [
   z.looseObject({ kind: z.literal("primitive"), primitive: Primitive }),
   z.looseObject({ kind: z.literal("path"), points: z.array(Triple) }),
   z.looseObject({ kind: z.literal("members"), members: z.array(z.looseObject({ at: Triple })) }),
-  z.looseObject({ kind: z.literal("sky_region") }),
+  z.looseObject({ kind: z.literal("sky_region"), order: z.number().int(), cells: z.array(z.number().int()), near: z.number(), far: z.number() }),
   z.looseObject({ kind: z.literal("volume_grid") }),
   z.looseObject({ kind: z.literal("grid_region") }),
 ]);

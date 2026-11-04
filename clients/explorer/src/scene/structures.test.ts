@@ -4,7 +4,7 @@ import type { StructureDetail } from "../api/structures.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { shapeOf, structureDetail } from "../test/structures.ts";
 import { drawingOf } from "./structures.ts";
-import { type Vec3, norm, sub, unapply } from "./vec.ts";
+import { type Vec3, norm, normalize, sub, unapply } from "./vec.ts";
 
 const ROTATIONS = manifestOf("stars").rotations;
 
@@ -45,13 +45,38 @@ describe("a structure's shape", () => {
     expect(drawingOf(detail(point), ROTATIONS).outline.markers).toEqual([[2, 0, 0]]);
   });
 
-  it("draws a sky region, or a structure with no placed shape, as its bounding box, marked approximate", () => {
-    for (const shape of [shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "sky_region" } }), null]) {
+  it("draws a grid, or a structure with no placed shape, as its bounding box, marked approximate", () => {
+    for (const shape of [shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "volume_grid" } }), null]) {
       const drawing = drawingOf(detail(shape), ROTATIONS);
       expect(drawing.approximate).toBe(true);
       expect(drawing.outline.segments.length).toBe(24);
       expect(drawing.centre).toEqual([0, 0, 0]);
     }
+  });
+
+  it("draws a sky region as the boundary of its cells at its near and far distances, joined by radial edges", () => {
+    // HEALPix order 1, cell 0: one cell, its four edges at 10 and at 20 Mpc, and four radial edges.
+    const region = shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "sky_region", order: 1, cells: [0], near: 10, far: 20 } });
+    const drawing = drawingOf(detail(region), ROTATIONS);
+    expect(drawing.approximate).toBe(false);
+    const segments = drawing.outline.segments;
+    // Two shells of four edges, each in three pieces of two points, and four radial edges.
+    expect(segments.length).toBe(2 * 4 * 3 * 2 + 4 * 2);
+    const reach = segments.map((p) => norm(p));
+    for (const r of reach.slice(0, 24)) expect(r).toBeCloseTo(10, 9);
+    for (const r of reach.slice(24, 48)) expect(r).toBeCloseTo(20, 9);
+    for (const [i, r] of reach.slice(48).entries()) expect(r).toBeCloseTo(i % 2 === 0 ? 10 : 20, 9);
+  });
+
+  it("turns a sky region's cells from the frame its shape names", () => {
+    const geometry = { kind: "sky_region" as const, order: 0, cells: [4], near: 1, far: 2 };
+    const icrs = drawingOf(detail(shapeOf({ frame: "icrs", unit: "megaparsec", geometry })), ROTATIONS).outline.segments;
+    const galactic = drawingOf(detail(shapeOf({ frame: "galactic", unit: "megaparsec", geometry })), ROTATIONS).outline.segments;
+    // Base cell 4 is centred on longitude 0 at the equator: the frame's x axis.
+    const centre = (points: Vec3[]) => normalize(points.reduce<Vec3>((sum, p) => [sum[0] + p[0], sum[1] + p[1], sum[2] + p[2]], [0, 0, 0]));
+    expect(centre(icrs)[0]).toBeCloseTo(1, 1);
+    const towards = unapply(ROTATIONS.to_galactic, [1, 0, 0]);
+    for (const [i, c] of centre(galactic).entries()) expect(c).toBeCloseTo(towards[i] ?? 0, 1);
   });
 
   it("takes the bounds and centre in the centre's unit", () => {

@@ -3331,20 +3331,35 @@ links:
         name: "draws a path as lines, members as markers at their positions, and a point as a marker"
         body: ed240cf866bb9347fb1f2d935ae12417a0f4ecb8b36f97fdaf87c69096c3c506
   - node: 01a1a4bd-9644-750a-a678-390771cfa729
-    reviewed: 07e4009fc3526fa7477ab67b3944e4eb460b8ee188b170f7b160393ee658bf57
+    reviewed: 61da897f88768aba57dcad866cc973f6c796402aed204ce1c1dca7f991dc669a
     tests:
       - file: "clients/explorer/src/scene/structures.test.ts"
-        name: "draws a sky region, or a structure with no placed shape, as its bounding box, marked approximate"
-        body: 956fa7e0f524a9f85d832bb6e466cbddce71812393187744e763bb31036567f7
+        name: "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+        body: e9c122d1c3ec225de062c402e806d1d4a81f8324664cc5e90eda8c6610cea6c7
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "say when a structure is drawn by its bounding box, or not placed at all"
         body: a5304d3fa44dc6fc89260bdff112847abfefdebcdd63521684153b02aaa56b3c
+  - node: 01a1a6d7-1b42-741d-95f7-ed4ee2759b78
+    reviewed: 6cddd7a3ded05b19b35637c40ab136ee4b0e4151f3e1937951fa5270c36f9c74
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a sky region as the boundary of its cells at its near and far distances, joined by radial edges"
+        body: 6ea5a935fb64bb1b5512bfdf8dff691d0d04b59db0d55fb91e3feab73e0561b9
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "turns a sky region's cells from the frame its shape names"
+        body: b5322b1b976f3c255d7f983631c0d611620c2ffc645035d5e585d526ae69aa30
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "of one cell is its four edges, each from corner to corner"
+        body: 86cf75c32de27e842814197b918b7c2b3ae6e650ff363eec49d8a134b2f33315
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "of two neighbours is six edges, the one they share inside the region"
+        body: 91264293c686fa38560fcbbffa7efa6b11e2ee7fa7a7d2717c7e72334dabe080
   - node: 01a1a497-e843-728a-bce8-3ff3a71f35c5
     reviewed: 4e0dbb5f62ed63d0fd3e084089740bfed20a5bcd13dd9d578d77076dadb36c3c
     tests:
       - file: "clients/explorer/src/scene/structures.test.ts"
-        name: "draws a sky region, or a structure with no placed shape, as its bounding box, marked approximate"
-        body: 956fa7e0f524a9f85d832bb6e466cbddce71812393187744e763bb31036567f7
+        name: "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+        body: e9c122d1c3ec225de062c402e806d1d4a81f8324664cc5e90eda8c6610cea6c7
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "takes the bounds and centre in the centre's unit"
         body: 07bc2f4ed2c5a1b1d9e3c29625216a504408864922626d625386704e2207c1be
