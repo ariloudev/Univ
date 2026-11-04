@@ -26,6 +26,8 @@ const listen = {
   host: "127.0.0.1",
   port: 5317,
   strictPort: true,
+  // The reference tile decoder is imported from its own directory beside the explorer's.
+  fs: { allow: [".", "../tile-decoder"] },
   proxy: {
     "/v1": {
       target: server,

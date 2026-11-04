@@ -186,7 +186,7 @@ export function decodeTile(
   const points: DecodedPoint[] = new Array(n);
   for (let k = 0; k < n; k++) {
     const at = HEADER_BYTES + 6 * k;
-    const coordinate = (i: number) => min[i] + (view.getUint16(at + 2 * i, true) + 0.5) * step;
+    const coordinate = (i: 0 | 1 | 2) => min[i] + (view.getUint16(at + 2 * i, true) + 0.5) * step;
 
     const low = view.getUint32(ids + 8 * k, true);
     const high = view.getUint32(ids + 8 * k + 4, true);
@@ -195,7 +195,7 @@ export function decodeTile(
     }
     const index = view.getUint16(sourceColumn + 2 * k, true);
     const source = sources.get(index) ?? fail(`point ${k} names source ${index}, which the manifest does not list`);
-    const code = bytes[kindColumn + k];
+    const code = view.getUint8(kindColumn + k);
     const kind = kinds[code] ?? fail(`point ${k} has the kind of value ${code}, which the manifest does not list`);
     points[k] = {
       x: coordinate(0),
