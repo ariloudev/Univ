@@ -2,8 +2,9 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { UNREACHABLE } from "../api/client.ts";
 import { App } from "./App.tsx";
-import { START_COMMAND } from "./Unreachable.tsx";
+import { START_COMMAND } from "./ServerUnreachable.tsx";
 
 const cosmology = { name: "Planck 2018", hubble_constant: 67.66, omega_matter: 0.3111 };
 const RELEASES = {
@@ -26,7 +27,13 @@ function serve(...answers: (() => Promise<Response>)[]) {
 }
 
 const ok = () => Promise.resolve(new Response(JSON.stringify(RELEASES), { status: 200 }));
-const refused = () => Promise.reject(new TypeError("Failed to fetch"));
+const refused = () =>
+  Promise.resolve(
+    new Response(
+      JSON.stringify({ type: UNREACHABLE, title: "Univ Server is not answering", address: "http://127.0.0.1:8790" }),
+      { status: 502, headers: { "content-type": "application/problem+json" } },
+    ),
+  );
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -62,13 +69,15 @@ describe("opening the explorer", () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it("names the problem when Univ Server refuses to list its releases", async () => {
+  it("names the problem when Univ Server refuses to list its releases, and tries again", async () => {
     const problem = new Response(JSON.stringify({ status: 404, title: "No such release" }), {
       status: 404,
       headers: { "content-type": "application/problem+json" },
     });
-    serve(() => Promise.resolve(problem));
+    serve(() => Promise.resolve(problem), ok);
     render(<App />);
     expect((await screen.findByRole("alert")).textContent).toContain("404 No such release");
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText(/Drawing release 7/)).toBeTruthy();
   });
 });

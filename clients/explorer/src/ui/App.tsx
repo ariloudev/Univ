@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import type { ReleaseSummary } from "../api/schemas.ts";
 import { ReleasePicker } from "./ReleasePicker.tsx";
-import { Unreachable } from "./Unreachable.tsx";
+import { ServerUnreachable, TryAgain } from "./ServerUnreachable.tsx";
 import { useReleases } from "./useReleases.ts";
 
 /** Univ Explorer: the releases of Univ Server, and the view of the one chosen. */
@@ -10,14 +10,21 @@ export function App() {
   const { state, retry } = useReleases();
   switch (state.kind) {
     case "loading":
-      return <p role="status" className="p-6 text-dim">Reading Univ Server's releases…</p>;
+      return (
+        <p role="status" className="p-6 text-dim">
+          {state.waiting === undefined
+            ? "Reading Univ Server's releases…"
+            : `Univ Server's rate limit was reached: reading again in ${state.waiting} s…`}
+        </p>
+      );
     case "unreachable":
-      return <Unreachable address={state.address} onRetry={retry} />;
+      return <ServerUnreachable address={state.address} onRetry={retry} />;
     case "failed":
       return (
-        <p role="alert" className="p-6 text-warn">
-          Univ Server could not list its releases: {state.message}
-        </p>
+        <div role="alert" className="space-y-3 p-6 text-warn">
+          <p>Univ Server could not list its releases: {state.message}</p>
+          <TryAgain onRetry={retry} />
+        </div>
       );
     case "ready":
       return <Explorer releases={state.releases} latest={state.latest} />;

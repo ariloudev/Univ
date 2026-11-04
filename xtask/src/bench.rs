@@ -15,9 +15,7 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use crate::integration::{
-    Exchange, REAL_STATE, issue_key, migrate, release_tables, send, start_ready,
-};
+use crate::integration::{Exchange, REAL_STATE, fresh_key, send, start_on_real_state};
 
 /// How many lookups are timed.
 const SAMPLES: usize = 1_000;
@@ -111,31 +109,13 @@ fn centres(n: usize, distance: f64) -> Vec<[f64; 3]> {
 /// Starts the Worker, times `requests` after the first [`WARM_UP`], and reports them against
 /// `bound`; true when all answered 200 and the 95th percentile is within it.
 fn bench(root: &Path, what: &str, attribute: &str, requests: &[Timed], bound: Duration) -> bool {
-    let state = root.join(REAL_STATE);
-    if !release_tables(root, &state) || !migrate(root, &state) {
-        return false;
-    }
     let log = root.join("target/bench/wrangler.log");
-    if let Some(dir) = log.parent()
-        && let Err(error) = std::fs::create_dir_all(dir)
-    {
-        eprintln!("could not create {}: {error}", dir.display());
-        return false;
-    }
-    let Some((wrangler, port)) = start_ready(root, &state, &log) else {
-        eprintln!(
-            "bench failed at: wrangler dev; its log is {}",
-            log.display()
-        );
+    let Some((wrangler, port)) = start_on_real_state(root, &log) else {
+        eprintln!("bench failed at: starting Univ Server");
         return false;
     };
-    // An extended key: anonymous reads are limited to 300 a minute, too few for the run.
-    let key = match issue_key(port, "extended") {
-        Ok(key) => key,
-        Err(error) => {
-            eprintln!("bench failed at: issuing its key: {error}");
-            return false;
-        }
+    let Some(key) = fresh_key(port, "bench") else {
+        return false;
     };
     let (times, failures) = time(port, &key, requests);
     drop(wrangler);

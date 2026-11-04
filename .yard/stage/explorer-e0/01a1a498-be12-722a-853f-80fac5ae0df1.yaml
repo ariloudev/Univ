@@ -24,6 +24,18 @@ blocks:
         title: "Scaffold clients/explorer"
         detail: "Done when `pnpm check` (typecheck, Vitest with coverage, fallow, build) passes on an empty app that imports the tile decoder."
         state: active
+      - key: 01a1a49e-1559-7288-ad94-a751751acac6
+        at: 2026-11-04T03:33:06Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Scaffold clients/explorer"
+        detail: |-
+          `clients/explorer` uses Vite 8, TypeScript 7 strict, React 19, Tailwind 4, zod, Vitest 4 with Istanbul coverage, and fallow. It is its own pnpm root (a workspace file above the repository made pnpm look elsewhere). `pnpm check` passes.
+
+          The tile decoder and axe are left out until their first use, because fallow refuses unused dependencies.
+        state: done
   - key: 01a1a498-be12-722a-853f-80fc5fd67f1b
     id: e0-api
     kind: task
@@ -37,6 +49,23 @@ blocks:
         title: "API client with problem details and 429 retry"
         detail: "Done when unit tests show a 429 retried after `Retry-After`, a problem's status and title surfaced, and zod-checked releases."
         state: open
+      - key: 01a1a49e-1559-7288-ad94-a752bbe0734e
+        at: 2026-11-04T03:33:06Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "API client with problem details and 429 retry"
+        detail: |-
+          `src/api/client.ts` and `schemas.ts`, with 7 unit tests:
+
+          - a 429 is read again after `Retry-After`, or after 60 s when it gives none;
+          - the release appears on pinned reads;
+          - a problem surfaces its status and title;
+          - a failed connection, or a proxy's own 5xx, counts as unreachable;
+          - answers are checked by zod;
+          - an aborted read stays aborted.
+        state: done
   - key: 01a1a498-be12-722a-853f-80fdebc6c2da
     id: e0-open
     kind: task
@@ -50,6 +79,23 @@ blocks:
         title: "Open the explorer: releases, choice, unreachable server"
         detail: "Done when App tests with a mocked `fetch` show the latest release named, another release chosen and named in later reads, and the unreachable message with its address, its command and Try again."
         state: open
+      - key: 01a1a49e-1559-7288-ad94-a753bee2a826
+        at: 2026-11-04T03:33:06Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Open the explorer: releases, choice, unreachable server"
+        detail: |-
+          4 App tests with a mocked `fetch`:
+
+          - the latest release is drawn and named;
+          - every release not pruned is offered, and the chosen one is drawn;
+          - the unreachable screen gives its address and command, and Try again works;
+          - a problem is named.
+
+          Checked in Chromium against the real server: the header shows release 7 and its cosmology, with no console errors.
+        state: done
   - key: 01a1a498-be12-722a-853f-80fe3c4dc68c
     id: e0-xtask
     kind: task
@@ -63,3 +109,15 @@ blocks:
         title: "cargo xtask explore and the explorer gate"
         detail: "Done when `cargo xtask check` runs the explorer gate, and `cargo xtask explore` starts the Worker and the dev server, whose proxy adds an extended-tier key from the owner secret."
         state: open
+      - key: 01a1a49e-1559-7288-ad94-a754cb74b948
+        at: 2026-11-04T03:33:06Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "cargo xtask explore and the explorer gate"
+        detail: |-
+          `cargo xtask explore` starts the Worker on the real state, issues an extended key, and runs Vite on `127.0.0.1:5317`. Two ports were changed on the way: 5174 belonged to another project's Vite, and `localhost` had bound to IPv6 alone.
+
+          Verified live: 310 reads in a row through the proxy all answered 200, past the anonymous limit of 300, so the key is in use. `cargo xtask check` gains the `explorer` gate (`pnpm install --frozen-lockfile`, then `pnpm check`).
+        state: done

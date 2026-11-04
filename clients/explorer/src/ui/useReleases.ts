@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { ApiError, Unreachable, readJson } from "../api/client.ts";
+import { Unreachable, readJson } from "../api/client.ts";
 import { ReleaseList, type ReleaseSummary } from "../api/schemas.ts";
 
 /** What the explorer knows of Univ Server's releases. */
 export type Releases =
-  | { kind: "loading" }
+  | { kind: "loading"; waiting?: number }
   | { kind: "unreachable"; address: string }
   | { kind: "failed"; message: string }
   | { kind: "ready"; releases: ReleaseSummary[]; latest: number };
 
 function failure(error: unknown): Releases {
   if (error instanceof Unreachable) return { kind: "unreachable", address: error.address };
-  if (error instanceof ApiError) return { kind: "failed", message: `${error.status} ${error.title}` };
-  return { kind: "failed", message: String(error) };
+  return { kind: "failed", message: error instanceof Error ? error.message : String(error) };
 }
 
 /** The releases that can be drawn: published and not pruned. */
@@ -28,7 +27,10 @@ export function useReleases(): { state: Releases; retry: () => void } {
   useEffect(() => {
     const controller = new AbortController();
     setState({ kind: "loading" });
-    readJson("/v1/releases", ReleaseList, { signal: controller.signal })
+    const onWait = (waiting: number) => {
+      setState({ kind: "loading", waiting });
+    };
+    readJson("/v1/releases", ReleaseList, { signal: controller.signal, onWait })
       .then((list) => {
         setState({ kind: "ready", releases: drawable(list.releases), latest: list.latest });
       })

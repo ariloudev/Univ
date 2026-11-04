@@ -1,6 +1,5 @@
 {
   "$schema": "./node_modules/fallow/schema.json",
-  "ignorePatterns": ["dist/**", "coverage/**", "test-results/**", "playwright-report/**"],
   "rules": {
     "unused-files": "error",
     "unused-exports": "error",

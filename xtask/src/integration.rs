@@ -365,10 +365,10 @@ pub(crate) fn send(
     Ok((status, body))
 }
 
-/// Issues a key of `tier` from the Worker on `port`, which `start_ready` gave the owner
-/// secret, and gives its secret.
-pub(crate) fn issue_key(port: u16, tier: &str) -> Result<String, String> {
-    let json = format!(r#"{{"label":"xtask","tier":"{tier}"}}"#);
+/// Issues a key of `tier` labelled `label` from the Worker on `port`, which `start_ready` gave
+/// the owner secret, and gives its secret.
+fn issue_key(port: u16, tier: &str, label: &str) -> Result<String, String> {
+    let json = format!(r#"{{"label":"{label}","tier":"{tier}"}}"#);
     let exchange = Exchange {
         method: "POST",
         path: "/v1/owner/keys",
@@ -376,15 +376,89 @@ pub(crate) fn issue_key(port: u16, tier: &str) -> Result<String, String> {
         json: Some(&json),
     };
     let (status, body) = send(port, &exchange, Duration::from_secs(30))?;
-    // The body may come in one chunk of chunked transfer coding: the document is its braces.
-    let document = body
-        .find('{')
-        .zip(body.rfind('}'))
-        .map_or("", |(start, end)| &body[start..=end]);
-    let issued: serde_json::Value = serde_json::from_str(document)
+    let issued: serde_json::Value = serde_json::from_str(document(&body))
         .map_err(|error| format!("issuing a key answered {status}: {error}"))?;
     issued["secret"]
         .as_str()
         .map(str::to_owned)
         .ok_or_else(|| format!("issuing a key answered {status}: {issued}"))
+}
+
+/// The JSON document of a Worker's answer, which may come in one chunk of chunked transfer
+/// coding: the document is its outermost braces.
+fn document(body: &str) -> &str {
+    body.find('{')
+        .zip(body.rfind('}'))
+        .map_or("", |(start, end)| &body[start..=end])
+}
+
+/// Revokes every standing key labelled `label` on the Worker at `port`: what an earlier run
+/// issued for itself and could not revoke, as Ctrl-C ends it at once.
+fn revoke_labelled(port: u16, label: &str) -> Result<usize, String> {
+    let list = Exchange {
+        method: "GET",
+        path: "/v1/owner/keys",
+        bearer: Some(OWNER_SECRET),
+        json: None,
+    };
+    let (status, body) = send(port, &list, Duration::from_secs(30))?;
+    let keys: serde_json::Value = serde_json::from_str(document(&body))
+        .map_err(|error| format!("listing the keys answered {status}: {error}"))?;
+    let standing: Vec<&str> = keys["keys"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|key| key["label"] == label && key["revoked_at"].is_null())
+        .filter_map(|key| key["id"].as_str())
+        .collect();
+    for id in &standing {
+        let path = format!("/v1/owner/keys/{id}/revoke");
+        let revoke = Exchange {
+            method: "POST",
+            path: &path,
+            bearer: Some(OWNER_SECRET),
+            json: None,
+        };
+        let (status, _) = send(port, &revoke, Duration::from_secs(30))?;
+        if status != 200 {
+            return Err(format!("revoking key {id} answered {status}"));
+        }
+    }
+    Ok(standing.len())
+}
+
+/// Univ Server on the real local state, its tables and migrations brought up to date, its
+/// Wrangler log at `log`; the running Wrangler and its port, or none, having said why.
+pub(crate) fn start_on_real_state(root: &Path, log: &Path) -> Option<(Wrangler, u16)> {
+    let state = root.join(REAL_STATE);
+    if !state.is_dir() {
+        eprintln!(
+            "{} holds no published release: run `univ-ingest publish` first",
+            state.display()
+        );
+        return None;
+    }
+    if !release_tables(root, &state) || !migrate(root, &state) {
+        return None;
+    }
+    if let Some(dir) = log.parent()
+        && let Err(error) = fs::create_dir_all(dir)
+    {
+        eprintln!("could not create {}: {error}", dir.display());
+        return None;
+    }
+    let started = start_ready(root, &state, log);
+    if started.is_none() {
+        eprintln!("wrangler dev did not start; its log is {}", log.display());
+    }
+    started
+}
+
+/// A key of the extended tier labelled `label`, for a run on the real state, where anonymous
+/// reads are limited to 300 a minute; the keys of `label` that earlier runs left standing are
+/// revoked first, as Ctrl-C ends a run before it can revoke its own.
+pub(crate) fn fresh_key(port: u16, label: &str) -> Option<String> {
+    let key = revoke_labelled(port, label).and_then(|_| issue_key(port, "extended", label));
+    key.map_err(|error| eprintln!("could not issue a {label} key: {error}"))
+        .ok()
 }
