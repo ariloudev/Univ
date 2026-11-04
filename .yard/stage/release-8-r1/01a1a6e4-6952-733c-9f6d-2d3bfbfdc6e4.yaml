@@ -10,6 +10,15 @@ versions:
     title: "R1: star colours and spectral types"
     goal: "Release 8's stars carry the colour indices and spectral types their sources publish, and its tiles (encoding version 2) carry each star's colour index for the explorer"
     status: active
+  - key: 01a1a742-e6e8-7456-9c0f-bf430922a437
+    at: 2026-11-04T15:52:21Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R1: star colours and spectral types"
+    goal: "Release 8's stars carry the colour indices and spectral types their sources publish, and its tiles (encoding version 2) carry each star's colour index for the explorer"
+    status: done
 blocks:
   - key: 01a1a6e4-6952-733c-9f6d-2d3c1338f1f3
     id: r1-t-spec
@@ -253,6 +262,26 @@ blocks:
           - `cargo xtask check` and `cargo xtask integration` pass;
           - the Yard Log is closed and `stage/release-8-r1` is merged into `product/release-8`.
         state: active
+      - key: 01a1a742-c946-7035-be93-5ba93c735bc9
+        at: 2026-11-04T15:52:14Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge into product/release-8"
+        detail: |-
+          **Done when:**
+          - the new criteria are linked;
+          - the reviews' findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and `stage/release-8-r1` is merged into `product/release-8`.
+
+          **Result:**
+          - **Trace:** the twelve criteria are linked, and all 347 nodes are linked. The links the review changed were accepted again (82a9225).
+          - **Reviews:** the findings are fixed or left with a reason; see the review note (96a2a0e).
+          - **Gate:** `cargo xtask check` passed, 12 gates. `loft verify` is skipped off `develop`.
+          - **Integration:** the first run failed two end-to-end tests that still expected encoding version 1 from the fixture releases. They now expect version 2 and its colour bands (5de8e49), and `cargo xtask integration` passes.
+        state: done
   - key: 01a1a6e4-6952-733c-9f6d-2d41067995c9
     id: r1-spec
     kind: loft
@@ -3145,3 +3174,33 @@ blocks:
           - **The spectral type stays in `entries.extra`, not in columns.** This was the approved design: it needs no migration of older releases. The schema comments now name it.
           - **Interning band strings, and boxing `colours`.** These are small per-row savings and would change the model's types.
         tone: info
+  - key: 01a1a742-e6e8-7456-9c0f-bf413cef2613
+    id: r1-produced
+    kind: note
+    versions:
+      - key: 01a1a742-e6e8-7456-9c0f-bf42351dc4c4
+        at: 2026-11-04T15:52:21Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What R1 produced"
+        markdown: |-
+          **Release 8's ingest now keeps:**
+          - **Colour indices** as measurements naming their two bands:
+            - Hipparcos-2's B−V (with its error) and V−I;
+            - Gaia DR3's BP−RP;
+            - GCNS BP−RP, derived from its two magnitudes and naming them.
+          - **Spectral types** as published text:
+            - the Hipparcos catalogue's (I/239), measured, from a new source attached by HIP number;
+            - Gaia ESP-HS's class letter, estimated, with its `unknown` read as no type.
+
+          **The object record** lists both: `band` and `derived_from` on each measurement, and `spectral_type` on each entry.
+
+          **Tiles are encoding version 2.** Each stars point carries its colour index to the hundredth of a magnitude and its bands. The order is Gaia BP−RP, else B−V, else derived BP−RP. Both decoders still read version 1.
+
+          **For what comes next:**
+          - **R3** builds release 8 with these sources live: Gaia's query now joins `astrophysical_parameters`, and hipparcos-1997 is a new fetch of 118,218 rows.
+          - **E7** needs the explorer's decoder to read version 2. It is on `product/explorer`, so it waits for the merges into `develop` you ask for.
+          - **Open:** at least 263 HIP numbers have no Hipparcos-2 star. They stand as objects with a spectral type and no position, and the definition's cuts say so.
+        tone: success

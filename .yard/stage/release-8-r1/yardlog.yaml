@@ -3,7 +3,7 @@ key: 01a1a6e4-6952-733c-9f6d-2d3a0d0703eb
 branch: "stage/release-8-r1"
 base: "develop"
 title: "stage/release-8-r1"
-revision: 13
+revision: 16
 opened:
   at: 2026-11-04T14:09:09Z
   revision: 1
@@ -46,6 +46,12 @@ submissions:
         by:
           name: "ariloudev"
           email: "ariloudev@local"
+closed:
+  at: 2026-11-04T15:52:24Z
+  revision: 16
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
 acts:
   - at: 2026-11-04T14:09:09Z
     revision: 1
@@ -109,6 +115,21 @@ acts:
       session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
   - at: 2026-11-04T15:43:46Z
     revision: 13
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T15:52:14Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T15:52:21Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T15:52:24Z
+    revision: 16
     by:
       host: claude-code
       session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
