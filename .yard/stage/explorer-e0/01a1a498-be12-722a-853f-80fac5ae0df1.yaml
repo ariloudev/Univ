@@ -1,0 +1,65 @@
+key: 01a1a498-be12-722a-853f-80fac5ae0df1
+id: xe0
+versions:
+  - key: 01a1a498-be12-722a-853f-80ff5272fa56
+    at: 2026-11-04T03:27:15Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E0: scaffold, API client, releases"
+    goal: "clients/explorer builds and tests under the gate; it reads Univ Server's releases and says plainly when the server is unreachable; cargo xtask explore starts server and explorer together"
+    status: active
+blocks:
+  - key: 01a1a498-be12-722a-853f-80fb16c88855
+    id: e0-scaffold
+    kind: task
+    versions:
+      - key: 01a1a498-be12-722a-853f-81003183bc24
+        at: 2026-11-04T03:27:15Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Scaffold clients/explorer"
+        detail: "Done when `pnpm check` (typecheck, Vitest with coverage, fallow, build) passes on an empty app that imports the tile decoder."
+        state: active
+  - key: 01a1a498-be12-722a-853f-80fc5fd67f1b
+    id: e0-api
+    kind: task
+    versions:
+      - key: 01a1a498-be12-722a-853f-81015969e1b2
+        at: 2026-11-04T03:27:15Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "API client with problem details and 429 retry"
+        detail: "Done when unit tests show a 429 retried after `Retry-After`, a problem's status and title surfaced, and zod-checked releases."
+        state: open
+  - key: 01a1a498-be12-722a-853f-80fdebc6c2da
+    id: e0-open
+    kind: task
+    versions:
+      - key: 01a1a498-be12-722a-853f-8102e427588e
+        at: 2026-11-04T03:27:15Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Open the explorer: releases, choice, unreachable server"
+        detail: "Done when App tests with a mocked `fetch` show the latest release named, another release chosen and named in later reads, and the unreachable message with its address, its command and Try again."
+        state: open
+  - key: 01a1a498-be12-722a-853f-80fe3c4dc68c
+    id: e0-xtask
+    kind: task
+    versions:
+      - key: 01a1a498-be12-722a-853f-8103f52205ac
+        at: 2026-11-04T03:27:15Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "cargo xtask explore and the explorer gate"
+        detail: "Done when `cargo xtask check` runs the explorer gate, and `cargo xtask explore` starts the Worker and the dev server, whose proxy adds an extended-tier key from the owner secret."
+        state: open
