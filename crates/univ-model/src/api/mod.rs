@@ -9,6 +9,7 @@ pub mod keys;
 pub mod layers;
 pub mod lookup;
 pub mod objects;
+pub mod query;
 pub mod releases;
 pub mod sources;
 pub mod structures;

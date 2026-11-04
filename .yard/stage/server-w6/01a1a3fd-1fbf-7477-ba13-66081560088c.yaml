@@ -111,6 +111,38 @@ blocks:
         title: "POST /v1/query/volume"
         detail: "`query/{mod, request, objects, structures, items, cursor}.rs`, the route, OpenAPI and `QueryLayersChanged`. Done when native tests on a volume fixture cover AC-192 to AC-203 and AC-207 to AC-208, plus the query halves of AC-213 and AC-250."
         state: active
+      - key: 01a1a420-1d15-75ff-9483-0e195fdd7dc5
+        at: 2026-11-04T01:15:30Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "POST /v1/query/volume"
+        detail: |-
+          `query/{mod, request, cursor, objects, structures, items}.rs`, with the route, OpenAPI and two problem types: `query-invalid` (400) and `query-layers-changed` (409).
+
+          **Matching:**
+          - objects are tested in SQL by a polynomial in their position within the cell ranges;
+          - structures by placed shape, then members, then bounding box, then centre;
+          - items by their stored box, then their shape.
+
+          18 tests:
+          - forms, frames and units;
+          - objects at r ± 0.01;
+          - Bootes Void met at its edge with its centre outside;
+          - `matched_by`;
+          - private items;
+          - each filter;
+          - 400 pointers;
+          - pages of 1,000 with cursors and a stable order;
+          - 10,050 results truncated at 10,000;
+          - what a cursor records;
+          - 409 for a published item, a layer made private or one read by its owner;
+          - release pinning;
+          - the query halves of AC-213 and AC-250.
+
+          Found: `key_id = NULL` read as NULL, not false, for an anonymous caller; it is now `key_id IS ?1`.
+        state: done
   - key: 01a1a3fd-1fbf-7477-ba13-660cd894b76a
     id: t6-time
     kind: task
@@ -133,6 +165,15 @@ blocks:
         title: "Time filter"
         detail: "Matched through `item_times` on TT. Done when native tests cover AC-187 to AC-191."
         state: open
+      - key: 01a1a420-1d15-75ff-9483-0e1aaaa792fd
+        at: 2026-11-04T01:15:30Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Time filter"
+        detail: "Matched through `item_times` on TT. Done when native tests cover AC-187 to AC-191."
+        state: active
   - key: 01a1a3fd-1fbf-7477-ba13-660d0d7166b4
     id: t6-tiles
     kind: task

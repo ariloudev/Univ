@@ -29,9 +29,6 @@ impl Failures {
 
     /// The refusal that lists them all: 422, saying a source is required when none is cited.
     pub(crate) fn refusal(self) -> Result<(), Problem> {
-        if self.list.is_empty() {
-            return Ok(());
-        }
         let (kind, detail) = if self.source_missing {
             (
                 ProblemType::SourceRequired,
@@ -43,6 +40,14 @@ impl Failures {
                 "The item failed the checks its errors name.",
             )
         };
+        self.refuse(kind, detail)
+    }
+
+    /// A refusal of `kind` that lists them all, if any.
+    pub(crate) fn refuse(self, kind: ProblemType, detail: &str) -> Result<(), Problem> {
+        if self.list.is_empty() {
+            return Ok(());
+        }
         let errors: Vec<Value> = self
             .list
             .into_iter()

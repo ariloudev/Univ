@@ -28,6 +28,13 @@ mod limits_tests;
 mod objects;
 mod openapi;
 mod problem;
+mod query;
+#[cfg(test)]
+mod query_fixture;
+#[cfg(test)]
+mod query_paging_tests;
+#[cfg(test)]
+mod query_tests;
 mod releases;
 mod routes;
 mod sources;

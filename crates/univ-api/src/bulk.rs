@@ -33,7 +33,7 @@ pub struct TileNodes {
 /// A scale domain of a release, as the release database lists it.
 #[derive(Deserialize)]
 pub struct DomainRow {
-    name: String,
+    pub(crate) name: String,
     radius: f64,
     points: u64,
     nodes: u64,
@@ -223,7 +223,10 @@ pub async fn tile_format<B: Backend>(request: &Request, backend: &B) -> Result<R
 }
 
 /// The scale domains of `release`, by name, read once and kept.
-async fn domains_of<B: Backend>(backend: &B, release: u32) -> Result<Arc<Vec<DomainRow>>, Problem> {
+pub(crate) async fn domains_of<B: Backend>(
+    backend: &B,
+    release: u32,
+) -> Result<Arc<Vec<DomainRow>>, Problem> {
     if let Some(domains) = backend.kept().domains.get(&release) {
         return Ok(domains);
     }

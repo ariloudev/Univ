@@ -73,7 +73,23 @@ impl Vocabulary {
         &self.cosmology
     }
 
-    /// The term numbered `id`.
+    /// The id of term `term`.
+    #[must_use]
+    pub fn term_id(&self, term: &str) -> Option<i64> {
+        self.terms
+            .iter()
+            .find_map(|(id, text)| (text == term).then_some(*id))
+    }
+
+    /// The `n` of the source of id `id`.
+    #[must_use]
+    pub fn source_n(&self, id: &str) -> Option<i64> {
+        self.sources
+            .iter()
+            .find_map(|(n, text)| (text == id).then_some(*n))
+    }
+
+    /// The text of term `id`.
     #[must_use]
     pub fn term(&self, id: i64) -> Option<&str> {
         self.terms.get(&id).map(String::as_str)

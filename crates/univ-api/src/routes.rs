@@ -6,7 +6,7 @@ use crate::access::Caller;
 use crate::backend::Backend;
 use crate::http::{Method, Request, Response};
 use crate::problem::{Problem, ProblemType};
-use crate::{bulk, grids, keys, layers, objects, openapi, releases, sources, structures};
+use crate::{bulk, grids, keys, layers, objects, openapi, query, releases, sources, structures};
 
 /// The values a route's `{name}` segments took in one request, in the template's order.
 pub type Params = Vec<(&'static str, String)>;
@@ -46,6 +46,7 @@ pub enum Endpoint {
     PublishItem,
     ReviseItem,
     RetractItem,
+    VolumeQuery,
 }
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
@@ -57,7 +58,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 32] = [
+pub static ROUTES: [Route; 33] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -97,6 +98,11 @@ pub static ROUTES: [Route; 32] = [
         method: Method::Get,
         path: "/v1/objects",
         endpoint: Endpoint::Objects,
+    },
+    Route {
+        method: Method::Post,
+        path: "/v1/query/volume",
+        endpoint: Endpoint::VolumeQuery,
     },
     Route {
         method: Method::Get,
@@ -239,6 +245,7 @@ async fn answer<B: Backend>(
         Endpoint::Structures => structures::list(request, backend).await,
         Endpoint::Structure => structures::get(request, param(params, "id"), backend).await,
         Endpoint::Objects => objects::find(request, backend).await,
+        Endpoint::VolumeQuery => query::volume(request, caller, backend).await,
         Endpoint::Object => objects::get(request, param(params, "id"), backend).await,
         Endpoint::ScaleDomains => bulk::domains(request, backend).await,
         Endpoint::TileManifest => bulk::manifest(request, param(params, "name"), backend).await,

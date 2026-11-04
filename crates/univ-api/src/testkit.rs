@@ -66,6 +66,11 @@ impl Sqlite {
         }
     }
 
+    /// The release database, to read what a fixture needs.
+    pub fn connection(&self) -> &rusqlite::Connection {
+        &self.connection
+    }
+
     /// Runs `sql`, statements that write the fixture's rows.
     pub fn exec(&self, sql: &str) -> &Self {
         self.connection.execute_batch(sql).unwrap();
