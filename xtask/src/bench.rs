@@ -15,7 +15,8 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use crate::integration::{Exchange, REAL_STATE, send, with_real_server};
+use crate::integration::{Exchange, REAL_STATE, send};
+use crate::owner::with_real_server;
 
 /// How many lookups are timed.
 const SAMPLES: usize = 1_000;

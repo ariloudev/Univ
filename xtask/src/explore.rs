@@ -12,7 +12,8 @@ use std::io::ErrorKind;
 use std::net::TcpListener;
 use std::path::Path;
 
-use crate::integration::{fresh_key, with_real_server};
+use crate::integration::TEST_OWNER_SECRET;
+use crate::owner::{fresh_key, with_real_server};
 use crate::{Outcome, command};
 
 /// The explorer's directory, relative to the workspace.
@@ -98,7 +99,7 @@ pub fn end_to_end(root: &Path, port: u16) -> Outcome {
     if let Err(ended) = installed(root, true) {
         return ended;
     }
-    let Some(key) = fresh_key(port, "explorer-e2e") else {
+    let Some(key) = fresh_key(port, TEST_OWNER_SECRET, "explorer-e2e") else {
         return Outcome::Failed;
     };
     outcome(pnpm(root, &["e2e"], Some(&Reading { port, key: &key })))

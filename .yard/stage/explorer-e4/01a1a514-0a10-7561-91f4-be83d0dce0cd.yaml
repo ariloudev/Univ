@@ -1,0 +1,52 @@
+key: 01a1a514-0a10-7561-91f4-be83d0dce0cd
+id: xe4
+versions:
+  - key: 01a1a514-0a11-7597-bd9d-3cd674c075d5
+    at: 2026-11-04T05:41:56Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E4: the real state's own owner secret"
+    goal: "Runs on the real local state (explore and the benches) start the Worker with the owner secret of crates/univ-server/.dev.vars and issue their keys with it; only the fixture state gets the fixed test secret"
+    status: active
+blocks:
+  - key: 01a1a514-0a10-7561-91f4-be849c831e21
+    id: e4-secret
+    kind: task
+    versions:
+      - key: 01a1a514-0a11-7597-bd9d-3cd790c6f1fd
+        at: 2026-11-04T05:41:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Real-state runs use .dev.vars's owner secret"
+        detail: |-
+          Done when:
+          - `with_real_server` reads `OWNER_SECRET` from `crates/univ-server/.dev.vars` before it starts Wrangler, with a unit test of the reading;
+          - it starts Wrangler without `--var`, so Wrangler loads `.dev.vars` itself;
+          - it issues and revokes keys with that secret;
+          - a missing file or empty secret stops the run, saying how to create the file;
+          - only `integration` passes the test secret.
+
+          The key-handling code moves out of `integration.rs`, which is at 497 lines, into a module of its own.
+        state: active
+  - key: 01a1a514-0a10-7561-91f4-be8597ceb9a4
+    id: e4-check
+    kind: task
+    versions:
+      - key: 01a1a514-0a11-7597-bd9d-3cd8f45bbf44
+        at: 2026-11-04T05:41:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Checked live, reviewed, gated"
+        detail: |-
+          Done when:
+          - `cargo xtask explore` serves release 7 with keys issued under `.dev.vars`'s secret;
+          - the test secret answers 401 on the real-state Worker;
+          - the review findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass.
+        state: open

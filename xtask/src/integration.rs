@@ -20,10 +20,11 @@ use std::time::{Duration, Instant};
 use crate::{Outcome, command};
 
 /// The Worker's crate, from the workspace root, which holds its `wrangler.toml`.
-const WORKER_DIR: &str = "crates/univ-server";
+pub(crate) const WORKER_DIR: &str = "crates/univ-server";
 
-/// The owner secret the Worker is started with in the tests.
-const OWNER_SECRET: &str = "integration-owner-secret";
+/// The owner secret the Worker is started with on the fixture state, for the tests. Runs on
+/// the real local state never take it: their Worker reads its own from `.dev.vars`.
+pub(crate) const TEST_OWNER_SECRET: &str = "integration-owner-secret";
 
 /// The local state Univ Ingest publishes real releases to.
 pub(crate) const REAL_STATE: &str = ".cache/univ-ingest/wrangler";
@@ -58,7 +59,7 @@ pub fn integration(root: &Path) -> bool {
         return false;
     }
     let log = work.join("wrangler.log");
-    let Some((wrangler, port)) = start_ready(root, &state, &log) else {
+    let Some((wrangler, port)) = start_ready(root, &state, &log, Some(TEST_OWNER_SECRET)) else {
         eprintln!(
             "integration failed at: wrangler dev; its log is {}",
             log.display()
@@ -70,7 +71,7 @@ pub fn integration(root: &Path) -> bool {
         .args(["test", "--quiet", "--package", "univ-server"])
         .args(["--tests", "--", "--ignored"])
         .env("UNIV_E2E_URL", format!("http://127.0.0.1:{port}"))
-        .env("UNIV_E2E_OWNER_SECRET", OWNER_SECRET)
+        .env("UNIV_E2E_OWNER_SECRET", TEST_OWNER_SECRET)
         .status()
         .is_ok_and(|status| status.success());
     let explorer = if passed {
@@ -164,8 +165,15 @@ fn succeeded(status: std::io::Result<std::process::ExitStatus>, what: &str) -> b
 }
 
 /// Starts `wrangler dev` on a free port and waits until it answers, starting it again on a new
-/// port when it exits first; the running Wrangler and its port, or none.
-pub(crate) fn start_ready(root: &Path, state: &Path, log: &Path) -> Option<(Wrangler, u16)> {
+/// port when it exits first; the running Wrangler and its port, or none. The Worker's owner
+/// secret is `owner` where given, and otherwise the one Wrangler reads from the Worker's
+/// `.dev.vars`.
+pub(crate) fn start_ready(
+    root: &Path,
+    state: &Path,
+    log: &Path,
+    owner: Option<&str>,
+) -> Option<(Wrangler, u16)> {
     for start in 1..=STARTS {
         let port = match free_port() {
             Ok(port) => port,
@@ -175,7 +183,7 @@ pub(crate) fn start_ready(root: &Path, state: &Path, log: &Path) -> Option<(Wran
             }
         };
         eprintln!("==> wrangler dev on port {port}");
-        let mut wrangler = match Wrangler::start(root, state, port, log) {
+        let mut wrangler = match Wrangler::start(root, state, port, log, owner) {
             Ok(wrangler) => wrangler,
             Err(error) => {
                 eprintln!("could not start wrangler dev: {error}");
@@ -252,12 +260,21 @@ pub fn stop_on_interrupt() {
 }
 
 impl Wrangler {
-    fn start(root: &Path, state: &Path, port: u16, log: &Path) -> std::io::Result<Self> {
+    fn start(
+        root: &Path,
+        state: &Path,
+        port: u16,
+        log: &Path,
+        owner: Option<&str>,
+    ) -> std::io::Result<Self> {
         let out = fs::File::create(log)?;
         let err = out.try_clone()?;
-        let child = wrangler(root, "dev", state)
+        let mut dev = wrangler(root, "dev", state);
+        if let Some(secret) = owner {
+            dev.args(["--var", &format!("OWNER_SECRET:{secret}")]);
+        }
+        let child = dev
             .args(["--port", &port.to_string()])
-            .args(["--var", &format!("OWNER_SECRET:{OWNER_SECRET}")])
             .arg("--show-interactive-dev-session=false")
             .stdin(Stdio::null())
             .stdout(out)
@@ -373,125 +390,4 @@ pub(crate) fn send(
         .map_or("", |(_, body)| body)
         .to_owned();
     Ok((status, body))
-}
-
-/// Issues a key of `tier` labelled `label` from the Worker on `port`, which `start_ready` gave
-/// the owner secret, and gives its secret.
-fn issue_key(port: u16, tier: &str, label: &str) -> Result<String, String> {
-    let json = format!(r#"{{"label":"{label}","tier":"{tier}"}}"#);
-    let exchange = Exchange {
-        method: "POST",
-        path: "/v1/owner/keys",
-        bearer: Some(OWNER_SECRET),
-        json: Some(&json),
-    };
-    let (status, body) = send(port, &exchange, Duration::from_secs(30))?;
-    let issued: serde_json::Value = serde_json::from_str(document(&body))
-        .map_err(|error| format!("issuing a key answered {status}: {error}"))?;
-    issued["secret"]
-        .as_str()
-        .map(str::to_owned)
-        .ok_or_else(|| format!("issuing a key answered {status}: {issued}"))
-}
-
-/// The JSON document of a Worker's answer, which may come in one chunk of chunked transfer
-/// coding: the document is its outermost braces.
-fn document(body: &str) -> &str {
-    body.find('{')
-        .zip(body.rfind('}'))
-        .map_or("", |(start, end)| &body[start..=end])
-}
-
-/// Revokes every standing key labelled `label` on the Worker at `port`: what an earlier run
-/// issued for itself and could not revoke, as Ctrl-C ends it at once.
-fn revoke_labelled(port: u16, label: &str) -> Result<usize, String> {
-    let list = Exchange {
-        method: "GET",
-        path: "/v1/owner/keys",
-        bearer: Some(OWNER_SECRET),
-        json: None,
-    };
-    let (status, body) = send(port, &list, Duration::from_secs(30))?;
-    let keys: serde_json::Value = serde_json::from_str(document(&body))
-        .map_err(|error| format!("listing the keys answered {status}: {error}"))?;
-    let standing: Vec<&str> = keys["keys"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter(|key| key["label"] == label && key["revoked_at"].is_null())
-        .filter_map(|key| key["id"].as_str())
-        .collect();
-    for id in &standing {
-        let path = format!("/v1/owner/keys/{id}/revoke");
-        let revoke = Exchange {
-            method: "POST",
-            path: &path,
-            bearer: Some(OWNER_SECRET),
-            json: None,
-        };
-        let (status, _) = send(port, &revoke, Duration::from_secs(30))?;
-        if status != 200 {
-            return Err(format!("revoking key {id} answered {status}"));
-        }
-    }
-    Ok(standing.len())
-}
-
-/// Univ Server on the real local state, its tables and migrations brought up to date, its
-/// Wrangler log at `log`; the running Wrangler and its port, or none, having said why.
-fn start_on_real_state(root: &Path, log: &Path) -> Option<(Wrangler, u16)> {
-    let state = root.join(REAL_STATE);
-    if !state.is_dir() {
-        eprintln!(
-            "{} holds no published release: run `univ-ingest publish` first",
-            state.display()
-        );
-        return None;
-    }
-    if !release_tables(root, &state) || !migrate(root, &state) {
-        return None;
-    }
-    if let Some(dir) = log.parent()
-        && let Err(error) = fs::create_dir_all(dir)
-    {
-        eprintln!("could not create {}: {error}", dir.display());
-        return None;
-    }
-    let started = start_ready(root, &state, log);
-    if started.is_none() {
-        eprintln!("wrangler dev did not start; its log is {}", log.display());
-    }
-    started
-}
-
-/// A key of the extended tier labelled `label`, for a run on the real state, where anonymous
-/// reads are limited to 300 a minute; the keys of `label` that earlier runs left standing are
-/// revoked first, as Ctrl-C ends a run before it can revoke its own.
-pub(crate) fn fresh_key(port: u16, label: &str) -> Option<String> {
-    let key = revoke_labelled(port, label).and_then(|_| issue_key(port, "extended", label));
-    key.map_err(|error| eprintln!("could not issue a {label} key: {error}"))
-        .ok()
-}
-
-/// Runs `run` with the port of Univ Server on the real local state and a fresh key labelled
-/// `label`, its Wrangler log at `log`, then stops the server; whether all of it succeeded.
-pub(crate) fn with_real_server(
-    root: &Path,
-    log: &Path,
-    label: &str,
-    run: impl FnOnce(u16, &str) -> bool,
-) -> bool {
-    let Some((wrangler, port)) = start_on_real_state(root, log) else {
-        eprintln!(
-            "failed at: starting Univ Server; its log is {}",
-            log.display()
-        );
-        return false;
-    };
-    let Some(key) = fresh_key(port, label) else {
-        return false;
-    };
-    let succeeded = run(port, &key);
-    drop(wrangler);
-    succeeded
 }
