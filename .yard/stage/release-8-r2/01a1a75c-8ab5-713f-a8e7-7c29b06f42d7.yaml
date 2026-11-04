@@ -10,6 +10,15 @@ versions:
     title: "R2: curated superstructures and the volumes their papers bound"
     goal: "Release 8 holds every known superstructure its primary papers support, each cited, with Vela, Shapley and Horologium–Reticulum placed by the sky regions their papers quote, sky regions bounded by their own cells, and lower-limit shapes labelled \"(at least)\""
     status: active
+  - key: 01a1a7ae-f81d-77f5-89df-ecca96b69c32
+    at: 2026-11-04T17:50:24Z
+    revision: 32
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R2: curated superstructures and the volumes their papers bound"
+    goal: "Release 8 holds every known superstructure its primary papers support, each cited, with Vela, Shapley and Horologium–Reticulum placed by the sky regions their papers quote, sky regions bounded by their own cells, and lower-limit shapes labelled \"(at least)\""
+    status: done
 blocks:
   - key: 01a1a75c-8ab5-713f-a8e7-7c2ade30eea9
     id: r2-t-list
@@ -369,6 +378,18 @@ blocks:
         title: "Close and merge into product/release-8"
         detail: "**Done when** the Yard Log is closed and committed, and the branch is merged `--no-ff`."
         state: open
+      - key: 01a1a7ae-f81d-77f5-89df-eccbd7e71eb2
+        at: 2026-11-04T17:50:24Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Close and merge into product/release-8"
+        detail: |-
+          **Done when** the Yard Log is closed and committed, and the branch is merged `--no-ff`.
+
+          **Result:** closed and merged into `product/release-8`.
+        state: done
   - key: 01a1a75c-aa7f-71dc-9419-dec3498c9651
     id: r2-q-voids
     kind: question
@@ -1945,6 +1966,20 @@ blocks:
         title: "Full gate and integration"
         detail: "**Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green."
         state: active
+      - key: 01a1a7ae-f81d-77f5-89df-ecc878b2c9e5
+        at: 2026-11-04T17:50:24Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration"
+        detail: |-
+          **Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green.
+
+          **Result:**
+          - `cargo xtask check` passed 13 gates. `loft verify` was skipped, since it runs only on `develop`.
+          - `cargo xtask integration` passed, with the Worker's end-to-end tests and the explorer's 7 Playwright tests, axe included.
+        state: done
   - key: 01a1a792-993c-74c5-b00f-53ac9781e90a
     id: r2-note-files
     kind: note
@@ -2924,3 +2959,29 @@ blocks:
               "schema": "loft-reconcile/3"
             }
           }
+  - key: 01a1a7ae-f81d-77f5-89df-ecc761410c21
+    id: r2-note-done
+    kind: note
+    versions:
+      - key: 01a1a7ae-f81d-77f5-89df-ecc9d4ab0ac5
+        at: 2026-11-04T17:50:24Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What R2 leaves"
+        markdown: |-
+          **Built:**
+          - **Bounds:** sky regions are bounded by their own cells in univ-model. A sky region may be a centre and a size, and may cite its paper's "at least" sentence, which names the structure "(at least)" in the explorer.
+          - **Extents:** a structure may give its published extents about its point. The explorer draws them as three lines through the marker, and the panel says the bounds are unknown. The Hercules, Sculptor and Local voids use them.
+          - **New forms:** member tables may give Cartesian coordinates, and a structure may be a box along its frame's axes.
+          - **Structures:** 28 new structure files (53 in all), and Vela, Shapley and Horologium–Reticulum are placed by their papers' sky regions.
+          - **univ-model:** scales every geometry kind exhaustively.
+
+          **For R3:** release 8 is built from these files. Its spot checks should find Laniakea and Vela, Vela as a sky region labelled "(at least)", and the Hercules Void with its three axes. Check them live with a screenshot.
+
+          **Left open:**
+          - Hydra–Centaurus, whose velocities are in the Local Group frame.
+          - The catalogued voids and the Einasto 2001 superclusters, which go to a catalogue wave.
+          - One bounds path for sky regions (the index bounds from the cells), a change of its own.
+        tone: success
