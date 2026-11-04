@@ -27,6 +27,70 @@ blocks:
 
           **Done when** release 8 is complete under `.cache/univ-ingest/build/releases/8`, with its manifest checked.
         state: active
+      - key: 01a1a7d0-aa19-762c-8a9e-56059998fafc
+        at: 2026-11-04T18:27:12Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build release 8"
+        detail: |-
+          **Scope:** `univ-ingest build` with the defaults, in the background.
+
+          **Done when** release 8 is complete under `.cache/univ-ingest/build/releases/8`, with its manifest checked.
+
+          **Progress:**
+          - The first run stalled at 25 of 99 fetch items on `gaia-dr3-bright`, whose joined query outlasted every synchronous request. It was stopped at 15 minutes, with nothing written.
+          - Restarted after r3-t-gaia-jobs. The fetch resumes from its cache.
+        state: active
+      - key: 01a1a7e9-b149-73a0-8489-988737adf9b0
+        at: 2026-11-04T18:54:32Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build release 8"
+        detail: |-
+          **Scope:** `univ-ingest build` with the defaults, in the background.
+
+          **Done when** release 8 is complete under `.cache/univ-ingest/build/releases/8`, with its manifest checked.
+
+          **Result:** built at 18:54 UTC, on the third run.
+          - **Fetch:** 39 items got and 60 from the cache, no source failed, 170 MB. CDS Strasbourg was down. The run dropped it after its retries, IDIA broke off mid-body, and GCNS and Hipparcos came from the next mirror.
+          - **Normalize:** 3,083,452 entries, 3,829 left out.
+          - **Cross-match:** 2,099,181 objects, 2,085,809 placed, 263 new ids, 0 replaced; 18 member lists placed and none not placed.
+          - **Build:** 53 structures, 3 volume grids, 401 tiles and 540 files, every check passed.
+
+          **Runs:**
+          - The first stalled on Gaia, fixed in r3-t-gaia-jobs.
+          - The second polled each job on a dead pooled connection and resubmitted it, fixed in `c9e3007`.
+        state: done
+  - key: 01a1a7d0-aa19-762c-8a9e-560337ee3f2a
+    id: r3-t-gaia-jobs
+    kind: task
+    versions:
+      - key: 01a1a7d0-aa19-762c-8a9e-560444e9e1f7
+        at: 2026-11-04T18:27:12Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fetch Gaia's bright stars as TAP jobs"
+        detail: |-
+          **Scope:** the first build of release 8 stalled on `gaia-dr3-bright`.
+
+          **Done when** a working way to fetch the joined query is found, built and tested, and the build is restarted.
+
+          **Result:**
+          - **Probes:**
+            - A synchronous chunk with R1's `astrophysical_parameters` join outlasted the 120 s read timeout on ESA's and ARI's mirrors. With indexed filters instead of `MOD`, it still outlasted 3 minutes on both.
+            - The same chunk without the join took 4 s.
+            - The same joined chunk run as an asynchronous job at ESA completed in 11 s, with 30,082 rows: 30,058 with BP−RP, and classes K, F, M, A, B and G, 286 blank and 72 "unknown", as R1 measured.
+          - **Built:** a TAP source may say `run: async`. Each chunk is then submitted as a UWS job, its phase polled every 5 s for up to half an hour, and its result fetched and recorded, with the usual retries and mirror fallback.
+          - **Tested** against a stand-in service: a job polled once while executing, then completed and kept; a job that ends in ERROR is retried, then moved to the next mirror. The access test checks the job suffix.
+          - **Committed** in `c60572a`. `gaia-dr3-bright` runs as jobs, its definition saying why.
+        state: done
+        type: fix
   - key: 01a1a7af-c9d5-71fb-aa0f-95d466f878f5
     id: r3-t-publish
     kind: task
@@ -43,6 +107,18 @@ blocks:
 
           **Done when** latest is release 8 and every file is checked against its SHA-256.
         state: open
+      - key: 01a1a7e9-b149-73a0-8489-98882e7b6ac3
+        at: 2026-11-04T18:54:32Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Publish release 8 locally"
+        detail: |-
+          **Scope:** `univ-ingest publish` to the local D1 and R2 that `wrangler dev` reads.
+
+          **Done when** latest is release 8 and every file is checked against its SHA-256.
+        state: active
   - key: 01a1a7af-c9d5-71fb-aa0f-95d5f035ceb1
     id: r3-t-science
     kind: task
@@ -59,6 +135,18 @@ blocks:
 
           **Done when** every check passes, or a failure is explained and fixed.
         state: open
+      - key: 01a1a7e9-b149-73a0-8489-98899ea94d43
+        at: 2026-11-04T18:54:32Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science checks and tile checks"
+        detail: |-
+          **Scope:** `cargo xtask science` on release 8, and every tile decoded and checked against its SHA-256.
+
+          **Done when** every check passes, or a failure is explained and fixed.
+        state: active
   - key: 01a1a7af-c9d5-71fb-aa0f-95d6a2baa184
     id: r3-t-spot
     kind: task

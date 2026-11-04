@@ -57,11 +57,13 @@ redistribution:
     two Jones et al. papers; whether a public hobby release counts as a "scientific context" is a
     judgement the terms do not settle. Provisional: judged again before any public deployment.
 scale_domain: cosmic_web
+# VizieR's mirrors, checked 2026-11-04: China-VO answers like CDS; NAO's database was unreachable
+# and IDIA broke off mid-answer, so they come last.
 mirrors:
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
-  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
-  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
 fixes:
   - defect: >-
       e_cz = 0 does not mean zero uncertainty: 6dFGS redshifts deemed unsuitable for extragalactic

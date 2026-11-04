@@ -60,11 +60,13 @@ redistribution:
     terms were not checked, and "scientific context" is not defined for a public hobby release.
     Provisional: judged again before any public deployment.
 scale_domain: nearby_galaxies
+# VizieR's mirrors, checked 2026-11-04: China-VO answers like CDS; NAO's database was unreachable
+# and IDIA broke off mid-answer, so they come last.
 mirrors:
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
-  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
-  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
 normalization:
   distances:
     - value: (m-M)

@@ -57,11 +57,13 @@ redistribution:
     restriction. The MNRAS/OUP policy CDS points to was not checked, and "scientific context" is not
     defined for a public hobby release. Provisional: judged again before any public deployment.
 scale_domain: cosmic_web
+# VizieR's mirrors, checked 2026-11-04: China-VO answers like CDS; NAO's database was unreachable
+# and IDIA broke off mid-answer, so they come last.
 mirrors:
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
-  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
-  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
 fixes:
   - defect: "e_HV = 0 does not mean zero uncertainty: the ReadMe gives it as zero when the error was not measured."
     change: "e_HV = 0 is read as no uncertainty reported, never as a zero uncertainty."
