@@ -22,6 +22,10 @@ requirements:
       system: "Univ Explorer"
       shall: "show the object's record that Univ Server gives."
     criteria:
+      - key: 01a1a6b2-b217-764e-93d0-da89ee4e3c67
+        name: "The panel is headed by the object's name: the name it was found by, or else the first name its sources give, or else its first designation, with its id beside it."
+      - key: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
+        name: "The panel names a galaxy group as such, and names the scale domain of every object."
       - key: 01a1a497-e843-728a-bce8-3fe7201a1670
         name: "The panel gives the object's names and designations, each with its source."
       - key: 01a1a497-e843-728a-bce8-3fe8c93208cf
