@@ -1,4 +1,4 @@
-import { STRUCTURE_CSS } from "../scene/kinds.ts";
+import { CHOSEN_CSS, STRUCTURE_CSS } from "../scene/kinds.ts";
 import type { NameLabel, Overlay } from "./overlay.ts";
 import { useStore } from "./store.ts";
 import { pointText } from "./text.ts";
@@ -26,15 +26,15 @@ export function Marks({ overlay }: { overlay: Overlay }) {
 
 /** Each placed structure's name, kept at its centre and clear of the others. The names take no
  * pointer: the view's mouse chooses a structure by its name (and the list does, by keyboard). */
-export function StructureNames({ names, overlay }: { names: readonly NameLabel[]; overlay: Overlay }) {
+export function StructureNames({ names, overlay, chosen }: { names: readonly NameLabel[]; overlay: Overlay; chosen?: string | undefined }) {
   return (
     <div ref={overlay.names} className="pointer-events-none">
       {names.map((name) => (
         <span
           key={name.id}
           data-structure={name.id}
-          className="absolute top-0 left-0 text-xs whitespace-nowrap"
-          style={{ display: "none", color: STRUCTURE_CSS }}
+          className={`absolute top-0 left-0 text-xs whitespace-nowrap ${name.id === chosen ? "font-semibold" : ""}`}
+          style={{ display: "none", color: name.id === chosen ? CHOSEN_CSS : STRUCTURE_CSS }}
         >
           <span className="block -translate-x-1/2 -translate-y-1/2">{name.text}</span>
         </span>

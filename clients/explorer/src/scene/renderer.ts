@@ -6,7 +6,7 @@
 import type { View } from "./camera.ts";
 import { type Sphere, inSight, sightOf } from "./frustum.ts";
 import type { Drawer, Lines } from "./drawing.ts";
-import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, pointOpacity } from "./kinds.ts";
+import { CHOSEN_COLOUR, CHOSEN_INDEX, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, pointOpacity } from "./kinds.ts";
 import { projection } from "./projection.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
@@ -28,6 +28,12 @@ export interface Points {
 const POINT_SIZE = 2;
 /** The diameter of a structure's marker, in device pixels. */
 const MARKER_SIZE = 6;
+/** How markers are drawn: a structure's in its colour; the chosen structure's in the chosen
+ * colour and larger, so that a structure placed by a point shows as chosen. */
+const MARKER_STYLES = {
+  plain: { index: MARKER_INDEX, size: MARKER_SIZE },
+  chosen: { index: CHOSEN_INDEX, size: 16 },
+} as const;
 
 interface Drawn {
   vao: WebGLVertexArrayObject;
@@ -76,7 +82,7 @@ export class Renderer implements Drawer {
   /** Each tile's points, by its id, with the sphere they lie in. */
   private readonly batches = new Map<string, Drawn & { extent: Points["extent"] }>();
   private readonly outlines = new Map<string, Outline>();
-  private readonly markers = new Map<string, Drawn>();
+  private readonly markers = new Map<string, Drawn & { size: number }>();
   private readonly pointSize: WebGLUniformLocation | null;
   private readonly opacity: WebGLUniformLocation | null;
 
@@ -91,7 +97,7 @@ export class Renderer implements Drawer {
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
-    const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
+    const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR, CHOSEN_COLOUR].flat());
     gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
   }
 
@@ -137,14 +143,16 @@ export class Renderer implements Drawer {
     this.batches.delete(id);
   }
 
-  /** Draws markers at `offsets` from `centre` under `name`, in place of what was drawn under it. */
-  setMarkers(name: string, markers: { centre: Vec3; offsets: Float32Array } | undefined): void {
+  /** Draws markers at `offsets` from `centre` under `name`, in place of what was drawn under it;
+   * in the chosen colour where `chosen`. */
+  setMarkers(name: string, markers: { centre: Vec3; offsets: Float32Array } | undefined, chosen = false): void {
     const old = this.markers.get(name);
     if (old !== undefined) this.release(old);
     this.markers.delete(name);
     if (markers === undefined) return;
-    const kinds = new Uint8Array(markers.offsets.length / 3).fill(MARKER_INDEX);
-    this.markers.set(name, this.upload({ ...markers, kinds }));
+    const style = MARKER_STYLES[chosen ? "chosen" : "plain"];
+    const kinds = new Uint8Array(markers.offsets.length / 3).fill(style.index);
+    this.markers.set(name, { ...this.upload({ ...markers, kinds }), size: style.size });
   }
 
   /** Draws `lines` under `name`, in place of what was drawn under it; nothing for none. */
@@ -182,9 +190,11 @@ export class Renderer implements Drawer {
     for (const batch of inSight(this.batches.values(), sight, (b) => b.extent)) {
       this.drawOne(this.points, frame, batch, gl.POINTS);
     }
-    gl.uniform1f(this.pointSize, MARKER_SIZE);
     gl.uniform1f(this.opacity, 1);
-    for (const marker of this.markers.values()) this.drawOne(this.points, frame, marker, gl.POINTS);
+    for (const marker of this.markers.values()) {
+      gl.uniform1f(this.pointSize, marker.size);
+      this.drawOne(this.points, frame, marker, gl.POINTS);
+    }
   }
 
   private use(program: Program, frame: { axes: Mat3; projection: Float32Array }): void {

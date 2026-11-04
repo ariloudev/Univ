@@ -15,7 +15,7 @@ export function Scene({ release, cosmology }: { release: number; cosmology: stri
     structure: (id) => selection.structureById(id),
   });
   const { chosen, choose } = useChosen(release, world);
-  const structures = useStructures(release, world, rotations);
+  const structures = useStructures(release, world, rotations, structureId);
   const selection: Selection = {
     chosen,
     structure: structureId === undefined ? undefined : structures.details.get(structureId),
@@ -44,7 +44,7 @@ export function Scene({ release, cosmology }: { release: number; cosmology: stri
         aria-label={`The placed objects of release ${release} around Earth. Drag to turn, scroll to zoom, drag with the right button or Shift to move; click a point to read it, double-click to fly to it.`}
       />
       <Marks overlay={overlay} />
-      <StructureNames names={world?.names ?? []} overlay={overlay} />
+      <StructureNames names={world?.names ?? []} overlay={overlay} chosen={structureId} />
       {world === undefined ? null : <HoverLabel world={world} />}
       {problem === undefined ? null : (
         <p role="alert" className="absolute inset-x-0 top-4 mx-auto w-fit rounded bg-panel px-3 py-2 text-warn">
