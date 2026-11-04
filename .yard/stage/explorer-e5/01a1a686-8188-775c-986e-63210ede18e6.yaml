@@ -214,3 +214,15 @@ blocks:
           What comes after this needs your approval:
           - **E5, E6 and S1** are within the explorer, whose spec you pre-approved, so they run without stopping.
           - **Release 8 changes the tile-format contract and ingest's spec.** I'll send that spec change for your approval before building it.
+  - key: 01a1a6b1-c9f8-72c2-bd2f-15e2d7e7712e
+    id: x5-carry
+    kind: note
+    versions:
+      - key: 01a1a6b1-c9f9-7713-8b21-fba46df63a67
+        at: 2026-11-04T13:13:51Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Where the rest of the plan goes"
+        markdown: "This Yard Log is E5's and is closing now. Each later wave keeps its own log on its own branch, as E0 to E4 did: E6 on `stage/explorer-e6`, S1 on `stage/explorer-s1`, and R1 to R3 on `stage/release-8-rN` under `product/release-8`. Each copies its tasks from the stages planned here as it opens."
