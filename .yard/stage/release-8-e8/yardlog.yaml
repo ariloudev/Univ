@@ -1,0 +1,43 @@
+format: yardlog/1
+key: 01a1a8cc-6aab-7755-afbf-a5bd9694127b
+branch: "stage/release-8-e8"
+base: "develop"
+title: "stage/release-8-e8"
+revision: 2
+opened:
+  at: 2026-11-04T23:02:11Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+stages:
+  - key: 01a1a8cc-6aab-7755-afbf-a5beff82cf88
+    id: e8
+submissions:
+  - key: 01a1a8cc-6aab-7755-afbf-a5c6d0d88f1d
+    blocks:
+      - 01a1a8cc-6aab-7755-afbf-a5c16dfcde59
+    changes:
+      - what: sent
+        at: 2026-11-04T23:02:11Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+      - what: answered
+        at: 2026-11-04T23:02:54Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+acts:
+  - at: 2026-11-04T23:02:11Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:02:54Z
+    revision: 2
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
