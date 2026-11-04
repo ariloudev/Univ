@@ -1040,13 +1040,13 @@ links:
         body: 95090ff027783519855552b3b82342fbdc451d6b61ca33016dd6047feb2aff8c
       - file: "crates/univ-ingest/tests/release_details.rs"
         name: "the_fixture_release_records_each_sources_reference_and_coverage"
-        body: ccc1e658c246a905effff2327a3852e0c5095f50651fbf0f97dc01970c5bacae
+        body: 358989dca152c5e5c2b6179a27a3e60923254e88baf3c6a0d6ec2db64b7ccba0
   - node: 01a1a304-4ae3-74cc-a986-969a727616ef
     reviewed: 8f2b05687101297da355fd5f8da38b0aba0230a2cf0d49bb24bfcd6cfe1e6ed6
     tests:
       - file: "crates/univ-ingest/tests/source_coverage.rs"
         name: "a_sources_sky_is_the_sorted_order_5_cells_of_its_entries"
-        body: be36108a62bb90b395980b278b9dca6bc95c4d89aa4954c73a4ab4cdd1418571
+        body: cd0b1381bb767aeafebd494902c191ffa3ccf29f9ce89552952c5dd1220d9d5a
       - file: "crates/univ-ingest/tests/source_coverage.rs"
         name: "the_radial_range_of_2mrs_is_that_of_its_redshifts_as_published"
         body: 222d94095679b250c707de97ca3c7977fef78cc5966ef0ae8093f6671f1b707e
@@ -1055,7 +1055,7 @@ links:
         body: b51698a03ea1d42ad6ca75bb91930927a4d567d69dfe513b3be64fc0ea8fc7b0
       - file: "crates/univ-ingest/tests/release_details.rs"
         name: "the_fixture_release_records_each_sources_reference_and_coverage"
-        body: ccc1e658c246a905effff2327a3852e0c5095f50651fbf0f97dc01970c5bacae
+        body: 358989dca152c5e5c2b6179a27a3e60923254e88baf3c6a0d6ec2db64b7ccba0
   - node: 01a1a304-2788-77fb-8f0d-273ac3c97e3c
     reviewed: 58a22444377c403d1b68e7e76e812253fd880676ee9903d70e7883594da8fbb0
     tests:
@@ -2858,7 +2858,7 @@ links:
         body: f498937ecb739a5adc7e0ea950c4a1d0aa0922696d3d710ee02f7c9db6c3a3c8
       - file: "crates/univ-model/src/tile/tests.rs"
         name: "a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_colours"
-        body: 3ff9608b235928936f96b79ce430b3abf4d9631dd16136676a6b038b353a786e
+        body: 15154e5d6b3d7407832ae75f30d7a758a823f7ad9d90a461e2a309bc94a22784
   - node: 01a1a6e4-22e1-765d-b404-01ff442efb73
     reviewed: 279d1e3ce5238e28b0e8c711c9cbe69fe7cec4d115e2e9537e4ce6dd435dfa3c
     tests:
