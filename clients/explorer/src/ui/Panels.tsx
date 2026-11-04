@@ -1,0 +1,96 @@
+import type { Catalogue } from "../catalogue/catalogue.ts";
+import { AXES, type Axes } from "../scene/frames.ts";
+import { formatDistance } from "../scene/format.ts";
+import { cssColour } from "../scene/kinds.ts";
+import type { World } from "./useWorld.ts";
+
+/** The panels around the view: where the eye is, the axes, the key and the credits. */
+export function Panels({ world, release, cosmology }: { world: World; tick: number; release: number; cosmology: string }) {
+  const { controller, catalogue } = world;
+  return (
+    <>
+      <div className="absolute top-3 left-3 w-80 space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
+        <p data-testid="distance">
+          <span className="text-dim">Eye to focus: </span>
+          {formatDistance(controller.view.distance)}
+        </p>
+        <p className="text-dim">
+          Ring: the {controller.axes} equator, {formatDistance(controller.ringRadius)} from Earth
+        </p>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2">
+            <span className="text-dim">Axes</span>
+            <select
+              value={controller.axes}
+              onChange={(event) => {
+                controller.setAxes(event.target.value as Axes);
+              }}
+              className="rounded border border-line bg-space px-2 py-1"
+            >
+              {AXES.map((axes) => (
+                <option key={axes} value={axes}>
+                  {axes}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={() => {
+              controller.returnToEarth();
+            }}
+            className="rounded border border-accent px-2 py-1 text-accent hover:bg-accent hover:text-space"
+          >
+            Return to Earth
+          </button>
+        </div>
+        <FrameStatement axes={controller.axes} basis={controller.basis} cosmology={cosmology} />
+      </div>
+      {catalogue === undefined ? null : <Key catalogue={catalogue} release={release} />}
+    </>
+  );
+}
+
+function FrameStatement({ axes, basis, cosmology }: { axes: Axes; basis: string; cosmology: string }) {
+  return (
+    <p className="text-xs text-dim" data-testid="frame">
+      Axes {axes} ({basis}). Origin: the Solar System barycentre, within about 1 AU of Earth.
+      Distances in parsecs to gigaparsecs, positions in megaparsecs; cosmology {cosmology}.
+    </p>
+  );
+}
+
+function Key({ catalogue, release }: { catalogue: Catalogue; release: number }) {
+  const kinds = [...catalogue.kinds.entries()];
+  const credits = catalogue.credits();
+  return (
+    <div className="absolute right-3 bottom-3 max-h-[60%] w-96 space-y-2 overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm">
+      <h2 className="font-semibold">Kind of value of each distance</h2>
+      <ul data-testid="key">
+        {kinds.map(([kind, count]) => (
+          <li key={kind} className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-full" style={{ background: cssColour(kind) }} />
+            {kind}: {count.toLocaleString("en-GB")} points
+          </li>
+        ))}
+      </ul>
+      {catalogue.failed > 0 ? (
+        <p role="status" className="text-warn">
+          {catalogue.failed} tiles failed their check and are not drawn.
+        </p>
+      ) : null}
+      <details>
+        <summary className="cursor-pointer">Credits: the sources of release {release}'s points</summary>
+        <ul className="mt-2 space-y-2" data-testid="credits">
+          {credits.map((source) => (
+            <li key={`${source.domain}/${source.id}`}>
+              <p className="font-medium">{source.title}</p>
+              <p className="text-xs text-dim">{source.citation}</p>
+              <p className="text-xs">{source.credit}</p>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </div>
+  );
+}

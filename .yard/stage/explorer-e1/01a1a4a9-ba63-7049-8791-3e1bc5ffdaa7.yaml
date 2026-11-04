@@ -1,0 +1,52 @@
+key: 01a1a4a9-ba63-7049-8791-3e1bc5ffdaa7
+id: xe1
+versions:
+  - key: 01a1a4a9-ba63-7049-8791-3e1f7aaf7505
+    at: 2026-11-04T03:45:49Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E1: the scene and mouse navigation"
+    goal: "The catalogues' tiles are drawn around Earth with level of detail, the mouse orbits, zooms across scales from parsecs to gigaparsecs, pans and resets to Earth, and the sources are credited"
+    status: active
+blocks:
+  - key: 01a1a4a9-ba63-7049-8791-3e1c70cdfcff
+    id: e1-math
+    kind: task
+    versions:
+      - key: 01a1a4a9-ba63-7049-8791-3e2048e5e752
+        at: 2026-11-04T03:45:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Camera, controls, frames and distance format"
+        detail: "Done when unit tests show: the focus centred; the eye at its distance; the pole up; turning about the focus and stopping short of the poles; one factor per wheel step; the 0.1 pc to 20 Gpc limits; panning by the distance dragged; the 6 px click; flights; the ring in the chosen equator; changing axes moving no point; distances in pc to Gpc with light-years."
+        state: active
+  - key: 01a1a4a9-ba63-7049-8791-3e1d1eb18b90
+    id: e1-tiles
+    kind: task
+    versions:
+      - key: 01a1a4a9-ba63-7049-8791-3e21cba2c828
+        at: 2026-11-04T03:45:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tiles: priority, budget, SHA-256, decode, counts and credits"
+        detail: "Done when unit tests on the decoder's fixture tiles show: roots first; children largest on screen first; the 3,000,000-point budget; positions placed in Mpc; a SHA-256 mismatch undrawn and counted; kinds counted; sources credited."
+        state: open
+  - key: 01a1a4a9-ba63-7049-8791-3e1ee90bc1f2
+    id: e1-render
+    kind: task
+    versions:
+      - key: 01a1a4a9-ba63-7049-8791-3e22718985f3
+        at: 2026-11-04T03:45:49Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "WebGL2 renderer, mouse binding and panels"
+        detail: "Done when, in Chromium against release 7, the points are drawn around Earth, dragging turns, the wheel zooms, Return to Earth and the axes work, and the key, credits and frame statement show, confirmed by screenshots."
+        state: open

@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import type { ReleaseSummary } from "../api/schemas.ts";
 import { ReleasePicker } from "./ReleasePicker.tsx";
+import { Scene } from "./Scene.tsx";
 import { ServerUnreachable, TryAgain } from "./ServerUnreachable.tsx";
 import { useReleases } from "./useReleases.ts";
 
@@ -44,7 +45,9 @@ function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: nu
           {shown === undefined ? "" : `, ${shown.cosmology.name}`}
         </p>
       </header>
-      <section aria-label="The view" className="relative flex-1" data-release={release} />
+      <section aria-label="The view" className="relative flex-1" data-release={release}>
+        <Scene key={release} release={release} cosmology={shown?.cosmology.name ?? ""} />
+      </section>
     </div>
   );
 }
