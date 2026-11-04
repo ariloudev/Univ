@@ -10,3 +10,24 @@ versions:
     title: "E9 build"
     goal: "The click centres the view, tested, gated and merged into product/release-8"
     status: planned
+  - key: 01a1a8fc-92d2-7357-b655-348188e3bab9
+    at: 2026-11-04T23:54:47Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E9 build"
+    goal: "The click centres the view, tested, gated and merged into product/release-8"
+    status: dropped
+blocks:
+  - key: 01a1a8fc-92d2-7357-b655-347d564598e3
+    id: e9-later-note
+    kind: note
+    versions:
+      - key: 01a1a8fc-92d2-7357-b655-348231b777b5
+        at: 2026-11-04T23:54:47Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        markdown: "Dropped: the build was done in the E9 stage itself, so this placeholder stage was not used."

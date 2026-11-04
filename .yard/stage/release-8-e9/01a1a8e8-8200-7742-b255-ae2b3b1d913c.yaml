@@ -10,6 +10,15 @@ versions:
     title: "E9: a click centres the view on the point"
     goal: "A click on a drawn point makes it the focus at the current distance, so the view turns about it as it does about Earth"
     status: active
+  - key: 01a1a8fc-92d2-7357-b655-348054593e94
+    at: 2026-11-04T23:54:47Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E9: a click centres the view on the point"
+    goal: "A click on a drawn point makes it the focus at the current distance, so the view turns about it as it does about Earth"
+    status: done
 blocks:
   - key: 01a1a8e8-8200-7742-b255-ae2d267f074b
     id: e9-spec
@@ -431,6 +440,15 @@ blocks:
 
           Live, release 9: a 2MRS galaxy at 58.2 Mpc ends 0.0 px from the centre, the distance stays 400 Mpc, and a drag keeps it there. The live run caught a stale hover label: a pending hover lookup re-picked the galaxy after the click. The click now cancels it, through one `clearHover` shared with pointer-leave.
         state: active
+      - key: 01a1a8fc-92d2-7357-b655-347ec3a98afe
+        at: 2026-11-04T23:54:47Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Reviews, gate, integration, trace, close, merge"
+        detail: "Committed in 7efa297: the gate, integration and trace pass. The Yard Log is closed next, then the branch is merged into `product/release-8`."
+        state: done
   - key: 01a1a8f0-ab48-75a9-874f-b2e0a79abc73
     id: e9-reviews
     kind: note
@@ -1036,3 +1054,28 @@ blocks:
               "schema": "loft-reconcile/3"
             }
           }
+  - key: 01a1a8fc-92d2-7357-b655-347ca2e2223d
+    id: e9-result
+    kind: note
+    versions:
+      - key: 01a1a8fc-92d2-7357-b655-347f8444ccbf
+        at: 2026-11-04T23:54:47Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What E9 produced"
+        markdown: |-
+          A **click** on a drawn point now makes it the focus at the distance the view is at, so dragging turns the view about it as it does about Earth. A **double-click** still flies in close, and *Return to Earth* still brings the focus home.
+
+          | Check | Result |
+          |---|---|
+          | `pnpm check` | 199 tests |
+          | `cargo xtask integration` | 9 Playwright tests, including the click test |
+          | `cargo xtask check` | 13 gates |
+          | Live, release 9 | the galaxy ends 0.0 px from the centre at 400 Mpc, and stays centred after a drag |
+
+          **Left open:**
+          - a click on a structure's name still flies in close, as before; the spec does not cover structures;
+          - the catalogue re-plans tiles on every frame of a flight, an older cost that clicks now trigger more often.
+        tone: success
