@@ -1,8 +1,9 @@
 //! The OpenAPI 3.1 document of every route served, at `/v1/openapi.json`
 //! (read-the-openapi-document).
 //!
-//! The paths come from each handler's `#[utoipa::path]`, and the schemas from the Rust types the
-//! server answers with. A test holds the document's paths to [`ROUTES`](crate::ROUTES) exactly.
+//! The paths come from each handler's `#[utoipa::path]`, the refusals of each from
+//! [`crate::refusals`], and the schemas from the Rust types the server answers with. A test
+//! holds the document's paths to [`ROUTES`](crate::ROUTES) exactly.
 
 use std::sync::LazyLock;
 
@@ -82,11 +83,16 @@ impl utoipa::Modify for Security {
     }
 }
 
+/// The name of the problem details schema in the document's components.
+pub(crate) const PROBLEM_SCHEMA: &str = "Problem";
+
 /// The OpenAPI document of every route served, with the problem details schema, generated from
 /// [`ProblemDocument`], whose `type` lists every kind of problem.
 #[must_use]
 pub fn document() -> utoipa::openapi::OpenApi {
-    ApiDoc::openapi()
+    let mut document = ApiDoc::openapi();
+    crate::refusals::describe(&mut document);
+    document
 }
 
 /// Serves the OpenAPI document.
@@ -115,14 +121,16 @@ static SERIALIZED: LazyLock<Result<Vec<u8>, String>> =
     LazyLock::new(|| serde_json::to_vec(&document()).map_err(|error| error.to_string()));
 
 #[cfg(test)]
-mod tests {
-    use std::collections::BTreeSet;
+pub(crate) mod tests {
+    use std::collections::{BTreeMap, BTreeSet};
 
     use super::*;
     use crate::routes::ROUTES;
 
-    /// The name of the problem details schema in the document's components.
-    const PROBLEM_SCHEMA: &str = "Problem";
+    /// The document as JSON.
+    pub(crate) fn value() -> serde_json::Value {
+        serde_json::to_value(document()).unwrap()
+    }
 
     /// Each `(method, path)` the document describes.
     fn documented() -> BTreeSet<(String, String)> {
@@ -158,13 +166,13 @@ mod tests {
 
     #[test]
     fn the_document_is_openapi_3_1() {
-        let value = serde_json::to_value(document()).unwrap();
+        let value = value();
         assert_eq!(value["openapi"], "3.1.0");
     }
 
     #[test]
     fn the_problem_schema_lists_every_problem_type() {
-        let value = serde_json::to_value(document()).unwrap();
+        let value = value();
         let schemas = &value["components"]["schemas"];
         let kind = &schemas[PROBLEM_SCHEMA]["properties"]["type"]["$ref"];
         assert_eq!(kind, "#/components/schemas/ProblemType");
@@ -180,5 +188,106 @@ mod tests {
         let listed = &schemas["ProblemType"]["enum"];
         let uris: Vec<&str> = ProblemType::ALL.iter().map(|kind| kind.uri()).collect();
         assert_eq!(listed, &serde_json::json!(uris));
+    }
+
+    #[test]
+    fn each_refusal_a_route_can_give_is_described_with_its_status_and_problem_type() {
+        let value = value();
+        for route in &ROUTES {
+            let method = route.method.as_str().to_lowercase();
+            let responses = &value["paths"][route.path][&method]["responses"];
+            let mut described: Vec<(u16, String)> = Vec::new();
+            for (status, response) in responses.as_object().unwrap() {
+                let Some(problem) = response["content"].get(crate::problem::CONTENT_TYPE) else {
+                    continue;
+                };
+                let parts = problem["schema"]["allOf"].as_array().unwrap();
+                assert_eq!(parts[0]["$ref"], "#/components/schemas/Problem");
+                for uri in parts[1]["properties"]["type"]["enum"].as_array().unwrap() {
+                    described.push((status.parse().unwrap(), uri.as_str().unwrap().to_owned()));
+                }
+            }
+            let mut expected: Vec<(u16, String)> = crate::refusals::refusals(route.endpoint)
+                .iter()
+                .map(|kind| (kind.status(), kind.uri().to_owned()))
+                .collect();
+            described.sort();
+            expected.sort();
+            assert_eq!(
+                described,
+                expected,
+                "{} {}",
+                route.method.as_str(),
+                route.path
+            );
+        }
+    }
+
+    /// The schema named `T::name()` and every schema it refers to, as univ-model generates them.
+    fn generated<T: utoipa::ToSchema>(into: &mut BTreeMap<String, serde_json::Value>) {
+        let mut schemas = vec![(T::name().into_owned(), T::schema())];
+        T::schemas(&mut schemas);
+        for (name, schema) in schemas {
+            into.insert(name, serde_json::to_value(schema).unwrap());
+        }
+    }
+
+    #[test]
+    fn the_documents_schemas_are_generated_from_univ_models_types() {
+        use univ_model::api::{
+            bulk, keys, layers, lookup, objects, query, releases, sources, structures,
+        };
+        type Generate = fn(&mut BTreeMap<String, serde_json::Value>);
+        let roots: [Generate; 31] = [
+            generated::<releases::ReleaseList>,
+            generated::<sources::SourceList>,
+            generated::<sources::SourceDetail>,
+            generated::<sources::SourceProvenance>,
+            generated::<structures::StructurePage>,
+            generated::<structures::StructureDetail>,
+            generated::<objects::ObjectRecord>,
+            generated::<lookup::ObjectChoices>,
+            generated::<lookup::ObjectMerged>,
+            generated::<bulk::ScaleDomainList>,
+            generated::<bulk::GridList>,
+            generated::<bulk::TileFormat>,
+            generated::<univ_model::tile::manifest::TileManifest>,
+            generated::<keys::IssueKey>,
+            generated::<keys::IssuedKey>,
+            generated::<keys::KeyList>,
+            generated::<keys::KeyChange>,
+            generated::<keys::KeyRecord>,
+            generated::<layers::CreateLayer>,
+            generated::<layers::LayerList>,
+            generated::<layers::LayerChange>,
+            generated::<layers::LayerRecord>,
+            generated::<layers::LayerPage>,
+            generated::<layers::ChangePage>,
+            generated::<layers::ItemRecord>,
+            generated::<layers::ItemVersion>,
+            generated::<layers::PublishItem>,
+            generated::<layers::ReviseItem>,
+            generated::<layers::RetractItem>,
+            generated::<query::VolumeQuery>,
+            generated::<query::VolumePage>,
+        ];
+        let mut model = BTreeMap::new();
+        for generate in roots {
+            generate(&mut model);
+        }
+        let value = value();
+        // The server's own: the problem details every refusal is answered with.
+        let own = [PROBLEM_SCHEMA, "ProblemType"];
+        let documented: BTreeMap<String, serde_json::Value> = value["components"]["schemas"]
+            .as_object()
+            .unwrap()
+            .iter()
+            .filter(|(name, _)| !own.contains(&name.as_str()))
+            .map(|(name, schema)| (name.clone(), schema.clone()))
+            .collect();
+        assert_eq!(
+            documented, model,
+            "every other schema is univ-model's, as generated"
+        );
     }
 }

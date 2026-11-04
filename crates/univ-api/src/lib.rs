@@ -27,6 +27,8 @@ mod layers_tests;
 mod limits_tests;
 mod objects;
 mod openapi;
+#[cfg(test)]
+mod openapi_snapshot;
 mod problem;
 mod query;
 #[cfg(test)]
@@ -37,6 +39,7 @@ mod query_paging_tests;
 mod query_tests;
 #[cfg(test)]
 mod query_time_tests;
+mod refusals;
 mod releases;
 mod routes;
 mod sources;

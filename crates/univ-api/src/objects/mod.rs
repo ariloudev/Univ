@@ -269,16 +269,16 @@ fn href(id: u64, release: u32) -> String {
 /// The 404 of a lookup that leads to no object of `release`, naming what was looked up.
 fn not_found(release: u32, looked_up: &LookedUp) -> Problem {
     let what = match looked_up {
-        LookedUp::Id { id } => format!("object {id}"),
-        LookedUp::Name { name } => format!("an object named {name:?}"),
+        LookedUp::Id { id } => format!("no object {id}"),
+        LookedUp::Name { name } => format!("no object named {name:?}"),
         LookedUp::Designation {
             source,
             designation,
-        } => format!("an object that {source} designates {designation:?}"),
+        } => format!("no object that {source} designates {designation:?}"),
     };
     Problem::new(
         ProblemType::ObjectNotFound,
-        format!("Release {release} holds no {what}."),
+        format!("Release {release} holds {what}."),
     )
     .with("release", release)
     .with(

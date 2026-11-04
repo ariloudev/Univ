@@ -359,3 +359,30 @@ fn a_revoked_keys_public_layers_stay_readable_and_its_private_ones_unreadable() 
     let (refused, _) = db.with_key(&key, get(&format!("/v1/layers/{private}")));
     assert_eq!(refused.status, 401, "the revoked key itself is refused");
 }
+
+#[test]
+fn a_layer_or_item_read_in_a_release_refuses_one_that_is_malformed_or_never_published() {
+    let db = db();
+    let key = db.key();
+    let created = layer(
+        &db,
+        &key,
+        &json!({"title": "Pinned", "visibility": "public"}),
+    );
+    let id = text(&created, "id");
+    publish(&db, &key, &id, &sn1987a("sn1987a"));
+    for path in [
+        format!("/v1/layers/{id}"),
+        format!("/v1/layers/{id}/items/sn1987a"),
+        format!("/v1/layers/{id}/items/sn1987a/versions/1"),
+    ] {
+        for (release, status, kind) in [
+            ("abc", 400, "invalid-parameter"),
+            ("99", 404, "release-not-found"),
+        ] {
+            let response = db.get(&path, &format!("release={release}"));
+            assert_eq!(response.status, status, "{path}?release={release}");
+            assert_eq!(body(&response)["type"], format!("urn:univ:problem:{kind}"));
+        }
+    }
+}

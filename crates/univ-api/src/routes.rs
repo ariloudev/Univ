@@ -316,6 +316,16 @@ async fn answer<B: Backend>(
             .await
         }
     };
+    // Every test that meets a refusal checks that its route lists it among the refusals the
+    // OpenAPI document describes (read-the-openapi-document).
+    #[cfg(test)]
+    if let Err(problem) = &answered {
+        assert!(
+            crate::refusals::refusals(endpoint).contains(&problem.kind),
+            "{endpoint:?} answered {}, which its refusals do not list",
+            problem.kind.uri()
+        );
+    }
     answered.unwrap_or_else(Problem::into_response)
 }
 

@@ -104,3 +104,19 @@ A tile is decoded against the manifest of its own release. Fetch the manifest pi
 release (the scale-domain listing gives that URL), and fetch each tile with the same
 `?release=n`. A tile fetched unpinned is redirected to the latest release's tile, which may be
 a later release than a manifest read a moment before.
+
+## Check every tile a server serves
+
+`check-server.ts` fetches each scale domain's manifest and every tile of a release from a
+running Univ Server, such as one `cargo xtask serve` starts. It checks each tile's SHA-256
+against the manifest and decodes it; decoding checks the tile's node, its count of points and
+every value it holds:
+
+```sh
+UNIV_KEY=<an API key> node --experimental-strip-types check-server.ts http://127.0.0.1:8787 7
+```
+
+Without a release it reads the latest, and pins every later request to the release the listing
+names. An anonymous client may make 300 requests a minute, fewer than a release's tiles: a key
+in `UNIV_KEY` goes faster, and a 429 is waited out as its `Retry-After` says. It prints one line
+per scale domain and exits with status 1 on any failure.
