@@ -74,6 +74,27 @@ describe("the chosen object's panel", () => {
     expect(star).not.toContain("unknown");
   });
 
+  it("estimates the class from the colour index the star is drawn by, and marks a derived index", () => {
+    const derived = {
+      entry: 0,
+      source: "gcns",
+      quantity: "colour_index",
+      n: 0,
+      kind_of_value: "measured",
+      native: { value: 0.9, unit: "magnitude", uncertainty: { form: "none_reported" } },
+      band: "BP-RP",
+      derived_from: ["BPmag", "RPmag"],
+    };
+    const published = { ...derived, source: "hipparcos-2007", native: { ...derived.native, value: 0.65 }, band: "B-V", derived_from: null };
+    const record = { ...UNTYPED_STAR, measurements: [derived, published] };
+    render(<ObjectPanel chosen={{ kind: "ready", record }} onChoose={close} onClose={close} />);
+    const star = screen.getByTestId("star").textContent ?? "";
+    expect(star).toContain("Estimated class G2V");
+    expect(star).toContain("from B−V 0.65 (hipparcos-2007)");
+    expect(star).toContain("not corrected for interstellar reddening");
+    expect(star).toContain("(measured, gcns, derived from BPmag − RPmag)");
+  });
+
   it("names the papers of a researched entry", () => {
     render(<ObjectPanel chosen={{ kind: "ready", record: BETELGEUSE }} onChoose={close} onClose={close} />);
     const papers = screen.getByTestId("papers").textContent ?? "";

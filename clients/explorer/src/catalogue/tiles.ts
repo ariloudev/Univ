@@ -1,12 +1,12 @@
 // Fetching, checking and decoding one tile (draw-the-catalogues), and the scale domains and
 // manifests of a release.
 
-import { type ColourBands, type ManifestNode, decodeTile } from "univ-tile-decoder";
+import { type DecodedPoint, type ManifestNode, decodeTile } from "univ-tile-decoder";
 
 import { type ReadOptions, read, readJson } from "../api/client.ts";
 import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
-import { starColour } from "../scene/starColour.ts";
+import { starBytes } from "../scene/starColour.ts";
 import { add, scale } from "../scene/vec.ts";
 import { type Extent, type Tile, extentOf } from "./lod.ts";
 
@@ -31,23 +31,47 @@ export interface Batch {
   kinds: Uint8Array;
   /** Each point's index in the manifest's sources. */
   sources: Uint16Array;
-  /** Each point's colour, red, green, blue and opacity as bytes: a star's from its colour index,
-   * or grey; zero opacity for a point outside the stars domain, drawn by its kind of value. */
-  colours: Uint8Array;
-  /** Each point's colour index, NaN where it has none, and its bands as an index into
-   * `COLOUR_BANDS` plus one, 0 where none. */
-  colourIndices: Float32Array;
-  colourBands: Uint8Array;
+  /** The stars' colours, for a tile of the stars domain; none for any other, whose points are
+   * drawn by their kind of value. */
+  stars?: StarColours | undefined;
   ids: Float64Array;
   /** Where the points lie. */
   extent: Extent;
 }
 
 /** The scale domain whose points are drawn in their stars' colours. */
-export const STARS_DOMAIN = "stars";
+const STARS_DOMAIN = "stars";
 
-/** The bands a point's colour index may lie between, as `Batch.colourBands` codes them. */
-export const COLOUR_BANDS: readonly ColourBands[] = ["BP-RP", "B-V"];
+/** The colours of a tile's stars. */
+export interface StarColours {
+  /** Each star's colour as red, green, blue and opacity bytes: from its colour index, or grey. */
+  bytes: Uint8Array;
+  /** Each star's colour index in hundredths of a magnitude, as the tile holds it. */
+  hundredths: Int16Array;
+  /** Each star's colour bands, by the manifest's code: their place in its `colour_bands` plus
+   * one, 0 for a star without a colour index. */
+  bands: Uint8Array;
+  /** How many have a colour index. */
+  coloured: number;
+}
+
+/** The colours of the stars `points`, of a tile whose manifest names its colour bands `names`. */
+function starColoursOf(points: readonly DecodedPoint[], names: readonly string[]): StarColours {
+  const stars: StarColours = {
+    bytes: new Uint8Array(points.length * 4),
+    hundredths: new Int16Array(points.length),
+    bands: new Uint8Array(points.length),
+    coloured: 0,
+  };
+  points.forEach((p, i) => {
+    stars.bytes.set(starBytes(p.colour), i * 4);
+    if (p.colour === undefined) return;
+    stars.hundredths[i] = Math.round(p.colour.index * 100);
+    stars.bands[i] = names.indexOf(p.colour.bands) + 1;
+    stars.coloured += 1;
+  });
+  return stars;
+}
 
 /** A tile that did not match its manifest's SHA-256, or did not decode. */
 export class TileFailed extends Error {}
@@ -107,10 +131,6 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
   const kinds = new Uint8Array(points.length);
   const sources = new Uint16Array(points.length);
   const ids = new Float64Array(points.length);
-  const colours = new Uint8Array(points.length * 4);
-  const colourIndices = new Float32Array(points.length).fill(Number.NaN);
-  const colourBands = new Uint8Array(points.length);
-  const stars = domain.name === STARS_DOMAIN;
   const [cx, cy, cz] = tile.centre;
   points.forEach((p, i) => {
     offsets[i * 3] = p.x * domain.toMpc - cx;
@@ -119,14 +139,12 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
     kinds[i] = KIND_INDEX[p.kind];
     sources[i] = p.source.index;
     ids[i] = p.id;
-    if (p.colour !== undefined) {
-      colourIndices[i] = p.colour.index;
-      colourBands[i] = COLOUR_BANDS.indexOf(p.colour.bands) + 1;
-    }
-    if (stars) colours.set(starColour(p.colour).map((c) => Math.round(c * 255)), i * 4);
   });
-  const extent = extentOf(offsets, tile.centre);
-  return { tile, offsets, kinds, sources, ids, colours, colourIndices, colourBands, extent };
+  // A stars tile from before colour indices were kept lists no bands: its stars keep their
+  // kinds' colours rather than all turning grey.
+  const names = domain.manifest.encoding.colour_bands;
+  const stars = domain.name === STARS_DOMAIN && names !== undefined ? starColoursOf(points, names) : undefined;
+  return { tile, offsets, kinds, sources, ids, stars, extent: extentOf(offsets, tile.centre) };
 }
 
 /** Fetches, checks and decodes the tile of `tile` in `domain` of `release`. */

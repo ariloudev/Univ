@@ -7,7 +7,7 @@ import type { ManifestSource } from "univ-tile-decoder";
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
 import { type Tree, plan, treeOf } from "./lod.ts";
-import { type Batch, type Domain, type DomainTile, STARS_DOMAIN, TileFailed, fetchBatch } from "./tiles.ts";
+import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
 
 /** Tiles fetched at once. */
 const PARALLEL = 6;
@@ -150,10 +150,9 @@ export class Catalogue {
   /** Counts `batch`'s points into the stars' colours or the kinds of value, and into its domain,
    * or out of them where `by` is −1. */
   private tally(batch: Batch, by: 1 | -1): void {
-    if (batch.tile.domain === STARS_DOMAIN) {
-      const coloured = batch.colourBands.reduce((n, bands) => n + (bands > 0 ? 1 : 0), 0);
-      this.stars.coloured += by * coloured;
-      this.stars.grey += by * (batch.colourBands.length - coloured);
+    if (batch.stars !== undefined) {
+      this.stars.coloured += by * batch.stars.coloured;
+      this.stars.grey += by * (batch.ids.length - batch.stars.coloured);
     } else {
       for (const kind of batch.kinds) this.kinds[kind] = (this.kinds[kind] ?? 0) + by;
     }

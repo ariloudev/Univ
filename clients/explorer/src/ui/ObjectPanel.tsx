@@ -1,7 +1,7 @@
 import { type ObjectRecord, distancesOf } from "../api/objects.ts";
 import type { ChosenObject } from "./useChosen.ts";
 import { colourIndices, estimatedClass, publishedTypes } from "./starText.ts";
-import { headingOf, natureOf, preferredText, valueText, words } from "./text.ts";
+import { bandsText, headingOf, natureOf, preferredText, valueText, words } from "./text.ts";
 
 /** The chosen object's record: its names, its preferred and other distances, its frame. */
 export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObject; onChoose: (id: number) => void; onClose: () => void }) {
@@ -105,7 +105,7 @@ function Record({ record }: { record: ObjectRecord }) {
 function Star({ record }: { record: ObjectRecord }) {
   const types = publishedTypes(record);
   const colours = colourIndices(record);
-  const estimated = estimatedClass(record);
+  const estimated = estimatedClass(types, colours);
   if (types.length === 0 && colours.length === 0) return null;
   return (
     <div data-testid="star">
@@ -123,7 +123,11 @@ function Star({ record }: { record: ObjectRecord }) {
         )}
         {colours.map((m) => (
           <li key={`c:${m.entry}:${m.n}`}>
-            {(m.band ?? "colour index").replace("-", "−")} {valueText(m.native)} <span className="text-dim">({m.kind_of_value}, {m.source})</span>
+            {bandsText(m.band ?? "colour index")} {valueText(m.native)}{" "}
+            <span className="text-dim">
+              ({m.kind_of_value}, {m.source}
+              {m.derived_from === null || m.derived_from === undefined ? "" : `, derived from ${m.derived_from.join(" − ")}`})
+            </span>
           </li>
         ))}
       </ul>
@@ -142,7 +146,7 @@ function Papers({ record }: { record: ObjectRecord }) {
         {researched.flatMap((e) =>
           (e.references ?? []).map((r) => (
             <li key={`${e.source}:${r.citation}`}>
-              {r.citation} <span className="text-dim">({[r.bibcode, r.doi].filter((x) => x !== null && x !== undefined).join(", ")}; {e.source})</span>
+              {r.citation} <span className="text-dim">({[r.bibcode, r.doi, e.source].filter((x) => x !== null && x !== undefined).join(", ")})</span>
             </li>
           )),
         )}

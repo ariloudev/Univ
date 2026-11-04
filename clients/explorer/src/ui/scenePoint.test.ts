@@ -18,9 +18,7 @@ function starBatch() {
     kinds: new Uint8Array([1]),
     sources: new Uint16Array([source.index]),
     ids: new Float64Array([42]),
-    colours: new Uint8Array(4),
-    colourIndices: new Float32Array([1.85]),
-    colourBands: new Uint8Array([2]),
+    stars: { bytes: new Uint8Array(4), hundredths: new Int16Array([185]), bands: new Uint8Array([manifest.encoding.colour_bands?.indexOf("B-V") ?? -1]).map((c) => c + 1), coloured: 1 },
     extent: { centre: [0, 0, 0] as [number, number, number], radius: 1, core: { centre: [0, 0, 0] as [number, number, number], radius: 1 } },
   };
   return { domain, batch, source };
@@ -46,7 +44,7 @@ describe("a drawn point", () => {
     expect(point.kind).toBe("estimated");
     expect(point.colour?.bands).toBe("B-V");
     expect(point.colour?.index).toBeCloseTo(1.85, 5);
-    batch.colourBands[0] = 0;
+    batch.stars.bands[0] = 0;
     expect(pointOf(() => domain, batch, 0).colour).toBeUndefined();
   });
 });

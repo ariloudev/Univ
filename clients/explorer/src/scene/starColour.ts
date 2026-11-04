@@ -7,6 +7,7 @@ import type { ColourBands } from "univ-tile-decoder";
 
 import type { Rgba } from "./drawing.ts";
 import { DWARF_SEQUENCE, type DwarfRow } from "./dwarfSequence.ts";
+import { POINT_OPACITY, css } from "./kinds.ts";
 
 /** What a colour index gives, as estimated for a main-sequence star. */
 export interface StarTemperature {
@@ -108,35 +109,51 @@ export function blackBodyColour(teff: number): [number, number, number] {
   return [r ?? 0, g ?? 0, b ?? 0];
 }
 
-/** How opaque a star is drawn, as every point is: half, so that crowds stay readable. */
-const STAR_OPACITY = 0.5;
-
 /** The colour of a star without a colour index: neutral grey. */
-export const NO_COLOUR_GREY: Rgba = [0.6, 0.6, 0.6, STAR_OPACITY];
+export const NO_COLOUR_GREY: Rgba = [0.6, 0.6, 0.6, POINT_OPACITY];
 
 /** The temperatures the key labels, kelvin, coolest first. */
 export const KEY_TEMPERATURES: readonly number[] = [2500, 3500, 5000, 6500, 10_000, 30_000];
 
-const cssOf = ([r, g, b]: readonly number[]): string =>
-  `rgb(${Math.round((r ?? 0) * 255)} ${Math.round((g ?? 0) * 255)} ${Math.round((b ?? 0) * 255)})`;
-
-/** The stars' colours from the coolest temperature of the key to the hottest, for CSS: spaced
- * evenly in log temperature, as the labels below them are. */
-export const STAR_GRADIENT = `linear-gradient(to right, ${KEY_TEMPERATURES.map((t) => cssOf(blackBodyColour(t))).join(", ")})`;
+/** The stars' colours at the key's temperatures, coolest first, for CSS: each stop spaced evenly,
+ * as the labels below them are, so that each label stands under its colour. */
+export const STAR_GRADIENT = `linear-gradient(to right, ${KEY_TEMPERATURES.map((t) => css(blackBodyColour(t))).join(", ")})`;
 
 /** The grey of stars without a colour index, for CSS. */
-export const GREY_CSS = cssOf(NO_COLOUR_GREY);
+export const GREY_CSS = css(NO_COLOUR_GREY);
 
-const cache = new Map<string, Rgba>();
+/** A star's colour index, as a tile gives it. */
+export type StarColourIndex = { index: number; bands: ColourBands };
+
+/** A colour index as one number: its bands and its hundredths of a magnitude, as tiles hold it. */
+const keyOf = ({ index, bands }: StarColourIndex): number => (bands === "B-V" ? 65_536 : 0) + Math.round(index * 100) + 32_768;
+
+const colours = new Map<number, Rgba>();
+const bytes = new Map<number, Uint8Array>();
 
 /** The colour a star with `colour`, its colour index and bands, is drawn in; grey without one. */
-export function starColour(colour: { index: number; bands: ColourBands } | undefined): Rgba {
+export function starColour(colour: StarColourIndex | undefined): Rgba {
   if (colour === undefined) return NO_COLOUR_GREY;
-  const key = `${colour.bands}${colour.index}`;
-  const known = cache.get(key);
+  const key = keyOf(colour);
+  const known = colours.get(key);
   if (known !== undefined) return known;
   const [r, g, b] = blackBodyColour(temperatureOf(colour.index, colour.bands).teff);
-  const rgba: Rgba = [r, g, b, STAR_OPACITY];
-  cache.set(key, rgba);
+  const rgba: Rgba = [r, g, b, POINT_OPACITY];
+  colours.set(key, rgba);
   return rgba;
+}
+
+const toBytes = (rgba: Rgba): Uint8Array => Uint8Array.from(rgba, (c) => Math.round(c * 255));
+const GREY_BYTES = toBytes(NO_COLOUR_GREY);
+
+/** `starColour` as red, green, blue and opacity bytes, as the renderer takes them; computed once
+ * for each colour index, as the tiles give it to the hundredth of a magnitude. */
+export function starBytes(colour: StarColourIndex | undefined): Uint8Array {
+  if (colour === undefined) return GREY_BYTES;
+  const key = keyOf(colour);
+  const known = bytes.get(key);
+  if (known !== undefined) return known;
+  const made = toBytes(starColour(colour));
+  bytes.set(key, made);
+  return made;
 }

@@ -12,11 +12,14 @@ export const KINDS: readonly KindOfValue[] = ["measured", "estimated", "inferred
 /** Each kind's index in `KINDS`. */
 export const KIND_INDEX: Record<KindOfValue, number> = { measured: 0, estimated: 1, inferred: 2, reconstructed: 3 };
 
+/** How opaque every point is drawn, of a kind or a star: half. */
+export const POINT_OPACITY = 0.5;
+
 const COLOURS: Record<KindOfValue, Rgba> = {
-  measured: [0.42, 0.72, 1, 0.5],
-  estimated: [1, 0.81, 0.42, 0.5],
-  inferred: [0.84, 0.55, 1, 0.5],
-  reconstructed: [0.42, 1, 0.69, 0.5],
+  measured: [0.42, 0.72, 1, POINT_OPACITY],
+  estimated: [1, 0.81, 0.42, POINT_OPACITY],
+  inferred: [0.84, 0.55, 1, POINT_OPACITY],
+  reconstructed: [0.42, 1, 0.69, POINT_OPACITY],
 };
 
 /** Beyond this distance from the focus, megaparsecs, the points grow fainter as the eye
@@ -50,7 +53,9 @@ const CHOSEN_MARKER_SIZE = 16;
 export const structureStyle = (colour: Rgba, chosen: boolean): { colour: Rgba; markerSize: number } =>
   chosen ? { colour: CHOSEN_COLOUR, markerSize: CHOSEN_MARKER_SIZE } : { colour, markerSize: MARKER_SIZE };
 
-const css = ([r, g, b]: Rgba): string => `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
+/** A colour, red, green and blue each 0 to 1, for CSS. */
+export const css = ([r = 0, g = 0, b = 0]: readonly number[]): string =>
+  `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
 
 /** The colour of `kind` for CSS. */
 export const cssColour = (kind: KindOfValue): string => css(COLOURS[kind]);

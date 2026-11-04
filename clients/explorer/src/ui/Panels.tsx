@@ -92,7 +92,9 @@ function Key({ catalogue, release }: { catalogue: Tally; release: number }) {
         </div>
         <p className="text-xs">
           {catalogue.stars.coloured.toLocaleString("en-GB")} stars in the colour of the temperature their colour
-          index gives, estimated along the dwarf sequence of {DWARF_SEQUENCE_CITATION}.
+          index gives, estimated along the dwarf sequence of {DWARF_SEQUENCE_CITATION}, as observed and not
+          corrected for reddening. The sequence's BP−RP stops at B9V, so a hotter star coloured by BP−RP is drawn
+          at about 10,700 K.
         </p>
         <p className="flex items-center gap-2 text-xs">
           <span className="inline-block h-3 w-3 rounded-full" style={{ background: GREY_CSS }} />

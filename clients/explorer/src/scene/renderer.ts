@@ -21,8 +21,8 @@ export interface Points {
   centre: Vec3;
   offsets: Float32Array;
   kinds: Uint8Array;
-  /** Each point's own colour as RGBA bytes, or zero opacity to take its kind's. */
-  colours: Uint8Array;
+  /** Each point's own colour as RGBA bytes, for a star; none for a point drawn by its kind. */
+  colours?: Uint8Array | undefined;
   extent: Sphere;
 }
 
@@ -95,6 +95,9 @@ export class Renderer implements Drawer {
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
+    // A batch without colours of its own leaves `a_colour` at this constant: no colour, so that
+    // its points take their kind's (WebGL's default would be opaque black).
+    gl.vertexAttrib4f(gl.getAttribLocation(this.points.program, "a_colour"), 0, 0, 0, 0);
     const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
     gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
     this.markerColour = gl.getUniformLocation(this.points.program, `u_colours[${MARKER_INDEX}]`);
@@ -129,8 +132,8 @@ export class Renderer implements Drawer {
     const buffers = [
       this.buffer(this.points.program, "a_offset", points.offsets, 3),
       this.buffer(this.points.program, "a_kind", points.kinds, 1),
-      this.buffer(this.points.program, "a_colour", points.colours, 4, true),
     ];
+    if (points.colours !== undefined) buffers.push(this.buffer(this.points.program, "a_colour", points.colours, 4, true));
     this.gl.bindVertexArray(null);
     return { vao, buffers, centre: points.centre, count: points.kinds.length };
   }
@@ -160,9 +163,8 @@ export class Renderer implements Drawer {
     if (old !== undefined) this.release(old);
     this.markers.delete(name);
     if (markers === undefined) return;
-    const count = markers.offsets.length / 3;
-    const kinds = new Uint8Array(count).fill(MARKER_INDEX);
-    this.markers.set(name, this.upload({ ...markers, kinds, colours: new Uint8Array(count * 4) }));
+    const kinds = new Uint8Array(markers.offsets.length / 3).fill(MARKER_INDEX);
+    this.markers.set(name, this.upload({ ...markers, kinds }));
   }
 
   /** Draws `lines` under `name`, in place of what was drawn under it; nothing for none. */

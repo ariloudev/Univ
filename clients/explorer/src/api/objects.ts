@@ -26,6 +26,8 @@ const Measurement = z.looseObject({
   normalized: Value.nullable().optional(),
   /** The band of a magnitude, or the bands of a colour index such as `B-V`. */
   band: z.string().nullable().optional(),
+  /** The two magnitudes a colour index was computed from, where its source publishes no colour. */
+  derived_from: z.array(z.string()).nullable().optional(),
 });
 export type Measurement = z.infer<typeof Measurement>;
 

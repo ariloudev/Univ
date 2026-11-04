@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 
 import { ExplorerManifest } from "../api/schemas.ts";
 import { bytesOf, fixtureText, fixtureTiles, manifestOf } from "../test/fixtures.ts";
-import { starColour } from "../scene/starColour.ts";
-import { COLOUR_BANDS, MPC_PER, TileFailed, batchOf, tilesOf } from "./tiles.ts";
+import { starBytes } from "../scene/starColour.ts";
+import { MPC_PER, TileFailed, batchOf, tilesOf } from "./tiles.ts";
 
 function domainOf(name: string) {
   const manifest = manifestOf(name);
@@ -38,20 +38,33 @@ describe("a tile", () => {
       const tile = domain.tiles.find((t) => t.address === raw?.address);
       if (raw === undefined || tile === undefined) throw new Error("no fixture tile");
       const batch = await batchOf(domain, tile, bytesOf(raw.hex));
+      if (name === "cosmic_web") {
+        expect(batch.stars).toBeUndefined();
+        continue;
+      }
+      const stars = batch.stars;
+      if (stars === undefined) throw new Error("a star tile without its colours");
+      const names = domain.manifest.encoding.colour_bands ?? [];
+      expect(stars.coloured).toBe(raw.points.filter((p) => p.colour !== undefined).length);
       raw.points.forEach((point, i) => {
-        const rgba = [...batch.colours.slice(i * 4, i * 4 + 4)];
-        if (name === "cosmic_web") {
-          expect(rgba[3]).toBe(0);
-          return;
-        }
-        const [index, bands] = (point as { colour?: [number, "B-V" | "BP-RP"] }).colour ?? [];
+        const [index, bands] = point.colour ?? [];
         if (index === undefined || bands === undefined) throw new Error("a fixture star without a colour index");
-        expect(batch.colourIndices[i]).toBeCloseTo(index, 2);
-        expect(COLOUR_BANDS[(batch.colourBands[i] ?? 0) - 1]).toBe(bands);
-        expect(rgba).toEqual(starColour({ index: batch.colourIndices[i] ?? 0, bands }).map((c) => Math.round(c * 255)));
-        expect(rgba[3]).toBeGreaterThan(0);
+        expect((stars.hundredths[i] ?? 0) / 100).toBeCloseTo(index, 2);
+        expect(names[(stars.bands[i] ?? 0) - 1]).toBe(bands);
+        expect([...stars.bytes.slice(i * 4, i * 4 + 4)]).toEqual([...starBytes({ index: (stars.hundredths[i] ?? 0) / 100, bands })]);
       });
     }
+  });
+
+  it("keeps its stars' kinds of value where its manifest lists no colour bands", async () => {
+    // A tile whose points carry no colour, read as a stars tile whose manifest names no bands.
+    const domain = domainOf("cosmic_web");
+    const { colour_bands: _, ...encoding } = domain.manifest.encoding;
+    const old = { ...domain, name: "stars", manifest: { ...domain.manifest, encoding } };
+    const raw = fixtureTiles("cosmic_web")[0];
+    const tile = domain.tiles.find((t) => t.address === raw?.address);
+    if (raw === undefined || tile === undefined) throw new Error("no fixture tile");
+    expect((await batchOf(old, tile, bytesOf(raw.hex))).stars).toBeUndefined();
   });
 
   it("is read from a manifest in parsecs or megaparsecs, and no other unit", () => {
