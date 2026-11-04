@@ -8,9 +8,6 @@ body: |
   A time record's time is an ISO 8601 instant in UTC or TT for years 1 to 9999, or, for the
   deep past such as a distant source event, a span of Julian years before J2000.0 on TT. Its
   uncertainty names its unit: seconds, days or Julian years.
-
-  An item placed in FK4 B1950, which is not a rotation of the ICRS, is stored as given but
-  meets no volume query; its publish says so in a warning.
 realizes:
   - 01a19f1e-d177-716d-b124-3ce3944cd7e5
   - 01a19f1e-d177-716d-b124-3cf3def064d0
