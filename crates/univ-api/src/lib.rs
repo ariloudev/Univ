@@ -35,6 +35,8 @@ mod query_fixture;
 mod query_paging_tests;
 #[cfg(test)]
 mod query_tests;
+#[cfg(test)]
+mod query_time_tests;
 mod releases;
 mod routes;
 mod sources;

@@ -174,6 +174,21 @@ blocks:
         title: "Time filter"
         detail: "Matched through `item_times` on TT. Done when native tests cover AC-187 to AC-191."
         state: active
+      - key: 01a1a421-3975-7767-b587-568eb289dfe1
+        at: 2026-11-04T01:16:43Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Time filter"
+        detail: |-
+          Built with the query and tested on its own, 5 tests:
+          - the kind compared (arrival, discovery, source event by years before J2000.0);
+          - SN 1987A's ±60 s interval met at 07:34:50 and 07:36:30 UTC and missed at 07:34:30 and 07:36:40;
+          - items with no record, and objects, dropped;
+          - GW170817's arrival given in TT as 12:42:09.184 found by the UTC interval around 12:41:00 and not at 12:42:09 UTC (TT − UTC = 69.184 s);
+          - 400 at `/time/to`, `/time/from/timescale`, `/time/from/instant` (UTC before 1961), `/time/to/years_before_j2000` and `/time/kind`.
+        state: done
   - key: 01a1a3fd-1fbf-7477-ba13-660d0d7166b4
     id: t6-tiles
     kind: task
@@ -196,6 +211,15 @@ blocks:
         title: "Covering tile nodes"
         detail: "The kept manifest nodes gain level, bounds and a leaf flag. The level chosen is the deepest at most `max_level` with no more than 4,096 nodes. Done when counts match a brute-force pass (AC-204 to AC-206)."
         state: open
+      - key: 01a1a421-3975-7767-b587-568f08281e03
+        at: 2026-11-04T01:16:43Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Covering tile nodes"
+        detail: "The kept manifest nodes gain level, bounds and a leaf flag. The level chosen is the deepest at most `max_level` with no more than 4,096 nodes. Done when counts match a brute-force pass (AC-204 to AC-206)."
+        state: active
   - key: 01a1a3fd-1fbf-7477-ba13-660e3d820467
     id: t6-bench
     kind: task
