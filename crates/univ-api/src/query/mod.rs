@@ -100,12 +100,12 @@ pub async fn volume<B: Backend>(
     backend: &B,
 ) -> Result<Response, Problem> {
     let body = request::read(request)?;
-    let signing = Signing::of(backend);
     let cursor = match &body.cursor {
-        Some(text) => {
-            let signing = signing.as_ref().ok_or_else(Signing::missing)?;
-            Some(Cursor::decode(text, &body.fingerprint, signing)?)
-        }
+        Some(text) => Some(Cursor::decode(
+            text,
+            &body.fingerprint,
+            &Signing::of(backend)?,
+        )?),
         None => None,
     };
     let release = match &cursor {
@@ -153,9 +153,8 @@ pub async fn volume<B: Backend>(
     let served = served_before + found.len();
     let next = match found.last() {
         Some((after, _)) if more && served < MAX_RESULTS => {
-            let signing = signing.as_ref().ok_or_else(Signing::missing)?;
             let cursor = Cursor::new(&body.fingerprint, release, layers, after.clone(), served);
-            Some(cursor.encode(signing))
+            Some(cursor.encode(&Signing::of(backend)?))
         }
         _ => None,
     };

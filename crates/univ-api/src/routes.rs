@@ -316,6 +316,16 @@ async fn answer<B: Backend>(
             .await
         }
     };
+    // Every test that meets a refusal checks that its route lists it among the refusals the
+    // OpenAPI document describes (read-the-openapi-document).
+    #[cfg(test)]
+    if let Err(problem) = &answered {
+        assert!(
+            crate::refusals::refusals(endpoint).contains(&problem.kind),
+            "{endpoint:?} answered {}, which its refusals do not list",
+            problem.kind.uri()
+        );
+    }
     answered.unwrap_or_else(Problem::into_response)
 }
 
@@ -356,19 +366,6 @@ pub async fn dispatch<B: Backend>(request: &Request, caller: &Caller, backend: &
     .with("allow", allow.as_str())
     .into_response()
     .with_header("allow", &allow)
-}
-
-/// The endpoint of the route that answers `method` on `path`, a HEAD as its GET; none where no
-/// route does.
-#[cfg(test)]
-pub(crate) fn endpoint_of(method: &Method, path: &str) -> Option<Endpoint> {
-    ROUTES
-        .iter()
-        .find(|route| {
-            (route.method == *method || (*method == Method::Head && route.method == Method::Get))
-                && matches(route.path, path).is_some()
-        })
-        .map(|route| route.endpoint)
 }
 
 /// The value of the route's `{name}` segment; every endpoint asks only for segments its own

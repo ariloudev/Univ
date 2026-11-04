@@ -83,6 +83,9 @@ impl utoipa::Modify for Security {
     }
 }
 
+/// The name of the problem details schema in the document's components.
+pub(crate) const PROBLEM_SCHEMA: &str = "Problem";
+
 /// The OpenAPI document of every route served, with the problem details schema, generated from
 /// [`ProblemDocument`], whose `type` lists every kind of problem.
 #[must_use]
@@ -118,14 +121,16 @@ static SERIALIZED: LazyLock<Result<Vec<u8>, String>> =
     LazyLock::new(|| serde_json::to_vec(&document()).map_err(|error| error.to_string()));
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use std::collections::{BTreeMap, BTreeSet};
 
     use super::*;
     use crate::routes::ROUTES;
 
-    /// The name of the problem details schema in the document's components.
-    const PROBLEM_SCHEMA: &str = "Problem";
+    /// The document as JSON.
+    pub(crate) fn value() -> serde_json::Value {
+        serde_json::to_value(document()).unwrap()
+    }
 
     /// Each `(method, path)` the document describes.
     fn documented() -> BTreeSet<(String, String)> {
@@ -161,13 +166,13 @@ mod tests {
 
     #[test]
     fn the_document_is_openapi_3_1() {
-        let value = serde_json::to_value(document()).unwrap();
+        let value = value();
         assert_eq!(value["openapi"], "3.1.0");
     }
 
     #[test]
     fn the_problem_schema_lists_every_problem_type() {
-        let value = serde_json::to_value(document()).unwrap();
+        let value = value();
         let schemas = &value["components"]["schemas"];
         let kind = &schemas[PROBLEM_SCHEMA]["properties"]["type"]["$ref"];
         assert_eq!(kind, "#/components/schemas/ProblemType");
@@ -187,7 +192,7 @@ mod tests {
 
     #[test]
     fn each_refusal_a_route_can_give_is_described_with_its_status_and_problem_type() {
-        let value = serde_json::to_value(document()).unwrap();
+        let value = value();
         for route in &ROUTES {
             let method = route.method.as_str().to_lowercase();
             let responses = &value["paths"][route.path][&method]["responses"];
@@ -215,12 +220,6 @@ mod tests {
                 route.method.as_str(),
                 route.path
             );
-            assert!(
-                expected
-                    .iter()
-                    .any(|(_, uri)| uri == ProblemType::RateLimited.uri()),
-                "every route can be rate limited"
-            );
         }
     }
 
@@ -238,56 +237,57 @@ mod tests {
         use univ_model::api::{
             bulk, keys, layers, lookup, objects, query, releases, sources, structures,
         };
+        type Generate = fn(&mut BTreeMap<String, serde_json::Value>);
+        let roots: [Generate; 31] = [
+            generated::<releases::ReleaseList>,
+            generated::<sources::SourceList>,
+            generated::<sources::SourceDetail>,
+            generated::<sources::SourceProvenance>,
+            generated::<structures::StructurePage>,
+            generated::<structures::StructureDetail>,
+            generated::<objects::ObjectRecord>,
+            generated::<lookup::ObjectChoices>,
+            generated::<lookup::ObjectMerged>,
+            generated::<bulk::ScaleDomainList>,
+            generated::<bulk::GridList>,
+            generated::<bulk::TileFormat>,
+            generated::<univ_model::tile::manifest::TileManifest>,
+            generated::<keys::IssueKey>,
+            generated::<keys::IssuedKey>,
+            generated::<keys::KeyList>,
+            generated::<keys::KeyChange>,
+            generated::<keys::KeyRecord>,
+            generated::<layers::CreateLayer>,
+            generated::<layers::LayerList>,
+            generated::<layers::LayerChange>,
+            generated::<layers::LayerRecord>,
+            generated::<layers::LayerPage>,
+            generated::<layers::ChangePage>,
+            generated::<layers::ItemRecord>,
+            generated::<layers::ItemVersion>,
+            generated::<layers::PublishItem>,
+            generated::<layers::ReviseItem>,
+            generated::<layers::RetractItem>,
+            generated::<query::VolumeQuery>,
+            generated::<query::VolumePage>,
+        ];
         let mut model = BTreeMap::new();
-        generated::<releases::ReleaseList>(&mut model);
-        generated::<sources::SourceList>(&mut model);
-        generated::<sources::SourceDetail>(&mut model);
-        generated::<sources::SourceProvenance>(&mut model);
-        generated::<structures::StructurePage>(&mut model);
-        generated::<structures::StructureDetail>(&mut model);
-        generated::<objects::ObjectRecord>(&mut model);
-        generated::<lookup::ObjectChoices>(&mut model);
-        generated::<lookup::ObjectMerged>(&mut model);
-        generated::<bulk::ScaleDomainList>(&mut model);
-        generated::<bulk::GridList>(&mut model);
-        generated::<bulk::TileFormat>(&mut model);
-        generated::<univ_model::tile::manifest::TileManifest>(&mut model);
-        generated::<keys::IssueKey>(&mut model);
-        generated::<keys::IssuedKey>(&mut model);
-        generated::<keys::KeyList>(&mut model);
-        generated::<keys::KeyChange>(&mut model);
-        generated::<keys::KeyRecord>(&mut model);
-        generated::<layers::CreateLayer>(&mut model);
-        generated::<layers::LayerList>(&mut model);
-        generated::<layers::LayerChange>(&mut model);
-        generated::<layers::LayerRecord>(&mut model);
-        generated::<layers::LayerPage>(&mut model);
-        generated::<layers::ChangePage>(&mut model);
-        generated::<layers::ItemRecord>(&mut model);
-        generated::<layers::ItemVersion>(&mut model);
-        generated::<layers::PublishItem>(&mut model);
-        generated::<layers::ReviseItem>(&mut model);
-        generated::<layers::RetractItem>(&mut model);
-        generated::<query::VolumeQuery>(&mut model);
-        generated::<query::VolumePage>(&mut model);
-        let value = serde_json::to_value(document()).unwrap();
-        let documented = value["components"]["schemas"].as_object().unwrap();
+        for generate in roots {
+            generate(&mut model);
+        }
+        let value = value();
         // The server's own: the problem details every refusal is answered with.
         let own = [PROBLEM_SCHEMA, "ProblemType"];
-        for (name, schema) in documented {
-            if own.contains(&name.as_str()) {
-                continue;
-            }
-            assert_eq!(
-                Some(schema),
-                model.get(name),
-                "{name} is univ-model's, as generated"
-            );
-        }
+        let documented: BTreeMap<String, serde_json::Value> = value["components"]["schemas"]
+            .as_object()
+            .unwrap()
+            .iter()
+            .filter(|(name, _)| !own.contains(&name.as_str()))
+            .map(|(name, schema)| (name.clone(), schema.clone()))
+            .collect();
         assert_eq!(
-            documented.len(),
-            model.len() + own.len(),
-            "no univ-model schema is left out"
+            documented, model,
+            "every other schema is univ-model's, as generated"
         );
     }
 }

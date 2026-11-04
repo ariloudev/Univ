@@ -24,6 +24,28 @@ blocks:
         title: "Build and publish release 7 from cached downloads"
         detail: "`univ-ingest build --offline`, then `publish 7` to `.cache/univ-ingest/wrangler`, in the background. Done when release 7 is `latest` and release 6 stays readable."
         state: active
+      - key: 01a1a460-4d4a-71d4-9ca5-aa1b4ea325a7
+        at: 2026-11-04T02:25:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build and publish release 7 from cached downloads"
+        detail: |-
+          Built offline and published to `.cache/univ-ingest/wrangler`; `latest` is 7.
+
+          - 2,098,918 objects, 2,085,809 placed, 26 structures with their placed shapes (`structure_details`), 3 volume grids, 401 tiles.
+          - 0 new ids and 0 ids replaced against release 6.
+
+          Through the server:
+
+          | Release | Answer |
+          |---|---|
+          | 1–4 | 410 |
+          | 5 (built, never published) | 404 |
+          | 6, 7 | 200 |
+          | 99 | 404 |
+        state: done
   - key: 01a1a44e-3d9c-738c-a63a-aa3e3f7bb508
     id: t7-refusals
     kind: task
@@ -102,6 +124,26 @@ blocks:
         title: "All tiles of release 7 decoded by the TypeScript decoder"
         detail: "Done when every tile served for release 7 matches its manifest SHA-256 and decodes (AC-281)."
         state: open
+      - key: 01a1a460-4d4a-71d4-9ca5-aa1cdbde1139
+        at: 2026-11-04T02:25:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "All tiles of release 7 decoded by the TypeScript decoder"
+        detail: |-
+          `check-server.ts`, run against `xtask serve`:
+
+          | Domain | Tiles | Points |
+          |---|---|---|
+          | cosmic_web | 261 | 1,304,141 |
+          | nearby_galaxies | 1 | 1,227 |
+          | stars | 139 | 780,441 |
+
+          All 401 tiles match their manifest SHA-256s and decode. The 2,085,809 points equal the placed objects, and every point lies in its node's cube (AC-281).
+
+          The first run hit the anonymous limit of 300 requests a minute, as specified, so the script now sends a key from `UNIV_KEY`.
+        state: done
   - key: 01a1a44e-3d9c-738c-a63a-aa4215580762
     id: t7-science
     kind: task
@@ -115,3 +157,36 @@ blocks:
         title: "Science spot-checks through the API"
         detail: "Done when M31, M87, the Virgo group and Laniakea's attractors are read through the API on release 7 and compared with their cited values, and releases 1-4 answer 410."
         state: open
+      - key: 01a1a460-4d4a-71d4-9ca5-aa1e5a4e47ec
+        at: 2026-11-04T02:25:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science spot-checks through the API"
+        detail: |-
+          Through the API on release 7:
+
+          - **M31**, object 856254 (CF4 PGC 2557 = "Andromeda" = MESSIER031): preferred 0.747 ± 0.016 Mpc from CF4 μ = 24.366 ± 0.045. McConnachie 2012 gives 0.783 ± 0.025 Mpc (μ = 24.47 ± 0.07), kept as runner-up. The rule picks the smaller uncertainty; the two agree within 1.2σ.
+          - **M87**, object 2081340 (CF4 PGC 41361): μ = 31.134 ± 0.04 gives 16.86 ± 0.31 Mpc luminosity distance; its derived position is at 16.77 Mpc comoving (z_CMB = 0.00536, Planck 2018). `preferred.uncertainty.total` = 0.0184 is the fractional uncertainty, as the schema says.
+          - **Virgo**, CF4 group 1PGC 41220 (dominant NGC 4472, 164 member links), served at RA 187.755781°, Dec 12.405941°: exactly the KT17 centre ingest records, replacing CF4's wrong 220.8243°, −23.9008°. Found by a volume query around M87.
+          - **Laniakea basins** (Dupuy & Courtois 2023): the observer and all 9 attractors sit in their own basin labels in the served `cf4-basins` field 0, indexed from the header's cell-centre origin.
+          - **Structures:** within 300 Mpc, release 6 matches 16 by `bounding_box`, release 7 matches 15 by `shape`.
+
+          Still to come: `xtask science` on release 7.
+
+          Noted, not changed: `?name=M31` is 404 because only the nearby-galaxies names are indexed, where M31 is "Andromeda". The 404's wording was fixed.
+        state: active
+  - key: 01a1a460-4d4a-71d4-9ca5-aa1a07aa9f84
+    id: t7-fix-cursor-secret
+    kind: task
+    versions:
+      - key: 01a1a460-4d4a-71d4-9ca5-aa1dad814f7f
+        at: 2026-11-04T02:25:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "No forgeable cursors without an owner secret"
+        detail: "Found while serving release 7. `xtask serve` had no `.dev.vars`, and with no owner secret cursors were signed under a key derived from an empty string, which anyone could forge. Now a page that needs a cursor answers 500 when there is no secret; a test covers it. `.dev.vars` now holds a random secret (gitignored, mode 600)."
+        state: done

@@ -7,9 +7,12 @@
 
 use std::collections::BTreeMap;
 
+use utoipa::openapi::path::{Operation, PathItem};
 use utoipa::openapi::schema::{AllOfBuilder, ObjectBuilder, Schema, Type};
 use utoipa::openapi::{ContentBuilder, OpenApi, Ref, RefOr, ResponseBuilder};
 
+use crate::http::Method;
+use crate::openapi::PROBLEM_SCHEMA;
 use crate::problem::{CONTENT_TYPE, ProblemType};
 use crate::routes::{Endpoint, ROUTES};
 
@@ -65,21 +68,34 @@ pub fn refusals(endpoint: Endpoint) -> Vec<ProblemType> {
         E::ChangeKey => &[BODY, &[KeyNotFound]],
         E::RevokeKey => &[&[KeyNotFound]],
         E::CreateLayer => &[BODY, &[QuotaExceeded]],
-        E::Layer => &[LAYER],
+        // A layer's or an item's links are resolved in a release, `release` or the latest.
+        E::Layer => &[LAYER, RELEASE],
         E::ConfigureLayer => &[BODY, LAYER, &[NotLayerOwner]],
         E::RetireLayer => &[LAYER, &[NotLayerOwner]],
         E::Changes => &[LAYER, &[InvalidParameter]],
-        E::Item => &[LAYER, &[ItemNotFound]],
-        E::ItemVersion => &[LAYER, &[ItemNotFound, InvalidParameter]],
+        E::Item | E::ItemVersion => &[LAYER, RELEASE, &[ItemNotFound]],
         E::PublishItem => &[BODY, LAYER, ITEM_WRITE],
         E::ReviseItem | E::RetractItem => &[BODY, LAYER, ITEM_WRITE, &[ItemNotFound]],
         E::VolumeQuery => &[BODY, RELEASE, &[QueryInvalid, QueryLayersChanged]],
     };
-    let mut all: Vec<ProblemType> = parts.iter().copied().flatten().copied().collect();
-    all.extend(EVERY_ROUTE);
-    all.sort_by_key(|kind| kind.uri());
-    all.dedup();
-    all
+    parts
+        .iter()
+        .copied()
+        .flatten()
+        .chain(EVERY_ROUTE)
+        .copied()
+        .collect()
+}
+
+/// The operation of `item` that answers `method`.
+fn operation_mut<'a>(item: &'a mut PathItem, method: &Method) -> Option<&'a mut Operation> {
+    match method {
+        Method::Get => item.get.as_mut(),
+        Method::Post => item.post.as_mut(),
+        Method::Patch => item.patch.as_mut(),
+        Method::Delete => item.delete.as_mut(),
+        Method::Head | Method::Options | Method::Other(_) => None,
+    }
 }
 
 /// Writes each route's refusals into `openapi`: one `application/problem+json` response for
@@ -89,15 +105,7 @@ pub(crate) fn describe(openapi: &mut OpenApi) {
         let Some(item) = openapi.paths.paths.get_mut(route.path) else {
             continue;
         };
-        let operation = match route.method.as_str() {
-            "GET" => item.get.as_mut(),
-            "POST" => item.post.as_mut(),
-            "PATCH" => item.patch.as_mut(),
-            "PUT" => item.put.as_mut(),
-            "DELETE" => item.delete.as_mut(),
-            _ => None,
-        };
-        let Some(operation) = operation else {
+        let Some(operation) = operation_mut(item, &route.method) else {
             continue;
         };
         let mut by_status: BTreeMap<u16, Vec<ProblemType>> = BTreeMap::new();
@@ -113,7 +121,7 @@ pub(crate) fn describe(openapi: &mut OpenApi) {
                     .enum_values(Some(kinds.iter().map(|kind| kind.uri()))),
             );
             let schema = AllOfBuilder::new()
-                .item(Ref::from_schema_name("Problem"))
+                .item(Ref::from_schema_name(PROBLEM_SCHEMA))
                 .item(narrowed)
                 .build();
             let schema: RefOr<Schema> = Schema::AllOf(schema).into();

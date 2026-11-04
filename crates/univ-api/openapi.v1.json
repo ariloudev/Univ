@@ -6280,8 +6280,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:grid-not-found",
-                            "urn:univ:problem:release-not-found"
+                            "urn:univ:problem:release-not-found",
+                            "urn:univ:problem:grid-not-found"
                           ],
                           "type": "string"
                         }
@@ -6292,7 +6292,7 @@
                 }
               }
             },
-            "description": "No such volume grid; No such release"
+            "description": "No such release; No such volume grid"
           },
           "410": {
             "content": {
@@ -6482,9 +6482,9 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:grid-field-not-found",
+                            "urn:univ:problem:release-not-found",
                             "urn:univ:problem:grid-not-found",
-                            "urn:univ:problem:release-not-found"
+                            "urn:univ:problem:grid-field-not-found"
                           ],
                           "type": "string"
                         }
@@ -6495,7 +6495,7 @@
                 }
               }
             },
-            "description": "No such grid field; No such volume grid; No such release"
+            "description": "No such release; No such volume grid; No such grid field"
           },
           "410": {
             "content": {
@@ -6685,9 +6685,9 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:grid-field-not-found",
+                            "urn:univ:problem:release-not-found",
                             "urn:univ:problem:grid-not-found",
-                            "urn:univ:problem:release-not-found"
+                            "urn:univ:problem:grid-field-not-found"
                           ],
                           "type": "string"
                         }
@@ -6698,7 +6698,7 @@
                 }
               }
             },
-            "description": "No such grid field; No such volume grid; No such release"
+            "description": "No such release; No such volume grid; No such grid field"
           },
           "410": {
             "content": {
@@ -6920,8 +6920,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:invalid-body",
-                            "urn:univ:problem:unreadable-body"
+                            "urn:univ:problem:unreadable-body",
+                            "urn:univ:problem:invalid-body"
                           ],
                           "type": "string"
                         }
@@ -6932,7 +6932,7 @@
                 }
               }
             },
-            "description": "Invalid body; Unreadable body"
+            "description": "Unreadable body; Invalid body"
           },
           "401": {
             "content": {
@@ -7274,6 +7274,31 @@
           "304": {
             "description": "Nothing changed since the entity tag given"
           },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "urn:univ:problem:invalid-parameter"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid parameter"
+          },
           "401": {
             "content": {
               "application/problem+json": {
@@ -7311,7 +7336,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:layer-not-found"
+                            "urn:univ:problem:layer-not-found",
+                            "urn:univ:problem:release-not-found"
                           ],
                           "type": "string"
                         }
@@ -7322,7 +7348,7 @@
                 }
               }
             },
-            "description": "No such layer"
+            "description": "No such layer; No such release"
           },
           "410": {
             "content": {
@@ -7336,7 +7362,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:layer-retired"
+                            "urn:univ:problem:layer-retired",
+                            "urn:univ:problem:release-pruned"
                           ],
                           "type": "string"
                         }
@@ -7347,7 +7374,7 @@
                 }
               }
             },
-            "description": "Layer retired"
+            "description": "Layer retired; Release pruned"
           },
           "429": {
             "content": {
@@ -7458,8 +7485,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:invalid-body",
-                            "urn:univ:problem:unreadable-body"
+                            "urn:univ:problem:unreadable-body",
+                            "urn:univ:problem:invalid-body"
                           ],
                           "type": "string"
                         }
@@ -7470,7 +7497,7 @@
                 }
               }
             },
-            "description": "Invalid body; Unreadable body"
+            "description": "Unreadable body; Invalid body"
           },
           "401": {
             "content": {
@@ -7885,8 +7912,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:invalid-body",
-                            "urn:univ:problem:unreadable-body"
+                            "urn:univ:problem:unreadable-body",
+                            "urn:univ:problem:invalid-body"
                           ],
                           "type": "string"
                         }
@@ -7897,7 +7924,7 @@
                 }
               }
             },
-            "description": "Invalid body; Unreadable body"
+            "description": "Unreadable body; Invalid body"
           },
           "401": {
             "content": {
@@ -8162,6 +8189,31 @@
           "304": {
             "description": "Nothing changed since the entity tag given"
           },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "urn:univ:problem:invalid-parameter"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid parameter"
+          },
           "401": {
             "content": {
               "application/problem+json": {
@@ -8199,8 +8251,9 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:item-not-found",
-                            "urn:univ:problem:layer-not-found"
+                            "urn:univ:problem:layer-not-found",
+                            "urn:univ:problem:release-not-found",
+                            "urn:univ:problem:item-not-found"
                           ],
                           "type": "string"
                         }
@@ -8211,7 +8264,7 @@
                 }
               }
             },
-            "description": "No such item; No such layer"
+            "description": "No such layer; No such release; No such item"
           },
           "410": {
             "content": {
@@ -8225,7 +8278,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:layer-retired"
+                            "urn:univ:problem:layer-retired",
+                            "urn:univ:problem:release-pruned"
                           ],
                           "type": "string"
                         }
@@ -8236,7 +8290,7 @@
                 }
               }
             },
-            "description": "Layer retired"
+            "description": "Layer retired; Release pruned"
           },
           "429": {
             "content": {
@@ -8358,8 +8412,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:invalid-body",
-                            "urn:univ:problem:unreadable-body"
+                            "urn:univ:problem:unreadable-body",
+                            "urn:univ:problem:invalid-body"
                           ],
                           "type": "string"
                         }
@@ -8370,7 +8424,7 @@
                 }
               }
             },
-            "description": "Invalid body; Unreadable body"
+            "description": "Unreadable body; Invalid body"
           },
           "401": {
             "content": {
@@ -8435,8 +8489,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:item-not-found",
-                            "urn:univ:problem:layer-not-found"
+                            "urn:univ:problem:layer-not-found",
+                            "urn:univ:problem:item-not-found"
                           ],
                           "type": "string"
                         }
@@ -8447,7 +8501,7 @@
                 }
               }
             },
-            "description": "No such item; No such layer"
+            "description": "No such layer; No such item"
           },
           "409": {
             "content": {
@@ -8644,8 +8698,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:invalid-body",
-                            "urn:univ:problem:unreadable-body"
+                            "urn:univ:problem:unreadable-body",
+                            "urn:univ:problem:invalid-body"
                           ],
                           "type": "string"
                         }
@@ -8656,7 +8710,7 @@
                 }
               }
             },
-            "description": "Invalid body; Unreadable body"
+            "description": "Unreadable body; Invalid body"
           },
           "401": {
             "content": {
@@ -8721,8 +8775,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:item-not-found",
-                            "urn:univ:problem:layer-not-found"
+                            "urn:univ:problem:layer-not-found",
+                            "urn:univ:problem:item-not-found"
                           ],
                           "type": "string"
                         }
@@ -8733,7 +8787,7 @@
                 }
               }
             },
-            "description": "No such item; No such layer"
+            "description": "No such layer; No such item"
           },
           "409": {
             "content": {
@@ -8992,8 +9046,9 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:item-not-found",
-                            "urn:univ:problem:layer-not-found"
+                            "urn:univ:problem:layer-not-found",
+                            "urn:univ:problem:release-not-found",
+                            "urn:univ:problem:item-not-found"
                           ],
                           "type": "string"
                         }
@@ -9004,7 +9059,7 @@
                 }
               }
             },
-            "description": "No such item; No such layer"
+            "description": "No such layer; No such release; No such item"
           },
           "410": {
             "content": {
@@ -9018,7 +9073,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:layer-retired"
+                            "urn:univ:problem:layer-retired",
+                            "urn:univ:problem:release-pruned"
                           ],
                           "type": "string"
                         }
@@ -9029,7 +9085,7 @@
                 }
               }
             },
-            "description": "Layer retired"
+            "description": "Layer retired; Release pruned"
           },
           "429": {
             "content": {
@@ -9221,8 +9277,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:object-not-found",
-                            "urn:univ:problem:release-not-found"
+                            "urn:univ:problem:release-not-found",
+                            "urn:univ:problem:object-not-found"
                           ],
                           "type": "string"
                         }
@@ -9233,7 +9289,7 @@
                 }
               }
             },
-            "description": "No such object; No such release"
+            "description": "No such release; No such object"
           },
           "410": {
             "content": {
@@ -9438,8 +9494,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:object-not-found",
-                            "urn:univ:problem:release-not-found"
+                            "urn:univ:problem:release-not-found",
+                            "urn:univ:problem:object-not-found"
                           ],
                           "type": "string"
                         }
@@ -9450,7 +9506,7 @@
                 }
               }
             },
-            "description": "No such object; No such release"
+            "description": "No such release; No such object"
           },
           "410": {
             "content": {
@@ -9761,8 +9817,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:invalid-body",
-                            "urn:univ:problem:unreadable-body"
+                            "urn:univ:problem:unreadable-body",
+                            "urn:univ:problem:invalid-body"
                           ],
                           "type": "string"
                         }
@@ -9773,7 +9829,7 @@
                 }
               }
             },
-            "description": "Invalid body; Unreadable body"
+            "description": "Unreadable body; Invalid body"
           },
           "401": {
             "content": {
@@ -9910,8 +9966,8 @@
                       "properties": {
                         "type": {
                           "enum": [
-                            "urn:univ:problem:invalid-body",
-                            "urn:univ:problem:unreadable-body"
+                            "urn:univ:problem:unreadable-body",
+                            "urn:univ:problem:invalid-body"
                           ],
                           "type": "string"
                         }
@@ -9922,7 +9978,7 @@
                 }
               }
             },
-            "description": "Invalid body; Unreadable body"
+            "description": "Unreadable body; Invalid body"
           },
           "401": {
             "content": {
@@ -10224,10 +10280,10 @@
                       "properties": {
                         "type": {
                           "enum": [
+                            "urn:univ:problem:unreadable-body",
                             "urn:univ:problem:invalid-body",
                             "urn:univ:problem:invalid-parameter",
-                            "urn:univ:problem:query-invalid",
-                            "urn:univ:problem:unreadable-body"
+                            "urn:univ:problem:query-invalid"
                           ],
                           "type": "string"
                         }
@@ -10238,7 +10294,7 @@
                 }
               }
             },
-            "description": "Invalid body; Invalid parameter; Invalid query; Unreadable body"
+            "description": "Unreadable body; Invalid body; Invalid parameter; Invalid query"
           },
           "401": {
             "content": {
