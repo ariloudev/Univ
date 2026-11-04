@@ -4,7 +4,7 @@
 import { KINDS } from "./kinds.ts";
 
 /** The colours of the kinds of value and, after them, of structures' markers. */
-const COLOURS = KINDS.length + 2;
+const COLOURS = KINDS.length + 1;
 
 export const POINT_VERTEX = `#version 300 es
 in vec3 a_offset;

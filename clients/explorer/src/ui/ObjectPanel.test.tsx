@@ -24,7 +24,7 @@ describe("the chosen object's panel", () => {
   it("names a galaxy group as such, and the scale domain of every object, not \"body\"", () => {
     render(<ObjectPanel chosen={{ kind: "ready", record: ANDROMEDA }} onChoose={close} onClose={close} />);
     expect(screen.getByTestId("nature").textContent).toBe("In the nearby galaxies domain");
-    render(<ObjectPanel chosen={{ kind: "ready", record: { ...ANDROMEDA, kind: "group" } }} onChoose={close} onClose={close} />);
+    render(<ObjectPanel chosen={{ kind: "ready", record: { ...ANDROMEDA, kind: "galaxy_group" } }} onChoose={close} onClose={close} />);
     expect(screen.getAllByTestId("nature")[1]?.textContent).toBe("A galaxy group, in the nearby galaxies domain");
     render(<ObjectPanel chosen={{ kind: "ready", record: { ...ANDROMEDA, position: null } }} onChoose={close} onClose={close} />);
     expect(screen.getAllByTestId("nature")[2]?.textContent).toBe("Not placed, so in no scale domain");

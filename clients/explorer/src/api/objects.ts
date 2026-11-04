@@ -74,34 +74,42 @@ export interface Choices {
 }
 
 /** What a search found. */
-export type Found = { kind: "object"; record: ObjectRecord } | Choices | { kind: "none"; query: string };
+export type Found = { kind: "object"; record: ObjectRecord; as?: string | undefined } | Choices | { kind: "none"; query: string };
 
 /** The problem type of a lookup that found no object. */
 const NOT_FOUND = "urn:univ:problem:object-not-found";
 
-/** The path that looks `query` up: an id for a number, a designation for `source:identifier`,
- * a name otherwise. */
-export function lookupPath(query: string): string {
+/** What `query` looks up: an id for a number, a designation for `source:identifier`, a name
+ * otherwise. */
+function lookupOf(query: string): { by: "id" | "designation" | "name"; path: string } {
   const text = query.trim();
-  if (/^\d+$/.test(text)) return `/v1/objects/${text}`;
+  if (/^\d+$/.test(text)) return { by: "id", path: `/v1/objects/${text}` };
   const designation = /^([a-z0-9][a-z0-9-]*):(.+)$/i.exec(text);
   if (designation !== null) {
     const [, source = "", identifier = ""] = designation;
-    return `/v1/objects?source=${encodeURIComponent(source)}&designation=${encodeURIComponent(identifier.trim())}`;
+    return { by: "designation", path: `/v1/objects?source=${encodeURIComponent(source)}&designation=${encodeURIComponent(identifier.trim())}` };
   }
-  return `/v1/objects?name=${encodeURIComponent(text)}`;
+  return { by: "name", path: `/v1/objects?name=${encodeURIComponent(text)}` };
 }
+
+/** The path that looks `query` up. */
+export const lookupPath = (query: string): string => lookupOf(query).path;
 
 /** A name as the name lookup compares it: letter case and white space ignored. */
 const nameKey = (text: string) => text.toLowerCase().replace(/\s+/g, "");
 
-/** The name `record` was found by when `query` looked it up by name: the designation that reads
- * as the query, or the query itself; none when `query` was an id or a designation. */
-export function nameFound(record: ObjectRecord, query: string): string | undefined {
-  if (!lookupPath(query).startsWith("/v1/objects?name=")) return undefined;
-  const key = nameKey(query);
-  return record.designations.find((d) => nameKey(d.identifier) === key)?.identifier ?? query.trim();
+/** The name or designation of `record` that reads as `text`, letter case and white space aside,
+ * as `record` spells it; none where it has none. */
+export function nameOf(record: ObjectRecord, text: string): string | undefined {
+  const key = nameKey(text);
+  const spellings = [...record.entries.flatMap((e) => (e.name === null ? [] : [e.name])), ...record.designations.map((d) => d.identifier)];
+  return spellings.find((s) => nameKey(s) === key);
 }
+
+/** The name `record` was found by when looked up by the name `query`: its name or designation
+ * that reads as the query, or the query itself (Univ Server also matches names the record does
+ * not carry). */
+const nameFound = (record: ObjectRecord, query: string): string => nameOf(record, query) ?? query.trim();
 
 /** Reads `path`: the object, or, answered 300, the objects it leads to. */
 async function lookup(path: string, query: string, options: ReadOptions): Promise<Exclude<Found, { kind: "none" }>> {
@@ -119,10 +127,13 @@ export function objectOf(id: number, options: ReadOptions = {}): Promise<Exclude
   return lookup(`/v1/objects/${id}`, String(id), options);
 }
 
-/** Looks `query` up in `options.release`: the object, the objects to choose from, or none. */
+/** Looks `query` up in `options.release`: the object, with the name it was found by where it was
+ * looked up by name; the objects to choose from; or none. */
 export async function search(query: string, options: ReadOptions = {}): Promise<Found> {
+  const { by, path } = lookupOf(query);
   try {
-    return await lookup(lookupPath(query), query, options);
+    const found = await lookup(path, query, options);
+    return found.kind === "object" && by === "name" ? { ...found, as: nameFound(found.record, query) } : found;
   } catch (error) {
     if (error instanceof ApiError && error.type === NOT_FOUND) return { kind: "none", query };
     throw error;

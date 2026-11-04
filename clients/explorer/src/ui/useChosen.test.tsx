@@ -33,7 +33,7 @@ describe("the chosen object", () => {
   });
 
   it("is read from the address only where it names an object id, with the name it was found by", () => {
-    expect(objectInAddress("?object=42")).toEqual({ id: 42 });
+    expect(objectInAddress("?object=42")).toEqual({ id: 42, as: undefined });
     expect(objectInAddress("?object=856254&as=Andromeda")).toEqual({ id: 856254, as: "Andromeda" });
     expect(objectInAddress("?object=M31")).toBeUndefined();
     expect(objectInAddress("")).toBeUndefined();
@@ -75,5 +75,34 @@ describe("the chosen object", () => {
     expect(hook.result.current.chosen).toMatchObject({ as: "Andromeda" });
     act(() => hook.result.current.choose(undefined));
     expect(location.search).toBe("");
+  });
+
+  it("is headed by the name the address gives only where its record bears that name", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(Response.json(ANDROMEDA))));
+    history.replaceState(null, "", "/?object=856254&as=andromeda");
+    const first = world();
+    const borne = renderHook(() => useChosen(7, first));
+    await waitFor(() => expect(borne.result.current.chosen.kind).toBe("ready"));
+    expect(borne.result.current.chosen).toMatchObject({ as: "Andromeda" });
+    borne.unmount();
+    history.replaceState(null, "", "/?object=856254&as=Sirius");
+    const second = world();
+    const claimed = renderHook(() => useChosen(7, second));
+    await waitFor(() => expect(claimed.result.current.chosen.kind).toBe("ready"));
+    expect(claimed.result.current.chosen).toMatchObject({ as: undefined });
+    expect(location.search).toBe("?object=856254");
+  });
+
+  it("takes the name it was found by anew when the same object is found by another name", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(Response.json(ANDROMEDA))));
+    const scene = world();
+    const hook = renderHook(() => useChosen(7, scene));
+    act(() => hook.result.current.choose(856254, { as: "M 31" }));
+    await waitFor(() => expect(hook.result.current.chosen).toMatchObject({ as: "M 31" }));
+    act(() => hook.result.current.choose(856254, { as: "MESSIER031" }));
+    await waitFor(() => expect(hook.result.current.chosen).toMatchObject({ as: "MESSIER031" }));
+    // Picked in the view, with no name given: it keeps the one it was found by.
+    act(() => hook.result.current.choose(856254));
+    expect(hook.result.current.chosen).toMatchObject({ as: "MESSIER031" });
   });
 });

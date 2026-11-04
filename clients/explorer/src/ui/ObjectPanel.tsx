@@ -8,13 +8,15 @@ export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObjec
   return (
     <section aria-label="The chosen object" className="space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
       <div className="flex items-start justify-between gap-2">
-        {chosen.kind === "ready" ? (
-          <h2 className="font-semibold">
-            {headingOf(chosen.record, chosen.as)} <span className="font-normal text-dim">#{chosen.record.id}</span>
-          </h2>
-        ) : (
-          <h2 className="font-semibold">Object</h2>
-        )}
+        <h2 className="font-semibold">
+          {chosen.kind === "ready" ? (
+            <>
+              {headingOf(chosen.record, chosen.as)} <span className="font-normal text-dim">#{chosen.record.id}</span>
+            </>
+          ) : (
+            "Object"
+          )}
+        </h2>
         <button type="button" onClick={onClose} className="text-dim hover:text-ink" aria-label="Close the object's panel">
           ×
         </button>

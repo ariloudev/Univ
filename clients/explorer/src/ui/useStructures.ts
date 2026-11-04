@@ -6,7 +6,7 @@ import type { Rotations } from "../api/schemas.ts";
 import { type StructureDetail, type StructureSummary, structureOf, structuresOf } from "../api/structures.ts";
 import { viewingDistance } from "../scene/controls.ts";
 import type { Lines } from "../scene/drawing.ts";
-import { APPROXIMATE_COLOUR, CHOSEN_COLOUR, STRUCTURE_COLOUR } from "../scene/kinds.ts";
+import { APPROXIMATE_COLOUR, STRUCTURE_COLOUR } from "../scene/kinds.ts";
 import { type StructureDrawing, drawingOf } from "../scene/structures.ts";
 import { type Vec3, norm, sub } from "../scene/vec.ts";
 import type { World } from "./useWorld.ts";
@@ -27,13 +27,12 @@ const PARALLEL = 6;
 /** Offsets of `points` from `centre`, flat, for the renderer. */
 const offsetsFrom = (centre: Vec3, points: readonly Vec3[]) => new Float32Array(points.flatMap((p) => sub(p, centre)));
 
-/** What the renderer draws of `drawing`: its lines and its markers, about a centre, in the
- * chosen colour where it is the chosen structure. */
-export function rendered(drawing: StructureDrawing, chosen = false): { lines: Lines | undefined; markers: { centre: Vec3; offsets: Float32Array } | undefined } {
+/** What the renderer draws of `drawing`: its lines and its markers, about a centre. */
+export function rendered(drawing: StructureDrawing): { lines: Lines | undefined; markers: { centre: Vec3; offsets: Float32Array } | undefined } {
   const { segments, markers } = drawing.outline;
   const centre = drawing.centre ?? segments[0] ?? markers[0];
   if (centre === undefined) return { lines: undefined, markers: undefined };
-  const colour = chosen ? CHOSEN_COLOUR : drawing.approximate ? APPROXIMATE_COLOUR : STRUCTURE_COLOUR;
+  const colour = drawing.approximate ? APPROXIMATE_COLOUR : STRUCTURE_COLOUR;
   return {
     lines: segments.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, segments), colour },
     markers: markers.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, markers) },
@@ -78,16 +77,16 @@ async function readAll(release: number, rotations: Rotations, signal: AbortSigna
   };
 }
 
-/** Draws `drawing` into `world`, in the chosen colour where `chosen`. */
-function draw(world: World, drawing: StructureDrawing, chosen: boolean): void {
-  const { lines, markers } = rendered(drawing, chosen);
-  world.renderer.setLines(`structure:${drawing.id}`, lines);
-  world.renderer.setMarkers(`structure:${drawing.id}`, markers, chosen);
-}
+/** The renderer's name for structure `id`'s outline and markers. */
+const drawnAs = (id: string) => `structure:${id}`;
 
 /** Draws every structure of `structures` into `world`, and hands their names to the overlay. */
 function drawAll(world: World, structures: Structures): void {
-  for (const drawing of structures.drawings.values()) draw(world, drawing, false);
+  for (const drawing of structures.drawings.values()) {
+    const { lines, markers } = rendered(drawing);
+    world.renderer.setLines(drawnAs(drawing.id), lines);
+    world.renderer.setMarkers(drawnAs(drawing.id), markers);
+  }
   world.names = [...structures.drawings.values()].flatMap((d) =>
     d.centre === undefined ? [] : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name }],
   );
@@ -99,16 +98,10 @@ function drawAll(world: World, structures: Structures): void {
 export function useStructures(release: number, world: World | undefined, rotations: Rotations | undefined, chosen?: string): Structures {
   const [structures, setStructures] = useState<Structures>(NONE);
   useEffect(() => {
-    const drawing = chosen === undefined ? undefined : structures.drawings.get(chosen);
-    if (world === undefined || drawing === undefined) return;
-    draw(world, drawing, true);
+    if (world === undefined) return;
+    world.renderer.choose(chosen === undefined ? undefined : drawnAs(chosen));
     world.controller.invalidate();
-    // Chosen no more: drawn again in its own colour.
-    return () => {
-      draw(world, drawing, false);
-      world.controller.invalidate();
-    };
-  }, [world, structures, chosen]);
+  }, [world, chosen]);
   useEffect(() => {
     if (world === undefined || rotations === undefined) return;
     const abort = new AbortController();

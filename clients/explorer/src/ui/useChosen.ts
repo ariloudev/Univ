@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { ApiError } from "../api/client.ts";
-import { type Choices, type ObjectRecord, objectOf, placeOf } from "../api/objects.ts";
+import { type Choices, type ObjectRecord, nameOf, objectOf, placeOf } from "../api/objects.ts";
 import { viewingDistance } from "../scene/controls.ts";
 import { norm } from "../scene/vec.ts";
 import type { World } from "./useWorld.ts";
@@ -27,15 +27,16 @@ export interface ChooseOptions {
 
 interface Request extends ChooseOptions {
   id: number;
+  /** Named by the page's address, whose name the record must bear to head the panel. */
+  fromAddress?: boolean;
 }
 
 /** The object the page's address names, if any, and the name it was found by. */
-export function objectInAddress(search: string): { id: number; as?: string } | undefined {
+export function objectInAddress(search: string): { id: number; as: string | undefined } | undefined {
   const params = new URLSearchParams(search);
   const value = params.get("object");
   if (value === null || !/^\d+$/.test(value)) return undefined;
-  const as = params.get("as");
-  return as === null || as === "" ? { id: Number(value) } : { id: Number(value), as };
+  return { id: Number(value), as: params.get("as") || undefined };
 }
 
 /** The page's address naming `request`'s object and the name it was found by, or no object. */
@@ -65,7 +66,7 @@ function arrive(world: World, record: ObjectRecord, fly: boolean): void {
 export function useChosen(release: number, world: World | undefined) {
   const [request, setRequest] = useState<Request | undefined>(() => {
     const named = objectInAddress(location.search);
-    return named === undefined ? undefined : { ...named, fly: true };
+    return named === undefined ? undefined : { ...named, fly: true, fromAddress: true };
   });
   const [chosen, setChosen] = useState<ChosenObject>({ kind: "none" });
   useEffect(() => {
@@ -76,7 +77,11 @@ export function useChosen(release: number, world: World | undefined) {
       return;
     }
     const ready = (record: ObjectRecord) => {
-      setChosen({ kind: "ready", record, as: request.as });
+      // A name the address gives heads the panel only where the record bears it: a link cannot
+      // give an object a name it does not have.
+      const as = request.fromAddress === true && request.as !== undefined ? nameOf(record, request.as) : request.as;
+      if (as !== request.as) keepInAddress({ ...request, as });
+      setChosen({ kind: "ready", record, as });
       arrive(world, record, request.fly === true);
     };
     if (request.record !== undefined) {
@@ -96,7 +101,9 @@ export function useChosen(release: number, world: World | undefined) {
   const choose = useCallback((id: number | undefined, options: ChooseOptions = {}) => {
     setRequest((current) => {
       if (id === undefined) return undefined;
-      return current?.id === id && options.record === undefined && options.as === undefined ? current : { id, ...options };
+      // The same object again keeps its request, unless the name it was found by is given anew.
+      const same = current?.id === id && options.record === undefined && (!("as" in options) || options.as === current.as);
+      return same ? current : { id, ...options };
     });
   }, []);
   return { chosen, choose };

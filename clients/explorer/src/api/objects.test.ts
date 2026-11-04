@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { answer, fakeHttp } from "../test/http.ts";
 import { ANDROMEDA } from "../test/objects.ts";
-import { type ObjectRecord, distancesOf, lookupPath, nameFound, objectOf, placeOf, search } from "./objects.ts";
+import { type ObjectRecord, distancesOf, lookupPath, objectOf, placeOf, search } from "./objects.ts";
 
 const http = (status: number, body: unknown) => fakeHttp(answer(status, body));
 
@@ -17,7 +17,7 @@ describe("finding an object", () => {
   it("reads the object found, in the release chosen", async () => {
     const fake = http(200, ANDROMEDA);
     const found = await search("Andromeda", { http: fake, release: 7 });
-    expect(found).toEqual({ kind: "object", record: ANDROMEDA });
+    expect(found).toEqual({ kind: "object", record: ANDROMEDA, as: "Andromeda" });
     expect(fake.urls).toEqual(["/v1/objects?name=Andromeda&release=7"]);
   });
 
@@ -72,14 +72,18 @@ describe("an object's record", () => {
 });
 
 describe("the name an object was found by", () => {
-  it("is the designation that reads as the name typed, letter case and spaces aside, or else what was typed", () => {
-    expect(nameFound(ANDROMEDA, " andromeda ")).toBe("Andromeda");
-    expect(nameFound(ANDROMEDA, "messier 031")).toBe("MESSIER031");
-    expect(nameFound(ANDROMEDA, "M 31")).toBe("M 31");
+  it("is the designation that reads as the name typed, letter case and spaces aside, or else what was typed", async () => {
+    const as = async (query: string) => {
+      const found = await search(query, { http: http(200, ANDROMEDA) });
+      return found.kind === "object" ? found.as : "not found";
+    };
+    expect(await as(" andromeda ")).toBe("Andromeda");
+    expect(await as("messier 031")).toBe("MESSIER031");
+    expect(await as("M 31")).toBe("M 31");
   });
 
-  it("is none for a lookup by id or by designation", () => {
-    expect(nameFound(ANDROMEDA, "856254")).toBeUndefined();
-    expect(nameFound(ANDROMEDA, "mcconnachie-2012:Andromeda")).toBeUndefined();
+  it("is none for a lookup by id or by designation", async () => {
+    expect(await search("856254", { http: http(200, ANDROMEDA) })).toEqual({ kind: "object", record: ANDROMEDA });
+    expect(await search("mcconnachie-2012:Andromeda", { http: http(200, ANDROMEDA) })).toEqual({ kind: "object", record: ANDROMEDA });
   });
 });
