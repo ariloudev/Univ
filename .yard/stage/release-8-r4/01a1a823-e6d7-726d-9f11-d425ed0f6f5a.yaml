@@ -10,6 +10,15 @@ versions:
     title: "R4: researched star distances and release 9"
     goal: "The 64 naked-eye stars Hipparcos and Gaia leave without a usable distance each have a cited star file, and release 9 places those with a published distance"
     status: active
+  - key: 01a1a8ab-3ed0-7387-80e7-8c0112628436
+    at: 2026-11-04T22:25:57Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R4: researched star distances and release 9"
+    goal: "Release 9 places the naked-eye stars whose published distances stand, each from a cited star file naming its paper"
+    status: done
 blocks:
   - key: 01a1a823-e6d7-726d-9f11-d42798f6f4c6
     id: r4-t-list
@@ -411,6 +420,31 @@ blocks:
           - the Yard Log is closed;
           - the stage is merged into `product/release-8` with `--no-ff`.
         state: open
+      - key: 01a1a8ab-3ed0-7387-80e7-8bffc05610a8
+        at: 2026-11-04T22:25:57Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, reviews, gate, close, merge"
+        detail: |-
+          **Reviews:**
+          - `/simplify`: four reviewers.
+          - `/code-review`: ten findings.
+          - Fixed in `e842068`:
+            - one shared set of cited-value and dispute checks;
+            - one directory walker;
+            - `Holds` decided once;
+            - provenance makes its own directory;
+            - star entries checked as rows are;
+            - a parallax keeps its method;
+            - a value the ranking could not use is refused;
+            - membership only beside a group distance;
+            - `10^{-3}` stays a power.
+          - Skipped: writing `holds` always (release 9 already built without it, and an absent `holds` reads as structures); removing `source` from the naming words (every Gaia id is written "source N"); the trait as free functions (taste); provenance payload rows for star files (as for structure files).
+
+          **Gate:** `cargo xtask check` passed, 13 gates (loft verify runs on develop only). `cargo xtask integration` passed after the fixture count was updated for HIP 1 (`16c2e88`).
+        state: done
   - key: 01a1a826-2d5c-73f2-9175-34db5597e0b7
     id: r4-spec-view
     kind: loft
@@ -987,3 +1021,1299 @@ blocks:
           email: "ariloudev@local"
         channel: page
         verdict: approved
+  - key: 01a1a8ab-3ed0-7387-80e7-8bfcd3bbda0f
+    id: r4-trace
+    kind: loft
+    versions:
+      - key: 01a1a8ab-3ed0-7387-80e7-8bfeeb12cd86
+        at: 2026-11-04T22:25:57Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "The new criteria of record-a-researched-star-distance and look-up-an-object linked to their tests, and the changed links accepted. The one info finding (AC-301) is about a test's name and predates this wave."
+        recorded:
+          commit: "16c2e882d3743942b2dbe273a81083a887fac45f"
+          branch: "stage/release-8-r4"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T22:25:57Z
+        report: |
+          {
+            "base": "product/release-8",
+            "commit": "b1998bc95c5036d5ec09c667a23374e8e612b24f",
+            "counts": {
+              "features": 3
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1833afc5c0fc",
+                    "label": "AC-1",
+                    "name": "A source definition gives the source's id, title, provider, access method, query and cuts.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 69,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "a_definition_gives_id_title_provider_access_query_and_cuts"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1834e602c6b1",
+                    "label": "AC-2",
+                    "name": "A source definition maps each column it takes to a univ-model field with the column's unit.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 91,
+                            "lastLine": 99
+                          }
+                        ],
+                        "name": "each_column_maps_to_a_model_field_with_its_unit"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1835412ca8ed",
+                    "label": "AC-3",
+                    "name": "A source definition names the frame and epoch of the source's positions.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 101,
+                            "lastLine": 109
+                          }
+                        ],
+                        "name": "a_definition_names_frame_epoch_citation_terms_credit_and_scale_domain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1836d60c8672",
+                    "label": "AC-4",
+                    "name": "A source definition gives the primary citation, the terms of use, the required credit and the scale domain.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 101,
+                            "lastLine": 109
+                          }
+                        ],
+                        "name": "a_definition_names_frame_epoch_citation_terms_credit_and_scale_domain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183725365029",
+                    "label": "AC-5",
+                    "name": "A source definition lists the mirrors to try, in order.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 111,
+                            "lastLine": 119
+                          }
+                        ],
+                        "name": "mirrors_are_kept_in_the_order_written"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183984aea659",
+                    "label": "AC-6",
+                    "name": "The message names the source definition, the field and what is wrong with it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1838f05eb5b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 121,
+                            "lastLine": 137
+                          }
+                        ],
+                        "name": "an_unknown_unit_frame_or_scale_domain_is_refused_naming_the_file_and_field"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 139,
+                            "lastLine": 167
+                          }
+                        ],
+                        "name": "an_incomplete_definition_is_refused_naming_the_missing_field"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183b90085a10",
+                    "label": "AC-7",
+                    "name": "The redistribution status is permitted, permitted with credit, or forbidden.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 270,
+                            "lastLine": 296
+                          }
+                        ],
+                        "name": "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183ca629c7f8",
+                    "label": "AC-8",
+                    "name": "The source definition quotes the terms of use it judged and states the reasoning for its status.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 270,
+                            "lastLine": 296
+                          }
+                        ],
+                        "name": "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183ee3b99b68",
+                    "label": "AC-9",
+                    "name": "The message names the source and quotes its terms of use.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183d2d91487a",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 324,
+                            "lastLine": 333
+                          }
+                        ],
+                        "name": "a_forbidden_source_blocks_a_release_naming_it_and_quoting_its_terms"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1840046e9bc8",
+                    "label": "AC-10",
+                    "name": "The galaxy sources are SDSS DR17 spectroscopic galaxies, BOSS DR17 Great Wall region, 6dFGS DR3, 2MRS, 2M++ catalogue and Cosmicflows-4 distances.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 34,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "every_source_of_the_first_release_has_a_valid_definition"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1841361113b6",
+                    "label": "AC-11",
+                    "name": "The Local Group and nearby sources are McConnachie 2012 Local Group and the Updated Nearby Galaxy Catalog.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 34,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "every_source_of_the_first_release_has_a_valid_definition"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1842afd6d59e",
+                    "label": "AC-12",
+                    "name": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 34,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "every_source_of_the_first_release_has_a_valid_definition"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18439d96b214",
+                    "label": "AC-13",
+                    "name": "The structure and field sources are the CF4++ density grid, CF4 basins of attraction, 2M++ reconstruction, eRASS1 clusters and Researched structures.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 34,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "every_source_of_the_first_release_has_a_valid_definition"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                "label": "F-1",
+                "name": "Define a source",
+                "requirements": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "label": "RQ-1",
+                    "name": "Univ Ingest shall read each source from its source definition in the repository.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "read each source from its source definition in the repository.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1838f05eb5b7",
+                    "label": "RQ-2",
+                    "name": "If a source definition is incomplete or names an unknown unit, frame or scale domain, then Univ Ingest shall refuse the run before fetching anything and name the field.",
+                    "statement": {
+                      "condition": "a source definition is incomplete or names an unknown unit, frame or scale domain",
+                      "form": "unwanted",
+                      "shall": "refuse the run before fetching anything and name the field.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "label": "RQ-3",
+                    "name": "Univ Ingest shall record in each source definition whether its terms permit redistributing its data, with the terms it rests on.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "record in each source definition whether its terms permit redistributing its data, with the terms it rests on.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183d2d91487a",
+                    "label": "RQ-4",
+                    "name": "If a source definition's redistribution status is forbidden, then Univ Ingest shall refuse to publish any release that holds the source.",
+                    "statement": {
+                      "condition": "a source definition's redistribution status is forbidden",
+                      "form": "unwanted",
+                      "shall": "refuse to publish any release that holds the source.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "label": "RQ-5",
+                    "name": "Univ Ingest shall provide a source definition for each source of the first release.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "provide a source definition for each source of the first release.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf7366dc3a34",
+                    "label": null,
+                    "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                    "requirement": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 128,
+                            "lastLine": 135
+                          }
+                        ],
+                        "name": "a_number_its_quoted_sentence_does_not_hold_is_refused_naming_the_field"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 137,
+                            "lastLine": 144
+                          }
+                        ],
+                        "name": "a_number_of_the_notes_that_no_citation_holds_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 201
+                          }
+                        ],
+                        "name": "every_star_file_of_the_repository_and_of_the_tests_can_be_used"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf74029af338",
+                    "label": null,
+                    "name": "A star file joins the object of the Hipparcos star whose HIP number it gives.",
+                    "requirement": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 49,
+                            "lastLine": 100
+                          }
+                        ],
+                        "name": "a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf7588585aa4",
+                    "label": null,
+                    "name": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives.",
+                    "requirement": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 102,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "a_star_files_value_keeps_its_kind_uncertainty_and_method"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 167,
+                            "lastLine": 175
+                          }
+                        ],
+                        "name": "a_parallax_the_ranking_could_not_invert_is_refused"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf76499f0e46",
+                    "label": null,
+                    "name": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member.",
+                    "requirement": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 146,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "a_groups_distance_is_inferred_and_cites_the_membership"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 165
+                          }
+                        ],
+                        "name": "a_membership_beside_a_value_that_is_no_groups_distance_is_refused"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf77402e4c76",
+                    "label": null,
+                    "name": "The entry of a star file names the paper its values come from.",
+                    "requirement": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 49,
+                            "lastLine": 100
+                          }
+                        ],
+                        "name": "a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf793b4b68ec",
+                    "label": null,
+                    "name": "The message names the star file, the field and the number.",
+                    "requirement": "01a1a825-fb4e-702c-a84f-bf78ded1df98",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 128,
+                            "lastLine": 135
+                          }
+                        ],
+                        "name": "a_number_its_quoted_sentence_does_not_hold_is_refused_naming_the_field"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf7b361027b4",
+                    "label": null,
+                    "name": "A star file without a distance gives the reason none was found, and adds no distance to its star.",
+                    "requirement": "01a1a825-fb4e-702c-a84f-bf7a85f10357",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/star_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 177,
+                            "lastLine": 190
+                          }
+                        ],
+                        "name": "a_star_without_a_published_distance_keeps_its_file_and_adds_no_entry"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a825-fb4e-702c-a84f-bf71f70beb40",
+                "label": null,
+                "name": "Record a researched star distance",
+                "requirements": [
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                    "label": null,
+                    "name": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "read each researched star distance from a star file in which every number cites where it comes from.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf78ded1df98",
+                    "label": null,
+                    "name": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number.",
+                    "statement": {
+                      "condition": "a number in a star file cites nothing, or its quoted sentence does not hold it",
+                      "form": "unwanted",
+                      "shall": "refuse the star file and name the number.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf7a85f10357",
+                    "label": null,
+                    "name": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d0f2163e49f",
+                    "label": "AC-131",
+                    "name": "The response lists every catalogue entry resolved to the object, each with its source and the designation that source gives it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 38
+                          }
+                        ],
+                        "name": "every_entry_is_listed_with_its_source_and_designation"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d100d0beecf",
+                    "label": "AC-132",
+                    "name": "The response lists every measurement with its native value, unit, uncertainty, kind of value and source.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 52
+                          }
+                        ],
+                        "name": "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 123,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d11207d1f43",
+                    "label": "AC-133",
+                    "name": "The response names the preferred measurement and the ranking rule that chose it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 54,
+                            "lastLine": 63
+                          }
+                        ],
+                        "name": "the_preferred_measurement_names_the_ranking_rule_that_chose_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 237
+                          }
+                        ],
+                        "name": "the_preferred_measurement_reads_with_the_ranking_that_chose_it"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-020006acc572",
+                    "label": "AC-344",
+                    "name": "The response lists each spectral type of the object's catalogue entries with its source and kind of value.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a825-fb4e-702c-a84f-bf7cb64ddb9e",
+                    "label": null,
+                    "name": "The response names the paper each researched catalogue entry's values come from.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1233780c6e",
+                    "label": "AC-134",
+                    "name": "Each derived position names its frame, epoch, release cosmology and the transformation that produced it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 65,
+                            "lastLine": 73
+                          }
+                        ],
+                        "name": "a_derived_position_names_its_frame_epoch_cosmology_and_transformation"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 239,
+                            "lastLine": 274
+                          }
+                        ],
+                        "name": "every_derived_position_names_its_frame_epoch_cosmology_and_chain"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d14e7c5aa1e",
+                    "label": "AC-135",
+                    "name": "The response lists each candidate match to another object with its confidence.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 276,
+                            "lastLine": 290
+                          }
+                        ],
+                        "name": "every_candidate_match_reads_with_its_confidence"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 337,
+                            "lastLine": 353
+                          }
+                        ],
+                        "name": "candidate_links_are_written_with_no_duplicate_key"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d15581dbbe1",
+                    "label": "AC-136",
+                    "name": "An object with no distance has a sky position and no derived three-dimensional position.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 75,
+                            "lastLine": 82
+                          }
+                        ],
+                        "name": "an_object_with_no_distance_has_a_sky_position_and_no_derived_position"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 292,
+                            "lastLine": 335
+                          }
+                        ],
+                        "name": "an_object_with_no_distance_has_a_sky_position_and_no_derived_position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d17358a5809",
+                    "label": "AC-137",
+                    "name": "A designation is given as a source and that source's identifier, such as Gaia DR3 and a source_id.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 161,
+                            "lastLine": 174
+                          }
+                        ],
+                        "name": "a_designation_is_a_source_and_its_identifier"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 93,
+                            "lastLine": 102
+                          }
+                        ],
+                        "name": "a_designation_resolves_to_its_object"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d187201bad5",
+                    "label": "AC-138",
+                    "name": "A common name such as M31 resolves through the names the sources publish for their catalogue entries.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 84,
+                            "lastLine": 91
+                          }
+                        ],
+                        "name": "a_common_name_resolves_ignoring_letter_case_and_white_space"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d192b854029",
+                    "label": "AC-139",
+                    "name": "Name matching ignores letter case and whitespace.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 137,
+                            "lastLine": 150
+                          }
+                        ],
+                        "name": "a_name_resolves_ignoring_letter_case_and_white_space"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 84,
+                            "lastLine": 91
+                          }
+                        ],
+                        "name": "a_common_name_resolves_ignoring_letter_case_and_white_space"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1a9f344b6d",
+                    "label": "AC-140",
+                    "name": "A name that more than one object carries answers with the list of those objects instead of choosing one.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 152,
+                            "lastLine": 159
+                          }
+                        ],
+                        "name": "a_name_more_than_one_object_carries_leads_to_each_of_them"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 200,
+                            "lastLine": 208
+                          }
+                        ],
+                        "name": "a_name_more_than_one_object_carries_answers_300_with_each"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1c08830bee",
+                    "label": "AC-141",
+                    "name": "An id merged into one object answers with a permanent redirect to that object in the same release.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 45,
+                            "lastLine": 51
+                          }
+                        ],
+                        "name": "an_id_merged_into_one_object_leads_to_it_naming_the_release_that_merged_it"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 187
+                          }
+                        ],
+                        "name": "a_merged_id_answers_301_to_its_object_in_the_same_release"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "an_id_replaced_twice_leads_to_the_object_the_read_release_holds_naming_each_change"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1d3700915c",
+                    "label": "AC-142",
+                    "name": "An id split into more than one object answers with the list of objects that replaced it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 53,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "an_id_split_into_more_than_one_object_leads_to_each_of_them"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 189,
+                            "lastLine": 198
+                          }
+                        ],
+                        "name": "a_split_id_answers_300_with_the_objects_that_replaced_it"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 108,
+                            "lastLine": 125
+                          }
+                        ],
+                        "name": "a_split_into_many_objects_lists_every_one"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1e82a3e951",
+                    "label": "AC-143",
+                    "name": "The response names the release in which the id was replaced.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 187
+                          }
+                        ],
+                        "name": "a_merged_id_answers_301_to_its_object_in_the_same_release"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 189,
+                            "lastLine": 198
+                          }
+                        ],
+                        "name": "a_split_id_answers_300_with_the_objects_that_replaced_it"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "a_merge_into_an_object_later_retired_names_both_changes"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2d-251d-77d9-a8e5-ffa62e4598ec",
+                    "label": "AC-144",
+                    "name": "A read of a release in which the id still names an object returns that object, whatever later releases did to it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "a_read_of_a_release_that_still_holds_the_id_returns_it_whatever_later_releases_did"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d2075b12616",
+                    "label": "AC-145",
+                    "name": "The response status is 404.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1f02c8bee9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 104,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "a_lookup_that_finds_nothing_answers_404_naming_what_was_looked_up"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 210,
+                            "lastLine": 216
+                          }
+                        ],
+                        "name": "a_retired_id_answers_404_naming_the_release_that_retired_it"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d21ce741ac6",
+                    "label": "AC-146",
+                    "name": "The problem details name the id, designation or name that was looked up.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d1f02c8bee9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 104,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "a_lookup_that_finds_nothing_answers_404_naming_what_was_looked_up"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                "label": "F-15",
+                "name": "Look up an object",
+                "requirements": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                    "label": "RQ-52",
+                    "name": "When a client requests an object by its object id, Univ Server shall return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                    "statement": {
+                      "condition": "a client requests an object by its object id",
+                      "form": "event_driven",
+                      "shall": "return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d16ab310032",
+                    "label": "RQ-53",
+                    "name": "When a client requests an object by a catalogue designation or a common name, Univ Server shall return the object that the designation or name resolves to.",
+                    "statement": {
+                      "condition": "a client requests an object by a catalogue designation or a common name",
+                      "form": "event_driven",
+                      "shall": "return the object that the designation or name resolves to.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "label": "RQ-54",
+                    "name": "When a client requests an object id that the release it reads from records as merged into another object or split into more than one, Univ Server shall direct the client to the objects of that release that replaced it.",
+                    "statement": {
+                      "condition": "a client requests an object id that the release it reads from records as merged into another object or split into more than one",
+                      "form": "event_driven",
+                      "shall": "direct the client to the objects of that release that replaced it.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d1f02c8bee9",
+                    "label": "RQ-55",
+                    "name": "If no object carries the requested id, designation or name, then Univ Server shall answer that the object was not found.",
+                    "statement": {
+                      "condition": "no object carries the requested id, designation or name",
+                      "form": "unwanted",
+                      "shall": "answer that the object was not found.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 427,
+              "linked": 427,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a8ab-3ed0-7387-80e7-8bfd530ecb42
+    id: r4-note-result
+    kind: note
+    versions:
+      - key: 01a1a8ab-3ed0-7387-80e7-8c0020d6a38c
+        at: 2026-11-04T22:25:57Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "R4 produced release 9 with 16 researched naked-eye stars placed"
+        markdown: |-
+          **Release 9**, published locally, places 16 naked-eye stars by researched distances. Each comes from a cited star file and names its paper in the API:
+
+          | Kind | Stars |
+          |---|---|
+          | Model or seismic distance (estimated) | Betelgeuse 168 pc (3σ range kept as an interval), Shaula 112 pc, Mira 110 pc |
+          | Group distance with cited membership (inferred) | Antares, Alniyat 145 pc (Upper Sco), ε Lup 140 pc, Alnilam, Alnitak 382 pc, Mintaka 381 pc, Deneb 802 pc, b Vel 410 pc, FN CMa 1.48 kpc, HD 202214 829 pc |
+          | Orbital or interferometric parallax | σ Ori 2.5806 mas (measured), γ² Vel 346 pc (measured), Dschubba 7.4 mas (estimated: it rests on an assumed mass) |
+
+          **Unplaced:** 48 of the 64 stay unplaced. 35 have a file giving the reason; 13 have no file, because the research was stopped at your request.
+
+          The review rules made the outcomes stricter: a Gaia parallax counts only with RUWE ≤ 1.4, a DR2 parallax that EDR3 withdrew does not count, and a group's distance places a member only where its membership stands.
+
+          **Deterministic checks:**
+          - every star file is checked by the ingest suite, on every `cargo test` and in the gate;
+          - the release carries six cited science checks (Betelgeuse, Antares, σ Ori, the count of 16, papers named).
+
+          **Open for a later wave:**
+          - the 13 unresearched stars;
+          - the Gaia gap: about 8,700 Hipparcos stars miss a Gaia parallax, mostly through `gaia-dr3-bright`'s G < 10 cut.
+        tone: success

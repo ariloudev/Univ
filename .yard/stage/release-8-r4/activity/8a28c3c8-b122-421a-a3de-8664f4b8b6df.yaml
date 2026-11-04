@@ -23,7 +23,7 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-04T22:25:40Z
+lastEnded: 2026-11-04T22:25:42Z
 turns:
   - started: 2026-11-04T19:58:07Z
     ended: 2026-11-04T20:26:07Z
@@ -194,4 +194,6 @@ loft:
       - reconcile
     agent: main
     started: 2026-11-04T22:25:40Z
+    ended: 2026-11-04T22:25:42Z
+    failed: false
     stage: 01a1a823-e6d7-726d-9f11-d425ed0f6f5a
