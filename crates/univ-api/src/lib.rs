@@ -10,10 +10,19 @@ mod bulk;
 mod cors;
 mod grids;
 mod http;
+#[cfg(test)]
+mod items_checks_tests;
+#[cfg(test)]
+mod items_tests;
 mod kept;
 mod keys;
 #[cfg(test)]
 mod keys_tests;
+mod layers;
+#[cfg(test)]
+mod layers_fixture;
+#[cfg(test)]
+mod layers_tests;
 #[cfg(test)]
 mod limits_tests;
 mod objects;
@@ -26,6 +35,7 @@ mod structures;
 #[cfg(test)]
 mod testkit;
 
+pub use access::Caller;
 pub use backend::{Backend, BackendError, Limiter, Row};
 pub use http::{Body, Method, Request, Response};
 pub use kept::Kept;
@@ -35,9 +45,10 @@ pub use routes::{ROUTES, Route};
 
 /// The univ-layers database's migrations, in order, as `migrations/` holds them and Wrangler
 /// applies them.
-pub const MIGRATIONS: [&str; 2] = [
+pub const MIGRATIONS: [&str; 3] = [
     include_str!("../migrations/0001_schema_version.sql"),
     include_str!("../migrations/0002_keys.sql"),
+    include_str!("../migrations/0003_layers.sql"),
 ];
 
 /// The answer to a request the runtime failed to hand over or to answer, such as a body that
@@ -47,20 +58,44 @@ pub fn failure(kind: ProblemType, detail: impl Into<String>) -> Response {
     cors::allow_any_origin(Problem::new(kind, detail).into_response())
 }
 
-/// Answers one request from `backend`: a CORS preflight, a route of [`ROUTES`], or a problem.
-/// Any other request is first authenticated and counted against its rate limit
-/// ([`access`]), and refused before it reaches its route where either fails.
-/// A HEAD is answered with the headers of the GET, and the length of its body, but no body,
-/// whatever the answer (RFC 9110 §9.3.2).
+/// Answers one request from `backend`: [`admit`] it, then [`answer`] it.
 pub async fn handle<B: Backend>(request: &Request, backend: &B) -> Response {
-    let response = if request.method == Method::Options {
-        cors::preflight()
-    } else {
-        match access::admit(request, backend).await {
-            Ok(_) => routes::dispatch(request, backend).await,
-            Err(problem) => problem.into_response(),
-        }
-    };
+    match admit(request, backend).await {
+        Admission::Admitted(caller) => answer(request, &caller, backend).await,
+        Admission::Answered(response) => response,
+    }
+}
+
+/// What [`admit`] made of a request.
+pub enum Admission {
+    /// The request may go on to [`answer`], from this caller.
+    Admitted(Caller),
+    /// The request is answered already: a CORS preflight, or a refusal.
+    Answered(Response),
+}
+
+/// The first step of a request, which reads no body: a CORS preflight is answered, and any
+/// other request is authenticated and counted against its rate limit ([`access`]). The Worker
+/// reads a write's body only once its request is admitted.
+pub async fn admit<B: Backend>(request: &Request, backend: &B) -> Admission {
+    if request.method == Method::Options {
+        return Admission::Answered(finish(request, cors::preflight()));
+    }
+    match access::admit(request, backend).await {
+        Ok(caller) => Admission::Admitted(caller),
+        Err(problem) => Admission::Answered(finish(request, problem.into_response())),
+    }
+}
+
+/// Answers an admitted request: a route of [`ROUTES`], or a problem. A HEAD is answered with
+/// the headers of the GET, and the length of its body, but no body, whatever the answer
+/// (RFC 9110 §9.3.2).
+pub async fn answer<B: Backend>(request: &Request, caller: &Caller, backend: &B) -> Response {
+    finish(request, routes::dispatch(request, caller, backend).await)
+}
+
+/// The response as sent: without its body for a HEAD, and with the CORS headers.
+fn finish(request: &Request, response: Response) -> Response {
     let response = if request.method == Method::Head {
         if matches!(response.body, Body::Object(_)) {
             // Its length is the bucket's to know: the runtime answers it from the object's

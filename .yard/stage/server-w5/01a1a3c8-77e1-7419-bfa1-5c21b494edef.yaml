@@ -1,0 +1,685 @@
+key: 01a1a3c8-77e1-7419-bfa1-5c21b494edef
+id: w5-close
+versions:
+  - key: 01a1a3c8-77e1-7419-bfa1-5c2b85ce6226
+    at: 2026-11-03T23:39:46Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W5 close: review, gate, trace, merge"
+    goal: "W5's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: planned
+  - key: 01a1a3e6-5737-7452-ba35-464f15474a8f
+    at: 2026-11-04T00:12:24Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W5 close: review, gate, trace, merge"
+    goal: "W5's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: active
+  - key: 01a1a3fa-8679-77c7-9fd9-047978e84a9c
+    at: 2026-11-04T00:34:27Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W5 close: review, gate, trace, merge"
+    goal: "W5's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: done
+blocks:
+  - key: 01a1a3e6-5737-7452-ba35-464c46a700d0
+    id: t5-review
+    kind: task
+    versions:
+      - key: 01a1a3e6-5737-7452-ba35-4650c6f704fe
+        at: 2026-11-04T00:12:24Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fix W5's review findings"
+        detail: |-
+          Correctness:
+          - the ETag ignores the release links are resolved against (a stale 304 after a new release);
+          - links accepted against unpublished releases;
+          - retractions skip the bytes quota;
+          - sub-objects report one failure and drop unknown members;
+          - quota races;
+          - 403 checked before 409;
+          - a concurrent retire answers 500.
+
+          Simplify:
+          - 6 D1 round trips per publish, down to 4;
+          - item counts kept on the layer row;
+          - links resolved in a few batches;
+          - only the current version's content read;
+          - one write path and one change helper;
+          - one serialization of each version.
+        state: active
+      - key: 01a1a3fa-8679-77c7-9fd9-047543acc843
+        at: 2026-11-04T00:34:27Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fix W5's review findings"
+        detail: |-
+          d51d6f9. Correctness:
+          - the release is in entity tags and the Univ-Release header;
+          - links count published releases only;
+          - retractions are held to the bytes quota;
+          - each member of a geometry, time record, link and source is checked on its own, and members no type holds are refused;
+          - quotas are held inside the batch;
+          - 409 is checked before 403;
+          - a failed batch is settled into 410, 409 or 403.
+
+          Simplify:
+          - 4 round trips per publish instead of 6;
+          - item counts on the layer row;
+          - links resolved a ledger level per batch;
+          - one store path and one change helper.
+
+          7 new tests, 156 in univ-api.
+        state: done
+  - key: 01a1a3fa-8679-77c7-9fd9-04728d8cae1d
+    id: t5-gate
+    kind: task
+    versions:
+      - key: 01a1a3fa-8679-77c7-9fd9-04769b2c1733
+        at: 2026-11-04T00:34:27Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration run"
+        detail: "`cargo xtask check` passed all 12 gates; `cargo xtask integration` passed 4 layer, 3 access and 18 other end-to-end tests."
+        state: done
+  - key: 01a1a3fa-8679-77c7-9fd9-04734cfefeb4
+    id: w5-trace
+    kind: loft
+    versions:
+      - key: 01a1a3fa-8679-77c7-9fd9-04775a89e2f6
+        at: 2026-11-04T00:34:27Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "W5 links AC-209 to AC-257 and the seven W4 left for layer writes: AC-258 to AC-260, AC-264, AC-270, AC-271 and AC-279. AC-213 and AC-250 also speak of query results; W6 adds those tests."
+        base: "cca98f3"
+        recorded:
+          commit: "bad1de7d0835f850bc4a446217cd981fc5bf9669"
+          branch: "stage/server-w5"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T00:34:26Z
+        report: |
+          {
+            "base": "cca98f3",
+            "commit": "cca98f36072ad27e5495d709a1d8bdddb05aae23",
+            "counts": {
+              "features": 2
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cf9a022ff00",
+                    "label": "AC-187",
+                    "name": "The query names the kind of time record compared: source event, arrival or discovery.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cfa90995426",
+                    "label": "AC-188",
+                    "name": "A time record with an uncertainty interval matches when that interval intersects the query's interval.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cfbeb2181d8",
+                    "label": "AC-189",
+                    "name": "A result with no time record of the named kind does not match.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cfc576674a6",
+                    "label": "AC-190",
+                    "name": "A time given in UTC and a time given in TT are compared on TT.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d01d38e6cfa",
+                    "label": "AC-191",
+                    "name": "The response status is 400 with problem details that point at the faulty field.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d002ef5c1f9",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  }
+                ],
+                "key": "01a19f1f-9fd7-7209-b7cb-5cf7de740462",
+                "label": "F-21",
+                "name": "Filter by time",
+                "requirements": [
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cf8324f9e39",
+                    "label": "RQ-70",
+                    "name": "When a query names an interval of time records, Univ Server shall return only the results whose time records of the named kind intersect the interval.",
+                    "statement": {
+                      "condition": "a query names an interval of time records",
+                      "form": "event_driven",
+                      "shall": "return only the results whose time records of the named kind intersect the interval.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d002ef5c1f9",
+                    "label": "RQ-71",
+                    "name": "If an interval ends before it starts or names an unknown timescale, then Univ Server shall refuse the query and name the faulty bound or timescale.",
+                    "statement": {
+                      "condition": "an interval ends before it starts or names an unknown timescale",
+                      "form": "unwanted",
+                      "shall": "refuse the query and name the faulty bound or timescale.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f352d3ef9fc",
+                    "label": "AC-227",
+                    "name": "The item holds a title, a summary, a geometry, its time records, its kind of value, its links and its sources.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3603bb663b",
+                    "label": "AC-228",
+                    "name": "The item's id is chosen by the client and is unique within the layer.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 230,
+                            "lastLine": 238
+                          }
+                        ],
+                        "name": "an_id_the_layer_holds_answers_409_with_the_items_current_version"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f37afa7a5f0",
+                    "label": "AC-229",
+                    "name": "The geometry is one of the geometry kinds univ-model defines, in a named frame.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "each_failing_member_of_a_geometry_or_time_record_is_named_on_its_own"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f380e7feae0",
+                    "label": "AC-230",
+                    "name": "Each time record names its kind, its timescale and its uncertainty.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "each_time_record_is_stored_on_tt_with_its_uncertainty_interval"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "each_failing_member_of_a_geometry_or_time_record_is_named_on_its_own"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 82,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "a_time_record_gives_an_instant_or_years_before_j2000_and_not_both"
+                      },
+                      {
+                        "file": "crates/univ-model/src/time/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 152,
+                            "lastLine": 166
+                          }
+                        ],
+                        "name": "a_record_reads_from_json_in_either_form"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f39371a8402",
+                    "label": "AC-231",
+                    "name": "The stored version has the number 1 and the time the server stored it.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3a1008f3a6",
+                    "label": "AC-232",
+                    "name": "The publish advances the layer's change sequence by one.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "a_published_item_is_its_first_version_with_its_content_and_the_time_it_was_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3c190e7421",
+                    "label": "AC-233",
+                    "name": "Nothing is stored and the layer's change sequence is unchanged.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f3b5f5065f5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 167
+                          }
+                        ],
+                        "name": "an_item_failing_its_checks_is_refused_naming_each_field_and_nothing_is_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3db58503d4",
+                    "label": "AC-234",
+                    "name": "The problem details list each failing field by its JSON pointer, with the reason it failed.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f3b5f5065f5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 167
+                          }
+                        ],
+                        "name": "an_item_failing_its_checks_is_refused_naming_each_field_and_nothing_is_stored"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "each_failing_member_of_a_geometry_or_time_record_is_named_on_its_own"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 60,
+                            "lastLine": 80
+                          }
+                        ],
+                        "name": "a_member_no_type_holds_is_refused_not_dropped"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3f75200dfa",
+                    "label": "AC-235",
+                    "name": "The response status is 422 and nothing is stored.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f3e36b397b1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 169,
+                            "lastLine": 190
+                          }
+                        ],
+                        "name": "an_item_citing_no_source_answers_422_saying_a_source_is_required"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f412ed74190",
+                    "label": "AC-236",
+                    "name": "A link names its relation, such as host, counterpart, member of or located in, and the id of an object or structure.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f40a8b8c250",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "a_link_names_its_relation_and_a_published_object_or_structure"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f42b9073b71",
+                    "label": "AC-237",
+                    "name": "A link to an id that no release has published is refused with the id it names.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f40a8b8c250",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "a_link_names_its_relation_and_a_published_object_or_structure"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 118
+                          }
+                        ],
+                        "name": "a_link_to_what_only_an_unpublished_release_holds_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 167
+                          }
+                        ],
+                        "name": "an_item_failing_its_checks_is_refused_naming_each_field_and_nothing_is_stored"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f43ab9e950c",
+                    "label": "AC-238",
+                    "name": "A link to an id that a later release merged is served with the id that replaced it, beside the id as written.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f40a8b8c250",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 228
+                          }
+                        ],
+                        "name": "a_link_to_an_id_a_later_release_merged_is_served_with_the_id_that_replaced_it"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 163,
+                            "lastLine": 190
+                          }
+                        ],
+                        "name": "a_read_whose_links_a_new_latest_release_resolves_differently_gets_a_new_entity_tag"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f454b07cdb9",
+                    "label": "AC-239",
+                    "name": "The response status is 409 with problem details that give the item's current version.",
+                    "requirement": "01a19f20-1cb3-7721-97a0-4f4496bceaf8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/items_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 230,
+                            "lastLine": 238
+                          }
+                        ],
+                        "name": "an_id_the_layer_holds_answers_409_with_the_items_current_version"
+                      },
+                      {
+                        "file": "crates/univ-api/src/items_checks_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 146,
+                            "lastLine": 161
+                          }
+                        ],
+                        "name": "an_id_the_layer_holds_answers_409_even_with_the_layer_at_its_quota"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f20-1cb3-7721-97a0-4f33a250acbb",
+                "label": "F-25",
+                "name": "Publish a layer item",
+                "requirements": [
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f34698e25b8",
+                    "label": "RQ-84",
+                    "name": "When the owning key publishes an item to a layer, Univ Server shall validate the item and store it as the item's first version.",
+                    "statement": {
+                      "condition": "the owning key publishes an item to a layer",
+                      "form": "event_driven",
+                      "shall": "validate the item and store it as the item's first version.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3b5f5065f5",
+                    "label": "RQ-85",
+                    "name": "If an item fails validation, then Univ Server shall refuse the item and name each field that failed.",
+                    "statement": {
+                      "condition": "an item fails validation",
+                      "form": "unwanted",
+                      "shall": "refuse the item and name each field that failed.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f3e36b397b1",
+                    "label": "RQ-86",
+                    "name": "If an item cites no source, then Univ Server shall refuse the item and say that a source is required.",
+                    "statement": {
+                      "condition": "an item cites no source",
+                      "form": "unwanted",
+                      "shall": "refuse the item and say that a source is required.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f40a8b8c250",
+                    "label": "RQ-87",
+                    "name": "When an item links to a reference object or structure, Univ Server shall store the link with its relation and resolve it against the release a read is answered from.",
+                    "statement": {
+                      "condition": "an item links to a reference object or structure",
+                      "form": "event_driven",
+                      "shall": "store the link with its relation and resolve it against the release a read is answered from.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f20-1cb3-7721-97a0-4f4496bceaf8",
+                    "label": "RQ-88",
+                    "name": "If an item uses an id that the layer already holds, then Univ Server shall refuse the publish as a conflict.",
+                    "statement": {
+                      "condition": "an item uses an id that the layer already holds",
+                      "form": "unwanted",
+                      "shall": "refuse the publish as a conflict.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 335,
+              "linked": 309,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a3fa-8679-77c7-9fd9-0474235b0d93
+    id: w5-result
+    kind: note
+    versions:
+      - key: 01a1a3fa-8679-77c7-9fd9-04788cc5a6b0
+        at: 2026-11-04T00:34:27Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What W5 produced"
+        markdown: |-
+          | Area | Result |
+          |---|---|
+          | Layers | create (private by default), list, configure, retire; sequence from 0; 403 or the same 404 for another key; 410 with the retirement time |
+          | Items | publish, revise (update or correction), retract; every failing member by JSON pointer; 422 source-required; 409 with the current version |
+          | Links | an object or structure some published release holds; merged and split ids served with `replaced_by` and `replaced_in` against the release read |
+          | Time | an instant in UTC (1961 to the table's expiry, IERS TAI − UTC) or TT, or years before J2000.0; stored on TT with its uncertainty interval for W6 |
+          | Following | change feed in pages of 1,000 with cursors; entity tags from the sequence and the release; 304 |
+          | Quotas | layers per key, items per layer and bytes per version, held in each write's batch; usage on every key |
+
+          **For W6:** `item_times` holds every current record on TT. Items still need bounding-box columns for volume queries.
+        tone: success

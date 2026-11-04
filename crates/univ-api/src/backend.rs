@@ -49,6 +49,13 @@ pub trait Backend {
         params: &[Value],
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
 
+    /// Runs several statements on the univ-layers database as one transaction, as D1's batch
+    /// does: all of them take effect, or, when one fails, none.
+    fn layers_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>>;
+
     /// Fills `bytes` from a cryptographically secure source of randomness.
     ///
     /// # Errors
@@ -65,6 +72,12 @@ pub trait Backend {
         limiter: Limiter,
         client: &str,
     ) -> impl Future<Output = Result<bool, BackendError>>;
+
+    /// The time now, as RFC 3339 UTC to the millisecond, as every stored time is written.
+    fn now_rfc3339(&self) -> String {
+        let at = std::time::UNIX_EPOCH + std::time::Duration::from_millis(self.now_millis());
+        humantime::format_rfc3339_millis(at).to_string()
+    }
 
     /// The owner secret the Worker was given, if any; without one, every owner operation is
     /// refused.

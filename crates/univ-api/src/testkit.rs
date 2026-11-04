@@ -92,6 +92,21 @@ impl Sqlite {
         issued
     }
 
+    /// The secret of a new key of the standard tier, issued by the owner.
+    pub fn key(&self) -> String {
+        self.issue(&serde_json::json!({"label": "test"}))["secret"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    }
+
+    /// The answer to `request` sent with key `secret`, and its JSON document, if any.
+    pub fn with_key(&self, secret: &str, request: Request) -> (Response, Value) {
+        let response = self.answer(&request.with_bearer(secret));
+        let document = serde_json::from_slice(response.body.as_bytes()).unwrap_or(Value::Null);
+        (response, document)
+    }
+
     /// The answer to a GET of `path` with the raw query `query`.
     pub fn get(&self, path: &str, query: &str) -> Response {
         let mut request = Request::new(Method::Get, path);
@@ -170,6 +185,13 @@ impl Backend for Sqlite {
         std::future::ready(run(&self.layers, sql, params))
     }
 
+    fn layers_batch(
+        &self,
+        statements: &[(&str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>> {
+        std::future::ready(batch(&self.layers, statements))
+    }
+
     fn random(&self, bytes: &mut [u8]) -> Result<(), BackendError> {
         // Deterministic, so tests can name what they expect; never random.
         for byte in bytes {
@@ -212,10 +234,29 @@ pub const OWNER_SECRET: &str = "the-owner-secret";
 /// The univ-layers database in memory, with every migration of `migrations/` applied.
 fn layers_database() -> rusqlite::Connection {
     let connection = rusqlite::Connection::open_in_memory().unwrap();
+    // As D1 does, foreign keys are enforced.
+    connection
+        .execute_batch("PRAGMA foreign_keys = ON;")
+        .unwrap();
     for migration in crate::MIGRATIONS {
         connection.execute_batch(migration).unwrap();
     }
     connection
+}
+
+/// Runs `statements` on `connection` in one transaction, as D1's batch does.
+fn batch(
+    connection: &rusqlite::Connection,
+    statements: &[(&str, &[Value])],
+) -> Result<Vec<Vec<Row>>, BackendError> {
+    let error = |error: rusqlite::Error| BackendError(error.to_string());
+    let transaction = connection.unchecked_transaction().map_err(error)?;
+    let rows = statements
+        .iter()
+        .map(|(sql, params)| run(&transaction, sql, params))
+        .collect::<Result<Vec<_>, _>>()?;
+    transaction.commit().map_err(error)?;
+    Ok(rows)
 }
 
 /// Runs one statement on `connection`, as D1 would, and gives every row.

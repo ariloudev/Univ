@@ -11,29 +11,10 @@ mod common;
 
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use common::{CLIENT, OWNER, header, json, url};
+use common::{CLIENT, header, issue, json, owner, url};
 use reqwest::StatusCode;
-use reqwest::blocking::{RequestBuilder, Response};
+use reqwest::blocking::Response;
 use serde_json::json;
-
-fn owner(request: RequestBuilder) -> RequestBuilder {
-    request.bearer_auth(&*OWNER)
-}
-
-/// Issues a key of `tier`, and gives its id and secret.
-fn issue(label: &str, tier: &str) -> (String, String) {
-    let response = owner(CLIENT.post(url("/v1/owner/keys")))
-        .header("content-type", "application/json")
-        .body(json!({"label": label, "tier": tier}).to_string())
-        .send()
-        .unwrap();
-    assert_eq!(response.status(), StatusCode::CREATED);
-    let issued = json(response);
-    (
-        issued["id"].as_str().unwrap().to_owned(),
-        issued["secret"].as_str().unwrap().to_owned(),
-    )
-}
 
 fn read_with(secret: &str) -> Response {
     CLIENT

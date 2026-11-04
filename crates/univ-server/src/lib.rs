@@ -1,5 +1,6 @@
 //! The Cloudflare Worker of Univ Server: it turns each runtime request into a `univ_api`
-//! request, lets [`univ_api::handle`] answer it, and turns the answer back.
+//! request, lets [`univ_api::admit`] and [`univ_api::answer`] answer it, and turns the answer
+//! back.
 //!
 //! Its bindings are named in `wrangler.toml` beside this crate. Nothing here decides what a
 //! request means; that is all `univ_api`'s. A failure of the runtime itself is still answered
@@ -36,14 +37,29 @@ async fn fetch(request: Request, env: Env, _ctx: Context) -> Result<Response> {
     }
 }
 
-/// `univ_api`'s answer to the runtime request.
+/// `univ_api`'s answer to the runtime request. A write's body is read only once the request is
+/// admitted, so a client that is refused never has its body read.
 async fn answer(mut request: Request, env: &Env) -> Result<univ_api::Response> {
     let url = request.url()?;
-    let method = Method::parse(request.method().as_ref());
+    let mut api_request = univ_api::Request {
+        method: Method::parse(request.method().as_ref()),
+        path: url.path().to_owned(),
+        query: url.query().unwrap_or_default().to_owned(),
+        headers: request.headers().entries().collect(),
+        body: Vec::new(),
+    };
+    let backend = d1::D1::new(env);
+    let caller = match univ_api::admit(&api_request, &backend).await {
+        univ_api::Admission::Admitted(caller) => caller,
+        univ_api::Admission::Answered(response) => return Ok(response),
+    };
     // Only a write carries a body; a read's is never read, whatever it sends.
-    let body = if matches!(method, Method::Post | Method::Patch | Method::Delete) {
+    if matches!(
+        api_request.method,
+        Method::Post | Method::Patch | Method::Delete
+    ) {
         match request.bytes().await {
-            Ok(body) => body,
+            Ok(body) => api_request.body = body,
             Err(error) => {
                 return Ok(univ_api::failure(
                     ProblemType::UnreadableBody,
@@ -51,18 +67,8 @@ async fn answer(mut request: Request, env: &Env) -> Result<univ_api::Response> {
                 ));
             }
         }
-    } else {
-        Vec::new()
-    };
-    let api_request = univ_api::Request {
-        method,
-        path: url.path().to_owned(),
-        query: url.query().unwrap_or_default().to_owned(),
-        headers: request.headers().entries().collect(),
-        body,
-    };
-    let backend = d1::D1::new(env);
-    Ok(univ_api::handle(&api_request, &backend).await)
+    }
+    Ok(univ_api::answer(&api_request, &caller, &backend).await)
 }
 
 /// The runtime response that carries `answer`. An object of the releases bucket is handed to

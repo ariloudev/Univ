@@ -4,6 +4,10 @@ name: "Publish a layer item"
 body: |
   Adding an item to a layer: a cosmic event, a landmark or anything a client wants to place in
   space and time, linked where it applies to the reference objects and structures it concerns.
+
+  A time record's time is an ISO 8601 instant in UTC or TT for years 1 to 9999, or, for the
+  deep past such as a distant source event, a span of Julian years before J2000.0 on TT. Its
+  uncertainty names its unit: seconds, days or Julian years.
 realizes:
   - 01a19f1e-d177-716d-b124-3ce3944cd7e5
   - 01a19f1e-d177-716d-b124-3cf3def064d0

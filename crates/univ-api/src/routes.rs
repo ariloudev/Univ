@@ -2,10 +2,11 @@
 //! (read-the-openapi-document). The OpenAPI document lists exactly these routes, which a test
 //! of `openapi` holds it to.
 
+use crate::access::Caller;
 use crate::backend::Backend;
 use crate::http::{Method, Request, Response};
 use crate::problem::{Problem, ProblemType};
-use crate::{bulk, grids, keys, objects, openapi, releases, sources, structures};
+use crate::{bulk, grids, keys, layers, objects, openapi, releases, sources, structures};
 
 /// The values a route's `{name}` segments took in one request, in the template's order.
 pub type Params = Vec<(&'static str, String)>;
@@ -34,6 +35,17 @@ pub enum Endpoint {
     Keys,
     ChangeKey,
     RevokeKey,
+    CreateLayer,
+    Layers,
+    Layer,
+    ConfigureLayer,
+    RetireLayer,
+    Changes,
+    Item,
+    ItemVersion,
+    PublishItem,
+    ReviseItem,
+    RetractItem,
 }
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
@@ -45,7 +57,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 21] = [
+pub static ROUTES: [Route; 32] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -147,6 +159,61 @@ pub static ROUTES: [Route; 21] = [
         endpoint: Endpoint::RevokeKey,
     },
     Route {
+        method: Method::Post,
+        path: "/v1/layers",
+        endpoint: Endpoint::CreateLayer,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/layers",
+        endpoint: Endpoint::Layers,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/layers/{id}",
+        endpoint: Endpoint::Layer,
+    },
+    Route {
+        method: Method::Patch,
+        path: "/v1/layers/{id}",
+        endpoint: Endpoint::ConfigureLayer,
+    },
+    Route {
+        method: Method::Delete,
+        path: "/v1/layers/{id}",
+        endpoint: Endpoint::RetireLayer,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/layers/{id}/changes",
+        endpoint: Endpoint::Changes,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/layers/{id}/items/{item}",
+        endpoint: Endpoint::Item,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/layers/{id}/items/{item}/versions/{version}",
+        endpoint: Endpoint::ItemVersion,
+    },
+    Route {
+        method: Method::Post,
+        path: "/v1/layers/{id}/items",
+        endpoint: Endpoint::PublishItem,
+    },
+    Route {
+        method: Method::Post,
+        path: "/v1/layers/{id}/items/{item}/revisions",
+        endpoint: Endpoint::ReviseItem,
+    },
+    Route {
+        method: Method::Post,
+        path: "/v1/layers/{id}/items/{item}/retraction",
+        endpoint: Endpoint::RetractItem,
+    },
+    Route {
         method: Method::Get,
         path: "/v1/tile-format",
         endpoint: Endpoint::TileFormat,
@@ -157,6 +224,7 @@ pub static ROUTES: [Route; 21] = [
 async fn answer<B: Backend>(
     endpoint: Endpoint,
     request: &Request,
+    caller: &Caller,
     params: &Params,
     backend: &B,
 ) -> Response {
@@ -189,6 +257,38 @@ async fn answer<B: Backend>(
         Endpoint::Keys => keys::list(backend).await,
         Endpoint::ChangeKey => keys::change(request, param(params, "id"), backend).await,
         Endpoint::RevokeKey => keys::revoke(param(params, "id"), backend).await,
+        Endpoint::CreateLayer => layers::config::create(request, caller, backend).await,
+        Endpoint::Layers => layers::config::list(caller, backend).await,
+        Endpoint::Layer => {
+            layers::config::read(request, caller, param(params, "id"), backend).await
+        }
+        Endpoint::ConfigureLayer => {
+            layers::config::configure(request, caller, param(params, "id"), backend).await
+        }
+        Endpoint::RetireLayer => layers::config::retire(caller, param(params, "id"), backend).await,
+        Endpoint::Changes => {
+            layers::changes::list(request, caller, param(params, "id"), backend).await
+        }
+        Endpoint::Item => {
+            let (id, item) = (param(params, "id"), param(params, "item"));
+            layers::items::read(request, caller, id, item, backend).await
+        }
+        Endpoint::PublishItem => {
+            layers::write::publish(request, caller, param(params, "id"), backend).await
+        }
+        Endpoint::ReviseItem => {
+            let (id, item) = (param(params, "id"), param(params, "item"));
+            layers::write::revise(request, caller, id, item, backend).await
+        }
+        Endpoint::RetractItem => {
+            let (id, item) = (param(params, "id"), param(params, "item"));
+            layers::write::retract(request, caller, id, item, backend).await
+        }
+        Endpoint::ItemVersion => {
+            let (id, item) = (param(params, "id"), param(params, "item"));
+            layers::items::version(request, caller, id, item, param(params, "version"), backend)
+                .await
+        }
         Endpoint::GridUncertainty => {
             grids::uncertainty(
                 request,
@@ -214,7 +314,7 @@ async fn answer<B: Backend>(
 
 /// Answers a request that is not a preflight: the endpoint of the route it names, or a problem.
 /// A HEAD is answered as the GET of its route; [`crate::handle`] leaves out the body.
-pub async fn dispatch<B: Backend>(request: &Request, backend: &B) -> Response {
+pub async fn dispatch<B: Backend>(request: &Request, caller: &Caller, backend: &B) -> Response {
     let head = request.method == Method::Head;
     let mut allowed: Vec<&str> = Vec::new();
     for route in &ROUTES {
@@ -222,7 +322,7 @@ pub async fn dispatch<B: Backend>(request: &Request, backend: &B) -> Response {
             continue;
         };
         if route.method == request.method || (head && route.method == Method::Get) {
-            return answer(route.endpoint, request, &params, backend).await;
+            return answer(route.endpoint, request, caller, &params, backend).await;
         }
         allowed.push(route.method.as_str());
         if route.method == Method::Get {

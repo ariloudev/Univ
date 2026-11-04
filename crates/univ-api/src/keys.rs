@@ -3,14 +3,13 @@
 //! which [`crate::access::admit`] opens to the owner secret alone, so a handler is only ever
 //! reached by the owner. No answer here is stored by a cache.
 
-use std::time::{Duration, UNIX_EPOCH};
-
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use univ_model::api::keys::{
     IssueKey, IssuedKey, KeyChange, KeyList, KeyRecord, MAX_QUOTA, QuotaChange, Quotas,
     RateLimitTier,
 };
+use univ_model::api::layers::Usage;
 use univ_model::encoding::hex;
 
 use crate::access::sha256_hex;
@@ -18,9 +17,13 @@ use crate::backend::{Backend, rows_as};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 
-/// The columns of a key row, as [`KeyRow`] reads them.
+/// The columns of a key row, as [`KeyRow`] reads them, with its usage.
 const COLUMNS: &str = "id, label, issued_at, revoked_at, layers_per_key, items_per_layer, \
-                       bytes_per_item_version, tier";
+                       bytes_per_item_version, tier, \
+                       (SELECT COUNT(*) FROM layers WHERE key_id = keys.id \
+                        AND retired_at IS NULL) AS layers, \
+                       (SELECT COALESCE(MAX(items_held), 0) FROM layers WHERE key_id = keys.id \
+                        AND retired_at IS NULL) AS largest_layer_items";
 
 /// Issues a key: its secret is 256 random bits, returned in this response alone; only the
 /// secret's SHA-256 is stored.
@@ -52,7 +55,7 @@ pub async fn issue<B: Backend>(request: &Request, backend: &B) -> Result<Respons
     };
     let id = format!("key_{}", hex(&random::<8>(backend)?));
     let secret = format!("univ_{}", hex(&random::<32>(backend)?));
-    let issued_at = now(backend);
+    let issued_at = backend.now_rfc3339();
     backend
         .layers(
             "INSERT INTO keys (id, label, secret_sha256, issued_at, layers_per_key, \
@@ -78,6 +81,7 @@ pub async fn issue<B: Backend>(request: &Request, backend: &B) -> Result<Respons
             revoked_at: None,
             quotas,
             tier: asked.tier,
+            usage: Usage::default(),
         },
         secret,
     };
@@ -130,26 +134,29 @@ pub async fn change<B: Backend>(
 ) -> Result<Response, Problem> {
     let asked: KeyChange = request.json()?;
     let quotas = bounded(asked.quotas)?;
+    let update = [
+        json!(id),
+        json!(asked.label),
+        json!(quotas.layers_per_key),
+        json!(quotas.items_per_layer),
+        json!(quotas.bytes_per_item_version),
+        json!(asked.tier),
+    ];
+    let read = [json!(id)];
     let rows = backend
-        .layers(
-            &format!(
+        .layers_batch(&[
+            (
                 "UPDATE keys SET label = COALESCE(?2, label), \
                  layers_per_key = COALESCE(?3, layers_per_key), \
                  items_per_layer = COALESCE(?4, items_per_layer), \
                  bytes_per_item_version = COALESCE(?5, bytes_per_item_version), \
-                 tier = COALESCE(?6, tier) WHERE id = ?1 RETURNING {COLUMNS}"
+                 tier = COALESCE(?6, tier) WHERE id = ?1",
+                &update,
             ),
-            &[
-                json!(id),
-                json!(asked.label),
-                json!(quotas.layers_per_key),
-                json!(quotas.items_per_layer),
-                json!(quotas.bytes_per_item_version),
-                json!(asked.tier),
-            ],
-        )
+            (&select_one(), &read),
+        ])
         .await?;
-    unstored(200, &the_key(rows, id)?)
+    unstored(200, &the_key(rows.into_iter().last(), id)?)
 }
 
 /// Revokes a key: it is refused from the next request on, and its revocation time recorded.
@@ -166,16 +173,18 @@ pub async fn change<B: Backend>(
     responses((status = 200, description = "The key as revoked", body = KeyRecord))
 )]
 pub async fn revoke<B: Backend>(id: &str, backend: &B) -> Result<Response, Problem> {
+    let update = [json!(id), json!(backend.now_rfc3339())];
+    let read = [json!(id)];
     let rows = backend
-        .layers(
-            &format!(
-                "UPDATE keys SET revoked_at = COALESCE(revoked_at, ?2) WHERE id = ?1 \
-                 RETURNING {COLUMNS}"
+        .layers_batch(&[
+            (
+                "UPDATE keys SET revoked_at = COALESCE(revoked_at, ?2) WHERE id = ?1",
+                &update,
             ),
-            &[json!(id), json!(now(backend))],
-        )
+            (&select_one(), &read),
+        ])
         .await?;
-    unstored(200, &the_key(rows, id)?)
+    unstored(200, &the_key(rows.into_iter().last(), id)?)
 }
 
 /// A key row as stored.
@@ -189,6 +198,8 @@ struct KeyRow {
     items_per_layer: u64,
     bytes_per_item_version: u64,
     tier: RateLimitTier,
+    layers: u64,
+    largest_layer_items: u64,
 }
 
 impl KeyRow {
@@ -204,13 +215,22 @@ impl KeyRow {
                 bytes_per_item_version: self.bytes_per_item_version,
             },
             tier: self.tier,
+            usage: Usage {
+                layers: self.layers,
+                largest_layer_items: self.largest_layer_items,
+            },
         }
     }
 }
 
+/// The statement that reads key `?1` with its usage.
+fn select_one() -> String {
+    format!("SELECT {COLUMNS} FROM keys WHERE id = ?1")
+}
+
 /// The one key `rows` hold, or a 404 naming `id`.
-fn the_key(rows: Vec<crate::Row>, id: &str) -> Result<KeyRecord, Problem> {
-    rows_as::<KeyRow>(rows)?
+fn the_key(rows: Option<Vec<crate::Row>>, id: &str) -> Result<KeyRecord, Problem> {
+    rows_as::<KeyRow>(rows.unwrap_or_default())?
         .pop()
         .map(KeyRow::record)
         .ok_or_else(|| {
@@ -246,12 +266,6 @@ fn bounded(quotas: QuotaChange) -> Result<QuotaChange, Problem> {
 /// an issued key's carries its secret.
 fn unstored(status: u16, value: &impl Serialize) -> Result<Response, Problem> {
     Ok(Response::json_with_status(status, value)?.with_header("cache-control", "no-store"))
-}
-
-/// The time now, as RFC 3339 UTC to the millisecond.
-fn now(backend: &impl Backend) -> String {
-    humantime::format_rfc3339_millis(UNIX_EPOCH + Duration::from_millis(backend.now_millis()))
-        .to_string()
 }
 
 /// `N` bytes from the backend's source of randomness.

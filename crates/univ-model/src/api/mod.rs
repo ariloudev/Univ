@@ -6,6 +6,7 @@
 
 pub mod bulk;
 pub mod keys;
+pub mod layers;
 pub mod lookup;
 pub mod objects;
 pub mod releases;

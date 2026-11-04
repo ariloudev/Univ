@@ -108,6 +108,8 @@ pub struct KeyRecord {
     pub revoked_at: Option<String>,
     pub quotas: Quotas,
     pub tier: RateLimitTier,
+    /// What the key has written, against its quotas.
+    pub usage: crate::api::layers::Usage,
 }
 
 /// A key just issued: its record and its secret, which no later response gives.
