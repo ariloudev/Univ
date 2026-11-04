@@ -1,0 +1,44 @@
+key: 01a1a697-dbef-72ce-86f4-f5147a343fed
+id: x5-r3
+versions:
+  - key: 01a1a697-dbef-72ce-86f4-f52ef6306586
+    at: 2026-11-04T12:45:32Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R3 (product/release-8): build and publish release 8"
+    goal: "Release 8 is built from the cached and newly fetched data, published locally, and checked"
+    status: planned
+blocks:
+  - key: 01a1a697-dbef-72ce-86f4-f51541d1e070
+    id: r3-t-build
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f52f23e95bd7
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fetch, build and publish release 8"
+        detail: "**Done when** release 8 is published to the real local state, with the new fetches run in the background, and releases 6 and 7 are still served."
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f5162aa40033
+    id: r3-t-check
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f53079cdbe88
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Check release 8"
+        detail: |-
+          **Done when:**
+          - `cargo xtask science` passes on release 8;
+          - every tile decodes with its SHA-256;
+          - QA-2 and QA-3 are measured on it;
+          - spot checks pass: Sirius's B−V near 0.00 and its type A1V; Betelgeuse's B−V near 1.85; Laniakea and Vela present.
+        state: open

@@ -4,12 +4,14 @@ import { describe, expect, it } from "vitest";
 import type { Http } from "../api/client.ts";
 import { DOMAINS, bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts";
 import { Catalogue } from "./catalogue.ts";
-import { domainsOf } from "./tiles.ts";
+import type { Sight } from "../scene/frustum.ts";
+import type { Vec3 } from "../scene/vec.ts";
+import { type Batch, domainsOf } from "./tiles.ts";
 
 /** Univ Server's answer to `path` on the fixture release; `corrupt` (domain/address) altered,
  * `missing` (domain/address) answered 503. */
-function answer(path: string, corrupt?: string, missing?: string): Response {
-  if (path === "/v1/scale-domains") return Response.json({ release: 2, domains: DOMAINS.map((name) => ({ name })) });
+function answer(path: string, corrupt?: string, missing?: string, domains = DOMAINS): Response {
+  if (path === "/v1/scale-domains") return Response.json({ release: 2, domains: domains.map((name) => ({ name })) });
   const manifest = /^\/v1\/scale-domains\/(\w+)\/manifest$/.exec(path);
   if (manifest !== null) return new Response(fixtureText(`${manifest[1]}.manifest.json`));
   const [, domain = "", address = ""] = /^\/v1\/scale-domains\/(\w+)\/tiles\/(\w+)$/.exec(path) ?? [];
@@ -22,13 +24,13 @@ function answer(path: string, corrupt?: string, missing?: string): Response {
 }
 
 /** Univ Server on the tile decoder's fixtures: the fixture release's three domains. */
-function server(corrupt?: string, missing?: string): Http & { urls: string[] } {
+function server(corrupt?: string, missing?: string, domains = DOMAINS): Http & { urls: string[] } {
   const urls: string[] = [];
   return {
     urls,
     fetch: (url) => {
       urls.push(url);
-      return Promise.resolve(answer(url.split("?")[0] ?? "", corrupt, missing));
+      return Promise.resolve(answer(url.split("?")[0] ?? "", corrupt, missing, domains));
     },
     sleep: () => Promise.resolve(),
     now: () => 0,
@@ -44,10 +46,22 @@ async function until(done: () => boolean): Promise<void> {
   throw new Error("the catalogue did not settle");
 }
 
-async function loaded(http: Http, drawn: string[]) {
+/** A sight that sees every tile but those centred where `hidden` says, its points far apart. */
+const sight = (hidden: (centre: Vec3) => boolean = () => false): Sight => ({
+  eye: [0, 0, 0],
+  focal: 1e9,
+  inView: (centre) => !hidden(centre),
+});
+
+async function loaded(http: Http, drawn: string[], budget?: number) {
   const domains = await domainsOf(2, { http });
-  const catalogue = new Catalogue(2, domains, { onBatch: (b) => drawn.push(b.tile.id), onChange: () => undefined }, { http });
-  catalogue.update([0, 0, 0]);
+  const events = {
+    onBatch: (b: Batch) => drawn.push(b.tile.id),
+    onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
+    onChange: () => undefined,
+  };
+  const catalogue = new Catalogue(2, domains, events, budget === undefined ? { http } : { http, budget });
+  catalogue.update(sight());
   return catalogue;
 }
 
@@ -75,6 +89,24 @@ describe("the catalogue", () => {
     await until(() => catalogue.failed === 1 && drawn.length >= 2);
     expect(drawn).not.toContain("stars/r");
     expect(catalogue.unread).toBe(0);
+  });
+
+  it("drops the tiles the view leaves to make room for those it turns to, and counts their points out", async () => {
+    const drawn: string[] = [];
+    // The simulated domain: a root of 8 points and eight children of 3 to 9; room for 25 points.
+    const catalogue = await loaded(server(undefined, undefined, ["simulated"]), drawn, 25);
+    await until(() => drawn.length === 3);
+    const first = [...drawn];
+    const total = () => catalogue.kinds.reduce((a, b) => a + b, 0);
+    expect(total()).toBe(25);
+    // Turn away from the children held: they are dropped for others, and the root stays.
+    const held = new Set(first);
+    const tiles = catalogue.domain("simulated")?.tiles ?? [];
+    const away = new Set(tiles.filter((t) => held.has(t.id) && t.parent !== undefined).map((t) => t.centre));
+    catalogue.update(sight((centre) => away.has(centre)));
+    await until(() => drawn.length >= 2 && drawn.every((id) => id === "simulated/r" || !first.includes(id)));
+    expect(drawn).toContain("simulated/r");
+    expect(total()).toBeLessThanOrEqual(25);
   });
 
   it("does not count a tile Univ Server could not serve as failing its check", async () => {

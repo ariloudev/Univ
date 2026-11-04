@@ -4,6 +4,7 @@
 // double precision once a frame, and its points' small offsets are float32.
 
 import { type View, eyeAxes, eyeOf } from "./camera.ts";
+import { inSight, sightOf } from "./frustum.ts";
 import type { Drawer, Lines } from "./drawing.ts";
 import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, pointOpacity } from "./kinds.ts";
 import { projection } from "./projection.ts";
@@ -13,9 +14,12 @@ import type { Mat3, Vec3 } from "./vec.ts";
 /** The browser cannot draw with WebGL2. */
 export class NoWebGL extends Error {}
 
-/** Points to draw: offsets from `centre` and each point's kind of value. */
+/** A tile's points to draw: offsets from `centre`, all within `radius` of it, and each point's
+ * kind of value. */
 export interface Points {
+  id: string;
   centre: Vec3;
+  radius: number;
   offsets: Float32Array;
   kinds: Uint8Array;
 }
@@ -69,7 +73,8 @@ export class Renderer implements Drawer {
   private readonly points: Program;
   private readonly lines: Program;
   private readonly lineColour: WebGLUniformLocation | null;
-  private readonly batches: Drawn[] = [];
+  /** Each tile's points, by its id, with the radius they lie within. */
+  private readonly batches = new Map<string, Drawn & { radius: number }>();
   private readonly outlines = new Map<string, Outline>();
   private readonly markers = new Map<string, Drawn>();
   private readonly pointSize: WebGLUniformLocation | null;
@@ -107,7 +112,7 @@ export class Renderer implements Drawer {
     for (const buffer of drawn.buffers) this.gl.deleteBuffer(buffer);
   }
 
-  private upload(points: Points): Drawn {
+  private upload(points: Pick<Points, "centre" | "offsets" | "kinds">): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
@@ -120,7 +125,16 @@ export class Renderer implements Drawer {
 
   /** Adds a tile's points to what is drawn. */
   addPoints(points: Points): void {
-    this.batches.push(this.upload(points));
+    this.removePoints(points.id);
+    this.batches.set(points.id, { ...this.upload(points), radius: points.radius });
+  }
+
+  /** Draws the points of the tile `id` no more. */
+  removePoints(id: string): void {
+    const drawn = this.batches.get(id);
+    if (drawn === undefined) return;
+    this.release(drawn);
+    this.batches.delete(id);
   }
 
   /** Draws markers at `offsets` from `centre` under `name`, in place of what was drawn under it. */
@@ -164,7 +178,9 @@ export class Renderer implements Drawer {
     this.use(this.points, frame);
     gl.uniform1f(this.pointSize, POINT_SIZE);
     gl.uniform1f(this.opacity, pointOpacity(view.distance));
-    for (const batch of this.batches) this.drawOne(this.points, frame, batch, gl.POINTS);
+    for (const batch of inSight(this.batches.values(), sightOf(view, toFrame, width, height))) {
+      this.drawOne(this.points, frame, batch, gl.POINTS);
+    }
     gl.uniform1f(this.pointSize, MARKER_SIZE);
     gl.uniform1f(this.opacity, 1);
     for (const marker of this.markers.values()) this.drawOne(this.points, frame, marker, gl.POINTS);
@@ -191,8 +207,8 @@ export class Renderer implements Drawer {
 
   /** Lets go of everything drawn, as when the view closes. */
   dispose(): void {
-    for (const drawn of [...this.batches, ...this.outlines.values(), ...this.markers.values()]) this.release(drawn);
-    this.batches.length = 0;
+    for (const drawn of [...this.batches.values(), ...this.outlines.values(), ...this.markers.values()]) this.release(drawn);
+    this.batches.clear();
     this.outlines.clear();
     this.markers.clear();
   }

@@ -1,0 +1,58 @@
+key: 01a1a697-dbef-72ce-86f4-f51048f769b7
+id: x5-r2
+versions:
+  - key: 01a1a697-dbef-72ce-86f4-f52a8c2bc3c1
+    at: 2026-11-04T12:45:32Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R2 (product/release-8): the curated superstructures"
+    goal: "Every structure in Wikipedia's lists of largest cosmic structures and of superclusters that a peer-reviewed paper places is a structure file quoting its paper, and S1's derived volumes are added where approved"
+    status: planned
+blocks:
+  - key: 01a1a697-dbef-72ce-86f4-f511ab3685aa
+    id: r2-t-list
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f52ba540acf2
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The curated list"
+        detail: |-
+          **Done when** a note lists every candidate from the two lists, each with:
+          - its primary paper;
+          - whether that paper gives a position;
+          - whether it is included, or left out with the reason.
+
+          It also lists the structures already in.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f51204d797ba
+    id: r2-t-files
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f52c6634a2a9
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structure files for the included structures"
+        detail: "**Done when** each included structure has a file whose every number quotes its paper's sentence, with kind of value and uncertainty, and the ingest structure tests and the science checks pass on them."
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f513efcd2463
+    id: r2-t-shapes
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f52d7d85770e
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Derived volumes for point-placed structures"
+        detail: "**Done when** the change you approved in S1 is built: shapes derived and labelled approximate, with their chain, and tests on Vela."
+        state: open

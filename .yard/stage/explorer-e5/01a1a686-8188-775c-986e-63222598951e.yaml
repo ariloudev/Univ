@@ -2858,3 +2858,338 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1a697-5449-732e-a894-70ef29e1387d
+    id: e5-t-spec
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-70f9c26790c4
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec: view-driven loading"
+        detail: |-
+          **Done when:**
+          - `draw-the-catalogues` states ranking, refinement, eviction and culling as criteria;
+          - `loft fmt --check` and `loft check --fail-on warning` pass;
+          - it is committed alone.
+
+          **Result:** committed as `567d984`. It reworded one criterion and added five, plus two requirements.
+        state: done
+  - key: 01a1a697-5449-732e-a894-70f0e6ea23c0
+    id: e5-t-frustum
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-70fa2040ce3e
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The view's frustum (scene/frustum.ts)"
+        detail: |-
+          **Scope:**
+          - `sightOf(view, toFrame, width, height)`: the eye, the focal length, and a sphere-against-frustum test with no far plane;
+          - `inSight(items, sight)`.
+
+          **Done when** `frustum.test.ts` shows:
+          - a sphere ahead is in view and one behind is not, unless it reaches in front of the eye;
+          - side limits follow the aspect ratio;
+          - the focal length is right;
+          - `inSight` filters.
+
+          **State:** written and passing, not yet committed.
+        state: active
+  - key: 01a1a697-5449-732e-a894-70f1c9b2eec3
+    id: e5-t-plan
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-70fb55cf270e
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Which tiles to fetch and drop (catalogue/lod.ts `plan`)"
+        detail: |-
+          **Scope:**
+          - roots first;
+          - children only of tiles in view whose points lie more than 3 px apart on screen;
+          - children wholly outside the view are not fetched;
+          - the largest on screen first;
+          - the budget counts the points on their way;
+          - room is made by dropping drawn tiles that are needed less than the tile wanted: outside the view first, then the smallest on screen. A root, a tile with a child drawn or on its way, or the parent of a tile being fetched is never dropped.
+
+          **Done when** `lod.test.ts` has a test for each of these criteria:
+          - ranking;
+          - refinement stopping at 3 px;
+          - the budget with points on their way;
+          - dropping out of view first;
+          - never a root or a parent;
+          - keeping a larger tile in view;
+          - fetching a dropped tile again.
+
+          **State:** written; 9 tests pass; not committed.
+        state: active
+  - key: 01a1a697-5449-732e-a894-70f2bfb14888
+    id: e5-t-catalogue
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-70fc3f5f4ec0
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The catalogue fetches and drops by the plan"
+        detail: |-
+          **Scope:**
+          - `Catalogue.update(sight)`;
+          - `onDrop` events;
+          - the kind counts go down when a tile is dropped;
+          - failed tiles are never dropped or asked for again;
+          - a `budget` option for tests.
+
+          **Done when** `catalogue.test.ts` shows, on the fixture's simulated domain with a budget of 25 points:
+          - the tiles the view leaves are dropped for those it turns to;
+          - the root stays;
+          - the counts stay within the budget.
+
+          **State:** written and passing, not committed.
+        state: active
+  - key: 01a1a697-5449-732e-a894-70f3d45453e7
+    id: e5-t-render
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-70fdd022560a
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Draw only what is in view; let go of dropped tiles"
+        detail: |-
+          **Scope:**
+          - the renderer keys batches by tile, draws only those `inSight`, and `removePoints` a dropped tile;
+          - the world removes a dropped tile from picking;
+          - the controller gives `sight` to the catalogue on every change of view.
+
+          **Done when:**
+          - `pnpm check` passes, typecheck and fallow included;
+          - the live check (`e5-t-live`) shows no region missing from the view.
+
+          **State:** `pnpm check` passes (124 tests); not live-checked; not committed.
+        state: active
+  - key: 01a1a697-5449-732e-a894-70f4c6470980
+    id: e5-t-live
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-70fe4ff1a3b1
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Live check on release 7"
+        detail: |-
+          **Done when** `cargo xtask explore` shows, with screenshots and the key's counts:
+          - at the opening 400 Mpc view, fewer points held than the release's 2,085,809, and no hole in the view;
+          - zoomed out to 2.3 Gpc, refinement stops early;
+          - near Earth, the stars are refined;
+          - turning the view fetches what comes into view.
+
+          It also shows:
+          - in one run with the budget lowered to 300,000 points (a local edit, never committed), tiles are dropped and fetched again as the view turns, and the counts never exceed 300,000;
+          - `cargo xtask bench first-points` stays within 3 s.
+        state: open
+  - key: 01a1a697-5449-732e-a894-70f5c6f763d1
+    id: e5-t-trace
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-70fff3c70525
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace the new criteria"
+        detail: |-
+          **Done when:**
+          - the reworded fetch-order criterion is linked in `loft.trace.yaml` to its `lod.test.ts` and `catalogue.test.ts` tests, and so are the 5 new criteria and the culling criterion (with the frustum tests);
+          - `loft reconcile --accept-stale` has run;
+          - `loft reconcile --fail-on warning` passes.
+        state: open
+  - key: 01a1a697-5449-732e-a894-70f6c8308b62
+    id: e5-t-review
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-7100dc4feda9
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "/simplify and /code-review, findings fixed"
+        detail: "**Done when** both have run in parallel on E5's diff, each finding is fixed or skipped with a reason, and the fixes are committed."
+        state: open
+  - key: 01a1a697-5449-732e-a894-70f77330ba5b
+    id: e5-t-gate
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-710198f83472
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration, once"
+        detail: "**Done when** `cargo xtask check` and `cargo xtask integration` each pass once, after the review fixes."
+        state: open
+  - key: 01a1a697-5449-732e-a894-70f885923f42
+    id: e5-t-close
+    kind: task
+    versions:
+      - key: 01a1a697-5449-732e-a894-7102b37d61fd
+        at: 2026-11-04T12:44:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Close E5 and merge"
+        detail: |-
+          **Done when:**
+          - the result note and the `trace` loft block are written;
+          - the Yard Log is closed and `.yard` committed;
+          - `stage/explorer-e5` is merged `--no-ff` into `product/explorer`.
+        state: open
+  - key: 01a1a698-6451-7607-932e-3818b1ce713c
+    id: plan-28-plan-glowing-questing-ullman-01a1a686-8188-775c-986e-63222598951e
+    kind: plan
+    versions:
+      - key: 01a1a698-6451-7607-932e-3819564f54e2
+        at: 2026-11-04T12:46:07Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Plan: the explorer's next waves (E5, E6, S1, release 8, E7)"
+        markdown: |
+          # Plan: the explorer's next waves (E5, E6, S1, release 8, E7)
+
+          ## Context
+
+          You asked for nine items and a spike after using the explorer on release 7:
+
+          1. Frustum culling.
+          2. Eviction.
+          3. Ranking.
+          4. Dynamic refinement.
+          5. Catalogue names (Andromeda's panel shows "Object 856254 · body").
+          6. A chosen shell structure changes colour.
+          7. A chosen point structure changes colour.
+          8. Stars coloured by class.
+          9. All known superstructures.
+
+          The spike: Vela is placed by a point, so how can it be shown as a bounded volume?
+
+          You decided in the Yard Log:
+          - **Colours:** both the colour index and published spectral types.
+          - **Structures:** a curated list, each checked against its primary paper.
+          - **Ingest work:** on `product/release-8`, cut from `develop`.
+
+          I had started E5's code before registering its tasks. It is uncommitted: its unit tests pass, but it has not been checked live. Every task is now registered in the Yard Log of `stage/explorer-e5`, http://127.0.0.1:7411/, with its scope and the check that shows it done.
+
+          The process for each wave is unchanged:
+          - spec first, committed alone;
+          - focused checks between tasks;
+          - `/simplify` and `/code-review` in parallel;
+          - `cargo xtask check` and `cargo xtask integration` once;
+          - the trace linked and accepted;
+          - close the Yard Log, then merge `--no-ff` into the product branch.
+
+          Merges into `develop` wait for you.
+
+          ## E5: view-driven loading (`stage/explorer-e5`, items 1 to 4)
+
+          The spec change is committed (`567d984`, draw-the-catalogues): one criterion reworded, five added, and two requirements.
+
+          | Task | Scope | Done when | State |
+          |---|---|---|---|
+          | e5-t-frustum | `scene/frustum.ts`: `sightOf` (eye, focal length, a sphere-against-frustum test with no far plane), `inSight` | `frustum.test.ts`: ahead, behind, sides by aspect, focal, filter | written, passing |
+          | e5-t-plan | `catalogue/lod.ts` `plan()`: roots first; children only of tiles in view refined while their points lie more than 3 px apart; none wholly outside the view; largest on screen first; the budget counts points on their way; room made by dropping the least needed tiles (outside the view first, then the smallest), never a root, a parent, or the parent of a tile being fetched | `lod.test.ts`, one test per criterion | written, 9 tests pass |
+          | e5-t-catalogue | `Catalogue.update(sight)`, `onDrop`, counts go down, a `budget` option | `catalogue.test.ts`: the simulated fixture domain at a 25-point budget drops and refetches as the view turns | written, passing |
+          | e5-t-render | the renderer keys batches by tile, draws only `inSight`, `removePoints`; picking forgets dropped tiles; the controller gives its `sight` | `pnpm check` passes, and the live check shows no holes | `pnpm check` passes |
+          | e5-t-live | release 7 through `cargo xtask explore` | points held at 400 Mpc, 2.3 Gpc, near Earth and after turning, with screenshots; one run with the budget lowered to 300k locally (never committed) shows drops and refetches within 300k; `bench first-points` within 3 s | open |
+          | e5-t-trace, e5-t-review, e5-t-gate, e5-t-close | the wave's end | as in the process above | open |
+
+          The pieces it reuses:
+          - `apparentSize`, `eyeAxes`, `eyeOf` and `focalPixels` in `scene/camera.ts`;
+          - `Controller.subscribe` for view changes;
+          - the `pickable` list in `ui/useWorld.ts`.
+
+          ## E6: names and selection (`stage/explorer-e6`, items 5 to 7)
+
+          | Task | Done when |
+          |---|---|
+          | e6-t-find | A note says whether the object record carries a type (star, galaxy, group). `ObjectRecord.kind` is only one entry versus a group (`univ-model/src/object/relation.rs`), but the volume query filters by a kind term (`univ-api/src/query/objects.rs`). If the API doesn't return the term, that change moves to R1. |
+          | e6-t-spec | Two spec changes, committed alone: `read-an-object` (the panel is headed by the name, with the id beside it, and says the type where the record gives one) and `see-the-structures` (a chosen structure's outline, markers and members get their own colour until another is chosen or the panel closes). |
+          | e6-t-heading | `ObjectPanel.test.tsx`: Andromeda found by name is headed "Andromeda"; an object opened by click is headed by its first name; an object with no name is headed by its designation. |
+          | e6-t-type | The panel shows galaxy, star or galaxy group in place of "body", or the task moves to R1. |
+          | e6-t-outline | A `useStructures` test shows the chosen structure's lines in the chosen colour and the others unchanged, restored on close; a live screenshot of the KBC void. |
+          | e6-t-markers | The same for point and member markers; a live screenshot of Shapley. |
+          | e6-t-close | Trace, review, gate, close, merge. |
+
+          It reuses `STRUCTURE_COLOUR` and `APPROXIMATE_COLOUR` (`scene/kinds.ts`), `drawingOf` (`scene/structures.ts`) and `Renderer.setLines` / `setMarkers`.
+
+          ## S1: spike on bounded volumes (`stage/explorer-s1`)
+
+          | Task | Done when |
+          |---|---|
+          | s1-t-survey | A table of all 26 structures: what places each, and the extents their files quote (sky extent, velocity range, size), with kind of value and limits. |
+          | s1-t-options | The options compared: a sky-and-depth sector, an ellipsoid of published size, a hull of members, a marker. Each with the structures it fits, its caveats (lower limits, h⁻¹, an approximate label), and whether it belongs in ingest or the explorer. One is recommended. Vela worked through: l 260°–285°, b −10°–+10°, cz 18,000–22,000 km/s, per Kraan-Korteweg et al. 2017. |
+          | s1-t-proposal | The implied release-8 spec change, sent to you for approval. If approved, it joins R2. |
+
+          ## Release 8 (`product/release-8` from `develop`; each wave with its own Yard Log)
+
+          **R1: star colours and spectral types.**
+
+          | Task | Done when |
+          |---|---|
+          | r1-t-spec | The spec change is sent for your approval: new source columns, the record carries them, tile encoding v2 with a colour column, and the tile-format contract. |
+          | r1-t-colour | Gaia `bp_rp`, Hipparcos I/311 B−V and V−I, and GCNS BP and RP are read as measurements in fixture tests. |
+          | r1-t-types | Hipparcos I/239 `SpType` and Gaia DR3 `spectraltype_esphs` are read as published text in fixture tests. |
+          | r1-t-tiles | The v2 encoder and both decoders work, v1 still reads, the fixtures are regenerated, and `/v1/tile-format` describes v2. |
+
+          **R2: curated superstructures.**
+
+          | Task | Done when |
+          |---|---|
+          | r2-t-list | A note lists every candidate from Wikipedia's lists of the largest cosmic structures and of superclusters, each with its primary paper and whether it is included or left out, and why. |
+          | r2-t-files | One structure file per included structure, quoting its sentences, with the science checks passing. |
+          | r2-t-shapes | S1's approved derived volumes. |
+
+          **R3: release 8.** Fetch, build and publish in the background. Then the science checks, every tile's SHA-256, QA-2 and QA-3, and spot checks: Sirius B−V ≈ 0.00 and A1V; Betelgeuse B−V ≈ 1.85; Laniakea and Vela present.
+
+          ## E7: stars in their colours (after you ask for the merges)
+
+          | Task | Done when |
+          |---|---|
+          | e7-t-colour | A tested module maps colour index to star colour through the Pecaut & Mamajek 2013 table. Stars are drawn in it, galaxies keep their kind-of-value colours, the key explains both, and there is a screenshot. |
+          | e7-t-panel | The panel gives a published type as measured, or else the class estimated from the colour, labelled estimated and cited. |
+
+          ## Verification
+
+          - **Each wave:** its unit tests, `pnpm check`, `cargo xtask check` and `cargo xtask integration` (Playwright with axe) pass; the trace is linked and accepted.
+          - **Live checks on release 7, or release 8:** as named in each task, with screenshots, and with the first-points bench within 3 s.
+          - **Release 8:** `cargo xtask science`, the decode of every tile, QA-2 and QA-3, and the spot checks above.
+        planMode: true
+    responses:
+      - key: 01a1a698-ab68-7751-bc70-03232a9d0886
+        at: 2026-11-04T12:46:25Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
