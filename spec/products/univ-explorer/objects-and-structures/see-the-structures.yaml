@@ -16,6 +16,10 @@ requirements:
         name: "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names."
       - key: 01a1a497-e843-728a-bce8-3ff2f42a8c13
         name: "Paths are drawn as lines, and member lists as their members' positions."
+      - key: 01a1a4bd-9644-750a-a678-3906e3189ded
+        name: "A point is drawn as a marker at its place."
+      - key: 01a1a4bd-9644-750a-a678-390771cfa729
+        name: "A sky region or a grid is drawn as its bounding box, marked as approximate."
       - key: 01a1a497-e843-728a-bce8-3ff3a71f35c5
         name: "A structure with no placed shape is drawn as its bounding box, marked as approximate."
       - key: 01a1a497-e843-728a-bce8-3ff4358efffd

@@ -3,19 +3,25 @@ import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
 import { KINDS, cssColour } from "../scene/kinds.ts";
 import type { Controller } from "../scene/controller.ts";
+import { type Store, useStore } from "./store.ts";
 
 interface PanelsProps {
   controller: Controller;
-  catalogue: Tally | undefined;
+  /** The catalogue, once its domains are read. */
+  catalogue: () => Tally | undefined;
+  /** Counts the frames drawn: the panels show the view as each leaves it. */
+  frame: Store<number>;
   release: number;
   cosmology: string;
 }
 
 /** The panels around the view: where the eye is, the axes, the key and the credits. */
-export function Panels({ controller, catalogue, release, cosmology }: PanelsProps) {
+export function Panels({ controller, catalogue: tally, frame, release, cosmology }: PanelsProps) {
+  useStore(frame);
+  const catalogue = tally();
   return (
     <>
-      <div className="absolute top-3 left-3 w-80 space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
+      <div className="w-80 space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
         <p data-testid="distance">
           <span className="text-dim">Eye to focus: </span>
           {formatDistance(controller.view.distance)}
@@ -73,7 +79,7 @@ function Key({ catalogue, release }: { catalogue: Tally; release: number }) {
   const kinds = KINDS.map((kind, i) => [kind, catalogue.kinds[i] ?? 0] as const);
   const credits = catalogue.credits();
   return (
-    <div className="absolute right-3 bottom-3 max-h-[60%] w-96 space-y-2 overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm">
+    <div className="fixed right-3 bottom-3 max-h-[35%] w-96 space-y-2 overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm">
       <h2 className="font-semibold">Kind of value of each distance</h2>
       <ul data-testid="key">
         {kinds.map(([kind, count]) => (

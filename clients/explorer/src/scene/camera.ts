@@ -51,6 +51,9 @@ export function eyeAxes(view: View, toFrame: Mat3): Mat3 {
   return multiply([right, up, back], toFrame);
 }
 
+/** The focal length in pixels of a viewport `height` pixels tall. */
+export const focalPixels = (height: number): number => height / 2 / Math.tan(FOV / 2);
+
 /** Where `point` (ICRS megaparsecs) falls on a viewport `width` × `height` pixels; none behind. */
 export function project(
   view: View,
@@ -62,7 +65,7 @@ export function project(
   const local = apply(eyeAxes(view, toFrame), sub(point, eyeOf(view, toFrame)));
   const depth = -local[2];
   if (depth <= 0) return undefined;
-  const f = height / 2 / Math.tan(FOV / 2);
+  const f = focalPixels(height);
   return { x: width / 2 + (local[0] * f) / depth, y: height / 2 - (local[1] * f) / depth, depth };
 }
 

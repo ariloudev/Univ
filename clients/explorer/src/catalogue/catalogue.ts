@@ -58,6 +58,11 @@ export class Catalogue {
     this.options = options;
   }
 
+  /** The domain named `name`. */
+  domain(name: string): Domain | undefined {
+    return this.domains.get(name);
+  }
+
   private get aborted(): boolean {
     return this.options.signal?.aborted === true;
   }

@@ -5,7 +5,7 @@
 
 import { type View, eyeAxes, eyeOf } from "./camera.ts";
 import type { Drawer, Lines } from "./drawing.ts";
-import { KIND_COLOURS } from "./kinds.ts";
+import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR } from "./kinds.ts";
 import { projection } from "./projection.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
@@ -22,6 +22,8 @@ export interface Points {
 
 /** The diameter of a point, in device pixels. */
 const POINT_SIZE = 2;
+/** The diameter of a structure's marker, in device pixels. */
+const MARKER_SIZE = 6;
 
 interface Drawn {
   vao: WebGLVertexArrayObject;
@@ -69,6 +71,8 @@ export class Renderer implements Drawer {
   private readonly lineColour: WebGLUniformLocation | null;
   private readonly batches: Drawn[] = [];
   private readonly outlines = new Map<string, Outline>();
+  private readonly markers = new Map<string, Drawn>();
+  private readonly pointSize: WebGLUniformLocation | null;
 
   constructor(canvas: HTMLCanvasElement) {
     // No multisampling: the points soften their own edges, and samples multiply blending's cost.
@@ -79,8 +83,9 @@ export class Renderer implements Drawer {
     this.lines = compile(gl, LINE_VERTEX, LINE_FRAGMENT);
     this.lineColour = gl.getUniformLocation(this.lines.program, "u_colour");
     gl.useProgram(this.points.program);
-    gl.uniform1f(gl.getUniformLocation(this.points.program, "u_size"), POINT_SIZE);
-    gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), new Float32Array(KIND_COLOURS.flat()));
+    this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
+    const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
+    gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
   }
 
   private buffer(program: WebGLProgram, name: string, data: Float32Array | Uint8Array, size: number): WebGLBuffer {
@@ -100,8 +105,7 @@ export class Renderer implements Drawer {
     for (const buffer of drawn.buffers) this.gl.deleteBuffer(buffer);
   }
 
-  /** Adds a tile's points to what is drawn. */
-  addPoints(points: Points): void {
+  private upload(points: Points): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
@@ -109,7 +113,22 @@ export class Renderer implements Drawer {
       this.buffer(this.points.program, "a_kind", points.kinds, 1),
     ];
     this.gl.bindVertexArray(null);
-    this.batches.push({ vao, buffers, centre: points.centre, count: points.kinds.length });
+    return { vao, buffers, centre: points.centre, count: points.kinds.length };
+  }
+
+  /** Adds a tile's points to what is drawn. */
+  addPoints(points: Points): void {
+    this.batches.push(this.upload(points));
+  }
+
+  /** Draws markers at `offsets` from `centre` under `name`, in place of what was drawn under it. */
+  setMarkers(name: string, markers: { centre: Vec3; offsets: Float32Array } | undefined): void {
+    const old = this.markers.get(name);
+    if (old !== undefined) this.release(old);
+    this.markers.delete(name);
+    if (markers === undefined) return;
+    const kinds = new Uint8Array(markers.offsets.length / 3).fill(MARKER_INDEX);
+    this.markers.set(name, this.upload({ ...markers, kinds }));
   }
 
   /** Draws `lines` under `name`, in place of what was drawn under it; nothing for none. */
@@ -141,7 +160,10 @@ export class Renderer implements Drawer {
       this.drawOne(this.lines, frame, outline, gl.LINES);
     }
     this.use(this.points, frame);
+    gl.uniform1f(this.pointSize, POINT_SIZE);
     for (const batch of this.batches) this.drawOne(this.points, frame, batch, gl.POINTS);
+    gl.uniform1f(this.pointSize, MARKER_SIZE);
+    for (const marker of this.markers.values()) this.drawOne(this.points, frame, marker, gl.POINTS);
   }
 
   private use(program: Program, frame: { axes: Mat3; projection: Float32Array }): void {
@@ -165,9 +187,10 @@ export class Renderer implements Drawer {
 
   /** Lets go of everything drawn, as when the view closes. */
   dispose(): void {
-    for (const drawn of [...this.batches, ...this.outlines.values()]) this.release(drawn);
+    for (const drawn of [...this.batches, ...this.outlines.values(), ...this.markers.values()]) this.release(drawn);
     this.batches.length = 0;
     this.outlines.clear();
+    this.markers.clear();
   }
 
   /** Gives the context back to the browser, which keeps only so many: once its canvas is gone

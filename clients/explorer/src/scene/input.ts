@@ -11,6 +11,8 @@ export interface Gestures {
   click: (x: number, y: number) => void;
   doubleClick: (x: number, y: number) => void;
   hover: (x: number, y: number) => void;
+  /** The pointer left the view, or began to move it: nothing is under it to name. */
+  leave: () => void;
 }
 
 interface Press {
@@ -40,6 +42,7 @@ export function bindMouse(canvas: HTMLElement, gestures: Gestures): () => void {
     held.x = event.clientX;
     held.y = event.clientY;
     if (isClick(held.travelled)) return;
+    gestures.leave();
     if (held.panning) gestures.pan(dx, dy);
     else gestures.turn(dx, dy);
   };
@@ -69,11 +72,13 @@ export function bindMouse(canvas: HTMLElement, gestures: Gestures): () => void {
   );
   // A drag the browser takes over ends without a pointerup.
   canvas.addEventListener("pointercancel", end, options);
+  canvas.addEventListener("pointerleave", () => gestures.leave(), options);
   canvas.addEventListener("lostpointercapture", end, options);
   canvas.addEventListener(
     "wheel",
     (event) => {
       event.preventDefault();
+      gestures.leave();
       gestures.zoom(-wheelSteps(event.deltaY, event.deltaMode));
     },
     { ...options, passive: false },

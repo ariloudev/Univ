@@ -11,11 +11,14 @@ export const UNREACHABLE = "urn:univ-explorer:problem:server-unreachable";
 export class ApiError extends Error {
   readonly status: number;
   readonly title: string;
+  /** The problem's type URI, where it gave one. */
+  readonly type: string | undefined;
 
-  constructor(status: number, title: string) {
+  constructor(status: number, title: string, type?: string) {
     super(`${status} ${title}`);
     this.status = status;
     this.title = title;
+    this.type = type;
   }
 }
 
@@ -64,6 +67,8 @@ export interface ReadOptions {
   signal?: AbortSignal;
   /** Told the seconds each wait for the rate limit lasts, as it begins. */
   onWait?: (seconds: number) => void;
+  /** Statuses besides 2xx answered with the response rather than as a problem. */
+  accept?: readonly number[];
 }
 
 /** The URL of `path` pinned to `release`, if one is given. */
@@ -90,7 +95,8 @@ async function problemOf(response: Response): Promise<Error> {
       : undefined;
   if (member("type") === UNREACHABLE) return new Unreachable(String(member("address")));
   const title = member("title");
-  return new ApiError(response.status, typeof title === "string" ? title : response.statusText);
+  const type = member("type");
+  return new ApiError(response.status, typeof title === "string" ? title : response.statusText, typeof type === "string" ? type : undefined);
 }
 
 /** Waits until reads through `http` may resume, telling `onWait` of a wait. */
@@ -117,7 +123,7 @@ export async function read(path: string, options: ReadOptions = {}): Promise<Res
       resumeAt.set(http, Math.max(resumeAt.get(http) ?? 0, until));
       continue;
     }
-    if (!response.ok) throw await problemOf(response);
+    if (!response.ok && options.accept?.includes(response.status) !== true) throw await problemOf(response);
     return response;
   }
 }
