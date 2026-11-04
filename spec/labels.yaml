@@ -3,11 +3,11 @@ counters:
   FG: 12
   F: 34
   RQ: 115
-  AC: 326
+  AC: 335
   CMP: 48
   CON: 9
   QA: 4
-  ADR: 27
+  ADR: 28
 bindings:
   - key: 01a19f1a-685d-7357-b67e-d658085bf5c8
     label: P-1
@@ -1199,3 +1199,25 @@ bindings:
     label: AC-324
   - key: 01a1a25a-c0ef-776c-a6c7-886f2de1845d
     label: AC-325
+  - key: 01a1a2b8-447e-752b-832a-97474716125a
+    label: ADR-27
+    publishedState: accepted
+    publishedHistory: 00d7a093050020ea1efd3faabef952774b8634327aff184e7d8ea5d5b49fd0f9
+  - key: 01a1a2b8-447e-752b-832a-974f9a8253a9
+    label: AC-332
+  - key: 01a1a2b8-447e-752b-832a-9750ec8ef08a
+    label: AC-333
+  - key: 01a1a2b8-447e-752b-832a-975136ea867e
+    label: AC-334
+  - key: 01a1a304-2788-77fb-8f0d-273901bad9b4
+    label: AC-326
+  - key: 01a1a304-2788-77fb-8f0d-273ac3c97e3c
+    label: AC-328
+  - key: 01a1a304-2788-77fb-8f0d-273b90e08a90
+    label: AC-329
+  - key: 01a1a304-2788-77fb-8f0d-273c7a6188dc
+    label: AC-330
+  - key: 01a1a304-4ae3-74cc-a986-969a727616ef
+    label: AC-327
+  - key: 01a1a304-6c1b-7575-8a30-d059e1d0fd0e
+    label: AC-331
