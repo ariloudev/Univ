@@ -36,10 +36,10 @@ describe("choosing tiles", () => {
     expect(apparentSize(TILES[3] as Tile, [300, 300, 300])).toBeGreaterThan(apparentSize(TILES[2] as Tile, [300, 300, 300]));
   });
 
-  it("waits for a tile's parent, and skips tiles too small to see", () => {
+  it("waits for a tile's parent, and fetches even the smallest on screen in the end", () => {
     const held = new Set(["web/r", "stars/r"]);
     expect(nextTiles(TILES, held, new Set(), 0, [300, 300, 300], 10).map((t) => t.id)).not.toContain("web/r70");
-    expect(nextTiles(TILES, held, new Set(), 0, [1e6, 0, 0], 10)).toEqual([]);
+    expect(nextTiles(TILES, held, new Set(), 0, [1e6, 0, 0], 10).map((t) => t.id)).toEqual(["web/r7", "web/r0"]);
   });
 
   it("holds no more than 3,000,000 points", () => {

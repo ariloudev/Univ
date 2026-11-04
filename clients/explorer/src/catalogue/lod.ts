@@ -21,9 +21,6 @@ export interface Tile {
 /** The most points the explorer holds at once. */
 export const POINT_BUDGET = 3_000_000;
 
-/** How large a tile must look, edge over distance, to be worth fetching. */
-const WORTH = 0.35;
-
 /** How large `tile` looks from `eye`: its edge over its distance, its cube's nearest reach. */
 export function apparentSize(tile: Tile, eye: Vec3): number {
   const reach = norm(sub(tile.centre, eye)) - tile.edge * 0.87;
@@ -31,7 +28,8 @@ export function apparentSize(tile: Tile, eye: Vec3): number {
 }
 
 /** The tiles to fetch next, at most `count`: every root first, then the children of the tiles
- * held, largest on screen first, while they look large enough and fit in the budget. */
+ * held, largest on screen first, while they fit in the budget. A release within the budget is
+ * fetched whole, so that no region stays sparser than its neighbours once loading ends. */
 export function nextTiles(
   tiles: readonly Tile[],
   held: ReadonlySet<string>,
@@ -46,7 +44,6 @@ export function nextTiles(
   const ranked = open
     .filter((t) => t.parent !== undefined && held.has(t.parent))
     .map((t) => ({ tile: t, size: apparentSize(t, eye) }))
-    .filter(({ size }) => size >= WORTH)
     .sort((a, b) => b.size - a.size);
   const chosen: Tile[] = [];
   let points = heldPoints;
