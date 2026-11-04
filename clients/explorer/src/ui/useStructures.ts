@@ -90,18 +90,19 @@ function drawAll(world: World, structures: Structures): void {
   world.names = [...structures.drawings.values()].flatMap((d) =>
     d.centre === undefined ? [] : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name }],
   );
-  world.controller.invalidate();
 }
 
 /** The structures of `release`, drawn into `world` once the rotations of its frames are read,
  * the one `chosen` in the chosen colour. */
 export function useStructures(release: number, world: World | undefined, rotations: Rotations | undefined, chosen?: string): Structures {
   const [structures, setStructures] = useState<Structures>(NONE);
+  // After the render that holds them: a frame drawn before React has added the names' elements
+  // would place none, and a still view draws no other.
   useEffect(() => {
     if (world === undefined) return;
     world.renderer.choose(chosen === undefined ? undefined : drawnAs(chosen));
     world.controller.invalidate();
-  }, [world, chosen]);
+  }, [world, structures, chosen]);
   useEffect(() => {
     if (world === undefined || rotations === undefined) return;
     const abort = new AbortController();

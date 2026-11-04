@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { structuresOf } from "../api/structures.ts";
@@ -89,5 +89,15 @@ describe("the chosen structure", () => {
     expect(choose).toHaveBeenLastCalledWith("structure:shapley-supercluster");
     hook.rerender({ chosen: undefined });
     expect(choose).toHaveBeenLastCalledWith(undefined);
+  });
+
+  it("asks for a frame once the structures read are rendered, so that their names are placed", async () => {
+    vi.stubGlobal("fetch", vi.fn((url: string) => Promise.resolve(Response.json(url.startsWith("/v1/structures?") ? { release: 7, structures: [], next: null } : {}))));
+    const world = fakeWorld();
+    const invalidate = vi.spyOn(world.controller, "invalidate");
+    const hook = renderHook(() => useStructures(7, world, manifestOf("stars").rotations));
+    const before = invalidate.mock.calls.length;
+    await waitFor(() => expect(hook.result.current.list).toEqual([]));
+    await waitFor(() => expect(invalidate.mock.calls.length).toBeGreaterThan(before));
   });
 });
