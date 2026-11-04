@@ -39,17 +39,14 @@ export function pan(view: View, toFrame: Mat3, dx: number, dy: number, height: n
   return { ...view, focus: add(view.focus, move) };
 }
 
-/** Whether a press that moved `dx`, `dy` pixels in all is a click. */
-export const isClick = (dx: number, dy: number): boolean => Math.hypot(dx, dy) < CLICK_SLOP;
+/** Whether a press whose pointer travelled `distance` pixels in all is a click. */
+export const isClick = (distance: number): boolean => distance < CLICK_SLOP;
 
 /** The distance to view a thing `away` megaparsecs from Earth from, `size` across where known. */
 export function viewingDistance(away: number, size?: number): number {
   if (size !== undefined && size > 0) return clampDistance(size * 2.5);
   return clampDistance(Math.max(away * 0.05, 1e-6));
 }
-
-/** The view of `focus` from `distance`, keeping the direction it is seen from. */
-export const arriving = (view: View, focus: Vec3, distance: number): View => ({ ...view, focus, distance });
 
 /** The view `t` of the way (0 to 1) from `from` to `to`: the focus moved, the distance scaled. */
 export function between(from: View, to: View, t: number): View {

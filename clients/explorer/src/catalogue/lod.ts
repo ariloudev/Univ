@@ -30,14 +30,14 @@ export function apparentSize(tile: Tile, eye: Vec3): number {
 /** The tiles to fetch next, at most `count`: every root first, then the children of the tiles
  * held, largest on screen first, while they fit in the budget. A release within the budget is
  * fetched whole, so that no region stays sparser than its neighbours once loading ends. */
-export function nextTiles(
-  tiles: readonly Tile[],
+export function nextTiles<T extends Tile>(
+  tiles: readonly T[],
   held: ReadonlySet<string>,
   pending: ReadonlySet<string>,
   heldPoints: number,
   eye: Vec3,
   count: number,
-): Tile[] {
+): T[] {
   const open = tiles.filter((t) => !held.has(t.id) && !pending.has(t.id));
   const roots = open.filter((t) => t.parent === undefined);
   if (roots.length > 0) return roots.slice(0, count);
@@ -45,7 +45,7 @@ export function nextTiles(
     .filter((t) => t.parent !== undefined && held.has(t.parent))
     .map((t) => ({ tile: t, size: apparentSize(t, eye) }))
     .sort((a, b) => b.size - a.size);
-  const chosen: Tile[] = [];
+  const chosen: T[] = [];
   let points = heldPoints;
   for (const { tile } of ranked) {
     if (chosen.length >= count) break;

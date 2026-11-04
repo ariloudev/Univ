@@ -1,12 +1,18 @@
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
-import { cssColour } from "../scene/kinds.ts";
-import type { World } from "./useWorld.ts";
+import { KINDS, cssColour } from "../scene/kinds.ts";
+import type { Controller } from "../scene/controller.ts";
+
+interface PanelsProps {
+  controller: Controller;
+  catalogue: Tally | undefined;
+  release: number;
+  cosmology: string;
+}
 
 /** The panels around the view: where the eye is, the axes, the key and the credits. */
-export function Panels({ world, release, cosmology }: { world: World; tick: number; release: number; cosmology: string }) {
-  const { controller, catalogue } = world;
+export function Panels({ controller, catalogue, release, cosmology }: PanelsProps) {
   return (
     <>
       <div className="absolute top-3 left-3 w-80 space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
@@ -28,7 +34,7 @@ export function Panels({ world, release, cosmology }: { world: World; tick: numb
               className="rounded border border-line bg-space px-2 py-1"
             >
               {AXES.map((axes) => (
-                <option key={axes} value={axes}>
+                <option key={axes} value={axes} disabled={!controller.canShow(axes)}>
                   {axes}
                 </option>
               ))}
@@ -44,7 +50,7 @@ export function Panels({ world, release, cosmology }: { world: World; tick: numb
             Return to Earth
           </button>
         </div>
-        <FrameStatement axes={controller.axes} basis={controller.basis} cosmology={cosmology} />
+        <FrameStatement axes={controller.axes} basis={controller.frame.basis} cosmology={cosmology} />
       </div>
       {catalogue === undefined ? null : <Key catalogue={catalogue} release={release} />}
     </>
@@ -60,8 +66,11 @@ function FrameStatement({ axes, basis, cosmology }: { axes: Axes; basis: string;
   );
 }
 
-function Key({ catalogue, release }: { catalogue: Catalogue; release: number }) {
-  const kinds = [...catalogue.kinds.entries()];
+/** What the key reads of the catalogue. */
+export type Tally = Pick<Catalogue, "kinds" | "failed" | "unread" | "credits">;
+
+function Key({ catalogue, release }: { catalogue: Tally; release: number }) {
+  const kinds = KINDS.map((kind, i) => [kind, catalogue.kinds[i] ?? 0] as const);
   const credits = catalogue.credits();
   return (
     <div className="absolute right-3 bottom-3 max-h-[60%] w-96 space-y-2 overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm">
@@ -77,6 +86,11 @@ function Key({ catalogue, release }: { catalogue: Catalogue; release: number }) 
       {catalogue.failed > 0 ? (
         <p role="status" className="text-warn">
           {catalogue.failed} tiles failed their check and are not drawn.
+        </p>
+      ) : null}
+      {catalogue.unread > 0 ? (
+        <p role="status" className="text-warn">
+          {catalogue.unread} tiles could not be read from Univ Server and are not drawn.
         </p>
       ) : null}
       <details>

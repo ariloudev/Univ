@@ -1,17 +1,12 @@
 // The view and what moves it (navigate-with-the-mouse): turning, zooming, moving the focus,
 // flights, the chosen axes, and one drawing for each animation frame that needs one.
 
-import type { View } from "./camera.ts";
-import { FLIGHT_MS, arriving, between, pan, turn, zoom } from "./controls.ts";
-import { type Axes, type Rotations, equatorRing, frameOf, ringRadius } from "./frames.ts";
-import type { Lines } from "./renderer.ts";
-import { IDENTITY, type Mat3, ORIGIN, type Vec3 } from "./vec.ts";
-
-/** What the controller draws on. */
-export interface Drawer {
-  draw: (view: View, toFrame: Mat3, width: number, height: number) => void;
-  setLines: (name: string, lines: Lines | undefined) => void;
-}
+import type { Rotations } from "../api/schemas.ts";
+import { type View, eyeOf } from "./camera.ts";
+import { FLIGHT_MS, between, pan, turn, zoom } from "./controls.ts";
+import type { Drawer } from "./drawing.ts";
+import { type Axes, EQUATORIAL, type Frame, equatorRing, frameOf, ringRadius } from "./frames.ts";
+import { type Mat3, ORIGIN, type Vec3 } from "./vec.ts";
 
 export interface Surroundings {
   /** The canvas's size in CSS pixels and the device's pixels per CSS pixel. */
@@ -32,9 +27,9 @@ interface Flight {
 
 export class Controller {
   view: View = OPENING;
-  axes: Axes = "galactic";
-  toFrame: Mat3 = IDENTITY;
-  basis = "";
+  /** The ICRS's own axes until the release's rotations arrive and galactic is chosen. */
+  axes: Axes = "equatorial";
+  frame: Frame = EQUATORIAL;
   private rotations: Rotations | undefined;
   private flight: Flight | undefined;
   private dirty = true;
@@ -46,6 +41,15 @@ export class Controller {
   constructor(drawer: Drawer, around: Surroundings) {
     this.drawer = drawer;
     this.around = around;
+  }
+
+  get toFrame(): Mat3 {
+    return this.frame.toFrame;
+  }
+
+  /** The eye, ICRS megaparsecs. */
+  get eye(): Vec3 {
+    return eyeOf(this.view, this.toFrame);
   }
 
   /** Called whenever the view or the axes change. */
@@ -60,44 +64,49 @@ export class Controller {
     for (const listener of this.listeners) listener();
   }
 
-  /** The rotations of the release, from its manifests. */
+  /** Moves the view at once, ending any flight. */
+  private steer(view: View): void {
+    this.flight = undefined;
+    this.changed(view);
+  }
+
+  /** The rotations of the release, from its manifests; the view turns to galactic axes. */
   setRotations(rotations: Rotations): void {
     this.rotations = rotations;
-    this.setAxes(this.axes);
+    this.setAxes("galactic");
+  }
+
+  /** Whether `axes` can be shown: a rotated frame needs the release's rotations. */
+  canShow(axes: Axes): boolean {
+    return frameOf(axes, this.rotations) !== undefined;
   }
 
   setAxes(axes: Axes): void {
+    const frame = frameOf(axes, this.rotations);
+    if (frame === undefined) return;
     this.axes = axes;
-    if (this.rotations !== undefined) {
-      const frame = frameOf(axes, this.rotations);
-      this.toFrame = frame.toFrame;
-      this.basis = frame.basis;
-    }
+    this.frame = frame;
     this.ring = 0;
     this.changed(this.view);
   }
 
   turn(dx: number, dy: number): void {
-    this.flight = undefined;
-    this.changed(turn(this.view, dx, dy));
+    this.steer(turn(this.view, dx, dy));
   }
 
   pan(dx: number, dy: number): void {
-    this.flight = undefined;
-    this.changed(pan(this.view, this.toFrame, dx, dy, this.around.size().height));
+    this.steer(pan(this.view, this.toFrame, dx, dy, this.around.size().height));
   }
 
   zoom(steps: number): void {
-    this.flight = undefined;
-    this.changed(zoom(this.view, steps));
+    this.steer(zoom(this.view, steps));
   }
 
   /** Flies to `focus`, seen from `distance`, or moves there at once for reduced motion. */
   flyTo(focus: Vec3, distance: number): void {
-    const to = arriving(this.view, focus, distance);
+    const to = { ...this.view, focus, distance };
     if (this.around.reducedMotion()) {
-      this.flight = undefined;
-      this.changed(to);
+      this.steer(to);
       return;
     }
     this.flight = { from: this.view, to, start: this.around.now() };
@@ -114,15 +123,15 @@ export class Controller {
     return this.flight !== undefined;
   }
 
-  /** Advances any flight and draws, if anything changed since the last frame. */
-  frame(): void {
+  /** Advances any flight and draws if anything changed since the last frame; whether it drew. */
+  tick(): boolean {
     if (this.flight !== undefined) {
       const t = Math.min(1, (this.around.now() - this.flight.start) / FLIGHT_MS);
       const view = between(this.flight.from, this.flight.to, t);
       if (t >= 1) this.flight = undefined;
       this.changed(view);
     }
-    if (!this.dirty) return;
+    if (!this.dirty) return false;
     this.dirty = false;
     const radius = ringRadius(this.view.distance);
     if (radius !== this.ring) {
@@ -131,6 +140,7 @@ export class Controller {
     }
     const { width, height, ratio } = this.around.size();
     this.drawer.draw(this.view, this.toFrame, Math.round(width * ratio), Math.round(height * ratio));
+    return true;
   }
 
   /** Asks for a drawing on the next frame, as when new points arrive. */

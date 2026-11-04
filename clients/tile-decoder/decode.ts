@@ -195,8 +195,7 @@ export function decodeTile(
     }
     const index = view.getUint16(sourceColumn + 2 * k, true);
     const source = sources.get(index) ?? fail(`point ${k} names source ${index}, which the manifest does not list`);
-    // The size was checked above, so the byte is there.
-    const code = bytes[kindColumn + k] ?? fail(`point ${k} has no kind of value`);
+    const code = view.getUint8(kindColumn + k);
     const kind = kinds[code] ?? fail(`point ${k} has the kind of value ${code}, which the manifest does not list`);
     points[k] = {
       x: coordinate(0),

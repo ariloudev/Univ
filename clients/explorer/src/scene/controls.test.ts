@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { MAX_DISTANCE, MIN_DISTANCE, type View, project, unitsPerPixel } from "./camera.ts";
 import { CLICK_SLOP, STEP_FACTOR, between, isClick, pan, viewingDistance, wheelSteps, zoom } from "./controls.ts";
-import { IDENTITY, type Vec3 } from "./vec.ts";
+import { IDENTITY, type Vec3, norm, sub } from "./vec.ts";
 
 const view: View = { focus: [10, 0, 0], distance: 1, yaw: 0.3, pitch: 0.2 };
 
@@ -30,7 +30,7 @@ describe("the mouse", () => {
 
   it("moves the focus in the plane facing the eye by the distance dragged at its depth", () => {
     const moved = pan(view, IDENTITY, 50, 0, 600);
-    const shift = Math.hypot(...([0, 1, 2].map((i) => (moved.focus[i] ?? 0) - (view.focus[i] ?? 0)) as [number, number, number]));
+    const shift = norm(sub(moved.focus, view.focus));
     expect(shift).toBeCloseTo(50 * unitsPerPixel(view, 600));
     // The old focus now lies 50 pixels to the right of the centre.
     const old = project(moved, IDENTITY, view.focus, 800, 600);
@@ -40,8 +40,8 @@ describe("the mouse", () => {
 
   it("calls a press that moves less than 6 pixels a click", () => {
     expect(CLICK_SLOP).toBe(6);
-    expect(isClick(3, 4)).toBe(true);
-    expect(isClick(5, 4)).toBe(false);
+    expect(isClick(5.9)).toBe(true);
+    expect(isClick(6)).toBe(false);
   });
 
   it("flies by easing the focus and scaling the distance, ending where it was sent", () => {

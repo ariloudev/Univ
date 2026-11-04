@@ -1,8 +1,12 @@
 // Draws the scene with WebGL2 (draw-the-catalogues, navigate-with-the-mouse): one point pass,
 // blended additively so that no depth sorting is needed, and one line pass for the outlines.
+// Each batch is placed relative to the eye: its centre's offset from the eye is worked out in
+// double precision once a frame, and its points' small offsets are float32.
 
-import type { View } from "./camera.ts";
-import { axesOf, centreFromEye, projection } from "./projection.ts";
+import { type View, eyeAxes, eyeOf } from "./camera.ts";
+import type { Drawer, Lines } from "./drawing.ts";
+import { KIND_COLOURS } from "./kinds.ts";
+import { projection } from "./projection.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
 
@@ -16,17 +20,26 @@ export interface Points {
   kinds: Uint8Array;
 }
 
-/** Line segments to draw: pairs of offsets from `centre`, in one colour (RGBA, 0 to 1). */
-export interface Lines {
-  centre: Vec3;
-  offsets: Float32Array;
-  colour: readonly [number, number, number, number];
-}
+/** The diameter of a point, in device pixels. */
+const POINT_SIZE = 2;
 
 interface Drawn {
   vao: WebGLVertexArrayObject;
+  buffers: WebGLBuffer[];
   centre: Vec3;
   count: number;
+}
+
+interface Outline extends Drawn {
+  colour: Float32Array;
+}
+
+/** A linked program and the locations of its uniforms. */
+interface Program {
+  program: WebGLProgram;
+  axes: WebGLUniformLocation | null;
+  centre: WebGLUniformLocation | null;
+  projection: WebGLUniformLocation | null;
 }
 
 function attach(gl: WebGL2RenderingContext, program: WebGLProgram, type: number, source: string): void {
@@ -37,7 +50,7 @@ function attach(gl: WebGL2RenderingContext, program: WebGLProgram, type: number,
   gl.attachShader(program, shader);
 }
 
-function compile(gl: WebGL2RenderingContext, vertex: string, fragment: string): WebGLProgram {
+function compile(gl: WebGL2RenderingContext, vertex: string, fragment: string): Program {
   const program = gl.createProgram();
   attach(gl, program, gl.VERTEX_SHADER, vertex);
   attach(gl, program, gl.FRAGMENT_SHADER, fragment);
@@ -45,62 +58,72 @@ function compile(gl: WebGL2RenderingContext, vertex: string, fragment: string): 
   if (gl.getProgramParameter(program, gl.LINK_STATUS) !== true) {
     throw new NoWebGL(gl.getProgramInfoLog(program) ?? "the shaders did not link");
   }
-  return program;
+  const at = (name: string) => gl.getUniformLocation(program, name);
+  return { program, axes: at("u_axes"), centre: at("u_centre"), projection: at("u_projection") };
 }
 
-export class Renderer {
+export class Renderer implements Drawer {
   private readonly gl: WebGL2RenderingContext;
-  private readonly points: WebGLProgram;
-  private readonly lines: WebGLProgram;
+  private readonly points: Program;
+  private readonly lines: Program;
+  private readonly lineColour: WebGLUniformLocation | null;
   private readonly batches: Drawn[] = [];
-  private outlines = new Map<string, Drawn & { colour: Lines["colour"] }>();
-  private colours = new Float32Array(16);
-  pointSize = 2;
+  private readonly outlines = new Map<string, Outline>();
 
   constructor(canvas: HTMLCanvasElement) {
-    const gl = canvas.getContext("webgl2", { antialias: true, alpha: false });
+    // No multisampling: the points soften their own edges, and samples multiply blending's cost.
+    const gl = canvas.getContext("webgl2", { antialias: false, alpha: false });
     if (gl === null) throw new NoWebGL("WebGL2 is not available");
     this.gl = gl;
     this.points = compile(gl, POINT_VERTEX, POINT_FRAGMENT);
     this.lines = compile(gl, LINE_VERTEX, LINE_FRAGMENT);
+    this.lineColour = gl.getUniformLocation(this.lines.program, "u_colour");
+    gl.useProgram(this.points.program);
+    gl.uniform1f(gl.getUniformLocation(this.points.program, "u_size"), POINT_SIZE);
+    gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), new Float32Array(KIND_COLOURS.flat()));
   }
 
-  /** The colour of each kind of value, in the manifests' order of kinds. */
-  setColours(colours: readonly (readonly [number, number, number, number])[]): void {
-    this.colours = new Float32Array(colours.flat());
-  }
-
-  private buffer(program: WebGLProgram, name: string, data: Float32Array | Uint8Array, size: number): void {
+  private buffer(program: WebGLProgram, name: string, data: Float32Array | Uint8Array, size: number): WebGLBuffer {
     const gl = this.gl;
+    const buffer = gl.createBuffer();
     const location = gl.getAttribLocation(program, name);
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(location);
     const type = data instanceof Uint8Array ? gl.UNSIGNED_BYTE : gl.FLOAT;
     gl.vertexAttribPointer(location, size, type, false, 0, 0);
+    return buffer;
+  }
+
+  private release(drawn: Drawn): void {
+    this.gl.deleteVertexArray(drawn.vao);
+    for (const buffer of drawn.buffers) this.gl.deleteBuffer(buffer);
   }
 
   /** Adds a tile's points to what is drawn. */
   addPoints(points: Points): void {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
-    this.buffer(this.points, "a_offset", points.offsets, 3);
-    this.buffer(this.points, "a_kind", points.kinds, 1);
+    const buffers = [
+      this.buffer(this.points.program, "a_offset", points.offsets, 3),
+      this.buffer(this.points.program, "a_kind", points.kinds, 1),
+    ];
     this.gl.bindVertexArray(null);
-    this.batches.push({ vao, centre: points.centre, count: points.kinds.length });
+    this.batches.push({ vao, buffers, centre: points.centre, count: points.kinds.length });
   }
 
   /** Draws `lines` under `name`, in place of what was drawn under it; nothing for none. */
   setLines(name: string, lines: Lines | undefined): void {
     const old = this.outlines.get(name);
-    if (old !== undefined) this.gl.deleteVertexArray(old.vao);
+    if (old !== undefined) this.release(old);
     this.outlines.delete(name);
     if (lines === undefined) return;
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
-    this.buffer(this.lines, "a_offset", lines.offsets, 3);
+    const buffers = [this.buffer(this.lines.program, "a_offset", lines.offsets, 3)];
     this.gl.bindVertexArray(null);
-    this.outlines.set(name, { vao, centre: lines.centre, count: lines.offsets.length / 3, colour: lines.colour });
+    const count = lines.offsets.length / 3;
+    this.outlines.set(name, { vao, buffers, centre: lines.centre, count, colour: new Float32Array(lines.colour) });
   }
 
   /** Draws the view on a canvas `width` × `height` device pixels. */
@@ -111,39 +134,45 @@ export class Renderer {
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    const projection_ = projection(view, width / height);
-    const axes = axesOf(view, toFrame);
-    this.pass(this.lines, projection_, axes, () => {
-      for (const outline of this.outlines.values()) {
-        gl.uniform4fv(gl.getUniformLocation(this.lines, "u_colour"), [...outline.colour]);
-        this.drawOne(this.lines, view, toFrame, outline, gl.LINES);
-      }
-    });
-    this.pass(this.points, projection_, axes, () => {
-      gl.uniform1f(gl.getUniformLocation(this.points, "u_size"), this.pointSize);
-      gl.uniform4fv(gl.getUniformLocation(this.points, "u_colours"), this.colours);
-      for (const batch of this.batches) this.drawOne(this.points, view, toFrame, batch, gl.POINTS);
-    });
+    const frame = { axes: eyeAxes(view, toFrame), eye: eyeOf(view, toFrame), projection: projection(view, width / height) };
+    this.use(this.lines, frame);
+    for (const outline of this.outlines.values()) {
+      gl.uniform4fv(this.lineColour, outline.colour);
+      this.drawOne(this.lines, frame, outline, gl.LINES);
+    }
+    this.use(this.points, frame);
+    for (const batch of this.batches) this.drawOne(this.points, frame, batch, gl.POINTS);
   }
 
-  private pass(program: WebGLProgram, projection_: Float32Array, axes: Float32Array, body: () => void): void {
+  private use(program: Program, frame: { axes: Mat3; projection: Float32Array }): void {
     const gl = this.gl;
-    gl.useProgram(program);
-    gl.uniformMatrix4fv(gl.getUniformLocation(program, "u_projection"), false, projection_);
-    gl.uniformMatrix3fv(gl.getUniformLocation(program, "u_axes"), true, axes);
-    body();
+    gl.useProgram(program.program);
+    gl.uniformMatrix4fv(program.projection, false, frame.projection);
+    gl.uniformMatrix3fv(program.axes, true, frame.axes.flat());
   }
 
-  private drawOne(program: WebGLProgram, view: View, toFrame: Mat3, drawn: Drawn, mode: number): void {
-    const gl = this.gl;
-    gl.uniform3fv(gl.getUniformLocation(program, "u_centre"), centreFromEye(view, toFrame, drawn.centre));
-    gl.bindVertexArray(drawn.vao);
-    gl.drawArrays(mode, 0, drawn.count);
+  /** Draws `drawn`, its centre placed from the eye in double precision. */
+  private drawOne(program: Program, frame: { axes: Mat3; eye: Vec3 }, drawn: Drawn, mode: number): void {
+    const { axes, eye } = frame;
+    const dx = drawn.centre[0] - eye[0];
+    const dy = drawn.centre[1] - eye[1];
+    const dz = drawn.centre[2] - eye[2];
+    const row = (r: Vec3) => r[0] * dx + r[1] * dy + r[2] * dz;
+    this.gl.uniform3f(program.centre, row(axes[0]), row(axes[1]), row(axes[2]));
+    this.gl.bindVertexArray(drawn.vao);
+    this.gl.drawArrays(mode, 0, drawn.count);
   }
 
-  /** Lets go of every point drawn, as when another release is chosen. */
-  clearPoints(): void {
-    for (const batch of this.batches) this.gl.deleteVertexArray(batch.vao);
+  /** Lets go of everything drawn, as when the view closes. */
+  dispose(): void {
+    for (const drawn of [...this.batches, ...this.outlines.values()]) this.release(drawn);
     this.batches.length = 0;
+    this.outlines.clear();
+  }
+
+  /** Gives the context back to the browser, which keeps only so many: once its canvas is gone
+   * for good, since a canvas mounted again gets the same context, lost. */
+  loseContext(): void {
+    this.gl.getExtension("WEBGL_lose_context")?.loseContext();
   }
 }

@@ -32,13 +32,16 @@ export function apply(m: Mat3, v: Vec3): Vec3 {
 }
 
 /** The transpose of `m`: the inverse of a rotation. */
-export function transpose(m: Mat3): Mat3 {
+function transpose(m: Mat3): Mat3 {
   return [
     [m[0][0], m[1][0], m[2][0]],
     [m[0][1], m[1][1], m[2][1]],
     [m[0][2], m[1][2], m[2][2]],
   ];
 }
+
+/** The vector whose image under the rotation `m` is `v`: `m`'s axes back to the ICRS. */
+export const unapply = (m: Mat3, v: Vec3): Vec3 => apply(transpose(m), v);
 
 /** `a` times `b`. */
 export function multiply(a: Mat3, b: Mat3): Mat3 {

@@ -1,71 +1,65 @@
 // @vitest-environment node
-import { readFileSync } from "node:fs";
-
 import { describe, expect, it } from "vitest";
 
 import type { Http } from "../api/client.ts";
+import { DOMAINS, bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts";
 import { Catalogue } from "./catalogue.ts";
 import { domainsOf } from "./tiles.ts";
 
-const FIXTURES = new URL("../../../tile-decoder/fixtures/", import.meta.url);
-const DOMAINS = ["stars", "nearby_galaxies", "cosmic_web"];
-const read = (file: string) => readFileSync(new URL(file, FIXTURES), "utf8");
-
-const flip = (bytes: Uint8Array) => {
-  bytes[0] = (bytes[0] ?? 0) ^ 0xff;
-};
-
-/** The bytes of the fixture tile at `address` of `domain`, if there is one. */
-function tileBytes(domain: string, address: string): Uint8Array<ArrayBuffer> | undefined {
-  const tiles = JSON.parse(read(`${domain}.tiles.json`)) as { tiles: { address: string; hex: string }[] };
-  const found = tiles.tiles.find((t) => t.address === address);
-  return found === undefined ? undefined : Uint8Array.from(found.hex.match(/../g) ?? [], (b) => Number.parseInt(b, 16));
-}
-
-/** Univ Server's answer to `path` on the fixture release, `corrupt` (domain/address) altered. */
-function answer(path: string, corrupt?: string): Response {
+/** Univ Server's answer to `path` on the fixture release; `corrupt` (domain/address) altered,
+ * `missing` (domain/address) answered 503. */
+function answer(path: string, corrupt?: string, missing?: string): Response {
   if (path === "/v1/scale-domains") return Response.json({ release: 2, domains: DOMAINS.map((name) => ({ name })) });
   const manifest = /^\/v1\/scale-domains\/(\w+)\/manifest$/.exec(path);
-  if (manifest !== null) return new Response(read(`${manifest[1]}.manifest.json`));
+  if (manifest !== null) return new Response(fixtureText(`${manifest[1]}.manifest.json`));
   const [, domain = "", address = ""] = /^\/v1\/scale-domains\/(\w+)\/tiles\/(\w+)$/.exec(path) ?? [];
-  const bytes = tileBytes(domain, address);
-  if (bytes === undefined) return new Response("{}", { status: 404 });
-  if (`${domain}/${address}` === corrupt) flip(bytes);
+  const tile = fixtureTiles(domain).find((t) => t.address === address);
+  if (tile === undefined) return new Response("{}", { status: 404 });
+  if (`${domain}/${address}` === missing) return Response.json({ status: 503, title: "Unavailable" }, { status: 503 });
+  const bytes = bytesOf(tile.hex);
+  if (`${domain}/${address}` === corrupt) bytes[0] = (bytes[0] ?? 0) ^ 0xff;
   return new Response(bytes);
 }
 
 /** Univ Server on the tile decoder's fixtures: the fixture release's three domains. */
-function server(corrupt?: string): Http & { urls: string[] } {
+function server(corrupt?: string, missing?: string): Http & { urls: string[] } {
   const urls: string[] = [];
   return {
     urls,
     fetch: (url) => {
       urls.push(url);
-      return Promise.resolve(answer(url.split("?")[0] ?? "", corrupt));
+      return Promise.resolve(answer(url.split("?")[0] ?? "", corrupt, missing));
     },
     sleep: () => Promise.resolve(),
     now: () => 0,
   };
 }
 
-async function settled(catalogue: Catalogue, changes: { count: number }, expected: number) {
-  for (let i = 0; i < 200 && changes.count < expected; i += 1) await new Promise((r) => setTimeout(r, 1));
+/** Waits until `done` holds, failing after a second. */
+async function until(done: () => boolean): Promise<void> {
+  for (let i = 0; i < 1000; i += 1) {
+    if (done()) return;
+    await new Promise((r) => setTimeout(r, 1));
+  }
+  throw new Error("the catalogue did not settle");
+}
+
+async function loaded(http: Http, drawn: string[]) {
+  const domains = await domainsOf(2, { http });
+  const catalogue = new Catalogue(2, domains, { onBatch: (b) => drawn.push(b.tile.id), onChange: () => undefined }, { http });
+  catalogue.update([0, 0, 0]);
   return catalogue;
 }
 
 describe("the catalogue", () => {
   it("draws every root tile, counts each kind of value, and credits the drawn domains' sources", async () => {
     const http = server();
-    const domains = await domainsOf(2, { http });
-    const changes = { count: 0 };
-    let batches = 0;
-    const catalogue = new Catalogue(2, domains, { onBatch: () => (batches += 1), onChange: () => (changes.count += 1) }, { http });
-    catalogue.update([0, 0, 0]);
-    await settled(catalogue, changes, 3);
-    expect(batches).toBe(3);
+    const drawn: string[] = [];
+    const catalogue = await loaded(http, drawn);
+    await until(() => drawn.length >= 3);
+    expect(drawn.slice(0, 3).sort()).toEqual(["cosmic_web/r", "nearby_galaxies/r", "stars/r"]);
     expect(http.urls.filter((u) => u.includes("/tiles/")).every((u) => u.endsWith("release=2"))).toBe(true);
-    expect(catalogue.points).toBeGreaterThan(0);
-    expect([...catalogue.kinds.keys()].every((k) => ["measured", "estimated", "inferred", "reconstructed"].includes(k))).toBe(true);
+    expect(catalogue.kinds.reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
     const credits = catalogue.credits();
     expect(credits.length).toBeGreaterThan(0);
     for (const credit of credits) {
@@ -76,14 +70,18 @@ describe("the catalogue", () => {
   });
 
   it("leaves a tile that fails its SHA-256 undrawn and counts it", async () => {
-    const http = server("stars/r");
-    const domains = await domainsOf(2, { http });
-    const changes = { count: 0 };
     const drawn: string[] = [];
-    const catalogue = new Catalogue(2, domains, { onBatch: (b) => drawn.push(b.tile.id), onChange: () => (changes.count += 1) }, { http });
-    catalogue.update([0, 0, 0]);
-    await settled(catalogue, changes, 3);
-    expect(catalogue.failed).toBe(1);
+    const catalogue = await loaded(server("stars/r"), drawn);
+    await until(() => catalogue.failed === 1 && drawn.length >= 2);
+    expect(drawn).not.toContain("stars/r");
+    expect(catalogue.unread).toBe(0);
+  });
+
+  it("does not count a tile Univ Server could not serve as failing its check", async () => {
+    const drawn: string[] = [];
+    const catalogue = await loaded(server(undefined, "stars/r"), drawn);
+    await until(() => drawn.length >= 2);
+    expect(catalogue.failed).toBe(0);
     expect(drawn).not.toContain("stars/r");
   });
 });

@@ -1,21 +1,14 @@
-// @vitest-environment node
-import { readFileSync } from "node:fs";
-
 import { describe, expect, it } from "vitest";
 
+import { manifestOf } from "../test/fixtures.ts";
 import { eyeOf, project } from "./camera.ts";
-import { Controller, type Drawer } from "./controller.ts";
+import { Controller } from "./controller.ts";
 import { FLIGHT_MS } from "./controls.ts";
-import type { Rotations } from "./frames.ts";
-import type { Lines } from "./renderer.ts";
+import type { Drawer, Lines } from "./drawing.ts";
 import { IDENTITY, type Vec3, apply, norm, sub } from "./vec.ts";
 
 // The rotations a tile manifest gives (the decoder's fixture of the stars domain).
-const ROTATIONS = (
-  JSON.parse(
-    readFileSync(new URL("../../../tile-decoder/fixtures/stars.manifest.json", import.meta.url), "utf8"),
-  ) as { rotations: Rotations }
-).rotations;
+const ROTATIONS = manifestOf("stars").rotations;
 const TO_SUPERGALACTIC = ROTATIONS.to_supergalactic;
 
 function setup(reduced = false) {
@@ -43,10 +36,10 @@ describe("the controller", () => {
     const { controller, advance } = setup();
     const target: Vec3 = [120, -40, 15];
     controller.flyTo(target, 5);
-    controller.frame();
+    controller.tick();
     expect(controller.flying).toBe(true);
     advance(FLIGHT_MS);
-    controller.frame();
+    controller.tick();
     expect(controller.flying).toBe(false);
     expect(FLIGHT_MS).toBeLessThanOrEqual(1500);
     const at = project(controller.view, controller.toFrame, target, 800, 600);
@@ -65,17 +58,17 @@ describe("the controller", () => {
     const { controller, advance } = setup();
     controller.flyTo([50, 0, 0], 2);
     advance(FLIGHT_MS);
-    controller.frame();
+    controller.tick();
     controller.returnToEarth();
     advance(FLIGHT_MS);
-    controller.frame();
+    controller.tick();
     expect(norm(controller.view.focus)).toBe(0);
   });
 
   it("draws the chosen frame's equator as a ring around Earth", () => {
     const { controller, drawn } = setup();
     controller.setAxes("supergalactic");
-    controller.frame();
+    controller.tick();
     const ring = drawn.lines.get("equator");
     expect(ring?.centre).toEqual([0, 0, 0]);
     const first: Vec3 = [ring?.offsets[0] ?? 0, ring?.offsets[1] ?? 0, ring?.offsets[2] ?? 0];
@@ -102,11 +95,27 @@ describe("the controller", () => {
 
   it("draws only when something changed", () => {
     const { controller, drawn } = setup();
-    controller.frame();
-    controller.frame();
+    expect(controller.tick()).toBe(true);
+    expect(controller.tick()).toBe(false);
     expect(drawn.draws).toBe(1);
     controller.turn(10, 0);
-    controller.frame();
+    controller.tick();
     expect(drawn.draws).toBe(2);
+  });
+
+  it("shows the ICRS's own axes until the release's rotations arrive, then galactic", () => {
+    const drawer: Drawer = { draw: () => undefined, setLines: () => undefined };
+    const controller = new Controller(drawer, {
+      size: () => ({ width: 800, height: 600, ratio: 1 }),
+      now: () => 0,
+      reducedMotion: () => false,
+    });
+    expect(controller.axes).toBe("equatorial");
+    expect(controller.canShow("galactic")).toBe(false);
+    controller.setAxes("supergalactic");
+    expect(controller.axes).toBe("equatorial");
+    controller.setRotations(ROTATIONS);
+    expect(controller.axes).toBe("galactic");
+    expect(controller.frame.basis).toContain("Hipparcos");
   });
 });
