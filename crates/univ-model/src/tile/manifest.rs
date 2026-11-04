@@ -282,3 +282,12 @@ pub struct NodeIndex {
     pub bounds: Bounds,
     pub sha256: String,
 }
+
+impl NodeIndex {
+    /// The address of the node above this one: its own without its last octant digit; none
+    /// for the root, `r`.
+    #[must_use]
+    pub fn parent(&self) -> Option<&str> {
+        (self.address.len() > 1).then(|| &self.address[..self.address.len() - 1])
+    }
+}

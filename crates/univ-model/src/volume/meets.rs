@@ -16,20 +16,8 @@
 use super::Region;
 use super::refine::Piece;
 use crate::geometry::{Aabb, Geometry, Member, Primitive, Shape};
-use crate::position::{Frame, Rotation, Vec3, between, cross, dot, scaled, zip};
+use crate::position::{Frame, Rotation, Vec3, add, between, cross, dot, norm, scaled, sub, zip};
 use crate::units::Unit;
-
-pub(super) fn norm(v: Vec3) -> f64 {
-    dot(v, v).sqrt()
-}
-
-pub(super) fn add(a: Vec3, b: Vec3) -> Vec3 {
-    zip(a, b, |x, y| x + y)
-}
-
-pub(super) fn sub(a: Vec3, b: Vec3) -> Vec3 {
-    zip(a, b, |x, y| x - y)
-}
 
 /// A solid as the image of the cube [-1, 1]³: `centre + Σ uᵢ axes[i]`, its axes orthogonal,
 /// or of the unit ball within it for an ellipsoid.

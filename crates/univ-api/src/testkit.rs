@@ -146,6 +146,18 @@ impl Sqlite {
 }
 
 /// The JSON document a response carries.
+/// The JSON pointers a refusal names, sorted.
+pub fn pointers(problem: &Value) -> Vec<String> {
+    let mut list: Vec<String> = problem["errors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|e| e["pointer"].as_str().unwrap().to_owned())
+        .collect();
+    list.sort();
+    list
+}
+
 pub fn body(response: &Response) -> Value {
     serde_json::from_slice(response.body.as_bytes())
         .unwrap_or_else(|error| panic!("{} carries no JSON: {error}", response.status))

@@ -57,6 +57,42 @@ impl Failures {
     }
 }
 
+/// The time a record or a bound of an interval gives in its members: an instant, or years
+/// before J2000.0, not both. A failure where it gives both, or, when `missing` is to be
+/// named, neither; `noun` names what gives it.
+pub(crate) fn at(
+    members: &Map<String, Value>,
+    base: &str,
+    noun: &str,
+    missing: bool,
+    failures: &mut Failures,
+) -> Option<univ_model::time::At> {
+    use univ_model::time::At;
+    let before = failures.len();
+    let instant = member::<String>(members, base, "instant", false, failures);
+    let years = member::<f64>(members, base, "years_before_j2000", false, failures);
+    match (instant, years) {
+        (Some(instant), None) => Some(At::Instant { instant }),
+        (None, Some(years_before_j2000)) => Some(At::YearsBefore { years_before_j2000 }),
+        (Some(_), Some(_)) => {
+            failures.add(
+                pointer(base, "years_before_j2000"),
+                format!("{noun} gives an instant or years before J2000.0, not both"),
+            );
+            None
+        }
+        (None, None) => {
+            if missing && failures.len() == before {
+                failures.add(
+                    base,
+                    format!("{noun} gives an instant or years_before_j2000"),
+                );
+            }
+            None
+        }
+    }
+}
+
 /// `value` as an object, or a failure saying what it should be.
 pub(crate) fn object<'a>(
     value: Option<&'a Value>,

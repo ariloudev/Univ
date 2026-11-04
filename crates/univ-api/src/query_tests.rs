@@ -5,11 +5,13 @@ use serde_json::{Value, json};
 use univ_model::position::{Frame, between};
 
 use crate::layers_fixture::{layer, publish, sn1987a};
-use crate::query_fixture::{Placed, STAR, STARS, galaxy, hits, pointers, query, sphere, volume_db};
+use crate::query_fixture::{
+    BODY, Placed, STARS, galaxy, group, hits, pointers, query, sphere, volume_db,
+};
 use crate::testkit::Sqlite;
 
-/// Galaxies about (100, 0, 0) Mpc, one just inside and one just outside 5 Mpc of it, others
-/// toward the galactic centre and away from it, and a star 10 pc off.
+/// Galaxies about (100, 0, 0) Mpc, one just inside 5 Mpc of it and a galaxy group just
+/// outside, others toward the galactic centre and away from it, and a star 10 pc off.
 fn fixture() -> Sqlite {
     let toward_centre = between(Frame::Galactic, Frame::Icrs)
         .rotation()
@@ -18,12 +20,12 @@ fn fixture() -> Sqlite {
     volume_db(&[
         galaxy(1001, [100.0, 0.0, 0.0]),
         galaxy(1002, [104.99, 0.0, 0.0]),
-        galaxy(1003, [105.01, 0.0, 0.0]),
+        group(1003, [105.01, 0.0, 0.0]),
         galaxy(1004, toward_centre),
         galaxy(1005, toward_centre.map(|c| -c)),
         Placed {
             id: 2001,
-            kind: STAR,
+            kind: BODY,
             domain: STARS,
             at: [10.0, 0.0, 0.0],
         },
@@ -183,10 +185,10 @@ fn results_narrow_to_the_kinds_sources_scale_domains_and_layers_named() {
         ]
     );
     assert_eq!(
-        with(json!({"kinds": ["galaxy"]})),
-        ["object:1001", "object:1002", "object:1003"]
+        with(json!({"kinds": ["body"]})),
+        ["object:1001", "object:1002"]
     );
-    assert_eq!(with(json!({"kinds": ["star"]})), Vec::<String>::new());
+    assert_eq!(with(json!({"kinds": ["galaxy_group"]})), ["object:1003"]);
     assert_eq!(
         with(json!({"sources": ["hipparcos-2007"]})),
         ["object:1002"]
@@ -249,14 +251,14 @@ fn a_malformed_volume_or_filter_answers_400_pointing_at_each_field() {
         assert_eq!(problem["type"], "urn:univ:problem:query-invalid");
         assert_eq!(pointers(&problem), expected, "{volume}");
     }
-    let filters = json!({"kinds": ["unicorn", "galaxy"], "sources": [], "scale_domains": ["stars", "dark_sector"], "layers": ["lay_none"]});
+    let filters = json!({"kinds": ["unicorn", "body"], "sources": [], "scale_domains": ["stars", "dark_sector"], "layers": ["lay_none"]});
     let (response, problem) = query(
         &db,
         &json!({"volume": sphere([0.0; 3], 1.0), "filters": filters}),
     );
     assert_eq!(response.status, 400);
     assert_eq!(pointers(&problem), ["/filters/sources"]);
-    let filters = json!({"kinds": ["unicorn", "galaxy"], "scale_domains": ["stars", "dark_sector"], "layers": ["lay_none"]});
+    let filters = json!({"kinds": ["unicorn", "stars", "body"], "scale_domains": ["stars", "dark_sector"], "layers": ["lay_none"]});
     let (_, problem) = query(
         &db,
         &json!({"volume": sphere([0.0; 3], 1.0), "filters": filters}),
@@ -265,6 +267,7 @@ fn a_malformed_volume_or_filter_answers_400_pointing_at_each_field() {
         pointers(&problem),
         [
             "/filters/kinds/0",
+            "/filters/kinds/1",
             "/filters/layers/0",
             "/filters/scale_domains/1"
         ]
@@ -314,5 +317,29 @@ fn the_first_page_gives_the_tile_nodes_covering_the_volume_each_fetched_by_its_a
     assert_eq!(
         query(&db, &only_stars).1["tiles"].as_array().unwrap().len(),
         1
+    );
+}
+
+#[test]
+fn an_item_stored_before_items_kept_their_box_is_still_found_by_its_shape() {
+    let db = fixture();
+    let key = db.key();
+    let id = layer(&db, &key, &json!({"title": "Old", "visibility": "public"}))["id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let mut item = sn1987a("old");
+    item["geometry"] = json!({"frame": "icrs", "unit": "megaparsec", "geometry": {"kind": "point", "at": [-50.0, 0.0, 0.0]}});
+    publish(&db, &key, &id, &item);
+    db.layers
+        .execute_batch("UPDATE items SET min_x = NULL, min_y = NULL, min_z = NULL, max_x = NULL, max_y = NULL, max_z = NULL;")
+        .unwrap();
+    assert_eq!(
+        page(&db, &json!({"volume": sphere([-50.0, 0.0, 0.0], 1.0)})),
+        [format!("item:{id}/old")]
+    );
+    assert_eq!(
+        page(&db, &json!({"volume": sphere([50.0, 0.0, 0.0], 1.0)})),
+        Vec::<String>::new()
     );
 }

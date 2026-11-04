@@ -8,9 +8,9 @@ use std::collections::BinaryHeap;
 use std::f64::consts::PI;
 
 use super::Region;
-use super::meets::{Placing, Solid, norm, sub};
+use super::meets::{Placing, Solid};
 use crate::healpix;
-use crate::position::{Vec3, scaled, zip};
+use crate::position::{Vec3, norm, scaled, sub, zip};
 
 /// The fraction of a region's extent below which an undecided piece counts as meeting.
 pub const TOLERANCE: f64 = 1e-6;

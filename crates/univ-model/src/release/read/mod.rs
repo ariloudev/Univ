@@ -31,6 +31,8 @@ pub struct Vocabulary {
     terms: HashMap<i64, String>,
     chains: HashMap<i64, serde_json::Value>,
     sources: HashMap<i64, String>,
+    term_ids: HashMap<String, i64>,
+    source_ns: HashMap<String, i64>,
 }
 
 impl Vocabulary {
@@ -46,13 +48,17 @@ impl Vocabulary {
         chains: impl IntoIterator<Item = (i64, serde_json::Value)>,
         sources: impl IntoIterator<Item = (i64, String)>,
     ) -> Self {
+        let terms: HashMap<i64, String> = terms.into_iter().collect();
+        let sources: HashMap<i64, String> = sources.into_iter().collect();
         Self {
             release,
             cosmology,
             ranking_rule,
-            terms: terms.into_iter().collect(),
+            term_ids: terms.iter().map(|(id, t)| (t.clone(), *id)).collect(),
+            source_ns: sources.iter().map(|(n, id)| (id.clone(), *n)).collect(),
+            terms,
             chains: chains.into_iter().collect(),
-            sources: sources.into_iter().collect(),
+            sources,
         }
     }
 
@@ -76,17 +82,13 @@ impl Vocabulary {
     /// The id of term `term`.
     #[must_use]
     pub fn term_id(&self, term: &str) -> Option<i64> {
-        self.terms
-            .iter()
-            .find_map(|(id, text)| (text == term).then_some(*id))
+        self.term_ids.get(term).copied()
     }
 
     /// The `n` of the source of id `id`.
     #[must_use]
     pub fn source_n(&self, id: &str) -> Option<i64> {
-        self.sources
-            .iter()
-            .find_map(|(n, text)| (text == id).then_some(*n))
+        self.source_ns.get(id).copied()
     }
 
     /// The text of term `id`.

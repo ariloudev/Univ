@@ -2,24 +2,34 @@
 //! It records the query it pages, by a digest of its body; the release it reads; the change
 //! sequence of each layer whose items it reads; the last result served; and how many were.
 //!
-//! A later page reads the layers again, and refuses with 409 when any recorded layer changed,
-//! is no longer read, or a layer is now read that was not: every change to a layer advances its
-//! sequence, so no page can skip or repeat a result because a layer changed between pages. The
-//! cursor grows by some thirty bytes for each layer it records.
+//! A cursor is signed, an HMAC-SHA256 under a key drawn from the owner secret, so that a
+//! client cannot move it past the cap of results or name layers in it. A later page reads the
+//! layers again, and refuses with 409 when any recorded layer changed, is no longer read, or a
+//! layer is now read that was not: every change to a layer advances its sequence, so no page
+//! can skip or repeat a result because a layer changed between pages. The cursor grows by some
+//! thirty bytes for each layer it records.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
+use subtle::ConstantTimeEq;
 
 use super::Query;
+use super::request::invalid;
 use crate::backend::{Backend, rows_as};
+use crate::layers::readable_by;
+use crate::layers::validate::Failures;
 use crate::problem::{Problem, ProblemType};
 
 /// The cursor's format.
 const VERSION: u8 = 1;
+
+/// The bytes of the signature a cursor carries.
+const SIGNATURE: usize = 16;
 
 /// Where a page starts: after this result.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -28,17 +38,6 @@ pub(super) enum After {
     Object { id: u64 },
     Structure { id: String },
     Item { layer: String, item: String },
-}
-
-impl After {
-    /// The part of the results it lies in: objects, then structures, then items.
-    pub(super) fn part(&self) -> usize {
-        match self {
-            Self::Object { .. } => 0,
-            Self::Structure { .. } => 1,
-            Self::Item { .. } => 2,
-        }
-    }
 }
 
 /// A cursor as the client holds it.
@@ -50,6 +49,34 @@ pub(super) struct Cursor {
     pub layers: BTreeMap<String, u64>,
     pub after: After,
     pub served: usize,
+}
+
+/// The key cursors are signed under, drawn from the owner secret.
+pub(super) struct Signing([u8; 32]);
+
+impl Signing {
+    pub(super) fn of<B: Backend>(backend: &B) -> Self {
+        let mut hash = Sha256::new();
+        hash.update(b"univ volume query cursor v1\0");
+        hash.update(backend.owner_secret().unwrap_or_default());
+        Self(hash.finalize().into())
+    }
+
+    /// HMAC-SHA256 of `message` (RFC 2104), its first [`SIGNATURE`] bytes.
+    fn sign(&self, message: &[u8]) -> [u8; SIGNATURE] {
+        let pad = |byte: u8| -> [u8; 64] {
+            std::array::from_fn(|i| self.0.get(i).copied().unwrap_or(0) ^ byte)
+        };
+        let inner = Sha256::new()
+            .chain_update(pad(0x36))
+            .chain_update(message)
+            .finalize();
+        let outer = Sha256::new()
+            .chain_update(pad(0x5c))
+            .chain_update(inner)
+            .finalize();
+        std::array::from_fn(|i| outer[i])
+    }
 }
 
 impl Cursor {
@@ -70,9 +97,14 @@ impl Cursor {
         }
     }
 
-    /// The cursor as text: base64url of its JSON.
-    pub(super) fn encode(&self) -> String {
-        URL_SAFE_NO_PAD.encode(serde_json::to_vec(self).unwrap_or_default())
+    /// The cursor as text: base64url of its JSON, a dot, and its signature.
+    pub(super) fn encode(&self, signing: &Signing) -> String {
+        let json = serde_json::to_vec(self).unwrap_or_default();
+        format!(
+            "{}.{}",
+            URL_SAFE_NO_PAD.encode(&json),
+            URL_SAFE_NO_PAD.encode(signing.sign(&json))
+        )
     }
 
     /// The cursor `text` of the query whose digest is `query`.
@@ -80,11 +112,15 @@ impl Cursor {
     /// # Errors
     ///
     /// A 400 at `/cursor` for text no page gave, or a cursor of another query.
-    pub(super) fn decode(text: &str, query: &str) -> Result<Self, Problem> {
-        let cursor = URL_SAFE_NO_PAD
-            .decode(text)
-            .ok()
-            .and_then(|bytes| serde_json::from_slice::<Self>(&bytes).ok())
+    pub(super) fn decode(text: &str, query: &str, signing: &Signing) -> Result<Self, Problem> {
+        let cursor = text
+            .split_once('.')
+            .and_then(|(json, signature)| {
+                let json = URL_SAFE_NO_PAD.decode(json).ok()?;
+                let signature = URL_SAFE_NO_PAD.decode(signature).ok()?;
+                bool::from(signing.sign(&json).ct_eq(signature.as_slice())).then_some(json)
+            })
+            .and_then(|json| serde_json::from_slice::<Self>(&json).ok())
             .filter(|cursor| cursor.v == VERSION)
             .ok_or_else(|| refused("is not a cursor a page of this server gave"))?;
         if cursor.query != query {
@@ -97,14 +133,11 @@ impl Cursor {
 }
 
 fn refused(reason: &str) -> Problem {
-    Problem::new(
-        ProblemType::QueryInvalid,
-        "The query failed the checks its errors name.",
-    )
-    .with(
-        "errors",
-        vec![json!({"pointer": "/cursor", "reason": reason})],
-    )
+    let mut failures = Failures::default();
+    failures.add("/cursor", reason);
+    invalid(failures)
+        .err()
+        .unwrap_or_else(|| Problem::new(ProblemType::QueryInvalid, reason))
 }
 
 /// A layer's change sequence.
@@ -131,9 +164,11 @@ pub(super) async fn sequences<B: Backend>(
 ) -> Result<BTreeMap<String, u64>, Problem> {
     let rows = backend
         .layers(
-            "SELECT id, sequence FROM layers WHERE retired_at IS NULL AND item_count > 0 \
-             AND (visibility = 'public' OR key_id = ?1) \
-             AND (?2 IS NULL OR id IN (SELECT value FROM json_each(?2))) ORDER BY id",
+            &format!(
+                "SELECT id, sequence FROM layers WHERE retired_at IS NULL AND item_count > 0 \
+                 AND {} AND (?2 IS NULL OR id IN (SELECT value FROM json_each(?2))) ORDER BY id",
+                readable_by("", "?1")
+            ),
             &[json!(query.key), json!(query.filters.layers)],
         )
         .await?;
@@ -147,8 +182,8 @@ pub(super) async fn sequences<B: Backend>(
 ///
 /// # Errors
 ///
-/// A 409 naming each layer that changed: its sequence now, or that it is retired or no longer
-/// readable.
+/// A 409 naming each layer that changed: its sequence now, its retirement, or, alike for a
+/// layer the caller may no longer read and one that does not exist, that it is not readable.
 pub(super) async fn unchanged<B: Backend>(
     backend: &B,
     query: &Query,
@@ -158,27 +193,38 @@ pub(super) async fn unchanged<B: Backend>(
     if recorded == now {
         return Ok(());
     }
-    let changed: Vec<&String> = recorded
+    let changed: BTreeSet<&String> = recorded
         .keys()
         .chain(now.keys())
         .filter(|id| recorded.get(*id) != now.get(*id))
-        .collect::<std::collections::BTreeSet<_>>()
-        .into_iter()
         .collect();
     let rows = backend
         .layers(
-            "SELECT id, sequence, retired_at, \
-             (visibility = 'public' OR key_id IS ?1) AS readable FROM layers \
-             WHERE id IN (SELECT value FROM json_each(?2)) ORDER BY id",
+            &format!(
+                "SELECT id, sequence, retired_at, {} AS readable FROM layers \
+                 WHERE id IN (SELECT value FROM json_each(?2)) ORDER BY id",
+                readable_by("", "?1")
+            ),
             &[json!(query.key), json!(changed)],
         )
         .await?;
-    let layers: Vec<Value> = rows_as::<LayerRow>(rows)?
+    let read: BTreeMap<String, LayerRow> = rows_as::<LayerRow>(rows)?
         .into_iter()
-        .map(|row| match (row.retired_at, row.readable) {
-            (Some(at), 1) => json!({"layer": row.id, "sequence": row.sequence, "retired_at": at}),
-            (None, 1) => json!({"layer": row.id, "sequence": row.sequence}),
-            _ => json!({"layer": row.id, "readable": false}),
+        .filter(|row| row.readable == 1)
+        .map(|row| (row.id.clone(), row))
+        .collect();
+    let layers: Vec<Value> = changed
+        .into_iter()
+        .map(|id| match read.get(id) {
+            Some(LayerRow {
+                retired_at: Some(at),
+                sequence,
+                ..
+            }) => {
+                json!({"layer": id, "sequence": sequence, "retired_at": at})
+            }
+            Some(row) => json!({"layer": id, "sequence": row.sequence}),
+            None => json!({"layer": id, "readable": false}),
         })
         .collect();
     Err(Problem::new(

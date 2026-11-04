@@ -87,29 +87,33 @@ fn finite(v: &Vec3) -> bool {
     v.iter().all(|c| c.is_finite())
 }
 
-impl Volume {
-    /// Every member that cannot stand: a frame other than ICRS, galactic or supergalactic, a
-    /// unit that is not a length, a size that is not positive, a box whose `max` is not above
-    /// its `min` on every axis, or a cone wider than [`MAX_OPENING_DEGREES`].
+/// What a volume's frame must be.
+pub const FRAME_RULE: &str = "is icrs, galactic or supergalactic";
+/// What a volume's unit must be.
+pub const UNIT_RULE: &str = "is a unit of length, such as parsec or megaparsec";
+
+/// The refusal of a frame a volume cannot be given in: one that is not ICRS, galactic or
+/// supergalactic.
+#[must_use]
+pub fn check_frame(frame: Frame) -> Option<VolumeError> {
+    (!matches!(frame, Frame::Icrs | Frame::Galactic | Frame::Supergalactic))
+        .then(|| VolumeError::new("frame", FRAME_RULE))
+}
+
+/// The refusal of a unit a volume cannot be given in: one that is not a length.
+#[must_use]
+pub fn check_unit(unit: Unit) -> Option<VolumeError> {
+    (unit.dimension() != Dimension::Length).then(|| VolumeError::new("unit", UNIT_RULE))
+}
+
+impl VolumeForm {
+    /// Every member of the form that cannot stand: a size that is not positive, a box whose
+    /// `max` is not above its `min` on every axis, or a cone wider than
+    /// [`MAX_OPENING_DEGREES`].
     #[must_use]
     pub fn check(&self) -> Vec<VolumeError> {
         let mut errors = Vec::new();
-        if !matches!(
-            self.frame,
-            Frame::Icrs | Frame::Galactic | Frame::Supergalactic
-        ) {
-            errors.push(VolumeError::new(
-                "frame",
-                "is icrs, galactic or supergalactic",
-            ));
-        }
-        if self.unit.dimension() != Dimension::Length {
-            errors.push(VolumeError::new(
-                "unit",
-                "is a unit of length, such as parsec or megaparsec",
-            ));
-        }
-        match &self.form {
+        match self {
             VolumeForm::Box { min, max } => {
                 if !finite(min) {
                     errors.push(VolumeError::new("min", "has three finite coordinates"));
@@ -164,6 +168,19 @@ impl Volume {
             }
         }
         errors
+    }
+}
+
+impl Volume {
+    /// Every member that cannot stand: a frame other than ICRS, galactic or supergalactic, a
+    /// unit that is not a length, or a member of its form (see [`VolumeForm::check`]).
+    #[must_use]
+    pub fn check(&self) -> Vec<VolumeError> {
+        check_frame(self.frame)
+            .into_iter()
+            .chain(check_unit(self.unit))
+            .chain(self.form.check())
+            .collect()
     }
 
     /// The region the volume encloses, in the ICRS and in `unit`; none for a volume that

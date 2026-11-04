@@ -2,8 +2,9 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::position::Vec3;
+use crate::position::{Frame, Vec3};
 use crate::time::{At, TimeKind, Timescale};
+use crate::units::Unit;
 use crate::volume::Volume;
 
 /// The most results one page holds.
@@ -123,9 +124,9 @@ pub struct ObjectHit {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct HitPosition {
     /// Always `icrs`.
-    pub frame: String,
-    /// `parsec` or `megaparsec`.
-    pub unit: String,
+    pub frame: Frame,
+    /// `parsec` for stars, `megaparsec` otherwise.
+    pub unit: Unit,
     #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
     pub at: Vec3,
 }

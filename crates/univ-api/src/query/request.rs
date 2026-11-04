@@ -1,17 +1,21 @@
-//! A volume query's body, read member by member so that every member that fails is named by
-//! its JSON pointer in one 400 answer (query-a-bounded-volume, filter-by-time).
+//! A volume query's body (query-a-bounded-volume, filter-by-time). Its members are checked one
+//! by one, so that every member that fails is named by its JSON pointer in one 400 answer;
+//! the body that passes is then read as univ-model's [`VolumeQuery`], the type the OpenAPI
+//! document describes, which gives the values.
 
+use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
-use univ_model::api::query::Filters;
+use univ_model::api::query::{Filters, VolumeQuery};
 use univ_model::encoding::hex;
-use univ_model::position::{Frame, Vec3};
-use univ_model::time::{At, TimeKind, TimeRecord, TimeUncertainty, Timescale};
-use univ_model::units::{Dimension, Unit};
-use univ_model::volume::{Volume, VolumeForm};
+use univ_model::position::Frame;
+use univ_model::time::{TimeKind, Timescale};
+use univ_model::units::Unit;
+use univ_model::volume::{FRAME_RULE, Region, UNIT_RULE, VolumeError, check_frame, check_unit};
 
 use crate::http::Request;
-use crate::layers::validate::{Failures, member, pointer, unknown};
+use crate::layers::broken;
+use crate::layers::validate::{Failures, at, member, object, pointer, unknown};
 use crate::problem::{Problem, ProblemType};
 
 /// The most values one filter names.
@@ -19,13 +23,14 @@ const MAX_FILTER_VALUES: usize = 100;
 
 /// A volume query's body, read.
 pub(super) struct Body {
-    pub volume: Volume,
+    /// The volume's region in the ICRS, in megaparsecs.
+    pub region: Region,
     pub filters: Filters,
     /// The kind of time record compared, and the interval on TT, days from J2000.0.
     pub time: Option<(TimeKind, f64, f64)>,
     pub max_level: Option<u8>,
     pub cursor: Option<String>,
-    /// What a cursor records of the query it pages: a digest of its body without the cursor.
+    /// What a cursor records of the query it pages: a digest of its volume, filters and time.
     pub fingerprint: String,
 }
 
@@ -35,30 +40,65 @@ pub(super) struct Body {
 ///
 /// A 400 naming each member that fails by its JSON pointer.
 pub(super) fn read(request: &Request) -> Result<Body, Problem> {
-    let mut members: Map<String, Value> = request.json()?;
+    let members: Map<String, Value> = request.json()?;
     let mut failures = Failures::default();
     let names = ["volume", "filters", "time", "tiles", "cursor"];
     unknown(&members, &names, "", "a volume query", &mut failures);
-    let volume = volume(members.get("volume"), &mut failures);
-    let filters = filters(members.get("filters"), &mut failures);
-    let time = members.get("time").and_then(|t| time(t, &mut failures));
-    let max_level = members.get("tiles").and_then(|t| tiles(t, &mut failures));
-    let cursor = member::<String>(&members, "", "cursor", false, &mut failures);
+    volume(members.get("volume"), &mut failures);
+    if let Some(value) = members.get("filters") {
+        filters(value, &mut failures);
+    }
+    if let Some(value) = members.get("time") {
+        time(value, &mut failures);
+    }
+    if let Some(value) = members.get("tiles")
+        && let Some(tiles) = object(Some(value), "/tiles", "the tiles wanted", &mut failures)
+    {
+        unknown(
+            tiles,
+            &["max_level"],
+            "/tiles",
+            "the tiles wanted",
+            &mut failures,
+        );
+        member::<u8>(tiles, "/tiles", "max_level", false, &mut failures);
+    }
+    member::<String>(&members, "", "cursor", false, &mut failures);
     invalid(failures)?;
-    members.remove("cursor");
-    let digest = Sha256::digest(Value::Object(members).to_string());
-    let Some(volume) = volume else {
-        return Err(Problem::new(
-            ProblemType::QueryInvalid,
-            "The volume did not read.",
-        ));
+    let digest = Sha256::digest(
+        Value::Object(
+            members
+                .iter()
+                .filter(|(name, _)| !["cursor", "tiles"].contains(&name.as_str()))
+                .map(|(name, value)| (name.clone(), value.clone()))
+                .collect(),
+        )
+        .to_string(),
+    );
+    let query: VolumeQuery = serde_json::from_value(Value::Object(members))
+        .map_err(|e| broken("A volume query that passed its checks", e))?;
+    let region = query
+        .volume
+        .region_in(Unit::Megaparsec)
+        .ok_or_else(|| broken("A volume that passed its checks", "it encloses no region"))?;
+    let time = match query.time {
+        None => None,
+        Some(t) => {
+            let bound = |b: &univ_model::api::query::TimeBound| b.at.on_tt(b.timescale);
+            let (from, to) = (bound(&t.from), bound(&t.to));
+            Some((
+                t.kind,
+                from.map_err(|e| broken("A bound", e))?,
+                to.map_err(|e| broken("A bound", e))?,
+            ))
+        }
     };
     Ok(Body {
-        volume,
-        filters,
+        region,
+        filters: query.filters,
         time,
-        max_level,
-        cursor,
+        max_level: query.tiles.and_then(|t| t.max_level),
+        cursor: query.cursor,
         fingerprint: hex(&digest[..8]),
     })
 }
@@ -71,79 +111,45 @@ pub(super) fn invalid(failures: Failures) -> Result<(), Problem> {
     )
 }
 
-/// The members `value` holds, or a failure at `at`.
-fn object<'a>(
-    value: Option<&'a Value>,
-    at: &str,
+/// Member `name` of the volume read as a `T` that `rule` admits, or a failure with `reason`.
+fn known<T: DeserializeOwned + Copy>(
+    members: &Map<String, Value>,
+    name: &str,
+    rule: fn(T) -> Option<VolumeError>,
+    reason: &str,
     failures: &mut Failures,
-) -> Option<&'a Map<String, Value>> {
-    match value {
-        Some(Value::Object(members)) => Some(members),
-        None => {
-            failures.add(at, "is required");
-            None
-        }
-        Some(_) => {
-            failures.add(at, "is a JSON object");
-            None
-        }
-    }
-}
-
-fn volume(value: Option<&Value>, failures: &mut Failures) -> Option<Volume> {
-    let at = "/volume";
-    let members = object(value, at, failures)?;
-    let frame = members.get("frame").and_then(|v| {
-        let frame = serde_json::from_value::<Frame>(v.clone()).ok();
-        let known =
-            frame.filter(|f| matches!(f, Frame::Icrs | Frame::Galactic | Frame::Supergalactic));
-        if known.is_none() {
-            failures.add("/volume/frame", "is icrs, galactic or supergalactic");
-        }
-        known
-    });
-    if !members.contains_key("frame") {
-        failures.add("/volume/frame", "is required");
-    }
-    let unit = members.get("unit").and_then(|v| {
-        let unit = serde_json::from_value::<Unit>(v.clone()).ok();
-        let length = unit.filter(|u| u.dimension() == Dimension::Length);
-        if length.is_none() {
-            failures.add(
-                "/volume/unit",
-                "is a unit of length, such as parsec or megaparsec",
-            );
-        }
-        length
-    });
-    if !members.contains_key("unit") {
-        failures.add("/volume/unit", "is required");
-    }
-    let form = form(members, failures)?;
-    // The form is checked even where the frame or unit failed, against stand-ins for them,
-    // so that every malformed member is named at once.
-    let volume = Volume {
-        frame: frame.unwrap_or(Frame::Icrs),
-        unit: unit.unwrap_or(Unit::Megaparsec),
-        form,
+) -> Option<T> {
+    let Some(value) = members.get(name) else {
+        failures.add(pointer("/volume", name), "is required");
+        return None;
     };
-    let errors = volume.check();
-    for error in &errors {
-        failures.add(pointer(at, error.member), error.reason.clone());
+    let read = serde_json::from_value::<T>(value.clone())
+        .ok()
+        .filter(|v| rule(*v).is_none());
+    if read.is_none() {
+        failures.add(pointer("/volume", name), reason);
     }
-    (errors.is_empty() && frame.is_some() && unit.is_some()).then_some(volume)
+    read
 }
 
-fn form(members: &Map<String, Value>, failures: &mut Failures) -> Option<VolumeForm> {
-    let at = "/volume";
-    let named = member::<String>(members, at, "form", true, failures)?;
+/// Checks the volume: its frame, its unit, and each member of its form.
+fn volume(value: Option<&Value>, failures: &mut Failures) {
+    let at_volume = "/volume";
+    let Some(members) = object(value, at_volume, "a volume", failures) else {
+        return;
+    };
+    known::<Frame>(members, "frame", check_frame, FRAME_RULE, failures);
+    known::<Unit>(members, "unit", check_unit, UNIT_RULE, failures);
+    let Some(named) = member::<String>(members, at_volume, "form", true, failures) else {
+        return;
+    };
     let own: &[&str] = match named.as_str() {
         "box" => &["min", "max"],
         "sphere" => &["centre", "radius"],
         "cone" => &["lon", "lat", "opening_angle", "near", "far"],
         _ => {
             failures.add("/volume/form", "is box, sphere or cone");
-            return None;
+            return;
         }
     };
     let allowed: Vec<&str> = ["frame", "unit", "form"]
@@ -151,69 +157,56 @@ fn form(members: &Map<String, Value>, failures: &mut Failures) -> Option<VolumeF
         .chain(own)
         .copied()
         .collect();
-    unknown(members, &allowed, at, &format!("a {named}"), failures);
-    let point =
-        |name: &str, failures: &mut Failures| member::<Vec3>(members, at, name, true, failures);
-    let number =
-        |name: &str, failures: &mut Failures| member::<f64>(members, at, name, true, failures);
-    Some(match named.as_str() {
-        "box" => {
-            let (min, max) = (point("min", failures), point("max", failures));
-            VolumeForm::Box {
-                min: min?,
-                max: max?,
-            }
+    unknown(
+        members,
+        &allowed,
+        at_volume,
+        &format!("a {named}"),
+        failures,
+    );
+    let before = failures.len();
+    for name in own {
+        if ["min", "max", "centre"].contains(name) {
+            member::<[f64; 3]>(members, at_volume, name, true, failures);
+        } else {
+            member::<f64>(members, at_volume, name, true, failures);
         }
-        "sphere" => {
-            let (centre, radius) = (point("centre", failures), number("radius", failures));
-            VolumeForm::Sphere {
-                centre: centre?,
-                radius: radius?,
-            }
+    }
+    if failures.len() > before {
+        return;
+    }
+    // The form's members read: its own rules, from the form as univ-model reads it.
+    let mut form = members.clone();
+    form.retain(|name, _| name == "form" || own.contains(&name.as_str()));
+    if let Ok(form) = serde_json::from_value::<univ_model::volume::VolumeForm>(Value::Object(form))
+    {
+        for error in form.check() {
+            failures.add(pointer(at_volume, error.member), error.reason);
         }
-        _ => {
-            let numbers: Vec<Option<f64>> = own.iter().map(|name| number(name, failures)).collect();
-            VolumeForm::Cone {
-                lon: numbers[0]?,
-                lat: numbers[1]?,
-                opening_angle: numbers[2]?,
-                near: numbers[3]?,
-                far: numbers[4]?,
-            }
-        }
-    })
+    }
 }
 
-fn filters(value: Option<&Value>, failures: &mut Failures) -> Filters {
-    let Some(value) = value else {
-        return Filters::default();
-    };
-    let Some(members) = object(Some(value), "/filters", failures) else {
-        return Filters::default();
+fn filters(value: &Value, failures: &mut Failures) {
+    let Some(members) = object(Some(value), "/filters", "the filters", failures) else {
+        return;
     };
     let names = ["kinds", "sources", "scale_domains", "layers"];
     unknown(members, &names, "/filters", "the filters", failures);
-    let mut list = |name: &str| {
-        let values = member::<Vec<String>>(members, "/filters", name, false, failures)?;
-        if values.is_empty() || values.len() > MAX_FILTER_VALUES {
+    for name in names {
+        let values = member::<Vec<String>>(members, "/filters", name, false, failures);
+        if values.is_some_and(|v| v.is_empty() || v.len() > MAX_FILTER_VALUES) {
             failures.add(
                 pointer("/filters", name),
                 format!("names 1 to {MAX_FILTER_VALUES} values"),
             );
-            return None;
         }
-        Some(values)
-    };
-    Filters {
-        kinds: list("kinds"),
-        sources: list("sources"),
-        scale_domains: list("scale_domains"),
-        layers: list("layers"),
     }
 }
 
-fn time(value: &Value, failures: &mut Failures) -> Option<(TimeKind, f64, f64)> {
-    let members = object(Some(value), "/time", failures)?;
+fn time(value: &Value, failures: &mut Failures) {
+    let Some(members) = object(Some(value), "/time", "a time filter", failures) else {
+        return;
+    };
     unknown(
         members,
         &["kind", "from", "to"],
@@ -224,64 +217,31 @@ fn time(value: &Value, failures: &mut Failures) -> Option<(TimeKind, f64, f64)> 
     let kind = member::<TimeKind>(members, "/time", "kind", true, failures);
     let from = bound(members.get("from"), "/time/from", failures);
     let to = bound(members.get("to"), "/time/to", failures);
-    let (kind, from, to) = (kind?, from?, to?);
-    if to < from {
+    if let (Some(_), Some(from), Some(to)) = (kind, from, to)
+        && to < from
+    {
         failures.add(
             "/time/to",
             "ends before from: an interval ends no earlier than it starts",
         );
-        return None;
     }
-    Some((kind, from, to))
 }
 
 /// A bound of the interval on TT, days from J2000.0.
-fn bound(value: Option<&Value>, at: &str, failures: &mut Failures) -> Option<f64> {
-    let members = object(value, at, failures)?;
+fn bound(value: Option<&Value>, base: &str, failures: &mut Failures) -> Option<f64> {
+    let members = object(value, base, "a bound of time", failures)?;
     let names = ["timescale", "instant", "years_before_j2000"];
-    unknown(members, &names, at, "a bound of time", failures);
-    let timescale = member::<Timescale>(members, at, "timescale", true, failures);
-    let instant = member::<String>(members, at, "instant", false, failures);
-    let years = member::<f64>(members, at, "years_before_j2000", false, failures);
-    let at_time = match (instant, years) {
-        (Some(instant), None) => At::Instant { instant },
-        (None, Some(years_before_j2000)) => At::YearsBefore { years_before_j2000 },
-        (Some(_), Some(_)) => {
-            failures.add(
-                pointer(at, "years_before_j2000"),
-                "is given with an instant: a bound gives one or the other",
-            );
-            return None;
-        }
-        (None, None) => {
-            if !members.contains_key("instant") && !members.contains_key("years_before_j2000") {
-                failures.add(at, "gives an instant or years_before_j2000");
-            }
-            return None;
-        }
-    };
-    let record = TimeRecord {
-        kind: TimeKind::Arrival,
-        timescale: timescale?,
-        at: at_time,
-        uncertainty: TimeUncertainty::NoneReported,
-    };
-    record
-        .on_tt()
-        .map(|on| on.at)
-        .map_err(|error| failures.add(pointer(at, error.member()), error.to_string()))
-        .ok()
-}
-
-/// The `tiles` member's deepest level, if any.
-fn tiles(value: &Value, failures: &mut Failures) -> Option<u8> {
-    let members = object(Some(value), "/tiles", failures)?;
-    unknown(
+    unknown(members, &names, base, "a bound of time", failures);
+    let before = failures.len();
+    let timescale = member::<Timescale>(members, base, "timescale", true, failures);
+    let when = at(
         members,
-        &["max_level"],
-        "/tiles",
-        "the tiles wanted",
+        base,
+        "a bound of time",
+        failures.len() == before,
         failures,
-    );
-    member::<u8>(members, "/tiles", "max_level", false, failures)
+    )?;
+    when.on_tt(timescale?)
+        .map_err(|error| failures.add(pointer(base, error.member()), error.to_string()))
+        .ok()
 }

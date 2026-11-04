@@ -115,7 +115,7 @@ fn a_cursor_records_the_release_read_and_each_layers_change_sequence() {
     let (_, page) = query(&db, &crowd());
     let cursor: Value = serde_json::from_slice(
         &URL_SAFE_NO_PAD
-            .decode(page["next"].as_str().unwrap())
+            .decode(page["next"].as_str().unwrap().split_once('.').unwrap().0)
             .unwrap(),
     )
     .unwrap();
@@ -217,4 +217,37 @@ fn a_layer_made_private_and_a_retracted_item_leave_query_results() {
     assert_eq!(hits(&query(&db, &near).1), Vec::<String>::new());
     let (_, owners) = db.with_key(&key, request(&near));
     assert_eq!(hits(&owners), [format!("item:{id}/second")]);
+}
+
+#[test]
+fn a_cursor_changed_by_its_client_is_refused() {
+    let (db, _, _) = crowded(1_200);
+    let (_, page) = query(&db, &crowd());
+    let (json_part, signature) = page["next"].as_str().unwrap().split_once('.').unwrap();
+    let mut cursor: Value =
+        serde_json::from_slice(&URL_SAFE_NO_PAD.decode(json_part).unwrap()).unwrap();
+    cursor["served"] = json!(0);
+    let forged = format!("{}.{signature}", URL_SAFE_NO_PAD.encode(cursor.to_string()));
+    let mut next = crowd();
+    next["cursor"] = json!(forged);
+    let (response, problem) = query(&db, &next);
+    assert_eq!(response.status, 400, "a cursor reset to serve 10,000 more");
+    assert_eq!(pointers(&problem), ["/cursor"]);
+}
+
+#[test]
+fn a_later_page_may_leave_out_the_tiles_the_first_asked_for() {
+    let (db, _, _) = crowded(1_200);
+    let mut first = crowd();
+    first["tiles"] = json!({"max_level": 1});
+    let (_, page) = query(&db, &first);
+    assert!(page["tiles"].is_array());
+    let mut next = crowd();
+    next["cursor"] = page["next"].clone();
+    let (response, later) = query(&db, &next);
+    assert_eq!(response.status, 200, "{later}");
+    assert!(
+        later.get("tiles").is_none(),
+        "tiles come on the first page alone"
+    );
 }

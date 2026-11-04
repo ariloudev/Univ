@@ -15,7 +15,7 @@ use serde_json::{Value, json};
 use univ_model::api::bulk::{ScaleDomainList, ScaleDomainSummary, TileFormat};
 use univ_model::geometry::Aabb;
 use univ_model::tile::format::layout;
-use univ_model::tile::manifest::{TileManifest, TileManifestIndex};
+use univ_model::tile::manifest::{NodeIndex, TileManifest, TileManifestIndex};
 use univ_model::units::scale_domain_unit;
 use utoipa::{PartialSchema, ToSchema};
 
@@ -307,7 +307,11 @@ pub(crate) async fn tile_nodes<B: Backend>(
             format!("The tile manifest {key} did not read: {error}."),
         )
     })?;
-    let addresses: BTreeSet<&str> = manifest.nodes.iter().map(|n| n.address.as_str()).collect();
+    let parents: BTreeSet<&str> = manifest
+        .nodes
+        .iter()
+        .filter_map(NodeIndex::parent)
+        .collect();
     let cubes = manifest
         .nodes
         .iter()
@@ -318,8 +322,7 @@ pub(crate) async fn tile_nodes<B: Backend>(
                 min: node.bounds.min,
                 max: node.bounds.max,
             },
-            leaf: !(0..8)
-                .any(|octant| addresses.contains(format!("{}{octant}", node.address).as_str())),
+            leaf: !parents.contains(node.address.as_str()),
         })
         .collect();
     let nodes = TileNodes {

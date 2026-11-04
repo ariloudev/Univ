@@ -5,7 +5,6 @@
 //! the level its deepest nodes stand in. Each address is one the domain's tile route serves.
 
 use univ_model::api::query::{MAX_TILE_NODES, TileCovering};
-use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::volume::Region;
 
 use super::Query;
@@ -21,23 +20,14 @@ pub(super) async fn coverings<B: Backend>(
 ) -> Result<Vec<TileCovering>, Problem> {
     let mut coverings = Vec::new();
     for domain in domains_of(backend, query.release).await?.iter() {
-        let wanted = query
-            .filters
-            .scale_domains
-            .as_ref()
-            .is_none_or(|names| names.contains(&domain.name));
-        let Ok(factor) = Unit::Megaparsec.factor_to(scale_domain_unit(&domain.name)) else {
+        let Some(region) = query
+            .region_in_domain(&domain.name)
+            .filter(|_| query.wants_domain(&domain.name))
+        else {
             continue;
         };
-        if !wanted {
-            continue;
-        }
         let nodes = tile_nodes(backend, query.release, &domain.name, &domain.manifest_key).await?;
-        let (level, nodes) = covering(
-            &nodes.cubes,
-            &query.region.clone().scaled(factor),
-            max_level,
-        );
+        let (level, nodes) = covering(&nodes.cubes, &region, max_level);
         coverings.push(TileCovering {
             scale_domain: domain.name.clone(),
             level,
@@ -59,18 +49,18 @@ pub(crate) fn covering(
         .collect();
     let deepest = cubes.iter().map(|c| c.level).max().unwrap_or(0);
     let top = max_level.map_or(deepest, |m| m.min(deepest));
-    for level in (0..=top).rev() {
-        let mut nodes: Vec<String> = meeting
+    let at = |level: u8| {
+        meeting
             .iter()
-            .filter(|c| c.level == level || (c.leaf && c.level < level))
-            .map(|c| c.address.clone())
-            .collect();
-        if nodes.len() <= MAX_TILE_NODES || level == 0 {
-            nodes.sort();
-            return (level, nodes);
-        }
-    }
-    (0, Vec::new())
+            .filter(move |c| c.level == level || (c.leaf && c.level < level))
+    };
+    let level = (0..=top)
+        .rev()
+        .find(|&level| at(level).count() <= MAX_TILE_NODES)
+        .unwrap_or(0);
+    let mut nodes: Vec<String> = at(level).map(|c| c.address.clone()).collect();
+    nodes.sort();
+    (level, nodes)
 }
 
 #[cfg(test)]
@@ -81,38 +71,15 @@ mod tests {
 
     /// A full octree of `depth` levels below a root from -64 to 64 on each axis.
     fn full(depth: u8) -> Vec<NodeCube> {
-        let mut cubes = Vec::new();
-        let mut level = vec![(
-            "r".to_owned(),
-            Aabb {
-                min: [-64.0; 3],
-                max: [64.0; 3],
-            },
-        )];
-        for l in 0..=depth {
-            let mut below = Vec::new();
-            for (address, bounds) in level {
-                if l < depth {
-                    for octant in 0..8_u8 {
-                        let half: [f64; 3] =
-                            std::array::from_fn(|i| (bounds.max[i] - bounds.min[i]) / 2.0);
-                        let min: [f64; 3] = std::array::from_fn(|i| {
-                            bounds.min[i] + if octant >> i & 1 == 1 { half[i] } else { 0.0 }
-                        });
-                        let max = std::array::from_fn(|i| min[i] + half[i]);
-                        below.push((format!("{address}{octant}"), Aabb { min, max }));
-                    }
-                }
-                cubes.push(NodeCube {
-                    address,
-                    level: l,
-                    bounds,
-                    leaf: l == depth,
-                });
-            }
-            level = below;
-        }
-        cubes
+        crate::query_fixture::octree(64.0, depth)
+            .into_iter()
+            .map(|(address, level, bounds)| NodeCube {
+                address,
+                level,
+                bounds,
+                leaf: level == depth,
+            })
+            .collect()
     }
 
     /// The nodes of `level` a sphere meets, counted the plain way: the distance from its

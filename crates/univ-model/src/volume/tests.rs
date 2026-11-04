@@ -1,6 +1,6 @@
 use super::*;
 use crate::geometry::{Geometry, Primitive, Shape};
-use crate::position::{lon_lat, separation_degrees};
+use crate::position::{lon_lat, norm, separation_degrees};
 
 pub(super) const MPC: Unit = Unit::Megaparsec;
 
@@ -80,10 +80,6 @@ impl Stream {
     }
 }
 
-fn length(v: Vec3) -> f64 {
-    v.iter().map(|c| c * c).sum::<f64>().sqrt()
-}
-
 /// Points of the region's surface, densely: where the nearest point to any outside point lies.
 fn surface(region: &Region, stream: &mut Stream, n: usize) -> Vec<Vec3> {
     (0..n)
@@ -132,7 +128,7 @@ fn surface(region: &Region, stream: &mut Stream, n: usize) -> Vec<Vec3> {
                 // The conical side: the direction pushed out to the cone's edge.
                 let u = if stream.next() < 0.4 {
                     let side = crate::position::cross(*axis, u);
-                    let n = length(side);
+                    let n = norm(side);
                     if n < 1e-9 {
                         continue;
                     }
@@ -256,7 +252,7 @@ fn distance_is_the_exact_distance_to_the_region_and_zero_within_it() {
             let d = region.distance(q);
             let nearest = points
                 .iter()
-                .map(|p| length(std::array::from_fn(|i| p[i] - q[i])))
+                .map(|p| norm(std::array::from_fn(|i| p[i] - q[i])))
                 .fold(f64::INFINITY, f64::min);
             assert!(
                 d <= nearest + 1e-9,

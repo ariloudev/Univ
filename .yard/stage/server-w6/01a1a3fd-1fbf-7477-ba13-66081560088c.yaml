@@ -276,6 +276,20 @@ blocks:
           - an e2e query on the fixture release covers objects, structures, an item, paging and a tile fetched by address;
           - `cargo xtask bench volume` runs 50 Mpc spheres 100 Mpc out on release 6, and the p95 of the first page is reported against 500 ms.
         state: active
+      - key: 01a1a438-f492-7025-b63d-3d6587f430a6
+        at: 2026-11-04T01:42:38Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "E2e query and the QA-3 bench"
+        detail: |-
+          E2e tests are written and run in the integration step at wave close.
+
+          First bench run on release 6: p50 2,605 ms, p95 4,949 ms, p99 5,211 ms; all 220 requests answered 200. **QA-3 NOT met.**
+
+          **Cause:** the `ORDER BY id LIMIT` made SQLite walk `objects` by id, about 2 million rows, probing `object_cells` for each, instead of reading the cells first. With `CROSS JOIN` the same query takes 24 ms instead of 1,550 ms. The fix goes in with the review fixes, then the bench runs again.
+        state: active
   - key: 01a1a403-aef5-7328-b16a-bc685063e48e
     id: ask-toolu-015eknjcccv74r96nowxwq7b-1
     kind: question
@@ -1155,3 +1169,43 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1a438-f492-7025-b63d-3d643beb343e
+    id: t6-review
+    kind: task
+    versions:
+      - key: 01a1a438-f492-7025-b63d-3d66b51ef222
+        at: 2026-11-04T01:42:38Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fix W6's review findings"
+        detail: |-
+          **Code review:**
+          - items stored before migration 0004 are invisible;
+          - cursors can be forged: unsigned, and their `served` count is trusted;
+          - a 409 reveals which private layer ids exist;
+          - `kinds` accepts any term;
+          - the cursor's digest includes `tiles`;
+          - the body is parsed by hand next to the model types;
+          - structures are read without a limit;
+          - objects are sorted again on every page.
+
+          **Simplify:**
+          - volume rules written in two places;
+          - a placeholder time record;
+          - copied JSON helpers and the readable-layer SQL;
+          - `HitPosition` holds strings;
+          - domain names hardcoded;
+          - `Region` clones;
+          - fields that could be derived;
+          - `collect` matches twice;
+          - vector helpers defined three times;
+          - `Aabb` builders duplicated;
+          - tile leaves found with 8 strings per node;
+          - the octree builder copied in tests;
+          - linear vocabulary lookups;
+          - no test ties the SQL predicate to `Region::contains`.
+
+          **Kept as is, with reasons:** no index on item boxes (layers are small in v1); tile nodes not pruned by parent (401 nodes); awaits not run together (univ-api has no join utility).
+        state: active

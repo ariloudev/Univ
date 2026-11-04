@@ -1,11 +1,14 @@
-//! The layer items of a volume query: the current version of each item, not retracted, of a
-//! layer not retired that the caller may read, whose shape meets the volume, and, under a time
-//! filter, with a time record of its kind whose uncertainty interval meets the interval on TT
-//! (filter-by-time). The box each item keeps gives the candidates; the shape decides.
+//! The layer items of a volume query: the current version of each item, not retracted, of the
+//! layers the query reads (those the caller may read, not retired, holding current items, as
+//! its cursor records them), whose shape meets the volume, and, under a time filter, with a
+//! time record of its kind whose uncertainty interval meets the interval on TT
+//! (filter-by-time). The box each item keeps gives the candidates, and an item with no box yet
+//! (stored before boxes were kept) is a candidate everywhere; the shape decides.
+
+use std::collections::BTreeMap;
 
 use serde::Deserialize;
-use serde_json::json;
-use univ_model::api::layers::VersionBody;
+use serde_json::{Value, json};
 use univ_model::api::query::{ItemHit, QueryResult};
 use univ_model::geometry::Shape;
 use univ_model::units::Unit;
@@ -27,70 +30,61 @@ struct Row {
     content: String,
 }
 
-/// What a volume query reads of an item's content.
+/// What a volume query reads of a version: its content's title and shape.
+#[derive(Deserialize)]
+struct Version {
+    content: Option<Placed>,
+}
+
 #[derive(Deserialize)]
 struct Placed {
     title: String,
     geometry: Shape,
 }
 
-/// Up to `want` items that meet the volume after item `after`, by layer and item.
+/// Up to `want` items of `layers` that meet the volume after item `after`, by layer and item.
 pub(super) async fn page<B: Backend>(
     backend: &B,
     query: &Query,
-    after: Option<(&str, &str)>,
+    layers: &BTreeMap<String, u64>,
+    after: Option<(&String, &String)>,
     want: usize,
 ) -> Result<Vec<(After, QueryResult)>, Problem> {
-    let bounds = query.region.bounds();
+    if layers.is_empty() {
+        return Ok(Vec::new());
+    }
+    let b = query.region.bounds();
     let sql = format!(
         "SELECT i.layer_id, i.id, i.version, v.content FROM items i \
-         JOIN layers l ON l.id = i.layer_id \
          JOIN item_versions v ON v.layer_id = i.layer_id AND v.item_id = i.id \
          AND v.version = i.version \
-         WHERE i.retracted = 0 AND l.retired_at IS NULL \
-         AND (l.visibility = 'public' OR l.key_id = ?1) \
-         AND i.max_x >= {:?} AND i.min_x <= {:?} AND i.max_y >= {:?} AND i.min_y <= {:?} \
-         AND i.max_z >= {:?} AND i.min_z <= {:?} \
+         WHERE i.layer_id IN (SELECT value FROM json_each(?1)) AND i.retracted = 0 \
+         AND (i.min_x IS NULL OR (i.max_x >= {:?} AND i.min_x <= {:?} AND i.max_y >= {:?} \
+         AND i.min_y <= {:?} AND i.max_z >= {:?} AND i.min_z <= {:?})) \
          AND (i.layer_id > ?2 OR (i.layer_id = ?2 AND i.id > ?3)) \
-         AND (?4 IS NULL OR i.layer_id IN (SELECT value FROM json_each(?4))) \
-         AND (?5 IS NULL OR EXISTS (SELECT 1 FROM item_times t WHERE t.layer_id = i.layer_id \
-         AND t.item_id = i.id AND t.kind = ?5 AND t.latest >= ?6 AND t.earliest <= ?7)) \
+         AND (?4 IS NULL OR EXISTS (SELECT 1 FROM item_times t WHERE t.layer_id = i.layer_id \
+         AND t.item_id = i.id AND t.kind = ?4 AND t.latest >= ?5 AND t.earliest <= ?6)) \
          ORDER BY i.layer_id, i.id LIMIT {CHUNK}",
-        bounds.min[0], bounds.max[0], bounds.min[1], bounds.max[1], bounds.min[2], bounds.max[2],
+        b.min[0], b.max[0], b.min[1], b.max[1], b.min[2], b.max[2],
     );
-    let (kind, from, to) = match query.time {
-        Some((kind, from, to)) => (json!(kind), json!(from), json!(to)),
-        None => (json!(null), json!(null), json!(null)),
-    };
-    let (mut layer, mut item) = after.map_or((String::new(), String::new()), |(l, i)| {
-        (l.to_owned(), i.to_owned())
-    });
+    let mut params: Vec<Value> = vec![
+        json!(layers.keys().collect::<Vec<_>>()),
+        json!(after.map_or("", |(layer, _)| layer)),
+        json!(after.map_or("", |(_, item)| item)),
+        json!(query.time.map(|t| t.0)),
+        json!(query.time.map(|t| t.1)),
+        json!(query.time.map(|t| t.2)),
+    ];
     let mut found = Vec::new();
     loop {
-        let rows = backend
-            .layers(
-                &sql,
-                &[
-                    json!(query.key),
-                    json!(layer),
-                    json!(item),
-                    json!(query.filters.layers),
-                    kind.clone(),
-                    from.clone(),
-                    to.clone(),
-                ],
-            )
-            .await?;
+        let rows = rows_as::<Row>(backend.layers(&sql, &params).await?)?;
         let read = rows.len();
-        for row in rows_as::<Row>(rows)? {
-            (layer, item) = (row.layer_id.clone(), row.id.clone());
-            let body: VersionBody = serde_json::from_str(&row.content).map_err(|e| {
+        for row in rows {
+            (params[1], params[2]) = (json!(row.layer_id), json!(row.id));
+            let version: Version = serde_json::from_str(&row.content).map_err(|e| {
                 broken(&format!("Item {:?} of layer {:?}", row.id, row.layer_id), e)
             })?;
-            let Some(placed) = body
-                .content
-                .and_then(|c| serde_json::from_value::<Placed>(c).ok())
-            else {
+            let Some(placed) = version.content else {
                 continue;
             };
             if query.region.meets(Unit::Megaparsec, &placed.geometry) == Some(true) {

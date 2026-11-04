@@ -10,11 +10,12 @@ use univ_model::release::cells::{CellSpace, structure_cells};
 
 use crate::http::{Method, Request, Response};
 use crate::layers_fixture::db;
+pub use crate::testkit::pointers;
 use crate::testkit::{Sqlite, body};
 
 /// The terms the fixture's objects are coded in.
-pub const GALAXY: i64 = 100;
-pub const STAR: i64 = 101;
+pub const BODY: i64 = 100;
+pub const GROUP: i64 = 101;
 pub const COSMIC_WEB: i64 = 102;
 pub const STARS: i64 = 103;
 
@@ -26,10 +27,20 @@ pub struct Placed {
     pub at: [f64; 3],
 }
 
+/// A galaxy group's object in the cosmic web.
+pub fn group(id: u64, at: [f64; 3]) -> Placed {
+    Placed {
+        id,
+        kind: GROUP,
+        domain: COSMIC_WEB,
+        at,
+    }
+}
+
 pub fn galaxy(id: u64, at: [f64; 3]) -> Placed {
     Placed {
         id,
-        kind: GALAXY,
+        kind: BODY,
         domain: COSMIC_WEB,
         at,
     }
@@ -41,7 +52,7 @@ pub fn galaxy(id: u64, at: [f64; 3]) -> Placed {
 pub fn volume_db(objects: &[Placed]) -> Sqlite {
     let db = db();
     db.exec(&format!(
-        "INSERT INTO terms VALUES (2, {GALAXY}, 'galaxy'), (2, {STAR}, 'star'), \
+        "INSERT INTO terms VALUES (2, {BODY}, 'body'), (2, {GROUP}, 'galaxy_group'), \
          (2, {COSMIC_WEB}, 'cosmic_web'), (2, {STARS}, 'stars');
          INSERT INTO structures VALUES (2, 'box-only', 'Box Only', 'wall', 'observed', 'cosmic_web',
            205.0, 205.0, 205.0, 'primitive', '{{}}', NULL,
@@ -77,7 +88,7 @@ pub fn volume_db(objects: &[Placed]) -> Sqlite {
             object.id
         )
         .unwrap();
-        if object.kind == STAR || object.id == 1002 {
+        if object.domain == STARS || object.id == 1002 {
             writeln!(
                 sql,
                 "INSERT INTO entries (release, object_id, entry, source, identifier, resolution) \
@@ -116,30 +127,46 @@ pub fn volume_db(objects: &[Placed]) -> Sqlite {
     db
 }
 
-/// A manifest of a full octree `depth` levels deep below a root from `-radius` to `radius`.
-pub fn manifest(radius: f64, depth: u8) -> Vec<u8> {
+/// A full octree `depth` levels deep below a root from `-radius` to `radius` on each axis: each
+/// node's address, level and cube, octant bit 0 for high x, 1 for high y and 2 for high z.
+pub fn octree(radius: f64, depth: u8) -> Vec<(String, u8, Aabb)> {
     let mut nodes = Vec::new();
-    let mut level = vec![("r".to_owned(), [-radius; 3], [radius; 3])];
+    let mut level = vec![(
+        "r".to_owned(),
+        Aabb {
+            min: [-radius; 3],
+            max: [radius; 3],
+        },
+    )];
     for l in 0..=depth {
         let mut below = Vec::new();
-        for (address, min, max) in level {
-            nodes.push(
-                json!({"address": address, "level": l, "bounds": {"min": min, "max": max},
-                "bytes": 1, "sha256": format!("{l}{address}")}),
-            );
+        for (address, cube) in level {
             if l < depth {
                 for octant in 0..8_u8 {
-                    let half: [f64; 3] = std::array::from_fn(|i| (max[i] - min[i]) / 2.0);
-                    let low: [f64; 3] = std::array::from_fn(|i| {
-                        min[i] + if octant >> i & 1 == 1 { half[i] } else { 0.0 }
+                    let half: [f64; 3] = std::array::from_fn(|i| (cube.max[i] - cube.min[i]) / 2.0);
+                    let min: [f64; 3] = std::array::from_fn(|i| {
+                        cube.min[i] + if octant >> i & 1 == 1 { half[i] } else { 0.0 }
                     });
-                    let high: [f64; 3] = std::array::from_fn(|i| low[i] + half[i]);
-                    below.push((format!("{address}{octant}"), low, high));
+                    let max = std::array::from_fn(|i| min[i] + half[i]);
+                    below.push((format!("{address}{octant}"), Aabb { min, max }));
                 }
             }
+            nodes.push((address, l, cube));
         }
         level = below;
     }
+    nodes
+}
+
+/// The manifest of [`octree`]`(radius, depth)`, as much of it as the server reads.
+pub fn manifest(radius: f64, depth: u8) -> Vec<u8> {
+    let nodes: Vec<Value> = octree(radius, depth)
+        .into_iter()
+        .map(|(address, level, cube)| {
+            json!({"address": address, "level": level, "bounds": {"min": cube.min, "max": cube.max},
+                "bytes": 1, "sha256": format!("{level}{address}")})
+        })
+        .collect();
     serde_json::to_vec(&json!({"encoding": {"version": 1}, "nodes": nodes})).unwrap()
 }
 
@@ -178,16 +205,4 @@ pub fn hits(page: &Value) -> Vec<String> {
             format!("{}:{id}", r["type"].as_str().unwrap())
         })
         .collect()
-}
-
-/// The JSON pointers a refusal names, sorted.
-pub fn pointers(problem: &Value) -> Vec<String> {
-    let mut list: Vec<String> = problem["errors"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|e| e["pointer"].as_str().unwrap().to_owned())
-        .collect();
-    list.sort();
-    list
 }

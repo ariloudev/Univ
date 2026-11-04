@@ -150,22 +150,7 @@ impl TimeRecord {
     /// A malformed instant, a UTC instant before 1961 or after the leap-second table expires,
     /// a span before J2000.0 given in UTC, or an uncertainty that is negative or not finite.
     pub fn on_tt(&self) -> Result<OnTt, TimeError> {
-        let at = match &self.at {
-            At::Instant { instant } => instant_on_tt(instant, self.timescale)?,
-            At::YearsBefore { years_before_j2000 } => {
-                if self.timescale != Timescale::Tt {
-                    return Err(TimeError::YearsBefore(
-                        "a span before J2000.0 is on TT; give the timescale as tt",
-                    ));
-                }
-                if !years_before_j2000.is_finite() || *years_before_j2000 < 0.0 {
-                    return Err(TimeError::YearsBefore(
-                        "the years before J2000.0 must be a finite number, 0 or more",
-                    ));
-                }
-                -years_before_j2000 * JULIAN_YEAR_DAYS
-            }
-        };
+        let at = self.at.on_tt(self.timescale)?;
         let (minus, plus) = match self.uncertainty {
             TimeUncertainty::NoneReported => (0.0, 0.0),
             TimeUncertainty::Symmetric { sigma, unit } => {
@@ -185,6 +170,33 @@ impl TimeRecord {
             earliest: at - minus,
             latest: at + plus,
         })
+    }
+}
+
+impl At {
+    /// The time in `timescale` as TT days from J2000.0.
+    ///
+    /// # Errors
+    ///
+    /// A malformed instant, a UTC instant before 1961 or after the leap-second table expires,
+    /// or a span before J2000.0 given in UTC or not a finite number, 0 or more.
+    pub fn on_tt(&self, timescale: Timescale) -> Result<f64, TimeError> {
+        match self {
+            Self::Instant { instant } => instant_on_tt(instant, timescale),
+            Self::YearsBefore { years_before_j2000 } => {
+                if timescale != Timescale::Tt {
+                    return Err(TimeError::YearsBefore(
+                        "a span before J2000.0 is on TT; give the timescale as tt",
+                    ));
+                }
+                if !years_before_j2000.is_finite() || *years_before_j2000 < 0.0 {
+                    return Err(TimeError::YearsBefore(
+                        "the years before J2000.0 must be a finite number, 0 or more",
+                    ));
+                }
+                Ok(-years_before_j2000 * JULIAN_YEAR_DAYS)
+            }
+        }
     }
 }
 

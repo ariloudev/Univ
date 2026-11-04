@@ -23,9 +23,42 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-04T00:53:19Z
+lastEnded: 2026-11-04T01:40:46Z
 turns:
   - started: 2026-11-04T00:37:17Z
+    ended: 2026-11-04T01:29:49Z
+  - started: 2026-11-04T01:31:14Z
+    ended: 2026-11-04T01:31:17Z
+  - started: 2026-11-04T01:31:22Z
+    ended: 2026-11-04T01:31:24Z
+  - started: 2026-11-04T01:31:27Z
+    ended: 2026-11-04T01:31:29Z
+  - started: 2026-11-04T01:32:21Z
+    ended: 2026-11-04T01:32:59Z
+  - started: 2026-11-04T01:34:24Z
+    ended: 2026-11-04T01:34:42Z
+  - started: 2026-11-04T01:40:46Z
+subagents:
+  - agent: ad551901b27ea7f5f
+    type: Explore
+    started: 2026-11-04T01:29:39Z
+    ended: 2026-11-04T01:32:21Z
+    stage: 01a1a3fd-1fbf-7477-ba13-66081560088c
+  - agent: af7c6dbda83a6c965
+    type: Explore
+    started: 2026-11-04T01:29:39Z
+    ended: 2026-11-04T01:31:22Z
+    stage: 01a1a3fd-1fbf-7477-ba13-66081560088c
+  - agent: a94ce9d0ff18e225b
+    type: Explore
+    started: 2026-11-04T01:29:39Z
+    ended: 2026-11-04T01:31:27Z
+    stage: 01a1a3fd-1fbf-7477-ba13-66081560088c
+  - agent: a924261dd9750b8fd
+    type: Explore
+    started: 2026-11-04T01:29:39Z
+    ended: 2026-11-04T01:31:14Z
+    stage: 01a1a3fd-1fbf-7477-ba13-66081560088c
 plan:
   - started: 2026-11-04T00:43:36Z
     ended: 2026-11-04T00:47:04Z

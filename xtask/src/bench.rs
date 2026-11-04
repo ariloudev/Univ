@@ -91,8 +91,9 @@ pub fn volume(root: &Path) -> bool {
 /// run is the same each time.
 fn centres(n: usize, distance: f64) -> Vec<[f64; 3]> {
     let golden = f64::midpoint(1.0, 5.0_f64.sqrt());
-    let count = f64::from(u32::try_from(n).unwrap_or(u32::MAX));
-    (0..u32::try_from(n).unwrap_or(u32::MAX))
+    let n = u32::try_from(n).unwrap_or(u32::MAX);
+    let count = f64::from(n);
+    (0..n)
         .map(|i| {
             let k = f64::from(i) + 0.5;
             let z = 1.0 - 2.0 * k / count;

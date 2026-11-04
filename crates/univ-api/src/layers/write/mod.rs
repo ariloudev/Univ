@@ -7,7 +7,6 @@ mod store;
 use serde_json::{Map, Value};
 use univ_model::api::layers::{ItemVersion, RevisionKind, VersionBody, VersionKind};
 use univ_model::geometry::Aabb;
-use univ_model::position::Frame;
 use univ_model::units::Unit;
 
 use super::validate::{self, Checked, Failures, member, pointer, text, unknown};
@@ -275,9 +274,7 @@ fn current(layer: &LayerRow, item: &str, replaces: u64) -> Result<(), Problem> {
 /// The box of checked content's shape in the ICRS, in megaparsecs, as volume queries read it.
 /// Every shape that passes its checks rotates into the ICRS and is in a unit of length.
 fn placed(checked: &Checked) -> Option<Aabb> {
-    let shape = &checked.content.geometry;
-    let factor = shape.unit.factor_to(Unit::Megaparsec).ok()?;
-    Some(shape.bounds_in(Frame::Icrs)?.scaled(factor))
+    checked.content.geometry.icrs_bounds(Unit::Megaparsec)
 }
 
 /// Checked content as stored: the item's own types written back, one form for every version.

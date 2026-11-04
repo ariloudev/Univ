@@ -3,11 +3,11 @@
 //! and the quotas and conflicts that every new version meets (publish-a-layer-item,
 //! revise-or-retract-an-item, enforce-quotas-and-rate-limits).
 
-use serde_json::{Value, json};
+use serde_json::json;
 
 use crate::http::{Method, Request};
 use crate::layers_fixture::{content, count, db, layer, publish, sn1987a};
-use crate::testkit::Sqlite;
+use crate::testkit::{Sqlite, pointers};
 
 fn setup() -> (Sqlite, String, String) {
     let db = db();
@@ -21,17 +21,6 @@ fn setup() -> (Sqlite, String, String) {
         .unwrap()
         .to_owned();
     (db, key, id)
-}
-
-fn pointers(problem: &Value) -> Vec<String> {
-    let mut pointers: Vec<String> = problem["errors"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|e| e["pointer"].as_str().unwrap().to_owned())
-        .collect();
-    pointers.sort();
-    pointers
 }
 
 #[test]

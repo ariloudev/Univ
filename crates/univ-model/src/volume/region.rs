@@ -4,10 +4,10 @@
 use std::f64::consts::PI;
 
 use crate::geometry::Aabb;
-use crate::position::{Rotation, Vec3, cross, dot, scaled, zip};
+use crate::position::{Rotation, Vec3, dot, norm, scaled, separation_degrees, sub};
 
 /// A region of ICRS space, in one unit of length.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Region {
     Sphere {
         centre: Vec3,
@@ -28,10 +28,6 @@ pub enum Region {
         near: f64,
         far: f64,
     },
-}
-
-fn norm(v: Vec3) -> f64 {
-    dot(v, v).sqrt()
 }
 
 impl Region {
@@ -70,15 +66,13 @@ impl Region {
     #[must_use]
     pub fn distance(&self, p: Vec3) -> f64 {
         match self {
-            Self::Sphere { centre, radius } => {
-                (norm(zip(p, *centre, |a, b| a - b)) - radius).max(0.0)
-            }
+            Self::Sphere { centre, radius } => (norm(sub(p, *centre)) - radius).max(0.0),
             Self::Box {
                 to_frame,
                 centre,
                 half,
             } => {
-                let local = zip(to_frame.apply(p), *centre, |a, b| a - b);
+                let local = sub(to_frame.apply(p), *centre);
                 norm(std::array::from_fn(|i| (local[i].abs() - half[i]).max(0.0)))
             }
             Self::Sector {
@@ -91,7 +85,7 @@ impl Region {
                 // of radii near to far and angles 0 to half_angle, and the nearest point of the
                 // solid lies in that half-plane.
                 let r = norm(p);
-                let theta = norm(cross(p, *axis)).atan2(dot(p, *axis));
+                let theta = separation_degrees(p, *axis).to_radians();
                 if theta <= *half_angle {
                     return (near - r).max(r - far).max(0.0);
                 }
@@ -114,10 +108,7 @@ impl Region {
     #[must_use]
     pub fn bounds(&self) -> Aabb {
         match self {
-            Self::Sphere { centre, radius } => Aabb {
-                min: centre.map(|c| c - radius),
-                max: centre.map(|c| c + radius),
-            },
+            Self::Sphere { centre, radius } => Aabb::centred(*centre, [*radius; 3]),
             Self::Box {
                 to_frame,
                 centre,
@@ -130,7 +121,7 @@ impl Region {
                         centre[i] + sign * half[i]
                     }))
                 });
-                bounding(corners)
+                Aabb::around(corners).unwrap_or(Aabb::centred(*centre, *half))
             }
             Self::Sector {
                 axis,
@@ -170,20 +161,4 @@ fn cap_extreme(axis: Vec3, half_angle: f64, e: Vec3) -> f64 {
     } else {
         (gamma - half_angle).min(PI).cos()
     }
-}
-
-/// The box around `points`, of which there is at least one.
-pub(super) fn bounding(points: impl IntoIterator<Item = Vec3>) -> Aabb {
-    let mut points = points.into_iter();
-    let first = points.next().unwrap_or([0.0; 3]);
-    points.fold(
-        Aabb {
-            min: first,
-            max: first,
-        },
-        |b, p| Aabb {
-            min: zip(b.min, p, f64::min),
-            max: zip(b.max, p, f64::max),
-        },
-    )
 }
