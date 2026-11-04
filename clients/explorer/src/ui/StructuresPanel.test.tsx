@@ -3,10 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import type { StructureDetail } from "../api/structures.ts";
+import { shapeOf } from "../test/structures.ts";
 import { StructureList, StructurePanel, matchedText } from "./StructuresPanel.tsx";
-
-/** A placed shape, typed as Univ Server gives it. */
-const shapeOf = (shape: NonNullable<StructureDetail["shape"]>) => shape;
 
 const LOCAL_VOID: StructureDetail = {
   id: "local-void",
@@ -20,7 +18,11 @@ const LOCAL_VOID: StructureDetail = {
   record: {
     papers: [{ id: "tully-2019", reference: "Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24" }],
     values: {
-      density_at_deepest_minimum: { kind: "reconstructed", quantity: { value: -1.89, unit: "dimensionless" }, cite: { paper: "tully-2019" } },
+      density_at_deepest_minimum: {
+        kind: "reconstructed",
+        quantity: { value: -1.89, unit: "dimensionless", uncertainty: { form: "none_reported" } },
+        cite: { paper: "tully-2019" },
+      },
     },
   },
 };
@@ -39,7 +41,7 @@ describe("the structures", () => {
     expect(screen.getByTestId("structure-kind").textContent).toBe("void · cosmic web");
     expect(screen.getByTestId("structure-matched").textContent).toBe("Placed by a point in icrs, derived from geometry Point.");
     const values = screen.getByTestId("structure-values").textContent ?? "";
-    expect(values).toContain("density at deepest minimum: -1.89 dimensionless");
+    expect(values).toContain("density at deepest minimum: -1.89 dimensionless, no uncertainty reported");
     expect(values).toContain("reconstructed; Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24");
   });
 

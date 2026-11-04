@@ -1,18 +1,13 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Controller } from "../scene/controller.ts";
 import { ANDROMEDA } from "../test/objects.ts";
+import { fakeWorld } from "../test/world.ts";
 import { objectInAddress, useChosen } from "./useChosen.ts";
 import type { World } from "./useWorld.ts";
 
 function world(): World {
-  const controller = new Controller(
-    { draw: () => undefined, setLines: () => undefined },
-    { size: () => ({ width: 800, height: 600, ratio: 1 }), now: () => 0, reducedMotion: () => true },
-  );
-  const renderer = { setMarkers: vi.fn() } as unknown as World["renderer"];
-  return { controller, renderer, catalogue: undefined, domains: new Map(), rotations: undefined, pickable: [], chosen: undefined };
+  return fakeWorld();
 }
 
 afterEach(() => {
@@ -25,7 +20,7 @@ describe("the chosen object", () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(Response.json(ANDROMEDA))));
     const scene = world();
     const first = renderHook(() => useChosen(7, scene));
-    act(() => first.result.current.choose(856254, false));
+    act(() => first.result.current.choose(856254));
     await waitFor(() => expect(first.result.current.chosen.kind).toBe("ready"));
     expect(location.search).toBe("?object=856254");
     expect(scene.chosen).toEqual([0.55, 0.1, 0.49]);
@@ -43,13 +38,27 @@ describe("the chosen object", () => {
     expect(objectInAddress("")).toBeUndefined();
   });
 
+  it("is read once however often it is chosen, and not at all when its record is in hand", async () => {
+    const fetch = vi.fn(() => Promise.resolve(Response.json(ANDROMEDA)));
+    vi.stubGlobal("fetch", fetch);
+    const scene = world();
+    const hook = renderHook(() => useChosen(7, scene));
+    act(() => hook.result.current.choose(856254));
+    act(() => hook.result.current.choose(856254));
+    await waitFor(() => expect(hook.result.current.chosen.kind).toBe("ready"));
+    expect(fetch).toHaveBeenCalledTimes(1);
+    act(() => hook.result.current.choose(1, { record: { ...ANDROMEDA, id: 1 } }));
+    expect(hook.result.current.chosen).toEqual({ kind: "ready", record: { ...ANDROMEDA, id: 1 } });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it("is let go of, leaving the address naming none", async () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(Response.json(ANDROMEDA))));
     const scene = world();
     const hook = renderHook(() => useChosen(7, scene));
-    act(() => hook.result.current.choose(856254, false));
+    act(() => hook.result.current.choose(856254));
     await waitFor(() => expect(hook.result.current.chosen.kind).toBe("ready"));
-    act(() => hook.result.current.choose(undefined, false));
+    act(() => hook.result.current.choose(undefined));
     await waitFor(() => expect(hook.result.current.chosen.kind).toBe("none"));
     expect(location.search).toBe("");
     expect(scene.chosen).toBeUndefined();

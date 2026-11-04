@@ -40,7 +40,7 @@ describe("searching", () => {
   });
 
   it("repeats what was searched for when nothing is found", async () => {
-    answer(404, { status: 404, title: "No such object" });
+    answer(404, { status: 404, title: "No such object", type: "urn:univ:problem:object-not-found" });
     await find("Nowhere");
     expect((await screen.findByRole("status")).textContent).toBe("Nothing found for “Nowhere”.");
   });

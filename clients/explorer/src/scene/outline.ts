@@ -2,7 +2,7 @@
 // rings and edges, paths, rays and ranges as lines, points and member lists as markers. Every
 // position is ICRS megaparsecs once `place` has turned it from the shape's frame and unit.
 
-import { type Vec3, add, scale } from "./vec.ts";
+import { type Vec3, add, scale, sub } from "./vec.ts";
 
 /** Segments of each ring of a sphere or an ellipsoid. */
 const SEGMENTS = 96;
@@ -14,6 +14,9 @@ export interface Outline {
 }
 
 export const empty = (): Outline => ({ segments: [], markers: [] });
+
+/** An outline of `segments` alone. */
+export const lines = (segments: Vec3[]): Outline => ({ segments, markers: [] });
 
 /** The ring through `centre + u cos t + v sin t`. */
 function ring(centre: Vec3, u: Vec3, v: Vec3): Vec3[] {
@@ -52,7 +55,7 @@ export function polyline(points: readonly Vec3[]): Vec3[] {
 /** The bounding box `min` to `max` as its twelve edges. */
 export function boundsEdges(min: Vec3, max: Vec3): Vec3[] {
   const centre = scale(add(min, max), 0.5);
-  const half = scale(add(max, scale(min, -1)), 0.5);
+  const half = scale(sub(max, min), 0.5);
   return boxEdges(centre, [
     [half[0], 0, 0],
     [0, half[1], 0],

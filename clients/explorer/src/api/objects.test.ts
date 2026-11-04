@@ -1,21 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import type { Http } from "./client.ts";
+import { answer, fakeHttp } from "../test/http.ts";
 import { ANDROMEDA } from "../test/objects.ts";
-import { type ObjectRecord, distancesOf, lookupPath, placeOf, search } from "./objects.ts";
+import { type ObjectRecord, distancesOf, lookupPath, objectOf, placeOf, search } from "./objects.ts";
 
-function http(status: number, body: unknown): Http & { urls: string[] } {
-  const urls: string[] = [];
-  return {
-    urls,
-    fetch: (url) => {
-      urls.push(url);
-      return Promise.resolve(Response.json(body, { status }));
-    },
-    sleep: () => Promise.resolve(),
-    now: () => 0,
-  };
-}
+const http = (status: number, body: unknown) => fakeHttp(answer(status, body));
 
 describe("finding an object", () => {
   it("looks a number up as an id, source:identifier as a designation, and anything else as a name", () => {
@@ -45,8 +34,25 @@ describe("finding an object", () => {
   });
 
   it("says nothing was found, keeping what was searched for", async () => {
-    const problem = { status: 404, title: "No such object" };
+    const problem = { status: 404, title: "No such object", type: "urn:univ:problem:object-not-found" };
     expect(await search("Nowhere", { http: http(404, problem) })).toEqual({ kind: "none", query: "Nowhere" });
+  });
+
+  it("keeps any other refusal a problem, such as a source that does not exist", async () => {
+    const problem = { status: 404, title: "No such source", type: "urn:univ:problem:source-not-found" };
+    await expect(search("nosuch:1", { http: http(404, problem) })).rejects.toThrow("404 No such source");
+  });
+
+  it("lists the objects that replaced an id that was split", async () => {
+    const choices = { objects: [{ id: 3, href: "/v1/objects/3" }, { id: 4, href: "/v1/objects/4" }] };
+    expect(await objectOf(12, { http: http(300, choices) })).toEqual({
+      kind: "choices",
+      query: "12",
+      objects: [
+        { id: 3, names: [] },
+        { id: 4, names: [] },
+      ],
+    });
   });
 });
 

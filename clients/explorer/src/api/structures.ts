@@ -37,7 +37,7 @@ const Shape = z.looseObject({ frame: z.string(), unit: z.string(), geometry: Geo
 
 const Cited = z.looseObject({
   kind: z.string().optional(),
-  quantity: z.looseObject({ value: z.unknown(), unit: z.string().optional() }).optional(),
+  quantity: z.looseObject({ value: z.unknown(), unit: z.string().optional(), uncertainty: z.unknown().optional() }).optional(),
   cite: z.looseObject({ paper: z.string() }).nullable().optional(),
 });
 

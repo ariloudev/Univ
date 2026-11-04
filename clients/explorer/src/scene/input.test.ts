@@ -14,6 +14,7 @@ function bound() {
     click: (x, y) => seen.push(`click ${x} ${y}`),
     doubleClick: (x, y) => seen.push(`double ${x} ${y}`),
     hover: (x, y) => seen.push(`hover ${x} ${y}`),
+    leave: () => seen.push("leave"),
   };
   const unbind = bindMouse(canvas, gestures);
   const fire = (type: string, init: PointerEventInit & MouseEventInit) => {
@@ -29,7 +30,7 @@ describe("the mouse on the view", () => {
     fire("pointerdown", { clientX: 100, clientY: 100, button: 0 });
     fire("pointermove", { clientX: 110, clientY: 100 });
     fire("pointerup", { clientX: 110, clientY: 100, button: 0 });
-    expect(seen).toEqual(["turn 10 0"]);
+    expect(seen).toEqual(["leave", "turn 10 0"]);
   });
 
   it("calls a press that moves less than 6 pixels a click, and turns nothing", () => {
@@ -48,14 +49,14 @@ describe("the mouse on the view", () => {
     fire("pointerdown", { clientX: 0, clientY: 0, button: 0, shiftKey: true });
     fire("pointermove", { clientX: 8, clientY: 0 });
     fire("pointerup", { clientX: 8, clientY: 0, button: 0 });
-    expect(seen).toEqual(["pan 0 20", "pan 8 0"]);
+    expect(seen).toEqual(["leave", "pan 0 20", "leave", "pan 8 0"]);
   });
 
   it("zooms in a step for each notch scrolled forward", () => {
     const { seen, fire } = bound();
     fire("wheel", { deltaY: -100 } as WheelEventInit);
     fire("wheel", { deltaY: 200 } as WheelEventInit);
-    expect(seen).toEqual(["zoom 1", "zoom -2"]);
+    expect(seen).toEqual(["leave", "zoom 1", "leave", "zoom -2"]);
   });
 
   it("flies on a double click, and stops listening when unbound", () => {

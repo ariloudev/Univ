@@ -2,16 +2,15 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
-import { Controller } from "../scene/controller.ts";
+import type { Controller } from "../scene/controller.ts";
+import { fakeController } from "../test/world.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { Panels, type Tally } from "./Panels.tsx";
 import { Scene } from "./Scene.tsx";
+import { createStore } from "./store.ts";
 
 function controller(): Controller {
-  const made = new Controller(
-    { draw: () => undefined, setLines: () => undefined },
-    { size: () => ({ width: 800, height: 600, ratio: 1 }), now: () => 0, reducedMotion: () => true },
-  );
+  const made = fakeController();
   made.setRotations(manifestOf("stars").rotations);
   return made;
 }
@@ -28,7 +27,7 @@ function tally(failed = 0, unread = 0): Tally {
 }
 
 function show(catalogue: Tally, made = controller()) {
-  render(<Panels controller={made} catalogue={catalogue} release={7} cosmology="Planck 2018" />);
+  render(<Panels controller={made} catalogue={() => catalogue} frame={createStore(0)} release={7} cosmology="Planck 2018" />);
   return made;
 }
 

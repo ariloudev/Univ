@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 
 import { type Found, type ObjectRecord, search } from "../api/objects.ts";
 
@@ -8,18 +8,26 @@ type State = { kind: "idle" } | { kind: "searching" } | { kind: "failed"; messag
 export function SearchBox({ release, onFound }: { release: number; onFound: (id: number, record?: ObjectRecord) => void }) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<State>({ kind: "idle" });
+  const searching = useRef<AbortController>(undefined);
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (query.trim() === "") return;
+    // Only the last search answers: one before it is given up.
+    searching.current?.abort();
+    const abort = new AbortController();
+    searching.current = abort;
     setState({ kind: "searching" });
-    search(query, { release })
+    search(query, { release, signal: abort.signal })
       .then((found) => {
+        if (abort.signal.aborted) return;
         if (found.kind === "object") {
           setState({ kind: "idle" });
           onFound(found.record.id, found.record);
         } else setState(found);
       })
-      .catch((error: unknown) => setState({ kind: "failed", message: error instanceof Error ? error.message : String(error) }));
+      .catch((error: unknown) => {
+        if (!abort.signal.aborted) setState({ kind: "failed", message: error instanceof Error ? error.message : String(error) });
+      });
   };
   return (
     <div className="space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">

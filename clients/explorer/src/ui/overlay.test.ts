@@ -1,56 +1,54 @@
 import { describe, expect, it } from "vitest";
 
-import { Controller } from "../scene/controller.ts";
+import { fakeWorld } from "../test/world.ts";
 import type { Vec3 } from "../scene/vec.ts";
-import { type Overlay, placeOverlay } from "./overlay.ts";
-import type { World } from "./useWorld.ts";
+import { type Overlay, labelSize, placeOverlay } from "./overlay.ts";
 
-function element(width = 0): HTMLDivElement {
-  const made = document.createElement("div");
-  Object.defineProperty(made, "offsetWidth", { value: width });
-  Object.defineProperty(made, "offsetHeight", { value: 14 });
-  return made;
+const div = () => document.createElement("div");
+
+function overlay(names: string[]): Overlay {
+  const container = div();
+  for (const id of names) {
+    const element = div();
+    element.dataset["structure"] = id;
+    container.append(element);
+  }
+  return { earth: { current: div() }, ring: { current: div() }, ringLabel: { current: document.createElement("span") }, chosen: { current: div() }, names: { current: container } };
 }
 
-function scene(chosen: Vec3 | undefined): World {
-  const controller = new Controller(
-    { draw: () => undefined, setLines: () => undefined },
-    { size: () => ({ width: 800, height: 600, ratio: 1 }), now: () => 0, reducedMotion: () => true },
-  );
-  return { controller, renderer: {} as World["renderer"], catalogue: undefined, domains: new Map(), rotations: undefined, pickable: [], chosen };
-}
-
-function overlay(labels: [string, HTMLElement, Vec3][]): Overlay {
-  return {
-    earth: { current: element() },
-    ring: { current: element() },
-    ringLabel: { current: document.createElement("span") },
-    chosen: { current: element() },
-    labels: { current: new Map(labels.map(([id, e, centre]) => [id, { element: e, centre }])) },
-  };
-}
+const numbers = (element: Element | null | undefined) =>
+  ((element as HTMLElement | null | undefined)?.style.transform.match(/-?[\d.]+/g) ?? []).map(Number);
 
 describe("the overlay", () => {
   it("keeps Earth at the centre while it is the focus, and marks the chosen object where it is", () => {
     const marks = overlay([]);
-    placeOverlay(scene([0, 0, 0]), marks, { width: 800, height: 600 });
-    const [x, y] = (marks.earth.current?.style.transform.match(/-?[\d.]+/g) ?? []).map(Number);
+    placeOverlay(fakeWorld({ chosen: [0, 0, 0] }), marks, { width: 800, height: 600 });
+    const [x, y] = numbers(marks.earth.current);
     expect(x).toBeCloseTo(400);
     expect(y).toBeCloseTo(300);
     expect(marks.chosen.current?.style.display).toBe("");
     expect(marks.ringLabel.current?.textContent).toBe("1 Gpc");
-    placeOverlay(scene(undefined), marks, { width: 800, height: 600 });
+    placeOverlay(fakeWorld(), marks, { width: 800, height: 600 });
     expect(marks.chosen.current?.style.display).toBe("none");
   });
 
+  it("draws each structure's name at its centre", () => {
+    const marks = overlay(["kbc"]);
+    placeOverlay(fakeWorld({ names: [{ id: "kbc", centre: [0, 0, 0], text: "KBC void" }] }), marks, { width: 800, height: 600 });
+    const [x, y] = numbers(marks.names.current?.firstElementChild);
+    expect(x).toBeCloseTo(400);
+    expect(y).toBeCloseTo(300);
+  });
+
   it("hides a structure's name that would overlap a nearer one", () => {
-    const near = element(120);
-    const far = element(120);
-    const marks = overlay([
-      ["near", near, [0, 0, 0]],
-      ["far", far, [-1, 0, 0]],
-    ]);
-    placeOverlay(scene(undefined), marks, { width: 800, height: 600 });
-    expect([near.style.display, far.style.display].sort()).toEqual(["", "none"]);
+    const marks = overlay(["near", "far"]);
+    const names = [
+      { id: "near", centre: [0, 0, 0] as Vec3, text: "A long structure name" },
+      { id: "far", centre: [-1, 0, 0] as Vec3, text: "Another long name" },
+    ];
+    placeOverlay(fakeWorld({ names }), marks, { width: 800, height: 600 });
+    const shown = [...(marks.names.current?.children ?? [])].map((e) => (e as HTMLElement).style.display);
+    expect(shown.sort()).toEqual(["", "none"]);
+    expect(labelSize("KBC void").width).toBeGreaterThan(50);
   });
 });

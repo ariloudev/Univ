@@ -1,7 +1,8 @@
-import type { StructureDrawing } from "../scene/structures.ts";
-import type { Overlay } from "./overlay.ts";
-import type { ScenePoint } from "./scenePoint.ts";
+import { STRUCTURE_CSS } from "../scene/kinds.ts";
+import type { NameLabel, Overlay } from "./overlay.ts";
+import { useStore } from "./store.ts";
 import { pointText } from "./text.ts";
+import type { World } from "./useWorld.ts";
 
 /** Earth, the ring's label and the chosen object's mark, kept over their places. */
 export function Marks({ overlay }: { overlay: Overlay }) {
@@ -24,30 +25,28 @@ export function Marks({ overlay }: { overlay: Overlay }) {
 }
 
 /** Each placed structure's name, kept at its centre and clear of the others; each to choose. */
-export function StructureNames({ drawings, overlay, onChoose }: { drawings: Iterable<StructureDrawing>; overlay: Overlay; onChoose: (id: string) => void }) {
-  const named = [...drawings].flatMap((d) => (d.centre === undefined ? [] : [{ ...d, centre: d.centre }]));
-  return named.map((d) => (
-    <button
-      key={d.id}
-      type="button"
-      ref={(element) => {
-        if (element === null) overlay.labels.current.delete(d.id);
-        else overlay.labels.current.set(d.id, { element, centre: d.centre });
-      }}
-      onClick={() => onChoose(d.id)}
-      className="absolute top-0 left-0 text-xs whitespace-nowrap text-[#ff8c59] hover:underline"
-      style={{ display: "none" }}
-    >
-      <span className="block -translate-x-1/2 -translate-y-1/2">
-        {d.name}
-        {d.approximate ? " (approximate)" : ""}
-      </span>
-    </button>
-  ));
+export function StructureNames({ names, overlay, onChoose }: { names: readonly NameLabel[]; overlay: Overlay; onChoose: (id: string) => void }) {
+  return (
+    <div ref={overlay.names}>
+      {names.map((name) => (
+        <button
+          key={name.id}
+          type="button"
+          data-structure={name.id}
+          onClick={() => onChoose(name.id)}
+          className="absolute top-0 left-0 text-xs whitespace-nowrap hover:underline"
+          style={{ display: "none", color: STRUCTURE_CSS }}
+        >
+          <span className="block -translate-x-1/2 -translate-y-1/2">{name.text}</span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 /** The label of the point under the pointer. */
-export function HoverLabel({ hover }: { hover: { x: number; y: number; point: ScenePoint } | undefined }) {
+export function HoverLabel({ world }: { world: World }) {
+  const hover = useStore(world.hover);
   if (hover === undefined) return null;
   return (
     <p role="tooltip" className="pointer-events-none absolute rounded bg-panel px-2 py-1 text-xs" style={{ left: hover.x + 12, top: hover.y + 12 }}>

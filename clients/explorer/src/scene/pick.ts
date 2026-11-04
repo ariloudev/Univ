@@ -2,8 +2,8 @@
 // the nearer to the eye where two are as near. Batches whose bounding sphere falls clear of
 // the pointer are skipped whole, so that a pick reads only the tiles along its line of sight.
 
-import { FOV, type View, eyeAxes, eyeOf } from "./camera.ts";
-import type { Mat3, Vec3 } from "./vec.ts";
+import { type View, eyeAxes, eyeOf, focalPixels } from "./camera.ts";
+import { type Mat3, type Vec3, apply, dot, norm, normalize, scale, sub } from "./vec.ts";
 
 /** A batch of points to pick from: offsets from its centre, within `radius` of it. */
 export interface Pickable {
@@ -38,7 +38,7 @@ interface Best extends Picked {
 export function pick(batches: readonly Pickable[], view: View, toFrame: Mat3, pointer: Pointer): Picked | undefined {
   const axes = eyeAxes(view, toFrame);
   const eye = eyeOf(view, toFrame);
-  const f = pointer.height / 2 / Math.tan(FOV / 2);
+  const f = focalPixels(pointer.height);
   let best: Best | undefined;
   batches.forEach((batch, index) => {
     best = pickIn(batch, index, axes, eye, f, pointer, best);
@@ -46,14 +46,17 @@ export function pick(batches: readonly Pickable[], view: View, toFrame: Mat3, po
   return best === undefined ? undefined : { batch: best.batch, index: best.index };
 }
 
-/** Whether `batch`'s bounding sphere, seen from the eye, may hold a point under the pointer. */
-function mayHold(c: Vec3, radius: number, f: number, pointer: Pointer): boolean {
-  const depth = -c[2];
-  if (depth + radius <= 0) return false;
-  if (depth <= radius) return true;
-  const x = pointer.width / 2 + (c[0] * f) / depth;
-  const y = pointer.height / 2 - (c[1] * f) / depth;
-  return Math.hypot(x - pointer.x, y - pointer.y) <= (radius * f) / (depth - radius) + PICK_SLOP;
+/** The pointer's ray from the eye, in the eye's axes. */
+const rayOf = (f: number, pointer: Pointer): Vec3 =>
+  normalize([(pointer.x - pointer.width / 2) / f, -(pointer.y - pointer.height / 2) / f, -1]);
+
+/** Whether a sphere about `c` (in the eye's axes) of `radius`, widened by the pick's slop at its
+ * depth, meets the pointer's `ray`: only then may it hold a point under the pointer. */
+function mayHold(c: Vec3, radius: number, ray: Vec3, f: number): boolean {
+  const along = dot(c, ray);
+  if (along < -radius) return false;
+  const across = norm(sub(c, scale(ray, along)));
+  return across <= radius + (PICK_SLOP * Math.abs(along)) / f;
 }
 
 /** Points within a pixel of one another count as equally near the pointer. */
@@ -68,9 +71,8 @@ function better(d2: number, depth: number, found: Best | undefined): boolean {
 
 function pickIn(batch: Pickable, index: number, axes: Mat3, eye: Vec3, f: number, pointer: Pointer, best: Best | undefined): Best | undefined {
   const [a, b, c] = axes;
-  const d: Vec3 = [batch.centre[0] - eye[0], batch.centre[1] - eye[1], batch.centre[2] - eye[2]];
-  const centre: Vec3 = [a[0] * d[0] + a[1] * d[1] + a[2] * d[2], b[0] * d[0] + b[1] * d[1] + b[2] * d[2], c[0] * d[0] + c[1] * d[1] + c[2] * d[2]];
-  if (!mayHold(centre, batch.radius, f, pointer)) return best;
+  const centre = apply(axes, sub(batch.centre, eye));
+  if (!mayHold(centre, batch.radius, rayOf(f, pointer), f)) return best;
   let found = best;
   const o = batch.offsets;
   for (let i = 0; i < o.length / 3; i += 1) {

@@ -2677,6 +2677,23 @@ blocks:
           - positions in pc or Mpc are converted to Mpc;
           - the fractional uncertainty is shown as a share of the distance.
         state: open
+      - key: 01a1a4c7-134d-7071-9cba-7ee3189d6288
+        at: 2026-11-04T04:17:52Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Objects API: lookup, search with choices, distances"
+        detail: |-
+          Done when unit tests show:
+          - a number is looked up as an id, `source:identifier` as a designation, and other text as a name;
+          - an answer of 300 lists the objects to choose from, and 404 means none found;
+          - the preferred distance's measurement and the other distances are picked out;
+          - positions in pc or Mpc are converted to Mpc;
+          - the fractional uncertainty is shown as a share of the distance.
+
+          Result: passes. Found live: Univ Server's preferred-distance uncertainty is **fractional** (0.0042 for Sirius's parallax), so the panel shows it as ± %, with the absolute value beside it.
+        state: done
   - key: 01a1a4bd-c40e-7712-815c-71515009ea67
     id: e2-pick
     kind: task
@@ -2697,6 +2714,28 @@ blocks:
           - a problem shows its status and title;
           - a double-click flies within 1.5 s, or moves at once under reduced motion.
         state: open
+      - key: 01a1a4c7-134d-7071-9cba-7ee4f788a490
+        at: 2026-11-04T04:17:52Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Picking, hover label, chosen object panel, URL, double-click flight"
+        detail: |-
+          Done when unit tests show:
+          - the nearest point within the slop is picked across batches;
+          - the label gives id, domain, distance, source and kind;
+          - the panel gives names and designations, the preferred distance with uncertainty, kind, source and rule, the other distances, and frame and epoch;
+          - the object id is kept in the URL and restored;
+          - a problem shows its status and title;
+          - a double-click flies within 1.5 s, or moves at once under reduced motion.
+
+          Result: passes, and checked live on release 7:
+          - Andromeda: 747 kpc ± 2.1 %;
+          - Sirius by `hipparcos-2007:32349`: 2.64 pc ± 0.42 %;
+          - a double-click flew to a Gaia star 114 pc away;
+          - the chosen object survived a reload.
+        state: done
   - key: 01a1a4bd-c40e-7712-815c-715267bc73aa
     id: e2-structures
     kind: task
@@ -2719,3 +2758,39 @@ blocks:
 
           Then checked live on release 7.
         state: open
+      - key: 01a1a4c7-134d-7071-9cba-7ee5581cc943
+        at: 2026-11-04T04:17:52Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structures: outlines, markers, bounding boxes, names, list and panel"
+        detail: |-
+          Done when unit tests show:
+          - sphere, ellipsoid and box outlines, paths, members and points;
+          - sky regions and missing shapes drawn as their bounding box, marked approximate; with no box, listed and not drawn;
+          - a shape's frame and unit converted;
+          - labels placed without overlap;
+          - the list by name and kind;
+          - the panel with kind, domain, derivation and each value's cited paper.
+
+          Then checked live on release 7.
+
+          Result: passes. Live:
+          - all 26 structures listed;
+          - the Bootes Void sphere framed;
+          - names placed clear of each other.
+        state: done
+  - key: 01a1a4c7-134d-7071-9cba-7ee2aefe649c
+    id: e2-review
+    kind: task
+    versions:
+      - key: 01a1a4c7-134d-7071-9cba-7ee6f101c4cf
+        at: 2026-11-04T04:17:52Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Simplify and code review of E2, findings fixed"
+        detail: "Done when `/simplify` and `/code-review` have run in parallel on the E2 diff and their findings are fixed or skipped with a reason."
+        state: active

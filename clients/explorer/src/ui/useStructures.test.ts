@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { structuresOf } from "../api/structures.ts";
 import type { StructureDrawing } from "../scene/structures.ts";
-import { rendered, structureView } from "./useStructures.ts";
+import { rendered, settled, structureView } from "./useStructures.ts";
 
 const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing["centre"] = [10, 0, 0]): StructureDrawing => ({
   id: "s",
@@ -10,6 +10,7 @@ const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing[
   centre,
   outline,
   approximate: false,
+  size: 5,
 });
 
 afterEach(() => {
@@ -33,10 +34,27 @@ describe("drawing a structure", () => {
       list: [],
       problem: undefined,
       drawings: new Map([["s", drawing({ segments: [], markers: [] })]]),
-      details: new Map([["s", { bounds: { min: [0, 0, 0], max: [3, 4, 0] } } as never]]),
+      details: new Map(),
     };
     expect(structureView(structures, "s")).toEqual({ centre: [10, 0, 0], distance: 12.5 });
     expect(structureView(structures, "none")).toBeUndefined();
+  });
+});
+
+describe("reading the structures", () => {
+  it("reads at most so many at once, and keeps every read that succeeded", async () => {
+    let running = 0;
+    let most = 0;
+    const results = await settled([1, 2, 3, 4, 5], 2, async (n) => {
+      running += 1;
+      most = Math.max(most, running);
+      await new Promise((r) => setTimeout(r, 1));
+      running -= 1;
+      if (n === 3) throw new Error("unreadable");
+      return n * 10;
+    });
+    expect(most).toBe(2);
+    expect(results.map((r) => r.status)).toEqual(["fulfilled", "fulfilled", "rejected", "fulfilled", "fulfilled"]);
   });
 });
 

@@ -6,34 +6,37 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 
 import type { Rotations } from "../api/schemas.ts";
 import { Catalogue } from "../catalogue/catalogue.ts";
-import { type Batch, type Domain, domainsOf } from "../catalogue/tiles.ts";
+import { type Batch, domainsOf } from "../catalogue/tiles.ts";
 import { Controller, type Surroundings } from "../scene/controller.ts";
+import { viewingDistance } from "../scene/controls.ts";
 import { bindMouse } from "../scene/input.ts";
-import { type Pickable, pick } from "../scene/pick.ts";
+import type { Pickable } from "../scene/pick.ts";
 import { NoWebGL, Renderer } from "../scene/renderer.ts";
 import type { Vec3 } from "../scene/vec.ts";
-import { type Overlay, placeOverlay } from "./overlay.ts";
-import { type ScenePoint, pointOf } from "./scenePoint.ts";
+import { type NameLabel, type Overlay, placeOverlay } from "./overlay.ts";
+import { type ScenePoint, pointUnder } from "./scenePoint.ts";
+import { type Store, createStore } from "./store.ts";
+
+/** The point under the pointer, where the pointer is. */
+export type Hover = { x: number; y: number; point: ScenePoint } | undefined;
 
 export interface World {
   controller: Controller;
   renderer: Renderer;
   catalogue: Catalogue | undefined;
-  domains: ReadonlyMap<string, Domain>;
-  rotations: Rotations | undefined;
   /** Every batch drawn, to pick from. */
   pickable: (Pickable & { batch: Batch })[];
   /** Where the chosen object is marked. */
   chosen: Vec3 | undefined;
+  /** The structures' names, to place over the view. */
+  names: NameLabel[];
+  /** Counts the frames drawn, for what shows the view's state. */
+  frame: Store<number>;
+  hover: Store<Hover>;
 }
 
-/** What the scene tells the page of the mouse. */
-export interface SceneEvents {
-  /** The point under the pointer, at `x`, `y`, or none. */
-  onHover: (hover: { x: number; y: number; point: ScenePoint } | undefined) => void;
-  /** A point chosen: clicked, or double-clicked to fly to it. */
-  onChoose: (point: ScenePoint, fly: boolean) => void;
-}
+/** What the scene tells the page of the mouse: a point clicked, or double-clicked and flown to. */
+export type OnChoose = (point: ScenePoint) => void;
 
 function surroundings(element: HTMLElement): Surroundings {
   return {
@@ -43,59 +46,71 @@ function surroundings(element: HTMLElement): Surroundings {
   };
 }
 
-/** Reads the release's domains and starts fetching its tiles into `world`. */
-async function startCatalogue(release: number, world: World, signal: AbortSignal): Promise<void> {
+/** A world for `controller` drawing with `renderer`, holding nothing yet. */
+export function emptyWorld(controller: Controller, renderer: Renderer): World {
+  return {
+    controller,
+    renderer,
+    catalogue: undefined,
+    pickable: [],
+    chosen: undefined,
+    names: [],
+    frame: createStore(0),
+    hover: createStore<Hover>(undefined),
+  };
+}
+
+/** Reads the release's domains and starts fetching its tiles into `world`; its rotations. */
+async function startCatalogue(release: number, world: World, signal: AbortSignal): Promise<Rotations | undefined> {
   const { controller, renderer } = world;
   const domains = await domainsOf(release, { signal });
-  const first = domains[0];
-  if (first === undefined) return;
-  world.domains = new Map(domains.map((d) => [d.name, d]));
-  world.rotations = first.manifest.rotations;
-  controller.setRotations(first.manifest.rotations);
+  const rotations = domains[0]?.manifest.rotations;
+  if (rotations === undefined) return undefined;
+  controller.setRotations(rotations);
   const events = {
     onBatch: (batch: Batch) => {
       renderer.addPoints({ centre: batch.tile.centre, offsets: batch.offsets, kinds: batch.kinds });
-      world.pickable.push({ centre: batch.tile.centre, radius: batch.tile.edge * 0.87, offsets: batch.offsets, batch });
+      // The bounding sphere of the tile's cube: half its diagonal.
+      world.pickable.push({ centre: batch.tile.centre, radius: batch.tile.edge * (Math.sqrt(3) / 2), offsets: batch.offsets, batch });
       controller.invalidate();
     },
     onChange: () => controller.invalidate(),
   };
-  const catalogue = new Catalogue(release, domains, events, { signal });
-  world.catalogue = catalogue;
-  catalogue.update(controller.eye);
+  world.catalogue = new Catalogue(release, domains, events, { signal });
+  world.catalogue.update(controller.eye);
+  return rotations;
 }
 
 /** The point of `world` under the pointer at `x`, `y` on `element`, if any. */
-function pointAt(world: World, element: HTMLElement, x: number, y: number): ScenePoint | undefined {
-  const { controller } = world;
-  const pointer = { width: element.clientWidth, height: element.clientHeight, x, y };
-  const picked = pick(world.pickable, controller.view, controller.toFrame, pointer);
-  const entry = picked === undefined ? undefined : world.pickable[picked.batch];
-  return picked === undefined || entry === undefined ? undefined : pointOf(world.domains, entry.batch, picked.index);
-}
+const pointAt = (world: World, element: HTMLElement, x: number, y: number): ScenePoint | undefined =>
+  pointUnder(world, { width: element.clientWidth, height: element.clientHeight, x, y });
 
 /** Binds the mouse and the canvas's size to the world, until the returned function. */
-function bindView(element: HTMLCanvasElement, world: World, events: RefObject<SceneEvents>): () => void {
-  const { controller } = world;
+function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<OnChoose>): () => void {
+  const { controller, hover } = world;
   let hovering: number | undefined;
+  const chooser = (fly: boolean) => (x: number, y: number) => {
+    const point = pointAt(world, element, x, y);
+    if (point === undefined) return;
+    if (fly) controller.flyTo(point.place, viewingDistance(point.distanceMpc));
+    onChoose.current(point);
+  };
   const unbind = bindMouse(element, {
     turn: (dx, dy) => controller.turn(dx, dy),
     pan: (dx, dy) => controller.pan(dx, dy),
     zoom: (steps) => controller.zoom(steps),
-    click: (x, y) => {
-      const point = pointAt(world, element, x, y);
-      if (point !== undefined) events.current.onChoose(point, false);
-    },
-    doubleClick: (x, y) => {
-      const point = pointAt(world, element, x, y);
-      if (point !== undefined) events.current.onChoose(point, true);
-    },
+    click: chooser(false),
+    doubleClick: chooser(true),
     hover: (x, y) => {
       if (hovering !== undefined) cancelAnimationFrame(hovering);
       hovering = requestAnimationFrame(() => {
         const point = pointAt(world, element, x, y);
-        events.current.onHover(point === undefined ? undefined : { x, y, point });
+        hover.set(point === undefined ? undefined : { x, y, point });
       });
+    },
+    leave: () => {
+      if (hovering !== undefined) cancelAnimationFrame(hovering);
+      if (hover.get() !== undefined) hover.set(undefined);
     },
   });
   const resize = new ResizeObserver(() => {
@@ -111,20 +126,28 @@ function bindView(element: HTMLCanvasElement, world: World, events: RefObject<Sc
   };
 }
 
-/** The scene of `release` on `canvas`: its world, a count that moves on each frame drawn (for
- * the panels), the overlay's elements, and the problem that stopped it, if any. */
-export function useWorld(
-  release: number,
-  canvas: RefObject<HTMLCanvasElement | null>,
-  events: SceneEvents,
-): { world: World | undefined; version: number; overlay: Overlay; problem: string | undefined } {
-  const [version, setVersion] = useState(0);
+/** Draws `world` on every animation frame that needs it, placing its overlay, until stopped. */
+function animate(world: World, overlay: RefObject<Overlay>, size: Surroundings["size"]): () => void {
+  let frame = requestAnimationFrame(function loop() {
+    if (world.controller.tick()) {
+      placeOverlay(world, overlay.current, size());
+      world.frame.set(world.frame.get() + 1);
+    }
+    frame = requestAnimationFrame(loop);
+  });
+  return () => cancelAnimationFrame(frame);
+}
+
+/** The scene of `release` on `canvas`: its world, the rotations of its frames once read, the
+ * overlay's elements, and the problem that stopped it, if any. */
+export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | null>, onChoose: OnChoose) {
   const [problem, setProblem] = useState<string>();
   const [world, setWorld] = useState<World>();
-  const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), chosen: useRef(null), labels: useRef(new Map()) };
+  const [rotations, setRotations] = useState<Rotations>();
+  const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), chosen: useRef(null), names: useRef(null) };
   const overlayRef = useRef(overlay);
-  const eventsRef = useRef(events);
-  eventsRef.current = events;
+  const chooseRef = useRef(onChoose);
+  chooseRef.current = onChoose;
   useEffect(() => {
     const element = canvas.current;
     if (element === null) return;
@@ -136,33 +159,29 @@ export function useWorld(
       return;
     }
     const around = surroundings(element);
-    const controller = new Controller(renderer, around);
-    const state: World = { controller, renderer, catalogue: undefined, domains: new Map(), rotations: undefined, pickable: [], chosen: undefined };
+    const state = emptyWorld(new Controller(renderer, around), renderer);
     setWorld(state);
     const abort = new AbortController();
-    startCatalogue(release, state, abort.signal).catch((error: unknown) => {
-      if (!abort.signal.aborted) setProblem(`The tiles of release ${release} could not be read: ${String(error)}`);
-    });
-    const unsubscribe = controller.subscribe(() => state.catalogue?.update(controller.eye));
-    const unbind = bindView(element, state, eventsRef);
-    let frame = requestAnimationFrame(function loop() {
-      if (controller.tick()) {
-        placeOverlay(state, overlayRef.current, around.size());
-        setVersion((n) => n + 1);
-      }
-      frame = requestAnimationFrame(loop);
-    });
+    startCatalogue(release, state, abort.signal)
+      .then(setRotations)
+      .catch((error: unknown) => {
+        if (!abort.signal.aborted) setProblem(`The tiles of release ${release} could not be read: ${String(error)}`);
+      });
+    const unsubscribe = state.controller.subscribe(() => state.catalogue?.update(state.controller.eye));
+    const unbind = bindView(element, state, chooseRef);
+    const stop = animate(state, overlayRef, around.size);
     return () => {
       abort.abort();
-      cancelAnimationFrame(frame);
+      stop();
       unbind();
       unsubscribe();
       renderer.dispose();
       setWorld(undefined);
+      setRotations(undefined);
       setTimeout(() => {
         if (!element.isConnected) renderer.loseContext();
       });
     };
   }, [release, canvas]);
-  return { world, version, overlay, problem };
+  return { world, rotations, overlay, problem };
 }

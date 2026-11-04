@@ -3,7 +3,7 @@ import type { ChosenObject } from "./useChosen.ts";
 import { preferredText, valueText, words } from "./text.ts";
 
 /** The chosen object's record: its names, its preferred and other distances, its frame. */
-export function ObjectPanel({ chosen, onClose }: { chosen: ChosenObject; onClose: () => void }) {
+export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObject; onChoose: (id: number) => void; onClose: () => void }) {
   if (chosen.kind === "none") return null;
   return (
     <section aria-label="The chosen object" className="space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
@@ -13,13 +13,28 @@ export function ObjectPanel({ chosen, onClose }: { chosen: ChosenObject; onClose
           ×
         </button>
       </div>
-      <Body chosen={chosen} />
+      <Body chosen={chosen} onChoose={onChoose} />
     </section>
   );
 }
 
-function Body({ chosen }: { chosen: Exclude<ChosenObject, { kind: "none" }> }) {
+function Body({ chosen, onChoose }: { chosen: Exclude<ChosenObject, { kind: "none" }>; onChoose: (id: number) => void }) {
   switch (chosen.kind) {
+    case "choices":
+      return (
+        <div>
+          <p>Object {chosen.choices.query} was replaced by {chosen.choices.objects.length} objects:</p>
+          <ul>
+            {chosen.choices.objects.map((o) => (
+              <li key={o.id}>
+                <button type="button" onClick={() => onChoose(o.id)} className="text-accent hover:underline">
+                  {o.id}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
     case "loading":
       return <p role="status" className="text-dim">Reading object {chosen.id}…</p>;
     case "failed":

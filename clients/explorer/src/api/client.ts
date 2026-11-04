@@ -11,11 +11,14 @@ export const UNREACHABLE = "urn:univ-explorer:problem:server-unreachable";
 export class ApiError extends Error {
   readonly status: number;
   readonly title: string;
+  /** The problem's type URI, where it gave one. */
+  readonly type: string | undefined;
 
-  constructor(status: number, title: string) {
+  constructor(status: number, title: string, type?: string) {
     super(`${status} ${title}`);
     this.status = status;
     this.title = title;
+    this.type = type;
   }
 }
 
@@ -92,7 +95,8 @@ async function problemOf(response: Response): Promise<Error> {
       : undefined;
   if (member("type") === UNREACHABLE) return new Unreachable(String(member("address")));
   const title = member("title");
-  return new ApiError(response.status, typeof title === "string" ? title : response.statusText);
+  const type = member("type");
+  return new ApiError(response.status, typeof title === "string" ? title : response.statusText, typeof type === "string" ? type : undefined);
 }
 
 /** Waits until reads through `http` may resume, telling `onWait` of a wait. */

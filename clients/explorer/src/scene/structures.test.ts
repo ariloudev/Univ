@@ -2,25 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { manifestOf } from "../test/fixtures.ts";
+import { shapeOf, structureDetail } from "../test/structures.ts";
 import { drawingOf } from "./structures.ts";
 import { type Vec3, norm, sub, unapply } from "./vec.ts";
-
-/** A placed shape, typed as Univ Server gives it. */
-const shapeOf = (shape: NonNullable<StructureDetail["shape"]>) => shape;
 
 const ROTATIONS = manifestOf("stars").rotations;
 
 function detail(shape: StructureDetail["shape"], bounds: StructureDetail["bounds"] = { min: [-1, -1, -1], max: [1, 1, 1] }): StructureDetail {
-  return {
-    id: "s",
-    name: "S",
-    kind: "void",
-    scale_domain: "cosmic_web",
-    centre: bounds === null ? null : { x: 0, y: 0, z: 0, unit: "megaparsec" },
-    bounds,
-    shape,
-    record: {},
-  };
+  return structureDetail({ shape, bounds, centre: bounds === null ? null : { x: 0, y: 0, z: 0, unit: "megaparsec" } });
 }
 
 const distances = (from: Vec3, points: Vec3[]) => points.map((p) => norm(sub(p, from)));
@@ -63,6 +52,13 @@ describe("a structure's shape", () => {
       expect(drawing.outline.segments.length).toBe(24);
       expect(drawing.centre).toEqual([0, 0, 0]);
     }
+  });
+
+  it("takes the bounds and centre in the centre's unit", () => {
+    const inParsecs = structureDetail({ centre: { x: 0, y: 0, z: 0, unit: "parsec" }, bounds: { min: [-50, -50, -50], max: [50, 50, 50] } });
+    const drawing = drawingOf(inParsecs, ROTATIONS);
+    expect(Math.max(...drawing.outline.segments.map((p) => Math.abs(p[0])))).toBeCloseTo(50e-6);
+    expect(drawing.size).toBeCloseTo(Math.hypot(100, 100, 100) * 1e-6);
   });
 
   it("lists but does not draw a structure with neither a shape nor a bounding box", () => {

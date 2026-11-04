@@ -18,9 +18,9 @@ const LY_UNITS: readonly (readonly [number, string])[] = [
   [1, "ly"],
 ];
 
-/** `value` to three significant figures, without a trailing zero after the point. */
-function figures(value: number): string {
-  return Number(value.toPrecision(3)).toLocaleString("en-GB");
+/** `value` to `digits` significant figures, without a trailing zero after the point. */
+export function figures(value: number, digits = 3): string {
+  return value.toLocaleString("en-GB", { maximumSignificantDigits: digits });
 }
 
 function inUnits(value: number, units: readonly (readonly [number, string])[]): string {

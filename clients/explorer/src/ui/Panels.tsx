@@ -3,16 +3,22 @@ import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
 import { KINDS, cssColour } from "../scene/kinds.ts";
 import type { Controller } from "../scene/controller.ts";
+import { type Store, useStore } from "./store.ts";
 
 interface PanelsProps {
   controller: Controller;
-  catalogue: Tally | undefined;
+  /** The catalogue, once its domains are read. */
+  catalogue: () => Tally | undefined;
+  /** Counts the frames drawn: the panels show the view as each leaves it. */
+  frame: Store<number>;
   release: number;
   cosmology: string;
 }
 
 /** The panels around the view: where the eye is, the axes, the key and the credits. */
-export function Panels({ controller, catalogue, release, cosmology }: PanelsProps) {
+export function Panels({ controller, catalogue: tally, frame, release, cosmology }: PanelsProps) {
+  useStore(frame);
+  const catalogue = tally();
   return (
     <>
       <div className="w-80 space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">

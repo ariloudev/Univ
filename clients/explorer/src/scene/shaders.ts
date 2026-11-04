@@ -1,6 +1,11 @@
 // The renderer's shaders: points with a soft round edge, and lines; both placed relative to the
 // eye, each batch by its centre's offset from the eye and its own small offsets.
 
+import { KINDS } from "./kinds.ts";
+
+/** The colours of the kinds of value and, after them, of structures' markers. */
+const COLOURS = KINDS.length + 1;
+
 export const POINT_VERTEX = `#version 300 es
 in vec3 a_offset;
 in float a_kind;
@@ -8,7 +13,7 @@ uniform mat3 u_axes;
 uniform vec3 u_centre;
 uniform mat4 u_projection;
 uniform float u_size;
-uniform vec4 u_colours[5];
+uniform vec4 u_colours[${COLOURS}];
 out vec4 v_colour;
 void main() {
   gl_Position = u_projection * vec4(u_axes * a_offset + u_centre, 1.0);

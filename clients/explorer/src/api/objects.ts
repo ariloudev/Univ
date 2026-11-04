@@ -3,13 +3,15 @@
 
 import { z } from "zod";
 
-import { type ReadOptions, read } from "./client.ts";
+import { toMpc } from "../scene/units.ts";
+import { ApiError, type ReadOptions, read } from "./client.ts";
 
 const Uncertainty = z.looseObject({
   form: z.string(),
   sigma: z.number().optional(),
   minus: z.number().optional(),
   plus: z.number().optional(),
+  probability: z.number().optional(),
 });
 
 const Value = z.looseObject({ value: z.number(), unit: z.string(), uncertainty: Uncertainty.optional() });
@@ -38,7 +40,7 @@ const Preferred = z.looseObject({
 const Position = z.looseObject({
   frame: z.string(),
   scale_domain: z.string(),
-  unit: z.enum(["parsec", "megaparsec"]),
+  unit: z.string(),
   x: z.number(),
   y: z.number(),
   z: z.number(),
@@ -64,11 +66,18 @@ const ObjectChoices = z.looseObject({
   objects: z.array(z.looseObject({ id: z.number().int(), names: z.array(z.string()).optional() })),
 });
 
+/** The objects a lookup leads to, to choose from. */
+export interface Choices {
+  kind: "choices";
+  query: string;
+  objects: { id: number; names: string[] }[];
+}
+
 /** What a search found. */
-export type Found =
-  | { kind: "object"; record: ObjectRecord }
-  | { kind: "choices"; query: string; objects: { id: number; names: string[] }[] }
-  | { kind: "none"; query: string };
+export type Found = { kind: "object"; record: ObjectRecord } | Choices | { kind: "none"; query: string };
+
+/** The problem type of a lookup that found no object. */
+const NOT_FOUND = "urn:univ:problem:object-not-found";
 
 /** The path that looks `query` up: an id for a number, a designation for `source:identifier`,
  * a name otherwise. */
@@ -83,16 +92,9 @@ export function lookupPath(query: string): string {
   return `/v1/objects?name=${encodeURIComponent(text)}`;
 }
 
-/** The object `id` of `release`. */
-export async function objectOf(id: number, options: ReadOptions = {}): Promise<ObjectRecord> {
-  const response = await read(`/v1/objects/${id}`, options);
-  return ObjectRecord.parse(await response.json());
-}
-
-/** Looks `query` up in `options.release`: the object, the objects to choose from, or none. */
-export async function search(query: string, options: ReadOptions = {}): Promise<Found> {
-  const response = await read(lookupPath(query), { ...options, accept: [300, 404] });
-  if (response.status === 404) return { kind: "none", query };
+/** Reads `path`: the object, or, answered 300, the objects it leads to. */
+async function lookup(path: string, query: string, options: ReadOptions): Promise<Exclude<Found, { kind: "none" }>> {
+  const response = await read(path, { ...options, accept: [300] });
   const body: unknown = await response.json();
   if (response.status === 300) {
     const objects = ObjectChoices.parse(body).objects.map((o) => ({ id: o.id, names: o.names ?? [] }));
@@ -101,14 +103,26 @@ export async function search(query: string, options: ReadOptions = {}): Promise<
   return { kind: "object", record: ObjectRecord.parse(body) };
 }
 
-/** The megaparsecs in each unit an object's position may be in. */
-const MPC_PER = { parsec: 1e-6, megaparsec: 1 } as const;
+/** The object `id` of `options.release`, or the objects that replaced it where it was split. */
+export function objectOf(id: number, options: ReadOptions = {}): Promise<Exclude<Found, { kind: "none" }>> {
+  return lookup(`/v1/objects/${id}`, String(id), options);
+}
+
+/** Looks `query` up in `options.release`: the object, the objects to choose from, or none. */
+export async function search(query: string, options: ReadOptions = {}): Promise<Found> {
+  try {
+    return await lookup(lookupPath(query), query, options);
+  } catch (error) {
+    if (error instanceof ApiError && error.type === NOT_FOUND) return { kind: "none", query };
+    throw error;
+  }
+}
 
 /** The object's ICRS position in megaparsecs; none for an object with no distance. */
 export function placeOf(record: ObjectRecord): [number, number, number] | undefined {
   const position = record.position;
-  if (position === null) return undefined;
-  const k = MPC_PER[position.unit];
+  const k = position === null ? undefined : toMpc(position.unit);
+  if (position === null || k === undefined) return undefined;
   return [position.x * k, position.y * k, position.z * k];
 }
 

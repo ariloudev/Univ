@@ -1,5 +1,5 @@
 import type { Geometry, StructureDetail, StructureSummary } from "../api/structures.ts";
-import { words } from "./text.ts";
+import { valueText, words } from "./text.ts";
 
 /** Every structure of the release by name and kind, each to choose. */
 export function StructureList({ list, onChoose }: { list: StructureSummary[]; onChoose: (id: string) => void }) {
@@ -17,6 +17,15 @@ export function StructureList({ list, onChoose }: { list: StructureSummary[]; on
       </ul>
     </details>
   );
+}
+
+/** A structure's published quantity with its uncertainty, as valueText words an object's. */
+function quantityText(quantity: { value: unknown; unit?: string | undefined; uncertainty?: unknown } | undefined): string {
+  if (quantity === undefined) return "not given";
+  const { value, unit } = quantity;
+  if (typeof value !== "number") return `${JSON.stringify(value)} ${words(unit ?? "")}`.trim();
+  const uncertainty = quantity.uncertainty as Parameters<typeof valueText>[0]["uncertainty"];
+  return valueText({ value, unit: unit ?? "", ...(uncertainty === undefined ? {} : { uncertainty }) });
 }
 
 /** A geometry's kind in words: a primitive by its form. */
@@ -52,7 +61,7 @@ export function StructurePanel({ detail, approximate, onClose }: { detail: Struc
       <ul className="space-y-1" data-testid="structure-values">
         {values.map(([name, value]) => (
           <li key={name}>
-            {words(name)}: {String(value.quantity?.value ?? "—")} {words(value.quantity?.unit ?? "")}
+            {words(name)}: {quantityText(value.quantity)}
             <span className="text-dim">
               {" "}({value.kind ?? "kind not given"}; {value.cite === null || value.cite === undefined ? "no citation" : (papers.get(value.cite.paper) ?? value.cite.paper)})
             </span>

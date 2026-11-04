@@ -38,6 +38,7 @@ export class TileFailed extends Error {}
 
 /** The size of each unit a manifest may be in, in megaparsecs. */
 export const MPC_PER: Record<ExplorerManifest["unit"], number> = { pc: 1e-6, Mpc: 1 };
+// The manifests name their units by symbol, the API by name: the two agree on their sizes.
 
 /** The tiles of `manifest`'s domain `name`, in megaparsecs. */
 export function tilesOf(name: string, manifest: ExplorerManifest): DomainTile[] {

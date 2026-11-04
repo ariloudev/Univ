@@ -24,13 +24,15 @@ export const KIND_COLOURS: readonly Rgba[] = KINDS.map((kind) => COLOURS[kind]);
 
 /** The colour of structures' outlines and markers, after the kinds' in the renderer's table. */
 export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
-/** The colour of a structure drawn by its bounding box, marked approximate. */
-export const APPROXIMATE_COLOUR: Rgba = [1, 0.55, 0.35, 0.3];
+/** The colour of a structure drawn by its bounding box, marked approximate: fainter. */
+export const APPROXIMATE_COLOUR: Rgba = [STRUCTURE_COLOUR[0], STRUCTURE_COLOUR[1], STRUCTURE_COLOUR[2], 0.3];
 /** The index of `STRUCTURE_COLOUR` in the renderer's table of colours. */
 export const MARKER_INDEX = KINDS.length;
 
+const css = ([r, g, b]: Rgba): string => `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
+
 /** The colour of `kind` for CSS. */
-export function cssColour(kind: KindOfValue): string {
-  const [r, g, b] = COLOURS[kind];
-  return `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
-}
+export const cssColour = (kind: KindOfValue): string => css(COLOURS[kind]);
+
+/** The colour of structures for CSS, as their names are written. */
+export const STRUCTURE_CSS = css(STRUCTURE_COLOUR);
