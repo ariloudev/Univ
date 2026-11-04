@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { fakeWorld } from "../test/world.ts";
 import type { Overlay } from "./overlay.ts";
-import { FIRST_POINTS, drawn } from "./useWorld.ts";
+import { FIRST_POINTS } from "../firstPoints.ts";
+import { drawn } from "./useWorld.ts";
 
 const overlay: Overlay = {
   earth: { current: null },

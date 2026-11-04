@@ -35,7 +35,7 @@ UNIV_SERVER=http://127.0.0.1:8790 UNIV_KEY=<an API key> pnpm dev
 | Read an object | Hover a point for its label; click it for its record |
 | Fly to an object | Double-click it (it moves at once if your system asks for reduced motion) |
 | Find an object | Type an id, `source:identifier` (such as `hipparcos-2007:32349`) or a name, and Find |
-| See a structure | Click its name in the view, or choose it from the list of structures |
+| See a structure | Click its name in the view (hovering it says so), or choose it from the list of structures |
 | Come home | Return to Earth |
 
 The view's axes are galactic, equatorial (the ICRS) or supergalactic; the ring is the chosen
@@ -69,5 +69,6 @@ pnpm e2e     # Playwright and axe, against the Univ Server in UNIV_SERVER
 ```
 
 `cargo xtask check` runs `pnpm check`; `cargo xtask integration` runs `pnpm e2e` against the
-fixture release. `cargo xtask bench first-points` measures the first points drawn on release 7
-(the 95th percentile of 10 loads, against 3 s).
+fixture release, installing Playwright's Chromium first where it is missing. `cargo xtask bench
+first-points` measures the first points drawn on the latest published release: one load to warm
+up, then the 95th percentile of 10, against 3 s.

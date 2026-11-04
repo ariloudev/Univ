@@ -13,13 +13,23 @@ import { bindMouse } from "../scene/input.ts";
 import type { Pickable } from "../scene/pick.ts";
 import { NoWebGL, Renderer } from "../scene/renderer.ts";
 import type { Vec3 } from "../scene/vec.ts";
+import { FIRST_POINTS } from "../firstPoints.ts";
 import type { LabelBox } from "../scene/labels.ts";
 import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts";
 import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
 
-/** The point under the pointer, where the pointer is. */
-export type Hover = { x: number; y: number; point: ScenePoint } | undefined;
+/** What is under the pointer, where the pointer is: a structure's name, which a click
+ * chooses, or else a point. */
+export type Hover = ({ x: number; y: number } & ({ name: NameLabel } | { point: ScenePoint })) | undefined;
+
+/** What is under the pointer at `x`, `y`: a name before a point, as a click chooses. */
+function under(world: World, element: HTMLCanvasElement, x: number, y: number): Hover {
+  const name = nameAt(world, x, y);
+  if (name !== undefined) return { x, y, name };
+  const point = pointAt(world, element, x, y);
+  return point === undefined ? undefined : { x, y, point };
+}
 
 export interface World {
   controller: Controller;
@@ -98,15 +108,14 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   const { controller, hover } = world;
   let hovering: number | undefined;
   const chooser = (fly: boolean) => (x: number, y: number) => {
-    const name = nameAt(world, x, y);
-    if (name !== undefined) {
-      onChoose.current.structure(name);
+    const found = under(world, element, x, y);
+    if (found === undefined) return;
+    if ("name" in found) {
+      onChoose.current.structure(found.name.id);
       return;
     }
-    const point = pointAt(world, element, x, y);
-    if (point === undefined) return;
-    if (fly) controller.flyTo(point.place, viewingDistance(point.distanceMpc));
-    onChoose.current.point(point);
+    if (fly) controller.flyTo(found.point.place, viewingDistance(found.point.distanceMpc));
+    onChoose.current.point(found.point);
   };
   const unbind = bindMouse(element, {
     turn: (dx, dy) => controller.turn(dx, dy),
@@ -116,10 +125,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
     doubleClick: chooser(true),
     hover: (x, y) => {
       if (hovering !== undefined) cancelAnimationFrame(hovering);
-      hovering = requestAnimationFrame(() => {
-        const point = pointAt(world, element, x, y);
-        hover.set(point === undefined ? undefined : { x, y, point });
-      });
+      hovering = requestAnimationFrame(() => hover.set(under(world, element, x, y)));
     },
     leave: () => {
       if (hovering !== undefined) cancelAnimationFrame(hovering);
@@ -138,10 +144,6 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
     if (hovering !== undefined) cancelAnimationFrame(hovering);
   };
 }
-
-/** The performance mark of the first frame drawn that holds points: the end of what
- * explorer.first_points.latency measures from the page's start. */
-export const FIRST_POINTS = "univ:first-points";
 
 /** What follows a frame drawn: the overlay placed, the frame counted, and the first points
  * marked if these are they; whether the first points are now marked. */

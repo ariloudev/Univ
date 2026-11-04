@@ -42,7 +42,8 @@ Run them from this directory.
   (ingest's fixture releases, the first pruned) into `target/integration/state`, applies the
   univ-layers migrations, starts `wrangler dev` on a free port and runs the ignored tests of
   `crates/univ-server/tests/` against it, then the explorer's Playwright tests (with axe) through
-  its dev server on port 5318. Wrangler's log is `target/integration/wrangler.log`.
+  its dev server on port 5318. It installs Playwright's Chromium where it is missing; without
+  pnpm it skips the explorer's tests and says so. Wrangler's log is `target/integration/wrangler.log`.
 - `cargo xtask serve` runs Univ Server under `wrangler dev` on the real local state,
   `.cache/univ-ingest/wrangler`, where `univ-ingest publish` puts releases. It first creates any
   table of univ-model's release schema that state lacks (a release built before the schema grew
@@ -58,8 +59,8 @@ Run them from this directory.
   Worker with an extended-tier key it issues for the run (and revokes the keys earlier runs left),
   so the key never reaches the browser. Its Wrangler log is `target/explore/wrangler.log`.
 - `cargo xtask bench first-points` starts Univ Server on the real local state, opens the explorer
-  10 times in headless Chromium and prints the time to its first points drawn, the 95th
-  percentile against 3 s.
+  (on port 5319) once to warm up and then 10 times in headless Chromium, and prints the time to
+  its first points drawn on the latest release, the 95th percentile against 3 s.
 - The explorer's own gate, `pnpm check` in `clients/explorer` (typecheck, Vitest with coverage,
   fallow, build), runs in `cargo xtask check` when pnpm is on the path.
 - `cargo fmt` formats the workspace. Nothing formats automatically, and the gate fails on
@@ -79,8 +80,9 @@ Run them from this directory.
   exempted.
 - **No network in tests.** Tests read small recorded provider answers. Tests that fetch live are
   `#[ignore]` and run by hand.
-- **Branches.** `product/ingest`, `product/server` and `product/explorer` gathered each
-  product's work. Each wave is a `stage/<product>-<wave>` branch cut from its product branch, and each branch keeps a Yard Log under `.yard/` (use the `loft:yard` skill). Merges
+- **Branches.** Each product gathers its work on `product/ingest`, `product/server` or
+  `product/explorer`. Each wave is a `stage/<product>-<wave>` branch cut from its product
+  branch, and each branch keeps a Yard Log under `.yard/` (use the `loft:yard` skill). Merges
   happen only when the owner asks.
 - **Checks during a wave, the gate at its end.** Between tasks, run focused checks on what
   changed: `cargo test -p <crate> <filter>`, `cargo clippy -p <crate> --all-targets -- -D

@@ -15,7 +15,7 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use crate::integration::{Exchange, REAL_STATE, fresh_key, send, start_on_real_state};
+use crate::integration::{Exchange, REAL_STATE, send, with_real_server};
 
 /// How many lookups are timed.
 const SAMPLES: usize = 1_000;
@@ -110,16 +110,10 @@ fn centres(n: usize, distance: f64) -> Vec<[f64; 3]> {
 /// `bound`; true when all answered 200 and the 95th percentile is within it.
 fn bench(root: &Path, what: &str, attribute: &str, requests: &[Timed], bound: Duration) -> bool {
     let log = root.join("target/bench/wrangler.log");
-    let Some((wrangler, port)) = start_on_real_state(root, &log) else {
-        eprintln!("bench failed at: starting Univ Server");
-        return false;
-    };
-    let Some(key) = fresh_key(port, "bench") else {
-        return false;
-    };
-    let (times, failures) = time(port, &key, requests);
-    drop(wrangler);
-    report(what, attribute, &times, &failures, bound, requests.len())
+    with_real_server(root, &log, "bench", |port, key| {
+        let (times, failures) = time(port, key, requests);
+        report(what, attribute, &times, &failures, bound, requests.len())
+    })
 }
 
 /// Each request's time after the first [`WARM_UP`], and the requests not answered 200.

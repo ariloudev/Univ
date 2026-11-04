@@ -43,13 +43,13 @@ export function StructureNames({ names, overlay }: { names: readonly NameLabel[]
   );
 }
 
-/** The label of the point under the pointer. */
+/** The label of what is under the pointer: a structure's name, which a click reads, or a point. */
 export function HoverLabel({ world }: { world: World }) {
   const hover = useStore(world.hover);
   if (hover === undefined) return null;
   return (
     <p role="tooltip" className="pointer-events-none absolute rounded bg-panel px-2 py-1 text-xs" style={{ left: hover.x + 12, top: hover.y + 12 }}>
-      {pointText(hover.point)}
+      {"name" in hover ? `${hover.name.text}. Click to read the structure.` : pointText(hover.point)}
     </p>
   );
 }

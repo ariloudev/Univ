@@ -7,7 +7,7 @@ import type { RefObject } from "react";
 import { project } from "../scene/camera.ts";
 import { shortDistance } from "../scene/format.ts";
 import { ringAnchor } from "../scene/frames.ts";
-import { type LabelBox, clearLabels } from "../scene/labels.ts";
+import { type LabelBox, clearLabels, contains } from "../scene/labels.ts";
 import { ORIGIN, type Vec3 } from "../scene/vec.ts";
 import type { World } from "./useWorld.ts";
 
@@ -30,8 +30,29 @@ export interface Overlay {
 
 type At = { x: number; y: number; depth: number } | undefined;
 
-/** A name's box: the overlay's small type is about 6.6 px a character and 16 px a line. */
-export const labelSize = (text: string) => ({ width: text.length * 6.6 + 4, height: 16 });
+/** The overlay's small type (Tailwind's `text-xs`), measured where a canvas can measure it. */
+let measure: ((text: string) => number) | undefined | null;
+
+function measurer(): ((text: string) => number) | null {
+  if (measure !== undefined) return measure;
+  const context = document.createElement("canvas").getContext("2d");
+  if (context === null) return (measure = null);
+  context.font = `12px ${getComputedStyle(document.body).fontFamily || "sans-serif"}`;
+  return (measure = (text) => context.measureText(text).width);
+}
+
+const widths = new Map<string, number>();
+
+/** A name's box: its text measured once, or, where nothing can measure it, about 6.6 px a
+ * character; 16 px a line. */
+export function labelSize(text: string): { width: number; height: number } {
+  let width = widths.get(text);
+  if (width === undefined) {
+    width = (measurer()?.(text) ?? text.length * 6.6) + 4;
+    widths.set(text, width);
+  }
+  return { width, height: 16 };
+}
 
 function show(element: HTMLElement, shown: boolean): void {
   const display = shown ? "" : "none";
@@ -54,7 +75,8 @@ function placeNames(container: HTMLElement | null, names: readonly NameLabel[], 
     placed.set(name.id, on);
     if (on !== undefined) boxes.push({ id: name.id, x: on.x, y: on.y, depth: on.depth, ...labelSize(name.text) });
   }
-  const kept = clearLabels(boxes);
+  const shown = clearLabels(boxes);
+  const kept = new Set(shown.map((box) => box.id));
   for (const element of container.children) {
     if (!(element instanceof HTMLElement)) continue;
     const id = element.dataset["structure"] ?? "";
@@ -62,13 +84,13 @@ function placeNames(container: HTMLElement | null, names: readonly NameLabel[], 
     if (on !== undefined && kept.has(id)) place(element, on);
     else show(element, false);
   }
-  return boxes.filter((box) => kept.has(box.id));
+  return shown;
 }
 
-/** The structure whose name, as last placed, is under `x`, `y`, if any. */
-export function nameAt(world: World, x: number, y: number): string | undefined {
-  const box = world.namesShown.find((b) => Math.abs(x - b.x) * 2 <= b.width && Math.abs(y - b.y) * 2 <= b.height);
-  return box?.id;
+/** The structure whose name, as last placed, is under `x`, `y`, if any: its id and name. */
+export function nameAt(world: World, x: number, y: number): NameLabel | undefined {
+  const box = world.namesShown.find((b) => contains(b, x, y));
+  return box === undefined ? undefined : world.names.find((name) => name.id === box.id);
 }
 
 /** Places every overlay element for the view `world` shows on a viewport of `size`. */

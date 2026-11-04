@@ -43,7 +43,7 @@ describe("the overlay", () => {
   it("lets the mouse choose a structure by the name it shows", () => {
     const world = fakeWorld({ names: [{ id: "kbc", centre: [0, 0, 0], text: "KBC void" }] });
     placeOverlay(world, overlay(["kbc"]), { width: 800, height: 600 });
-    expect(nameAt(world, 405, 302)).toBe("kbc");
+    expect(nameAt(world, 405, 302)?.id).toBe("kbc");
     expect(nameAt(world, 600, 302)).toBeUndefined();
   });
 
