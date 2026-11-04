@@ -2841,3 +2841,63 @@ links:
       - file: "crates/univ-api/src/openapi_snapshot.rs"
         name: "removing_renaming_or_narrowing_is_caught_and_adding_is_not"
         body: 17f89eb7191cde1969fd67369147b5f77f6b26966bf15fea2913ee2bb8007511
+  - node: 01a1a497-e843-728a-bce8-4028add2863c
+    reviewed: b29686a60ed981cd31444dd6a3b80ced0fb390848553372211c06393f115159c
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "draws the release latest points to, and names it"
+        body: 00c28aed9128eb37dd2befe612cae85ece498d7e1d4048ac8b4eb8e018339bfa
+  - node: 01a1a497-e843-728a-bce8-4029408477ea
+    reviewed: ebe52a7289143675bb583e4e8f33162ee928d592f69844969658325699625907
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "draws the release latest points to, and names it"
+        body: 00c28aed9128eb37dd2befe612cae85ece498d7e1d4048ac8b4eb8e018339bfa
+  - node: 01a1a497-e843-728a-bce8-402b1b713ac4
+    reviewed: 45317ec8bbfef7a656e3ee23e34087c9e95b7381d535c886e407d02dc8927f19
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "offers every release not pruned, and draws the one chosen"
+        body: 971bfa73a35beb327613979922d942688e195d6089d5c78b33baf7b28a63b757
+  - node: 01a1a497-e843-728a-bce8-402c7430235c
+    reviewed: e29778838bf266ca95bc03de1fb940352fa90b080e2db97af5243b97faab188c
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "offers every release not pruned, and draws the one chosen"
+        body: 971bfa73a35beb327613979922d942688e195d6089d5c78b33baf7b28a63b757
+      - file: "clients/explorer/src/api/client.test.ts"
+        name: "names the release on every read pinned to one"
+        body: 840bd9c07649901adbd787ac6efb551b14127097a6e584bafae307880449466e
+  - node: 01a1a497-e843-728a-bce8-402e69057896
+    reviewed: 21e771a27389c4c570ad5cb967002feb0065bf107c8431ac7a92179ca00a67c8
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "says where it looked and how to start Univ Server, and tries again when asked"
+        body: 250a817cc3e53f52cf56de3b9193607e320816e2ec6d6a01c657d699fde78110
+      - file: "clients/explorer/src/api/client.test.ts"
+        name: "calls Univ Server unreachable where the explorer's server says so, with its address"
+        body: f11affb0b9e2f2e10a81e5b01ba2ab394608e91173522ffe63f2a2f30988417a
+  - node: 01a1a497-e843-728a-bce8-402f2c21ca9d
+    reviewed: 892cea42f73fdaece7ce2d44ae4da480bf7b6e05d08c21bb0215ab77fc75134c
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "says where it looked and how to start Univ Server, and tries again when asked"
+        body: 250a817cc3e53f52cf56de3b9193607e320816e2ec6d6a01c657d699fde78110
+  - node: 01a1a497-e843-728a-bce8-4030e4feb6a1
+    reviewed: 25d7e45300b69ad8edb3fd9e1d3c1ef8a76fb616dc99abe38a9b0e9a70945c3d
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "says where it looked and how to start Univ Server, and tries again when asked"
+        body: 250a817cc3e53f52cf56de3b9193607e320816e2ec6d6a01c657d699fde78110
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "names the problem when Univ Server refuses to list its releases, and tries again"
+        body: ff89574bcf4769acfbfbaed05541f9d10039a09148b26b055d2243942895ad95
+  - node: 01a1a497-e843-728a-bce8-4032ee17e718
+    reviewed: 1ae54cd17c6cb705ea6698ff4ef9fbf66438b4526c660942c0d60a5807989f69
+    tests:
+      - file: "clients/explorer/src/api/client.test.ts"
+        name: "reads a refused read again after the seconds its Retry-After gives, saying so"
+        body: 2a7de7ee05538c2d381790d152519325f4462e0de809d39e209b22ff7b7830e6
+      - file: "clients/explorer/src/api/client.test.ts"
+        name: "takes Retry-After as seconds, zero included, or as a date, and the window otherwise"
+        body: 768ac26ce29ceb3b685ad257aae80ab47868725463553c0dbeeb45ba2277b5d6
