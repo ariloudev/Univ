@@ -21,6 +21,8 @@ export interface Points {
   centre: Vec3;
   offsets: Float32Array;
   kinds: Uint8Array;
+  /** Each point's own colour as RGBA bytes, or zero opacity to take its kind's. */
+  colours: Uint8Array;
   extent: Sphere;
 }
 
@@ -98,7 +100,13 @@ export class Renderer implements Drawer {
     this.markerColour = gl.getUniformLocation(this.points.program, `u_colours[${MARKER_INDEX}]`);
   }
 
-  private buffer(program: WebGLProgram, name: string, data: Float32Array | Uint8Array, size: number): WebGLBuffer {
+  private buffer(
+    program: WebGLProgram,
+    name: string,
+    data: Float32Array | Uint8Array,
+    size: number,
+    normalized = false,
+  ): WebGLBuffer {
     const gl = this.gl;
     const buffer = gl.createBuffer();
     const location = gl.getAttribLocation(program, name);
@@ -106,7 +114,7 @@ export class Renderer implements Drawer {
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(location);
     const type = data instanceof Uint8Array ? gl.UNSIGNED_BYTE : gl.FLOAT;
-    gl.vertexAttribPointer(location, size, type, false, 0, 0);
+    gl.vertexAttribPointer(location, size, type, normalized, 0, 0);
     return buffer;
   }
 
@@ -115,12 +123,13 @@ export class Renderer implements Drawer {
     for (const buffer of drawn.buffers) this.gl.deleteBuffer(buffer);
   }
 
-  private upload(points: Pick<Points, "centre" | "offsets" | "kinds">): Drawn {
+  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours">): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
       this.buffer(this.points.program, "a_offset", points.offsets, 3),
       this.buffer(this.points.program, "a_kind", points.kinds, 1),
+      this.buffer(this.points.program, "a_colour", points.colours, 4, true),
     ];
     this.gl.bindVertexArray(null);
     return { vao, buffers, centre: points.centre, count: points.kinds.length };
@@ -151,8 +160,9 @@ export class Renderer implements Drawer {
     if (old !== undefined) this.release(old);
     this.markers.delete(name);
     if (markers === undefined) return;
-    const kinds = new Uint8Array(markers.offsets.length / 3).fill(MARKER_INDEX);
-    this.markers.set(name, this.upload({ ...markers, kinds }));
+    const count = markers.offsets.length / 3;
+    const kinds = new Uint8Array(count).fill(MARKER_INDEX);
+    this.markers.set(name, this.upload({ ...markers, kinds, colours: new Uint8Array(count * 4) }));
   }
 
   /** Draws `lines` under `name`, in place of what was drawn under it; nothing for none. */

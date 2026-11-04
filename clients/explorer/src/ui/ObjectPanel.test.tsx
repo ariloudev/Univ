@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { ANDROMEDA } from "../test/objects.ts";
+import { ANDROMEDA, BETELGEUSE, UNTYPED_STAR } from "../test/objects.ts";
 import { ObjectPanel } from "./ObjectPanel.tsx";
 
 const close = () => undefined;
@@ -55,6 +55,31 @@ describe("the chosen object's panel", () => {
     expect(screen.getByTestId("position-frame").textContent).toBe(
       "Position: ICRS equatorial Cartesian, about the Solar System barycentre, epoch 2000",
     );
+  });
+
+  it("gives each published spectral type with its source and kind of value, and each colour index with its bands", () => {
+    render(<ObjectPanel chosen={{ kind: "ready", record: BETELGEUSE }} onChoose={close} onClose={close} />);
+    const star = screen.getByTestId("star").textContent ?? "";
+    expect(star).toContain("M2Ib (measured, hipparcos-1997)");
+    expect(star).toContain("B−V 1.5 ± 0.51 magnitude (measured, hipparcos-2007)");
+    expect(star).not.toContain("Estimated class");
+  });
+
+  it("gives the class a colour index suggests, labelled as estimated and cited, where no source gives a type", () => {
+    render(<ObjectPanel chosen={{ kind: "ready", record: UNTYPED_STAR }} onChoose={close} onClose={close} />);
+    const star = screen.getByTestId("star").textContent ?? "";
+    expect(star).toContain("Estimated class G2V, about 5,800 K");
+    expect(star).toContain("as for a main-sequence star");
+    expect(star).toContain("Pecaut & Mamajek 2013");
+    expect(star).not.toContain("unknown");
+  });
+
+  it("names the papers of a researched entry", () => {
+    render(<ObjectPanel chosen={{ kind: "ready", record: BETELGEUSE }} onChoose={close} onClose={close} />);
+    const papers = screen.getByTestId("papers").textContent ?? "";
+    expect(papers).toContain("Joyce, Leung, Molnár, Ireland, Kobayashi & Nomoto 2020, ApJ 902, 63");
+    expect(papers).toContain("2020ApJ...902...63J");
+    expect(screen.getByTestId("preferred").textContent).toContain("estimated · researched-star-distances");
   });
 
   it("lists the objects that replaced an id that was split, each to choose", async () => {

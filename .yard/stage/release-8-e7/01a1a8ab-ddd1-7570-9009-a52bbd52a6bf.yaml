@@ -24,6 +24,15 @@ blocks:
         title: "Spec change for approval"
         detail: "draw-the-catalogues: stars coloured by temperature from the colour index (Pecaut & Mamajek 2013), grey without one; the kind-of-value colours narrowed to points outside the stars domain; the key for both. read-an-object: spectral types, colour index, estimated class, researched paper. product summary amended."
         state: active
+      - key: 01a1a8ac-8909-7436-90f7-f88639985a77
+        at: 2026-11-04T22:27:21Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for approval"
+        detail: "Approved and committed alone in 554a2ae."
+        state: done
   - key: 01a1a8ab-ddd1-7570-9009-a52d7e4d3932
     id: e7-t-table
     kind: task
@@ -37,6 +46,36 @@ blocks:
         title: "starColour module"
         detail: "Mamajek's dwarf sequence (version 2022.04.16, the table of Pecaut & Mamajek 2013) kept as a data file with its URL, version and citation; B−V or BP−RP interpolated to Teff and the nearest class; Teff to sRGB through the Planck spectrum and the CIE 1931 fit of Wyman, Sloan & Shirley 2013. Done when starColour.test.ts passes: the Sun's B−V 0.65 gives about 5,770 K and G2V; B−V 1.50 about 3,700 K and early M; B−V −0.30 over 25,000 K; out-of-range values clamped and said so; hot bluer than cool."
         state: open
+      - key: 01a1a8ac-8909-7436-90f7-f8879ded42b1
+        at: 2026-11-04T22:27:21Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "starColour module"
+        detail: "Mamajek's dwarf sequence (version 2022.04.16, the table of Pecaut & Mamajek 2013) kept as a data file with its URL, version and citation; B−V or BP−RP interpolated to Teff and the nearest class; Teff to sRGB through the Planck spectrum and the CIE 1931 fit of Wyman, Sloan & Shirley 2013. Done when starColour.test.ts passes: the Sun's B−V 0.65 gives about 5,770 K and G2V; B−V 1.50 about 3,700 K and early M; B−V −0.30 over 25,000 K; out-of-range values clamped and said so; hot bluer than cool."
+        state: active
+      - key: 01a1a8b1-16e9-70e5-97e2-aa55ed32ddca
+        at: 2026-11-04T22:32:20Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "starColour module"
+        detail: |-
+          `scene/dwarfSequence.ts` holds Mamajek's dwarf sequence, version 2022.04.16 (Pecaut & Mamajek 2013), 87 rows with B−V or BP−RP, with its URL and citation.
+
+          `scene/starColour.ts` turns a colour index into a temperature:
+          - interpolated in log Teff along each column while it rises (B−V to M9V, BP−RP to M8.5V);
+          - an index beyond the sequence is clamped to the end and says so.
+
+          It then turns the temperature into an sRGB colour:
+          - Planck's spectrum integrated against the CIE 1931 fit of Wyman, Sloan & Shirley 2013, whose coefficients were checked against the paper's Table 1 and Listing 1;
+          - XYZ to sRGB (IEC 61966-2-1), scaled to the brightest channel;
+          - cached by colour index.
+
+          11 tests pass: the Sun's B−V gives 5,770 K and G2V, B−V 1.50 gives about 3,600 K (M1.5–M2V), B−V −0.30 is over 25,000 K, the clamps hold, and hot is bluer than cool.
+        state: done
   - key: 01a1a8ab-ddd1-7570-9009-a52e75ac39f4
     id: e7-t-draw
     kind: task
@@ -50,6 +89,22 @@ blocks:
         title: "Draw stars in their colours"
         detail: "Each point keeps its colour from the tile; a per-point colour attribute: stars in their temperature colour or grey, other points by kind of value. Done when the batch and colour-buffer unit tests and `pnpm check` pass."
         state: open
+      - key: 01a1a8b1-16e9-70e5-97e2-aa56ef65ff9c
+        at: 2026-11-04T22:32:20Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Draw stars in their colours"
+        detail: |-
+          Each batch now carries per-point RGBA bytes:
+          - a star's colour from its colour index, or grey without one;
+          - zero opacity for any point outside the stars domain.
+
+          The renderer feeds the bytes to a normalized `a_colour` attribute. The shader uses a point's own colour where it has one, and its kind's colour otherwise. Markers upload zeros.
+
+          The batch keeps each colour index and its bands for the hover label. Tested on the fixture tiles: each star's bytes are its colour index's colour, and cosmic-web points have none.
+        state: done
   - key: 01a1a8ab-ddd1-7570-9009-a52f5bacb99b
     id: e7-t-key
     kind: task
@@ -63,6 +118,21 @@ blocks:
         title: "The key and the hover label"
         detail: "A 'Stars, by colour index' strip in kelvin with the counts of coloured and grey stars; the hover label gains the colour index. Done when Panels, scenePoint and the Playwright test pass."
         state: open
+      - key: 01a1a8b1-16e9-70e5-97e2-aa578f3d91dc
+        at: 2026-11-04T22:32:20Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The key and the hover label"
+        detail: |-
+          The key gains a "Stars, by colour index" strip:
+          - a gradient from 2,500 K to 30,000 K, labelled in kelvin;
+          - the count of stars in colour, citing Pecaut & Mamajek;
+          - the count of stars in grey, with no colour index.
+
+          The kind-of-value list now counts points outside the stars domain only. The hover label ends with the colour index, such as "B−V 1.85". Panels, text and scenePoint tests and the e2e key assertion are updated.
+        state: done
   - key: 01a1a8ab-ddd1-7570-9009-a530442eb34a
     id: e7-t-panel
     kind: task
@@ -76,6 +146,23 @@ blocks:
         title: "The object panel"
         detail: "Spectral types with their kind of value, the colour index with bands and uncertainty, the estimated class labelled and cited, and the paper of a researched distance. Done when ObjectPanel tests pass."
         state: open
+      - key: 01a1a8b1-16e9-70e5-97e2-aa58a466ea5b
+        at: 2026-11-04T22:32:20Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The object panel"
+        detail: |-
+          The panel gains a "Spectral type and colour" section:
+          - each published type, with its kind of value and source;
+          - each colour index, with its bands and uncertainty;
+          - where no source gives a type (Gaia's "unknown" counts as none), the class estimated from BP−RP or B−V, labelled as for a main-sequence star and citing Pecaut & Mamajek.
+
+          It also gains "Papers of the researched values", each with its bibcode or DOI.
+
+          BETELGEUSE (cut from release 9) and an untyped SIMULATED star are added as fixtures. Three new panel tests pass, and `pnpm check` passes (176 tests, fallow, build).
+        state: done
   - key: 01a1a8ab-ddd1-7570-9009-a5318620930b
     id: e7-t-live
     kind: task
@@ -89,6 +176,15 @@ blocks:
         title: "Live screenshots"
         detail: "`cargo xtask explore` on release 9: Orion (Betelgeuse red, Rigel blue-white), the Sun's neighbourhood, Betelgeuse's panel; `bench first-points` within 3 s."
         state: open
+      - key: 01a1a8b1-16e9-70e5-97e2-aa595ce1e761
+        at: 2026-11-04T22:32:20Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Live screenshots"
+        detail: "`cargo xtask explore` on release 9: Orion (Betelgeuse red, Rigel blue-white), the Sun's neighbourhood, Betelgeuse's panel; `bench first-points` within 3 s."
+        state: active
   - key: 01a1a8ab-ddd1-7570-9009-a5329ba862e4
     id: e7-t-close
     kind: task

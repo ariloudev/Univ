@@ -18,6 +18,9 @@ function starBatch() {
     kinds: new Uint8Array([1]),
     sources: new Uint16Array([source.index]),
     ids: new Float64Array([42]),
+    colours: new Uint8Array(4),
+    colourIndices: new Float32Array([1.85]),
+    colourBands: new Uint8Array([2]),
     extent: { centre: [0, 0, 0] as [number, number, number], radius: 1, core: { centre: [0, 0, 0] as [number, number, number], radius: 1 } },
   };
   return { domain, batch, source };
@@ -33,25 +36,17 @@ describe("a drawn point", () => {
     expect(pointUnder(world, { width: 800, height: 600, x: 10, y: 10 })).toBeUndefined();
   });
 
-  it("is known by its id, scale domain, place and distance, and the source and kind of its distance", () => {
-    const manifest = manifestOf("stars");
-    const tile = tilesOf("stars", manifest)[0];
-    const source = manifest.sources[0];
-    if (tile === undefined || source === undefined) throw new Error("no fixture tile");
-    const domain = { name: "stars", manifest, toMpc: MPC_PER.pc, tiles: [tile] };
-    const batch = {
-      tile,
-      offsets: new Float32Array([3e-6 - tile.centre[0], 4e-6 - tile.centre[1], -tile.centre[2]]),
-      kinds: new Uint8Array([1]),
-      sources: new Uint16Array([source.index]),
-      ids: new Float64Array([42]),
-      extent: { centre: [0, 0, 0] as [number, number, number], radius: 1, core: { centre: [0, 0, 0] as [number, number, number], radius: 1 } },
-    };
+  it("is known by its id, scale domain, place and distance, the source and kind of its distance, and its colour index", () => {
+    const { domain, batch, source } = starBatch();
     const point = pointOf((name) => (name === "stars" ? domain : undefined), batch, 0);
     expect(point.id).toBe(42);
     expect(point.domain).toBe("stars");
     expect(point.distanceMpc).toBeCloseTo(5e-6, 10);
     expect(point.source).toBe(source.title);
     expect(point.kind).toBe("estimated");
+    expect(point.colour?.bands).toBe("B-V");
+    expect(point.colour?.index).toBeCloseTo(1.85, 5);
+    batch.colourBands[0] = 0;
+    expect(pointOf(() => domain, batch, 0).colour).toBeUndefined();
   });
 });

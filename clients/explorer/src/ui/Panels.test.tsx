@@ -20,6 +20,7 @@ const SOURCE = manifestOf("stars").sources[0];
 function tally(failed = 0, unread = 0): Tally {
   return {
     kinds: [1200, 30, 4, 0],
+    stars: { coloured: 98_500, grey: 1500 },
     failed,
     unread,
     credits: () => (SOURCE === undefined ? [] : [{ ...SOURCE, domain: "stars" }]),
@@ -39,6 +40,16 @@ describe("the panels", () => {
     expect(key).toContain("estimated: 30 points");
     expect(key).toContain("inferred: 4 points");
     expect(key).toContain("reconstructed: 0 points");
+  });
+
+  it("show the stars' colours by temperature and count the stars in colour and in grey", () => {
+    show(tally());
+    const key = screen.getByTestId("star-key").textContent ?? "";
+    expect(key).toContain("2,500 K");
+    expect(key).toContain("30,000 K");
+    expect(key).toContain("98,500 stars in the colour of the temperature their colour index gives");
+    expect(key).toContain("Pecaut & Mamajek 2013");
+    expect(key).toContain("1,500 stars in grey, with no colour index");
   });
 
   it("credit each source of the drawn points with its title, citation and credit, naming the release", () => {

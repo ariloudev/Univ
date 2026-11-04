@@ -1,6 +1,8 @@
 // A drawn point as the hover label and the chosen object know it, read from its tile.
 
-import type { Batch, Domain } from "../catalogue/tiles.ts";
+import type { ColourBands } from "univ-tile-decoder";
+
+import { type Batch, COLOUR_BANDS, type Domain } from "../catalogue/tiles.ts";
 import { KINDS } from "../scene/kinds.ts";
 import { type Pointer, pick } from "../scene/pick.ts";
 import { type Vec3, norm } from "../scene/vec.ts";
@@ -14,6 +16,8 @@ export interface ScenePoint {
   distanceMpc: number;
   source: string;
   kind: string;
+  /** Its colour index and the bands it lies between, where its tile gives one. */
+  colour?: { index: number; bands: ColourBands } | undefined;
 }
 
 /** The point `index` of `batch`. */
@@ -33,7 +37,15 @@ export function pointOf(domainOf: (name: string) => Domain | undefined, batch: B
     distanceMpc: norm(place),
     source: source?.title ?? "an unlisted source",
     kind: KINDS[batch.kinds[index] ?? 0] ?? "unknown",
+    colour: colourOf(batch, index),
   };
+}
+
+/** The colour index of the point `index` of `batch`, if its tile gives one. */
+function colourOf(batch: Batch, index: number): ScenePoint["colour"] {
+  const bands = COLOUR_BANDS[(batch.colourBands[index] ?? 0) - 1];
+  const value = batch.colourIndices[index];
+  return bands === undefined || value === undefined || Number.isNaN(value) ? undefined : { index: value, bands };
 }
 
 /** The point of `world` under `pointer`, if any. */

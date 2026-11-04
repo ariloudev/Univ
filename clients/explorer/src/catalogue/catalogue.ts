@@ -7,7 +7,7 @@ import type { ManifestSource } from "univ-tile-decoder";
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
 import { type Tree, plan, treeOf } from "./lod.ts";
-import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
+import { type Batch, type Domain, type DomainTile, STARS_DOMAIN, TileFailed, fetchBatch } from "./tiles.ts";
 
 /** Tiles fetched at once. */
 const PARALLEL = 6;
@@ -50,8 +50,10 @@ export class Catalogue {
   /** The points of the tiles drawn and on their way. */
   private points = 0;
   private sight: Sight | undefined;
-  /** Points drawn of each kind of value, by its index in `KINDS`. */
+  /** Points drawn outside the stars domain of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
+  /** Stars drawn in the colour of their colour index, and in grey for want of one. */
+  readonly stars = { coloured: 0, grey: 0 };
   /** The points drawn of each domain. */
   private readonly domainPoints = new Map<string, number>();
   /** Tiles that failed their SHA-256 or did not decode. */
@@ -145,9 +147,16 @@ export class Catalogue {
     }, RETRY_MS);
   }
 
-  /** Counts `batch`'s points into the kinds of value and its domain, or out of them where `by` is −1. */
+  /** Counts `batch`'s points into the stars' colours or the kinds of value, and into its domain,
+   * or out of them where `by` is −1. */
   private tally(batch: Batch, by: 1 | -1): void {
-    for (const kind of batch.kinds) this.kinds[kind] = (this.kinds[kind] ?? 0) + by;
+    if (batch.tile.domain === STARS_DOMAIN) {
+      const coloured = batch.colourBands.reduce((n, bands) => n + (bands > 0 ? 1 : 0), 0);
+      this.stars.coloured += by * coloured;
+      this.stars.grey += by * (batch.colourBands.length - coloured);
+    } else {
+      for (const kind of batch.kinds) this.kinds[kind] = (this.kinds[kind] ?? 0) + by;
+    }
     const domain = batch.tile.domain;
     this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * batch.kinds.length);
   }
