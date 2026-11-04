@@ -251,3 +251,17 @@ fn a_later_page_may_leave_out_the_tiles_the_first_asked_for() {
         "tiles come on the first page alone"
     );
 }
+
+#[test]
+fn without_an_owner_secret_no_cursor_is_given_that_anyone_could_sign() {
+    let (mut db, _, _) = crowded(1_200);
+    db.owner = None;
+    let (response, problem) = query(&db, &crowd());
+    assert_eq!(response.status, 500, "{problem}");
+    assert_eq!(problem["type"], "urn:univ:problem:internal-error");
+    let (response, page) = query(&db, &json!({"volume": sphere([-500.0, 5.0, 0.0], 1.0)}));
+    assert_eq!(
+        response.status, 200,
+        "a query of one page needs no cursor: {page}"
+    );
+}

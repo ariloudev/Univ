@@ -55,11 +55,22 @@ pub(super) struct Cursor {
 pub(super) struct Signing([u8; 32]);
 
 impl Signing {
-    pub(super) fn of<B: Backend>(backend: &B) -> Self {
+    /// The key of `backend`'s owner secret; none where the Worker has no secret, since a key
+    /// anyone could draw would let a client forge cursors.
+    pub(super) fn of<B: Backend>(backend: &B) -> Option<Self> {
+        let secret = backend.owner_secret().filter(|s| !s.is_empty())?;
         let mut hash = Sha256::new();
         hash.update(b"univ volume query cursor v1\0");
-        hash.update(backend.owner_secret().unwrap_or_default());
-        Self(hash.finalize().into())
+        hash.update(secret);
+        Some(Self(hash.finalize().into()))
+    }
+
+    /// The refusal of a page that needs a cursor where there is no key to sign it with.
+    pub(super) fn missing() -> Problem {
+        Problem::new(
+            ProblemType::InternalError,
+            "The Worker has no owner secret to sign a query's cursors with.",
+        )
     }
 
     /// HMAC-SHA256 of `message` (RFC 2104), its first [`SIGNATURE`] bytes.

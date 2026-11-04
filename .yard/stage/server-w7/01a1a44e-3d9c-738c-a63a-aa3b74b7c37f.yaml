@@ -37,6 +37,20 @@ blocks:
         title: "Every refusal of every route in the OpenAPI document"
         detail: "Done when a test walks the route table and finds each status and problem type a handler can answer documented for its route."
         state: open
+      - key: 01a1a455-032e-75d3-bedf-c4719609055e
+        at: 2026-11-04T02:13:17Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Every refusal of every route in the OpenAPI document"
+        detail: |-
+          Done in `7fd9697`. `refusals.rs` lists each endpoint's problem types. The document gives one `application/problem+json` response per status, its `type` narrowed to that route's types.
+
+          The test kit now asserts that every problem a test meets on a route is in that route's list, so all 189 univ-api tests check it. It found one gap: an empty release listing answers `release-not-found`.
+
+          A test also holds the document's schemas equal to those univ-model generates (AC-286). AC-274 got its missing test in `3563aa5`: a keyed read answers byte for byte as an anonymous one. All 335 criteria in scope are now linked.
+        state: done
   - key: 01a1a44e-3d9c-738c-a63a-aa3f9d821596
     id: t7-snapshot
     kind: task
@@ -50,6 +64,18 @@ blocks:
         title: "OpenAPI snapshot refusing removals and renames (AC-292)"
         detail: "Done when a committed snapshot of `openapi.json` is compared by a test that fails on any path, operation, parameter, schema or property removed or renamed within /v1, and passes on additions."
         state: open
+      - key: 01a1a455-032e-75d3-bedf-c472109c45bb
+        at: 2026-11-04T02:13:17Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "OpenAPI snapshot refusing removals and renames (AC-292)"
+        detail: |-
+          `crates/univ-api/openapi.v1.json` is the committed document. A test refuses anything the snapshot holds that the document lost or changed, prose aside. It then requires the snapshot to equal the document, so additions are held from then on; `UNIV_OPENAPI_SNAPSHOT=write` rewrites it, and only when nothing was taken away.
+
+          A second test checks that a field removed, a field renamed, a route removed and an enumeration value removed are each caught, while additions and rewording pass.
+        state: done
   - key: 01a1a44e-3d9c-738c-a63a-aa40b20bb6a6
     id: t7-qa
     kind: task
