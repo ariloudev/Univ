@@ -3278,7 +3278,7 @@ links:
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "chooses a structure by the name it shows in the view, and still zooms over it"
-        body: bddfc4dc314ccc1c1e50a8252465e03f553853878bf9ec3b3f2ccf002732bb4c
+        body: 3bb8b5402624a23e04c91c9bfe04c01e78059fa373709e91675f6eee6011cd8b
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "draws each structure's name at its centre"
         body: 3058b5f259b766cd4c67628a18fbcc9b6f06a92524ce9be5458831401b6784db

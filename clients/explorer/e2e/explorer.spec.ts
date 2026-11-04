@@ -67,20 +67,40 @@ test("lists the release's structures and reads one", async ({ page }) => {
 
 test("chooses a structure by the name it shows in the view, and still zooms over it", async ({ page }) => {
   await firstPoints(page);
-  const name = page.locator("[data-structure]").filter({ visible: true }).first();
-  await expect(name).toBeVisible();
-  const box = await name.boundingBox();
-  if (box === null) throw new Error("no name drawn");
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
+  // A name drawn where the view itself lies under it: on the screen and clear of the panels.
+  // Its inner element is the text, centred on the structure's place.
+  // The structures are read after the first points, so their names come a little later.
+  const found = await page.waitForFunction(() => {
+    const canvas = document.querySelector("canvas");
+    for (const text of document.querySelectorAll("[data-structure] > span")) {
+      const box = text.getBoundingClientRect();
+      if (box.width > 0 && document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) === canvas) {
+        return text.parentElement?.dataset["structure"];
+      }
+    }
+    return undefined;
+  });
+  const id = (await found.jsonValue()) ?? "";
+  const text = page.locator(`[data-structure="${id}"] > span`);
+  const centre = async () => {
+    const box = await text.boundingBox();
+    if (box === null) throw new Error("the name is not drawn");
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  };
   const distance = page.getByTestId("distance");
-  const before = await distance.textContent();
-  await page.mouse.move(x, y);
+  const before = (await distance.textContent()) ?? "";
+  let at = await centre();
+  await page.mouse.move(at.x, at.y);
   await expect(page.getByRole("tooltip")).toContainText("Click to read");
   await page.mouse.wheel(0, -300);
-  await expect(distance).not.toHaveText(before ?? "");
-  await page.getByRole("button", { name: "Return to Earth" }).click();
-  await page.mouse.click(x, y);
+  await expect(distance).not.toHaveText(before);
+  // As far back out: each step scales the distance about the focus by one factor, so the view,
+  // and the name in it, come back to where they were.
+  await page.mouse.wheel(0, 300);
+  await expect(distance).toHaveText(before);
+  await expect(text).toBeVisible();
+  at = await centre();
+  await page.mouse.click(at.x, at.y);
   await expect(page.getByRole("region", { name: "The chosen structure" })).toBeVisible();
 });
 
