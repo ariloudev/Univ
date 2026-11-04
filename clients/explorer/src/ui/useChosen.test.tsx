@@ -32,8 +32,9 @@ describe("the chosen object", () => {
     expect(reloaded.controller.view.focus).toEqual([0.55, 0.1, 0.49]);
   });
 
-  it("is read from the address only where it names an object id", () => {
-    expect(objectInAddress("?object=42")).toBe(42);
+  it("is read from the address only where it names an object id, with the name it was found by", () => {
+    expect(objectInAddress("?object=42")).toEqual({ id: 42 });
+    expect(objectInAddress("?object=856254&as=Andromeda")).toEqual({ id: 856254, as: "Andromeda" });
     expect(objectInAddress("?object=M31")).toBeUndefined();
     expect(objectInAddress("")).toBeUndefined();
   });
@@ -62,5 +63,17 @@ describe("the chosen object", () => {
     await waitFor(() => expect(hook.result.current.chosen.kind).toBe("none"));
     expect(location.search).toBe("");
     expect(scene.chosen).toBeUndefined();
+  });
+
+  it("keeps the name it was found by in the address, beside its id", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(Response.json(ANDROMEDA))));
+    const scene = world();
+    const hook = renderHook(() => useChosen(7, scene));
+    act(() => hook.result.current.choose(856254, { record: ANDROMEDA, as: "Andromeda" }));
+    await waitFor(() => expect(hook.result.current.chosen.kind).toBe("ready"));
+    expect(new URLSearchParams(location.search).get("as")).toBe("Andromeda");
+    expect(hook.result.current.chosen).toMatchObject({ as: "Andromeda" });
+    act(() => hook.result.current.choose(undefined));
+    expect(location.search).toBe("");
   });
 });

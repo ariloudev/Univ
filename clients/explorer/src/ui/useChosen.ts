@@ -13,14 +13,15 @@ import type { World } from "./useWorld.ts";
 export type ChosenObject =
   | { kind: "none" }
   | { kind: "loading"; id: number }
-  | { kind: "ready"; record: ObjectRecord }
+  | { kind: "ready"; record: ObjectRecord; as?: string | undefined }
   | { kind: "choices"; choices: Choices }
   | { kind: "failed"; id: number; status: number | undefined; title: string };
 
-/** How an object is chosen: its record where it is already read, and whether to fly to it
- * once it is (a picked point is flown to at once, by the scene). */
+/** How an object is chosen: its record where it is already read, the name it was found by,
+ * and whether to fly to it once it is (a picked point is flown to at once, by the scene). */
 export interface ChooseOptions {
   record?: ObjectRecord | undefined;
+  as?: string | undefined;
   fly?: boolean | undefined;
 }
 
@@ -28,17 +29,22 @@ interface Request extends ChooseOptions {
   id: number;
 }
 
-/** The object id the page's address names, if any. */
-export function objectInAddress(search: string): number | undefined {
-  const value = new URLSearchParams(search).get("object");
-  return value !== null && /^\d+$/.test(value) ? Number(value) : undefined;
+/** The object the page's address names, if any, and the name it was found by. */
+export function objectInAddress(search: string): { id: number; as?: string } | undefined {
+  const params = new URLSearchParams(search);
+  const value = params.get("object");
+  if (value === null || !/^\d+$/.test(value)) return undefined;
+  const as = params.get("as");
+  return as === null || as === "" ? { id: Number(value) } : { id: Number(value), as };
 }
 
-/** The page's address naming `id`, or naming no object. */
-function keepInAddress(id: number | undefined): void {
+/** The page's address naming `request`'s object and the name it was found by, or no object. */
+function keepInAddress(request: Request | undefined): void {
   const url = new URL(location.href);
-  if (id === undefined) url.searchParams.delete("object");
-  else url.searchParams.set("object", String(id));
+  url.searchParams.delete("as");
+  if (request === undefined) url.searchParams.delete("object");
+  else url.searchParams.set("object", String(request.id));
+  if (request?.as !== undefined) url.searchParams.set("as", request.as);
   history.replaceState(history.state, "", url);
 }
 
@@ -58,19 +64,19 @@ function arrive(world: World, record: ObjectRecord, fly: boolean): void {
 /** The chosen object of `release` in `world`, and the way to choose another. */
 export function useChosen(release: number, world: World | undefined) {
   const [request, setRequest] = useState<Request | undefined>(() => {
-    const id = objectInAddress(location.search);
-    return id === undefined ? undefined : { id, fly: true };
+    const named = objectInAddress(location.search);
+    return named === undefined ? undefined : { ...named, fly: true };
   });
   const [chosen, setChosen] = useState<ChosenObject>({ kind: "none" });
   useEffect(() => {
-    keepInAddress(request?.id);
+    keepInAddress(request);
     if (world !== undefined) world.chosen = undefined;
     if (request === undefined || world === undefined) {
       setChosen({ kind: "none" });
       return;
     }
     const ready = (record: ObjectRecord) => {
-      setChosen({ kind: "ready", record });
+      setChosen({ kind: "ready", record, as: request.as });
       arrive(world, record, request.fly === true);
     };
     if (request.record !== undefined) {
@@ -90,7 +96,7 @@ export function useChosen(release: number, world: World | undefined) {
   const choose = useCallback((id: number | undefined, options: ChooseOptions = {}) => {
     setRequest((current) => {
       if (id === undefined) return undefined;
-      return current?.id === id && options.record === undefined ? current : { id, ...options };
+      return current?.id === id && options.record === undefined && options.as === undefined ? current : { id, ...options };
     });
   }, []);
   return { chosen, choose };

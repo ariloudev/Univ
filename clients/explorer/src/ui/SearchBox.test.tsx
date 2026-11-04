@@ -24,10 +24,10 @@ afterEach(() => {
 });
 
 describe("searching", () => {
-  it("makes the object found the chosen one", async () => {
+  it("makes the object found the chosen one, with the name it was found by", async () => {
     const fetch = answer(200, ANDROMEDA);
     const found = await find("Andromeda");
-    expect(found).toHaveBeenCalledWith(856254, ANDROMEDA);
+    expect(found).toHaveBeenCalledWith(856254, ANDROMEDA, "Andromeda");
     expect(fetch.mock.calls[0]?.[0]).toBe("/v1/objects?name=Andromeda&release=7");
   });
 

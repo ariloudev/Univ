@@ -92,6 +92,17 @@ export function lookupPath(query: string): string {
   return `/v1/objects?name=${encodeURIComponent(text)}`;
 }
 
+/** A name as the name lookup compares it: letter case and white space ignored. */
+const nameKey = (text: string) => text.toLowerCase().replace(/\s+/g, "");
+
+/** The name `record` was found by when `query` looked it up by name: the designation that reads
+ * as the query, or the query itself; none when `query` was an id or a designation. */
+export function nameFound(record: ObjectRecord, query: string): string | undefined {
+  if (!lookupPath(query).startsWith("/v1/objects?name=")) return undefined;
+  const key = nameKey(query);
+  return record.designations.find((d) => nameKey(d.identifier) === key)?.identifier ?? query.trim();
+}
+
 /** Reads `path`: the object, or, answered 300, the objects it leads to. */
 async function lookup(path: string, query: string, options: ReadOptions): Promise<Exclude<Found, { kind: "none" }>> {
   const response = await read(path, { ...options, accept: [300] });

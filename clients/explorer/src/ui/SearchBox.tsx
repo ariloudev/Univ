@@ -1,11 +1,11 @@
 import { type FormEvent, useRef, useState } from "react";
 
-import { type Found, type ObjectRecord, search } from "../api/objects.ts";
+import { type Found, type ObjectRecord, nameFound, search } from "../api/objects.ts";
 
 type State = { kind: "idle" } | { kind: "searching" } | { kind: "failed"; message: string } | Exclude<Found, { kind: "object" }>;
 
 /** Finds an object by id, designation (`source:identifier`) or name (find-an-object). */
-export function SearchBox({ release, onFound }: { release: number; onFound: (id: number, record?: ObjectRecord) => void }) {
+export function SearchBox({ release, onFound }: { release: number; onFound: (id: number, record?: ObjectRecord, as?: string) => void }) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<State>({ kind: "idle" });
   const searching = useRef<AbortController>(undefined);
@@ -22,7 +22,7 @@ export function SearchBox({ release, onFound }: { release: number; onFound: (id:
         if (abort.signal.aborted) return;
         if (found.kind === "object") {
           setState({ kind: "idle" });
-          onFound(found.record.id, found.record);
+          onFound(found.record.id, found.record, nameFound(found.record, query));
         } else setState(found);
       })
       .catch((error: unknown) => {

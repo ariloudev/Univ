@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { answer, fakeHttp } from "../test/http.ts";
 import { ANDROMEDA } from "../test/objects.ts";
-import { type ObjectRecord, distancesOf, lookupPath, objectOf, placeOf, search } from "./objects.ts";
+import { type ObjectRecord, distancesOf, lookupPath, nameFound, objectOf, placeOf, search } from "./objects.ts";
 
 const http = (status: number, body: unknown) => fakeHttp(answer(status, body));
 
@@ -68,5 +68,18 @@ describe("an object's record", () => {
     const star = { ...ANDROMEDA, position: { ...ANDROMEDA.position, unit: "parsec", x: 2, y: 0, z: 0 } } as ObjectRecord;
     expect(placeOf(star)?.[0]).toBeCloseTo(2e-6);
     expect(placeOf({ ...ANDROMEDA, position: null })).toBeUndefined();
+  });
+});
+
+describe("the name an object was found by", () => {
+  it("is the designation that reads as the name typed, letter case and spaces aside, or else what was typed", () => {
+    expect(nameFound(ANDROMEDA, " andromeda ")).toBe("Andromeda");
+    expect(nameFound(ANDROMEDA, "messier 031")).toBe("MESSIER031");
+    expect(nameFound(ANDROMEDA, "M 31")).toBe("M 31");
+  });
+
+  it("is none for a lookup by id or by designation", () => {
+    expect(nameFound(ANDROMEDA, "856254")).toBeUndefined();
+    expect(nameFound(ANDROMEDA, "mcconnachie-2012:Andromeda")).toBeUndefined();
   });
 });
