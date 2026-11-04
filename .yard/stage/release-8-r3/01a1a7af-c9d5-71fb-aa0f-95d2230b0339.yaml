@@ -10,6 +10,15 @@ versions:
     title: "R3: release 8"
     goal: "Release 8 is built from the current sources and structure files, published locally, and passes its science checks, its tile checks, QA-2 and QA-3, and the spot checks for star colours and the curated structures"
     status: active
+  - key: 01a1a817-ba76-72db-8616-dc169c0ebe31
+    at: 2026-11-04T19:44:49Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R3: build and check release 8"
+    goal: "Release 8 is built, published locally, and passes the science, tile, spot and QA checks"
+    status: done
 blocks:
   - key: 01a1a7af-c9d5-71fb-aa0f-95d3b008aac5
     id: r3-t-build
@@ -377,3 +386,65 @@ blocks:
 
           **Done when** `/simplify` and `/code-review` have run in parallel with their findings fixed, `cargo xtask check` has run once green, Yard Log is closed, and the stage is merged into `product/release-8` with `--no-ff`.
         state: active
+      - key: 01a1a817-ba76-72db-8616-dc14fb65c76e
+        at: 2026-11-04T19:44:49Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Review, gate, close and merge"
+        detail: |-
+          **Scope:** the code this stage changed: TAP jobs, polling on fresh connections, and the VizieR mirrors.
+
+          **Done when** `/simplify` and `/code-review` have run in parallel with their findings fixed, `cargo xtask check` has run once green, Yard Log is closed, and the stage is merged into `product/release-8` with `--no-ff`.
+
+          **Result:**
+          - **Reviews:** both found the same fault. A job's payload recorded its result address, which never ends with the chunk's request, so every kept job chunk would have been deleted and run again on the next build. Release 8 itself was built before this mattered.
+          - **Fixed in `1302670`:**
+            - A chunk's request is a typed `Ask` (a GET or a job), not a suffix with a magic prefix.
+            - A job records the request that ran it, so a kept chunk is matched and the query stays in provenance.
+            - A job that ends in error or outlasts 30 minutes goes to the next mirror, not resubmitted.
+            - A failed poll or result download is made again in place, and every job is deleted once done.
+            - The count is asked at once.
+            - One shared GET helper; the job tests moved to `tests/fetch_jobs.rs`, under 500 lines.
+          - **Tests:** five job tests pass. `a_job_kept_on_disk_with_its_record_is_not_run_again` is linked to "A chunk already on disk is not fetched again", and eight links whose tests now pass a typed ask were accepted as stale.
+          - **Skipped findings:**
+            - faster polling, worth about 30 s per source;
+            - pooled connections for jobs, since ESA drops idle ones;
+            - building the job client lazily, a few ms.
+          - **Gate:** `cargo xtask check` passed once: 13 gates, with `loft verify` skipped off its publish branch.
+          - **Integration:** not run. This stage changed only Univ Ingest, and integration covers the server and the explorer.
+        state: done
+  - key: 01a1a817-ba76-72db-8616-dc136def5623
+    id: r3-note-result
+    kind: note
+    versions:
+      - key: 01a1a817-ba76-72db-8616-dc153c3a237d
+        at: 2026-11-04T19:44:49Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What R3 produced"
+        markdown: |-
+          **Release 8 is built, published locally and checked.**
+
+          | Check | Result |
+          |---|---|
+          | Build | 2,099,181 objects (2,085,809 placed), 53 structures, 401 tiles, 540 files |
+          | Publish | latest is release 8; 541 files checked |
+          | Science checks | 27 PASS, 0 FAIL, 3 CONCERN (as release 6), 2 INFO |
+          | Tiles through Univ Server | every tile of the three domains decoded and its SHA-256 matched |
+          | QA-2 lookup | p95 8.0 ms against 200 ms |
+          | QA-3 volume query | p95 47.3 ms against 500 ms |
+          | First points | p95 210 ms against 3 s |
+          | Explorer | "(at least)" on Vela and Horologium–Reticulum; the Hercules Void drawn with axis lines and no box |
+
+          **Fixed on the way:**
+          - Gaia's joined query runs as TAP jobs.
+          - Jobs are polled on fresh connections.
+          - A kept job is not run again.
+          - VizieR mirrors are listed in the order they answer.
+
+          **Left open for E7:** Betelgeuse is not placed. Its Hipparcos parallax has a 12.7% error, over the 10% rule, and Gaia does not measure it. Drawing it needs a cited distance.
+        tone: success
