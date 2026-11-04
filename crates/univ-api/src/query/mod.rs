@@ -13,6 +13,7 @@ mod items;
 mod objects;
 mod request;
 mod structures;
+mod tiles;
 
 use std::sync::Arc;
 
@@ -129,6 +130,7 @@ pub async fn volume<B: Backend>(
     if let Some(cursor) = &cursor {
         cursor::unchanged(backend, &query, &cursor.layers, &layers).await?;
     }
+    let first_page = cursor.is_none();
     let served_before = cursor.as_ref().map_or(0, |c| c.served);
     let room = RESULTS_PER_PAGE.min(MAX_RESULTS.saturating_sub(served_before));
     let mut found = collect(backend, &query, cursor.map(|c| c.after), room + 1).await?;
@@ -147,9 +149,12 @@ pub async fn volume<B: Backend>(
         served,
         next,
         truncated: more && served >= MAX_RESULTS,
-        tiles: None,
+        tiles: if first_page && query.reads_objects() {
+            Some(tiles::coverings(backend, &query, body.max_level).await?)
+        } else {
+            None
+        },
     };
-    let _ = body.max_level;
     Ok(pinned(Response::json(&page)?, release))
 }
 

@@ -433,5 +433,5 @@ INSERT INTO grids VALUES (2, 'cf4-basins', 1, 'megaparsec_over_h', '[128,128,128
 /// The cosmic web tile manifest of release 2: two nodes.
 pub const COSMIC_WEB_MANIFEST: &str = r#"{"format":"univ-tile-manifest","release":2,
   "scale_domain":"cosmic_web","encoding":{"version":1},"nodes":[
-  {"address":"r","level":0,"bytes":3,"sha256":"aaaa"},
-  {"address":"r07","level":1,"bytes":2,"sha256":"bbbb"}]}"#;
+  {"address":"r","level":0,"bounds":{"min":[-168.0,-168.0,-168.0],"max":[168.0,168.0,168.0]},"bytes":3,"sha256":"aaaa"},
+  {"address":"r07","level":2,"bounds":{"min":[-84.0,-84.0,-84.0],"max":[0.0,0.0,0.0]},"bytes":2,"sha256":"bbbb"}]}"#;

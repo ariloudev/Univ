@@ -270,3 +270,49 @@ fn a_malformed_volume_or_filter_answers_400_pointing_at_each_field() {
         ]
     );
 }
+
+#[test]
+fn the_first_page_gives_the_tile_nodes_covering_the_volume_each_fetched_by_its_address() {
+    let db = fixture();
+    let body = json!({"volume": sphere([100.0, 0.0, 0.0], 5.0), "tiles": {"max_level": 2}});
+    let (_, page) = query(&db, &body);
+    let tiles = page["tiles"].as_array().unwrap();
+    let domains: Vec<&str> = tiles
+        .iter()
+        .map(|t| t["scale_domain"].as_str().unwrap())
+        .collect();
+    assert_eq!(domains, ["cosmic_web", "stars"]);
+    // The cosmic web's octree: a root of ±168 Mpc, octant bit 0 for high x, 1 for high y, 2
+    // for high z. The sphere about x = 100 lies in the four level-1 octants of high x, and in
+    // each of them in the level-2 octant of high x nearest the x axis.
+    let nodes: Vec<&str> = tiles[0]["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|n| n.as_str().unwrap())
+        .collect();
+    assert_eq!(nodes, ["r17", "r35", "r53", "r71"]);
+    assert_eq!(
+        tiles[1],
+        json!({"scale_domain": "stars", "level": 1, "nodes": []}),
+        "100 Mpc is beyond the stars"
+    );
+    for node in nodes {
+        let tile = db.get(
+            &format!("/v1/scale-domains/cosmic_web/tiles/{node}"),
+            "release=2",
+        );
+        assert_eq!(tile.status, 200, "{node}");
+    }
+    let shallow = json!({"volume": sphere([100.0, 0.0, 0.0], 5.0), "tiles": {"max_level": 1}});
+    assert_eq!(
+        query(&db, &shallow).1["tiles"][0]["nodes"],
+        json!(["r1", "r3", "r5", "r7"])
+    );
+    let only_stars =
+        json!({"volume": sphere([100.0, 0.0, 0.0], 5.0), "filters": {"scale_domains": ["stars"]}});
+    assert_eq!(
+        query(&db, &only_stars).1["tiles"].as_array().unwrap().len(),
+        1
+    );
+}

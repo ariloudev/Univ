@@ -108,7 +108,39 @@ pub fn volume_db(objects: &[Placed]) -> Sqlite {
         }
     }
     db.exec(&sql);
+    db.put(
+        "releases/2/tiles/cosmic_web/manifest.json",
+        manifest(168.0, 2),
+    );
+    db.put("releases/2/tiles/stars/manifest.json", manifest(48.0, 1));
     db
+}
+
+/// A manifest of a full octree `depth` levels deep below a root from `-radius` to `radius`.
+pub fn manifest(radius: f64, depth: u8) -> Vec<u8> {
+    let mut nodes = Vec::new();
+    let mut level = vec![("r".to_owned(), [-radius; 3], [radius; 3])];
+    for l in 0..=depth {
+        let mut below = Vec::new();
+        for (address, min, max) in level {
+            nodes.push(
+                json!({"address": address, "level": l, "bounds": {"min": min, "max": max},
+                "bytes": 1, "sha256": format!("{l}{address}")}),
+            );
+            if l < depth {
+                for octant in 0..8_u8 {
+                    let half: [f64; 3] = std::array::from_fn(|i| (max[i] - min[i]) / 2.0);
+                    let low: [f64; 3] = std::array::from_fn(|i| {
+                        min[i] + if octant >> i & 1 == 1 { half[i] } else { 0.0 }
+                    });
+                    let high: [f64; 3] = std::array::from_fn(|i| low[i] + half[i]);
+                    below.push((format!("{address}{octant}"), low, high));
+                }
+            }
+        }
+        level = below;
+    }
+    serde_json::to_vec(&json!({"encoding": {"version": 1}, "nodes": nodes})).unwrap()
 }
 
 /// A volume query's request.

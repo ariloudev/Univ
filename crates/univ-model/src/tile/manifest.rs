@@ -259,9 +259,10 @@ impl TileManifest {
     }
 }
 
-/// What a server reads of a tile manifest to serve its tiles: the encoding version and each
-/// node's address and SHA-256, the rest of the manifest left unread.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+/// What a server reads of a tile manifest to serve its tiles and the nodes that cover a
+/// volume: the encoding version and each node's address, level, cube and SHA-256, the rest of
+/// the manifest left unread.
+#[derive(Clone, Debug, PartialEq, Deserialize)]
 pub struct TileManifestIndex {
     pub encoding: EncodingIndex,
     pub nodes: Vec<NodeIndex>,
@@ -274,8 +275,10 @@ pub struct EncodingIndex {
 }
 
 /// A node of a [`TileManifestIndex`].
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize)]
 pub struct NodeIndex {
     pub address: String,
+    pub level: u8,
+    pub bounds: Bounds,
     pub sha256: String,
 }

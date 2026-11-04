@@ -220,6 +220,25 @@ blocks:
         title: "Covering tile nodes"
         detail: "The kept manifest nodes gain level, bounds and a leaf flag. The level chosen is the deepest at most `max_level` with no more than 4,096 nodes. Done when counts match a brute-force pass (AC-204 to AC-206)."
         state: active
+      - key: 01a1a428-646c-76ac-9793-bdf98a37a7b3
+        at: 2026-11-04T01:24:33Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Covering tile nodes"
+        detail: |-
+          `query/tiles.rs`.
+
+          **What changed:** the kept manifest index now has each node's level and cube, and a leaf flag. A covering at a level is the level's nodes that meet the volume, plus the shallower leaves that do. The level chosen is the deepest at most `max_level` with at most 4,096 nodes. Coverings come on the first page, for the domains the filters leave, when the query reads objects.
+
+          **Tests:**
+          - covering against a brute-force count on a full octree of five levels, for three spheres; level 5 exceeds 4,096 nodes, so level 4 is chosen; `max_level` is honoured;
+          - shallower leaves standing in where the octree stops short;
+          - a handler test: the four level-2 nodes about x = 100 Mpc, each fetched through the tile route.
+
+          When no node meets the volume, the level is the deepest allowed, with no nodes.
+        state: done
   - key: 01a1a3fd-1fbf-7477-ba13-660e3d820467
     id: t6-bench
     kind: task
@@ -245,6 +264,18 @@ blocks:
           - an e2e query on the fixture release covers objects, structures, an item, paging and a tile fetched by address;
           - `cargo xtask bench volume` runs 50 Mpc spheres 100 Mpc out on release 6, and the p95 of the first page is reported against 500 ms.
         state: open
+      - key: 01a1a428-646c-76ac-9793-bdfa96bc8efe
+        at: 2026-11-04T01:24:33Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "E2e query and the QA-3 bench"
+        detail: |-
+          Done when:
+          - an e2e query on the fixture release covers objects, structures, an item, paging and a tile fetched by address;
+          - `cargo xtask bench volume` runs 50 Mpc spheres 100 Mpc out on release 6, and the p95 of the first page is reported against 500 ms.
+        state: active
   - key: 01a1a403-aef5-7328-b16a-bc685063e48e
     id: ask-toolu-015eknjcccv74r96nowxwq7b-1
     kind: question
