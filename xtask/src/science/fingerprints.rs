@@ -2,8 +2,6 @@
 //! recomputes them from D1: univ-model's fingerprint query, and for the lookup tables the
 //! digest of their rows in univ-model's canonical form.
 
-use std::fmt::Write as _;
-
 use rusqlite::Connection;
 use rusqlite::types::ValueRef;
 use sha2::{Digest, Sha256};
@@ -128,10 +126,4 @@ fn sql_value(value: ValueRef<'_>) -> Result<SqlValue, String> {
     })
 }
 
-/// Bytes in lower-case hex.
-pub fn hex(bytes: &[u8]) -> String {
-    bytes.iter().fold(String::new(), |mut out, b| {
-        let _ = write!(out, "{b:02x}");
-        out
-    })
-}
+pub use univ_model::encoding::hex;

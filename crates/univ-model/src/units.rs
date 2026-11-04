@@ -10,6 +10,7 @@ const PARSECS_PER_AU: f64 = 4.848_136_811_095_36e-6;
 
 /// A unit that a source publishes a value in, or that a value is normalized to.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Unit {
     Degree,
@@ -110,6 +111,20 @@ impl Unit {
     }
 }
 
+/// The name of the scale domain whose positions are in parsecs.
+pub const STARS_DOMAIN: &str = "stars";
+
+/// The unit of the positions of the scale domain named `domain` (`stars`, `nearby_galaxies` or
+/// `cosmic_web`): parsecs for stars, megaparsecs for every other.
+#[must_use]
+pub fn scale_domain_unit(domain: &str) -> Unit {
+    if domain == STARS_DOMAIN {
+        Unit::Parsec
+    } else {
+        Unit::Megaparsec
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -159,5 +174,12 @@ mod tests {
         );
         assert!(Unit::MegaparsecOverH.factor_to(Unit::Megaparsec).is_err());
         assert!(Unit::Magnitude.factor_to(Unit::Parsec).is_err());
+    }
+
+    #[test]
+    fn stars_are_in_parsecs_and_every_other_domain_in_megaparsecs() {
+        assert_eq!(scale_domain_unit("stars"), Unit::Parsec);
+        assert_eq!(scale_domain_unit("nearby_galaxies"), Unit::Megaparsec);
+        assert_eq!(scale_domain_unit("cosmic_web"), Unit::Megaparsec);
     }
 }

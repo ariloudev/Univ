@@ -7,13 +7,32 @@ use crate::position::{Rotation, Vec3, dot, scaled, zip};
 
 /// An axis-aligned box.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Aabb {
+    #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
     pub min: Vec3,
+    #[cfg_attr(feature = "openapi", schema(value_type = Vec<f64>, min_items = 3, max_items = 3))]
     pub max: Vec3,
 }
 
 impl Aabb {
-    fn around(points: impl IntoIterator<Item = Vec3>) -> Option<Self> {
+    /// The middle of the box.
+    #[must_use]
+    pub fn centre(&self) -> Vec3 {
+        zip(self.min, self.max, f64::midpoint)
+    }
+
+    /// The box with every coordinate multiplied by `factor`, a positive change of unit.
+    #[must_use]
+    pub fn scaled(&self, factor: f64) -> Self {
+        Self {
+            min: scaled(self.min, factor),
+            max: scaled(self.max, factor),
+        }
+    }
+
+    /// The box around `points`; none for no points.
+    pub(crate) fn around(points: impl IntoIterator<Item = Vec3>) -> Option<Self> {
         points.into_iter().fold(None, |acc, p| {
             Some(match acc {
                 None => Self { min: p, max: p },
@@ -25,7 +44,8 @@ impl Aabb {
         })
     }
 
-    fn centred(centre: Vec3, half: Vec3) -> Self {
+    /// The box of half-extents `half` about `centre`.
+    pub(crate) fn centred(centre: Vec3, half: Vec3) -> Self {
         Self {
             min: zip(centre, half, |c, h| c - h),
             max: zip(centre, half, |c, h| c + h),
@@ -241,6 +261,19 @@ mod tests {
             far: 50.0,
         };
         assert_eq!(boxed(region).min, [-50.0; 3]);
+    }
+
+    #[test]
+    fn a_box_has_a_centre_and_scales_with_its_unit() {
+        let b = Aabb {
+            min: [-2.0, 0.0, 1.0],
+            max: [4.0, 2.0, 1.0],
+        };
+        assert_eq!(b.centre(), [1.0, 1.0, 1.0]);
+        let in_pc = b.scaled(1.0e6);
+        assert_eq!(in_pc.min, [-2.0e6, 0.0, 1.0e6]);
+        assert_eq!(in_pc.max, [4.0e6, 2.0e6, 1.0e6]);
+        assert_eq!(in_pc.centre(), [1.0e6; 3]);
     }
 
     #[test]

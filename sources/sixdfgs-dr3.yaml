@@ -30,6 +30,7 @@ citation: >-
   683. 2009MNRAS.399..683J,
   doi:10.1111/j.1365-2966.2009.15338.x. VizieR catalogue VII/259. The 6dFGS team also asks for the
   original survey paper, Jones et al. 2004, MNRAS 355, 747.
+reference: { bibcode: "2009MNRAS.399..683J", doi: "10.1111/j.1365-2966.2009.15338.x" }
 terms:
   url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
   quote: >-

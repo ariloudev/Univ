@@ -15,12 +15,25 @@ use thiserror::Error;
 /// A Cartesian vector; its frame and unit are held by whatever holds it.
 pub type Vec3 = [f64; 3];
 
+/// The name of the frame every placed position of a release is given in, as the tile
+/// manifests, the cell index and the API name it: ICRS axes, Cartesian.
+pub const ICRS_CARTESIAN_NAME: &str = "ICRS equatorial Cartesian";
+
+/// The origin of [`ICRS_CARTESIAN_NAME`] positions.
+pub const BARYCENTRE: &str = "Solar System barycentre";
+
 /// A rotation between frames, applied as `matrix · vector`.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(
+    feature = "openapi",
+    derive(utoipa::ToSchema),
+    schema(value_type = Vec<Vec<f64>>)
+)]
 pub struct Rotation(pub [[f64; 3]; 3]);
 
 /// A celestial reference frame.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Frame {
     /// The International Celestial Reference System, equatorial.
@@ -335,7 +348,7 @@ pub fn between(from: Frame, to: Frame) -> Transform {
 }
 
 pub use fk4::equinox_ambiguity;
-pub use vector::{cross, dot, scaled, separation_degrees, zip};
+pub use vector::{add, cross, dot, norm, scaled, separation_degrees, sub, zip};
 
 #[cfg(test)]
 mod tests {

@@ -39,6 +39,7 @@ citation: >-
   Eisenstein et al. 2011, AJ 142, 72 (2011AJ....142...72E); Dawson et al. 2013, AJ 145, 10
   (2013AJ....145...10D); Dawson et al. 2016, AJ 151, 44 (2016AJ....151...44D). The SDSS bibcodes
   were constructed from Crossref-verified journal, volume and page; ADS was not reachable.
+reference: { bibcode: "2022ApJS..259...35A", doi: "10.3847/1538-4365/ac4414" }
 terms:
   url: "https://www.sdss4.org/collaboration/"
   quote: "All SDSS data released in our public data releases is considered in the public domain."

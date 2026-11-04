@@ -5,6 +5,7 @@
 #![allow(dead_code, reason = "each test file uses a part of the fixture")]
 
 use std::path::Path;
+use std::process::{Command, Output};
 
 use crate::common::{definition_of, normalized_fixture, source_id, workspace};
 use tempfile::TempDir;
@@ -18,6 +19,7 @@ use univ_ingest::state::State;
 use univ_ingest::structures::{Structure, read_all_named};
 use univ_ingest::tiles::{Built, Context, TileRules, build as build_tiles};
 use univ_model::derive::Release;
+use univ_model::release::manifest::Target;
 use univ_model::release::{ReleaseManifest, keys};
 
 /// Sources each fetched in one query: Hipparcos stars, nearby galaxies and cosmic web galaxies.
@@ -140,6 +142,17 @@ pub fn read_manifest(dir: &Path) -> ReleaseManifest {
     serde_norway::from_str(&text).unwrap()
 }
 
+/// The release in `dir`, its manifest `m`: its D1 files executed in path order into a fresh
+/// in-memory database.
+pub fn loaded(dir: &Path, m: &ReleaseManifest) -> rusqlite::Connection {
+    let db = rusqlite::Connection::open_in_memory().unwrap();
+    for f in m.files.iter().filter(|f| f.target == Target::D1) {
+        let sql = std::fs::read_to_string(dir.join(&f.path)).unwrap();
+        db.execute_batch(&sql).unwrap();
+    }
+    db
+}
+
 /// The text of the release's D1 file of `table`.
 pub fn d1_text(dir: &Path, manifest: &ReleaseManifest, table: &str) -> String {
     manifest
@@ -148,4 +161,34 @@ pub fn d1_text(dir: &Path, manifest: &ReleaseManifest, table: &str) -> String {
         .filter(|f| f.path.contains(&format!("-{table}-")))
         .map(|f| std::fs::read_to_string(dir.join(&f.path)).unwrap())
         .collect()
+}
+
+/// Runs `univ-ingest <command> <number>` on the build output `out` and state directory `state`,
+/// against Wrangler's local state in `persist` and the repository's `wrangler.toml`.
+pub fn univ_ingest(command: &str, number: u32, out: &Path, state: &Path, persist: &Path) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_univ-ingest"))
+        .arg(command)
+        .arg(number.to_string())
+        .arg("--out")
+        .arg(out)
+        .arg("--state")
+        .arg(state)
+        .arg("--persist-to")
+        .arg(persist)
+        .arg("--config")
+        .arg(workspace().join("wrangler.toml"))
+        .output()
+        .unwrap()
+}
+
+/// Runs [`univ_ingest`], echoes its log, fails with it when the command fails, and gives it.
+pub fn run_ok(command: &str, number: u32, out: &Path, state: &Path, persist: &Path) -> String {
+    let run = univ_ingest(command, number, out, state, persist);
+    let log = String::from_utf8_lossy(&run.stderr).into_owned();
+    eprintln!("$ univ-ingest {command} {number}\n{log}");
+    assert!(
+        run.status.success(),
+        "univ-ingest {command} {number}:\n{log}"
+    );
+    log
 }

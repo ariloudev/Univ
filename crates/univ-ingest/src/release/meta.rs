@@ -3,21 +3,17 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use univ_model::derive::Release;
 use univ_model::geometry::Aabb;
 use univ_model::ids::SourceId;
-use univ_model::redshift::CmbCorrection;
 use univ_model::release::keys;
 use univ_model::release::rows::{
     NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, StructureRow,
 };
 
 use super::objects::{json, snake};
-use super::place::{centre, index_bounds};
-use crate::crossmatch::MemberPlacement;
+use super::placement::Placement;
 use crate::provenance::Provenance;
-use crate::source::{ScaleDomain, SourceDefinition};
-use crate::structures::Structure;
+use crate::source::SourceDefinition;
 use crate::tiles::{Built, name_of, unit_symbol};
 
 /// The rows of a release's sources and their provenance.
@@ -91,59 +87,48 @@ pub fn source_rows(
 /// A structure's id and its ICRS bounding box in Mpc, or why it has none.
 pub type StructureBounds = (String, Result<Aabb, String>);
 
-/// The rows of the release's `structures`, each by its id, with its scale domain and centre and
-/// the member list `placements` resolved for it; and each structure's ICRS bounding box in Mpc
-/// under `release` and the run's dipole `correction`, the box its row records and the cell index
-/// holds (see [`super::place`]), or why it has none.
+/// The rows of the release's `structures`, each by its id, with its scale domain, its member
+/// list as resolved, and its centre and bounds as `placed` ([`super::placement`]), both in its
+/// scale domain's unit; and each structure's ICRS bounding box in Mpc, the box the cell index
+/// holds, or why it has none.
 ///
 /// # Errors
 ///
 /// Fails when a value cannot be written as JSON.
 pub fn structure_rows(
     release_number: u32,
-    structures: &[(String, Structure)],
-    placements: &[MemberPlacement],
-    release: &Release,
-    correction: &CmbCorrection,
+    placed: &[Placement<'_>],
 ) -> Result<(Vec<StructureRow>, Vec<StructureBounds>), String> {
-    let mut rows = Vec::with_capacity(structures.len());
-    let mut bounds = Vec::with_capacity(structures.len());
-    for (id, s) in structures {
-        let placed = placements.iter().find(|p| p.structure == s.name);
-        let shape = placed.and_then(|p| p.shape.as_ref());
-        let boxed = index_bounds(s, placed, release, correction);
-        // In the domain's unit: pc for stars, Mpc otherwise.
-        let per_mpc = if s.scale_domain == ScaleDomain::Stars {
-            1e6
-        } else {
-            1.0
-        };
-        let at = centre(s, placed, release, correction)
-            .ok()
-            .map(|c| c.map(|v| v * per_mpc));
+    let mut rows = Vec::with_capacity(placed.len());
+    let mut bounds = Vec::with_capacity(placed.len());
+    for p in placed {
+        let s = p.structure;
+        let members = p
+            .members
+            .and_then(|m| m.shape.as_ref().map(|shape| (m, shape)));
         rows.push(StructureRow {
             release: release_number,
-            id: id.clone(),
+            id: p.id.to_owned(),
             name: s.name.clone(),
             kind: snake(&s.kind),
             status: snake(&s.status),
             scale_domain: name_of(s.scale_domain).to_owned(),
-            centre_x: at.map(|c| c[0]),
-            centre_y: at.map(|c| c[1]),
-            centre_z: at.map(|c| c[2]),
+            centre_x: p.centre.map(|c| c[0]),
+            centre_y: p.centre.map(|c| c[1]),
+            centre_z: p.centre.map(|c| c[2]),
             geometry_kind: s.geometry_kind().map(str::to_owned),
             record: json(s)?,
-            members: shape
-                .map(|shape| {
+            members: members
+                .map(|(m, shape)| {
                     json(&serde_json::json!({
                         "shape": shape,
-                        "placed_from_file": placed.map_or(&[][..], |p| p.from_file.as_slice()),
+                        "placed_from_file": m.from_file,
                     }))
                 })
                 .transpose()?,
-            bounds: boxed.as_ref().ok().map(json).transpose()?,
+            bounds: p.bounds.as_ref().map(json).transpose()?,
         });
-        bounds.push((id.clone(), boxed));
+        bounds.push((p.id.to_owned(), p.index.clone()));
     }
     Ok((rows, bounds))
 }

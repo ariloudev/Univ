@@ -14,7 +14,7 @@ requirements:
       form: event_driven
       when: "the owner issues an API key"
       system: "Univ Server"
-      shall: "create the key with its label and quotas and return its secret once."
+      shall: "create the key with its label, quotas and rate-limit tier and return its secret once."
     criteria:
       - key: 01a19f20-8e6c-7039-b16f-abe5d0392ce2
         name: "The secret holds at least 256 bits of randomness."
@@ -24,6 +24,8 @@ requirements:
         name: "The secret is returned in the response that issues it and in no later response."
       - key: 01a19f20-8e6c-7039-b16f-abe824aac9f3
         name: "A key issued without quotas gets the default quotas."
+      - key: 01a1a2b8-447e-752b-832a-975136ea867e
+        name: "A key issued without a rate-limit tier gets the standard tier."
   - key: 01a19f20-8e6c-7039-b16f-abe9617a077f
     statement:
       form: event_driven
@@ -40,7 +42,7 @@ requirements:
       form: event_driven
       when: "the owner lists API keys"
       system: "Univ Server"
-      shall: "return each key's label, issuance time, revocation time, quotas and usage, without its secret."
+      shall: "return each key's label, issuance time, revocation time, quotas, rate-limit tier and usage, without its secret."
     criteria:
       - key: 01a19f20-8e6c-7039-b16f-abedaa177f5f
         name: "Usage gives the key's number of layers and its largest layer's number of items."

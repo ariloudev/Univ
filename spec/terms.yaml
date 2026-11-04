@@ -46,6 +46,9 @@
 - key: 01a19f1e-d177-716d-b124-3d45bf470745
   name: "preferred measurement"
   definition: "The measurement the ranking rule chose to place an object in three dimensions."
+- key: 01a1a2b8-447e-752b-832a-9752c6e34928
+  name: "rate-limit tier"
+  definition: "One of the fixed request rates the owner can give an API key, each a number of requests in 60 seconds."
 - key: 01a19f1e-d177-716d-b124-3d3fc692252b
   name: "release"
   definition: "An immutable, numbered set of objects, structures, volume grids, tiles, sources and manifests that one ingest run published."

@@ -1,0 +1,81 @@
+session: 8a28c3c8-b122-421a-a3de-8664f4b8b6df
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-03T19:57:23Z
+turns:
+  - started: 2026-11-03T19:07:32Z
+    ended: 2026-11-03T19:36:20Z
+  - started: 2026-11-03T19:37:34Z
+    ended: 2026-11-03T19:37:37Z
+  - started: 2026-11-03T19:37:37Z
+    ended: 2026-11-03T19:37:39Z
+  - started: 2026-11-03T19:37:50Z
+    ended: 2026-11-03T19:37:53Z
+  - started: 2026-11-03T19:37:55Z
+    ended: 2026-11-03T19:54:29Z
+  - started: 2026-11-03T19:57:23Z
+subagents:
+  - agent: a3e8bac0068f66d29
+    type: Explore
+    started: 2026-11-03T19:36:18Z
+    ended: 2026-11-03T19:37:55Z
+    stage: 01a1a2cf-3cac-7599-8a58-56cef997dd82
+  - agent: a344813ef16c69011
+    type: Explore
+    started: 2026-11-03T19:36:18Z
+    ended: 2026-11-03T19:37:34Z
+    stage: 01a1a2cf-3cac-7599-8a58-56cef997dd82
+  - agent: ab9918f28cf8f2e25
+    type: Explore
+    started: 2026-11-03T19:36:18Z
+    ended: 2026-11-03T19:37:37Z
+    stage: 01a1a2cf-3cac-7599-8a58-56cef997dd82
+  - agent: a949bbc6c1ed12c45
+    type: Explore
+    started: 2026-11-03T19:36:18Z
+    ended: 2026-11-03T19:37:50Z
+    stage: 01a1a2cf-3cac-7599-8a58-56cef997dd82
+loft:
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-03T19:53:46Z
+    ended: 2026-11-03T19:53:47Z
+    failed: false
+    stage: 01a1a2cf-3cac-7599-8a58-56cef997dd82
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-03T19:53:50Z
+    ended: 2026-11-03T19:53:51Z
+    failed: false
+    stage: 01a1a2cf-3cac-7599-8a58-56cef997dd82
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-03T19:53:56Z
+    ended: 2026-11-03T19:53:57Z
+    failed: false
+    stage: 01a1a2cf-3cac-7599-8a58-56cef997dd82

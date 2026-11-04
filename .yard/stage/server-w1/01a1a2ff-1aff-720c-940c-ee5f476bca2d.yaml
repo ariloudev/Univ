@@ -1,0 +1,661 @@
+key: 01a1a2ff-1aff-720c-940c-ee5f476bca2d
+id: w1
+versions:
+  - key: 01a1a2ff-1aff-720c-940c-ee67c794b106
+    at: 2026-11-03T19:59:50Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W1: releases, sources and structures"
+    goal: "Clients list releases, pin any of them, and read each release's sources with their provenance and its structures with every number cited (F-14, F-16, F-17)"
+    status: active
+  - key: 01a1a325-ad45-71d4-8d08-c6f14a424cd9
+    at: 2026-11-03T20:41:57Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W1: releases, sources and structures"
+    goal: "Clients list releases, pin any of them, and read each release's sources with their provenance and its structures with every number cited (F-14, F-16, F-17)"
+    status: done
+blocks:
+  - key: 01a1a2ff-1aff-720c-940c-ee61dfbc1127
+    id: t1-backend
+    kind: task
+    versions:
+      - key: 01a1a2ff-1aff-720c-940c-ee698f8fad83
+        at: 2026-11-03T19:59:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Async handlers over a Backend trait"
+        detail: "univ-api handlers become async over one `Backend` trait that runs SQL on the release database. The Worker implements it with D1, and the native tests with rusqlite and the real `univ_model::release::SCHEMA`. Routes name an `Endpoint` that dispatch matches. Response types live in univ-model behind an `openapi` feature (AC-286). Done when a native test reads rows through the SQLite backend, and wasm32 clippy of univ-server passes."
+        state: active
+      - key: 01a1a308-57fd-70c3-a60d-8c1c7c59c2e8
+        at: 2026-11-03T20:09:55Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Async handlers over a Backend trait"
+        detail: "Done in eb9d01c: the Backend trait, the D1 implementation in univ-server (binding DB), the in-memory SQLite test backend with univ_model::release::SCHEMA, routes by Endpoint, and response types in univ_model::api behind the `openapi` feature. wasm32 clippy is clean."
+        state: done
+  - key: 01a1a2ff-1aff-720c-940c-ee624424e922
+    id: t1-pin
+    kind: task
+    versions:
+      - key: 01a1a2ff-1aff-720c-940c-ee6a85960b70
+        at: 2026-11-03T19:59:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Pin a release for every release-scoped read"
+        detail: "`?release=n` or `latest`. A pruned release answers 410 with its pruning time; one never published answers 404. The answer names its release in its body and in `Univ-Release`. Done when native tests cover AC-126 to AC-130 and the e2e tests read releases 1 (410) and 2."
+        state: open
+      - key: 01a1a308-57fd-70c3-a60d-8c1b1890e132
+        at: 2026-11-03T20:09:55Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Pin a release for every release-scoped read"
+        detail: "In eb9d01c: `resolve` and `pinned`, with native tests for latest, a named release, 410 with pruned_at, 404 for never-published and missing releases, and 400 naming the parameter. Still to come: the e2e tests, and AC-128 (identical pinned reads) through the Worker."
+        state: active
+      - key: 01a1a325-ad45-71d4-8d08-c6ef1b97f952
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Pin a release for every release-scoped read"
+        detail: "Native tests in eb9d01c, and e2e tests for identical pinned bytes, 410 and 404 in 0a595ee; those run in the W1 close."
+        state: done
+  - key: 01a1a2ff-1aff-720c-940c-ee63866eeda4
+    id: t1-releases
+    kind: task
+    versions:
+      - key: 01a1a2ff-1aff-720c-940c-ee6b294a32e0
+        at: 2026-11-03T19:59:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "GET /v1/releases"
+        detail: "Every published release, newest first, pruned ones included with their pruning time. Each gives its number, publication time, cosmology, sources and counts, and the listing names latest. Done when native tests cover AC-122 to AC-125."
+        state: open
+      - key: 01a1a308-57fd-70c3-a60d-8c1afd5893bb
+        at: 2026-11-03T20:09:55Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "GET /v1/releases"
+        detail: "Done in eb9d01c. Native tests cover AC-122 to AC-125: number, publication time, cosmology and source ids; counts; latest named; newest first, with release 3 (never published) left out and pruned release 1 listed with its pruning time."
+        state: done
+  - key: 01a1a2ff-1aff-720c-940c-ee64af221a38
+    id: t1-sources
+    kind: task
+    versions:
+      - key: 01a1a2ff-1aff-720c-940c-ee6cff452a1a
+        at: 2026-11-03T19:59:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Sources and their provenance"
+        detail: "GET /v1/sources, /v1/sources/{id} and /v1/sources/{id}/provenance, plus whatever ingest must add (coverage at least: see the gap analysis). Done when native tests cover AC-147 to AC-155."
+        state: open
+      - key: 01a1a30f-3ecb-70d8-9063-a2c0d0679e82
+        at: 2026-11-03T20:17:27Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Sources and their provenance"
+        detail: "Done in eb9d01c (listing) and f66a0c2 (detail and provenance). 15 native tests cover AC-147 to AC-155, including 404, 410, and a release database from before schema v3, which reads with no reference or coverage. The values of AC-147 and AC-150 come from t1-ingest."
+        state: done
+  - key: 01a1a2ff-1aff-720c-940c-ee65428eb06a
+    id: t1-structures
+    kind: task
+    versions:
+      - key: 01a1a2ff-1aff-720c-940c-ee6dfc2ab1d9
+        at: 2026-11-03T19:59:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structures, listed and read"
+        detail: "GET /v1/structures (filtered by kind and scale domain, 500 per page with a cursor) and /v1/structures/{id}. Done when native tests cover AC-156 to AC-165."
+        state: open
+      - key: 01a1a30f-3ecb-70d8-9063-a2c1e26372df
+        at: 2026-11-03T20:17:27Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structures, listed and read"
+        detail: "Done in d974df2. 16 native tests cover AC-156 to AC-165 and the new derivation criterion. They include pages of 500 over 1,203 structures (each once, in id order), a cursor that keeps its release, a cursor into a pruned release answering 410, filters, and 404. Shape, derivation, outline and rescaled come from t1-ingest's `structure_details`; until it merges, the test kit creates that table itself."
+        state: done
+  - key: 01a1a2ff-1aff-720c-940c-ee6696c884e8
+    id: t1-e2e
+    kind: task
+    versions:
+      - key: 01a1a2ff-1aff-720c-940c-ee6e95388575
+        at: 2026-11-03T19:59:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W1 end-to-end tests"
+        detail: "Through the real Worker: the release listing, pinned reads of release 2 returning identical bytes, 410 for release 1, 404 for release 99, and a source and a structure read. Done when they pass in `cargo xtask integration`."
+        state: open
+      - key: 01a1a325-ad45-71d4-8d08-c6eed6afbf48
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W1 end-to-end tests"
+        detail: "Written in 0a595ee and 56fa972: releases, identical pinned reads, 410/404, a source and its provenance, structure pages, a reference and coverage, and the Boötes 63 Mpc (H0 = 50) radius rescaled by 50/67.66. They run in the W1 close's integration run."
+        state: done
+  - key: 01a1a304-9a6d-73c6-8276-aa8c3eca041e
+    id: w1-gaps
+    kind: note
+    versions:
+      - key: 01a1a304-9a6d-73c6-8276-aa8e65f93a72
+        at: 2026-11-03T20:05:50Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What W1's criteria need that releases don't hold yet"
+        markdown: |-
+          I mapped F-14, F-16 and F-17's 28 criteria against the published D1 data.
+
+          - **F-14:** all met by the data.
+          - **F-16:** two criteria are short:
+            - AC-147: the reference is free text, and `researched-structures` gives no bibcode.
+            - AC-150: no coverage is stored.
+          - **F-17:** four are short:
+            - AC-156: only member lists have a univ-model geometry, and sky regions are boxes with no HEALPix.
+            - AC-161: the outline test's result is computed in tests only.
+            - AC-162: the rescaled sizes are computed but used only for bounds.
+            - AC-157: derived numbers carry no derivation.
+
+          **Done in W1:**
+
+          | Ingest addition | Criteria |
+          |---|---|
+          | bibcode or DOI per source definition | AC-147 |
+          | coverage: a HEALPix MOC of entry positions, plus the redshift or distance range (needs `ang2pix_nested` in univ-model, Górski et al. 2005) | AC-150 |
+          | univ-model geometry for every placed structure (sky regions as MOCs) | AC-156 |
+          | outline test result per grid-outlined structure | AC-161 |
+          | rescaled size beside its native value | AC-162 |
+
+          All of these are additive tables or columns, so releases already published still read. Real data gets them with the next real build, which belongs to W7.
+        tone: warning
+  - key: 01a1a304-9a6d-73c6-8276-aa8d0e4cea59
+    id: spec-w1
+    kind: loft
+    versions:
+      - key: 01a1a304-9a6d-73c6-8276-aa8f44464258
+        at: 2026-11-03T20:05:50Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: |-
+          **Minor change, pre-approved.** Server criteria clarified to fit the data:
+
+          - AC-150: the range applies only where entries hold redshifts or distances.
+          - AC-152: "fetched" is published plus left out.
+          - AC-157 is split: published numbers cite their source, and a new criterion says derived numbers name their derivation.
+
+          Five ingest criteria are added under *Build a release*, so that ingest publishes what those server criteria read: the reference, the coverage, the placed geometry, the outline test result and the rescaled sizes.
+
+          AC-152 keeps one LQ-005 info finding: it is one record's two counts, an enumerated shape.
+        base: "product/server"
+        recorded:
+          commit: "a6dbe0c6780af08de647983d3b36053d021af555"
+          branch: "stage/server-w1"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T20:05:50Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 9,
+              "graph.edges": 0,
+              "graph.nodes": 20,
+              "status.base.added": 6,
+              "status.base.changed": 3,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1a304-2788-77fb-8f0d-273901bad9b4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release records each source's primary reference by its bibcode or DOI.",
+                  "words": {
+                    "after": "The release records each source's primary reference by its bibcode or DOI."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-4ae3-74cc-a986-969a727616ef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release records each source's coverage as a sky region with, where its catalogue entries hold redshifts or distances, the range they span.",
+                  "words": {
+                    "after": "The release records each source's coverage as a sky region with, where its catalogue entries hold redshifts or distances, the range they span."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-2788-77fb-8f0d-273ac3c97e3c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release holds each placed structure's geometry as a univ-model geometry in ICRS, beside the geometry its structure file gives.",
+                  "words": {
+                    "after": "The release holds each placed structure's geometry as a univ-model geometry in ICRS, beside the geometry its structure file gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-2788-77fb-8f0d-273b90e08a90",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline.",
+                  "words": {
+                    "after": "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-2788-77fb-8f0d-273c7a6188dc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology.",
+                  "words": {
+                    "after": "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d2878dbdf48",
+                  "kind": "criterion",
+                  "label": "AC-150",
+                  "name": "The coverage gives the source's sky footprint as a sky region and, where its catalogue entries hold redshifts or distances, the range they span.",
+                  "words": {
+                    "after": "The coverage gives the source's sky footprint as a sky region and, where its catalogue entries hold redshifts or distances, the range they span.",
+                    "before": "The coverage gives the source's sky footprint as a sky region and the range of redshift or distance it holds."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d2beb1e33d9",
+                  "kind": "criterion",
+                  "label": "AC-152",
+                  "name": "The record gives the number of catalogue entries published and the number fetched, which is those published and those left out together.",
+                  "words": {
+                    "after": "The record gives the number of catalogue entries published and the number fetched, which is those published and those left out together.",
+                    "before": "The record gives the number of catalogue entries fetched and published."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d3396424fcd",
+                  "kind": "criterion",
+                  "label": "AC-157",
+                  "name": "Each published number cites its source and the table, figure or sentence it was taken from.",
+                  "words": {
+                    "after": "Each published number cites its source and the table, figure or sentence it was taken from.",
+                    "before": "Each number cites its source and the table, figure or sentence it was taken from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-6c1b-7575-8a30-d059e1d0fd0e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number derived from a published number names its derivation.",
+                  "words": {
+                    "after": "Each number derived from a published number names its derivation."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": "FG-4",
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-151d9fb569d2",
+                  "kind": "feature",
+                  "label": "F-9",
+                  "name": "Build a release",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                  "kind": "requirement",
+                  "label": "RQ-33",
+                  "name": "When the owner builds a release, Univ Ingest shall assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk.",
+                  "parent": "01a19f23-636f-72bd-b194-151d9fb569d2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-2788-77fb-8f0d-273901bad9b4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release records each source's primary reference by its bibcode or DOI.",
+                  "parent": "01a19f23-636f-72bd-b194-151ed99bd6f9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-4ae3-74cc-a986-969a727616ef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release records each source's coverage as a sky region with, where its catalogue entries hold redshifts or distances, the range they span.",
+                  "parent": "01a19f23-636f-72bd-b194-151ed99bd6f9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-2788-77fb-8f0d-273ac3c97e3c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release holds each placed structure's geometry as a univ-model geometry in ICRS, beside the geometry its structure file gives.",
+                  "parent": "01a19f23-636f-72bd-b194-151ed99bd6f9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-2788-77fb-8f0d-273b90e08a90",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline.",
+                  "parent": "01a19f23-636f-72bd-b194-151ed99bd6f9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-2788-77fb-8f0d-273c7a6188dc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology.",
+                  "parent": "01a19f23-636f-72bd-b194-151ed99bd6f9"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d23daf70123",
+                  "kind": "feature",
+                  "label": "F-16",
+                  "name": "Read a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d24f2c252fc",
+                  "kind": "requirement",
+                  "label": "RQ-56",
+                  "name": "When a client requests a source, Univ Server shall return its citation, terms of use, required credit, provider, query, cuts and coverage.",
+                  "parent": "01a19f1e-d177-716d-b124-3d23daf70123"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d2878dbdf48",
+                  "kind": "criterion",
+                  "label": "AC-150",
+                  "name": "The coverage gives the source's sky footprint as a sky region and, where its catalogue entries hold redshifts or distances, the range they span.",
+                  "parent": "01a19f1e-d177-716d-b124-3d24f2c252fc"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d29d163748c",
+                  "kind": "requirement",
+                  "label": "RQ-57",
+                  "name": "When a client requests a source's provenance, Univ Server shall return the record of its acquisition and normalization.",
+                  "parent": "01a19f1e-d177-716d-b124-3d23daf70123"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d2beb1e33d9",
+                  "kind": "criterion",
+                  "label": "AC-152",
+                  "name": "The record gives the number of catalogue entries published and the number fetched, which is those published and those left out together.",
+                  "parent": "01a19f1e-d177-716d-b124-3d29d163748c"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                  "kind": "feature",
+                  "label": "F-17",
+                  "name": "Read a structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                  "kind": "requirement",
+                  "label": "RQ-59",
+                  "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                  "parent": "01a19f1e-d177-716d-b124-3d3019ad55e7"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d3396424fcd",
+                  "kind": "criterion",
+                  "label": "AC-157",
+                  "name": "Each published number cites its source and the table, figure or sentence it was taken from.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a304-6c1b-7575-8a30-d059e1d0fd0e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number derived from a published number names its derivation.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1a304-2788-77fb-8f0d-273901bad9b4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "The release records each source's primary reference by its bibcode or DOI.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a304-4ae3-74cc-a986-969a727616ef",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "The release records each source's coverage as a sky region with, where its catalogue entries hold redshifts or distances, the range they span.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a304-2788-77fb-8f0d-273ac3c97e3c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 27,
+                    "name": "The release holds each placed structure's geometry as a univ-model geometry in ICRS, beside the geometry its structure file gives.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a304-2788-77fb-8f0d-273b90e08a90",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 29,
+                    "name": "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a304-2788-77fb-8f0d-273c7a6188dc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 31,
+                    "name": "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a304-6c1b-7575-8a30-d059e1d0fd0e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "Each number derived from a published number names its derivation.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a19f1e-d177-716d-b124-3d2878dbdf48",
+                    "kind": "criterion",
+                    "label": "AC-150",
+                    "line": 25,
+                    "name": "The coverage gives the source's sky footprint as a sky region and, where its catalogue entries hold redshifts or distances, the range they span.",
+                    "path": "spec/products/univ-server/reference-data/read-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1e-d177-716d-b124-3d2beb1e33d9",
+                    "kind": "criterion",
+                    "label": "AC-152",
+                    "line": 36,
+                    "name": "The record gives the number of catalogue entries published and the number fetched, which is those published and those left out together.",
+                    "path": "spec/products/univ-server/reference-data/read-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1e-d177-716d-b124-3d3396424fcd",
+                    "kind": "criterion",
+                    "label": "AC-157",
+                    "line": 21,
+                    "name": "Each published number cites its source and the table, figure or sentence it was taken from.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  }
+                ],
+                "commit": "a6dbe0c6780af08de647983d3b36053d021af555",
+                "removed": [],
+                "revision": "product/server"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 2,
+                "publishedAt": "2026-11-03T18:26:57Z",
+                "stateRoot": "f809d6d341a5bae88459ad23c3abf1629e161ed74c5cda771fc8465b01c8d2cb"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/server-w1",
+                "modified": [
+                  "spec/products/univ-ingest/releases/build-a-release.yaml",
+                  "spec/products/univ-server/reference-data/read-a-source.yaml",
+                  "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a308-57fd-70c3-a60d-8c184f1adf05
+    id: t1-ingest
+    kind: task
+    versions:
+      - key: 01a1a308-57fd-70c3-a60d-8c19f3d4e92b
+        at: 2026-11-03T20:09:55Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Ingest schema v3: source details and structure details"
+        detail: |-
+          Delegated to a subagent in its own worktree, branched from eb9d01c:
+          - `source_details`: bibcode and DOI, a HEALPix order-5 MOC of entry positions via cdshealpix, and the radial ranges;
+          - `structure_details`: placed univ-model shape (sky regions as MOCs), derivation, outline test result, rescaled sizes;
+          - a structured `reference` in each source definition.
+
+          Done when ingest's tests, clippy, deny and lines pass, and the fixture state holds the rows for release 2 and none for pruned release 1.
+        state: active
+      - key: 01a1a325-ad45-71d4-8d08-c6edbd377ed6
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Ingest schema v3: source details and structure details"
+        detail: |-
+          Merged in bf0bcf0 from the agent's branch (74f413e, dbe9db0, 35f566a). I reviewed the HEALPix code (cdshealpix, Górski et al. 2005), the rescaling (univ-model's rules, comoving ratio at the cited redshift), and the 19 references against their citations.
+
+          Choices:
+          - sky regions at order 6 (CfA2 Great Wall: 6,517 cells);
+          - an admitted outline keeps its published point as its shape, because a GridRegion in h⁻¹ Mpc can't be expressed in ICRS;
+          - deny.toml ignores RUSTSEC-2025-0141 (bincode unmaintained, not vulnerable, comes only through cdshealpix, never called).
+
+          Results: ingest 396 tests, model 92. The fixture holds 6 source_details and 26 structure_details rows for release 2, none for release 1.
+        state: done
+  - key: 01a1a325-ad45-71d4-8d08-c6eb54a91db3
+    id: w1-slip
+    kind: note
+    versions:
+      - key: 01a1a325-ad45-71d4-8d08-c6f06e332d29
+        at: 2026-11-03T20:41:57Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A commit through a pipe, corrected"
+        markdown: "8ee667d was committed after `cargo clippy … | grep`. The pipe's status hid a clippy failure (`assert_is_empty`). The commit was local, so I amended it to 56fa972, gated on clippy's own exit status. The memory rule now names focused checks explicitly."
+        tone: warning

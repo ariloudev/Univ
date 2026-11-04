@@ -3,7 +3,10 @@ slug: filter-by-time
 name: "Filter by time"
 body: |
   Narrowing a query to an interval of time by the time records of layer items, which is how
-  temporal layers are queried. Times in the first version are accepted in UTC or TT.
+  temporal layers are queried. Times in the first version are accepted in UTC or TT. UTC is
+  accepted from 1961-01-01, when it began, until the IERS leap-second table in force expires,
+  and is converted to TT with the IERS tables of TAI − UTC; earlier or later times are given in
+  TT, with any ΔT the client's to apply.
 realizes:
   - 01a19f1e-d177-716d-b124-3cfd642f3747
 requirements:

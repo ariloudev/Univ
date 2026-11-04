@@ -40,6 +40,10 @@
 //! version before the size, so a tile of a version it does not know is named as such at any
 //! size.
 
+pub mod format;
+#[cfg(test)]
+mod format_tests;
+pub mod manifest;
 mod read;
 #[cfg(test)]
 mod tests;

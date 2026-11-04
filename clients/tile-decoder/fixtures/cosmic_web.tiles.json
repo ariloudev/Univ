@@ -1,0 +1,72 @@
+{
+  "about": "Tiles of Univ Ingest's fixture release, real data, as the Rust encoder writes them, with each point's position before quantization. Checked against what ingest builds by univ-ingest's test tile_decoder_fixtures; UPDATE_FIXTURES=1 cargo test -p univ-ingest --test tile_decoder_fixtures rewrites them.",
+  "scale_domain": "cosmic_web",
+  "tiles": [
+    {
+      "address": "r",
+      "hex": "5556544c01000000060000000000000000000000000070c000000000000070c000000000000070c0000000000000804029ad0780f47a2cd3f87ff68b3da70880757c649b13803392487ce87e777bf77b6c7ef57b010000000000000002000000000000000300000000000000050000000000000013000000000000001400000000000000000000000000000001000100000000000000",
+      "points": [
+        {
+          "id": 1,
+          "position": [
+            90.32151906076245,
+            0.056741637602996546,
+            -10.08952786489902
+          ],
+          "source": "cosmicflows-4",
+          "kind": "measured"
+        },
+        {
+          "id": 2,
+          "position": [
+            166.34604725010595,
+            -0.056634859540733266,
+            23.925188206015758
+          ],
+          "source": "cosmicflows-4",
+          "kind": "measured"
+        },
+        {
+          "id": 3,
+          "position": [
+            78.48085450386164,
+            0.06437020274762036,
+            -7.085287688456673
+          ],
+          "source": "cosmicflows-4",
+          "kind": "measured"
+        },
+        {
+          "id": 5,
+          "position": [
+            54.78572861827189,
+            0.14896538037183915,
+            36.40106045902718
+          ],
+          "source": "cosmicflows-4",
+          "kind": "measured"
+        },
+        {
+          "id": 19,
+          "position": [
+            -7.437066464944077,
+            -2.1837211875253257,
+            -9.065010741176081
+          ],
+          "source": "twomrs",
+          "kind": "measured"
+        },
+        {
+          "id": 20,
+          "position": [
+            -8.06787040239615,
+            -3.1561834853102444,
+            -8.08390868831029
+          ],
+          "source": "twomrs",
+          "kind": "measured"
+        }
+      ]
+    }
+  ]
+}

@@ -34,6 +34,7 @@ citation: >-
   Courtois H.M., Mould J., Hollinger A.M., Dupuy A., Zhang C.P. 2025, "In search of the Local
   Universe dynamical homogeneity scale with CF4++ peculiar velocities", A&A 701, A187.
   2025A&A...701A.187C, doi:10.1051/0004-6361/202553677, arXiv:2502.01308.
+reference: { bibcode: "2025A&A...701A.187C", doi: "10.1051/0004-6361/202553677" }
 terms:
   url: "https://projets.ip2i.in2p3.fr/cosmicflows/"
   quote: "If you use this data cite the article above"

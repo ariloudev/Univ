@@ -3,8 +3,15 @@
 //! - `cargo xtask check` runs every gate in order and stops at the first that fails.
 //! - `cargo xtask lines` reports each `.rs` file over the 500-line limit.
 //! - `cargo xtask science <release-dir>` runs the science checks of a built release.
+//! - `cargo xtask integration` runs Univ Server's end-to-end tests inside `wrangler dev`.
+//! - `cargo xtask serve` runs Univ Server on the real local state.
+//! - `cargo xtask bench lookup` times object lookups through it (QA-2).
+//! - `cargo xtask bench volume` times the first pages of volume queries through it (QA-3).
 
+mod bench;
+mod integration;
 mod lines;
+mod node;
 mod science;
 
 use std::fs;
@@ -32,11 +39,13 @@ enum Gate {
     Lines,
     /// `loft verify`, which only holds on the publish branch.
     Verify,
+    /// The reference TypeScript tile decoder's tests, when `node` is on the path.
+    TileDecoder,
 }
 
 /// What a gate came to.
 #[derive(PartialEq, Eq)]
-enum Outcome {
+pub(crate) enum Outcome {
     Passed,
     Skipped,
     Failed,
@@ -68,6 +77,7 @@ const GATES: &[Gate] = &[
         ],
     ),
     Gate::Command("test", "cargo", &["test", "--workspace", "--quiet"]),
+    Gate::TileDecoder,
     Gate::Command(
         "wasm32",
         "cargo",
@@ -75,9 +85,28 @@ const GATES: &[Gate] = &[
             "check",
             "--package",
             "univ-model",
+            "--package",
+            "univ-api",
             "--target",
             "wasm32-unknown-unknown",
             "--quiet",
+        ],
+    ),
+    // The Worker's own target: what native clippy cannot see, such as code behind
+    // `cfg(target_arch = "wasm32")` in workers-rs's macros.
+    Gate::Command(
+        "clippy wasm32",
+        "cargo",
+        &[
+            "clippy",
+            "--package",
+            "univ-server",
+            "--target",
+            "wasm32-unknown-unknown",
+            "--quiet",
+            "--",
+            "-D",
+            "warnings",
         ],
     ),
     Gate::Command("deny", "cargo", &["deny", "check"]),
@@ -90,6 +119,7 @@ impl Gate {
             Self::Command(name, _, _) => name,
             Self::Lines => "lines",
             Self::Verify => "loft verify",
+            Self::TileDecoder => "tile decoder",
         }
     }
 
@@ -98,6 +128,7 @@ impl Gate {
             Self::Command(_, program, args) => run(root, program, args),
             Self::Lines => lines_pass(root),
             Self::Verify => return verify(root),
+            Self::TileDecoder => return node::tile_decoder(root),
         };
         if passed {
             Outcome::Passed
@@ -112,12 +143,27 @@ fn main() -> ExitCode {
     let passed = match std::env::args().nth(1).as_deref() {
         Some("check") => check(&root),
         Some("lines") => lines_pass(&root),
+        Some("integration") => {
+            integration::stop_on_interrupt();
+            integration::integration(&root)
+        }
+        Some("serve") => integration::serve(&root),
+        Some("bench") if std::env::args().nth(2).as_deref() == Some("lookup") => {
+            integration::stop_on_interrupt();
+            bench::lookup(&root)
+        }
+        Some("bench") if std::env::args().nth(2).as_deref() == Some("volume") => {
+            integration::stop_on_interrupt();
+            bench::volume(&root)
+        }
         Some("science") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             science::run(&root, &args)
         }
         _ => {
-            eprintln!("usage: cargo xtask <check|lines|science <release-dir>>");
+            eprintln!(
+                "usage: cargo xtask <check|lines|integration|serve|bench lookup|bench volume|science <release-dir>>"
+            );
             return ExitCode::from(2);
         }
     };
@@ -160,7 +206,7 @@ fn check(root: &Path) -> bool {
 }
 
 /// A command for `program` run from the workspace root, without the variables `cargo run` set.
-fn command(root: &Path, program: &str) -> Command {
+pub(crate) fn command(root: &Path, program: &str) -> Command {
     let mut command = Command::new(program);
     command.current_dir(root);
     for (key, _) in std::env::vars_os() {

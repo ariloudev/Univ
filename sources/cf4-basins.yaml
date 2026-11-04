@@ -32,6 +32,7 @@ citation: >-
   Dupuy A., Courtois H.M. 2023, "Dynamic cosmography of the local Universe: Laniakea and five more
   watershed superclusters", A&A 678, A176. 2023A&A...678A.176D (constructed from the ADS convention;
   ADS not queried), doi:10.1051/0004-6361/202346802, arXiv:2305.02339.
+reference: { bibcode: "2023A&A...678A.176D", doi: "10.1051/0004-6361/202346802" }
 terms:
   url: "https://projets.ip2i.in2p3.fr/cosmicflows/"
   quote: "If you use this data cite the article above"

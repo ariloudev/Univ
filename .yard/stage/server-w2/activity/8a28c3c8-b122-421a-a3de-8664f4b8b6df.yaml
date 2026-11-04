@@ -1,0 +1,74 @@
+session: 8a28c3c8-b122-421a-a3de-8664f4b8b6df
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-03T22:14:51Z
+turns:
+  - started: 2026-11-03T21:16:48Z
+    ended: 2026-11-03T21:22:04Z
+  - started: 2026-11-03T21:33:10Z
+    ended: 2026-11-03T21:40:40Z
+  - started: 2026-11-03T21:43:19Z
+    ended: 2026-11-03T21:43:22Z
+  - started: 2026-11-03T21:43:23Z
+    ended: 2026-11-03T21:43:29Z
+  - started: 2026-11-03T21:46:32Z
+    ended: 2026-11-03T21:49:56Z
+  - started: 2026-11-03T21:55:17Z
+    ended: 2026-11-03T21:57:51Z
+  - started: 2026-11-03T22:06:20Z
+    ended: 2026-11-03T22:08:36Z
+  - started: 2026-11-03T22:14:51Z
+subagents:
+  - agent: a61308e005ca7d11c
+    type: general-purpose
+    started: 2026-11-03T21:17:17Z
+    stage: 01a1a345-9428-72f5-956a-8ef5a6407337
+  - agent: ac609f6074e779ef0
+    type: Explore
+    started: 2026-11-03T21:40:34Z
+    ended: 2026-11-03T21:43:23Z
+    stage: 01a1a345-9428-72f5-956a-8ef5a6407337
+  - agent: a748431f2f0117b56
+    type: Explore
+    started: 2026-11-03T21:40:34Z
+    ended: 2026-11-03T21:43:19Z
+    stage: 01a1a345-9428-72f5-956a-8ef5a6407337
+  - agent: a9f6038677552f71c
+    type: general-purpose
+    started: 2026-11-03T21:47:41Z
+    ended: 2026-11-03T21:55:17Z
+    stage: 01a1a345-9428-72f5-956a-8ef5a6407337
+  - agent: a7e9e475ca580111f
+    type: general-purpose
+    started: 2026-11-03T21:47:42Z
+    stage: 01a1a345-9428-72f5-956a-8ef5a6407337
+loft:
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-03T22:08:02Z
+    ended: 2026-11-03T22:08:03Z
+    failed: false
+    stage: 01a1a345-9428-72f5-956a-8ef5a6407337

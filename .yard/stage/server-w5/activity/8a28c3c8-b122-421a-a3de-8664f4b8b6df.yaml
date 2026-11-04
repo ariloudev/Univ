@@ -1,0 +1,70 @@
+session: 8a28c3c8-b122-421a-a3de-8664f4b8b6df
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-04T00:34:13Z
+turns:
+  - started: 2026-11-03T23:39:46Z
+    ended: 2026-11-04T00:03:06Z
+  - started: 2026-11-04T00:05:34Z
+    ended: 2026-11-04T00:05:40Z
+  - started: 2026-11-04T00:05:51Z
+    ended: 2026-11-04T00:05:58Z
+  - started: 2026-11-04T00:11:15Z
+    ended: 2026-11-04T00:28:06Z
+  - started: 2026-11-04T00:34:13Z
+subagents:
+  - agent: a4e367f1591434a56
+    type: general-purpose
+    started: 2026-11-04T00:02:58Z
+    ended: 2026-11-04T00:11:15Z
+    stage: 01a1a3c8-77e1-7419-bfa1-5c20eb7727f6
+  - agent: a11ab9f28a04b25d6
+    type: general-purpose
+    started: 2026-11-04T00:02:58Z
+    ended: 2026-11-04T00:05:51Z
+    stage: 01a1a3c8-77e1-7419-bfa1-5c20eb7727f6
+loft:
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-04T00:01:25Z
+    ended: 2026-11-04T00:01:26Z
+    failed: false
+    stage: 01a1a3c8-77e1-7419-bfa1-5c20eb7727f6
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-04T00:27:37Z
+    ended: 2026-11-04T00:27:50Z
+    failed: false
+    stage: 01a1a3c8-77e1-7419-bfa1-5c21b494edef
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-04T00:27:54Z
+    ended: 2026-11-04T00:27:59Z
+    failed: false
+    stage: 01a1a3c8-77e1-7419-bfa1-5c21b494edef

@@ -1,0 +1,12 @@
+key: 01a1a345-9428-72f5-956a-8ef6712727c0
+id: w2-close
+versions:
+  - key: 01a1a345-9428-72f5-956a-8eff16729e93
+    at: 2026-11-03T21:16:48Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W2 close: review, gate, trace, merge"
+    goal: "W2's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: planned

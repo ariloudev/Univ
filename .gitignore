@@ -2,5 +2,8 @@
 /.cache
 /.claude/worktrees/
 /node_modules/
-/.wrangler/
+# Wrangler state and its request.cf cache (location data), wherever Wrangler runs.
+.wrangler/
 .DS_Store
+/crates/univ-server/build/
+.dev.vars

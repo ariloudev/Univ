@@ -11,6 +11,7 @@ const MAX_SAFE_INTEGER: u64 = (1 << 53) - 1;
 
 /// An object's id in Univ releases: a positive integer that, once given, is never reused.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "u64", into = "u64")]
 pub struct ObjectId(u64);
 
@@ -24,8 +25,10 @@ pub struct SourceId(Arc<str>);
 /// A source's own name for an entry: the source and its identifier, such as Gaia DR3 and a
 /// `source_id`.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "RawDesignation")]
 pub struct Designation {
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub source: SourceId,
     pub identifier: String,
 }

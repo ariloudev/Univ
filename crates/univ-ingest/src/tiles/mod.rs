@@ -35,6 +35,7 @@ mod octree;
 mod rules;
 mod write;
 
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 use sha2::{Digest, Sha256};
@@ -49,8 +50,8 @@ pub use domain::{
     name_of, unit_of, unit_symbol,
 };
 pub use manifest::{
-    Bounds, ENCODING, FORMAT, FRAME, Level, MANIFEST_VERSION, Manifest, NodeEntry, Rotations,
-    Sampling, SourceEntry, SourceRole,
+    Bounds, ENCODING, Encoding, FORMAT, FRAME, FrameInfo, GENERATOR, Level, MANIFEST_VERSION,
+    NodeEntry, Rotations, Sampling, SourceEntry, SourceRole, TileManifest, rotations, sampling,
 };
 pub use octree::{Node, Octree, generator, root_box};
 pub use rules::{DEEPEST, MAX_SEED, TileRules};
@@ -131,7 +132,7 @@ pub struct BuiltNode {
 pub struct BuiltDomain {
     pub domain: ScaleDomain,
     pub nodes: Vec<BuiltNode>,
-    pub manifest: Manifest,
+    pub manifest: TileManifest,
     /// The manifest as written.
     pub json: Vec<u8>,
 }
@@ -340,7 +341,7 @@ pub fn build_domain(
         &built,
         context,
     )?;
-    let json = manifest.to_json()?;
+    let json = manifest::to_json(&manifest)?;
     Ok(BuiltDomain {
         domain,
         nodes: built,
@@ -358,7 +359,7 @@ fn manifest_of(
     fractions: &[f64],
     nodes: &[BuiltNode],
     context: &Context<'_>,
-) -> Result<Manifest, TilesError> {
+) -> Result<TileManifest, TilesError> {
     // The first node of each level, whose cube gives the level's edge and step.
     let mut first: BTreeMap<u8, &NodeBox> = BTreeMap::new();
     for n in nodes {
@@ -377,18 +378,18 @@ fn manifest_of(
         .iter()
         .map(|p| p.position.iter().map(|c| c * c).sum::<f64>().sqrt())
         .fold(0.0_f64, f64::max);
-    Ok(Manifest {
-        format: FORMAT,
+    Ok(TileManifest {
+        format: Cow::Borrowed(FORMAT),
         manifest_version: MANIFEST_VERSION,
         release: context.release.to_owned(),
-        scale_domain: name_of(domain),
+        scale_domain: Cow::Borrowed(name_of(domain)),
         frame: FRAME,
-        unit: unit_symbol(domain),
+        unit: Cow::Borrowed(unit_symbol(domain)),
         cosmology: context.cosmology.clone(),
-        rotations: Rotations::from_model()?,
+        rotations: rotations()?,
         encoding: ENCODING,
         levels,
-        sampling: Sampling::new(context.rules, stream),
+        sampling: sampling(context.rules, stream),
         points: points.len(),
         radius,
         sources,

@@ -70,6 +70,44 @@ fn every_row_type_matches_its_table_in_the_schema() {
 }
 
 #[test]
+fn version_3_adds_the_source_and_structure_details_per_release() {
+    assert_eq!(SCHEMA_VERSION, 3);
+    for (name, columns) in [
+        (
+            "source_details",
+            &[
+                "release",
+                "source",
+                "bibcode",
+                "doi",
+                "reference_note",
+                "sky",
+                "radial",
+            ][..],
+        ),
+        (
+            "structure_details",
+            &[
+                "release",
+                "id",
+                "shape",
+                "derivation",
+                "outline",
+                "rescaled",
+            ][..],
+        ),
+    ] {
+        let (declared, key) = declared(name);
+        assert_eq!(declared, columns, "{name}");
+        assert_eq!(key, columns[..2], "{name}");
+        let table = TABLES.iter().find(|t| t.name == name).unwrap();
+        // Pruning deletes the rows of every per-release table.
+        assert_eq!(table.scope, Scope::PerRelease, "{name}");
+        assert_eq!(table.columns, columns, "{name}");
+    }
+}
+
+#[test]
 fn every_index_in_the_schema_is_counted_in_the_estimate() {
     let declared = SCHEMA.matches("CREATE INDEX").count();
     let counted: usize = TABLES.iter().map(|t| t.indexes.len()).sum();

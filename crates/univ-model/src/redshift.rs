@@ -10,6 +10,7 @@ use crate::value::{Quantity, Uncertainty, ValueError};
 
 /// The frame a redshift is published in.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RedshiftFrame {
     #[default]
@@ -23,6 +24,7 @@ pub enum RedshiftFrame {
 /// A measurement of the Sun's motion against the cosmic microwave background, named in each
 /// redshift derived with it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum DipoleModel {
     /// Planck Collaboration 2020 (A&A 641, A1): 369.82 ± 0.11 km/s toward l = 264.021°,

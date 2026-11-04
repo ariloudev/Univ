@@ -5,7 +5,6 @@ mod file;
 mod tally;
 
 use std::collections::HashSet;
-use std::fmt::Write as _;
 use std::future::Future;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -448,13 +447,4 @@ pub fn with_causes(error: &(dyn std::error::Error + 'static)) -> String {
     text
 }
 
-/// Lower-case hexadecimal.
-#[must_use]
-pub fn hex(bytes: &[u8]) -> String {
-    bytes
-        .iter()
-        .fold(String::with_capacity(bytes.len() * 2), |mut text, byte| {
-            let _ = write!(text, "{byte:02x}");
-            text
-        })
-}
+pub use univ_model::encoding::hex;

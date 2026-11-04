@@ -8,6 +8,8 @@ mod compare;
 mod dense;
 mod region;
 
+use std::borrow::Borrow;
+
 use serde::Serialize;
 use thiserror::Error;
 use univ_model::entry::CatalogueEntry;
@@ -101,10 +103,10 @@ pub enum OutlineError {
 /// # Errors
 ///
 /// As [`place_on`].
-pub fn place(
+pub fn place<E: Borrow<CatalogueEntry>>(
     structure: &Structure,
     grid: &Grid,
-    catalogues: &[(SourceId, &[CatalogueEntry])],
+    catalogues: &[(SourceId, &[E])],
 ) -> Result<OutlineResult, OutlineError> {
     place_on(
         structure,
@@ -122,12 +124,13 @@ pub fn place(
 /// # Errors
 ///
 /// Fails when the structure has no outline record, `grid` is not the record's grid, or the grid
-/// lacks the record's field as one real number per cell.
-pub fn place_on(
+/// lacks the record's field as one real number per cell. The catalogues' entries are held or
+/// borrowed.
+pub fn place_on<E: Borrow<CatalogueEntry>>(
     structure: &Structure,
     grid: &Grid,
     sky: &GridSky<'_>,
-    catalogues: &[(SourceId, &[CatalogueEntry])],
+    catalogues: &[(SourceId, &[E])],
     dense: &[DensePlace],
 ) -> Result<OutlineResult, OutlineError> {
     let (Some(record), Some(published)) = (&structure.outline, &structure.position) else {

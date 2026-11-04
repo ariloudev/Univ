@@ -21,9 +21,11 @@ pub const MAX_REDSHIFT: f64 = 10.0;
 /// A flat ΛCDM cosmology without radiation, as a release names it. Checked when built and when
 /// read.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "RawCosmology")]
 pub struct Cosmology {
     /// Its name and citation.
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub name: Cow<'static, str>,
     /// The Hubble constant in km/s/Mpc.
     pub hubble_constant: f64,
@@ -155,6 +157,7 @@ impl Cosmology {
 /// where stated, the densities of matter and of Λ today. A length in h⁻¹ Mpc assumes
 /// H0 = 100 km/s/Mpc. Checked when read; a value built in code is checked where it is used.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "RawAssumedCosmology")]
 pub struct AssumedCosmology {
     /// The Hubble constant in km/s/Mpc.
