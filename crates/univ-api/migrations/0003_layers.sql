@@ -36,6 +36,22 @@ CREATE TABLE IF NOT EXISTS item_versions (
   FOREIGN KEY (layer_id, item_id) REFERENCES items (layer_id, id)
 ) WITHOUT ROWID;
 
+-- The time records of each item's current version on TT, in days from J2000.0, with their
+-- uncertainty interval: what the time filter compares (filter-by-time). A retracted item has
+-- none.
+CREATE TABLE IF NOT EXISTS item_times (
+  layer_id TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  record INTEGER NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('source_event', 'arrival', 'discovery')),
+  at REAL NOT NULL,
+  earliest REAL NOT NULL,
+  latest REAL NOT NULL,
+  PRIMARY KEY (layer_id, item_id, record),
+  FOREIGN KEY (layer_id, item_id) REFERENCES items (layer_id, id)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS item_times_by_kind ON item_times (kind, earliest, latest);
+
 -- Each layer's changes, numbered from 1 in the order they were made.
 CREATE TABLE IF NOT EXISTS changes (
   layer_id TEXT NOT NULL REFERENCES layers (id),

@@ -10,11 +10,17 @@ mod bulk;
 mod cors;
 mod grids;
 mod http;
+#[cfg(test)]
+mod items_tests;
 mod kept;
 mod keys;
 #[cfg(test)]
 mod keys_tests;
 mod layers;
+#[cfg(test)]
+mod layers_fixture;
+#[cfg(test)]
+mod layers_tests;
 #[cfg(test)]
 mod limits_tests;
 mod objects;

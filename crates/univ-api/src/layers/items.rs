@@ -110,6 +110,7 @@ pub async fn read<B: Backend>(
 ) -> Result<Response, Problem> {
     let layer = readable(backend, caller, id).await?;
     let mut versions = versions(backend, &layer.id, item, None).await?;
+    super::links::resolve(request, backend, &mut versions).await?;
     let Some(current) = versions.pop() else {
         return Err(not_found(&layer.id, item));
     };
@@ -142,6 +143,7 @@ pub async fn read<B: Backend>(
     responses((status = 200, description = "The version", body = ItemVersion))
 )]
 pub async fn version<B: Backend>(
+    request: &Request,
     caller: &Caller,
     id: &str,
     item: &str,
@@ -157,6 +159,9 @@ pub async fn version<B: Backend>(
         None => None,
     };
     let version = found.ok_or_else(|| not_found(&layer.id, item).with("version", number))?;
+    let mut version = [version];
+    super::links::resolve(request, backend, &mut version).await?;
+    let [version] = version;
     Ok(Response::json(&version)?.with_header("cache-control", "private, no-cache"))
 }
 

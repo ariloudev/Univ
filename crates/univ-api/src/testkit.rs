@@ -92,6 +92,21 @@ impl Sqlite {
         issued
     }
 
+    /// The secret of a new key of the standard tier, issued by the owner.
+    pub fn key(&self) -> String {
+        self.issue(&serde_json::json!({"label": "test"}))["secret"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    }
+
+    /// The answer to `request` sent with key `secret`, and its JSON document, if any.
+    pub fn with_key(&self, secret: &str, request: Request) -> (Response, Value) {
+        let response = self.answer(&request.with_bearer(secret));
+        let document = serde_json::from_slice(response.body.as_bytes()).unwrap_or(Value::Null);
+        (response, document)
+    }
+
     /// The answer to a GET of `path` with the raw query `query`.
     pub fn get(&self, path: &str, query: &str) -> Response {
         let mut request = Request::new(Method::Get, path);

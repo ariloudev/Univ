@@ -41,6 +41,8 @@ pub struct LayerChange {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct LayerRecord {
     pub id: String,
+    /// The id of the key that owns it, which alone may change it.
+    pub owner: String,
     pub title: String,
     pub description: String,
     pub visibility: Visibility,
@@ -181,4 +183,106 @@ pub struct LayerPage {
     pub items: Vec<ItemVersion>,
     /// The cursor of the next page, as `?cursor=`; absent on the last page.
     pub next: Option<String>,
+}
+
+/// How an item relates to the reference object or structure it links to.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum Relation {
+    /// The object hosts the item, as a galaxy hosts a supernova.
+    Host,
+    /// The object is the item's counterpart in another messenger or band.
+    Counterpart,
+    /// The item is a member of the object or structure.
+    MemberOf,
+    /// The item lies within the object or structure.
+    LocatedIn,
+}
+
+/// A link from an item to one reference object, by its id, or one structure, by its id.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
+pub struct Link {
+    pub relation: Relation,
+    /// The id of an object some release published.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub object: Option<u64>,
+    /// The id of a structure some release published.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub structure: Option<String>,
+}
+
+/// A source an item cites: its title, and at least one of an ADS bibcode, a DOI or a URL.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
+pub struct ItemSource {
+    pub title: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bibcode: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub doi: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+}
+
+/// What an item holds: a title, a summary, a geometry in a named frame, its time records, its
+/// kind of value, its links and at least one source.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
+pub struct ItemContent {
+    pub title: String,
+    pub summary: String,
+    pub geometry: crate::geometry::Shape,
+    #[serde(default)]
+    pub time_records: Vec<crate::time::TimeRecord>,
+    pub kind_of_value: crate::value::KindOfValue,
+    #[serde(default)]
+    pub links: Vec<Link>,
+    pub sources: Vec<ItemSource>,
+}
+
+/// An item to publish: its id, chosen by the client and unique within the layer, and its
+/// content.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct PublishItem {
+    pub id: String,
+    #[serde(flatten)]
+    pub content: ItemContent,
+}
+
+/// What kind of revision a revision is.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum RevisionKind {
+    Update,
+    Correction,
+}
+
+/// A revision: the version it replaces, which must be the current one, and the content it
+/// stores as the next version. A correction names the version it corrects and what was wrong.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct ReviseItem {
+    pub replaces: u64,
+    pub revision: RevisionKind,
+    /// The version a correction corrects; the one it replaces where absent.
+    pub corrects: Option<u64>,
+    /// What was wrong; required of a correction.
+    pub what_was_wrong: Option<String>,
+    pub content: ItemContent,
+}
+
+/// A retraction: the version it replaces, which must be the current one, and why.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
+pub struct RetractItem {
+    pub replaces: u64,
+    pub reason: String,
 }

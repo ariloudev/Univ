@@ -43,6 +43,9 @@ pub enum Endpoint {
     Changes,
     Item,
     ItemVersion,
+    PublishItem,
+    ReviseItem,
+    RetractItem,
 }
 
 /// One route: the method it answers, its path template with `{name}` segments, and its
@@ -54,7 +57,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 29] = [
+pub static ROUTES: [Route; 32] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -196,6 +199,21 @@ pub static ROUTES: [Route; 29] = [
         endpoint: Endpoint::ItemVersion,
     },
     Route {
+        method: Method::Post,
+        path: "/v1/layers/{id}/items",
+        endpoint: Endpoint::PublishItem,
+    },
+    Route {
+        method: Method::Post,
+        path: "/v1/layers/{id}/items/{item}/revisions",
+        endpoint: Endpoint::ReviseItem,
+    },
+    Route {
+        method: Method::Post,
+        path: "/v1/layers/{id}/items/{item}/retraction",
+        endpoint: Endpoint::RetractItem,
+    },
+    Route {
         method: Method::Get,
         path: "/v1/tile-format",
         endpoint: Endpoint::TileFormat,
@@ -255,9 +273,21 @@ async fn answer<B: Backend>(
             let (id, item) = (param(params, "id"), param(params, "item"));
             layers::items::read(request, caller, id, item, backend).await
         }
+        Endpoint::PublishItem => {
+            layers::write::publish(request, caller, param(params, "id"), backend).await
+        }
+        Endpoint::ReviseItem => {
+            let (id, item) = (param(params, "id"), param(params, "item"));
+            layers::write::revise(request, caller, id, item, backend).await
+        }
+        Endpoint::RetractItem => {
+            let (id, item) = (param(params, "id"), param(params, "item"));
+            layers::write::retract(request, caller, id, item, backend).await
+        }
         Endpoint::ItemVersion => {
             let (id, item) = (param(params, "id"), param(params, "item"));
-            layers::items::version(caller, id, item, param(params, "version"), backend).await
+            layers::items::version(request, caller, id, item, param(params, "version"), backend)
+                .await
         }
         Endpoint::GridUncertainty => {
             grids::uncertainty(

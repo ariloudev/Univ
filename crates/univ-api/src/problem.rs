@@ -68,6 +68,12 @@ problem_types! {
     LayerNotFound = "urn:univ:problem:layer-not-found", "No such layer", 404;
     /// The layer holds no item of that id, or no version of that number.
     ItemNotFound = "urn:univ:problem:item-not-found", "No such item", 404;
+    /// The item failed the checks its `errors` name, each by JSON pointer.
+    ItemInvalid = "urn:univ:problem:item-invalid", "Invalid item", 422;
+    /// The item cites no source; any other failure is listed beside it.
+    SourceRequired = "urn:univ:problem:source-required", "Source required", 422;
+    /// The item's id is already in the layer, or the version named is not its current one.
+    ItemConflict = "urn:univ:problem:item-conflict", "Item conflict", 409;
     /// The layer was retired.
     LayerRetired = "urn:univ:problem:layer-retired", "Layer retired", 410;
     /// The layer belongs to another key, which alone may change it.

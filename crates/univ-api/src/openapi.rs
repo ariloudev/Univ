@@ -46,7 +46,10 @@ use crate::problem::{Problem, ProblemDocument, ProblemType};
         crate::layers::config::retire,
         crate::layers::changes::list,
         crate::layers::items::read,
-        crate::layers::items::version
+        crate::layers::items::version,
+        crate::layers::write::publish,
+        crate::layers::write::revise,
+        crate::layers::write::retract
     ),
     components(schemas(ProblemDocument, ProblemType, univ_model::tile::manifest::TileManifest)),
     modifiers(&Security)

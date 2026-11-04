@@ -218,7 +218,8 @@ pub async fn read<B: Backend>(
 ) -> Result<Response, Problem> {
     let layer = readable(backend, caller, id).await?;
     let etag = layer.etag();
-    let page = super::items::page(backend, &layer, request.param("cursor")).await?;
+    let mut page = super::items::page(backend, &layer, request.param("cursor")).await?;
+    super::links::resolve(request, backend, &mut page.items).await?;
     tagged(request, &layer, &etag, || Response::json(&page))
 }
 

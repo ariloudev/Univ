@@ -13,6 +13,9 @@
 pub mod changes;
 pub mod config;
 pub mod items;
+pub mod links;
+pub mod validate;
+pub mod write;
 
 use serde::Deserialize;
 use serde_json::json;
@@ -46,6 +49,7 @@ impl LayerRow {
     pub(crate) fn record(&self) -> LayerRecord {
         LayerRecord {
             id: self.id.clone(),
+            owner: self.key_id.clone(),
             title: self.title.clone(),
             description: self.description.clone(),
             visibility: self.visibility,
