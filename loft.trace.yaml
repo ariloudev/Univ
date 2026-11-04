@@ -2786,13 +2786,13 @@ links:
         body: 52760d160fab0fa63656651cbb95ef07bf30cfba2affea684c35af9faa00e6dd
       - file: "crates/univ-api/src/openapi.rs"
         name: "the_document_is_openapi_3_1"
-        body: 0588411b2d8c68ed0820bbb804fc655d37788c7c7d8adc7019452a54fe9e7bce
+        body: 23cb6546fe5015888dfd138d25cbe1b37f3ec254921077e4b76c99223815f634
   - node: 01a19f20-8e6c-7039-b16f-ac087a3ea07a
     reviewed: 5306c00d135dbe8fc3f4bf144a3a73ebe13f9262aacbc246613d39327be98895
     tests:
       - file: "crates/univ-api/src/openapi.rs"
         name: "the_documents_schemas_are_generated_from_univ_models_types"
-        body: 961b808c49195ec498498f3f75884f63aadb0c118dc5faadae5aa5b20b887d7a
+        body: 248de3740e263fb52f9812043e13f3473901c84467ac1d8a19a09aa1eae66fd9
   - node: 01a19f20-8e6c-7039-b16f-ac09bec61527
     reviewed: 1101ee170b4cf1e3a80fdabcfddedd284252711243a4121141f6c4bed3dc94da
     tests:
@@ -2804,7 +2804,7 @@ links:
     tests:
       - file: "crates/univ-api/src/openapi.rs"
         name: "each_refusal_a_route_can_give_is_described_with_its_status_and_problem_type"
-        body: b9aecdf4a19609e6c2007dce774098077c35f93ef46da88602233bd721d6e738
+        body: 2d2e9e5efeb0b683d90606335d83dce09f0ee8118da6c3d2421d010c3e2cd657
   - node: 01a19f20-8e6c-7039-b16f-ac0c9f071903
     reviewed: 594ec7d33ac902e675bae6248599f4d55ed3925a41ec3a01e3420f6471d557f2
     tests:
@@ -2825,7 +2825,7 @@ links:
         body: bd3b67ce0d6081d8941060c4202c6f35d46247dfe7485713576b947ff7ccd721
       - file: "crates/univ-api/src/openapi.rs"
         name: "the_problem_schema_lists_every_problem_type"
-        body: 188b0b5ed1d0e898e755f2786cc86b7481cef5d1bc7ae2eec96359e4dc067cb0
+        body: 18639f775d7db32586bf38397f625998db894f6c163351cf6d23fe7d82e85e56
   - node: 01a19f20-8e6c-7039-b16f-ac0f65af0df8
     reviewed: a2d82c61532b93158dbdae9b6fd925795e5a2b49e81d32dcbaff172db2ea7402
     tests:
@@ -2837,7 +2837,7 @@ links:
     tests:
       - file: "crates/univ-api/src/openapi_snapshot.rs"
         name: "within_v1_a_change_adds_to_the_document_and_removes_or_renames_nothing"
-        body: 9ffa5efa1bc739b924ce9424da4f2a210d2f4581eda5136ac856c5dba89165a0
+        body: 10314c14a2cf8c540307143c8c994cb8f0151b4092e36fea8eb11e5add115f5d
       - file: "crates/univ-api/src/openapi_snapshot.rs"
-        name: "removing_a_field_a_route_or_a_value_of_an_enumeration_is_caught_and_adding_one_is_not"
-        body: 1259e3edb737828dc800208d33a5e2278e844f386e336cd93d5a4f22a859eac2
+        name: "removing_renaming_or_narrowing_is_caught_and_adding_is_not"
+        body: 17f89eb7191cde1969fd67369147b5f77f6b26966bf15fea2913ee2bb8007511
