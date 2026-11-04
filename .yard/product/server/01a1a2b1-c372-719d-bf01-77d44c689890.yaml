@@ -49,3 +49,64 @@ blocks:
         title: "W0 merged: the Worker skeleton and its integration harness"
         markdown: "`695ae16`. The gate passes, and so does `cargo xtask integration` (4 of 4). Eight criteria are traced: AC-273, 275, 276, 285, 287, 289, 290 and 291."
         tone: success
+  - key: 01a1a48e-8f19-710e-af9f-ad2754d0eae3
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1a48e-8f19-710e-af9f-ad28148958f8
+        at: 2026-11-04T03:16:08Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: publish
+        note: "Publish 3 (`5794155`) on `develop`, after Univ Server W0–W7 merged (`587f638`). `loft verify` confirms state root `bfa1564b…`.\\n\\nNew labels: AC-326 to AC-334 and ADR-27. That covers the rate-limit tiers (ADR-27, AC-332 to AC-334), the structure derivation names (AC-331), and ingest's release records (AC-326 to AC-330). All 335 criteria in scope are linked to tests."
+        recorded:
+          commit: "57941559367ba7b13a875a2edee1bbbcb8398726"
+          branch: "develop"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T03:16:08Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 47,
+              "constraint": 8,
+              "criterion": 334,
+              "decision": 27,
+              "feature": 33,
+              "feature_group": 11,
+              "product": 2,
+              "quality_attribute": 3,
+              "requirement": 114
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "57941559367ba7b13a875a2edee1bbbcb8398726",
+                "removed": [],
+                "revision": "57941559367ba7b13a875a2edee1bbbcb8398726"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 3,
+                "publishedAt": "2026-11-04T03:15:52Z",
+                "stateRoot": "bfa1564b3c6aaaffd9900d17ab5eadf5e06e0ae5d093a141b2b81cf1fa426f09"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
