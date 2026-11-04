@@ -2,9 +2,10 @@ import type { StructureDetail } from "../api/structures.ts";
 import { ObjectPanel } from "./ObjectPanel.tsx";
 import { Panels } from "./Panels.tsx";
 import { SearchBox } from "./SearchBox.tsx";
+import { ShowPanel, type ShowPanelProps } from "./ShowPanel.tsx";
 import { StructureList, StructurePanel } from "./StructuresPanel.tsx";
 import type { ChooseOptions, ChosenObject } from "./useChosen.ts";
-import type { Structures } from "./useStructures.ts";
+import type { ShownStructures } from "./useStructures.ts";
 import type { World } from "./useWorld.ts";
 
 /** What is chosen, an object or a structure, and the ways to choose. */
@@ -22,18 +23,21 @@ interface SidePanelsProps {
   world: World;
   release: number;
   cosmology: string;
-  structures: Structures;
+  structures: ShownStructures;
   selection: Selection;
+  /** What can be turned off, what is, and the way to turn it on or off. */
+  show: ShowPanelProps;
 }
 
 /** The panels beside the view: where the eye is and the structures on the left; search and the
  * chosen object or structure on the right. */
-export function SidePanels({ world, release, cosmology, structures, selection }: SidePanelsProps) {
+export function SidePanels({ world, release, cosmology, structures, selection, show }: SidePanelsProps) {
   return (
     <>
       <div className="absolute top-3 left-3 flex flex-col gap-2">
         <Panels controller={world.controller} catalogue={() => world.catalogue} frame={world.frame} release={release} cosmology={cosmology} />
-        <StructureList list={structures.list} onChoose={selection.structureById} />
+        <ShowPanel {...show} />
+        <StructureList list={structures.shown} onChoose={selection.structureById} />
         {structures.problem === undefined ? null : <p className="w-80 text-xs text-warn">{structures.problem}</p>}
       </div>
       <div className="absolute top-3 right-3 flex w-96 flex-col gap-2">

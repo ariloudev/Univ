@@ -1,3 +1,4 @@
+import { Swatch } from "./Swatch.tsx";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
@@ -97,7 +98,7 @@ function Key({ catalogue, release }: { catalogue: Tally; release: number }) {
           at about 10,700 K.
         </p>
         <p className="flex items-center gap-2 text-xs">
-          <span className="inline-block h-3 w-3 rounded-full" style={{ background: GREY_CSS }} />
+          <Swatch colour={GREY_CSS} />
           {catalogue.stars.grey.toLocaleString("en-GB")} stars in grey, with no colour index.
         </p>
       </div>
@@ -105,7 +106,7 @@ function Key({ catalogue, release }: { catalogue: Tally; release: number }) {
       <ul data-testid="key">
         {kinds.map(([kind, count]) => (
           <li key={kind} className="flex items-center gap-2">
-            <span className="inline-block h-3 w-3 rounded-full" style={{ background: cssColour(kind) }} />
+            <Swatch colour={cssColour(kind)} />
             {kind}: {count.toLocaleString("en-GB")} points
           </li>
         ))}

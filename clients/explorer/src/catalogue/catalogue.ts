@@ -7,6 +7,8 @@ import type { ManifestSource } from "univ-tile-decoder";
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
 import { type Tree, plan, treeOf } from "./lod.ts";
+import { KINDS } from "../scene/kinds.ts";
+import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
 
 /** Tiles fetched at once. */
@@ -31,6 +33,29 @@ export type CatalogueOptions = ReadOptions & { budget?: number };
 /** A source of the drawn points, with the domain whose manifest credits it. */
 export type Credit = ManifestSource & { domain: string };
 
+/** The sources `domain`'s points may name: one more than its manifest's highest index. */
+const sourcesOf = (domain: Domain): number => Math.max(0, ...domain.manifest.sources.map((s) => s.index)) + 1;
+
+/** A batch's points counted by kind of value, source and whether coloured, so that what is
+ * turned off is counted out by cell rather than point by point. */
+interface Histogram {
+  /** The sources of the batch's domain: one more than the highest index of its manifest. */
+  sources: number;
+  /** Cell `(kind × sources + source) × 2 + coloured`. */
+  cells: Uint32Array;
+}
+
+/** `batch`'s points counted by cell, its domain having `sources` sources. */
+function histogramOf(batch: Batch, sources: number): Histogram {
+  const cells = new Uint32Array(KINDS.length * sources * 2);
+  const bands = batch.stars?.bands;
+  for (let i = 0; i < batch.kinds.length; i += 1) {
+    const at = ((batch.kinds[i] ?? 0) * sources + (batch.sources[i] ?? 0)) * 2 + ((bands?.[i] ?? 0) > 0 ? 1 : 0);
+    cells[at] = (cells[at] ?? 0) + 1;
+  }
+  return { sources, cells };
+}
+
 /** The tiles held for `release`, fetched and dropped as `update` is told what the eye sees. */
 export class Catalogue {
   readonly release: number;
@@ -54,8 +79,12 @@ export class Catalogue {
   readonly kinds = [0, 0, 0, 0];
   /** Stars drawn in the colour of their colour index, and in grey for want of one. */
   readonly stars = { coloured: 0, grey: 0 };
-  /** The points drawn of each domain. */
+  /** The points counted of each domain. */
   private readonly domainPoints = new Map<string, number>();
+  /** Each drawn tile's points by cell, by tile id. */
+  private readonly histograms = new Map<string, Histogram>();
+  /** What is turned off: points it hides are not counted, nor their sources credited. */
+  private masks: Masks = NO_MASKS;
   /** Tiles that failed their SHA-256 or did not decode. */
   failed = 0;
   /** Tiles that could not be read, after `ATTEMPTS` tries. */
@@ -101,6 +130,7 @@ export class Catalogue {
       .then((batch) => {
         this.settled.add(tile.id);
         this.drawn.set(tile.id, batch);
+        this.histograms.set(tile.id, histogramOf(batch, sourcesOf(domain)));
         this.tally(batch, 1);
         this.events.onBatch(batch);
       })
@@ -123,6 +153,7 @@ export class Catalogue {
     this.settled.delete(tile.id);
     this.points -= tile.points;
     this.tally(batch, -1);
+    this.histograms.delete(tile.id);
     this.events.onDrop(batch);
   }
 
@@ -147,20 +178,41 @@ export class Catalogue {
     }, RETRY_MS);
   }
 
-  /** Counts `batch`'s points into the stars' colours or the kinds of value, and into its domain,
-   * or out of them where `by` is −1. */
+  /** Counts `batch`'s points that are drawn into the stars' colours or the kinds of value, and
+   * into its domain, or out of them where `by` is −1. */
   private tally(batch: Batch, by: 1 | -1): void {
-    if (batch.stars !== undefined) {
-      this.stars.coloured += by * batch.stars.coloured;
-      this.stars.grey += by * (batch.ids.length - batch.stars.coloured);
-    } else {
-      for (const kind of batch.kinds) this.kinds[kind] = (this.kinds[kind] ?? 0) + by;
-    }
+    const histogram = this.histograms.get(batch.tile.id);
+    if (histogram === undefined) return;
     const domain = batch.tile.domain;
-    this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * batch.kinds.length);
+    const { sources, cells } = histogram;
+    cells.forEach((n, at) => {
+      const kind = Math.floor(at / 2 / sources);
+      if (n === 0 || !isPointShown(this.masks, domain, Math.floor(at / 2) % sources, kind)) return;
+      this.count(batch.stars !== undefined, kind, at % 2 === 1, by * n);
+      this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * n);
+    });
   }
 
-  /** The sources of every domain with a point drawn, as their manifests credit them. */
+  /** Counts `n` points into the stars' colours, or into their kind of value. */
+  private count(star: boolean, kind: number, coloured: boolean, n: number): void {
+    if (!star) this.kinds[kind] = (this.kinds[kind] ?? 0) + n;
+    else if (coloured) this.stars.coloured += n;
+    else this.stars.grey += n;
+  }
+
+  /** Counts again, once, every drawn point that `masks` leaves on (choose-what-is-drawn). */
+  setMasks(masks: Masks): void {
+    this.masks = masks;
+    this.kinds.fill(0);
+    this.stars.coloured = 0;
+    this.stars.grey = 0;
+    this.domainPoints.clear();
+    for (const batch of this.drawn.values()) this.tally(batch, 1);
+    this.events.onChange();
+  }
+
+  /** The sources of every domain with a point drawn, as their manifests credit them: all of
+   * them, since a point's sky position may come from a source other than its distance's. */
   credits(): Credit[] {
     return [...this.domains.values()]
       .filter((d) => (this.domainPoints.get(d.name) ?? 0) > 0)

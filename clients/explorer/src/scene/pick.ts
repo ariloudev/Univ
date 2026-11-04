@@ -3,6 +3,7 @@
 // the pointer are skipped whole, so that a pick reads only the tiles along its line of sight.
 
 import { type View, eyeAxes, eyeOf, focalPixels } from "./camera.ts";
+import type { Shown } from "./masks.ts";
 import { type Mat3, type Vec3, apply, dot, norm, normalize, scale, sub } from "./vec.ts";
 
 /** A batch of points to pick from: offsets from its centre, within `radius` of it. */
@@ -10,6 +11,9 @@ export interface Pickable {
   centre: Vec3;
   radius: number;
   offsets: Float32Array;
+  /** Which points may be picked: every one where none is given. A point not drawn is passed
+   * over, so that it never hides one drawn behind it. */
+  shown?: Shown | undefined;
 }
 
 /** The point picked: its batch and its index in the batch. */
@@ -69,23 +73,29 @@ function better(d2: number, depth: number, found: Best | undefined): boolean {
   return Math.abs(d2 - found.d2) <= TIE && depth < found.depth;
 }
 
-function pickIn(batch: Pickable, index: number, axes: Mat3, eye: Vec3, f: number, pointer: Pointer, best: Best | undefined): Best | undefined {
+/** Point `i` of offsets `o` from `centre` (both in the eye's `axes`) on the screen: its square
+ * pixels from the pointer and its depth, if it is before the eye and within the pick's slop. */
+function onScreen(o: Float32Array, i: number, centre: Vec3, axes: Mat3, f: number, pointer: Pointer): { d2: number; depth: number } | undefined {
   const [a, b, c] = axes;
+  const ox = o[i * 3] ?? 0;
+  const oy = o[i * 3 + 1] ?? 0;
+  const oz = o[i * 3 + 2] ?? 0;
+  const depth = -(centre[2] + c[0] * ox + c[1] * oy + c[2] * oz);
+  if (depth <= 0) return undefined;
+  const dx = pointer.width / 2 + ((centre[0] + a[0] * ox + a[1] * oy + a[2] * oz) * f) / depth - pointer.x;
+  const dy = pointer.height / 2 - ((centre[1] + b[0] * ox + b[1] * oy + b[2] * oz) * f) / depth - pointer.y;
+  const d2 = dx * dx + dy * dy;
+  return d2 > PICK_SLOP * PICK_SLOP ? undefined : { d2, depth };
+}
+
+function pickIn(batch: Pickable, index: number, axes: Mat3, eye: Vec3, f: number, pointer: Pointer, best: Best | undefined): Best | undefined {
   const centre = apply(axes, sub(batch.centre, eye));
-  if (!mayHold(centre, batch.radius, rayOf(f, pointer), f)) return best;
+  if (batch.shown === "none" || !mayHold(centre, batch.radius, rayOf(f, pointer), f)) return best;
+  const shown = typeof batch.shown === "function" ? batch.shown : () => true;
   let found = best;
-  const o = batch.offsets;
-  for (let i = 0; i < o.length / 3; i += 1) {
-    const ox = o[i * 3] ?? 0;
-    const oy = o[i * 3 + 1] ?? 0;
-    const oz = o[i * 3 + 2] ?? 0;
-    const depth = -(centre[2] + c[0] * ox + c[1] * oy + c[2] * oz);
-    if (depth <= 0) continue;
-    const dx = pointer.width / 2 + ((centre[0] + a[0] * ox + a[1] * oy + a[2] * oz) * f) / depth - pointer.x;
-    const dy = pointer.height / 2 - ((centre[1] + b[0] * ox + b[1] * oy + b[2] * oz) * f) / depth - pointer.y;
-    const d2 = dx * dx + dy * dy;
-    if (d2 > PICK_SLOP * PICK_SLOP) continue;
-    if (better(d2, depth, found)) found = { batch: index, index: i, d2, depth };
+  for (let i = 0; i < batch.offsets.length / 3; i += 1) {
+    const at = onScreen(batch.offsets, i, centre, axes, f, pointer);
+    if (at !== undefined && shown(i) && better(at.d2, at.depth, found)) found = { batch: index, index: i, ...at };
   }
   return found;
 }

@@ -64,10 +64,12 @@ function starColoursOf(points: readonly DecodedPoint[], names: readonly string[]
     coloured: 0,
   };
   points.forEach((p, i) => {
-    stars.bytes.set(starBytes(p.colour), i * 4);
-    if (p.colour === undefined) return;
+    // A colour index in bands the manifest does not name is not read: the star is drawn grey.
+    const band = p.colour === undefined ? 0 : names.indexOf(p.colour.bands) + 1;
+    stars.bytes.set(starBytes(band === 0 ? undefined : p.colour), i * 4);
+    if (band === 0 || p.colour === undefined) return;
     stars.hundredths[i] = Math.round(p.colour.index * 100);
-    stars.bands[i] = names.indexOf(p.colour.bands) + 1;
+    stars.bands[i] = band;
     stars.coloured += 1;
   });
   return stars;

@@ -107,9 +107,23 @@ test("chooses a structure by the name it shows in the view, and still zooms over
   await expect(page.getByRole("region", { name: "The chosen structure" })).toBeVisible();
 });
 
+test("turns a scale domain off, counts none of its points in the key, and keeps it off across a reload", async ({ page }) => {
+  await firstPoints(page);
+  const stars = page.getByTestId("star-key");
+  await expect(stars).toContainText(/[1-9][\d,]* stars in the colour/);
+  await page.getByText("Show", { exact: true }).click();
+  await page.getByLabel("stars", { exact: true }).uncheck();
+  await expect(page).toHaveURL(/hide=domain%3Astars/);
+  await expect(stars).toContainText(/(^|\D)0 stars in the colour/);
+  await page.reload();
+  await page.getByText("Show", { exact: true }).click();
+  await expect(page.getByLabel("stars", { exact: true })).not.toBeChecked();
+});
+
 test("has no serious or critical accessibility violations", async ({ page }) => {
   await firstPoints(page);
   await page.getByText(/^Structures \(\d+\)/).click();
+  await page.getByText("Show", { exact: true }).click();
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
