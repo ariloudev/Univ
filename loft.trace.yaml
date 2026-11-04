@@ -70,7 +70,7 @@ links:
         name: "every_source_of_the_first_release_has_a_valid_definition"
         body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
   - node: 01a19f22-2ad9-716e-876f-1842afd6d59e
-    reviewed: 0d8776a8f4b969550ac54807ccb1912c7f8093084a8ade92b371d5ef3193c08d
+    reviewed: 955d52425320c26ee0edee610bcdfdb09fc39ff114e71e55876f2cabf46df7e4
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_of_the_first_release_has_a_valid_definition"
@@ -627,6 +627,60 @@ links:
       - file: "crates/univ-ingest/tests/outlines_dense.rs"
         name: "a_dense_place_off_the_grid_is_recorded_with_why_and_counted"
         body: 6f82156a0e31361a291c9ebee792a5e63f990310afe669ecbe3c0c5b3fde64e8
+  - node: 01a1a825-fb4e-702c-a84f-bf7366dc3a34
+    reviewed: 405cdce50b930b43cf822bf8eaba6ff1793488c6548c2b10c23faaf9b1b362be
+    tests:
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_number_its_quoted_sentence_does_not_hold_is_refused_naming_the_field"
+        body: fd6c2163418a87e0748b2d5744c2b642e47014416f1ddc0adda26c990a2a6ca5
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_number_of_the_notes_that_no_citation_holds_is_refused"
+        body: 5722c7de682aafe20c05ef9c16c8f49540f7b004556e00275409885b0e085572
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "every_star_file_of_the_repository_and_of_the_tests_can_be_used"
+        body: 099cc874bb56c8ec7866a8e8978a181bfbe82d800cdb39a4c48cee681ceb9881
+  - node: 01a1a825-fb4e-702c-a84f-bf74029af338
+    reviewed: 1a6e3fdbd4aa32c4f09c7f1885a040d914bdfd4d5f549950ff004f3e920fed4a
+    tests:
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance"
+        body: 71893b48866b7532663c1facd61f2bb740a2d8ee5f74fe6eb04837a541d98526
+  - node: 01a1a825-fb4e-702c-a84f-bf7588585aa4
+    reviewed: 930917042ad420d02dd8944aef0cb7cfc75418d6dcb9ea63a23c5be238d8b864
+    tests:
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_star_files_value_keeps_its_kind_uncertainty_and_method"
+        body: 68a8e348d2efd2007a40f56594578022e019f8e6588c3e4fb4fa009e1902ce48
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_parallax_the_ranking_could_not_invert_is_refused"
+        body: f2dfb9a74cce64d65d42360c3d9c5afd731177d32a7b771ad6da068f4cd61fbf
+  - node: 01a1a825-fb4e-702c-a84f-bf76499f0e46
+    reviewed: c8e86871f2803a0c8d712ecaf027de44a0c3b63ab14a80e8208a419ddd84bdb0
+    tests:
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_groups_distance_is_inferred_and_cites_the_membership"
+        body: 430c5d3e56e79dd68da2294a281e70b538715b2a78a857cdc0bfbe8bd34759fb
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_membership_beside_a_value_that_is_no_groups_distance_is_refused"
+        body: 0209570c47d7cd334b94668679dcefc579c37a76f9fea4a16689f026f3ab3070
+  - node: 01a1a825-fb4e-702c-a84f-bf77402e4c76
+    reviewed: 07797d30803bd7321bdde389060661ebdceadee84405a8c5aa1979673752a04f
+    tests:
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance"
+        body: 71893b48866b7532663c1facd61f2bb740a2d8ee5f74fe6eb04837a541d98526
+  - node: 01a1a825-fb4e-702c-a84f-bf793b4b68ec
+    reviewed: e0548a4638729ccb1bfdf4668535e2689f3c6a1f9a81513a5f801e7c7f02f547
+    tests:
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_number_its_quoted_sentence_does_not_hold_is_refused_naming_the_field"
+        body: fd6c2163418a87e0748b2d5744c2b642e47014416f1ddc0adda26c990a2a6ca5
+  - node: 01a1a825-fb4e-702c-a84f-bf7b361027b4
+    reviewed: 748047b900d72eb93da9d422a4d6c149578dff1b47ec3f1984d62674ff20ce7e
+    tests:
+      - file: "crates/univ-ingest/tests/star_distances.rs"
+        name: "a_star_without_a_published_distance_keeps_its_file_and_adds_no_entry"
+        body: 1fa39d0ed6312e61d2d08a4161ace26739308de18861d65dded07e4d735ed918
   - node: 01a19f23-636e-7035-8185-ab998407d632
     reviewed: 7630424b0e1f46a63129bb35234a4a81243755014dfcfb33e42850be779fd1ec
     tests:
@@ -1583,7 +1637,7 @@ links:
         body: 5a3aff19cc24e1d793d29fdba67e93c1cc9cb5c2e9818d15efcafeae631c8cd2
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
-        body: b99646a236e9fed252c4186ffcc6d9046a07e540f08a3096dfc244b0408be712
+        body: 064e474c997dc87ca720f05abda0d310cc9f20b01d52cac713e62f2f78bd4c9a
       - file: "crates/univ-server/tests/e2e.rs"
         name: "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
         body: 435d37c3a828395e58e075c44bf41e7ef6709cf1397a577bfbb3168ddd502aaa
@@ -1613,7 +1667,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
-        body: b99646a236e9fed252c4186ffcc6d9046a07e540f08a3096dfc244b0408be712
+        body: 064e474c997dc87ca720f05abda0d310cc9f20b01d52cac713e62f2f78bd4c9a
+  - node: 01a1a825-fb4e-702c-a84f-bf7cb64ddb9e
+    reviewed: 7b0ec7f57fd6f67746b716ae271e18d25514fcba5f5997f795720ebaaa360f5b
+    tests:
+      - file: "crates/univ-ingest/tests/object_reads.rs"
+        name: "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
+        body: 064e474c997dc87ca720f05abda0d310cc9f20b01d52cac713e62f2f78bd4c9a
   - node: 01a19f1e-d177-716d-b124-3d1233780c6e
     reviewed: bfc71725b8808dc589e327e577d331796355ed8f9b7069e46a80890d2a9e54dc
     tests:
@@ -1640,7 +1700,7 @@ links:
     tests:
       - file: "crates/univ-api/src/objects/record_tests.rs"
         name: "an_object_with_no_distance_has_a_sky_position_and_no_derived_position"
-        body: cb8deea205d182f16293a70d924b22bb2a99ec2bbac0253b307c27d08f27cfa8
+        body: d60bd9464db5136bcc3210269a6762d873737f5e3ddbda7ebe758c40b0a6485c
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "an_object_with_no_distance_has_a_sky_position_and_no_derived_position"
         body: 5a9f9cd36effb406f050e7b56671cc082765e078c6df111dcb1c05368aa202dd

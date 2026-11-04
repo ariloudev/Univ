@@ -19,6 +19,7 @@ use univ_ingest::source::LeftOutReason;
 use univ_ingest::stars::{normalize, problems, read_all};
 use univ_ingest::state::State;
 use univ_model::derive::Release;
+use univ_model::distance::{DistanceKind, Method};
 use univ_model::object::{Decided, Placement};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
@@ -96,6 +97,32 @@ fn a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance() {
     assert_eq!(preferred.decided, Decided::OnlyCandidate);
     let papers = &*chosen.references;
     assert_eq!(papers[0].citation, "Test 2020, SIMULATED 1, 1");
+}
+
+#[test]
+fn a_star_files_value_keeps_its_kind_uncertainty_and_method() {
+    let definition = definition_of("researched-star-distances");
+    let parallax = "parallax:\n  value: 2.5\n  unit: milliarcsecond\n  kind: measured\n  uncertainty: { form: symmetric, sigma: 0.1 }\n  cite:\n    paper: test-2020\n    sentence: \"SIMULATED: a parallax of 2.5 ± 0.1 mas.\"\n  distance_kind: parallax\n  method: \"SIMULATED orbit\"\n";
+    let dir = dir_of(&[("one", star(1, MODEL)), ("two", star(2, parallax))]);
+    let entries = normalize(&definition, dir.path()).unwrap().entries;
+    let d = &entries[0].distances[0];
+    assert_eq!(d.kind_of_value, KindOfValue::Estimated);
+    assert_eq!(d.kind, DistanceKind::PrimaryIndicator);
+    assert_eq!(d.method, Method::Other("SIMULATED model".to_owned()));
+    assert_eq!(
+        d.native.uncertainty,
+        Uncertainty::Asymmetric {
+            minus: 15.0,
+            plus: 27.0
+        }
+    );
+    let p = entries[1].parallax.as_ref().unwrap();
+    assert_eq!(p.kind, KindOfValue::Measured);
+    assert!(matches!(
+        p.native.uncertainty,
+        Uncertainty::Symmetric { .. }
+    ));
+    assert_eq!(entries[1].flags["method"], "SIMULATED orbit");
 }
 
 #[test]
