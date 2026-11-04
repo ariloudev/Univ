@@ -19,7 +19,9 @@ requirements:
       - key: 01a1a4bd-9644-750a-a678-3906e3189ded
         name: "A point is drawn as a marker at its place."
       - key: 01a1a4bd-9644-750a-a678-390771cfa729
-        name: "A sky region or a grid is drawn as its bounding box, marked as approximate."
+        name: "A grid is drawn as its bounding box, marked as approximate."
+      - key: 01a1a6d7-1b42-741d-95f7-ed4ee2759b78
+        name: "A sky region is drawn as the boundary of its cells on the spheres of its near and far distances, joined by radial edges at the region's extremes."
       - key: 01a1a497-e843-728a-bce8-3ff3a71f35c5
         name: "A structure with no placed shape is drawn as its bounding box, marked as approximate."
       - key: 01a1a497-e843-728a-bce8-3ff4358efffd
