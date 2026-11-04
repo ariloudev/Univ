@@ -46,6 +46,15 @@ blocks:
         title: "Create, configure, retire and list layers"
         detail: "Private by default, sequence from 0, 403/404 for another key, 410 with the retirement time for a reader allowed to read it, a retired layer leaving the key's layer quota. Done when native tests cover F-23 and read-a-layer's listing."
         state: open
+      - key: 01a1a3dc-7eed-7652-9cf6-b75b024803b0
+        at: 2026-11-04T00:01:39Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Create, configure, retire and list layers"
+        detail: "717ad04. 13 native tests: private by default, sequence from 0, 403 or 404 for another key, 410 with the retirement time, a retired layer leaving the quota, listing, pages of 500, the change feed, entity tags and 304. A retired layer's change feed is still served, so a follower reads the retirement."
+        state: done
   - key: 01a1a3c8-77e1-7419-bfa1-5c246f723390
     id: t5-items
     kind: task
@@ -59,6 +68,20 @@ blocks:
         title: "Publish, revise and retract items"
         detail: "Validation by JSON pointer, 422 without a source, 409 on a used id or a stale version, links checked against every release's issued ids and structures, quotas on items and bytes. Done when native tests cover F-25 and F-26, with time records once the time questions are answered."
         state: open
+      - key: 01a1a3dc-7eed-7652-9cf6-b75c387645ab
+        at: 2026-11-04T00:01:39Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Publish, revise and retract items"
+        detail: |-
+          ee048c8. 13 native tests:
+          - every failing member named by JSON pointer (422), and `source-required` when no source is cited;
+          - links checked against every release's issued ids and structures, and served with `replaced_by` for an id a release merged;
+          - 409 with the current version;
+          - the quotas on items and bytes.
+        state: done
   - key: 01a1a3c8-77e1-7419-bfa1-5c254ed367f0
     id: t5-reads
     kind: task
@@ -72,6 +95,15 @@ blocks:
         title: "Read layers, items and versions; follow changes"
         detail: "Pages of 500 items and 1,000 changes, cursors, entity tags and 304, a private layer answering exactly as one that does not exist. Done when native tests cover read-a-layer and F-24."
         state: open
+      - key: 01a1a3dc-7eed-7652-9cf6-b75d26aada0f
+        at: 2026-11-04T00:01:39Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Read layers, items and versions; follow changes"
+        detail: "With t5-layers: items and versions by number, the change feed's pages of 1,000, cursors, and a 400 with the sequence for a bad cursor."
+        state: done
   - key: 01a1a3c8-77e1-7419-bfa1-5c2687458f71
     id: t5-time
     kind: task
@@ -94,6 +126,15 @@ blocks:
         title: "Time records"
         detail: "Kind, timescale and uncertainty, validated and stored on TT for W6's filter, as decided: UTC from 1961 via the cited IERS tables, and a calendar instant or years before J2000.0. Done when native tests cover the time-record criteria with cited conversions."
         state: active
+      - key: 01a1a3dc-7eed-7652-9cf6-b75e6fbc3855
+        at: 2026-11-04T00:01:39Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Time records"
+        detail: "`univ_model::time`: UTC (1961 on, until the table's expiry) or TT instants, or years before J2000.0, placed on TT with their uncertainty interval. The TAI − UTC table is checked against IERS's recorded `Leap_Second.dat` and `UTC-TAI.history`. Each item's current records are in `item_times`, ready for W6."
+        state: done
   - key: 01a1a3c8-77e1-7419-bfa1-5c27f576c53a
     id: t5-e2e
     kind: task
@@ -107,6 +148,15 @@ blocks:
         title: "W5 end-to-end tests"
         detail: "Publish, revise, retract and follow the changes through the Worker; an entity tag answers 304; a private layer looks absent; a quota refused."
         state: open
+      - key: 01a1a3dc-7eed-7652-9cf6-b75f1bf3526f
+        at: 2026-11-04T00:01:39Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W5 end-to-end tests"
+        detail: "Publish, revise, retract and follow the changes through the Worker; an entity tag answers 304; a private layer looks absent; a quota refused."
+        state: active
   - key: 01a1a3c8-77e1-7419-bfa1-5c2818a6e8f9
     id: q-utc-1972
     kind: question
@@ -197,3 +247,146 @@ blocks:
         title: "A time is a calendar instant or a span of Julian years before J2000.0"
         consequence: "A time record is either an ISO 8601 instant (years 1–9999) in UTC or TT, or `years_before_j2000` on TT for the deep past. Its uncertainty names its unit (s, d or a), so a source event's age keeps its own units. The server stores each record's time and its uncertainty interval as TT days from J2000.0, ready for W6's time filter."
         question: 01a1a3c8-77e1-7419-bfa1-5c297e06cc06
+  - key: 01a1a3dc-7eed-7652-9cf6-b7591211968d
+    id: w5-spec-time
+    kind: loft
+    versions:
+      - key: 01a1a3dc-7eed-7652-9cf6-b75a4ac826ec
+        at: 2026-11-04T00:01:39Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "A minor edit, pre-approved, that writes the two time decisions into the bodies of publish-a-layer-item and filter-by-time. No requirement or criterion changed."
+        recorded:
+          commit: "a897805b7367156f6bd9f10554c112360b5e9b31"
+          branch: "stage/server-w5"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T00:01:38Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 2,
+              "graph.edges": 0,
+              "graph.nodes": 5,
+              "status.base.added": 0,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5cf7de740462",
+                  "kind": "feature",
+                  "label": "F-21",
+                  "name": "Filter by time",
+                  "words": {
+                    "after": "Filter by time\n\nNarrowing a query to an interval of time by the time records of layer items, which is how\ntemporal layers are queried. Times in the first version are accepted in UTC or TT. UTC is\naccepted from 1961-01-01, when it began, until the IERS leap-second table in force expires,\nand is converted to TT with the IERS tables of TAI − UTC; earlier or later times are given in\nTT, with any ΔT the client's to apply.",
+                    "before": "Filter by time\n\nNarrowing a query to an interval of time by the time records of layer items, which is how\ntemporal layers are queried. Times in the first version are accepted in UTC or TT."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-1cb3-7721-97a0-4f33a250acbb",
+                  "kind": "feature",
+                  "label": "F-25",
+                  "name": "Publish a layer item",
+                  "words": {
+                    "after": "Publish a layer item\n\nAdding an item to a layer: a cosmic event, a landmark or anything a client wants to place in\nspace and time, linked where it applies to the reference objects and structures it concerns.\n\nA time record's time is an ISO 8601 instant in UTC or TT for years 1 to 9999, or, for the\ndeep past such as a distant source event, a span of Julian years before J2000.0 on TT. Its\nuncertainty names its unit: seconds, days or Julian years.",
+                    "before": "Publish a layer item\n\nAdding an item to a layer: a cosmic event, a landmark or anything a client wants to place in\nspace and time, linked where it applies to the reference objects and structures it concerns."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6615e6965c1",
+                  "kind": "feature_group",
+                  "label": "FG-8",
+                  "name": "Spatial and temporal queries",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5cf7de740462",
+                  "kind": "feature",
+                  "label": "F-21",
+                  "name": "Filter by time",
+                  "parent": "01a19f1a-685d-7357-b67e-d6615e6965c1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d662fbe4f6f3",
+                  "kind": "feature_group",
+                  "label": "FG-9",
+                  "name": "Layers",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-1cb3-7721-97a0-4f33a250acbb",
+                  "kind": "feature",
+                  "label": "F-25",
+                  "name": "Publish a layer item",
+                  "parent": "01a19f1a-685d-7357-b67e-d662fbe4f6f3"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 6,
+                    "key": "01a19f1f-9fd7-7209-b7cb-5cf7de740462",
+                    "kind": "feature",
+                    "label": "F-21",
+                    "line": 1,
+                    "name": "Filter by time",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/filter-by-time.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a19f20-1cb3-7721-97a0-4f33a250acbb",
+                    "kind": "feature",
+                    "label": "F-25",
+                    "line": 1,
+                    "name": "Publish a layer item",
+                    "path": "spec/products/univ-server/layers/publish-a-layer-item.yaml"
+                  }
+                ],
+                "commit": "cca98f36072ad27e5495d709a1d8bdddb05aae23",
+                "removed": [],
+                "revision": "product/server"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 2,
+                "publishedAt": "2026-11-03T18:26:57Z",
+                "stateRoot": "f809d6d341a5bae88459ad23c3abf1629e161ed74c5cda771fc8465b01c8d2cb"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/server-w5",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
