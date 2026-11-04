@@ -6,7 +6,7 @@ import type { ManifestSource } from "univ-tile-decoder";
 
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
-import { plan } from "./lod.ts";
+import { type Tree, plan, treeOf } from "./lod.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
 
 /** Tiles fetched at once. */
@@ -35,7 +35,7 @@ export type Credit = ManifestSource & { domain: string };
 export class Catalogue {
   readonly release: number;
   private readonly domains: ReadonlyMap<string, Domain>;
-  private readonly tiles: readonly DomainTile[];
+  private readonly tree: Tree<DomainTile>;
   private readonly events: CatalogueEvents;
   private readonly options: CatalogueOptions;
   /** Tiles drawn, failed or given up; only a drawn tile is dropped and asked for again. */
@@ -52,8 +52,8 @@ export class Catalogue {
   private sight: Sight | undefined;
   /** Points drawn of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
-  /** The domains with a point drawn. */
-  private readonly drawnDomains = new Set<string>();
+  /** The points drawn of each domain. */
+  private readonly domainPoints = new Map<string, number>();
   /** Tiles that failed their SHA-256 or did not decode. */
   failed = 0;
   /** Tiles that could not be read, after `ATTEMPTS` tries. */
@@ -62,7 +62,7 @@ export class Catalogue {
   constructor(release: number, domains: readonly Domain[], events: CatalogueEvents, options: CatalogueOptions = {}) {
     this.release = release;
     this.domains = new Map(domains.map((d) => [d.name, d]));
-    this.tiles = domains.flatMap((d) => d.tiles);
+    this.tree = treeOf(domains.flatMap((d) => d.tiles));
     this.events = events;
     this.options = options;
   }
@@ -82,14 +82,8 @@ export class Catalogue {
     const room = PARALLEL - this.pending.size;
     if (room <= 0) return;
     const pending = this.resting.size === 0 ? this.pending : new Set([...this.pending, ...this.resting]);
-    const holding = {
-      settled: this.settled,
-      drawn: new Set(this.drawn.keys()),
-      pending,
-      points: this.points,
-      extent: (id: string) => this.drawn.get(id)?.extent,
-    };
-    const next = plan(this.tiles, holding, sight, room, this.options.budget);
+    const holding = { settled: this.settled, drawn: this.drawn, pending, points: this.points };
+    const next = plan(this.tree, holding, sight, room, this.options.budget);
     for (const tile of next.drop) this.drop(tile);
     for (const tile of next.fetch) {
       const domain = this.domains.get(tile.domain);
@@ -105,7 +99,7 @@ export class Catalogue {
       .then((batch) => {
         this.settled.add(tile.id);
         this.drawn.set(tile.id, batch);
-        this.count(domain, batch);
+        this.tally(batch, 1);
         this.events.onBatch(batch);
       })
       .catch((error: unknown) => {
@@ -151,20 +145,17 @@ export class Catalogue {
     }, RETRY_MS);
   }
 
-  /** Counts `batch`'s points into the kinds of value, or out of them where `by` is −1. */
+  /** Counts `batch`'s points into the kinds of value and its domain, or out of them where `by` is −1. */
   private tally(batch: Batch, by: 1 | -1): void {
     for (const kind of batch.kinds) this.kinds[kind] = (this.kinds[kind] ?? 0) + by;
-  }
-
-  private count(domain: Domain, batch: Batch): void {
-    this.tally(batch, 1);
-    if (batch.kinds.length > 0) this.drawnDomains.add(domain.name);
+    const domain = batch.tile.domain;
+    this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * batch.kinds.length);
   }
 
   /** The sources of every domain with a point drawn, as their manifests credit them. */
   credits(): Credit[] {
     return [...this.domains.values()]
-      .filter((d) => this.drawnDomains.has(d.name))
+      .filter((d) => (this.domainPoints.get(d.name) ?? 0) > 0)
       .flatMap((d) => d.manifest.sources.map((s) => ({ ...s, domain: d.name })));
   }
 }

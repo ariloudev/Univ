@@ -145,6 +145,8 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
     element.width = Math.round(element.clientWidth * devicePixelRatio);
     element.height = Math.round(element.clientHeight * devicePixelRatio);
     controller.invalidate();
+    // A new size is a new frustum: what the view needs is worked out again.
+    world.catalogue?.update(controller.sight);
   });
   resize.observe(element);
   return () => {

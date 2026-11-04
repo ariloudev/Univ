@@ -36,7 +36,7 @@ describe("the view's frustum", () => {
       { id: "ahead", centre: [0, 0, 0] as const, radius: 1 },
       { id: "behind", centre: [30, 0, 0] as const, radius: 1 },
     ].map((i) => ({ ...i, centre: [...i.centre] as [number, number, number] }));
-    expect(inSight(items, sight, (i) => i).map((i) => i.id)).toEqual(["ahead"]);
+    expect([...inSight(items, sight, (i) => i)].map((i) => i.id)).toEqual(["ahead"]);
   });
 
   it("gives the focal length in pixels", () => {

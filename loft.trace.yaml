@@ -2870,22 +2870,22 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "fetches the root of every scale domain before any other tile"
-        body: 3e1c94c7b61e3e358fbe4cff34fccf9fe40d02767c547bf467801792cba3286c
+        body: 47da61d522fd15a0eecda2c85a4adc60a9c45b66ce0c029c87bc9aba51fd467d
   - node: 01a1a497-e843-728a-bce8-400536d8f2b5
     reviewed: b71eda699136400252e7a544def57668b0dd1d2ee3afe8a9110ad60adf0ab603
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "fetches the children in view of held tiles, the largest on screen first, and none wholly outside it"
-        body: 862a04ef0f6436bda1e7d6e3f08f034393f3f38590ba89c31511ea62f9408e88
+        body: c2c33def47f95d820c7ccd7a095f22577417720f74fd96c55fb0efa334acc1fc
   - node: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
     reviewed: 5ed7dccb7622bfee3d4e5db93c8315efab04352e1bd81219b3316277718534be
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "refines a tile only while its points lie farther apart on screen than 3 pixels"
-        body: ab4642407675f1d38a824db82671698d2c9e967cb0c53e08021b12a64893d8f4
+        body: 8ba68e794c4bd18cd89a3e9ee31268fe8ffb5da699e52febd4312d6e384d0fac
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "measures a tile read by where its points lie, not by its cube"
-        body: dd17e8bd69adb1c266022d5421325dea4d34760aef3661d815b7b874999e75e1
+        body: 1a17468adad6abb34288a32a151705a7e05e22f393fd089b3187fa673aa94776
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "measures how far apart a tile's points lie by where most of them are, not by the farthest"
         body: 39947fd6f4fef34defe138ed42b8a43db532f6703b6c56a874b4a2e84e48056a
@@ -2894,19 +2894,19 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "adds a tile's children in view all together, or none, so no octant stays coarser than the rest"
-        body: 4995875cb029980d56d0e6bf0af1ffa8a0fee482bad31b18cc2859075f3aae0e
+        body: a71cba49fb9c4277ef01b5ca61d349a5dd49c89e66c94f37b1571335ed3a9ecc
   - node: 01a1a6a7-c540-7210-8492-7dfdf91c2ccf
     reviewed: 1070e847a26bf7617d2211165f89d440714790efcb48704614ed669a243a64ad
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles, within a budget too small for all it wants, and fetches no tile twice"
-        body: 757ff3127f9fab764252dc7cba9f43312ee53267971b9bd6eecbf67e567280d6
+        body: 8bce0ca6a9c8621d4f0e9ef470f03ff92974338e9629c5db1eb1f30e90ffa256
   - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
     reviewed: d56d1e83e4cfbb1a73c3bc5393c25caa8ee7bb5c00b587c47d326bf8fd2283fd
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "holds no more than 3,000,000 points, counting those on their way"
-        body: 37b3536bcccb6f845dbdfba9f520e2020b1525673800e618f7c03867cd19dc30
+        body: fe131166d4f30d069df1b7f4cb44a11ad2bf237a3a901b4a5964db76a2b92b97
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
         body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
@@ -2915,7 +2915,7 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "drops a tile wholly outside the view to fetch one in it"
-        body: 482975d60dba777a0269ff8aefb92594144d87b78c97a8124930e7b6ea845220
+        body: cbc6dc35af6d259a19ba2449a57ff89fca41dca9bccb14340164f4684c89b391
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
         body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
@@ -2924,16 +2924,16 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "never drops a root, nor a tile whose children are held, nor the tile being refined"
-        body: f8a8e7a2f26a3d52153b0659370a6186579d9b2c33987d46eb4eb9c704935dd7
+        body: a58b03d5ea3d2a5535c3ed82d83284c54f8a4c50d0a5595453abbe3fcc191b0e
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "drops no tile the view still wants, even to fetch another it wants"
-        body: 40f0ede6daa84eefc6a1d93a45fa6e4751487a440afe1911385d6409f7dbd064
+        body: 6be45a1309fab62e5cac193d94fb004bd4fe4ba780a11fca62d7c27f964f96f7
   - node: 01a1a689-0b25-768a-9f1e-cc2a53831ad9
     reviewed: 32c865e634a5efa716eedf713faef49fd05719b8c0f0ef2e63744863f604b52d
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "fetches a dropped tile again once the view needs it"
-        body: ed1319c881d1fbedc538e3e9ff853aa3474cdc6dca10f9044b97218c6adfd99f
+        body: 91f97e6594163e1f2b626d7a2b378d4f47885fb41a8010dfb04ded0b418f28ad
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
         body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
@@ -2948,7 +2948,7 @@ links:
         body: fe44175a1434cda15d0832ffd8b5df6557e5d1aa32d229fb117c452ca408f8dd
       - file: "clients/explorer/src/scene/frustum.test.ts"
         name: "keeps, of a list, only what reaches into the view"
-        body: e3c1f44d1219fa9da1928b41c9ffd6c0e77111d6526960d8198910bbeef3a422
+        body: 493e4486c6eeaefcdcaa92e2f1a8c273a0a1170cc7220d9a2be73a070976c311
   - node: 01a1a497-e843-728a-bce8-40081f3b67cf
     reviewed: 4f8ef32cdbb2cad0c5d2d944602202510e5b128c1cc259b430218891e03a6900
     tests:

@@ -3,8 +3,8 @@
 // Each batch is placed relative to the eye: its centre's offset from the eye is worked out in
 // double precision once a frame, and its points' small offsets are float32.
 
-import { type View, eyeAxes, eyeOf } from "./camera.ts";
-import { inSight, sightOf } from "./frustum.ts";
+import type { View } from "./camera.ts";
+import { type Sphere, inSight, sightOf } from "./frustum.ts";
 import type { Drawer, Lines } from "./drawing.ts";
 import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, pointOpacity } from "./kinds.ts";
 import { projection } from "./projection.ts";
@@ -21,7 +21,7 @@ export interface Points {
   centre: Vec3;
   offsets: Float32Array;
   kinds: Uint8Array;
-  extent: { centre: Vec3; radius: number };
+  extent: Sphere;
 }
 
 /** The diameter of a point, in device pixels. */
@@ -169,7 +169,8 @@ export class Renderer implements Drawer {
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    const frame = { axes: eyeAxes(view, toFrame), eye: eyeOf(view, toFrame), projection: projection(view, width / height) };
+    const sight = sightOf(view, toFrame, width, height);
+    const frame = { axes: sight.axes, eye: sight.eye, projection: projection(view, width / height) };
     this.use(this.lines, frame);
     for (const outline of this.outlines.values()) {
       gl.uniform4fv(this.lineColour, outline.colour);
@@ -178,7 +179,7 @@ export class Renderer implements Drawer {
     this.use(this.points, frame);
     gl.uniform1f(this.pointSize, POINT_SIZE);
     gl.uniform1f(this.opacity, pointOpacity(view.distance));
-    for (const batch of inSight(this.batches.values(), sightOf(view, toFrame, width, height), (b) => b.extent)) {
+    for (const batch of inSight(this.batches.values(), sight, (b) => b.extent)) {
       this.drawOne(this.points, frame, batch, gl.POINTS);
     }
     gl.uniform1f(this.pointSize, MARKER_SIZE);

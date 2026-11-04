@@ -1,11 +1,13 @@
 // Which tiles the view needs (draw-the-catalogues). Every point of a domain is stored in exactly
 // one node, and an inner node keeps a fixed fraction of the points under it, so a view gains
-// detail by adding the children of the nodes it holds: nothing is drawn twice. A node is
-// refined while it is in view and its points lie farther apart on screen than the screen can
-// show; when the budget needs room, the held nodes the view needs least are dropped, never a
-// root nor a node whose children are held.
+// detail by adding the children of the nodes it holds: nothing is drawn twice. The view wants
+// every root and, the largest on screen first, the children in view of each wanted node whose
+// points lie farther apart on screen than the screen can show, all of a node's together, within
+// the budget. What it wants is fetched; what it holds and does not want is dropped when the
+// budget needs room, out of view first, then the smallest on screen, never a root nor a node
+// whose children are held.
 
-import type { Sight } from "../scene/frustum.ts";
+import type { Sight, Sphere } from "../scene/frustum.ts";
 import { type Vec3, norm, sub } from "../scene/vec.ts";
 
 /** One node of a domain's octree, in megaparsecs. */
@@ -30,70 +32,66 @@ export const REFINE_SPACING = 3;
 
 /** How large `tile` looks from `eye`: its edge over its distance, its cube's nearest reach. */
 export function apparentSize(tile: Tile, eye: Vec3): number {
-  const reach = norm(sub(tile.centre, eye)) - tile.edge * 0.87;
+  const reach = norm(sub(tile.centre, eye)) - radiusOf(tile);
   return tile.edge / Math.max(reach, tile.edge * 0.05);
 }
 
 /** The radius of the sphere about a tile's cube: half its diagonal. */
 const radiusOf = (tile: Tile): number => tile.edge * (Math.sqrt(3) / 2);
 
-/** Where a tile's points lie: the sphere about their box, which holds every one, and within it
- * the radius that holds most of them. A domain's cubes are far larger than its data (the cosmic
- * web's root is 16 Gpc across, its surveys a few), and a few far objects stretch a box (the
+/** Where a tile's points lie: the sphere about their box, which holds every one, and the sphere
+ * about their mean that holds most of them. A domain's cubes are far larger than its data (the
+ * cosmic web's root is 16 Gpc across, its surveys a few), and a few far objects stretch a box (the
  * root's reach 6 Gpc while 90 % lie within 1.3 Gpc), so once a tile's points are read their
- * sphere decides what is in view and their core how far apart they lie on screen; before, the
- * tile's cube decides both. */
-export interface Extent {
-  centre: Vec3;
-  radius: number;
-  /** The sphere about the points' mean that holds `CORE` of them. */
-  core: { centre: Vec3; radius: number };
-}
+ * sphere decides whether it is in view and their core how far apart they lie on screen; before,
+ * the tile's cube decides both. */
+export type Extent = Sphere & { core: Sphere };
 
 /** The share of a tile's points its core holds. */
 const CORE = 0.9;
 
-/** The sphere about a tile's cube. */
+/** The sphere about a tile's cube, as its extent before its points are read. */
 function cubeExtent(tile: Tile): Extent {
   const sphere = { centre: tile.centre, radius: radiusOf(tile) };
   return { ...sphere, core: sphere };
 }
 
-/** The sphere about the box of `offsets` (x, y, z triples) from `centre`. */
+/** The extent of `offsets` (x, y, z triples) from `centre`. */
 export function extentOf(offsets: Float32Array, centre: Vec3): Extent {
-  if (offsets.length < 3) return { centre, radius: 0, core: { centre, radius: 0 } };
-  const lo = [Infinity, Infinity, Infinity];
-  const hi = [-Infinity, -Infinity, -Infinity];
-  for (let i = 0; i < offsets.length; i += 1) {
-    const v = offsets[i] ?? 0;
-    const axis = i % 3;
-    if (v < (lo[axis] ?? 0)) lo[axis] = v;
-    if (v > (hi[axis] ?? 0)) hi[axis] = v;
+  const n = Math.floor(offsets.length / 3);
+  if (n === 0) return { centre, radius: 0, core: { centre, radius: 0 } };
+  let [minX, minY, minZ] = [Infinity, Infinity, Infinity];
+  let [maxX, maxY, maxZ] = [-Infinity, -Infinity, -Infinity];
+  let [sumX, sumY, sumZ] = [0, 0, 0];
+  for (let i = 0; i < n * 3; i += 3) {
+    const x = offsets[i] ?? 0;
+    const y = offsets[i + 1] ?? 0;
+    const z = offsets[i + 2] ?? 0;
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+    minZ = Math.min(minZ, z);
+    maxZ = Math.max(maxZ, z);
+    sumX += x;
+    sumY += y;
+    sumZ += z;
   }
-  const mid = (a: number) => ((lo[a] ?? 0) + (hi[a] ?? 0)) / 2;
-  const half = (a: number) => ((hi[a] ?? 0) - (lo[a] ?? 0)) / 2;
-  return {
-    centre: [centre[0] + mid(0), centre[1] + mid(1), centre[2] + mid(2)],
-    radius: Math.hypot(half(0), half(1), half(2)),
-    core: coreOf(offsets, centre),
-  };
-}
-
-/** The sphere about the mean of `offsets` from `centre` that holds `CORE` of them. */
-function coreOf(offsets: Float32Array, centre: Vec3): { centre: Vec3; radius: number } {
-  const n = offsets.length / 3;
-  const mean = [0, 1, 2].map((a) => {
-    let sum = 0;
-    for (let i = a; i < offsets.length; i += 3) sum += offsets[i] ?? 0;
-    return sum / n;
-  });
-  const [mx = 0, my = 0, mz = 0] = mean;
+  const [mx, my, mz] = [sumX / n, sumY / n, sumZ / n];
+  // Squared distances from the mean sort as the distances do.
   const reach = new Float64Array(n);
   for (let i = 0; i < n; i += 1) {
-    reach[i] = Math.hypot((offsets[i * 3] ?? 0) - mx, (offsets[i * 3 + 1] ?? 0) - my, (offsets[i * 3 + 2] ?? 0) - mz);
+    const dx = (offsets[i * 3] ?? 0) - mx;
+    const dy = (offsets[i * 3 + 1] ?? 0) - my;
+    const dz = (offsets[i * 3 + 2] ?? 0) - mz;
+    reach[i] = dx * dx + dy * dy + dz * dz;
   }
   reach.sort();
-  return { centre: [centre[0] + mx, centre[1] + my, centre[2] + mz], radius: reach[Math.ceil(CORE * n) - 1] ?? 0 };
+  return {
+    centre: [centre[0] + (minX + maxX) / 2, centre[1] + (minY + maxY) / 2, centre[2] + (minZ + maxZ) / 2],
+    radius: Math.hypot(maxX - minX, maxY - minY, maxZ - minZ) / 2,
+    core: { centre: [centre[0] + mx, centre[1] + my, centre[2] + mz], radius: Math.sqrt(reach[Math.ceil(CORE * n) - 1] ?? 0) },
+  };
 }
 
 /** How far apart a tile's points lie on screen, pixels: its points spread over the square their
@@ -108,112 +106,171 @@ export function spacing(tile: Tile, sight: Sight, extent = cubeExtent(tile)): nu
 const refines = (tile: Tile, sight: Sight, extent = cubeExtent(tile)): boolean =>
   sight.inView(extent.centre, extent.radius) && spacing(tile, sight, extent) > REFINE_SPACING;
 
+/** A release's tiles as a tree: worked out once, read on every change of view. */
+export interface Tree<T extends Tile> {
+  tiles: readonly T[];
+  roots: readonly T[];
+  children: ReadonlyMap<string, readonly T[]>;
+}
+
+export function treeOf<T extends Tile>(tiles: readonly T[]): Tree<T> {
+  const children = new Map<string, T[]>();
+  for (const t of tiles) {
+    if (t.parent === undefined) continue;
+    const siblings = children.get(t.parent);
+    if (siblings === undefined) children.set(t.parent, [t]);
+    else siblings.push(t);
+  }
+  return { tiles, roots: tiles.filter((t) => t.parent === undefined), children };
+}
+
 /** What a catalogue holds, as the plan reads it. */
 export interface Holding {
   /** Tiles settled: drawn, or failed and given up. */
   settled: ReadonlySet<string>;
-  /** Tiles drawn, which may be dropped. */
-  drawn: ReadonlySet<string>;
+  /** The tiles drawn, which may be dropped, with where their points lie where it is known. */
+  drawn: ReadonlyMap<string, { readonly extent?: Extent }>;
   pending: ReadonlySet<string>;
   /** The points of the tiles drawn and on their way. */
   points: number;
-  /** Where a drawn tile's points lie, where it is known. */
-  extent?: (id: string) => Extent | undefined;
 }
 
-/** The tiles to fetch next, at most `count`, and the drawn tiles to drop to make room for them. */
+/** The tiles to fetch next and the drawn tiles to drop to make room for them. */
 export interface Plan<T> {
   fetch: T[];
   drop: T[];
 }
 
-/** How much the view needs a tile: in view before out of it, then the larger on screen. */
-function need(tile: Tile, sight: Sight): [number, number] {
-  return [sight.inView(tile.centre, radiusOf(tile)) ? 1 : 0, apparentSize(tile, sight.eye)];
+/** A wanted tile's children in view, wanted together. */
+interface Family<T extends Tile> {
+  parent: T;
+  tiles: readonly T[];
+  points: number;
+  /** The largest of them on screen. */
+  size: number;
 }
 
-const less = (a: [number, number], b: [number, number]) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
-const byNeed = <T>(a: { need: [number, number] }, b: { need: [number, number] }) => (less(a.need, b.need) ? -1 : less(b.need, a.need) ? 1 : 0);
-
-/** The tiles the view wants, within `budget`: every root, then, the most needed first, the
- * children in view of each wanted tile the view refines, all of a tile's together, so that the
- * budget never leaves one octant of a region coarser than the rest. It depends on what the view
- * sees and where read tiles' points lie, not on what is held, so a view that does not change
- * settles. */
-function wanted<T extends Tile>(tiles: readonly T[], holding: Holding, sight: Sight, budget: number): Set<string> {
-  const children = new Map<string, T[]>();
-  for (const t of tiles) {
-    if (t.parent !== undefined) children.set(t.parent, [...(children.get(t.parent) ?? []), t]);
+/** Inserts `family` into `frontier`, which is kept smallest first. */
+function insert<T extends Tile>(frontier: Family<T>[], family: Family<T>): void {
+  let lo = 0;
+  let hi = frontier.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if ((frontier[mid]?.size ?? 0) < family.size) lo = mid + 1;
+    else hi = mid;
   }
-  const roots = tiles.filter((t) => t.parent === undefined);
-  const chosen = new Set(roots.map((t) => t.id));
-  let points = roots.reduce((sum, t) => sum + t.points, 0);
-  const frontier: { tiles: T[]; points: number; need: [number, number] }[] = [];
+  frontier.splice(lo, 0, family);
+}
+
+/** The families the view wants within `budget`, the most needed first, after the roots. It
+ * depends on what the view sees and where read tiles' points lie, not on what is held, so a view
+ * that does not change settles. */
+function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, budget: number): Family<T>[] {
+  let points = tree.roots.reduce((sum, t) => sum + t.points, 0);
+  const frontier: Family<T>[] = [];
   const open = (tile: T) => {
-    if (!refines(tile, sight, holding.extent?.(tile.id))) return;
-    const seen = (children.get(tile.id) ?? []).filter((c) => sight.inView(c.centre, radiusOf(c)));
-    if (seen.length === 0) return;
-    const needs = seen.map((c) => need(c, sight)).sort((x, y) => (less(x, y) ? 1 : less(y, x) ? -1 : 0));
-    frontier.push({ tiles: seen, points: seen.reduce((sum, c) => sum + c.points, 0), need: needs[0] ?? [0, 0] });
-    frontier.sort(byNeed);
+    if (!refines(tile, sight, holding.drawn.get(tile.id)?.extent)) return;
+    const tiles = (tree.children.get(tile.id) ?? []).filter((c) => sight.inView(c.centre, radiusOf(c)));
+    if (tiles.length === 0) return;
+    const size = Math.max(...tiles.map((c) => apparentSize(c, sight.eye)));
+    insert(frontier, { parent: tile, tiles, points: tiles.reduce((sum, c) => sum + c.points, 0), size });
   };
-  for (const root of roots) open(root);
+  for (const root of tree.roots) open(root);
+  const chosen: Family<T>[] = [];
   for (let next = frontier.pop(); next !== undefined; next = frontier.pop()) {
     if (points + next.points > budget) continue;
     points += next.points;
-    for (const tile of next.tiles) chosen.add(tile.id);
+    chosen.push(next);
     for (const tile of next.tiles) open(tile);
   }
   return chosen;
 }
 
-/** What to fetch and drop for `sight`: every root first; then the wanted tiles not held whose
- * parent is, the most needed first, each once the budget has room, made by dropping held tiles the
- * view does not want, out of view first, then the smallest on screen, a parent only after its
- * children. */
+/** What to fetch and drop for `sight`: every root first; then each wanted family whose parent is
+ * settled, the most needed first, its tiles not yet held all at once once the budget has room,
+ * made by dropping held tiles the view does not want. At most `count` families start at once. */
 export function plan<T extends Tile>(
-  tiles: readonly T[],
+  tree: Tree<T>,
   holding: Holding,
   sight: Sight,
   count: number,
   budget = POINT_BUDGET,
 ): Plan<T> {
-  const open = tiles.filter((t) => !holding.settled.has(t.id) && !holding.pending.has(t.id));
-  const roots = open.filter((t) => t.parent === undefined);
+  const open = (t: T) => !holding.settled.has(t.id) && !holding.pending.has(t.id);
+  const roots = tree.roots.filter(open);
   if (roots.length > 0) return { fetch: roots.slice(0, count), drop: [] };
-  const want = wanted(tiles, holding, sight, budget);
-  const ranked = open
-    .filter((t) => want.has(t.id) && t.parent !== undefined && holding.settled.has(t.parent))
-    .map((tile) => ({ tile, need: need(tile, sight) }))
-    .sort((a, b) => byNeed(b, a));
-  const spare = droppable(tiles, holding, sight).filter((s) => !want.has(s.tile.id));
+  const families = wanted(tree, holding, sight, budget);
+  const want = new Set(families.flatMap((f) => f.tiles.map((t) => t.id)));
+  const room = new Room(tree, holding, sight, want, budget);
   const fetch: T[] = [];
-  const drop: T[] = [];
-  let points = holding.points;
-  for (const { tile } of ranked) {
-    if (fetch.length >= count) break;
-    while (points + tile.points > budget && drop.length < spare.length) {
-      const next = spare[drop.length];
-      if (next === undefined) break;
-      drop.push(next.tile);
-      points -= next.tile.points;
-    }
-    if (points + tile.points > budget) break;
-    points += tile.points;
-    fetch.push(tile);
+  let started = 0;
+  for (const family of families) {
+    if (started >= count) break;
+    if (!holding.settled.has(family.parent.id)) continue;
+    const tiles = family.tiles.filter(open);
+    if (tiles.length === 0 || !room.make(tiles.reduce((sum, t) => sum + t.points, 0))) continue;
+    fetch.push(...tiles.sort((a, b) => apparentSize(b, sight.eye) - apparentSize(a, sight.eye)));
+    started += 1;
   }
-  return { fetch, drop };
+  return { fetch, drop: room.drop };
 }
 
-/** The drawn tiles that may be dropped, the least needed first: no root, and none with a child
- * drawn or on its way. */
-function droppable<T extends Tile>(tiles: readonly T[], holding: Holding, sight: Sight) {
-  const parents = new Set<string>();
-  for (const t of tiles) {
-    if (t.parent !== undefined && (holding.settled.has(t.id) || holding.pending.has(t.id))) parents.add(t.parent);
+/** Room in the budget, made by dropping held tiles the view does not want: out of view first,
+ * then the smallest on screen, leaves first, a parent once its children are gone. */
+class Room<T extends Tile> {
+  readonly drop: T[] = [];
+  private readonly dropped = new Set<string>();
+  private spare: T[] = [];
+  private points: number;
+
+  constructor(
+    private readonly tree: Tree<T>,
+    private readonly holding: Holding,
+    private readonly sight: Sight,
+    private readonly want: ReadonlySet<string>,
+    private readonly budget: number,
+  ) {
+    this.points = holding.points;
   }
-  return tiles
-    .filter((t) => t.parent !== undefined && holding.drawn.has(t.id) && !parents.has(t.id))
-    .map((tile) => ({ tile, need: need(tile, sight) }))
-    .sort(byNeed);
+
+  /** Makes room for `points` more, dropping what it must; nothing is dropped where they cannot fit. */
+  make(points: number): boolean {
+    const before = { drops: this.drop.length, points: this.points, spare: [...this.spare] };
+    while (this.points + points > this.budget) {
+      const next = this.next();
+      if (next === undefined) {
+        for (const t of this.drop.splice(before.drops)) this.dropped.delete(t.id);
+        this.points = before.points;
+        this.spare = before.spare;
+        return false;
+      }
+      this.drop.push(next);
+      this.dropped.add(next.id);
+      this.points -= next.points;
+    }
+    this.points += points;
+    return true;
+  }
+
+  /** The next tile to drop: the least needed leaf of what is held and not wanted. */
+  private next(): T | undefined {
+    if (this.spare.length === 0) this.spare = this.leaves();
+    return this.spare.shift();
+  }
+
+  /** The held tiles not wanted, nor a root, nor with a child drawn or on its way, least needed first. */
+  private leaves(): T[] {
+    const { holding, dropped, sight } = this;
+    const held = (id: string) => !dropped.has(id) && (holding.drawn.has(id) || holding.pending.has(id));
+    const parents = new Set<string>();
+    for (const t of this.tree.tiles) if (t.parent !== undefined && held(t.id)) parents.add(t.parent);
+    return this.tree.tiles
+      .filter((t) => t.parent !== undefined && holding.drawn.has(t.id) && !dropped.has(t.id) && !this.want.has(t.id) && !parents.has(t.id))
+      .map((tile) => {
+        const extent = holding.drawn.get(tile.id)?.extent ?? cubeExtent(tile);
+        return { tile, seen: sight.inView(extent.centre, extent.radius) ? 1 : 0, size: apparentSize(tile, sight.eye) };
+      })
+      .sort((a, b) => a.seen - b.seen || a.size - b.size)
+      .map((l) => l.tile);
+  }
 }

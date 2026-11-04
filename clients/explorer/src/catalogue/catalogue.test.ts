@@ -49,6 +49,11 @@ async function until(done: () => boolean): Promise<void> {
 /** A sight that sees every tile but those centred where `hidden` says, its points far apart. */
 const sight = (hidden: (centre: Vec3) => boolean = () => false): Sight => ({
   eye: [0, 0, 0],
+  axes: [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+  ],
   focal: 1e9,
   inView: (centre) => !hidden(centre),
 });

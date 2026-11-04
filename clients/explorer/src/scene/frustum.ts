@@ -5,10 +5,18 @@
 import { FOV, type View, eyeAxes, eyeOf, focalPixels } from "./camera.ts";
 import { type Mat3, type Vec3, apply, sub } from "./vec.ts";
 
+/** A sphere, ICRS megaparsecs. */
+export interface Sphere {
+  centre: Vec3;
+  radius: number;
+}
+
 /** The eye of a view on a viewport, and what it sees. */
 export interface Sight {
   /** The eye, ICRS megaparsecs. */
   eye: Vec3;
+  /** The rotation from the ICRS to the eye's axes. */
+  axes: Mat3;
   /** The focal length, pixels. */
   focal: number;
   /** Whether any part of the sphere about `centre` of `radius` (megaparsecs) is in view. */
@@ -16,11 +24,11 @@ export interface Sight {
 }
 
 /** The items of `items` in view: those whose sphere, as `sphere` gives it, reaches into it. */
-export function inSight<T>(items: Iterable<T>, sight: Sight, sphere: (item: T) => { centre: Vec3; radius: number }): T[] {
-  return [...items].filter((item) => {
+export function* inSight<T>(items: Iterable<T>, sight: Sight, sphere: (item: T) => Sphere): Generator<T> {
+  for (const item of items) {
     const { centre, radius } = sphere(item);
-    return sight.inView(centre, radius);
-  });
+    if (sight.inView(centre, radius)) yield item;
+  }
 }
 
 /** The sight of `view` on a viewport `width` × `height` pixels. */
@@ -35,6 +43,7 @@ export function sightOf(view: View, toFrame: Mat3, width: number, height: number
   const y = side(tanY);
   return {
     eye,
+    axes,
     focal: focalPixels(height),
     inView(centre, radius) {
       const local = apply(axes, sub(centre, eye));
