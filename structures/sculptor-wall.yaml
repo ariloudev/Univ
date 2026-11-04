@@ -1,0 +1,115 @@
+# A flattened, low-contrast sheet of galaxies in Sculptor, found in the Southern Sky Redshift
+# Survey, which its discoverers called the "wall".
+name: Sculptor Wall
+alternative_names: []
+kind: wall
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: da-costa-1988
+    reference: "da Costa, Pellegrini, Sargent, Tonry, Davis, Meiksin, Latham, Menzies & Coulson 1988, ApJ 327, 544"
+    title: "The Southern Sky Redshift Survey"
+    doi: 10.1086/166215
+    bibcode: 1988ApJ...327..544D
+    read: "ADS scan of the article: abstract and pages 549 to 553 read on the page images"
+# The direction is the centre of the flattened distribution the paper sees face-on in its
+# 3000-6000 km/s window and identifies with the wall seen edge-on in the wedge diagrams; the
+# distance is the wall's mean distance from the paper's Cartesian maps. The paper prints no
+# single velocity for the wall, and no equinox.
+position:
+  frame: equatorial_equinox_unstated
+  lon:
+    value: 30
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "2h"
+    cite: &centre
+      paper: da-costa-1988
+      sentence: "In this velocity interval we also see a large structure with a nearly uniform surface density of galaxies covering an area of roughly 600 square degrees centered at α = 2h and δ = −30°."
+      page: 549
+  lat:
+    value: -30
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *centre
+  distance:
+    value: 50
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: da-costa-1988
+      sentence: "However, examination of the distribution in the Cartesian system suggests that the structure in the eastern side of the survey (x < 0), the “wall” at a mean distance of 50 h−1 Mpc, is primarily planar within the observed volume."
+      page: 553
+values:
+  diagonal_length:
+    value: 50
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    cite: &diagonal
+      paper: da-costa-1988
+      sentence: "In Figures 7a–c below this feature is a prominent diagonal structure stretching over 50 h−1 Mpc, from (4h5, 4000 km s−1) to (0h5, 9000 km s−1)! This feature has not been previously noted, and we shall refer to it as the “wall.”"
+      page: 550
+  near_end_velocity:
+    value: 4000
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *diagonal
+    note: "The near end of the diagonal structure in the wedge diagrams, at the eastern side of the survey."
+  far_end_velocity:
+    value: 9000
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *diagonal
+    note: "The far end of the diagonal structure, towards the west."
+  extent_long:
+    value: 50
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &extent
+      paper: da-costa-1988
+      sentence: "This structure is of low-density contrast and is approximately 50 × 20 × 10 h−1 Mpc in extent."
+      page: 551
+  extent_middle:
+    value: 20
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *extent
+  extent_short:
+    value: 10
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *extent
+  depth_in_survey:
+    value: 50
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    cite: &survey
+      paper: da-costa-1988
+      sentence: "It extends to the limit of the survey area for at least 50 h−1 Mpc in depth, 30 h−1 Mpc in the observed declination range and has a typical thickness of 5 h−1 to 10 h−1 Mpc."
+      page: 553
+  extent_in_declination:
+    value: 30
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: lower_limit }
+    cite: *survey
+disputes: []
+notes: >-
+  The paper calls the structure only the "wall"; the name Sculptor Wall is later usage. The point
+  joins the centre of the face-on distribution of roughly six hundred square degrees in the
+  middle velocity window, which the paper identifies with the wall, to the wall's mean distance
+  from its Cartesian maps: both are printed for the structure, but not together. The paper's
+  coordinates are those of the ESO catalogue, with no equinox printed. In its Cartesian maps the
+  wall is primarily planar and reaches the limits of the survey, so its extents are those within
+  the surveyed volume. The sky area has no unit in univ-model and is left out. Lengths are in
+  h^-1 Mpc with h the Hubble constant over a hundred, as the abstract defines it.

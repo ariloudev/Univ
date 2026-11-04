@@ -1,0 +1,102 @@
+# LQG 12 of Komberg, Kravtsov & Lukash 1996: 14 quasars found by cluster analysis of a quasar catalogue.
+name: Komberg–Kravtsov–Lukash LQG 12
+alternative_names: ["KKL LQG 12", "LQG 12"]
+kind: quasar_group
+status: statistical_claim
+scale_domain: cosmic_web
+papers:
+  - id: komberg-1996
+    reference: "Komberg, Kravtsov & Lukash 1996, MNRAS 282, 713"
+    title: "The search and investigation of the Large Groups of Quasars"
+    doi: 10.1093/mnras/282.3.713
+    arxiv: "astro-ph/9602090"
+    read: "arXiv PDF text of astro-ph/9602090; Table 1 read by page column from its text layer"
+geometry:
+  kind: members
+  members:
+    frame: equatorial_equinox_unstated
+    tracer: quasar
+    source: { paper: komberg-1996, table: "1" }
+    columns:
+      - { name: lon, header: "R.A.", unit: degree, format: hms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lat, header: "Decl.", unit: degree, format: dms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "Redshift", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+    rows:
+      - ["1", "21 57 16.6", "-19 40 10", 1.206]
+      - ["2", "21 57 21.8", "-20 00 11", 1.198]
+      - ["3", "21 58 29.9", "-19 03 01", 1.240]
+      - ["4", "21 59 23.9", "-19 26 17", 1.170]
+      - ["5", "22 00 35.6", "-19 29 37", 1.165]
+      - ["6", "22 00 50.5", "-19 49 40", 1.168]
+      - ["7", "22 00 28.8", "-19 52 24", 1.277]
+      - ["8", "22 00 44.5", "-18 49 31", 1.288]
+      - ["9", "22 00 54.5", "-19 58 21", 1.260]
+      - ["10", "21 57 46.5", "-19 34 51", 1.142]
+      - ["11", "21 59 40.8", "-18 50 10", 1.155]
+      - ["12", "22 03 15.6", "-18 36 30", 1.179]
+      - ["13", "22 01 59.6", "-19 05 29", 1.123]
+      - ["14", "22 05 59.3", "-19 40 14", 1.280]
+values:
+  members:
+    value: 14
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: { paper: komberg-1996, table: "2", row: "LQG 12", column: "Number of QSOs" }
+  redshift:
+    value: 1.2
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: { paper: komberg-1996, table: "2", row: "LQG 12", column: "z" }
+    note: "The group's redshift to one decimal place; the paper does not say how it is taken from the members'."
+  extent_ra:
+    value: 80
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: &cosmology
+      cosmology: "comoving; H0 = 100h km/s/Mpc, Ω0 = 1, Λ = 0"
+      cite:
+        paper: komberg-1996
+        sentence: "We have today considerable independent evidence for an existence of large-scale structures in matter distribution stretching from tens of megaparsecs up to a typical scale lLS ∼100−150h−1Mpc (unless otherwise stated we assume H0 = 100h km/s/Mpc, Ω0 = 1 and Λ = 0, all scales here are comoving)."
+    cite: { paper: komberg-1996, table: "1", row: "LQG 12", column: "Parameters", cell: "Rα = 80" }
+    note: "The group's comoving extent in right ascension."
+  extent_dec:
+    value: 46
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: { paper: komberg-1996, table: "1", row: "LQG 12", column: "Parameters", cell: "Rδ = 46" }
+    note: "The group's comoving extent in declination."
+  extent_redshift:
+    value: 155
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: { paper: komberg-1996, table: "2", row: "LQG 12", column: "Rz, h−1Mpc" }
+    note: "The group's comoving extent along the line of sight, which the paper takes as a reasonable estimate of size, since a survey does not cut a group along it."
+  density_contrast:
+    value: 4
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: { paper: komberg-1996, table: "1", row: "LQG 12", column: "Parameters", cell: "∆N/N ∼4" }
+    note: "The approximate quasar number density contrast."
+  probability_random:
+    value: 0.01
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: { paper: komberg-1996, table: "2", row: "LQG 12", column: "Probability to be random" }
+    note: "The fraction of random realisations of the host survey that hold a group as rich and dense in the same redshift range."
+disputes: []
+notes: >-
+  Table 1 gives the members' coordinates as they are in the quasar catalogue the groups were found
+  in, and the paper does not state their equinox. Twelve members come from the deep UVX survey of
+  Boyle et al., one from the Large Bright Quasar Survey and one, a radio-loud quasar perhaps
+  missed by that survey's subfields, from Savage et al. The quasar number density of Table 2 is in
+  units univ-model does not have and is left out. Some encyclopaedia entries for these groups cite
+  other papers; this file cites only the paper that found them.

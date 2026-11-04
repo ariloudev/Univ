@@ -12,15 +12,15 @@
 //!
 //! A frame move is cited as an object's derivation cites it: univ-model's chain steps.
 
-use univ_model::api::structures::{Derivation, DistanceDerivation};
+use univ_model::api::structures::{Derivation, DistanceDerivation, Extents};
 use univ_model::derive::{Release, Step, Transformation};
-use univ_model::geometry::{Geometry, Member, Primitive, Shape};
-use univ_model::position::{Frame, Vec3};
+use univ_model::geometry::{Geometry, Primitive, Shape};
+use univ_model::position::{Frame, between};
 use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::{Dimension, Unit};
 
 use super::objects::snake;
-use super::place::{assumed, place, radial, sphere_radius};
+use super::place::{assumed, axis_box, km_s, length, place, radial, sphere_radius};
 use super::pointers::{self, Pointed};
 use super::sky::{REGION_ORDER, box_cells};
 use crate::crossmatch::MemberPlacement;
@@ -140,7 +140,48 @@ pub(super) fn derivation(
         distance,
         cosmology: "release".to_owned(),
         grid: None,
+        at_least: None,
+        extents: None,
     }
+}
+
+/// How [`extents`] turns a published extent into a length.
+const EXTENTS_METHOD: &str = "a velocity divided by the release Hubble constant, as a Hubble-flow \
+     length; a length rescaled to the release cosmology; each laid along its frame's axis turned \
+     into the ICRS";
+
+/// The extents of `s` about its position, in `unit`: each axis of the position's frame turned
+/// into the ICRS, as long as the published extent along it.
+fn extents(s: &Structure, release: &Release, unit: Unit) -> Result<Option<Extents>, String> {
+    let (Some(names), Some(frame)) = (&s.extents, s.position.as_ref().and_then(Coordinates::frame))
+    else {
+        return Ok(None);
+    };
+    let per_mpc = Unit::Megaparsec
+        .factor_to(unit)
+        .map_err(|e| e.to_string())?;
+    let to_icrs = between(frame, Frame::Icrs);
+    let mut axes = [[0.0; 3]; 3];
+    for (k, name) in names.names().into_iter().enumerate() {
+        let c = s
+            .values
+            .get(name)
+            .ok_or_else(|| format!("its extents name {name}, which is not among its values"))?;
+        let mpc = if c.unit().dimension() == Dimension::Velocity {
+            km_s(c)? / release.cosmology().hubble_constant
+        } else {
+            length(c, release)?
+        };
+        let mut along = [0.0; 3];
+        along[k] = 1.0;
+        axes[k] = to_icrs.apply(along).map(|u| u * mpc * per_mpc);
+    }
+    Ok(Some(Extents {
+        frame,
+        axes,
+        from: names.names().map(pointers::value).to_vec(),
+        method: EXTENTS_METHOD.to_owned(),
+    }))
 }
 
 fn pointed(from: &[Pointed<'_>]) -> Vec<String> {
@@ -192,59 +233,6 @@ fn members(
     (shape.geometry.clone(), derived)
 }
 
-/// `geometry`, placed in Mpc, in `per_mpc` units of the scale domain per Mpc.
-fn in_units(geometry: Geometry, per_mpc: f64) -> Geometry {
-    if (per_mpc - 1.0).abs() < f64::EPSILON {
-        return geometry;
-    }
-    let s = |v: Vec3| v.map(|c| c * per_mpc);
-    match geometry {
-        Geometry::Point { at } => Geometry::Point { at: s(at) },
-        Geometry::Primitive {
-            primitive: Primitive::Sphere { centre, radius },
-        } => Geometry::Primitive {
-            primitive: Primitive::Sphere {
-                centre: s(centre),
-                radius: radius * per_mpc,
-            },
-        },
-        Geometry::Members { members } => Geometry::Members {
-            members: members
-                .into_iter()
-                .map(|m| match m {
-                    Member::Object { id, at } => Member::Object { id, at: s(at) },
-                    Member::Tracer { at, kind } => Member::Tracer { at: s(at), kind },
-                })
-                .collect(),
-        },
-        Geometry::SkyRegion {
-            order,
-            cells,
-            near,
-            far,
-        } => Geometry::SkyRegion {
-            order,
-            cells,
-            near: near * per_mpc,
-            far: far * per_mpc,
-        },
-        Geometry::GridRegion {
-            grid,
-            origin,
-            cell,
-            shape,
-            cells,
-        } => Geometry::GridRegion {
-            grid,
-            origin: s(origin),
-            cell: cell * per_mpc,
-            shape,
-            cells,
-        },
-        other => other,
-    }
-}
-
 /// `geometry`, placed in Mpc in `frame`, as a shape in the unit of `domain`
 /// (`crate::tiles::unit_of`).
 ///
@@ -260,7 +248,7 @@ pub(super) fn in_domain(
     let per_mpc = Unit::Megaparsec
         .factor_to(unit)
         .map_err(|e| e.to_string())?;
-    Shape::new(frame, unit, in_units(geometry, per_mpc))
+    Shape::new(frame, unit, geometry.scaled(per_mpc))
         .map_err(|e| format!("its shape cannot stand: {e}"))
 }
 
@@ -277,7 +265,7 @@ pub fn placed_shape(
     p: &Placing<'_>,
 ) -> Result<PlacedShape, String> {
     let no_position = || "it publishes no position or geometry".to_owned();
-    let (geometry, derivation) = match &s.geometry {
+    let (geometry, mut derivation) = match &s.geometry {
         Some(StructureGeometry::Members(m)) => match placed {
             Some(pl) => match &pl.shape {
                 Some(shape) => members(m, pl, shape, &p.dipole),
@@ -307,22 +295,38 @@ pub fn placed_shape(
                 far: near.max(far),
             };
             let bound = radial_distance(&b.near, None, &p.dipole);
-            let derived = derivation(
+            let mut derived = derivation(
                 pointed(&pointers::geometry(g)),
                 frame_chain(Some(b.frame)),
                 distance(
                     format!("the published near and far bounds, each {}", bound.from),
                     format!(
                         "{}, for each bound; the cells of HEALPix order {REGION_ORDER} whose \
-                         centres fall in the published longitude and latitude box",
-                        bound.method
+                         centres fall in {}",
+                        bound.method,
+                        b.sides.described()
                     ),
                 ),
             );
+            derived.at_least = b.at_least.as_ref().map(|_| pointers::AT_LEAST.to_owned());
             (geometry, derived)
+        }
+        Some(g @ StructureGeometry::AxisBox(b)) => {
+            let derived = derivation(
+                pointed(&pointers::geometry(g)),
+                frame_chain(Some(b.frame)),
+                distance(
+                    "the published range along each axis of the frame",
+                    "each bound a length rescaled to the release cosmology; the box between them \
+                     an oriented box whose axes are the frame's, turned into the ICRS",
+                ),
+            );
+            let primitive = axis_box(b, p.release)?.into();
+            (Geometry::Primitive { primitive }, derived)
         }
         None => point(s, s.position.as_ref().ok_or_else(no_position)?, p)?,
     };
     let shape = in_domain(Frame::Icrs, geometry, s.scale_domain)?;
+    derivation.extents = extents(s, p.release, shape.unit)?;
     Ok(PlacedShape { shape, derivation })
 }

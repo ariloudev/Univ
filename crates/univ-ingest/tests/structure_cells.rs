@@ -10,12 +10,16 @@
 
 mod common;
 
+use std::sync::LazyLock;
+
 use common::workspace;
 use univ_ingest::release::{
     Placing, centre as structure_centre, index_bounds, placements, structure_rows,
 };
 use univ_ingest::source::ScaleDomain;
-use univ_ingest::structures::{Coordinates, Radial, Structure, StructureGeometry, read_all_named};
+use univ_ingest::structures::{
+    Coordinates, Radial, Sides, Structure, StructureGeometry, read_all_named,
+};
 use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::derive::Release;
 use univ_model::geometry::Aabb;
@@ -24,13 +28,12 @@ use univ_model::redshift::{CmbCorrection, DipoleModel, RedshiftFrame};
 use univ_model::units::Unit;
 use univ_model::value::{Quantity, Uncertainty};
 
+/// The repository's structure files, read once.
+static STRUCTURES: LazyLock<Vec<(String, Structure)>> =
+    LazyLock::new(|| read_all_named(&workspace().join("structures")).unwrap());
+
 fn structure(id: &str) -> Structure {
-    read_all_named(&workspace().join("structures"))
-        .unwrap()
-        .into_iter()
-        .find(|(i, _)| i == id)
-        .unwrap()
-        .1
+    STRUCTURES.iter().find(|(i, _)| i == id).unwrap().1.clone()
 }
 
 /// The run's dipole, as the pipeline makes it.
@@ -91,22 +94,16 @@ fn a_point_is_boxed_where_it_is_placed_and_an_unstated_equinox_widens_it() {
         .unwrap();
     assert!((dot(b.min, b.min).sqrt() - distance).abs() < 1e-6);
 
-    // The Shapley Supercluster's equinox is unstated: its box holds both readings.
-    let shapley = index_bounds(
-        &structure("shapley-supercluster"),
-        None,
-        &release,
-        &dipole(),
-    )
-    .unwrap();
-    let c = centre(&shapley);
+    // The South Pole Wall's equinox is unstated: its box holds both readings.
+    let wall = index_bounds(&structure("south-pole-wall"), None, &release, &dipole()).unwrap();
+    let c = centre(&wall);
     let reach = dot(c, c).sqrt()
         * Frame::EquatorialEquinoxUnstated
             .systematic_uncertainty()
             .unwrap()
             .to_radians()
             .sin();
-    assert!(half(&shapley).iter().all(|h| (h - reach).abs() < 1e-9));
+    assert!(half(&wall).iter().all(|h| (h - reach).abs() < 1e-9));
 }
 
 #[test]
@@ -150,14 +147,13 @@ fn a_structure_that_cannot_be_placed_is_not_indexed_with_the_reason() {
             "it publishes no position or geometry",
         ),
         (
-            "horologium-reticulum-supercluster",
+            "south-pole-wall",
             "its published position gives no distance",
         ),
         ("big-ring", "its member list was not resolved"),
     ] {
         let mut s = structure(id);
-        // Horologium-Reticulum now cites its mean velocity; without it, its position gives no
-        // distance.
+        // The South Pole Wall is placed by its position alone; without its distance, nowhere.
         if let Some(Coordinates::Spherical { radial, .. }) = &mut s.position {
             *radial = None;
         }
@@ -172,8 +168,10 @@ fn horologium_reticulum_is_placed_at_its_cited_mean_velocity() {
     // applied to all redshifts"), near α = 03h19m, δ = -50°02′. The velocity moves to the CMB
     // frame toward the centre with the run's dipole, as an entry's does, before it is placed:
     // 288.3 Mpc, not the 289.5 Mpc of the heliocentric cz.
+    // Its position, as placed were it not drawn as its sky region.
     let release = Release::planck_2018();
-    let s = structure("horologium-reticulum-supercluster");
+    let mut s = structure("horologium-reticulum-supercluster");
+    s.geometry = None;
     let Some(Coordinates::Spherical {
         frame,
         lon: Some(lon),
@@ -223,8 +221,11 @@ fn a_sky_region_over_every_longitude_spans_all_360_degrees() {
     let Some(StructureGeometry::SkyRegion(region)) = &mut wall.geometry else {
         unreachable!()
     };
-    region.lon[0].quantity.value = 0.0;
-    region.lon[1].quantity.value = 360.0;
+    let Sides::Ranges { lon, .. } = &mut region.sides else {
+        unreachable!()
+    };
+    lon[0].quantity.value = 0.0;
+    lon[1].quantity.value = 360.0;
     let to_icrs = between(region.frame, Frame::Icrs);
     let b = index_bounds(&wall, None, &release, &dipole()).unwrap();
     let far = release.cosmology().comoving_distance(0.05).unwrap();

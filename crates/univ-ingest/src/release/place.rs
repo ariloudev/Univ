@@ -32,15 +32,15 @@
 
 use univ_model::cosmology::{AssumedCosmology, SPEED_OF_LIGHT};
 use univ_model::derive::Release;
-use univ_model::geometry::Aabb;
-use univ_model::position::{Frame, Vec3, between, dot, lon_lat, scaled, unit_vector};
+use univ_model::geometry::{Aabb, Geometry, Primitive, Shape};
+use univ_model::position::{Frame, Rotation, Vec3, between, dot, lon_lat, scaled, unit_vector};
 use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::{Quantity, Uncertainty};
 
 use crate::crossmatch::MemberPlacement;
 use crate::structures::{
-    Cited, Coordinates, Radial, SkyBox, SphereSize, Structure, StructureGeometry,
+    AxisBox, Cited, Coordinates, Radial, Sides, SkyBox, SphereSize, Structure, StructureGeometry,
     StructurePrimitive,
 };
 
@@ -85,6 +85,17 @@ pub fn index_bounds(
             Ok(centred(centre, sphere_radius(p, release)? + margin))
         }
         Some(StructureGeometry::SkyRegion(b)) => sky_region(b, release),
+        Some(StructureGeometry::AxisBox(b)) => {
+            let primitive = axis_box(b, release)?.into();
+            Shape::new(
+                Frame::Icrs,
+                Unit::Megaparsec,
+                Geometry::Primitive { primitive },
+            )
+            .map_err(|e| format!("its box cannot stand: {e}"))?
+            .bounds_in(Frame::Icrs)
+            .ok_or_else(|| "its box has no bounds".to_owned())
+        }
         None => match &structure.position {
             Some(at) => point(at, release, correction),
             None => Err("it publishes no position or geometry".to_owned()),
@@ -117,16 +128,58 @@ pub fn centre(
         Some(StructureGeometry::SkyRegion(b)) => {
             let near = radial(&b.near, release)?;
             let far = radial(&b.far, release)?;
-            let lon0 = degrees(&b.lon[0])?;
-            let lon = lon0 + longitude_span(lon0, degrees(&b.lon[1])?) / 2.0;
-            let lat = f64::midpoint(degrees(&b.lat[0])?, degrees(&b.lat[1])?);
-            let u = unit_vector(lon, lat);
+            let r = ranges(b)?;
+            let u = unit_vector(r.lon0 + r.span / 2.0, f64::midpoint(r.lat0, r.lat1));
             Ok(between(b.frame, Frame::Icrs).apply(scaled(u, f64::midpoint(near, far))))
         }
+        Some(StructureGeometry::AxisBox(b)) => axis_box(b, release).map(|placed| placed.centre),
         None => match &structure.position {
             Some(at) => place(at, release, correction).map(|(c, _)| c),
             None => Err("it publishes no position or geometry".to_owned()),
         },
+    }
+}
+
+/// A sky region's sides as ranges, degrees in its frame: longitude from `lon0` eastward over
+/// `span`, latitude from `lat0` to `lat1`.
+#[derive(Clone, Copy, Debug)]
+pub struct SkyRanges {
+    pub lon0: f64,
+    pub span: f64,
+    pub lat0: f64,
+    pub lat1: f64,
+}
+
+/// The ranges of `region`'s sides: as published, or, for a centre with a width and height on
+/// the sky, the height about the centre's latitude and the half-width over the cosine of that
+/// latitude either side of its longitude.
+///
+/// # Errors
+///
+/// Fails when a side is not an angle.
+pub fn ranges(region: &SkyBox) -> Result<SkyRanges, String> {
+    match &region.sides {
+        Sides::Ranges { lon, lat } => {
+            let lon0 = degrees(&lon[0])?;
+            // The file check keeps the latitude bounds in order.
+            Ok(SkyRanges {
+                lon0,
+                span: longitude_span(lon0, degrees(&lon[1])?),
+                lat0: degrees(&lat[0])?,
+                lat1: degrees(&lat[1])?,
+            })
+        }
+        Sides::Centred { centre, size } => {
+            let (lon, lat) = (degrees(&centre[0])?, degrees(&centre[1])?);
+            let (width, height) = (degrees(&size[0])?, degrees(&size[1])?);
+            let span = (width / lat.to_radians().cos()).min(360.0);
+            Ok(SkyRanges {
+                lon0: (lon - span / 2.0).rem_euclid(360.0),
+                span,
+                lat0: lat - height / 2.0,
+                lat1: lat + height / 2.0,
+            })
+        }
     }
 }
 
@@ -160,7 +213,7 @@ pub(super) fn comoving(z: f64, release: &Release) -> Result<f64, String> {
         .map_err(|e| e.to_string())
 }
 
-fn km_s(c: &Cited) -> Result<f64, String> {
+pub(super) fn km_s(c: &Cited) -> Result<f64, String> {
     c.quantity
         .to(Unit::KilometrePerSecond)
         .map(|q| q.value)
@@ -200,6 +253,47 @@ pub(super) fn length(c: &Cited, release: &Release) -> Result<f64, String> {
         .to(Unit::Megaparsec)
         .map(|q| q.value)
         .map_err(|e| e.to_string())
+}
+
+/// A box along its frame's axes as univ-model's oriented box in the ICRS, in Mpc of the release
+/// cosmology: its middle and half-extents from the published ranges, each bound rescaled, and
+/// the frame's axes turned into the ICRS as its orientation.
+///
+/// # Errors
+///
+/// Fails when a bound cannot be rescaled, or its frame does not rotate into the ICRS.
+pub(super) fn axis_box(b: &AxisBox, release: &Release) -> Result<PlacedBox, String> {
+    let orientation = between(b.frame, Frame::Icrs)
+        .rotation()
+        .ok_or_else(|| format!("a box's frame rotates into the ICRS, not {:?}", b.frame))?;
+    let (mut middle, mut half_extents) = ([0.0; 3], [0.0; 3]);
+    for (k, (_, [low, high])) in b.pairs().into_iter().enumerate() {
+        let (low, high) = (length(low, release)?, length(high, release)?);
+        middle[k] = f64::midpoint(low, high);
+        half_extents[k] = (high - low) / 2.0;
+    }
+    Ok(PlacedBox {
+        centre: orientation.apply(middle),
+        half_extents,
+        orientation,
+    })
+}
+
+/// A box placed in the ICRS, Mpc: univ-model's oriented box.
+pub(super) struct PlacedBox {
+    pub centre: Vec3,
+    pub half_extents: Vec3,
+    pub orientation: Rotation,
+}
+
+impl From<PlacedBox> for Primitive {
+    fn from(b: PlacedBox) -> Self {
+        Self::OrientedBox {
+            centre: b.centre,
+            half_extents: b.half_extents,
+            orientation: b.orientation,
+        }
+    }
 }
 
 /// A sphere's radius in Mpc of the release cosmology: its published radius, or half its
@@ -309,10 +403,12 @@ pub fn sky_region(region: &SkyBox, release: &Release) -> Result<Aabb, String> {
     let near = radial(&region.near, release)?;
     let far = radial(&region.far, release)?;
     let (near, far) = (near.min(far), near.max(far));
-    let lon0 = degrees(&region.lon[0])?;
-    let span = longitude_span(lon0, degrees(&region.lon[1])?);
-    let (lat_a, lat_b) = (degrees(&region.lat[0])?, degrees(&region.lat[1])?);
-    let (lat0, lat1) = (lat_a.min(lat_b), lat_a.max(lat_b));
+    let SkyRanges {
+        lon0,
+        span,
+        lat0,
+        lat1,
+    } = ranges(region)?;
     let to_icrs = between(region.frame, Frame::Icrs);
     let n = f64::from(SKY_SAMPLES);
     let mut lo = [f64::INFINITY; 3];

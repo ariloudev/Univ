@@ -203,7 +203,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/structure_cells.rs"
         name: "horologium_reticulum_is_placed_at_its_cited_mean_velocity"
-        body: 5997e23bff42072150b838e880ccb261a058b2039dbc47d0443bd6ea668b72be
+        body: bb4a26be89d6d2a31cf13cf91b0f2a4d55ea10618f0136e4cf928d4935f74e62
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "a_redshift_distance_is_the_comoving_distance_of_the_cmb_frame_redshift"
         body: 3a4209fa46d5f86a73ea190f7ca866f6c342574e00f4758d065397c31720a3f5
@@ -311,7 +311,7 @@ links:
         body: 2ca6aedaee04ad2f514e4097f6b12fb3e074c78269d12cab5cace14218986ee8
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
-        body: b5f7f249cec2df5f3b2fdb4cb4f1496c15448e5d3476e17b53da41c2f43e3e80
+        body: 47583b08559bd0d0fe4287e9e448faa1b9e27512585bcc67dab4806310cc2da3
   - node: 01a19f22-2ad9-716e-876f-186415c2b2be
     reviewed: 458cb36ebd2c648503a49d347b9c2ac1d7d318306bca79bc27c117259efaa85a
     tests:
@@ -323,7 +323,7 @@ links:
         body: 06605592dc942ad4e6fcaa0225da1f58d73838142bceb134a5e6774e36e9b9c6
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
-        body: b5f7f249cec2df5f3b2fdb4cb4f1496c15448e5d3476e17b53da41c2f43e3e80
+        body: 47583b08559bd0d0fe4287e9e448faa1b9e27512585bcc67dab4806310cc2da3
   - node: 01a19f22-2ad9-716e-876f-1865763fa63d
     reviewed: 00fdbbf8ec387c88f8f4c6bea65028bcab0eecce03cdbfba9c85ba19e78ceb98
     tests:
@@ -1028,7 +1028,7 @@ links:
         body: 9b53940c55b3f335695917b94b57507f4afb6679bc3db5422338bd0f58f758aa
       - file: "crates/univ-ingest/tests/structure_cells.rs"
         name: "a_sky_region_over_every_longitude_spans_all_360_degrees"
-        body: af490900dac9dea747c3868359a1dd331f6d861761e278517a042d2cb5cb530e
+        body: 394445a9585035a901186d90b339e7084cf498d868cb4069629469663a092069
   - node: 01a1a304-2788-77fb-8f0d-273901bad9b4
     reviewed: 55d51c39ea72c4f24274d910221c2df4efcb998750f292d4d314e228cda00e07
     tests:
@@ -1061,7 +1061,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/structure_details.rs"
         name: "a_sky_box_becomes_the_healpix_cells_whose_centres_lie_in_it"
-        body: 7b882551e12e9f9baacf1b707f01636b7c3ef2a11bf59e585b0fd240ae20538d
+        body: ad5f7f6f17603e1df493cf218f8e398f52c83fbdc51830aaed615f276e41329a
       - file: "crates/univ-ingest/tests/structure_details.rs"
         name: "an_admitted_outline_is_placed_as_its_grid_region_in_mpc_of_the_release_cosmology"
         body: e29a86006db502d1c17a893969baa92a617287d7eae0dc6a243a7a7a5a37c7d5
@@ -1082,7 +1082,7 @@ links:
         body: 569800c01bf284f826d9dca83f5dab3c88e6c2ba78906020f39bc45d14aa68b1
       - file: "crates/univ-ingest/tests/structure_details.rs"
         name: "every_structure_names_the_cited_values_its_shape_and_rescaled_lengths_come_from"
-        body: 4602cd1f68f34cfb7dec66302deb708485ee5a7aa60d66807143079d857a2600
+        body: 124ca5aaedf6d73f4f6b40d3d9ce843d9b46e129231cb804899c0ffd25a27607
   - node: 01a19f23-636f-72bd-b194-15248994b03f
     reviewed: 531442a7f316a2ed5e8fbade5d8190168bc1fd7e6f311bde2266d6665ab61149
     tests:
@@ -1343,7 +1343,7 @@ links:
         body: 4da26c9886aacba7e8c52b2f978e57ccb4f41b7212ff3738cfba4e2c5c5e7d81
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
-        body: ae3a075bbab555b875550fdbb6598d70e8dd5a2bdfd0265a391c33535cf9db8b
+        body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
       - file: "crates/univ-ingest/tests/crossmatch.rs"
         name: "the_cross_match_stage_reports_its_steps_and_counts_and_writes_its_ids_as_pending"
         body: bba61434f6d49da2d39e82e9e3efcd298358f76ddc7781f0c8da9f6e2c63b5a3
@@ -1352,7 +1352,7 @@ links:
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: 432bc0143addc9f348a01a091f9c3977772a0f203706c401611b8c484ac6bcb9
+        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
         body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
@@ -1427,10 +1427,10 @@ links:
         body: 82b975c4785d473109110da1c61fa98f2f1c72ffc16fcea510ab30d1bb3b310e
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: 432bc0143addc9f348a01a091f9c3977772a0f203706c401611b8c484ac6bcb9
+        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
-        body: ae3a075bbab555b875550fdbb6598d70e8dd5a2bdfd0265a391c33535cf9db8b
+        body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
@@ -1451,13 +1451,13 @@ links:
         body: fb3233969c3b0a55c726aae02e8cf6bdec7cb47fc1252d96f0717c912178ea25
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
-        body: ae3a075bbab555b875550fdbb6598d70e8dd5a2bdfd0265a391c33535cf9db8b
+        body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: 432bc0143addc9f348a01a091f9c3977772a0f203706c401611b8c484ac6bcb9
+        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "the_fetch_ends_with_what_it_got_hit_failed_and_fetched"
         body: 7f2007f98ba30b6948371bd583e8ff2a05ae7b197fab612e3e13dbb352831138
@@ -1866,6 +1866,27 @@ links:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_size_published_under_h0_50_is_served_beside_its_rescaled_value"
         body: d0a5c46ac53486f5a25f9785bb6512ad1efeaeec5cac062c8fae8e0bf5ccdbe8
+  - node: 01a1a75d-dddb-74ed-8d5c-c9cad6ced21c
+    reviewed: 0ac7c8cebf87b933c640ab0e0354208ef3c6b494bdb5e90c8a84ad8c74b11c85
+    tests:
+      - file: "crates/univ-model/src/geometry/bounds.rs"
+        name: "a_sky_region_is_bounded_by_its_cells_between_its_distances"
+        body: eab30a72eb922217a5013a11335c44cbd69d38b1472cc4158011a16f07c04517
+  - node: 01a1a75d-dddb-74ed-8d5c-c9cbdad20688
+    reviewed: f4d5adf5f448e14eb09754a6a04fb006538515e7f9c02d333e3c3bd7ee98886b
+    tests:
+      - file: "crates/univ-ingest/tests/structure_details.rs"
+        name: "a_shape_its_paper_gives_as_a_lower_limit_on_the_extent_says_where"
+        body: 15aa82b1f2cb695c992eae44e0ed746d3f1d79cc9d7191aac3092bf104dd54e4
+  - node: 01a1a776-3b75-725b-96e4-807b84c53c7c
+    reviewed: f9b6cbfee270fe37e781edcbabf6aeda7c30d8108c58fb3f185620f72c186329
+    tests:
+      - file: "crates/univ-ingest/tests/structure_details.rs"
+        name: "a_void_with_extents_but_no_bounds_gives_them_about_its_point_and_is_bounded_by_it"
+        body: 1c31a60d3af0a591f7eddd0f292e37d1f25b6fb690618bd47c7279c22e0dfd55
+      - file: "crates/univ-ingest/tests/structures.rs"
+        name: "extents_name_lengths_or_velocities_among_the_values_about_a_placed_position"
+        body: f3701050bf4a15c229dfde66f794939de124df166d9eb11541d1caba323cf42b
   - node: 01a19f1e-d177-716d-b124-3d3a3c4e7f9d
     reviewed: bd133a9321c35822a44058bcf4c325e8c08fd1e7aedf564e7639f7eda8f8d3ce
     tests:
@@ -3426,6 +3447,12 @@ links:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "say when a structure is drawn by its bounding box, or not placed at all"
         body: a5304d3fa44dc6fc89260bdff112847abfefdebcdd63521684153b02aaa56b3c
+  - node: 01a1a776-3b75-725b-96e4-8079d9d916bf
+    reviewed: 52018ecce5d56e235e230ed65c0395f44ea031743536236446be85eff35b470c
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a point's published extents as a line along each, centred on its marker, and no box"
+        body: f657f7f01eb10a6a2d9f4e8ae21e4171ba4b87ed7c85ed1919ff297265d85125
   - node: 01a1a6d7-1b42-741d-95f7-ed4ee2759b78
     reviewed: 6cddd7a3ded05b19b35637c40ab136ee4b0e4151f3e1937951fa5270c36f9c74
     tests:
@@ -3471,6 +3498,15 @@ links:
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "draws each structure's name at its centre"
         body: 3058b5f259b766cd4c67628a18fbcc9b6f06a92524ce9be5458831401b6784db
+  - node: 01a1a75d-dddb-74ed-8d5c-c9c9a3084e80
+    reviewed: 689d7e03bdb6ef7a12fa0c2df995ce005ffd939d4f8604dd2c3766a278c703a0
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "is followed by \"(at least)\" where its papers give its shape as a lower limit on its extent"
+        body: 2fb9725e8726725fa2e67bb414395aa6e204d6098ca936eb5c8be71977a41802
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "name a structure whose shape is a lower limit on its extent \"(at least)\" in the panel"
+        body: 38e5707b97e69324c34acbfb111a21b7f402e20fdcaa4b6aeaffeae7990a32a7
   - node: 01a1a497-e843-728a-bce8-3ff70e744c39
     reviewed: bfba018f2e87e6cb478b58ef354c5a48d2622f35bfe07831bafdc10ce1748a20
     tests:
@@ -3513,3 +3549,9 @@ links:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "name a primitive shape by its form"
         body: 3200f915dd9bdb858982604758ed2be53848840e4c807849ff79cd061569f9ee
+  - node: 01a1a776-3b75-725b-96e4-807a1f1e8ef1
+    reviewed: 2c7296accced82ce68b41e74f0c895b20f2900d1eed84a1f07849ab93fcca516
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "say a structure drawn by its extents has unknown bounds, and only then"
+        body: b407b42fc3eef6aeeebed30623ea0fd1e4e0508d9b660a27fdf90877760f6521

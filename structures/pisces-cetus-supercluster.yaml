@@ -1,0 +1,85 @@
+# The Pisces-Cetus Supercluster: the most prominent component of Tully's Pisces-Cetus
+# Supercluster Complex, a percolated group of rich Abell clusters.
+name: Pisces-Cetus Supercluster
+alternative_names: ["Pisces–Cetus Supercluster"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: tully-1987
+    reference: "Tully 1987, ApJ 323, 1"
+    title: "More about clustering on a scale of 0.1 c"
+    doi: 10.1086/165803
+    bibcode: 1987ApJ...323....1T
+    read: "ADS scan of the article; Table 1 and the quoted sentences read on rendered page images"
+geometry:
+  kind: members
+  members:
+    frame: supergalactic
+    tracer: galaxy cluster
+    source: { paper: tully-1987, table: "1" }
+    columns:
+      - { name: redshift, header: "z (Adopted redshift)", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+      - { name: x, header: "SGX", unit: megaparsec, kind: inferred, uncertainty: { form: none_reported }, assumes: "h75^-1 Mpc: H0 = 75 km/s/Mpc" }
+      - { name: y, header: "SGY", unit: megaparsec, kind: inferred, uncertainty: { form: none_reported }, assumes: "h75^-1 Mpc: H0 = 75 km/s/Mpc" }
+      - { name: z, header: "SGZ", unit: megaparsec, kind: inferred, uncertainty: { form: none_reported }, assumes: "h75^-1 Mpc: H0 = 75 km/s/Mpc" }
+    rows:
+      - ["A14", 0.0640, 3, -229, 10]
+      - ["A44", 0.0559, 119, -161, 33]
+      - ["A74", 0.0672, 16, -238, -10]
+      - ["A75", 0.0617, 158, -152, 35]
+      - ["A76", 0.0416, 82, -131, 15]
+      - ["A77", 0.0719, 203, -145, 47]
+      - ["A79", 0.0927, 214, -228, 45]
+      - ["A85", 0.0518, 54, -182, 2]
+      - ["A86", 0.0610, 18, -218, -11]
+      - ["A104", 0.0822, 216, -182, 38]
+      - ["A114", 0.0566, 19, -203, -19]
+      - ["A117", 0.0536, 57, -187, -10]
+      - ["A119", 0.0440, 70, -147, -2]
+      - ["A133", 0.0604, 22, -215, -28]
+      - ["A147", 0.0438, 80, -141, -7]
+      - ["A150", 0.0596, 139, -164, 1]
+      - ["A151", 0.0526, 41, -186, -25]
+      - ["A154", 0.0658, 165, -167, 4]
+      - ["A158", 0.0645, 160, -166, 3]
+      - ["A160", 0.0447, 112, -122, 0]
+      - ["A168", 0.0452, 78, -147, -14]
+      - ["A171", 0.0706, 172, -181, -3]
+      - ["A179", 0.0547, 146, -136, -3]
+      - ["A189", 0.0334, 63, -108, -14]
+      - ["A193", 0.0482, 106, -141, -15]
+      - ["A195", 0.0422, 115, -107, -6]
+      - ["A225", 0.0692, 181, -165, -21]
+      - ["A240", 0.0618, 132, -175, -35]
+      - ["A245", 0.0790, 160, -219, -48]
+      - ["A246", 0.0700, 142, -198, -44]
+      - ["A257", 0.0706, 171, -178, -38]
+      - ["A261", 0.0467, 79, -147, -42]
+      - ["A277", 0.0947, 122, -283, -92]
+      - ["A279", 0.0815, 144, -233, -71]
+      - ["A281", 0.0880, 122, -263, -86]
+      - ["A2665", 0.0559, 92, -171, 60]
+values:
+  distance:
+    value: 200
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: "h75^-1 Mpc: H0 = 75 km/s/Mpc"
+    cite:
+      paper: tully-1987
+      sentence: "Much of the motivation for the claim in T86 that we are appended to a vast supercluster complex came from the observation that relatively nearby rich clusters (those within 100 h75^-1 Mpc) adhere to the same plane as that defined by the distribution of nearby galaxies (those within 40 h75^-1 Mpc) and, moreover, rich clusters in the Pisces-Cetus Supercluster (at a distance of ~200 h75^-1 Mpc) adhere remarkably to the very same plane."
+      page: 8
+    note: "The supercluster's distance as the paper rounds it."
+disputes: []
+notes: >-
+  The Pisces-Cetus Supercluster is the first of the five parts into which the paper divides
+  the Pisces-Cetus Supercluster Complex (its own file), and the paper calls it "the most
+  prominent component of the complex". The members are the Abell clusters listed under its
+  heading in Table 1, which gives each an adopted redshift and supergalactic Cartesian
+  coordinates in h75^-1 Mpc; the coordinates give only each member's direction, and its
+  distance comes from its redshift. The table stars the clusters that percolate to the
+  complex's major component at the shorter of the paper's two scale lengths; the others join
+  at the longer one. Both are kept as members. The paper notes that the supercluster may
+  extend below the southern declination limit of the Abell survey.

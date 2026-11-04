@@ -1,0 +1,118 @@
+# U1.11: a Large Quasar Group of 38 quasars linked at 100 Mpc in SDSS DR7QSO, beside U1.28.
+name: U1.11 LQG
+alternative_names: ["U1.11"]
+kind: quasar_group
+status: statistical_claim
+scale_domain: cosmic_web
+papers:
+  - id: clowes-2012
+    reference: "Clowes, Campusano, Graham & Söchting 2012, MNRAS 419, 556"
+    title: "Two close large quasar groups of size ~350 Mpc at z ~ 1.2"
+    doi: 10.1111/j.1365-2966.2011.19719.x
+    bibcode: 2012MNRAS.419..556C
+    arxiv: "1108.6221"
+    read: "arXiv PDF text of 1108.6221; Table 2 read from its text layer"
+geometry:
+  kind: members
+  members:
+    frame: icrs
+    tracer: quasar
+    source: { paper: clowes-2012, table: "2" }
+    columns:
+      - { name: lon, header: "RA (2000)", unit: degree, format: hms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lat, header: "Dec (2000)", unit: degree, format: dms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "z", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+    rows:
+      - ["SDSS J102907.22+021552.4", "10:29:07.22", "+02:15:52.4", 1.0173]
+      - ["SDSS J103200.20+022056.4", "10:32:00.20", "+02:20:56.4", 1.0038]
+      - ["SDSS J103300.11+042116.9", "10:33:00.11", "+04:21:16.9", 1.0144]
+      - ["SDSS J103552.43+032537.2", "10:35:52.43", "+03:25:37.2", 1.0553]
+      - ["SDSS J103626.33+045436.4", "10:36:26.33", "+04:54:36.4", 1.0477]
+      - ["SDSS J103639.63+022553.5", "10:36:39.63", "+02:25:53.5", 1.0525]
+      - ["SDSS J103641.96+050941.1", "10:36:41.96", "+05:09:41.1", 1.0631]
+      - ["SDSS J103709.33+022055.7", "10:37:09.33", "+02:20:55.7", 1.0143]
+      - ["SDSS J103739.49+034946.9", "10:37:39.49", "+03:49:46.9", 1.0321]
+      - ["SDSS J103743.97+040233.8", "10:37:43.97", "+04:02:33.8", 1.0932]
+      - ["SDSS J103748.36+040242.1", "10:37:48.36", "+04:02:42.1", 1.0869]
+      - ["SDSS J103806.57+020234.3", "10:38:06.57", "+02:02:34.3", 1.0526]
+      - ["SDSS J104012.14+043904.6", "10:40:12.14", "+04:39:04.6", 1.1195]
+      - ["SDSS J104309.70+075317.8", "10:43:09.70", "+07:53:17.8", 1.1823]
+      - ["SDSS J104410.13+072305.6", "10:44:10.13", "+07:23:05.6", 1.1514]
+      - ["SDSS J104446.16+070651.4", "10:44:46.16", "+07:06:51.4", 1.1292]
+      - ["SDSS J104506.44+051627.4", "10:45:06.44", "+05:16:27.4", 1.1116]
+      - ["SDSS J104509.93+063559.0", "10:45:09.93", "+06:35:59.0", 1.1184]
+      - ["SDSS J104636.93+082437.4", "10:46:36.93", "+08:24:37.4", 1.1398]
+      - ["SDSS J104752.93+022408.1", "10:47:52.93", "+02:24:08.1", 1.1390]
+      - ["SDSS J104835.72+000002.3", "10:48:35.72", "+00:00:02.3", 1.1429]
+      - ["SDSS J104901.71+005534.0", "10:49:01.71", "+00:55:34.0", 1.1630]
+      - ["SDSS J104932.22+050531.7", "10:49:32.22", "+05:05:31.7", 1.1136]
+      - ["SDSS J105017.31+012450.9", "10:50:17.31", "+01:24:50.9", 1.2007]
+      - ["SDSS J105048.25+032328.6", "10:50:48.25", "+03:23:28.6", 1.1509]
+      - ["SDSS J105118.61+015755.9", "10:51:18.61", "+01:57:55.9", 1.1812]
+      - ["SDSS J105229.50+031131.5", "10:52:29.50", "+03:11:31.5", 1.1665]
+      - ["SDSS J105234.24-001501.0", "10:52:34.24", "-00:15:01.0", 1.1607]
+      - ["SDSS J105352.72+050043.9", "10:53:52.72", "+05:00:43.9", 1.1320]
+      - ["SDSS J105414.09-001803.5", "10:54:14.09", "-00:18:03.5", 1.1618]
+      - ["SDSS J105459.34+031151.3", "10:54:59.34", "+03:11:51.3", 1.1819]
+      - ["SDSS J105527.67+002001.5", "10:55:27.67", "+00:20:01.5", 1.1448]
+      - ["SDSS J105543.01+001001.7", "10:55:43.01", "+00:10:01.7", 1.1093]
+      - ["SDSS J105549.72+031324.1", "10:55:49.72", "+03:13:24.1", 1.1348]
+      - ["SDSS J105703.23+040526.8", "10:57:03.23", "+04:05:26.8", 1.1330]
+      - ["SDSS J105837.95+033124.9", "10:58:37.95", "+03:31:24.9", 1.1215]
+      - ["SDSS J105943.44+024418.2", "10:59:43.44", "+02:44:18.2", 1.1024]
+      - ["SDSS J110121.27+023333.0", "11:01:21.27", "+02:33:33.0", 1.0874]
+values:
+  members:
+    value: 38
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &group
+      paper: clowes-2012
+      sentence: "U1.11 has 38 members, z = 1.11, and angular separation (of RA, Dec centroids) of 1.97° from U1.28."
+  mean_redshift:
+    value: 1.11
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *group
+  separation_from_u1_28:
+    value: 1.97
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *group
+    note: "The angular separation of the RA, Dec centroids of U1.11 and U1.28."
+  characteristic_size:
+    value: 380
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: &cosmology
+      cosmology: "proper size at the present epoch; ΩT = 1, ΩM = 0.27, ΩΛ = 0.73, H0 = 70 km/s/Mpc"
+      cite:
+        paper: clowes-2012
+        sentence: "Note that the concordance model is adopted for cosmological calculations, with ΩT = 1, ΩM = 0.27, ΩΛ = 0.73, and H0 = 70 km s-1 Mpc-1. All sizes given are proper sizes at the present epoch."
+    cite:
+      paper: clowes-2012
+      sentence: "A simple measure of the characteristic size of the LQGs, which takes no account of morphology, is the cube root of the corrected CHMS volumes, giving ~ 350, 380 Mpc for U1.28 and U1.11 respectively."
+    note: "The cube root of the corrected convex-hull-of-member-spheres volume."
+  longest_axis:
+    value: 780
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite:
+      paper: clowes-2012
+      sentence: "By this measure the longest axes are ~ 630 and 780 Mpc for U1.28 and U1.11 respectively."
+    note: "From the inertia tensor of the members."
+disputes: []
+notes: >-
+  The members are the quasars of Table 2, with their SDSS J2000 positions as published; the
+  paper's names are prefixed with SDSS J as for U1.28. The group was found beside the
+  Clowes-Campusano LQG (U1.28, its own file) in the same direction. The paper finds it
+  significant by its convex-hull-of-member-spheres test against random points; that departure is
+  printed in units of sigma with the symbol glued to the number, which the file's citation check
+  cannot read, so it is not carried. No paper disputing this group in particular was read;
+  Nadathur disputes the linkage method for the Huge-LQG.

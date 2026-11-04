@@ -1,0 +1,81 @@
+# A possible chain of Abell and Zwicky clusters in Perseus-Pegasus, through the Perseus-Pisces
+# Supercluster (Batuski & Burns 1985).
+name: Perseus–Pegasus Filament
+alternative_names: ["Perseus-Pegasus Filament"]
+kind: filament
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: batuski-1985
+    reference: "Batuski & Burns 1985, ApJ 299, 5"
+    title: "A possible 300 megaparsec filament of clusters of galaxies in Perseus-Pegasus"
+    doi: 10.1086/163677
+    bibcode: 1985ApJ...299....5B
+    read: "ADS scan of the full article; Table 2B and the quoted sentences read on rendered page images"
+geometry:
+  kind: members
+  members:
+    frame: galactic
+    tracer: galaxy cluster (Abell or Zwicky)
+    source: { paper: batuski-1985, table: "2B" }
+    columns:
+      - { name: lat, header: "b", unit: degree, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lon, header: "l", unit: degree, kind: measured, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "Z", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+    rows:
+      - ["A426", -13.4, 150.4, 0.0183]
+      - ["A347", -17.6, 141.2, 0.0187]
+      - ["A262", -25.1, 136.6, 0.0161]
+      - ["A71", -33.2, 119.4, 0.0219]
+      - ["A2666", -33.8, 106.4, 0.0265]
+      - ["A2634", -33.1, 103.5, 0.0312]
+      - ["A2572", -38.9, 94.2, 0.0383]
+      - ["A2589", -41.2, 94.7, 0.0414]
+      - ["A2593", -43.2, 93.5, 0.0440]
+      - ["ZW 2336+20", -38.6, 101.1, 0.0567]
+      - ["A2626", -38.4, 100.5, 0.0573]
+      - ["A2625", -39.0, 100.1, 0.0602]
+      - ["A2618", -36.5, 100.6, 0.0705]
+      - ["A2630", -43.5, 98.1, 0.0675]
+      - ["ZW 2339+14", -44.9, 98.8, 0.0692]
+      - ["A2675", -49.1, 101.7, 0.0726]
+      - ["A2622", -32.4, 102.8, 0.0615]
+      - ["A2657", -50.3, 96.7, 0.0408]
+      - ["ZW 2349+16", -43.4, 103.3, 0.0759]
+      - ["ZW 0003+32", -28.8, 112.2, 0.0348]
+values:
+  length:
+    value: 300
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: lower_limit }
+    assumes: "h75^-1 Mpc: H0 = 75 km/s/Mpc"
+    cite:
+      paper: batuski-1985
+      sentence: "The region contains a possible filament of galaxies and galaxy clusters which includes the Perseus-Pisces Supercluster and has a total apparent length of over 300 h^-1 Mpc."
+      page: 5
+    note: >-
+      The paper's h is defined in its introduction as "(h = H0/75 Mpc km^-1 s^-1)". The body's sum
+      of the direct links between the Abell clusters gives a somewhat longer lower bound, printed
+      with the number glued to its unit, which the file's citation check cannot read.
+  abell_clusters_in_contour:
+    value: 16
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: batuski-1985
+      sentence: "There are 16 Abell clusters within this contour."
+      page: 7
+disputes: []
+notes: >-
+  The members are the clusters of Table 2B, "Filament Members", in the galactic latitude and
+  longitude the paper prints (it predates the Hipparcos definition of the galactic frame, from
+  which its coordinates differ by far less than their printed precision). Four are poor Zwicky
+  clusters, one of which the authors take as a bridge across the widest gap between Abell
+  clusters. The redshifts are from the literature, except those the authors measured, which
+  Table 2B marks; the number of galaxies averaged into each is left out. The paper calls the
+  structure a possible filament: a Kolmogorov-Smirnov test of cluster alignments makes it
+  unlikely in random samples with the Abell clusters' correlation function. Its Perseus-Pisces
+  end runs into the zone of avoidance. Table 2A lists the region's non-members, which are
+  not ported.

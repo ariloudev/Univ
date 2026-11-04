@@ -1,0 +1,83 @@
+# Our home supercluster, defined as the basin of attraction whose peculiar-velocity flows,
+# reconstructed from Cosmicflows-2 distances with a Wiener filter, converge on the Great
+# Attractor region.
+name: Laniakea Supercluster
+alternative_names: ["Laniakea"]
+kind: basin
+status: reconstructed
+scale_domain: cosmic_web
+papers:
+  - id: tully-2014
+    reference: "Tully, Courtois, Hoffman & Pomarède 2014, Nature 513, 71"
+    title: "The Laniakea supercluster of galaxies"
+    doi: 10.1038/nature13674
+    bibcode: 2014Natur.513...71T
+    arxiv: "1409.0880"
+    read: "arXiv PDF of 1409.0880, text extracted: main text, Methods and the figure and Extended Data captions read"
+# The putative centroid of the attractor region, about which the Methods apply their local/tidal
+# decomposition: the place the flows converge on, not the centre of the basin, which the paper
+# does not give. The sentence names no frame; the vector is read as supergalactic Cartesian
+# (SGX, SGY, SGZ), the frame of every map of the paper: the Extended Data Figure 3 captions
+# slice the basin at SGX = -4750 and SGY = +1000 km/s, beside this centroid.
+position:
+  frame: supergalactic
+  x:
+    value: -4700
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: &centroid
+      paper: tully-2014
+      sentence: "A local/tidal decomposition has been applied to a sphere of radius 6000 km s−1 = 80 Mpc centered on the putative centroid of the attractor region ([−4700, 1300, −500] km s−1)."
+  y:
+    value: 1300
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *centroid
+  z:
+    value: -500
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *centroid
+values:
+  diameter_in_velocity:
+    value: 12000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: &diameter
+      paper: tully-2014
+      sentence: "The region, if approximated as round, has a diameter 12,000 km s−1 or 160 Mpc and encompasses ~1×10^17 M⊙."
+    note: "The diameter of the basin if it were round; the basin's boundary, the outer limit of the inflowing streams, is not round."
+  diameter:
+    value: 160
+    unit: megaparsec
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    assumes:
+      cosmology: "H0 = 75.2 km/s/Mpc, the Cosmicflows-2 value"
+      cite:
+        paper: tully-2014
+        sentence: "We found H0 = 75.2 ± 3.0 km s−1 Mpc−1."
+    cite: *diameter
+  attractor_sphere_radius:
+    value: 6000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *centroid
+    note: "The sphere about the centroid in which each of the constrained realizations holds one monolithic overdense structure; beyond about a sphere a little larger, more than one attractor emerges."
+disputes: []
+notes: >-
+  Laniakea is a basin of attraction rather than a concentration of galaxies: the volume whose
+  peculiar-velocity flow lines, reconstructed with a Wiener filter from Cosmicflows-2 distances,
+  run inward to one local attractor near the Norma and Centaurus clusters. It holds the historical
+  Local and Southern superclusters, the Pavo-Indus filament, an extension to the Ophiuchus
+  Cluster, the Local Void and the Sculptor and other bounding voids. The point is the centroid of
+  the attractor region, read in supergalactic Cartesian coordinates as the paper's maps are drawn;
+  the sentence itself names no frame. The published km/s values are kept; the paper's Mpc figures
+  convert them with its Hubble constant. The mass enclosed, in solar masses, has no unit in
+  univ-model and is left out; the Hubble constant's uncertainty is kept in its cited sentence. The paper expects Laniakea to prove to
+  be in motion as part of something larger.

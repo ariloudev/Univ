@@ -1,0 +1,176 @@
+# A supercluster of twelve Abell clusters in Bootes, on the wall of the Bootes Void, as the Tartu
+# catalogues of superclusters of rich clusters list it.
+name: Bootes Supercluster
+alternative_names: ["Boötes Supercluster", "SCL 138"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: einasto-1997
+    reference: "Einasto, Tago, Jaaniste, Einasto & Andernach 1997, A&AS 123, 119"
+    title: "The supercluster-void network I. The supercluster catalogue and large-scale distribution"
+    doi: 10.1051/aas:1997340
+    bibcode: 1997A&AS..123..119E
+    arxiv: "astro-ph/9610088"
+    read: "arXiv PDF of astro-ph/9610088: Table A1 and its column notes read on the rendered page, Section 2.1 from the extracted text"
+  - id: einasto-1994
+    reference: "Einasto, Einasto, Tago, Dalton & Andernach 1994, MNRAS 269, 301"
+    title: "The structure of the Universe traced by rich clusters of galaxies"
+    doi: 10.1093/mnras/269.2.301
+    bibcode: 1994MNRAS.269..301E
+    read: "ADS scan of the article: Table 2 (pages 305 and 306) read on the page images, Sections 2 and 3.6"
+# The supercluster's centre in the 1997 catalogue, SCL 138: the mean of its member clusters'
+# supergalactic X, Y and Z, turned into B1950 equatorial coordinates and a distance.
+position:
+  frame: fk4_b1950
+  lon:
+    value: 209.8
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1997
+      table: "A1"
+      row: "138 (Bootes)"
+      column: "(3) αC, the centre's right ascension (1950)"
+      cell: "209.8"
+  lat:
+    value: 25.4
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1997
+      table: "A1"
+      row: "138 (Bootes)"
+      column: "(4) δC, the centre's declination (1950)"
+      cell: "25.4"
+  distance:
+    value: 196
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1997
+      table: "A1"
+      row: "138 (Bootes)"
+      column: "(5) DC h−1Mpc, the distance to the supercluster centre"
+      cell: "196"
+    note: "From redshifts moved to the rest frame of the Local Group and corrected for expansion in a flat model with a cosmological constant (Section 2.1); some members' redshifts are photometric estimates."
+values:
+  member_clusters:
+    value: 12
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1997
+      table: "A1"
+      row: "138 (Bootes)"
+      column: "(2) NCL, the multiplicity"
+      cell: "12"
+    note: "The twelve Abell clusters listed in column (6) of the row, among them Abell 1795."
+  centre_ra_1994:
+    value: 211.6
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1994
+      table: "2"
+      row: "83"
+      column: "(3) αC"
+      cell: "211.6"
+    note: "The centre of the same supercluster in the earlier catalogue, which the 1997 row cross-identifies as its number 83; that table prints no equinox."
+  centre_dec_1994:
+    value: 25.0
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1994
+      table: "2"
+      row: "83"
+      column: "(4) δC"
+      cell: "25.0"
+  centre_distance_1994:
+    value: 202
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1994
+      table: "2"
+      row: "83"
+      column: "(5) DC h−1Mpc"
+      cell: "202"
+  member_clusters_1994:
+    value: 12
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-1994
+      table: "2"
+      row: "83"
+      column: "(2) NCL"
+      cell: "12"
+  extent_sgx_1994:
+    value: 37
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: &units "not stated: the paper states no Hubble constant; the table notes give these extents and the length in megaparsecs, while the distance column beside them is in h^-1 Mpc"
+    cite:
+      paper: einasto-1994
+      table: "2"
+      row: "83"
+      column: "(6) ΔX, the extent in supergalactic X (in megaparsecs, the table notes)"
+      cell: "37"
+  extent_sgy_1994:
+    value: 41
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *units
+    cite:
+      paper: einasto-1994
+      table: "2"
+      row: "83"
+      column: "(7) ΔY, the extent in supergalactic Y (in megaparsecs, the table notes)"
+      cell: "41"
+  extent_sgz_1994:
+    value: 42
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *units
+    cite:
+      paper: einasto-1994
+      table: "2"
+      row: "83"
+      column: "(8) ΔZ, the extent in supergalactic Z (in megaparsecs, the table notes)"
+      cell: "42"
+  length_1994:
+    value: 69
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *units
+    cite:
+      paper: einasto-1994
+      table: "2"
+      row: "83"
+      column: "(9) L, the length of the supercluster (in megaparsecs, the table notes)"
+      cell: "69"
+disputes: []
+notes: >-
+  Not the Bootes Void, which lies beside it: the 1994 paper counts this supercluster among those
+  that make up the larger Batuski and Burns supercluster surrounding the giant Bootes void. Both
+  catalogues find superclusters by linking Abell and ACO clusters within a neighbourhood radius
+  and place each at the mean supergalactic position of its members. The 1997 catalogue gives its
+  centre for equinox 1950; the 1994 table prints no equinox, and its centre and distance differ a
+  little with the updated redshifts and estimated distances of 1997. The 1994 extents and length
+  are printed in megaparsecs without the h of its distances; they are kept as printed, and may
+  well be h^-1 Mpc like every other length of the paper. Distances in h^-1 Mpc become lengths only
+  once a Hubble constant is chosen.

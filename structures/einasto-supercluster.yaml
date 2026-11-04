@@ -1,0 +1,126 @@
+# The most massive supercluster of a catalogue of 662 found by friends-of-friends linking of WHL
+# clusters in SDSS, at z ≈ 0.25; its discoverers named it after Jaan Einasto.
+name: Einasto Supercluster
+alternative_names: ["SCl 1"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: sankhyayan-2023
+    reference: "Sankhyayan, Bagchi, Tempel, More, Einasto, Dabhade, Raychaudhury, Athreya & Heinämäki 2023, ApJ 958, 62"
+    title: "Identification of Superclusters and their Properties in the Sloan Digital Sky Survey Using the WHL Cluster Catalog"
+    doi: 10.3847/1538-4357/acfaeb
+    bibcode: 2023ApJ...958...62S
+    arxiv: "2309.06251"
+    read: "arXiv PDF of 2309.06251 (the draft of September 2023), text extracted: abstract, Sections 1, 4.2 and 5.1.2, and Table 2 read"
+# SCl 1 of Table 2: the virial-mass-weighted average position of the member clusters (Section
+# 4.2), which the paper notes need not be the supercluster's geometric centre.
+position:
+  frame: equatorial_equinox_unstated
+  lon:
+    value: 209.6316
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: sankhyayan-2023
+      table: "2"
+      row: "SCl 1"
+      column: "RA (deg) (2)"
+      cell: "209.6316"
+  lat:
+    value: 3.3618
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: sankhyayan-2023
+      table: "2"
+      row: "SCl 1"
+      column: "Decl. (deg) (3)"
+      cell: "3.3618"
+  redshift:
+    value: 0.2493
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: sankhyayan-2023
+      table: "2"
+      row: "SCl 1"
+      column: "z (6)"
+      cell: "0.2493"
+    note: "The redshift of the mass-weighted position; most member redshifts are spectroscopic, a minority photometric."
+values:
+  size:
+    value: 111.10
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes:
+      cosmology: "H0 = 72 km/s/Mpc, Ωm = 0.26, ΩΛ = 0.74; comoving"
+      cite:
+        paper: sankhyayan-2023
+        sentence: "Throughout this paper, we have adopted the following cosmological parameters: H0 = 72 km s−1 Mpc−1, Ωm = 0.26 and ΩΛ = 0.74."
+    cite:
+      paper: sankhyayan-2023
+      table: "2"
+      row: "SCl 1"
+      column: "Size (Mpc) (7)"
+      cell: "111.10"
+    note: "The comoving linear size: the largest distance between two member clusters (Section 4.2)."
+  member_clusters:
+    value: 54
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: sankhyayan-2023
+      table: "2"
+      row: "SCl 1"
+      column: "Nmem (9)"
+      cell: "54"
+  abell_clusters:
+    value: 2
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: sankhyayan-2023
+      table: "2"
+      row: "SCl 1"
+      column: "NAbells (10)"
+      cell: "2"
+    note: "Abell 1835, the most massive member, and Abell 1801."
+  most_massive_member_bcg_ra:
+    value: 210.2586
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: sankhyayan-2023
+      table: "2"
+      row: "SCl 1"
+      column: "RA BCG (deg) (4)"
+      cell: "210.2586"
+    note: "The brightest cluster galaxy of the most massive member cluster, Abell 1835."
+  most_massive_member_bcg_dec:
+    value: 2.8785
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: sankhyayan-2023
+      table: "2"
+      row: "SCl 1"
+      column: "Decl BCG (deg) (5)"
+      cell: "2.8785"
+disputes: []
+notes: >-
+  The paper's own notes on SCl 1 call it a new discovery, the most massive supercluster at its
+  redshift: "We propose to name SCl 1 as Einasto Supercluster in honor of Prof. Jaan Einasto"
+  (Section 5.1.2). It was found by a modified friends-of-friends algorithm on the WHL cluster
+  catalogue. Its position is the virial-mass-weighted mean of its members' comoving positions;
+  the paper prints no equinox. Its total mass, the sum of its members' bound halo masses in solar
+  masses, has no unit in univ-model and is left out. The full catalogue is machine-readable at the
+  journal and CDS; only the five rows printed in the paper were read, so no members are drawn.
