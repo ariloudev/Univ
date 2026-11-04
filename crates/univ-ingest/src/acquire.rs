@@ -241,7 +241,7 @@ impl<C: Clock> Run<'_, C> {
         let recorded = self
             .known
             .payload(&request.item)
-            .filter(|p| p.url.ends_with(&request.suffix))
+            .filter(|p| p.url.ends_with(&request.ask.suffix()))
             .and_then(|p| p.rows);
         if recorded.is_none() {
             self.remove(&dest)?;
@@ -251,7 +251,7 @@ impl<C: Clock> Run<'_, C> {
             .chunk(
                 &self.item(&request.item, &dest),
                 &self.definition.mirrors,
-                &request.suffix,
+                &request.ask,
                 check,
                 &|p| self.record(p),
             )

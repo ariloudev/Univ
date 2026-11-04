@@ -9,7 +9,7 @@ use std::io::{Read, Write};
 use std::net::TcpListener;
 
 use common::{accept, item, keep, rig};
-use univ_ingest::fetch::{FetchError, with_causes};
+use univ_ingest::fetch::{Ask, FetchError, with_causes};
 
 /// The error of fetching one chunk from the single mirror `mirror`.
 async fn failure(mirror: String) -> String {
@@ -18,7 +18,13 @@ async fn failure(mirror: String) -> String {
     let dest = dir.path().join("chunk-0.tsv");
     let error = rig
         .fetcher
-        .chunk(&item("chunk 0", &dest), &[mirror], "/q", &accept, &keep)
+        .chunk(
+            &item("chunk 0", &dest),
+            &[mirror],
+            &Ask::Get("/q".into()),
+            &accept,
+            &keep,
+        )
         .await
         .unwrap_err();
     let FetchError::AllMirrorsFailed { .. } = &error else {

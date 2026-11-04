@@ -62,11 +62,13 @@ redistribution:
     and Extragalactic Distance Database terms were not checked (EDD was unreachable). Provisional:
     judged again before any public deployment.
 scale_domain: cosmic_web
+# VizieR's mirrors, checked 2026-11-04: China-VO answers like CDS; NAO's database was unreachable
+# and IDIA broke off mid-answer, so they come last.
 mirrors:
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
-  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
-  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
 fixes:
   - defect: >-
       SGX, SGY and SGZ are labelled Mpc in the ReadMe and by VizieR, but hold km/s: they are the

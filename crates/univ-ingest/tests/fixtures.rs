@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use univ_ingest::access::{check_answer, chunk_requests};
 use univ_ingest::events::RecordingSink;
-use univ_ingest::fetch::{Fetched, Fetcher, Item, RetryPolicy, SystemClock, hex};
+use univ_ingest::fetch::{Ask, Fetched, Fetcher, Item, RetryPolicy, SystemClock, hex};
 use univ_ingest::source::{Access, SourceDefinition};
 
 /// Rows asked of a query provider for a fixture.
@@ -76,14 +76,17 @@ fn every_source_has_a_recording_its_reader_parses() {
 }
 
 /// The first chunk's request of a query source, cut to a few rows.
-fn small(definition: &SourceDefinition) -> Option<String> {
-    let first = chunk_requests(definition).into_iter().next()?.suffix;
-    Some(match &definition.access {
+fn small(definition: &SourceDefinition) -> Option<Ask> {
+    let cut = |asked: &str| match &definition.access {
         Access::VizierTsv { .. } => {
-            first.replace("-out.max=unlimited", &format!("-out.max={ROWS}"))
+            asked.replace("-out.max=unlimited", &format!("-out.max={ROWS}"))
         }
         // `SELECT` is the start of the query in the encoded text.
-        _ => first.replacen("SELECT+", &format!("SELECT+TOP+{ROWS}+"), 1),
+        _ => asked.replacen("SELECT+", &format!("SELECT+TOP+{ROWS}+"), 1),
+    };
+    Some(match chunk_requests(definition).into_iter().next()?.ask {
+        Ask::Get(suffix) => Ask::Get(cut(&suffix)),
+        Ask::Job(form) => Ask::Job(cut(&form)),
     })
 }
 
@@ -144,7 +147,7 @@ async fn record_fixtures() {
                 }
             }
         } else {
-            let Some(suffix) = small(&definition) else {
+            let Some(ask) = small(&definition) else {
                 continue;
             };
             let part = path.with_extension("download");
@@ -155,7 +158,7 @@ async fn record_fixtures() {
                 dest: &part,
             };
             match fetcher
-                .chunk(&item, &definition.mirrors, &suffix, &check, &|_| Ok(()))
+                .chunk(&item, &definition.mirrors, &ask, &check, &|_| Ok(()))
                 .await
             {
                 Ok(Fetched::Arrived(payload)) => {

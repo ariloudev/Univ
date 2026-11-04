@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use common::{accept, item, keep, rig};
 use univ_ingest::events::Event;
-use univ_ingest::fetch::{FetchError, Fetched, Payload};
+use univ_ingest::fetch::{Ask, FetchError, Fetched, Payload};
 use wiremock::matchers::{method, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -37,7 +37,7 @@ async fn a_request_is_retried_four_times_with_waits_doubling_from_two_seconds() 
         .chunk(
             &item("chunk 0", &dest),
             &mirrors,
-            "/q?chunk=0",
+            &Ask::Get("/q?chunk=0".into()),
             &accept,
             &keep,
         )
@@ -71,7 +71,7 @@ async fn a_mirror_that_fails_all_its_retries_is_skipped_for_the_rest_of_the_run(
             .chunk(
                 &item(&format!("chunk {n}"), &dest),
                 &mirrors,
-                &format!("/q?chunk={n}"),
+                &Ask::Get(format!("/q?chunk={n}")),
                 &accept,
                 &keep,
             )
@@ -112,7 +112,7 @@ async fn a_run_resumes_from_the_first_chunk_not_on_disk_and_fetches_no_chunk_twi
             .chunk(
                 &item(&format!("chunk {n}"), &dest),
                 &[server.uri()],
-                &format!("/q?chunk={n}"),
+                &Ask::Get(format!("/q?chunk={n}")),
                 &accept,
                 &keep,
             )
@@ -159,7 +159,7 @@ async fn a_chunk_is_renamed_into_place_only_once_complete_and_a_partial_file_is_
         .chunk(
             &item("chunk 0", &dest),
             &[server.uri()],
-            "/q?chunk=0",
+            &Ask::Get("/q?chunk=0".into()),
             &tsv_only,
             &keep,
         )
@@ -181,7 +181,7 @@ async fn a_chunk_is_renamed_into_place_only_once_complete_and_a_partial_file_is_
         .chunk(
             &item("chunk 0", &dest),
             &[server.uri()],
-            "/q?chunk=0",
+            &Ask::Get("/q?chunk=0".into()),
             &tsv_only,
             &keep,
         )
@@ -214,7 +214,7 @@ async fn a_chunk_no_mirror_can_give_fails_naming_the_source_the_chunk_and_each_m
         .chunk(
             &item("chunk 1", &dest),
             &[busy.uri(), missing.uri()],
-            "/q?chunk=1",
+            &Ask::Get("/q?chunk=1".into()),
             &accept,
             &keep,
         )
@@ -257,7 +257,7 @@ async fn an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk() 
         .chunk(
             &item("chunk 0", &dir.path().join("chunk-0.tsv")),
             &[server.uri()],
-            "/q?chunk=0",
+            &Ask::Get("/q?chunk=0".into()),
             &accept,
             &keep,
         )
@@ -269,7 +269,7 @@ async fn an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk() 
         .chunk(
             &item("chunk 1", &dir.path().join("chunk-1.tsv")),
             &[server.uri()],
-            "/q?chunk=1",
+            &Ask::Get("/q?chunk=1".into()),
             &accept,
             &keep,
         )
@@ -323,7 +323,7 @@ async fn a_body_that_fails_its_check_moves_to_the_next_mirror_without_skipping_t
             .chunk(
                 &item(&format!("chunk {n}"), &dest),
                 &mirrors,
-                &format!("/q?chunk={n}"),
+                &Ask::Get(format!("/q?chunk={n}")),
                 &tsv_only,
                 &keep,
             )
@@ -361,7 +361,7 @@ async fn a_chunk_is_recorded_before_it_is_renamed_and_a_failed_record_leaves_no_
         .chunk(
             &item("chunk 0", &dest),
             &[server.uri()],
-            "/q",
+            &Ask::Get("/q".into()),
             &tsv_only,
             &seen,
         )
@@ -375,7 +375,7 @@ async fn a_chunk_is_recorded_before_it_is_renamed_and_a_failed_record_leaves_no_
         .chunk(
             &item("chunk 1", &dest),
             &[server.uri()],
-            "/q",
+            &Ask::Get("/q".into()),
             &tsv_only,
             &failing,
         )
@@ -458,12 +458,12 @@ async fn fetch_three(
         .map(|n| dir.path().join(format!("chunk-{n}.tsv")))
         .collect();
     let names: Vec<String> = (0..3).map(|n| format!("chunk {n}")).collect();
-    let suffixes: Vec<String> = (0..3).map(|n| format!("/q?chunk={n}")).collect();
+    let asks: Vec<Ask> = (0..3).map(|n| Ask::Get(format!("/q?chunk={n}"))).collect();
     let fetch = |n: usize| {
         let item = item(&names[n], &dests[n]);
         let fetcher = &rig.fetcher;
-        let (mirrors, suffix) = (&mirrors, &suffixes[n]);
-        async move { fetcher.chunk(&item, mirrors, suffix, &accept, &keep).await }
+        let (mirrors, ask) = (&mirrors, &asks[n]);
+        async move { fetcher.chunk(&item, mirrors, ask, &accept, &keep).await }
     };
     let (a, b, c) = tokio::join!(fetch(0), fetch(1), fetch(2));
     assert!(a.is_ok() && b.is_ok() && c.is_ok());
