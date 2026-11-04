@@ -149,6 +149,15 @@ blocks:
           - **Checker for the agents:** an ignored test checks any directory of star files (`UNIV_STARS=dir`). The research agents run it to fix their files.
           - **Next:** the full workspace run, then the commit.
         state: active
+      - key: 01a1a866-141f-719f-97a8-d2b6a0e52e39
+        at: 2026-11-04T21:10:24Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Read star files into catalogue entries"
+        detail: "Committed in d8142e0. Source `researched-star-distances`; star files checked with the structure files' `CitedFile` checks; entries carry `references` through to the API. `tests/star_distances.rs` passes, and the ingest suite now checks every star file of `stars/` and of the tests on every run (`stars::problems`)."
+        state: done
   - key: 01a1a823-e6d7-726d-9f11-d42a41b41048
     id: r4-t-rules
     kind: task
@@ -209,6 +218,24 @@ blocks:
 
           **Progress:** the four agents are researching in the scratchpad (`r4-research/`), each writing star files, the quoted text excerpts and a report.
         state: active
+      - key: 01a1a866-141f-719f-97a8-d2b73583f95d
+        at: 2026-11-04T21:10:24Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Research and review the star files"
+        detail: |-
+          **Stopped early at the person's request**: 51 of the 64 stars have a file; the other 13 (batch D's unfinished stars) stay as release 8 has them, unplaced with no file.
+
+          **Outcome of the 51:** 16 placed, 35 unplaced with their reasons.
+
+          **Review rules applied:** a non-1σ range is an interval (Betelgeuse); a Gaia parallax places a star only with RUWE ≤ 1.4 (Lindegren et al. 2021), and a DR2 parallax that EDR3 withdrew does not count; a group distance places a member only where its membership stands (Wezen and λ Lup unplaced).
+
+          **Checked:** every file passes the checker; every quoted sentence of the 16 placed stars was found in the saved paper texts; batch D's three files reviewed by hand.
+
+          **Placed:** Betelgeuse, Antares, Deneb, Shaula, Alnilam, Alnitak, Mintaka, γ² Vel, Dschubba, Alniyat, ε Lup, σ Ori, b Vel, Mira, FN CMa, HD 202214.
+        state: done
   - key: 01a1a837-48a5-725c-90c2-a9df2a740f0a
     id: r4-note-research
     kind: note
@@ -293,6 +320,15 @@ blocks:
 
           **Done when** release 9 is built and `latest`.
         state: open
+      - key: 01a1a866-141f-719f-97a8-d2b8e7c489e2
+        at: 2026-11-04T21:10:24Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build and publish release 9"
+        detail: "`univ-ingest build` in the background, then `publish 9`."
+        state: active
   - key: 01a1a823-e6d7-726d-9f11-d42d7a0109f4
     id: r4-t-check
     kind: task

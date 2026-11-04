@@ -1,0 +1,70 @@
+# 3 Piscis Austrini, K3III giant: Hipparcos-2 parallax error above a tenth; Gaia EDR3 parallax with RUWE above 1.4; unplaced.
+hip: 104750
+name: 3 Piscis Austrini
+alternative_names:
+- 3 PsA
+- HD 201901
+- HR 8110
+papers:
+- id: gaia-edr3-2021
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021,
+    A&A 649, A1
+  title: Gaia Early Data Release 3. Summary of the contents and survey properties
+  bibcode: 2021A&A...649A...1G
+  doi: 10.1051/0004-6361/202039657
+  arxiv: '2012.01533'
+  read: catalogue table gaiadr3.gaia_source (astrometry identical to EDR3) queried by ADQL on the ESA
+    Gaia archive TAP; query and rows in texts/gaia-edr3-2021.txt (batch C section)
+- id: gaia-dr2-2018
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al.
+    2018, A&A 616, A1
+  title: Gaia Data Release 2. Summary of the contents and survey properties
+  bibcode: 2018A&A...616A...1G
+  doi: 10.1051/0004-6361/201833051
+  arxiv: '1804.09365'
+  read: catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; query and rows
+    in texts/gaia-dr2-2018.txt (batch C section)
+unplaced: 'No usable distance: the Hipparcos-2 parallax whose error is above a tenth of the parallax;
+  the Gaia EDR3 parallax of the star has a RUWE above the limit for a reliable single-star solution, and
+  Gaia DR2 disagrees with it strongly; no cluster membership or modelling distance was found.'
+disputes:
+- claim: Gaia EDR3 gives source 6790606529228148352 a parallax of 8.073376153159384 mas.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 6790606529228148352
+    column: parallax
+    cell: '8.073376153159384'
+- claim: Its parallax error is 0.17333435 mas.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 6790606529228148352
+    column: parallax_error
+    cell: '0.17333435'
+- claim: Its RUWE is 1.7617174, above the limit for a reliable single-star solution.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 6790606529228148352
+    column: ruwe
+    cell: '1.7617174'
+- claim: Gaia DR2 gives the same source a parallax of 10.686196758912665 mas, far above EDR3.
+  cite:
+    paper: gaia-dr2-2018
+    table: gaiadr2.gaia_source
+    row: source_id 6790606529228148352
+    column: parallax
+    cell: '10.686196758912665'
+- claim: The DR2 parallax error is 0.3859634638436049 mas.
+  cite:
+    paper: gaia-dr2-2018
+    table: gaiadr2.gaia_source
+    row: source_id 6790606529228148352
+    column: parallax_error
+    cell: '0.3859634638436049'
+notes: >-
+  The Gaia source sits at the Hipparcos position and is in neither hipparcos2_best_neighbour table, which
+  is why the project's cross-match found no Gaia parallax. The Hipparcos-2 parallax lies between the DR2
+  and EDR3 values. The EDR3 parallax is the closest to usable of the star's determinations, but its RUWE
+  is above the limit. No other published distance was found.

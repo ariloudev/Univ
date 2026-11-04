@@ -1,0 +1,64 @@
+# epsilon Lupi, B2IV-V spectroscopic multiple: Hipparcos-2 parallax error 11%, no Gaia DR3 parallax; placed by its Upper Centaurus Lupus membership.
+hip: 75264
+name: epsilon Lupi
+alternative_names: ["eps Lup", "HD 136504", "HR 5708"]
+papers:
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos Census of the Nearby OB Associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, text extracted with pdfminer.six; Table C1 rows cross-checked with pypdf; bibcode checked on SIMBAD's reference page (ADS returned a human-verification page)"
+  - id: uytterhoeven-2005
+    reference: "Uytterhoeven, Harmanec, Telting & Aerts 2005, A&A 440, 249"
+    title: "The orbit of the close spectroscopic binary ε Lup and the intrinsic variability of its early B-type components"
+    bibcode: 2005A&A...440..249U
+    doi: 10.1051/0004-6361:20053009
+    arxiv: "astro-ph/0507376"
+    read: "arXiv PDF of astro-ph/0507376v1, text extracted with pdfminer.six; bibcode checked on SIMBAD's reference page"
+  - id: rizzuto-2011
+    reference: "Rizzuto, Ireland & Robertson 2011, MNRAS 416, 3108"
+    title: "Multidimensional Bayesian membership analysis of the Sco OB2 moving group"
+    bibcode: 2011MNRAS.416.3108R
+    doi: 10.1111/j.1365-2966.2011.19256.x
+    arxiv: "1106.2857"
+    read: "arXiv PDF of 1106.2857v1, text extracted with pdfminer.six; Table A1 searched for the HIP number; bibcode checked on SIMBAD's reference page"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+distance:
+  value: 140
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 2 }
+  cite:
+    paper: dezeeuw-1999
+    page: 14
+    sentence: "Our member selection method identifies 221 members in this field, with a mean distance of 140±2 pc: 66 B, 68 A, 55 F, 25 G, 6 K, and 1 M-type star."
+  distance_kind: geometric
+  method: "mean Hipparcos parallax distance of the Upper Centaurus Lupus (UCL) subgroup of Sco OB2, applied to the member star"
+membership:
+  paper: dezeeuw-1999
+  table: "Table C1 (Membership lists), Upper Centaurus Lupus block, page 50"
+  row: "HIP 75264"
+  column: "P (membership probability, per cent)"
+  cell: "84"
+disputes:
+  - claim: "Rizzuto et al. select 436 Sco OB2 members, listed in their Table A1, and HIP 75264 is not among them."
+    cite:
+      paper: rizzuto-2011
+      page: 1
+      sentence: "We select 436 members, 88 of which are new members not included in previous membership selections."
+notes: >-
+  Uytterhoeven et al. 2005 also adopt the membership, writing that the Hipparcos parallax "led De Zeeuw et al.
+  (1999) to conclude that ε Lup is most probably a member of the UCL OB association". Gaia DR2 gives a parallax
+  whose error is just above a tenth of its value and which agrees with the UCL mean. Gaia EDR3/DR3 gives no
+  parallax. Rizzuto et al. 2011 do not say why eps Lup is missing from their list. It is a short-period
+  spectroscopic binary, whose radial velocity and astrometry are harder to use for membership. The UCL mean
+  rests on Hipparcos-1 parallaxes, and its formal error does not include the depth of the subgroup. Unlike
+  lambda Lup, its own parallaxes agree with the subgroup, so its membership stands under review rule C.

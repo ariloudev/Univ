@@ -1,0 +1,32 @@
+# HD 186185 (HR 7496), F6IV-V: Hipparcos-2 parallax error above a tenth; Gaia DR2 has a parallax but EDR3 cut the source to a two-parameter solution; unplaced.
+hip: 97063
+name: HD 186185
+alternative_names: ["HR 7496", "GJ 9666", "BD-15 5444"]
+papers:
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue tables gaiaedr3.gaia_source and gaiadr3.gaia_source (same astrometry) queried by ADQL on the ESA Gaia archive TAP; queries and rows in texts/gaia-edr3-2021.txt (batch D section)"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; queries and rows in texts/gaia-dr2-2018.txt (batch D section)"
+unplaced: "no usable distance: Gaia DR2 published a parallax for the star, but Gaia EDR3 cut its source back to a two-parameter solution (review rule B), the Hipparcos-2 parallax has an error above a tenth of its value, and no orbital, group or modelling distance was found"
+disputes:
+  - claim: "Gaia DR2 gives source 4181857103177308032 a parallax of 27.650821583579603 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 4181857103177308032", column: "parallax", cell: "27.650821583579603" }
+  - claim: "Its Gaia DR2 parallax error is 0.2819815029236396 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 4181857103177308032", column: "parallax_error", cell: "0.2819815029236396" }
+  - claim: "Gaia EDR3 gives the same source only a two-parameter solution (astrometric_params_solved 3), with no parallax."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 4181857103177308032", column: "astrometric_params_solved", cell: "3" }
+notes: >-
+  SIMBAD resolves HIP 97063 to HD 186185 (HR 7496), whose Gaia DR3 identifier is source 4181857103177308032,
+  the only bright Gaia source at the Hipparcos-2 position. The DR2 parallax is precise, but EDR3 and DR3
+  withdrew it, which review rule B treats as unusable. A nearby F-type subgiant like this has no cluster
+  membership, and no orbital or modelling distance was found.

@@ -1,0 +1,72 @@
+# Alniyat, sigma Scorpii (20 Sco), B1III: Hipparcos-2 parallax error 13%, no Gaia DR3 parallax; placed by its Upper Scorpius membership.
+hip: 80112
+name: Alniyat
+alternative_names: ["sigma Scorpii", "20 Sco", "HD 147165", "HR 6084"]
+papers:
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos Census of the Nearby OB Associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, text extracted with pdfminer.six; Table C1 rows cross-checked with pypdf; bibcode checked on SIMBAD's reference page (ADS returned a human-verification page)"
+  - id: north-2007
+    reference: "North, Davis, Tuthill, Tango & Robertson 2007, MNRAS 380, 1276"
+    title: "Orbital solution and fundamental parameters of σ Scorpii"
+    bibcode: 2007MNRAS.380.1276N
+    doi: 10.1111/j.1365-2966.2007.12188.x
+    arxiv: "0707.0897"
+    read: "arXiv PDF of 0707.0897v1, text extracted with pdfminer.six (the ± signs of section 4.1 land on separate lines and are restored in the quotes); bibcode checked on SIMBAD's reference page"
+  - id: rizzuto-2011
+    reference: "Rizzuto, Ireland & Robertson 2011, MNRAS 416, 3108"
+    title: "Multidimensional Bayesian membership analysis of the Sco OB2 moving group"
+    bibcode: 2011MNRAS.416.3108R
+    doi: 10.1111/j.1365-2966.2011.19256.x
+    arxiv: "1106.2857"
+    read: "arXiv PDF of 1106.2857v1, text extracted with pdfminer.six; Table A1 searched for the HIP number; bibcode checked on SIMBAD's reference page"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+distance:
+  value: 145
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 2 }
+  cite:
+    paper: dezeeuw-1999
+    page: 12
+    sentence: "The mean distance of US is 145±2 pc, where the error is the formal error on the mean, and the correction applied for the bias caused by exclusion of stars with negative parallaxes is negligible (§3.6)."
+  distance_kind: geometric
+  method: "mean Hipparcos parallax distance of the Upper Scorpius (US) subgroup of Sco OB2, applied to the member star"
+membership:
+  paper: dezeeuw-1999
+  table: "Table C1 (Membership lists), Upper Scorpius block, page 50"
+  row: "HIP 80112"
+  column: "P (membership probability, per cent)"
+  cell: "94"
+disputes:
+  - claim: "North et al. derive a dynamical parallax of 5.76 ± 0.68 mas from their interferometric orbit, with an error above a tenth of the value."
+    cite:
+      paper: north-2007
+      page: 6
+      sentence: "Combining these values of a1 and a2 with the angular semi-major axis of the relative orbit in Table 4, the dynamical parallax was found to be πd = 5.76 ± 0.68 mas."
+  - claim: "North et al. put the system at 174^{+23}_{-18} pc, beyond the subgroup mean."
+    cite:
+      paper: north-2007
+      page: 7
+      sentence: "The distance to the system is therefore 174^{+23}_{-18} pc, which is consistent within uncertainties with the Hipparcos value of 225^{+50}_{-35} pc."
+  - claim: "Gaia DR2 gives source 6048602103659567488 a parallax of 9.955620698290137 mas, nearer than the subgroup mean."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 6048602103659567488", column: "parallax", cell: "9.955620698290137" }
+  - claim: "Its Gaia DR2 parallax error is 1.0871674826492144 mas, above a tenth of the parallax."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 6048602103659567488", column: "parallax_error", cell: "1.0871674826492144" }
+notes: >-
+  The star's own parallaxes all have errors above a tenth of their values and fall on both sides of the
+  subgroup mean. North et al. 2007 combine a SUSI interferometric orbit of the spectroscopic pair with
+  literature radial velocities. They read de Zeeuw et al. 1999 as making sigma Sco a secure Upper Scorpius
+  member, with the probability in Table C1. Gaia EDR3/DR3 gives no parallax. Rizzuto et al. 2011 also list
+  HIP 80112 in their Sco OB2 member table A1. The value used is the de Zeeuw et al. US mean, which rests on
+  Hipparcos-1 parallaxes. Its formal error does not include the depth of the subgroup.

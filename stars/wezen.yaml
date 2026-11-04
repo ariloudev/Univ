@@ -1,0 +1,52 @@
+# Wezen, delta Canis Majoris, F8Ia supergiant: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 34444
+name: Wezen
+alternative_names: ["delta Canis Majoris", "del CMa", "25 CMa", "HD 54605"]
+papers:
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos census of the nearby OB associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, full text extracted with pypdf; Sect. 6.1 Collinder 121 (PDF page 21) read"
+  - id: fleming-2023
+    reference: "Fleming, Kirk & Ward-Thompson 2023, MNRAS, Stellar clustering and the kinematics of stars around Collinder 121 using Gaia DR3"
+    title: "Stellar clustering and the kinematics of stars around Collinder 121 using Gaia DR3"
+    doi: 10.1093/mnras/stad1817
+    arxiv: "2306.08578"
+    read: "arXiv PDF of 2306.08578v1, full text extracted with pypdf; abstract and introduction read"
+  - id: davis-2007
+    reference: "Davis, Booth, Ireland, Jacob, North, Owens, Robertson, Tango & Tuthill 2007, PASA 24, 151"
+    title: "The Emergent Flux and Effective Temperature of Delta Canis Majoris"
+    bibcode: 2007PASA...24..151D
+    arxiv: "0709.3873"
+    read: "arXiv PDF of 0709.3873v1, full text extracted with pypdf; Sect. on interstellar extinction read"
+unplaced: "The only group distance that names δ CMa as a member, the Hipparcos mean distance of Collinder 121, is not found by the Gaia DR3 study of the region; the Hipparcos-2 parallax has an error above a tenth of the parallax, there is no Gaia parallax, and no other published distance was found."
+disputes:
+  - claim: "de Zeeuw et al. place their Col 121 group at a mean distance of 592 ±28 pc from Hipparcos parallaxes."
+    cite:
+      paper: dezeeuw-1999
+      page: 21
+      sentence: "We select 103 stars in our Col 121 field (Table A1) with a mean distance of 592 ±28 pc; 1 WR, 1 O, 85 B, 8 A, 1 F, 1 G, 3 K, and 3 M-type."
+  - claim: "de Zeeuw et al. include δ CMa as a member of that group."
+    cite:
+      paper: dezeeuw-1999
+      page: 21
+      sentence: "We reject σ CMa, but include δ and o CMa as member."
+  - claim: "Fleming et al., with Gaia DR3, do not find associations at the distances given in the literature, and instead find an OB association centred around 803 pc which they do not show to contain δ CMa."
+    cite:
+      paper: fleming-2023
+      page: 1
+      sentence: "Using Gaia DR3 data, we do not find associations at the distances given in the literature. Instead, using the HDBSCAN machine learning algorithm, we find a major association of OB stars centred around 803 pc."
+  - claim: "Davis et al. cite studies that put Collinder 121 beyond 1000 pc with a foreground association at about 700 pc, to which they think δ CMa likely belongs."
+    cite:
+      paper: davis-2007
+      page: 3
+      sentence: "However, more recent studies (Kaltcheva 2000; Burningham et al. 2007) place Collinder 121 at a distance greater than 1000 pc with a foreground moving association of stars at a distance of ∼ 700 pc."
+notes: >-
+  Unplaced under review rule C: the group distance of de Zeeuw et al. would place the star only if
+  its membership stands, and the Gaia DR3 study of Fleming et al. does not find the group at that
+  distance. De Zeeuw et al. themselves expect interlopers in their membership list, and earlier
+  photometric work split the region into a nearer association and a farther cluster. No Gaia-era
+  paper naming δ CMa as a member of a group with a measured distance was found.

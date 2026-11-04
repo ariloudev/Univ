@@ -1,0 +1,36 @@
+# HD 125628 (HR 5371), G9III giant with a wide neighbour (DUN 159): Hipparcos-2 parallax error above a tenth, no Gaia parallax; unplaced.
+hip: 70264
+name: HD 125628
+alternative_names:
+- HR 5371
+- DUN 159A
+- CPC 20 4510
+papers:
+- id: gaia-edr3-2021
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021,
+    A&A 649, A1
+  title: Gaia Early Data Release 3. Summary of the contents and survey properties
+  bibcode: 2021A&A...649A...1G
+  doi: 10.1051/0004-6361/202039657
+  arxiv: '2012.01533'
+  read: catalogue table gaiadr3.gaia_source (astrometry identical to EDR3) queried by ADQL on the ESA
+    Gaia archive TAP; query and rows in texts/gaia-edr3-2021.txt (batch C section)
+- id: gaia-dr2-2018
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al.
+    2018, A&A 616, A1
+  title: Gaia Data Release 2. Summary of the contents and survey properties
+  bibcode: 2018A&A...616A...1G
+  doi: 10.1051/0004-6361/201833051
+  arxiv: '1804.09365'
+  read: catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; query and rows
+    in texts/gaia-dr2-2018.txt (batch C section)
+unplaced: No published distance other than the Hipparcos-2 parallax, whose error is above a tenth of the
+  parallax; Gaia DR2 and EDR3 give the star (source 5891112112577938816) only a two-parameter solution,
+  and no cluster membership or modelling distance was found.
+disputes: []
+notes: >-
+  Gaia DR2 and DR3 publish a precise parallax for a fainter source about nine arcseconds away (source
+  5891112112577932800), possibly the companion of the double-star entry DUN 159A, but it is not in the
+  Multiple Star Catalog and no paper was found that shows it is physical or applies its parallax to HD
+  125628; the brief forbids applying it ourselves. Its parallax is well above the Hipparcos-2 value of
+  HD 125628, so the pair may be optical.

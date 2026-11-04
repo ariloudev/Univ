@@ -1,0 +1,94 @@
+# 26 Aurigae, composite G giant + A-type visual binary (BU 1240 AB) with a physical companion C (STF 753 AB-C): Hipparcos-2 parallax error far above a tenth, no Gaia parallax; unplaced.
+hip: 26536
+name: 26 Aurigae
+alternative_names:
+- 26 Aur
+- HD 37269
+- HR 1914
+- BU 1240AB
+- ADS 4229
+papers:
+- id: gaia-edr3-2021
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021,
+    A&A 649, A1
+  title: Gaia Early Data Release 3. Summary of the contents and survey properties
+  bibcode: 2021A&A...649A...1G
+  doi: 10.1051/0004-6361/202039657
+  arxiv: '2012.01533'
+  read: catalogue table gaiadr3.gaia_source (astrometry identical to EDR3) queried by ADQL on the ESA
+    Gaia archive TAP; query and rows in texts/gaia-edr3-2021.txt (batch C section)
+- id: gaia-dr2-2018
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al.
+    2018, A&A 616, A1
+  title: Gaia Data Release 2. Summary of the contents and survey properties
+  bibcode: 2018A&A...616A...1G
+  doi: 10.1051/0004-6361/201833051
+  arxiv: '1804.09365'
+  read: catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; query and rows
+    in texts/gaia-dr2-2018.txt (batch C section)
+- id: tokovinin-2018
+  reference: Tokovinin 2018, ApJS 235, 6
+  title: The Updated Multiple Star Catalog
+  bibcode: 2018ApJS..235....6T
+  doi: 10.3847/1538-4365/aaa1a5
+  arxiv: '1712.04750'
+  read: components table J/ApJS/235/6/catalog (VizieR version of Dec 2023) queried by position on the
+    VizieR mirror vizier.cfa.harvard.edu; rows in texts/tokovinin-2018.txt
+- id: bailer-jones-2021
+  reference: Bailer-Jones, Rybizki, Fouesneau, Demleitner & Andrae 2021, AJ 161, 147
+  title: Estimating Distances from Parallaxes. V. Geometric and Photogeometric Distances to 1.47 Billion
+    Stars in Gaia Early Data Release 3
+  bibcode: 2021AJ....161..147B
+  doi: 10.3847/1538-3881/abd806
+  arxiv: '2012.05220'
+  read: table external.gaiaedr3_distance queried by ADQL on the ESA Gaia archive TAP for the companion's
+    source_id; row in texts/bailer-jones-2021.txt
+- id: rica-romero-2008
+  reference: Rica Romero 2008, RMxAA 44, 137
+  title: Orbital Elements for BU 1240 AB. Nature of the C and D Components
+  bibcode: 2008RMxAA..44..137R
+  read: journal PDF through the ADS link gateway, text extracted with PyMuPDF; Sects. 1, 3 and 4.5 read
+    (the Hipparcos distance on journal p. 137, the C component on p. 144)
+unplaced: No published distance for 26 Aur AB itself other than the Hipparcos parallaxes, whose Hipparcos-2
+  error exceeds the parallax; Gaia DR2 and EDR3 give the star (source 3447545341986921216) only a two-parameter
+  solution, and no cluster membership or modelling distance of AB was found.
+disputes:
+- claim: Rica Romero derives a spectroscopic distance of 163 pc for the companion C, with no stated uncertainty.
+  cite:
+    paper: rica-romero-2008
+    page: 144
+    sentence: A spectroscopic distance of 163 pc was obtained and, within the errors, agrees with the
+      distance to AB.
+- claim: Rica Romero quotes 137.2 pc from the original Hipparcos parallax.
+  cite:
+    paper: rica-romero-2008
+    page: 137
+    sentence: A distance of 137.2^{+20.8}_{-16.0} pc is inferred from the Hipparcos parallax.
+- claim: Gaia EDR3 gives C (source 3447545548145352704) a parallax of 5.939838003426973 mas.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 3447545548145352704
+    column: parallax
+    cell: '5.939838003426973'
+- claim: Its RUWE is 2.1489005.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 3447545548145352704
+    column: ruwe
+    cell: '2.1489005'
+- claim: Bailer-Jones et al. give C a geometric distance of 167.80432 pc, between 165.86665 and 169.76732
+    pc.
+  cite:
+    paper: bailer-jones-2021
+    table: external.gaiaedr3_distance
+    row: source_id 3447545548145352704
+    column: r_med_geo; r_lo_geo; r_hi_geo
+    cell: 167.80432; 165.86665; 169.76732
+notes: >-
+  Candidates from the companion C, not used. Rica Romero shows C to be bound to AB ("According to all
+  the criteria used, the component C is physically bound to the AB binary."), and the Multiple Star Catalog
+  (Tokovinin 2018) lists C as part of the system. None of these papers applies a distance to 26 Aur AB
+  itself, and the brief forbids applying C's ourselves; C's own Gaia solution also has a RUWE above the
+  limit. If companion distances are accepted, the Gaia-based one for C is the natural placement.

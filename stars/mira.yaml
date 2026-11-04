@@ -1,0 +1,95 @@
+# Mira, omicron Ceti, M5-9IIIe Mira variable (prototype) with a close companion: Hipparcos parallaxes with errors above a tenth, no Gaia parallax; placed by a period-luminosity distance.
+hip: 10826
+name: Mira
+alternative_names:
+- omicron Ceti
+- omi Cet
+- o Cet
+- 68 Cet
+- HD 14386
+- HR 681
+papers:
+- id: haniff-1995
+  reference: Haniff, Scholz & Tuthill 1995, MNRAS 276, 640
+  title: 'New diameter measurements for 10 Mira variables: implications for effective temperatures, atmospheric
+    structure and pulsation modes'
+  bibcode: 1995MNRAS.276..640H
+  doi: 10.1093/mnras/276.2.640
+  read: ADS scanned PDF (OCR text layer extracted with PyMuPDF); journal page 648 rendered and read visually
+    to confirm Table 5 and the sentence after it
+- id: whitelock-2008
+  reference: Whitelock, Feast & van Leeuwen 2008, MNRAS 386, 313
+  title: AGB variables and the Mira period-luminosity relation
+  bibcode: 2008MNRAS.386..313W
+  doi: 10.1111/j.1365-2966.2008.13032.x
+  arxiv: '0801.4465'
+  read: arXiv PDF of 0801.4465, text extracted with PyMuPDF; Sect. 4.1.2 and Tables 4 and A3 read
+- id: knapp-2003
+  reference: Knapp, Pourbaix, Platais & Jorissen 2003, A&A 403, 993
+  title: Reprocessing the Hipparcos data of evolved stars. III. Revised Hipparcos period-luminosity relationship
+    for galactic long-period variable stars
+  bibcode: 2003A&A...403..993K
+  doi: 10.1051/0004-6361:20030429
+  arxiv: astro-ph/0301579
+  read: arXiv PDF searched (no per-star values in the text); table 1 read from VizieR J/A+A/403/993 on
+    the vizier.cfa.harvard.edu mirror
+- id: planesas-2016
+  reference: Planesas, Alcolea & Bachiller 2016, A&A 586, A69
+  title: The radio continuum spectrum of Mira A and Mira B up to submillimeter wavelengths
+  bibcode: 2016A&A...586A..69P
+  doi: 10.1051/0004-6361/201527833
+  arxiv: '1512.08638'
+  read: arXiv PDF of 1512.08638, text extracted with PyMuPDF; Sect. 1 read (arXiv PDF p. 1)
+distance:
+  value: 110
+  unit: parsec
+  kind: estimated
+  uncertainty: {form: symmetric, sigma: 9}
+  cite:
+    paper: haniff-1995
+    page: 648
+    table: Table 5 (Distances and linear photospheric radii for the sample stars.)
+    row: o Cet
+    column: Distance (pc)
+    cell: 110 ± 9
+  distance_kind: secondary_indicator
+  method: K-band period-luminosity relation of Feast et al., applied to the star's mean K magnitude and
+    period
+disputes:
+- claim: Haniff et al. compare their distance with a trigonometric one of 77 ± 30 pc for o Ceti.
+  cite:
+    paper: haniff-1995
+    page: 648
+    sentence: both of these sources of 110 ± 9 pc are consistent with these more direct estimates which
+      give distances of 77 ± 30 pc and 121 ± 15 pc for o Ceti and R Leo respectively.
+- claim: The Hipparcos-2 parallax of o Cet is 10.91 ± 1.22 mas.
+  cite:
+    paper: whitelock-2008
+    table: Table 4 (Data for individual stars with σπ/π < 0.16)
+    row: o Cet
+    column: π
+    cell: 10.91 ± 1.22
+- claim: Knapp et al. revise the Hipparcos parallax to 9.34 mas, with an error of 1.07 mas.
+  cite:
+    paper: knapp-2003
+    table: table 1 (VizieR J/A+A/403/993/table1)
+    row: HIP 10826 (omicron Cet)
+    column: plx; e_plx
+    cell: 9.34; 1.07
+- claim: Planesas et al. attribute period-luminosity distances of 107±12 pc to Knapp et al. (2003) and
+    115±7 pc to Whitelock et al. (2008); these numbers were not found in those papers' text, so they are
+    not used.
+  cite:
+    paper: planesas-2016
+    page: 1
+    sentence: Its distance has been determined using different methods, such as the Mira period-luminosity
+      relation (107±12 pc, Knapp et al. (2003)), the oxygen-rich Mira period-luminosity relation (115±7
+      pc, Whitelock et al. (2008)), the oxygen-rich Mira period-color-luminosity relation (105±7 pc, Feast
+      et al. (1989)), and the Hipparcos parallax (92 ± 11 pc), which is likely the least reliable method
+      because the star size is three times larger than the measured parallax.
+notes: >-
+  Gaia DR2 and DR3 give Mira only a two-parameter solution. Its trigonometric parallaxes are all Hipparcos-based,
+  with errors above a tenth of the parallax. The period-luminosity distance of Haniff et al. is old and
+  rests on the Feast et al. calibration, but it is the only dedicated determination for the star with
+  a stated uncertainty that was found; it agrees with the trigonometric values within their errors. Mira's
+  large angular size relative to its parallax and its companion Mira B make a trigonometric parallax hard.

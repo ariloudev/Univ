@@ -1,0 +1,87 @@
+# 2 Camelopardalis, A8V primary of the visual multiple STF 566: Hipparcos-2 parallax error above a tenth; Gaia EDR3 parallax with RUWE far above 1.4; unplaced.
+hip: 21730
+name: 2 Camelopardalis
+alternative_names:
+- 2 Cam
+- HD 29316
+- HR 1466
+- STF 566
+papers:
+- id: gaia-edr3-2021
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021,
+    A&A 649, A1
+  title: Gaia Early Data Release 3. Summary of the contents and survey properties
+  bibcode: 2021A&A...649A...1G
+  doi: 10.1051/0004-6361/202039657
+  arxiv: '2012.01533'
+  read: catalogue table gaiadr3.gaia_source (astrometry identical to EDR3) queried by ADQL on the ESA
+    Gaia archive TAP; query and rows in texts/gaia-edr3-2021.txt (batch C section)
+- id: gaia-dr2-2018
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al.
+    2018, A&A 616, A1
+  title: Gaia Data Release 2. Summary of the contents and survey properties
+  bibcode: 2018A&A...616A...1G
+  doi: 10.1051/0004-6361/201833051
+  arxiv: '1804.09365'
+  read: catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; query and rows
+    in texts/gaia-dr2-2018.txt (batch C section)
+- id: tokovinin-2018
+  reference: Tokovinin 2018, ApJS 235, 6
+  title: The Updated Multiple Star Catalog
+  bibcode: 2018ApJS..235....6T
+  doi: 10.3847/1538-4365/aaa1a5
+  arxiv: '1712.04750'
+  read: components table J/ApJS/235/6/catalog (VizieR version of Dec 2023) queried by position on the
+    VizieR mirror vizier.cfa.harvard.edu; rows in texts/tokovinin-2018.txt
+unplaced: 'No usable distance: the Hipparcos-2 parallax whose error is above a tenth of the parallax;
+  the Gaia EDR3 parallax of the star has a RUWE far above the limit for a reliable single-star solution;
+  no cluster membership or modelling distance was found.'
+disputes:
+- claim: Gaia EDR3 gives source 272978775488802816 a parallax of 15.093765422379212 mas.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 272978775488802816
+    column: parallax
+    cell: '15.093765422379212'
+- claim: Its parallax error is 0.3734542 mas.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 272978775488802816
+    column: parallax_error
+    cell: '0.3734542'
+- claim: Its RUWE is 10.340177, far too high for a reliable single-star solution.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 272978775488802816
+    column: ruwe
+    cell: '10.340177'
+- claim: Gaia DR2 gives the same source a parallax of 15.322037220688774 mas.
+  cite:
+    paper: gaia-dr2-2018
+    table: gaiadr2.gaia_source
+    row: source_id 272978775488802816
+    column: parallax
+    cell: '15.322037220688774'
+- claim: The DR2 parallax error is 0.3790413894546419 mas.
+  cite:
+    paper: gaia-dr2-2018
+    table: gaiadr2.gaia_source
+    row: source_id 272978775488802816
+    column: parallax_error
+    cell: '0.3790413894546419'
+- claim: The Multiple Star Catalog gives a dynamical parallax of 13.00 mas, below the Gaia values.
+  cite:
+    paper: tokovinin-2018
+    table: J/ApJS/235/6/catalog
+    row: 04400+5328 A
+    column: plx; r_plx
+    cell: 13.00; dyn
+notes: >-
+  The Gaia source sits at the Hipparcos position and is in neither hipparcos2_best_neighbour table, which
+  is why the project's cross-match found no Gaia parallax. DR2 and EDR3 agree, but the EDR3 RUWE shows
+  the single-star solution fails, as expected for a close visual binary with orbital motion. The dynamical
+  parallax rests on the visual orbit and assumed masses and has no stated error. A candidate for later
+  if an orbital parallax appears.
