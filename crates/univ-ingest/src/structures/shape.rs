@@ -1,5 +1,5 @@
-//! A structure's geometry beyond a point: a primitive solid, a member list or a sky region, each
-//! one of univ-model's geometry kinds. Each is read through a raw struct rather than a tagged
+//! A structure's geometry beyond a point: a primitive solid, a box along its frame's axes, a
+//! member list or a sky region, each one of univ-model's geometry kinds. Each is read through a raw struct rather than a tagged
 //! enum, so a refusal keeps the path to the field.
 
 use serde::{Deserialize, Serialize};
@@ -22,6 +22,9 @@ pub enum StructureGeometry {
     /// A region of the sky between two radial bounds, given by its published longitude and
     /// latitude ranges; univ-model's `sky_region`, whose `HEALPix` cells the pipeline computes.
     SkyRegion(Box<SkyBox>),
+    /// A box along the Cartesian axes of its frame, given by the published range along each;
+    /// univ-model's `primitive`, an oriented box.
+    AxisBox(Box<AxisBox>),
 }
 
 /// The univ-model geometry kinds a structure file may give, beside the point of its position.
@@ -31,6 +34,7 @@ enum Kind {
     Primitive,
     Members,
     SkyRegion,
+    Box,
 }
 
 /// A geometry as written: its kind, and the one field that kind takes.
@@ -44,15 +48,24 @@ struct RawGeometry {
     members: Option<Members>,
     #[serde(default)]
     sky_region: Option<SkyBox>,
+    #[serde(default, rename = "box")]
+    axis_box: Option<AxisBox>,
 }
 
 impl TryFrom<RawGeometry> for StructureGeometry {
     type Error = String;
     fn try_from(raw: RawGeometry) -> Result<Self, String> {
-        match (raw.kind, raw.primitive, raw.members, raw.sky_region) {
-            (Kind::Primitive, Some(p), None, None) => Ok(Self::Primitive(Box::new(p))),
-            (Kind::Members, None, Some(m), None) => Ok(Self::Members(m)),
-            (Kind::SkyRegion, None, None, Some(s)) => Ok(Self::SkyRegion(Box::new(s))),
+        match (
+            raw.kind,
+            raw.primitive,
+            raw.members,
+            raw.sky_region,
+            raw.axis_box,
+        ) {
+            (Kind::Primitive, Some(p), None, None, None) => Ok(Self::Primitive(Box::new(p))),
+            (Kind::Members, None, Some(m), None, None) => Ok(Self::Members(m)),
+            (Kind::SkyRegion, None, None, Some(s), None) => Ok(Self::SkyRegion(Box::new(s))),
+            (Kind::Box, None, None, None, Some(b)) => Ok(Self::AxisBox(Box::new(b))),
             (kind, ..) => Err(format!(
                 "a {kind:?} geometry takes exactly the field named after its kind"
             )),
@@ -65,7 +78,7 @@ impl StructureGeometry {
     #[must_use]
     pub fn kind(&self) -> &'static str {
         match self {
-            Self::Primitive(_) => "primitive",
+            Self::Primitive(_) | Self::AxisBox(_) => "primitive",
             Self::Members(_) => "members",
             Self::SkyRegion(_) => "sky_region",
         }
@@ -78,6 +91,7 @@ impl StructureGeometry {
             Self::Primitive(p) => p.centre.frame(),
             Self::Members(m) => Some(m.frame),
             Self::SkyRegion(s) => Some(s.frame),
+            Self::AxisBox(b) => Some(b.frame),
         }
     }
 
@@ -107,6 +121,15 @@ impl StructureGeometry {
                 }
                 out
             }
+            Self::AxisBox(b) => b
+                .ranges()
+                .into_iter()
+                .flat_map(|(name, pair)| {
+                    pair.iter()
+                        .enumerate()
+                        .map(move |(i, c)| (format!("box.{name}[{i}]"), c))
+                })
+                .collect(),
         }
     }
 }
@@ -295,5 +318,57 @@ impl TryFrom<RawSkyBox> for SkyBox {
             far: raw.far,
             at_least: raw.at_least,
         })
+    }
+}
+
+/// A box along the Cartesian axes of `frame`, such as supergalactic SGX, SGY and SGZ: the range
+/// its paper gives along each, from the lower bound to the upper, each a length.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(try_from = "RawAxisBox")]
+pub struct AxisBox {
+    pub frame: Frame,
+    pub x: [Cited; 2],
+    pub y: [Cited; 2],
+    pub z: [Cited; 2],
+}
+
+impl AxisBox {
+    /// Its three ranges, each with its axis's name.
+    #[must_use]
+    pub fn ranges(&self) -> [(&'static str, &[Cited; 2]); 3] {
+        [("x", &self.x), ("y", &self.y), ("z", &self.z)]
+    }
+}
+
+/// A box as written.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawAxisBox {
+    frame: Frame,
+    x: [Cited; 2],
+    y: [Cited; 2],
+    z: [Cited; 2],
+}
+
+impl TryFrom<RawAxisBox> for AxisBox {
+    type Error = String;
+    fn try_from(raw: RawAxisBox) -> Result<Self, String> {
+        let b = Self {
+            frame: raw.frame,
+            x: raw.x,
+            y: raw.y,
+            z: raw.z,
+        };
+        for (name, [low, high]) in b.ranges() {
+            if !is_length(low.unit()) || low.unit() != high.unit() {
+                return Err(format!("the box's {name} bounds are lengths in one unit"));
+            }
+            if low.value() >= high.value() {
+                return Err(format!(
+                    "the box's {name} runs from the lower bound to the upper"
+                ));
+            }
+        }
+        Ok(b)
     }
 }

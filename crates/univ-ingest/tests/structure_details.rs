@@ -222,6 +222,47 @@ fn a_void_with_extents_but_no_bounds_gives_them_about_its_point_and_is_bounded_b
 }
 
 #[test]
+fn a_box_published_along_its_frames_axes_is_an_oriented_box_of_their_ranges_rescaled() {
+    let (release, correction) = (
+        Release::planck_2018(),
+        CmbCorrection::new(DipoleModel::Planck2018),
+    );
+    // Tully 1982: "roughly enclosed by the limits: -10 h^-1 < SGX < +10 h^-1 Mpc, 0 < SGY < +15
+    // h^-1 Mpc, -10 h^-1 < SGZ < +10 h^-1 Mpc".
+    let local = placed_shape(
+        &named("local-supercluster"),
+        None,
+        &placing(&release, &correction),
+    )
+    .unwrap();
+    let Geometry::Primitive {
+        primitive:
+            Primitive::OrientedBox {
+                centre,
+                half_extents,
+                orientation,
+            },
+    } = local.shape.geometry
+    else {
+        panic!("the Local Supercluster is an oriented box")
+    };
+    let h = release.cosmology().hubble_constant / 100.0;
+    for (got, want) in half_extents.iter().zip([10.0, 7.5, 10.0]) {
+        assert!((got - want / h).abs() < 1e-9, "{half_extents:?}");
+    }
+    let to_icrs = between(Frame::Supergalactic, Frame::Icrs);
+    for (got, want) in centre.iter().zip(to_icrs.apply([0.0, 7.5 / h, 0.0])) {
+        assert!((got - want).abs() < 1e-9, "{centre:?}");
+    }
+    assert_eq!(Some(orientation), to_icrs.rotation());
+    assert_eq!(
+        local.derivation.from[0], "/geometry/AxisBox/x/0",
+        "{:?}",
+        local.derivation.from
+    );
+}
+
+#[test]
 fn a_radius_published_for_h0_50_is_rescaled_by_50_over_67_66() {
     let release = Release::planck_2018();
     let bootes = named("bootes-void");

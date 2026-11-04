@@ -32,7 +32,7 @@
 
 use univ_model::cosmology::{AssumedCosmology, SPEED_OF_LIGHT};
 use univ_model::derive::Release;
-use univ_model::geometry::Aabb;
+use univ_model::geometry::{Aabb, Geometry, Primitive, Shape};
 use univ_model::position::{Frame, Vec3, between, dot, lon_lat, scaled, unit_vector};
 use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::{Dimension, Unit};
@@ -40,7 +40,7 @@ use univ_model::value::{Quantity, Uncertainty};
 
 use crate::crossmatch::MemberPlacement;
 use crate::structures::{
-    Cited, Coordinates, Radial, Sides, SkyBox, SphereSize, Structure, StructureGeometry,
+    AxisBox, Cited, Coordinates, Radial, Sides, SkyBox, SphereSize, Structure, StructureGeometry,
     StructurePrimitive,
 };
 
@@ -85,6 +85,17 @@ pub fn index_bounds(
             Ok(centred(centre, sphere_radius(p, release)? + margin))
         }
         Some(StructureGeometry::SkyRegion(b)) => sky_region(b, release),
+        Some(StructureGeometry::AxisBox(b)) => {
+            let primitive = axis_box(b, release)?;
+            Shape::new(
+                Frame::Icrs,
+                Unit::Megaparsec,
+                Geometry::Primitive { primitive },
+            )
+            .map_err(|e| format!("its box cannot stand: {e}"))?
+            .bounds_in(Frame::Icrs)
+            .ok_or_else(|| "its box has no bounds".to_owned())
+        }
         None => match &structure.position {
             Some(at) => point(at, release, correction),
             None => Err("it publishes no position or geometry".to_owned()),
@@ -121,6 +132,10 @@ pub fn centre(
             let u = unit_vector(r.lon0 + r.span / 2.0, f64::midpoint(r.lat0, r.lat1));
             Ok(between(b.frame, Frame::Icrs).apply(scaled(u, f64::midpoint(near, far))))
         }
+        Some(StructureGeometry::AxisBox(b)) => match axis_box(b, release)? {
+            Primitive::OrientedBox { centre, .. } => Ok(centre),
+            _ => Err("its box is not a box".to_owned()),
+        },
         None => match &structure.position {
             Some(at) => place(at, release, correction).map(|(c, _)| c),
             None => Err("it publishes no position or geometry".to_owned()),
@@ -241,6 +256,30 @@ pub(super) fn length(c: &Cited, release: &Release) -> Result<f64, String> {
         .to(Unit::Megaparsec)
         .map(|q| q.value)
         .map_err(|e| e.to_string())
+}
+
+/// A box along its frame's axes as univ-model's oriented box in the ICRS, in Mpc of the release
+/// cosmology: its middle and half-extents from the published ranges, each bound rescaled, and
+/// the frame's axes turned into the ICRS as its orientation.
+///
+/// # Errors
+///
+/// Fails when a bound cannot be rescaled, or its frame does not rotate into the ICRS.
+pub(super) fn axis_box(b: &AxisBox, release: &Release) -> Result<Primitive, String> {
+    let orientation = between(b.frame, Frame::Icrs)
+        .rotation()
+        .ok_or_else(|| format!("a box's frame rotates into the ICRS, not {:?}", b.frame))?;
+    let (mut middle, mut half_extents) = ([0.0; 3], [0.0; 3]);
+    for (k, (_, [low, high])) in b.ranges().into_iter().enumerate() {
+        let (low, high) = (length(low, release)?, length(high, release)?);
+        middle[k] = f64::midpoint(low, high);
+        half_extents[k] = (high - low) / 2.0;
+    }
+    Ok(Primitive::OrientedBox {
+        centre: orientation.apply(middle),
+        half_extents,
+        orientation,
+    })
 }
 
 /// A sphere's radius in Mpc of the release cosmology: its published radius, or half its

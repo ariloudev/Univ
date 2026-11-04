@@ -74,11 +74,13 @@ fn refusal(text: &str) -> StructureError {
 #[test]
 fn every_ported_structure_loads() {
     let structures = read_all(&repository_structures()).unwrap();
-    assert_eq!(
-        structures.len(),
-        26,
-        "the 26 structures of the newsroom atlas"
-    );
+    let files = fs::read_dir(repository_structures())
+        .unwrap()
+        .filter(|e| e.as_ref().unwrap().path().extension() == Some("yaml".as_ref()))
+        .count();
+    // The newsroom atlas's 26, and those release 8 adds.
+    assert!(structures.len() > 26, "{} structures", structures.len());
+    assert_eq!(structures.len(), files, "every structure file loads");
     let names: HashSet<&str> = structures.iter().map(|s| s.name.as_str()).collect();
     assert_eq!(names.len(), structures.len(), "names are unique");
 }

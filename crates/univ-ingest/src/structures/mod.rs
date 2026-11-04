@@ -51,7 +51,7 @@ pub use members::{Column, ColumnName, Format, MemberSource, Members, Row};
 pub use outline::{
     Choice, ChosenBy, DensePlaces, GridOutline, OutlineTest, Rule, Seed, Side, Threshold,
 };
-pub use shape::{Sides, SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
+pub use shape::{AxisBox, Sides, SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
 
 /// A researched structure as its file describes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

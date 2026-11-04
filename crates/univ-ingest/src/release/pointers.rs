@@ -68,6 +68,15 @@ pub fn geometry(g: &StructureGeometry) -> Vec<Pointed<'_>> {
             out.push(radial(&format!("{at}/far"), &b.far));
             out
         }
+        StructureGeometry::AxisBox(b) => b
+            .ranges()
+            .into_iter()
+            .flat_map(|(name, pair)| {
+                pair.iter()
+                    .enumerate()
+                    .map(move |(i, c)| (format!("/geometry/AxisBox/{name}/{i}"), c))
+            })
+            .collect(),
         StructureGeometry::Members(_) => vec![],
     }
 }

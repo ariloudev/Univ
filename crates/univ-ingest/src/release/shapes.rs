@@ -20,7 +20,7 @@ use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::{Dimension, Unit};
 
 use super::objects::snake;
-use super::place::{assumed, km_s, length, place, radial, sphere_radius};
+use super::place::{assumed, axis_box, km_s, length, place, radial, sphere_radius};
 use super::pointers::{self, Pointed};
 use super::sky::{REGION_ORDER, box_cells};
 use crate::crossmatch::MemberPlacement;
@@ -249,6 +249,20 @@ fn in_units(geometry: Geometry, per_mpc: f64) -> Geometry {
                 radius: radius * per_mpc,
             },
         },
+        Geometry::Primitive {
+            primitive:
+                Primitive::OrientedBox {
+                    centre,
+                    half_extents,
+                    orientation,
+                },
+        } => Geometry::Primitive {
+            primitive: Primitive::OrientedBox {
+                centre: s(centre),
+                half_extents: s(half_extents),
+                orientation,
+            },
+        },
         Geometry::Members { members } => Geometry::Members {
             members: members
                 .into_iter()
@@ -366,6 +380,19 @@ pub fn placed_shape(
                 .as_ref()
                 .map(|_| "/geometry/SkyRegion/at_least".to_owned());
             (geometry, derived)
+        }
+        Some(g @ StructureGeometry::AxisBox(b)) => {
+            let derived = derivation(
+                pointed(&pointers::geometry(g)),
+                frame_chain(Some(b.frame)),
+                distance(
+                    "the published range along each axis of the frame",
+                    "each bound a length rescaled to the release cosmology; the box between them \
+                     an oriented box whose axes are the frame's, turned into the ICRS",
+                ),
+            );
+            let primitive = axis_box(b, p.release)?;
+            (Geometry::Primitive { primitive }, derived)
         }
         None => point(s, s.position.as_ref().ok_or_else(no_position)?, p)?,
     };
