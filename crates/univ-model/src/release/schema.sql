@@ -211,7 +211,8 @@ CREATE TABLE IF NOT EXISTS objects (
 --   no uncertainty of its own and normalized to degrees.
 -- - flags: JSON object, NULL when empty. extra: JSON object of what no column holds, NULL when
 --   nothing: "via" (the designation it was resolved through, when not one of the object's
---   entries) and "position_uncertainty" (when not held by the error columns).
+--   entries), "position_uncertainty" (when not held by the error columns) and "spectral_type"
+--   (its text as published and its kind of value, where its source gives one).
 CREATE TABLE IF NOT EXISTS entries (
   release INTEGER NOT NULL,
   object_id INTEGER NOT NULL,
@@ -257,6 +258,9 @@ CREATE TABLE IF NOT EXISTS entries (
 --   cmb and cmb_form, ... its CMB-frame value; kind (term) spectroscopic or photometric;
 --   method (term) the dipole model.
 -- - A magnitude: kind (term) its band.
+-- - A colour index: kind (term) its two bands, such as B-V, numbered within the entry as its
+--   distances are; extra holds derived_from, the two magnitude columns it was computed from,
+--   where its source publishes the magnitudes and not the colour.
 CREATE TABLE IF NOT EXISTS measurements (
   release INTEGER NOT NULL,
   object_id INTEGER NOT NULL,

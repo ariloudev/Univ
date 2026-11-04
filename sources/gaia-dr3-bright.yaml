@@ -85,4 +85,7 @@ normalization:
       ESP-HS assigns its spectral type tag from the BP/RP spectrum, by the module's own
       classification ahead of fitting hot-star models (Creevey et al. 2023, A&A 674, A26, the
       ESP-HS section of Gaia DR3's astrophysical parameters): a model estimate, not a
-      classification of the star's spectrum by a spectroscopist, so it is estimated.
+      classification of the star's spectrum by a spectroscopist, so it is estimated. The Gaia DR3
+      data model gives the tag as one of O, B, A, F, G, K, M, CSTAR or unknown; "unknown" is
+      where ESP-HS assigned no type, so it is read as none.
+    none: [unknown]

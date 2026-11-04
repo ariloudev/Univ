@@ -7,6 +7,7 @@ use serde::Deserialize;
 use serde_json::{Map, Value};
 
 use super::columns::Columns;
+use super::measurements::from_extra;
 use super::{ReadError, Row, Vocabulary};
 use crate::api::objects::{EntryPosition, EntryRecord, SpectralTypeRecord};
 use crate::entry::SpectralType;
@@ -156,17 +157,12 @@ fn spectral_type(
     c: &Columns<'_>,
     extra: &Map<String, Value>,
 ) -> Result<Option<SpectralTypeRecord>, ReadError> {
-    extra
-        .get("spectral_type")
-        .map(|t| {
-            SpectralType::deserialize(t)
-                .map(|t| SpectralTypeRecord {
-                    text: t.text,
-                    kind_of_value: t.kind,
-                })
-                .map_err(|e| c.error("extra", format!("spectral_type {t}: {e}")))
-        })
-        .transpose()
+    Ok(
+        from_extra::<SpectralType>(c, extra, "spectral_type")?.map(|t| SpectralTypeRecord {
+            text: t.text,
+            kind_of_value: t.kind,
+        }),
+    )
 }
 
 /// The entry's sky position as published, none when it has none.

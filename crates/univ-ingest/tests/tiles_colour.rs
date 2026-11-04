@@ -1,50 +1,43 @@
 //! The colour index a stars point carries (build-octree-tiles): which of its object's colour
 //! indices is chosen, or that it has none. Every entry here is SIMULATED.
-#![expect(
-    clippy::unwrap_used,
-    reason = "test helpers unwrap: a failure there is the test failing"
-)]
 
 mod common;
 mod simulated;
 
-use simulated::bare;
+use simulated::tiles::object as release_object;
+use simulated::{bare, value};
 use univ_ingest::tiles::colour_of;
 use univ_model::entry::{CatalogueEntry, ColourIndex};
-use univ_model::object::{Object, ObjectEntry, Resolution};
+use univ_model::object::Object;
 use univ_model::tile::{ColourBands, PointColour};
 use univ_model::units::Unit;
-use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
+use univ_model::value::Uncertainty;
 
 /// SIMULATED: a colour index of `value` magnitudes between `bands`, derived from two
 /// magnitudes where `derived`.
-fn colour(bands: [&str; 2], value: f64, derived: bool) -> ColourIndex {
+fn colour(bands: [&str; 2], index: f64, derived: bool) -> ColourIndex {
     ColourIndex {
         bands: bands.map(str::to_owned),
-        value: Value::normalize(
-            Quantity::new(value, Unit::Magnitude, Uncertainty::NoneReported).unwrap(),
+        value: value(
+            index,
             Unit::Magnitude,
-            KindOfValue::Measured,
-        )
-        .unwrap(),
+            Unit::Magnitude,
+            Uncertainty::NoneReported,
+        ),
         derived_from: derived.then(|| ["BPmag".to_owned(), "RPmag".to_owned()]),
     }
 }
 
 /// SIMULATED: an object of one entry per source, each with the colour indices given.
 fn object(entries: Vec<(&str, Vec<ColourIndex>)>) -> Object {
-    Object::new(
-        entries
-            .into_iter()
-            .map(|(source, colours)| ObjectEntry {
-                entry: CatalogueEntry {
-                    colours,
-                    ..bare(source, "1")
-                },
-                resolved_by: Resolution::Anchor,
-            })
-            .collect(),
-    )
+    let entries = entries
+        .into_iter()
+        .map(|(source, colours)| CatalogueEntry {
+            colours,
+            ..bare(source, "1")
+        })
+        .collect();
+    release_object(1, entries, None).object
 }
 
 fn chosen(o: &Object) -> Option<(f64, ColourBands)> {

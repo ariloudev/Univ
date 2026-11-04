@@ -5,7 +5,7 @@
 
 mod common;
 
-use common::{entry, near, normalized_fixture};
+use common::{definition_of, entry, fixture_of, near, normalize_body, normalized_fixture};
 use univ_model::entry::{CatalogueEntry, ColourIndex};
 use univ_model::value::{KindOfValue, Uncertainty};
 
@@ -86,4 +86,24 @@ fn the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_f
     assert!(e.position.is_none());
     // HIP 5: G8III.
     assert_eq!(entry(&n, "5").spectral_type.as_ref().unwrap().text, "G8III");
+}
+
+#[test]
+fn an_esp_hs_tag_of_unknown_is_read_as_no_spectral_type() {
+    let definition = definition_of("gaia-dr3-bright");
+    let body = std::fs::read_to_string(fixture_of(&definition)).unwrap();
+    // Row 2 as recorded, its tag K written as ESP-HS writes a star it gave no type.
+    let row = ",9.485988,1.4611044,K";
+    assert!(body.contains(row));
+    let n = normalize_body(
+        &definition,
+        body.replace(row, ",9.485988,1.4611044,unknown").as_bytes(),
+    );
+    let e = entry(&n, "140437257257667584");
+    assert_eq!(e.spectral_type, None);
+    assert_eq!(
+        colour(e, "BP-RP").value.native.value,
+        1.461_104_4,
+        "the rest of the row is kept"
+    );
 }

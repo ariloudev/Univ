@@ -87,16 +87,31 @@ pub const POINT_BYTES: usize = 20;
 /// The largest tile a release may hold: 1 MiB, the release's quality bound.
 pub const MAX_TILE_BYTES: usize = 1_048_576;
 /// The most points a version 2 tile may hold within [`MAX_TILE_BYTES`]: 52,426.
-pub const MAX_POINTS: usize = (MAX_TILE_BYTES - HEADER_BYTES) / POINT_BYTES;
+pub const MAX_POINTS: usize = max_points(POINT_BYTES);
 
-/// The bytes each point takes in tiles of `version`, if a version this module reads.
+/// The encoding versions this module reads, oldest first; it writes the last, [`VERSION`].
+pub const VERSIONS: [u16; 2] = [1, VERSION];
+
+/// The bytes each point takes in tiles of `version`, if one of [`VERSIONS`].
 #[must_use]
 pub const fn point_bytes(version: u16) -> Option<usize> {
     match version {
         1 => Some(V1_POINT_BYTES),
-        2 => Some(POINT_BYTES),
+        VERSION => Some(POINT_BYTES),
         _ => None,
     }
+}
+
+/// The most points a tile of `point_bytes` a point may hold within [`MAX_TILE_BYTES`].
+#[must_use]
+pub const fn max_points(point_bytes: usize) -> usize {
+    (MAX_TILE_BYTES - HEADER_BYTES) / point_bytes
+}
+
+/// Whether tiles of `version` carry each point's colour index: from version 2 on.
+#[must_use]
+pub const fn has_colour(version: u16) -> bool {
+    version >= 2
 }
 
 /// The colour index a version 2 point holds when it has none.
@@ -116,23 +131,31 @@ pub enum ColourBands {
 pub const COLOUR_BANDS: [ColourBands; 2] = [ColourBands::BpRp, ColourBands::BV];
 
 impl ColourBands {
-    /// The bands a pair such as `B-V` names, if version 2 codes them.
+    /// The bands a pair such as `["B", "V"]` names, as a source definition gives them, if
+    /// version 2 codes them.
     #[must_use]
-    pub fn of(pair: &str) -> Option<Self> {
-        match pair {
-            "BP-RP" => Some(Self::BpRp),
-            "B-V" => Some(Self::BV),
+    pub fn of(bands: &[String; 2]) -> Option<Self> {
+        match [bands[0].as_str(), bands[1].as_str()] {
+            ["BP", "RP"] => Some(Self::BpRp),
+            ["B", "V"] => Some(Self::BV),
             _ => None,
         }
     }
 
-    /// The code version 2 gives the bands: their index in [`COLOUR_BANDS`] plus one.
+    /// The code version 2 gives the bands: their index in [`COLOUR_BANDS`] plus one, which
+    /// [`ColourBands::of_code`] reads back (the codec's tests check every band both ways).
     #[must_use]
-    pub fn code(self) -> u8 {
+    pub const fn code(self) -> u8 {
         match self {
             Self::BpRp => 1,
             Self::BV => 2,
         }
+    }
+
+    /// The bands a version 2 code other than 0 gives, if [`COLOUR_BANDS`] holds them.
+    #[must_use]
+    pub fn of_code(code: u8) -> Option<Self> {
+        COLOUR_BANDS.get(usize::from(code).checked_sub(1)?).copied()
     }
 }
 
@@ -276,11 +299,12 @@ pub enum TileError {
     )]
     BadNode { min: Vec3, edge: f64 },
     #[error(
-        "{points} points take {} bytes, beyond the {MAX_TILE_BYTES} a tile may hold (at most \
-         {MAX_POINTS} points)",
-        tile_bytes(*points)
+        "{points} points of {point_bytes} bytes take {} bytes, beyond the {MAX_TILE_BYTES} a tile \
+         may hold (at most {} points)",
+        HEADER_BYTES.saturating_add(point_bytes.saturating_mul(*points)),
+        max_points(*point_bytes)
     )]
-    TooManyPoints { points: usize },
+    TooManyPoints { points: usize, point_bytes: usize },
     #[error("object {id}'s position {position:?} lies outside its node")]
     OutsideNode { id: ObjectId, position: Vec3 },
     #[error("the tile is {found} bytes, short of the {expected} its header gives")]
@@ -291,7 +315,7 @@ pub enum TileError {
     Oversized(usize),
     #[error("the tile starts with {0:?}, not the magic UVTL")]
     Magic([u8; 4]),
-    #[error("the tile encoding version {0} is not one this decoder knows (it knows 1 and 2)")]
+    #[error("the tile encoding version {0} is not one this decoder knows (it knows {VERSIONS:?})")]
     UnknownVersion(u16),
     #[error("a reserved field of the tile header is not zero")]
     Reserved,
@@ -366,10 +390,14 @@ fn hundredths(index: f64) -> Option<i16> {
 pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError> {
     let node = NodeBox::new(node.min, node.edge)?;
     let n = points.len();
-    let count = u32::try_from(n)
-        .ok()
-        .filter(|_| n <= MAX_POINTS)
-        .ok_or(TileError::TooManyPoints { points: n })?;
+    let count =
+        u32::try_from(n)
+            .ok()
+            .filter(|_| n <= MAX_POINTS)
+            .ok_or(TileError::TooManyPoints {
+                points: n,
+                point_bytes: POINT_BYTES,
+            })?;
     if let Some(p) = points.iter().find(|p| !node.contains(p.position)) {
         return Err(TileError::OutsideNode {
             id: p.id,

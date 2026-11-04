@@ -158,7 +158,10 @@ fn a_colour_index_round_trips_to_the_nearest_hundredth_with_its_bands_or_none() 
 fn a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_colours() {
     let good = encode(&node(), &points()).unwrap();
     let n = points().len();
-    let (colours, bands) = (HEADER_BYTES + 17 * n, HEADER_BYTES + 19 * n);
+    let (colours, bands) = (
+        HEADER_BYTES + V1_POINT_BYTES * n,
+        HEADER_BYTES + (V1_POINT_BYTES + 2) * n,
+    );
     let mut unknown = good.clone();
     unknown[bands + 1] = 3;
     assert_eq!(
@@ -195,7 +198,8 @@ fn an_encoder_refuses_too_many_points_or_one_outside_its_node() {
     assert_eq!(
         encode(&node, &many),
         Err(TileError::TooManyPoints {
-            points: MAX_POINTS + 1
+            points: MAX_POINTS + 1,
+            point_bytes: POINT_BYTES,
         })
     );
     assert!(encode(&node, &vec![p; MAX_POINTS]).is_ok());
@@ -380,4 +384,36 @@ fn a_node_whose_far_corner_overflows_or_whose_step_is_not_normal_is_refused() {
     assert!(node.max().iter().all(|c| c.is_finite()));
     let decoded = decode(&one_point_tile(-huge / 2.0, huge)).unwrap();
     assert!(decoded.points[0].position.iter().all(|c| c.is_finite()));
+}
+
+#[test]
+fn each_colour_bands_code_reads_back_as_its_bands_and_a_version_1_count_is_refused_by_its_own_size()
+{
+    for (i, bands) in (1u8..).zip(COLOUR_BANDS) {
+        assert_eq!(
+            bands.code(),
+            i,
+            "{bands:?}: its index in COLOUR_BANDS plus one"
+        );
+        assert_eq!(ColourBands::of_code(i), Some(bands));
+    }
+    assert_eq!(ColourBands::of_code(0), None);
+    // A version 1 tile one point beyond version 1's own limit, 61,678 points of 17 bytes.
+    let n = max_points(V1_POINT_BYTES) + 1;
+    let mut bytes = vec![0; HEADER_BYTES];
+    bytes[..4].copy_from_slice(&MAGIC);
+    bytes[4..6].copy_from_slice(&1u16.to_le_bytes());
+    bytes[8..12].copy_from_slice(&u32::try_from(n).unwrap().to_le_bytes());
+    let error = decode(&bytes).unwrap_err();
+    assert_eq!(
+        error,
+        TileError::TooManyPoints {
+            points: 61_679,
+            point_bytes: 17
+        }
+    );
+    assert!(
+        error.to_string().contains("at most 61678 points"),
+        "{error}"
+    );
 }

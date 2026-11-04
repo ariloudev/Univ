@@ -53,6 +53,10 @@ pub struct ColourReading {
 pub struct SpectralTypeReading {
     pub column: String,
     pub kind_of_value: KindOfValue,
+    /// What the source writes in the column where it gives no type, such as Gaia ESP-HS's
+    /// `unknown`: read as no spectral type, as a blank cell is.
+    #[serde(default)]
+    pub none: Vec<String>,
     /// Where the source states how it classified its stars, quoted or cited.
     pub basis: String,
 }
@@ -245,11 +249,28 @@ impl Columns<'_> {
 }
 
 /// The columns a colour reading names, each a column of the definition in magnitudes.
+/// The photometric bands a colour index may lie between: Johnson–Cousins `U`, `B`, `V`, `R`
+/// and `I`, Gaia's `G`, `BP` and `RP`, and 2MASS's `J`, `H` and `Ks`, as the catalogues name
+/// them. A band outside them is refused, so a misspelling cannot leave a colour unread.
+const BANDS: [&str; 11] = ["U", "B", "V", "R", "I", "G", "BP", "RP", "J", "H", "Ks"];
+
 fn check_colour<'c>(
     table: &Columns<'_>,
     at: &str,
     c: &'c ColourReading,
 ) -> Result<Vec<&'c str>, Problem> {
+    if let Some(band) = c.bands.iter().find(|b| !BANDS.contains(&b.as_str())) {
+        return Err(problem(
+            at,
+            format!(
+                "names the band {band}, which is not one of {}",
+                BANDS.join(", ")
+            ),
+        ));
+    }
+    if c.bands[0] == c.bands[1] {
+        return Err(problem(at, format!("names the band {} twice", c.bands[0])));
+    }
     let names: Vec<&str> = c
         .column
         .iter()

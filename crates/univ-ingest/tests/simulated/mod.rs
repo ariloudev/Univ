@@ -52,7 +52,7 @@ pub fn offset(ra: f64, dec: f64, east: f64, north: f64) -> (f64, f64) {
     (ra.rem_euclid(360.0), dec + north / 3_600.0)
 }
 
-fn value(v: f64, unit: Unit, to: Unit, u: Uncertainty) -> Value {
+pub fn value(v: f64, unit: Unit, to: Unit, u: Uncertainty) -> Value {
     Value::normalize(
         Quantity::new(v, unit, u).unwrap(),
         to,

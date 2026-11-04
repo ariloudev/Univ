@@ -114,24 +114,38 @@ struct Placed {
 
 /// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
 /// (Gaia DR3's), else a published B−V (Hipparcos-2's), else a BP−RP derived from two magnitudes
-/// (the Gaia Catalogue of Nearby Stars'); the first its entries give of the best of these.
+/// (the Gaia Catalogue of Nearby Stars'); of each, the first its entries give.
 #[must_use]
 pub fn colour_of(object: &Object) -> Option<PointColour> {
-    let colours = || object.entries.iter().flat_map(|e| &e.entry.colours);
-    let find = |bands: ColourBands, derived: bool| {
-        colours()
-            .find(|c| {
-                ColourBands::of(&c.band_pair()) == Some(bands)
-                    && c.derived_from.is_some() == derived
-            })
-            .map(|c| PointColour {
-                index: c.value.normalized.value,
-                bands,
-            })
-    };
-    find(ColourBands::BpRp, false)
-        .or_else(|| find(ColourBands::BV, false))
-        .or_else(|| find(ColourBands::BpRp, true))
+    /// The rank of a colour index of `bands`, published or `derived`: lower is preferred.
+    fn rank(bands: ColourBands, derived: bool) -> u8 {
+        match (bands, derived) {
+            (ColourBands::BpRp, false) => 0,
+            (ColourBands::BV, false) => 1,
+            (ColourBands::BpRp, true) => 2,
+            (ColourBands::BV, true) => 3,
+        }
+    }
+    let mut best: Option<(u8, PointColour)> = None;
+    for c in object.entries.iter().flat_map(|e| &e.entry.colours) {
+        let Some(bands) = ColourBands::of(&c.bands) else {
+            continue;
+        };
+        let r = rank(bands, c.derived_from.is_some());
+        if best.is_none_or(|(b, _)| r < b) {
+            best = Some((
+                r,
+                PointColour {
+                    index: c.value.normalized.value,
+                    bands,
+                },
+            ));
+            if r == 0 {
+                break;
+            }
+        }
+    }
+    best.map(|(_, c)| c)
 }
 
 /// The kind of value of the measurement `m` of `object`.

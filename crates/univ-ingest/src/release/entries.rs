@@ -365,14 +365,14 @@ impl Measurements<'_, '_> {
             self.value(numbering, "magnitude", &m.value, Some(band))?;
         }
         for (n, c) in entry.colours.iter().enumerate() {
-            let derived = c
-                .derived_from
-                .as_ref()
-                .map(|from| json(&serde_json::json!({ "derived_from": from })))
-                .transpose()?;
+            // Numbered within the entry, as its distances are; the bands are its kind.
+            let mut more = Map::new();
+            if let Some(from) = &c.derived_from {
+                more.insert("derived_from".into(), to_json(from)?);
+            }
             let detail = Detail {
                 kind: Some(numbering.terms.id(&c.band_pair())),
-                extra: derived,
+                extra: extra(&more)?,
                 ..Detail::default()
             };
             let v = &c.value;

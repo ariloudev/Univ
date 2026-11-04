@@ -1,8 +1,9 @@
 //! The reference decoder of the tile encoding.
 
 use super::{
-    COLOUR_BANDS, DecodedPoint, HEADER_BYTES, MAGIC, MAX_TILE_BYTES, NO_COLOUR, NodeBox,
-    PointColour, Tile, TileError, V1_POINT_BYTES, kind_of_code, point_bytes,
+    ColourBands, DecodedPoint, HEADER_BYTES, MAGIC, MAX_TILE_BYTES, NO_COLOUR, NodeBox,
+    PointColour, Tile, TileError, V1_POINT_BYTES, has_colour, kind_of_code, max_points,
+    point_bytes,
 };
 use crate::ids::ObjectId;
 
@@ -21,21 +22,21 @@ fn f64_at(bytes: &[u8], at: usize) -> Result<f64, TileError> {
     array(bytes, at).map(f64::from_le_bytes)
 }
 
-/// A version 2 point's colour from its column values, or `Err` where they disagree or the code
-/// is unknown.
-fn colour_of(held: i16, code: u8) -> Result<Option<PointColour>, ()> {
+/// Point `point`'s colour from its colour index and bands code as held, refused where they
+/// disagree or the code is unknown.
+fn point_colour(point: usize, held: i16, code: u8) -> Result<Option<PointColour>, TileError> {
+    let refused = TileError::Colour { point, code };
     match (held, code) {
         (NO_COLOUR, 0) => Ok(None),
-        (NO_COLOUR, _) | (_, 0) => Err(()),
-        (h, c) => COLOUR_BANDS
-            .get(usize::from(c - 1))
-            .map(|&bands| {
+        (NO_COLOUR, _) | (_, 0) => Err(refused),
+        (h, c) => ColourBands::of_code(c)
+            .map(|bands| {
                 Some(PointColour {
                     index: f64::from(h) / 100.0,
                     bands,
                 })
             })
-            .ok_or(()),
+            .ok_or(refused),
     }
 }
 
@@ -72,8 +73,11 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
     }
     let count = u32::from_le_bytes(array(bytes, 8)?);
     let n = usize::try_from(count).unwrap_or(usize::MAX);
-    if n > (MAX_TILE_BYTES - HEADER_BYTES) / point_bytes {
-        return Err(TileError::TooManyPoints { points: n });
+    if n > max_points(point_bytes) {
+        return Err(TileError::TooManyPoints {
+            points: n,
+            point_bytes,
+        });
     }
     let expected = HEADER_BYTES + point_bytes * n;
     if bytes.len() < expected {
@@ -112,12 +116,12 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
         let [code] = array(bytes, kinds + k)?;
         let kind = kind_of_code(code).ok_or(TileError::Kind { point: k, code })?;
         let position = [0, 1, 2].map(|i| min[i] + (f64::from(quantized[i]) + 0.5) * step);
-        let colour = if version == 1 {
-            None
-        } else {
+        let colour = if has_colour(version) {
             let held = i16::from_le_bytes(array(bytes, colours + 2 * k)?);
             let [code] = array(bytes, bands + k)?;
-            colour_of(held, code).map_err(|()| TileError::Colour { point: k, code })?
+            point_colour(k, held, code)?
+        } else {
+            None
         };
         points.push(DecodedPoint {
             position,

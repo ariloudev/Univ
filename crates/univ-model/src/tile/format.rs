@@ -11,12 +11,10 @@ use std::mem::size_of;
 use serde::Serialize;
 
 use super::{
-    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, MAGIC, MAX_TILE_BYTES, STEPS, point_bytes,
+    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, MAGIC, MAX_TILE_BYTES, STEPS, has_colour,
+    max_points, point_bytes,
 };
 use crate::value::KindOfValue;
-
-/// The encoding versions this module can describe, oldest first.
-pub const VERSIONS: &[u32] = &[1, 2];
 
 /// The type of a field's elements, every number little-endian and unaligned.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -126,10 +124,8 @@ pub struct EncodingLayout {
 /// The layout of tiles of encoding `version`, or `None` for a version this module does not know.
 #[must_use]
 pub fn layout(version: u32) -> Option<EncodingLayout> {
-    u16::try_from(version)
-        .ok()
-        .filter(|v| matches!(v, 1 | 2))
-        .map(layout_of)
+    let version = u16::try_from(version).ok()?;
+    point_bytes(version).map(|point_bytes| layout_of(version, point_bytes))
 }
 
 /// The fields before the offsets: name, type, count, fixed value and meaning.
@@ -242,7 +238,7 @@ fn points_v1() -> [Spec; 4] {
 /// The point fields of `version`, in order: version 1's, and version 2's colour after them.
 fn points_of(version: u16) -> Vec<Spec> {
     let mut fields = points_v1().to_vec();
-    if version >= 2 {
+    if has_colour(version) {
         fields.extend([
             (
                 "colour",
@@ -268,7 +264,7 @@ fn points_of(version: u16) -> Vec<Spec> {
     fields
 }
 
-fn layout_of(version: u16) -> EncodingLayout {
+fn layout_of(version: u16, point_bytes: usize) -> EncodingLayout {
     let mut offset = 0;
     let header = header_of(version)
         .into_iter()
@@ -302,7 +298,7 @@ fn layout_of(version: u16) -> EncodingLayout {
             }
         })
         .collect();
-    let point_bytes = point_bytes(version).unwrap_or_default();
+    let coloured = has_colour(version);
     let mut refusals = vec![
         "another magic",
         "an encoding version the decoder does not know, named",
@@ -313,7 +309,7 @@ fn layout_of(version: u16) -> EncodingLayout {
         "an object id outside 1 to 2^53 - 1",
         "a kind of value beyond kinds",
     ];
-    if version >= 2 {
+    if coloured {
         refusals.push(
             "a colour bands code beyond colour_bands, or a colour index of -32768 with a code \
              other than 0, or 0 with another colour index",
@@ -326,12 +322,12 @@ fn layout_of(version: u16) -> EncodingLayout {
         point_bytes,
         tile_bytes: format!("{HEADER_BYTES} + {point_bytes} n"),
         max_tile_bytes: MAX_TILE_BYTES,
-        max_points: (MAX_TILE_BYTES - HEADER_BYTES) / point_bytes.max(1),
+        max_points: max_points(point_bytes),
         steps_per_edge: STEPS,
         header,
         points,
         kinds: KINDS.to_vec(),
-        colour_bands: if version >= 2 {
+        colour_bands: if coloured {
             COLOUR_BANDS.to_vec()
         } else {
             Vec::new()

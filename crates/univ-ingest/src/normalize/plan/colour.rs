@@ -2,9 +2,18 @@
 
 use univ_model::value::KindOfValue;
 
-use super::{Col, Errors, Measured, Resolver};
+use super::{Col, Measured, Resolver};
 use crate::normalize::NormalizeError;
-use crate::source::ColourReading;
+use crate::source::{ColourReading, ErrorColumns};
+
+/// A spectral type to read from a row: its column, its kind of value, and what the source
+/// writes there for no type.
+#[derive(Clone, Debug)]
+pub(in crate::normalize) struct SpectralTypePlan {
+    pub column: usize,
+    pub kind: KindOfValue,
+    pub none: Vec<String>,
+}
 
 /// A colour index to read from a row.
 #[derive(Clone, Debug)]
@@ -21,10 +30,7 @@ impl Resolver<'_> {
         match (&c.column, &c.from) {
             (Some(column), None) => Ok(ColourPlan::Published {
                 bands,
-                value: Measured {
-                    value: self.col(column)?,
-                    error: c.error.as_deref().map(|e| self.col(e)).transpose()?.map(Errors::Symmetric),
-                },
+                value: self.reading(column, c.error.clone().map(ErrorColumns::Symmetric).as_ref())?,
             }),
             (None, Some([first, second])) if c.error.is_none() => Ok(ColourPlan::Derived {
                 bands,
@@ -37,12 +43,18 @@ impl Resolver<'_> {
         }
     }
 
-    pub(super) fn spectral_type(&self) -> Result<Option<(usize, KindOfValue)>, NormalizeError> {
+    pub(super) fn spectral_type(&self) -> Result<Option<SpectralTypePlan>, NormalizeError> {
         self.definition
             .normalization
             .spectral_type
             .as_ref()
-            .map(|s| Ok((self.col(&s.column)?.index, s.kind_of_value)))
+            .map(|s| {
+                Ok(SpectralTypePlan {
+                    column: self.index(&s.column)?,
+                    kind: s.kind_of_value,
+                    none: s.none.clone(),
+                })
+            })
             .transpose()
     }
 }

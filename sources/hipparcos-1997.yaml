@@ -14,6 +14,11 @@ cuts:
     Only HIP and SpType are taken: the spectral type of field H76 of the original Hipparcos
     catalogue, as published; the astrometry of the new reduction (van Leeuwen 2007) is taken from
     hipparcos-2007, to which each row is attached by its HIP number.
+  - >-
+    I/239 holds 118,218 records and I/311 117,955 (both ReadMes), so at least 263 HIP numbers have
+    no Hipparcos-2 star to attach to: the stars the new reduction gave no solution. Each stands as
+    an object of one entry, with its spectral type and no position or distance, found by its HIP
+    designation and drawn in no tile.
 columns:
   - { column: HIP, field: identifier, unit: dimensionless }
   - { column: SpType, field: spectral_type, unit: dimensionless }

@@ -313,6 +313,9 @@ impl CatalogueEntry {
         if let Some(m) = &self.magnitude {
             in_unit("magnitude", &m.value, Unit::Magnitude)?;
         }
+        for c in &self.colours {
+            in_unit("colour index", &c.value, Unit::Magnitude)?;
+        }
         if let Some(sg) = &self.supergalactic_velocity {
             for v in [&sg.x, &sg.y, &sg.z] {
                 in_unit("supergalactic velocity", v, Unit::KilometrePerSecond)?;
@@ -324,8 +327,13 @@ impl CatalogueEntry {
         {
             return Err(EntryError::MixedDistanceUnits);
         }
-        for (field, text) in [("name", &self.name), ("group id", &self.group_id)] {
-            if text.as_ref().is_some_and(|t| t.trim().is_empty()) {
+        let spectral_type = self.spectral_type.as_ref().map(|t| &t.text);
+        for (field, text) in [
+            ("name", self.name.as_ref()),
+            ("group id", self.group_id.as_ref()),
+            ("spectral type", spectral_type),
+        ] {
+            if text.is_some_and(|t| t.trim().is_empty()) {
                 return Err(EntryError::Blank(field));
             }
         }

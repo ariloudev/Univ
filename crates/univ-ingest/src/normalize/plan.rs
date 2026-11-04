@@ -15,7 +15,7 @@ use univ_model::value::KindOfValue;
 mod colour;
 mod fixes;
 
-pub(super) use colour::ColourPlan;
+pub(super) use colour::{ColourPlan, SpectralTypePlan};
 pub(super) use fixes::{FixEffect, FixPlan};
 
 use super::NormalizeError;
@@ -118,7 +118,7 @@ pub(super) struct Plan {
     pub magnitude: Option<Col>,
     pub colours: Vec<ColourPlan>,
     /// The column of a spectral type, and its kind of value.
-    pub spectral_type: Option<(usize, KindOfValue)>,
+    pub spectral_type: Option<SpectralTypePlan>,
     pub group_id: Option<usize>,
     pub supergalactic: Option<[Col; 3]>,
     pub flags: Vec<Col>,

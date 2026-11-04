@@ -1,6 +1,6 @@
 //! The layout of the encoding against the encoder. Every point here is SIMULATED.
 
-use super::format::{EncodingLayout, FieldType, Fixed, HeaderField, VERSIONS, layout};
+use super::format::{EncodingLayout, FieldType, Fixed, HeaderField, layout};
 use super::*;
 
 /// SIMULATED: `n` points spread over a node, every kind and a few sources among them.
@@ -40,9 +40,9 @@ fn field<'a>(layout: &'a EncodingLayout, name: &str) -> &'a HeaderField {
 
 #[test]
 fn every_listed_version_has_a_layout_and_no_other_does() {
-    assert_eq!(VERSIONS, &[1, 2]);
-    for v in VERSIONS {
-        assert_eq!(layout(*v).unwrap().version, *v);
+    assert_eq!(VERSIONS, [1, 2]);
+    for v in VERSIONS.map(u32::from) {
+        assert_eq!(layout(v).unwrap().version, v);
     }
     assert!(layout(0).is_none());
     assert!(layout(3).is_none());

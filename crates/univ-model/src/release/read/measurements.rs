@@ -24,7 +24,7 @@ pub(super) fn key(v: &Vocabulary, row: &Row) -> Result<Key, ReadError> {
 }
 
 /// What of `extra` a column of type `T` holds, none when it is absent.
-fn from_extra<T: serde::de::DeserializeOwned>(
+pub(super) fn from_extra<T: serde::de::DeserializeOwned>(
     c: &Columns<'_>,
     extra: &Map<String, Value>,
     field: &str,
