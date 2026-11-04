@@ -1,0 +1,73 @@
+key: 01a1a497-e843-728a-bce8-4013de790aff
+slug: navigate-with-the-mouse
+name: "Navigate with the mouse"
+body: "Moving through the view with the mouse alone: turning about the focus, zooming across scales, moving the focus, flying to a thing and back to Earth."
+realizes:
+  - 01a1a497-e843-728a-bce8-3fcf940bdac0
+requirements:
+  - key: 01a1a497-e843-728a-bce8-4014d5bf7fe9
+    statement:
+      form: event_driven
+      when: "the person drags with the primary button"
+      system: "Univ Explorer"
+      shall: "turn the view about the focus."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-40155a522828
+        name: "Dragging sideways turns the view about the pole of the frame whose axes it shows."
+      - key: 01a1a497-e843-728a-bce8-40169a56936b
+        name: "Dragging up or down tilts the view, stopping short of either pole."
+      - key: 01a1a497-e843-728a-bce8-4017e181b56d
+        name: "A press that moves less than 6 pixels is a click, not a drag."
+  - key: 01a1a497-e843-728a-bce8-40189c79db07
+    statement:
+      form: event_driven
+      when: "the person turns the mouse wheel"
+      system: "Univ Explorer"
+      shall: "move the eye toward or away from the focus by the same factor for each step."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-40194ffc65db
+        name: "Each step of the wheel changes the distance from the eye to the focus by the same factor."
+      - key: 01a1a497-e843-728a-bce8-401a8b7b26d8
+        name: "The distance from the eye to the focus stays between 0.1 parsec and 20 gigaparsecs."
+      - key: 01a1a497-e843-728a-bce8-401b318a282a
+        name: "The view shows the distance from the eye to the focus in parsecs, kiloparsecs, megaparsecs or gigaparsecs, whichever suits it, with light-years beside it."
+  - key: 01a1a497-e843-728a-bce8-401c96d859c6
+    statement:
+      form: event_driven
+      when: "the person drags with the secondary button, or with the primary button and Shift held"
+      system: "Univ Explorer"
+      shall: "move the focus across the view."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-401d23c750eb
+        name: "The focus moves in the plane facing the eye, by the distance the pointer moved at the focus's depth."
+  - key: 01a1a497-e843-728a-bce8-401e02fe8fb9
+    statement:
+      form: event_driven
+      when: "the person double-clicks a point or a structure"
+      system: "Univ Explorer"
+      shall: "fly to it and make it the focus."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-401fac9dd829
+        name: "The flight ends within 1.5 seconds with the thing at the centre of the view."
+      - key: 01a1a497-e843-728a-bce8-40204b4131f6
+        name: "Where the person's system asks for reduced motion, the view moves at once instead of flying."
+  - key: 01a1a497-e843-728a-bce8-402165709dd6
+    statement:
+      form: event_driven
+      when: "the person asks to return to Earth"
+      system: "Univ Explorer"
+      shall: "make Earth the focus again."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-4022b38915cd
+        name: "A control on the view returns the focus to Earth."
+  - key: 01a1a497-e843-728a-bce8-40239ca6b61d
+    statement:
+      form: event_driven
+      when: "the person chooses the galactic, equatorial or supergalactic axes"
+      system: "Univ Explorer"
+      shall: "turn the view to that frame's axes."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-4024890baa12
+        name: "The chosen frame's equator is drawn as a ring around Earth."
+      - key: 01a1a497-e843-728a-bce8-4025c1c8e956
+        name: "Changing the axes leaves every point at the same place in space."

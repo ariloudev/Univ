@@ -5,13 +5,17 @@
 //! - `cargo xtask science <release-dir>` runs the science checks of a built release.
 //! - `cargo xtask integration` runs Univ Server's end-to-end tests inside `wrangler dev`.
 //! - `cargo xtask serve` runs Univ Server on the real local state.
+//! - `cargo xtask explore` runs Univ Server and Univ Explorer beside it on the real local state.
 //! - `cargo xtask bench lookup` times object lookups through it (QA-2).
 //! - `cargo xtask bench volume` times the first pages of volume queries through it (QA-3).
+//! - `cargo xtask bench first-points` measures how soon Univ Explorer draws its first points.
 
 mod bench;
+mod explore;
 mod integration;
 mod lines;
 mod node;
+mod owner;
 mod science;
 
 use std::fs;
@@ -41,6 +45,8 @@ enum Gate {
     Verify,
     /// The reference TypeScript tile decoder's tests, when `node` is on the path.
     TileDecoder,
+    /// Univ Explorer's own check, when `pnpm` is on the path.
+    Explorer,
 }
 
 /// What a gate came to.
@@ -78,6 +84,7 @@ const GATES: &[Gate] = &[
     ),
     Gate::Command("test", "cargo", &["test", "--workspace", "--quiet"]),
     Gate::TileDecoder,
+    Gate::Explorer,
     Gate::Command(
         "wasm32",
         "cargo",
@@ -120,6 +127,7 @@ impl Gate {
             Self::Lines => "lines",
             Self::Verify => "loft verify",
             Self::TileDecoder => "tile decoder",
+            Self::Explorer => "explorer",
         }
     }
 
@@ -129,6 +137,7 @@ impl Gate {
             Self::Lines => lines_pass(root),
             Self::Verify => return verify(root),
             Self::TileDecoder => return node::tile_decoder(root),
+            Self::Explorer => return explore::gate(root),
         };
         if passed {
             Outcome::Passed
@@ -148,30 +157,37 @@ fn main() -> ExitCode {
             integration::integration(&root)
         }
         Some("serve") => integration::serve(&root),
-        Some("bench") if std::env::args().nth(2).as_deref() == Some("lookup") => {
+        Some("explore") => {
             integration::stop_on_interrupt();
-            bench::lookup(&root)
+            explore::explore(&root)
         }
-        Some("bench") if std::env::args().nth(2).as_deref() == Some("volume") => {
+        Some("bench") => {
             integration::stop_on_interrupt();
-            bench::volume(&root)
+            match std::env::args().nth(2).as_deref() {
+                Some("lookup") => bench::lookup(&root),
+                Some("volume") => bench::volume(&root),
+                Some("first-points") => explore::first_points(&root),
+                _ => return usage(),
+            }
         }
         Some("science") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             science::run(&root, &args)
         }
-        _ => {
-            eprintln!(
-                "usage: cargo xtask <check|lines|integration|serve|bench lookup|bench volume|science <release-dir>>"
-            );
-            return ExitCode::from(2);
-        }
+        _ => return usage(),
     };
     if passed {
         ExitCode::SUCCESS
     } else {
         ExitCode::FAILURE
     }
+}
+
+fn usage() -> ExitCode {
+    eprintln!(
+        "usage: cargo xtask <check|lines|integration|serve|explore|bench lookup|bench volume|bench first-points|science <release-dir>>"
+    );
+    ExitCode::from(2)
 }
 
 /// The workspace root: the parent of this crate's directory.

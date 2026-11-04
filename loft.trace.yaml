@@ -2841,3 +2841,588 @@ links:
       - file: "crates/univ-api/src/openapi_snapshot.rs"
         name: "removing_renaming_or_narrowing_is_caught_and_adding_is_not"
         body: 17f89eb7191cde1969fd67369147b5f77f6b26966bf15fea2913ee2bb8007511
+  - node: 01a1a497-e843-728a-bce8-4000304272e5
+    reviewed: 49e72271655bbde69ab24eed7fa3ad2a994f25202be641d3d267ed0708e52f5d
+    tests:
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "is drawn at the ICRS positions its points give, in megaparsecs"
+        body: 7f97650638312e76168858e8c0208d2f1cca1d430c3c60ef31b48e7dcee88ad7
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "is read from a manifest in parsecs or megaparsecs, and no other unit"
+        body: 4e8fd4247352f16c31d616ce00c5a9bc97cfd2ad67898fbdd30db21e75153de7
+  - node: 01a1a497-e843-728a-bce8-40018ecb5def
+    reviewed: 0e0b74c27edea48ad2954681c566fa1a56fcd289bd45f24dc16b92027a988edd
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "marks Earth as the Solar System barycentre, and says when it cannot draw"
+        body: 540201203d9e919336a94c7754c572656419fd92d3f69369214769d80ea385c3
+  - node: 01a1a497-e843-728a-bce8-40026e7286d2
+    reviewed: c351be9f44274d24780c20b9925fd09dc4e021d26e7cf3ce0502f2f699a0a1c8
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+        body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "is drawn at the ICRS positions its points give, in megaparsecs"
+        body: 7f97650638312e76168858e8c0208d2f1cca1d430c3c60ef31b48e7dcee88ad7
+  - node: 01a1a497-e843-728a-bce8-40049983aed9
+    reviewed: 60a2b90ff670f3de8d8fe9683d0c4d71ba1b5bfffd53e88f1e14b8a0af170115
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "fetches the root of every scale domain before any other tile"
+        body: 47da61d522fd15a0eecda2c85a4adc60a9c45b66ce0c029c87bc9aba51fd467d
+  - node: 01a1a497-e843-728a-bce8-400536d8f2b5
+    reviewed: b71eda699136400252e7a544def57668b0dd1d2ee3afe8a9110ad60adf0ab603
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "fetches the children in view of held tiles, the largest on screen first, and none wholly outside it"
+        body: c2c33def47f95d820c7ccd7a095f22577417720f74fd96c55fb0efa334acc1fc
+  - node: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
+    reviewed: 5ed7dccb7622bfee3d4e5db93c8315efab04352e1bd81219b3316277718534be
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "refines a tile only while its points lie farther apart on screen than 3 pixels"
+        body: 8ba68e794c4bd18cd89a3e9ee31268fe8ffb5da699e52febd4312d6e384d0fac
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "measures a tile read by where its points lie, not by its cube"
+        body: 1a17468adad6abb34288a32a151705a7e05e22f393fd089b3187fa673aa94776
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "measures how far apart a tile's points lie by where most of them are, not by the farthest"
+        body: 39947fd6f4fef34defe138ed42b8a43db532f6703b6c56a874b4a2e84e48056a
+  - node: 01a1a6a7-c540-7210-8492-7dfc16d279b8
+    reviewed: 9f4cc14d2503bc59adb7e1a124667fb809a1d93c75a2cbdc2559edba4c61454a
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "adds a tile's children in view all together, or none, so no octant stays coarser than the rest"
+        body: a71cba49fb9c4277ef01b5ca61d349a5dd49c89e66c94f37b1571335ed3a9ecc
+  - node: 01a1a6a7-c540-7210-8492-7dfdf91c2ccf
+    reviewed: 1070e847a26bf7617d2211165f89d440714790efcb48704614ed669a243a64ad
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "settles, within a budget too small for all it wants, and fetches no tile twice"
+        body: 8bce0ca6a9c8621d4f0e9ef470f03ff92974338e9629c5db1eb1f30e90ffa256
+  - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
+    reviewed: d56d1e83e4cfbb1a73c3bc5393c25caa8ee7bb5c00b587c47d326bf8fd2283fd
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "holds no more than 3,000,000 points, counting those on their way"
+        body: fe131166d4f30d069df1b7f4cb44a11ad2bf237a3a901b4a5964db76a2b92b97
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
+        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+  - node: 01a1a689-0b25-768a-9f1e-cc28566a82e6
+    reviewed: 0f0300380b27121d826afc8c0e7dd3d9978b3d798112fc7285c73e261c06f158
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "drops a tile wholly outside the view to fetch one in it"
+        body: cbc6dc35af6d259a19ba2449a57ff89fca41dca9bccb14340164f4684c89b391
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
+        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+  - node: 01a1a689-0b25-768a-9f1e-cc29da0f0de4
+    reviewed: 1d5455cdbc3aca3bca0e11ef6bc102883720f6feb22b1f928751910e82f77132
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "never drops a root, nor a tile whose children are held, nor the tile being refined"
+        body: a58b03d5ea3d2a5535c3ed82d83284c54f8a4c50d0a5595453abbe3fcc191b0e
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "drops no tile the view still wants, even to fetch another it wants"
+        body: 6be45a1309fab62e5cac193d94fb004bd4fe4ba780a11fca62d7c27f964f96f7
+  - node: 01a1a689-0b25-768a-9f1e-cc2a53831ad9
+    reviewed: 32c865e634a5efa716eedf713faef49fd05719b8c0f0ef2e63744863f604b52d
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "fetches a dropped tile again once the view needs it"
+        body: 91f97e6594163e1f2b626d7a2b378d4f47885fb41a8010dfb04ded0b418f28ad
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
+        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+  - node: 01a1a689-0b25-768a-9f1e-cc2c484365d4
+    reviewed: e82b1fb1e371fca155aeaa6795d4f08bf91215034ad308160bd02a5eac646c7f
+    tests:
+      - file: "clients/explorer/src/scene/frustum.test.ts"
+        name: "holds what lies ahead of the eye, and not what lies behind it"
+        body: dda326d9bde54105971c470470050c3adab6aec0f925da1d1bf6f0c878dd7c05
+      - file: "clients/explorer/src/scene/frustum.test.ts"
+        name: "leaves out a sphere wholly beyond a side, and keeps one that crosses it"
+        body: fe44175a1434cda15d0832ffd8b5df6557e5d1aa32d229fb117c452ca408f8dd
+      - file: "clients/explorer/src/scene/frustum.test.ts"
+        name: "keeps, of a list, only what reaches into the view"
+        body: 493e4486c6eeaefcdcaa92e2f1a8c273a0a1170cc7220d9a2be73a070976c311
+  - node: 01a1a497-e843-728a-bce8-40081f3b67cf
+    reviewed: 4f8ef32cdbb2cad0c5d2d944602202510e5b128c1cc259b430218891e03a6900
+    tests:
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "whose bytes do not match its SHA-256 is refused"
+        body: c5f9b6986f159e03690de3c458a7542476f180dc6c6d8cad826d829b3ccbe925
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "leaves a tile that fails its SHA-256 undrawn and counts it"
+        body: 68feb548c02eb5cdf87a0d080d9b98c40857f13bd05e1635c18ebd4891088f2d
+  - node: 01a1a497-e843-728a-bce8-4009e23e1ebc
+    reviewed: 8f07b9fa802b0e4db02d15b333042143534342e209a970f2a499a41fb34c54e4
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "leaves a tile that fails its SHA-256 undrawn and counts it"
+        body: 68feb548c02eb5cdf87a0d080d9b98c40857f13bd05e1635c18ebd4891088f2d
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "does not count a tile Univ Server could not serve as failing its check"
+        body: f3d97e7ccf76e529847e89144040f00332699b8aa8ee63bdb6297188f9675b4c
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "state the tiles that failed their check, and those that could not be read"
+        body: eddaaa991540ec699571322f43e215e0db9a8433185691df244d9880fd03da63
+  - node: 01a1a497-e843-728a-bce8-400b9b581384
+    reviewed: 3321669c8f1ae6d614453311aa8e9477ac27a64ee188df719bc4accc012d2bf9
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn in four distinct colours, in one order whatever a manifest lists"
+        body: 3dc2440a8a8d49922db1fb8f36e716e8a7cd2f948741776057090fdf25326ba3
+  - node: 01a1a497-e843-728a-bce8-400c71ad8ebe
+    reviewed: 28ec7f93a5e7dc872109f9e51747747af7b8f9842acaaaff7069bd08a573fadf
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "count the points of each kind of value beside its colour"
+        body: e82a6a2ee5d1dcf1379228e0432725c6b88ec04841bc9bb61ce0d814c3406f98
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+        body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
+  - node: 01a1a497-e843-728a-bce8-400eb0b1b70d
+    reviewed: 3d68e31733a11b68aac2fed28b4280d13551e8ef4a59c1c64d49e2c245020709
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "credit each source of the drawn points with its title, citation and credit, naming the release"
+        body: b08c754a3ab477a8c567111f9bb1bb599a9aad9301c0de86562c845b4fe93d17
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
+        body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
+  - node: 01a1a497-e843-728a-bce8-400fa74e76fc
+    reviewed: 9168a029025acb7360a6987f25e6b6e0f837e534a580e3564723f854f7102b34
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "credit each source of the drawn points with its title, citation and credit, naming the release"
+        body: b08c754a3ab477a8c567111f9bb1bb599a9aad9301c0de86562c845b4fe93d17
+  - node: 01a1a497-e843-728a-bce8-40111a7d5c5f
+    reviewed: 9391d08a6b70a3814402f29ccde8c89b15826c77bdab778cac888088ec830424
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "name the frame of the axes, the origin, the units and the cosmology"
+        body: 963fe1464b95e0bc2280138c5fea671fb3ec5df7bf46beb53f94c0e23cd5d28b
+  - node: 01a1a497-e843-728a-bce8-40155a522828
+    reviewed: 66744c39f5557baae7d2c96f2896819a4b59b904b78a2c2e075e5f05e28f7799
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "turns the view while the primary button drags"
+        body: b94feb2699eea4bd65dc5f00646009fdbfe4120609eb03949305e7a5846344e2
+      - file: "clients/explorer/src/scene/camera.test.ts"
+        name: "turns about the focus and stops short of either pole"
+        body: f392657fb5b60fe11178b40203e7fa5f2c5e129a4d0c4184fbcd6301ba05c63b
+      - file: "clients/explorer/src/scene/camera.test.ts"
+        name: "keeps the frame's pole up on the screen"
+        body: a75d3c1f3787490268b4da5109aea800f6e0c4d3faade75fe85c5fb32273cab6
+  - node: 01a1a497-e843-728a-bce8-40169a56936b
+    reviewed: 1e4755b48629a7c64c1f1300422133d5dbba15e7218fb50aa9fa4b3e835ef8b5
+    tests:
+      - file: "clients/explorer/src/scene/camera.test.ts"
+        name: "turns about the focus and stops short of either pole"
+        body: f392657fb5b60fe11178b40203e7fa5f2c5e129a4d0c4184fbcd6301ba05c63b
+  - node: 01a1a497-e843-728a-bce8-4017e181b56d
+    reviewed: 477dc12816b8066f6756403aaea58ff59abce5ab41b570f1b9e34bafb5e402f7
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "calls a press that moves less than 6 pixels a click, and turns nothing"
+        body: 2b28ec99997db8b2a971fe44b08989d654ddf369f8f3c539d2eeeda1a8c119b4
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "calls a press that moves less than 6 pixels a click"
+        body: a8a5990ea95e1d19e0f689ee2f05eb07de9cfc13a66bc5901a8a31b29d7f65e3
+  - node: 01a1a497-e843-728a-bce8-40194ffc65db
+    reviewed: c8aff6a9f83401a577f93d34de33ac242885f822d2d5ebc4590ed9920673d88b
+    tests:
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "changes the distance by the same factor for each step of the wheel"
+        body: adfac48484e9a7679c93f4923172b262cc9f1976d55318d13fb2b8427d0d3fb9
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "reads a notch of the wheel as one step, in pixels, lines or pages"
+        body: 86486621ae9ce6a6005447635af384c3b0008e35806cf2a797ad081d9b59c0bd
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "zooms in a step for each notch scrolled forward"
+        body: a7d407b128bd24b3ccb773306bbafccde3a7b9055fc267e0add3aea2b007550a
+  - node: 01a1a497-e843-728a-bce8-401a8b7b26d8
+    reviewed: e63edf64132592225f907ce359863ac7bcc0f3ca85c83386e197f4416c3595fb
+    tests:
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "keeps the eye between 0.1 parsec and 20 gigaparsecs from the focus"
+        body: 8ffe2d82a36c6678e954facc6b5824bc2740dc73040ad78bb5dfb5e742b55a1b
+  - node: 01a1a497-e843-728a-bce8-401b318a282a
+    reviewed: e9af2a4cfdb6fc098e6374de23025f30dbdeead06d5f66fe55a1dadf6a5e8276
+    tests:
+      - file: "clients/explorer/src/scene/format.test.ts"
+        name: "are given in the parsec unit that suits them, with light-years beside"
+        body: 1f18e3118e0c19c27f1ae0287717113feaeb78621c321b20e15de1ea71ef56c4
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "show the distance from the eye to the focus, and return the focus to Earth"
+        body: 6a74365ecc0602a62208fb85e208ba537c03c1c02f782c8d50ba46ebff748199
+  - node: 01a1a497-e843-728a-bce8-401d23c750eb
+    reviewed: c8ec4d70631fc753e86ec1a5edec63856a08fdce1788d89bf3b0e6507ff19623
+    tests:
+      - file: "clients/explorer/src/scene/controls.test.ts"
+        name: "moves the focus in the plane facing the eye by the distance dragged at its depth"
+        body: fb8c05532f87fbb5748cbde14ecd1d590c93605379e71f14e2293cbc05c55a40
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "moves the focus while the secondary button, or Shift, drags"
+        body: 9eaa2c47f35a38587e59e70049a5a3a590bc491dec38980aac5d2efb503e7e01
+  - node: 01a1a497-e843-728a-bce8-401fac9dd829
+    reviewed: c68184c4891492d38fa47942b401a004ebc3d4efe11a6447441464387bc2fef0
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "flies to a thing within the flight's time and ends with it at the centre"
+        body: b8d9e9aee6b4e150813b4f57768726bd57e4db46c5807dba73e095654133c1d7
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "flies on a double click, and stops listening when unbound"
+        body: cee5780d9e8ad34c87827eb3a7a06af669f25fe995b88c93aa8ef02901bdcc17
+  - node: 01a1a497-e843-728a-bce8-40204b4131f6
+    reviewed: 68f3fa03f97f60cef028710d5e5f305d7030740c79e52efa7708a7fc23475dc9
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "moves at once where reduced motion is asked for"
+        body: 61667cb2228642b856c162f049d63fa98b1bb3b254b2ba1c7cd36f0d68e1cc9e
+  - node: 01a1a497-e843-728a-bce8-4022b38915cd
+    reviewed: 9f4d2d913340f6ae75d603f0802f663728ecef00890f0f7760819c0504346f90
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "returns the focus to Earth"
+        body: 10826eedee5f53f7b5a8e019ea8464a446920db573d5abceefa917aa56625b7a
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "show the distance from the eye to the focus, and return the focus to Earth"
+        body: 6a74365ecc0602a62208fb85e208ba537c03c1c02f782c8d50ba46ebff748199
+  - node: 01a1a497-e843-728a-bce8-4024890baa12
+    reviewed: 176059f23b2324e2edd1a211facdfdc8419a2f4892f352fb4f7d7eac40a27db6
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "draws the chosen frame's equator as a ring around Earth"
+        body: fd56dd1de68c3aab0df0cd06df7979013f9579b8d138854cc3623fa83cdec2db
+  - node: 01a1a497-e843-728a-bce8-4025c1c8e956
+    reviewed: 12e61fd3fe8ded0c57407c82460efdd87cc0a85ed0866a2891a74e1520452311
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "changes the axes without moving the focus or any point"
+        body: af3a664c4e0e8d2bbc5173a8e23b040f16ad29bdc43557b45d00f5c7c8e4b328
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "change the axes the view shows"
+        body: 2833c5d15ba12fac06d2cf0925e2b08d93a7b01c9cfe466a6f90f63b4d906db4
+  - node: 01a1a497-e843-728a-bce8-4028add2863c
+    reviewed: b29686a60ed981cd31444dd6a3b80ced0fb390848553372211c06393f115159c
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "draws the release latest points to, and names it"
+        body: 00c28aed9128eb37dd2befe612cae85ece498d7e1d4048ac8b4eb8e018339bfa
+  - node: 01a1a497-e843-728a-bce8-4029408477ea
+    reviewed: ebe52a7289143675bb583e4e8f33162ee928d592f69844969658325699625907
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "draws the release latest points to, and names it"
+        body: 00c28aed9128eb37dd2befe612cae85ece498d7e1d4048ac8b4eb8e018339bfa
+  - node: 01a1a497-e843-728a-bce8-402b1b713ac4
+    reviewed: 45317ec8bbfef7a656e3ee23e34087c9e95b7381d535c886e407d02dc8927f19
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "offers every release not pruned, and draws the one chosen"
+        body: 971bfa73a35beb327613979922d942688e195d6089d5c78b33baf7b28a63b757
+  - node: 01a1a497-e843-728a-bce8-402c7430235c
+    reviewed: e29778838bf266ca95bc03de1fb940352fa90b080e2db97af5243b97faab188c
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "offers every release not pruned, and draws the one chosen"
+        body: 971bfa73a35beb327613979922d942688e195d6089d5c78b33baf7b28a63b757
+      - file: "clients/explorer/src/api/client.test.ts"
+        name: "names the release on every read pinned to one"
+        body: 840bd9c07649901adbd787ac6efb551b14127097a6e584bafae307880449466e
+  - node: 01a1a497-e843-728a-bce8-402e69057896
+    reviewed: 21e771a27389c4c570ad5cb967002feb0065bf107c8431ac7a92179ca00a67c8
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "says where it looked and how to start Univ Server, and tries again when asked"
+        body: 250a817cc3e53f52cf56de3b9193607e320816e2ec6d6a01c657d699fde78110
+      - file: "clients/explorer/src/api/client.test.ts"
+        name: "calls Univ Server unreachable where the explorer's server says so, with its address"
+        body: e2f072d11d7160a6fe11a8a1c933ee3cf05d64c84f7b653cf292a48270fdce7e
+  - node: 01a1a497-e843-728a-bce8-402f2c21ca9d
+    reviewed: 892cea42f73fdaece7ce2d44ae4da480bf7b6e05d08c21bb0215ab77fc75134c
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "says where it looked and how to start Univ Server, and tries again when asked"
+        body: 250a817cc3e53f52cf56de3b9193607e320816e2ec6d6a01c657d699fde78110
+  - node: 01a1a497-e843-728a-bce8-4030e4feb6a1
+    reviewed: 25d7e45300b69ad8edb3fd9e1d3c1ef8a76fb616dc99abe38a9b0e9a70945c3d
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "says where it looked and how to start Univ Server, and tries again when asked"
+        body: 250a817cc3e53f52cf56de3b9193607e320816e2ec6d6a01c657d699fde78110
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "names the problem when Univ Server refuses to list its releases, and tries again"
+        body: ff89574bcf4769acfbfbaed05541f9d10039a09148b26b055d2243942895ad95
+  - node: 01a1a497-e843-728a-bce8-4032ee17e718
+    reviewed: 1ae54cd17c6cb705ea6698ff4ef9fbf66438b4526c660942c0d60a5807989f69
+    tests:
+      - file: "clients/explorer/src/api/client.test.ts"
+        name: "reads a refused read again after the seconds its Retry-After gives, saying so"
+        body: e7a824ed0157a8a930372cdef97f9c335f944db2335b4b268b6353d7d32203ae
+      - file: "clients/explorer/src/api/client.test.ts"
+        name: "takes Retry-After as seconds, zero included, or as a date, and the window otherwise"
+        body: 768ac26ce29ceb3b685ad257aae80ab47868725463553c0dbeeb45ba2277b5d6
+  - node: 01a1a497-e843-728a-bce8-3fde6b42f63b
+    reviewed: 4cbbd3fd831065846d24c5b2148409663688ff7e618e9d70fd32c188542de213
+    tests:
+      - file: "clients/explorer/src/api/objects.test.ts"
+        name: "looks a number up as an id, source:identifier as a designation, and anything else as a name"
+        body: 6e3ce3ced261d69f3cbb7c3d63eecfdb0d65fb1e64f162999248c15d0df3f343
+      - file: "clients/explorer/src/api/objects.test.ts"
+        name: "reads the object found, in the release chosen"
+        body: 0ee038741868f1434a90ccb8ec015c62a3bf510723724b00d29db0a330bb58e5
+  - node: 01a1a497-e843-728a-bce8-3fdf22d824cf
+    reviewed: e32249090c437fa7ea136a14441a387aa4a0108f1b89a9bd5c6a2964ae4c507b
+    tests:
+      - file: "clients/explorer/src/ui/SearchBox.test.tsx"
+        name: "makes the object found the chosen one, with the name it was found by"
+        body: 911ad6e25383b29a933e56af5ecdc92a37ecdb8f14d566099879205a62fdf70f
+      - file: "clients/explorer/src/ui/useChosen.test.tsx"
+        name: "is kept in the page's address, read back on reload, marked, and flown to"
+        body: 4a642179f5ba6a98df055f4e48e06d9da7e838d3afe83fde1011ee3420f0bb4d
+  - node: 01a1a497-e843-728a-bce8-3fe0cf1c756b
+    reviewed: 162c714ed0630af06daf81bd0d1d4b2852da07847d76571630cf72f430f4a3c9
+    tests:
+      - file: "clients/explorer/src/ui/SearchBox.test.tsx"
+        name: "lists the objects a name belongs to, to choose from, each chosen with the name it was found by"
+        body: 3195d4738b948520e13e9b154efb231500aa6346adca23ccb8ecae950f166e5d
+      - file: "clients/explorer/src/api/objects.test.ts"
+        name: "lists the objects a name belongs to, to choose from"
+        body: 659fd1e62aefeb1e05dc9aa4e22d3d5bc6aef188c1b8a377911cf96ac0882758
+  - node: 01a1a497-e843-728a-bce8-3fe2d2338514
+    reviewed: 4421a94ff3ff717ed1716c8ad3ddccf3ae6bc38eb376125fe1f67d38f57dd5af
+    tests:
+      - file: "clients/explorer/src/ui/SearchBox.test.tsx"
+        name: "repeats what was searched for when nothing is found"
+        body: 96d313c66db2954ce10e5aedfc7579b311fc51833f8e67e1c85e9fe263fe19d0
+      - file: "clients/explorer/src/api/objects.test.ts"
+        name: "says nothing was found, keeping what was searched for"
+        body: 48dda6945fd50b32241cae96d4d4839f5b8b7c9a241ab0a11c2949f90ad8c3cb
+  - node: 01a1a497-e843-728a-bce8-3fe5ca42baa2
+    reviewed: 49c262781350cb4b1df043dc95a352f9e0b379e71bc3685640eac885b0b650c3
+    tests:
+      - file: "clients/explorer/src/ui/scenePoint.test.ts"
+        name: "is known by its id, scale domain, place and distance, and the source and kind of its distance"
+        body: f7c3edf604354e112e6dd103e473d6e4be084bcb3d3700f3c7712d6a775d51ef
+      - file: "clients/explorer/src/ui/text.test.ts"
+        name: "label a point with its id, scale domain, distance, and the source and kind of its distance"
+        body: eca811556d8ac6d96febb5dff917a5b5ac42db4e6e40fa1498fb6346e064e8d9
+      - file: "clients/explorer/src/ui/scenePoint.test.ts"
+        name: "is found under the pointer, or nothing is"
+        body: d2e67af0e2d29ae5a46eb54d97aa55f5f1c5ff6f5426748463c89abbb3c26602
+      - file: "clients/explorer/src/scene/pick.test.ts"
+        name: "finds the point under the pointer, across batches"
+        body: 37f02fcb621ce6620054c55f7a57f43067e7079259e99239af4c80c72c60e157
+  - node: 01a1a6b2-b217-764e-93d0-da89ee4e3c67
+    reviewed: 6034ae72796c70435d080c5529759d0ca3761d4a1dc226331d9748dee6376891
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "is headed by the name the object was found by, with its id beside it"
+        body: eecae235cb90df636a321bf44d9b9c154112754adb3836d0ee65b27919585268
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "is headed, when opened from the view, by the first name its entries give, or else its first designation"
+        body: 4dfa6ef9d1cc9cf90bf22bc48ec53d90d63bd60020ffbe636d25bad17e7ce1f8
+      - file: "clients/explorer/src/api/objects.test.ts"
+        name: "is the designation that reads as the name typed, letter case and spaces aside, or else what was typed"
+        body: 16114a85febed8ad6c613b2ed9d85ff5274fcc4f2201393f60b1a76a12c7b6f2
+      - file: "clients/explorer/src/ui/useChosen.test.tsx"
+        name: "keeps the name it was found by in the address, beside its id"
+        body: f5574803b52801858ccf23f9aeb24a9963c605d3e38b4da395e170f9fbb79fae
+  - node: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
+    reviewed: b50e335a6ecb06d3274361f87e0018abb49a097f3871c3fd20358cbc762dd372
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "names a galaxy group as such, and the scale domain of every object, not \"body\""
+        body: 5314d46ab79d66492161d895a945bad596c2c3bc163cb9308957ae0b55866310
+  - node: 01a1a497-e843-728a-bce8-3fe7201a1670
+    reviewed: 250a2af29b9190f2c99846570ccaca8d0b939fcb1ad77f2be75fd50fcd8c5148
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives the object's names and designations, each with its source"
+        body: bd4ad48d411e77387fa7f4f370e4519608fc262a86898781f0f9a8954a54ff76
+  - node: 01a1a497-e843-728a-bce8-3fe8c93208cf
+    reviewed: 7e219d474557c0e3d47ae541ae9bf570a405ba2759f7df8620c362dbdea790c6
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives the preferred distance with its uncertainty, kind, source and rule"
+        body: 45e332dd75badd1ae771885894420a845145efbedc8b1802f8a9641a29513f7d
+      - file: "clients/explorer/src/ui/text.test.ts"
+        name: "give the preferred distance with its fractional uncertainty, also as a distance"
+        body: db01b1ebebf048eec7ca7d86ff9caac5a7d2c285b561a54b27c04f4fc618b3b2
+      - file: "clients/explorer/src/api/objects.test.ts"
+        name: "picks out the preferred distance's measurement and every other distance"
+        body: a63d6dbaca891897aad3bfc41f7f42a36fb404c4a2e99e19add69788439d53c2
+  - node: 01a1a497-e843-728a-bce8-3fe962cd751a
+    reviewed: d337b1093082464f9fd49b7fa73fbb99dafbf8ce10c217852df0722cf5c74630
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "lists each other distance measurement beside the preferred one"
+        body: 371e3449192e269b2406266121f7b10578aebb212cbb13be478aaee25866cf22
+      - file: "clients/explorer/src/ui/text.test.ts"
+        name: "give a published value with its unit and uncertainty as the source gave them"
+        body: a1b15c7e16ef70583682c2484488cb594c5073d862164f13564bff90fc308002
+      - file: "clients/explorer/src/ui/text.test.ts"
+        name: "is said in the form its source published it: a range is no error, a limit no value"
+        body: b38bf458cdfe94d9dc983568a6600d9be091d1f86490ad0a4481af54fcd8781c
+  - node: 01a1a497-e843-728a-bce8-3fea61a8f74f
+    reviewed: 41775a71a7530ba7ad62cb2deeae9d5528c6b0820e1b79689806867a3746db04
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives the frame and epoch of the object's position"
+        body: aaae8cd5260df5e924d616314d66d9eb8efe8f6bb99fb78b9d4589970a0eac66
+  - node: 01a1a497-e843-728a-bce8-3febf4df9871
+    reviewed: bca7d8b112819f648054c466978ba0a83c9a97cb103d987537d411ecf16209af
+    tests:
+      - file: "clients/explorer/src/ui/useChosen.test.tsx"
+        name: "is kept in the page's address, read back on reload, marked, and flown to"
+        body: 4a642179f5ba6a98df055f4e48e06d9da7e838d3afe83fde1011ee3420f0bb4d
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "keeps Earth at the centre while it is the focus, and marks the chosen object where it is"
+        body: 00633dee91d25898149d4513814c71f20aa87adaf366e6dd5b052042694b12a2
+  - node: 01a1a497-e843-728a-bce8-3fec1fe0b4b3
+    reviewed: 070e93b2a2c9bc1c818701d067f6eb55530c025aa159bdfdc9da9505f55a95cc
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "finds an object by name, reads it, and keeps it in the address across a reload"
+        body: 3462ba567f96272e6cecec7478edaf2b948e13fce8b167e92afedc551364aa1e
+      - file: "clients/explorer/src/ui/useChosen.test.tsx"
+        name: "is kept in the page's address, read back on reload, marked, and flown to"
+        body: 4a642179f5ba6a98df055f4e48e06d9da7e838d3afe83fde1011ee3420f0bb4d
+      - file: "clients/explorer/src/ui/useChosen.test.tsx"
+        name: "is read from the address only where it names an object id, with the name it was found by"
+        body: 59f79d815a2a338419122a28e35ac5a4f66732c9bcb25cf8772e5007e8ce1a5a
+      - file: "clients/explorer/src/ui/useChosen.test.tsx"
+        name: "is let go of, leaving the address naming none"
+        body: 76cc124c699310591f32ace5b8d67513819352c57ea278a56e1c8b2d6f508718
+  - node: 01a1a497-e843-728a-bce8-3fee23d1c65a
+    reviewed: 7e45f65eb420b5b929a6974834b750c1b64e6f1cbfcaf95e00a177b22e6ec457
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives the status and title Univ Server answered with"
+        body: 833ba4847d4eb48507f356680b133cf991d8bca5a73a34fa9d94df062a1d905f
+  - node: 01a1a497-e843-728a-bce8-3ff1ded85aea
+    reviewed: 4384b621b88c2658b7e36e90a830b5b28b099ec7d41cd7f799f19a2651c281b9
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a sphere as rings at its radius, in the frame and unit its shape names"
+        body: a62d9a0a6fff7934496ab5036dc9e3a791a6445005bdb750994ff01d16db405d
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws an ellipsoid as rings along its axes, and an oriented box as its twelve edges"
+        body: b74437aba36e7e19c7a644ef0f0fb3465b30ff29975a981199fb09e983daa8a2
+  - node: 01a1a497-e843-728a-bce8-3ff2f42a8c13
+    reviewed: e1cc72ff569ef79da218abd83bb3344b2fc602ac03f482cae2232f1de175d9d3
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a path as lines, members as markers at their positions, and a point as a marker"
+        body: ed240cf866bb9347fb1f2d935ae12417a0f4ecb8b36f97fdaf87c69096c3c506
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "draws its segments as lines and its markers as points, about its centre"
+        body: a12bb678ea85f35c5f4cc76096372188dead636fe1c4f3eaf6f8b451087dbeb2
+  - node: 01a1a4bd-9644-750a-a678-3906e3189ded
+    reviewed: 72050876f6889ae2e65b35fc490ba971041de261255eebc90566409270edb988
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a path as lines, members as markers at their positions, and a point as a marker"
+        body: ed240cf866bb9347fb1f2d935ae12417a0f4ecb8b36f97fdaf87c69096c3c506
+  - node: 01a1a4bd-9644-750a-a678-390771cfa729
+    reviewed: 61da897f88768aba57dcad866cc973f6c796402aed204ce1c1dca7f991dc669a
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+        body: e9c122d1c3ec225de062c402e806d1d4a81f8324664cc5e90eda8c6610cea6c7
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "say when a structure is drawn by its bounding box, or not placed at all"
+        body: a5304d3fa44dc6fc89260bdff112847abfefdebcdd63521684153b02aaa56b3c
+  - node: 01a1a6d7-1b42-741d-95f7-ed4ee2759b78
+    reviewed: 6cddd7a3ded05b19b35637c40ab136ee4b0e4151f3e1937951fa5270c36f9c74
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a sky region as the boundary of its cells at its near and far distances, joined by radial edges"
+        body: 6ea5a935fb64bb1b5512bfdf8dff691d0d04b59db0d55fb91e3feab73e0561b9
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "turns a sky region's cells from the frame its shape names"
+        body: b5322b1b976f3c255d7f983631c0d611620c2ffc645035d5e585d526ae69aa30
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws by its box a sky region with no boundary to draw, and gives a band about the sky no radial edges"
+        body: 640f4d0c5644e0b112599c61256b2d465110fe38e22d85c90e651ada774ba759
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "of one cell is its four edges, each from corner to corner"
+        body: 86cf75c32de27e842814197b918b7c2b3ae6e650ff363eec49d8a134b2f33315
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "of two neighbours is six edges, the one they share inside the region"
+        body: 91264293c686fa38560fcbbffa7efa6b11e2ee7fa7a7d2717c7e72334dabe080
+  - node: 01a1a497-e843-728a-bce8-3ff3a71f35c5
+    reviewed: 4e0dbb5f62ed63d0fd3e084089740bfed20a5bcd13dd9d578d77076dadb36c3c
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+        body: e9c122d1c3ec225de062c402e806d1d4a81f8324664cc5e90eda8c6610cea6c7
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "takes the bounds and centre in the centre's unit"
+        body: 07bc2f4ed2c5a1b1d9e3c29625216a504408864922626d625386704e2207c1be
+  - node: 01a1a497-e843-728a-bce8-3ff4358efffd
+    reviewed: 762c76f870f14d2588edb17235a773840d868ccd1b586c575d29bde4dd965eb6
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "lists but does not draw a structure with neither a shape nor a bounding box"
+        body: e7bf9df60ded63e08ed92808f6874259b3fd2aa9e42175ae783b3fe9bc69a6c0
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "say when a structure is drawn by its bounding box, or not placed at all"
+        body: a5304d3fa44dc6fc89260bdff112847abfefdebcdd63521684153b02aaa56b3c
+  - node: 01a1a497-e843-728a-bce8-3ff67c685244
+    reviewed: 3f1fbafea052dd7d47b3269446bec7bd56c5d4224cf50d6423b90eb5625c0475
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "chooses a structure by the name it shows in the view, and still zooms over it"
+        body: 3bb8b5402624a23e04c91c9bfe04c01e78059fa373709e91675f6eee6011cd8b
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "draws each structure's name at its centre"
+        body: 3058b5f259b766cd4c67628a18fbcc9b6f06a92524ce9be5458831401b6784db
+  - node: 01a1a497-e843-728a-bce8-3ff70e744c39
+    reviewed: bfba018f2e87e6cb478b58ef354c5a48d2622f35bfe07831bafdc10ce1748a20
+    tests:
+      - file: "clients/explorer/src/scene/labels.test.ts"
+        name: "are not drawn over one another: the nearer is kept"
+        body: 7938b772b1d77ac40a363877dd61c8119d5936195b74d7482cfb47ad879f2f89
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "hides a structure's name that would overlap a nearer one"
+        body: e8922b92aad908d2334513eaa572736a5a6fa0b85791b1a592bb8d3b5984cf3a
+  - node: 01a1a497-e843-728a-bce8-3ff996141e6c
+    reviewed: 8bbf3b8f19a86fd4634f08d612679436835df6f69b55574a5a50cead55b4e775
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the release's structures and reads one"
+        body: 6ce61adb5ce3e3db07b94eb2ca97a45663c1287ef954e4ecf86e57c9fae0d975
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "are listed by name and kind, each to choose"
+        body: 18250f2dbee4a7acda13e53b2cde3fd88dd345982c1daf909bef710e8332d1cb
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "is read page after page, each in the release chosen"
+        body: 6f76bb02efd1f77815b23c4d998ff841b9562c4e196fc7f1b162c93247e7bb4d
+  - node: 01a1a6b2-b217-764e-93d0-da8be265b690
+    reviewed: 59b484dcaac99c15ba902acc8c4cc9eccf0de2b4dd6e4cecd2f0c2c705a33807
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "is the one the renderer draws as chosen, until another is chosen or none"
+        body: c1bd99286408dc25fef02053399d011dabe99ac9fc83aa70dbf6978e119048df
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
+        body: 90c6b0a6f69393e273411eec927bd4870ba6e690fe8e2bdcecfff97259fb143d
+      - file: "clients/explorer/src/ui/SceneOverlay.test.tsx"
+        name: "writes the chosen structure's name in the chosen colour, and the others in the structures' own"
+        body: 0a660037479bd1b47d0abf7efc51c4df4edbe758ed17c4cbe4dc49bcaffe6119
+  - node: 01a1a497-e843-728a-bce8-3ffa426590e2
+    reviewed: f0b8b7ee41de7be2ce86c64da40f91c05bc36dcc41c0bcfc3c8cb094a930a4c5
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "give a structure's kind, scale domain, how it was placed, and the paper each number is cited from"
+        body: f387652673e5b20c0fce3d90eacad7d4514dce1f79de873c736a0993368343b1
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "name a primitive shape by its form"
+        body: 3200f915dd9bdb858982604758ed2be53848840e4c807849ff79cd061569f9ee

@@ -1,0 +1,113 @@
+key: 01a1a497-e843-728a-bce8-3ffe4657fb77
+slug: draw-the-catalogues
+name: "Draw the catalogues"
+body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least."
+realizes:
+  - 01a1a497-e843-728a-bce8-3fcf940bdac0
+  - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
+requirements:
+  - key: 01a1a497-e843-728a-bce8-3fff6f6d18ce
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw each placed object of every scale domain at the position its tile gives, with Earth at the centre."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-4000304272e5
+        name: "Each point is drawn at the ICRS position its tile gives, converted from its scale domain's unit to megaparsecs."
+      - key: 01a1a497-e843-728a-bce8-40018ecb5def
+        name: "Earth is marked at the origin, which the marker names as the Solar System barycentre, within about 1 AU of Earth."
+      - key: 01a1a497-e843-728a-bce8-40026e7286d2
+        name: "Points of the stars domain and of the galaxy domains are drawn together, each at its own distance."
+  - key: 01a1a497-e843-728a-bce8-4003ade9ca4b
+    statement:
+      form: event_driven
+      when: "the view changes"
+      system: "Univ Explorer"
+      shall: "fetch the tiles the view needs, those in view and the largest on screen first, within a budget of points."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-40049983aed9
+        name: "The root tile of every scale domain is fetched before any other tile."
+      - key: 01a1a497-e843-728a-bce8-400536d8f2b5
+        name: "The tiles the view needs are fetched in order of their size on screen, largest first, and a tile wholly outside the view is not fetched."
+      - key: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
+        name: "A tile's children are fetched only while its points lie farther apart on screen than 3 pixels, so that a region far away or seen whole is not refined beyond what the screen shows."
+      - key: 01a1a6a7-c540-7210-8492-7dfc16d279b8
+        name: "A tile's children in view are fetched together or not at all, so that no part of a region is left coarser than the rest."
+      - key: 01a1a6a7-c540-7210-8492-7dfdf91c2ccf
+        name: "A view that does not change stops fetching and dropping tiles once it holds what it needs."
+      - key: 01a1a497-e843-728a-bce8-4006f5c2ce8f
+        name: "No more than 3,000,000 points are held at once."
+  - key: 01a1a689-0b25-768a-9f1e-cc27109fed3c
+    statement:
+      form: event_driven
+      when: "a tile the view needs would take the points held beyond the budget"
+      system: "Univ Explorer"
+      shall: "drop the held tiles the view needs least until the tile fits."
+    criteria:
+      - key: 01a1a689-0b25-768a-9f1e-cc28566a82e6
+        name: "Tiles wholly outside the view are dropped before tiles in view, and among them the smallest on screen first."
+      - key: 01a1a689-0b25-768a-9f1e-cc29da0f0de4
+        name: "A root tile, and a tile whose children are held, is never dropped, so that no region loses the sample its children refine."
+      - key: 01a1a689-0b25-768a-9f1e-cc2a53831ad9
+        name: "A dropped tile is fetched again when the view needs it again."
+  - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw only the held tiles that lie in the view."
+    criteria:
+      - key: 01a1a689-0b25-768a-9f1e-cc2c484365d4
+        name: "A held tile is not drawn while the sphere about its points lies wholly outside the view."
+  - key: 01a1a497-e843-728a-bce8-400775a8d943
+    statement:
+      form: unwanted
+      if: "a tile's bytes do not match the SHA-256 its manifest gives, or the tile does not decode"
+      system: "Univ Explorer"
+      shall: "leave the tile undrawn and count it as failed."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-40081f3b67cf
+        name: "A tile whose SHA-256 differs from its manifest's is not drawn."
+      - key: 01a1a497-e843-728a-bce8-4009e23e1ebc
+        name: "The view states the count of tiles that failed, where any did."
+  - key: 01a1a497-e843-728a-bce8-400ade54e0e1
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "colour each point by the kind of value of its distance and show the key to the colours."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-400b9b581384
+        name: "Measured, estimated, inferred and reconstructed distances are drawn in four distinct colours."
+      - key: 01a1a497-e843-728a-bce8-400c71ad8ebe
+        name: "The key names each colour's kind of value and counts the points drawn in it."
+  - key: 01a1a497-e843-728a-bce8-400db24e35a8
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "credit every source whose points are drawn, as the tile manifest gives its credit."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-400eb0b1b70d
+        name: "The credits list each source of the drawn points with its title, its citation and its required credit."
+      - key: 01a1a497-e843-728a-bce8-400fa74e76fc
+        name: "The credits name the release the points come from."
+  - key: 01a1a497-e843-728a-bce8-401087e90f86
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "state the frame, origin, units and cosmology of what it draws."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-40111a7d5c5f
+        name: "The view names the frame whose axes it shows, the origin, the unit of its distances and the release cosmology."
+qualityAttributes:
+  - key: 01a1a497-e843-728a-bce8-4012b27b645f
+    name: "Univ Explorer shall draw the first points of the latest release within 3 seconds of being opened."
+    qaKind: latency
+    qualityTarget:
+      metric: "explorer.first_points.latency"
+      band:
+        kind: at_most
+        upper: "3"
+      unit: "s"
+      aggregation: p95
+      scenario: "Opening the explorer on the latest release, from page load to the first points drawn, over 10 loads"
+      environment: "Univ Server and the explorer run locally through cargo xtask explore on the owner's computer"
+    verificationFate: sampled

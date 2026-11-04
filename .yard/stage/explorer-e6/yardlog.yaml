@@ -1,0 +1,52 @@
+format: yardlog/1
+key: 01a1a6b2-14c4-710c-9bff-9c6744b74caa
+branch: "stage/explorer-e6"
+base: "develop"
+title: "stage/explorer-e6"
+revision: 6
+opened:
+  at: 2026-11-04T13:14:11Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+stages:
+  - key: 01a1a6b2-14c4-710c-9bff-9c685dd9bbc1
+    id: x6
+closed:
+  at: 2026-11-04T13:42:32Z
+  revision: 6
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+acts:
+  - at: 2026-11-04T13:14:11Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T13:14:40Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T13:14:57Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T13:28:02Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T13:42:31Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T13:42:32Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"

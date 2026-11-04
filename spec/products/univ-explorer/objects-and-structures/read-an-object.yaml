@@ -1,0 +1,49 @@
+key: 01a1a497-e843-728a-bce8-3fe32aecd7d3
+slug: read-an-object
+name: "Read an object"
+body: "Naming a point under the pointer, and reading the object it stands for from Univ Server."
+realizes:
+  - 01a1a497-e843-728a-bce8-3fcf940bdac0
+  - 01a1a497-e843-728a-bce8-3fd1631f1368
+requirements:
+  - key: 01a1a497-e843-728a-bce8-3fe4680b13fa
+    statement:
+      form: event_driven
+      when: "the pointer rests on a drawn point"
+      system: "Univ Explorer"
+      shall: "name the object it stands for."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-3fe5ca42baa2
+        name: "The label gives the object's id, its scale domain, its distance from Earth and the source and kind of value of that distance."
+  - key: 01a1a497-e843-728a-bce8-3fe654d91c29
+    statement:
+      form: event_driven
+      when: "the person clicks a drawn point"
+      system: "Univ Explorer"
+      shall: "show the object's record that Univ Server gives."
+    criteria:
+      - key: 01a1a6b2-b217-764e-93d0-da89ee4e3c67
+        name: "The panel is headed by the object's name: the name it was found by, or else the first name its sources give, or else its first designation, with its id beside it."
+      - key: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
+        name: "The panel names a galaxy group as such, and names the scale domain of every object."
+      - key: 01a1a497-e843-728a-bce8-3fe7201a1670
+        name: "The panel gives the object's names and designations, each with its source."
+      - key: 01a1a497-e843-728a-bce8-3fe8c93208cf
+        name: "The panel gives the preferred distance with its uncertainty, its kind of value, its source and the rule that preferred it."
+      - key: 01a1a497-e843-728a-bce8-3fe962cd751a
+        name: "The panel lists each other distance measurement of the object beside the preferred one."
+      - key: 01a1a497-e843-728a-bce8-3fea61a8f74f
+        name: "The panel gives the frame and epoch of the object's position."
+      - key: 01a1a497-e843-728a-bce8-3febf4df9871
+        name: "The chosen object is marked in the view."
+      - key: 01a1a497-e843-728a-bce8-3fec1fe0b4b3
+        name: "The chosen object is kept in the page's address, so that reloading the page shows it again."
+  - key: 01a1a497-e843-728a-bce8-3fedaa2c488c
+    statement:
+      form: unwanted
+      if: "Univ Server does not give the object's record"
+      system: "Univ Explorer"
+      shall: "say so in the panel."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-3fee23d1c65a
+        name: "The panel gives the status and the problem's title that Univ Server answered with."

@@ -1,0 +1,62 @@
+key: 01a1a686-8188-775c-986e-6324337bddfa
+id: x5-spike
+versions:
+  - key: 01a1a686-8188-775c-986e-632c2d2cc008
+    at: 2026-11-04T12:26:35Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "S1 spike: a bounded volume for point-placed structures"
+    goal: "A recommendation, worked on Vela, for drawing a structure placed by a point as the volume its papers describe, with what it needs from ingest"
+    status: planned
+blocks:
+  - key: 01a1a697-dbef-72ce-86f4-f508827595bd
+    id: s1-t-survey
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f522e694104a
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What places each structure and what extent its papers give"
+        detail: |-
+          **Done when** a table note lists, for each of the 26 structures:
+          - what places it (point, members, sphere, sky region or nothing);
+          - what extent its file quotes (sky extent, depth or velocity range, physical size), with its kind of value and whether it is a limit.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f509d8eda8a3
+    id: s1-t-options
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f523b4583d7c
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Ways to draw a bounded volume, worked on Vela"
+        detail: |-
+          **Done when** a note compares:
+          - a sky-and-depth sector, from a sky extent and a velocity range;
+          - an ellipsoid or sphere of the published size about the point;
+          - the convex hull of members;
+          - a size-less marker.
+
+          For each it states which structures it fits, the science caveats (lower limits, h⁻¹ units, an approximate label), and whether it belongs in ingest (a derived shape with its chain) or in the explorer. It recommends one, with Vela worked through: l 260°–285°, b −10°–+10°, cz 18,000–22,000 km/s.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f50a9e42c851
+    id: s1-t-proposal
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f52494b16b82
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The spec change the recommendation implies"
+        detail: "**Done when** the change is written for release 8 and sent to you for approval: how ingest derives an approximate shape from published extents, and how the explorer labels it. If you approve, the work joins R2."
+        state: open

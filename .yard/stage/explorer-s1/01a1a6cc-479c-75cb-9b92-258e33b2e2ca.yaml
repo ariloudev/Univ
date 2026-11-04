@@ -1,0 +1,257 @@
+key: 01a1a6cc-479c-75cb-9b92-258e33b2e2ca
+id: s1
+versions:
+  - key: 01a1a6cc-479c-75cb-9b92-25924a960ce7
+    at: 2026-11-04T13:42:47Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "S1: spike, structures as bounded volumes"
+    goal: "A recommended way to draw a structure placed by a point (Vela, Shapley) as the volume its papers bound, with the release-8 spec change it implies sent for approval"
+    status: active
+  - key: 01a1a6d5-9908-747b-90fa-0f292166ed2b
+    at: 2026-11-04T13:52:58Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "S1: spike, structures as bounded volumes"
+    goal: "A recommended way to draw a structure placed by a point (Vela, Shapley) as the volume its papers bound, with the release-8 spec change it implies sent for approval"
+    status: done
+blocks:
+  - key: 01a1a6cc-479c-75cb-9b92-258f3af53534
+    id: s1-t-survey
+    kind: task
+    versions:
+      - key: 01a1a6cc-479c-75cb-9b92-2593817915f4
+        at: 2026-11-04T13:42:47Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Survey what places each structure and what extents its file quotes"
+        detail: |-
+          **Done when** a table covers all 26 structures of release 7, each with:
+          - what places it (shape, bounding box, point, members);
+          - the extents its file quotes (sky extent, velocity or redshift range, size), each with its kind of value and any limit (lower limit, h⁻¹).
+        state: active
+      - key: 01a1a6cf-e0a5-72ff-9510-6c0f895d47bd
+        at: 2026-11-04T13:46:43Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Survey what places each structure and what extents its file quotes"
+        detail: |-
+          **Done when** a table covers all 26 structures of release 7, each with:
+          - what places it (shape, bounding box, point, members);
+          - the extents its file quotes (sky extent, velocity or redshift range, size), each with its kind of value and any limit (lower limit, h⁻¹).
+
+          **Result:** see `s1-survey`. The Vela and Shapley papers were read for their exact wording; both correct the numbers in the plan.
+        state: done
+  - key: 01a1a6cc-479c-75cb-9b92-2590e29ec5ee
+    id: s1-t-options
+    kind: task
+    versions:
+      - key: 01a1a6cc-479c-75cb-9b92-25942217a627
+        at: 2026-11-04T13:42:47Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Compare ways to draw a bounded volume, and recommend one"
+        detail: |-
+          **The options:** a sky-and-depth sector, an ellipsoid of published size, a hull of members, and a marker.
+
+          **Done when** each option is given with:
+          - the structures it fits;
+          - its caveats (lower limits, h⁻¹, an approximate label);
+          - whether it belongs in ingest or in the explorer.
+
+          One option is recommended, and Vela is worked through: l 260°–285°, b −10° to +10°, cz 18,000–22,000 km/s, per Kraan-Korteweg et al. 2017.
+        state: open
+      - key: 01a1a6cf-e0a5-72ff-9510-6c117a8779e6
+        at: 2026-11-04T13:46:43Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Compare ways to draw a bounded volume, and recommend one"
+        detail: |-
+          **Done when** each option is given with the structures it fits, its caveats, and whether it belongs in ingest or the explorer; one is recommended; and Vela is worked through.
+
+          **Result:** see `s1-options`. The recommendation: sectors for Vela, Shapley and Horologium–Reticulum; boxes for three voids; and the explorer drawing sky regions as their own outline.
+
+          Vela's numbers follow the paper's text, which corrects the plan's l 260°–285° and cz 18,000–22,000.
+        state: done
+  - key: 01a1a6cc-479c-75cb-9b92-2591fcace361
+    id: s1-t-proposal
+    kind: task
+    versions:
+      - key: 01a1a6cc-479c-75cb-9b92-259508ee41a7
+        at: 2026-11-04T13:42:47Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Send the implied release-8 spec change for approval"
+        detail: "**Done when** the spec change the recommendation implies is written up and sent to the person for approval. If approved, it joins R2."
+        state: open
+      - key: 01a1a6cf-e0a5-72ff-9510-6c124a88ee37
+        at: 2026-11-04T13:46:43Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Send the implied release-8 spec change for approval"
+        detail: "**Done when** the spec change the recommendation implies is written up and sent to the person for approval. If approved, it joins R2."
+        state: active
+      - key: 01a1a6d5-9908-747b-90fa-0f273a2540b9
+        at: 2026-11-04T13:52:58Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Send the implied release-8 spec change for approval"
+        detail: |-
+          **Done when** the spec change the recommendation implies is written up and sent to the person for approval. If approved, it joins R2.
+
+          **Result:** approved on the page. It joins R2, plus a new explorer wave, E8.
+        state: done
+  - key: 01a1a6cf-e0a5-72ff-9510-6c0b845e1709
+    id: s1-survey
+    kind: note
+    versions:
+      - key: 01a1a6cf-e0a5-72ff-9510-6c0ee369c2a1
+        at: 2026-11-04T13:46:43Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What places each of release 7's 26 structures"
+        markdown: |-
+          | Placed by | Structures | Extents their files quote |
+          |---|---|---|
+          | **Sphere** (5) | Boötes, Eridanus supervoid, Giant Void, Ho'oleilana (shell), KBC void | radius, each with its cosmology (H₀ 50 to 75) |
+          | **Sky region**, drawn as its bounding box today (5) | BOSS Great Wall, CfA2 Great Wall, Hercules SC, Perseus–Pisces, Sloan Great Wall | RA/Dec or l/b ranges and near/far redshift; CfA2's sizes are lower limits |
+          | **Members** (6) | Big Ring, Clowes–Campusano LQG, Giant Arc, Giant GRB Ring, Huge-LQG, Saraswati | sizes and axes in proper Mpc (H₀ 70) |
+          | **A point only** (8) | **Vela**, **Shapley**, **Horologium–Reticulum**, Hercules Void, Sculptor Void, Local Void (with an outline), Dipole Repeller, South Pole Wall | see below |
+          | **Not placed** (2) | Hercules–Corona Borealis Great Wall, Pisces–Cetus | no sky position in the file |
+
+          **The point-placed structures that quote a bounded volume:**
+          - **Vela** (Kraan-Korteweg et al. 2017): "an overall extent of at least 25°×20°"; the overdensity's galaxies at "16–24 000 km s⁻¹"; Fig. 2 region 255°≤l≤285°, |b|≤10°. The paper calls the 25° longitude in the abstract and latitude in Section 2.
+          - **Shapley** (Proust et al. 2006): survey area "R.A. ≃12h40m to ≃14h10m and from Dec ≃−24° to ≃−38°", with the main plane filling it; main body 13,000–18,000 km/s. The abstract's "12 degrees by 30 degrees" disagrees with that area, and the equinox is not stated.
+          - **Horologium–Reticulum** (Fleenor et al. 2005): "more than 12° × 12° on the sky centered at approximately α = 03h19m, δ = −50°02′" and "at least the redshift range from 17,000 to 22,500 km s⁻¹".
+          - **Hercules, Sculptor and Local voids:** extents along SGX, SGY and SGZ at isodensity −0.7, in km/s.
+          - **Dipole Repeller and South Pole Wall:** a distance or lengths only, no extent across the sky.
+  - key: 01a1a6cf-e0a5-72ff-9510-6c0cc1507d04
+    id: s1-options
+    kind: note
+    versions:
+      - key: 01a1a6cf-e0a5-72ff-9510-6c10ab79bfc3
+        at: 2026-11-04T13:46:43Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Ways to draw a bounded volume, compared"
+        markdown: |-
+          | Option | Fits | Caveats | Where |
+          |---|---|---|---|
+          | **A. Sector: a sky region between two depths** | Vela, Shapley, Horologium–Reticulum; and it draws the 5 existing sky regions as what they are | Uses quantities as published (angles, cz), so no h⁻¹ enters. Depth comes from the release cosmology (inferred) and ignores peculiar velocities. The sky extents are mostly lower limits, so the label says "at least". | Structure files (ingest), drawing (explorer), bounds (model) |
+          | B. Ellipsoid of published size | none of the three | Vela's 115 × 90 h₇₀⁻¹ Mpc has no orientation and no third axis; drawing one would invent both | — |
+          | C. Hull of members | none of the three | release 7 holds no member list for them | — |
+          | D. Box along the published axes | Hercules, Sculptor and Local voids | Extents at an isodensity contour, in km/s; a box claims no shape beyond them | Structure files: the existing `box` primitive in the supergalactic frame |
+          | E. Marker, as today | Dipole Repeller, South Pole Wall | no extent across the sky is quoted | — |
+
+          **Recommended: A for the three superclusters, D for the three voids, E for the rest.**
+
+          How it is drawn today matters too. `SkyRegion` is held as HEALPix cells between `near` and `far`, but its bounds are a box around the whole sphere of radius `far`. The explorer draws that box, so the Hercules Supercluster shows as a cube about Earth. Drawing the region's own outline fixes the 5 existing regions with release 7's data, and needs no new release.
+
+          **Vela, worked through:**
+          - **Sky:** l 255°–285°, b −10° to +10°, the region the paper measures the overdensity in (Fig. 2). Estimated, a lower limit: it "extends over most of our ZOA survey region", which is "at least 25°×20°".
+          - **Depth:** cz 16,000–24,000 km/s, the paper's range for the overdensity. That is z 0.053–0.080, about 237–350 Mpc comoving in Planck 2018 (inferred). It replaces the plan's 18,000–22,000, which were the walls' centres.
+          - **Drawn as:** a curved slab across the Galactic Plane, about 30° × 20° and about 110 Mpc deep, labelled "Vela Supercluster (at least)", in place of today's point.
+  - key: 01a1a6cf-e0a5-72ff-9510-6c0d7afe74f1
+    id: s1-approve
+    kind: approval
+    versions:
+      - key: 01a1a6cf-e0a5-72ff-9510-6c131e8c1682
+        at: 2026-11-04T13:46:43Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Draw structures as the volumes their papers bound"
+        markdown: |-
+          **What this approves** (the spec is written once you approve, in the waves named):
+
+          1. **Explorer (a new wave, E8):** a sky region is drawn as its own outline: the boundary of its cells at its near and far distances, joined by radial edges. It replaces the box about Earth. This helps the 5 sky regions release 7 already has, with no new data.
+          2. **Model and server (R2):** a sky region's bounds become the box around its cells between `near` and `far`, not the whole sphere out to `far`. This narrows what a volume query matches.
+          3. **Structure files (R2):** Vela, Shapley and Horologium–Reticulum are placed by sky regions built from the ranges their papers quote:
+             - Vela: l 255°–285°, |b| ≤ 10°, cz 16,000–24,000 km/s;
+             - Shapley: RA 12h40m–14h10m, Dec −38° to −24°, cz 13,000–18,000 km/s;
+             - Horologium–Reticulum: 12° × 12° about 03h19m, −50°02′, cz 17,000–22,500 km/s.
+             
+             The Hercules, Sculptor and Local voids get boxes along their published SGX/SGY/SGZ extents. Each bound keeps its kind and its lower-limit form.
+          4. **Label:** a structure whose bounds are lower limits is named with "(at least)" in the view and in its panel.
+
+          **Look at:**
+          - Shapley's paper disagrees with itself (12° × 30° against its own RA/Dec area), and its equinox is unstated. R2 checks the published A&A text before using it.
+          - Depths follow from cz through the release cosmology, ignoring peculiar velocities, and are labelled inferred.
+          - The Dipole Repeller and the South Pole Wall stay markers: their papers give no sky extent.
+    responses:
+      - key: 01a1a6d5-60fe-7651-9b3d-f2e243809106
+        at: 2026-11-04T13:52:44Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1a6d5-9908-747b-90fa-0f24b2cf6dd1
+    id: s1-decision
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a6d5-9908-747b-90fa-0f26052802ca
+        at: 2026-11-04T13:52:58Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Draw structures as the volumes their papers bound"
+        consequence: |-
+          **What follows:**
+          - **A new explorer wave, E8:** sky regions are drawn as their own outline. It runs next, on release 7's five sky regions.
+          - **R2 takes on the rest:**
+            - a sky region's bounds narrowed to its cells;
+            - sky regions for Vela, Shapley and Horologium–Reticulum, from their papers' quoted ranges, Shapley's after checking the published A&A text;
+            - boxes for the Hercules, Sculptor and Local voids;
+            - the "(at least)" label for lower-limit bounds.
+  - key: 01a1a6d5-9908-747b-90fa-0f2537619c80
+    id: s1-result
+    kind: note
+    versions:
+      - key: 01a1a6d5-9908-747b-90fa-0f28856703ba
+        at: 2026-11-04T13:52:58Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What S1 produced"
+        markdown: |-
+          **Vela can be shown as a volume** without inventing anything. Its paper quotes a sky region and a velocity range, so it becomes a curved slab: l 255°–285°, |b| ≤ 10°, at 237–350 Mpc, labelled "(at least)". Shapley and Horologium–Reticulum take the same form, and three voids become boxes along their published axes.
+
+          **What it found:**
+          - the existing sky regions are drawn as a box around Earth, which E8 fixes with release 7's own data;
+          - the papers correct the plan's Vela numbers;
+          - Shapley's paper disagrees with itself.
+
+          **Next:**
+          - **E8:** draw sky regions as their outline.
+          - **R1:** star colours and spectral types.
+          - **R2:** curated superstructures plus S1's volumes.
+          - **R3:** build release 8.
+        tone: success

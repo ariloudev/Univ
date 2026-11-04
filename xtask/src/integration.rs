@@ -17,13 +17,14 @@ use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, Instant};
 
-use crate::command;
+use crate::{Outcome, command};
 
 /// The Worker's crate, from the workspace root, which holds its `wrangler.toml`.
-const WORKER_DIR: &str = "crates/univ-server";
+pub(crate) const WORKER_DIR: &str = "crates/univ-server";
 
-/// The owner secret the Worker is started with in the tests.
-const OWNER_SECRET: &str = "integration-owner-secret";
+/// The owner secret the Worker is started with on the fixture state, for the tests. Runs on
+/// the real local state never take it: their Worker reads its own from `.dev.vars`.
+pub(crate) const TEST_OWNER_SECRET: &str = "integration-owner-secret";
 
 /// The local state Univ Ingest publishes real releases to.
 pub(crate) const REAL_STATE: &str = ".cache/univ-ingest/wrangler";
@@ -58,7 +59,7 @@ pub fn integration(root: &Path) -> bool {
         return false;
     }
     let log = work.join("wrangler.log");
-    let Some((wrangler, port)) = start_ready(root, &state, &log) else {
+    let Some((wrangler, port)) = start_ready(root, &state, &log, Some(TEST_OWNER_SECRET)) else {
         eprintln!(
             "integration failed at: wrangler dev; its log is {}",
             log.display()
@@ -70,35 +71,55 @@ pub fn integration(root: &Path) -> bool {
         .args(["test", "--quiet", "--package", "univ-server"])
         .args(["--tests", "--", "--ignored"])
         .env("UNIV_E2E_URL", format!("http://127.0.0.1:{port}"))
-        .env("UNIV_E2E_OWNER_SECRET", OWNER_SECRET)
+        .env("UNIV_E2E_OWNER_SECRET", TEST_OWNER_SECRET)
         .status()
         .is_ok_and(|status| status.success());
+    let explorer = if passed {
+        eprintln!("==> the explorer's end-to-end tests");
+        crate::explore::end_to_end(root, port, TEST_OWNER_SECRET)
+    } else {
+        Outcome::Failed
+    };
     drop(wrangler);
-    if passed {
+    if explorer == Outcome::Passed {
         eprintln!("integration passed");
+    } else if explorer == Outcome::Skipped {
+        eprintln!("integration passed, skipped: the explorer's end-to-end tests");
+    } else if passed {
+        eprintln!("integration failed at: the explorer's end-to-end tests");
     } else {
         eprintln!(
             "integration failed at: end-to-end tests; Wrangler's log is {}",
             log.display()
         );
     }
-    passed
+    explorer != Outcome::Failed
 }
 
 /// Runs the Worker on the real local state until it is stopped, on the port its
 /// `wrangler.toml` names for development.
+/// It takes the owner secret of the Worker's `.dev.vars`, and runs without one, refusing
+/// every owner request, where there is none.
 pub fn serve(root: &Path) -> bool {
+    if crate::owner::real_owner(root).is_none() {
+        eprintln!("serving all the same: owner requests will be refused");
+    }
+    prepared_real_state(root)
+        .is_some_and(|state| succeeded(wrangler(root, "dev", &state).status(), "wrangler dev"))
+}
+
+/// The real local state, its release tables and the univ-layers migrations brought up to date;
+/// none, having said why.
+pub(crate) fn prepared_real_state(root: &Path) -> Option<std::path::PathBuf> {
     let state = root.join(REAL_STATE);
     if !state.is_dir() {
         eprintln!(
             "{} holds no published release: run `univ-ingest publish` first",
             state.display()
         );
-        return false;
+        return None;
     }
-    release_tables(root, &state)
-        && migrate(root, &state)
-        && succeeded(wrangler(root, "dev", &state).status(), "wrangler dev")
+    (release_tables(root, &state) && migrate(root, &state)).then_some(state)
 }
 
 /// Creates each table of univ-model's release schema that the release database in `state`
@@ -154,8 +175,15 @@ fn succeeded(status: std::io::Result<std::process::ExitStatus>, what: &str) -> b
 }
 
 /// Starts `wrangler dev` on a free port and waits until it answers, starting it again on a new
-/// port when it exits first; the running Wrangler and its port, or none.
-pub(crate) fn start_ready(root: &Path, state: &Path, log: &Path) -> Option<(Wrangler, u16)> {
+/// port when it exits first; the running Wrangler and its port, or none. The Worker's owner
+/// secret is `owner` where given, and otherwise the one Wrangler reads from the Worker's
+/// `.dev.vars`.
+pub(crate) fn start_ready(
+    root: &Path,
+    state: &Path,
+    log: &Path,
+    owner: Option<&str>,
+) -> Option<(Wrangler, u16)> {
     for start in 1..=STARTS {
         let port = match free_port() {
             Ok(port) => port,
@@ -165,7 +193,7 @@ pub(crate) fn start_ready(root: &Path, state: &Path, log: &Path) -> Option<(Wran
             }
         };
         eprintln!("==> wrangler dev on port {port}");
-        let mut wrangler = match Wrangler::start(root, state, port, log) {
+        let mut wrangler = match Wrangler::start(root, state, port, log, owner) {
             Ok(wrangler) => wrangler,
             Err(error) => {
                 eprintln!("could not start wrangler dev: {error}");
@@ -242,12 +270,21 @@ pub fn stop_on_interrupt() {
 }
 
 impl Wrangler {
-    fn start(root: &Path, state: &Path, port: u16, log: &Path) -> std::io::Result<Self> {
+    fn start(
+        root: &Path,
+        state: &Path,
+        port: u16,
+        log: &Path,
+        owner: Option<&str>,
+    ) -> std::io::Result<Self> {
         let out = fs::File::create(log)?;
         let err = out.try_clone()?;
-        let child = wrangler(root, "dev", state)
+        let mut dev = wrangler(root, "dev", state);
+        if let Some(secret) = owner {
+            dev.args(["--var", &format!("OWNER_SECRET:{secret}")]);
+        }
+        let child = dev
             .args(["--port", &port.to_string()])
-            .args(["--var", &format!("OWNER_SECRET:{OWNER_SECRET}")])
             .arg("--show-interactive-dev-session=false")
             .stdin(Stdio::null())
             .stdout(out)
@@ -363,28 +400,4 @@ pub(crate) fn send(
         .map_or("", |(_, body)| body)
         .to_owned();
     Ok((status, body))
-}
-
-/// Issues a key of `tier` from the Worker on `port`, which `start_ready` gave the owner
-/// secret, and gives its secret.
-pub(crate) fn issue_key(port: u16, tier: &str) -> Result<String, String> {
-    let json = format!(r#"{{"label":"xtask","tier":"{tier}"}}"#);
-    let exchange = Exchange {
-        method: "POST",
-        path: "/v1/owner/keys",
-        bearer: Some(OWNER_SECRET),
-        json: Some(&json),
-    };
-    let (status, body) = send(port, &exchange, Duration::from_secs(30))?;
-    // The body may come in one chunk of chunked transfer coding: the document is its braces.
-    let document = body
-        .find('{')
-        .zip(body.rfind('}'))
-        .map_or("", |(start, end)| &body[start..=end]);
-    let issued: serde_json::Value = serde_json::from_str(document)
-        .map_err(|error| format!("issuing a key answered {status}: {error}"))?;
-    issued["secret"]
-        .as_str()
-        .map(str::to_owned)
-        .ok_or_else(|| format!("issuing a key answered {status}: {issued}"))
 }
