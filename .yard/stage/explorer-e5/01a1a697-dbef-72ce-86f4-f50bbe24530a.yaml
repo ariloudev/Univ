@@ -1,0 +1,82 @@
+key: 01a1a697-dbef-72ce-86f4-f50bbe24530a
+id: x5-r1
+versions:
+  - key: 01a1a697-dbef-72ce-86f4-f52551a5cd4b
+    at: 2026-11-04T12:45:32Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R1 (product/release-8): star colours and spectral types"
+    goal: "Release 8's stars carry their published colour index and, where a catalogue gives one, their spectral type; tiles carry the colour index in encoding v2, which the Rust and TypeScript decoders read"
+    status: planned
+blocks:
+  - key: 01a1a697-dbef-72ce-86f4-f50cb4c00fd5
+    id: r1-t-spec
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f526a0fee628
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec: colours, spectral types, tile encoding v2"
+        detail: |-
+          **Done when** the changes are sent to you for approval:
+          - the ingest sources that read colours and types;
+          - the object record carrying them;
+          - tile encoding v2 with a colour column, and the tile-format contract that describes it.
+
+          This changes a contract, so it waits for your approval.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f50d065973c4
+    id: r1-t-colour
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f527989dc0f3
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Read the colour index"
+        detail: |-
+          **Scope:** Gaia DR3 `bp_rp`, Hipparcos I/311 B−V and V−I, and GCNS BP and RP.
+
+          **Done when** each source's recorded fixture answer yields the colour as a measurement, with unit, uncertainty and kind of value, in tests.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f50eadb73859
+    id: r1-t-types
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f5280251aedd
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Read published spectral types"
+        detail: |-
+          **Scope:** Hipparcos I/239 `SpType` and Gaia DR3 ESP-HS `spectraltype_esphs`.
+
+          **Done when** fixture tests read them as published text, attached to the matched stars, without any guessing.
+        state: open
+  - key: 01a1a697-dbef-72ce-86f4-f50fa0e2266c
+    id: r1-t-tiles
+    kind: task
+    versions:
+      - key: 01a1a697-dbef-72ce-86f4-f52961d31795
+        at: 2026-11-04T12:45:32Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Tile encoding v2"
+        detail: |-
+          **Done when:**
+          - the Rust encoder writes a colour column, and both the Rust and TypeScript decoders read v2 and still read v1;
+          - the decoder fixtures are regenerated;
+          - `GET /v1/tile-format` describes v2;
+          - the `node --test` and cargo tests pass.
+        state: open

@@ -1,0 +1,141 @@
+key: 01a1a514-0a10-7561-91f4-be83d0dce0cd
+id: xe4
+versions:
+  - key: 01a1a514-0a11-7597-bd9d-3cd674c075d5
+    at: 2026-11-04T05:41:56Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E4: the real state's own owner secret"
+    goal: "Runs on the real local state (explore and the benches) start the Worker with the owner secret of crates/univ-server/.dev.vars and issue their keys with it; only the fixture state gets the fixed test secret"
+    status: active
+  - key: 01a1a51c-a617-7016-abd2-fddbf1c17c26
+    at: 2026-11-04T05:51:20Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E4: the real state's own owner secret"
+    goal: "Runs on the real local state (explore and the benches) start the Worker with the owner secret of crates/univ-server/.dev.vars and issue their keys with it; only the fixture state gets the fixed test secret"
+    status: done
+blocks:
+  - key: 01a1a514-0a10-7561-91f4-be849c831e21
+    id: e4-secret
+    kind: task
+    versions:
+      - key: 01a1a514-0a11-7597-bd9d-3cd790c6f1fd
+        at: 2026-11-04T05:41:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Real-state runs use .dev.vars's owner secret"
+        detail: |-
+          Done when:
+          - `with_real_server` reads `OWNER_SECRET` from `crates/univ-server/.dev.vars` before it starts Wrangler, with a unit test of the reading;
+          - it starts Wrangler without `--var`, so Wrangler loads `.dev.vars` itself;
+          - it issues and revokes keys with that secret;
+          - a missing file or empty secret stops the run, saying how to create the file;
+          - only `integration` passes the test secret.
+
+          The key-handling code moves out of `integration.rs`, which is at 497 lines, into a module of its own.
+        state: active
+      - key: 01a1a515-e6ca-703a-9d45-9943e1b19711
+        at: 2026-11-04T05:43:58Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Real-state runs use .dev.vars's owner secret"
+        detail: |-
+          Done when:
+          - `with_real_server` reads `OWNER_SECRET` from `crates/univ-server/.dev.vars` before it starts Wrangler, with a unit test of the reading;
+          - it starts Wrangler without `--var`, so Wrangler loads `.dev.vars` itself;
+          - it issues and revokes keys with that secret;
+          - a missing file or empty secret stops the run, saying how to create the file;
+          - only `integration` passes the test secret.
+
+          The key-handling code moves out of `integration.rs`, which is at 497 lines, into a module of its own.
+
+          Result: done in `aae2018`.
+          - `xtask/src/owner.rs` holds the real-state run and the owner operations. `integration.rs` is down to 393 lines.
+          - Both `secret_in` tests pass.
+          - Checked live on release 7: the test secret gets 401, `.dev.vars`'s secret gets 200, exactly one `explorer` key is standing, and the explorer reads releases through its proxy.
+        state: done
+  - key: 01a1a514-0a10-7561-91f4-be8597ceb9a4
+    id: e4-check
+    kind: task
+    versions:
+      - key: 01a1a514-0a11-7597-bd9d-3cd8f45bbf44
+        at: 2026-11-04T05:41:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Checked live, reviewed, gated"
+        detail: |-
+          Done when:
+          - `cargo xtask explore` serves release 7 with keys issued under `.dev.vars`'s secret;
+          - the test secret answers 401 on the real-state Worker;
+          - the review findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass.
+        state: open
+      - key: 01a1a515-e6ca-703a-9d45-994476273a20
+        at: 2026-11-04T05:43:58Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Checked live, reviewed, gated"
+        detail: |-
+          Done when:
+          - `cargo xtask explore` serves release 7 with keys issued under `.dev.vars`'s secret;
+          - the test secret answers 401 on the real-state Worker;
+          - the review findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass.
+        state: active
+      - key: 01a1a51c-a617-7016-abd2-fdd9b61b5105
+        at: 2026-11-04T05:51:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Checked live, reviewed, gated"
+        detail: |-
+          Done when:
+          - `cargo xtask explore` serves release 7 with keys issued under `.dev.vars`'s secret;
+          - the test secret answers 401 on the real-state Worker;
+          - the review findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass.
+
+          Result: all four done.
+          - Review fixes are in `02b41df`.
+          - After the fixes, the live check passed again: the test secret got 401, the explorer's key was issued with the secret xtask read, and releases came through the proxy.
+          - `cargo xtask check` passed: 13 gates.
+          - `cargo xtask integration` passed, including the 7 explorer tests.
+        state: done
+  - key: 01a1a51c-a617-7016-abd2-fdd84ca7e6d4
+    id: e4-result
+    kind: note
+    versions:
+      - key: 01a1a51c-a617-7016-abd2-fdda57ba9386
+        at: 2026-11-04T05:51:20Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What E4 changed"
+        markdown: |-
+          **Before:** `cargo xtask explore` and the benches started the Worker on the real state with `--var OWNER_SECRET:integration-owner-secret`. That fixed test secret is written in the source, and it replaced the owner's own secret for as long as the run lasted.
+
+          **Now:**
+          - Runs on the real state let Wrangler read `crates/univ-server/.dev.vars` itself, so the secret never appears in a process's arguments. xtask reads the same file by dotenv 16's rules, as Wrangler does, to issue and revoke its keys.
+          - A run with no secret stops before any install or build. If the Worker and xtask ever read different secrets, the 401 names `.dev.vars`.
+          - `serve` warns when there is no secret.
+          - Only `integration`, on the fixture state, uses the test secret.
+
+          **From the reviews:** both found that xtask's first reader diverged from Wrangler's dotenv on `#`, `export`, the colon form, back quotes and repeated lines. The reader now follows dotenv's rules, with tests for each case. Passing the secret with `--var` was rejected because it would put the secret on the command line.
+
+          **Left open:** a quoted value spanning several lines is not read. The trace is unchanged: no criterion covers xtask.
+        tone: success

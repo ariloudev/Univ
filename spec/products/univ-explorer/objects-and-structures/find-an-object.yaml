@@ -1,0 +1,29 @@
+key: 01a1a497-e843-728a-bce8-3fdcc5ac09d5
+slug: find-an-object
+name: "Find an object"
+body: "Looking an object up by its id, a name or a source's designation, and flying to it."
+realizes:
+  - 01a1a497-e843-728a-bce8-3fd1631f1368
+requirements:
+  - key: 01a1a497-e843-728a-bce8-3fdd9c30a9e7
+    statement:
+      form: event_driven
+      when: "the person searches for an object id, a name, or a designation written as source and identifier"
+      system: "Univ Explorer"
+      shall: "look it up in the release drawn and fly to the object found."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-3fde6b42f63b
+        name: "A number is looked up as an object id, `source:identifier` as a designation, and any other text as a name."
+      - key: 01a1a497-e843-728a-bce8-3fdf22d824cf
+        name: "The object found becomes the chosen object and the focus."
+      - key: 01a1a497-e843-728a-bce8-3fe0cf1c756b
+        name: "Where a name belongs to more than one object, they are listed to choose from."
+  - key: 01a1a497-e843-728a-bce8-3fe110e49f5b
+    statement:
+      form: unwanted
+      if: "the search finds no object"
+      system: "Univ Explorer"
+      shall: "say that nothing was found and leave the view as it was."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-3fe2d2338514
+        name: "The message repeats what was searched for."

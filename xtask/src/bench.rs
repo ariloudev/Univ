@@ -15,9 +15,8 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use crate::integration::{
-    Exchange, REAL_STATE, issue_key, migrate, release_tables, send, start_ready,
-};
+use crate::integration::{Exchange, REAL_STATE, send};
+use crate::owner::{real_owner, with_real_server};
 
 /// How many lookups are timed.
 const SAMPLES: usize = 1_000;
@@ -111,35 +110,14 @@ fn centres(n: usize, distance: f64) -> Vec<[f64; 3]> {
 /// Starts the Worker, times `requests` after the first [`WARM_UP`], and reports them against
 /// `bound`; true when all answered 200 and the 95th percentile is within it.
 fn bench(root: &Path, what: &str, attribute: &str, requests: &[Timed], bound: Duration) -> bool {
-    let state = root.join(REAL_STATE);
-    if !release_tables(root, &state) || !migrate(root, &state) {
+    let Some(owner) = real_owner(root) else {
         return false;
-    }
+    };
     let log = root.join("target/bench/wrangler.log");
-    if let Some(dir) = log.parent()
-        && let Err(error) = std::fs::create_dir_all(dir)
-    {
-        eprintln!("could not create {}: {error}", dir.display());
-        return false;
-    }
-    let Some((wrangler, port)) = start_ready(root, &state, &log) else {
-        eprintln!(
-            "bench failed at: wrangler dev; its log is {}",
-            log.display()
-        );
-        return false;
-    };
-    // An extended key: anonymous reads are limited to 300 a minute, too few for the run.
-    let key = match issue_key(port, "extended") {
-        Ok(key) => key,
-        Err(error) => {
-            eprintln!("bench failed at: issuing its key: {error}");
-            return false;
-        }
-    };
-    let (times, failures) = time(port, &key, requests);
-    drop(wrangler);
-    report(what, attribute, &times, &failures, bound, requests.len())
+    with_real_server(root, &owner, &log, "bench", |port, key| {
+        let (times, failures) = time(port, key, requests);
+        report(what, attribute, &times, &failures, bound, requests.len())
+    })
 }
 
 /// Each request's time after the first [`WARM_UP`], and the requests not answered 200.

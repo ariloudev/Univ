@@ -1,0 +1,74 @@
+key: 01a1a496-4f23-7195-be10-70122cd06c58
+id: xe3
+versions:
+  - key: 01a1a496-4f23-7195-be10-70197e8bf1f4
+    at: 2026-11-04T03:24:36Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E3: end to end on the real release"
+    goal: "The explorer runs on release 7 through cargo xtask explore, its e2e tests run in the integration step, its quality attribute is measured, and it is merged ready for the owner to run"
+    status: planned
+blocks:
+  - key: 01a1a757-1ea7-7479-9758-c0b5f5eff354
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1a757-1ea7-7479-9758-c0b68c70f8e2
+        at: 2026-11-04T16:14:26Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: publish
+        note: "Published as **publish 4** on `develop` (440d0e6, state root `4577f367…`), after `product/explorer` was merged in (5853f71) with waves E0 to E6, S1 and E8.\\n\\n`loft verify` passes on `develop`, and so do every code gate of `cargo xtask check` and `cargo xtask integration`, with the explorer's Playwright tests among them."
+        recorded:
+          commit: "440d0e61eb0d2f1dad874269833726c84a9954e9"
+          branch: "develop"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T16:14:26Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 52,
+              "constraint": 8,
+              "criterion": 412,
+              "decision": 28,
+              "feature": 39,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 143
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "440d0e61eb0d2f1dad874269833726c84a9954e9",
+                "removed": [],
+                "revision": "440d0e61eb0d2f1dad874269833726c84a9954e9"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 4,
+                "publishedAt": "2026-11-04T16:14:12Z",
+                "stateRoot": "4577f367600c2ad5b501e5ceb32291471f56b2418d7c671eb11d743f152f960c"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
