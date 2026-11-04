@@ -41,6 +41,23 @@ blocks:
           - each geometry kind meeting and missing;
           - a shape whose centre is outside but which meets.
         state: open
+      - key: 01a1a408-af95-72f3-9fc7-cbabb4f4d169
+        at: 2026-11-04T00:49:55Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "univ-model volume: request, region, distance, meets"
+        detail: |-
+          Done when native tests cover:
+          - a sphere meeting a box only at a corner (r ± 1e-9);
+          - a 181° cone refused;
+          - each malformed member's pointer;
+          - distance against brute-force sampling for each region;
+          - a galactic box rotated into ICRS;
+          - each geometry kind meeting and missing;
+          - a shape whose centre is outside but which meets.
+        state: active
   - key: 01a1a3fd-1fbf-7477-ba13-660ba7700559
     id: t6-query
     kind: task
@@ -820,6 +837,15 @@ blocks:
         title: "Spec bodies: cone, filters, matched_by, tolerance, FK4 warning"
         detail: "Minor edits to the bodies of query-a-bounded-volume and publish-a-layer-item; no criterion changes. Done when `loft fmt --check` and `loft check --fail-on warning` pass and `spec/` is committed alone."
         state: active
+      - key: 01a1a408-af95-72f3-9fc7-cbaa8ff38bf2
+        at: 2026-11-04T00:49:55Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec bodies: cone, filters, matched_by, tolerance, FK4 warning"
+        detail: "Both bodies edited; `loft fmt --check` and `loft check --fail-on warning` pass. Committed as `spec/` alone."
+        state: done
   - key: 01a1a406-563c-76cc-bf79-32f4c9fdedf0
     id: t6-item-bounds
     kind: task
@@ -833,3 +859,154 @@ blocks:
         title: "Item bounds: migration 0004 and the store"
         detail: "Migration 0004 adds `min_x` to `max_z` to `items` (ICRS Mpc), written on publish and revise. An FK4 shape stores no bounds, and its publish carries a warning. Done when tests cover publish, revise and FK4."
         state: open
+  - key: 01a1a408-af95-72f3-9fc7-cba81c4f142b
+    id: w6-spec
+    kind: loft
+    versions:
+      - key: 01a1a408-af95-72f3-9fc7-cba9922dfa19
+        at: 2026-11-04T00:49:55Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: |-
+          A minor edit of two bodies, made under the standing approval for minor spec changes; no requirement or criterion changes.
+
+          - **query-a-bounded-volume:** the cone's apex and opening angle; filters combining with AND; the order in which a structure's match is tried, with `matched_by` and the bounding-box match labelled approximate; the tolerance of refinement.
+          - **publish-a-layer-item:** an FK4 B1950 item meets no volume query and its publish warns of it.
+        recorded:
+          commit: "14489d7f9710977970bbd2204fb0b29611545d4a"
+          branch: "stage/server-w6"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T00:49:54Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 2,
+              "graph.edges": 0,
+              "graph.nodes": 5,
+              "status.base.added": 0,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00",
+                  "kind": "feature",
+                  "label": "F-22",
+                  "name": "Query a bounded volume",
+                  "words": {
+                    "after": "Query a bounded volume\n\nAsking what the server knows inside a volume of space: the named objects, structures and layer\nitems it holds there, and the tiles that carry its bulk points. Each request has a bounded cost:\nresults come in capped pages, and bulk points come back as tiles to fetch, never as rows.\n\nA volume is a box, axis-aligned in its frame; a sphere; or a cone whose apex is the frame's\norigin, the Solar System barycentre, given by its axis, its full opening angle and the range of\ndistance from the apex it spans. Filters combine: each keeps only the results that carry one\nof the values it names, so a result that carries no such value, such as a layer item under a\nfilter of kinds, is left out.\n\nA structure is tested by its placed shape, else by its placed member list, else by its\nbounding box, else by its centre, and each result says which. A match by bounding box is\napproximate: the release holds no placed shape for the structure. Geometries are tested\nexactly where a closed form exists, and otherwise refined until decided; one that comes\nwithin a millionth of the volume's extent, or that refinement cannot decide within its\nbudget, counts as meeting it.",
+                    "before": "Query a bounded volume\n\nAsking what the server knows inside a volume of space: the named objects, structures and layer\nitems it holds there, and the tiles that carry its bulk points. Each request has a bounded cost:\nresults come in capped pages, and bulk points come back as tiles to fetch, never as rows."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-1cb3-7721-97a0-4f33a250acbb",
+                  "kind": "feature",
+                  "label": "F-25",
+                  "name": "Publish a layer item",
+                  "words": {
+                    "after": "Publish a layer item\n\nAdding an item to a layer: a cosmic event, a landmark or anything a client wants to place in\nspace and time, linked where it applies to the reference objects and structures it concerns.\n\nA time record's time is an ISO 8601 instant in UTC or TT for years 1 to 9999, or, for the\ndeep past such as a distant source event, a span of Julian years before J2000.0 on TT. Its\nuncertainty names its unit: seconds, days or Julian years.\n\nAn item placed in FK4 B1950, which is not a rotation of the ICRS, is stored as given but\nmeets no volume query; its publish says so in a warning.",
+                    "before": "Publish a layer item\n\nAdding an item to a layer: a cosmic event, a landmark or anything a client wants to place in\nspace and time, linked where it applies to the reference objects and structures it concerns.\n\nA time record's time is an ISO 8601 instant in UTC or TT for years 1 to 9999, or, for the\ndeep past such as a distant source event, a span of Julian years before J2000.0 on TT. Its\nuncertainty names its unit: seconds, days or Julian years."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6615e6965c1",
+                  "kind": "feature_group",
+                  "label": "FG-8",
+                  "name": "Spatial and temporal queries",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00",
+                  "kind": "feature",
+                  "label": "F-22",
+                  "name": "Query a bounded volume",
+                  "parent": "01a19f1a-685d-7357-b67e-d6615e6965c1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d662fbe4f6f3",
+                  "kind": "feature_group",
+                  "label": "FG-9",
+                  "name": "Layers",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-1cb3-7721-97a0-4f33a250acbb",
+                  "kind": "feature",
+                  "label": "F-25",
+                  "name": "Publish a layer item",
+                  "parent": "01a19f1a-685d-7357-b67e-d662fbe4f6f3"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 6,
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00",
+                    "kind": "feature",
+                    "label": "F-22",
+                    "line": 1,
+                    "name": "Query a bounded volume",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a19f20-1cb3-7721-97a0-4f33a250acbb",
+                    "kind": "feature",
+                    "label": "F-25",
+                    "line": 1,
+                    "name": "Publish a layer item",
+                    "path": "spec/products/univ-server/layers/publish-a-layer-item.yaml"
+                  }
+                ],
+                "commit": "d709be3b9eea5b796e415fc995ccf3f838048763",
+                "removed": [],
+                "revision": "product/server"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 2,
+                "publishedAt": "2026-11-03T18:26:57Z",
+                "stateRoot": "f809d6d341a5bae88459ad23c3abf1629e161ed74c5cda771fc8465b01c8d2cb"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/server-w6",
+                "modified": [
+                  "spec/products/univ-server/layers/publish-a-layer-item.yaml",
+                  "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
