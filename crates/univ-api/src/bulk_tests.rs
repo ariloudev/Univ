@@ -218,3 +218,30 @@ fn a_fields_uncertainty_is_served_where_it_was_published() {
         Body::Object("releases/2/grids/cf4-basins/field-0-sigma.f32".into())
     );
 }
+
+#[test]
+fn a_read_of_reference_data_with_a_valid_key_returns_what_the_same_read_without_one_does() {
+    let db = db();
+    let key = db.key();
+    for path in [
+        "/v1/releases",
+        "/v1/sources",
+        "/v1/structures",
+        "/v1/scale-domains",
+        "/v1/scale-domains/cosmic_web/manifest",
+        "/v1/grids",
+    ] {
+        let anonymous = db.answer(&Request::new(Method::Get, path));
+        let keyed = db.answer(&Request::new(Method::Get, path).with_bearer(&key));
+        assert_eq!(anonymous.status, 200, "{path}");
+        assert_eq!(keyed.status, anonymous.status, "{path}");
+        for header in ["content-type", "univ-release", "etag", "cache-control"] {
+            assert_eq!(
+                keyed.header(header),
+                anonymous.header(header),
+                "{path}: {header}"
+            );
+        }
+        assert_eq!(db.bytes_of(&keyed), db.bytes_of(&anonymous), "{path}");
+    }
+}

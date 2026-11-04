@@ -2685,6 +2685,12 @@ links:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_read_with_no_authorization_header_succeeds_from_any_origin"
         body: 52760d160fab0fa63656651cbb95ef07bf30cfba2affea684c35af9faa00e6dd
+  - node: 01a19f20-8e6c-7039-b16f-abf3d55f1698
+    reviewed: 17f5117e1cd21117af9d0dc16fd95c8ad052ed8d42e1db4c7ffd6669c1c5d24d
+    tests:
+      - file: "crates/univ-api/src/bulk_tests.rs"
+        name: "a_read_of_reference_data_with_a_valid_key_returns_what_the_same_read_without_one_does"
+        body: 47e732d199687741ee8ce11ab08788f67eb2bb06a5015454e8b206913f2cab00
   - node: 01a19f20-8e6c-7039-b16f-abf520a82854
     reviewed: b8df71fea550340cf38cdfcef18ddd4e8e0ac5ba501ace729a885f065b0475af
     tests:
