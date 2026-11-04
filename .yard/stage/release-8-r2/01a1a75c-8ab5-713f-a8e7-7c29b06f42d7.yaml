@@ -1853,6 +1853,20 @@ blocks:
             - the panel's sentence, to the panel test.
           - `loft reconcile` finds every test; 419 of 419 nodes are linked. Acceptance waits until after the reviews.
         state: active
+      - key: 01a1a7aa-afd5-73e0-92a6-9838603d5d4b
+        at: 2026-11-04T17:45:43Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace the new criteria"
+        detail: |-
+          **Scope:** link the tests to the six new criteria and accept them.
+
+          **Done when** `loft reconcile` reports none stale and the trace view is recorded.
+
+          **Result:** `loft reconcile --accept-stale` recorded 8 test bodies. 419 of 419 nodes are linked, with no stale or unreviewed links. The trace view is above.
+        state: done
   - key: 01a1a779-da64-726e-bcf6-4c922059772f
     id: r2-t-review
     kind: task
@@ -1881,6 +1895,34 @@ blocks:
 
           **Done when** every finding is fixed or skipped with a reason.
         state: active
+      - key: 01a1a7aa-afd5-73e0-92a6-983606024d85
+        at: 2026-11-04T17:45:43Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "/simplify and /code-review"
+        detail: |-
+          **Scope:** both run in parallel on `product/release-8...HEAD`, without `.yard/`, `spec/`, the trace and the structure files.
+
+          **Done when** every finding is fixed or skipped with a reason.
+
+          **Result:** committed in `ae9db97`.
+
+          **Fixed:**
+          - univ-model scales every geometry kind exhaustively. Ingest's own per-kind rescaling left ellipsoids, paths and rays unscaled in a parsec domain.
+          - The sky-region bound evaluates its reach once per axis extreme, not per cell.
+          - A Cartesian member table needs redshifts and one unit. Its directions, published to the megaparsec, place members but are not used to check a name match at the 60″ tolerance, which would have refused Pisces–Cetus once a catalogue held its clusters.
+          - A centred sky region checks its centre and the poles in degrees.
+          - One walker for named pairs of cited bounds. The box's pairs are named as the sky region's, and the box is placed once, into its own type.
+          - The explorer frames a structure drawn by its extents by their span, not by its zero-size bounds.
+          - Tests read the structure files once, and the cannot-be-placed test no longer special-cases one file.
+          - A misplaced doc comment, a dead latitude reordering, and a duplicated length rule.
+
+          **Skipped, with reasons:**
+          - **One bounds path for sky regions** (index bounds from the cells rather than ingest's sampled box). It would change every sky region's index bounds and the unstated-equinox margin, so it belongs in a change of its own.
+          - **Velocity extents as v/H0.** That is how the papers convert them, and the derivation records the method.
+        state: done
   - key: 01a1a779-da64-726e-bcf6-4c93a7bfa5b4
     id: r2-t-gate
     kind: task
@@ -1894,6 +1936,15 @@ blocks:
         title: "Full gate and integration"
         detail: "**Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green."
         state: open
+      - key: 01a1a7aa-afd5-73e0-92a6-983924ce56a7
+        at: 2026-11-04T17:45:43Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration"
+        detail: "**Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green."
+        state: active
   - key: 01a1a792-993c-74c5-b00f-53ac9781e90a
     id: r2-note-files
     kind: note
@@ -1930,3 +1981,946 @@ blocks:
 
           **Shared name:** the Northern Local Supervoid (Einasto 1994) and the Hercules Void (Tully 2019) both carry "Northern Local Void". The supervoid's notes say they are kept apart, each as its paper places it.
         tone: info
+  - key: 01a1a7aa-afd5-73e0-92a6-9835f4aadb78
+    id: r2-trace
+    kind: loft
+    versions:
+      - key: 01a1a7aa-afd5-73e0-92a6-9837aeb9d6f8
+        at: 2026-11-04T17:45:43Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "The six new criteria are linked and accepted: sky-region bounds, the lower-limit derivation, the \"(at least)\" name, extents in the record, extents drawn, and the panel's sentence. The info finding on AC-301 predates this wave."
+        recorded:
+          commit: "ae9db97d2f0100e8767129c913cb8ac461bdbe3f"
+          branch: "stage/release-8-r2"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T17:45:43Z
+        report: |
+          {
+            "base": "product/release-8",
+            "commit": "dbd2b16ab0e87737b0e4083d1a3dda729283813e",
+            "counts": {
+              "features": 2
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d325ae1db12",
+                    "label": "AC-156",
+                    "name": "The geometry is one of the geometry kinds univ-model defines, in a named frame.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 38
+                          }
+                        ],
+                        "name": "the_geometry_is_a_univ_model_geometry_in_a_named_frame"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3396424fcd",
+                    "label": "AC-157",
+                    "name": "Each published number cites its source and the table, figure or sentence it was taken from.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "each_published_number_cites_its_source_and_where_it_was_taken_from"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "structures_are_listed_in_pages_and_read_with_their_citations"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-6c1b-7575-8a30-d059e1d0fd0e",
+                    "label": "AC-331",
+                    "name": "Each number derived from a published number names its derivation.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 61
+                          }
+                        ],
+                        "name": "each_number_derived_from_a_published_number_names_its_derivation"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d34432eb4b3",
+                    "label": "AC-158",
+                    "name": "A structure outlined from a reconstruction has the kind of value reconstructed.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 63,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "a_structure_outlined_from_a_reconstruction_has_the_kind_of_value_reconstructed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d359cc582f4",
+                    "label": "AC-159",
+                    "name": "A number digitised from a figure has the kind of value estimated.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 70,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "a_number_digitised_from_a_figure_has_the_kind_of_value_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3618ffc2c2",
+                    "label": "AC-160",
+                    "name": "Each member is given as an object id or as a tracer with its own position and kind, such as a quasar or an absorber.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 85
+                          }
+                        ],
+                        "name": "each_member_is_an_object_id_or_a_tracer_with_its_position_and_kind"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3742c0d34b",
+                    "label": "AC-161",
+                    "name": "A structure outlined from a volume grid names the grid, the threshold that outlined it and the test that admitted it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 87,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "a_structure_outlined_from_a_grid_names_the_grid_threshold_and_test"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d381a2a11dd",
+                    "label": "AC-162",
+                    "name": "Each size published for another Hubble constant gives its native value beside the value rescaled to the release cosmology.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "a_size_published_for_another_hubble_constant_gives_its_native_and_rescaled_values"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 190,
+                            "lastLine": 206
+                          }
+                        ],
+                        "name": "a_size_published_under_h0_50_is_served_beside_its_rescaled_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                    "label": null,
+                    "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/geometry/bounds.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 311,
+                            "lastLine": 358
+                          }
+                        ],
+                        "name": "a_sky_region_is_bounded_by_its_cells_between_its_distances"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                    "label": null,
+                    "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 170,
+                            "lastLine": 188
+                          }
+                        ],
+                        "name": "a_shape_its_paper_gives_as_a_lower_limit_on_the_extent_says_where"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a776-3b75-725b-96e4-807b84c53c7c",
+                    "label": null,
+                    "name": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 190,
+                            "lastLine": 228
+                          }
+                        ],
+                        "name": "a_void_with_extents_but_no_bounds_gives_them_about_its_point_and_is_bounded_by_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structures.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 433,
+                            "lastLine": 455
+                          }
+                        ],
+                        "name": "extents_name_lengths_or_velocities_among_the_values_about_a_placed_position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3a3c4e7f9d",
+                    "label": "AC-163",
+                    "name": "Each listed structure gives its id, name, kind, scale domain and the centre of its geometry.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 115,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "each_listed_structure_gives_its_id_name_kind_scale_domain_and_centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3b527de35f",
+                    "label": "AC-164",
+                    "name": "The listing is paginated with at most 500 structures per page and a cursor to the next page.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 154,
+                            "lastLine": 179
+                          }
+                        ],
+                        "name": "the_listing_comes_in_pages_of_at_most_500_with_a_cursor_to_the_next"
+                      },
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 181,
+                            "lastLine": 198
+                          }
+                        ],
+                        "name": "a_cursor_keeps_reading_its_release"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3de5813ad2",
+                    "label": "AC-165",
+                    "name": "The response status is 404 with problem details that name the requested id.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3c531de76d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 207,
+                            "lastLine": 214
+                          }
+                        ],
+                        "name": "an_unknown_structure_answers_404_naming_it"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "structures_are_listed_in_pages_and_read_with_their_citations"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                "label": "F-17",
+                "name": "Read a structure",
+                "requirements": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "label": "RQ-59",
+                    "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                    "statement": {
+                      "condition": "a client requests a structure",
+                      "form": "event_driven",
+                      "shall": "return its geometry, members, kind of value and the citation of each of its numbers.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "label": "RQ-60",
+                    "name": "When a client lists structures, Univ Server shall return the structures of the release, filtered by the kinds and scale domains the client names.",
+                    "statement": {
+                      "condition": "a client lists structures",
+                      "form": "event_driven",
+                      "shall": "return the structures of the release, filtered by the kinds and scale domains the client names.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3c531de76d",
+                    "label": "RQ-61",
+                    "name": "If no structure has the requested id, then Univ Server shall answer that the structure was not found.",
+                    "statement": {
+                      "condition": "no structure has the requested id",
+                      "form": "unwanted",
+                      "shall": "answer that the structure was not found.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff1ded85aea",
+                    "label": "AC-401",
+                    "name": "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "draws a sphere as rings at its radius, in the frame and unit its shape names"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 47
+                          }
+                        ],
+                        "name": "draws an ellipsoid as rings along its axes, and an oriented box as its twelve edges"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff2f42a8c13",
+                    "label": "AC-402",
+                    "name": "Paths are drawn as lines, and member lists as their members' positions.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 49,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "draws a path as lines, members as markers at their positions, and a point as a marker"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 25,
+                            "lastLine": 30
+                          }
+                        ],
+                        "name": "draws its segments as lines and its markers as points, about its centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a4bd-9644-750a-a678-3906e3189ded",
+                    "label": "AC-403",
+                    "name": "A point is drawn as a marker at its place.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 49,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "draws a path as lines, members as markers at their positions, and a point as a marker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a4bd-9644-750a-a678-390771cfa729",
+                    "label": "AC-404",
+                    "name": "A grid is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 70,
+                            "lastLine": 77
+                          }
+                        ],
+                        "name": "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "say when a structure is drawn by its bounding box, or not placed at all"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                    "label": null,
+                    "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 58,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "draws a point's published extents as a line along each, centred on its marker, and no box"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6d7-1b42-741d-95f7-ed4ee2759b78",
+                    "label": "AC-405",
+                    "name": "A sky region is drawn as the boundary of its cells on the spheres of its near and far distances, joined by radial edges at the region's extremes.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 79,
+                            "lastLine": 91
+                          }
+                        ],
+                        "name": "draws a sky region as the boundary of its cells at its near and far distances, joined by radial edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 104,
+                            "lastLine": 113
+                          }
+                        ],
+                        "name": "turns a sky region's cells from the frame its shape names"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 93,
+                            "lastLine": 102
+                          }
+                        ],
+                        "name": "draws by its box a sky region with no boundary to draw, and gives a band about the sky no radial edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 42
+                          }
+                        ],
+                        "name": "of one cell is its four edges, each from corner to corner"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 49
+                          }
+                        ],
+                        "name": "of two neighbours is six edges, the one they share inside the region"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff3a71f35c5",
+                    "label": "AC-406",
+                    "name": "A structure with no placed shape is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 70,
+                            "lastLine": 77
+                          }
+                        ],
+                        "name": "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 115,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "takes the bounds and centre in the centre's unit"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff4358efffd",
+                    "label": "AC-407",
+                    "name": "A structure with neither a shape nor a bounding box is listed but not drawn.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "lists but does not draw a structure with neither a shape nor a bounding box"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "say when a structure is drawn by its bounding box, or not placed at all"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff67c685244",
+                    "label": "AC-408",
+                    "name": "Each structure's name is drawn at its centre.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 68,
+                            "lastLine": 105
+                          }
+                        ],
+                        "name": "chooses a structure by the name it shows in the view, and still zooms over it"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 41
+                          }
+                        ],
+                        "name": "draws each structure's name at its centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                    "label": null,
+                    "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 18,
+                            "lastLine": 24
+                          }
+                        ],
+                        "name": "is followed by \"(at least)\" where its papers give its shape as a lower limit on its extent"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "name a structure whose shape is a lower limit on its extent \"(at least)\" in the panel"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff70e744c39",
+                    "label": "AC-409",
+                    "name": "Names that would overlap are not drawn over one another.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/labels.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 8,
+                            "lastLine": 11
+                          }
+                        ],
+                        "name": "are not drawn over one another: the nearer is kept"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 60
+                          }
+                        ],
+                        "name": "hides a structure's name that would overlap a nearer one"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff996141e6c",
+                    "label": "AC-410",
+                    "name": "Every structure of the release is listed by name and kind.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 66
+                          }
+                        ],
+                        "name": "lists the release's structures and reads one"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 37
+                          }
+                        ],
+                        "name": "are listed by name and kind, each to choose"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 66,
+                            "lastLine": 76
+                          }
+                        ],
+                        "name": "is read page after page, each in the release chosen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6b2-b217-764e-93d0-da8be265b690",
+                    "label": "AC-411",
+                    "name": "The chosen structure's outline, markers and name are drawn in a colour of their own, its markers larger, until another structure is chosen or its panel is closed.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 92
+                          }
+                        ],
+                        "name": "is the one the renderer draws as chosen, until another is chosen or none"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 23,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/SceneOverlay.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 22,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "writes the chosen structure's name in the chosen colour, and the others in the structures' own"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ffa426590e2",
+                    "label": "AC-412",
+                    "name": "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "give a structure's kind, scale domain, how it was placed, and the paper each number is cited from"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 68,
+                            "lastLine": 71
+                          }
+                        ],
+                        "name": "name a primitive shape by its form"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                    "label": null,
+                    "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 66
+                          }
+                        ],
+                        "name": "say a structure drawn by its extents has unknown bounds, and only then"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                "label": "F-39",
+                "name": "See the structures",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "label": "RQ-141",
+                    "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw each structure of the release by its placed shape.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "label": "RQ-142",
+                    "name": "Univ Explorer shall name each drawn structure in the view.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "name each drawn structure in the view.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "label": "RQ-143",
+                    "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                    "statement": {
+                      "condition": "the person chooses a structure, in the view or from the list of structures",
+                      "form": "event_driven",
+                      "shall": "show its record and fly to it.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 419,
+              "linked": 419,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
