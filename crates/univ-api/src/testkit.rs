@@ -66,6 +66,11 @@ impl Sqlite {
         }
     }
 
+    /// The release database, to read what a fixture needs.
+    pub fn connection(&self) -> &rusqlite::Connection {
+        &self.connection
+    }
+
     /// Runs `sql`, statements that write the fixture's rows.
     pub fn exec(&self, sql: &str) -> &Self {
         self.connection.execute_batch(sql).unwrap();
@@ -141,6 +146,18 @@ impl Sqlite {
 }
 
 /// The JSON document a response carries.
+/// The JSON pointers a refusal names, sorted.
+pub fn pointers(problem: &Value) -> Vec<String> {
+    let mut list: Vec<String> = problem["errors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|e| e["pointer"].as_str().unwrap().to_owned())
+        .collect();
+    list.sort();
+    list
+}
+
 pub fn body(response: &Response) -> Value {
     serde_json::from_slice(response.body.as_bytes())
         .unwrap_or_else(|error| panic!("{} carries no JSON: {error}", response.status))
@@ -428,5 +445,5 @@ INSERT INTO grids VALUES (2, 'cf4-basins', 1, 'megaparsec_over_h', '[128,128,128
 /// The cosmic web tile manifest of release 2: two nodes.
 pub const COSMIC_WEB_MANIFEST: &str = r#"{"format":"univ-tile-manifest","release":2,
   "scale_domain":"cosmic_web","encoding":{"version":1},"nodes":[
-  {"address":"r","level":0,"bytes":3,"sha256":"aaaa"},
-  {"address":"r07","level":1,"bytes":2,"sha256":"bbbb"}]}"#;
+  {"address":"r","level":0,"bounds":{"min":[-168.0,-168.0,-168.0],"max":[168.0,168.0,168.0]},"bytes":3,"sha256":"aaaa"},
+  {"address":"r07","level":2,"bounds":{"min":[-84.0,-84.0,-84.0],"max":[0.0,0.0,0.0]},"bytes":2,"sha256":"bbbb"}]}"#;

@@ -3,11 +3,11 @@
 //! and the quotas and conflicts that every new version meets (publish-a-layer-item,
 //! revise-or-retract-an-item, enforce-quotas-and-rate-limits).
 
-use serde_json::{Value, json};
+use serde_json::json;
 
 use crate::http::{Method, Request};
-use crate::layers_fixture::{count, db, layer, publish, sn1987a};
-use crate::testkit::Sqlite;
+use crate::layers_fixture::{content, count, db, layer, publish, sn1987a};
+use crate::testkit::{Sqlite, pointers};
 
 fn setup() -> (Sqlite, String, String) {
     let db = db();
@@ -21,17 +21,6 @@ fn setup() -> (Sqlite, String, String) {
         .unwrap()
         .to_owned();
     (db, key, id)
-}
-
-fn pointers(problem: &Value) -> Vec<String> {
-    let mut pointers: Vec<String> = problem["errors"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|e| e["pointer"].as_str().unwrap().to_owned())
-        .collect();
-    pointers.sort();
-    pointers
 }
 
 #[test]
@@ -187,4 +176,47 @@ fn a_read_whose_links_a_new_latest_release_resolves_differently_gets_a_new_entit
         json!([10])
     );
     assert_eq!(read["current"]["content"]["links"][0]["replaced_in"], 3);
+}
+
+fn bounds(db: &Sqlite) -> Vec<f64> {
+    db.layers
+        .query_row(
+            "SELECT min_x, min_y, min_z, max_x, max_y, max_z FROM items",
+            [],
+            |r| (0..6).map(|i| r.get::<_, f64>(i)).collect(),
+        )
+        .unwrap()
+}
+
+#[test]
+fn an_items_box_in_the_icrs_in_megaparsecs_follows_its_revisions_and_outlasts_its_retraction() {
+    let (db, key, layer) = setup();
+    publish(&db, &key, &layer, &sn1987a("sn"));
+    // SN 1987A's point at (1.977, 18.10, −48.07) kpc, as megaparsecs.
+    let at = [0.001_977, 0.018_10, -0.048_07];
+    assert_eq!(bounds(&db), [at, at].concat());
+    let mut revised = content(&sn1987a("sn"));
+    revised["geometry"] = json!({"frame": "galactic", "unit": "parsec",
+        "geometry": {"kind": "primitive", "primitive": {"form": "sphere", "centre": [0, 0, 0], "radius": 500}}});
+    let path = format!("/v1/layers/{layer}/items/sn");
+    let revision = json!({"replaces": 1, "revision": "update", "content": revised});
+    let (response, problem) = db.with_key(
+        &key,
+        Request::new(Method::Post, &format!("{path}/revisions")).with_json(&revision),
+    );
+    assert_eq!(response.status, 201, "{problem}");
+    assert_eq!(
+        bounds(&db),
+        [-0.0005, -0.0005, -0.0005, 0.0005, 0.0005, 0.0005]
+    );
+    let retraction = json!({"replaces": 2, "reason": "a test"});
+    let (response, _) = db.with_key(
+        &key,
+        Request::new(Method::Post, &format!("{path}/retraction")).with_json(&retraction),
+    );
+    assert_eq!(response.status, 201);
+    assert_eq!(
+        bounds(&db),
+        [-0.0005, -0.0005, -0.0005, 0.0005, 0.0005, 0.0005]
+    );
 }

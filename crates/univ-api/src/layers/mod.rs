@@ -71,6 +71,20 @@ impl LayerRow {
 }
 
 /// The key a write comes from, or a 401: writes need an API key (write-with-an-api-key).
+/// The key `caller` reads with, whose private layers it may read.
+pub(crate) fn key_of(caller: &Caller) -> Option<&str> {
+    match caller {
+        Caller::Key { id, .. } => Some(id),
+        Caller::Anonymous | Caller::Owner => None,
+    }
+}
+
+/// The SQL test of a layer row a key may read: a public layer, or one of its own. `table` is
+/// the row's alias with its dot (or nothing), `key` the parameter that binds the key or null.
+pub(crate) fn readable_by(table: &str, key: &str) -> String {
+    format!("({table}visibility = 'public' OR {table}key_id IS {key})")
+}
+
 pub(crate) fn writer(caller: &Caller) -> Result<&str, Problem> {
     match caller {
         Caller::Key { id, .. } => Ok(id),

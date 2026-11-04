@@ -22,6 +22,24 @@ pub fn scaled(v: Vec3, s: f64) -> Vec3 {
     v.map(|c| c * s)
 }
 
+/// `a + b`.
+#[must_use]
+pub fn add(a: Vec3, b: Vec3) -> Vec3 {
+    zip(a, b, |x, y| x + y)
+}
+
+/// `a − b`.
+#[must_use]
+pub fn sub(a: Vec3, b: Vec3) -> Vec3 {
+    zip(a, b, |x, y| x - y)
+}
+
+/// The length of `v`.
+#[must_use]
+pub fn norm(v: Vec3) -> f64 {
+    dot(v, v).sqrt()
+}
+
 /// The cross product.
 #[must_use]
 pub fn cross(a: Vec3, b: Vec3) -> Vec3 {

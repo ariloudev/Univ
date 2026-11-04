@@ -1,7 +1,7 @@
 //! Creating, listing, reading, configuring and retiring layers (create-and-configure-a-layer,
 //! read-a-layer).
 
-use serde_json::{Value, json};
+use serde_json::json;
 use univ_model::api::layers::{
     ChangeKind, CreateLayer, LayerChange, LayerList, LayerPage, LayerRecord,
 };
@@ -80,18 +80,14 @@ pub async fn create<B: Backend>(
     responses((status = 200, description = "Every layer the caller may read, by id", body = LayerList))
 )]
 pub async fn list<B: Backend>(caller: &Caller, backend: &B) -> Result<Response, Problem> {
-    let key = match caller {
-        Caller::Key { id, .. } => Value::String(id.clone()),
-        Caller::Anonymous | Caller::Owner => Value::Null,
-    };
     let rows = backend
         .layers(
             &format!(
                 "SELECT {COLUMNS} FROM layers l JOIN keys k ON k.id = l.key_id \
-                 WHERE l.retired_at IS NULL AND (l.visibility = 'public' OR l.key_id = ?1) \
-                 ORDER BY l.id"
+                 WHERE l.retired_at IS NULL AND {} ORDER BY l.id",
+                super::readable_by("l.", "?1")
             ),
-            &[key],
+            &[json!(super::key_of(caller))],
         )
         .await?;
     let layers = rows_as::<LayerRow>(rows)?

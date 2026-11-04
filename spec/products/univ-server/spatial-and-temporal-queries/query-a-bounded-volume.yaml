@@ -5,6 +5,19 @@ body: |
   Asking what the server knows inside a volume of space: the named objects, structures and layer
   items it holds there, and the tiles that carry its bulk points. Each request has a bounded cost:
   results come in capped pages, and bulk points come back as tiles to fetch, never as rows.
+
+  A volume is a box, axis-aligned in its frame; a sphere; or a cone whose apex is the frame's
+  origin, the Solar System barycentre, given by its axis, its full opening angle and the range of
+  distance from the apex it spans. Filters combine: each keeps only the results that carry one
+  of the values it names, so a result that carries no such value, such as a layer item under a
+  filter of kinds, is left out.
+
+  A structure is tested by its placed shape, else by its placed member list, else by its
+  bounding box, else by its centre, and each result says which. A match by bounding box is
+  approximate: the release holds no placed shape for the structure. Geometries are tested
+  exactly where a closed form exists, and otherwise refined until decided; one that comes
+  within a millionth of the volume's extent, or that refinement cannot decide within its
+  budget, counts as meeting it.
 tags:
   - release-scoped
 realizes:

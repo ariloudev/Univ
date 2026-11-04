@@ -1,10 +1,16 @@
-//! `cargo xtask bench lookup`: object lookups timed through the Worker on the real local state
-//! (QA-2: an object lookup within 200 ms at the 95th percentile).
+//! Latency benches through the Worker on the real local state, each against its quality
+//! attribute:
 //!
-//! It samples [`SAMPLES`] object ids of the latest release at random, starts the Worker under
-//! `wrangler dev` on the real state, reads each id once after [`WARM_UP`] reads that are not
-//! counted, and prints the 50th, 95th and 99th percentiles. This is the local runtime and its
-//! local D1, so it measures the Worker and its queries, not Cloudflare's network.
+//! - `cargo xtask bench lookup`: object lookups (QA-2, within 200 ms at the 95th percentile).
+//!   [`SAMPLES`] object ids of the latest release, at random, each read once.
+//! - `cargo xtask bench volume`: the first page of a bounded volume query (QA-3, within 500 ms
+//!   at the 95th percentile). [`VOLUMES`] spheres of 50 Mpc radius centred 100 Mpc from the
+//!   barycentre in directions spread over the sky, each queried once.
+//!
+//! Each starts the Worker under `wrangler dev` on the real state, makes [`WARM_UP`] requests
+//! that are not counted, and prints the 50th, 95th and 99th percentiles. This is the local
+//! runtime and its local D1, so it measures the Worker and its queries, not Cloudflare's
+//! network.
 
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -16,11 +22,24 @@ use crate::integration::{
 /// How many lookups are timed.
 const SAMPLES: usize = 1_000;
 
-/// How many lookups run first, uncounted, so that the isolate and its caches are warm.
+/// How many volume queries are timed.
+const VOLUMES: usize = 200;
+
+/// How many requests run first, uncounted, so that the isolate and its caches are warm.
 const WARM_UP: usize = 20;
 
 /// QA-2's bound on the 95th percentile.
-const P95_BOUND: Duration = Duration::from_millis(200);
+const LOOKUP_P95: Duration = Duration::from_millis(200);
+
+/// QA-3's bound on the 95th percentile.
+const VOLUME_P95: Duration = Duration::from_millis(500);
+
+/// A request to time: its method, path and JSON body.
+struct Timed {
+    method: &'static str,
+    path: String,
+    json: Option<String>,
+}
 
 /// Times the object lookups; true when every lookup answered 200 within QA-2's bound.
 pub fn lookup(root: &Path) -> bool {
@@ -35,6 +54,64 @@ pub fn lookup(root: &Path) -> bool {
             return false;
         }
     };
+    let requests: Vec<Timed> = ids
+        .iter()
+        .map(|id| Timed {
+            method: "GET",
+            path: format!("/v1/objects/{id}"),
+            json: None,
+        })
+        .collect();
+    bench(root, "object lookup", "QA-2", &requests, LOOKUP_P95)
+}
+
+/// Times the first pages of volume queries; true when every one answered 200 within QA-3's
+/// bound.
+pub fn volume(root: &Path) -> bool {
+    let requests: Vec<Timed> = centres(VOLUMES + WARM_UP, 100.0)
+        .into_iter()
+        .map(|[x, y, z]| Timed {
+            method: "POST",
+            path: "/v1/query/volume".to_owned(),
+            json: Some(format!(
+                r#"{{"volume":{{"frame":"icrs","unit":"megaparsec","form":"sphere","centre":[{x},{y},{z}],"radius":50}}}}"#
+            )),
+        })
+        .collect();
+    bench(
+        root,
+        "volume query, first page",
+        "QA-3",
+        &requests,
+        VOLUME_P95,
+    )
+}
+
+/// `n` points `distance` from the origin, spread over the sphere: a Fibonacci lattice, so the
+/// run is the same each time.
+fn centres(n: usize, distance: f64) -> Vec<[f64; 3]> {
+    let golden = f64::midpoint(1.0, 5.0_f64.sqrt());
+    let n = u32::try_from(n).unwrap_or(u32::MAX);
+    let count = f64::from(n);
+    (0..n)
+        .map(|i| {
+            let k = f64::from(i) + 0.5;
+            let z = 1.0 - 2.0 * k / count;
+            let r = (1.0 - z * z).sqrt();
+            let phi = std::f64::consts::TAU * k / golden;
+            [
+                distance * r * phi.cos(),
+                distance * r * phi.sin(),
+                distance * z,
+            ]
+        })
+        .collect()
+}
+
+/// Starts the Worker, times `requests` after the first [`WARM_UP`], and reports them against
+/// `bound`; true when all answered 200 and the 95th percentile is within it.
+fn bench(root: &Path, what: &str, attribute: &str, requests: &[Timed], bound: Duration) -> bool {
+    let state = root.join(REAL_STATE);
     if !release_tables(root, &state) || !migrate(root, &state) {
         return false;
     }
@@ -60,31 +137,50 @@ pub fn lookup(root: &Path) -> bool {
             return false;
         }
     };
-    let mut times = Vec::with_capacity(ids.len());
+    let (times, failures) = time(port, &key, requests);
+    drop(wrangler);
+    report(what, attribute, &times, &failures, bound, requests.len())
+}
+
+/// Each request's time after the first [`WARM_UP`], and the requests not answered 200.
+fn time(port: u16, key: &str, requests: &[Timed]) -> (Vec<Duration>, Vec<String>) {
+    let mut times = Vec::with_capacity(requests.len());
     let mut failures = Vec::new();
-    for (n, id) in ids.iter().enumerate() {
-        let path = format!("/v1/objects/{id}");
-        let started = Instant::now();
+    for (n, request) in requests.iter().enumerate() {
         let exchange = Exchange {
-            bearer: Some(&key),
-            ..Exchange::get(&path)
+            method: request.method,
+            path: &request.path,
+            bearer: Some(key),
+            json: request.json.as_deref(),
         };
+        let started = Instant::now();
         let status = send(port, &exchange, Duration::from_secs(30)).map(|(status, _)| status);
         let took = started.elapsed();
         match status {
             Ok(200) => {}
-            Ok(status) => failures.push(format!("{path}: {status}")),
-            Err(error) => failures.push(format!("{path}: {error}")),
+            Ok(status) => failures.push(format!("{} {}: {status}", request.method, request.path)),
+            Err(error) => failures.push(format!("{} {}: {error}", request.method, request.path)),
         }
         if n >= WARM_UP {
             times.push(took);
         }
     }
-    drop(wrangler);
     times.sort_unstable();
-    let p = |q: f64| percentile(&times, q);
+    (times, failures)
+}
+
+/// Prints the percentiles and whether the quality attribute was met.
+fn report(
+    what: &str,
+    attribute: &str,
+    times: &[Duration],
+    failures: &[String],
+    bound: Duration,
+    total: usize,
+) -> bool {
+    let p = |q: f64| percentile(times, q);
     eprintln!(
-        "object lookup over {} ids: p50 {:.1} ms, p95 {:.1} ms, p99 {:.1} ms, max {:.1} ms",
+        "{what} over {} requests: p50 {:.1} ms, p95 {:.1} ms, p99 {:.1} ms, max {:.1} ms",
         times.len(),
         ms(p(0.50)),
         ms(p(0.95)),
@@ -94,18 +190,17 @@ pub fn lookup(root: &Path) -> bool {
     for failure in failures.iter().take(10) {
         eprintln!("not 200: {failure}");
     }
-    let within = p(0.95) <= P95_BOUND;
+    let within = p(0.95) <= bound;
     eprintln!(
-        "QA-2 {}: p95 {} the bound of {} ms; {} of {} lookups not 200",
+        "{attribute} {}: p95 {} the bound of {} ms; {} of {total} requests not 200",
         if within && failures.is_empty() {
             "met"
         } else {
             "NOT met"
         },
         if within { "within" } else { "over" },
-        P95_BOUND.as_millis(),
+        bound.as_millis(),
         failures.len(),
-        ids.len()
     );
     within && failures.is_empty()
 }
@@ -176,6 +271,17 @@ fn release_database(state: &Path) -> Result<PathBuf, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_volume_centres_lie_100_mpc_out_in_both_hemispheres() {
+        let points = centres(200, 100.0);
+        assert!(
+            points
+                .iter()
+                .all(|p| (p.iter().map(|c| c * c).sum::<f64>().sqrt() - 100.0).abs() < 1e-9)
+        );
+        assert!(points.iter().any(|p| p[2] > 90.0) && points.iter().any(|p| p[2] < -90.0));
+    }
 
     #[test]
     fn the_95th_percentile_is_the_nearest_rank() {

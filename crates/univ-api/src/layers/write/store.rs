@@ -4,6 +4,7 @@
 
 use serde_json::{Value, json};
 use univ_model::api::layers::{ChangeKind, ItemVersion, VersionBody, VersionKind};
+use univ_model::geometry::Aabb;
 use univ_model::time::{OnTt, TimeKind};
 
 use super::super::config::quota_exceeded;
@@ -20,6 +21,9 @@ pub(super) struct NewVersion<'a> {
     pub body: VersionBody,
     /// The time records on TT of a version with content; none for a retraction.
     pub times: &'a [(TimeKind, OnTt)],
+    /// The box of a version with content in the ICRS, in megaparsecs; none for a retraction,
+    /// which keeps the item's box.
+    pub bounds: Option<Aabb>,
 }
 
 /// Stores `new` as the version after the item's current one in `layer` (version 1 for a
@@ -75,6 +79,15 @@ pub(super) async fn store<B: Backend>(
     ))
 }
 
+/// The six coordinates of `bounds`, minimum then maximum, each null for no box.
+fn corners(bounds: Option<Aabb>) -> impl Iterator<Item = Value> {
+    (0..6).map(move |i| match bounds {
+        Some(b) if i < 3 => json!(b.min[i]),
+        Some(b) => json!(b.max[i - 3]),
+        None => Value::Null,
+    })
+}
+
 /// The statements that store `new` as `version`, its body `text`, ending with the change.
 fn statements(
     layer: &LayerRow,
@@ -89,21 +102,31 @@ fn statements(
         // The quota of items is held here: past it, no row is inserted, the version's foreign
         // key fails and the batch with it.
         Statement::new(
-            "INSERT INTO items (layer_id, id, version) SELECT ?1, ?2, 1 FROM layers \
+            "INSERT INTO items (layer_id, id, version, min_x, min_y, min_z, max_x, max_y, max_z) \
+             SELECT ?1, ?2, 1, ?4, ?5, ?6, ?7, ?8, ?9 FROM layers \
              WHERE id = ?1 AND items_held < ?3",
-            vec![json!(layer_id), json!(item), json!(layer.items_per_layer)],
+            [json!(layer_id), json!(item), json!(layer.items_per_layer)]
+                .into_iter()
+                .chain(corners(new.bounds))
+                .collect(),
         )
     } else {
         Statement::new(
-            "UPDATE items SET version = ?3, retracted = ?4 \
+            "UPDATE items SET version = ?3, retracted = ?4, min_x = coalesce(?6, min_x), \
+             min_y = coalesce(?7, min_y), min_z = coalesce(?8, min_z), \
+             max_x = coalesce(?9, max_x), max_y = coalesce(?10, max_y), \
+             max_z = coalesce(?11, max_z) \
              WHERE layer_id = ?1 AND id = ?2 AND version = ?5 AND retracted = 0",
-            vec![
+            [
                 json!(layer_id),
                 json!(item),
                 json!(version),
                 json!(i32::from(new.kind == VersionKind::Retraction)),
                 json!(current),
-            ],
+            ]
+            .into_iter()
+            .chain(corners(new.bounds))
+            .collect(),
         )
     }];
     // A version written meanwhile holds this number already, and fails the batch.

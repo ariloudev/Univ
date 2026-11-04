@@ -102,6 +102,11 @@ problem_types! {
     GridNotFound = "urn:univ:problem:grid-not-found", "No such volume grid", 404;
     /// The volume grid has no field of that index, or the field no uncertainty.
     GridFieldNotFound = "urn:univ:problem:grid-field-not-found", "No such grid field", 404;
+    /// The volume query failed the checks its `errors` name, each by JSON pointer.
+    QueryInvalid = "urn:univ:problem:query-invalid", "Invalid query", 400;
+    /// A layer whose items the query reads changed since its first page: `layers` names each,
+    /// with its current change sequence.
+    QueryLayersChanged = "urn:univ:problem:query-layers-changed", "Layers changed", 409;
     /// The server failed to answer a request it should have answered.
     InternalError = "urn:univ:problem:internal-error", "Internal error", 500;
 }

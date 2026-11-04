@@ -6,15 +6,15 @@
 
 mod fields;
 
-pub(crate) use fields::{Failures, member, pointer, text, unknown};
+pub(crate) use fields::{Failures, at, member, object, pointer, text, unknown};
 
-use fields::{dropped, entries, object, path};
+use fields::{dropped, entries, path};
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value, json};
 use univ_model::api::layers::{ItemContent, ItemSource, Link, Relation};
 use univ_model::geometry::{Geometry, Shape};
 use univ_model::position::Frame;
-use univ_model::time::{At, OnTt, TimeKind, TimeRecord, TimeUncertainty, Timescale};
+use univ_model::time::{OnTt, TimeKind, TimeRecord, TimeUncertainty, Timescale};
 use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
 
@@ -146,24 +146,13 @@ fn time_record(value: &Value, at: &str, failures: &mut Failures) -> Option<(Time
     unknown(members, &names, at, "a time record", failures);
     let kind = member::<TimeKind>(members, at, "kind", true, failures);
     let timescale = member::<Timescale>(members, at, "timescale", true, failures);
-    let instant = member::<String>(members, at, "instant", false, failures);
-    let years = member::<f64>(members, at, "years_before_j2000", false, failures);
-    let when = match (instant, years) {
-        (Some(instant), None) => Some(At::Instant { instant }),
-        (None, Some(years_before_j2000)) => Some(At::YearsBefore { years_before_j2000 }),
-        (Some(_), Some(_)) => {
-            failures.add(
-                pointer(at, "years_before_j2000"),
-                "a time record gives an instant or years before J2000.0, not both",
-            );
-            None
-        }
-        (None, None) if failures.len() == before => {
-            failures.add(at, "a time record gives an instant or years_before_j2000");
-            None
-        }
-        (None, None) => None,
-    };
+    let when = fields::at(
+        members,
+        at,
+        "a time record",
+        failures.len() == before,
+        failures,
+    );
     let uncertainty = match members.get("uncertainty") {
         None => {
             failures.add(pointer(at, "uncertainty"), "is required");

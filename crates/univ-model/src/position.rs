@@ -348,7 +348,7 @@ pub fn between(from: Frame, to: Frame) -> Transform {
 }
 
 pub use fk4::equinox_ambiguity;
-pub use vector::{cross, dot, scaled, separation_degrees, zip};
+pub use vector::{add, cross, dot, norm, scaled, separation_degrees, sub, zip};
 
 #[cfg(test)]
 mod tests {

@@ -13,8 +13,9 @@ use std::sync::{Arc, LazyLock};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use univ_model::api::bulk::{ScaleDomainList, ScaleDomainSummary, TileFormat};
+use univ_model::geometry::Aabb;
 use univ_model::tile::format::layout;
-use univ_model::tile::manifest::{TileManifest, TileManifestIndex};
+use univ_model::tile::manifest::{NodeIndex, TileManifest, TileManifestIndex};
 use univ_model::units::scale_domain_unit;
 use utoipa::{PartialSchema, ToSchema};
 
@@ -23,21 +24,31 @@ use crate::http::{Body, Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{RELEASE_PARAM, pinned, pinned_file, resolve};
 
-/// What is kept of a scale domain's tile manifest: its encoding version, and each node's
-/// address with its tile's SHA-256.
+/// What is kept of a scale domain's tile manifest: its encoding version, each node's address
+/// with its tile's SHA-256, and each node's cube.
 pub struct TileNodes {
     version: u16,
     nodes: HashMap<String, String>,
+    pub(crate) cubes: Vec<NodeCube>,
+}
+
+/// A node's place in its octree: its address, level and cube in its domain's unit (ICRS
+/// about the barycentre), and whether it is a leaf, a node no node lies below.
+pub struct NodeCube {
+    pub address: String,
+    pub level: u8,
+    pub bounds: Aabb,
+    pub leaf: bool,
 }
 
 /// A scale domain of a release, as the release database lists it.
 #[derive(Deserialize)]
 pub struct DomainRow {
-    name: String,
+    pub(crate) name: String,
     radius: f64,
     points: u64,
     nodes: u64,
-    manifest_key: String,
+    pub(crate) manifest_key: String,
 }
 
 /// The JSON Schema of a tile manifest, built once and whole: the schemas it refers to are its
@@ -223,7 +234,10 @@ pub async fn tile_format<B: Backend>(request: &Request, backend: &B) -> Result<R
 }
 
 /// The scale domains of `release`, by name, read once and kept.
-async fn domains_of<B: Backend>(backend: &B, release: u32) -> Result<Arc<Vec<DomainRow>>, Problem> {
+pub(crate) async fn domains_of<B: Backend>(
+    backend: &B,
+    release: u32,
+) -> Result<Arc<Vec<DomainRow>>, Problem> {
     if let Some(domains) = backend.kept().domains.get(&release) {
         return Ok(domains);
     }
@@ -271,7 +285,7 @@ impl std::ops::Deref for DomainRef {
 }
 
 /// The nodes of the tile manifest of scale domain `name` of `release`, read once and kept.
-async fn tile_nodes<B: Backend>(
+pub(crate) async fn tile_nodes<B: Backend>(
     backend: &B,
     release: u32,
     name: &str,
@@ -293,6 +307,24 @@ async fn tile_nodes<B: Backend>(
             format!("The tile manifest {key} did not read: {error}."),
         )
     })?;
+    let parents: BTreeSet<&str> = manifest
+        .nodes
+        .iter()
+        .filter_map(NodeIndex::parent)
+        .collect();
+    let cubes = manifest
+        .nodes
+        .iter()
+        .map(|node| NodeCube {
+            address: node.address.clone(),
+            level: node.level,
+            bounds: Aabb {
+                min: node.bounds.min,
+                max: node.bounds.max,
+            },
+            leaf: !parents.contains(node.address.as_str()),
+        })
+        .collect();
     let nodes = TileNodes {
         version: manifest.encoding.version,
         nodes: manifest
@@ -300,6 +332,7 @@ async fn tile_nodes<B: Backend>(
             .into_iter()
             .map(|node| (node.address, node.sha256))
             .collect(),
+        cubes,
     };
     Ok(backend.kept().tile_nodes.keep(kept_key, nodes))
 }

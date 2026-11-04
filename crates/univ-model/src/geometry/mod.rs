@@ -202,6 +202,14 @@ impl Shape {
         let rotation = between(self.frame, frame).rotation()?;
         self.geometry.bounds(&rotation)
     }
+
+    /// The bounding box in the ICRS, in `unit`, as volume queries read it; none for a shape
+    /// that does not rotate into the ICRS or a unit that is not a length.
+    #[must_use]
+    pub fn icrs_bounds(&self, unit: Unit) -> Option<Aabb> {
+        let factor = self.unit.factor_to(unit).ok()?;
+        Some(self.bounds_in(Frame::Icrs)?.scaled(factor))
+    }
 }
 
 impl TryFrom<RawShape> for Shape {

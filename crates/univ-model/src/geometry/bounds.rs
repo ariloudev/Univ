@@ -31,7 +31,8 @@ impl Aabb {
         }
     }
 
-    fn around(points: impl IntoIterator<Item = Vec3>) -> Option<Self> {
+    /// The box around `points`; none for no points.
+    pub(crate) fn around(points: impl IntoIterator<Item = Vec3>) -> Option<Self> {
         points.into_iter().fold(None, |acc, p| {
             Some(match acc {
                 None => Self { min: p, max: p },
@@ -43,7 +44,8 @@ impl Aabb {
         })
     }
 
-    fn centred(centre: Vec3, half: Vec3) -> Self {
+    /// The box of half-extents `half` about `centre`.
+    pub(crate) fn centred(centre: Vec3, half: Vec3) -> Self {
         Self {
             min: zip(centre, half, |c, h| c - h),
             max: zip(centre, half, |c, h| c + h),
