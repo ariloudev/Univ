@@ -1,0 +1,1256 @@
+key: 01a1a8ab-ddd1-7570-9009-a52bbd52a6bf
+id: e7
+versions:
+  - key: 01a1a8ab-ddd1-7570-9009-a533e967e5fc
+    at: 2026-11-04T22:26:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E7: stars in their colours"
+    goal: "Univ Explorer draws each star in the colour of the temperature its colour index gives, grey where it has none, and its panel gives the star's spectral types, colour index, estimated class and the paper of a researched distance"
+    status: active
+blocks:
+  - key: 01a1a8ab-ddd1-7570-9009-a52c17b0ad08
+    id: e7-t-spec
+    kind: task
+    versions:
+      - key: 01a1a8ab-ddd1-7570-9009-a534f10b8a3d
+        at: 2026-11-04T22:26:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for approval"
+        detail: "draw-the-catalogues: stars coloured by temperature from the colour index (Pecaut & Mamajek 2013), grey without one; the kind-of-value colours narrowed to points outside the stars domain; the key for both. read-an-object: spectral types, colour index, estimated class, researched paper. product summary amended."
+        state: active
+  - key: 01a1a8ab-ddd1-7570-9009-a52d7e4d3932
+    id: e7-t-table
+    kind: task
+    versions:
+      - key: 01a1a8ab-ddd1-7570-9009-a53597f1ed1b
+        at: 2026-11-04T22:26:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "starColour module"
+        detail: "Mamajek's dwarf sequence (version 2022.04.16, the table of Pecaut & Mamajek 2013) kept as a data file with its URL, version and citation; B−V or BP−RP interpolated to Teff and the nearest class; Teff to sRGB through the Planck spectrum and the CIE 1931 fit of Wyman, Sloan & Shirley 2013. Done when starColour.test.ts passes: the Sun's B−V 0.65 gives about 5,770 K and G2V; B−V 1.50 about 3,700 K and early M; B−V −0.30 over 25,000 K; out-of-range values clamped and said so; hot bluer than cool."
+        state: open
+  - key: 01a1a8ab-ddd1-7570-9009-a52e75ac39f4
+    id: e7-t-draw
+    kind: task
+    versions:
+      - key: 01a1a8ab-ddd1-7570-9009-a536b8304532
+        at: 2026-11-04T22:26:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Draw stars in their colours"
+        detail: "Each point keeps its colour from the tile; a per-point colour attribute: stars in their temperature colour or grey, other points by kind of value. Done when the batch and colour-buffer unit tests and `pnpm check` pass."
+        state: open
+  - key: 01a1a8ab-ddd1-7570-9009-a52f5bacb99b
+    id: e7-t-key
+    kind: task
+    versions:
+      - key: 01a1a8ab-ddd1-7570-9009-a5377bb13db4
+        at: 2026-11-04T22:26:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The key and the hover label"
+        detail: "A 'Stars, by colour index' strip in kelvin with the counts of coloured and grey stars; the hover label gains the colour index. Done when Panels, scenePoint and the Playwright test pass."
+        state: open
+  - key: 01a1a8ab-ddd1-7570-9009-a530442eb34a
+    id: e7-t-panel
+    kind: task
+    versions:
+      - key: 01a1a8ab-ddd1-7570-9009-a538a8272bcd
+        at: 2026-11-04T22:26:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The object panel"
+        detail: "Spectral types with their kind of value, the colour index with bands and uncertainty, the estimated class labelled and cited, and the paper of a researched distance. Done when ObjectPanel tests pass."
+        state: open
+  - key: 01a1a8ab-ddd1-7570-9009-a5318620930b
+    id: e7-t-live
+    kind: task
+    versions:
+      - key: 01a1a8ab-ddd1-7570-9009-a53943ec23ba
+        at: 2026-11-04T22:26:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Live screenshots"
+        detail: "`cargo xtask explore` on release 9: Orion (Betelgeuse red, Rigel blue-white), the Sun's neighbourhood, Betelgeuse's panel; `bench first-points` within 3 s."
+        state: open
+  - key: 01a1a8ab-ddd1-7570-9009-a5329ba862e4
+    id: e7-t-close
+    kind: task
+    versions:
+      - key: 01a1a8ab-ddd1-7570-9009-a53aadeb6f21
+        at: 2026-11-04T22:26:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, reviews, gate, integration, close, merge"
+        detail: "As for every wave."
+        state: open
+  - key: 01a1a8ac-3063-7309-9f32-29a82218483d
+    id: e7-spec-change
+    kind: loft
+    versions:
+      - key: 01a1a8ac-3063-7309-9f32-29aab545d5e4
+        at: 2026-11-04T22:26:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "Explorer only: the tiles of release 9 already hold each star's colour index and its bands, so ingest and the server are unchanged."
+        recorded:
+          commit: "b85aa86d5938ffc4c47c1e6518d8d82b5ca5d8a5"
+          branch: "stage/release-8-e7"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T22:26:59Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 32,
+              "graph.edges": 0,
+              "graph.nodes": 54,
+              "status.base.added": 28,
+              "status.base.changed": 4,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-1842afd6d59e",
+                  "kind": "criterion",
+                  "label": "AC-12",
+                  "name": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                  "words": {
+                    "after": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                    "before": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification and the Hipparcos new reduction."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf71f70beb40",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Record a researched star distance",
+                  "words": {
+                    "after": "Record a researched star distance\n\nGiving a naked-eye star that Hipparcos and Gaia leave without a usable distance the distance its\npapers publish for it, without a single uncited number. Such a star is too bright for a Gaia\nparallax, and its Hipparcos parallax too uncertain to invert."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from.",
+                  "words": {
+                    "after": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7366dc3a34",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                  "words": {
+                    "after": "Each number cites its paper and the sentence or table cell it was taken from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf74029af338",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file joins the object of the Hipparcos star whose HIP number it gives.",
+                  "words": {
+                    "after": "A star file joins the object of the Hipparcos star whose HIP number it gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7588585aa4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives.",
+                  "words": {
+                    "after": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf76499f0e46",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member.",
+                  "words": {
+                    "after": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf77402e4c76",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The entry of a star file names the paper its values come from.",
+                  "words": {
+                    "after": "The entry of a star file names the paper its values come from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf78ded1df98",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number.",
+                  "words": {
+                    "after": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf793b4b68ec",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the star file, the field and the number.",
+                  "words": {
+                    "after": "The message names the star file, the field and the number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7a85f10357",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it.",
+                  "words": {
+                    "after": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7b361027b4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file without a distance gives the reason none was found, and adds no distance to its star.",
+                  "words": {
+                    "after": "A star file without a distance gives the reason none was found, and adds no distance to its star."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7cb64ddb9e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response names the paper each researched catalogue entry's values come from.",
+                  "words": {
+                    "after": "The response names the paper each researched catalogue entry's values come from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                  "words": {
+                    "after": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                  "words": {
+                    "after": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-807b84c53c7c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position.",
+                  "words": {
+                    "after": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "words": {
+                    "after": "Univ Explorer\n\nA web application that draws what Univ Server knows in three dimensions, around Earth, and lets\na person move through it with the mouse: from the nearest stars to the largest structures of\nthe universe.\n\nIt reads Univ Server's public API alone and draws only what a release placed, each point at the\nposition the release derived for it, each star in the colour of the temperature its colour\nindex gives and every other point by the kind of value of its distance, with the sources\ncredited as their terms require. Clicking a point reads its object; the structures are\ndrawn by their placed shapes.\n\nThe first version runs locally, beside Univ Server under `wrangler dev`. Flying with the\nkeyboard, editing layers, time and phones are outside it.",
+                    "before": "Univ Explorer\n\nA web application that draws what Univ Server knows in three dimensions, around Earth, and lets\na person move through it with the mouse: from the nearest stars to the largest structures of\nthe universe.\n\nIt reads Univ Server's public API alone and draws only what a release placed, each point at the\nposition the release derived for it, coloured by the kind of value of its distance, with the\nsources credited as their terms require. Clicking a point reads its object; the structures are\ndrawn by their placed shapes.\n\nThe first version runs locally, beside Univ Server under `wrangler dev`. Flying with the\nkeyboard, editing layers, time and phones are outside it."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                  "kind": "requirement",
+                  "label": "RQ-123",
+                  "name": "Univ Explorer shall colour each point outside the stars domain by the kind of value of its distance and show the key to the colours.",
+                  "words": {
+                    "after": "Univ Explorer shall colour each point outside the stars domain by the kind of value of its distance and show the key to the colours.",
+                    "before": "Univ Explorer shall colour each point by the kind of value of its distance and show the key to the colours."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400b9b581384",
+                  "kind": "criterion",
+                  "label": "AC-362",
+                  "name": "Points outside the stars domain whose distances are measured, estimated, inferred and reconstructed are drawn in four distinct colours.",
+                  "words": {
+                    "after": "Points outside the stars domain whose distances are measured, estimated, inferred and reconstructed are drawn in four distinct colours.",
+                    "before": "Measured, estimated, inferred and reconstructed distances are drawn in four distinct colours."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33e770aeebd",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw each point of the stars domain in the colour of the temperature its colour index gives, and in neutral grey where it has none.",
+                  "words": {
+                    "after": "Univ Explorer shall draw each point of the stars domain in the colour of the temperature its colour index gives, and in neutral grey where it has none."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33fb69a707c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star's colour index, BP−RP or B−V, gives its effective temperature along the dwarf sequence of Pecaut & Mamajek 2013, and the temperature gives the colour a black body of that temperature shows the CIE 1931 standard observer.",
+                  "words": {
+                    "after": "A star's colour index, BP−RP or B−V, gives its effective temperature along the dwarf sequence of Pecaut & Mamajek 2013, and the temperature gives the colour a black body of that temperature shows the CIE 1931 standard observer."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b340d68ae618",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index beyond the sequence is taken at the sequence's end, so that the star is drawn in the sequence's hottest or coolest colour.",
+                  "words": {
+                    "after": "A colour index beyond the sequence is taken at the sequence's end, so that the star is drawn in the sequence's hottest or coolest colour."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b3413483ba01",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star without a colour index is drawn in neutral grey.",
+                  "words": {
+                    "after": "A star without a colour index is drawn in neutral grey."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b3422af21b30",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The key shows the colours of the stars with their temperatures in kelvin, and counts the stars drawn in colour and those drawn in grey.",
+                  "words": {
+                    "after": "The key shows the colours of the stars with their temperatures in kelvin, and counts the stars drawn in colour and those drawn in grey."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33a18c5c77c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives each spectral type the object's sources publish, as published, with its source and its kind of value.",
+                  "words": {
+                    "after": "The panel gives each spectral type the object's sources publish, as published, with its source and its kind of value."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33ba7b45072",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives each colour index of the object with its bands, its uncertainty and its source.",
+                  "words": {
+                    "after": "The panel gives each colour index of the object with its bands, its uncertainty and its source."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33c05d6a7a7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where no source publishes a spectral type, or only an unknown one, the panel gives the class the colour index suggests, labelled as estimated for a main-sequence star and citing Pecaut & Mamajek 2013.",
+                  "words": {
+                    "after": "Where no source publishes a spectral type, or only an unknown one, the panel gives the class the colour index suggests, labelled as estimated for a main-sequence star and citing Pecaut & Mamajek 2013."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33dc8e38c1d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel names the papers of each researched entry of the object.",
+                  "words": {
+                    "after": "The panel names the papers of each researched entry of the object."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                  "words": {
+                    "after": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                  "words": {
+                    "after": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                  "words": {
+                    "after": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf70efaf8d70",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Researched star distances",
+                  "words": {
+                    "after": "Researched star distances\n\nDistances of naked-eye stars that Hipparcos and Gaia leave without a usable one, read from their papers, with each number cited to the sentence or table cell it comes from."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6593dd0cb35",
+                  "kind": "feature_group",
+                  "label": "FG-1",
+                  "name": "Acquisition",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                  "kind": "feature",
+                  "label": "F-1",
+                  "name": "Define a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                  "kind": "requirement",
+                  "label": "RQ-5",
+                  "name": "Univ Ingest shall provide a source definition for each source of the first release.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-1842afd6d59e",
+                  "kind": "criterion",
+                  "label": "AC-12",
+                  "name": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                  "parent": "01a19f22-2ad9-716e-876f-183f79f9ae1c"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf71f70beb40",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Record a researched star distance",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf71f70beb40"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7366dc3a34",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf74029af338",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file joins the object of the Hipparcos star whose HIP number it gives.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7588585aa4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf76499f0e46",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf77402e4c76",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The entry of a star file names the paper its values come from.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf728a424bbe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf78ded1df98",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf71f70beb40"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf793b4b68ec",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the star file, the field and the number.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf78ded1df98"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7a85f10357",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf71f70beb40"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7b361027b4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star file without a distance gives the reason none was found, and adds no distance to its star.",
+                  "parent": "01a1a825-fb4e-702c-a84f-bf7a85f10357"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                  "kind": "feature",
+                  "label": "F-15",
+                  "name": "Look up an object",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                  "kind": "requirement",
+                  "label": "RQ-52",
+                  "name": "When a client requests an object by its object id, Univ Server shall return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0d39dc9a3f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf7cb64ddb9e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response names the paper each researched catalogue entry's values come from.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0ee7e600ab"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                  "kind": "feature",
+                  "label": "F-17",
+                  "name": "Read a structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                  "kind": "requirement",
+                  "label": "RQ-59",
+                  "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                  "parent": "01a19f1e-d177-716d-b124-3d3019ad55e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-807b84c53c7c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffe4657fb77",
+                  "kind": "feature",
+                  "label": "F-34",
+                  "name": "Draw the catalogues",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                  "kind": "requirement",
+                  "label": "RQ-123",
+                  "name": "Univ Explorer shall colour each point outside the stars domain by the kind of value of its distance and show the key to the colours.",
+                  "parent": "01a1a497-e843-728a-bce8-3ffe4657fb77"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400b9b581384",
+                  "kind": "criterion",
+                  "label": "AC-362",
+                  "name": "Points outside the stars domain whose distances are measured, estimated, inferred and reconstructed are drawn in four distinct colours.",
+                  "parent": "01a1a497-e843-728a-bce8-400ade54e0e1"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33e770aeebd",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw each point of the stars domain in the colour of the temperature its colour index gives, and in neutral grey where it has none.",
+                  "parent": "01a1a497-e843-728a-bce8-3ffe4657fb77"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33fb69a707c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star's colour index, BP−RP or B−V, gives its effective temperature along the dwarf sequence of Pecaut & Mamajek 2013, and the temperature gives the colour a black body of that temperature shows the CIE 1931 standard observer.",
+                  "parent": "01a1a8ac-052e-72b3-a33e-b33e770aeebd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b340d68ae618",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A colour index beyond the sequence is taken at the sequence's end, so that the star is drawn in the sequence's hottest or coolest colour.",
+                  "parent": "01a1a8ac-052e-72b3-a33e-b33e770aeebd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b3413483ba01",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A star without a colour index is drawn in neutral grey.",
+                  "parent": "01a1a8ac-052e-72b3-a33e-b33e770aeebd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b3422af21b30",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The key shows the colours of the stars with their temperatures in kelvin, and counts the stars drawn in colour and those drawn in grey.",
+                  "parent": "01a1a8ac-052e-72b3-a33e-b33e770aeebd"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe32aecd7d3",
+                  "kind": "feature",
+                  "label": "F-38",
+                  "name": "Read an object",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                  "kind": "requirement",
+                  "label": "RQ-139",
+                  "name": "When the person clicks a drawn point, Univ Explorer shall show the object's record that Univ Server gives.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe32aecd7d3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33a18c5c77c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives each spectral type the object's sources publish, as published, with its source and its kind of value.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33ba7b45072",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives each colour index of the object with its bands, its uncertainty and its source.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33c05d6a7a7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where no source publishes a spectral type, or only an unknown one, the panel gives the class the colour index suggests, labelled as estimated for a main-sequence star and citing Pecaut & Mamajek 2013.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a8ac-052e-72b3-a33e-b33dc8e38c1d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel names the papers of each researched entry of the object.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                  "kind": "requirement",
+                  "label": "RQ-141",
+                  "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff084b48fab"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                  "kind": "requirement",
+                  "label": "RQ-142",
+                  "name": "Univ Explorer shall name each drawn structure in the view.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff56cfa0dc5"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                  "kind": "requirement",
+                  "label": "RQ-143",
+                  "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce7c64960ab",
+                  "kind": "component",
+                  "label": "CMP-7",
+                  "name": "Data providers",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-182f41fd2c08",
+                  "kind": "component",
+                  "label": "CMP-31",
+                  "name": "Literature",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a825-fb4e-702c-a84f-bf70efaf8d70",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Researched star distances",
+                  "parent": "01a19f22-2ad9-716e-876f-182f41fd2c08"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 6,
+                    "key": "01a1a825-fb4e-702c-a84f-bf71f70beb40",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Record a researched star distance",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a825-fb4e-702c-a84f-bf728a424bbe",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 12,
+                    "name": "Univ Ingest shall read each researched star distance from a star file in which every number cites where it comes from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7366dc3a34",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 18,
+                    "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf74029af338",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 20,
+                    "name": "A star file joins the object of the Hipparcos star whose HIP number it gives.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7588585aa4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 22,
+                    "name": "A star file's distance or parallax keeps the kind of value, uncertainty and method the file gives.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf76499f0e46",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 24,
+                    "name": "A cluster's or association's distance given to a member is inferred and cites the paper that names the star a member.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf77402e4c76",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 26,
+                    "name": "The entry of a star file names the paper its values come from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a825-fb4e-702c-a84f-bf78ded1df98",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 28,
+                    "name": "If a number in a star file cites nothing, or its quoted sentence does not hold it, then Univ Ingest shall refuse the star file and name the number.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf793b4b68ec",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "The message names the star file, the field and the number.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7a85f10357",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 37,
+                    "name": "Univ Ingest shall keep a star file whose papers publish no distance for the star, with the reason, and place nothing by it.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7b361027b4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "A star file without a distance gives the reason none was found, and adds no distance to its star.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf7cb64ddb9e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 27,
+                    "name": "The response names the paper each researched catalogue entry's values come from.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a776-3b75-725b-96e4-807b84c53c7c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a8ac-052e-72b3-a33e-b33e770aeebd",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 82,
+                    "name": "Univ Explorer shall draw each point of the stars domain in the colour of the temperature its colour index gives, and in neutral grey where it has none.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8ac-052e-72b3-a33e-b33fb69a707c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 88,
+                    "name": "A star's colour index, BP−RP or B−V, gives its effective temperature along the dwarf sequence of Pecaut & Mamajek 2013, and the temperature gives the colour a black body of that temperature shows the CIE 1931 standard observer.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8ac-052e-72b3-a33e-b340d68ae618",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 90,
+                    "name": "A colour index beyond the sequence is taken at the sequence's end, so that the star is drawn in the sequence's hottest or coolest colour.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8ac-052e-72b3-a33e-b3413483ba01",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 92,
+                    "name": "A star without a colour index is drawn in neutral grey.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8ac-052e-72b3-a33e-b3422af21b30",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 94,
+                    "name": "The key shows the colours of the stars with their temperatures in kelvin, and counts the stars drawn in colour and those drawn in grey.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8ac-052e-72b3-a33e-b33a18c5c77c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "The panel gives each spectral type the object's sources publish, as published, with its source and its kind of value.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8ac-052e-72b3-a33e-b33ba7b45072",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "The panel gives each colour index of the object with its bands, its uncertainty and its source.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8ac-052e-72b3-a33e-b33c05d6a7a7",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 41,
+                    "name": "Where no source publishes a spectral type, or only an unknown one, the panel gives the class the colour index suggests, labelled as estimated for a main-sequence star and citing Pecaut & Mamajek 2013.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8ac-052e-72b3-a33e-b33dc8e38c1d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "The panel names the papers of each researched entry of the object.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 56,
+                    "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a825-fb4e-702c-a84f-bf70efaf8d70",
+                    "kind": "component",
+                    "label": null,
+                    "line": 109,
+                    "name": "Researched star distances",
+                    "path": "spec/components/data-providers.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a19f22-2ad9-716e-876f-1842afd6d59e",
+                    "kind": "criterion",
+                    "label": "AC-12",
+                    "line": 66,
+                    "name": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                    "kind": "product",
+                    "label": "P-3",
+                    "line": 1,
+                    "name": "Univ Explorer",
+                    "path": "spec/products/univ-explorer/product.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                    "kind": "requirement",
+                    "label": "RQ-123",
+                    "line": 72,
+                    "name": "Univ Explorer shall colour each point outside the stars domain by the kind of value of its distance and show the key to the colours.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a497-e843-728a-bce8-400b9b581384",
+                    "kind": "criterion",
+                    "label": "AC-362",
+                    "line": 78,
+                    "name": "Points outside the stars domain whose distances are measured, estimated, inferred and reconstructed are drawn in four distinct colours.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  }
+                ],
+                "commit": "80c6d1da04ba8b686625b9c87cb3a47c90be0de1",
+                "removed": [],
+                "revision": "develop"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 4,
+                "publishedAt": "2026-11-04T16:14:12Z",
+                "stateRoot": "4577f367600c2ad5b501e5ceb32291471f56b2418d7c671eb11d743f152f960c"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/release-8-e7",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml",
+                  "spec/products/univ-explorer/product.yaml",
+                  "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a8ac-3063-7309-9f32-29a99697fc4c
+    id: e7-spec-approval
+    kind: approval
+    versions:
+      - key: 01a1a8ac-3063-7309-9f32-29abe0dae151
+        at: 2026-11-04T22:26:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Approve E7's spec change: stars in their colours"
+        markdown: |-
+          **Draw the catalogues**
+          - A new requirement: each star is drawn in the colour of the temperature its colour index gives, grey where it has none. Four criteria:
+            - BP−RP or B−V gives Teff along Pecaut & Mamajek's 2013 dwarf sequence, and Teff gives a black body's colour under the CIE 1931 observer;
+            - a colour index beyond the sequence is clamped to its end;
+            - a star with no colour index is drawn neutral grey;
+            - the key shows the colours in kelvin and counts the coloured and grey stars.
+          - The kind-of-value colours now apply to points outside the stars domain only.
+
+          **Read an object**
+          - Four new panel criteria:
+            - each published spectral type, with its source and kind of value;
+            - each colour index, with its bands and uncertainty;
+            - where no real spectral type is published, the class the colour index suggests, labelled as estimated for a main-sequence star and citing Pecaut & Mamajek;
+            - the papers of a researched entry.
+
+          **Product summary:** amended to say stars are coloured by temperature.
+
+          **What to look at:** the estimated class assumes a main-sequence star. For a giant such as Betelgeuse, its own published type (M1–M2 Ia–ab) is what the panel shows, since a type is published, and the colour still follows its colour index. The colour is a temperature estimate along the dwarf sequence. Where the dwarf sequence ends (M9.5V, about 2,300 K, and O3V, about 44,900 K), the clamp gives the end colour.
+    responses:
+      - key: 01a1a8ac-5af8-73ec-94f6-7c4a95778522
+        at: 2026-11-04T22:27:10Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
