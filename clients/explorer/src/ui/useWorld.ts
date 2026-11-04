@@ -6,16 +6,18 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 
 import type { Rotations } from "../api/schemas.ts";
 import { Catalogue } from "../catalogue/catalogue.ts";
-import { type Batch, domainsOf } from "../catalogue/tiles.ts";
+import { type Batch, type Domain, domainsOf } from "../catalogue/tiles.ts";
 import { Controller, type Surroundings } from "../scene/controller.ts";
 import { viewingDistance } from "../scene/controls.ts";
 import { bindMouse } from "../scene/input.ts";
+import { type Masks, NO_MASKS, masksOf, shownIn } from "../scene/masks.ts";
 import type { Pickable } from "../scene/pick.ts";
 import { NoWebGL, Renderer } from "../scene/renderer.ts";
 import { type Vec3, norm, sub } from "../scene/vec.ts";
 import { FIRST_POINTS } from "../firstPoints.ts";
 import type { LabelBox } from "../scene/labels.ts";
 import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts";
+import type { Hidden } from "./hidden.ts";
 import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
 
@@ -37,6 +39,8 @@ export interface World {
   catalogue: Catalogue | undefined;
   /** Every batch drawn, to pick from. */
   pickable: (Pickable & { batch: Batch })[];
+  /** What is turned off, as the renderer, the pick and the key read it. */
+  masks: Masks;
   /** Where the chosen object is marked. */
   chosen: Vec3 | undefined;
   /** The structures' names, to place over the view. */
@@ -70,6 +74,7 @@ export function emptyWorld(controller: Controller, renderer: Renderer): World {
     renderer,
     catalogue: undefined,
     pickable: [],
+    masks: NO_MASKS,
     chosen: undefined,
     names: [],
     namesShown: [],
@@ -78,8 +83,28 @@ export function emptyWorld(controller: Controller, renderer: Renderer): World {
   };
 }
 
-/** Reads the release's domains and starts fetching its tiles into `world`; its rotations. */
-async function startCatalogue(release: number, world: World, signal: AbortSignal): Promise<Rotations | undefined> {
+/** Which of `batch`'s points `masks` leave drawn. */
+const shownOf = (masks: Masks, batch: Batch) => shownIn(masks, batch.tile.domain, batch.sources, batch.kinds);
+
+/** Turns off the points of the groups `hidden` names in `world`, of `domains`: drawn, picked
+ * and counted alike. */
+export function hide(world: World, hidden: Pick<Hidden, "domain" | "source" | "kind">, domains: readonly Domain[]): void {
+  world.masks = masksOf(hidden, domains);
+  world.renderer.setHidden(world.masks);
+  for (const p of world.pickable) p.shown = shownOf(world.masks, p.batch);
+  world.catalogue?.setMasks(world.masks);
+  world.controller.invalidate();
+}
+
+/** What a release's catalogue starts from: its domains, and the rotations of its frames. */
+interface Started {
+  domains: Domain[];
+  rotations: Rotations;
+}
+
+/** Reads the release's domains and starts fetching its tiles into `world`; its domains and
+ * rotations. */
+async function startCatalogue(release: number, world: World, signal: AbortSignal): Promise<Started | undefined> {
   const { controller, renderer } = world;
   const domains = await domainsOf(release, { signal });
   const rotations = domains[0]?.manifest.rotations;
@@ -89,10 +114,11 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
     onBatch: (batch: Batch) => {
       const { id, centre } = batch.tile;
       const { extent } = batch;
-      renderer.addPoints({ id, centre, extent, offsets: batch.offsets, kinds: batch.kinds, colours: batch.stars?.bytes });
+      const { offsets, kinds, sources } = batch;
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes });
       // Picking tests a sphere about the tile's centre: the one holding the points' own.
       const radius = norm(sub(extent.centre, centre)) + extent.radius;
-      world.pickable.push({ centre, radius, offsets: batch.offsets, batch });
+      world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });
       controller.invalidate();
     },
     onDrop: (batch: Batch) => {
@@ -105,7 +131,7 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
   };
   world.catalogue = new Catalogue(release, domains, events, { signal });
   world.catalogue.update(controller.sight);
-  return rotations;
+  return { domains, rotations };
 }
 
 /** The point of `world` under the pointer at `x`, `y` on `element`, if any. */
@@ -176,12 +202,13 @@ function animate(world: World, overlay: RefObject<Overlay>, size: Surroundings["
   return () => cancelAnimationFrame(frame);
 }
 
-/** The scene of `release` on `canvas`: its world, the rotations of its frames once read, the
- * overlay's elements, and the problem that stopped it, if any. */
+/** The scene of `release` on `canvas`: its world, its domains and the rotations of its frames
+ * once read, the overlay's elements, and the problem that stopped it, if any. */
 export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | null>, onChoose: OnChoose) {
   const [problem, setProblem] = useState<string>();
   const [world, setWorld] = useState<World>();
   const [rotations, setRotations] = useState<Rotations>();
+  const [domains, setDomains] = useState<readonly Domain[]>([]);
   const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), chosen: useRef(null), names: useRef(null) };
   const overlayRef = useRef(overlay);
   const chooseRef = useRef(onChoose);
@@ -201,7 +228,10 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
     setWorld(state);
     const abort = new AbortController();
     startCatalogue(release, state, abort.signal)
-      .then(setRotations)
+      .then((started) => {
+        setDomains(started?.domains ?? []);
+        setRotations(started?.rotations);
+      })
       .catch((error: unknown) => {
         if (!abort.signal.aborted) setProblem(`The tiles of release ${release} could not be read: ${String(error)}`);
       });
@@ -216,10 +246,11 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
       renderer.dispose();
       setWorld(undefined);
       setRotations(undefined);
+      setDomains([]);
       setTimeout(() => {
         if (!element.isConnected) renderer.loseContext();
       });
     };
   }, [release, canvas]);
-  return { world, rotations, overlay, problem };
+  return { world, domains, rotations, overlay, problem };
 }

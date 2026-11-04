@@ -9,7 +9,11 @@ const COLOURS = KINDS.length + 1;
 export const POINT_VERTEX = `#version 300 es
 in vec3 a_offset;
 in float a_kind;
+in float a_source;
 in vec4 a_colour;
+// The kinds of value, and the batch's sources by index, turned off (choose-what-is-drawn).
+uniform uint u_hiddenKinds;
+uniform uint u_hiddenSources;
 uniform mat3 u_axes;
 uniform vec3 u_centre;
 uniform mat4 u_projection;
@@ -18,6 +22,16 @@ uniform vec4 u_colours[${COLOURS}];
 uniform float u_opacity;
 out vec4 v_colour;
 void main() {
+  uint kind = uint(a_kind);
+  uint source = uint(a_source);
+  bool hidden = ((u_hiddenKinds >> kind) & 1u) != 0u || (source < 32u && ((u_hiddenSources >> source) & 1u) != 0u);
+  if (hidden) {
+    // Outside the clip volume, and of no size: not drawn.
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    gl_PointSize = 0.0;
+    v_colour = vec4(0.0);
+    return;
+  }
   gl_Position = u_projection * vec4(u_axes * a_offset + u_centre, 1.0);
   gl_PointSize = u_size;
   // A point with its own colour, a star, is drawn in it; any other in its kind's.

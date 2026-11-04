@@ -42,4 +42,18 @@ describe("picking", () => {
     const batches = [batch([0, 0, 0], [far, near])];
     expect(pick(batches, view, IDENTITY, { ...SIZE, x: target.x, y: target.y })).toEqual({ batch: 0, index: 1 });
   });
+
+  it("passes over a point not drawn for the drawn point behind it", () => {
+    const eye = eyeOf(view, IDENTITY);
+    const toward = (k: number): Vec3 => [eye[0] * (1 - k) + 1 * k, eye[1] * (1 - k) + 1 * k, eye[2] * (1 - k)];
+    const far = toward(1.5);
+    const near = toward(0.5);
+    const target = at(near);
+    const hidingNear = { ...batch([0, 0, 0], [far, near]), shown: (i: number) => i === 0 };
+    expect(pick([hidingNear], view, IDENTITY, { ...SIZE, x: target.x, y: target.y })).toEqual({ batch: 0, index: 0 });
+    const hidingBoth = { ...hidingNear, shown: () => false };
+    expect(pick([hidingBoth], view, IDENTITY, { ...SIZE, x: target.x, y: target.y })).toBeUndefined();
+    const hidingAll = { ...hidingNear, shown: "none" as const };
+    expect(pick([hidingAll], view, IDENTITY, { ...SIZE, x: target.x, y: target.y })).toBeUndefined();
+  });
 });

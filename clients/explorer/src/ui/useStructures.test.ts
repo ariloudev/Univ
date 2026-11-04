@@ -6,6 +6,7 @@ import type { Renderer } from "../scene/renderer.ts";
 import type { StructureDrawing } from "../scene/structures.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { fakeWorld } from "../test/world.ts";
+import { structureDetail } from "../test/structures.ts";
 import { rendered, settled, structureView, useStructures } from "./useStructures.ts";
 
 const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing["centre"] = [10, 0, 0]): StructureDrawing => ({
@@ -16,6 +17,9 @@ const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing[
   approximate: false,
   size: 5,
 });
+
+/** No kind of structure turned off, the same set on every render. */
+const NO_KINDS: ReadonlySet<string> = new Set();
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -79,9 +83,9 @@ describe("the list of structures", () => {
 describe("the chosen structure", () => {
   it("is the one the renderer draws as chosen, until another is chosen or none", () => {
     const choose = vi.fn();
-    const world = fakeWorld({ renderer: { setLines: vi.fn(), setMarkers: vi.fn(), choose } as unknown as Renderer });
+    const world = fakeWorld({ renderer: { setLines: vi.fn(), setMarkers: vi.fn(), choose, hideNames: vi.fn() } as unknown as Renderer });
     vi.stubGlobal("fetch", vi.fn(() => new Promise(() => undefined)));
-    const hook = renderHook(({ chosen }: { chosen: string | undefined }) => useStructures(7, world, manifestOf("stars").rotations, chosen), {
+    const hook = renderHook(({ chosen }: { chosen: string | undefined }) => useStructures(7, world, manifestOf("stars").rotations, chosen, NO_KINDS), {
       initialProps: { chosen: "kbc-void" as string | undefined },
     });
     expect(choose).toHaveBeenLastCalledWith("structure:kbc-void");
@@ -95,9 +99,43 @@ describe("the chosen structure", () => {
     vi.stubGlobal("fetch", vi.fn((url: string) => Promise.resolve(Response.json(url.startsWith("/v1/structures?") ? { release: 7, structures: [], next: null } : {}))));
     const world = fakeWorld();
     const invalidate = vi.spyOn(world.controller, "invalidate");
-    const hook = renderHook(() => useStructures(7, world, manifestOf("stars").rotations));
+    const hook = renderHook(() => useStructures(7, world, manifestOf("stars").rotations, undefined, NO_KINDS));
     const before = invalidate.mock.calls.length;
     await waitFor(() => expect(hook.result.current.list).toEqual([]));
     await waitFor(() => expect(invalidate.mock.calls.length).toBeGreaterThan(before));
+  });
+
+  it("draws and names no structure of a kind turned off, and draws it again once turned on", async () => {
+    const detail = structureDetail({ id: "kbc-void", name: "KBC void" });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) =>
+        Promise.resolve(
+          Response.json(
+            url.startsWith("/v1/structures?")
+              ? { release: 7, structures: [{ id: "kbc-void", name: "KBC void", kind: "void", scale_domain: "cosmic_web" }], next: null }
+              : detail,
+          ),
+        ),
+      ),
+    );
+    const hideNames = vi.fn();
+    const world = fakeWorld({ renderer: { setLines: vi.fn(), setMarkers: vi.fn(), choose: vi.fn(), hideNames } as unknown as Renderer });
+    const rotations = manifestOf("stars").rotations;
+    const voids: ReadonlySet<string> = new Set(["void"]);
+    const none: ReadonlySet<string> = new Set();
+    const hook = renderHook(({ hidden }: { hidden: ReadonlySet<string> }) => useStructures(7, world, rotations, undefined, hidden), {
+      initialProps: { hidden: none },
+    });
+    await waitFor(() => expect(hook.result.current.names.map((n) => n.id)).toEqual(["kbc-void"]));
+    expect(world.names).toBe(hook.result.current.names);
+    hook.rerender({ hidden: voids });
+    expect(hook.result.current.names).toEqual([]);
+    expect(hook.result.current.shown).toEqual([]);
+    expect(world.names).toEqual([]);
+    expect(hideNames).toHaveBeenLastCalledWith(new Set(["structure:kbc-void"]));
+    hook.rerender({ hidden: none });
+    expect(world.names.map((n) => n.id)).toEqual(["kbc-void"]);
+    expect(hideNames).toHaveBeenLastCalledWith(new Set());
   });
 });

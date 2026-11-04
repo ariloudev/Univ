@@ -3372,6 +3372,69 @@ links:
       - file: "clients/explorer/src/api/client.test.ts"
         name: "takes Retry-After as seconds, zero included, or as a date, and the window otherwise"
         body: 768ac26ce29ceb3b685ad257aae80ab47868725463553c0dbeeb45ba2277b5d6
+  - node: 01a1a8cc-3d02-7585-85fb-455a3c55e223
+    reviewed: 651043b0559b020ad34b1b42ca4607e462f3153b731744f210ecb9a3c02c8584
+    tests:
+      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
+        name: "offers every domain, every source once by its title, the four kinds and each kind of structure with its count"
+        body: 20259281dca2ca65a8ca33bdd340ce945bcac1eec32224b61c21ce515113aa8f
+  - node: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
+    reviewed: b071004bd59d15698d699c866972d0e78d80c999cd25be7768fed6e3d4ee10f2
+    tests:
+      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
+        name: "offers every domain, every source once by its title, the four kinds and each kind of structure with its count"
+        body: 20259281dca2ca65a8ca33bdd340ce945bcac1eec32224b61c21ce515113aa8f
+      - file: "clients/explorer/src/ui/hidden.test.ts"
+        name: "are none by default, so everything is drawn"
+        body: d9258b0b6c9b5b51b88faff5fd4beb49a89df81d979bb179cd1116dfcb973fc5
+  - node: 01a1a8cc-3d02-7585-85fb-455d411f618e
+    reviewed: 53babcdf157e4664c27920e9a64bd7cdbc1bd474beb685572ba67fcd88d97772
+    tests:
+      - file: "clients/explorer/src/scene/masks.test.ts"
+        name: "tell which points are drawn: by domain, source and kind"
+        body: 2fe2b0e0447cbf1f0ea806f5108dda6a957a3fe83269413a47e99bda3641f5c3
+      - file: "clients/explorer/src/scene/masks.test.ts"
+        name: "set a source's bit at its index in each domain's manifest"
+        body: 4363f2ca554e683e85eb617d1667ffc5ac295f3a298c790f9041c47a25daf71c
+      - file: "clients/explorer/src/scene/masks.test.ts"
+        name: "turn off a source in every domain that has it, at its own index in each"
+        body: fcf8a81079e353e28b5e608546c40690b9817895181114db051e900a4af578a9
+      - file: "clients/explorer/src/scene/masks.test.ts"
+        name: "set a kind's bit at its index among the kinds"
+        body: d02a93b255b2c6e5e758b32170611b917b732eae6510359fefa23a6d16bbff53
+  - node: 01a1a8cc-3d02-7585-85fb-455ef6890107
+    reviewed: 9208c4a1b24049ba045412534ba0dda611a46c79c1e69fc6bba569fa2b2ce02e
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "draws and names no structure of a kind turned off, and draws it again once turned on"
+        body: 0fa94d94e75066201515b8528ee30582df297bf095f63a5a9ea163a45d0aed69
+      - file: "clients/explorer/src/ui/SidePanels.test.tsx"
+        name: "hold the checkboxes of what is drawn, and list no structure of a kind turned off"
+        body: 03b7700ef6c670243369c7a22bb674a5fe0ae28850b53c88429588b920bcaab1
+  - node: 01a1a8cc-3d02-7585-85fb-455fd5131e7f
+    reviewed: 51a1d42e822a90e1465311acfbb103a1d2ff7ef95ea401205ad27a469141f1a6
+    tests:
+      - file: "clients/explorer/src/scene/pick.test.ts"
+        name: "passes over a point not drawn for the drawn point behind it"
+        body: 061f98c65c30f514cf83624052ea0a2837bcedd8292d2d1c211978566bd3f4d1
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "counts and credits only the points that what is turned off leaves drawn, and all again once shown"
+        body: 16f74791cef77f650b24db0a1ec29717276620a0d683369d39130de07c9545aa
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
+        body: 790d37d4f55d0bdc0e27154ec762bf581e3c43becee6fdbe0185b7b977ee9857
+  - node: 01a1a8cc-3d02-7585-85fb-4561d1b0f1de
+    reviewed: b9ee14b78d7cda09bc75088b59ba3b163850a2c383f8a1449f5089c72ea34bf5
+    tests:
+      - file: "clients/explorer/src/ui/hidden.test.ts"
+        name: "go through the address and back, each group by its name"
+        body: ae9cc8c4b0ad3c43e245dc8ccef8644bc6ffb18cf450f3d5446befe8abd93e34
+      - file: "clients/explorer/src/ui/hidden.test.ts"
+        name: "are kept in the address with its other parameters"
+        body: 3dd5b554771e6163f0fce4623b24584dc7e90c2b09cdeb0839b49dc2c6c06b1a
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
+        body: 790d37d4f55d0bdc0e27154ec762bf581e3c43becee6fdbe0185b7b977ee9857
   - node: 01a1a497-e843-728a-bce8-3fde6b42f63b
     reviewed: 4cbbd3fd831065846d24c5b2148409663688ff7e618e9d70fd32c188542de213
     tests:
@@ -3659,7 +3722,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/useStructures.test.ts"
         name: "is the one the renderer draws as chosen, until another is chosen or none"
-        body: c1bd99286408dc25fef02053399d011dabe99ac9fc83aa70dbf6978e119048df
+        body: 1551c8b75dc6542272f5f2ea759e09ea208d28d1b14b5d140aba772f532bd123
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
         body: 90c6b0a6f69393e273411eec927bd4870ba6e690fe8e2bdcecfff97259fb143d

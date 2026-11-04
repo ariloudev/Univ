@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 import type { Http } from "../api/client.ts";
 import { DOMAINS, bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts";
 import { Catalogue } from "./catalogue.ts";
+import { NO_MASKS, masksOf } from "../scene/masks.ts";
+import { hiddenInAddress } from "../ui/hidden.ts";
 import type { Sight } from "../scene/frustum.ts";
 import type { Vec3 } from "../scene/vec.ts";
 import { type Batch, domainsOf } from "./tiles.ts";
@@ -147,5 +149,28 @@ describe("the catalogue", () => {
     await until(() => drawn.length >= 2);
     expect(catalogue.failed).toBe(0);
     expect(drawn).not.toContain("stars/r");
+  });
+
+  it("counts and credits only the points that what is turned off leaves drawn, and all again once shown", async () => {
+    const drawn: string[] = [];
+    const catalogue = await loaded(server(), drawn);
+    await until(() => drawn.length >= 3);
+    await steady(drawn);
+    const total = () => catalogue.kinds.reduce((a, b) => a + b, 0);
+    const before = { kinds: total(), stars: catalogue.stars.coloured + catalogue.stars.grey, credits: catalogue.credits().length };
+    expect(before.stars).toBeGreaterThan(0);
+    const domains = await domainsOf(2, { http: server() });
+    catalogue.setMasks(masksOf(hiddenInAddress("?hide=domain:stars"), domains));
+    expect(catalogue.stars.coloured + catalogue.stars.grey).toBe(0);
+    expect(total()).toBe(before.kinds);
+    expect(catalogue.credits().every((c) => c.domain !== "stars")).toBe(true);
+    catalogue.setMasks(masksOf(hiddenInAddress("?hide=kind:measured,kind:estimated,kind:inferred,kind:reconstructed"), domains));
+    expect(total()).toBe(0);
+    expect(catalogue.credits()).toEqual([]);
+    const everySource = domains.flatMap((d) => d.manifest.sources.map((s) => `source:${s.id}`)).join(",");
+    catalogue.setMasks(masksOf(hiddenInAddress(`?hide=${everySource}`), domains));
+    expect({ kinds: total(), stars: catalogue.stars.coloured + catalogue.stars.grey }).toEqual({ kinds: 0, stars: 0 });
+    catalogue.setMasks(NO_MASKS);
+    expect({ kinds: total(), stars: catalogue.stars.coloured + catalogue.stars.grey, credits: catalogue.credits().length }).toEqual(before);
   });
 });
