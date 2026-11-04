@@ -10,9 +10,11 @@ use super::cited::{Assumes, Cited};
 use super::geometry::is_length;
 use super::members::{ColumnName, MemberSource};
 use super::numbers::{has_magnitude, has_number, numbers, stated_numbers};
-use super::{Structure, StructureGeometry};
+use super::{Paper, Structure, StructureGeometry};
+use std::collections::HashSet;
+use univ_model::ids::is_slug;
 
-type Problem = (String, String);
+pub(crate) type Problem = (String, String);
 
 fn problem(field: &str, what: impl Into<String>) -> Result<(), Problem> {
     Err((field.to_owned(), what.into()))
@@ -20,7 +22,7 @@ fn problem(field: &str, what: impl Into<String>) -> Result<(), Problem> {
 
 /// The texts a citation shows: the quoted sentence, the table's number, row, column and cell,
 /// or the figure's number and how it was read.
-fn shown(cite: &Citation) -> Vec<&str> {
+pub(crate) fn shown(cite: &Citation) -> Vec<&str> {
     match &cite.locator {
         Locator::Sentence { quote, .. } => vec![quote],
         Locator::Table {
@@ -37,9 +39,65 @@ fn shown(cite: &Citation) -> Vec<&str> {
     }
 }
 
-impl Structure {
+/// A file of values cited from its papers, such as a structure file or a star file: the checks
+/// of its citations against its papers, which every such file shares.
+pub(crate) trait CitedFile {
+    /// The papers the file cites.
+    fn papers(&self) -> &[Paper];
+
+    /// The papers' ids are unique lowercase slugs, and each paper has a DOI or a bibcode, its
+    /// reference and how it was read. Gives the ids.
+    fn check_papers(&self) -> Result<HashSet<&str>, Problem> {
+        let mut ids = HashSet::new();
+        for (i, paper) in self.papers().iter().enumerate() {
+            if !is_slug(&paper.id) || !ids.insert(paper.id.as_str()) {
+                return Err((
+                    format!("papers[{i}].id"),
+                    "is not a unique lowercase slug".to_owned(),
+                ));
+            }
+            if paper.doi.is_none() && paper.bibcode.is_none() {
+                return Err((
+                    format!("papers[{i}]"),
+                    "needs a DOI or a bibcode".to_owned(),
+                ));
+            }
+            if paper.reference.trim().is_empty() || paper.read.trim().is_empty() {
+                return Err((
+                    format!("papers[{i}]"),
+                    "needs its reference and how it was read".to_owned(),
+                ));
+            }
+        }
+        Ok(ids)
+    }
+
+    /// A citation names one of the file's papers and, for a value cited by a sentence, the
+    /// sentence holds the value's number.
+    fn check_citation(
+        &self,
+        field: &str,
+        cite: &Citation,
+        value: Option<&Cited>,
+    ) -> Result<(), Problem> {
+        self.check_paper(&format!("{field}.cite"), cite)?;
+        if let (Some(value), Locator::Sentence { quote, .. }) = (value, &cite.locator)
+            && !value.appears_in(quote)
+        {
+            let shown = value
+                .as_published
+                .clone()
+                .unwrap_or_else(|| value.value().to_string());
+            return problem(
+                field,
+                format!("the number {shown} does not appear in the sentence it cites"),
+            );
+        }
+        Ok(())
+    }
+
     /// The checks of one cited value, beyond its citation's paper.
-    pub(super) fn check_value(&self, field: &str, value: &Cited) -> Result<(), Problem> {
+    fn check_value(&self, field: &str, value: &Cited) -> Result<(), Problem> {
         if let Locator::Table {
             cell: Some(cell), ..
         } = &value.cite.locator
@@ -82,8 +140,8 @@ impl Structure {
         Ok(())
     }
 
-    pub(super) fn check_paper(&self, field: &str, cite: &Citation) -> Result<(), Problem> {
-        if self.papers.iter().any(|p| p.id == cite.paper) {
+    fn check_paper(&self, field: &str, cite: &Citation) -> Result<(), Problem> {
+        if self.papers().iter().any(|p| p.id == cite.paper) {
             Ok(())
         } else {
             problem(
@@ -112,7 +170,15 @@ impl Structure {
         }
         Ok(())
     }
+}
 
+impl CitedFile for Structure {
+    fn papers(&self) -> &[Paper] {
+        &self.papers
+    }
+}
+
+impl Structure {
     /// Extents name three of the file's values, each a positive length or velocity, about a
     /// position given in a frame, and only for a structure placed at its position.
     pub(super) fn check_extents(&self) -> Result<(), Problem> {
@@ -189,10 +255,6 @@ impl Structure {
     /// Every number of a dispute's claim appears in the claim's own citation, and every number
     /// in the notes, in how a figure was read, in why the structure is unplaced and in a value's
     /// note is one the file cites.
-    #[expect(
-        clippy::float_cmp,
-        reason = "the same number as written, not a near one"
-    )]
     pub(super) fn check_free_text(&self) -> Result<(), Problem> {
         for (i, dispute) in self.disputes.iter().enumerate() {
             let texts = shown(&dispute.cite);
@@ -206,24 +268,7 @@ impl Structure {
                 );
             }
         }
-        let corpus = self.cited_text();
-        let cited_numbers = self.cited_numbers();
-        let known = |x: f64| {
-            corpus.iter().any(|t| has_magnitude(t, x))
-                || cited_numbers.iter().any(|n| n.abs() == x.abs())
-        };
-        for (field, text) in self.free_text() {
-            if let Some(x) = stated_numbers(text).into_iter().find(|x| !known(*x)) {
-                return problem(
-                    &field,
-                    format!(
-                        "the number {x} is not one the file cites: quote it in a citation, or \
-                         leave it out"
-                    ),
-                );
-            }
-        }
-        Ok(())
+        uncited_in_text(&self.free_text(), &self.cited_text(), &self.cited_numbers())
     }
 
     /// The free text of the file, by field.
@@ -292,6 +337,34 @@ impl Structure {
         }
         out
     }
+}
+
+/// Every number written in `free` text is one the file cites: shown in `corpus`, the text of
+/// its citations, or among its `cited` numbers.
+#[expect(
+    clippy::float_cmp,
+    reason = "the same number as written, not a near one"
+)]
+pub(crate) fn uncited_in_text(
+    free: &[(String, &str)],
+    corpus: &[&str],
+    cited: &[f64],
+) -> Result<(), Problem> {
+    let known = |x: f64| {
+        corpus.iter().any(|t| has_magnitude(t, x)) || cited.iter().any(|n| n.abs() == x.abs())
+    };
+    for (field, text) in free {
+        if let Some(x) = stated_numbers(text).into_iter().find(|x| !known(*x)) {
+            return problem(
+                field,
+                format!(
+                    "the number {x} is not one the file cites: quote it in a citation, or leave \
+                     it out"
+                ),
+            );
+        }
+    }
+    Ok(())
 }
 
 /// A latitude lies in [-90°, 90°] and a longitude in [0°, 360°), named by the last part of

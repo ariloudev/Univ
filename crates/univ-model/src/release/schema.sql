@@ -211,8 +211,9 @@ CREATE TABLE IF NOT EXISTS objects (
 --   no uncertainty of its own and normalized to degrees.
 -- - flags: JSON object, NULL when empty. extra: JSON object of what no column holds, NULL when
 --   nothing: "via" (the designation it was resolved through, when not one of the object's
---   entries), "position_uncertainty" (when not held by the error columns) and "spectral_type"
---   (its text as published and its kind of value, where its source gives one).
+--   entries), "position_uncertainty" (when not held by the error columns), "spectral_type"
+--   (its text as published and its kind of value, where its source gives one) and "references"
+--   (the papers a researched entry's values come from: citation, doi, bibcode).
 CREATE TABLE IF NOT EXISTS entries (
   release INTEGER NOT NULL,
   object_id INTEGER NOT NULL,

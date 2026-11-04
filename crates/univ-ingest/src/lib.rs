@@ -20,6 +20,7 @@ pub mod ranking;
 pub mod release;
 pub mod run;
 pub mod source;
+pub mod stars;
 pub mod state;
 pub mod structures;
 pub mod table;

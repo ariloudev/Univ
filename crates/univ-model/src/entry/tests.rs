@@ -68,6 +68,7 @@ fn entry() -> CatalogueEntry {
         group_id: None,
         supergalactic_velocity: None,
         flags: BTreeMap::from([("r_cz".to_owned(), "1991RC3.9.C...0000d".to_owned())]),
+        references: None,
     }
 }
 

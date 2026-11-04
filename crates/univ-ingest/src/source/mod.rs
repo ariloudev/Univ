@@ -101,7 +101,31 @@ pub enum Access {
     Files { files: Vec<RemoteFile> },
     /// Files kept in this repository under `path`, such as the researched structures, which are
     /// read from their papers rather than fetched.
-    Repository { path: String },
+    Repository {
+        path: String,
+        /// What its files are: structure files, or star files.
+        #[serde(default, skip_serializing_if = "Holds::is_structures")]
+        holds: Holds,
+    },
+}
+
+/// What the files of a source kept in the repository are.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Holds {
+    /// Researched structures, one structure file each.
+    #[default]
+    Structures,
+    /// Researched star distances, one star file each.
+    StarDistances,
+}
+
+impl Holds {
+    /// Whether the files are structure files, the default, which a definition need not say.
+    #[must_use]
+    pub fn is_structures(&self) -> bool {
+        *self == Self::Structures
+    }
 }
 
 /// How a TAP service is asked a query.
@@ -440,7 +464,7 @@ impl Access {
                 "access.files",
                 "holds two files with the same file name, which would share one file on disk",
             )),
-            Self::Repository { path } if path.trim().is_empty() => {
+            Self::Repository { path, .. } if path.trim().is_empty() => {
                 Some(("access.path", "is empty"))
             }
             _ => None,

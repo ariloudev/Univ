@@ -35,7 +35,7 @@ mod numbers;
 mod outline;
 mod shape;
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
@@ -44,6 +44,7 @@ use univ_model::ids::is_slug;
 use crate::source::ScaleDomain;
 use crate::yaml::{FileError, read_checked, read_dir};
 
+pub(crate) use check::{CitedFile, Problem, shown, uncited_in_text};
 pub use citation::{Citation, Locator};
 pub use cited::{Assumes, Cited};
 pub use geometry::{AxisExtents, Coordinates, Radial};
@@ -171,21 +172,7 @@ impl Structure {
         if self.notes.trim().is_empty() {
             return problem("notes", "is empty");
         }
-        let mut ids = HashSet::new();
-        for (i, paper) in self.papers.iter().enumerate() {
-            if !is_slug(&paper.id) || !ids.insert(paper.id.as_str()) {
-                return problem(&format!("papers[{i}].id"), "is not a unique lowercase slug");
-            }
-            if paper.doi.is_none() && paper.bibcode.is_none() {
-                return problem(&format!("papers[{i}]"), "needs a DOI or a bibcode");
-            }
-            if paper.reference.trim().is_empty() || paper.read.trim().is_empty() {
-                return problem(
-                    &format!("papers[{i}]"),
-                    "needs its reference and how it was read",
-                );
-            }
-        }
+        let ids = self.check_papers()?;
         let placed = self.position.is_some() || self.geometry.is_some();
         match (placed, &self.unplaced) {
             (false, None) => return problem("unplaced", "give a position, a geometry or why not"),
@@ -224,28 +211,6 @@ impl Structure {
         self.check_members()?;
         self.check_extents()?;
         self.check_free_text()
-    }
-
-    fn check_citation(
-        &self,
-        field: &str,
-        cite: &Citation,
-        value: Option<&Cited>,
-    ) -> Result<(), (String, String)> {
-        self.check_paper(&format!("{field}.cite"), cite)?;
-        if let (Some(value), Locator::Sentence { quote, .. }) = (value, &cite.locator)
-            && !value.appears_in(quote)
-        {
-            let shown = value
-                .as_published
-                .clone()
-                .unwrap_or_else(|| value.value().to_string());
-            return Err((
-                field.to_owned(),
-                format!("the number {shown} does not appear in the sentence it cites"),
-            ));
-        }
-        Ok(())
     }
 
     /// Every cited number in the file with its field path, except the cells of a member table,

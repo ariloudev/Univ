@@ -120,6 +120,35 @@ blocks:
           - an `unplaced:` file places nothing;
           - the record names the paper.
         state: open
+      - key: 01a1a851-2b27-73f7-b68d-89f2aef70294
+        at: 2026-11-04T20:47:34Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Read star files into catalogue entries"
+        detail: |-
+          **Scope:**
+          - Source `researched-star-distances` (`method: repository`, `path: stars/`, `holds: star_distances`).
+          - Star files read with the structure files' `Cited`, papers and quoted-sentence checker.
+          - Each file becomes an entry with no position and its distance, or is `unplaced:` with a reason.
+          - The paper is named in the object record (`EntryRecord.references`).
+
+          **Done when** `tests/star_distances.rs` passes:
+          - a file joins HIP 27989's object and places it;
+          - an uncited or mismatched number is refused;
+          - an `unplaced:` file places nothing;
+          - the record names the paper.
+
+          **Progress:**
+          - **Shared checker:** the structure files' checks are lifted into a `CitedFile` trait that structure and star files share.
+          - **Number scanner:** reads LaTeX asymmetric errors such as `168^{+27}_{-15}` as numbers, not powers, and treats HIP, HD, HR, TIC and Gaia `source` numbers as names.
+          - **Star files:** disputes carry their own citation, as in structure files. A star with no published distance is counted as `no_published_distance`.
+          - **Entries:** carry `references` (`PaperReference`), through the release's `extra` column to the API; the OpenAPI snapshot is regenerated.
+          - **Tests:** the six tests of `star_distances.rs` pass. The fixture release holds a SIMULATED star file for HIP 1, and the object-read test checks its paper reads back.
+          - **Checker for the agents:** an ignored test checks any directory of star files (`UNIV_STARS=dir`). The research agents run it to fix their files.
+          - **Next:** the full workspace run, then the commit.
+        state: active
   - key: 01a1a823-e6d7-726d-9f11-d42a41b41048
     id: r4-t-rules
     kind: task
@@ -180,6 +209,74 @@ blocks:
 
           **Progress:** the four agents are researching in the scratchpad (`r4-research/`), each writing star files, the quoted text excerpts and a report.
         state: active
+  - key: 01a1a837-48a5-725c-90c2-a9df2a740f0a
+    id: r4-note-research
+    kind: note
+    versions:
+      - key: 01a1a837-48a5-725c-90c2-a9e0b678d8b7
+        at: 2026-11-04T20:19:17Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "How the research agents are doing (20:19 UTC)"
+        markdown: |-
+          **Status.** The four agents, one per batch of 16 stars, have been working for about 20 minutes. None has finished, and no star file is written yet. Each writes its files at the end, after reading the papers.
+
+          **Papers read so far: 20, each saved as quoted text for checking.**
+
+          | Paper | Likely for |
+          |---|---|
+          | Joyce et al. 2020; Harper et al. 2017 | Betelgeuse |
+          | Schiller & Przybilla 2008 | Deneb |
+          | North et al. 2007 | γ Velorum |
+          | Hummel et al. 2013; Tango et al. 2006, 2009; Tycner et al. 2011 | interferometric orbits (Mintaka, and the α/δ Sco binaries) |
+          | de Zeeuw et al. 1999; Miret-Roig et al. 2022 | Sco–Cen membership and distances |
+          | Maíz Apellániz et al. 2022 | Orion Belt and OB stars |
+          | Schmutz 2026, Nazé 2024, Moravveji 2013, Fleming 2023, de Souza 2018, Davis 2007, Schaefer 2010, Oplistilová 2023, Sánchez Arias 2023 | other stars of batches A and B |
+
+          **Also used:**
+          - 36 PDFs and 16 SIMBAD lookups, used to confirm each star's identity from its position.
+          - Gaia DR2 and EDR3 cone searches, which check whether Gaia published a parallax for any of these stars.
+
+          **Meanwhile, the reader is being built.**
+          - The citation checks are lifted into a `CitedFile` trait that structure and star files share.
+          - Entries carry `references`, the papers a researched value comes from, from the entry through the release's `extra` column to the API's entry record.
+          - The workspace builds. The star-file reader and its tests are next.
+
+          **Next update:** when the agents report, with each star's outcome, and the files reviewed one by one.
+        tone: info
+  - key: 01a1a851-2b27-73f7-b68d-89f0570b533a
+    id: r4-note-gaia-gap
+    kind: note
+    versions:
+      - key: 01a1a851-2b27-73f7-b68d-89f15d3314d7
+        at: 2026-11-04T20:47:34Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Found: about 8,700 Hipparcos stars miss their Gaia parallax"
+        markdown: |-
+          Batch B found Gaia EDR3 parallaxes for three "no parallax" stars, which led to a count over release 8.
+
+          **The count.** Hipparcos-2 stars by their Gaia DR3 entry. Each cell gives the stars, with the unplaced ones in brackets.
+
+          | Hp | No Gaia entry | Gaia source with no parallax |
+          |---|---|---|
+          | < 6 | 446 (24) | 135 (40) |
+          | 6–8 | 1,191 (189) | 508 (344) |
+          | 8–10 | 2,364 (1,186) | 751 (687) |
+          | ≥ 10 | 8,073 (5,995) | 12 (11) |
+
+          In all, 104,475 Hipparcos-2 stars have a Gaia parallax and are all placed.
+
+          **The causes.**
+          - **Selection gap (about 6,000 stars).** `gaia-dr3-bright` keeps only G < 10, so Hipparcos stars fainter than that never get their Gaia parallax. The fix: fetch Gaia DR3 for every source of `gaiadr3.hipparcos2_best_neighbour`, whatever its G.
+          - **Missing or wrong links (about 2,300 stars, Hp < 10).** The best-neighbour table has no row for the star, or links a companion or a two-parameter solution. In DR2, λ Cyg was linked to its fainter companion. A position match against Gaia, checked by magnitude, would recover many of them.
+
+          **Proposed:** a later ingest wave, not R4. R4 stays with the 64 naked-eye stars you chose, whose researched distances are needed whatever happens to Gaia, since these stars are mostly too bright for a Gaia parallax.
+        tone: warning
   - key: 01a1a823-e6d7-726d-9f11-d42cd8499edc
     id: r4-t-build
     kind: task

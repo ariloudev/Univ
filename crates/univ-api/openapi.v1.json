@@ -908,6 +908,13 @@
               }
             ]
           },
+          "references": {
+            "description": "The papers a researched entry's values come from, the paper of its distance first;\nempty for an entry of a catalogue, which its source's citation covers.",
+            "items": {
+              "$ref": "#/components/schemas/PaperReference"
+            },
+            "type": "array"
+          },
           "resolved_by": {
             "$ref": "#/components/schemas/Resolution",
             "description": "How it was resolved into the object: the anchor, a published cross-identification, or a\nmatch with its method, separation, line-of-sight difference and confidence, each through\nthe entry it names."
@@ -3176,6 +3183,31 @@
           "refused"
         ],
         "type": "string"
+      },
+      "PaperReference": {
+        "description": "A paper a researched entry's values come from.",
+        "properties": {
+          "bibcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "citation": {
+            "description": "Authors, year, journal, volume and page, such as `Joyce et al. 2020, ApJ 902, 63`.",
+            "type": "string"
+          },
+          "doi": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "citation"
+        ],
+        "type": "object"
       },
       "Payload": {
         "description": "One payload fetched.",

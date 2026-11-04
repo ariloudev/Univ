@@ -118,6 +118,7 @@ pub fn entry(source: &str, n: usize, p: Vec3, redshift: bool) -> CatalogueEntry 
         group_id: None,
         supergalactic_velocity: None,
         flags: BTreeMap::new(),
+        references: None,
     }
 }
 
