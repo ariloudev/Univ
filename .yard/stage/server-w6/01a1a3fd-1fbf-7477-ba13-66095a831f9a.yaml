@@ -19,3 +19,677 @@ versions:
     title: "W6 close: review, gate, trace, merge"
     goal: "W6's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
     status: active
+  - key: 01a1a44d-7790-7591-832e-a3987b1fbf35
+    at: 2026-11-04T02:05:02Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W6 close: review, gate, trace, merge"
+    goal: "W6's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: done
+blocks:
+  - key: 01a1a44d-7790-7591-832e-a392863e93a0
+    id: t6-gate
+    kind: task
+    versions:
+      - key: 01a1a44d-7790-7591-832e-a395edada09a
+        at: 2026-11-04T02:05:02Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration, once"
+        detail: |-
+          `cargo xtask check`: passed, 12 gates (`loft verify` skipped off the publish branch).
+
+          `cargo xtask integration`: passed on the third run. The first two runs failed only on the new e2e edge test:
+          1. it asked for the Bootes Void alone, but the fixture box also lies in the KBC void and reaches Ho'oleilana; it now checks the Bootes Void is found at its edge and missed just past it;
+          2. its probe item cited a source by title alone, which the server rightly refuses with 422; it now gives a URL.
+
+          No server code changed after the gate.
+        state: done
+  - key: 01a1a44d-7790-7591-832e-a393f9ccadce
+    id: w6-trace
+    kind: loft
+    versions:
+      - key: 01a1a44d-7790-7591-832e-a3966fd350e7
+        at: 2026-11-04T02:05:02Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "W6 links 22 criteria (AC-187 to AC-208) and adds the query test to AC-213 and AC-250. Still unlinked: AC-292 (the OpenAPI snapshot, W7's work) and 3 others outside W6. The TR-008 on AC-301 is from ingest."
+        recorded:
+          commit: "60f93357e4eee362133f210dc82e0fb697832b06"
+          branch: "stage/server-w6"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T02:05:02Z
+        report: |
+          {
+            "base": "product/server",
+            "commit": "d709be3b9eea5b796e415fc995ccf3f838048763",
+            "counts": {
+              "features": 1
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d0ef2d0a80a",
+                    "label": "AC-192",
+                    "name": "The volume is a box, a sphere, or a cone with a distance range.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "a_volume_is_a_box_a_sphere_or_a_cone_with_a_distance_range"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/query.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "a_volume_query_finds_objects_structures_by_their_shapes_and_tiles_to_fetch"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d0f00fe2fe8",
+                    "label": "AC-193",
+                    "name": "The volume names its frame, which is ICRS, galactic or supergalactic, and its unit.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 74
+                          }
+                        ],
+                        "name": "a_volume_names_its_frame_and_unit"
+                      },
+                      {
+                        "file": "crates/univ-model/src/volume/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 296,
+                            "lastLine": 318
+                          }
+                        ],
+                        "name": "a_galactic_box_lies_toward_the_galactic_centre_in_the_icrs"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d104c3238b3",
+                    "label": "AC-194",
+                    "name": "An object matches by its derived position under the release cosmology.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 76,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "an_object_matches_by_its_derived_position"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query/objects.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 189,
+                            "lastLine": 261
+                          }
+                        ],
+                        "name": "the_sql_test_of_a_position_is_the_regions_own"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d11ceeb957a",
+                    "label": "AC-195",
+                    "name": "A structure or layer item matches when its geometry intersects the volume, even if its centre lies outside it.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 123
+                          }
+                        ],
+                        "name": "a_structure_or_item_matches_when_its_geometry_meets_the_volume_with_its_centre_outside"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 125,
+                            "lastLine": 139
+                          }
+                        ],
+                        "name": "a_structure_with_no_placed_shape_matches_by_its_members_or_its_bounding_box_and_says_so"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 323,
+                            "lastLine": 345
+                          }
+                        ],
+                        "name": "an_item_stored_before_items_kept_their_box_is_still_found_by_its_shape"
+                      },
+                      {
+                        "file": "crates/univ-model/src/volume/meets_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 239,
+                            "lastLine": 253
+                          }
+                        ],
+                        "name": "a_structure_whose_centre_lies_outside_still_meets"
+                      },
+                      {
+                        "file": "crates/univ-model/src/volume/meets_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 165,
+                            "lastLine": 197
+                          }
+                        ],
+                        "name": "each_geometry_kind_meets_a_region_it_reaches_and_misses_one_it_does_not"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/query.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "a_structure_meets_a_volume_at_its_edge_with_its_centre_outside_and_an_item_is_found"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d12d67f0253",
+                    "label": "AC-196",
+                    "name": "Items of a private layer match only for a request that carries the layer's owning key.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 141,
+                            "lastLine": 158
+                          }
+                        ],
+                        "name": "a_private_layers_items_match_only_with_its_owning_key"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d13540b5b8f",
+                    "label": "AC-197",
+                    "name": "Results can be narrowed to the kinds, sources, scale domains and layers the client names.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 160,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "results_narrow_to_the_kinds_sources_scale_domains_and_layers_named"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d15532c9c3a",
+                    "label": "AC-198",
+                    "name": "Each page carries a cursor to the next page while results remain.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 67,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "each_page_carries_a_cursor_to_the_next_while_results_remain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d164b16f644",
+                    "label": "AC-199",
+                    "name": "Results come in a stable order, so paging a query whose layers have not changed returns the same pages.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 95
+                          }
+                        ],
+                        "name": "paging_a_query_whose_layers_did_not_change_gives_the_same_pages_in_one_order"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d174e903e62",
+                    "label": "AC-200",
+                    "name": "A query that matches more than 10,000 results returns the first 10,000 and states that the result was truncated.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 97,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "a_query_matching_more_than_10000_returns_the_first_10000_and_says_it_was_truncated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22c8f33720f3",
+                    "label": "AC-201",
+                    "name": "Each cursor records the release the query reads and the change sequence of each layer whose items it reads.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 125
+                          }
+                        ],
+                        "name": "a_cursor_records_the_release_read_and_each_layers_change_sequence"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 173,
+                            "lastLine": 193
+                          }
+                        ],
+                        "name": "a_cursor_of_another_query_or_one_no_page_gave_answers_400_and_a_later_page_keeps_its_release"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 222,
+                            "lastLine": 236
+                          }
+                        ],
+                        "name": "a_cursor_changed_by_its_client_is_refused"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22ca5dbce89f",
+                    "label": "AC-202",
+                    "name": "The response status is 409 with problem details that list each changed layer with its current change sequence.",
+                    "requirement": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 127,
+                            "lastLine": 149
+                          }
+                        ],
+                        "name": "a_layer_changed_between_pages_answers_409_naming_it_with_its_current_sequence"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22cbf2d197a5",
+                    "label": "AC-203",
+                    "name": "No page is returned that skips or repeats a result because a layer changed between pages.",
+                    "requirement": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_paging_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 151,
+                            "lastLine": 171
+                          }
+                        ],
+                        "name": "no_page_skips_or_repeats_a_result_because_a_layer_changed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d19cdceaeab",
+                    "label": "AC-204",
+                    "name": "The nodes of a scale domain are given at the deepest level, no deeper than the client asks for, at which no more than 4,096 nodes intersect the volume.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 105,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "the_level_is_the_deepest_at_which_at_most_4096_nodes_meet_the_volume"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 172
+                          }
+                        ],
+                        "name": "where_the_octree_stops_short_its_leaves_stand_in"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22cc0ddcee28",
+                    "label": "AC-205",
+                    "name": "The response names the level it chose for each scale domain.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 277,
+                            "lastLine": 321
+                          }
+                        ],
+                        "name": "the_first_page_gives_the_tile_nodes_covering_the_volume_each_fetched_by_its_address"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query/tiles.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 105,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "the_level_is_the_deepest_at_which_at_most_4096_nodes_meet_the_volume"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1a86501cb8",
+                    "label": "AC-206",
+                    "name": "Each node address can be fetched as a tile without further lookup.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 277,
+                            "lastLine": 321
+                          }
+                        ],
+                        "name": "the_first_page_gives_the_tile_nodes_covering_the_volume_each_fetched_by_its_address"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/query.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "a_volume_query_finds_objects_structures_by_their_shapes_and_tiles_to_fetch"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1c374609bf",
+                    "label": "AC-207",
+                    "name": "A negative or zero size, an unknown frame, an unknown unit or a cone wider than 180 degrees is refused.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d1b5a00f7dd",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/volume/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 168,
+                            "lastLine": 183
+                          }
+                        ],
+                        "name": "a_cone_wider_than_180_degrees_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-model/src/volume/tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 185,
+                            "lastLine": 231
+                          }
+                        ],
+                        "name": "each_malformed_member_is_named"
+                      },
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 275
+                          }
+                        ],
+                        "name": "a_malformed_volume_or_filter_answers_400_pointing_at_each_field"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1dc8111c5f",
+                    "label": "AC-208",
+                    "name": "The response status is 400 with problem details that point at the malformed field.",
+                    "requirement": "01a19f1f-9fd7-7209-b7cb-5d1b5a00f7dd",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/query_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 275
+                          }
+                        ],
+                        "name": "a_malformed_volume_or_filter_answers_400_pointing_at_each_field"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/query.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 157
+                          }
+                        ],
+                        "name": "a_malformed_volume_is_refused_pointing_at_its_fields"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00",
+                "label": "F-22",
+                "name": "Query a bounded volume",
+                "requirements": [
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d0dcd90a07b",
+                    "label": "RQ-72",
+                    "name": "When a client queries a bounded volume, Univ Server shall return the objects, structures and layer items whose positions or geometries intersect the volume.",
+                    "statement": {
+                      "condition": "a client queries a bounded volume",
+                      "form": "event_driven",
+                      "shall": "return the objects, structures and layer items whose positions or geometries intersect the volume.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                    "label": "RQ-73",
+                    "name": "Univ Server shall return at most 1,000 results per page and at most 10,000 results per bounded volume query.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "return at most 1,000 results per page and at most 10,000 results per bounded volume query.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                    "label": "RQ-74",
+                    "name": "If a layer that a cursor records has changed since the cursor's first page, then Univ Server shall refuse the next page and name the layers that changed.",
+                    "statement": {
+                      "condition": "a layer that a cursor records has changed since the cursor's first page",
+                      "form": "unwanted",
+                      "shall": "refuse the next page and name the layers that changed.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "label": "RQ-75",
+                    "name": "When a client queries a bounded volume, Univ Server shall return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain.",
+                    "statement": {
+                      "condition": "a client queries a bounded volume",
+                      "form": "event_driven",
+                      "shall": "return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1b5a00f7dd",
+                    "label": "RQ-76",
+                    "name": "If the volume is malformed, then Univ Server shall refuse the query and name what is malformed.",
+                    "statement": {
+                      "condition": "the volume is malformed",
+                      "form": "unwanted",
+                      "shall": "refuse the query and name what is malformed.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 335,
+              "linked": 331,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a44d-7790-7591-832e-a39408fa6a77
+    id: w6-result
+    kind: note
+    versions:
+      - key: 01a1a44d-7790-7591-832e-a397fb74bd95
+        at: 2026-11-04T02:05:02Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What W6 produced"
+        markdown: |-
+          `POST /v1/query/volume` answers with the objects, structures and layer items in a box, sphere or cone given in the ICRS, galactic or supergalactic frame and any length unit.
+
+          | Part | How it matches |
+          |---|---|
+          | Objects | exactly in SQL, by derived position, over the cells the volume's box covers |
+          | Structures | by placed shape, member list, bounding box (labelled approximate) or centre, in that order |
+          | Items | by their shape, with their stored box narrowing the candidates |
+
+          - Filters: kinds, sources, scale domains, layers and a time interval on TT, combined with AND.
+          - Pages of 1,000, capped at 10,000. Signed cursors record the release and each layer's sequence; a layer changed between pages answers 409.
+          - The first page gives the tile nodes covering the volume per scale domain.
+          - **QA-3 met** on release 6: p95 47.9 ms against 500 ms.
+
+          **For W7:** release 6 has no placed structure shapes, so its structures match by bounding box; release 7 built with the current ingest fixes that. The OpenAPI snapshot (AC-292) is W7's.
+        tone: success
