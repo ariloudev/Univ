@@ -10,6 +10,15 @@ versions:
     title: "W5: layers"
     goal: "Keys create, configure and retire layers; publish, revise and retract items with validated geometry, time records, links and sources; anyone allowed reads layers and items, and follows each layer's changes with cursors and entity tags; quotas are enforced (F-23 to F-27, the rest of F-28 and F-29)"
     status: active
+  - key: 01a1a3e6-5737-7452-ba35-464eb19b18f9
+    at: 2026-11-04T00:12:24Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W5: layers"
+    goal: "Keys create, configure and retire layers; publish, revise and retract items with validated geometry, time records, links and sources; anyone allowed reads layers and items, and follows each layer's changes with cursors and entity tags; quotas are enforced (F-23 to F-27, the rest of F-28 and F-29)"
+    status: done
 blocks:
   - key: 01a1a3c8-77e1-7419-bfa1-5c222c8fcbf1
     id: t5-schema
@@ -157,6 +166,15 @@ blocks:
         title: "W5 end-to-end tests"
         detail: "Publish, revise, retract and follow the changes through the Worker; an entity tag answers 304; a private layer looks absent; a quota refused."
         state: active
+      - key: 01a1a3e6-5737-7452-ba35-464ddb08fe20
+        at: 2026-11-04T00:12:24Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W5 end-to-end tests"
+        detail: "095516c, `crates/univ-server/tests/layers.rs`. The first integration run passed the 4 layer tests and all 21 earlier ones."
+        state: done
   - key: 01a1a3c8-77e1-7419-bfa1-5c2818a6e8f9
     id: q-utc-1972
     kind: question

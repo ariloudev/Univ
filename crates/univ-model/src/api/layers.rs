@@ -268,6 +268,7 @@ pub enum RevisionKind {
 /// stores as the next version. A correction names the version it corrects and what was wrong.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
 pub struct ReviseItem {
     pub replaces: u64,
     pub revision: RevisionKind,

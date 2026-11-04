@@ -1,8 +1,9 @@
 //! The time records of layer items (publish-a-layer-item, filter-by-time): when an event
 //! happened at its source, when its signal arrived, or when it was discovered.
 //!
-//! A time is a calendar instant in UTC or TT, ISO 8601 for years 1 to 9999, or for the deep
-//! past a span of Julian years before J2000.0 on TT. Each is turned into TT days from J2000.0
+//! A time is a calendar instant in UTC or TT, ISO 8601 for years 1 to 9999 in the proleptic
+//! Gregorian calendar (a date of the Julian calendar, such as most before 1582, is converted
+//! by the client first), or for the deep past a span of Julian years before J2000.0 on TT. Each is turned into TT days from J2000.0
 //! (2000-01-01T12:00:00 TT), with its uncertainty as an interval, which is what queries
 //! compare. TT = TAI + 32.184 s exactly (IAU 1991 Resolution A4), and TAI − UTC comes from the
 //! IERS tables of [`utc`]: UTC is converted from 1961-01-01, when it began, until the
@@ -17,7 +18,7 @@ use thiserror::Error;
 pub const TT_MINUS_TAI: f64 = 32.184;
 
 /// The MJD of J2000.0, 2000-01-01T12:00:00 TT.
-const J2000_MJD: f64 = 51_544.5;
+pub const J2000_MJD: f64 = 51_544.5;
 
 /// The days of a Julian year.
 pub const JULIAN_YEAR_DAYS: f64 = 365.25;
@@ -90,8 +91,9 @@ pub enum TimeUncertainty {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(untagged)]
 pub enum At {
-    /// An ISO 8601 instant in the record's timescale, such as `1987-02-23T07:35:35Z` in UTC
-    /// or `2017-08-17T12:42:09.184` in TT; a trailing `Z` is allowed in UTC alone.
+    /// An ISO 8601 instant in the record's timescale, proleptic Gregorian, such as
+    /// `1987-02-23T07:35:35Z` in UTC or `2017-08-17T12:42:09.184` in TT; a trailing `Z` is
+    /// allowed in UTC alone.
     Instant { instant: String },
     /// Julian years before J2000.0, on TT, for times before year 1 such as a distant source
     /// event.

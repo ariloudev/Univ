@@ -2,31 +2,68 @@ format: yardtokens/2
 session: 8a28c3c8-b122-421a-a3de-8664f4b8b6df
 host: claude-code
 firstEnded: 2026-11-03T23:39:46Z
-lastEnded: 2026-11-04T00:02:58Z
+lastEnded: 2026-11-04T00:25:49Z
 tokens:
-  input: 136
-  cacheRead: 24120330
-  cacheWrite: 145973
-  output: 121911
+  input: 304
+  cacheRead: 44368182
+  cacheWrite: 570938
+  output: 238918
 stages:
   - stage: 01a1a3c8-77e1-7419-bfa1-5c20eb7727f6
-    input: 136
-    cacheRead: 24120330
-    cacheWrite: 145973
-    output: 121911
+    input: 254
+    cacheRead: 32262032
+    cacheWrite: 500655
+    output: 185904
     agents:
       - agent: main
-        input: 136
-        cacheRead: 24120330
-        cacheWrite: 145973
-        output: 121911
+        input: 152
+        cacheRead: 26282589
+        cacheWrite: 161628
+        output: 129323
+      - agent: a11ab9f28a04b25d6
+        type: general-purpose
+        input: 42
+        cacheRead: 1778041
+        cacheWrite: 131865
+        output: 16256
+      - agent: a4e367f1591434a56
+        type: general-purpose
+        input: 60
+        cacheRead: 4201402
+        cacheWrite: 207162
+        output: 40325
+  - stage: 01a1a3c8-77e1-7419-bfa1-5c21b494edef
+    input: 50
+    cacheRead: 12106150
+    cacheWrite: 70283
+    output: 53014
+    agents:
+      - agent: main
+        input: 50
+        cacheRead: 12106150
+        cacheWrite: 70283
+        output: 53014
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 136
-    cacheRead: 24120330
-    cacheWrite: 145973
-    output: 121911
+    input: 202
+    cacheRead: 38388739
+    cacheWrite: 231911
+    output: 182337
+  - agent: a11ab9f28a04b25d6
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 42
+    cacheRead: 1778041
+    cacheWrite: 131865
+    output: 16256
+  - agent: a4e367f1591434a56
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 60
+    cacheRead: 4201402
+    cacheWrite: 207162
+    output: 40325
 submissions:
   - submission: 01a1a3c8-77e1-7419-bfa1-5c342cde607a
     input: 28

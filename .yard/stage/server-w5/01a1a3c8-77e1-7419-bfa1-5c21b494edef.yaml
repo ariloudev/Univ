@@ -10,3 +10,42 @@ versions:
     title: "W5 close: review, gate, trace, merge"
     goal: "W5's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
     status: planned
+  - key: 01a1a3e6-5737-7452-ba35-464f15474a8f
+    at: 2026-11-04T00:12:24Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W5 close: review, gate, trace, merge"
+    goal: "W5's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: active
+blocks:
+  - key: 01a1a3e6-5737-7452-ba35-464c46a700d0
+    id: t5-review
+    kind: task
+    versions:
+      - key: 01a1a3e6-5737-7452-ba35-4650c6f704fe
+        at: 2026-11-04T00:12:24Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fix W5's review findings"
+        detail: |-
+          Correctness:
+          - the ETag ignores the release links are resolved against (a stale 304 after a new release);
+          - links accepted against unpublished releases;
+          - retractions skip the bytes quota;
+          - sub-objects report one failure and drop unknown members;
+          - quota races;
+          - 403 checked before 409;
+          - a concurrent retire answers 500.
+
+          Simplify:
+          - 6 D1 round trips per publish, down to 4;
+          - item counts kept on the layer row;
+          - links resolved in a few batches;
+          - only the current version's content read;
+          - one write path and one change helper;
+          - one serialization of each version.
+        state: active

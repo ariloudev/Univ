@@ -234,6 +234,10 @@ pub const OWNER_SECRET: &str = "the-owner-secret";
 /// The univ-layers database in memory, with every migration of `migrations/` applied.
 fn layers_database() -> rusqlite::Connection {
     let connection = rusqlite::Connection::open_in_memory().unwrap();
+    // As D1 does, foreign keys are enforced.
+    connection
+        .execute_batch("PRAGMA foreign_keys = ON;")
+        .unwrap();
     for migration in crate::MIGRATIONS {
         connection.execute_batch(migration).unwrap();
     }

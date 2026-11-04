@@ -139,7 +139,7 @@ fn an_item_failing_its_checks_is_refused_naming_each_field_and_nothing_is_stored
         pointers,
         [
             "/colour",
-            "/geometry",
+            "/geometry/frame",
             "/id",
             "/kind_of_value",
             "/links/0/object",
@@ -290,7 +290,7 @@ fn a_revision_is_checked_as_a_publish_is_and_a_failing_one_stores_nothing() {
         pointers,
         [
             "/content/sources",
-            "/content/time_records/0",
+            "/content/time_records/0/timescale",
             "/what_was_wrong"
         ]
     );

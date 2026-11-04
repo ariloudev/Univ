@@ -74,21 +74,29 @@ fn every_row_of_1961_to_1971_is_the_historys() {
         .map(|r| r.offset)
         .collect();
     assert_eq!(offsets, drifts);
-    let bases: [(f64, f64); 4] = [
-        (37_300.0, 0.001_296),
-        (37_665.0, 0.001_123_2),
-        (38_761.0, 0.001_296),
-        (39_126.0, 0.002_592),
-    ];
-    for (base, rate) in bases {
-        let text = format!("(MJD - {}", f64_text(base));
-        assert!(history.contains(&text), "{text}");
-        assert!(
-            TABLE
-                .iter()
-                .any(|r| r.base.to_bits() == base.to_bits() && r.rate.to_bits() == rate.to_bits())
-        );
+    // Each drift row's base and rate, as the history writes them, row by row: a row that
+    // writes `""` keeps the row above's.
+    let mut pairs: Vec<(f64, f64)> = Vec::new();
+    for line in history.lines().filter(|line| line.contains("s +")) {
+        let pair = match line.split_once("(MJD - ") {
+            Some((_, rest)) => {
+                let (base, rest) = rest.split_once(')').unwrap();
+                let rate = rest.split_once('x').unwrap().1.trim().trim_end_matches('s');
+                let parse = |text: &str| text.replace(' ', "").parse::<f64>().unwrap();
+                (parse(base), parse(rate))
+            }
+            None => *pairs.last().unwrap(),
+        };
+        pairs.push(pair);
     }
+    let bits = |(base, rate): (f64, f64)| (base.to_bits(), rate.to_bits());
+    let table: Vec<(u64, u64)> = TABLE
+        .iter()
+        .filter(|r| r.rate != 0.0)
+        .map(|r| bits((r.base, r.rate)))
+        .collect();
+    let read: Vec<(u64, u64)> = pairs.into_iter().map(bits).collect();
+    assert_eq!(read, table);
     let starts = [
         (1961, 1, 1),
         (1961, 8, 1),
@@ -112,11 +120,4 @@ fn every_row_of_1961_to_1971_is_the_historys() {
     let expected: Vec<i64> = starts.iter().map(|(y, m, d)| mjd(*y, *m, *d)).collect();
     assert_eq!(froms, expected);
     assert_eq!(FIRST_MJD, mjd(1961, 1, 1));
-}
-
-/// A base MJD as the history writes it, such as `37 300`.
-fn f64_text(base: f64) -> String {
-    #[expect(clippy::cast_possible_truncation, reason = "a base MJD is whole")]
-    let whole = base as i64;
-    format!("{} {:03}", whole / 1_000, whole % 1_000)
 }

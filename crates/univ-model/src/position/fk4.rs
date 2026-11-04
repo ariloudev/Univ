@@ -35,7 +35,7 @@ const PMF: f64 = 100.0 * 206_264.806_247_096_36;
 /// date, 15019.81352 + 50 × 365.242198781 (ERFA `epb2jd`), to a Julian year (ERFA `epj`).
 fn b1950_as_julian_epoch() -> f64 {
     let mjd = 15_019.813_52 + 50.0 * 365.242_198_781;
-    2000.0 + (mjd - 51_544.5) / 365.25
+    2000.0 + (mjd - crate::time::J2000_MJD) / crate::time::JULIAN_YEAR_DAYS
 }
 
 /// The FK4 (without E-terms) to FK5 J2000 matrix for a B1950 position of zero FK5 proper

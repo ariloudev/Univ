@@ -1,20 +1,19 @@
 //! Publishing, revising and retracting items (publish-a-layer-item, revise-or-retract-an-item,
-//! enforce-quotas-and-rate-limits). Each write is one batch: the item's row, its new version,
-//! its time records on TT, the layer's sequence and the change take effect together.
+//! enforce-quotas-and-rate-limits). Each handler checks its request, every failing member by
+//! JSON pointer, and hands the new version to [`store::store`].
 
 mod store;
 
-use serde_json::{Map, Value, json};
-use univ_model::api::layers::{ItemVersion, VersionBody, VersionKind};
+use serde_json::{Map, Value};
+use univ_model::api::layers::{ItemVersion, RevisionKind, VersionBody, VersionKind};
 
-use super::config::quota_exceeded;
-use super::validate::{self, Checked, Failures, pointer};
-use super::{LayerRow, now, writable};
+use super::validate::{self, Checked, Failures, member, pointer, text, unknown};
+use super::{LayerRow, broken, writable};
 use crate::access::Caller;
 use crate::backend::Backend;
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
-use store::{Write, body_of, commit, current, quotas, stored, times, version_row};
+use store::{NewVersion, store};
 
 /// Publishes an item as its first version.
 ///
@@ -37,8 +36,7 @@ pub async fn publish<B: Backend>(
     id: &str,
     backend: &B,
 ) -> Result<Response, Problem> {
-    let layer = writable(backend, caller, id).await?;
-    let mut members = object(request)?;
+    let mut members: Map<String, Value> = request.json()?;
     let mut failures = Failures::default();
     let item = match members.remove("id") {
         Some(Value::String(item)) if valid_id(&item) => Some(item),
@@ -50,60 +48,41 @@ pub async fn publish<B: Backend>(
             None
         }
     };
+    let layer = writable(backend, caller, id, item.as_deref()).await?;
     let content = Value::Object(members);
-    let (checked, no_source) =
-        validate::content(backend, Some(&content), "", &mut failures).await?;
-    failures.refusal(no_source)?;
+    let checked = validate::content(backend, Some(&content), "", &mut failures).await?;
+    failures.refusal()?;
     let (Some(item), Some(checked)) = (item, checked) else {
-        return Err(unchecked());
-    };
-    let body = body_of(&VersionBody {
-        content: Some(canonical(&checked)?),
-        ..VersionBody::default()
-    })?;
-    let quotas = quotas(backend, &layer).await?;
-    if quotas.items >= quotas.items_per_layer {
-        return Err(quota_exceeded(
-            "items_per_layer",
-            quotas.items_per_layer,
-            quotas.items,
+        return Err(broken(
+            "An item",
+            "it passed its checks with a part missing",
         ));
-    }
-    quotas.fits(&body)?;
-    if let Some((current, _)) = current(backend, &layer.id, &item).await? {
+    };
+    if let Some(current) = layer.current_version {
         return Err(conflict(
             &item,
             current,
             "The layer already holds an item of this id.",
         ));
     }
-    let stored_at = now(backend);
-    let mut writes = vec![
-        Write::new(
-            "INSERT INTO items (layer_id, id, version) VALUES (?1, ?2, 1)",
-            vec![json!(layer.id), json!(item)],
-        ),
-        version_row(
-            &layer.id,
-            &item,
-            1,
-            &stored_at,
-            VersionKind::Published,
-            &body,
-        ),
-    ];
-    writes.extend(times(&layer.id, &item, Some(&checked)));
-    commit(
-        backend,
-        &layer,
-        &item,
-        1,
-        "item_published",
-        &stored_at,
-        writes,
-    )
-    .await?;
-    stored(&layer, &item, 1, stored_at, VersionKind::Published, &body)
+    if layer.items_held >= layer.items_per_layer {
+        return Err(super::config::quota_exceeded(
+            "items_per_layer",
+            layer.items_per_layer,
+            layer.items_held,
+        ));
+    }
+    let body = VersionBody {
+        content: Some(canonical(&checked)?),
+        ..VersionBody::default()
+    };
+    let new = NewVersion {
+        item: &item,
+        kind: VersionKind::Published,
+        body,
+        times: &checked.times,
+    };
+    store(backend, &layer, new).await
 }
 
 /// Revises an item: its next version, as an update or a correction.
@@ -131,69 +110,47 @@ pub async fn revise<B: Backend>(
     item: &str,
     backend: &B,
 ) -> Result<Response, Problem> {
-    let layer = writable(backend, caller, id).await?;
-    let members = object(request)?;
+    let layer = writable(backend, caller, id, Some(item)).await?;
+    let members: Map<String, Value> = request.json()?;
     let mut failures = Failures::default();
-    for name in members.keys() {
-        if ![
-            "replaces",
-            "revision",
-            "corrects",
-            "what_was_wrong",
-            "content",
-        ]
-        .contains(&name.as_str())
-        {
-            failures.add(pointer("", name), "is not a member of a revision");
-        }
-    }
+    let names = [
+        "replaces",
+        "revision",
+        "corrects",
+        "what_was_wrong",
+        "content",
+    ];
+    unknown(&members, &names, "", "a revision", &mut failures);
     let replaces = version_number(&members, "replaces", &mut failures);
-    let correction = match members.get("revision").and_then(Value::as_str) {
-        Some("update") => false,
-        Some("correction") => true,
-        _ => {
-            failures.add("/revision", "is required: update or correction");
-            false
-        }
-    };
-    let corrects = if correction {
-        correction_of(&members, replaces, &mut failures)
-    } else {
-        for name in ["corrects", "what_was_wrong"] {
-            if members.contains_key(name) {
-                failures.add(pointer("", name), "belongs to a correction alone");
-            }
-        }
-        None
-    };
-    let (checked, no_source) =
+    let revision = member::<RevisionKind>(&members, "", "revision", true, &mut failures);
+    let (corrects, what_was_wrong) = correction(&members, replaces, revision, &mut failures);
+    let checked =
         validate::content(backend, members.get("content"), "/content", &mut failures).await?;
-    failures.refusal(no_source)?;
-    let (Some(replaces), Some(checked)) = (replaces, checked) else {
-        return Err(unchecked());
+    failures.refusal()?;
+    let (Some(replaces), Some(revision), Some(checked)) = (replaces, revision, checked) else {
+        return Err(broken(
+            "A revision",
+            "it passed its checks with a part missing",
+        ));
     };
-    let kind = if correction {
-        VersionKind::Correction
-    } else {
-        VersionKind::Update
+    current(&layer, item, replaces)?;
+    let kind = match revision {
+        RevisionKind::Update => VersionKind::Update,
+        RevisionKind::Correction => VersionKind::Correction,
     };
-    let body = body_of(&VersionBody {
+    let body = VersionBody {
         content: Some(canonical(&checked)?),
-        corrects: corrects.as_ref().map(|(version, _)| *version),
-        what_was_wrong: corrects.map(|(_, why)| why),
+        corrects,
+        what_was_wrong,
         reason: None,
-    })?;
-    replace(
-        backend,
-        &layer,
+    };
+    let new = NewVersion {
         item,
-        replaces,
         kind,
-        "item_revised",
-        &body,
-        Some(&checked),
-    )
-    .await
+        body,
+        times: &checked.times,
+    };
+    store(backend, &layer, new).await
 }
 
 /// Retracts an item: a new version that marks it retracted, with the reason.
@@ -201,8 +158,8 @@ pub async fn revise<B: Backend>(
 /// # Errors
 ///
 /// A problem answer: no reason (422), a version other than the current one replaced or a
-/// retracted item (409), the item absent (404), the layer's access refused, or the database
-/// failing.
+/// retracted item (409), the item absent (404), a quota (403), the layer's access refused, or
+/// the database failing.
 #[utoipa::path(
     post,
     path = "/v1/layers/{id}/items/{item}/retraction",
@@ -221,62 +178,78 @@ pub async fn retract<B: Backend>(
     item: &str,
     backend: &B,
 ) -> Result<Response, Problem> {
-    let layer = writable(backend, caller, id).await?;
-    let members = object(request)?;
+    let layer = writable(backend, caller, id, Some(item)).await?;
+    let members: Map<String, Value> = request.json()?;
     let mut failures = Failures::default();
-    for name in members
-        .keys()
-        .filter(|name| !["replaces", "reason"].contains(&name.as_str()))
-    {
-        failures.add(pointer("", name), "is not a member of a retraction");
-    }
+    unknown(
+        &members,
+        &["replaces", "reason"],
+        "",
+        "a retraction",
+        &mut failures,
+    );
     let replaces = version_number(&members, "replaces", &mut failures);
-    let reason = match members.get("reason") {
-        Some(Value::String(reason)) if !reason.trim().is_empty() => Some(reason.clone()),
-        _ => {
-            failures.add("/reason", "is required, as text that is not empty");
-            None
-        }
-    };
-    failures.refusal(false)?;
+    let reason = text(&members, "", "reason", &mut failures);
+    failures.refusal()?;
     let (Some(replaces), Some(reason)) = (replaces, reason) else {
-        return Err(unchecked());
+        return Err(broken(
+            "A retraction",
+            "it passed its checks with a part missing",
+        ));
     };
-    let body = body_of(&VersionBody {
+    current(&layer, item, replaces)?;
+    let body = VersionBody {
         reason: Some(reason),
         ..VersionBody::default()
-    })?;
-    let kind = VersionKind::Retraction;
-    replace(
-        backend,
-        &layer,
+    };
+    let new = NewVersion {
         item,
-        replaces,
-        kind,
-        "item_retracted",
-        &body,
-        None,
-    )
-    .await
+        kind: VersionKind::Retraction,
+        body,
+        times: &[],
+    };
+    store(backend, &layer, new).await
 }
 
-/// Stores the version after `replaces` of `item`, which must be its current one and not
-/// retracted: a revision with its time records, or a retraction with none.
-#[expect(clippy::too_many_arguments, reason = "one write's every part, named")]
-async fn replace<B: Backend>(
-    backend: &B,
-    layer: &LayerRow,
-    item: &str,
-    replaces: u64,
-    kind: VersionKind,
-    change: &str,
-    body: &str,
-    checked: Option<&Checked>,
-) -> Result<Response, Problem> {
-    let Some((current, retracted)) = current(backend, &layer.id, item).await? else {
+/// The version a correction corrects, from 1 to the one it replaces (that one where absent),
+/// and what was wrong; an update gives neither.
+fn correction(
+    members: &Map<String, Value>,
+    replaces: Option<u64>,
+    revision: Option<RevisionKind>,
+    failures: &mut Failures,
+) -> (Option<u64>, Option<String>) {
+    if revision != Some(RevisionKind::Correction) {
+        for name in ["corrects", "what_was_wrong"] {
+            if members.contains_key(name) {
+                failures.add(pointer("", name), "belongs to a correction alone");
+            }
+        }
+        return (None, None);
+    }
+    let corrects = match members.get("corrects") {
+        None => replaces,
+        Some(_) => version_number(members, "corrects", failures),
+    };
+    if corrects
+        .zip(replaces)
+        .is_some_and(|(corrects, replaces)| corrects > replaces)
+    {
+        failures.add(
+            "/corrects",
+            "is a version from 1 to the one the revision replaces",
+        );
+    }
+    (corrects, text(members, "", "what_was_wrong", failures))
+}
+
+/// Whether `replaces` is `item`'s current version, which is not a retraction: a 404 for an
+/// item the layer does not hold, a 409 with its current version otherwise.
+fn current(layer: &LayerRow, item: &str, replaces: u64) -> Result<(), Problem> {
+    let Some(current) = layer.current_version else {
         return Err(super::items::not_found(&layer.id, item));
     };
-    if retracted {
+    if layer.current_retracted == Some(1) {
         return Err(conflict(
             item,
             current,
@@ -290,49 +263,12 @@ async fn replace<B: Backend>(
             "The version replaced is not the item's current one.",
         ));
     }
-    if checked.is_some() {
-        quotas(backend, layer).await?.fits(body)?;
-    }
-    let version = current + 1;
-    let stored_at = now(backend);
-    let mut writes = vec![
-        Write::new(
-            "UPDATE items SET version = ?3, retracted = ?4 \
-             WHERE layer_id = ?1 AND id = ?2 AND version = ?5",
-            vec![
-                json!(layer.id),
-                json!(item),
-                json!(version),
-                json!(i32::from(kind == VersionKind::Retraction)),
-                json!(current),
-            ],
-        ),
-        version_row(&layer.id, item, version, &stored_at, kind, body),
-    ];
-    writes.extend(times(&layer.id, item, checked));
-    commit(backend, layer, item, version, change, &stored_at, writes).await?;
-    stored(layer, item, version, stored_at, kind, body)
+    Ok(())
 }
 
 /// Checked content as stored: the item's own types written back, one form for every version.
 fn canonical(checked: &Checked) -> Result<Value, Problem> {
-    serde_json::to_value(&checked.content).map_err(|e| {
-        Problem::new(
-            ProblemType::InternalError,
-            format!("An item did not write: {e}."),
-        )
-    })
-}
-
-/// The request's body as a JSON object, or a 400.
-fn object(request: &Request) -> Result<Map<String, Value>, Problem> {
-    match request.json::<Value>()? {
-        Value::Object(members) => Ok(members),
-        _ => Err(Problem::new(
-            ProblemType::InvalidBody,
-            "The body is a JSON object.",
-        )),
-    }
+    serde_json::to_value(&checked.content).map_err(|e| broken("An item", e))
 }
 
 /// Member `name` as a version number, 1 or more, or a failure naming it.
@@ -354,34 +290,6 @@ fn version_number(
     number
 }
 
-/// The version a correction corrects, 1 to the one it replaces, and what was wrong.
-fn correction_of(
-    members: &Map<String, Value>,
-    replaces: Option<u64>,
-    failures: &mut Failures,
-) -> Option<(u64, String)> {
-    let corrects = match members.get("corrects") {
-        None => replaces,
-        Some(value) => value
-            .as_u64()
-            .filter(|n| *n >= 1 && replaces.is_none_or(|r| *n <= r)),
-    };
-    if corrects.is_none() && replaces.is_some() {
-        failures.add(
-            "/corrects",
-            "is a version from 1 to the one the revision replaces",
-        );
-    }
-    let why = match members.get("what_was_wrong") {
-        Some(Value::String(why)) if !why.trim().is_empty() => Some(why.clone()),
-        _ => {
-            failures.add("/what_was_wrong", "a correction says what was wrong");
-            None
-        }
-    };
-    corrects.zip(why)
-}
-
 /// Whether `id` is an item id: 1 to 128 ASCII letters, digits, `.`, `_` or `-`.
 fn valid_id(id: &str) -> bool {
     (1..=128).contains(&id.len())
@@ -390,15 +298,9 @@ fn valid_id(id: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(&b))
 }
 
-pub(super) fn conflict(item: &str, current: u64, detail: &str) -> Problem {
+/// A refusal of a write that conflicts with the item as it stands.
+fn conflict(item: &str, current: u64, detail: &str) -> Problem {
     Problem::new(ProblemType::ItemConflict, detail)
         .with("item", item)
         .with("current_version", current)
-}
-
-fn unchecked() -> Problem {
-    Problem::new(
-        ProblemType::InternalError,
-        "An item passed its checks with a part missing.",
-    )
 }

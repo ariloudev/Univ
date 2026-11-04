@@ -73,6 +73,12 @@ pub trait Backend {
         client: &str,
     ) -> impl Future<Output = Result<bool, BackendError>>;
 
+    /// The time now, as RFC 3339 UTC to the millisecond, as every stored time is written.
+    fn now_rfc3339(&self) -> String {
+        let at = std::time::UNIX_EPOCH + std::time::Duration::from_millis(self.now_millis());
+        humantime::format_rfc3339_millis(at).to_string()
+    }
+
     /// The owner secret the Worker was given, if any; without one, every owner operation is
     /// refused.
     fn owner_secret(&self) -> Option<String>;

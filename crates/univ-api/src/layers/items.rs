@@ -1,5 +1,5 @@
 //! Reading items: a layer's current items page by page, one item with its versions, and any
-//! version by number (read-a-layer).
+//! version by number (read-a-layer). Their links are resolved against the release read.
 
 use serde::Deserialize;
 use serde_json::json;
@@ -7,12 +7,17 @@ use univ_model::api::layers::{
     ItemRecord, ItemVersion, LayerPage, VersionBody, VersionKind, VersionSummary,
 };
 
-use super::config::ITEMS_PER_PAGE;
-use super::{LayerRow, readable, tagged};
+use super::{LayerRow, Statement, broken, readable, run, tagged};
 use crate::access::Caller;
 use crate::backend::{Backend, rows_as};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
+
+/// The most items one page of a layer holds.
+pub const ITEMS_PER_PAGE: usize = 500;
+
+/// The columns of a version row, as [`VersionRow`] reads them.
+const VERSION: &str = "item_id, version, stored_at, kind, content";
 
 /// A version row as stored.
 #[derive(Deserialize)]
@@ -27,12 +32,9 @@ struct VersionRow {
 impl VersionRow {
     fn version(self) -> Result<ItemVersion, Problem> {
         let body: VersionBody = serde_json::from_str(&self.content).map_err(|error| {
-            Problem::new(
-                ProblemType::InternalError,
-                format!(
-                    "Version {} of item {:?} did not read: {error}.",
-                    self.version, self.item_id
-                ),
+            broken(
+                &format!("Version {} of item {:?}", self.version, self.item_id),
+                error,
             )
         })?;
         Ok(ItemVersion {
@@ -43,6 +45,13 @@ impl VersionRow {
             body,
         })
     }
+}
+
+fn versions(rows: Vec<crate::Row>) -> Result<Vec<ItemVersion>, Problem> {
+    rows_as::<VersionRow>(rows)?
+        .into_iter()
+        .map(VersionRow::version)
+        .collect()
 }
 
 /// One page of `layer`'s current items that are not retracted, after the item `cursor`.
@@ -64,20 +73,15 @@ pub(crate) async fn page<B: Backend>(
             ],
         )
         .await?;
-    let mut items = rows_as::<VersionRow>(rows)?
-        .into_iter()
-        .map(VersionRow::version)
-        .collect::<Result<Vec<_>, _>>()?;
-    let next = if items.len() > ITEMS_PER_PAGE as usize {
-        items.truncate(ITEMS_PER_PAGE as usize);
+    let mut items = versions(rows)?;
+    let next = (items.len() > ITEMS_PER_PAGE).then(|| {
+        items.truncate(ITEMS_PER_PAGE);
         items.last().map(|item| item.item.clone())
-    } else {
-        None
-    };
+    });
     Ok(LayerPage {
         layer: layer.record(),
         items,
-        next,
+        next: next.flatten(),
     })
 }
 
@@ -93,7 +97,8 @@ pub(crate) async fn page<B: Backend>(
     path = "/v1/layers/{id}/items/{item}",
     params(
         ("id" = String, Path, description = "The layer's id"),
-        ("item" = String, Path, description = "The item's id")
+        ("item" = String, Path, description = "The item's id"),
+        ("release" = Option<u32>, Query, description = "The release links are resolved against; latest when absent")
     ),
     security((), ("api_key" = [])),
     responses(
@@ -109,23 +114,42 @@ pub async fn read<B: Backend>(
     backend: &B,
 ) -> Result<Response, Problem> {
     let layer = readable(backend, caller, id).await?;
-    let mut versions = versions(backend, &layer.id, item, None).await?;
-    super::links::resolve(request, backend, &mut versions).await?;
-    let Some(current) = versions.pop() else {
+    let mut rows = run(
+        backend,
+        &[
+            Statement::new(
+                "SELECT version, stored_at, kind FROM item_versions \
+                 WHERE layer_id = ?1 AND item_id = ?2 ORDER BY version",
+                vec![json!(layer.id), json!(item)],
+            ),
+            Statement::new(
+                format!(
+                    "SELECT {VERSION} FROM item_versions v WHERE layer_id = ?1 AND item_id = ?2 \
+                     AND version = (SELECT version FROM items WHERE layer_id = ?1 AND id = ?2)"
+                ),
+                vec![json!(layer.id), json!(item)],
+            ),
+        ],
+    )
+    .await?
+    .into_iter();
+    let list: Vec<VersionSummary> = rows_as(rows.next().unwrap_or_default())?;
+    let mut current = versions(rows.next().unwrap_or_default())?;
+    let release = super::links::resolve(request, backend, &mut current).await?;
+    let Some(current) = current.pop() else {
         return Err(not_found(&layer.id, item));
     };
-    let mut list: Vec<VersionSummary> = versions.iter().map(summary).collect();
-    list.push(summary(&current));
     let record = ItemRecord {
         layer: layer.id.clone(),
         retracted: current.kind == VersionKind::Retraction,
         current,
         versions: list,
     };
-    tagged(request, &layer, &layer.etag(), || Response::json(&record))
+    tagged(request, &layer, release, || Response::json(&record))
 }
 
-/// Reads one version of an item by its number; a version never changes once stored.
+/// Reads one version of an item by its number; a version never changes once stored, though
+/// its links are resolved against the release read.
 ///
 /// # Errors
 ///
@@ -137,7 +161,8 @@ pub async fn read<B: Backend>(
     params(
         ("id" = String, Path, description = "The layer's id"),
         ("item" = String, Path, description = "The item's id"),
-        ("version" = u64, Path, description = "The version's number, from 1")
+        ("version" = u64, Path, description = "The version's number, from 1"),
+        ("release" = Option<u32>, Query, description = "The release links are resolved against; latest when absent")
     ),
     security((), ("api_key" = [])),
     responses((status = 200, description = "The version", body = ItemVersion))
@@ -151,47 +176,21 @@ pub async fn version<B: Backend>(
     backend: &B,
 ) -> Result<Response, Problem> {
     let layer = readable(backend, caller, id).await?;
-    let wanted = number.parse::<u64>().ok();
-    let found = match wanted {
-        Some(wanted) => versions(backend, &layer.id, item, Some(wanted))
-            .await?
-            .pop(),
-        None => None,
-    };
-    let version = found.ok_or_else(|| not_found(&layer.id, item).with("version", number))?;
-    let mut version = [version];
-    super::links::resolve(request, backend, &mut version).await?;
-    let [version] = version;
-    Ok(Response::json(&version)?.with_header("cache-control", "private, no-cache"))
-}
-
-/// The versions of `item`, oldest first, or only version `number`.
-pub(crate) async fn versions<B: Backend>(
-    backend: &B,
-    layer: &str,
-    item: &str,
-    number: Option<u64>,
-) -> Result<Vec<ItemVersion>, Problem> {
+    let missing = || not_found(&layer.id, item).with("version", number);
+    let wanted = number.parse::<u64>().map_err(|_| missing())?;
     let rows = backend
         .layers(
-            "SELECT item_id, version, stored_at, kind, content FROM item_versions \
-             WHERE layer_id = ?1 AND item_id = ?2 AND (?3 IS NULL OR version = ?3) \
-             ORDER BY version",
-            &[json!(layer), json!(item), json!(number)],
+            &format!(
+                "SELECT {VERSION} FROM item_versions \
+                 WHERE layer_id = ?1 AND item_id = ?2 AND version = ?3"
+            ),
+            &[json!(layer.id), json!(item), json!(wanted)],
         )
         .await?;
-    rows_as::<VersionRow>(rows)?
-        .into_iter()
-        .map(VersionRow::version)
-        .collect()
-}
-
-fn summary(version: &ItemVersion) -> VersionSummary {
-    VersionSummary {
-        version: version.version,
-        stored_at: version.stored_at.clone(),
-        kind: version.kind,
-    }
+    let mut found = versions(rows)?;
+    let release = super::links::resolve(request, backend, &mut found).await?;
+    let version = found.pop().ok_or_else(missing)?;
+    tagged(request, &layer, release, || Response::json(&version))
 }
 
 /// The answer to an item the layer does not hold.

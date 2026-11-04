@@ -95,18 +95,25 @@ fn a_private_layer_answers_another_caller_exactly_as_one_that_does_not_exist() {
         let hidden = db.answer(&get(path));
         let absent = db.answer(&get(&unknown));
         assert_eq!(hidden.status, 404, "{path}");
-        let (keyed, _) = db.with_key(&other, get(path));
-        assert_eq!(keyed.status, 404, "{path}");
+        let (keyed, keyed_body) = db.with_key(&other, get(path));
+        let (keyed_absent, _) = db.with_key(&other, get(&unknown));
         let mut expected = body(&absent);
         expected["id"] = json!(id);
         expected["detail"] = json!(format!("No layer has the id {id:?}."));
         assert_eq!(body(&hidden), expected, "{path}");
+        assert_eq!(keyed_body, expected, "{path}, with another key");
+        assert_eq!(hidden.headers, absent.headers, "{path}");
+        assert_eq!(
+            keyed.headers, keyed_absent.headers,
+            "{path}, with another key"
+        );
     }
-    let (changed, _) = db.with_key(
+    let (changed, changed_body) = db.with_key(
         &other,
         Request::new(Method::Patch, &format!("/v1/layers/{id}")).with_json(&json!({"title": "x"})),
     );
     assert_eq!(changed.status, 404);
+    assert_eq!(changed_body["type"], "urn:univ:problem:layer-not-found");
 }
 
 #[test]

@@ -3,8 +3,6 @@
 //! which [`crate::access::admit`] opens to the owner secret alone, so a handler is only ever
 //! reached by the owner. No answer here is stored by a cache.
 
-use std::time::{Duration, UNIX_EPOCH};
-
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use univ_model::api::keys::{
@@ -24,10 +22,8 @@ const COLUMNS: &str = "id, label, issued_at, revoked_at, layers_per_key, items_p
                        bytes_per_item_version, tier, \
                        (SELECT COUNT(*) FROM layers WHERE key_id = keys.id \
                         AND retired_at IS NULL) AS layers, \
-                       (SELECT COALESCE(MAX(n), 0) FROM (SELECT COUNT(*) AS n FROM items \
-                        JOIN layers ON layers.id = items.layer_id \
-                        WHERE layers.key_id = keys.id AND layers.retired_at IS NULL \
-                        GROUP BY items.layer_id)) AS largest_layer_items";
+                       (SELECT COALESCE(MAX(items_held), 0) FROM layers WHERE key_id = keys.id \
+                        AND retired_at IS NULL) AS largest_layer_items";
 
 /// Issues a key: its secret is 256 random bits, returned in this response alone; only the
 /// secret's SHA-256 is stored.
@@ -59,7 +55,7 @@ pub async fn issue<B: Backend>(request: &Request, backend: &B) -> Result<Respons
     };
     let id = format!("key_{}", hex(&random::<8>(backend)?));
     let secret = format!("univ_{}", hex(&random::<32>(backend)?));
-    let issued_at = now(backend);
+    let issued_at = backend.now_rfc3339();
     backend
         .layers(
             "INSERT INTO keys (id, label, secret_sha256, issued_at, layers_per_key, \
@@ -177,7 +173,7 @@ pub async fn change<B: Backend>(
     responses((status = 200, description = "The key as revoked", body = KeyRecord))
 )]
 pub async fn revoke<B: Backend>(id: &str, backend: &B) -> Result<Response, Problem> {
-    let update = [json!(id), json!(now(backend))];
+    let update = [json!(id), json!(backend.now_rfc3339())];
     let read = [json!(id)];
     let rows = backend
         .layers_batch(&[
@@ -270,16 +266,6 @@ fn bounded(quotas: QuotaChange) -> Result<QuotaChange, Problem> {
 /// an issued key's carries its secret.
 fn unstored(status: u16, value: &impl Serialize) -> Result<Response, Problem> {
     Ok(Response::json_with_status(status, value)?.with_header("cache-control", "no-store"))
-}
-
-/// The time now, as RFC 3339 UTC to the millisecond.
-fn now(backend: &impl Backend) -> String {
-    rfc3339(backend.now_millis())
-}
-
-/// `millis` since the Unix epoch as RFC 3339 UTC to the millisecond.
-pub(crate) fn rfc3339(millis: u64) -> String {
-    humantime::format_rfc3339_millis(UNIX_EPOCH + Duration::from_millis(millis)).to_string()
 }
 
 /// `N` bytes from the backend's source of randomness.

@@ -10,7 +10,11 @@ CREATE TABLE IF NOT EXISTS layers (
   created_at TEXT NOT NULL,
   retired_at TEXT,
   -- The number of the layer's last change; 0 until its first.
-  sequence INTEGER NOT NULL DEFAULT 0
+  sequence INTEGER NOT NULL DEFAULT 0,
+  -- Its items not retracted, and every item it holds, retracted ones included, which the
+  -- quota of items per layer counts; each write that changes them keeps them in its batch.
+  item_count INTEGER NOT NULL DEFAULT 0,
+  items_held INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS layers_by_key ON layers (key_id, retired_at);
 

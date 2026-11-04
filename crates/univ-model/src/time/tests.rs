@@ -71,14 +71,16 @@ fn utc_before_1961_or_from_the_tables_expiry_is_refused_and_tt_is_not() {
     for text in [
         "1960-12-31T23:59:59Z",
         "2027-06-28T00:00:00Z",
-        "1572-11-11T00:00:00Z",
+        // Tycho's supernova, first seen 1572-11-11 in the Julian calendar, is 1572-11-21 in
+        // the proleptic Gregorian calendar instants are read in; it predates UTC either way.
+        "1572-11-21T00:00:00Z",
     ] {
         let error = instant(text, Timescale::Utc).unwrap_err();
         assert_eq!(error.member(), "instant");
         assert!(error.to_string().contains("give the time in TT"), "{error}");
     }
     assert!(instant("2027-06-27T23:59:59Z", Timescale::Utc).is_ok());
-    assert!(instant("1572-11-11T00:00:00", Timescale::Tt).is_ok());
+    assert!(instant("1572-11-21T00:00:00", Timescale::Tt).is_ok());
     assert!(instant("2100-01-01T00:00:00", Timescale::Tt).is_ok());
 }
 

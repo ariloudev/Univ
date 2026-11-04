@@ -2,20 +2,22 @@
 //! read-a-layer).
 
 use serde_json::{Value, json};
-use univ_model::api::layers::{CreateLayer, LayerChange, LayerList, LayerRecord};
+use univ_model::api::layers::{
+    ChangeKind, CreateLayer, LayerChange, LayerList, LayerPage, LayerRecord,
+};
 use univ_model::encoding::hex;
 
-use super::{COLUMNS, LayerRow, now, readable, tagged, writable, writer};
+use super::{
+    COLUMNS, ChangeOf, LayerRow, Statement, advance, broken, readable, run, settle, tagged,
+    writable, writer,
+};
 use crate::access::Caller;
 use crate::backend::{Backend, column, first, rows_as};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 
-/// The most items one page of a layer holds.
-pub const ITEMS_PER_PAGE: u32 = 500;
-
 /// Creates a layer owned by the caller's key: private unless asked public, its change
-/// sequence at 0.
+/// sequence at 0. The insert itself holds the key to its quota of layers.
 ///
 /// # Errors
 ///
@@ -35,45 +37,32 @@ pub async fn create<B: Backend>(
 ) -> Result<Response, Problem> {
     let key = writer(caller)?;
     let asked: CreateLayer = request.json()?;
-    let usage = backend
-        .layers(
-            "SELECT layers_per_key AS quota, (SELECT COUNT(*) FROM layers \
-             WHERE key_id = ?1 AND retired_at IS NULL) AS used FROM keys WHERE id = ?1",
-            &[json!(key)],
-        )
-        .await?;
-    let row = first(usage).unwrap_or_default();
-    let (quota, used): (u64, u64) = (column(&row, "quota")?, column(&row, "used")?);
-    if used >= quota {
-        return Err(quota_exceeded("layers_per_key", quota, used));
-    }
     let mut bytes = [0_u8; 8];
     backend.random(&mut bytes)?;
     let id = format!("lay_{}", hex(&bytes));
-    let created_at = now(backend);
-    let insert = [
-        json!(id),
-        json!(key),
-        json!(asked.title),
-        json!(asked.description),
-        json!(asked.visibility),
-        json!(created_at),
-    ];
-    let read = [json!(id)];
-    let rows = backend
-        .layers_batch(&[
-            (
+    let rows = run(
+        backend,
+        &[
+            Statement::new(
                 "INSERT INTO layers (id, key_id, title, description, visibility, created_at) \
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-                &insert,
+                 SELECT ?1, ?2, ?3, ?4, ?5, ?6 FROM keys WHERE id = ?2 AND layers_per_key > \
+                 (SELECT COUNT(*) FROM layers WHERE key_id = ?2 AND retired_at IS NULL)",
+                vec![
+                    json!(id),
+                    json!(key),
+                    json!(asked.title),
+                    json!(asked.description),
+                    json!(asked.visibility),
+                    json!(backend.now_rfc3339()),
+                ],
             ),
-            (
-                &format!("SELECT {COLUMNS} FROM layers WHERE id = ?1"),
-                &read,
-            ),
-        ])
-        .await?;
-    let layer = one(rows)?;
+            select(&id),
+        ],
+    )
+    .await?;
+    let Some(layer) = last(rows)? else {
+        return Err(layers_quota(backend, key).await?);
+    };
     Ok(Response::json_with_status(201, &layer.record())?
         .with_header("location", &format!("/v1/layers/{id}")))
 }
@@ -98,8 +87,9 @@ pub async fn list<B: Backend>(caller: &Caller, backend: &B) -> Result<Response, 
     let rows = backend
         .layers(
             &format!(
-                "SELECT {COLUMNS} FROM layers WHERE retired_at IS NULL \
-                 AND (visibility = 'public' OR key_id = ?1) ORDER BY id"
+                "SELECT {COLUMNS} FROM layers l JOIN keys k ON k.id = l.key_id \
+                 WHERE l.retired_at IS NULL AND (l.visibility = 'public' OR l.key_id = ?1) \
+                 ORDER BY l.id"
             ),
             &[key],
         )
@@ -133,28 +123,20 @@ pub async fn configure<B: Backend>(
     id: &str,
     backend: &B,
 ) -> Result<Response, Problem> {
-    let layer = writable(backend, caller, id).await?;
+    let layer = writable(backend, caller, id, None).await?;
     let asked: LayerChange = request.json()?;
-    let update = [
-        json!(layer.id),
-        json!(asked.title),
-        json!(asked.description),
-        json!(asked.visibility),
-    ];
-    let rows = changed(
-        backend,
-        &layer.id,
-        (
-            "UPDATE layers SET title = COALESCE(?2, title), \
-             description = COALESCE(?3, description), \
-             visibility = COALESCE(?4, visibility), sequence = sequence + 1 \
-             WHERE id = ?1 AND retired_at IS NULL",
-            &update,
-        ),
-        "layer_configured",
-    )
-    .await?;
-    Ok(Response::json(&rows.record())?.with_header("etag", &rows.etag()))
+    let update = Statement::new(
+        "UPDATE layers SET title = COALESCE(?2, title), description = COALESCE(?3, description), \
+         visibility = COALESCE(?4, visibility) WHERE id = ?1",
+        vec![
+            json!(layer.id),
+            json!(asked.title),
+            json!(asked.description),
+            json!(asked.visibility),
+        ],
+    );
+    let changed = changed(backend, &layer, update, ChangeKind::LayerConfigured).await?;
+    Response::json(&changed.record())
 }
 
 /// Retires a layer: it and its items are served no more, and it leaves its key's quota of
@@ -175,23 +157,17 @@ pub async fn retire<B: Backend>(
     id: &str,
     backend: &B,
 ) -> Result<Response, Problem> {
-    let layer = writable(backend, caller, id).await?;
-    let update = [json!(layer.id), json!(now(backend))];
-    changed(
-        backend,
-        &layer.id,
-        (
-            "UPDATE layers SET retired_at = ?2, sequence = sequence + 1 \
-             WHERE id = ?1 AND retired_at IS NULL",
-            &update,
-        ),
-        "layer_retired",
-    )
-    .await?;
+    let layer = writable(backend, caller, id, None).await?;
+    let update = Statement::new(
+        "UPDATE layers SET retired_at = ?2 WHERE id = ?1",
+        vec![json!(layer.id), json!(backend.now_rfc3339())],
+    );
+    changed(backend, &layer, update, ChangeKind::LayerRetired).await?;
     Ok(Response::empty(204))
 }
 
-/// Reads a layer: its details and a page of its current items that are not retracted, by id.
+/// Reads a layer: its details and a page of its current items that are not retracted, by id,
+/// their links resolved against the release read.
 ///
 /// # Errors
 ///
@@ -202,11 +178,12 @@ pub async fn retire<B: Backend>(
     path = "/v1/layers/{id}",
     params(
         ("id" = String, Path, description = "The layer's id"),
-        ("cursor" = Option<String>, Query, description = "The id of the last item of the page before")
+        ("cursor" = Option<String>, Query, description = "The id of the last item of the page before"),
+        ("release" = Option<u32>, Query, description = "The release links are resolved against; latest when absent")
     ),
     security((), ("api_key" = [])),
     responses(
-        (status = 200, description = "The layer and a page of its items", body = univ_model::api::layers::LayerPage),
+        (status = 200, description = "The layer and a page of its items", body = LayerPage),
         (status = 304, description = "Nothing changed since the entity tag given")
     )
 )]
@@ -217,49 +194,64 @@ pub async fn read<B: Backend>(
     backend: &B,
 ) -> Result<Response, Problem> {
     let layer = readable(backend, caller, id).await?;
-    let etag = layer.etag();
     let mut page = super::items::page(backend, &layer, request.param("cursor")).await?;
-    super::links::resolve(request, backend, &mut page.items).await?;
-    tagged(request, &layer, &etag, || Response::json(&page))
+    let release = super::links::resolve(request, backend, &mut page.items).await?;
+    tagged(request, &layer, release, || Response::json(&page))
 }
 
-/// Runs `update` on layer `id`, which advances its sequence by one, records the change of
-/// `kind` at that sequence in the same batch, and gives the layer as changed.
+/// Runs `update` on `layer` and records the change of `kind`, as one batch, and gives the
+/// layer as changed. The change is recorded first, so that a retirement records itself while
+/// the layer still stands.
 async fn changed<B: Backend>(
     backend: &B,
-    id: &str,
-    update: (&str, &[Value]),
-    kind: &str,
+    layer: &LayerRow,
+    update: Statement,
+    kind: ChangeKind,
 ) -> Result<LayerRow, Problem> {
-    let change = [json!(id), json!(now(backend)), json!(kind)];
-    let read = [json!(id)];
-    let rows = backend
-        .layers_batch(&[
-            update,
-            (
-                "INSERT INTO changes (layer_id, sequence, at, kind) \
-                 SELECT id, sequence, ?2, ?3 FROM layers WHERE id = ?1",
-                &change,
-            ),
-            (
-                &format!("SELECT {COLUMNS} FROM layers WHERE id = ?1"),
-                &read,
-            ),
-        ])
-        .await?;
-    one(rows)
+    let at = backend.now_rfc3339();
+    let change = ChangeOf {
+        kind,
+        item: None,
+        version: None,
+        at: &at,
+        counted: 0,
+        held: 0,
+    };
+    let [bump, record] = advance(&layer.id, &change);
+    match run(backend, &[bump, record, update, select(&layer.id)]).await {
+        Ok(rows) => last(rows)?.ok_or_else(|| broken("The layer written", "it did not read back")),
+        Err(error) => Err(settle(backend, &layer.id, None, error, |_| None).await),
+    }
 }
 
-/// The layer the last statement of a batch read.
-fn one(rows: Vec<Vec<crate::Row>>) -> Result<LayerRow, Problem> {
-    rows_as::<LayerRow>(rows.into_iter().last().unwrap_or_default())?
-        .pop()
-        .ok_or_else(|| {
-            Problem::new(
-                ProblemType::InternalError,
-                "The layer written did not read back.",
-            )
-        })
+/// The statement that reads layer `id` with its key's quotas.
+fn select(id: &str) -> Statement {
+    Statement::new(
+        format!("SELECT {COLUMNS} FROM layers l JOIN keys k ON k.id = l.key_id WHERE l.id = ?1"),
+        vec![json!(id)],
+    )
+}
+
+/// The layer the last statement of a batch read, if it read one.
+fn last(rows: Vec<Vec<crate::Row>>) -> Result<Option<LayerRow>, Problem> {
+    Ok(rows_as::<LayerRow>(rows.into_iter().last().unwrap_or_default())?.pop())
+}
+
+/// The refusal of a layer beyond `key`'s quota of layers, with its usage.
+async fn layers_quota<B: Backend>(backend: &B, key: &str) -> Result<Problem, Problem> {
+    let rows = backend
+        .layers(
+            "SELECT layers_per_key AS quota, (SELECT COUNT(*) FROM layers \
+             WHERE key_id = ?1 AND retired_at IS NULL) AS used FROM keys WHERE id = ?1",
+            &[json!(key)],
+        )
+        .await?;
+    let row = first(rows).unwrap_or_default();
+    Ok(quota_exceeded(
+        "layers_per_key",
+        column(&row, "quota")?,
+        column(&row, "used")?,
+    ))
 }
 
 /// A refusal of a write that would take a key beyond `quota`.

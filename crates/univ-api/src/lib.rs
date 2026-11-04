@@ -11,6 +11,8 @@ mod cors;
 mod grids;
 mod http;
 #[cfg(test)]
+mod items_checks_tests;
+#[cfg(test)]
 mod items_tests;
 mod kept;
 mod keys;

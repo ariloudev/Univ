@@ -162,10 +162,16 @@ fn a_private_layer_looks_absent_and_a_write_without_a_key_is_refused() {
         Some(&json!({"title": "Mine"})),
     );
     let layer = json(created)["id"].as_str().unwrap().to_owned();
+    let absent_id = "lay_0000000000000000";
     let hidden = get(&format!("/v1/layers/{layer}"));
-    let absent = get("/v1/layers/lay_0000000000000000");
+    let absent = get(&format!("/v1/layers/{absent_id}"));
     assert_eq!(hidden.status(), StatusCode::NOT_FOUND);
-    assert_eq!(json(hidden)["type"], json(absent)["type"]);
+    let as_absent = json(absent).to_string().replace(absent_id, &layer);
+    assert_eq!(
+        json(hidden).to_string(),
+        as_absent,
+        "the same body, but for the id asked"
+    );
     assert_eq!(
         send(
             &key,

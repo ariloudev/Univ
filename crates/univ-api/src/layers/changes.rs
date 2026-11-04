@@ -76,5 +76,5 @@ pub async fn list<B: Backend>(
         sequence: layer.sequence,
         changes,
     };
-    tagged(request, &layer, &layer.etag(), || Response::json(&page))
+    tagged(request, &layer, None, || Response::json(&page))
 }
