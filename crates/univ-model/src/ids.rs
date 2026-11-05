@@ -30,8 +30,9 @@ pub struct SourceId(Arc<str>);
 pub struct Designation {
     #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub source: SourceId,
-    /// Shared by every copy: an entry's designation is copied into its object's preferred
-    /// measurements and the id maps, for each of tens of millions of entries.
+    // Shared by every copy: an entry's designation is copied into its object's preferred
+    // measurements and the id maps, for each of tens of millions of entries. A plain comment, as
+    // a doc comment would enter the API's OpenAPI document.
     #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub identifier: Arc<str>,
 }
