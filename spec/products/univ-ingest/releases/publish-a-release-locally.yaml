@@ -15,8 +15,10 @@ requirements:
       form: event_driven
       when: "the owner publishes a complete release"
       system: "Univ Ingest"
-      shall: "upload its files to local R2 and its tables to local D1, and only then point latest at it."
+      shall: "upload its files to local R2 and its tables to the catalogue database and object shards of local D1, and only then point latest at it."
     criteria:
+      - key: 01a1a931-2c8a-73a8-91f2-590ede3fd3b1
+        name: "Each object shard receives only the rows the release manifest assigns to it."
       - key: 01a19f23-636f-72bd-b194-153fb0e0dd43
         name: "Each uploaded file is checked against its SHA-256 in the release manifest."
       - key: 01a19f23-636f-72bd-b194-1540b752f379
@@ -41,3 +43,12 @@ requirements:
     criteria:
       - key: 01a19f23-636f-72bd-b194-1545c890a557
         name: "The message names the release number and its publication time."
+  - key: 01a1a931-2c8a-73a8-91f2-590fd0e5d484
+    statement:
+      form: unwanted
+      if: "the release needs more object shards than Univ Server binds"
+      system: "Univ Ingest"
+      shall: "refuse to publish it before uploading anything."
+    criteria:
+      - key: 01a1a931-2c8a-73a8-91f2-5910680f6e67
+        name: "The message names the number of object shards the release needs and the number Univ Server binds."

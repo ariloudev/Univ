@@ -1,0 +1,65 @@
+key: 01a1a931-2c8a-73a8-91f2-58da6aab49a1
+slug: add-desi-and-the-galaxy-surveys-to-release-10
+title: "Add DESI DR1 and seven more galaxy surveys to release 10"
+context: "The owner asked to add DESI DR1 and the COSMOS-Web groups, deferred from the first release, and to weigh 2dFGRS, GAMA, ALFALFA, the rest of BOSS and eBOSS, the photometric all-sky catalogues and Euclid. Each was read against its paper and terms on 2026-11-05. Euclid's first full data release is not public, and the COSMOS-Web groups cover 0.45 square degrees with photometric group redshifts and no stated licence. The owner accepts larger redshift errors for a more complete catalogue."
+state:
+  kind: accepted
+  selectedOption: 01a1a931-2c8a-73a8-91f2-58ddf62e9738
+  outcome: "Release 10 adds DESI DR1, the rest of SDSS DR17, 2dFGRS, GAMA DR4, ALFALFA α.100, 2MPZ and WISE × SuperCOSMOS, quasars included, while Euclid waits for its first full data release and the COSMOS-Web groups for a deep-field scale domain."
+drivers:
+  - key: 01a1a931-2c8a-73a8-91f2-58db33c4917a
+    kind: local
+    label: "Completeness"
+    statement: "The catalogue holds as many galaxies with a redshift as can be found, larger errors accepted."
+  - key: 01a1a931-2c8a-73a8-91f2-58dc8ea4c776
+    kind: local
+    label: "One scale"
+    statement: "Every survey added fits the scale domains the release already has."
+options:
+  - key: 01a1a931-2c8a-73a8-91f2-58ddf62e9738
+    title: "Seven surveys and quasars"
+    description: "The spectroscopic, 21 cm and photometric surveys and the quasars of DESI and SDSS."
+  - key: 01a1a931-2c8a-73a8-91f2-58de8c2a3440
+    title: "Spectroscopic only"
+    description: "DESI DR1, the rest of SDSS DR17, 2dFGRS and ALFALFA, galaxies only."
+  - key: 01a1a931-2c8a-73a8-91f2-58df1960fe5a
+    title: "Everything weighed"
+    description: "The seven surveys with Euclid Q1 and the COSMOS-Web groups as well."
+assessments:
+  - option: 01a1a931-2c8a-73a8-91f2-58ddf62e9738
+    driver: 01a1a931-2c8a-73a8-91f2-58db33c4917a
+    rating: supports
+    rationale: "photometric redshifts fill the sky between the spectroscopic surveys"
+  - option: 01a1a931-2c8a-73a8-91f2-58ddf62e9738
+    driver: 01a1a931-2c8a-73a8-91f2-58dc8ea4c776
+    rating: supports
+    rationale: "all of them are wide surveys of the cosmic web"
+  - option: 01a1a931-2c8a-73a8-91f2-58de8c2a3440
+    driver: 01a1a931-2c8a-73a8-91f2-58db33c4917a
+    rating: conflicts
+    rationale: "the all-sky photometric surveys and the quasars stay out"
+  - option: 01a1a931-2c8a-73a8-91f2-58de8c2a3440
+    driver: 01a1a931-2c8a-73a8-91f2-58dc8ea4c776
+    rating: supports
+    rationale: "all of them are wide surveys"
+  - option: 01a1a931-2c8a-73a8-91f2-58df1960fe5a
+    driver: 01a1a931-2c8a-73a8-91f2-58db33c4917a
+    rating: supports
+    rationale: "nothing weighed is left out"
+  - option: 01a1a931-2c8a-73a8-91f2-58df1960fe5a
+    driver: 01a1a931-2c8a-73a8-91f2-58dc8ea4c776
+    rating: conflicts
+    rationale: "Euclid Q1 and COSMOS-Web are pencil beams that need a deep-field scale domain"
+consequences:
+  - key: 01a1a931-2c8a-73a8-91f2-58e0ed43501e
+    kind: cost
+    statement: "Release 10 needs object shards, a barycentric redshift frame and catalogue-wide uncertainties."
+  - key: 01a1a931-2c8a-73a8-91f2-58e175f75d34
+    kind: risk
+    statement: "A photometric redshift places its galaxy with a distance error of 12 to 15 per cent along the line of sight, and the ranking rule ranks it below every measured redshift."
+  - key: 01a1a931-2c8a-73a8-91f2-58e25e5c7565
+    kind: obligation
+    statement: "Euclid's first full data release and the COSMOS-Web groups are weighed again in a later release."
+subjects:
+  - role: outcome
+    node: 01a1a931-2c8a-73a8-91f2-58fec7b6f3d1

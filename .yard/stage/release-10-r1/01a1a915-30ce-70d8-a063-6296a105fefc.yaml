@@ -1,0 +1,358 @@
+key: 01a1a915-30ce-70d8-a063-6296a105fefc
+id: decide-the-scope
+versions:
+  - key: 01a1a915-30ce-70d8-a063-629a8688288e
+    at: 2026-11-05T00:21:40Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Decide the wave's scope with the owner"
+    goal: "The owner has chosen which surveys release 10 takes and how bulk objects are stored"
+    status: planned
+  - key: 01a1a92b-885c-71a5-a921-4c9d7c79b52a
+    at: 2026-11-05T00:46:04Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Decide the wave's scope with the owner"
+    goal: "The owner has chosen which surveys release 10 takes and how bulk objects are stored"
+    status: active
+  - key: 01a1a92d-f714-7037-8939-37837e5a988c
+    at: 2026-11-05T00:48:44Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Decide the wave's scope with the owner"
+    goal: "The owner has chosen which surveys release 10 takes and how bulk objects are stored"
+    status: done
+blocks:
+  - key: 01a1a92b-885c-71a5-a921-4c932533886b
+    id: q-storage
+    kind: question
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4c9e36fd55ae
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "How should a release hold more objects than one 10 GB D1 database?"
+        header: "Storage"
+        context: "DESI DR1 alone is ~15.8 M objects. With release 9's 2.1 M and the other surveys, release 10 is about 15–18 GB in D1 at ~0.83 kB an object. Cloudflare: \"D1 is designed for horizontal scale out across multiple, smaller (10 GB) databases\"; 100,000 databases are included on Workers Paid, with ~5,000 bindings per Worker. Every reference read goes through `Backend::releases`/`releases_batch` in univ-api (~22 call sites)."
+        options:
+          - label: "Several D1 databases"
+            detail: "A small catalogue database (releases, sources, terms, structures, an id-to-shard index) plus object shards split by spatial cell. The SQL stays as it is. Work: routing in the Worker, cross-shard paging for volume queries, a shard-aware publish and prune. QA-2's lookup time is re-measured. About one ingest wave and one server wave. Recommended: the smallest change that scales."
+            recommended: true
+          - label: "R2 shards"
+            detail: "Bulk survey objects as files per octree node in R2, as the existing decision foresaw. Lookups and volume queries leave SQL for file reads and an index of their own: a larger rewrite of the query path."
+          - label: "One D1, no DESI"
+            detail: "Keep the current store and take only what fits (~6–10 M new objects after pruning). DESI and WISE×SuperCOSMOS stay out."
+    responses:
+      - key: 01a1a92d-c43f-7217-8ab2-18630ee7dc4d
+        at: 2026-11-05T00:48:31Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Several D1 databases"
+  - key: 01a1a92b-885c-71a5-a921-4c943399dbb9
+    id: q-spectroscopic
+    kind: question
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4c9ffc491a2a
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Which spectroscopic surveys go into release 10?"
+        header: "Surveys"
+        context: "All four have clear terms. 2dFGRS (through CDS) and ALFALFA (CC BY-NC) allow non-commercial use only."
+        options:
+          - label: "DESI DR1"
+            detail: "~15.8 M redshifts over ~9,700 deg² to z = 1.7, CC BY 4.0. Needs the shards and a barycentric redshift frame. A 22.4 GB download, or column subsets over Astro Data Lab TAP."
+            recommended: true
+          - label: "Rest of BOSS/eBOSS"
+            detail: "1.53 M galaxies at 0.35 ≤ z < 1.2 from the same SDSS DR17 SpecObj query the release already runs, with `zErr`. Public domain."
+            recommended: true
+          - label: "2dFGRS"
+            detail: "221,509 galaxies over ~1,500 deg², median z 0.11. No per-object error; the catalogue's rms of 85 km/s is used as an estimate. Overlaps SDSS and 6dFGS, which the cross-match merges."
+            recommended: true
+          - label: "ALFALFA"
+            detail: "25,434 HI-selected galaxies to cz ~ 18,000 km/s, gas-rich ones that optical surveys miss. Its flow-model distances (H0 = 70) are kept as estimates."
+            recommended: true
+        multiple: true
+    responses:
+      - key: 01a1a92d-c43f-7217-8ab2-186491436e4a
+        at: 2026-11-05T00:48:31Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "DESI DR1"
+          - "Rest of BOSS/eBOSS"
+          - "2dFGRS"
+          - "ALFALFA"
+  - key: 01a1a92b-885c-71a5-a921-4c95b1a7ae1e
+    id: q-quasars
+    kind: question
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4ca00c93c7ff
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Should release 10 take quasars as well as galaxies?"
+        header: "Quasars"
+        context: "SDSS DR17 has 753,228 `class = 'QSO'` spectra with `zWarning = 0`; DESI DR1 has ~1.55 M QSOs. They reach z ~ 7, which `cosmic_web`'s octree accepts (its root grows to the farthest point)."
+        options:
+          - label: "Include quasars"
+            detail: "~2.3 M more spectroscopic objects to z ~ 7, the most distant points in the release. DESI warns that Lyα QSO redshifts are biased low by >100 km/s at z > 3. That caveat goes in the source definition."
+            recommended: true
+          - label: "Galaxies only"
+            detail: "Keep the release to galaxies, as the SDSS source does now."
+    responses:
+      - key: 01a1a92d-c43f-7217-8ab2-1865b21c25a2
+        at: 2026-11-05T00:48:31Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Include quasars"
+  - key: 01a1a92b-885c-71a5-a921-4c9621e71cdb
+    id: q-pending
+    kind: question
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4ca168be355c
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Which permission-pending surveys should get source definitions now?"
+        header: "Pending"
+        context: "These have no redistribution grant. Each would carry `permission_pending` until its provider replies."
+        options:
+          - label: "2MPZ"
+            detail: "928 k photometric redshifts, near all-sky, σz = 0.015. Fills in the nearby sky between the spectroscopic surveys. Ask WFAU (mar@roe.ac.uk) and M. Bilicki."
+            recommended: true
+          - label: "WISE×SuperCOSMOS"
+            detail: "~18.5 M photometric redshifts over 3π sr, σz/(1+z) = 0.033. Needs the shards. The same request to WFAU covers it."
+            recommended: true
+          - label: "GAMA DR4"
+            detail: "302,682 spectroscopic redshifts in ~286 deg², deep (r < 19.8). About 82 k rows are re-served from SDSS, 2dFGRS and others; take `SURVEY = 'GAMA'` only. Ask gama@gama-survey.org."
+            recommended: true
+          - label: "COSMOS-Web groups"
+            detail: "1,678 photometric group candidates in 0.45 deg² to z = 3.7, ~77% pure. Needs a new deep-field scale domain and a frame the paper does not state. Ask the corresponding author."
+        multiple: true
+    responses:
+      - key: 01a1a92d-c43f-7217-8ab2-1866d44f6a40
+        at: 2026-11-05T00:48:31Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "2MPZ"
+          - "WISE×SuperCOSMOS"
+          - "GAMA DR4"
+  - key: 01a1a92b-885c-71a5-a921-4c9778e2b34b
+    id: q-euclid
+    kind: question
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4ca28b579cea
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "What should release 10 do about Euclid?"
+        header: "Euclid"
+        context: "Q1 is public: 12.9 M photometric redshifts in 63 deg² (CC BY-NC 3.0 IGO, the ESA Euclid logo shown on websites). DR1-Foundation (~1,900 deg²) is listed for 12 Nov 2026, marked tentative."
+        options:
+          - label: "Wait for DR1"
+            detail: "Weigh DR1 in a later wave once it is out and its terms are read. Q1's three deep fields would need a deep-field domain for only 63 deg²."
+            recommended: true
+          - label: "Q1 now"
+            detail: "Take Q1's photo-z now, with a new deep-field scale domain and the shards."
+          - label: "Leave Euclid out"
+            detail: "No Euclid work planned."
+    responses:
+      - key: 01a1a92d-c43f-7217-8ab2-18673c1c3a01
+        at: 2026-11-05T00:48:31Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Wait for DR1"
+  - key: 01a1a92b-885c-71a5-a921-4c988fa0acc9
+    id: q-noncommercial
+    kind: question
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4ca3d7e7afae
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Should sources whose terms allow non-commercial use only be admitted?"
+        header: "NC terms"
+        context: "2dFGRS (through CDS), ALFALFA (CC BY-NC) and Euclid (CC BY-NC 3.0 IGO) would be the first. Today a source's status is `permitted`, `permitted_with_credit` or `forbidden`."
+        options:
+          - label: "Admit, marked NC"
+            detail: "Record a non-commercial condition on the source and serve it with the source's terms, so a later commercial use can drop exactly those sources. Fits a hobby project run locally."
+            recommended: true
+          - label: "Commercial-safe only"
+            detail: "Refuse non-commercial sources; 2dFGRS, ALFALFA and Euclid stay out."
+    responses:
+      - key: 01a1a92d-c43f-7217-8ab2-18688bb2e394
+        at: 2026-11-05T00:48:31Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Admit, marked NC"
+  - key: 01a1a92b-885c-71a5-a921-4c9985e0072d
+    id: q-pending-scope
+    kind: question
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4ca43c7da94b
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "`permission_pending` sources are ingested by default, as you asked. Should anything stop them from going public?"
+        header: "Guard"
+        context: "The project rule is that a source whose terms forbid redistribution is never published. A pending source isn't forbidden, but its provider hasn't agreed either. Everything runs locally today, and existing judgments say \"Provisional: judged again before any public deployment.\""
+        options:
+          - label: "Local only, flagged"
+            detail: "Ingested and published to the local state by default. The API serves the status with the source's terms, and any future public deployment refuses while a source is still pending. Recommended: matches your default and keeps the redistribution rule."
+            recommended: true
+          - label: "Included everywhere"
+            detail: "Pending sources are treated like permitted ones wherever releases go. Simpler, but a public deployment would redistribute data its provider hasn't cleared."
+          - label: "Opt-in flag"
+            detail: "Ingest leaves pending sources out unless a flag includes them."
+    responses:
+      - key: 01a1a92d-c43f-7217-8ab2-186909d48757
+        at: 2026-11-05T00:48:31Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Included everywhere"
+  - key: 01a1a92d-f714-7037-8939-3775428a5534
+    id: d-storage
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a92d-f714-7037-8939-377cafce7e5a
+        at: 2026-11-05T00:48:44Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Shard a release's objects across several D1 databases"
+        consequence: "A new spec decision supersedes keep-objects-in-d1-until-a-desi-sized-source: a catalogue database plus object shards by spatial cell, with routing in the Worker and shard-aware publish and prune; QA-2 is re-measured on the shards."
+        question: 01a1a92b-885c-71a5-a921-4c932533886b
+  - key: 01a1a92d-f714-7037-8939-37769358e64b
+    id: d-spectroscopic
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1a92d-f714-7037-8939-377df0534a8e
+        at: 2026-11-05T00:48:44Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Take DESI DR1, the rest of BOSS/eBOSS, 2dFGRS and ALFALFA"
+        consequence: "Four new source definitions with their quoted terms; univ-model gains a barycentric redshift frame for DESI, and 2dFGRS's global 85 km/s rms is recorded as an estimated uncertainty."
+        question: 01a1a92b-885c-71a5-a921-4c943399dbb9
+  - key: 01a1a92d-f714-7037-8939-3777dbe34cc0
+    id: d-quasars
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1a92d-f714-7037-8939-377ea40713ec
+        at: 2026-11-05T00:48:44Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Take quasars from SDSS and DESI"
+        consequence: "About 2.3 M quasars to z ~ 7 join the cosmic web domain, with DESI's warning on low-biased Lyα redshifts in the source definition."
+        question: 01a1a92b-885c-71a5-a921-4c95b1a7ae1e
+  - key: 01a1a92d-f714-7037-8939-3778c44516a8
+    id: d-pending
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1a92d-f714-7037-8939-377f73d30a71
+        at: 2026-11-05T00:48:44Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Define 2MPZ, WISE×SuperCOSMOS and GAMA DR4 as permission pending"
+        consequence: "Three source definitions carry `permission_pending` while requests go to WFAU, M. Bilicki and GAMA; COSMOS-Web groups wait for a deep-field domain and its author's reply."
+        question: 01a1a92b-885c-71a5-a921-4c9621e71cdb
+  - key: 01a1a92d-f714-7037-8939-37798eb5b4bf
+    id: d-euclid
+    kind: decision
+    number: 5
+    versions:
+      - key: 01a1a92d-f714-7037-8939-37802be7b76f
+        at: 2026-11-05T00:48:44Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Wait for Euclid DR1"
+        consequence: "No Euclid work in release 10; DR1 is weighed in a later wave once it is public and its terms are read."
+        question: 01a1a92b-885c-71a5-a921-4c9778e2b34b
+  - key: 01a1a92d-f714-7037-8939-377a303e68da
+    id: d-noncommercial
+    kind: decision
+    number: 6
+    versions:
+      - key: 01a1a92d-f714-7037-8939-3781c9108c12
+        at: 2026-11-05T00:48:44Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Admit non-commercial sources, marked as such"
+        consequence: "A source records a non-commercial condition, served with its terms, so 2dFGRS and ALFALFA can be dropped exactly for any commercial use."
+        question: 01a1a92b-885c-71a5-a921-4c988fa0acc9
+  - key: 01a1a92d-f714-7037-8939-377ba2fff364
+    id: d-pending-scope
+    kind: decision
+    number: 7
+    versions:
+      - key: 01a1a92d-f714-7037-8939-37821c1fd829
+        at: 2026-11-05T00:48:44Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Treat permission-pending sources like permitted ones everywhere"
+        consequence: "Ingest and publish take pending sources by default with no deployment guard; the status is served with each source's terms, so a public deployment would show which sources are still awaiting permission."
+        question: 01a1a92b-885c-71a5-a921-4c9985e0072d

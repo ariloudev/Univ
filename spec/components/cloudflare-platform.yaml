@@ -9,7 +9,7 @@ components:
     body: "Runs the Worker's WebAssembly."
   - key: 01a19f1e-d177-716d-b124-3ce3944cd7e5
     name: "D1"
-    body: "SQLite databases: objects, identities, the cell index, layers and keys."
+    body: "SQLite databases: the catalogue database of the releases, which holds their sources, structures and the object shard of each object id; the object shards, which hold objects, identities and the cell index; and the layers and keys."
   - key: 01a19f1e-d177-716d-b124-3ce42ae3be29
     name: "R2"
     body: "Object storage: tiles, tile manifests, volume grids and release manifests."
