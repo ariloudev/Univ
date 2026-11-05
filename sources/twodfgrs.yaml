@@ -5,8 +5,9 @@ access:
   method: vizier_tsv
   table: "VII/250/2dfgrs"
   constraints: ["q_z=3..5", "z=0.002..0.5"]
-  # SeqNum is the 2dFGRS serial number, I6, never blank (ReadMe); 245,591 records.
-  slices: { column: SeqNum, from: 1, to: 270000, step: 30000 }
+  # SeqNum is the 2dFGRS serial number, I6, never blank (ReadMe). The table holds 245,591
+  # records, but their serial numbers run from 1 to 389,712 (counted at China-VO, 2026-11-05).
+  slices: { column: SeqNum, from: 1, to: 390000, step: 30000 }
   rows: 221414
 cuts:
   - "VII/250/2dfgrs, the best observation of each of 245,591 objects (ReadMe), cut to redshift quality q_z >= 3 and 0.002 <= z <= 0.5."

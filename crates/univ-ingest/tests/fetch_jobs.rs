@@ -1,5 +1,6 @@
-//! A TAP query run as a job is submitted, polled until it completes, its result kept and the
-//! job deleted; a job kept on disk is not run again (F-2).
+//! A TAP query run as a job is created, started through its phase, polled until it completes,
+//! its result kept and the job deleted; a job kept on disk is not run again (F-2). The services
+//! here refuse a job created with its phase, as Astro Data Lab does.
 
 mod common;
 
@@ -19,17 +20,43 @@ fn ok() -> ResponseTemplate {
     ResponseTemplate::new(200)
 }
 
+/// Mounts on `server` a TAP service's taking of `job`: a submission that sets a phase refused
+/// as Astro Data Lab refuses it, one without redirected to the job, and the job started once by
+/// `PHASE=RUN` sent to its phase.
+async fn takes(server: &MockServer, job: &str) {
+    Mock::given(method("POST"))
+        .and(path("/tap/async"))
+        .and(body_string_contains("PHASE"))
+        .respond_with(
+            ResponseTemplate::new(400).set_body_string("PHASE: Execution Phase is mandatory."),
+        )
+        .with_priority(1)
+        .mount(server)
+        .await;
+    Mock::given(method("POST"))
+        .and(path("/tap/async"))
+        .respond_with(
+            ResponseTemplate::new(303).insert_header("Location", format!("/tap/async/{job}")),
+        )
+        .expect(1)
+        .mount(server)
+        .await;
+    Mock::given(method("POST"))
+        .and(path(format!("/tap/async/{job}/phase")))
+        .and(body_string_contains("PHASE=RUN"))
+        .respond_with(
+            ResponseTemplate::new(303).insert_header("Location", format!("/tap/async/{job}")),
+        )
+        .expect(1)
+        .mount(server)
+        .await;
+}
+
 /// A TAP service that takes one job: it redirects the submission to the job, reports it
 /// executing once and then completed, serves its result and deletes it once asked.
 async fn job_service(result: &str) -> MockServer {
     let server = MockServer::start().await;
-    Mock::given(method("POST"))
-        .and(path("/tap/async"))
-        .and(body_string_contains("PHASE=RUN"))
-        .respond_with(ResponseTemplate::new(303).insert_header("Location", "/tap/async/job-1"))
-        .expect(1)
-        .mount(&server)
-        .await;
+    takes(&server, "job-1").await;
     Mock::given(method("GET"))
         .and(path("/tap/async/job-1"))
         .respond_with(ok().set_body_string("<uws:job/>"))
@@ -110,12 +137,7 @@ async fn a_query_run_as_a_job_is_polled_until_it_completes_and_its_result_kept()
 #[tokio::test]
 async fn a_job_that_ends_in_error_is_not_submitted_again_and_the_next_mirror_runs_it() {
     let failing = MockServer::start().await;
-    Mock::given(method("POST"))
-        .and(path("/tap/async"))
-        .respond_with(ResponseTemplate::new(303).insert_header("Location", "/tap/async/job-9"))
-        .expect(1)
-        .mount(&failing)
-        .await;
+    takes(&failing, "job-9").await;
     Mock::given(method("GET"))
         .and(path("/tap/async/job-9"))
         .respond_with(ok())
@@ -179,12 +201,7 @@ async fn a_poll_that_fails_is_asked_again_and_the_job_is_not_submitted_again() {
 #[tokio::test]
 async fn a_job_that_does_not_complete_in_half_an_hour_is_deleted_and_the_next_mirror_runs_it() {
     let slow = MockServer::start().await;
-    Mock::given(method("POST"))
-        .and(path("/tap/async"))
-        .respond_with(ResponseTemplate::new(303).insert_header("Location", "/tap/async/job-5"))
-        .expect(1)
-        .mount(&slow)
-        .await;
+    takes(&slow, "job-5").await;
     Mock::given(method("GET"))
         .and(path("/tap/async/job-5"))
         .respond_with(ok())

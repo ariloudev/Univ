@@ -1,12 +1,18 @@
-//! A TAP query run as a job (IVOA UWS): submitted to the service's `/async` endpoint with
-//! `PHASE=RUN`, its phase polled until it completes, then its result fetched and the job deleted.
-//! A service such as the ESA Gaia archive answers a join of two large tables this way in
-//! seconds, where a synchronous query of the same rows outlasts any request.
+//! A TAP query run as a job (IVOA UWS): created at the service's `/async` endpoint, started by
+//! `PHASE=RUN` sent to its `phase`, its phase polled until it completes, then its result fetched
+//! and the job deleted. A service such as the ESA Gaia archive answers a join of two large tables
+//! this way in seconds, where a synchronous query of the same rows outlasts any request.
+//!
+//! The job's form keeps `PHASE=RUN`, the request a chunk on disk is matched by, but the job is
+//! created without it: Astro Data Lab refuses a job created with `PHASE=RUN` ("Execution Phase is
+//! mandatory", HTTP 400) and leaves one created with `phase=RUN` pending (2026-11-05). Every UWS
+//! service starts a pending job through its `phase`.
 
 use std::future::Future;
 use std::time::Duration;
 
 use reqwest::header::CONTENT_TYPE;
+use url::form_urlencoded::{Serializer, parse};
 
 use super::{Attempt, Clock, Fetcher, read};
 
@@ -28,9 +34,13 @@ impl<C: Clock> Fetcher<C> {
     /// that ends in error, or does not complete in time, sends the fetch to the next mirror:
     /// the same query submitted again would end the same way.
     pub(super) async fn job(&self, base: &str, form: &str) -> Result<Vec<u8>, Attempt> {
-        let job = self.submit(base, form).await?;
+        let job = self.submit(base, &without_phase(form)).await?;
         let result = format!("{job}/results/result");
-        let result = match self.until_done(&job).await {
+        let ran = match self.again(|| self.run(&job)).await {
+            Ok(()) => self.until_done(&job).await,
+            Err(e) => Err(e),
+        };
+        let result = match ran {
             Ok(()) => self.again(|| read(&self.jobs, &result)).await,
             Err(e) => Err(e),
         };
@@ -59,6 +69,19 @@ impl<C: Clock> Fetcher<C> {
             ));
         }
         Ok(job.to_owned())
+    }
+
+    /// Starts `job`, created pending.
+    async fn run(&self, job: &str) -> Result<(), Attempt> {
+        let response = self
+            .jobs
+            .post(format!("{job}/phase"))
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .body("PHASE=RUN")
+            .send()
+            .await
+            .map_err(|e| Attempt::Retry(super::with_causes(&e)))?;
+        super::judge_status(response.status())
     }
 
     /// Polls the phase of `job` until it completes; an error when it ends otherwise or does not
@@ -107,5 +130,30 @@ impl<C: Clock> Fetcher<C> {
                 done => return done,
             }
         }
+    }
+}
+
+/// `form` without its `PHASE`, in any letter case.
+fn without_phase(form: &str) -> String {
+    let mut kept = Serializer::new(String::new());
+    for (key, value) in parse(form.as_bytes()) {
+        if !key.eq_ignore_ascii_case("PHASE") {
+            kept.append_pair(&key, &value);
+        }
+    }
+    kept.finish()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_job_is_created_without_its_phase() {
+        assert_eq!(
+            without_phase("REQUEST=doQuery&QUERY=SELECT+1+%2B+2&PHASE=RUN"),
+            "REQUEST=doQuery&QUERY=SELECT+1+%2B+2"
+        );
+        assert_eq!(without_phase("phase=RUN&LANG=ADQL"), "LANG=ADQL");
     }
 }
