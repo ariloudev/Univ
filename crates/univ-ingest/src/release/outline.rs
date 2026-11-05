@@ -394,7 +394,7 @@ pub fn outlines_on(
         if !dense.iter().any(|(r, _)| *r == rule) {
             let places = dense_places(
                 rule,
-                objects.iter().map(|o| &o.object),
+                objects.iter().map(|o| &*o.object),
                 structures.iter().map(|(_, s)| s),
             );
             dense.push((rule, places));

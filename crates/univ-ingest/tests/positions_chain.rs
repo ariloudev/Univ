@@ -277,7 +277,8 @@ fn an_unstated_equinox_is_taken_as_j2000_before_it_is_moved_to_the_icrs() {
     let direction =
         Direction::new(Frame::EquatorialEquinoxUnstated, 150.0, 20.0, Epoch::J2000).unwrap();
     let placed = DerivedPosition::new(direction, radial);
-    let chain = steps(placed.chain());
+    let chain = placed.chain();
+    let chain = steps(&chain);
     let at = |f: fn(&Transformation) -> bool| chain.iter().position(|t| f(t)).unwrap();
     let assumed = at(|t| matches!(t, Transformation::EquinoxAssumedJ2000 { .. }));
     let moved = at(|t| matches!(t, Transformation::ToIcrs { .. }));

@@ -91,7 +91,7 @@ impl EntryField {
     #[must_use]
     pub fn read(self, entry: &CatalogueEntry) -> Option<&str> {
         let text = match self {
-            Self::Identifier => Some(entry.designation.identifier.as_str()),
+            Self::Identifier => Some(&*entry.designation.identifier),
             Self::Name => entry.name.as_deref(),
             Self::GroupId => entry.group_id.as_deref(),
         }?;

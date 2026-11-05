@@ -278,7 +278,7 @@ fn the_galactic_centre_and_the_supergalactic_pole_round_trip() {
     let [gx, gy, gz] = gc.cartesian(Frame::Galactic).unwrap();
     assert!(near(gx, 8.178e-3, 1e-12) && gy.abs() < 1e-15 && gz.abs() < 1e-15);
     assert!(matches!(
-        steps(gc.chain())[..2],
+        steps(&gc.chain())[..2],
         [Transformation::Published { .. }, Transformation::Euclidean { largest_difference }]
             if *largest_difference < 2e-6
     ));
@@ -314,10 +314,14 @@ fn each_derived_value_records_the_release_cosmology_its_chain_and_the_model_vers
     let direction = Direction::new(Frame::Fk5J2000, 54.430_541_7, -22.908_194_4, Epoch::J2000);
     let p = DerivedPosition::new(direction.unwrap(), radial);
     assert_eq!(p.cosmology(), &Cosmology::planck_2018());
-    assert_eq!((p.model_version(), MODEL_VERSION), ("0.1.0", "0.1.0"));
+    let held = serde_json::to_value(&p).unwrap();
+    assert_eq!(
+        (held["model_version"].as_str(), MODEL_VERSION),
+        (Some("0.1.0"), "0.1.0")
+    );
     let factor = 75.0 / 67.66;
     assert!(matches!(
-        steps(p.chain())[..],
+        steps(&p.chain())[..],
         [
             Transformation::Published { measure: Measure::Luminosity, .. },
             Transformation::FromModulus { .. },

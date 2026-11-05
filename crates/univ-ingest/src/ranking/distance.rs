@@ -332,7 +332,7 @@ pub fn choose(
     let (best, decided) = winner(object, candidates, &[], rules)?;
     let runner_up = winner(object, candidates, &[best], rules).map(|(i, _)| {
         let c = &candidates[i];
-        (c.measurement(object), c.uncertainty)
+        Box::new((c.measurement(object), c.uncertainty))
     });
     let c = &candidates[best];
     Some(PreferredDistance {

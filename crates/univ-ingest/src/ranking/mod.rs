@@ -37,7 +37,7 @@ pub fn rank(object: &mut Object, rules: &RankingRules, release: &Release) {
 }
 
 /// Ranks every object.
-pub fn rank_all(objects: &mut [Object], rules: &RankingRules, release: &Release) {
+pub fn rank_all(objects: &mut [Box<Object>], rules: &RankingRules, release: &Release) {
     for object in objects {
         rank(object, rules, release);
     }

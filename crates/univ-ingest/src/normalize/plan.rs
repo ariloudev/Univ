@@ -3,10 +3,11 @@
 //! apply to it.
 
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
 use univ_model::cosmology::Cosmology;
 use univ_model::distance::{DistanceKind, Measure, Method};
-use univ_model::entry::RedshiftKind;
+use univ_model::entry::{RedshiftKind, flag_name};
 use univ_model::position::Frame;
 use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
@@ -132,7 +133,8 @@ pub(super) struct Plan {
     pub spectral_type: Option<SpectralTypePlan>,
     pub group_id: Option<usize>,
     pub supergalactic: Option<[Col; 3]>,
-    pub flags: Vec<Col>,
+    /// The quality columns, each with its name shared by every entry's flags.
+    pub flags: Vec<(usize, Arc<str>)>,
     pub redshifts: Vec<RedshiftPlan>,
     pub distances: Vec<DistancePlan>,
     pub rules: Vec<RulePlan>,
@@ -420,7 +422,10 @@ impl Plan {
                 .columns
                 .iter()
                 .filter(|c| c.field == Field::Quality)
-                .map(|c| r.col(&c.column))
+                .map(|c| {
+                    r.col(&c.column)
+                        .map(|col| (col.index, flag_name(&col.name)))
+                })
                 .collect::<Result<_, _>>()?,
             redshifts: n
                 .redshifts

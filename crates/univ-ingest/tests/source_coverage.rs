@@ -128,6 +128,7 @@ fn the_radial_ranges_of_hipparcos_and_cosmicflows_4_are_their_parallaxes_and_dis
     let (entries, radial) = fixture_coverage("hipparcos-2007");
     let (lo, hi, n) = range(entries.iter().filter_map(|e| {
         e.parallax
+            .as_deref()
             .map(|p| p.normalized.to(Unit::Milliarcsecond).unwrap().value)
     }));
     let p = item(&radial, "parallax");

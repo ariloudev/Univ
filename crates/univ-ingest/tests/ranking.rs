@@ -29,9 +29,9 @@ fn object(entries: Vec<CatalogueEntry>) -> Object {
             .into_iter()
             .map(|entry| ObjectEntry {
                 entry,
-                resolved_by: Resolution::Anchor,
+                resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     )
 }
 
@@ -82,7 +82,7 @@ fn a_redshift_distance_beats_tully_fisher_at_15000_km_s_and_loses_at_1000() {
         panic!()
     };
     assert!(peculiar_velocity.unwrap() > 10.0 * measurement.unwrap());
-    let (lost, tf) = p.runner_up.unwrap();
+    let (lost, tf) = *p.runner_up.unwrap();
     assert!(matches!(lost, MeasurementRef::Distance { .. }));
     assert!((total(tf) - 0.185).abs() < 0.001, "TF {}", total(tf));
 
@@ -90,7 +90,7 @@ fn a_redshift_distance_beats_tully_fisher_at_15000_km_s_and_loses_at_1000() {
     let p = near.preferred_distance.unwrap();
     assert!(matches!(p.measurement, MeasurementRef::Distance { .. }));
     assert!((total(p.uncertainty) - 0.185).abs() < 0.001);
-    let (_, z) = p.runner_up.unwrap();
+    let (_, z) = *p.runner_up.unwrap();
     assert!((total(z) - 0.30).abs() < 0.02, "redshift {}", total(z));
 }
 

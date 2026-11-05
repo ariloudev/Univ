@@ -74,7 +74,7 @@ fn alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error() {
     assert_eq!((n.report.published, n.report.left_out_total()), (5, 0));
     // AGC 105367: Vhel 11983 km/s.
     let e = entry(&n, "105367");
-    let cz = e.redshifts[0].velocity.unwrap();
+    let cz = e.redshifts[0].velocity.as_deref().unwrap();
     assert!((cz.value - 11_983.0).abs() < 1e-9);
     // e_W50 39 km/s: Haynes et al. 2018 adopt half of it as the velocity's error.
     assert_eq!(cz.uncertainty, Uncertainty::Symmetric { sigma: 19.5 });

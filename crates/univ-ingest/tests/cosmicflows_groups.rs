@@ -25,7 +25,15 @@ fn a_group_velocity_beyond_13000_km_s_reads_as_a_comoving_distance_and_meets_its
     for (pgc, v3k) in [("1365066", 28_573.0), ("837279", 15_659.0)] {
         let group = &entry(&groups, pgc).redshifts[0];
         let galaxy = &entry(&galaxies, pgc).redshifts[0];
-        assert_eq!(entry(&groups, pgc).velocity.unwrap().native.value, v3k);
+        assert_eq!(
+            entry(&groups, pgc)
+                .velocity
+                .as_deref()
+                .unwrap()
+                .native
+                .value,
+            v3k
+        );
         let (zg, zh) = (group.cmb.value.value, galaxy.cmb.value.value);
         assert!((zg / zh - 1.0).abs() < 0.005, "{pgc}: {zg} against {zh}");
         assert!((v3k / SPEED_OF_LIGHT / zh - 1.0).abs() > 0.01, "{pgc}");

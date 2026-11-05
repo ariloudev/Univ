@@ -209,12 +209,12 @@ fn the_designations_are_the_objects_rows_or_its_entries_own_before_that_table() 
     let named: Vec<(&str, &str)> = read
         .designations
         .iter()
-        .map(|d| (d.source.as_str(), d.identifier.as_str()))
+        .map(|d| (d.source.as_str(), &*d.identifier))
         .collect();
     assert_eq!(named, [("sixdfgs-dr3", "g1"), ("twomrs", "J0042")]);
     let before = object(&v, &object_row(), &[entry_row()], &[], &[]).unwrap();
     assert_eq!(before.designations.len(), 1);
-    assert_eq!(before.designations[0].identifier, "J0042");
+    assert_eq!(&*before.designations[0].identifier, "J0042");
     let bad = [designation_row(9, "x")];
     let err = object(&v, &object_row(), &[entry_row()], &[], &bad).unwrap_err();
     assert!(err.0.contains("designations.source"), "{err}");

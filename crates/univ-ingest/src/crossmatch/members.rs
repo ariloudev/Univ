@@ -119,7 +119,7 @@ impl<'a> NameIndex<'a> {
     pub fn new(objects: &'a [Resolved<'a>]) -> Self {
         let mut by_name: HashMap<String, Vec<usize>> = HashMap::new();
         for (i, c) in objects.iter().enumerate() {
-            let names = c.object.designations.iter().map(|d| d.identifier.as_str());
+            let names = c.object.designations().map(|d| &*d.identifier);
             let common = c.object.names.iter().map(|n| n.name.as_str());
             for name in names.chain(common).filter_map(key) {
                 let found = by_name.entry(name).or_default();
