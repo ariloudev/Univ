@@ -19,7 +19,7 @@ use univ_model::object::{
 };
 use univ_model::release::read::{Row, Vocabulary, object};
 
-use crate::release_fixture::{built, cross, fixture, loaded, tiles};
+use crate::release_fixture::{built, cross, fixture_with, loaded, tiles};
 
 /// Each cross-matched object beside the record its rows decode to.
 pub struct Decoded {
@@ -131,7 +131,8 @@ fn with_links(crossed: &mut CrossMatched) {
 }
 
 fn load() -> Loaded {
-    let fixture = fixture();
+    // DESI's redshifts are barycentric: its objects read back with that frame.
+    let fixture = fixture_with(&["desi-dr1"]);
     let mut crossed = cross(&fixture);
     with_links(&mut crossed);
     let tiles = tiles(&fixture, &crossed);

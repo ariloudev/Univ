@@ -1,0 +1,5 @@
+source: gama-dr4
+url: https://www.gama-survey.org/dr4/data/cat/SpecCat/v27/SpecObjv27.fits
+retrieved: 2026-11-05T02:46:00Z
+sha256: b6a9ff86ad5e448f94ca25ea3de0cd9a8ff7e565f712a4ef45ca13e1d2622c9a
+note: the first 4096 bytes of the first file

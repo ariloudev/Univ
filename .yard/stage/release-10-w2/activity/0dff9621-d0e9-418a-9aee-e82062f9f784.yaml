@@ -23,13 +23,23 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-05T04:05:19Z
+lastEnded: 2026-11-05T04:21:03Z
 turns:
   - started: 2026-11-05T02:29:39Z
     ended: 2026-11-05T03:50:58Z
   - started: 2026-11-05T04:02:20Z
     ended: 2026-11-05T04:02:55Z
   - started: 2026-11-05T04:04:25Z
+    ended: 2026-11-05T04:05:53Z
+  - started: 2026-11-05T04:05:53Z
+    ended: 2026-11-05T04:07:16Z
+  - started: 2026-11-05T04:07:17Z
+    ended: 2026-11-05T04:07:33Z
+  - started: 2026-11-05T04:07:33Z
+    ended: 2026-11-05T04:15:42Z
+  - started: 2026-11-05T04:20:10Z
+    ended: 2026-11-05T04:20:25Z
+  - started: 2026-11-05T04:21:03Z
 subagents:
   - agent: adfb2da588ea1dcb8
     type: web-fetch
@@ -50,4 +60,6 @@ loft:
       - check
     agent: main
     started: 2026-11-05T04:05:19Z
+    ended: 2026-11-05T04:05:20Z
+    failed: false
     stage: 01a1a98a-5cb2-7098-b9b7-f2a9ebf6274e
