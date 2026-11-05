@@ -165,6 +165,15 @@ blocks:
         title: "Review, gate, trace and merge W1"
         detail: "/simplify, /code-review, cargo xtask check, loft reconcile, close, merge."
         state: open
+      - key: 01a1a951-da6e-7585-b31d-e7fd89d1f736
+        at: 2026-11-05T01:27:56Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review, gate, trace and merge W1"
+        detail: "/simplify, /code-review, cargo xtask check, loft reconcile, close, merge."
+        state: active
   - key: 01a1a93b-1b80-7724-88bd-0370c0ea6af6
     id: build-issues
     kind: note
@@ -180,3 +189,25 @@ blocks:
           | Issue | Found by | Fix | State |
           |---|---|---|---|
           | none yet | | | |
+      - key: 01a1a96c-0605-754d-92a9-de8ced4e29d2
+        at: 2026-11-05T01:56:31Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | Adding columns to `sources` would not reach an existing D1 (the schema only creates what is missing) | design, W1 | new table `source_terms`, schema 4, additive like version 3 | fixed |
+          | `normalization.rs` reached 510 lines | `cargo xtask lines` | `CatalogueError` and its check moved to `source/normalization/catalogue_error.rs` | fixed |
+          | `write_release` over 100 lines; similar binding names | clippy | `manifest_sources` extracted; bindings renamed | fixed |
+          | The permission request had three structs and two D1 columns | `/simplify` (reuse, simplification) | one `univ_model::api::sources::PermissionRequest`; one JSON column `source_terms.permission` | fixed |
+          | `is_iso_date` accepted 2026-02-31 and duplicated `Civil::parse` | `/simplify` (reuse) | `univ_model::time::is_calendar_date` | fixed |
+          | Catalogue uncertainties written with `json!` and read through another struct | `/simplify` | typed `release::rows::CatalogueUncertainty` on both sides | fixed |
+          | Two String allocations per measurement read to probe the uncertainty map | `/simplify` (efficiency) | map keyed by source id, then `MeasuredQuantity`; no allocation | fixed |
+          | `Redshift::barycentric` duplicated `heliocentric` | `/simplify` | one public `Redshift::measured(frame, …)` | fixed |
+          | `CmbRedshift.heliocentric` held a barycentric value | `/simplify` (altitude) | renamed `measured`, reading `heliocentric` as an alias | fixed |
+          | A source with two redshift readings, one catalogue-wide, would mark both estimated | `/simplify` (altitude) | a catalogue error is refused unless its redshift reading is the only one; a per-row marker would add ~0.5 GB over ~20 M rows | fixed |
+          | cz → z conversion written again in `CatalogueError::in_unit` | `/simplify` (reuse) | skipped: a one-line constant conversion; `as_redshift` works on a `Quantity` | skipped |
+          | Basis cloned per measurement record | `/simplify` (efficiency) | skipped: the API type stays `String`; once per redshift of a lookup | skipped |
