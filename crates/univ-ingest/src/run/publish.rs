@@ -63,7 +63,8 @@ pub struct Shown<'a> {
     stop: &'a AtomicBool,
     /// The files done by this run of each kind, in the order first seen.
     files: Vec<(&'static str, u64)>,
-    /// The rows of the release each table holds once checked by this run, in the order checked.
+    /// The rows of the release each table holds once checked by this run, in every database,
+    /// in the order first checked.
     tables: Vec<(&'static str, u64)>,
 }
 
@@ -128,7 +129,12 @@ impl Progress for Shown<'_> {
             Some((_, n)) => *n += 1,
             None => self.files.push((kind, 1)),
         }
-        self.tables.extend(file.rows);
+        if let Some((table, rows)) = file.rows {
+            match self.tables.iter_mut().find(|(t, _)| *t == table) {
+                Some((_, n)) => *n += rows,
+                None => self.tables.push((table, rows)),
+            }
+        }
         self.sink.emit(Event::Uploaded {
             stage: self.stage,
             step: file.line,

@@ -22,6 +22,7 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 
 use univ_model::release::manifest::Target;
+use univ_model::release::shards::Database;
 use univ_model::release::{ReleaseManifest, Scope, TABLES, keys};
 
 use super::check::{published_status, sql_text};
@@ -192,19 +193,63 @@ fn remove_build_and_journal(
     Ok(build)
 }
 
-/// The rows of release `number` in the tables of one release, as one sum of counts (D1 limits
-/// the terms of a compound `SELECT`, so no `UNION`).
-fn rows_of(store: &mut dyn Store, number: u32) -> Result<u64, String> {
+/// The databases that hold the schema, each object shard Univ Server binds then the catalogue
+/// database: a shard no release was ever loaded into holds nothing to prune.
+fn databases(store: &mut dyn Store) -> Result<Vec<Database>, String> {
+    let shards = store.bound_shards()?;
+    let mut held = Vec::new();
+    for database in (0..shards)
+        .map(Database::Shard)
+        .chain([Database::Catalogue])
+    {
+        let schema = store.query(
+            database,
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_version'",
+        )?;
+        if !schema.is_empty() {
+            held.push(database);
+        }
+    }
+    Ok(held)
+}
+
+/// The rows of release `number` in the tables of one release in `database`, as one sum of
+/// counts (D1 limits the terms of a compound `SELECT`, so no `UNION`).
+fn rows_of(store: &mut dyn Store, database: Database, number: u32) -> Result<u64, String> {
     let counts: Vec<String> = TABLES
         .iter()
         .filter(|t| t.scope == Scope::PerRelease)
         .map(|t| format!("(SELECT COUNT(*) FROM {} WHERE release = {number})", t.name))
         .collect();
-    let rows = store.query(&format!("SELECT {} AS n", counts.join(" + ")))?;
+    let rows = store.query(database, &format!("SELECT {} AS n", counts.join(" + ")))?;
     rows.first()
         .and_then(|r| r.get("n"))
         .and_then(serde_json::Value::as_u64)
-        .ok_or_else(|| format!("D1 gave no count of the rows of release {number}"))
+        .ok_or_else(|| format!("{database} gave no count of the rows of release {number}"))
+}
+
+/// Deletes release `number`'s rows of the tables of one release from `database`, and runs
+/// `then` after, in one file written to `journals`.
+fn delete_rows(
+    store: &mut dyn Store,
+    database: Database,
+    number: u32,
+    journals: &Path,
+    then: Option<String>,
+) -> Result<(), String> {
+    let mut statements: Vec<String> = TABLES
+        .iter()
+        .filter(|t| t.scope == Scope::PerRelease)
+        .map(|t| format!("DELETE FROM {} WHERE release = {number};", t.name))
+        .collect();
+    statements.extend(then);
+    let sql = statements.join("\n") + "\n";
+    std::fs::create_dir_all(journals).map_err(|e| e.to_string())?;
+    let file = journals.join(format!("prune-{number}-{}.sql", database.dir()));
+    std::fs::write(&file, sql).map_err(|e| format!("{}: {e}", file.display()))?;
+    let executed = store.execute_file(database, &file);
+    let _ = std::fs::remove_file(&file);
+    executed
 }
 
 /// Prunes release `number` from `store`. `progress` is given a line for each step.
@@ -284,32 +329,35 @@ pub fn prune_with(
     if progress.stopping() {
         return Err(failed(STOPPED.to_owned()));
     }
-    let rows = rows_of(store, number).map_err(failed)?;
-    let mut statements: Vec<String> = TABLES
-        .iter()
-        .filter(|t| t.scope == Scope::PerRelease)
-        .map(|t| format!("DELETE FROM {} WHERE release = {number};", t.name))
-        .collect();
-    statements.push(format!(
-        "UPDATE releases SET pruned_at = {} WHERE number = {number} AND pruned_at IS NULL;",
-        sql_text(&(options.now)())
-    ));
-    let sql = statements.join("\n") + "\n";
-    std::fs::create_dir_all(options.journals).map_err(|e| failed(e.to_string()))?;
-    let file = options.journals.join(format!("prune-{number}.sql"));
-    std::fs::write(&file, sql).map_err(|e| failed(format!("{}: {e}", file.display())))?;
-    let executed = store.execute_file(&file);
-    let _ = std::fs::remove_file(&file);
-    executed.map_err(failed)?;
-    let left = rows_of(store, number).map_err(failed)?;
-    if left > 0 {
-        return Err(failed(format!(
-            "D1 still holds {left} rows of release {number}"
-        )));
+    let held = databases(store).map_err(failed)?;
+    let mut rows = 0;
+    for &database in &held {
+        rows += rows_of(store, database, number).map_err(failed)?;
     }
+    // Each object shard's rows, then the catalogue's with the pruning time, last.
+    for &database in &held {
+        let then = (database == Database::Catalogue).then(|| {
+            format!(
+                "UPDATE releases SET pruned_at = {} WHERE number = {number} AND pruned_at IS \
+                 NULL;",
+                sql_text(&(options.now)())
+            )
+        });
+        delete_rows(store, database, number, options.journals, then).map_err(failed)?;
+    }
+    for &database in &held {
+        let left = rows_of(store, database, number).map_err(failed)?;
+        if left > 0 {
+            return Err(failed(format!(
+                "{database} still holds {left} rows of release {number}"
+            )));
+        }
+    }
+    let shards = held.len().saturating_sub(1);
     progress.line(format!(
-        "release {number}: {rows} rows deleted from the tables of one release; the list of \
-         releases and the id ledger are kept"
+        "release {number}: {rows} rows deleted from the tables of one release, in the \
+         catalogue database and {shards} object shard(s); the list of releases and the id \
+         ledger are kept"
     ));
     if progress.stopping() {
         return Err(failed(STOPPED.to_owned()));

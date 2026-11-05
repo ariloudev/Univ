@@ -45,6 +45,7 @@ pub mod journal;
 mod progress;
 mod prune;
 mod r2batch;
+mod refuse;
 mod upload;
 mod wrangler;
 
@@ -52,6 +53,7 @@ use std::fmt;
 use std::path::Path;
 
 use serde_json::{Map, Value};
+use univ_model::release::shards::Database;
 
 use crate::tiles::sha256;
 
@@ -61,7 +63,9 @@ pub use progress::{FileDone, Lines, Progress};
 pub use prune::{PruneError, Pruned, prune, prune_with};
 pub use r2batch::{R2Batch, SCRIPT};
 pub use upload::{Published, move_latest, publish, publish_with};
-pub use wrangler::{BUCKET, DATABASE, STDERR_LINES, Wrangler, ingest_dir, strip_ansi};
+pub use wrangler::{
+    BUCKET, DATABASE, STDERR_LINES, Wrangler, bound_shards, database_name, ingest_dir, strip_ansi,
+};
 
 /// Where publishing and pruning find a release and keep their journals, and their clock.
 pub struct StoreOptions<'a> {
@@ -89,21 +93,30 @@ pub struct ReadBack {
     pub sha256: String,
 }
 
-/// The D1 and R2 operations publishing and pruning need.
+/// The D1 and R2 operations publishing and pruning need. D1 is several databases: the
+/// catalogue database and the object shards (`univ_model::release::shards`).
 pub trait Store {
-    /// Executes the SQL file `file` against D1.
+    /// Executes the SQL file `file` against the D1 database `database`.
     ///
     /// # Errors
     ///
     /// Fails, saying why, when D1 refuses it.
-    fn execute_file(&mut self, file: &Path) -> Result<(), String>;
+    fn execute_file(&mut self, database: Database, file: &Path) -> Result<(), String>;
 
-    /// Runs one SQL statement against D1 and gives the rows it returns.
+    /// Runs one SQL statement against the D1 database `database` and gives the rows it
+    /// returns.
     ///
     /// # Errors
     ///
     /// Fails, saying why, when D1 refuses it.
-    fn query(&mut self, sql: &str) -> Result<Vec<QueryRow>, String>;
+    fn query(&mut self, database: Database, sql: &str) -> Result<Vec<QueryRow>, String>;
+
+    /// How many object shards Univ Server binds: shards `0` to this, less one.
+    ///
+    /// # Errors
+    ///
+    /// Fails, saying why, when the bindings cannot be read.
+    fn bound_shards(&mut self) -> Result<u32, String>;
 
     /// Writes the file `file` to R2 at `key`.
     ///

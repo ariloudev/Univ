@@ -24,6 +24,47 @@ binding = "DB"
 database_name = "univ"
 database_id = "00000000-0000-0000-0000-000000000000"
 
+# The object shards, as the root wrangler.toml names them.
+[[d1_databases]]
+binding = "OBJECTS_0"
+database_name = "univ-objects-0"
+database_id = "00000000-0000-0000-0000-000000000100"
+
+[[d1_databases]]
+binding = "OBJECTS_1"
+database_name = "univ-objects-1"
+database_id = "00000000-0000-0000-0000-000000000101"
+
+[[d1_databases]]
+binding = "OBJECTS_2"
+database_name = "univ-objects-2"
+database_id = "00000000-0000-0000-0000-000000000102"
+
+[[d1_databases]]
+binding = "OBJECTS_3"
+database_name = "univ-objects-3"
+database_id = "00000000-0000-0000-0000-000000000103"
+
+[[d1_databases]]
+binding = "OBJECTS_4"
+database_name = "univ-objects-4"
+database_id = "00000000-0000-0000-0000-000000000104"
+
+[[d1_databases]]
+binding = "OBJECTS_5"
+database_name = "univ-objects-5"
+database_id = "00000000-0000-0000-0000-000000000105"
+
+[[d1_databases]]
+binding = "OBJECTS_6"
+database_name = "univ-objects-6"
+database_id = "00000000-0000-0000-0000-000000000106"
+
+[[d1_databases]]
+binding = "OBJECTS_7"
+database_name = "univ-objects-7"
+database_id = "00000000-0000-0000-0000-000000000107"
+
 [[d1_databases]]
 binding = "LAYERS"
 database_name = "univ-layers"

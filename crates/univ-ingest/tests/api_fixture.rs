@@ -18,6 +18,7 @@ use memory_store::{Clock, MemoryStore, publishing};
 use release_fixture::{build_next, fixture};
 use rusqlite::Connection;
 use rusqlite::types::ValueRef;
+use univ_model::release::shards::SHARD_TABLES;
 
 /// The variable that asks the test to rewrite the file.
 const UPDATE: &str = "UPDATE_FIXTURES";
@@ -82,8 +83,11 @@ fn dump(db: &Connection, table: &str, out: &mut String) {
     }
 }
 
-/// The file's text for the release published in `db`.
-fn text(db: &Connection) -> String {
+/// The file's text for the release published in `store`: each table's rows from the database
+/// that holds them, a shard table's from each object shard in turn, so that the file is one
+/// database of the release.
+fn text(store: &MemoryStore) -> String {
+    let db = &store.db;
     let rule: String = db
         .query_row(
             "SELECT ranking_rule_name FROM releases WHERE number = ?1",
@@ -99,7 +103,13 @@ fn text(db: &Connection) -> String {
     )
     .unwrap();
     for table in TABLES {
-        dump(db, table, &mut out);
+        if SHARD_TABLES.contains(&table) {
+            for shard in store.shards.values() {
+                dump(shard, table, &mut out);
+            }
+        } else {
+            dump(db, table, &mut out);
+        }
     }
     out
 }
@@ -114,7 +124,7 @@ fn univ_servers_fixture_of_objects_is_release_2_as_ingest_writes_it() {
         build_next(&f);
         publishing(&mut store, number, out, state, journals.path(), &clock).unwrap();
     }
-    let written = text(&store.db);
+    let written = text(&store);
     let path = workspace().join(FILE);
     if std::env::var_os(UPDATE).is_some() {
         std::fs::write(&path, &written).unwrap();

@@ -1,5 +1,5 @@
-//! An in-memory [`Store`]: D1 as an in-memory `SQLite` database, which is what D1 runs, and R2
-//! as a map of keys to bytes. It records every operation, can fail the upload after a given
+//! An in-memory [`Store`]: each D1 database as an in-memory `SQLite` database, which is what D1
+//! runs, the catalogue's and each object shard's, and R2 as a map of keys to bytes. It records every operation, can fail the upload after a given
 //! number, and can look at D1 and R2 after each operation.
 
 #![allow(dead_code, reason = "each test file uses a part of the store")]
@@ -14,6 +14,7 @@ use serde_json::{Map, Value};
 use univ_ingest::publish::{
     PruneError, Pruned, PublishError, Published, QueryRow, Store, StoreOptions, prune, publish,
 };
+use univ_model::release::shards::Database;
 
 /// An operation the store was asked for.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -32,11 +33,17 @@ impl Op {
     }
 }
 
-/// Looks at D1 and R2 after an operation.
-pub type Observer = Box<dyn FnMut(&Op, &Connection, &BTreeMap<String, Vec<u8>>)>;
+/// Looks at D1 and R2 after an operation: the catalogue database, the database the operation
+/// ran in, and R2.
+pub type Observer = Box<dyn FnMut(&Op, &Connection, &Connection, &BTreeMap<String, Vec<u8>>)>;
 
 pub struct MemoryStore {
+    /// The catalogue database.
     pub db: Connection,
+    /// Each object shard's database, made when first used.
+    pub shards: BTreeMap<u32, Connection>,
+    /// How many object shards the store binds.
+    pub bound: u32,
     pub r2: BTreeMap<String, Vec<u8>>,
     pub ops: Vec<Op>,
     /// Fails every upload once this many have been made.
@@ -45,18 +52,23 @@ pub struct MemoryStore {
     pub corrupt_reads: bool,
     pub observer: Option<Observer>,
     pub uploads: usize,
+    /// The database the last D1 operation ran in.
+    pub last: Database,
 }
 
 impl Default for MemoryStore {
     fn default() -> Self {
         Self {
             db: Connection::open_in_memory().unwrap(),
+            shards: BTreeMap::new(),
+            bound: 8,
             r2: BTreeMap::new(),
             ops: Vec::new(),
             fail_after: None,
             corrupt_reads: false,
             observer: None,
             uploads: 0,
+            last: Database::Catalogue,
         }
     }
 }
@@ -74,8 +86,13 @@ impl MemoryStore {
     }
 
     fn observe(&mut self) {
-        if let (Some(observer), Some(op)) = (self.observer.as_mut(), self.ops.last()) {
-            observer(op, &self.db, &self.r2);
+        let db = match self.last {
+            Database::Catalogue => Some(&self.db),
+            Database::Shard(i) => self.shards.get(&i),
+        };
+        if let (Some(observer), Some(op), Some(db)) = (self.observer.as_mut(), self.ops.last(), db)
+        {
+            observer(op, &self.db, db, &self.r2);
         }
     }
 
@@ -99,9 +116,31 @@ impl MemoryStore {
         self.uploads = 0;
     }
 
-    /// The single integer a query gives.
+    /// The single integer a query of the catalogue gives.
     pub fn int(&self, sql: &str) -> i64 {
         int(&self.db, sql)
+    }
+
+    /// The sum of the single integer a query gives in each database that holds the schema, the
+    /// catalogue and every object shard.
+    pub fn int_everywhere(&self, sql: &str) -> i64 {
+        let schema = "SELECT COUNT(*) FROM sqlite_master WHERE name = 'schema_version'";
+        std::iter::once(&self.db)
+            .chain(self.shards.values())
+            .filter(|db| int(db, schema) > 0)
+            .map(|db| int(db, sql))
+            .sum()
+    }
+
+    /// The database `database`, made when first used.
+    pub fn database(&mut self, database: Database) -> &Connection {
+        match database {
+            Database::Catalogue => &self.db,
+            Database::Shard(i) => self
+                .shards
+                .entry(i)
+                .or_insert_with(|| Connection::open_in_memory().unwrap()),
+        }
     }
 }
 
@@ -164,21 +203,30 @@ fn rows(db: &Connection, sql: &str) -> rusqlite::Result<Vec<QueryRow>> {
 }
 
 impl Store for MemoryStore {
-    fn execute_file(&mut self, file: &Path) -> Result<(), String> {
+    fn execute_file(&mut self, database: Database, file: &Path) -> Result<(), String> {
         let name = file.file_name().unwrap().to_string_lossy().into_owned();
-        self.record(Op::Execute(name))?;
+        self.record(Op::Execute(format!("{}/{name}", database.dir())))?;
+        self.last = database;
         let sql = std::fs::read_to_string(file).map_err(|e| e.to_string())?;
-        let done = trim_sql_query(&sql)
-            .and_then(|sql| self.db.execute_batch(&sql).map_err(|e| e.to_string()));
+        let done = trim_sql_query(&sql).and_then(|sql| {
+            self.database(database)
+                .execute_batch(&sql)
+                .map_err(|e| e.to_string())
+        });
         self.observe();
         done
     }
 
-    fn query(&mut self, sql: &str) -> Result<Vec<QueryRow>, String> {
+    fn query(&mut self, database: Database, sql: &str) -> Result<Vec<QueryRow>, String> {
         self.record(Op::Query(sql.to_owned()))?;
-        let done = rows(&self.db, sql).map_err(|e| e.to_string());
+        self.last = database;
+        let done = rows(self.database(database), sql).map_err(|e| e.to_string());
         self.observe();
         done
+    }
+
+    fn bound_shards(&mut self) -> Result<u32, String> {
+        Ok(self.bound)
     }
 
     fn put(&mut self, key: &str, file: &Path) -> Result<(), String> {
