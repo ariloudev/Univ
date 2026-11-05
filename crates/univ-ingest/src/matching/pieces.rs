@@ -23,13 +23,13 @@ struct Galaxy {
 
 /// The entries of each group: the groups as the earlier passes left them, sorted by root, and
 /// those this pass has joined since, by their new root.
-struct Members {
+pub(super) struct Members {
     base: Vec<(usize, usize)>,
-    joined: HashMap<usize, Vec<usize>>,
+    pub(super) joined: HashMap<usize, Vec<usize>>,
 }
 
 impl Members {
-    fn new(work: &mut Work<'_>) -> Self {
+    pub(super) fn new(work: &mut Work<'_>) -> Self {
         let mut base: Vec<(usize, usize)> = (0..work.entries.len())
             .map(|e| (work.groups.find(e), e))
             .collect();
@@ -40,7 +40,7 @@ impl Members {
         }
     }
 
-    fn of(&self, root: usize) -> Vec<usize> {
+    pub(super) fn of(&self, root: usize) -> Vec<usize> {
         if let Some(m) = self.joined.get(&root) {
             return m.clone();
         }

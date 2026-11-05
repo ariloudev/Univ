@@ -99,6 +99,15 @@ impl Groups {
         self.links[keep].extend(links);
     }
 
+    /// Whether a candidate link joins the groups of `a` and `b`.
+    pub fn linked(&mut self, a: usize, b: usize) -> bool {
+        let (ra, rb) = (self.find(a), self.find(b));
+        (0..self.links[ra].len()).any(|k| {
+            let far = self.links[ra][k];
+            self.find(far) == rb
+        })
+    }
+
     /// Records a candidate link between the groups of `a` and `b`, which no join may then cross.
     pub fn link(&mut self, a: usize, b: usize) {
         let (ra, rb) = (self.find(a), self.find(b));

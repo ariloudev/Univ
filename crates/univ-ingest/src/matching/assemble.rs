@@ -1,14 +1,14 @@
 //! The last step: the groups made into objects, each entry with how it joined, its
 //! designations, common names and candidate links.
 
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 
 use thin_vec::ThinVec;
 use univ_model::entry::CatalogueEntry;
 use univ_model::ids::Designation;
 use univ_model::object::{
-    CandidateLink, CommonName, Confidence, MatchRecord, Object, ObjectEntry, ObjectKind, Relation,
-    RelationKind, Resolution,
+    CandidateLink, CommonName, Confidence, MatchMethod, MatchRecord, Object, ObjectEntry,
+    ObjectKind, Relation, RelationKind, Resolution,
 };
 
 use super::relations::GroupRelation;
@@ -32,13 +32,28 @@ pub(super) fn plan(work: &mut Work<'_>) -> Plan {
         adjacent[e.a].push((e.b, k));
         adjacent[e.b].push((e.a, k));
     }
+    // The galaxy of each group that took pieces within an extent, the largest where it took
+    // several: the extent rule records the galaxy as each piece join's first entry.
+    let mut galaxy_of: HashMap<usize, usize> = HashMap::new();
+    for e in &work.joins {
+        if matches!(&e.join, Join::Position(c) if c.method == MatchMethod::WithinExtent) {
+            let root = work.groups.find(e.a);
+            galaxy_of.entry(root).or_insert(e.a);
+        }
+    }
     let mut seen = vec![false; n];
     let mut objects = Vec::new();
-    for anchor in 0..n {
-        if seen[anchor] {
+    for first in 0..n {
+        if seen[first] {
             continue;
         }
-        // Breadth first from the anchor, the first entry of its group in order.
+        // Breadth first from the anchor: the galaxy of a group that took pieces, so that each
+        // piece's resolution leads back to it through its own join; else the first entry of
+        // the group in order. Objects stay in the order of their first entry.
+        let anchor = galaxy_of
+            .get(&work.groups.find(first))
+            .copied()
+            .unwrap_or(first);
         seen[anchor] = true;
         let mut members = vec![(anchor, None)];
         let mut queue = VecDeque::from([anchor]);

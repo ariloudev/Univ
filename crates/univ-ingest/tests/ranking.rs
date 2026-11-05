@@ -230,6 +230,23 @@ fn gaia_is_preferred_over_hipparcos_and_either_over_a_survey_unless_an_error_say
 }
 
 #[test]
+fn a_21_cm_beam_position_ranks_after_a_survey_position() {
+    // ALFALFA's HI centroid comes first in order, and still yields to the optical position.
+    let rules = ranking_rules();
+    let beam = || entry("alfalfa-a100", "a", 45.0, 30.0);
+    let survey = || entry("twomrs", "s", 45.0, 30.01);
+    let p = ranked(vec![beam(), survey()], &rules)
+        .preferred_position
+        .unwrap();
+    assert_eq!(
+        (p.class, p.entry),
+        (PositionClass::Survey, designation("twomrs", "s"))
+    );
+    let p = ranked(vec![beam()], &rules).preferred_position.unwrap();
+    assert_eq!(p.class, PositionClass::Beam);
+}
+
+#[test]
 fn an_object_without_a_distance_is_found_but_not_placed() {
     // AC-65: a simulated galaxy with a position and no distance or redshift: it is found by its
     // designation, carries its sky position and is marked `placed: no` with its reason.

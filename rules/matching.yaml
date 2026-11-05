@@ -632,3 +632,14 @@ extents:
     (J/ApJ/944/94 ReadMe, table2, Note 1), UNGC and McConnachie 2012 by name. A companion with an
     identity of its own, such as NGC 5195 (UNGC a26 = 6.92 arcmin, 455 km/s) 4.6 arcmin from M51
     (NGC5194, a26 = 15.85 arcmin, 446 km/s) and within its extent, stays apart.
+  fibres:
+    surveys: [desi-dr1, sdss-dr17-galaxies, sdss-dr17-distant, twodfgrs, gama-dr4, sixdfgs-dr3]
+    radius_arcsec: 60.0
+    basis: >-
+      Pipeline choice. A fibre survey targets the HII regions and knots of a nearby dwarf as
+      separate objects: release 10's second build left 129 such clusters of DESI DR1 fibres, 2 to
+      8 within 1 arcmin of each other at one cz to within a few km/s, on galaxies that no source
+      of the release gives an extent (8 at RA 337.111, Dec +30.295, 599 to 677 km/s). Below the
+      extent rule's 1,000 km/s, two galaxies 1 arcmin apart at one velocity are one galaxy
+      entered twice, as the science check local-group-duplicates holds; 1 arcmin is that check's
+      radius, and 300 km/s the extent rule's tolerance, which takes in a disc's rotation.

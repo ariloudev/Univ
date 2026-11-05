@@ -128,6 +128,27 @@ fn ic_5052_is_one_object_of_its_pieces_within_its_published_extent() {
 }
 
 #[test]
+fn a_galaxy_that_took_pieces_takes_its_own_position_whatever_the_order_of_its_entries() {
+    // The 6dFGS fibres read first, as an HI source sorting before UNGC would be: the galaxy still
+    // anchors the object, and the position is never a piece's.
+    let mut entries = recorded();
+    entries.sort_by_key(|e| e.designation.source.as_str() != "sixdfgs-dr3");
+    let mut m = match_entries(&matching_rules(), entries);
+    rank_all(&mut m.objects, &ranking_rules(), &Release::planck_2018());
+    for galaxy in ["IC5052", "NGC5194"] {
+        let o = holding(&m.objects, "updated-nearby-galaxies", galaxy);
+        let p = o.preferred_position.as_ref().unwrap();
+        assert_eq!(
+            p.entry,
+            designation("updated-nearby-galaxies", galaxy),
+            "{o:#?}"
+        );
+        assert!(matches!(&*o.entries[0].resolved_by, Resolution::Anchor));
+        assert_eq!(o.entries[0].entry.designation, p.entry);
+    }
+}
+
+#[test]
 fn a_companion_with_its_own_identity_stays_apart_within_the_extent() {
     // NGC 5195 lies within M51's 15.85 arcmin and agrees in velocity, but UNGC lists it on its
     // own, and Cosmicflows-4 names it by its own PGC number, 47413 against M51's 47404.

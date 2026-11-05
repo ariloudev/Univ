@@ -2353,7 +2353,8 @@
           "position",
           "position_and_redshift",
           "position_and_distance",
-          "within_extent"
+          "within_extent",
+          "fibres_of_one_galaxy"
         ],
         "type": "string"
       },
@@ -3336,7 +3337,8 @@
         "enum": [
           "gaia",
           "hipparcos",
-          "survey"
+          "survey",
+          "beam"
         ],
         "type": "string"
       },
@@ -4075,7 +4077,7 @@
         "description": "How an entry came to belong to its object, tagged by `by`: a match keeps its own `method`\nbeside the tag, so the tag cannot be `method` too.",
         "oneOf": [
           {
-            "description": "The entry the object was resolved around: the first of its entries in the order read.",
+            "description": "The entry the object was resolved around: the first of its entries in the order read,\nor, for a nearby galaxy that took pieces, the galaxy's own entry.",
             "properties": {
               "by": {
                 "enum": [

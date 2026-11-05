@@ -6,6 +6,7 @@
 mod assemble;
 mod cross_id;
 pub mod extent;
+mod fibres;
 mod groups;
 mod index;
 mod pieces;
@@ -73,6 +74,10 @@ pub struct MatchReport {
     /// counted among the merges by position.
     #[serde(default)]
     pub pieces_within_extent: u64,
+    /// Joins of two groups as fibres of one survey on one nearby galaxy without an extent; each
+    /// is also counted among the merges by position.
+    #[serde(default)]
+    pub fibres_of_one_galaxy: u64,
 }
 
 /// Why two entries were joined.
@@ -108,8 +113,9 @@ struct Work<'a> {
 }
 
 /// Resolves `entries` into objects under `rules`: cross-identifications, then positions, then
-/// the pieces of nearby galaxies within their published extents, then the relations of galaxy
-/// groups to their dominant galaxies.
+/// the pieces of nearby galaxies within their published extents, then the fibres of one survey
+/// on one nearby galaxy without one, then the relations of galaxy groups to their dominant
+/// galaxies.
 /// Objects are in the order of their first entry, so a run on the same entries gives the same
 /// objects.
 #[must_use]
@@ -144,10 +150,12 @@ pub fn match_entries(rules: &MatchingRules, entries: Vec<CatalogueEntry>) -> Mat
     cross_id::apply(&mut work);
     positions::apply(&mut work);
     let pieces = pieces::apply(&mut work);
+    let fibres = fibres::apply(&mut work);
     let plan = assemble::plan(&mut work);
     let relations = relations::find(&work);
     let mut matched = assemble::build(rules, entries, plan, relations);
     matched.report.pieces_within_extent = pieces;
+    matched.report.fibres_of_one_galaxy = fibres;
     matched
 }
 

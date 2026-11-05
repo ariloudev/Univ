@@ -9,7 +9,9 @@ pub mod rules;
 
 use univ_model::derive::Release;
 use univ_model::entry::PositionUncertainty;
-use univ_model::object::{NotPlacedReason, Object, Placement, PreferredPosition};
+use univ_model::object::{
+    MatchMethod, NotPlacedReason, Object, Placement, PreferredPosition, Resolution,
+};
 
 pub use distance::{Candidate, Which, candidates, choose, fraction, redshift_distance};
 pub use rules::RankingRules;
@@ -43,14 +45,51 @@ pub fn rank_all(objects: &mut [Box<Object>], rules: &RankingRules, release: &Rel
     }
 }
 
+/// Which entries of `object` are pieces of a nearby galaxy that took them within its extent:
+/// those whose resolution leads back to the galaxy through a join of the extent rule or of the
+/// fibre rule. None is a piece of an object that took no piece within an extent. The entries
+/// are in the order matching reached them, each after the entry it joined through.
+fn pieces(object: &Object) -> Vec<bool> {
+    let by_rule = |e: &univ_model::object::ObjectEntry, methods: &[MatchMethod]| matches!(&*e.resolved_by, Resolution::Match(r) if methods.contains(&r.method));
+    let mut piece = vec![false; object.entries.len()];
+    if !object
+        .entries
+        .iter()
+        .any(|e| by_rule(e, &[MatchMethod::WithinExtent]))
+    {
+        return piece;
+    }
+    for (i, e) in object.entries.iter().enumerate() {
+        let through = match &*e.resolved_by {
+            Resolution::Match(r) => Some(&r.with),
+            Resolution::CrossIdentification { via, .. } => Some(via),
+            Resolution::Anchor => None,
+        };
+        let parent = through.and_then(|d| {
+            object.entries[..i]
+                .iter()
+                .position(|o| &o.entry.designation == d)
+        });
+        piece[i] = by_rule(
+            e,
+            &[MatchMethod::WithinExtent, MatchMethod::FibresOfOneGalaxy],
+        ) || parent.is_some_and(|p| piece[p]);
+    }
+    piece
+}
+
 /// The position of the entry with the smallest published error; entries without one after,
-/// and ties by class, then by the order of the entries.
+/// and ties by class, then by the order of the entries. An object that took pieces of a nearby
+/// galaxy takes the position of the galaxy whose extent took them, never a piece's: a piece lies
+/// off the galaxy's centre by construction.
 #[must_use]
 pub fn preferred_position(object: &Object, rules: &RankingRules) -> Option<PreferredPosition> {
+    let piece = pieces(object);
     object
         .entries
         .iter()
         .enumerate()
+        .filter(|(i, _)| !piece[*i])
         .filter_map(|(i, e)| {
             let p = e.entry.position.as_ref()?;
             let error = match &p.uncertainty {
