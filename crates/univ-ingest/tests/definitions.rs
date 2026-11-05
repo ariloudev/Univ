@@ -1,14 +1,14 @@
-//! The repository holds a valid definition for each source of the first release (RQ-5), and
-//! of the galaxy surveys release 10 adds.
+//! The repository holds a valid definition for each source (RQ-5).
 
 mod common;
 
 use common::sources_dir;
 use univ_ingest::source::{RedistributionStatus, ScaleDomain, read_all};
 
-/// The sources of the first release, by id, with their scale domains, the Cosmicflows-4
-/// galaxies added for the second, and the Hipparcos spectral types added for the eighth.
-const FIRST_RELEASE: [(&str, ScaleDomain); 21] = [
+/// The sources by id, with their scale domains: those of the first release, the Cosmicflows-4
+/// galaxies added for the second, the Hipparcos spectral types added for the eighth, and the
+/// galaxy surveys added for the tenth.
+const SOURCES: [(&str, ScaleDomain); 25] = [
     ("sdss-dr17-galaxies", ScaleDomain::CosmicWeb),
     ("boss-dr17-great-wall", ScaleDomain::CosmicWeb),
     ("sixdfgs-dr3", ScaleDomain::CosmicWeb),
@@ -30,10 +30,7 @@ const FIRST_RELEASE: [(&str, ScaleDomain); 21] = [
     ("twompp-reconstruction", ScaleDomain::CosmicWeb),
     ("erass1-clusters", ScaleDomain::CosmicWeb),
     ("researched-structures", ScaleDomain::CosmicWeb),
-];
-
-/// The galaxy surveys added for release 10.
-const RELEASE_10: [(&str, ScaleDomain); 4] = [
+    // Release 10.
     ("desi-dr1", ScaleDomain::CosmicWeb),
     ("sdss-dr17-distant", ScaleDomain::CosmicWeb),
     ("twodfgrs", ScaleDomain::CosmicWeb),
@@ -41,25 +38,21 @@ const RELEASE_10: [(&str, ScaleDomain); 4] = [
 ];
 
 #[test]
-fn every_source_of_the_first_release_has_a_valid_definition() {
+fn every_source_has_a_valid_definition() {
     let definitions = read_all(&sources_dir()).unwrap_or_else(|e| panic!("{e}"));
     let ids: Vec<&str> = definitions.iter().map(|d| d.id.as_str()).collect();
-    for (id, domain) in FIRST_RELEASE.into_iter().chain(RELEASE_10) {
+    for (id, domain) in SOURCES {
         let d = definitions
             .iter()
             .find(|d| d.id.as_str() == id)
             .unwrap_or_else(|| panic!("no definition for {id}; found {ids:?}"));
         assert_eq!(d.scale_domain, domain, "{id}");
     }
-    assert_eq!(
-        definitions.len(),
-        FIRST_RELEASE.len() + RELEASE_10.len(),
-        "{ids:?}"
-    );
+    assert_eq!(definitions.len(), SOURCES.len(), "{ids:?}");
 }
 
 #[test]
-fn no_source_of_the_first_release_is_forbidden() {
+fn no_source_is_forbidden() {
     for d in common::read_sources() {
         assert_ne!(
             d.redistribution.status,

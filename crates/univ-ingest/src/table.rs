@@ -6,12 +6,6 @@ use std::borrow::Cow;
 
 use crate::source::Access;
 
-/// Whether a file of a files source is a gzipped CSV table, which is read a piece at a time.
-#[must_use]
-pub fn is_csv_gz(path: &str) -> bool {
-    path.ends_with(".csv.gz")
-}
-
 /// The format of a provider's table.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Format {

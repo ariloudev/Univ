@@ -70,8 +70,8 @@ fn a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entri
     };
     assert_eq!(*columns, &["Z_LAMBDA", "Z_LAMBDA_ERR"]);
     assert_eq!(
-        (when.column.as_str(), &when.is[..]),
-        ("BEST_Z_TYPE", &["lit_z".to_owned()][..])
+        (when.column.as_str(), when.is.as_deref()),
+        ("BEST_Z_TYPE", Some(&["lit_z".to_owned()][..]))
     );
 
     // The same action on the recorded 2M++ rows, dropping Ksmag where Cln is x: row 1 has a
@@ -84,11 +84,7 @@ fn a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entri
         evidence: "a test".into(),
         action: Some(FixAction::DropWhen {
             columns: vec!["Ksmag".into()],
-            when: Condition {
-                column: "Cln".into(),
-                is: vec!["x".into()],
-                not: false,
-            },
+            when: Condition::is("Cln", &["x"]),
         }),
     });
     let text = std::fs::read_to_string(fixture_of(&definition)).unwrap();

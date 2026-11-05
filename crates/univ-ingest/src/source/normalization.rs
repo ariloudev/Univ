@@ -13,13 +13,11 @@ use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
 pub use catalogue_error::CatalogueError;
-pub use floor::RedshiftFloor;
 
 use super::rules::{self, Rule};
 use super::{Column, Field, Fix};
 
 mod catalogue_error;
-mod floor;
 
 /// How a source's rows are read beyond the column each field comes from.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -78,9 +76,6 @@ pub struct RedshiftReading {
     /// place of `error`.
     #[serde(default)]
     pub catalogue_error: Option<CatalogueError>,
-    /// Rows whose value lies below this, in the column's unit, are left out.
-    #[serde(default)]
-    pub floor: Option<RedshiftFloor>,
     pub frame: RedshiftFrame,
     #[serde(default)]
     pub kind: Option<RedshiftKind>,
@@ -416,9 +411,6 @@ fn check_redshift<'a>(
     if let Some(c) = &r.catalogue_error {
         let at = format!("{at}.catalogue_error");
         catalogue_error::check(&at, c, table.unit(&r.column), r, alone)?;
-    }
-    if let Some(f) = &r.floor {
-        floor::check(&format!("{at}.floor"), f)?;
     }
     let mut read = vec![r.column.as_str()];
     if let Some(e) = &r.error {

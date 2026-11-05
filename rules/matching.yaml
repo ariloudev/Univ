@@ -100,8 +100,8 @@ cross_identifications:
       - { source: twompp-catalogue, field: identifier }
   - scheme: sdss-specobjid
     basis: >-
-      All three sources are queries of the SDSS DR17 SpecObj table (Abdurro'uf et al. 2022, ApJS 259,
-      35), whose specObjID names one spectrum.
+      All three sources are queries of the SDSS DR17 SpecObj table (Abdurro'uf et al. 2022, ApJS
+      259, 35), whose specObjID names one spectrum.
     members:
       - { source: sdss-dr17-galaxies, field: identifier }
       - { source: boss-dr17-great-wall, field: identifier }
@@ -351,9 +351,9 @@ pairs:
     line_of_sight: { compare: velocity, tolerance_km_s: 200 }
     basis: &desi >-
       DESI (mean_fiber_ra/dec of desi_dr1.zpix) and SDSS give fibre positions on the target; 5
-      arcsec is a pipeline choice, as for SDSS against 2MRS, for the offset between two fibres or
-      a fibre and an XSC centroid of an extended galaxy. 200 km/s as for 2MRS and 2M++: a few times the
-      errors either survey publishes. A quasar whose redshift the two pipelines put more than
+      arcsec is a pipeline choice, as for SDSS against 2MRS, for the offset between two fibres or a
+      fibre and an XSC centroid of an extended galaxy. 200 km/s as for 2MRS and 2M++: a few times
+      the errors either survey publishes. A quasar whose redshift the two pipelines put more than
       200 km/s apart stays two objects, linked if within the angle; a duplicate, never a false
       merge.
   - sources: [desi-dr1, sdss-dr17-distant]
@@ -399,16 +399,20 @@ pairs:
     angular_tolerance_arcsec: 5.0
     line_of_sight: { compare: velocity, tolerance_km_s: 200 }
     basis: *twodf
+  - sources: [twodfgrs, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *twodf
   - sources: [alfalfa-a100, sdss-dr17-galaxies]
     angular_tolerance_arcsec: 60.0
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
     basis: &alfalfa >-
       ALFALFA positions are the HI centroids of 21 cm sources seen with Arecibo's beam of a few
-      arcminutes (J/ApJ/861/49 ReadMe: "HI centroid"), not optical centres. 60 arcsec is a pipeline choice,
-      as for McConnachie 2012 against 2MRS. In a crowded field more than one galaxy lies within
-      it and the HI source stays apart, linked to each, rather than merged with the wrong one. A
-      21 cm velocity and an optical cz of one galaxy can differ by tens of km/s, and the line is
-      hundreds of km/s wide; 300 km/s is the pipeline's choice for velocities from another
+      arcminutes (J/ApJ/861/49 ReadMe: "HI centroid"), not optical centres. 60 arcsec is a pipeline
+      choice, as for McConnachie 2012 against 2MRS. In a crowded field more than one galaxy lies
+      within it and the HI source stays apart, linked to each, rather than merged with the wrong
+      one. A 21 cm velocity and an optical cz of one galaxy can differ by tens of km/s, and the line
+      is hundreds of km/s wide; 300 km/s is the pipeline's choice for velocities from another
       spectrum, as for UNGC.
   - sources: [alfalfa-a100, desi-dr1]
     angular_tolerance_arcsec: 60.0
@@ -427,6 +431,10 @@ pairs:
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
     basis: *alfalfa
   - sources: [alfalfa-a100, cosmicflows-4-galaxies]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+  - sources: [alfalfa-a100, twodfgrs]
     angular_tolerance_arcsec: 60.0
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
     basis: *alfalfa

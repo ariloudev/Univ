@@ -100,6 +100,15 @@ blocks:
         title: "DESI DR1 via Data Lab TAP"
         detail: "sources/desi-dr1.yaml written (barycentric, zcat_primary, zwarn = 0, GALAXY/QSO, 80 async chunks); fixture fetch retrying in the background, as Data Lab's sync endpoint timed out."
         state: active
+      - key: 01a1a9f2-b877-77d0-aeee-844025b829f4
+        at: 2026-11-05T04:23:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "DESI DR1 via Data Lab TAP"
+        detail: "sources/desi-dr1.yaml: zpix with zcat_primary = 'true' (a boolean at Data Lab), zwarn = 0, GALAXY/QSO; barycentric; 80 async chunks. Fixture of 6 rows; tests, including the barycentric frame read back from D1 in object_reads."
+        state: done
   - key: 01a1a98a-5cb2-7098-b9b7-f2ae0013b7a1
     id: w2-gama
     kind: task
@@ -122,6 +131,15 @@ blocks:
         title: "GAMA DR4 SpecObj"
         detail: "files definition, is_not condition, other_survey reason, fixture and tests."
         state: active
+      - key: 01a1a9f2-b877-77d0-aeee-844136fb0dae
+        at: 2026-11-05T04:23:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "GAMA DR4 SpecObj"
+        detail: "Reader done: negated rule conditions (`not`), the other_survey reason, and a redshift floor. Fixture of 7 rows and its test drafted. Counts checked on the full file: 248,682 GAMA rows with NQ >= 3, 9,966 of them stars below z = 0.002. The definition waits for the date of the permission request."
+        state: active
   - key: 01a1a98a-5cb2-7098-b9b7-f2af1e750517
     id: w2-ssa
     kind: task
@@ -135,6 +153,15 @@ blocks:
         title: "2MPZ and WISE × SuperCOSMOS through ssa_sql"
         detail: "New access method, two definitions, fixtures and tests."
         state: open
+      - key: 01a1a9f2-b877-77d0-aeee-844242cc3da1
+        at: 2026-11-05T04:23:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "WISE × SuperCOSMOS and 2MPZ"
+        detail: "ssa_sql was dropped: the archive's SQL form cancels answers above about 500 rows. WISE × SuperCOSMOS becomes a files source (its 1.7 GB csv.gz) read by a new gzipped-CSV reader; its definition, fixture and test are drafted and wait for the permission date. 2MPZ is being downloaded sequentially in pieces of about 350 rows (the owner approved sequential paging), into the scratchpad; it becomes a files source once complete."
+        state: active
   - key: 01a1a98a-5cb2-7098-b9b7-f2b0c3ea8fce
     id: w2-matching
     kind: task
@@ -148,6 +175,15 @@ blocks:
         title: "Matching rules for the new pairs"
         detail: "rules/matching.yaml tolerances; fixture build holds every new source."
         state: open
+      - key: 01a1a9f2-b877-77d0-aeee-844334a8a9b4
+        at: 2026-11-05T04:23:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Matching rules for the new pairs"
+        detail: "Pairs for DESI, the rest of SDSS, 2dFGRS and ALFALFA written; sdss-dr17-distant joins sdss-specobjid. Pairs for GAMA and WISE × SuperCOSMOS (5 arcsec; 36,000 km/s, three times the photometric scatter) are drafted, as is 2MPZ in the 2masx scheme."
+        state: active
   - key: 01a1a98a-5cb2-7098-b9b7-f2b1d2aab6d1
     id: w2-review
     kind: task
@@ -177,6 +213,26 @@ blocks:
           |---|---|---|---|
           | VizieR's IDIA mirror answers 200 with an empty body | probe | the NAO mirror first in the new definitions | worked around |
           | Data Lab's `desi_dr1.zpix` has no `target_ra`/`target_dec` | probe | `mean_fiber_ra/dec`, stated in the cuts | worked around |
+      - key: 01a1a9f2-b877-77d0-aeee-8444d81c6d67
+        at: 2026-11-05T04:23:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | VizieR's IDIA mirror answers 200 with an empty body | probe | the NAO mirror first in the new definitions | worked around |
+          | Data Lab's `desi_dr1.zpix` has no `target_ra`/`target_dec` | probe | `mean_fiber_ra/dec`, stated in the cuts | worked around |
+          | Data Lab's `zcat_primary` is a boolean: `= 1` fails | probe | `= 'true'` | fixed |
+          | GAMA SpecObj keeps stars at z near 0 with NQ = 4 | full-file count | a redshift `floor` on a reading, rows below it left out as unsuitable | fixed |
+          | The SSA SQL form cancels answers above about 500 rows | probes | ssa_sql dropped; WISE×SCOS read from its file; 2MPZ paged sequentially | worked around |
+          | `not: false` would have changed existing releases' fix JSON | api_fixture | skipped when false | fixed |
+          | `row.rs` passed 500 lines; `entry` passed 100 | lines, clippy | `row/redshift.rs` | fixed |
+          | The approved spec quoted unverified DESI counts | own check against arXiv:2503.14745 | the abstract's counts | fixed |
+          | Adding DESI to the shared fixture shifts the API's object ids | univ-api tests | DESI added only to object_reads' fixture | worked around |
+          | The WISE×SCOS HEALPix mask is not applied | design | stated in the cuts; stars remain near the plane | open |
   - key: 01a1a9a2-2259-76e2-aa1b-d3351b4c8d6c
     id: permission-drafts
     kind: note

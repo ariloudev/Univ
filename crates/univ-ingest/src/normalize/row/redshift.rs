@@ -13,7 +13,7 @@ use crate::source::LeftOutReason;
 
 impl Row<'_, '_> {
     /// The redshift reading `r` gives this row, seen in `direction`: none when its cell is
-    /// blank. A row whose value lies below the reading's floor is left out.
+    /// blank.
     pub(super) fn redshift(
         &mut self,
         r: &RedshiftPlan,
@@ -22,9 +22,6 @@ impl Row<'_, '_> {
         let Some(mut measured) = self.quantity(&r.measured)? else {
             return Ok(None);
         };
-        if r.floor.is_some_and(|below| measured.value < below) {
-            return Err(LeftOutReason::UnsuitableRedshift);
-        }
         let mut read_as = None;
         if let Some((from, cosmology, kind_of_value)) = &r.comoving {
             let comoving;

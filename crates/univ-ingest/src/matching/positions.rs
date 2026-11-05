@@ -213,23 +213,79 @@ fn positioned_groups(work: &mut Work<'_>) -> Vec<Group> {
     groups
 }
 
-/// Every pair of groups with no source in common that some pair rule finds within its
-/// tolerances, through the pair of their entries with the highest confidence. Every entry with
-/// a position is indexed, so the search radius is the largest tolerance and no more.
-fn candidates(work: &Work<'_>, groups: &[Group]) -> Vec<Candidate> {
-    let mut group_of = Vec::new();
-    let mut entry_of = Vec::new();
-    let mut positions = Vec::new();
+/// The positioned entries of one source and their sky index, searched at the widest tolerance
+/// of the source's pairs.
+struct Sky {
+    index: SkyIndex,
+    group_of: Vec<usize>,
+    entry_of: Vec<usize>,
+}
+
+/// The positioned entries of one source, gathered before they are indexed.
+#[derive(Clone, Default)]
+struct Points {
+    group_of: Vec<usize>,
+    entry_of: Vec<usize>,
+    positions: Vec<(f64, f64)>,
+}
+
+/// For each source number, the source numbers some pair rule pairs it with.
+fn partners(work: &Work<'_>) -> Vec<Vec<usize>> {
+    let count = work.sources.len();
+    (0..count)
+        .map(|s| {
+            (0..count)
+                .filter(|&other| work.pairs[s * count + other].is_some())
+                .collect()
+        })
+        .collect()
+}
+
+/// One sky per source that some pair rule names; none for a source no rule pairs, whose
+/// entries are never compared by position.
+fn skies(work: &Work<'_>, groups: &[Group]) -> Vec<Option<Sky>> {
+    let n = work.sources.len();
+    let radius: Vec<Option<f64>> = (0..n)
+        .map(|s| {
+            work.pairs[s * n..(s + 1) * n]
+                .iter()
+                .flatten()
+                .map(|p| p.widest_degrees())
+                .reduce(f64::max)
+        })
+        .collect();
+    let mut points = vec![Points::default(); n];
     for (g, group) in groups.iter().enumerate() {
         for &e in &group.members {
-            if let Some(p) = &work.entries[e].position {
-                group_of.push(g);
-                entry_of.push(e);
-                positions.push((p.icrs.ra, p.icrs.dec));
+            let s = usize::from(work.source_of[e]);
+            if let (Some(p), Some(_)) = (&work.entries[e].position, radius[s]) {
+                points[s].group_of.push(g);
+                points[s].entry_of.push(e);
+                points[s].positions.push((p.icrs.ra, p.icrs.dec));
             }
         }
     }
-    let index = SkyIndex::new(&positions, work.rules.search_radius_degrees());
+    points
+        .into_iter()
+        .zip(radius)
+        .map(|(p, r)| {
+            r.map(|r| Sky {
+                index: SkyIndex::new(&p.positions, r),
+                group_of: p.group_of,
+                entry_of: p.entry_of,
+            })
+        })
+        .collect()
+}
+
+/// Every pair of groups with no source in common that some pair rule finds within its
+/// tolerances, through the pair of their entries with the highest confidence. Each entry is
+/// looked for only among the sources its own source is paired with, each indexed at the widest
+/// tolerance of its pairs, so a source of millions paired at 5 arcsec is not searched at the
+/// widest tolerance of a pair of nearby dwarfs.
+fn candidates(work: &Work<'_>, groups: &[Group]) -> Vec<Candidate> {
+    let skies = skies(work, groups);
+    let partners = partners(work);
     let mut near = Vec::new();
     let mut found = Vec::new();
     // The best comparison with each later group, for the group in hand.
@@ -240,19 +296,27 @@ fn candidates(work: &Work<'_>, groups: &[Group]) -> Vec<Candidate> {
             let Some(at) = &work.entries[a].position else {
                 continue;
             };
-            index.near(at.icrs.ra, at.icrs.dec, &mut near);
-            for &found_at in &near {
-                let (j, b) = (group_of[found_at as usize], entry_of[found_at as usize]);
-                let h = &groups[j];
-                if j <= i || g.sources.iter().any(|s| h.sources.contains(s)) {
-                    continue;
-                }
-                let Some(c) = work.compare(a, b) else {
+            for &other in &partners[usize::from(work.source_of[a])] {
+                let Some(sky) = &skies[other] else {
                     continue;
                 };
-                let slot = best.entry(j).or_insert((a, b, c));
-                if c.confidence > slot.2.confidence {
-                    *slot = (a, b, c);
+                sky.index.near(at.icrs.ra, at.icrs.dec, &mut near);
+                for &found_at in &near {
+                    let (j, b) = (
+                        sky.group_of[found_at as usize],
+                        sky.entry_of[found_at as usize],
+                    );
+                    let h = &groups[j];
+                    if j <= i || g.sources.iter().any(|s| h.sources.contains(s)) {
+                        continue;
+                    }
+                    let Some(c) = work.compare(a, b) else {
+                        continue;
+                    };
+                    let slot = best.entry(j).or_insert((a, b, c));
+                    if c.confidence > slot.2.confidence {
+                        *slot = (a, b, c);
+                    }
                 }
             }
         }

@@ -196,9 +196,14 @@ pub fn normalize_body(definition: &SourceDefinition, body: &[u8]) -> Normalized 
 
 /// The recorded answer of the source `id`, normalized.
 pub fn normalized_fixture(id: &str) -> Normalized {
-    let definition = definition_of(id);
-    let body = std::fs::read(fixture_of(&definition)).expect("a recorded answer");
-    normalize_body(&definition, &body)
+    normalized_definition(&definition_of(id))
+}
+
+/// The recorded answer of `definition`'s source, normalized as `definition`, which a test may
+/// have changed.
+pub fn normalized_definition(definition: &SourceDefinition) -> Normalized {
+    let body = std::fs::read(fixture_of(definition)).expect("a recorded answer");
+    normalize_body(definition, &body)
 }
 
 /// The recorded answer `file`, beside the source `id`'s own under its provider's fixtures,

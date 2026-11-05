@@ -10,7 +10,7 @@ mod common;
 
 use std::fs;
 
-use common::{definition_of, fixture_of, normalize_body};
+use common::{definition_of, normalized_definition};
 use univ_ingest::source::{CatalogueError, SourceDefinition, read_all};
 use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::units::Unit;
@@ -44,7 +44,7 @@ fn an_rms_velocity_for_the_catalogue_is_each_velocitys_symmetric_error() {
             basis: "Colless et al. 2001, §6: an rms of 85 km/s".to_owned(),
         },
     );
-    let n = normalize_body(&d, &fs::read(fixture_of(&d)).unwrap());
+    let n = normalized_definition(&d);
     assert_ne!(n.entries.len(), 0);
     for e in &n.entries {
         let r = &e.redshifts[0];
@@ -68,7 +68,7 @@ fn a_scatter_per_one_plus_z_grows_with_each_redshift() {
             basis: "Bilicki et al. 2016: σz/(1+z) = 0.033".to_owned(),
         },
     );
-    let n = normalize_body(&d, &fs::read(fixture_of(&d)).unwrap());
+    let n = normalized_definition(&d);
     assert_ne!(n.entries.len(), 0);
     for e in &n.entries {
         let z = e.redshifts[0].cmb.measured;

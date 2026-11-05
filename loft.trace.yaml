@@ -82,25 +82,25 @@ links:
     reviewed: d94647fbce6f3baf72d24be4d11d4f239a8395f58460d9aecca34bca05f29034
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
-        name: "every_source_of_the_first_release_has_a_valid_definition"
+        name: "every_source_has_a_valid_definition"
         body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
   - node: 01a19f22-2ad9-716e-876f-1841361113b6
     reviewed: 4b38c591f74484626e8ccaf5f74a9e71b5df699fadb8ca4aa11d568db31307af
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
-        name: "every_source_of_the_first_release_has_a_valid_definition"
+        name: "every_source_has_a_valid_definition"
         body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
   - node: 01a19f22-2ad9-716e-876f-1842afd6d59e
     reviewed: 955d52425320c26ee0edee610bcdfdb09fc39ff114e71e55876f2cabf46df7e4
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
-        name: "every_source_of_the_first_release_has_a_valid_definition"
+        name: "every_source_has_a_valid_definition"
         body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
   - node: 01a19f22-2ad9-716e-876f-18439d96b214
     reviewed: 85ed33936b18f9c512ce245a3e4c097b89d10b39bc5da07bc5bfab10acc5dadf
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
-        name: "every_source_of_the_first_release_has_a_valid_definition"
+        name: "every_source_has_a_valid_definition"
         body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
   - node: 01a19f22-2ad9-716e-876f-18463a5dce5c
     reviewed: 814e7461a598ef1428907f53c73d0af791172f6a799ea9f189754719766b46db

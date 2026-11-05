@@ -13,6 +13,11 @@ use crate::table::TableReader;
 /// The bytes of rows a piece holds, past which a piece ends at the next line.
 const PIECE: usize = 64 << 20;
 
+/// Whether a file of a files source is a gzipped CSV table.
+pub(super) fn is_csv_gz(path: &str) -> bool {
+    path.ends_with(".csv.gz")
+}
+
 impl Normalizer<'_> {
     /// Reads every row of the gzipped CSV file `file`.
     ///
@@ -24,27 +29,23 @@ impl Normalizer<'_> {
     }
 
     fn csv_file_in_pieces(&mut self, file: &Path, piece: usize) -> Result<(), NormalizeError> {
-        let unreadable = |e: std::io::Error| NormalizeError::Read {
-            source_id: self.definition.id.clone(),
-            file: file.to_path_buf(),
-            error: e.to_string(),
-        };
+        let unreadable = |e: std::io::Error| NormalizeError::read(&self.definition.id, file, &e);
         let opened = std::fs::File::open(file).map_err(unreadable)?;
         let mut lines = BufReader::new(MultiGzDecoder::new(opened));
-        let mut header = Vec::new();
-        lines.read_until(b'\n', &mut header).map_err(unreadable)?;
-        let mut body = header.clone();
+        let mut body = Vec::new();
+        lines.read_until(b'\n', &mut body).map_err(unreadable)?;
+        let header = body.len();
         loop {
-            let read = lines.read_until(b'\n', &mut body).map_err(unreadable)?;
-            if read == 0 || body.len() - header.len() >= piece {
-                if body.len() > header.len() {
-                    self.rows(file, TableReader::csv(&body))?;
-                }
-                if read == 0 {
-                    return Ok(());
-                }
-                body.truncate(header.len());
+            body.truncate(header);
+            while body.len() - header < piece
+                && lines.read_until(b'\n', &mut body).map_err(unreadable)? > 0
+            {}
+            if body.len() == header {
+                return Ok(());
             }
+            let table = TableReader::csv(&body)
+                .map_err(|e| NormalizeError::table(&self.definition.id, file, e))?;
+            self.rows(file, table)?;
         }
     }
 }

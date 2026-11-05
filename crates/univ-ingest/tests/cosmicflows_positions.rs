@@ -41,7 +41,7 @@ fn the_definition_cites_148_group_centres_and_leaves_9_groups_out() {
             Some(FixAction::LeaveOutWhen { when, reason }) => {
                 assert_eq!(*reason, LeftOutReason::WrongPosition);
                 assert_eq!(when.column, "1PGC");
-                left_out += when.is.len();
+                left_out += when.is.as_ref().map_or(0, Vec::len);
             }
             _ => {}
         }

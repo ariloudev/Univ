@@ -18,8 +18,8 @@ use univ_model::entry::CatalogueEntry;
 use univ_model::ids::SourceId;
 use univ_model::redshift::CmbCorrection;
 
-use crate::source::{Access, Field, Holds, LeftOutReason, SourceDefinition};
-use crate::table::{TableReader, is_csv_gz};
+use crate::source::{Access, Field, Holds, LeftOutReason, RemoteFile, SourceDefinition};
+use crate::table::TableReader;
 use bintable::BinTable;
 use plan::Plan;
 use row::{Changed, Context};
@@ -82,8 +82,47 @@ pub enum NormalizeError {
     Cancelled { source_id: SourceId },
 }
 
+impl NormalizeError {
+    fn read(source_id: &SourceId, file: &Path, error: &dyn std::fmt::Display) -> Self {
+        Self::Read {
+            source_id: source_id.clone(),
+            file: file.to_path_buf(),
+            error: error.to_string(),
+        }
+    }
+
+    fn table(source_id: &SourceId, file: &Path, error: String) -> Self {
+        Self::Table {
+            source_id: source_id.clone(),
+            file: file.to_path_buf(),
+            error,
+        }
+    }
+}
+
 /// Rows read between two looks at the cancel flag.
 const CANCEL_EVERY: usize = 4096;
+
+/// What the files of a files source hold, when they are tables of one kind.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum FileTables {
+    /// FITS binary tables, read whole and joined.
+    Fits,
+    /// Gzipped CSV tables, read a piece at a time.
+    CsvGz,
+}
+
+/// The kind of table every one of `files` holds; none when they are not all tables of one kind.
+fn file_tables(files: &[RemoteFile]) -> Option<FileTables> {
+    let all = |is: fn(&str) -> bool| files.iter().all(|f| is(&f.path));
+    if all(crate::fits::is_fits) {
+        Some(FileTables::Fits)
+    } else if all(csv_file::is_csv_gz) {
+        Some(FileTables::CsvGz)
+    } else {
+        None
+    }
+}
 
 /// Whether normalization gives `definition` entries: a provider's answers, files that are all
 /// FITS tables or all gzipped CSV tables, or the researched star distances, but not grids nor
@@ -91,10 +130,7 @@ const CANCEL_EVERY: usize = 4096;
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
     match &definition.access {
-        Access::Files { files } => {
-            files.iter().all(|f| crate::fits::is_fits(&f.path))
-                || files.iter().all(|f| is_csv_gz(&f.path))
-        }
+        Access::Files { files } => file_tables(files).is_some(),
         Access::Repository { holds, .. } => *holds == Holds::StarDistances,
         _ => true,
     }
@@ -168,24 +204,16 @@ impl<'a> Normalizer<'a> {
     /// Fails when the answer is not a table, a row has the wrong number of cells, or the table
     /// lacks a column the definition takes.
     pub fn table(&mut self, file: &Path, body: &[u8]) -> Result<(), NormalizeError> {
-        let table = TableReader::new(&self.definition.access, body);
+        let table = TableReader::new(&self.definition.access, body)
+            .map_err(|e| NormalizeError::table(&self.definition.id, file, e))?;
         self.rows(file, table)
     }
 
     /// Reads the rows of `table`, from the file `file`.
-    fn rows(
-        &mut self,
-        file: &Path,
-        table: Result<TableReader<'_>, String>,
-    ) -> Result<(), NormalizeError> {
+    fn rows(&mut self, file: &Path, mut table: TableReader<'_>) -> Result<(), NormalizeError> {
         self.go_on(0)?;
         let source_id = &self.definition.id;
-        let malformed = |error: String| NormalizeError::Table {
-            source_id: source_id.clone(),
-            file: file.to_path_buf(),
-            error,
-        };
-        let mut table = table.map_err(malformed)?;
+        let malformed = |error: String| NormalizeError::table(source_id, file, error);
         if table.columns().is_empty() {
             return Ok(());
         }
@@ -387,18 +415,17 @@ pub fn normalize_until(
     }
     let mut normalizer = Normalizer::new(definition, correction)?.cancelled_by(cancel);
     let read = |file: &PathBuf| {
-        std::fs::read(file).map_err(|e| NormalizeError::Read {
-            source_id: definition.id.clone(),
-            file: file.clone(),
-            error: e.to_string(),
-        })
+        std::fs::read(file).map_err(|e| NormalizeError::read(&definition.id, file, &e))
     };
-    let csv = matches!(&definition.access, Access::Files { files } if files.iter().all(|f| is_csv_gz(&f.path)));
-    if csv {
+    let tables = match &definition.access {
+        Access::Files { files } => file_tables(files),
+        _ => None,
+    };
+    if tables == Some(FileTables::CsvGz) {
         for file in files {
             normalizer.csv_file(file)?;
         }
-    } else if matches!(definition.access, Access::Files { .. }) {
+    } else if tables == Some(FileTables::Fits) {
         let mut tables = Vec::new();
         for file in files {
             let name = file
