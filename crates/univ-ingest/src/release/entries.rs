@@ -79,7 +79,7 @@ pub fn entry_row(
         object_id,
         entry: small(n),
         source: numbering.sources.n(&d.source),
-        identifier: d.identifier.clone(),
+        identifier: String::from(&*d.identifier),
         resolution: terms.id("anchor"),
         scheme: None,
         shared: None,
@@ -88,7 +88,7 @@ pub fn entry_row(
         separation_arcsec: None,
         difference: None,
         delta: None,
-        name: entry.name.clone(),
+        name: entry.name.as_deref().map(str::to_owned),
         frame: None,
         lon: None,
         lat: None,
@@ -100,13 +100,13 @@ pub fn entry_row(
         error_dec: None,
         error_unit: None,
         error_kind: None,
-        group_id: entry.group_id.clone(),
+        group_id: entry.group_id.as_deref().map(str::to_owned),
         flags: (!entry.flags.is_empty())
             .then(|| json(&entry.flags))
             .transpose()?,
         extra: None,
     };
-    match resolved_by {
+    match &**resolved_by {
         Resolution::Anchor => {}
         Resolution::CrossIdentification {
             scheme,
@@ -116,7 +116,7 @@ pub fn entry_row(
         } => {
             row.resolution = terms.id("cross_identification");
             row.scheme = Some(terms.id(scheme));
-            row.shared = (identifier != &d.identifier).then(|| identifier.clone());
+            row.shared = (**identifier != *d.identifier).then(|| identifier.clone());
             row.via_entry = via(through, &mut more)?;
             row.confidence = Some(confidence.get());
         }
@@ -329,7 +329,7 @@ impl Measurements<'_, '_> {
             // published in a frame other than heliocentric names it: in the CMB frame no dipole
             // moved it there, and a barycentric one is never relabelled heliocentric.
             let published = z.cmb.as_published();
-            let native = z.velocity.as_ref().unwrap_or(&published);
+            let native = z.velocity.as_deref().unwrap_or(&published);
             let frame = match z.cmb.published {
                 RedshiftFrame::Heliocentric => None,
                 RedshiftFrame::Cmb => Some(r#"{"published_frame":"cmb"}"#),
@@ -357,8 +357,8 @@ impl Measurements<'_, '_> {
         let pm = entry.proper_motion.as_ref();
         let sgv = entry.supergalactic_velocity.as_ref();
         let values: [(&str, Option<&Value>); 7] = [
-            ("parallax", entry.parallax.as_ref()),
-            ("velocity", entry.velocity.as_ref()),
+            ("parallax", entry.parallax.as_deref()),
+            ("velocity", entry.velocity.as_deref()),
             ("proper_motion_ra", pm.map(|p| &p.ra)),
             ("proper_motion_dec", pm.map(|p| &p.dec)),
             ("supergalactic_velocity_x", sgv.map(|v| &v.x)),

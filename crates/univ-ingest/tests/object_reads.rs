@@ -54,11 +54,12 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             let entry = &e.entry;
             assert_eq!(read.entry, n);
             assert_eq!(read.source, entry.designation.source.as_str());
-            assert_eq!(read.identifier, entry.designation.identifier);
-            assert_eq!(read.resolved_by, e.resolved_by, "{}", o.id.get());
-            assert_eq!(read.name, entry.name);
-            assert_eq!(read.group_id, entry.group_id);
-            assert_eq!(read.flags, entry.flags);
+            assert_eq!(read.identifier, &*entry.designation.identifier);
+            assert_eq!(read.resolved_by, *e.resolved_by, "{}", o.id.get());
+            assert_eq!(read.name.as_deref(), entry.name.as_deref());
+            assert_eq!(read.group_id.as_deref(), entry.group_id.as_deref());
+            let flags = read.flags.iter().map(|(n, v)| (n.as_str(), v.as_str()));
+            assert!(flags.eq(entry.flags.iter()));
             assert_eq!(read.references.as_slice(), &*entry.references);
             researched += usize::from(!read.references.is_empty());
             assert_eq!(
@@ -87,11 +88,11 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
         }
         // Every designation is an entry's own, or one its source gives beside it from a
         // field of the entry, such as the HIP number a Gaia–Hipparcos entry names.
-        for d in &o.object.designations {
+        for d in o.object.designations() {
             let own = r
                 .entries
                 .iter()
-                .any(|e| e.source == d.source.as_str() && e.identifier == d.identifier);
+                .any(|e| e.source == d.source.as_str() && e.identifier == *d.identifier);
             let beside = r.entries.iter().any(|e| {
                 e.source == d.source.as_str()
                     && [&e.name, &e.group_id]
@@ -102,7 +103,7 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             assert!(own || beside, "{d:?}");
         }
         // The record's designations are the object's `designations` rows, each once, in order.
-        let rows: std::collections::BTreeSet<_> = o.object.designations.iter().collect();
+        let rows: std::collections::BTreeSet<_> = o.object.designations().collect();
         assert!(
             r.designations.iter().eq(rows.into_iter()),
             "{}: {:?}",
@@ -152,7 +153,7 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
                 let published = z.cmb.as_published();
                 check(
                     m,
-                    z.velocity.as_ref().unwrap_or(&published),
+                    z.velocity.as_deref().unwrap_or(&published),
                     &published,
                     z.kind_of_value,
                 );
@@ -170,8 +171,8 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
             let pm = entry.proper_motion.as_ref();
             let sgv = entry.supergalactic_velocity.as_ref();
             let values = [
-                (MeasuredQuantity::Parallax, entry.parallax.as_ref()),
-                (MeasuredQuantity::Velocity, entry.velocity.as_ref()),
+                (MeasuredQuantity::Parallax, entry.parallax.as_deref()),
+                (MeasuredQuantity::Velocity, entry.velocity.as_deref()),
                 (MeasuredQuantity::ProperMotionRa, pm.map(|p| &p.ra)),
                 (MeasuredQuantity::ProperMotionDec, pm.map(|p| &p.dec)),
                 (MeasuredQuantity::SupergalacticVelocityX, sgv.map(|v| &v.x)),
@@ -223,7 +224,7 @@ fn the_preferred_measurement_reads_with_the_ranking_that_chose_it() {
         assert_eq!((read.rank, read.decided), (p.rank, p.decided));
         assert_eq!(read.distance_mpc, p.distance_mpc);
         assert_eq!(read.uncertainty, p.uncertainty);
-        match (&read.runner_up, &p.runner_up) {
+        match (&read.runner_up, p.runner_up.as_deref()) {
             (None, None) => {}
             (Some(read), Some((m, u))) => {
                 assert_eq!(read.measurement, key_of(&o.object, m));
@@ -279,8 +280,8 @@ fn every_candidate_match_reads_with_its_confidence() {
     let Decoded { pairs } = decoded();
     let mut links = 0;
     for (o, r) in pairs {
-        assert_eq!(r.links, o.object.links, "{}", o.id.get());
-        assert_eq!(r.relations, o.object.relations, "{}", o.id.get());
+        assert_eq!(r.links[..], o.object.links[..], "{}", o.id.get());
+        assert_eq!(r.relations[..], o.object.relations[..], "{}", o.id.get());
         for (read, link) in r.links.iter().zip(&o.object.links) {
             assert_eq!(read.confidence, link.confidence);
             links += 1;
@@ -325,7 +326,7 @@ fn an_object_with_no_distance_has_a_sky_position_and_no_derived_position() {
             (icrs.ra, icrs.dec, icrs.epoch.0)
         );
         let entry = &r.entries[sky.entry as usize];
-        assert_eq!(entry.identifier, p.entry.identifier);
+        assert_eq!(&*entry.identifier, &*p.entry.identifier);
         assert_eq!(
             (sky.class, sky.uncertainty_mas),
             (p.class, p.uncertainty_mas)

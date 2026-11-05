@@ -75,7 +75,7 @@ async fn the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_c
     assert_eq!(entries.len(), 3);
     let c = entries
         .iter()
-        .find(|e| e.designation.identifier == "C")
+        .find(|e| &*e.designation.identifier == "C")
         .unwrap();
     assert_eq!(
         c.redshifts[0].cmb.measured.uncertainty,

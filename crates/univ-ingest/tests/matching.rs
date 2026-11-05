@@ -28,7 +28,7 @@ fn at(m: &Matched, d: &Designation) -> usize {
 }
 
 fn record(object: &Object, d: &Designation) -> MatchRecord {
-    match &object.entry(d).unwrap().resolved_by {
+    match &*object.entry(d).unwrap().resolved_by {
         Resolution::Match(r) => r.clone(),
         other => panic!("{d:?} resolved by {other:?}"),
     }
@@ -78,7 +78,7 @@ fn the_object_records_the_cross_identification_that_resolved_it() {
     let schemes: Vec<(&str, &str)> = object
         .entries
         .iter()
-        .filter_map(|e| match &e.resolved_by {
+        .filter_map(|e| match &*e.resolved_by {
             Resolution::CrossIdentification {
                 scheme,
                 identifier,
@@ -116,7 +116,7 @@ fn a_shared_2masx_name_joins_entries_beyond_the_positional_tolerance() {
     assert_eq!(m.objects.len(), 1);
     let e = &m.objects[0].entries[1];
     assert!(matches!(
-        &e.resolved_by,
+        &*e.resolved_by,
         Resolution::CrossIdentification { scheme, .. } if scheme == "2masx"
     ));
 }
@@ -317,7 +317,7 @@ fn designations_and_common_names_keep_their_sources() {
         designation("gaia-dr3-hipparcos2", "HIP 10768"),
         designation("bailer-jones-2021", "4612085076726173440"),
     ] {
-        assert!(object.designations.contains(&d), "{d:?}");
+        assert!(object.designations().any(|o| *o == d), "{d:?}");
     }
     // AC-74: the LMC of McConnachie 2012 and of UNGC, 40" and 2% apart in distance (simulated
     // positions near the real ones): one object, its common name from McConnachie.
@@ -351,13 +351,13 @@ fn designations_and_common_names_keep_their_sources() {
     );
     assert!(
         object
-            .designations
-            .contains(&designation("updated-nearby-galaxies", "LMC"))
+            .designations()
+            .any(|o| o == &designation("updated-nearby-galaxies", "LMC"))
     );
     assert!(
         object
-            .designations
-            .contains(&designation("mcconnachie-2012", "LMC"))
+            .designations()
+            .any(|o| o == &designation("mcconnachie-2012", "LMC"))
     );
 }
 

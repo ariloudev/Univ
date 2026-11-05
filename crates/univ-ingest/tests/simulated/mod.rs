@@ -8,7 +8,6 @@
     reason = "helpers shared by two test crates, each using a subset; a failed unwrap or panic is the test failing"
 )]
 
-use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use univ_ingest::matching::MatchingRules;
@@ -82,17 +81,17 @@ pub fn bare(src: &str, id: &str) -> CatalogueEntry {
         designation: designation(src, id),
         name: None,
         position: None,
-        distances: Vec::new(),
-        redshifts: Vec::new(),
+        distances: thin_vec::ThinVec::new(),
+        redshifts: thin_vec::ThinVec::new(),
         velocity: None,
         parallax: None,
         proper_motion: None,
         magnitude: None,
-        colours: Vec::new(),
+        colours: thin_vec::ThinVec::new(),
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
-        flags: BTreeMap::new(),
+        flags: univ_model::entry::Flags::default(),
         references: Box::default(),
     }
 }
@@ -192,18 +191,18 @@ pub fn with_distance(
 
 /// The entry with the name `name` beside its identifier.
 pub fn named(mut e: CatalogueEntry, name: &str) -> CatalogueEntry {
-    e.name = Some(name.to_owned());
+    e.name = Some(name.into());
     e
 }
 
 /// The entry with a parallax of `mas` ± `sigma` mas, as published, normalized to degrees.
 pub fn with_parallax(mut e: CatalogueEntry, mas: f64, sigma: f64) -> CatalogueEntry {
-    e.parallax = Some(value(
+    e.parallax = Some(Box::new(value(
         mas,
         Unit::Milliarcsecond,
         Unit::Degree,
         Uncertainty::Symmetric { sigma },
-    ));
+    )));
     e
 }
 

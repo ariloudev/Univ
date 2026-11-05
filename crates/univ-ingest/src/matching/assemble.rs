@@ -3,6 +3,7 @@
 
 use std::collections::VecDeque;
 
+use thin_vec::ThinVec;
 use univ_model::entry::CatalogueEntry;
 use univ_model::ids::Designation;
 use univ_model::object::{
@@ -97,7 +98,7 @@ pub(super) fn build(
     };
     let mut objects = Vec::with_capacity(plan.objects.len());
     for (o, members) in plan.objects.into_iter().enumerate() {
-        let mut list = Vec::with_capacity(members.len());
+        let mut list = ThinVec::with_capacity(members.len());
         for (e, via) in members {
             object_of[e] = o;
             let resolved_by = match via {
@@ -111,13 +112,16 @@ pub(super) fn build(
                 }
             };
             if let Some(entry) = slots[e].take() {
-                list.push(ObjectEntry { entry, resolved_by });
+                list.push(ObjectEntry {
+                    entry,
+                    resolved_by: resolved_by.into(),
+                });
             }
         }
         if list.len() > 1 {
             report.multi_entry_objects += 1;
         }
-        let mut object = Object::new(list);
+        let mut object = Box::new(Object::new(list));
         if object.sources().any(|s| rules.galaxy_group(s).is_some()) {
             object.kind = ObjectKind::GalaxyGroup;
         }
@@ -196,9 +200,10 @@ fn attach_names(rules: &MatchingRules, object: &mut Object) {
         for rule in rules.designations.iter().filter(|r| &r.source == source) {
             if let Some(text) = rule.field.read(entry)
                 && let Ok(d) = Designation::new(source.clone(), format!("{}{text}", rule.prefix))
-                && !object.designations.contains(&d)
+                && !object.entries.iter().any(|o| o.entry.designation == d)
+                && !object.given.contains(&d)
             {
-                object.designations.push(d);
+                object.given.push(d);
             }
         }
         for rule in rules.names.iter().filter(|r| &r.source == source) {

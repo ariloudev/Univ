@@ -1,13 +1,14 @@
 //! One row of a table read into a catalogue entry, or left out with its reason.
 
 use std::borrow::Cow;
-use std::collections::BTreeMap;
+use std::sync::Arc;
 
+use thin_vec::ThinVec;
 use univ_model::cosmology::AssumedCosmology;
 use univ_model::distance::{Distance, DistanceError, DistanceKind, Method};
 use univ_model::entry::{
-    CatalogueEntry, EntryError, Magnitude, NativePosition, Position, PositionErrors,
-    PositionUncertainty, ProperMotion, SupergalacticVelocity,
+    CatalogueEntry, EntryError, Flags, Magnitude, NativePosition, Position, PositionErrors,
+    PositionUncertainty, ProperMotion, SupergalacticVelocity, flag_name,
 };
 use univ_model::ids::{Designation, SourceId};
 use univ_model::position::{Epoch, PositionError};
@@ -69,6 +70,15 @@ pub(super) fn read(
         // A row left out was changed only by a fix that left it out.
         Err(reason) => Err((reason, row.changed & cx.plan.leaving)),
     }
+}
+
+/// `list` with no room beyond its length, as it is held for each of millions of entries: it is
+/// sized to its plan, and a blank cell leaves it shorter.
+fn fitted<T>(mut list: ThinVec<T>) -> ThinVec<T> {
+    if list.len() < list.capacity() {
+        list.shrink_to_fit();
+    }
+    list
 }
 
 impl Row<'_, '_> {
@@ -145,13 +155,13 @@ impl Row<'_, '_> {
         let direction = position.as_ref().map(|p| p.icrs.unit_vector());
         // Sized to the plan: a vector grown from empty takes room for four, and an entry is held
         // millions of times over.
-        let mut redshifts = Vec::with_capacity(plan.redshifts.len());
+        let mut redshifts = ThinVec::with_capacity(plan.redshifts.len());
         for r in &plan.redshifts {
             if let Some(redshift) = self.redshift(r, direction)? {
                 redshifts.push(redshift);
             }
         }
-        let mut distances = Vec::with_capacity(plan.distances.len());
+        let mut distances = ThinVec::with_capacity(plan.distances.len());
         for (i, d) in plan.distances.iter().enumerate() {
             let Some(native) = self.quantity(&d.measured)? else {
                 continue;
@@ -181,28 +191,38 @@ impl Row<'_, '_> {
         let entry = CatalogueEntry {
             designation: Designation::new(self.cx.source.clone(), identifier)
                 .map_err(|_| LeftOutReason::MissingIdentifier)?,
-            name: plan.name.and_then(|c| self.text(c)),
+            name: plan
+                .name
+                .and_then(|c| self.text(c))
+                .map(String::into_boxed_str),
             position,
-            distances,
-            redshifts,
-            velocity: self.value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?,
-            parallax: self.value(plan.parallax.as_ref(), Unit::Degree)?,
+            distances: fitted(distances),
+            redshifts: fitted(redshifts),
+            velocity: self
+                .value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?
+                .map(Box::new),
+            parallax: self
+                .value(plan.parallax.as_ref(), Unit::Degree)?
+                .map(Box::new),
             proper_motion: self.proper_motion()?.map(Box::new),
             magnitude: self.magnitude()?.map(Box::new),
             colours: self.colours()?,
             spectral_type: self.spectral_type().map(Box::new),
-            group_id: plan.group_id.and_then(|c| self.text(c)),
+            group_id: plan
+                .group_id
+                .and_then(|c| self.text(c))
+                .map(String::into_boxed_str),
             supergalactic_velocity: self.supergalactic()?.map(Box::new),
-            flags: plan
-                .flags
-                .iter()
-                .filter_map(|c| self.text(c.index).map(|t| (c.name.clone(), t)))
-                .chain(
-                    self.marks
-                        .iter()
-                        .map(|(flag, text)| ((*flag).to_owned(), (*text).to_owned())),
-                )
-                .collect::<BTreeMap<_, _>>(),
+            flags: Flags::named(
+                plan.flags
+                    .iter()
+                    .filter_map(|(index, name)| self.text(*index).map(|t| (Arc::clone(name), t)))
+                    .chain(
+                        self.marks
+                            .iter()
+                            .map(|(flag, text)| (flag_name(flag), (*text).to_owned())),
+                    ),
+            ),
             references: Box::default(),
         };
         entry.check().map_err(entry_reason)?;

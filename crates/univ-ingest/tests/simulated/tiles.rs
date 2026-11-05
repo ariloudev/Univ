@@ -120,14 +120,14 @@ pub fn object(
             .into_iter()
             .map(|entry| ObjectEntry {
                 entry,
-                resolved_by: Resolution::Anchor,
+                resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     );
     let Some(m) = preferred else {
         return ReleaseObject {
             id: ObjectId::new(id).unwrap(),
-            object,
+            object: Box::new(object),
             position: None,
         };
     };
@@ -159,7 +159,7 @@ pub fn object(
     object.placement = Placement::Placed;
     ReleaseObject {
         id: ObjectId::new(id).unwrap(),
-        object,
+        object: Box::new(object),
         position: Some(position),
     }
 }

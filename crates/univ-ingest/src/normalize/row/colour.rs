@@ -1,17 +1,18 @@
 //! A row's colour indices and spectral type.
 
+use thin_vec::ThinVec;
 use univ_model::entry::{ColourIndex, SpectralType};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
 
-use super::{Row, value_reason};
+use super::{Row, fitted, value_reason};
 use crate::normalize::plan::ColourPlan;
 use crate::source::LeftOutReason;
 
 impl Row<'_, '_> {
     /// The colour indices the plan reads, each where its cells are not blank.
-    pub(super) fn colours(&mut self) -> Result<Vec<ColourIndex>, LeftOutReason> {
-        let mut colours = Vec::with_capacity(self.cx.plan.colours.len());
+    pub(super) fn colours(&mut self) -> Result<ThinVec<ColourIndex>, LeftOutReason> {
+        let mut colours = ThinVec::with_capacity(self.cx.plan.colours.len());
         for plan in &self.cx.plan.colours {
             let colour = match plan {
                 ColourPlan::Published { bands, value } => self
@@ -52,7 +53,7 @@ impl Row<'_, '_> {
             };
             colours.extend(colour);
         }
-        Ok(colours)
+        Ok(fitted(colours))
     }
 
     /// The spectral type the plan reads, as published, where its cell is not blank and not

@@ -33,7 +33,8 @@ pub type EntryIds = BTreeMap<Designation, ObjectId>;
 /// The ids of one release.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Assigned {
-    /// The objects, in the order of their smallest entry key.
+    /// The objects, in the order of their smallest entry key. The cross-match lets them go,
+    /// as its release objects hold their ids: they are empty in its output.
     pub objects: Vec<AssignedObject>,
     /// The map from entry to object id, for the next release.
     pub entries: EntryIds,

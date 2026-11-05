@@ -64,7 +64,7 @@ fn virgo_takes_the_kourkchi_tully_centre_and_its_wrong_cartesian_is_dropped() {
     assert!(virgo.supergalactic_velocity.is_none());
     // Its distance and velocity (V3k, in the CMB frame) are kept as published.
     assert_eq!(virgo.distances[0].native.value, 31.048);
-    assert_eq!(virgo.velocity.unwrap().native.value, 1479.0);
+    assert_eq!(virgo.velocity.as_ref().unwrap().native.value, 1479.0);
     // 1PGC 1816 had KT17's galactic angles as its supergalactic ones; it takes KT17's centre,
     // where its one table2 member lies (7.4238, -51.5207).
     let (ra, dec) = at(entry(&n, "1816"));
@@ -88,7 +88,7 @@ fn a_group_kourkchi_tully_does_not_list_is_left_out_for_its_wrong_position() {
     assert!(
         n.entries
             .iter()
-            .all(|e| e.designation.identifier != "43423")
+            .all(|e| &*e.designation.identifier != "43423")
     );
     // Provenance counts the entries each fix changed: three replaced, one left out, none read
     // SGX, SGY and SGZ as km/s, as the replacement dropped them, and none is the Milky Way's
@@ -103,7 +103,7 @@ fn a_replaced_group_position_names_kourkchi_and_tully_and_the_fix() {
     // whose position is as published carries no such flag.
     let n = recorded();
     let virgo = entry(&n, "41220");
-    let flag = &virgo.flags["position_source"];
+    let flag = &virgo.flags.get("position_source").unwrap();
     for text in [
         "Kourkchi & Tully 2017",
         "ApJ 843, 16",

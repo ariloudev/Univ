@@ -9,7 +9,7 @@ mod simulated;
 use common::{entry, normalized_file, normalized_fixture};
 use simulated::{designation, matching_rules, ranking_rules, with_cz, with_modulus};
 use univ_ingest::crossmatch::place;
-use univ_ingest::matching::match_entries;
+use univ_ingest::matching::{Matched, match_entries};
 use univ_ingest::normalize::Normalized;
 use univ_ingest::ranking::rank_all;
 use univ_model::cosmology::SPEED_OF_LIGHT;
@@ -31,7 +31,7 @@ fn galaxies() -> Normalized {
     normalized_fixture("cosmicflows-4-galaxies")
 }
 
-fn object_of<'a>(objects: &'a [Object], source: &str, id: &str) -> &'a Object {
+fn object_of<'a>(objects: &'a [Box<Object>], source: &str, id: &str) -> &'a Object {
     objects
         .iter()
         .find(|o| o.entry(&designation(source, id)).is_some())
@@ -65,7 +65,7 @@ fn every_row_reads_with_its_own_modulus_group_and_cmb_velocity() {
     };
     assert_eq!(z.cmb.published, RedshiftFrame::Cmb);
     assert_eq!(z.cmb.value.value, 1608.0 / SPEED_OF_LIGHT);
-    assert_eq!(z.velocity.unwrap().value, 1608.0);
+    assert_eq!(z.velocity.as_deref().unwrap().value, 1608.0);
     // Centaurus A: 27.804 ± 0.038 mag, 3.64 Mpc.
     let cen_a = entry(&n, "46957");
     let mpc = cen_a.distances[0]
@@ -82,13 +82,13 @@ fn virgo_group() -> CatalogueEntry {
     simulated::entry("cosmicflows-4", "41220", 187.756, 12.406)
 }
 
-fn matched() -> Vec<Object> {
+fn matched() -> Matched {
     let mut entries = galaxies().entries;
     entries.extend(twomrs_virgo().entries);
     entries.push(virgo_group());
     let mut m = match_entries(&matching_rules(), entries);
     rank_all(&mut m.objects, &ranking_rules(), &Release::planck_2018());
-    m.objects
+    m
 }
 
 #[test]
@@ -96,14 +96,14 @@ fn m87_merges_with_its_2mrs_entry_by_position_and_heliocentric_velocity() {
     // Cosmicflows-4 gives Vcmb = 1608 km/s, 2MRS cz = 1307 km/s: 301 km/s apart, beyond the
     // 200 km/s tolerance as published, 30 km/s apart once Vcmb is moved back to the
     // heliocentric frame along M87's direction.
-    let objects = matched();
+    let objects = matched().objects;
     let m87 = object_of(&objects, "cosmicflows-4-galaxies", M87);
     let twomrs = m87
         .entries
         .iter()
         .find(|e| e.entry.designation.source.as_str() == "twomrs")
         .unwrap();
-    let Resolution::Match(record) = &twomrs.resolved_by else {
+    let Resolution::Match(record) = &*twomrs.resolved_by else {
         panic!("{:?}", twomrs.resolved_by)
     };
     assert!(record.separation_arcsec < 1.0, "{record:?}");
@@ -124,7 +124,7 @@ fn m87_merges_with_its_2mrs_entry_by_position_and_heliocentric_velocity() {
 
 #[test]
 fn m87_is_placed_by_its_cosmicflows_4_distance_not_its_redshift() {
-    let objects = matched();
+    let objects = matched().objects;
     let p = object_of(&objects, "cosmicflows-4-galaxies", M87)
         .preferred_distance
         .as_ref()
@@ -141,13 +141,13 @@ fn m87_is_placed_by_its_cosmicflows_4_distance_not_its_redshift() {
         "{}",
         p.distance_mpc
     );
-    let (beaten, _) = p.runner_up.as_ref().unwrap();
+    let (beaten, _) = p.runner_up.as_deref().unwrap();
     assert!(matches!(beaten, MeasurementRef::Redshift { .. }));
 }
 
 #[test]
 fn each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan() {
-    let objects = matched();
+    let objects = matched().objects;
     let group = object_of(&objects, "cosmicflows-4", "41220");
     assert_eq!(group.entries.len(), 1, "a group merges with no galaxy");
     let members = group
@@ -185,7 +185,7 @@ fn each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan() {
 fn a_cosmicflows_4_galaxy_is_placed_at_its_luminosity_distance_over_one_plus_its_cmb_redshift() {
     // DM is a luminosity distance: M87's 31.134 mag is D_L = 16.858 Mpc, and its Vcmb of
     // 1608 km/s makes it comoving, D_L / (1 + z), once, with no second dipole step.
-    let mut objects = matched();
+    let mut objects = matched().objects;
     let release = Release::planck_2018();
     let at = objects
         .iter()
@@ -224,7 +224,7 @@ fn a_cosmicflows_4_galaxy_is_placed_at_its_luminosity_distance_over_one_plus_its
     );
     let mut alone = Object::new(vec![univ_model::object::ObjectEntry {
         entry: group,
-        resolved_by: Resolution::Anchor,
+        resolved_by: Resolution::Anchor.into(),
     }]);
     univ_ingest::ranking::rank(&mut alone, &ranking_rules(), &release);
     assert!(matches!(
