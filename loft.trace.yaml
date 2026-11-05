@@ -1673,7 +1673,7 @@ links:
         body: 3c4566d86e5e7b71ba175859e0e526267ffd40d0a0c35abcd42232304f8eda7d
       - file: "crates/univ-ingest/src/publish/wrangler.rs"
         name: "a_failure_gives_wranglers_standard_error_without_its_escapes"
-        body: fb3233969c3b0a55c726aae02e8cf6bdec7cb47fc1252d96f0717c912178ea25
+        body: 66fabba418acbff588677fd15e36332851998365f4894b7b62e54cc7d905d60f
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
         body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
@@ -1877,7 +1877,7 @@ links:
     tests:
       - file: "crates/univ-api/src/objects/tests.rs"
         name: "a_designation_is_a_source_and_its_identifier"
-        body: 1789407d072a7ba7d99aecdae79fd63f3c2522e49116196efcd9fdc01d260ef0
+        body: b6f9b480a0593c14269b81ef407f374e3812b65a61232b5a749dca9c62b56ec0
       - file: "crates/univ-api/src/objects/record_tests.rs"
         name: "a_designation_resolves_to_its_object"
         body: 149545eb02b931a139e98ede46679901ccab37a00ac29e93d836de8efe9dc937
@@ -2418,6 +2418,15 @@ links:
       - file: "crates/univ-api/src/query_paging_tests.rs"
         name: "paging_a_query_whose_layers_did_not_change_gives_the_same_pages_in_one_order"
         body: 01e31e54f3ace36a3fdcee00716d2ede9cb22a4dee0b04b37826445e5411a799
+  - node: 01a1a931-2c8a-73a8-91f2-59122e92f2fd
+    reviewed: 9153c6188810ce215ca5e885fd5dac15f9a2def39502029a4e47c025e1a17c8b
+    tests:
+      - file: "crates/univ-api/src/query_paging_tests.rs"
+        name: "a_page_holds_its_results_in_the_same_order_whichever_object_shards_they_come_from"
+        body: ff0bf5a27ecea040e0361cb0f9433cd2aea46fe6c489619a723e6a35c54f28d1
+      - file: "crates/univ-api/src/shards.rs"
+        name: "a_box_meets_the_shards_whose_codes_its_own_overlap"
+        body: 22a964b7e171526122f14a0b121f1d26423acc6f362f363a16c3906de0ea3e96
   - node: 01a19f1f-9fd7-7209-b7cb-5d174e903e62
     reviewed: 65781d1b4fb6302dcfa214e3d113285a51074387e369da64ec7e7ad51c4e2705
     tests:

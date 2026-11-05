@@ -141,3 +141,25 @@ blocks:
         markdown: |-
           | Issue | Found by | Fix | State |
           |---|---|---|---|
+      - key: 01a1aafe-cdcd-71ed-b63e-09b008210efa
+        at: 2026-11-05T09:16:27Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | A box was compared with a shard by one Morton range from its corners' codes. The bias sets each index's top bit from 0 up, so a box across 0 on any axis took most of the code space and read every shard. That includes spheres about the Sun and QA-3's spheres 100 Mpc out. | /code-review | `morton_ranges` cuts the box into aligned octree cubes, each a contiguous range, at most 64 of them; exact with room, a few times the box's cells at 64 | fixed |
+          | A shard batch answered with fewer results than statements left the missing ones empty, defeating `record`'s count check | /code-review | the Worker errs when a shard's answer count differs | fixed |
+          | A lookup by designation found the object's shard, then asked the catalogue for it again | efficiency, /code-review | `by_designation` gives `(id, shard)`; `record` takes the known shard | fixed |
+          | univ-api joined designations to sources in Rust and sorted them, which `read::object` already does | reuse, simplification, /code-review | univ-model reads a designation's source by number, as for entries; the rows go through unchanged | fixed |
+          | Two writers of the test shard index (the volume fixture and the test backend); cells written in a later `exec` never widened `shard_cells`; 80 statements after every `exec` | simplification, reuse, altitude, /code-review | the test backend alone writes the index, from a placement function (`id % 2` by default), recomputed from what the shards hold; nothing runs when an `exec` wrote no object rows. univ-api's suite went from 6.2 s to 4.0 s | fixed |
+          | The bench found the catalogue as the largest file, then as the file whose `latest` has a row | altitude | sampled through `wrangler d1 execute univ --json`; a release built before shards is named as such | fixed |
+          | A private `Run` struct repeated `shard_cells` | reuse | `ShardCellRow` | fixed |
+          | Linear grouping in the Worker; a re-exported `bound_shards`; two names for `univ` | simplification | `BTreeMap`; univ-model's `bound_shards` and `CATALOGUE_NAME` | fixed |
+          | `release_tables` runs 9 Wrangler processes one after another | efficiency, /code-review | tested in parallel on one state: 7 of 9 fail with `SQLITE_BUSY` at workerd start, so kept serial, with the reason in its doc | skipped |
+          | A release built before shards reads as empty in the server | /code-review | by the spec's decision such releases are pruned (W5), not read; the bench now says so | skipped |
+          | `page` near 100 lines; `RELEASES` const beside `Database::Catalogue.binding()` | simplification | clippy passes; cosmetic | skipped |
+          | Page-order criterion unlinked | /code-review | linked to the three-placement paging test and the shard map's unit test | fixed |
