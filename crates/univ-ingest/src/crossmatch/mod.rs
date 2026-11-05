@@ -66,6 +66,8 @@ pub struct CrossMatched {
     pub dipole: DipoleModel,
     /// The objects, in the order of their first entry.
     pub objects: Vec<ReleaseObject>,
+    /// The ids issued and replaced. Its objects are not kept: each release object holds its
+    /// id, and the entries of each are its object's.
     pub assigned: Assigned,
     /// The ledger with the release recorded, and the entry ids, as the next state; the ids
     /// are kept there alone, not in `assigned`.
@@ -142,14 +144,7 @@ pub fn cross_match_watched(
 
     let release = next_release(&inputs.state.ledger);
     let mut ledger = inputs.state.ledger.clone();
-    let groups = objects.iter().map(|o| {
-        o.entries
-            .iter()
-            .map(|e| e.entry.designation.clone())
-            .collect()
-    });
-    let (mut assigned, ids) =
-        assign_in_order(&inputs.state.previous, &mut ledger, &release, groups)?;
+    let (mut assigned, ids) = ids_of(&objects, inputs.state, &mut ledger, &release)?;
     step(format!(
         "ids: release {release}, {} new, {} replaced",
         issued(&assigned),
@@ -221,6 +216,26 @@ pub fn cross_match_watched(
         counts: crossed.counts(),
     });
     Ok(crossed)
+}
+
+/// The ids of `objects` for `release`, in their order, recorded in `ledger`, with what was
+/// issued and replaced. The assignment's own objects are let go, a designation of every entry:
+/// the release objects hold the ids.
+fn ids_of(
+    objects: &[Object],
+    state: &State,
+    ledger: &mut Ledger,
+    release: &str,
+) -> Result<(Assigned, Vec<ObjectId>), CrossMatchError> {
+    let groups = objects.iter().map(|o| {
+        o.entries
+            .iter()
+            .map(|e| e.entry.designation.clone())
+            .collect()
+    });
+    let (mut assigned, ids) = assign_in_order(&state.previous, ledger, release, groups)?;
+    assigned.objects = Vec::new();
+    Ok((assigned, ids))
 }
 
 impl CrossMatched {
