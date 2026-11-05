@@ -96,6 +96,15 @@ blocks:
         title: "Baseline: the fixture release's files and the focused run's peak"
         detail: "Done when the fixture release's manifest (each file's SHA-256 and the D1 fingerprints) is kept to compare against, and the focused run's peak per entry is measured without the profiler."
         state: active
+      - key: 01a1abbe-ff50-73db-88d2-e10dad24191b
+        at: 2026-11-05T12:46:23Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Baseline: the fixture release's files and the focused run's peak"
+        detail: "Fixture snapshot: releases 1 and 2, 7,512 lines and 134 file hashes, byte-identical across two runs. Focused run (2,432,397 entries): peak footprint 10.31 GB, 4,239 B per entry with the fixed part, 15.6 s."
+        state: done
   - key: 01a1abb4-e013-7643-8968-691a98ce4333
     id: m-chains
     kind: task
@@ -109,6 +118,15 @@ blocks:
         title: "Chains as templates in memory"
         detail: "Done when derived positions and distances hold a template and its parameters, the fixture release comes out the same, and the focused peak is measured."
         state: open
+      - key: 01a1abbe-ff50-73db-88d2-e10e8b883b96
+        at: 2026-11-05T12:46:23Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Chains as templates in memory"
+        detail: "Done when derived positions and distances hold a template and its parameters, the fixture release comes out the same, and the focused peak is measured."
+        state: active
   - key: 01a1abb4-e013-7643-8968-691ba53298f6
     id: m-entries-once
     kind: task

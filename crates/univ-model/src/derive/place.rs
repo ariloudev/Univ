@@ -78,7 +78,11 @@ impl Direction {
 /// derived and as published, and its Cartesian coordinates in Mpc in ICRS, galactic and
 /// supergalactic axes, with the release cosmology, the chain that made it and the univ-model
 /// version. It is made only from a [`Radial`], so never for an object without a distance.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+///
+/// It is held for each of tens of millions of objects, so it keeps only the radial chain: the
+/// steps after it, which the direction alone decides, are added when the chain is read
+/// ([`Self::chain`]), and serialized with it.
+#[derive(Clone, Debug, PartialEq)]
 pub struct DerivedPosition {
     direction: Direction,
     native: Quantity,
@@ -89,8 +93,27 @@ pub struct DerivedPosition {
     galactic: Vec3,
     supergalactic: Vec3,
     cosmology: Cosmology,
-    chain: Vec<Step>,
+    radial_chain: Box<[Step]>,
     model_version: &'static str,
+}
+
+impl Serialize for DerivedPosition {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+        let mut s = serializer.serialize_struct("DerivedPosition", 11)?;
+        s.serialize_field("direction", &self.direction)?;
+        s.serialize_field("native", &self.native)?;
+        s.serialize_field("assumed", &self.assumed)?;
+        s.serialize_field("distance", &self.distance)?;
+        s.serialize_field("measure", &self.measure)?;
+        s.serialize_field("icrs", &self.icrs)?;
+        s.serialize_field("galactic", &self.galactic)?;
+        s.serialize_field("supergalactic", &self.supergalactic)?;
+        s.serialize_field("cosmology", &self.cosmology)?;
+        s.serialize_field("chain", &self.chain())?;
+        s.serialize_field("model_version", &self.model_version)?;
+        s.end()
+    }
 }
 
 impl DerivedPosition {
@@ -98,24 +121,7 @@ impl DerivedPosition {
     #[must_use]
     pub fn new(direction: Direction, radial: Radial) -> Self {
         let cosmology = radial.cosmology().clone();
-        let frame = direction.published_in;
-        // Allocated once at its length: a chain is held for each of millions of objects.
-        let more = usize::from(direction.systematic_degrees.is_some())
-            + usize::from(frame != Frame::Icrs)
-            + 3;
-        let mut chain = Vec::with_capacity(radial.chain().len() + more);
-        chain.extend_from_slice(radial.chain());
-        // An unstated equinox is first taken as J2000, then moved to the ICRS from there.
-        if let Some(systematic_degrees) = direction.systematic_degrees {
-            chain.push(Transformation::EquinoxAssumedJ2000 { systematic_degrees }.into());
-        }
-        if frame != Frame::Icrs {
-            chain.push(Transformation::ToIcrs { from: frame }.into());
-        }
-        chain.push(Transformation::Cartesian.into());
-        for to in [Frame::Galactic, Frame::Supergalactic] {
-            chain.push(Transformation::Rotated { to }.into());
-        }
+        let radial_chain: Box<[Step]> = radial.chain().into();
         let (native, assumed, distance, measure) = radial.into_parts();
         let icrs = scaled(direction.icrs.unit_vector(), distance.value);
         Self {
@@ -128,7 +134,7 @@ impl DerivedPosition {
             galactic: from_icrs(Frame::Galactic).apply(icrs),
             supergalactic: from_icrs(Frame::Supergalactic).apply(icrs),
             cosmology,
-            chain,
+            radial_chain,
             model_version: MODEL_VERSION,
         }
     }
@@ -198,9 +204,29 @@ impl DerivedPosition {
         &self.cosmology
     }
 
+    /// Every step that made the position: the radial chain, then the direction's steps. An
+    /// unstated equinox is first taken as J2000, then moved to the ICRS from there; the ICRS
+    /// direction is made Cartesian and rotated to galactic and supergalactic axes.
     #[must_use]
-    pub fn chain(&self) -> &[Step] {
-        &self.chain
+    pub fn chain(&self) -> Vec<Step> {
+        let Direction {
+            published_in,
+            systematic_degrees,
+            ..
+        } = self.direction;
+        let mut chain = Vec::with_capacity(self.radial_chain.len() + 5);
+        chain.extend_from_slice(&self.radial_chain);
+        if let Some(systematic_degrees) = systematic_degrees {
+            chain.push(Transformation::EquinoxAssumedJ2000 { systematic_degrees }.into());
+        }
+        if published_in != Frame::Icrs {
+            chain.push(Transformation::ToIcrs { from: published_in }.into());
+        }
+        chain.push(Transformation::Cartesian.into());
+        for to in [Frame::Galactic, Frame::Supergalactic] {
+            chain.push(Transformation::Rotated { to }.into());
+        }
+        chain
     }
 
     #[must_use]
