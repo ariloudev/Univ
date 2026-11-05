@@ -141,8 +141,9 @@ pub struct Normalizer<'a> {
     definition: &'a SourceDefinition,
     correction: &'a CmbCorrection,
     entries: Vec<CatalogueEntry>,
-    /// The identifiers of the entries kept so far.
-    identifiers: HashSet<String>,
+    /// The identifiers of the entries kept so far, each by its [`identifier_hash`]: a copy of
+    /// each would take a gigabyte for a catalogue of twenty million rows.
+    identifiers: HashSet<u128>,
     left_out: BTreeMap<LeftOutReason, u64>,
     /// Entries each fix changed, by the fix's index in the definition.
     changed: Vec<u64>,
@@ -244,7 +245,7 @@ impl<'a> Normalizer<'a> {
             Ok((entry, changed)) => {
                 if self
                     .identifiers
-                    .insert(entry.designation.identifier.clone())
+                    .insert(identifier_hash(&entry.designation.identifier))
                 {
                     self.entries.push(entry);
                 } else {
@@ -444,4 +445,10 @@ pub fn normalize_until(
         }
     }
     Ok(normalizer.finish())
+}
+
+/// A 128-bit hash of an identifier ([`crate::hash::hash128`]).
+fn identifier_hash(identifier: &str) -> u128 {
+    use std::hash::Hash;
+    crate::hash::hash128(|h| identifier.hash(h))
 }

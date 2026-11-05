@@ -72,6 +72,8 @@ pub fn name_of(domain: ScaleDomain) -> &'static str {
 #[derive(Clone, Debug, PartialEq)]
 pub struct DomainPoint {
     pub id: ObjectId,
+    /// The object's place among the release's objects.
+    pub place: u32,
     /// Its derived ICRS Cartesian position in the domain's unit, the barycentre as origin.
     pub position: Vec3,
     /// The index in its domain's sources of the source of its preferred distance: the source
@@ -105,6 +107,7 @@ pub struct Assigned {
 /// A placed object before its sources are interned: the indices of its sources' definitions.
 struct Placed {
     id: ObjectId,
+    place: u32,
     position: Vec3,
     distance: usize,
     sky: usize,
@@ -191,7 +194,7 @@ pub fn assign(
     };
     let mut placed: BTreeMap<ScaleDomain, Vec<Placed>> = BTreeMap::new();
     let mut unplaced = 0;
-    for o in objects {
+    for (place, o) in (0_u32..).zip(objects) {
         let Some(position) = &o.position else {
             unplaced += 1;
             continue;
@@ -230,6 +233,7 @@ pub fn assign(
         }
         placed.entry(domain).or_default().push(Placed {
             id,
+            place,
             position: at,
             distance,
             sky,
@@ -272,6 +276,7 @@ fn intern(
         let sky = source(p.sky, &mut interned.sources)?;
         interned.points.push(DomainPoint {
             id: p.id,
+            place: p.place,
             position: p.position,
             source: distance,
             sky_source: sky,

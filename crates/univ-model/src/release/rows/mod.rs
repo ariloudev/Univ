@@ -35,8 +35,10 @@ macro_rules! row {
 }
 
 mod objects;
+mod shards;
 
 pub use objects::{ChainRow, DesignationRow, EntryRow, MeasurementRow, NameRow, ObjectRow, PARAMS};
+pub use shards::{ObjectShardRow, ReleaseShardRow, ShardCellRow};
 
 use serde::{Deserialize, Serialize};
 
@@ -443,7 +445,7 @@ pub struct CatalogueUncertainty {
 }
 
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 21] = [
+pub const TABLES: [Table; 24] = [
     ReleaseRow::TABLE,
     TermRow::TABLE,
     SourceRow::TABLE,
@@ -465,6 +467,9 @@ pub const TABLES: [Table; 21] = [
     SourceDetailRow::TABLE,
     StructureDetailRow::TABLE,
     SourceTermRow::TABLE,
+    ObjectShardRow::TABLE,
+    ShardCellRow::TABLE,
+    ReleaseShardRow::TABLE,
 ];
 
 /// The key a common name is looked up by: lower case, without white space.

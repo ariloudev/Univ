@@ -15,12 +15,26 @@ use common::workspace;
 use release_fixture::{build_next, fixture, run_ok, univ_ingest};
 use univ_ingest::publish::{Store, Wrangler};
 use univ_model::release::keys;
+use univ_model::release::shards::Database;
 
-fn int(store: &mut Wrangler, sql: &str) -> i64 {
-    let rows = store.query(sql).unwrap();
+/// The single integer a query of `database` gives.
+fn int_in(store: &mut Wrangler, database: Database, sql: &str) -> i64 {
+    let rows = store.query(database, sql).unwrap();
     let value = rows[0].values().next().unwrap().as_i64().unwrap();
     eprintln!("D1> {sql}\n    = {value}");
     value
+}
+
+/// The single integer a query of the catalogue database gives.
+fn int(store: &mut Wrangler, sql: &str) -> i64 {
+    int_in(store, Database::Catalogue, sql)
+}
+
+/// The sum over the release's `shards` of the single integer a query of each gives.
+fn in_shards(store: &mut Wrangler, shards: u32, sql: &str) -> i64 {
+    (0..shards)
+        .map(|i| int_in(store, Database::Shard(i), sql))
+        .sum()
 }
 
 #[test]
@@ -36,10 +50,20 @@ fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
     assert!(log.contains("Published release 1 at "), "{log}");
     let mut store = Wrangler::new(&workspace().join("wrangler.toml"), persist.path()).unwrap();
     assert_eq!(int(&mut store, "SELECT release FROM latest"), 1);
+    let shards = u32::try_from(built.manifest.shards.len()).unwrap();
+    assert!(shards >= 2, "the fixture spans object shards");
+    assert_eq!(
+        in_shards(
+            &mut store,
+            shards,
+            "SELECT COUNT(*) FROM objects WHERE release = 1"
+        ),
+        25
+    );
     assert_eq!(
         int(
             &mut store,
-            "SELECT COUNT(*) FROM objects WHERE release = (SELECT release FROM latest)"
+            "SELECT COUNT(*) FROM object_shards WHERE release = 1"
         ),
         25
     );
@@ -69,7 +93,10 @@ fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
     eprintln!("$ univ-ingest prune 2\n{said}");
     assert!(said.contains("latest points to release 2"), "{said}");
     let ids: Vec<i64> = store
-        .query("SELECT id FROM objects WHERE release = 1")
+        .query(
+            Database::Catalogue,
+            "SELECT id FROM object_shards WHERE release = 1",
+        )
         .unwrap()
         .iter()
         .map(|r| r["id"].as_i64().unwrap())
@@ -77,7 +104,18 @@ fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
     let log = run_ok("prune", 1, out, state, persist.path());
     assert!(log.contains("Release 1 pruned at "), "{log}");
     assert_eq!(
-        int(&mut store, "SELECT COUNT(*) FROM objects WHERE release = 1"),
+        in_shards(
+            &mut store,
+            shards,
+            "SELECT COUNT(*) FROM objects WHERE release = 1"
+        ),
+        0
+    );
+    assert_eq!(
+        int(
+            &mut store,
+            "SELECT COUNT(*) FROM object_shards WHERE release = 1"
+        ),
         0
     );
     assert_eq!(
@@ -99,8 +137,8 @@ fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
         &mut store,
         &format!(
             "SELECT COUNT(*) FROM ids_issued i JOIN (SELECT value AS id FROM json_each('[{list}]')) \
-             x ON x.id BETWEEN i.first AND i.last WHERE x.id IN (SELECT id FROM objects WHERE \
-             release = 2) OR x.id IN (SELECT id FROM ids_replaced)"
+             x ON x.id BETWEEN i.first AND i.last WHERE x.id IN (SELECT id FROM object_shards \
+             WHERE release = 2) OR x.id IN (SELECT id FROM ids_replaced)"
         ),
     );
     assert_eq!(resolved, i64::try_from(ids.len()).unwrap());

@@ -9,6 +9,7 @@ pub mod events;
 pub mod fetch;
 pub mod fits;
 pub mod grids;
+pub mod hash;
 pub mod ids;
 pub mod lock;
 pub mod matching;

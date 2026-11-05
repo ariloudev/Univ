@@ -12,11 +12,12 @@ use crate::cosmology::Cosmology;
 /// The name a release manifest gives its format.
 pub const FORMAT: &str = "univ-release-manifest";
 /// The version of the manifest's own layout.
-pub const MANIFEST_VERSION: u32 = 1;
-/// The most D1 storage one release's tables may take (CON-3: 10 GB, decimal gigabytes).
+pub const MANIFEST_VERSION: u32 = 2;
+/// The most D1 storage one database may take (CON-3: 10 GB, decimal gigabytes).
 pub const D1_CAP_BYTES: u64 = 10_000_000_000;
-/// The most D1 storage a build lets one release take: under half the cap, so release n + 1 is
-/// published beside release n, and checked with it against the cap, before n is pruned.
+/// The most D1 storage a build lets one release take in one database: under half the cap, so
+/// release n + 1 is published beside release n, and checked with it against the cap, before n
+/// is pruned. It is also the default budget of an object shard.
 pub const RELEASE_BUDGET_BYTES: u64 = 4_500_000_000;
 
 /// A release manifest.
@@ -42,9 +43,56 @@ pub struct ReleaseManifest {
     pub sources: Vec<ManifestSource>,
     pub counts: Counts,
     pub ids: Ids,
+    /// The catalogue database's rows (since manifest version 2; before it, every row).
     pub d1: D1Estimate,
+    /// The object shards, in order (manifest version 2): none in a release of one database.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub shards: Vec<ShardManifest>,
     /// Every file of the release but this manifest, sorted by path.
     pub files: Vec<ManifestFile>,
+}
+
+impl ReleaseManifest {
+    /// Each database's estimate: the catalogue's, then each object shard's.
+    pub fn estimates(&self) -> impl Iterator<Item = &D1Estimate> {
+        std::iter::once(&self.d1).chain(self.shards.iter().map(|s| &s.d1))
+    }
+
+    /// The rows of `table` in every database together, their counts and fingerprints added up:
+    /// what the release's D1 files hold of it once loaded into one database. None when no
+    /// database's estimate names it.
+    #[must_use]
+    pub fn table_estimate(&self, table: &str) -> Option<TableEstimate> {
+        let parts: Vec<&TableEstimate> = self
+            .estimates()
+            .filter_map(|e| e.tables.iter().find(|t| t.table == table))
+            .collect();
+        summed(&parts)
+    }
+}
+
+/// One table's estimates in several databases added up; none when there are none.
+pub(crate) fn summed(parts: &[&TableEstimate]) -> Option<TableEstimate> {
+    {
+        let mut sum = (*parts.first()?).clone();
+        for part in &parts[1..] {
+            sum.rows += part.rows;
+            sum.estimated_bytes += part.estimated_bytes;
+            for (total, more) in sum.fingerprint.iter_mut().zip(&part.fingerprint) {
+                total.total += more.total;
+                total.magnitude = total.magnitude.zip(more.magnitude).map(|(a, b)| a + b);
+                total.non_null = total.non_null.zip(more.non_null).map(|(a, b)| a + b);
+            }
+        }
+        // A table checked by its content has its rows in one database: that one's digest.
+        let holding: Vec<&&TableEstimate> = parts.iter().filter(|p| p.rows > 0).collect();
+        sum.content_sha256 = match holding.as_slice() {
+            [] => sum.content_sha256,
+            [one] => one.content_sha256.clone(),
+            _ => None,
+        };
+        Some(sum)
+    }
 }
 
 /// The versions the release was built with.
@@ -159,6 +207,32 @@ pub struct D1Estimate {
     pub cap_bytes: u64,
     pub estimated_bytes: u64,
     pub tables: Vec<TableEstimate>,
+}
+
+/// One object shard of a release: the cells it holds, its objects, and its rows' estimate.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ShardManifest {
+    /// Its number, from 0: the database bound as `OBJECTS_{index}`.
+    pub index: u32,
+    pub objects: u64,
+    /// The objects not placed, which it holds by their ids.
+    pub unplaced: u64,
+    /// Each run of level-0 cells it holds, one per scale domain.
+    pub cells: Vec<ShardCells>,
+    pub d1: D1Estimate,
+}
+
+/// The level-0 cells of one scale domain an object shard holds: those whose Morton code
+/// ([`super::shards::morton`]) lies from `first` to `last`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ShardCells {
+    pub domain: String,
+    pub first: u64,
+    pub last: u64,
+    /// The cells of the run that hold an object.
+    pub cells: u64,
 }
 
 /// One table's rows of the release, their estimated bytes, and their fingerprint, which

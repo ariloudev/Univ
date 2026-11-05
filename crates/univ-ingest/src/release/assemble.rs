@@ -13,30 +13,30 @@ use univ_model::redshift::CmbCorrection;
 use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
     CellIndex, CellSpaceInfo, Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestSource,
-    NotIndexed, RecordedFile, ReleaseManifest, Versions,
+    NotIndexed, RELEASE_BUDGET_BYTES, RecordedFile, ReleaseManifest, ShardManifest, Versions,
 };
 use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseRow};
+use univ_model::release::shards::Database;
 use univ_model::release::{Row, SCHEMA_VERSION, keys};
 
+use super::check::D1_KEYS;
 use super::check::{Failed, Subject, check_all, d1_derived, d1_size};
 use super::d1::{D1Writer, PartSink};
 use super::entries::Numbering;
 use super::files::DirSink;
 use super::objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
 use super::outline::Outlined;
+use super::sharded::{Sharding, repeated_id, shard_manifests, write_shard_index};
 use super::terms::{SourceIndex, Terms};
 use super::{
-    CellRows, Inputs, Placing, StructureBounds, TestCatalogues, cell_rows, coverages, domain_rows,
-    grid_files, outlines_on, placements, read_grid, source_detail_rows, source_rows,
+    CellRows, Inputs, Placing, StructureBounds, TestCatalogues, coverages, domain_rows, grid_files,
+    index_rows, object_cells, outlines_on, placements, read_grid, source_detail_rows, source_rows,
     structure_detail_rows, structure_rows,
 };
 use crate::crossmatch::RULES;
 use crate::source::SourceDefinition;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
 use crate::watch::Watch;
-
-/// Objects turned into rows between two looks at the build's stop flag.
-const OBJECTS_BETWEEN_CHECKS: usize = 10_000;
 
 /// A release written into its directory, with the failures of its checks.
 pub struct Written {
@@ -74,19 +74,24 @@ fn tile_count(inputs: &Inputs<'_>) -> usize {
 
 /// What the D1 rows came to.
 struct D1Done {
+    /// The catalogue database's estimate.
     estimate: D1Estimate,
+    shards: Vec<ShardManifest>,
     failed: Vec<Failed>,
     objects: ObjectCounts,
     cells: CellRows,
+    /// The placed objects, each with its row in the cell index.
+    object_cells: u64,
     structures: u64,
 }
 
-/// Writes every D1 row of release `number` through `writer`, the grids' rows given, under
-/// `release`, with the sources numbered by `sources`: both made once for the build.
+/// Writes every D1 row of release `number` into `sink`, the grids' rows given, under
+/// `release`, with the sources numbered by `sources`: both made once for the build. The
+/// objects are written to the object shards planned for them, the rest to the catalogue.
 fn d1_rows(
     inputs: &Inputs<'_>,
     number: u32,
-    mut writer: D1Writer<'_>,
+    sink: &mut DirSink<'_>,
     grids: &WrittenGrids,
     release: &Release,
     sources: SourceIndex,
@@ -99,7 +104,18 @@ fn d1_rows(
         terms: Terms::default(),
         sources,
     };
-    let objects = write_objects(inputs, numbering, &mut writer, watch)?;
+    let repeated = repeated_id(&crossed.objects);
+    let cells = object_cells(&crossed.objects, inputs.definitions, &crossed.cosmology)?;
+    let sharding = Sharding {
+        definitions: inputs.definitions,
+        cosmology: &crossed.cosmology,
+        cells: &cells,
+    };
+    let budget = crossed.basis.config.shard_budget();
+    let packing = sharding.plan(&crossed.objects, &numbering, budget, watch)?;
+    let mut writer = D1Writer::new(sink, packing.count())?;
+    let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
+    sharding.write(&crossed.objects, &mut objects, &mut writer, &packing, watch)?;
     let ObjectWriter {
         numbering: Numbering { mut terms, .. },
         chains,
@@ -118,24 +134,10 @@ fn d1_rows(
     let (structures, bounds) = write_structures(&mut writer, inputs, number, release, grids)?;
     writer.add_all(&domain_rows(number, inputs.tiles))?;
     writer.add_all(&grids.rows)?;
-    let cells = cell_rows(
-        number,
-        &crossed.objects,
-        inputs.definitions,
-        &crossed.cosmology,
-        &bounds,
-    )?;
-    for c in &cells.objects {
-        writer.add(&ObjectCellRow {
-            release: number,
-            domain: terms.id(c.domain),
-            ix: c.ix,
-            iy: c.iy,
-            iz: c.iz,
-            object_id: c.object_id,
-        })?;
-    }
+    drop(cells);
+    let cells = index_rows(number, &bounds)?;
     writer.add_all(&cells.structures)?;
+    write_shard_index(&mut writer, number, &packing, &mut terms)?;
     writer.add_all(&terms.rows(number))?;
     let source_ids: Vec<String> = inputs
         .definitions
@@ -162,28 +164,50 @@ fn d1_rows(
         // which therefore errs high by at most a few bytes.
         d1_estimated_bytes: i64::MAX.unsigned_abs(),
     };
-    let total = writer.estimated_bytes() + ReleaseRow::TABLE.estimated_bytes(&row.values());
+    let total = writer.estimated_bytes_in(Database::Catalogue)
+        + ReleaseRow::TABLE.estimated_bytes(&row.values());
     writer.add(&ReleaseRow {
         d1_estimated_bytes: total,
         ..row
     })?;
+    let object_cells = writer.rows(ObjectCellRow::TABLE.name);
     let written = writer.finish()?;
     let mut estimate = written.estimate;
     // The release's row records the estimate it is part of, computed with its widest value.
     estimate.estimated_bytes = total;
+    let shards = shard_manifests(&packing, written.shards);
     let mut failed = written.failed;
-    failed.extend(d1_size(&estimate));
+    failed.extend(repeated.map(|id| Failed {
+        check: D1_KEYS,
+        cause: format!(
+            "table objects: object id {id} is given to two objects, whose rows repeat its key \
+             (release = {number}, id = {id})"
+        ),
+    }));
+    failed.extend(sizes(&estimate, &shards, budget));
     failed.extend(d1_derived(
         counts.not_kept,
         counts.first_not_kept.as_deref(),
     ));
     Ok(D1Done {
         estimate,
+        shards,
         failed,
         objects: counts,
         cells,
+        object_cells,
         structures,
     })
+}
+
+/// The size checks of each database: the catalogue's `estimate` within a release's budget,
+/// each of the `shards` within `budget`.
+fn sizes(estimate: &D1Estimate, shards: &[ShardManifest], budget: u64) -> Vec<Failed> {
+    let catalogue = d1_size(Database::Catalogue, estimate, RELEASE_BUDGET_BYTES);
+    let each = shards
+        .iter()
+        .filter_map(|s| d1_size(Database::Shard(s.index), &s.d1, budget));
+    catalogue.into_iter().chain(each).collect()
 }
 
 /// Writes the `source_details`, `structures` and `structure_details` rows of release `number`
@@ -281,28 +305,10 @@ fn write_grids(
     Ok(grids)
 }
 
-/// Turns every object into its rows through `writer`, looking at the build's stop flag every
-/// [`OBJECTS_BETWEEN_CHECKS`] objects.
-fn write_objects<'a>(
-    inputs: &Inputs<'a>,
-    numbering: Numbering,
-    writer: &mut D1Writer<'_>,
-    watch: Watch<'_>,
-) -> Result<ObjectWriter<'a>, String> {
-    let crossed = inputs.crossed;
-    let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
-    for (n, o) in crossed.objects.iter().enumerate() {
-        if n % OBJECTS_BETWEEN_CHECKS == 0 {
-            watch.check()?;
-        }
-        objects.write(writer, o)?;
-    }
-    Ok(objects)
-}
-
 /// Writes release `number` of `inputs` into the new directory `dir` and checks it, telling
 /// `watch` as each of its phases is done: the rules, the tiles, the volume grids, the D1 rows and
-/// the checks. Each file written, each grid and every [`OBJECTS_BETWEEN_CHECKS`] objects is a
+/// the checks. Each file written, each grid and every
+/// [`super::sharded::OBJECTS_BETWEEN_CHECKS`] objects is a
 /// safe point at which the build stops once the owner asks it to.
 ///
 /// # Errors
@@ -335,19 +341,17 @@ pub fn write_release(
         .with_peculiar_velocity(crossed.basis.ranking.peculiar_velocity_km_s);
     let mut sources = SourceIndex::new(inputs.definitions.iter().map(|d| &d.id));
     let grids = write_grids(inputs, number, &mut sink, &release, &mut sources)?;
-    let d1 = d1_rows(
-        inputs,
-        number,
-        D1Writer::new(&mut sink)?,
-        &grids,
-        &release,
-        sources,
-        watch,
-    )?;
+    let d1 = d1_rows(inputs, number, &mut sink, &grids, &release, sources, watch)?;
     let sql_files = sink.files.iter().filter(|f| f.key.is_none()).count();
     watch.step(format!(
-        "D1 rows: {} rows in {sql_files} SQL files",
-        d1.estimate.tables.iter().map(|t| t.rows).sum::<u64>()
+        "D1 rows: {} rows in {sql_files} SQL files, in the catalogue database and {} object \
+         shard(s)",
+        std::iter::once(&d1.estimate)
+            .chain(d1.shards.iter().map(|s| &s.d1))
+            .flat_map(|e| &e.tables)
+            .map(|t| t.rows)
+            .sum::<u64>(),
+        d1.shards.len()
     ));
     watch.check()?;
     let mut failed = check_all(&Subject {
@@ -393,7 +397,7 @@ pub fn write_release(
             structures_indexed: d1.cells.structures_indexed,
             grids: grids.rows.len() as u64,
             tiles: tile_count(inputs) as u64,
-            object_cells: d1.cells.objects.len() as u64,
+            object_cells: d1.object_cells,
             structure_cells: d1.cells.structures.len() as u64,
         },
         ids: Ids {
@@ -402,6 +406,7 @@ pub fn write_release(
             replaced: assigned.replaced.len() as u64,
         },
         d1: d1.estimate,
+        shards: d1.shards,
         files,
     };
     Ok(Written { manifest, failed })

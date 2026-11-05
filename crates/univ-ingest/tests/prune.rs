@@ -24,7 +24,7 @@ fn resolve(store: &MemoryStore, id: i64, latest: i64) -> Vec<i64> {
     ));
     assert_eq!(issued, 1, "the ledger records which release issued {id}");
     let present = store.int(&format!(
-        "SELECT COUNT(*) FROM objects WHERE release = {latest} AND id = {id}"
+        "SELECT COUNT(*) FROM object_shards WHERE release = {latest} AND id = {id}"
     ));
     if present == 1 {
         return vec![id];
@@ -44,6 +44,18 @@ fn resolve(store: &MemoryStore, id: i64, latest: i64) -> Vec<i64> {
         .collect()
 }
 
+/// The ids of the objects of release `number`, by the catalogue's index of the object shards.
+fn ids_of(store: &MemoryStore, number: u32) -> Vec<i64> {
+    let mut s = store
+        .db
+        .prepare("SELECT id FROM object_shards WHERE release = ?1")
+        .unwrap();
+    s.query_map([number], |r| r.get(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect()
+}
+
 #[test]
 fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving() {
     let mut f = fixture();
@@ -56,16 +68,7 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     };
     let prune = |store: &mut MemoryStore| pruning(store, 1, &out, &state, journals.path(), &clock);
     publish(&mut store, 1);
-    let ids_of_1: Vec<i64> = {
-        let mut s = store
-            .db
-            .prepare("SELECT id FROM objects WHERE release = 1")
-            .unwrap();
-        s.query_map([], |r| r.get(0))
-            .unwrap()
-            .map(Result::unwrap)
-            .collect()
-    };
+    let ids_of_1 = ids_of(&store, 1);
     // Release 2 leaves out a source, so the objects only it held are retired.
     let dropped = "mcconnachie-2012";
     let at = f
@@ -82,7 +85,7 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
         store.int("SELECT COUNT(*) FROM ids_replaced"),
     );
     assert!(ledger_before.1 > 0, "release 2 retired some ids");
-    let rows_of_2 = store.int("SELECT COUNT(*) FROM objects WHERE release = 2");
+    let rows_of_2 = store.int_everywhere("SELECT COUNT(*) FROM objects WHERE release = 2");
     let keys_of_2: Vec<String> = store
         .r2
         .keys()
@@ -93,7 +96,7 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     let built_1 = univ_ingest::release::release_dir(&out, 1);
     // The local build is deleted last: it is there after every D1 and R2 operation.
     let watched = built_1.clone();
-    store.observer = Some(Box::new(move |op, _, _| {
+    store.observer = Some(Box::new(move |op, _, _, _| {
         assert!(watched.exists(), "the local build is gone at {op:?}");
     }));
 
@@ -108,15 +111,21 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     assert!(pruned.rows > 0 && pruned.files > 1);
     assert!(!store.r2.keys().any(|k| k.starts_with(&keys::prefix(1))));
     assert!(keys_of_2.iter().all(|k| store.r2.contains_key(k)));
+    // The release's rows are gone from the catalogue and from every object shard.
+    let loaded = store.int_everywhere("SELECT COUNT(*) FROM schema_version");
+    assert!(
+        loaded >= 3,
+        "the fixture spans object shards: {loaded} databases"
+    );
     for t in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
-        let left = store.int(&format!(
+        let left = store.int_everywhere(&format!(
             "SELECT COUNT(*) FROM {} WHERE release = 1",
             t.name
         ));
         assert_eq!(left, 0, "{}", t.name);
     }
     assert_eq!(
-        store.int("SELECT COUNT(*) FROM objects WHERE release = 2"),
+        store.int_everywhere("SELECT COUNT(*) FROM objects WHERE release = 2"),
         rows_of_2
     );
 
@@ -190,7 +199,7 @@ fn the_release_latest_points_to_is_not_pruned() {
     assert_eq!(store.r2, r2);
     assert!(store.ops.iter().all(|o| matches!(o, Op::Query(_))));
     assert_eq!(
-        store.int("SELECT COUNT(*) FROM objects WHERE release = 1"),
+        store.int_everywhere("SELECT COUNT(*) FROM objects WHERE release = 1"),
         25
     );
 
@@ -255,12 +264,13 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
 #[test]
 fn a_release_never_listed_whose_files_were_uploaded_has_them_deleted() {
     let f = fixture();
-    build_next(&f);
+    let schemas = build_next(&f).manifest.shards.len() + 1;
     let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
     let (out, state) = (f.out.path(), f.state.path());
-    // The publish stops after the schema and two R2 files, before any table is loaded.
+    // The publish stops after each database's schema and two R2 files, before any table is
+    // loaded.
     let mut store = MemoryStore {
-        fail_after: Some(3),
+        fail_after: Some(schemas + 2),
         ..MemoryStore::default()
     };
     publishing(&mut store, 1, out, state, journals.path(), &clock).unwrap_err();

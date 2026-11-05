@@ -154,7 +154,7 @@ pub fn variant_name<T: Serialize + ?Sized>(value: &T) -> Option<&'static str> {
 }
 
 /// The terms of a release, each numbered once in the order first named.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Terms {
     ids: HashMap<String, u32>,
     names: Vec<String>,
@@ -203,7 +203,7 @@ impl Terms {
 
 /// The index of each source of a release, `sources.n`: its place among the release's sources,
 /// then any other source a row names, numbered after them.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct SourceIndex {
     ids: HashMap<SourceId, u32>,
 }

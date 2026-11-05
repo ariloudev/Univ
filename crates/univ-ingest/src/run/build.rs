@@ -45,19 +45,38 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
             built.dir.join("manifest.yaml").display()
         ),
         format!(
-            "D1: {} rows estimated at {} of the {} cap ({share:.4}%), within the {} budget of a \
-             release",
+            "D1: the catalogue database's {} rows estimated at {} of the {} cap ({share:.4}%), \
+             within the {} budget of a release",
             m.d1.tables.iter().map(|t| t.rows).sum::<u64>(),
             decimal_bytes(m.d1.estimated_bytes),
             decimal_bytes(m.d1.cap_bytes),
             decimal_bytes(RELEASE_BUDGET_BYTES)
         ),
         format!("D1 by table: {}", table_sizes(&m.d1).join(", ")),
-        format!(
-            "cell index: {} placed objects, {} of {} structures with a bounding box",
-            m.counts.object_cells, m.counts.structures_indexed, m.counts.structures
-        ),
     ];
+    for shard in &m.shards {
+        let runs: Vec<String> = shard
+            .cells
+            .iter()
+            .map(|r| format!("{} cells of {}", r.cells, r.domain))
+            .collect();
+        lines.push(format!(
+            "D1: object shard {}: {} objects ({} not placed) in {}, rows estimated at {}",
+            shard.index,
+            shard.objects,
+            shard.unplaced,
+            if runs.is_empty() {
+                "no cell".to_owned()
+            } else {
+                runs.join(" and ")
+            },
+            decimal_bytes(shard.d1.estimated_bytes)
+        ));
+    }
+    lines.push(format!(
+        "cell index: {} placed objects, {} of {} structures with a bounding box",
+        m.counts.object_cells, m.counts.structures_indexed, m.counts.structures
+    ));
     if !m.cell_index.not_indexed.is_empty() {
         let each: Vec<String> = m
             .cell_index
