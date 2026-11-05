@@ -1,0 +1,12 @@
+key: 01a1a938-deb8-7399-857b-e7538454ae7a
+id: wave-w2
+versions:
+  - key: 01a1a938-deb8-7399-857b-e759ca2e52bc
+    at: 2026-11-05T01:00:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W2 sources"
+    goal: "The seven new source definitions exist with recorded fixtures, their access methods and matching rules, and fixture builds hold their entries; merged into product/release-10"
+    status: planned
