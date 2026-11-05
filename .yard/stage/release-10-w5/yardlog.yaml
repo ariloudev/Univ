@@ -1,0 +1,87 @@
+format: yardlog/1
+key: 01a1ab1d-6f6e-7690-98b8-06e0487fa1be
+branch: "stage/release-10-w5"
+base: "develop"
+title: "stage/release-10-w5"
+revision: 7
+opened:
+  at: 2026-11-05T09:49:55Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1ab1d-6f6e-7690-98b8-06e1748740f6
+    id: w5
+submissions:
+  - key: 01a1ab1d-b09b-7278-b15d-7b8ff22731fd
+    blocks:
+      - 01a1ab1d-b09b-7278-b15d-7b8bba2b10b7
+      - 01a1ab1d-b09b-7278-b15d-7b8c28c14a6c
+    changes:
+      - what: sent
+        at: 2026-11-05T09:50:12Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+      - what: withdrawn
+        at: 2026-11-05T11:28:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - key: 01a1ab77-a996-70a7-a65f-e0facb64e652
+    blocks:
+      - 01a1ab1d-b09b-7278-b15d-7b8bba2b10b7
+      - 01a1ab1d-b09b-7278-b15d-7b8c28c14a6c
+      - 01a1ab77-a996-70a7-a65f-e0f59e9829fd
+    changes:
+      - what: sent
+        at: 2026-11-05T11:28:28Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+      - what: withdrawn
+        at: 2026-11-05T11:59:47Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+acts:
+  - at: 2026-11-05T09:49:55Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T09:50:12Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T11:21:49Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T11:28:11Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T11:28:28Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T11:59:47Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T11:59:52Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
