@@ -19,6 +19,15 @@ versions:
     title: "Move the downloads to the Univ home folder"
     goal: "Univ Ingest's downloads live in the Univ home folder, and new downloads go there"
     status: active
+  - key: 01a1ad7e-05b8-759f-8000-89120b264bcf
+    at: 2026-11-05T20:54:39Z
+    revision: 27
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Move the downloads to the Univ home folder"
+    goal: "Univ Ingest's downloads live in the Univ home folder, and new downloads go there"
+    status: done
 blocks:
   - key: 01a1ad39-2c43-7632-801a-96752f23f7b2
     id: q-move-what
@@ -120,3 +129,69 @@ blocks:
         title: "Downloads go to Univ/downloads/univ-ingest"
         consequence: "`--cache` defaults to /Users/admin/Locap/Univ/downloads/univ-ingest, resolved from the repository's parent, not hard-coded, with an environment variable to override it. Other projects can keep their downloads beside it under `Univ/downloads/`."
         question: 01a1ad39-2c43-7632-801a-96765bedab66
+  - key: 01a1ad6e-a428-7579-a81b-4c8b165934ed
+    id: m-move-code
+    kind: task
+    versions:
+      - key: 01a1ad6e-a428-7579-a81b-4c8eb77249ad
+        at: 2026-11-05T20:37:51Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Point --cache at Univ/downloads/univ-ingest"
+        detail: "`--cache` defaults to `../downloads/univ-ingest` from the repository root, and `UNIV_INGEST_CACHE` overrides it (the variable the hand-run tests already read; clap's `env` feature on). The tests' `cache_dir()` and two test docs follow it. AGENTS.md (CLAUDE.md links to it) gains a \"Local data\" section, and the umbrella Univ/CLAUDE.md a rule on `downloads/<tool>/`. The spec does not name the path; the release records provenance but not the cache's path. Commit `5b58aab`."
+        state: done
+  - key: 01a1ad6e-a428-7579-a81b-4c8c0c1db7ca
+    id: m-move-files
+    kind: task
+    versions:
+      - key: 01a1ad6e-a428-7579-a81b-4c8f0554da05
+        at: 2026-11-05T20:37:51Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Move the source downloads"
+        detail: "24 source folders (2.7 GB) renamed into /Users/admin/Locap/Univ/downloads/univ-ingest. `.cache/univ-ingest/` keeps `build`, `state` and `wrangler`. A focused offline run reads every chunk from the new folder: 48 hits, 0 fetched, 2,432,397 entries as before."
+        state: done
+  - key: 01a1ad6e-a428-7579-a81b-4c8d20d0e42b
+    id: m-move-gate
+    kind: task
+    versions:
+      - key: 01a1ad6e-a428-7579-a81b-4c90284a7b61
+        at: 2026-11-05T20:37:51Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full gate"
+        detail: "`cargo xtask check`, then close Yard Log and merge `--no-ff` into `product/release-10`."
+        state: active
+      - key: 01a1ad7e-05b8-759f-8000-891171a300f6
+        at: 2026-11-05T20:54:39Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full gate"
+        detail: "`cargo xtask check` green: 13 steps, `loft verify` skipped (it runs on `develop`)."
+        state: done
+  - key: 01a1ad7e-05b8-759f-8000-891075378e3d
+    id: move-result
+    kind: note
+    versions:
+      - key: 01a1ad7e-05b8-759f-8000-89139b3ca2b8
+        at: 2026-11-05T20:54:39Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the move left"
+        markdown: |-
+          - **Downloads:** /Users/admin/Locap/Univ/downloads/univ-ingest/, 24 source folders, 2.7 GB. New downloads go there: it is the default of `univ-ingest --cache`, and `UNIV_INGEST_CACHE` names another.
+          - **Project outputs:** univ-server/.cache/univ-ingest/ keeps `state`, `build` and `wrangler`.
+          - **Documented** in univ-server's AGENTS.md ("Local data") and the umbrella Univ/CLAUDE.md.
+
+          **For W5:** the 2dFGRS refetch and the WISE, GAMA and 2MPZ downloads land in the new folder.
+        tone: success
