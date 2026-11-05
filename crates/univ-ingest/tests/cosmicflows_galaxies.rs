@@ -141,7 +141,7 @@ fn m87_is_placed_by_its_cosmicflows_4_distance_not_its_redshift() {
         "{}",
         p.distance_mpc
     );
-    let (beaten, _) = p.runner_up.as_ref().unwrap();
+    let (beaten, _) = p.runner_up.as_deref().unwrap();
     assert!(matches!(beaten, MeasurementRef::Redshift { .. }));
 }
 

@@ -223,7 +223,7 @@ fn the_preferred_measurement_reads_with_the_ranking_that_chose_it() {
         assert_eq!((read.rank, read.decided), (p.rank, p.decided));
         assert_eq!(read.distance_mpc, p.distance_mpc);
         assert_eq!(read.uncertainty, p.uncertainty);
-        match (&read.runner_up, &p.runner_up) {
+        match (&read.runner_up, p.runner_up.as_deref()) {
             (None, None) => {}
             (Some(read), Some((m, u))) => {
                 assert_eq!(read.measurement, key_of(&o.object, m));

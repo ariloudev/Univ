@@ -62,7 +62,7 @@ fn a_redshift_without_an_error_ranks_by_its_peculiar_velocity_term() {
     assert_eq!(measurement, None, "no error of its own is invented");
     assert_eq!(Some(total), peculiar_velocity);
     assert!(total > 0.025 && total < 0.035, "{total}");
-    let (runner_up, uncertainty) = preferred.runner_up.unwrap();
+    let (runner_up, uncertainty) = *preferred.runner_up.unwrap();
     assert!(matches!(runner_up, MeasurementRef::Distance { .. }));
     assert!(near(uncertainty.total().unwrap(), 0.25, 1e-12));
 }

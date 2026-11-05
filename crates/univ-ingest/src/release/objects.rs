@@ -288,7 +288,7 @@ impl<'a> ObjectWriter<'a> {
                 row.preferred_measurement,
                 row.preferred_velocity,
             ) = fraction(&p.uncertainty);
-            if let Some((m, u)) = &p.runner_up {
+            if let Some((m, u)) = p.runner_up.as_deref() {
                 let (entry, quantity, n) = reference(object, m);
                 row.runner_up_entry = entry;
                 row.runner_up_quantity = Some(terms.id(quantity));
