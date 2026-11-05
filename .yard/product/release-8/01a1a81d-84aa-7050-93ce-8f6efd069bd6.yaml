@@ -288,3 +288,61 @@ blocks:
           email: "ariloudev@local"
         channel: page
         verdict: approved
+  - key: 01a1a90c-6364-77e5-9362-a851fd9cd4fc
+    id: ask-toolu-01n8x7xd8ggcqvkue72hougk-1
+    kind: question
+    versions:
+      - key: 01a1a90c-6364-77e5-9362-a8534cbb91b7
+        at: 2026-11-05T00:12:03Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "develop doesn't yet hold product/release-8 (40 commits, with the R2 structures, E7–E9 and the spec changes for 'choose what is drawn' and click-to-centre). What should go into develop before `loft publish`?"
+        header: "Into develop"
+        options:
+          - label: "Release 8 and Loft"
+            detail: "Merge chore/loft-2.3.0-alpha.5 and product/release-8 into develop, then publish: the published spec matches everything built so far. The full gate runs on develop after the merges, before publishing."
+            recommended: true
+          - label: "Only the Loft upgrade"
+            detail: "Merge only chore/loft-2.3.0-alpha.5 into develop and publish: the published spec stays without release 8's changes, which would be published later."
+        ownWords: true
+    responses:
+      - key: 01a1a90c-cc36-7504-aed8-7179c6c8bca2
+        at: 2026-11-05T00:12:30Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Release 8 and Loft"
+  - key: 01a1a90c-6364-77e5-9362-a8524a108d5b
+    id: ask-toolu-01n8x7xd8ggcqvkue72hougk-2
+    kind: question
+    versions:
+      - key: 01a1a90c-6364-77e5-9362-a8549dc93168
+        at: 2026-11-05T00:12:03Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "The repository has no git remote, so nothing can be pushed. What should happen about pushing?"
+        header: "Push"
+        options:
+          - label: "Skip the push"
+            detail: "Do the merges and the publish locally; push later once a remote exists."
+            recommended: true
+          - label: "I'll give a remote"
+            detail: "You add a remote (say which URL in the answer's notes, or with `! git remote add origin <url>`), and I push develop and main to it after the merges."
+        ownWords: true
+    responses:
+      - key: 01a1a90c-cc36-7504-aed8-717afb519bf5
+        at: 2026-11-05T00:12:30Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Skip the push"
