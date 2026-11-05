@@ -120,7 +120,7 @@ pub fn object(
             .into_iter()
             .map(|entry| ObjectEntry {
                 entry,
-                resolved_by: Resolution::Anchor,
+                resolved_by: Resolution::Anchor.into(),
             })
             .collect(),
     );

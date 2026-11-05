@@ -103,7 +103,7 @@ fn m87_merges_with_its_2mrs_entry_by_position_and_heliocentric_velocity() {
         .iter()
         .find(|e| e.entry.designation.source.as_str() == "twomrs")
         .unwrap();
-    let Resolution::Match(record) = &twomrs.resolved_by else {
+    let Resolution::Match(record) = &*twomrs.resolved_by else {
         panic!("{:?}", twomrs.resolved_by)
     };
     assert!(record.separation_arcsec < 1.0, "{record:?}");
@@ -224,7 +224,7 @@ fn a_cosmicflows_4_galaxy_is_placed_at_its_luminosity_distance_over_one_plus_its
     );
     let mut alone = Object::new(vec![univ_model::object::ObjectEntry {
         entry: group,
-        resolved_by: Resolution::Anchor,
+        resolved_by: Resolution::Anchor.into(),
     }]);
     univ_ingest::ranking::rank(&mut alone, &ranking_rules(), &release);
     assert!(matches!(

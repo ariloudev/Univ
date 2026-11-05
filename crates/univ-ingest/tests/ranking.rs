@@ -29,7 +29,7 @@ fn object(entries: Vec<CatalogueEntry>) -> Object {
             .into_iter()
             .map(|entry| ObjectEntry {
                 entry,
-                resolved_by: Resolution::Anchor,
+                resolved_by: Resolution::Anchor.into(),
             })
             .collect(),
     )

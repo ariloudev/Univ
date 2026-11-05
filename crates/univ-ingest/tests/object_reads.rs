@@ -55,7 +55,7 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             assert_eq!(read.entry, n);
             assert_eq!(read.source, entry.designation.source.as_str());
             assert_eq!(read.identifier, entry.designation.identifier);
-            assert_eq!(read.resolved_by, e.resolved_by, "{}", o.id.get());
+            assert_eq!(read.resolved_by, *e.resolved_by, "{}", o.id.get());
             assert_eq!(read.name, entry.name);
             assert_eq!(read.group_id, entry.group_id);
             assert_eq!(read.flags, entry.flags);

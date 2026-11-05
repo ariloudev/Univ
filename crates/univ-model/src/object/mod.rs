@@ -4,6 +4,7 @@
 
 mod preferred;
 mod relation;
+mod resolved;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -13,6 +14,7 @@ pub use preferred::{
     PositionClass, PreferredDistance, PreferredPosition,
 };
 pub use relation::{ObjectKind, Relation, RelationKind};
+pub use resolved::Resolved;
 
 use crate::entry::CatalogueEntry;
 use crate::ids::{Designation, SourceId};
@@ -131,7 +133,7 @@ pub enum Resolution {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ObjectEntry {
     pub entry: CatalogueEntry,
-    pub resolved_by: Resolution,
+    pub resolved_by: Resolved,
 }
 
 /// A common name, such as M31 or the Large Magellanic Cloud, with the source that published it.

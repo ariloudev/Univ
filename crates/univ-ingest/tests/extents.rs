@@ -87,7 +87,7 @@ fn ic_5052_is_one_object_of_its_pieces_within_its_published_extent() {
     let pieces: Vec<_> = ic5052
         .entries
         .iter()
-        .filter_map(|e| match &e.resolved_by {
+        .filter_map(|e| match &*e.resolved_by {
             Resolution::Match(r) if r.method == MatchMethod::WithinExtent => Some(r),
             _ => None,
         })

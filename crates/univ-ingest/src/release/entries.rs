@@ -106,7 +106,7 @@ pub fn entry_row(
             .transpose()?,
         extra: None,
     };
-    match resolved_by {
+    match &**resolved_by {
         Resolution::Anchor => {}
         Resolution::CrossIdentification {
             scheme,

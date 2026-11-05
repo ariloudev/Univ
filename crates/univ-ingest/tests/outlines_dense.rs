@@ -43,7 +43,7 @@ fn object(source: &str, at: Vec3) -> Object {
     let entry: CatalogueEntry = void::entry(source, 0, at, true);
     Object::new(vec![ObjectEntry {
         entry,
-        resolved_by: Resolution::Anchor,
+        resolved_by: Resolution::Anchor.into(),
     }])
 }
 

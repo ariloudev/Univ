@@ -143,7 +143,7 @@ fn messier_compares_as_m_by_the_rules_alias_which_names_its_basis() {
         .unwrap();
     assert!(!matches!(
         m32.entry(&designation("updated-nearby-galaxies", "MESSIER032"))
-            .map(|e| &e.resolved_by),
+            .map(|e| &*e.resolved_by),
         Some(Resolution::CrossIdentification { .. })
     ));
     let mut unexplained = rules;

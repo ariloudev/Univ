@@ -111,7 +111,10 @@ pub(super) fn build(
                 }
             };
             if let Some(entry) = slots[e].take() {
-                list.push(ObjectEntry { entry, resolved_by });
+                list.push(ObjectEntry {
+                    entry,
+                    resolved_by: resolved_by.into(),
+                });
             }
         }
         if list.len() > 1 {
