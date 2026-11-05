@@ -1,0 +1,24 @@
+# Rasalgethi, alpha1 Herculis, M5Ib-II pulsating red giant in a triple system: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 84345
+name: Rasalgethi
+alternative_names: ["alpha1 Herculis", "alf01 Her", "64 Her A", "HD 156014"]
+papers:
+  - id: moravveji-2013
+    reference: "Moravveji, Guinan, Khosroshahi & Wasatonic 2013, AJ 146, 148"
+    title: "The Age and the Mass of the α Herculis Triple-Star System From a MESA Grid of Rotating Stars with 1.3 ≤ M/M⊙ ≤ 8.0"
+    bibcode: 2013AJ....146..148M
+    doi: 10.1088/0004-6256/146/6/148
+    arxiv: "1308.1632"
+    read: "arXiv PDF of 1308.1632v1, full text extracted with pypdf; Sect. 2 (PDF page 2) read"
+unplaced: "No published distance other than the Hipparcos parallax, whose Hipparcos-2 error is above a tenth of the parallax; no Gaia parallax for α1 Her itself and no association membership found."
+disputes:
+  - claim: "Moravveji et al. adopt the Hipparcos-2 parallax, π = 9.07 ± 1.32 mas, giving 110 ± 16 pc."
+    cite:
+      paper: moravveji-2013
+      page: 2
+      sentence: "Where necessary, we have replaced the first Hipparcos parallax of Perryman et al. (1997, π = 8.53 ± 2.80 mas) with the revised value of van Leeuwen (2007); thus, the distance to the system is π = 9.07 ± 1.32 mas ⇒ dHip = 110 ± 16 pc."
+notes: >-
+  The dedicated study of the system adopts the Hipparcos-2 parallax rather than determining a
+  distance. Gaia DR2 lists a parallax for the companion α2 Her, a few arcseconds away (Gaia EDR3
+  gives it none), but no paper applying it to α1 Her was found, and applying it ourselves is not
+  allowed. A candidate for later if such a paper appears.

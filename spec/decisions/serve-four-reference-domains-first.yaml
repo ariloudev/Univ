@@ -1,0 +1,51 @@
+key: 01a19f25-5955-701e-b3cf-ddf490f8ab1b
+slug: serve-four-reference-domains-first
+title: "Serve galaxies, large structures, the Local Group and nearby stars first"
+context: "Each kind of reference data brings its own sources, frames and ways of measuring distance, and the first version has to be finished."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddf730c75822
+  outcome: "The first release holds galaxies, large structures and fields, the Local Group and nearby galaxies, and Milky Way stars."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddf506361c06
+    kind: local
+    label: "Proven work"
+    statement: "The earlier Univ work already fetched and checked these sources."
+  - key: 01a19f25-5955-701e-b3cf-ddf684b537fd
+    kind: local
+    label: "One model"
+    statement: "The domains share static positions, so one model of catalogues serves them."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddf730c75822
+    title: "Four static domains"
+    description: "Galaxies and the cosmic web, large structures, the Local Group and nearby galaxies, and Milky Way stars."
+  - key: 01a19f25-5955-701e-b3cf-ddf811d6a130
+    title: "Everything at once"
+    description: "The four domains plus Solar System ephemerides and live transient alerts."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddf730c75822
+    driver: 01a19f25-5955-701e-b3cf-ddf506361c06
+    rating: supports
+    rationale: "SDSS, 6dFGS, BOSS, Cosmicflows-4, the Local Group catalogues and the reconstructions were all fetched before"
+  - option: 01a19f25-5955-701e-b3cf-ddf730c75822
+    driver: 01a19f25-5955-701e-b3cf-ddf684b537fd
+    rating: supports
+    rationale: "positions are catalogue values at an epoch"
+  - option: 01a19f25-5955-701e-b3cf-ddf811d6a130
+    driver: 01a19f25-5955-701e-b3cf-ddf506361c06
+    rating: conflicts
+    rationale: "ephemerides and alert feeds were never ingested"
+  - option: 01a19f25-5955-701e-b3cf-ddf811d6a130
+    driver: 01a19f25-5955-701e-b3cf-ddf684b537fd
+    rating: conflicts
+    rationale: "ephemerides are functions of time and alerts arrive live"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddf9af348a91
+    kind: cost
+    statement: "Solar System bodies and live transient alerts wait for a later version."
+  - key: 01a19f25-5955-701e-b3cf-ddfa6b0d92d9
+    kind: benefit
+    statement: "Layers can still place transient events, which clients author."
+subjects:
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-1831f423e25f

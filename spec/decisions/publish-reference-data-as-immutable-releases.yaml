@@ -1,0 +1,55 @@
+key: 01a19f25-5955-701e-b3cf-ddde3051d5da
+slug: publish-reference-data-as-immutable-releases
+title: "Publish reference data as immutable, numbered releases"
+context: "Layers and clients point at reference objects, so positions and ids must not shift beneath them unannounced."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dde12e103570
+  outcome: "Reference data changes only by publishing a new release, and any unpruned release can be read."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dddf3d2c8f89
+    kind: local
+    label: "Stable references"
+    statement: "A link made today still means the same object later."
+  - key: 01a19f25-5955-701e-b3cf-dde0a46708d8
+    kind: local
+    label: "Reproducible reads"
+    statement: "A pinned read returns the same data every time."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dde12e103570
+    title: "Immutable releases"
+    description: "Each ingest publishes a new numbered release, latest points to the newest, and ids carry across."
+  - key: 01a19f25-5955-701e-b3cf-dde296662a92
+    title: "Latest only"
+    description: "Each ingest replaces the previous data."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dde12e103570
+    driver: 01a19f25-5955-701e-b3cf-dddf3d2c8f89
+    rating: supports
+    rationale: "ids carry across releases with redirects"
+  - option: 01a19f25-5955-701e-b3cf-dde12e103570
+    driver: 01a19f25-5955-701e-b3cf-dde0a46708d8
+    rating: supports
+    rationale: "a pinned release never changes"
+  - option: 01a19f25-5955-701e-b3cf-dde296662a92
+    driver: 01a19f25-5955-701e-b3cf-dddf3d2c8f89
+    rating: conflicts
+    rationale: "links can move to another object silently"
+  - option: 01a19f25-5955-701e-b3cf-dde296662a92
+    driver: 01a19f25-5955-701e-b3cf-dde0a46708d8
+    rating: conflicts
+    rationale: "data changes under the client"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dde317316953
+    kind: cost
+    statement: "Each release takes its own storage until the owner prunes it."
+  - key: 01a19f25-5955-701e-b3cf-dde47c371b0d
+    kind: benefit
+    statement: "Tiles can be cached forever."
+subjects:
+  - role: affected
+    node: 01a19f23-636f-72bd-b194-1515b9ad9670
+  - role: outcome
+    node: 01a19f1e-d177-716d-b124-3d003878f4e1
+  - role: outcome
+    node: 01a19f23-636f-72bd-b194-151d9fb569d2

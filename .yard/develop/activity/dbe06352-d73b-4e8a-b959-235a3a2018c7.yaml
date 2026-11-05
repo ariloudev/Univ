@@ -1,0 +1,69 @@
+session: dbe06352-d73b-4e8a-b959-235a3a2018c7
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-03T18:30:51Z
+turns:
+  - started: 2026-11-03T01:19:08Z
+    ended: 2026-11-03T01:20:08Z
+  - started: 2026-11-03T01:25:14Z
+    ended: 2026-11-03T02:13:48Z
+  - started: 2026-11-03T02:14:02Z
+    ended: 2026-11-03T02:14:28Z
+  - started: 2026-11-03T02:17:28Z
+    ended: 2026-11-03T18:30:51Z
+loft:
+  - commands:
+      - fmt
+      - check
+      - status
+    agent: main
+    started: 2026-11-03T02:14:08Z
+    ended: 2026-11-03T02:14:09Z
+    failed: false
+    stage: 01a19efd-1563-705e-a96b-1e48357b4d4f
+  - commands:
+      - publish
+    agent: main
+    started: 2026-11-03T02:14:11Z
+    ended: 2026-11-03T02:14:13Z
+    failed: false
+    stage: 01a19efd-1563-705e-a96b-1e48357b4d4f
+  - commands:
+      - verify
+      - status
+    agent: main
+    started: 2026-11-03T02:14:16Z
+    ended: 2026-11-03T02:14:17Z
+    failed: false
+    stage: 01a19efd-1563-705e-a96b-1e48357b4d4f
+  - commands:
+      - fmt
+      - check
+      - publish
+    agent: main
+    started: 2026-11-03T18:26:55Z
+    ended: 2026-11-03T18:26:58Z
+    failed: false
+    stage: 01a19efd-1563-705e-a96b-1e48357b4d4f

@@ -1,0 +1,229 @@
+key: 01a19f51-6de0-7249-8001-847611468ede
+id: w1
+versions:
+  - key: 01a19f51-6de0-7249-8001-8480ece2812d
+    at: 2026-11-03T02:51:16Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W1 univ-model foundations"
+    goal: "univ-model holds values, units, distances, frames, cosmology, redshifts, geometry and ids, tested against published values, and builds for wasm32"
+    status: active
+  - key: 01a19f58-aa0a-776c-8eea-e5aa4e3913eb
+    at: 2026-11-03T02:59:10Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W1 univ-model foundations"
+    goal: "univ-model holds values, units, distances, frames, cosmology, redshifts, geometry and ids, tested against published values, and builds for wasm32"
+    status: done
+blocks:
+  - key: 01a19f51-6de0-7249-8001-84789fa6c9ab
+    id: w1-t1-value
+    kind: task
+    versions:
+      - key: 01a19f51-6de0-7249-8001-8482b06b1a7f
+        at: 2026-11-03T02:51:16Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Values, kinds of value, typed uncertainty and units"
+        detail: "A quantity with its unit and typed uncertainty (symmetric, asymmetric, upper or lower limit, credible region, none reported) and a kind of value. Unit conversion keeps the native value beside the normalized one and scales uncertainties. Done when unit tests cover conversion, refusal across dimensions and none-reported staying none."
+        state: open
+      - key: 01a19f51-7859-754d-a716-813d60d6ed6c
+        at: 2026-11-03T02:51:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Values, kinds of value, typed uncertainty and units"
+        detail: "A quantity with its unit and typed uncertainty (symmetric, asymmetric, upper or lower limit, credible region, none reported) and a kind of value. Unit conversion keeps the native value beside the normalized one and scales uncertainties. Done when unit tests cover conversion, refusal across dimensions and none-reported staying none."
+        state: active
+      - key: 01a19f57-e2e2-7741-98d8-9528c81d4241
+        at: 2026-11-03T02:58:19Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Values, kinds of value, typed uncertainty and units"
+        detail: "Done in `value.rs` and `units.rs`. Unit conversion stays within a dimension, h⁻¹ Mpc is kept apart from Mpc, and a value with no reported uncertainty never becomes zero. 7 tests."
+        state: done
+  - key: 01a19f51-6de0-7249-8001-84791dec874c
+    id: w1-t2-distance
+    kind: task
+    versions:
+      - key: 01a19f51-6de0-7249-8001-8483a390760e
+        at: 2026-11-03T02:51:16Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Distances: kinds, methods, Hubble constant, distance modulus"
+        detail: "A distance record with its kind, method and the H0 or h it was published for. A modulus becomes a distance with its propagated error while the modulus is kept, and a rescale to another H0 keeps the native value. Done when tests cover the modulus at 10 pc and h-rescaling both ways."
+        state: open
+      - key: 01a19f51-7859-754d-a716-813e4fc7b38c
+        at: 2026-11-03T02:51:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Distances: kinds, methods, Hubble constant, distance modulus"
+        detail: "A distance record with its kind, method and the H0 or h it was published for. A modulus becomes a distance with its propagated error while the modulus is kept, and a rescale to another H0 keeps the native value. Done when tests cover the modulus at 10 pc and h-rescaling both ways."
+        state: active
+      - key: 01a19f57-e2e2-7741-98d8-9529bc9af6be
+        at: 2026-11-03T02:58:19Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Distances: kinds, methods, Hubble constant, distance modulus"
+        detail: |-
+          Done in `distance.rs`:
+          - a modulus of 0 gives 10 pc;
+          - M31's modulus of 24.47 gives 783 kpc (McConnachie 2012), with the asymmetric error wider on the far side;
+          - h⁻¹ Mpc converts to Mpc, and H0 rescaling round-trips.
+        state: done
+  - key: 01a19f51-6de0-7249-8001-847af01eb3b2
+    id: w1-t3-frames
+    kind: task
+    versions:
+      - key: 01a19f51-6de0-7249-8001-84847e7428d1
+        at: 2026-11-03T02:51:16Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Frames and positions: ICRS, galactic (Hipparcos), supergalactic (Lahav 2000)"
+        detail: "Sky directions in ICRS with an epoch, Cartesian vectors, and rotations to galactic and supergalactic. Done when the published Hipparcos galactic pole and centre and the Lahav 2000 pole and origin are reproduced (AC-34, AC-35)."
+        state: open
+      - key: 01a19f57-e2e2-7741-98d8-952a1db1e385
+        at: 2026-11-03T02:58:19Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Frames and positions: ICRS, galactic (Hipparcos), supergalactic (Lahav 2000)"
+        detail: "Sky directions in ICRS with an epoch, Cartesian vectors, and rotations to galactic and supergalactic. Done when the published Hipparcos galactic pole and centre and the Lahav 2000 pole and origin are reproduced (AC-34, AC-35)."
+        state: active
+      - key: 01a19f58-5775-7658-b272-327b62f49d66
+        at: 2026-11-03T02:58:49Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Frames and positions: ICRS, galactic (Hipparcos), supergalactic (Lahav 2000)"
+        detail: "Done in `position.rs`. The Hipparcos matrix is orthonormal to 1e-9 and puts the NGP at b = 90°. The Lahav 2000 pole and origin are exact. M31 and the Galactic centre agree with astropy 8.0.2 to 1e-4°, the FK5-versus-ICRS gap in astropy's galactic frame."
+        state: done
+  - key: 01a19f51-6de0-7249-8001-847b64639487
+    id: w1-t4-cosmology
+    kind: task
+    versions:
+      - key: 01a19f51-6de0-7249-8001-84854a4104d4
+        at: 2026-11-03T02:51:16Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Flat ΛCDM cosmology and comoving distance"
+        detail: "Planck 2018 (H0 67.66, Ωm 0.3111), comoving distance by integration, and its inverse. Done when tests match astropy references (same model to 1e-6, the full Planck18 with radiation and neutrinos to 0.1%) and z → D_C → z round-trips."
+        state: open
+      - key: 01a19f58-5775-7658-b272-327c98b7f270
+        at: 2026-11-03T02:58:49Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Flat ΛCDM cosmology and comoving distance"
+        detail: "Done in `cosmology.rs`. Simpson's rule with 256 intervals matches astropy's same model to 1e-6 at z = 0.01 to 3, and the full Planck18 model to 0.1%. A safeguarded Newton inverse round-trips to 1e-9 from z = 0 to 7.5."
+        state: done
+  - key: 01a19f51-6de0-7249-8001-847c72bfad7d
+    id: w1-t5-redshift
+    kind: task
+    versions:
+      - key: 01a19f51-6de0-7249-8001-8486c73b0847
+        at: 2026-11-03T02:51:16Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Redshifts and the CMB frame"
+        detail: "A redshift keeps its published frame, and the CMB-frame value is derived with the Planck 2018 dipole and records what it came from. Done when cz toward the apex rises by 369.82 km/s, falls away from it and is unchanged at 90° (AC-46, AC-47, AC-48)."
+        state: open
+      - key: 01a19f58-5775-7658-b272-327d0a13a899
+        at: 2026-11-03T02:58:49Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Redshifts and the CMB frame"
+        detail: "Done in `redshift.rs`: 1 + z_cmb = (1 + z_hel) γ (1 + β cos θ). At z = 0.01, cz rises by (1 + z) × 369.82 toward the apex and falls by the same away from it. At 90° only the 0.23 km/s transverse Doppler term remains, a refinement of \"unchanged\"."
+        state: done
+  - key: 01a19f51-6de0-7249-8001-847dd2b147ac
+    id: w1-t6-geometry
+    kind: task
+    versions:
+      - key: 01a19f51-6de0-7249-8001-8487beaaf911
+        at: 2026-11-03T02:51:16Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Geometry kinds and bounding boxes"
+        detail: "Point, ray, range, primitives (sphere, ellipsoid, oriented box), path, member list, MOC sky region and volume grid, each with an axis-aligned bounding box in any frame where it has a finite extent. Done when the box tests pass, including rotated ellipsoids and boxes."
+        state: open
+      - key: 01a19f58-68b0-714a-9a97-183bf6a911b3
+        at: 2026-11-03T02:58:53Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Geometry kinds and bounding boxes"
+        detail: "Done in `geometry.rs`. All 8 kinds have a box. A ray carries its reach. A sky region is boxed by the sphere of its far distance, which is conservative (follow-up: a tighter cone box). A member list boxes its tracers plus the members a resolver can place. Rotated ellipsoids and boxes are bounded tightly."
+        state: done
+  - key: 01a19f51-6de0-7249-8001-847eee2d441b
+    id: w1-t7-ids
+    kind: task
+    versions:
+      - key: 01a19f51-6de0-7249-8001-8488f35775d1
+        at: 2026-11-03T02:51:16Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Ids and designations"
+        detail: "Object ids, source ids (validated slugs) and designations. Done when malformed source ids are refused."
+        state: open
+      - key: 01a19f58-68b0-714a-9a97-183c8bc44e76
+        at: 2026-11-03T02:58:53Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Ids and designations"
+        detail: "Done in `ids.rs`. Object ids run from 1 to 2^53 − 1, so they stay exact in TypeScript. Source ids are slugs, checked on deserialization too. A designation keeps its source."
+        state: done
+  - key: 01a19f51-6de0-7249-8001-847fd7b0b474
+    id: w1-t8-gate
+    kind: task
+    versions:
+      - key: 01a19f51-6de0-7249-8001-8489f4165eac
+        at: 2026-11-03T02:51:16Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run the gate green and link the traced criteria"
+        detail: "Done when `cargo xtask check` passes, including the wasm32 check, and the tests for AC-34, AC-35 and AC-47 are linked and accepted."
+        state: open
+      - key: 01a19f58-68b0-714a-9a97-183d295d40c6
+        at: 2026-11-03T02:58:53Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Run the gate green and link the traced criteria"
+        detail: "`cargo xtask check` passed 9 gates (verify is skipped off the publish branch). AC-34, AC-35, AC-47 and AC-48 are linked and accepted (4 of 293 nodes)."
+        state: done

@@ -1,0 +1,77 @@
+id: cf4pp-density
+title: "CF4++ reconstructed density and velocity grids (HMC mean and standard deviation)"
+provider: ip2i-cosmicflows
+access:
+  method: files
+  files:
+    # Linked from https://projets.ip2i.in2p3.fr/cosmicflows/ with a double slash, kept in the
+    # mirror base so the URL is exactly the one the page links.
+    - { path: new_CF4pp_mean_std_grids.npz }
+cuts:
+  - "The whole file: an NPZ (ZIP, members stored uncompressed) holding the mean and standard deviation over the HMC realizations of the ungrouped CF4++ catalogue; member N holds 9739, read as the number of realizations (inferred; the paper says nearly 10,000)."
+  - "These are reconstructed fields, not measurements."
+  - >-
+    Grid: 128^3 cells over a 1000 h^-1 Mpc box, cell 7.8125 h^-1 Mpc, observer at the centre,
+    extent [-500, +500) h^-1 Mpc on each axis, supergalactic Cartesian (SGX, SGY, SGZ). Cell centres
+    are at (i + 0.5) * 7.8125 - 500 h^-1 Mpc (observed). Grid coordinates are in h^-1 Mpc
+    (megaparsec_over_h).
+  - "d_mean is a linear-theory density contrast and can go below -1 (observed -3.29 in a void); it is not a physical density."
+  - "Velocities are taken as km/s (inferred from their magnitudes, not stated for this file); their rest frame is unverified, likely CMB."
+  - >-
+    Replacement and erratum: the grid was updated on 2026-10-13 because the radial velocity was not
+    computed properly before that date. Only the copy served with Last-Modified Tue, 13 Oct 2026
+    08:38:44 GMT and ETag "6acdee14-a0006be" is accepted.
+columns:
+  - { column: d_mean, field: density, unit: dimensionless }
+  - { column: d_std, field: density_error, unit: dimensionless }
+  - { column: vr_mean, field: radial_velocity, unit: kilometre_per_second }
+  - { column: vr_std, field: radial_velocity_error, unit: kilometre_per_second }
+  - { column: v_mean, field: velocity_vector, unit: kilometre_per_second }
+  - { column: v_std, field: velocity_vector_error, unit: kilometre_per_second }
+frame: supergalactic
+epoch: 2000.0
+citation: >-
+  Courtois H.M., Mould J., Hollinger A.M., Dupuy A., Zhang C.P. 2025, "In search of the Local
+  Universe dynamical homogeneity scale with CF4++ peculiar velocities", A&A 701, A187.
+  2025A&A...701A.187C, doi:10.1051/0004-6361/202553677, arXiv:2502.01308.
+reference: { bibcode: "2025A&A...701A.187C", doi: "10.1051/0004-6361/202553677" }
+terms:
+  url: "https://projets.ip2i.in2p3.fr/cosmicflows/"
+  quote: "If you use this data cite the article above"
+  credit: "Cite Courtois et al. 2025, A&A 701, A187 (doi:10.1051/0004-6361/202553677)."
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    The Cosmicflows page states no licence, copyright or terms, only the request to cite the
+    article; the A&A article's CC BY 4.0 covers the article, not the file. With the terms silent,
+    nothing grants re-hosting the raw file, so the file is fetched from its origin and only derived
+    products (sampled values, renders) carry the citation. Provisional: judged again before any
+    public deployment.
+scale_domain: cosmic_web
+mirrors:
+  - "https://projets.ip2i.in2p3.fr//cosmicflows"
+fixes:
+  - defect: "The NPZ carries no axis metadata: neither the array axis order nor the velocity component order is stated in the file."
+    change: >-
+      d_mean, d_std, vr_mean and vr_std are read as array[i_SGX, i_SGY, i_SGZ] in C order (SGZ
+      fastest); v_mean and v_std as [c, i_SGX, i_SGY, i_SGZ] with c = 0, 1, 2 for SGX, SGY, SGZ.
+    evidence: >-
+      The provider's retrieve_CF4pp_grid_values.py indexes d_data[ix,iy,iz] with ix from SGX, iy from
+      SGY and iz from SGZ. Read at the nine CF4 attractor voxels of Dupuy & Courtois 2023 Table 1,
+      d_mean in this order gives delta +0.43 to +2.73 at all nine, and -1.26 and -3.29 at the Sculptor
+      Void and near-Bootes-Void repellers; swapped ([SGZ][SGY][SGX]) the voids come out positive. The
+      identity vr_mean = v_mean . r_hat holds only with this component order and with cell centres at
+      (i - 63.5) * 7.8125 h^-1 Mpc (observed by range reads, 2026-11-03).
+  - defect: >-
+      Copies of the file fetched before 2026-10-13 hold a radial velocity that "wasn't computed
+      properly" (the erratum calls it vr_data, the example script's variable; in the NPZ it is
+      vr_mean).
+    change: >-
+      Only the replacement dated 2026-10-13 is used: a copy whose Last-Modified precedes Tue, 13 Oct
+      2026 08:38:44 GMT or whose ETag is not "6acdee14-a0006be" is refused.
+    evidence: >-
+      https://projets.ip2i.in2p3.fr/cosmicflows/: "Erratum : the grid was updated on Oct 13th 2026
+      Before that date : the parameter vr_data (radial velocity) wasn't computed properly, all other
+      parameters were correct." HEAD on 2026-11-03: Last-Modified Tue, 13 Oct 2026 08:38:44 GMT,
+      ETag "6acdee14-a0006be".

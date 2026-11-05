@@ -1,0 +1,83 @@
+key: 01a19f23-636e-7035-8185-aba1fc8f7bbd
+slug: cross-match-catalogues
+name: "Cross-match catalogues"
+body: |
+  Resolving the entries that several sources hold for one body, such as a galaxy in SDSS, 2MRS,
+  2M++ and Cosmicflows-4, into one object, and keeping the uncertain cases apart rather than
+  guessing.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cef889e66e6
+requirements:
+  - key: 01a19f23-636e-7035-8185-aba27e410ae5
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "resolve catalogue entries that share a published cross-identification into one object before matching by position."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-1509ef3e2d47
+        name: "A published cross-identification, such as the Gaia DR3 Hipparcos cross-identification or a shared PGC number, is used before a positional match."
+      - key: 01a19f23-636f-72bd-b194-150a909c8f0e
+        name: "The object records the cross-identification as the method that resolved it."
+  - key: 01a19f23-636f-72bd-b194-150b2d35ea65
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "merge catalogue entries into one object when they agree within the release's match tolerances and no other candidate does."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-150cc0a7de4d
+        name: "The tolerances on angular separation and on redshift or distance are set for each pair of sources in the release's matching rules."
+      - key: 01a19f23-636f-72bd-b194-150dfab9225c
+        name: "Each merge records its method, the separation, the redshift or distance difference and a confidence between 0 and 1."
+      - key: 01a19f23-636f-72bd-b194-150e56ac26d6
+        name: "The release's matching rules state how the confidence is computed."
+  - key: 01a19f23-636f-72bd-b194-150f94f19121
+    statement:
+      form: unwanted
+      if: "a catalogue entry has more than one candidate within the match tolerances"
+      system: "Univ Ingest"
+      shall: "keep the candidates as separate objects linked as candidate matches."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-1510f8ea82b8
+        name: "Each candidate link carries its confidence."
+      - key: 01a19f23-636f-72bd-b194-15114b1cd667
+        name: "No measurement is merged across a candidate link."
+  - key: 01a1a232-7345-778b-a4c5-0468f7140186
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "join to a nearby galaxy, as its pieces, the catalogue entries that lie within the galaxy's published extent at a velocity agreeing with its own."
+    criteria:
+      - key: 01a1a232-7345-778b-a4c5-0469c4fe9cd9
+        name: "The extent is read from a source that publishes it, as the release's matching rules name the source, its column and its unit."
+      - key: 01a1a232-7345-778b-a4c5-046a3dc619f9
+        name: "A galaxy without a published extent or a velocity takes no pieces."
+      - key: 01a1a232-7345-778b-a4c5-046bd3dc53bc
+        name: "An entry whose velocity differs from the galaxy's by more than the rule's tolerance, or that carries no velocity, stays apart."
+      - key: 01a1a232-7345-778b-a4c5-046c26fef149
+        name: "An object that holds an entry of a source naming its own galaxy, such as a different PGC number or another UNGC galaxy, is never joined as a piece."
+      - key: 01a1a232-7345-778b-a4c5-046dddc4aaba
+        name: "More than one entry of one source may join one galaxy as its pieces, and the preferred measurement is still chosen among all of them."
+      - key: 01a1a232-7345-778b-a4c5-046e89676561
+        name: "Each piece records the rule as its method, its separation from the galaxy's centre and its velocity difference."
+  - key: 01a1a147-6018-75e1-9409-3f7ba5142e0f
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "keep each galaxy group as an object of its own, related to its dominant galaxy."
+    criteria:
+      - key: 01a1a147-6018-75e1-9409-3f7cf003d8aa
+        name: "A group's catalogue entry is never merged into the object of its dominant galaxy, even when the group is named by the galaxy's PGC number."
+      - key: 01a1a147-6018-75e1-9409-3f7dc2dcf028
+        name: "The group's object records a relation that names its dominant galaxy's object, as the group's source identifies that galaxy."
+      - key: 01a1a147-6018-75e1-9409-3f7eb363692b
+        name: "No measurement of the group is lent to its dominant galaxy, and none of the galaxy is lent to the group."
+  - key: 01a19f23-636f-72bd-b194-15129323b215
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "attach to each object the designations and names its catalogue entries carry."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-1513f385222f
+        name: "Each designation keeps the source that gave it."
+      - key: 01a19f23-636f-72bd-b194-15144dcb948e
+        name: "A common name, such as M31 or the Large Magellanic Cloud, is attached with the source that published it."

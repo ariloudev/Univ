@@ -1,0 +1,60 @@
+# COSMOS-z3.1-A: a proto-supercluster of ten Lyα-emitter density peaks at z ≈ 3.1 found by ODIN.
+name: COSMOS-z3.1-A
+alternative_names: []
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: ramakrishnan-2025
+    reference: "Ramakrishnan, Ortiz, Moon, Jun, Schlegel, Lee et al. 2025, arXiv:2511.11826"
+    title: "ODIN: Characterizing the Three-dimensional Structure of Two Protocluster Complexes at z=3.1"
+    doi: 10.48550/arXiv.2511.11826
+    arxiv: "2511.11826"
+    read: "arXiv HTML of 2511.11826v2; Table 3 read from it"
+geometry:
+  kind: members
+  members:
+    frame: equatorial_equinox_unstated
+    tracer: density peak (density-weighted centroid of a peak of the reconstructed Lyα-emitter density field)
+    source: { paper: ramakrishnan-2025, table: "3" }
+    # Table 3 prints a ± for every centroid, its density-weighted second moment, which differs from
+    # peak to peak. A member column holds one uncertainty for all its rows, so the per-peak values
+    # are left out (see notes) rather than replaced by one invented for the column.
+    columns:
+      - { name: lon, header: "R.A.", unit: degree, kind: reconstructed, uncertainty: { form: none_reported } }
+      - { name: lat, header: "Decl.", unit: degree, kind: reconstructed, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "z_peak", unit: dimensionless, kind: reconstructed, uncertainty: { form: none_reported } }
+    rows:
+      - ["COSMOS-z3.1-A1", 150.932, 2.537, 3.121]
+      - ["COSMOS-z3.1-A2", 150.558, 2.663, 3.115]
+      - ["COSMOS-z3.1-A3", 150.376, 2.520, 3.130]
+      - ["COSMOS-z3.1-A4", 151.144, 2.664, 3.116]
+      - ["COSMOS-z3.1-A5", 151.020, 2.682, 3.138]
+      - ["COSMOS-z3.1-A6", 150.866, 2.739, 3.126]
+      - ["COSMOS-z3.1-A7", 150.679, 2.817, 3.135]
+      - ["COSMOS-z3.1-A8", 150.644, 2.404, 3.099]
+      - ["COSMOS-z3.1-A9", 150.471, 2.497, 3.111]
+      - ["COSMOS-z3.1-A10", 150.736, 2.577, 3.103]
+values:
+  sky_extent:
+    value: 40
+    unit: arcminute
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: ramakrishnan-2025
+      sentence: "This region contains eight distinct LAE surface density peaks – shown in the top left panel of Figure 3 as white contours – spanning approximately 40′ × 40′ in the sky, interconnected by cosmic filaments [74]."
+    note: "Each side of the sky area that the surface density peaks of Lyα emitters span."
+disputes: []
+notes: >-
+  The members are the ten density peaks of Table 3, at the density-weighted centroids of their
+  voxels in the paper's probabilistic three-dimensional reconstruction of the Lyα-emitter
+  distribution from narrow-band ODIN imaging and Keck, Gemini and DESI spectroscopy. The paper
+  prints the centroids in degrees without an equinox. Table 3 gives each centroid an
+  uncertainty, the density-weighted second moment of its voxels' positions; the member table
+  can hold only one uncertainty per column, so these are left out and the columns say none is
+  reported. The paper prints the second peak's right ascension uncertainty an order of
+  magnitude larger than the others'. The volume above the density threshold (in cubic comoving
+  Mpc), the descendant masses and the overdensities have no unit in univ-model and are left
+  out. The sky extent counts the surface density peaks, of which the three-dimensional
+  reconstruction resolves ten.

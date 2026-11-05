@@ -1,0 +1,189 @@
+key: 01a19f49-9217-76e9-acad-3375e1d19e46
+id: wave-2
+versions:
+  - key: 01a19f49-9217-76e9-acad-338126ee1e1c
+    at: 2026-11-03T02:42:41Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 Acquisition"
+    goal: "All 18 sources are defined in YAML and fetched durably, with resume and offline mode (stage/ingest-w2)"
+    status: planned
+  - key: 01a19f5f-5a82-7152-829c-6fc886078aba
+    at: 2026-11-03T03:06:28Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 Acquisition"
+    goal: "Source definitions for all 18 sources and a durable, resumable fetcher, tested against recorded answers and a mock server (stage/ingest-w2)"
+    status: active
+  - key: 01a19f99-b4da-71ab-82f3-ac65d6e5d0bd
+    at: 2026-11-03T04:10:13Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W2 Acquisition"
+    goal: "Source definitions for all 18 sources and a durable, resumable fetcher, tested against recorded answers and a mock server (stage/ingest-w2)"
+    status: done
+blocks:
+  - key: 01a19f99-b4da-71ab-82f3-ac613f43dd92
+    id: wave-2-merged
+    kind: note
+    versions:
+      - key: 01a19f99-b4da-71ab-82f3-ac6636e50b7e
+        at: 2026-11-03T04:10:13Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "W2 merged"
+        markdown: "`stage/ingest-w2` was merged as `8b71f63`. It brings 18 source definitions and the resumable fetcher, with whole-source row checks, 17 live fixtures and AC-1 to AC-27 traced. Three choices are still provisional until you answer below."
+        tone: success
+  - key: 01a19f99-b4da-71ab-82f3-ac6283f56761
+    id: pi-q-gaia-cut
+    kind: question
+    versions:
+      - key: 01a19f99-b4da-71ab-82f3-ac68a19eabbb
+        at: 2026-11-03T04:10:13Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How bright must a Gaia DR3 star be to enter the first release, beyond the 100 pc of the Gaia Catalogue of Nearby Stars?"
+        header: "Gaia G cut"
+        context: "Counts from the ESA Gaia Archive, queried 2026-11-03: G < 6: 6,764 · G < 8: 62,723 · **G < 10: 482,106** · G < 11: 1,247,240 · G < 12: 3,087,821. Hipparcos holds about 118,000 stars. D1 is capped at 10 GB (CON-3). Each star also gets a Bailer-Jones distance. `sources/gaia-dr3-bright.yaml` uses G < 10, marked provisional."
+        options:
+          - label: "G < 10"
+            detail: "About 482k stars: the binocular sky and past Hipparcos's completeness, small next to the 1.1M SDSS galaxies. Already in the definition. Recommended."
+            recommended: true
+          - label: "G < 8"
+            detail: "About 63k stars: the naked-eye sky, smaller than Hipparcos, and the cheapest."
+          - label: "G < 11"
+            detail: "About 1.25M stars: more Galactic structure, with roughly double the star share of D1 and the fetch time."
+          - label: "G < 12"
+            detail: "About 3.1M stars: the largest set, likely the biggest part of D1 and the tiles."
+    responses:
+      - key: 01a1a2a4-a1af-7149-97a8-0bdcd92bdff1
+        at: 2026-11-03T18:21:00Z
+        revision: 18
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "G < 10"
+  - key: 01a19f99-b4da-71ab-82f3-ac63f9589f0c
+    id: pi-q-licences
+    kind: question
+    versions:
+      - key: 01a19f99-b4da-71ab-82f3-ac694093b8ba
+        at: 2026-11-03T04:10:13Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "How should Univ judge sources whose terms are silent, or limited to scientific or non-commercial use?"
+        header: "Licences"
+        context: |-
+          | Source(s) | Terms found |
+          |---|---|
+          | 8 VizieR catalogues | CDS: "free of usage in a scientific context"; cite authors and VizieR |
+          | Gaia DR3, Hipparcos-2 neighbours | **CC BY-NC 3.0 IGO**: non-commercial |
+          | Bailer-Jones | CC BY 4.0 (GAVO) |
+          | SDSS DR17 | Public domain, with an acknowledgement |
+          | CF4++, CF4 basins, 2M++ reconstruction | **No terms stated**, only citation requests |
+          | eRASS1 | No licence on the DR1 site; the papers are CC BY 4.0 |
+
+          v1 publishes only to **local** D1 and R2. All 18 definitions are permitted_with_credit for now, each caveat stated and marked provisional.
+        options:
+          - label: "Credit, re-judge later"
+            detail: "Keep permitted_with_credit with each caveat recorded. Univ stays non-commercial, and every status is judged again before any public deployment (already in the plan's follow-ups). Recommended, since v1 redistributes nothing."
+            recommended: true
+          - label: "Strict now"
+            detail: "Sources with silent terms (CF4++, basins, 2M++ reconstruction, eRASS1) are forbidden until their authors grant permission. v1 then has no grids, no grid-outlined structures and no eRASS1 clusters."
+          - label: "Derived only"
+            detail: "Silent-terms grids feed derived products but are never served raw. This needs a fourth status, `derived_only`, which is a spec change."
+    responses:
+      - key: 01a1a2a4-a1af-7149-97a8-0bddad3bad3f
+        at: 2026-11-03T18:21:00Z
+        revision: 18
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Credit, re-judge later"
+  - key: 01a19f99-b4da-71ab-82f3-ac64ac6d36ce
+    id: pi-q-sdss-sample
+    kind: question
+    versions:
+      - key: 01a19f99-b4da-71ab-82f3-ac6a87e60383
+        at: 2026-11-03T04:10:13Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "Which SDSS DR17 galaxies should the first release take?"
+        header: "SDSS sample"
+        context: "The spec says \"SDSS DR17 main galaxy sample … about 1.1 million\". Its cuts (zWarning = 0, 0.005 < z < 0.35) give **1,097,303** Legacy, BOSS and eBOSS spectra, as the newsroom used. The true Main Galaxy Sample (`legacy_target1 & 448 > 0`) gives **687,048**. `sources/sdss-dr17-galaxies.yaml` takes all spectra for now."
+        options:
+          - label: "All spectra, renamed"
+            detail: "Keep 1,097,303 and rename the spec's source to \"SDSS DR17 spectroscopic galaxies\" (a minor spec fix). The most galaxies for the atlas. Recommended."
+            recommended: true
+          - label: "Main Galaxy Sample"
+            detail: "Keep the name and add the target-flag cut, for 687,048 uniformly selected galaxies. The spec's count changes to about 0.69 million."
+    responses:
+      - key: 01a1a2a4-a1af-7149-97a8-0bde55cf5267
+        at: 2026-11-03T18:21:00Z
+        revision: 18
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "All spectra, renamed"
+  - key: 01a1a2a5-5799-76e7-b665-820f4b1ba538
+    id: pi-d-gaia-cut
+    kind: decision
+    number: 7
+    versions:
+      - key: 01a1a2a5-5799-76e7-b665-821235e8dcdf
+        at: 2026-11-03T18:21:47Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Gaia DR3 stars brighter than G = 10"
+        consequence: "The cut already in the Gaia definition stands: about 482k stars beyond the GCNS's 100 pc. Release 6 holds 780,441 star objects in all."
+        question: 01a19f99-b4da-71ab-82f3-ac6283f56761
+  - key: 01a1a2a5-5799-76e7-b665-8210d2a459ed
+    id: pi-d-licences
+    kind: decision
+    number: 8
+    versions:
+      - key: 01a1a2a5-5799-76e7-b665-8213fbfe5a60
+        at: 2026-11-03T18:21:47Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Credit now, re-judge every licence before any public deployment"
+        consequence: "Sources with silent or scientific-use terms stay `permitted_with_credit` with their caveats and `review: provisional`. Each status is judged again before Univ is deployed publicly, which the release gate already enforces through the provisional review field."
+        question: 01a19f99-b4da-71ab-82f3-ac63f9589f0c
+  - key: 01a1a2a5-5799-76e7-b665-8211d3f93894
+    id: pi-d-sdss
+    kind: decision
+    number: 9
+    versions:
+      - key: 01a1a2a5-5799-76e7-b665-821407b65bde
+        at: 2026-11-03T18:21:47Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "All SDSS DR17 spectroscopic galaxies, with the source renamed"
+        consequence: "The spec names the source \"SDSS DR17 spectroscopic galaxies\" (data-providers and AC-10), matching the definition, which already takes all ~1.1M spectra with zWarning = 0."
+        question: 01a19f99-b4da-71ab-82f3-ac64ac6d36ce

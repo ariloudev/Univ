@@ -1,0 +1,55 @@
+key: 01a19f23-636f-72bd-b194-151d9fb569d2
+slug: build-a-release
+name: "Build a release"
+body: "Assembling everything a release holds on the owner's machine, checking it, and only then calling it complete."
+realizes:
+  - 01a19f1e-d177-716d-b124-3cf1defde8b6
+requirements:
+  - key: 01a19f23-636f-72bd-b194-151ed99bd6f9
+    statement:
+      form: event_driven
+      when: "the owner builds a release"
+      system: "Univ Ingest"
+      shall: "assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-151f95aff549
+        name: "The release has the next release number and records its build time, release cosmology, univ-model version and Univ Ingest version."
+      - key: 01a19f23-636f-72bd-b194-15208136562d
+        name: "The release records its matching rules and its ranking rule."
+      - key: 01a19f23-636f-72bd-b194-1521b702e5bb
+        name: "The release manifest lists every file of the release with its SHA-256."
+      - key: 01a19f23-636f-72bd-b194-1522436dac01
+        name: "The release holds the cell index that bounded volume queries read."
+      - key: 01a1a304-2788-77fb-8f0d-273901bad9b4
+        name: "The release records each source's primary reference by its bibcode or DOI."
+      - key: 01a1a304-4ae3-74cc-a986-969a727616ef
+        name: "The release records each source's coverage as a sky region with, where its catalogue entries hold redshifts or distances, the range they span."
+      - key: 01a1a304-2788-77fb-8f0d-273ac3c97e3c
+        name: "The release holds each placed structure's geometry as a univ-model geometry in a named frame, with its bounds in ICRS, beside the geometry its structure file gives."
+      - key: 01a1a304-2788-77fb-8f0d-273b90e08a90
+        name: "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline."
+      - key: 01a1a304-2788-77fb-8f0d-273c7a6188dc
+        name: "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology."
+  - key: 01a19f23-636f-72bd-b194-15238aca1cc9
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "check a release before marking it complete."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-15248994b03f
+        name: "Every object id that a tile holds exists among the release's objects."
+      - key: 01a19f23-636f-72bd-b194-1525435d731d
+        name: "Every number of every structure cites its source."
+      - key: 01a19f23-636f-72bd-b194-152619fffa94
+        name: "The counts of catalogue entries in the release match the counts in each source's provenance."
+      - key: 01a19f23-636f-72bd-b194-152783fea6de
+        name: "No source in the release has a redistribution status of forbidden."
+  - key: 01a19f23-636f-72bd-b194-1528b83f1040
+    statement:
+      form: unwanted
+      if: "a source fails or a check fails"
+      system: "Univ Ingest"
+      shall: "mark nothing complete and name the source or the check that failed."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-1529a7954231
+        name: "No release number is used up by a build that failed."

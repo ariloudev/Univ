@@ -1,0 +1,39 @@
+key: 01a1a8cc-3d02-7585-85fb-4558813fc355
+slug: choose-what-is-drawn
+name: "Choose what is drawn"
+body: "Turning groups of what the view draws on and off: the points of each scale domain, of each catalogue and of each kind of value of their distances, and the structures of each kind, so that one survey, one kind of value or one kind of structure can be seen alone."
+realizes:
+  - 01a1a497-e843-728a-bce8-3fcf940bdac0
+  - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
+requirements:
+  - key: 01a1a8cc-3d02-7585-85fb-4559a8a2b471
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "offer a checkbox for each scale domain, each source of the drawn points, each kind of value and each kind of structure, all checked when the view opens."
+    criteria:
+      - key: 01a1a8cc-3d02-7585-85fb-455a3c55e223
+        name: "The panel lists the scale domains, the sources of the drawn points by their titles, the four kinds of value and the kinds of the structures, each with a checkbox."
+      - key: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
+        name: "Every checkbox is checked when the view opens on an address that turns no group off."
+  - key: 01a1a8cc-3d02-7585-85fb-455c402dc776
+    statement:
+      form: event_driven
+      when: "a checkbox is cleared or checked"
+      system: "Univ Explorer"
+      shall: "draw only the points and structures whose groups are all checked."
+    criteria:
+      - key: 01a1a8cc-3d02-7585-85fb-455d411f618e
+        name: "A point is drawn only while its scale domain, the source of its preferred distance and that distance's kind of value are all checked."
+      - key: 01a1a8cc-3d02-7585-85fb-455ef6890107
+        name: "A structure is drawn only while its kind is checked."
+      - key: 01a1a8cc-3d02-7585-85fb-455fd5131e7f
+        name: "A point or structure not drawn is not named by the pointer nor chosen by a click, and the key does not count it."
+  - key: 01a1a8cc-3d02-7585-85fb-4560c2ae86dc
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "keep the groups turned off in the page's address."
+    criteria:
+      - key: 01a1a8cc-3d02-7585-85fb-4561d1b0f1de
+        name: "Reloading the page, or opening its address elsewhere, draws the same groups."

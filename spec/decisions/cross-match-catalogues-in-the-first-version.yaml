@@ -1,0 +1,64 @@
+key: 01a19f25-5955-701e-b3cf-dd8a0332affc
+slug: cross-match-catalogues-in-the-first-version
+title: "Cross-match catalogues in the first version"
+context: "One galaxy can appear in SDSS, 2MRS, 2M++, 6dFGS and Cosmicflows-4. Without cross-matching it is counted several times and a layer cannot point at it as one thing."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dd8d24e2515f
+  outcome: "Univ Ingest resolves catalogue entries into objects, and Univ Server serves one object per body."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dd8b203f722c
+    kind: local
+    label: "One thing, one id"
+    statement: "A body has one id that layers can link to."
+  - key: 01a19f25-5955-701e-b3cf-dd8c498fd993
+    kind: local
+    label: "Effort"
+    statement: "The first version stays buildable."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dd8d24e2515f
+    title: "Cross-match now"
+    description: "Ingest resolves entries into objects with a method and a confidence."
+  - key: 01a19f25-5955-701e-b3cf-dd8eefb4f3e4
+    title: "Identity table later"
+    description: "Specify identities now and build the matcher later."
+  - key: 01a19f25-5955-701e-b3cf-dd8f97028cba
+    title: "Never"
+    description: "Each catalogue stays separate."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dd8d24e2515f
+    driver: 01a19f25-5955-701e-b3cf-dd8b203f722c
+    rating: supports
+    rationale: "each body has one id"
+  - option: 01a19f25-5955-701e-b3cf-dd8d24e2515f
+    driver: 01a19f25-5955-701e-b3cf-dd8c498fd993
+    rating: conflicts
+    rationale: "fuzzy matching is substantial work"
+  - option: 01a19f25-5955-701e-b3cf-dd8eefb4f3e4
+    driver: 01a19f25-5955-701e-b3cf-dd8b203f722c
+    rating: neutral
+    rationale: "duplicates remain until the matcher exists"
+  - option: 01a19f25-5955-701e-b3cf-dd8eefb4f3e4
+    driver: 01a19f25-5955-701e-b3cf-dd8c498fd993
+    rating: supports
+    rationale: "the matcher waits"
+  - option: 01a19f25-5955-701e-b3cf-dd8f97028cba
+    driver: 01a19f25-5955-701e-b3cf-dd8b203f722c
+    rating: conflicts
+    rationale: "a body has one id per catalogue"
+  - option: 01a19f25-5955-701e-b3cf-dd8f97028cba
+    driver: 01a19f25-5955-701e-b3cf-dd8c498fd993
+    rating: supports
+    rationale: "nothing to build"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dd90dda77a1f
+    kind: cost
+    statement: "Matching rules and their tolerances must be designed and tested for each pair of sources."
+  - key: 01a19f25-5955-701e-b3cf-dd911560e14d
+    kind: benefit
+    statement: "Overlapping surveys such as 2M++ and its parent surveys no longer double-count galaxies."
+subjects:
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3d0d39dc9a3f
+  - role: outcome
+    node: 01a19f23-636e-7035-8185-aba1fc8f7bbd

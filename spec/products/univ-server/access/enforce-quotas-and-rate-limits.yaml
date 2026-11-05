@@ -1,0 +1,52 @@
+key: 01a19f20-8e6c-7039-b16f-abd83515093c
+slug: enforce-quotas-and-rate-limits
+name: "Enforce quotas and rate limits"
+body: |
+  Keeping what each key writes, and how often any client calls, within limits the owner sets. The
+  default quotas are 100 layers per key, 100,000 items per layer and 64 KiB per item version.
+
+  A key's request rate is one of a few rate-limit tiers rather than any number, because the
+  rate-limiting binding fixes each limit in the Worker's configuration.
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce5e5f4a665
+  - 01a19f1e-d177-716d-b124-3cffdfae1655
+requirements:
+  - key: 01a19f20-8e6c-7039-b16f-abd968a1043e
+    statement:
+      form: unwanted
+      if: "a write would take a key beyond one of its quotas"
+      system: "Univ Server"
+      shall: "refuse the write and name the quota."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-abdaebf630a9
+        name: "The quotas are layers per key, items per layer and bytes per item version."
+      - key: 01a19f20-8e6c-7039-b16f-abdb6193c8a7
+        name: "The problem details give the quota, its limit and the key's current usage."
+      - key: 01a19f20-8e6c-7039-b16f-abdce6ed0c1d
+        name: "Nothing is stored."
+  - key: 01a19f20-8e6c-7039-b16f-abdd6cea244d
+    statement:
+      form: unwanted
+      if: "a client exceeds its request rate limit"
+      system: "Univ Server"
+      shall: "refuse its requests until the limit's window has passed."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-abde5a8c8ce0
+        name: "Anonymous requests are limited per client address, by default to 300 requests in 60 seconds."
+      - key: 01a19f20-8e6c-7039-b16f-abdf92323beb
+        name: "Requests with an API key are limited per key, at the rate of the key's rate-limit tier."
+      - key: 01a1a2b8-447e-752b-832a-974f9a8253a9
+        name: "The rate-limit tiers are basic at 300, standard at 1,200 and extended at 6,000 requests in 60 seconds."
+      - key: 01a19f20-8e6c-7039-b16f-abe06d55345f
+        name: "The response status is 429 with a Retry-After header."
+  - key: 01a19f20-8e6c-7039-b16f-abe10a4ee3c8
+    statement:
+      form: event_driven
+      when: "the owner changes a key's quotas or rate-limit tier"
+      system: "Univ Server"
+      shall: "apply the new values from the key's next request."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-abe2ec3d6bd7
+        name: "A quota lowered below a key's current usage refuses the key's next write that would add to that usage, and keeps what the key already stored."
+      - key: 01a1a2b8-447e-752b-832a-9750ec8ef08a
+        name: "A key moved to another rate-limit tier is limited at that tier's rate from its next request."

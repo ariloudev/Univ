@@ -1,0 +1,92 @@
+id: bailer-jones-2021
+title: "Bailer-Jones et al. 2021 distances for Gaia DR3 bright stars (G < 10)"
+provider: gaia-archive
+access:
+  method: tap
+  # The same G < 10 selection and the same 16 random_index chunks as gaia-dr3-bright, each well
+  # under the ESA archive's silent 50,000-row anonymous cap.
+  query: >-
+    SELECT d.source_id, d.r_med_geo, d.r_lo_geo, d.r_hi_geo, d.r_med_photogeo, d.r_lo_photogeo,
+    d.r_hi_photogeo, d.flag FROM gaiadr3.gaia_source AS g JOIN external.gaiaedr3_distance AS d
+    ON d.source_id = g.source_id WHERE g.phot_g_mean_mag < 10
+    AND MOD(g.random_index, {chunks}) = {chunk}
+  chunks: 16
+  count: >-
+    SELECT COUNT(*) AS n FROM gaiadr3.gaia_source AS g JOIN external.gaiaedr3_distance AS d
+    ON d.source_id = g.source_id WHERE g.phot_g_mean_mag < 10
+cuts:
+  - "Inner join of external.gaiaedr3_distance to gaiadr3.gaia_source on source_id, for phot_g_mean_mag < 10 (PROVISIONAL, as gaia-dr3-bright); sources without a distance are absent."
+  - "EDR3 and DR3 share an identical source list, so EDR3 source_ids join DR3 directly; they cannot be matched to DR1 or DR2 ids."
+  - >-
+    The distances are model-based estimates (Bayesian posterior quantiles with a Galaxy-model prior),
+    not measurements: r_med_* is the median, r_lo_* and r_hi_* the 16th and 84th percentiles, kept as
+    an asymmetric interval. Photogeometric distances are absent where the BP-RP colour is missing.
+  - "flag is kept but not used for filtering, as its description asks; its decoding was not retrieved."
+columns:
+  - { column: source_id, field: identifier, unit: dimensionless }
+  - { column: r_med_geo, field: distance, unit: parsec }
+  - { column: r_lo_geo, field: distance_low, unit: parsec }
+  - { column: r_hi_geo, field: distance_high, unit: parsec }
+  - { column: r_med_photogeo, field: distance, unit: parsec }
+  - { column: r_lo_photogeo, field: distance_low, unit: parsec }
+  - { column: r_hi_photogeo, field: distance_high, unit: parsec }
+  - { column: flag, field: quality, unit: dimensionless }
+frame: icrs
+epoch: 2016.0
+citation: >-
+  Bailer-Jones C.A.L., Rybizki J., Fouesneau M., Demleitner M., Andrae R. 2021, "Estimating
+  Distances from Parallaxes. V. Geometric and Photogeometric Distances to 1.47 Billion Stars in
+  Gaia Early Data Release 3", AJ 161, 147. 2021AJ....161..147B, doi:10.3847/1538-3881/abd806.
+  Underlying data: Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1 (2023A&A...674A...1G) and
+  Gaia Collaboration, Prusti et al. 2016, A&A 595, A1 (2016A&A...595A...1G).
+reference: { bibcode: "2021AJ....161..147B", doi: "10.3847/1538-3881/abd806" }
+terms:
+  url: "https://dc.g-vo.org/browse/gedr3dist/q"
+  quote: >-
+    Rights The Gaia eDR3 (photo-) geometric distances catalogue. is licensed under the Creative
+    Commons Attribution 4.0 License https://spdx.org/licenses/CC-BY-4.0.html
+  credit: >-
+    Cite Bailer-Jones et al. 2021, AJ 161, 147, and link the CC BY 4.0 licence. The distances derive
+    from Gaia data, credited 'ESA/Gaia/DPAC': This work has made use of data from the European Space
+    Agency (ESA) mission Gaia ( https://www.cosmos.esa.int/gaia ), processed by the Gaia Data
+    Processing and Analysis Consortium (DPAC, https://www.cosmos.esa.int/web/gaia/dpac/consortium ).
+    Funding for the DPAC has been provided by national institutions, in particular the institutions
+    participating in the Gaia Multilateral Agreement.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    The creators' host (GAVO) licenses the catalogue CC BY 4.0, which permits redistribution with
+    attribution and has no share-alike. The copy read here is served from ESA's archive, whose data
+    ESA distributes under CC BY-NC 3.0 IGO, and the distances derive from Gaia data, so
+    redistribution is kept non-commercial with credit to Bailer-Jones et al. and ESA/Gaia/DPAC.
+    Provisional: judged again before any public deployment.
+scale_domain: stars
+# ARI serves these distances as gaiaedr3_complements.distances and GAVO as gedr3dist.main, not
+# under this table name, so only the ESA archive is listed.
+mirrors:
+  - "https://gea.esac.esa.int/tap-server/tap"
+normalization:
+  distances:
+    - value: r_med_geo
+      error: { credible_interval: { low: r_lo_geo, high: r_hi_geo, probability: 0.68 } }
+      kind: geometric
+      method: bayesian_geometric
+      measure: euclidean
+      kind_of_value: estimated
+      basis: >-
+        I/352 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/I/352/ReadMe, 2026-11-03): rgeo is
+        the median, b_rgeo and B_rgeo the "16th percentile" and "84th percentile of the geometric
+        distance posterior"; "Geometric distances use only the EDR3 parallaxes" with a
+        direction-dependent prior. Quantiles "transform invariably", so the interval is kept as
+        published.
+    - value: r_med_photogeo
+      error: { credible_interval: { low: r_lo_photogeo, high: r_hi_photogeo, probability: 0.68 } }
+      kind: photogeometric
+      method: bayesian_photogeometric
+      measure: euclidean
+      kind_of_value: estimated
+      basis: >-
+        I/352 ReadMe: b_rpgeo and B_rpgeo are the "16th percentile" and "84th percentile of the
+        photogeometric distance posterior"; the photogeometric distance "additionally uses the
+        colour and apparent magnitude of a star".

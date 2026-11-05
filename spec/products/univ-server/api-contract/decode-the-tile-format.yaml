@@ -1,0 +1,33 @@
+key: 01a19f20-8e6c-7039-b16f-abfe741c359f
+slug: decode-the-tile-format
+name: "Decode the tile format"
+body: "Reading tiles in a client without reverse-engineering them: the format is published, and a reference decoder ships with it."
+realizes:
+  - 01a19f1e-d177-716d-b124-3cf4d7ad065c
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+requirements:
+  - key: 01a19f20-8e6c-7039-b16f-abff12284f64
+    statement:
+      form: event_driven
+      when: "a client requests the tile format"
+      system: "Univ Server"
+      shall: "return the JSON Schema of the tile manifest and the description of the tile encoding."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-ac0049cc05d8
+        name: "The description gives the byte layout of a tile for each version of the encoding the release uses."
+  - key: 01a19f20-8e6c-7039-b16f-ac01cf25aa34
+    statement:
+      form: ubiquitous
+      system: "The Tile codec"
+      shall: "provide a reference TypeScript decoder that decodes every tile of a release into the points it encodes."
+    criteria:
+      - key: 01a19f20-8e6c-7039-b16f-ac0273b5ac3b
+        name: "Each decoded position lies within the quantization step the tile manifest states of the position the tile was built from."
+      - key: 01a19f20-8e6c-7039-b16f-ac037abf14fd
+        name: "Each decoded point gives its object id, its source and its kind of value."
+      - key: 01a19f20-8e6c-7039-b16f-ac04fdc1fabe
+        name: "A tile with an encoding version the decoder does not know fails with an error that names the version."
+      - key: 01a1a6e4-22e1-765d-b404-01feaa3330ef
+        name: "The decoder decodes tiles of encoding versions 1 and 2."
+      - key: 01a1a6e4-22e1-765d-b404-01ff442efb73
+        name: "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none."

@@ -1,0 +1,48 @@
+# gamma Circini (HR 5704), B5III + F8 visual binary (SIMBAD: B3/4V+F8V): Hipparcos-2 parallax error 11%, no Gaia parallax for the primary; unplaced.
+hip: 75323
+name: gamma Circini
+alternative_names: ["gam Cir", "HR 5704", "WDS J15234-5919AB", "HJ 4757"]
+papers:
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue table gaiaedr3.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-edr3-2021.txt"
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos Census of the Nearby OB Associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, text extracted with pdfminer.six; Table C1 rows cross-checked with pypdf; bibcode checked on SIMBAD's reference page (ADS returned a human-verification page)"
+  - id: rizzuto-2011
+    reference: "Rizzuto, Ireland & Robertson 2011, MNRAS 416, 3108"
+    title: "Multidimensional Bayesian membership analysis of the Sco OB2 moving group"
+    bibcode: 2011MNRAS.416.3108R
+    doi: 10.1111/j.1365-2966.2011.19256.x
+    arxiv: "1106.2857"
+    read: "arXiv PDF of 1106.2857v1, text extracted with pdfminer.six; Table A1 searched for the HIP number; bibcode checked on SIMBAD's reference page"
+  - id: tokovinin-2012
+    reference: "Tokovinin 2012, AJ 144, 56"
+    title: "Speckle interferometry and orbits of \"fast\" visual binaries"
+    bibcode: 2012AJ....144...56T
+    doi: 10.1088/0004-6256/144/2/56
+    arxiv: "1206.1882"
+    read: "arXiv PDF of 1206.1882v1, text extracted with pdfminer.six; Table 4 row reassembled from column-wise extraction; bibcode checked on SIMBAD's reference page"
+unplaced: "no published distance other than the Hipparcos-2 parallax, whose error is just above a tenth of its value; Gaia EDR3 gives the bright source no parallax, the DR2 best neighbour is a much fainter source, and no orbital parallax, group membership or modelling distance was found"
+disputes: []
+notes: >-
+  The Gaia DR2 best neighbour of HIP 75323 is source 5876786743052644480. It is far too faint to be the primary,
+  so its parallax is not this star's. EDR3 has the primary (source 5876786747391373696) without a parallax. The
+  star is not in the Sco OB2 member lists of de Zeeuw et al. 1999 or Rizzuto et al. 2011. Tokovinin 2012
+  lists only a speckle measure of HJ 4757, not an orbit. Hipparcos-2 misses the bar only narrowly, so a
+  future orbital parallax could settle this star.

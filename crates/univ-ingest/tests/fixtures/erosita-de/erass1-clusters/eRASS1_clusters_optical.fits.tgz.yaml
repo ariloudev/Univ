@@ -1,0 +1,9 @@
+source: erass1-clusters
+url: https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/KlugeM_DR1/eRASS1_clusters_optical.fits.tgz
+retrieved: 2026-11-03T05:01:00Z
+sha256: 59089354054a913d7d13aceee69b0d14a0436d93601e7ea6eb535da534465452
+note: >-
+  The first 5 rows of HDU 1 of the archive's FITS member (archive SHA-256 b09a94314a56ad4906970a1e3c5234c329df8a975cc04add58925c60c8962c18), cut by
+  hand: every header card kept except NAXIS2, set to 5; the data cut to 5 rows and padded with
+  zero bytes to a 2880-byte block; re-packed as a gzipped tar holding one member of the same
+  name.

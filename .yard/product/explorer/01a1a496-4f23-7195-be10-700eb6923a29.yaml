@@ -1,0 +1,62 @@
+key: 01a1a496-4f23-7195-be10-700eb6923a29
+id: x-plan
+versions:
+  - key: 01a1a496-4f23-7195-be10-70154d1ab242
+    at: 2026-11-04T03:24:36Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Plan the explorer's waves"
+    goal: "A wave plan, each wave's criteria and tests named, is in this log"
+    status: planned
+  - key: 01a1a498-947d-74eb-bc05-1f0f5ba9ef49
+    at: 2026-11-04T03:27:05Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Plan the explorer's waves"
+    goal: "A wave plan, each wave's criteria and tests named, is in this log"
+    status: active
+blocks:
+  - key: 01a1a498-947d-74eb-bc05-1f0de9f5eefa
+    id: x-plan-doc
+    kind: plan
+    versions:
+      - key: 01a1a498-947d-74eb-bc05-1f101a6d100b
+        at: 2026-11-04T03:27:05Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Univ Explorer: four waves"
+        markdown: |-
+          ## Shape
+
+          `clients/explorer/` is a pnpm package following the newsroom's conventions without its code:
+
+          - Vite 8, TypeScript 7 (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), React 19, Tailwind 4 and zod;
+          - Vitest 4 with Istanbul coverage, `fallow` for lint, Playwright with axe.
+
+          It imports the reference tile decoder from `clients/tile-decoder` through `link:`, so the decoder isn't duplicated.
+
+          | Part | Holds |
+          |---|---|
+          | `src/api/` | `fetch` client with 429 retry, problem details, and zod schemas of the routes read |
+          | `src/scene/` | framework-free WebGL2 renderer: orbit camera, controls, point and line passes, frames, picking, structure outlines, distance format |
+          | `src/catalogue/` | manifests, tile priority and budget, SHA-256 check, decode |
+          | `src/ui/` | React panels: release, search, object, structures, key and credits, status, unreachable server |
+
+          **Running it:** `cargo xtask explore` starts Univ Server on the real state and the explorer's dev server. The dev server proxies `/v1` to the Worker and adds an extended-tier key it provisions with the owner secret, so the key never reaches the browser. `cargo xtask check` gains an `explorer` gate (typecheck, unit tests with coverage, fallow, build). `cargo xtask integration` gains the explorer's Playwright e2e against the Worker on fixture state.
+
+          ## Waves
+
+          | Wave | Builds | Criteria | Tests |
+          |---|---|---|---|
+          | E0 | scaffold, gates, `xtask explore`, API client, release choice, unreachable server, 429 retry | open-the-explorer | client unit tests (retry, problems), App states with mocked `fetch` |
+          | E1 | camera, mouse controls, WebGL2 passes, Earth marker, frame rings, LOD loader, SHA check, colours, key, credits, frame statement | draw-the-catalogues, navigate-with-the-mouse | camera, controls, LOD and format unit tests; renderer with a fake GL; e2e smoke |
+          | E2 | hover and click picking, object panel and address, search, structure outlines, labels, list and panel | read-an-object, find-an-object, see-the-structures | pick, shapes and label-placement units; panels with a mocked API; search parsing |
+          | E3 | Playwright e2e in integration with axe; run on release 7; QA first points (10 loads); README | all, end to end | e2e on fixture Worker; QA measured on release 7 |
+
+          Each wave runs on its own `stage/explorer-eN` branch with focused checks, then simplify plus code review, one full gate and integration run, the trace, a closed log and a merge into `product/explorer`. Merging `product/explorer` into `develop` waits for the owner.

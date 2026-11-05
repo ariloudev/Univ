@@ -1,0 +1,854 @@
+# Science checks of a built release, run by `cargo xtask science <release-dir>`.
+#
+# Each check selects one thing of the release by a generic kind and states what it should be,
+# with the primary source of that expectation: the paper or catalogue, where in it, the sentence
+# or row quoted, and where and when it was fetched. Measured, estimated and reconstructed values
+# are named as such. Severity `fail` makes the command exit non-zero, `concern` is reported for a
+# look, `report` prints counts and judges nothing.
+#
+# Kinds (xtask/src/science/rules.rs):
+#   object_distance    an object's placed distance, Mpc. expect: value with sigma (agreement
+#                      within n_sigma, default 2, of the cited sigma and the object's own in
+#                      quadrature), absolute or relative; hubble_constant carries a value cited at
+#                      another H0 to the release's; placed_by names the preferred measurement's
+#                      source and method.
+#   object_direction   an object's sky position. expect: frame, lon, lat, within_arcmin.
+#   structure_distance a researched structure's centre distance against the comoving distance,
+#                      under the release cosmology, of a cited velocity (z = v/c), corrected to
+#                      the CMB frame with the Planck 2018 dipole when heliocentric.
+#   grid_labels        a grid field's labels at points given in the grid's frame and unit: the
+#                      number of points in another label than expected.
+#   query              an SQL query of the loaded release: the number of rows it gives (its first
+#                      column an object id, so listed exceptions are left out), or with scalar its
+#                      first value. :release is the release number. SQL functions: term(name),
+#                      source(id), sep_arcmin(ra1, dec1, ra2, dec2), comoving_mpc(z).
+#   close_pairs        placed objects closer on the sky than radius_arcmin whose distances agree
+#                      within their uncertainties in quadrature: the number of pairs.
+#   largest_tile, d1_estimate, fingerprints, report.
+# A count or share is judged by equals, at_least or at_most.
+
+checks:
+  # ---------------------------------------------------------------- positions and distances
+  - id: m31-distance
+    title: M31 at McConnachie's 783 ± 25 kpc
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: mcconnachie-2012, identifier: Andromeda }
+    expect: { value: 0.783, sigma: 0.025 }
+    cite:
+      - paper: "McConnachie 2012, AJ 144, 4 (VizieR J/AJ/144/4)"
+        locator: "catalog, row Andromeda (M31, NGC 224): (m-M), D, E_D, e_D"
+        quote: "Andromeda | M31,NGC 224,UGC 454 | (m-M) 24.47 +0.07 -0.07 | D 783 kpc +25 -25 (measured)"
+        fetched: "https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J/AJ/144/4/catalog&-out.all&-out.max=200, 2026-11-03T12:18:45"
+    note: >-
+      A measured distance with a symmetric 25 kpc error. The release may place M31 by another
+      measured distance; it agrees when within 2σ of McConnachie's and its own in quadrature.
+
+  - id: m31-direction
+    title: M31 toward l = 121.174°, b = -21.573°
+    severity: fail
+    select:
+      kind: object_direction
+      object: { source: mcconnachie-2012, identifier: Andromeda }
+    expect: { frame: galactic, lon: 121.174, lat: -21.573, within_arcmin: 0.5 }
+    cite:
+      - paper: "McConnachie 2012, AJ 144, 4 (VizieR J/AJ/144/4)"
+        locator: "catalog, row Andromeda: RAJ2000, DEJ2000, GLON, GLAT"
+        quote: "Andromeda | RAJ2000 00 42 44.3 | DEJ2000 +41 16 09 | GLON 121.2 | GLAT -21.6"
+        fetched: "https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J/AJ/144/4/catalog&-out.all&-out.max=200, 2026-11-03T12:18:45"
+    note: >-
+      l and b to 0.001° are McConnachie's FK5 J2000 position turned to galactic coordinates
+      (astropy 2026-11-03: l = 121.17423°, b = -21.57289°); the table prints them to 0.1°. Half an
+      arcminute allows the rounding to 0.001° and the release's own position of M31.
+
+  - id: m87-distance
+    title: M87 within Mei et al.'s 16.5 ± 1.1 Mpc
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: twomrs, identifier: 12304942+1223279 }
+    expect: { value: 16.5, sigma: 1.1 }
+    cite:
+      - paper: "Mei et al. 2007, ApJ 655, 144 (astro-ph/0702510)"
+        locator: abstract
+        quote: "have a narrow distribution around our adopted mean distance of 16.5+/-0.1 (random mean error) +/-1.1 Mpc (systematic)."
+        fetched: "https://arxiv.org/abs/astro-ph/0702510, 2026-11-03"
+    note: >-
+      The SBF mean distance of the Virgo cluster's main sample, measured; its systematic 1.1 Mpc
+      dominates the 0.1 Mpc random error and is taken as sigma. 2MASX J12304942+1223279 is M87.
+
+  - id: virgo-group-centre
+    title: Virgo group (CF4 1PGC 41220) at the KT17 centre
+    severity: fail
+    select:
+      kind: object_direction
+      object: { source: cosmicflows-4, identifier: "41220" }
+    expect: { frame: fk5_j2000, lon: 187.755781, lat: 12.405941, within_arcmin: 0.1 }
+    cite:
+      - paper: "Kourkchi & Tully 2017, ApJ 843, 16 (VizieR J/ApJ/843/16)"
+        locator: "table2, row PGC1 = 41220: _RAJ2000, _DEJ2000"
+        quote: "187.755781 +12.405941 | recno 211 | PGC1 41220 | Nm 714 | GLON 283.9352 | GLAT +74.5198"
+        fetched: "https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J/ApJ/843/16/table2&-out.add=_RAJ,_DEJ&PGC1=41220&-out.all, 2026-11-03T14:37:43"
+    note: The group centre KT17 estimated from its 714 members, as VizieR gives it in FK5 J2000.
+
+  - id: virgo-group-cites-kt17
+    title: The Virgo group's entry cites KT17 for its position
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT e.object_id FROM entries e JOIN designations d ON d.release = e.release
+        AND d.object_id = e.object_id AND d.source = source('cosmicflows-4') AND d.identifier = '41220'
+        WHERE e.release = :release AND e.source = source('cosmicflows-4')
+        AND instr(coalesce(e.flags, '') || coalesce(e.extra, ''), '2017ApJ...843...16K') > 0
+        AND instr(coalesce(e.flags, '') || coalesce(e.extra, ''), 'J/ApJ/843/16') > 0
+    expect: { equals: 1 }
+    cite:
+      - paper: "Kourkchi & Tully 2017, ApJ 843, 16 (VizieR J/ApJ/843/16)"
+        locator: "table2, row PGC1 = 41220"
+        quote: "187.755781 +12.405941 | recno 211 | PGC1 41220"
+        fetched: "https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J/ApJ/843/16/table2&-out.add=_RAJ,_DEJ&PGC1=41220&-out.all, 2026-11-03T14:37:43"
+
+  - id: m81-distance
+    title: M81 at UNGC's 3.63 Mpc from Cepheids
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: updated-nearby-galaxies, identifier: MESSIER081 }
+      placed_by: { source: updated-nearby-galaxies, method: cepheids }
+    expect: { value: 3.63, absolute: 0.005 }
+    cite:
+      - paper: "Karachentsev, Makarov & Kaisina 2013, AJ 145, 101 (VizieR J/AJ/145/101)"
+        locator: "catalog, row MESSIER081: Dist, f_Dist"
+        quote: "148.889583 +69.066667 MESSIER081 | Dist 3.63 | f_Dist Cep | HRV -38 | Bmag 7.79"
+        fetched: "http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag&-out.add=_RAJ%2C_DEJ&-out.max=unlimited, 2026-11-03T10:16:00Z"
+    note: A measured Cepheid distance published with no error; the tolerance is its last digit.
+
+  - id: cen-a-distance
+    title: Cen A at UNGC's 3.75 Mpc from the TRGB
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: updated-nearby-galaxies, identifier: NGC5128 }
+      placed_by: { source: updated-nearby-galaxies, method: tip_of_the_red_giant_branch }
+    expect: { value: 3.75, absolute: 0.005 }
+    cite:
+      - paper: "Karachentsev, Makarov & Kaisina 2013, AJ 145, 101 (VizieR J/AJ/145/101)"
+        locator: "catalog, row NGC5128: Dist, f_Dist"
+        quote: "201.370417 -43.016667 NGC5128 | Dist 3.75 | f_Dist TRGB | HRV 556 | Bmag 7.84"
+        fetched: "http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag&-out.add=_RAJ%2C_DEJ&-out.max=unlimited, 2026-11-03T10:16:00Z"
+    note: A measured TRGB distance published with no error; the tolerance is its last digit.
+
+  - id: coma-ngc4874
+    title: NGC 4874 at Scolnic et al.'s Coma distance on the Planck scale
+    severity: concern
+    select:
+      kind: object_distance
+      object: { source: twomrs, identifier: 12593570+2757338 }
+    expect: { value: 111.8, sigma: 1.8, hubble_constant: 67.4 }
+    cite: &scolnic
+      - paper: "Scolnic et al. 2024, arXiv:2409.14546"
+        locator: abstract
+        quote: >-
+          "Calibrating the absolute magnitude of SNe Ia with the HST distance ladder yields
+          $D_{\textrm Coma}=98.5\pm2.2$ Mpc" ... "This distance results in $H_0=76.5 \pm 2.2$
+          km/s/Mpc from the DESI FP relation." ... "calibrating it instead to the Planck+$\Lambda$CDM
+          value of $H_0=67.4$ km/s/Mpc implies a much greater distance to Coma,
+          $D_{\textrm Coma}=111.8\pm1.8$ Mpc"
+        fetched: "https://arxiv.org/abs/2409.14546, 2026-11-03"
+    note: >-
+      The release places Coma's galaxies by redshift under Planck 2018 (H0 = 67.66), so the
+      comparison is on that scale: Scolnic et al.'s own Planck-calibrated distance, 111.8 ± 1.8 Mpc
+      at H0 = 67.4, times 67.4/67.66 (a distance at fixed redshift goes as 1/H0), 111.37 ± 1.79 Mpc.
+      Their ladder distance gives the same: 98.5 Mpc × 76.5/67.66 = 111.4 Mpc. A single galaxy's
+      redshift also carries its motion within the cluster, which the release's 300 km/s term only
+      partly covers, hence a concern, not a failure.
+
+  - id: coma-ngc4889
+    title: NGC 4889 at Scolnic et al.'s Coma distance on the Planck scale
+    severity: concern
+    select:
+      kind: object_distance
+      object: { source: twomrs, identifier: 13000809+2758372 }
+    expect: { value: 111.8, sigma: 1.8, hubble_constant: 67.4 }
+    cite: *scolnic
+    note: As coma-ngc4874.
+
+  - id: laniakea-basins
+    title: Dupuy & Courtois's nine attractors each in their own CF4 basin, the observer in Laniakea
+    severity: fail
+    select:
+      kind: grid_labels
+      grid: cf4-basins
+      field: 0
+      frame: supergalactic
+      unit: megaparsec_over_h
+      points:
+        - { name: observer, at: [0, 0, 0], label: 1 }
+        - { name: Laniakea, at: [-62, -8, 39], label: 1 }
+        - { name: Apus, at: [-125, -23, -31], label: 2 }
+        - { name: Hercules, at: [-39, 70, 78], label: 3 }
+        - { name: Lepus, at: [-62, -39, -109], label: 4 }
+        - { name: Perseus-Pisces, at: [47, -23, -31], label: 5 }
+        - { name: Shapley, at: [-141, 62, -16], label: 6 }
+        - { name: SDSS-1a, at: [117, 227, -227], label: 7 }
+        - { name: SDSS-2a, at: [-102, 297, 102], label: 8 }
+        - { name: SDSS-2b, at: [31, 289, 156], label: 9 }
+    expect: { equals: 0 }
+    cite:
+      - paper: "Dupuy & Courtois 2023, A&A 678, A176 (arXiv:2305.02339)"
+        locator: "table of gravitational basins (tab:basins), CF4 galaxies columns SGX, SGY, SGZ"
+        quote: >-
+          "Laniakea & 263 & -39 & 7,412 & -62 & -8 & 39 & 1.9" ... "Apus -125 -23 -31", "Hercules
+          -39 70 78", "Lepus -62 -39 -109", "Perseus-Pisces 47 -23 -31", "Shapley -141 62 -16",
+          "SDSS-1a 117 227 -227", "SDSS-2a -102 297 102", "SDSS-2b 31 289 156"; "Columns 5-12, 6-13
+          and 7-14 give the supergalactic cartesian coordinates of the corresponding attractor or
+          repeller, SGX, SGY and SGZ, respectively, in units of Mpc $h^{-1}$."
+        fetched: "arXiv:2305.02339 LaTeX source (main.tex), fetched 2026-11-03"
+      - paper: "Dupuy & Courtois 2023, A&A 678, A176 (arXiv:2305.02339)"
+        locator: data availability
+        quote: >-
+          "Each integer labels a single basin (in the same order as listed in Table
+          \ref{tab:basins}, ignoring blank lines) [...] voxels filled with 1 are part of Laniakea,
+          2 of Apus, 3 of Hercules, etc."
+        fetched: "arXiv:2305.02339 LaTeX source (main.tex), fetched 2026-11-03"
+    note: >-
+      Reconstructed: attractors of the CF4 galaxies' velocity field, in supergalactic Mpc/h, read
+      in the released basins of attraction of the CF4 galaxies (field 0, CF4_new_128-z008_BoA).
+      The grid and the table share the Mpc/h unit, so no H0 enters.
+
+  - id: horologium-reticulum-distance
+    title: Horologium-Reticulum placed from Fleenor et al.'s 19,900 km/s
+    severity: fail
+    select:
+      kind: structure_distance
+      structure: horologium-reticulum-supercluster
+      velocity_km_s: 19900
+      frame: heliocentric
+    expect: { relative: 0.005 }
+    cite:
+      - paper: "Fleenor et al. 2005, AJ 130, 957 (astro-ph/0505361)"
+        locator: "§3.1 Kinematic Extent of the HRS"
+        quote: "The mean redshift of these clusters is 19,900 km s-1, with a dispersion σ of 2300 km s-1."
+        fetched: "arXiv:astro-ph/0505361 LaTeX source (ms.tex), fetched 2026-11-03"
+      - paper: "Fleenor et al. 2005, AJ 130, 957 (astro-ph/0505361)"
+        locator: "§2.4 Redshift Determination"
+        quote: "heliocentric corrections were applied to all redshifts."
+        fetched: "arXiv:astro-ph/0505361 LaTeX source (ms.tex), fetched 2026-11-03"
+    note: >-
+      The measured mean cz of seventeen ACO clusters, heliocentric, with no error of the mean
+      given. The check is of the placement from that velocity, so the tolerance is tight: 0.5%,
+      about 100 km/s.
+
+  # ------------------------------------------------------------------ researched star distances
+  - id: betelgeuse-distance
+    title: Betelgeuse at Joyce et al.'s seismic 168 pc
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: hipparcos-2007, identifier: "27989" }
+    expect: { value: 0.000168, absolute: 0.0000005 }
+    cite:
+      - paper: "Joyce, Leung, Molnár, Ireland, Kobayashi & Nomoto 2020, ApJ 902, 63 (arXiv:2006.09837)"
+        locator: "abstract, arXiv PDF page 1"
+        quote: >-
+          "this allows us to derive a new, independent distance estimate of 168^{+27}_{-15} pc"
+        fetched: "this repository, stars/betelgeuse.yaml (arXiv PDF of 2006.09837v5)"
+    note: >-
+      An estimated distance from seismic and evolutionary modelling with the measured angular
+      diameter. Its range, 15 pc below and 27 above, is the paper's 3σ range, not a one-sigma
+      error, so the check holds the value to its last digit. Hipparcos-2's parallax of the star
+      is too uncertain to invert and Gaia gives none, so release 8 left it unplaced.
+
+  - id: betelgeuse-names-joyce
+    title: Betelgeuse is placed by its star file, which names Joyce et al. 2020
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id FROM objects o JOIN designations d ON d.release = o.release AND d.object_id = o.id
+        AND d.source = source('hipparcos-2007') AND d.identifier = '27989'
+        JOIN entries e ON e.release = o.release AND e.object_id = o.id AND e.entry = o.preferred_entry
+        WHERE o.release = :release AND e.source = source('researched-star-distances')
+        AND instr(coalesce(e.extra, ''), '2020ApJ...902...63J') > 0
+    expect: { equals: 1 }
+    cite:
+      - paper: "Joyce, Leung, Molnár, Ireland, Kobayashi & Nomoto 2020, ApJ 902, 63"
+        locator: "bibcode on ADS"
+        quote: "2020ApJ...902...63J"
+        fetched: "this repository, stars/betelgeuse.yaml, papers[0]"
+
+  - id: antares-distance
+    title: Antares at the Upper Scorpius distance of 145 ± 2 pc
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: hipparcos-2007, identifier: "80763" }
+    expect: { value: 0.000145, sigma: 0.000002 }
+    cite:
+      - paper: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354 (arXiv:astro-ph/9809227)"
+        locator: "§4.2, Upper Scorpius"
+        quote: >-
+          "The mean distance of US is 145 ±2 pc, where the error is the formal error on the
+          mean" and "We confirm the evolved supergiant Antares (α Sco, HIP80763, M1Ib) [...] as
+          members."
+        fetched: "this repository, stars/antares.yaml (arXiv PDF of astro-ph/9809227v1)"
+    note: >-
+      An inferred distance: the association's mean Hipparcos distance given to a member the same
+      paper confirms.
+
+  - id: sigma-orionis-distance
+    title: σ Ori at 387.5 ± 1.3 pc from its orbital parallax
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: hipparcos-2007, identifier: "26549" }
+    expect: { value: 0.0003875, sigma: 0.0000013 }
+    cite:
+      - paper: "Schaefer, Hummel, Gies, Zavala, Monnier, Walter, Turner, Baron et al. 2016, AJ 152, 213 (arXiv:1610.01984)"
+        locator: "arXiv PDF page 11"
+        quote: >-
+          "The orbital parallax of π = 2.5806 ± 0.0088 mas gives a distance d = 387.5 ± 1.3 pc to
+          the σ Orionis system."
+        fetched: "this repository, stars/sigma-orionis.yaml (arXiv PDF of 1610.01984v1)"
+    note: >-
+      A measured parallax, inverted by the ranking: the check holds the inversion to the
+      distance the paper itself gives.
+
+  - id: researched-stars-placed
+    title: Every star file with a distance or parallax places its star
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id FROM objects o JOIN entries e ON e.release = o.release AND e.object_id = o.id
+        AND e.entry = o.preferred_entry
+        WHERE o.release = :release AND o.placed = 1 AND e.source = source('researched-star-distances')
+    expect: { equals: 16 }
+    cite:
+      - paper: "univ-server researched star distances"
+        locator: "stars/, the files with a distance or parallax and no unplaced"
+        quote: "16 of the 51 star files give a distance or a parallax; the other 35 say why not"
+        fetched: "this repository, stars/*.yaml"
+    note: >-
+      Each placed star file's star is placed by it: its distance or parallax is the only candidate
+      left once the Hipparcos-2 parallax is too uncertain to invert. A star file whose star
+      another source placed instead, or which placed nothing, makes the count fall short.
+
+  - id: researched-entries-name-their-papers
+    title: Every researched star entry names the papers its values come from
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT e.object_id FROM entries e WHERE e.release = :release
+        AND e.source = source('researched-star-distances')
+        AND json_extract(coalesce(e.extra, '{}'), '$.references[0].citation') IS NULL
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, feature Record a researched star distance"
+        locator: "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+        quote: "The entry of a star file names the paper its values come from."
+        fetched: "this repository, spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+
+  # ------------------------------------------------------------ cross-matching and kept rows
+  - id: twompp-in-parent-surveys
+    title: 2M++ entries sharing an object with a parent survey
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT avg(EXISTS (SELECT 1 FROM entries x WHERE x.release = e.release
+        AND x.object_id = e.object_id AND x.source IN (source('twomrs'), source('sixdfgs-dr3'),
+        source('sdss-dr17-galaxies'))))
+        FROM entries e WHERE e.release = :release AND e.source = source('twompp-catalogue')
+    expect: { at_least: 0.97 }
+    cite:
+      - paper: "Lavaux & Hudson 2011, MNRAS 416, 2840 (arXiv:1105.6107)"
+        locator: "§1 and Table 1"
+        quote: >-
+          "We gather the high-quality redshifts from the 2MASS redshift survey [...] limited to
+          $K=11.5$, the 6dF galaxy redshift survey Data Release Three [...] and the Sloan Digital
+          Sky Survey Data Release Seven." Table 1: "2Mx6S 9 016 | 6dF 42 442 | SDSS 17 702 |
+          Total 69 160" redshifts.
+        fetched: "arXiv:1105.6107 LaTeX source (paper.tex), fetched 2026-11-03"
+    note: >-
+      The paper adds NED redshifts and fibre clones (1,840 rows with Cln = 1) beside its three
+      parent surveys, so not every row has a parent entry. The 97% floor is set from the share
+      measured on release 1 (97.27%), not a number of the paper.
+
+  - id: twompp-6df-sourced
+    title: 2M++ rows whose redshift is 6dF DR3's sharing an object with 6dFGS DR3
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT avg(EXISTS (SELECT 1 FROM entries x WHERE x.release = e.release
+        AND x.object_id = e.object_id AND x.source = source('sixdfgs-dr3')))
+        FROM entries e WHERE e.release = :release AND e.source = source('twompp-catalogue')
+        AND json_extract(e.flags, '$.Ref') = '20096dF...C...0000J'
+    expect: { at_least: 0.99 }
+    cite: &twompp-ref
+      - paper: "Lavaux & Hudson 2011, MNRAS 416, 2840 (VizieR J/MNRAS/416/2840)"
+        locator: "catalog, column Ref"
+        quote: >-
+          "Ref (A19) Reference bibcode ("zoa" for fake galaxies in the Zone of Avoidance)"; 38,660
+          rows give Ref 20096dF...C...0000J (6dFGS DR3, Jones et al. 2009) and 11,606 rows
+          2009ApJS..182..543A (SDSS DR7, Abazajian et al. 2009).
+        fetched: "https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FMNRAS%2F416%2F2840%2Fcatalog&-out=Name%2CHV%2Ce_HV%2CKsmag%2CGID%2CRef%2CCln&-out.add=_RAJ%2C_DEJ&-out.max=unlimited, 2026-11-03"
+    note: The 99% floor is set from the share measured on release 1 (99.17%), not a number of the paper.
+
+  - id: twompp-sdss-sourced
+    title: 2M++ rows whose redshift is SDSS DR7's sharing an object with SDSS DR17
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT avg(EXISTS (SELECT 1 FROM entries x WHERE x.release = e.release
+        AND x.object_id = e.object_id AND x.source = source('sdss-dr17-galaxies')))
+        FROM entries e WHERE e.release = :release AND e.source = source('twompp-catalogue')
+        AND json_extract(e.flags, '$.Ref') = '2009ApJS..182..543A'
+    expect: { at_least: 0.975 }
+    cite: *twompp-ref
+    note: >-
+      A regression floor, not a number of the paper: the share was 97.98% on release 1
+      (11,372 of 11,606) and 97.75% on release 3. A fall below 97.5% means matching lost real
+      pairs.
+
+  - id: erass1-lit-z-kept
+    title: eRASS1's 155 lit_z rows with BEST_ZERR = -1 kept, with no uncertainty reported
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT e.object_id, e.name FROM entries e JOIN measurements m ON m.release = e.release
+        AND m.object_id = e.object_id AND m.entry = e.entry AND m.quantity = term('redshift')
+        WHERE e.release = :release AND e.source = source('erass1-clusters')
+        AND json_extract(e.flags, '$.BEST_Z_TYPE') = 'lit_z' AND m.native_form = term('none_reported')
+    expect: { equals: 155 }
+    cite: &erass1
+      - paper: "Bulbul et al. 2024, A&A 685, A106 (eRASS1 cluster catalogue erass1cl_primary_v3.2.fits)"
+        locator: "data model, column BEST_ZERR; the table's rows"
+        quote: >-
+          "BEST_ZERR float64 None 1 sigma error of BEST_Z"; in the file, 155 of 12,247 rows have
+          BEST_ZERR < 0, every one -1.0 and BEST_Z_TYPE lit_z (of 247 lit_z rows), among them
+          1eRASS J123049.2+122332 (BEST_Z 0.003) and 1eRASS J033829.1-352701 (BEST_Z 0.005).
+        fetched: "https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/BulbulE_DR1/erass1cl_primary_v3.2.fits.tgz, 2026-11-03T10:09:24Z; rows counted with astropy 2026-11-03"
+    note: Measured literature redshifts; their -1 error is read as none reported, not as zero.
+
+  - id: erass1-virgo-fornax
+    title: eRASS1 keeps the Virgo and Fornax clusters' lit_z rows
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT e.object_id, e.name FROM entries e WHERE e.release = :release
+        AND e.source = source('erass1-clusters')
+        AND e.name IN ('1eRASS J123049.2+122332', '1eRASS J033829.1-352701')
+        AND json_extract(e.flags, '$.BEST_Z_TYPE') = 'lit_z'
+    expect: { equals: 2 }
+    cite: *erass1
+
+  - id: ungc-without-distance
+    title: UNGC's 110 rows without a measured distance kept
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT e.object_id, e.identifier FROM entries e WHERE e.release = :release
+        AND e.source = source('updated-nearby-galaxies')
+        AND NOT EXISTS (SELECT 1 FROM measurements m WHERE m.release = e.release
+        AND m.object_id = e.object_id AND m.entry = e.entry AND m.quantity = term('distance'))
+    expect: { equals: 110 }
+    cite:
+      - paper: "Karachentsev, Makarov & Kaisina 2013, AJ 145, 101 (VizieR J/AJ/145/101)"
+        locator: "catalog, column f_Dist, and ReadMe Note (G1)"
+        quote: >-
+          f_Dist "Method used to obtain Dist (G1)"; h and h' are distances "by the Hubble
+          velocity-distance relation at H0=73 km/s/Mpc", and txt marks dwarfs whose "texture ...
+          indicates their likely proximity". Of the 869 rows served, 86 are h, 4 h' and 20 txt.
+        fetched: "http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FAJ%2F145%2F101%2Fcatalog&-out=Name%2CDist%2Cf_Dist%2CHRV%2CBmag&-out.add=_RAJ%2C_DEJ&-out.max=unlimited, 2026-11-03T10:16:00Z; ReadMe http://vizier.nao.ac.jp/ftp/cats/J/AJ/145/101/ReadMe, 2026-11-03"
+    note: >-
+      Estimated distances (Hubble-flow and texture), not measured ones: the definition drops them
+      and keeps the 110 galaxies, to be placed by another source if at all.
+
+  # -------------------------------------------------------------------------------- sanity
+  - id: local-group-duplicates
+    title: No two placed galaxies within 1′ at distances agreeing within their uncertainties
+    severity: fail
+    select:
+      kind: close_pairs
+      scale_domains: [nearby_galaxies]
+      kinds: [body]
+      radius_arcmin: 1.0
+      exceptions:
+        - source: mcconnachie-2012
+          identifier: HIZSS 3B
+          reason: >-
+            HIZSS 3B, a companion galaxy of HIZSS 3(A) whose HI overlaps it in projection but
+            separates in velocity (Begum et al. 2005, cited); McConnachie 2012 lists both at one
+            position and one distance, 288.0 and 322.6 km/s, "Binary with B?" and "Binary with A?".
+        - source: sixdfgs-dr3
+          identifier: g2257107-424818
+          reason: >-
+            A second 6dFGS target in NGC 7412A (RC3, cited: D25 = 3.5′ along PA 91°, V21 929
+            km/s), 41″ east of its RC3 centre beside g2257089-424818 21″ east, both given ZCAT's
+            929 km/s (q_cz 9). No source of the release publishes this galaxy's extent, so the
+            extent rule cannot join them: one galaxy entered twice, kept as a known duplicate.
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, univ-ingest cross-matching"
+        locator: "spec/products/univ-ingest"
+        quote: "Each object belongs to one scale domain [...] nearby galaxies where its placed distance is within 11 Mpc"
+        fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+      - paper: "Begum, Chengalur, Karachentsev & Sharina 2005, MNRAS 359, L53 (astro-ph/0503125)"
+        locator: abstract
+        quote: >-
+          "We present high spatial and velocity resolution Giant Meterwave Radio Telescope (GMRT)
+          observations that resolve these puzzles by showing that HIZSS003 is actually a galaxy
+          pair and that the HII region lies at the center of a much smaller companion galaxy
+          (HIZSS003B) to the main galaxy (HIZSS003A). The HI emission from these two galaxies
+          overlaps in projection, but can be separated in velocity space."
+        fetched: "https://export.arxiv.org/api/query?id_list=astro-ph/0503125, 2026-11-03"
+      - paper: "McConnachie 2012, AJ 144, 4 (VizieR J/AJ/144/4)"
+        locator: "catalog, rows HIZSS 3(A) and HIZSS 3B: RAJ2000, DEJ2000, D, Vh, Notes"
+        quote: >-
+          HIZSS 3(A) | 07 00 29.3 | -04 12 30 | D 1675 kpc | Vh 288.0 | "Zone of obscuration.
+          Binary with B?"; HIZSS 3B | 07 00 29.3 | -04 12 30 | D 1675 kpc | Vh 322.6 | "Zone of
+          obscuration. Binary with A?"
+        fetched: "https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J/AJ/144/4/catalog&-out.all&-out.max=200, 2026-11-03T12:18:45"
+      - paper: "de Vaucouleurs et al. 1991, Third Reference Catalogue of Bright Galaxies (RC3; VizieR VII/155)"
+        locator: "rc3, row NGC 7412A: RA2000, DE2000, D25, PA, V21"
+        quote: >-
+          NGC 7412A | ESO 290- 28 | PGC70089 | RA2000 22 57 07.0 | DE2000 -42 48 15 | D25 1.54
+          [log 0.1 arcmin] | R25 0.86 | PA 91 | V21 929 km/s
+        fetched: "http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=VII/155/rc3&-c=344.2908-42.805&-c.rm=3&-out.all, 2026-11-03"
+    note: >-
+      Two galaxies of the nearby volume 1′ apart at one distance are one galaxy entered twice.
+      Beyond 11 Mpc distinct galaxies in close pairs share a redshift distance within its 300 km/s
+      term, so the test cannot tell a duplicate there and runs on the nearby galaxies only.
+      Pieces of one extended galaxy within its published extent are joined by the matching rules'
+      extent rule; the exceptions are a real pair at one catalogued position and a duplicate of a
+      galaxy whose extent no source of the release publishes.
+
+  - id: redshift-conflicts
+    title: No object whose entries' redshifts disagree by more than max(1,000 km/s, 5σ)
+    severity: concern
+    select:
+      kind: query
+      shown: 10
+      sql: >-
+        WITH z AS (SELECT m.object_id, m.entry, m.cmb * 299792.458 AS cz, m.kind_of_value AS k,
+          CASE WHEN m.native_form = term('none_reported') THEN 0.0
+          ELSE (coalesce(m.native_minus, 0.0) + coalesce(m.native_plus, 0.0)) / 2.0
+            * CASE WHEN m.native_unit = term('kilometre_per_second') THEN 1.0 ELSE 299792.458 END
+          END AS sigma
+          FROM measurements m WHERE m.release = :release AND m.quantity = term('redshift')
+          AND m.cmb IS NOT NULL),
+        d AS (SELECT a.object_id, abs(a.cz - b.cz) AS dcz FROM z a JOIN z b
+          ON b.object_id = a.object_id AND b.entry > a.entry
+          WHERE abs(a.cz - b.cz) > 1000.0
+          AND (a.cz - b.cz) * (a.cz - b.cz) > 25.0 * (a.sigma * a.sigma + b.sigma * b.sigma))
+        SELECT d.object_id, round(max(d.dcz)) AS worst_km_s,
+          (SELECT group_concat(s.id || ':' || e.identifier || ' ' || round(z.cz) || ' '
+            || t.term, ', ') FROM z JOIN entries e ON e.release = :release
+            AND e.object_id = z.object_id AND e.entry = z.entry
+            JOIN sources s ON s.release = e.release AND s.n = e.source
+            JOIN terms t ON t.release = e.release AND t.id = z.k
+            WHERE z.object_id = d.object_id) AS cmb_cz_by_entry
+        FROM d GROUP BY d.object_id ORDER BY worst_km_s DESC
+    expect: { equals: 0 }
+    cite:
+      - paper: "Jones et al. 2009, MNRAS 399, 683 (VizieR VII/259)"
+        locator: "6dfgs.dat, columns f_cz and q_cz, Notes (2) and (5)"
+        quote: >-
+          f_cz "Comparison flags between z measurements (2)", Note (2): "The comparison threshold
+          is 330km/s"; q_cz Note (5): "3 = 6dFGS or 2dFGRS, 'probable' redshift (notionally 90%
+          confidence)", "9 = SDSS and ZCAT sources (not a measure of quality)"
+        fetched: "http://vizier.nao.ac.jp/ftp/cats/VII/259/ReadMe, 2026-11-03"
+      - paper: "Lavaux & Hudson 2011, MNRAS 416, 2840 (VizieR J/MNRAS/416/2840)"
+        locator: "catalog, column Cln"
+        quote: >-
+          Cln "Flag to indicate if the redshift has been obtained by the cloning procedure of
+          Section 2.3."
+        fetched: "http://vizier.nao.ac.jp/ftp/cats/J/MNRAS/416/2840/ReadMe, 2026-11-03"
+    note: >-
+      Entries of one object, matched by a shared 2MASX name or by position, whose CMB-frame cz
+      differ by more than 1,000 km/s and five times their published errors in quadrature (none
+      reported counts as zero): one of them is a wrong or assigned redshift, or a background
+      object. 6dFGS flags its own disagreements beyond 330 km/s; 1,000 km/s is a pipeline choice
+      well above a group's velocity spread. Each row gives every entry's cz and kind of value:
+      2M++ clones (Cln = 1) are estimated, not measured. Looked at on release 4 (154 objects).
+
+  - id: redshift-conflicts-placed-high
+    title: No object of a redshift conflict placed by the higher redshift
+    severity: concern
+    select:
+      kind: query
+      shown: 10
+      sql: >-
+        WITH z AS (SELECT m.object_id, m.entry, m.n, m.cmb * 299792.458 AS cz,
+          CASE WHEN m.native_form = term('none_reported') THEN 0.0
+          ELSE (coalesce(m.native_minus, 0.0) + coalesce(m.native_plus, 0.0)) / 2.0
+            * CASE WHEN m.native_unit = term('kilometre_per_second') THEN 1.0 ELSE 299792.458 END
+          END AS sigma
+          FROM measurements m WHERE m.release = :release AND m.quantity = term('redshift')
+          AND m.cmb IS NOT NULL),
+        h AS (SELECT a.object_id, a.entry, a.n, a.cz, max(a.cz - b.cz) AS above FROM z a JOIN z b
+          ON b.object_id = a.object_id AND b.entry <> a.entry
+          WHERE a.cz - b.cz > 1000.0
+          AND (a.cz - b.cz) * (a.cz - b.cz) > 25.0 * (a.sigma * a.sigma + b.sigma * b.sigma)
+          GROUP BY a.object_id, a.entry, a.n)
+        SELECT o.id, round(h.cz) AS placed_cmb_cz, round(h.above) AS above_lowest_km_s,
+          (SELECT s.id || ':' || e.identifier FROM entries e JOIN sources s
+            ON s.release = e.release AND s.n = e.source WHERE e.release = o.release
+            AND e.object_id = o.id AND e.entry = o.preferred_entry) AS placed_by
+        FROM objects o JOIN h ON h.object_id = o.id AND h.entry = o.preferred_entry
+          AND h.n = o.preferred_n
+        WHERE o.release = :release AND o.preferred_quantity = term('redshift')
+        ORDER BY above_lowest_km_s DESC
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, decision Rank redshift distances by kind of value and velocity uncertainty"
+        locator: "spec/decisions/rank-redshift-distances-by-kind-of-value-and-velocity-uncertainty.yaml, context"
+        quote: >-
+          "In the worst five, NED agrees with 2MRS's lower value, yet the higher one placed the
+          object: ESO 460-G001 at 6dFGS's 54,179 km/s against 2MRS's 7,520 km/s."
+        fetched: "this repository, spec/decisions/rank-redshift-distances-by-kind-of-value-and-velocity-uncertainty.yaml"
+    note: >-
+      The objects of redshift-conflicts whose placing redshift is the higher of a conflicting
+      pair, by the same test (1,000 km/s and five times the published errors in quadrature).
+      Fractional distance uncertainty always chose the higher of two redshifts; the ranking now
+      orders redshifts by kind of value and published velocity error, which holds no preference
+      for either value, so what is left here is placed high by a measured redshift with the
+      smaller error. The release holds no independent redshift, such as NED's, to say which of
+      the two is right, so each is listed for a look rather than judged. Release 5: 141 of 154;
+      release 6: 47 of 154.
+
+  - id: nothing-inside-1-mpc-outside-local-group
+    title: Nothing outside the Local Group placed inside 1 Mpc
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id, round(o.distance_mpc, 3) AS mpc,
+        (SELECT group_concat(s.id || ':' || e.identifier, ', ') FROM entries e JOIN sources s
+         ON s.release = e.release AND s.n = e.source WHERE e.release = o.release AND e.object_id = o.id) AS entries
+        FROM objects o WHERE o.release = :release AND o.placed = 1
+        AND o.scale_domain IN (term('nearby_galaxies'), term('cosmic_web')) AND o.distance_mpc < 1.0
+        AND NOT EXISTS (SELECT 1 FROM entries e WHERE e.release = o.release AND e.object_id = o.id
+          AND e.source = source('mcconnachie-2012'))
+        AND NOT EXISTS (SELECT 1 FROM objects g JOIN entries e ON e.release = g.release
+          AND e.object_id = g.id AND e.source = source('mcconnachie-2012')
+          WHERE g.release = o.release AND sep_arcmin(o.ra, o.dec, g.ra, g.dec) <= 1.0)
+      exceptions:
+        - source: cosmicflows-4
+          identifier: "2557"
+          reason: "The CF4 group of M31 (its dominant member PGC 2557), centred 22.5′ from M31: the M31 subgroup of the Local Group."
+        - source: cosmicflows-4
+          identifier: "5064336"
+          reason: "A CF4 group of Leo I (PGC 29488) and Leo II (PGC 34176), satellites of the Milky Way, centred toward the Galactic centre at 0.12 Mpc."
+        - source: cosmicflows-4
+          identifier: "5067061"
+          reason: "The CF4 group of PGC 5067061 alone, at (45.348°, +40.988°), the position of Perseus I (And XXXIII), an M31 satellite McConnachie 2012 does not list."
+        - source: cosmicflows-4-galaxies
+          identifier: "5067061"
+          reason: "PGC 5067061 at (45.348°, +40.988°), the position of Perseus I (And XXXIII), an M31 satellite McConnachie 2012 does not list; placed by its CF4 TRGB distance."
+        - source: cosmicflows-4-galaxies
+          identifier: "5065677"
+          reason: "PGC 5065677 at (344.568°, +41.291°), the position of Lacerta I (And XXXI), an M31 satellite McConnachie 2012 does not list; placed by its CF4 TRGB distance."
+        - source: cosmicflows-4-galaxies
+          identifier: "5065678"
+          reason: "PGC 5065678 at (8.997°, +51.560°), the position of Cassiopeia III (And XXXII), an M31 satellite McConnachie 2012 does not list; placed by its CF4 TRGB distance."
+        - source: cosmicflows-4-galaxies
+          identifier: "5065056"
+          reason: "PGC 5065056 at (9.145°, +49.647°), 0.03′ from UNGC's And XXX (Cassiopeia II), an M31 satellite McConnachie 2012 does not list: a duplicate for local-group-duplicates, not a galaxy outside the Local Group."
+        - source: updated-nearby-galaxies
+          identifier: And XXX
+          reason: "And XXX (Cassiopeia II), an M31 satellite McConnachie 2012 does not list, at UNGC's TRGB distance of 0.68 Mpc."
+        - source: updated-nearby-galaxies
+          identifier: Bol520
+          reason: "Bol 520, an object of the Bologna catalogue of M31's clusters, in the M31 field at UNGC's TRGB distance of 0.63 Mpc."
+        - source: updated-nearby-galaxies
+          identifier: Segue 3
+          reason: "Segue 3, a star cluster of the Milky Way's halo at UNGC's 0.02 Mpc from its colour-magnitude diagram."
+        - source: cosmicflows-4-galaxies
+          identifier: "3085"
+          reason: "The SMC (PGC 3085), 1.8′ from McConnachie's SMC at the same 0.064 Mpc: a Local Group galaxy entered twice, not a galaxy outside the Local Group."
+    expect: { equals: 0 }
+    cite:
+      - paper: "McConnachie 2012, AJ 144, 4 (VizieR J/AJ/144/4)"
+        locator: "catalog, columns SubG and n_Name"
+        quote: >-
+          "n_Name (A3) Indicates whether the galaxy is associated with Milky Way (G), M31 (A), the
+          Local Group (L), or is nearby neighbors (N)"
+        fetched: "https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J/AJ/144/4/catalog&-out.all&-out.max=200, 2026-11-03T12:18:45"
+    note: >-
+      The Local Group is McConnachie's catalogue: an object with one of its entries, or within 1′
+      of one (the same galaxy entered again, or a CF4 group centred on it). Each exception was
+      looked at on release 3; its identification by position is ours, not fetched.
+
+  - id: nearby-galaxies-within-11-mpc
+    title: Every nearby_galaxies point within 11 Mpc
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT id, distance_mpc FROM objects WHERE release = :release AND placed = 1
+        AND scale_domain = term('nearby_galaxies') AND (distance_mpc > 11.0 OR distance_mpc IS NULL)
+    expect: { equals: 0 }
+    cite: &domains
+      - paper: "univ-server specification, Build octree tiles"
+        locator: "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+        quote: >-
+          "Each object belongs to one scale domain: stars where the source definition of the
+          catalogue entry that holds its preferred distance names stars, and otherwise nearby
+          galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby
+          Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the
+          distance came from."
+        fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+
+  - id: nearby-galaxies-from-no-star-source
+    title: No nearby_galaxies point placed by a star source
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id, s.id AS source FROM objects o JOIN entries e ON e.release = o.release
+        AND e.object_id = o.id AND e.entry = o.preferred_entry
+        JOIN sources s ON s.release = e.release AND s.n = e.source
+        WHERE o.release = :release AND o.placed = 1 AND o.scale_domain = term('nearby_galaxies')
+        AND s.scale_domain = 'stars'
+    expect: { equals: 0 }
+    cite: *domains
+
+  - id: cosmic-web-beyond-11-mpc
+    title: No cosmic_web point within 11 Mpc
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT id, distance_mpc FROM objects WHERE release = :release AND placed = 1
+        AND scale_domain = term('cosmic_web') AND (distance_mpc <= 11.0 OR distance_mpc IS NULL)
+    expect: { equals: 0 }
+    cite: *domains
+
+  - id: redshift-distances-carry-peculiar-velocity
+    title: Every redshift distance carries at least the 300 km/s term
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id, m.cmb, o.distance_mpc, o.distance_minus, o.distance_plus FROM objects o
+        JOIN measurements m ON m.release = o.release AND m.object_id = o.id
+        AND m.entry = o.preferred_entry AND m.quantity = o.preferred_quantity AND m.n = o.preferred_n
+        WHERE o.release = :release AND o.placed = 1 AND o.preferred_quantity = term('redshift')
+        AND (m.cmb IS NULL OR o.distance_minus IS NULL OR o.distance_plus IS NULL
+          OR o.distance_minus < 0.999 * (comoving_mpc(m.cmb)
+            - comoving_mpc(max(0.0, m.cmb - (1.0 + m.cmb) * 300.0 / 299792.458)))
+          OR o.distance_plus < 0.999 * (comoving_mpc(min(10.0, m.cmb + (1.0 + m.cmb) * 300.0 / 299792.458))
+            - comoving_mpc(m.cmb)))
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, choose-the-preferred-measurement; rules/ranking.yaml"
+        locator: "peculiar_velocity_km_s and its basis"
+        quote: >-
+          "a peculiar-velocity term, 300 km/s unless the release's ranking rule sets another";
+          rules/ranking.yaml: "peculiar_velocity_km_s: 300" and "a redshift distance always
+          carries the peculiar-velocity term"
+        fetched: "this repository, rules/ranking.yaml"
+    note: >-
+      Each side of a redshift distance's interval must be at least D(z) moved by the redshift
+      (1 + z) 300 km/s / c, under the release cosmology; 0.1% allows rounding.
+
+  - id: no-negative-or-missing-distances
+    title: No negative, zero or missing (NaN) placed distance or position
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT id, distance_mpc FROM objects WHERE release = :release AND placed = 1
+        AND (distance_mpc IS NULL OR NOT distance_mpc > 0 OR x IS NULL OR y IS NULL OR z IS NULL)
+    expect: { equals: 0 }
+    cite: &model
+      - paper: "univ-model cosmology"
+        locator: "crates/univ-model/src/cosmology.rs, MAX_REDSHIFT"
+        quote: >-
+          "The largest redshift this model answers for. [...] so the model stops at z = 10."
+          SQLite stores a NaN as NULL, so a NaN shows as a missing value.
+        fetched: "this repository, crates/univ-model/src/cosmology.rs"
+
+  - id: nothing-beyond-z-10
+    title: Nothing placed beyond z = 10
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT id, distance_mpc FROM objects WHERE release = :release AND placed = 1
+        AND distance_mpc > comoving_mpc(10.0)
+    expect: { equals: 0 }
+    cite: *model
+
+  - id: largest-tile
+    title: The largest tile within 1 MiB (QA-1)
+    severity: fail
+    select: { kind: largest_tile }
+    expect: { at_most: 1048576 }
+    cite:
+      - paper: "univ-server specification, QA-1"
+        locator: "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+        quote: "Univ Ingest shall keep every tile within 1 MiB."
+        fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+
+  - id: d1-budget
+    title: The manifest's D1 estimate within the 4.5 GB release budget
+    severity: fail
+    select: { kind: d1_estimate }
+    expect: { at_most: 4500000000 }
+    cite:
+      - paper: "univ-model release manifest, CON-3"
+        locator: "crates/univ-model/src/release/manifest.rs, RELEASE_BUDGET_BYTES"
+        quote: >-
+          "The most D1 storage a build lets one release take: under half the cap, so release n + 1
+          is published beside release n" (4,500,000,000 bytes; the CON-3 cap is 10 GB)
+        fetched: "this repository, crates/univ-model/src/release/manifest.rs"
+
+  - id: fingerprints
+    title: The manifest's per-table fingerprints match the loaded rows
+    severity: fail
+    select: { kind: fingerprints }
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-model release fingerprint"
+        locator: "crates/univ-model/src/release/fingerprint.rs"
+        quote: >-
+          "The fingerprint is the row count and, for each column, a total SQLite core computes"; the
+          lookup tables "are checked by their content too"
+        fetched: "this repository, crates/univ-model/src/release/fingerprint.rs"
+
+  # ------------------------------------------------------------------------------- reported
+  - id: counts-by-scale-domain
+    title: Objects per scale domain
+    severity: report
+    select:
+      kind: report
+      sql: >-
+        SELECT coalesce((SELECT term FROM terms t WHERE t.release = o.release AND t.id = o.scale_domain), '-')
+        AS scale_domain, placed, count(*) AS objects, min(distance_mpc) AS min_mpc, max(distance_mpc) AS max_mpc
+        FROM objects o WHERE o.release = :release GROUP BY 1, 2 ORDER BY 1, 2
+    cite: *domains
+
+  - id: unplaced-by-reason
+    title: Unplaced objects by reason
+    severity: report
+    select:
+      kind: report
+      sql: >-
+        SELECT (SELECT term FROM terms t WHERE t.release = o.release AND t.id = o.not_placed) AS reason,
+        count(*) AS objects FROM objects o WHERE o.release = :release AND o.placed = 0
+        GROUP BY 1 ORDER BY 2 DESC
+    cite: *domains

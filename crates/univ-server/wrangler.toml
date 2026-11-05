@@ -1,0 +1,57 @@
+# Univ Server's Worker, run locally with `wrangler dev` (`cargo xtask serve`); nothing is
+# deployed in the first version.
+#
+# DB and RELEASES name the same local database and bucket as the root wrangler.toml, which Univ
+# Ingest publishes to: local D1 keys its file by database_id, so the ids must match. The Worker
+# only reads them. LAYERS is the database of keys and layers, which only the Worker writes.
+name = "univ-server"
+main = "build/index.js"
+compatibility_date = "2026-11-01"
+
+# Wrangler runs the build from the directory it is started in: run it from this crate's
+# directory, as `cargo xtask serve` and `integration` do.
+[build]
+command = "worker-build --release"
+
+# A port of its own: 8787, Wrangler's default, is often taken by another project's Worker.
+# `cargo xtask integration` passes a free port instead.
+[dev]
+ip = "127.0.0.1"
+port = 8790
+
+[[d1_databases]]
+binding = "DB"
+database_name = "univ"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[[d1_databases]]
+binding = "LAYERS"
+database_name = "univ-layers"
+database_id = "00000000-0000-0000-0000-000000000001"
+migrations_dir = "../univ-api/migrations"
+
+[[r2_buckets]]
+binding = "RELEASES"
+bucket_name = "univ-releases"
+
+# One rate-limiting namespace for anonymous clients, keyed by address, and one per rate-limit
+# tier, keyed by API key (enforce-quotas-and-rate-limits).
+[[ratelimits]]
+name = "ANON"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+[[ratelimits]]
+name = "BASIC"
+namespace_id = "1002"
+simple = { limit = 300, period = 60 }
+
+[[ratelimits]]
+name = "STANDARD"
+namespace_id = "1003"
+simple = { limit = 1200, period = 60 }
+
+[[ratelimits]]
+name = "EXTENDED"
+namespace_id = "1004"
+simple = { limit = 6000, period = 60 }

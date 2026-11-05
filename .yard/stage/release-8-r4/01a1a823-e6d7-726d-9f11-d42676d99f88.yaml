@@ -1,0 +1,74 @@
+key: 01a1a823-e6d7-726d-9f11-d42676d99f88
+id: e7
+versions:
+  - key: 01a1a823-e6d7-726d-9f11-d43062ac52f5
+    at: 2026-11-04T19:58:07Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E7: stars in their colours"
+    goal: "Univ Explorer draws each star in the colour its colour index gives, and its panel gives spectral types, colour index and the paper of a researched distance"
+    status: planned
+blocks:
+  - key: 01a1a90e-bc52-721b-810e-ce1e4c6d4c19
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1a90e-bc52-721b-810e-ce1f68610736
+        at: 2026-11-05T00:14:37Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: publish
+        note: "Published as **publish 5** on `develop` (111f715, state root `66786da4…`), after `product/release-8` was merged in (5550f89) with R2 to R4 and E7 to E9. `loft verify` passes; each wave passed `cargo xtask check` and `cargo xtask integration` before its merge."
+        recorded:
+          commit: "97dc033e53fdbc927c80d67b225bb8e0663b7586"
+          branch: "product/release-8"
+          loft: 2.3.0-alpha.5
+          at: 2026-11-05T00:14:37Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 53,
+              "constraint": 8,
+              "criterion": 443,
+              "decision": 28,
+              "feature": 41,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 151
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "111f715bab8ee229409540e36c0700b4e9187d51",
+                "removed": [],
+                "revision": "111f715bab8ee229409540e36c0700b4e9187d51"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 5,
+                "publishedAt": "2026-11-05T00:13:08Z",
+                "stateRoot": "66786da4430c04f826108f7ed5495bdf44eed301c9956215cd57c4294147c18f"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "product/release-8",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

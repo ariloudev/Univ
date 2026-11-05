@@ -1,0 +1,95 @@
+id: gcns
+title: "Gaia Catalogue of Nearby Stars (Gaia EDR3)"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/A+A/649/A6/table1c"
+  constraints: []
+  # GaiaEDR3 (source_id, I19, never blank) in 12 slices, one per level-0 HEALPix pixel:
+  # source_id / 34359738368 is the level-12 HEALPix index (Gaia documentation). A range on this
+  # column was answered correctly by the IDIA mirror on 2026-11-03.
+  slices: { column: GaiaEDR3, from: 0, to: 6917529027641081855, step: 576460752303423488 }
+  rows: 331312
+cuts:
+  - "No server-side cut: every row of table1c (selected GCNS objects), 331,312 by the ReadMe and as served. table1r (rejected objects) is not taken."
+  - >-
+    The ReadMe estimates that 9% of these stars probably lie outside 100 pc; the distance
+    percentiles Dist16/Dist50/Dist84 come from the distance posterior and are estimates.
+  - "Dist* columns are in kpc (ReadMe and served units). pmRA is pmRA*cos(DE)."
+columns:
+  - { column: GaiaEDR3, field: identifier, unit: dimensionless }
+  - { column: RA_ICRS, field: right_ascension, unit: degree }
+  - { column: DE_ICRS, field: declination, unit: degree }
+  - { column: e_RA_ICRS, field: right_ascension_error, unit: milliarcsecond }
+  - { column: e_DE_ICRS, field: declination_error, unit: milliarcsecond }
+  - { column: Plx, field: parallax, unit: milliarcsecond }
+  - { column: e_Plx, field: parallax_error, unit: milliarcsecond }
+  - { column: pmRA, field: proper_motion_ra, unit: milliarcsecond_per_year }
+  - { column: pmDE, field: proper_motion_dec, unit: milliarcsecond_per_year }
+  - { column: RV, field: velocity, unit: kilometre_per_second }
+  - { column: e_RV, field: velocity_error, unit: kilometre_per_second }
+  - { column: Dist50, field: distance, unit: kiloparsec }
+  - { column: Dist16, field: distance_low, unit: kiloparsec }
+  - { column: Dist84, field: distance_high, unit: kiloparsec }
+  - { column: Gmag, field: magnitude, unit: magnitude }
+  - { column: BPmag, field: colour_magnitude, unit: magnitude }
+  - { column: RPmag, field: colour_magnitude, unit: magnitude }
+  - { column: GCNSprob, field: quality, unit: dimensionless }
+frame: icrs
+epoch: 2016.0
+citation: >-
+  Gaia Collaboration, Smart R.L., Sarro L.M., Rybizki J., Reyle C., Robin A.C., Hambly N.C.,
+  Abbas U., Barstow M.A., de Bruijne J.H.J., et al. 2021, "Gaia Early Data Release 3: The Gaia
+  Catalogue of Nearby Stars", A&A 649, A6. 2021A&A...649A...6G, doi:10.1051/0004-6361/202039498.
+  VizieR catalogue J/A+A/649/A6, doi:10.26093/cds/vizier.36490006.
+reference: { bibcode: "2021A&A...649A...6G", doi: "10.1051/0004-6361/202039498" }
+terms:
+  url: "https://www.cosmos.esa.int/web/gaia-users/license"
+  quote: >-
+    Gaia data are distributed under the CC BY-NC 3.0 IGO  license. For details and guidelines
+    concerning commercial use of the Gaia data, please see the Terms and Conditions for the use of
+    data in the ESA space science archives.
+  credit: >-
+    Cite Gaia Collaboration, Smart et al. 2021, A&A 649, A6. This work has made use of data from the
+    European Space Agency (ESA) mission Gaia ( https://www.cosmos.esa.int/gaia ), processed by the
+    Gaia Data Processing and Analysis Consortium (DPAC,
+    https://www.cosmos.esa.int/web/gaia/dpac/consortium ). Funding for the DPAC has been provided by
+    national institutions, in particular the institutions participating in the Gaia Multilateral
+    Agreement. This research has made use of the VizieR catalogue access tool, CDS, Strasbourg,
+    France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was
+    published in 2000, A&AS 143, 23.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    GCNS is built on Gaia EDR3, which ESA distributes under CC BY-NC 3.0 IGO: redistribution and
+    adaptation are allowed with attribution, for non-commercial use only. Whether the Gaia licence
+    formally binds this VizieR table is unverified, but it is the prudent reading, and CDS adds only
+    use in a scientific context with citation. Provisional: judged again before any public
+    deployment.
+scale_domain: stars
+# VizieR's mirrors, checked 2026-11-04: China-VO answers like CDS; NAO's database was unreachable
+# and IDIA broke off mid-answer, so they come last.
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+normalization:
+  colours:
+    # GCNS publishes the BP and RP magnitudes of Gaia EDR3, not their difference: BP-RP is
+    # derived from them.
+    - { bands: [BP, RP], from: [BPmag, RPmag] }
+  distances:
+    - value: Dist50
+      error: { credible_interval: { low: Dist16, high: Dist84, probability: 0.68 } }
+      kind: geometric
+      method: { other: "GCNS Bayesian distance posterior from the parallax, with a mock-catalogue prior" }
+      measure: euclidean
+      kind_of_value: estimated
+      basis: >-
+        J/A+A/649/A6 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/A+A/649/A6/ReadMe,
+        2026-11-03): Dist16, Dist50 and Dist84 are the "16%", "50%" and "84%" distances of the
+        distance probability function, calculated "using Bayesian procedures and mock catalogues
+        for the prediction of the priors" for objects selected by parallax. The ReadMe names no
+        photometric term, so the kind is geometric.

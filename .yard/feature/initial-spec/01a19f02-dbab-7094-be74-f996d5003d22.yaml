@@ -1,0 +1,107 @@
+key: 01a19f02-dbab-7094-be74-f996d5003d22
+id: research
+versions:
+  - key: 01a19f02-dbab-7094-be74-f999fc6b160e
+    at: 2026-11-03T01:25:27Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Research prior Univ work"
+    goal: "What the earlier Univ sessions and the cosmic-newsroom experiment tried, the data sources they used and what they learned is summarized for scoping"
+    status: active
+  - key: 01a19f06-6833-7679-b0af-851fead28437
+    at: 2026-11-03T01:29:19Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Research prior Univ work"
+    goal: "What the earlier Univ sessions and the cosmic-newsroom experiment tried, the data sources they used and what they learned is summarized for scoping"
+    status: done
+blocks:
+  - key: 01a19f04-00fe-7617-a342-adf556b1386a
+    id: cf-workers-constraint
+    kind: note
+    versions:
+      - key: 01a19f04-00ff-750e-9251-794d904e4156
+        at: 2026-11-03T01:26:42Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Hosting: Cloudflare Workers"
+        markdown: |-
+          The person wants univ-server to run on **Cloudflare Workers** and to avoid building complex infrastructure for now.
+
+          What that implies for a Rust server, to be confirmed in the scope interview:
+
+          - It builds to `wasm32-unknown-unknown` with `workers-rs` (the `worker` crate), with no threads, no local filesystem and no native-only crates.
+          - Storage comes from Cloudflare's bindings: D1 (SQLite), R2 (objects), KV, Durable Objects. Hyperdrive is an option if a Postgres database is ever needed.
+          - Ingestion is limited by Workers' CPU time and memory. Heavy steps such as bulk SDSS pulls or Cosmicflows-4 FITS grids may need to run outside Workers (locally, in CI or in Cloudflare Containers) and publish their results to R2 or D1.
+        tone: info
+  - key: 01a19f04-c1e5-7624-b0f8-22cff17f383d
+    id: offline-ingestion
+    kind: note
+    versions:
+      - key: 01a19f04-c1e5-7624-b0f8-22d04a2b6777
+        at: 2026-11-03T01:27:31Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Ingestion runs offline"
+        markdown: |-
+          Ingestion will be a **local CLI** that downloads, ETLs and uploads the data. Only serving runs on Workers.
+
+          That suggests a Cargo workspace:
+
+          - **`univ-model`**: the shared domain types and normalization, compiled for both native and WebAssembly.
+          - **`univ-server`**: the Worker, built with `workers-rs` for `wasm32-unknown-unknown`.
+          - **`univ-ingest`**: a native CLI. It has no Workers limits, so it can use threads and the local filesystem, cache downloads, and read FITS, ZIP and NPZ files.
+
+          The CLI uploads to R2 and D1, and Workers serves what it uploaded.
+        tone: info
+  - key: 01a19f06-6833-7679-b0af-85164d1d0f2f
+    id: research-findings
+    kind: note
+    versions:
+      - key: 01a19f06-6833-7679-b0af-851e6a5ba09d
+        at: 2026-11-03T01:29:19Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "What the earlier Univ work already established"
+        markdown: |-
+          Sources: the earlier Univ session (2 Nov 16:52 to 3 Nov 01:10) and the `experiments/cosmic-newsroom` repository.
+
+          ### Data already fetched, with the lessons learned
+
+          | Source | Access | Size used | Lesson |
+          |---|---|---|---|
+          | SDSS DR17 spectroscopic galaxies | SkyServer SQL REST | 1,097,305 galaxies, z 0.005–0.35 | Split the query with `specObjID % 17` (an odd modulus) |
+          | 6dFGS DR3 (VizieR VII/259) | VizieR TSV, in slices of cz | 112,206 | Covers the southern sky that SDSS missed |
+          | BOSS DR17 (Great Wall region) | SkyServer, in strips of RA | 40,679, z 0.40–0.54 | |
+          | Cosmicflows-4 (J/ApJ/944/94) | VizieR | 55,877, H0 = 74.6 | Its SGX/Y/Z columns are in km/s although labelled Mpc; 158 group positions are bad |
+          | McConnachie 2012, UNGC 2013 | VizieR | 102 / 589 of 869 | Distances from the Hubble law or group membership were dropped |
+          | CF4++ density grid 2025, Laniakea basins 2023 | Downloads of NPZ (168 MB) and FITS zip (67 MB) | 128³ grids | The two files order their axes oppositely; the 2023 delta FITS was dropped after a galaxy correlation check gave −0.08 |
+          | JPL Horizons, Hipparcos, Gaia DR3, NED | APIs | 30 landmarks | NED and CDS were often down; the SAAO VizieR mirror worked |
+          | GCN, GraceDB, MPEC, TNS | JSON and HTML | 26 events | Events carry error regions, credible areas and versioned updates |
+
+          Rejected sources: DESI DR1 (too large, mostly the same sky as SDSS), 2MRS (its licence forbids redistribution), and the 2M++ density field (files too large).
+
+          ### Normalization rules to carry over
+
+          - **Positions:** stored as ICRS/J2000 as measured, with derived galactic and supergalactic frames kept next to the native values.
+          - **Distances:** a typed `Distance` record with a kind (parallax, redshift, comoving, standard candle, …), an interval in its native unit, a method, and a cosmology wherever the value depends on one. The default cosmology is Planck 2018. Sizes given in h⁻¹ Mpc are rescaled.
+          - **Kinds of value:** measured, estimated, inferred and reconstructed stay distinct. A reconstruction is never drawn as galaxies.
+          - **Provenance:** every dataset has a manifest with its query, cuts, SHA-256, credit and sky coverage. Fetches must survive failures: retries, mirrors, a per-chunk cache.
+
+          ### What univ-server inherits
+
+          - The newsroom ships 7.4 MB of static `.bin` files of (ra, dec, z) stored as uint16. That is too coarse to cross-match, and there is no tiling or level of detail.
+          - The earlier session's last open question was whether all the sky data could go in one normalized store. The proposed answer was **layers**: sources, measurements, identities (cross-matches), fields, shapes, claims and views.
+          - The newsroom spec already describes server components univ-server could take over: source connectors, a normalizer, a spatial knowledge service and a catalog service.
+          - **New with univ-server:** layers that clients author. These were never discussed in the earlier work.
+        tone: success

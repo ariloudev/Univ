@@ -1,0 +1,52 @@
+# Dschubba, delta Scorpii, B0.3IV Be star in an eccentric decade-long binary: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 78401
+name: Dschubba
+alternative_names: ["delta Scorpii", "del Sco", "7 Sco", "HD 143275"]
+papers:
+  - id: tycner-2011
+    reference: "Tycner, Ames, Zavala, Hummel, Benson & Hutter 2011, ApJ 729, L5"
+    title: "The Revised Orbit of the δ Sco System"
+    bibcode: 2011ApJ...729L...5T
+    doi: 10.1088/2041-8205/729/1/L5
+    arxiv: "1101.5152"
+    read: "arXiv PDF of 1101.5152v1, full text extracted with pypdf; Sects. 2 and 3.1 (PDF page 4) read"
+  - id: tango-2009
+    reference: "Tango, Davis, Jacob, Mendez, North, O'Byrne, Seneta & Tuthill 2009, MNRAS 396, 842"
+    title: "A new determination of the orbit and masses of the Be binary system δ Scorpii"
+    bibcode: 2009MNRAS.396..842T
+    doi: 10.1111/j.1365-2966.2009.14272.x
+    arxiv: "0811.4004"
+    read: "arXiv PDF of 0811.4004v1, full text extracted with pypdf; abstract and Sects. 5-6 read"
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos census of the nearby OB associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, full text extracted with pypdf; Sect. 4.2 Upper Scorpius read"
+parallax:
+  value: 7.4
+  unit: milliarcsecond
+  kind: estimated
+  uncertainty: { form: symmetric, sigma: 0.2 }
+  cite:
+    paper: tycner-2011
+    page: 4
+    sentence: "The mass of the primary is derived as 12.4 ± 0.8 M⊙, and the dynamical parallax is 7.4 ± 0.2 mas."
+  distance_kind: parallax
+  method: "orbital (dynamical) parallax from the NPOI interferometric orbit combined with published radial velocities, with the secondary's mass held fixed"
+disputes:
+  - claim: "Tango et al. estimate a dynamical parallax of 7.03 ± 0.15 mas from the SUSI orbit with estimated masses."
+    cite:
+      paper: tango-2009
+      page: 1
+      sentence: "The dynamical parallax is estimated to be 7.03 ± 0.15 mas, which is in good agreement with the revised HIPPARCOS parallax."
+notes: >-
+  The parallax error is under a tenth of the parallax. The fit is not a pure double-lined orbital
+  parallax: Tycner et al. held the secondary's mass fixed at the value found by Tango et al. and
+  fitted the primary's mass and the seven orbital elements to astrometry plus radial velocities
+  of Miroshnichenko et al. Tycner et al. describe their orbit as "the best orbital parameters to
+  date"; it supersedes Tango et al. 2009, whose value is in mild tension with it. Both agree with
+  the Hipparcos-2 parallax within its large error. De Zeeuw et al. 1999 did not select δ Sco as an
+  Upper Scorpius member because its orbital motion distorts the Hipparcos proper motion, so no
+  group distance is used.

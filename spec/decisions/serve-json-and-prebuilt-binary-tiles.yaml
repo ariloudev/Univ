@@ -1,0 +1,64 @@
+key: 01a19f25-5955-701e-b3cf-ddfbab29b988
+slug: serve-json-and-prebuilt-binary-tiles
+title: "Serve objects as JSON and bulk points as pre-built binary tiles"
+context: "Clients need both rich records of single objects and the positions of millions of galaxies and stars, and a Worker should not compute large responses per request."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddfee87ffb00
+  outcome: "Records are JSON, and bulk points are binary tiles that Univ Ingest builds and the Worker streams."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddfc369b4e6b
+    kind: local
+    label: "Bulk scale"
+    statement: "A client can draw millions of points without downloading all of them."
+  - key: 01a19f25-5955-701e-b3cf-ddfde9d8a31a
+    kind: local
+    label: "Cheap serving"
+    statement: "Each request costs the Worker little CPU."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddfee87ffb00
+    title: "JSON and tiles"
+    description: "A JSON API for records, plus binary tiles in R2 at several levels of detail."
+  - key: 01a19f25-5955-701e-b3cf-ddff4bab4797
+    title: "JSON and whole files"
+    description: "One binary file per survey, streamed from R2."
+  - key: 01a19f25-5955-701e-b3cf-de001743892d
+    title: "Query API"
+    description: "Cone, box and redshift queries answered from D1 for every point."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddfee87ffb00
+    driver: 01a19f25-5955-701e-b3cf-ddfc369b4e6b
+    rating: supports
+    rationale: "levels of detail load what the view needs"
+  - option: 01a19f25-5955-701e-b3cf-ddfee87ffb00
+    driver: 01a19f25-5955-701e-b3cf-ddfde9d8a31a
+    rating: supports
+    rationale: "tiles stream from R2 unchanged"
+  - option: 01a19f25-5955-701e-b3cf-ddff4bab4797
+    driver: 01a19f25-5955-701e-b3cf-ddfc369b4e6b
+    rating: conflicts
+    rationale: "the client downloads every point"
+  - option: 01a19f25-5955-701e-b3cf-ddff4bab4797
+    driver: 01a19f25-5955-701e-b3cf-ddfde9d8a31a
+    rating: supports
+    rationale: "files stream unchanged"
+  - option: 01a19f25-5955-701e-b3cf-de001743892d
+    driver: 01a19f25-5955-701e-b3cf-ddfc369b4e6b
+    rating: neutral
+    rationale: "any volume can be asked for"
+  - option: 01a19f25-5955-701e-b3cf-de001743892d
+    driver: 01a19f25-5955-701e-b3cf-ddfde9d8a31a
+    rating: conflicts
+    rationale: "bulk queries cost D1 reads and Worker CPU on every request"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-de01d5734862
+    kind: obligation
+    statement: "The tile format is specified, versioned and published with a reference decoder."
+  - key: 01a19f25-5955-701e-b3cf-de02237447f0
+    kind: cost
+    statement: "Changing how points are laid out needs a new release."
+subjects:
+  - role: affected
+    node: 01a19f1f-9fd6-77e0-931c-f98491ea6241
+  - role: outcome
+    node: 01a19f1f-9fd6-77e0-931c-f99de4f76490

@@ -1,0 +1,53 @@
+#
+#   VizieR Astronomical Server vizier.nao.ac.jp
+#    Date: 2026-11-04T14:53:57 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-04T14:53:57	  Query execution date
+#INFO	request=https://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=I%2F311%2Fhip2&-out=HIP%2CRArad%2CDErad%2Ce_RArad%2Ce_DErad%2CPlx%2Ce_Plx%2CpmRA%2CpmDE%2CHpmag%2CSn%2CB-V%2Ce_B-V%2CV-I&-out.max=5&HIP=1..30000	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_1311
+#Name: I/311
+#Title: Hipparcos, the New Reduction (van Leeuwen, 2007)
+#INFO	ivoid=ivo://cds.vizier/i/311	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/i/311	    IVOID of underlying data collection
+#INFO	creator=van Leeuwen F.	    First author or institution
+#INFO	cites=bibcode:2007A&A...474..653V	    Article or Data origin sources
+#INFO	journal=A&A	    Journal name
+#INFO	original_date=2007	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/I/311	    Dataset landing page
+#INFO	publication_date=2017-12-22	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Coosys	J2000_1991.250:	eq_FK5 J2000
+#Table	I_311_hip2:
+#Name: I/311/hip2
+#Title: The Astrometric Catalogue
+#Column	HIP	(I6)	Hipparcos identifier	[ucd=meta.id;meta.main]
+#Column	RArad	(F12.8)	Right Ascension in ICRS, Ep=1991.25	[ucd=pos.eq.ra;meta.main]
+#Column	DErad	(F12.8)	Declination in ICRS, Ep=1991.25	[ucd=pos.eq.dec;meta.main]
+#Column	e_RArad	(F6.2)	Formal error on RArad	[ucd=stat.error]
+#Column	e_DErad	(F6.2)	Formal error on DErad	[ucd=stat.error]
+#Column	Plx	(F7.2)	Parallax	[ucd=pos.parallax]
+#Column	e_Plx	(F6.2)	Formal error on Plx	[ucd=stat.error;pos.parallax]
+#Column	pmRA	(F8.2)	Proper motion in Right Ascension	[ucd=pos.pm;pos.eq.ra]
+#Column	pmDE	(F8.2)	Proper motion in Declination	[ucd=pos.pm;pos.eq.dec]
+#Column	Hpmag	(F7.4)	Hipparcos magnitude	[ucd=phot.mag;em.opt.V]
+#Column	Sn	(I3)	[0,159] Solution type new reduction (1)	[ucd=meta.id;stat.fit]
+#Column	B-V	(F6.3)	Colour index	[ucd=phot.color;em.opt.B;em.opt.V]
+#Column	e_B-V	(F6.3)	Formal error on colour index	[ucd=stat.error;phot.color;em.opt.B]
+#Column	V-I	(F6.3)	V-I colour index	[ucd=phot.color;em.opt.V;em.opt.I]
+HIP	RArad	DErad	e_RArad	e_DErad	Plx	e_Plx	pmRA	pmDE	Hpmag	Sn	B-V	e_B-V	V-I
+ 	deg	deg	mas	mas	mas	mas	mas/yr	mas/yr	mag	 	mag	mag	mag
+------	------------	------------	------	------	-------	------	--------	--------	-------	---	------	------	------
+     1	000.00091185	+01.08901332	  1.29	  0.66	   4.55	  1.33	   -4.55	   -1.19	 9.2043	  5	 0.482	 0.025	 0.550
+     2	000.00379738	-19.49883738	  0.95	  0.53	  20.85	  1.13	  182.88	   -1.31	 9.4017	 75	 0.999	 0.002	 1.040
+     3	000.00500794	+38.85928608	  0.31	  0.21	   2.26	  0.36	    4.27	   -3.43	 6.6081	  5	-0.019	 0.004	 0.000
+     4	000.00838188	-51.89354611	  0.40	  0.47	   7.45	  0.77	   62.64	    0.19	 8.1498	  5	 0.370	 0.009	 0.430
+     5	000.00996502	-40.59122445	  0.55	  0.50	   3.88	  0.95	    1.89	    8.06	 8.7077	  5	 0.902	 0.013	 0.900
+

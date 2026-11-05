@@ -1,0 +1,64 @@
+key: 01a19f20-1cb3-7721-97a0-4f5588b2c1c4
+slug: revise-or-retract-an-item
+name: "Revise or retract an item"
+body: |
+  Changing what an item says without erasing what it said before: an update brings new
+  information, a correction fixes an error, and a retraction withdraws the item with its reason.
+  Every version stays readable.
+realizes:
+  - 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfeda1fea21
+requirements:
+  - key: 01a19f20-1cb3-7721-97a0-4f5679ede9f1
+    statement:
+      form: event_driven
+      when: "the owning key revises an item"
+      system: "Univ Server"
+      shall: "store the revised content as the item's next version, marked as an update or a correction."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f5725b2fb75
+        name: "The new version's number is one more than the version it replaces."
+      - key: 01a19f20-1cb3-7721-97a0-4f583c9b45b2
+        name: "A correction names the version it corrects and summarises what was wrong."
+      - key: 01a19f20-1cb3-7721-97a0-4f59bc649213
+        name: "Earlier versions remain readable and unchanged."
+      - key: 01a19f20-1cb3-7721-97a0-4f5a9882c425
+        name: "The revision advances the layer's change sequence by one."
+  - key: 01a19f20-1cb3-7721-97a0-4f5b6d938672
+    statement:
+      form: event_driven
+      when: "the owning key retracts an item"
+      system: "Univ Server"
+      shall: "store a new version that marks the item retracted with its reason."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f5c49cf499d
+        name: "A retracted item no longer appears among the layer's current items or in query results."
+      - key: 01a19f20-1cb3-7721-97a0-4f5d41d72b6a
+        name: "A read of a retracted item returns its retraction version, with the reason, and its earlier versions."
+      - key: 01a19f20-1cb3-7721-97a0-4f5e403c1124
+        name: "The retraction advances the layer's change sequence by one."
+  - key: 01a19f20-1cb3-7721-97a0-4f5fb5bb46e4
+    statement:
+      form: unwanted
+      if: "a revision or retraction names a version other than the item's current one"
+      system: "Univ Server"
+      shall: "refuse it as a conflict and leave the item unchanged."
+    criteria:
+      - key: 01a19f20-1cb3-7721-97a0-4f608f85d888
+        name: "The response status is 409 with problem details that give the item's current version."
+  - key: 01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5
+    statement:
+      form: unwanted
+      if: "a revision fails any check that publishing an item applies"
+      system: "Univ Server"
+      shall: "refuse the revision and name each check that failed."
+    criteria:
+      - key: 01a19f2c-e7d7-7285-bdfa-6f3d2ddc2ce9
+        name: "A revision is checked for its geometry, time records, kind of value, links and sources exactly as a published item is."
+      - key: 01a19f2c-e7d7-7285-bdfa-6f3ebe384e68
+        name: "A revision that cites no source is refused."
+      - key: 01a19f2c-e7d7-7285-bdfa-6f3f361ed80c
+        name: "The problem details list each failing field by its JSON pointer, with the reason it failed."
+      - key: 01a19f2c-e7d7-7285-bdfa-6f40cb89a4da
+        name: "Nothing is stored, the item keeps its current version and the layer's change sequence is unchanged."

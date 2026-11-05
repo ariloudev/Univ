@@ -1,0 +1,90 @@
+id: sixdfgs-dr3
+title: "6dF Galaxy Survey DR3 (final release) redshift catalogue"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "VII/259/6dfgs"
+  constraints: []
+  # Target is I6, never blank, [2/179260] per the ReadMe; recno cannot slice (a recno range
+  # was ignored by the IDIA mirror on 2026-11-03 and the whole table came back).
+  slices: { column: Target, from: 2, to: 179260, step: 30000 }
+  rows: 124647
+cuts:
+  - "No server-side cut: every row of VII/259/6dfgs, 124,647 by the ReadMe and as served."
+  - "q_cz is kept, not filtered: 3 = probable, 4 = reliable, 6 = Galactic, 9 = SDSS/ZCAT (ReadMe Note 5)."
+  - "r_cz codes the redshift source: 126 = 6dFGS, 250 = SDSS, 392 = 2dFGRS, 1..99 = ZCAT (ReadMe Note 4)."
+  - "The ReadMe does not name the frame of cz (unverified); the per-spectrum z in VII/259/spectra is heliocentric."
+columns:
+  - { column: 6dFGS, field: identifier, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: cz, field: velocity, unit: kilometre_per_second }
+  - { column: e_cz, field: velocity_error, unit: kilometre_per_second }
+  - { column: q_cz, field: quality, unit: dimensionless }
+  - { column: bJmag, field: magnitude, unit: magnitude }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Jones D.H., Read M.A., Saunders W., Colless M., Jarrett T., Parker Q.A., Fairall A.P., Mauch T.,
+  Sadler E.M., Watson F.G., et al. 2009, "6dF galaxy survey final redshift release", MNRAS 399,
+  683. 2009MNRAS.399..683J,
+  doi:10.1111/j.1365-2966.2009.15338.x. VizieR catalogue VII/259. The 6dFGS team also asks for the
+  original survey paper, Jones et al. 2004, MNRAS 355, 747.
+reference: { bibcode: "2009MNRAS.399..683J", doi: "10.1111/j.1365-2966.2009.15338.x" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. The 6dFGS team (http://www-wfau.roe.ac.uk/6dFGS/) asks: "Any use of these data
+    should explicitly state that they come from the Final Release of 6dFGS and cite both the 6dGS
+    DR3 paper (Jones et al 2009) as well as the original 6dFGS survey paper (Jones et al 2004,
+    MNRAS 355, 747)."
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS gives VizieR data as free of usage in a scientific context provided the original authors and
+    publication are cited, and neither the ReadMe nor the landing-page metadata carries a
+    catalogue-specific licence. The 6dFGS team asks only for attribution to the Final Release and the
+    two Jones et al. papers; whether a public hobby release counts as a "scientific context" is a
+    judgement the terms do not settle. Provisional: judged again before any public deployment.
+scale_domain: cosmic_web
+# VizieR's mirrors, checked 2026-11-04: China-VO answers like CDS; NAO's database was unreachable
+# and IDIA broke off mid-answer, so they come last.
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+fixes:
+  - defect: >-
+      e_cz = 0 does not mean zero uncertainty: 6dFGS redshifts deemed unsuitable for extragalactic
+      use have had their uncertainty set to 0 km/s.
+    change: >-
+      Rows with e_cz = 0 are treated as unsuitable redshifts and left out with that reason; no
+      redshift is published with a zero uncertainty.
+    action: { kind: zero_error_leaves_out, columns: [e_cz], reason: unsuitable_redshift }
+    evidence: >-
+      VII/259 ReadMe Note (3): "6dFGS redshifts deemed unsuitable for extragalactic use (either
+      because of measurement uncertainty or spectral classification) have had their uncertainties
+      set to 0km/s." (read from http://vizier.nao.ac.jp/ftp/cats/VII/259/ReadMe, 2026-11-03)
+normalization:
+  redshifts:
+    - column: cz
+      error: e_cz
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        VII/259 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/VII/259/ReadMe, 2026-11-03): cz
+        is the "Best available combined recession velocity cz", obtained "by error-weighting
+        individual redshifts" (Note 3), and the per-spectrum z of the same catalogue is
+        "Heliocentric redshift". The ReadMe does not name the frame of cz itself: heliocentric is
+        inferred from its parts.

@@ -1,0 +1,6 @@
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-dbg-in-tests = true
+# Proper names that doc comments write as prose, beside clippy's own list ("..").
+doc-valid-idents = ["OpenAPI", ".."]

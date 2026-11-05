@@ -1,0 +1,102 @@
+key: 01a19f49-9217-76e9-acad-337b25f3204e
+id: wave-8
+versions:
+  - key: 01a19f49-9217-76e9-acad-3387b78b1e72
+    at: 2026-11-03T02:42:41Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W8 First real release"
+    goal: "Release 1 is built from the real sources, published locally and checked against the science (stage/ingest-w8)"
+    status: planned
+  - key: 01a1a0d1-71e8-75ea-8392-336e8a6cb3f7
+    at: 2026-11-03T09:50:43Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "W8 First real release"
+    goal: "All 18 sources fetched for real, release 1 built and published to local D1 and R2, and its science checked against published values (stage/ingest-w8)"
+    status: active
+blocks:
+  - key: 01a1a0d1-71e8-75ea-8392-336bf985c92c
+    id: wave-8-defaults
+    kind: note
+    versions:
+      - key: 01a1a0d1-71e8-75ea-8392-336fba11ad3b
+        at: 2026-11-03T09:50:43Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Release 1 runs on the recommended defaults"
+        markdown: |-
+          The three questions above are still open. Release 1 is built on the recommended answers:
+          - **Gaia cut:** G < 10.
+          - **Licences:** credit now, re-judged later.
+          - **SDSS:** all spectra.
+
+          If you choose otherwise, the affected sources are fetched again and release 2 is built. Release numbers are cheap and ids stay stable.
+        tone: warning
+  - key: 01a1a2ad-4898-73c4-8376-e0932a318ded
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1a2ad-4898-73c4-8376-e09499ca8a99
+        at: 2026-11-03T18:30:27Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: publish
+        note: "Univ Ingest (W0–W8) merged into `develop` as `a9bf48c` and published as **sequence 2** (`156d24c`, state root f809d6d3…). New labels run up to AC-325, CMP-47 and ADR-26. All 11 gates pass on `develop`, `loft verify` included."
+        recorded:
+          commit: "156d24c67666827d8fca80ec058a0d1df9a77ed5"
+          branch: "develop"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T18:30:27Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 47,
+              "constraint": 8,
+              "criterion": 325,
+              "decision": 26,
+              "feature": 33,
+              "feature_group": 11,
+              "product": 2,
+              "quality_attribute": 3,
+              "requirement": 114
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "156d24c67666827d8fca80ec058a0d1df9a77ed5",
+                "removed": [],
+                "revision": "156d24c67666827d8fca80ec058a0d1df9a77ed5"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 2,
+                "publishedAt": "2026-11-03T18:26:57Z",
+                "stateRoot": "f809d6d341a5bae88459ad23c3abf1629e161ed74c5cda771fc8465b01c8d2cb"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

@@ -1,0 +1,62 @@
+key: 01a19f25-5955-701e-b3cf-dd82152f55d7
+slug: cap-volume-queries-and-return-covering-tiles
+title: "Cap bounded volume queries and return the tiles that cover the volume"
+context: "The owner wants to ask what the server knows within a volume, but a large volume can hold millions of galaxies."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dd85e638e45d
+  outcome: "A volume query returns at most 10,000 results in pages of 1,000, and at most 4,096 covering octree nodes per scale domain."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dd833128b5fc
+    kind: local
+    label: "Bounded cost"
+    statement: "No single request can cost the Worker unbounded work."
+  - key: 01a19f25-5955-701e-b3cf-dd846140df68
+    kind: local
+    label: "Named results"
+    statement: "A client can list what is in a volume by name."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dd85e638e45d
+    title: "Capped objects and tiles"
+    description: "Paged objects, structures and items up to a cap, plus the covering tiles for bulk points."
+  - key: 01a19f25-5955-701e-b3cf-dd86fe315116
+    title: "Everything streamed"
+    description: "Every matching point streamed back."
+  - key: 01a19f25-5955-701e-b3cf-dd87b084cf07
+    title: "Counts and tiles"
+    description: "Counts per kind and the covering tiles only."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dd85e638e45d
+    driver: 01a19f25-5955-701e-b3cf-dd833128b5fc
+    rating: supports
+    rationale: "pages and the total are capped"
+  - option: 01a19f25-5955-701e-b3cf-dd85e638e45d
+    driver: 01a19f25-5955-701e-b3cf-dd846140df68
+    rating: supports
+    rationale: "named results are listed"
+  - option: 01a19f25-5955-701e-b3cf-dd86fe315116
+    driver: 01a19f25-5955-701e-b3cf-dd833128b5fc
+    rating: conflicts
+    rationale: "a large volume streams millions of rows"
+  - option: 01a19f25-5955-701e-b3cf-dd86fe315116
+    driver: 01a19f25-5955-701e-b3cf-dd846140df68
+    rating: supports
+    rationale: "everything is listed"
+  - option: 01a19f25-5955-701e-b3cf-dd87b084cf07
+    driver: 01a19f25-5955-701e-b3cf-dd833128b5fc
+    rating: supports
+    rationale: "only counts are computed"
+  - option: 01a19f25-5955-701e-b3cf-dd87b084cf07
+    driver: 01a19f25-5955-701e-b3cf-dd846140df68
+    rating: conflicts
+    rationale: "nothing is listed by name"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dd882c1a454b
+    kind: cost
+    statement: "A dense volume reports truncation, and the client turns to tiles for the rest."
+  - key: 01a19f25-5955-701e-b3cf-dd8942df5a62
+    kind: obligation
+    statement: "The release holds a cell index in D1 for these queries."
+subjects:
+  - role: outcome
+    node: 01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00

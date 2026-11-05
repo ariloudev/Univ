@@ -1,0 +1,64 @@
+key: 01a19f25-5955-701e-b3cf-ddaac3293354
+slug: generate-openapi-from-the-rust-types
+title: "Generate the OpenAPI document from the Rust types"
+context: "TypeScript clients need the API's types, and the model lives in Rust."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddad43a135a5
+  outcome: "Univ Server serves an OpenAPI 3.1 document generated from univ-model, and the tile format ships with a reference TS decoder."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddabfbd08706
+    kind: local
+    label: "One source of truth"
+    statement: "Types are written once."
+  - key: 01a19f25-5955-701e-b3cf-ddac994c7e91
+    kind: local
+    label: "Light clients"
+    statement: "Clients do not ship a large runtime."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddad43a135a5
+    title: "OpenAPI from Rust"
+    description: "An OpenAPI 3.1 document generated from univ-model, and a TS client generated from it."
+  - key: 01a19f25-5955-701e-b3cf-ddae977cbcdb
+    title: "univ-model as WASM"
+    description: "The model compiled to a WebAssembly package for clients."
+  - key: 01a19f25-5955-701e-b3cf-ddafb59203a1
+    title: "Handwritten TS"
+    description: "TS types maintained by hand."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddad43a135a5
+    driver: 01a19f25-5955-701e-b3cf-ddabfbd08706
+    rating: supports
+    rationale: "the document is generated"
+  - option: 01a19f25-5955-701e-b3cf-ddad43a135a5
+    driver: 01a19f25-5955-701e-b3cf-ddac994c7e91
+    rating: supports
+    rationale: "a generated client is plain TS"
+  - option: 01a19f25-5955-701e-b3cf-ddae977cbcdb
+    driver: 01a19f25-5955-701e-b3cf-ddabfbd08706
+    rating: supports
+    rationale: "the same code runs in the client"
+  - option: 01a19f25-5955-701e-b3cf-ddae977cbcdb
+    driver: 01a19f25-5955-701e-b3cf-ddac994c7e91
+    rating: conflicts
+    rationale: "clients download the WebAssembly module"
+  - option: 01a19f25-5955-701e-b3cf-ddafb59203a1
+    driver: 01a19f25-5955-701e-b3cf-ddabfbd08706
+    rating: conflicts
+    rationale: "two copies drift"
+  - option: 01a19f25-5955-701e-b3cf-ddafb59203a1
+    driver: 01a19f25-5955-701e-b3cf-ddac994c7e91
+    rating: supports
+    rationale: "plain TS"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddb001433e93
+    kind: obligation
+    statement: "Every route the Worker serves appears in the document."
+  - key: 01a19f25-5955-701e-b3cf-ddb14ecc006c
+    kind: cost
+    statement: "Coordinate transforms are not shared with clients as code."
+subjects:
+  - role: affected
+    node: 01a19f20-8e6c-7039-b16f-abfe741c359f
+  - role: outcome
+    node: 01a19f20-8e6c-7039-b16f-ac05a289fbdb

@@ -1,0 +1,94 @@
+id: twompp-catalogue
+title: "2M++ galaxy redshift catalogue"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/MNRAS/416/2840/catalog"
+  constraints: []
+  rows: 72973
+cuts:
+  - "No server-side cut: every row of the galaxy table, 72,973 by the ReadMe and as served (69,160 real galaxies and 3,813 fake ZoA galaxies)."
+  - >-
+    Fake Zone of Avoidance galaxies are flagged by Ref = "zoa" (equivalently a Name starting
+    "ZOA"); the ZoA flag column of the ReadMe is not served. They are simulated fill-in objects and
+    are labelled simulated or left out, never published as galaxies.
+  - "Cln = 1 marks a redshift obtained by the cloning procedure of Section 2.3: an assigned redshift, not a measurement."
+  - "GID is the group id from Section 4 (nullable); the group table J/MNRAS/416/2840/group is not taken."
+  - >-
+    RAdeg/DEdeg are not served; _RAJ2000/_DEJ2000 equal VizieR's _RA/_DE, which for real galaxies
+    match the 2MASS name to 5 decimals and for ZoA fakes carry the ReadMe's 2 decimals.
+  - "HV is heliocentric; Vcmb (CMB frame) is not taken, as the CMB value is derived."
+columns:
+  - { column: Name, field: identifier, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: HV, field: velocity, unit: kilometre_per_second }
+  - { column: e_HV, field: velocity_error, unit: kilometre_per_second }
+  - { column: Ksmag, field: magnitude, unit: magnitude }
+  - { column: GID, field: group_id, unit: dimensionless }
+  - { column: Ref, field: quality, unit: dimensionless }
+  - { column: Cln, field: quality, unit: dimensionless }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Lavaux G., Hudson M.J. 2011, "The 2M++ galaxy redshift catalogue", MNRAS 416, 2840-2856.
+  2011MNRAS.416.2840L, doi:10.1111/j.1365-2966.2011.19233.x. VizieR catalogue J/MNRAS/416/2840,
+  doi:10.26093/cds/vizier.74162840.
+reference: { bibcode: "2011MNRAS.416.2840L", doi: "10.1111/j.1365-2966.2011.19233.x" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Lavaux & Hudson 2011, MNRAS 416, 2840.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the authors and
+    publisher, and neither the ReadMe nor the landing-page metadata carries a copyright or licence
+    restriction. The MNRAS/OUP policy CDS points to was not checked, and "scientific context" is not
+    defined for a public hobby release. Provisional: judged again before any public deployment.
+scale_domain: cosmic_web
+# VizieR's mirrors, checked 2026-11-04: China-VO answers like CDS; NAO's database was unreachable
+# and IDIA broke off mid-answer, so they come last.
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+fixes:
+  - defect: "e_HV = 0 does not mean zero uncertainty: the ReadMe gives it as zero when the error was not measured."
+    change: "e_HV = 0 is read as no uncertainty reported, never as a zero uncertainty."
+    action: { kind: zero_error_is_none_reported, columns: [e_HV] }
+    evidence: >-
+      J/MNRAS/416/2840 ReadMe and the served column description: "? Total apparent velocity error
+      (equal to zero if not measured)" (read from http://vizier.nao.ac.jp/ftp/cats/J/MNRAS/416/2840/ReadMe
+      and http://vizieridia.saao.ac.za/viz-bin/asu-tsv?-meta.all&-source=J/MNRAS/416/2840, 2026-11-03).
+normalization:
+  redshifts:
+    - column: HV
+      error: e_HV
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        J/MNRAS/416/2840 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/J/MNRAS/416/2840/ReadMe,
+        2026-11-03): HV is the "Heliocentric total apparent velocity".
+  rules:
+    - when: { column: Ref, is: [zoa] }
+      leave_out: simulated_object
+      basis: >-
+        ReadMe: Ref is the "Reference bibcode ("zoa" for fake galaxies in the Zone of
+        Avoidance)", filled in by the algorithm of Section 3; they are not galaxies.
+    - when: { column: Cln, is: ["1"] }
+      kind_of_value: { columns: [HV], kind: estimated }
+      basis: >-
+        ReadMe: Cln flags "if the redshift has been obtained by the cloning procedure of Section
+        2.3", an assigned redshift rather than a measurement.

@@ -1,0 +1,115 @@
+format: yardlog/1
+key: 01a1a8cc-6aab-7755-afbf-a5bd9694127b
+branch: "stage/release-8-e8"
+base: "develop"
+title: "stage/release-8-e8"
+revision: 12
+opened:
+  at: 2026-11-04T23:02:11Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+stages:
+  - key: 01a1a8cc-6aab-7755-afbf-a5beff82cf88
+    id: e8
+submissions:
+  - key: 01a1a8cc-6aab-7755-afbf-a5c6d0d88f1d
+    blocks:
+      - 01a1a8cc-6aab-7755-afbf-a5c16dfcde59
+    changes:
+      - what: sent
+        at: 2026-11-04T23:02:11Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+      - what: answered
+        at: 2026-11-04T23:02:54Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+  - key: 01a1a8ce-da65-72a6-88f2-225d497f7b58
+    blocks:
+      - 01a1a8ce-da65-72a6-88f2-225b6dc9eefa
+    changes:
+      - what: sent
+        at: 2026-11-04T23:04:51Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+      - what: answered
+        at: 2026-11-04T23:05:12Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+closed:
+  at: 2026-11-04T23:22:35Z
+  revision: 11
+  by:
+    host: claude-code
+    session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+acts:
+  - at: 2026-11-04T23:02:11Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:02:54Z
+    revision: 2
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-04T23:04:51Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:05:12Z
+    revision: 4
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-04T23:05:20Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:08:05Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:10:35Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:17:33Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:22:18Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:22:35Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-04T23:22:35Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+  - at: 2026-11-05T00:14:03Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"

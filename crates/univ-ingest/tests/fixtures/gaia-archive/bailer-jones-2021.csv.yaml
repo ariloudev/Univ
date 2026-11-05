@@ -1,0 +1,5 @@
+source: bailer-jones-2021
+url: https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=SELECT+TOP+5+d.source_id%2C+d.r_med_geo%2C+d.r_lo_geo%2C+d.r_hi_geo%2C+d.r_med_photogeo%2C+d.r_lo_photogeo%2C+d.r_hi_photogeo%2C+d.flag+FROM+gaiadr3.gaia_source+AS+g+JOIN+external.gaiaedr3_distance+AS+d+ON+d.source_id+%3D+g.source_id+WHERE+g.phot_g_mean_mag+%3C+10+AND+MOD%28g.random_index%2C+16%29+%3D+0
+retrieved: 2026-11-03T03:52:35Z
+sha256: ea6397a676894811ad248a0d1ad8e66bbfd6ab0a927380cfa478f09e13633860
+note: the first chunk's query cut to 5 rows

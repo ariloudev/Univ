@@ -1,0 +1,66 @@
+key: 01a1a2b8-447e-752b-832a-97474716125a
+slug: set-a-keys-rate-limit-by-tier
+title: "Set a key's rate limit by tier"
+context: "The owner can change a key's rate limit, but Cloudflare's rate-limiting binding fixes each limit, with a period of 10 or 60 seconds, in the Worker's configuration, one limit to a namespace."
+state:
+  kind: accepted
+  selectedOption: 01a1a2b8-447e-752b-832a-974a73ff166f
+  outcome: "Each key has one of three rate-limit tiers, each a namespace of the binding, and the owner moves a key between them."
+drivers:
+  - key: 01a1a2b8-447e-752b-832a-9748d1e3d3f8
+    kind: local
+    label: "Owner control"
+    statement: "The owner can give one key a different request rate without redeploying the Worker."
+  - key: 01a1a2b8-447e-752b-832a-974968581f94
+    kind: local
+    label: "Cheap requests"
+    statement: "Counting a request adds no write to storage."
+options:
+  - key: 01a1a2b8-447e-752b-832a-974a73ff166f
+    title: "Tiers"
+    description: "A few binding namespaces at fixed rates, and a tier recorded on each key."
+  - key: 01a1a2b8-447e-752b-832a-974b4f188ee5
+    title: "Fixed limits"
+    description: "One rate for every key and one for anonymous clients, set in the configuration only."
+  - key: 01a1a2b8-447e-752b-832a-974cf390de3c
+    title: "Count in storage"
+    description: "Each key's requests counted per window in D1 or a Durable Object, against any rate the owner sets."
+assessments:
+  - option: 01a1a2b8-447e-752b-832a-974a73ff166f
+    driver: 01a1a2b8-447e-752b-832a-9748d1e3d3f8
+    rating: supports
+    rationale: "the owner moves a key to another tier at runtime, from a fixed set of rates"
+  - option: 01a1a2b8-447e-752b-832a-974a73ff166f
+    driver: 01a1a2b8-447e-752b-832a-974968581f94
+    rating: supports
+    rationale: "the binding counts requests without storage"
+  - option: 01a1a2b8-447e-752b-832a-974b4f188ee5
+    driver: 01a1a2b8-447e-752b-832a-9748d1e3d3f8
+    rating: conflicts
+    rationale: "a key's rate changes only with the configuration"
+  - option: 01a1a2b8-447e-752b-832a-974b4f188ee5
+    driver: 01a1a2b8-447e-752b-832a-974968581f94
+    rating: supports
+    rationale: "the binding counts requests without storage"
+  - option: 01a1a2b8-447e-752b-832a-974cf390de3c
+    driver: 01a1a2b8-447e-752b-832a-9748d1e3d3f8
+    rating: supports
+    rationale: "any rate can be set for any key"
+  - option: 01a1a2b8-447e-752b-832a-974cf390de3c
+    driver: 01a1a2b8-447e-752b-832a-974968581f94
+    rating: conflicts
+    rationale: "every keyed request writes a counter"
+consequences:
+  - key: 01a1a2b8-447e-752b-832a-974d91386973
+    kind: cost
+    statement: "A key's rate can only be one of the configured tiers."
+  - key: 01a1a2b8-447e-752b-832a-974ed20a95fe
+    kind: obligation
+    statement: "The Worker's configuration holds one rate-limiting namespace for anonymous clients and one for each tier."
+subjects:
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3ce5e5f4a665
+  - role: affected
+    node: 01a19f20-8e6c-7039-b16f-abe3447e87f6
+  - role: outcome
+    node: 01a19f20-8e6c-7039-b16f-abd83515093c

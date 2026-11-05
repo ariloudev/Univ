@@ -1,0 +1,5 @@
+source: twompp-catalogue
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FMNRAS%2F416%2F2840%2Fcatalog&-out=Name%2CHV%2Ce_HV%2CKsmag%2CGID%2CRef%2CCln&-out.add=_RAJ%2C_DEJ&-out.max=5
+retrieved: 2026-11-03T03:56:28Z
+sha256: c16326aa64f9432328217b52e17b78e754f170d604ab6595ba71402d389602ef
+note: the first chunk's query cut to 5 rows

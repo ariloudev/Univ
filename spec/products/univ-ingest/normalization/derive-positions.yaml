@@ -1,0 +1,54 @@
+key: 01a19f22-2ad9-716e-876f-18530217fadb
+slug: derive-positions
+name: "Derive positions"
+body: |
+  Placing each object in three dimensions under the release cosmology, with every derived value
+  carrying the chain of transformations that made it.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cee44add674
+  - 01a19f1e-d177-716d-b124-3cf3def064d0
+requirements:
+  - key: 01a19f22-2ad9-716e-876f-1854a9750478
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "derive each object's Cartesian position from its preferred measurement under the release cosmology."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-185572e41a3f
+        name: "The release cosmology is flat ΛCDM with Planck 2018 parameters, H0 = 67.66 km/s/Mpc and Ωm = 0.3111, unless the release names another."
+      - key: 01a1a211-4f38-7751-a3f5-d2946bd18364
+        name: "The release manifest records beside the release cosmology that distances calibrated on the distance ladder are on a scale of H0 = 74.6 ± 0.8 km/s/Mpc (Tully et al. 2023), nearer than redshift distances under the release cosmology, citing both."
+      - key: 01a19f22-2ad9-716e-876f-185687a92854
+        name: "A redshift distance is the comoving distance of the CMB-frame redshift."
+      - key: 01a19f22-2ad9-716e-876f-1857a487f288
+        name: "Each position is given in ICRS equatorial, galactic and supergalactic Cartesian coordinates with the Solar System barycentre as origin."
+      - key: 01a19f22-2ad9-716e-876f-18581d266d87
+        name: "Each derived value records the release cosmology, its chain of transformations and the version of univ-model that computed it."
+  - key: 01a19f22-2ad9-716e-876f-18596dbe801e
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "rescale each distance or size published for another Hubble constant to the release cosmology's Hubble constant."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-185a4c7f512f
+        name: "The rescaled value is stored beside the native value and the Hubble constant it was published for."
+      - key: 01a19f22-2ad9-716e-876f-185b99a202e5
+        name: "A size is rescaled with the same factor as its structure's distance, so the structure keeps its size relative to its distance."
+      - key: 01a1a147-6018-75e1-9409-3f7f4665912a
+        name: "A value published for a stated Hubble constant or cosmology records it as an assumed cosmology holding the Hubble constant with whichever of the matter and Λ densities the source states."
+      - key: 01a1a147-6018-75e1-9409-3f805f3d0223
+        name: "A length published in h⁻¹ Mpc records an assumed cosmology of H0 = 100 km/s/Mpc."
+  - key: 01a19f22-2ad9-716e-876f-185fd835d316
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "transform between frames with the published definitions of the FK4, galactic and supergalactic systems."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-186064637cbc
+        name: "Galactic coordinates use the ICRS to galactic transformation of the Hipparcos catalogue (ESA 1997, volume 1, section 1.5.3)."
+      - key: 01a19f22-2ad9-716e-876f-18610047a726
+        name: "Supergalactic coordinates use the pole and origin of Lahav et al. 2000 (MNRAS 312, 166)."
+      - key: 01a1a147-6018-75e1-9409-3f8182b395ba
+        name: "A position in the frame FK4 B1950 is moved to FK5 J2000 as ERFA's fk45z moves it, with the E-terms of aberration removed and the matrix of Standish 1982 (A&A 115, 20), and from there to ICRS."
+      - key: 01a1a147-6018-75e1-9409-3f820e7bc1c8
+        name: "A position in the frame \"equatorial, equinox not stated\" is placed as J2000 with a stated systematic uncertainty of 0.6986°, the largest angle between reading it as B1950 and as J2000."

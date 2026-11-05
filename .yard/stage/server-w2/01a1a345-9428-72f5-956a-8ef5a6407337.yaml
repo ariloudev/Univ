@@ -1,0 +1,177 @@
+key: 01a1a345-9428-72f5-956a-8ef5a6407337
+id: w2
+versions:
+  - key: 01a1a345-9428-72f5-956a-8efe79da414d
+    at: 2026-11-03T21:16:48Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W2: objects"
+    goal: "Clients read an object by id, designation or common name, with its entries, measurements, preferred measurement, derived positions and candidate matches, and are directed to the objects that replaced a merged or split id (F-15, QA-2)"
+    status: active
+blocks:
+  - key: 01a1a345-9428-72f5-956a-8ef79590afbc
+    id: t2-decode
+    kind: task
+    versions:
+      - key: 01a1a345-9428-72f5-956a-8f00ec8c527c
+        at: 2026-11-03T21:16:48Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Decode an object from its compact rows (univ-model)"
+        detail: "Delegated to a worktree agent. Scope: `univ_model::api::objects` response types; a pure `univ_model::release::read` decoder from object, entries and measurements rows plus the release vocabulary (terms, chains, sources, cosmology); fixing the duplicate `method` key in `objects.links`. Done when a round trip over ingest's fixture release reproduces every cross-matched object (AC-131 to AC-136)."
+        state: active
+      - key: 01a1a35a-eaec-7268-bc68-6783c1b07bb6
+        at: 2026-11-03T21:40:07Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Decode an object from its compact rows (univ-model)"
+        detail: "Merged in b8bb096 (99f2ac7, 164a4a6, a3abd85). The ingest round trip reproduces every fixture object. Real M31 decodes at 0.747 Mpc. I added the ranking rule's name to the vocabulary and the record (AC-133), and the object's designations (AC-131). The duplicate `method` key in links is now `by`; old rows still decode."
+        state: done
+  - key: 01a1a345-9428-72f5-956a-8ef878856015
+    id: t2-vocab
+    kind: task
+    versions:
+      - key: 01a1a345-9428-72f5-956a-8f0159fa861e
+        at: 2026-11-03T21:16:48Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release vocabulary cached per isolate"
+        detail: "univ-api reads a release's terms, chains, sources and cosmology once per isolate; releases are immutable. Done when a native test shows the second read makes no query."
+        state: active
+      - key: 01a1a35a-eaec-7268-bc68-67841ad5311a
+        at: 2026-11-03T21:40:07Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release vocabulary cached per isolate"
+        detail: "In 92d352e. Each backend keeps its vocabularies: the Worker keeps one per isolate, and each test database its own, so parallel tests don't share it. A native test shows the second read runs one statement fewer."
+        state: done
+  - key: 01a1a345-9428-72f5-956a-8ef97184c825
+    id: t2-resolve
+    kind: task
+    versions:
+      - key: 01a1a345-9428-72f5-956a-8f022b91e450
+        at: 2026-11-03T21:16:48Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Lookup by designation and by name"
+        detail: "`GET /v1/objects?source=&designation=` and `?name=` (names.key, ignoring case and whitespace). A name more than one object carries answers with the list. Done when native tests cover AC-137 to AC-140 and the 404s naming what was looked up (AC-145, AC-146)."
+        state: open
+      - key: 01a1a35a-eaec-7268-bc68-6785af9f86c5
+        at: 2026-11-03T21:40:07Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Lookup by designation and by name"
+        detail: "In 92d352e: one object gives 200 with its record, more than one gives 300, none gives 404 naming what was looked up; a malformed query gives 400."
+        state: done
+  - key: 01a1a345-9428-72f5-956a-8efab30e9374
+    id: t2-replaced
+    kind: task
+    versions:
+      - key: 01a1a345-9428-72f5-956a-8f0312e6ea5d
+        at: 2026-11-03T21:16:48Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Replaced ids: merged, split, retired"
+        detail: "Merged gives 301 to the object in the same release; split gives the list; each answer names the release that replaced the id; an older release still serves the original. Done when native tests cover AC-141 to AC-144."
+        state: open
+      - key: 01a1a35a-eaec-7268-bc68-67861bc7799e
+        at: 2026-11-03T21:40:07Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Replaced ids: merged, split, retired"
+        detail: "In 92d352e: a merge gives 301 with Location pinned to the release, a split gives 300, a retirement gives 404 with `retired_in`; changes by later releases are invisible to an older one."
+        state: done
+  - key: 01a1a345-9428-72f5-956a-8efbd53d36dd
+    id: t2-object
+    kind: task
+    versions:
+      - key: 01a1a345-9428-72f5-956a-8f04800d0a03
+        at: 2026-11-03T21:16:48Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "GET /v1/objects/{id}"
+        detail: "The handler that decodes the object with the vocabulary. Done when native tests cover AC-131 to AC-136 through the route, after t2-decode merges."
+        state: open
+      - key: 01a1a35a-eaec-7268-bc68-6787c40063e1
+        at: 2026-11-03T21:40:07Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "GET /v1/objects/{id}"
+        detail: "In 92d352e, with route tests on release 2 of the ingest fixture (taken whole into `testkit_objects.sql`) for AC-131 to AC-136."
+        state: done
+  - key: 01a1a345-9428-72f5-956a-8efcd634c5e0
+    id: t2-bench
+    kind: task
+    versions:
+      - key: 01a1a345-9428-72f5-956a-8f05cc419e19
+        at: 2026-11-03T21:16:48Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "cargo xtask bench lookup (QA-2)"
+        detail: "Times 1,000 random object lookups against `xtask serve` on release 6, and reports p50, p95 and p99. Done when it runs; the measurement is recorded as evidence in W7."
+        state: open
+  - key: 01a1a345-9428-72f5-956a-8efd51d33246
+    id: t2-e2e
+    kind: task
+    versions:
+      - key: 01a1a345-9428-72f5-956a-8f06716efdba
+        at: 2026-11-03T21:16:48Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W2 end-to-end tests"
+        detail: "An object by id, by designation and by name through the Worker, and a 404. They run in the W2 close's integration run."
+        state: open
+      - key: 01a1a35a-eaec-7268-bc68-67889c86372d
+        at: 2026-11-03T21:40:07Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W2 end-to-end tests"
+        detail: "In 92d352e: by id, by name, by designation and 404 through the Worker. They run in the W2 close."
+        state: done
+  - key: 01a1a35a-eaec-7268-bc68-678292321b58
+    id: w2-science
+    kind: note
+    versions:
+      - key: 01a1a35a-eaec-7268-bc68-6789eacd71f1
+        at: 2026-11-03T21:40:07Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science notes from decoding real objects"
+        markdown: |-
+          From decoding release 6. These are ingest matters, not the server's:
+
+          - **M31 at 0.747 Mpc**, about 5% under the usual ~0.78 Mpc. Under the release's ranking rule, CF4's group modulus 24.366 ± 0.045 beat McConnachie's 24.47 ± 0.07 (0.783 Mpc) on fractional uncertainty. That follows the rule as specified; whether a group modulus should outrank a galaxy's own distance is a ranking-rule question.
+          - **Proper-motion errors** from Gaia DR3 and Hipparcos are recorded as `none_reported`; ingest does not appear to map their error columns.
+          - **CF4's CMB-frame velocity** (−585 km/s for M31) appears twice: once as a redshift and once as a plain velocity.
+          - **M31's sky position** comes from the CF4 entry (4-decimal degrees, FK5), because every entry is class `survey` with no reported error, so entry order decided.
+        tone: warning

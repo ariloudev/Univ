@@ -1,0 +1,5 @@
+source: boss-dr17-great-wall
+url: https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=SELECT+TOP+5+specObjID%2C+ra%2C+dec%2C+z%2C+zErr+FROM+SpecObj+WHERE+class+%3D+%27GALAXY%27+AND+zWarning+%3D+0+AND+ra+BETWEEN+150+AND+172+AND+dec+BETWEEN+40+AND+60+AND+z+BETWEEN+0.42+AND+0.52&format=csv
+retrieved: 2026-11-03T03:52:35Z
+sha256: 1a703f15044c6bedfebe6910b7be2316b6a7465b9033bb891d275fec462aa98c
+note: the first chunk's query cut to 5 rows

@@ -1,0 +1,34 @@
+# beta2 Tucanae (HD 2885), A2V close binary in the beta Tuc system: Hipparcos-2 parallax error above a tenth; Gaia EDR3/DR3 cut it to a two-parameter solution, so its DR2 parallax does not place it; unplaced.
+hip: 2487
+name: beta2 Tucanae
+alternative_names: ["bet02 Tuc", "HD 2885", "HR 127", "LCL 119 CD"]
+papers:
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue table gaiaedr3.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-edr3-2021.txt"
+unplaced: "no usable distance: Gaia EDR3/DR3 cut this source back to a two-parameter solution without a parallax, so its Gaia DR2 parallax does not place it (review rule B); the Hipparcos-2 parallax has an error above a tenth of its value; no orbital or modelling distance was found, and a group distance (Tucana-Horologium) was not pursued"
+disputes:
+  - claim: "Gaia DR2 gives source 4900926678262376704 a parallax of 19.592258052055563 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 4900926678262376704", column: "parallax", cell: "19.592258052055563" }
+  - claim: "Its Gaia DR2 parallax error is 0.9674070646812636 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 4900926678262376704", column: "parallax_error", cell: "0.9674070646812636" }
+  - claim: "Gaia EDR3 solves only 3 astrometric parameters for the same source, so it publishes no parallax."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 4900926678262376704", column: "astrometric_params_solved", cell: "3" }
+  - claim: "The neighbouring bright source 4900927434176620160, at the position of beta1 Tuc (HIP 2484), has an EDR3 parallax of 22.8384130501729 mas; no paper read here establishes whether beta2 Tuc lies at the same distance."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 4900927434176620160", column: "parallax", cell: "22.8384130501729" }
+notes: >-
+  The DR2 source is the Gaia DR3 identifier SIMBAD gives for HD 2885 and lies at the Hipparcos position. The
+  table gaiadr2.hipparcos2_best_neighbour has no row for this star. EDR3's fallback to a two-parameter solution
+  shows the five-parameter fit failed Gaia's checks. SIMBAD lists the star as a close visual pair, whose orbital
+  motion may also have biased the DR2 parallax. Unplaced under review rule B.

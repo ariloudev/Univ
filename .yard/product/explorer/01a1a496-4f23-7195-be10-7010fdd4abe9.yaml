@@ -1,0 +1,12 @@
+key: 01a1a496-4f23-7195-be10-7010fdd4abe9
+id: xe1
+versions:
+  - key: 01a1a496-4f23-7195-be10-70178a74c09e
+    at: 2026-11-04T03:24:36Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E1: the scene and mouse navigation"
+    goal: "The catalogues' tiles are drawn around Earth with level of detail, the mouse orbits, zooms across scales from parsecs to gigaparsecs, pans and resets to Earth, and the sources are credited"
+    status: planned

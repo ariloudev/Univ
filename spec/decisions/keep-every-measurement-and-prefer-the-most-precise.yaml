@@ -1,0 +1,63 @@
+key: 01a19f25-5955-701e-b3cf-ddc75d01acc4
+slug: keep-every-measurement-and-prefer-the-most-precise
+title: "Keep every measurement and prefer the most precise distance"
+context: "Cross-matched catalogues disagree: one galaxy can have several redshifts and a redshift-independent distance, and its position depends on which is used."
+state:
+  kind: superseded
+  selectedOption: 01a19f25-5955-701e-b3cf-ddcae9d1e6d4
+  outcome: "Each object keeps every measurement, and the one with the smallest fractional distance uncertainty, counting peculiar velocity for redshifts, places it."
+  successor: 01a1a149-623d-7310-8064-e6497ba7827e
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddc882d01310
+    kind: local
+    label: "Provenance"
+    statement: "No value is made up, and every source's value stays visible."
+  - key: 01a19f25-5955-701e-b3cf-ddc9a408b78b
+    kind: local
+    label: "Accurate placement"
+    statement: "Each object is placed by its best distance."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddcae9d1e6d4
+    title: "All kept, one preferred"
+    description: "Every measurement is kept and a published rule picks the preferred one."
+  - key: 01a19f25-5955-701e-b3cf-ddcbff43bf32
+    title: "Combined estimate"
+    description: "Compatible measurements are averaged by their uncertainties."
+  - key: 01a19f25-5955-701e-b3cf-ddcc8df298d2
+    title: "Client chooses"
+    description: "No value is preferred."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddcae9d1e6d4
+    driver: 01a19f25-5955-701e-b3cf-ddc882d01310
+    rating: supports
+    rationale: "each measurement keeps its source"
+  - option: 01a19f25-5955-701e-b3cf-ddcae9d1e6d4
+    driver: 01a19f25-5955-701e-b3cf-ddc9a408b78b
+    rating: supports
+    rationale: "the most precise distance places the object"
+  - option: 01a19f25-5955-701e-b3cf-ddcbff43bf32
+    driver: 01a19f25-5955-701e-b3cf-ddc882d01310
+    rating: conflicts
+    rationale: "the combined value was published by no one"
+  - option: 01a19f25-5955-701e-b3cf-ddcbff43bf32
+    driver: 01a19f25-5955-701e-b3cf-ddc9a408b78b
+    rating: supports
+    rationale: "a weighted value is precise"
+  - option: 01a19f25-5955-701e-b3cf-ddcc8df298d2
+    driver: 01a19f25-5955-701e-b3cf-ddc882d01310
+    rating: supports
+    rationale: "nothing is chosen for the client"
+  - option: 01a19f25-5955-701e-b3cf-ddcc8df298d2
+    driver: 01a19f25-5955-701e-b3cf-ddc9a408b78b
+    rating: conflicts
+    rationale: "objects have no ready position"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddcd6c336f76
+    kind: benefit
+    statement: "A galaxy at 15,000 km/s is placed by its redshift rather than by a far less precise Tully-Fisher distance."
+  - key: 01a19f25-5955-701e-b3cf-ddcefea6f47b
+    kind: obligation
+    statement: "The ranking rule and its parameters are published in each release manifest."
+subjects:
+  - role: outcome
+    node: 01a19f23-636e-7035-8185-ab97eb9c2fb9

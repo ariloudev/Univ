@@ -1,0 +1,179 @@
+# A crescent of Mg II absorbers on the sky at z ≈ 0.8, in the field of PSZ2 G069.39+68.05.
+name: Giant Arc
+alternative_names: ["GA"]
+kind: arc
+status: statistical_claim
+scale_domain: cosmic_web
+papers:
+  - id: lopez-2022
+    reference: "Lopez, Clowes & Williger 2022, MNRAS 516, 1557"
+    title: "A Giant Arc on the Sky"
+    doi: 10.1093/mnras/stac2204
+    bibcode: 2022MNRAS.516.1557L
+    arxiv: "2201.06875"
+    read: "arXiv source (LaTeX and vector figures) of 2201.06875"
+  - id: sawala-2025
+    reference: "Sawala, Teeriaho, Frenk, Helly, Jenkins, Racz, Schaller & Schaye 2025, MNRAS Letters 541, L22"
+    title: "The emperor's new arc: gigaparsec patterns abound in a ΛCDM universe"
+    doi: 10.1093/mnrasl/slaf021
+    arxiv: "2502.03515"
+    read: "arXiv source (LaTeX) of 2502.03515"
+  - id: sawala-2025b
+    reference: "Sawala & Teeriaho 2025, The Open Journal of Astrophysics 8"
+    title: "The Giant Arc - Filament or Figment?"
+    doi: 10.33232/001c.145931
+    arxiv: "2505.11072"
+    read: "arXiv source (LaTeX) of 2505.11072"
+geometry:
+  kind: members
+  members:
+    frame: icrs
+    tracer: Mg II absorber
+    source:
+      paper: lopez-2022
+      figure: "5"
+      how: >-
+        The circle centres of the 44 black (principal agglomeration) and 11 red (secondary
+        agglomeration) markers, read from the drawing commands of the vector figure
+        (CHMS_GA_bigger_FOV.pdf in the arXiv source) and mapped linearly with its axis ticks. The paper does not say whether its axes are linear in RA and Dec or a
+        projection; linear axes are assumed. The absorbers' redshifts are not plotted.
+    columns:
+      - { name: lon, header: "RA", unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 0.01 } }
+      - { name: lat, header: "Dec", unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 0.01 } }
+    rows:
+      - ["black-01", 205.027, 38.558]
+      - ["black-02", 206.404, 38.387]
+      - ["black-03", 207.795, 38.276]
+      - ["black-04", 208.946, 38.205]
+      - ["black-05", 210.085, 38.109]
+      - ["black-06", 210.106, 39.529]
+      - ["black-07", 210.286, 38.238]
+      - ["black-08", 211.215, 39.937]
+      - ["black-09", 211.747, 38.464]
+      - ["black-10", 211.752, 38.903]
+      - ["black-11", 211.858, 37.481]
+      - ["black-12", 212.029, 37.749]
+      - ["black-13", 212.380, 38.637]
+      - ["black-14", 212.599, 38.729]
+      - ["black-15", 212.658, 37.149]
+      - ["black-16", 213.070, 36.239]
+      - ["black-17", 213.160, 38.295]
+      - ["black-18", 213.509, 37.756]
+      - ["black-19", 214.002, 37.823]
+      - ["black-20", 214.670, 39.379]
+      - ["black-21", 215.813, 37.872]
+      - ["black-22", 216.248, 38.713]
+      - ["black-23", 216.256, 38.350]
+      - ["black-24", 216.414, 37.960]
+      - ["black-25", 217.128, 39.467]
+      - ["black-26", 217.792, 38.742]
+      - ["black-27", 218.168, 38.536]
+      - ["black-28", 218.328, 38.927]
+      - ["black-29", 219.391, 38.995]
+      - ["black-30", 219.590, 39.569]
+      - ["black-31", 221.057, 38.982]
+      - ["black-32", 221.424, 40.481]
+      - ["black-33", 222.164, 42.203]
+      - ["black-34", 222.350, 40.097]
+      - ["black-35", 222.408, 39.265]
+      - ["black-36", 222.485, 42.100]
+      - ["black-37", 222.657, 40.089]
+      - ["black-38", 222.662, 40.408]
+      - ["black-39", 222.860, 39.769]
+      - ["black-40", 223.356, 39.624]
+      - ["black-41", 223.705, 39.711]
+      - ["black-42", 223.763, 42.023]
+      - ["black-43", 223.863, 39.826]
+      - ["black-44", 224.597, 40.434]
+      - ["red-01", 201.243, 41.083]
+      - ["red-02", 202.261, 38.443]
+      - ["red-03", 202.531, 38.011]
+      - ["red-04", 202.960, 39.571]
+      - ["red-05", 202.991, 39.907]
+      - ["red-06", 203.203, 39.965]
+      - ["red-07", 203.324, 40.314]
+      - ["red-08", 203.457, 38.960]
+      - ["red-09", 203.844, 39.571]
+      - ["red-10", 204.681, 41.428]
+      - ["red-11", 205.801, 38.859]
+values:
+  central_redshift:
+    value: 0.802
+    unit: dimensionless
+    kind: measured
+    # The slice's half-width (redshift_half_width below): a stated interval with no probability, its
+    # bounds 0.742 and 0.862, not a one-sigma error.
+    uncertainty: { form: interval, minus: 0.060, plus: 0.060 }
+    cite: &slice
+      paper: lopez-2022
+      sentence: "We are now taking the GA to be predominantly concentrated in the redshift interval 0.802 ± 0.060, so 0.742 → 0.862. Its (present-epoch) depth is then ~ 340 Mpc."
+  redshift_half_width:
+    value: 0.060
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "0.060"
+    cite: *slice
+  depth:
+    value: 340
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: &cosmology
+      cosmology: "proper size at the present epoch; ΩT0 = 1, ΩM0 = 0.27, ΩΛ0 = 0.73, H0 = 70 km/s/Mpc"
+      cite:
+        paper: lopez-2022
+        sentence: "The concordance model is adopted for cosmological calculations, with ΩT0 = 1, ΩM0 = 0.27, ΩΛ0 = 0.73, and H0 = 70 km s-1 Mpc-1. All sizes given are proper sizes at the present epoch."
+    cite: *slice
+  extent:
+    value: 1000
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "~1 Gpc"
+    assumes: *cosmology
+    cite:
+      paper: lopez-2022
+      sentence: "The Giant Arc (GA) spans ~1 Gpc (proper size, present epoch), and appears to be almost symmetrical on the sky."
+  principal_agglomeration_members:
+    value: 44
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &caption
+      paper: lopez-2022
+      sentence: "There are 44 black points which indicate the principal agglomeration of the Giant Arc — the largest, and most significant agglomeration in the field —, which comprises the majority of the GA. There are 11 red points which indicate the secondary agglomeration of the GA, which, although by itself not statistically significant, is clearly part of the GA."
+  secondary_agglomeration_members:
+    value: 11
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *caption
+  central_cluster_redshift:
+    value: 0.763
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: lopez-2022
+      sentence: "Recall that the SZ cluster B18, z = 0.763 [...], is at the centre of the GA."
+    note: "The redshift of the SZ cluster candidate PSZ2 G069.39+68.05 at the arc's centre, from Burenin et al. as the paper cites them."
+disputes:
+  - claim: >-
+      Patterns like the Giant Arc are common in a ΛCDM simulation analysed with the same method,
+      and its reported overdensity is an artefact of the algorithm.
+    cite:
+      paper: sawala-2025
+      sentence: "Applying the same methods used in the observations, we show that patterns like the \"Giant Arc\", supposedly in tension with the standard model, are, in fact, common and expected in a ΛCDM universe. We also show that their reported significant overdensities are an algorithmic artefact and unlikely to reflect any underlying structure."
+  - claim: >-
+      A follow-up finds very similar patterns abundant in uniform random distributions and among
+      equivalent haloes, and gives the arc's span as about 740 comoving Mpc.
+    cite:
+      paper: sawala-2025b
+      sentence: "The so-called \"Giant Arc\" is a sparse pattern of Mg II absorbers spanning ~740 comoving Mpc, whose discovery has been claimed to contradict the large-scale homogeneity inherent to the standard cosmological model."
+notes: >-
+  Lopez et al. found the arc in the field of the SZ cluster candidate PSZ2 G069.39+68.05 (z = 0.763),
+  around which it lies roughly symmetrically; they do not tabulate the absorbers, whose positions are
+  digitised here from Figure 5 (the absorbers come from the Zhu & Ménard DR7/DR12 Mg II catalogues).
+  The newsroom atlas placed a centre at that cluster's position, converted from its Galactic name;
+  that is not a published centre and is left out.

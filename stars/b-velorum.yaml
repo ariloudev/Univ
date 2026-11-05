@@ -1,0 +1,36 @@
+# B Velorum (HD 70930), B1V spectroscopic binary: Hipparcos-2 parallax error 17%, no Gaia DR3 parallax; placed by its Vel OB2 membership.
+hip: 41039
+name: B Velorum
+alternative_names: ["B Vel", "HD 70930", "HR 3294"]
+papers:
+  - id: dezeeuw-1999
+    reference: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354"
+    title: "A Hipparcos Census of the Nearby OB Associations"
+    bibcode: 1999AJ....117..354D
+    doi: 10.1086/300682
+    arxiv: "astro-ph/9809227"
+    read: "arXiv PDF of astro-ph/9809227v1, text extracted with pdfminer.six; Table C1 rows cross-checked with pypdf; bibcode checked on SIMBAD's reference page (ADS returned a human-verification page)"
+distance:
+  value: 410
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 12 }
+  cite:
+    paper: dezeeuw-1999
+    page: 20
+    sentence: "We obtain a mean distance of 410±12 pc for Vel OB2."
+  distance_kind: geometric
+  method: "mean Hipparcos parallax distance of the Vel OB2 association, applied to the member star"
+membership:
+  paper: dezeeuw-1999
+  table: "Table C1 (Membership lists), Vel OB2 block, page 50"
+  row: "HIP 41039"
+  column: "P (membership probability, per cent)"
+  cell: "99"
+disputes: []
+notes: >-
+  The association distance rests on Hipparcos-1 parallaxes of the members, and its formal error does not
+  include the association's depth. Gaia-era studies of the Vela OB2 region were not used, because this research
+  found no Gaia-era membership list that names HIP 41039. The star's own Hipparcos-2 parallax is less precise
+  and points to a somewhat larger distance. Gaia DR2 and EDR3 give the bright source no
+  parallax.

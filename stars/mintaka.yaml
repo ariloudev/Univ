@@ -1,0 +1,34 @@
+# Mintaka, delta Orionis A, O9.5II eclipsing triple in Orion's Belt: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 25930
+name: Mintaka
+alternative_names: ["delta Orionis", "del Ori", "34 Ori", "HD 36486"]
+papers:
+  - id: oplistilova-2023
+    reference: "Oplištilová, Mayer, Harmanec, Brož, Pigulski, Božić, Zasche, Šlechta, Pablo, Kołaczek-Szymański, Moffat, Lovekin, Wade, Zwintz, Popowicz & Weiss 2023, A&A 672, A31"
+    title: "Spectrum of the secondary component and new orbital elements of the massive triple star δ Ori A"
+    bibcode: 2023A&A...672A..31O
+    doi: 10.1051/0004-6361/202245272
+    arxiv: "2301.10290"
+    read: "arXiv PDF of 2301.10290v1, full text extracted with pypdf; abstract (PDF page 1), Sect. 3 (PDF page 3), Fig. 4 and Table 3 (PDF page 5) read"
+distance:
+  value: 381
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 8 }
+  cite:
+    paper: oplistilova-2023
+    page: 1
+    sentence: "In addition, the Gaia DR3 parallax of the faint component (Ca+Cb) constrains the distance of the system to (381 ± 8) pc, which is just in the centre of the Orion OB1b association, at (382 ± 1) pc."
+  distance_kind: geometric
+  method: "Gaia DR3 parallax of the wide companion δ Ori Ca+Cb applied to the system"
+membership:
+  paper: oplistilova-2023
+  page: 3
+  sentence: "Hereinafter, we assume that the components (Aa1+Aa2)+Ab as well as Ca+Cb are located at the same distance."
+disputes: []
+notes: >-
+  The distance applies a companion's Gaia DR3 parallax to the bright system, so it is recorded as
+  inferred. The authors argue that the pair is physical, from the small number of stars as bright
+  as Ca+Cb near δ Ori, and that δ Ori B, by contrast, lies much nearer and is not related. The
+  value agrees with their median Gaia DR3 distance of Orion OB1b, (382 ± 1) pc, to which δ Ori
+  belongs.

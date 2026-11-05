@@ -1,0 +1,281 @@
+key: 01a1a2cf-3cac-7599-8a58-56cdcf1330f5
+id: w0
+versions:
+  - key: 01a1a2cf-3cac-7599-8a58-56d7f91d777c
+    at: 2026-11-03T19:07:32Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W0: Worker skeleton, contract base and integration harness"
+    goal: "A workers-rs Worker answers under /v1 with problem details, CORS and a generated OpenAPI document, and `cargo xtask integration` tests it inside wrangler dev"
+    status: active
+  - key: 01a1a2e9-1410-70d4-9ac8-54d3b6adc936
+    at: 2026-11-03T19:35:46Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W0: Worker skeleton, contract base and integration harness"
+    goal: "A workers-rs Worker answers under /v1 with problem details, CORS and a generated OpenAPI document, and `cargo xtask integration` tests it inside wrangler dev"
+    status: done
+blocks:
+  - key: 01a1a2cf-3cac-7599-8a58-56cff847bcab
+    id: t-crates
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56d9669ad7fb
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Add the univ-api and univ-server crates"
+        detail: "univ-api (lib, native + wasm32) and univ-server (cdylib, workers-rs =0.8.7 with d1), with univ-server excluded from native builds through default-members. Done when `cargo build --workspace` passes natively and `cargo check -p univ-server --target wasm32-unknown-unknown` passes."
+        state: open
+      - key: 01a1a2cf-4a3d-70bf-a119-c6126771c9b1
+        at: 2026-11-03T19:07:36Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Add the univ-api and univ-server crates"
+        detail: "univ-api (lib, native + wasm32) and univ-server (cdylib, workers-rs =0.8.7 with d1), with univ-server excluded from native builds through default-members. Done when `cargo build --workspace` passes natively and `cargo check -p univ-server --target wasm32-unknown-unknown` passes."
+        state: active
+      - key: 01a1a2d9-6895-7417-8161-83a4d48016ed
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Add the univ-api and univ-server crates"
+        detail: "univ-api (lib, native + wasm32) and univ-server (cdylib + rlib, workers-rs =0.8.7 with d1). Done in caac3e1: `cargo build --workspace` passes natively and `cargo clippy -p univ-server --target wasm32-unknown-unknown -D warnings` passes. Change from the plan: workers-rs compiles natively, so univ-server stays an ordinary member; no default-members exclusion is needed."
+        state: done
+  - key: 01a1a2cf-3cac-7599-8a58-56d08b399163
+    id: t-problem
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56daa1c77c2a
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "RFC 9457 problem details"
+        detail: "A Problem type in univ-api: application/problem+json, a `type` URI per kind of refusal, title, status, detail and extension members. Done when its native tests check the content type, the shape and that every type URI is distinct and absolute."
+        state: open
+      - key: 01a1a2d9-6895-7417-8161-83a5dbafe755
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "RFC 9457 problem details"
+        detail: "Problem and ProblemType in univ-api: application/problem+json, `urn:univ:problem:<kind>` type URIs, and extensions that cannot overwrite the standard members. Done in caac3e1, with 4 native tests."
+        state: done
+  - key: 01a1a2cf-3cac-7599-8a58-56d122cbbaaf
+    id: t-router
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56db78bce801
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The /v1 router with CORS and a 404 problem"
+        detail: "A route table under /v1. An unknown path answers 404 with a problem, every read response allows any origin, and an OPTIONS preflight is answered without credentials. Done when native tests cover AC-273–276 and the 404 problem."
+        state: open
+      - key: 01a1a2d9-6895-7417-8161-83a67c9ddd53
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The /v1 router with CORS and a 404 problem"
+        detail: "The route table under /v1, a 404 route-not-found problem, a 405 that names the allowed methods, CORS on every response, and a preflight answered without credentials. Done in caac3e1, with 8 native tests (AC-273, AC-275, AC-276, AC-291)."
+        state: done
+  - key: 01a1a2cf-3cac-7599-8a58-56d2b0d53e7d
+    id: t-openapi
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56dc68b9afc3
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "OpenAPI 3.1 document from the route table"
+        detail: "utoipa builds the document. /v1/openapi.json serves it, and each problem type is listed. Done when a native test shows the document's paths equal the router's routes exactly (AC-287), and the version is 3.1."
+        state: open
+      - key: 01a1a2d9-6895-7417-8161-83a79221b23b
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "OpenAPI 3.1 document from the route table"
+        detail: "utoipa 6 builds the document, served at /v1/openapi.json, with a Problem schema whose `type` enum lists every problem URI. Done in caac3e1: the document's (method, path) pairs equal ROUTES exactly (AC-287), its version is 3.1.0, and every problem type is listed (AC-289)."
+        state: done
+  - key: 01a1a2cf-3cac-7599-8a58-56d3d5fd8449
+    id: t-worker
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56dda6456900
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The Worker entry and its wrangler.toml"
+        detail: "univ-server binds DB (univ), LAYERS (univ-layers), RELEASES and the four rate-limit namespaces, reads OWNER_SECRET from .dev.vars (gitignored) and hands requests to univ-api. A first migration of univ-layers. worker-build is installed. Done when `wrangler dev` serves /v1/openapi.json locally."
+        state: open
+      - key: 01a1a2d9-6895-7417-8161-83a8b760d64b
+        at: 2026-11-03T19:18:39Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The Worker entry and its wrangler.toml"
+        detail: "univ-server binds DB (univ), LAYERS (univ-layers), RELEASES and the four rate-limit namespaces, reads OWNER_SECRET from .dev.vars (gitignored) and hands requests to univ-api. A first migration of univ-layers. worker-build is installed. Done when `wrangler dev` serves /v1/openapi.json locally."
+        state: active
+      - key: 01a1a2dd-6a61-776e-9f78-bfdee7808ed9
+        at: 2026-11-03T19:23:02Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The Worker entry and its wrangler.toml"
+        detail: "Done in 770e083. `wrangler dev` on the fixture state serves /v1/openapi.json (200), a 404 problem as application/problem+json, and a 204 preflight with `Access-Control-Allow-Origin: *`. The univ-layers migration 0001 applies. One finding: wrangler runs `[build]` from the directory it was started in, so the command names `crates/univ-server`. OWNER_SECRET is passed with `--var` for tests; `.dev.vars` is gitignored for serve."
+        state: done
+  - key: 01a1a2cf-3cac-7599-8a58-56d48d5ffe9b
+    id: t-gates
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56de80d3c383
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Gate steps for the Worker"
+        detail: "`cargo xtask check` gains a wasm32 check of univ-api and clippy for univ-server on wasm32 with -D warnings, and excludes univ-server from the native clippy and test steps. Done when each new step fails on a planted fault and passes without it."
+        state: open
+      - key: 01a1a2dd-6a61-776e-9f78-bfdf29345e1a
+        at: 2026-11-03T19:23:02Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Gate steps for the Worker"
+        detail: "`cargo xtask check` gains a wasm32 check of univ-api and clippy for univ-server on wasm32 with -D warnings. The native clippy and test steps keep univ-server, which compiles natively. Done when each new step fails on a planted fault and passes without it."
+        state: active
+      - key: 01a1a2e2-6644-725a-af84-aaa140b44f44
+        at: 2026-11-03T19:28:28Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Gate steps for the Worker"
+        detail: "`cargo xtask check` now runs the wasm32 check over univ-model and univ-api, and a new `clippy wasm32` step for univ-server with -D warnings. A planted wasm32 compile_error and a planted unwrap each fail their step (rc 101), and both pass once removed. The native clippy and test steps keep univ-server, which compiles natively."
+        state: done
+  - key: 01a1a2cf-3cac-7599-8a58-56d55667850f
+    id: t-integration
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56df3011038d
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask integration` and the first e2e tests"
+        detail: "It builds, publishes and prunes the fixture release in a temporary state, applies the layer migrations, starts wrangler dev on a free port, runs the #[ignore] HTTP tests of univ-server and stops wrangler, also on failure. Done when the e2e tests (an anonymous read, a CORS preflight, a 404 problem) pass through it."
+        state: open
+      - key: 01a1a2e2-6644-725a-af84-aaa2242138ff
+        at: 2026-11-03T19:28:28Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask integration` and the first e2e tests"
+        detail: "It builds, publishes and prunes the fixture release in a temporary state, applies the layer migrations, starts wrangler dev on a free port, runs the #[ignore] HTTP tests of univ-server and stops wrangler, also on failure. Done when the e2e tests (an anonymous read, a CORS preflight, a 404 problem) pass through it."
+        state: active
+      - key: 01a1a2e8-d487-7121-8e9d-03f840472401
+        at: 2026-11-03T19:35:30Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask integration` and the first e2e tests"
+        detail: "Done in 1db3322. The run writes the fixture state (about 48 s), applies the migration, and starts wrangler dev, ready in 3 s once built. It passed 3 of 3 e2e tests: an anonymous read from another origin, a CORS preflight, and a 404 problem. Wrangler runs in its own process group, and no univ-server workerd was left behind."
+        state: done
+  - key: 01a1a2cf-3cac-7599-8a58-56d675884a42
+    id: t-serve-docs
+    kind: task
+    versions:
+      - key: 01a1a2cf-3cac-7599-8a58-56e07d4fb098
+        at: 2026-11-03T19:07:32Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask serve` and AGENTS.md"
+        detail: "serve runs the Worker on .cache/univ-ingest/wrangler. AGENTS.md gains the server layout, the product/server and stage/server-wN branches, integration and serve, and the full gate at each wave's end. Done when serve answers /v1/openapi.json on release 6's state."
+        state: open
+      - key: 01a1a2e2-6644-725a-af84-aaa33ff9d1eb
+        at: 2026-11-03T19:28:28Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask serve` and AGENTS.md"
+        detail: "serve runs the Worker on .cache/univ-ingest/wrangler. AGENTS.md gains the server layout, the product/server and stage/server-wN branches, integration and serve, and the full gate at each wave's end. Done when serve answers /v1/openapi.json on release 6's state."
+        state: active
+      - key: 01a1a2e8-d487-7121-8e9d-03f9cbfbaaed
+        at: 2026-11-03T19:35:30Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "`cargo xtask serve` and AGENTS.md"
+        detail: "Done in 1db3322. serve applies the migration to .cache/univ-ingest/wrangler and runs on port 8790, a port of its own: 8787 was taken by another project's Worker, which first answered my probe. It binds DB, LAYERS, RELEASES and the rate limiters on release 6's real state and serves /v1/openapi.json. AGENTS.md now gives the server's layout, commands and branches, and the full gate at each wave's end."
+        state: done
+  - key: 01a1a2e9-1410-70d4-9ac8-54d0933c3dbd
+    id: w0-built
+    kind: note
+    versions:
+      - key: 01a1a2e9-1410-70d4-9ac8-54d2a8fc32a2
+        at: 2026-11-03T19:35:46Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "W0 built: the Worker answers inside wrangler dev"
+        markdown: |-
+          | Part | State |
+          |---|---|
+          | `univ-api` | `/v1` route table, RFC 9457 problems (`urn:univ:problem:*`), CORS, and OpenAPI 3.1 held to the routes by a test; 15 native tests |
+          | `univ-server` | workers-rs 0.8.7 entry; its own `wrangler.toml` with DB, LAYERS, RELEASES and 4 rate limiters; builds for wasm32 and natively |
+          | `univ-layers` | migration 0001 (`schema_version`) |
+          | `cargo xtask integration` | fixture state → migrations → `wrangler dev` → 3 e2e tests, **passed** |
+          | `cargo xtask serve` | release 6's real state on port 8790 |
+          | Gate | wasm32 check of univ-api, clippy wasm32 of univ-server |
+
+          ```mermaid
+          flowchart LR
+            R[runtime Request] --> S[univ-server: to plain Request]
+            S --> H[univ_api::handle]
+            H --> P{OPTIONS?}
+            P -- yes --> F[204 preflight]
+            P -- no --> D[route table] --> X[handler or problem]
+            F --> C[CORS headers]
+            X --> C --> B[univ-server: runtime Response]
+          ```
+
+          **Changes from the plan:**
+
+          - workers-rs compiles natively, so `univ-server` stays an ordinary workspace member, with no `default-members` exclusion.
+          - `serve` uses port 8790, because another project's Worker holds 8787.
+          - Wrangler runs `[build]` from its start directory, so the build command names the crate path.
+        tone: success

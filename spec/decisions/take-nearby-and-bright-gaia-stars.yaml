@@ -1,0 +1,66 @@
+key: 01a19f25-5955-701e-b3cf-de113aab1645
+slug: take-nearby-and-bright-gaia-stars
+title: "Take Gaia's nearby and bright stars, not the whole catalogue"
+context: "Gaia DR3 holds about 1.8 billion sources, far beyond what one release in D1 can hold."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-de1478456b10
+  outcome: "Stars come from the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars with Bailer-Jones 2021 distances, and the Hipparcos new reduction."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-de1268848a67
+    kind: local
+    label: "Fits storage"
+    statement: "One release stays within D1's 10 GB."
+  - key: 01a19f25-5955-701e-b3cf-de13c3b91198
+    kind: local
+    label: "Shows the Galaxy"
+    statement: "The Milky Way scale shows real stars, not a schematic."
+options:
+  - key: 01a19f25-5955-701e-b3cf-de1478456b10
+    title: "100 pc plus bright stars"
+    description: "The Gaia Catalogue of Nearby Stars, Gaia DR3 stars brighter than a G cut, and Hipparcos."
+  - key: 01a19f25-5955-701e-b3cf-de157f7df4cc
+    title: "Nearby only"
+    description: "The 100 pc catalogue and Hipparcos."
+  - key: 01a19f25-5955-701e-b3cf-de1672ebca17
+    title: "Large and tiled"
+    description: "Tens to hundreds of millions of stars in tiles."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-de1478456b10
+    driver: 01a19f25-5955-701e-b3cf-de1268848a67
+    rating: supports
+    rationale: "a few million stars fit"
+  - option: 01a19f25-5955-701e-b3cf-de1478456b10
+    driver: 01a19f25-5955-701e-b3cf-de13c3b91198
+    rating: supports
+    rationale: "bright stars trace the Galaxy's shape"
+  - option: 01a19f25-5955-701e-b3cf-de157f7df4cc
+    driver: 01a19f25-5955-701e-b3cf-de1268848a67
+    rating: supports
+    rationale: "a few hundred thousand stars"
+  - option: 01a19f25-5955-701e-b3cf-de157f7df4cc
+    driver: 01a19f25-5955-701e-b3cf-de13c3b91198
+    rating: conflicts
+    rationale: "the Galaxy stays a schematic"
+  - option: 01a19f25-5955-701e-b3cf-de1672ebca17
+    driver: 01a19f25-5955-701e-b3cf-de1268848a67
+    rating: conflicts
+    rationale: "storage grows to tens of GB"
+  - option: 01a19f25-5955-701e-b3cf-de1672ebca17
+    driver: 01a19f25-5955-701e-b3cf-de13c3b91198
+    rating: supports
+    rationale: "the richest Galaxy"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-de1744160a1a
+    kind: obligation
+    statement: "Stellar distances come from Bailer-Jones 2021, never from an inverted parallax."
+  - key: 01a19f25-5955-701e-b3cf-de18f5e10a62
+    kind: cost
+    statement: "Faint and distant stars of the Galaxy are absent."
+subjects:
+  - role: affected
+    node: 01a19f22-2ad9-716e-876f-18279019d046
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-182403edb79e
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-1826edbc9607

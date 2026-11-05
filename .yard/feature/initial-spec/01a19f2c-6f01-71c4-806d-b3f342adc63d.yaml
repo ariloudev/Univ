@@ -1,0 +1,1324 @@
+key: 01a19f2c-6f01-71c4-806d-b3f342adc63d
+id: review-fixes
+versions:
+  - key: 01a19f2c-6f01-71c4-806d-b3fc5f7da400
+    at: 2026-11-03T02:10:51Z
+    revision: 19
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Fix review findings on the first draft"
+    goal: "The eight review findings are resolved in spec/, the checks pass, and the change is approved and committed"
+    status: active
+  - key: 01a19f2d-dffe-73dd-b2e4-c0cc57ed89ac
+    at: 2026-11-03T02:12:26Z
+    revision: 27
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Fix review findings on the first draft"
+    goal: "The eight review findings are resolved in spec/, the checks pass, and the change is approved and committed"
+    status: done
+blocks:
+  - key: 01a19f2c-6f01-71c4-806d-b3f41b5f8588
+    id: fix-1-node-cap
+    kind: task
+    versions:
+      - key: 01a19f2c-6f01-71c4-806d-b3fdf0637524
+        at: 2026-11-03T02:10:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cap the octree nodes a volume query returns"
+        detail: "P1. Return at most 4,096 covering nodes, choosing the deepest level that fits and naming it. Done when query-a-bounded-volume states the cap and the level rule, and the checks pass."
+        state: open
+        type: fix
+      - key: 01a19f2c-8d4c-7732-a9d7-1b78708a24dc
+        at: 2026-11-03T02:10:59Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cap the octree nodes a volume query returns"
+        detail: "P1. Return at most 4,096 covering nodes, choosing the deepest level that fits and naming it. Done when query-a-bounded-volume states the cap and the level rule, and the checks pass."
+        state: active
+        type: fix
+      - key: 01a19f2c-c816-76f5-b009-162f69ed1a87
+        at: 2026-11-03T02:11:14Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Cap the octree nodes a volume query returns"
+        detail: "P1. Return at most 4,096 covering nodes, choosing the deepest level that fits and naming it. Done when query-a-bounded-volume states the cap and the level rule, and the checks pass."
+        state: done
+        type: fix
+  - key: 01a19f2c-6f01-71c4-806d-b3f55180869c
+    id: fix-2-retired-private
+    kind: task
+    versions:
+      - key: 01a19f2c-6f01-71c4-806d-b3fe14ebca9f
+        at: 2026-11-03T02:10:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Keep retired private layers indistinguishable"
+        detail: "P2. Answer 410 only to callers allowed to read the layer, and 404 to everyone else. Done when create-and-configure-a-layer agrees with read-a-layer."
+        state: open
+        type: fix
+      - key: 01a19f2c-c816-76f5-b009-1631e63946f8
+        at: 2026-11-03T02:11:14Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Keep retired private layers indistinguishable"
+        detail: "P2. Answer 410 only to callers allowed to read the layer, and 404 to everyone else. Done when create-and-configure-a-layer agrees with read-a-layer."
+        state: active
+        type: fix
+      - key: 01a19f2c-fad3-74b7-be0c-04ee8292b831
+        at: 2026-11-03T02:11:27Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Keep retired private layers indistinguishable"
+        detail: "P2. Answer 410 only to callers allowed to read the layer, and 404 to everyone else. Done when create-and-configure-a-layer agrees with read-a-layer."
+        state: done
+        type: fix
+  - key: 01a19f2c-6f01-71c4-806d-b3f66585e75f
+    id: fix-3-revise-validation
+    kind: task
+    versions:
+      - key: 01a19f2c-6f01-71c4-806d-b3ff2812e32b
+        at: 2026-11-03T02:10:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Validate revisions like publications"
+        detail: "P2. Refuse a revision that fails any check publishing applies, storing nothing. Done when revise-or-retract-an-item holds the refusal Requirement."
+        state: open
+        type: fix
+      - key: 01a19f2c-c816-76f5-b009-1632463ddd69
+        at: 2026-11-03T02:11:14Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Validate revisions like publications"
+        detail: "P2. Refuse a revision that fails any check publishing applies, storing nothing. Done when revise-or-retract-an-item holds the refusal Requirement."
+        state: active
+        type: fix
+      - key: 01a19f2c-fad3-74b7-be0c-04ef9039cedb
+        at: 2026-11-03T02:11:27Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Validate revisions like publications"
+        detail: "P2. Refuse a revision that fails any check publishing applies, storing nothing. Done when revise-or-retract-an-item holds the refusal Requirement."
+        state: done
+        type: fix
+  - key: 01a19f2c-6f01-71c4-806d-b3f73cccf9a9
+    id: fix-4-pruned-listing
+    kind: task
+    versions:
+      - key: 01a19f2c-6f01-71c4-806d-b4003fdf7575
+        at: 2026-11-03T02:10:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "One contract for pruned releases in the listing"
+        detail: "P2. The listing gives the complete history, with pruned releases marked. Done when the statement and its criteria agree."
+        state: open
+        type: fix
+      - key: 01a19f2c-fad3-74b7-be0c-04f0fc9a89c8
+        at: 2026-11-03T02:11:27Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "One contract for pruned releases in the listing"
+        detail: "P2. The listing gives the complete history, with pruned releases marked. Done when the statement and its criteria agree."
+        state: active
+        type: fix
+      - key: 01a19f2d-3af1-751c-af04-1ac4e2ea6754
+        at: 2026-11-03T02:11:43Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "One contract for pruned releases in the listing"
+        detail: "P2. The listing gives the complete history, with pruned releases marked. Done when the statement and its criteria agree."
+        state: done
+        type: fix
+  - key: 01a19f2c-6f01-71c4-806d-b3f8b8fdcf0a
+    id: fix-5-paging-cursor
+    kind: task
+    versions:
+      - key: 01a19f2c-6f01-71c4-806d-b4018f650007
+        at: 2026-11-03T02:10:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Bind volume-query cursors to layer change sequences"
+        detail: "P2. A cursor records the release and each participating layer's change sequence, and a stale cursor is refused with 409. Done when query-a-bounded-volume states it."
+        state: open
+        type: fix
+      - key: 01a19f2c-8d4c-7732-a9d7-1b79c1f1698b
+        at: 2026-11-03T02:10:59Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Bind volume-query cursors to layer change sequences"
+        detail: "P2. A cursor records the release and each participating layer's change sequence, and a stale cursor is refused with 409. Done when query-a-bounded-volume states it."
+        state: active
+        type: fix
+      - key: 01a19f2c-c816-76f5-b009-163012e809c1
+        at: 2026-11-03T02:11:14Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Bind volume-query cursors to layer change sequences"
+        detail: "P2. A cursor records the release and each participating layer's change sequence, and a stale cursor is refused with 409. Done when query-a-bounded-volume states it."
+        state: done
+        type: fix
+  - key: 01a19f2c-6f01-71c4-806d-b3f95fedaa6b
+    id: fix-6-scale-domain
+    kind: task
+    versions:
+      - key: 01a19f2c-6f01-71c4-806d-b4021a611032
+        at: 2026-11-03T02:10:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Place a cross-matched object in one scale domain"
+        detail: "P2. The domain comes from the source of the preferred measurement. Done when build-octree-tiles states it."
+        state: open
+        type: fix
+      - key: 01a19f2d-3af1-751c-af04-1ac651b0aeb8
+        at: 2026-11-03T02:11:43Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Place a cross-matched object in one scale domain"
+        detail: "P2. The domain comes from the source of the preferred measurement. Done when build-octree-tiles states it."
+        state: active
+        type: fix
+      - key: 01a19f2d-8588-765f-a445-c3b7a3bd69f5
+        at: 2026-11-03T02:12:03Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Place a cross-matched object in one scale domain"
+        detail: "P2. The domain comes from the source of the preferred measurement. Done when build-octree-tiles states it."
+        state: done
+        type: fix
+  - key: 01a19f2c-6f01-71c4-806d-b3fad2585ede
+    id: fix-7-release-redirects
+    kind: task
+    versions:
+      - key: 01a19f2c-6f01-71c4-806d-b403a84bbe80
+        at: 2026-11-03T02:10:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Scope id redirects to the release being read"
+        detail: "P2. A merge or split applies only as of the release read. Done when look-up-an-object states it and a pinned old release returns the original object."
+        state: open
+        type: fix
+      - key: 01a19f2c-fad3-74b7-be0c-04f1c21057bb
+        at: 2026-11-03T02:11:27Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Scope id redirects to the release being read"
+        detail: "P2. A merge or split applies only as of the release read. Done when look-up-an-object states it and a pinned old release returns the original object."
+        state: active
+        type: fix
+      - key: 01a19f2d-3af1-751c-af04-1ac5d1504ccd
+        at: 2026-11-03T02:11:43Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Scope id redirects to the release being read"
+        detail: "P2. A merge or split applies only as of the release read. Done when look-up-an-object states it and a pinned old release returns the original object."
+        state: done
+        type: fix
+  - key: 01a19f2c-6f01-71c4-806d-b3fb444758b5
+    id: fix-8-stable-ids
+    kind: task
+    versions:
+      - key: 01a19f2c-6f01-71c4-806d-b404704efbad
+        at: 2026-11-03T02:10:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Keep ids when new entries join an object"
+        detail: "P2. Identity follows the carried-over entries. Done when keep-object-ids-stable states the rule for added and dropped entries."
+        state: open
+        type: fix
+      - key: 01a19f2d-3af1-751c-af04-1ac713570f40
+        at: 2026-11-03T02:11:43Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Keep ids when new entries join an object"
+        detail: "P2. Identity follows the carried-over entries. Done when keep-object-ids-stable states the rule for added and dropped entries."
+        state: active
+        type: fix
+      - key: 01a19f2d-8588-765f-a445-c3b8475160e4
+        at: 2026-11-03T02:12:03Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Keep ids when new entries join an object"
+        detail: "P2. Identity follows the carried-over entries. Done when keep-object-ids-stable states the rule for added and dropped entries."
+        state: done
+        type: fix
+  - key: 01a19f2d-8588-765f-a445-c3b6adf990bf
+    id: spec-change-review-fixes
+    kind: loft
+    versions:
+      - key: 01a19f2d-8588-765f-a445-c3b933e54f04
+        at: 2026-11-03T02:12:03Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: spec-change
+        note: "The eight review findings, compared with the approved first draft (`0dc1fa8`). The cap-volume-queries decision's outcome now names the 4,096-node cap."
+        base: "0dc1fa8"
+        recorded:
+          commit: "0dc1fa8f82f46c9da61ed27b6a25cffa584b558f"
+          branch: "feature/initial-spec"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T02:12:02Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 1,
+              "graph.diff": 26,
+              "graph.edges": 1,
+              "graph.nodes": 42,
+              "status.base.added": 14,
+              "status.base.changed": 11,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "changed",
+                  "key": "01a19f25-5955-701e-b3cf-dd82152f55d7",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Cap bounded volume queries and return the tiles that cover the volume",
+                  "words": {
+                    "after": "Cap bounded volume queries and return the tiles that cover the volume\n\nA volume query returns at most 10,000 results in pages of 1,000, and at most 4,096 covering octree nodes per scale domain.",
+                    "before": "Cap bounded volume queries and return the tiles that cover the volume\n\nA volume query returns at most 10,000 results in pages of 1,000, and the octree nodes that cover the volume."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-1516b502f718",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall decide each object's id by the catalogue entries it carries over from the previous release.",
+                  "words": {
+                    "after": "Univ Ingest shall decide each object's id by the catalogue entries it carries over from the previous release.",
+                    "before": "Univ Ingest shall give each object the id it had in the previous release when its catalogue entries carry over."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-15178440da44",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object whose carried-over catalogue entries all belonged to one object of the previous release keeps that object's id, whatever new entries joined it.",
+                  "words": {
+                    "after": "An object whose carried-over catalogue entries all belonged to one object of the previous release keeps that object's id, whatever new entries joined it.",
+                    "before": "An object whose catalogue entries are all in one object of the previous release keeps that object's id."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-151af96748e0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object that lost catalogue entries keeps its id while the entries it kept all belonged to it.",
+                  "words": {
+                    "after": "An object that lost catalogue entries keeps its id while the entries it kept all belonged to it.",
+                    "before": "An id is never given to a second object."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2d-59a8-7398-b20d-5c59b10da0c2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object made only of catalogue entries new in this release gets a new id.",
+                  "words": {
+                    "after": "An object made only of catalogue entries new in this release gets a new id."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2d-59a8-7398-b20d-5c5a34616724",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An id is never given to a second object.",
+                  "words": {
+                    "after": "An id is never given to a second object."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-152dec6f0f74",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each object belongs to one scale domain: the one named by the source definition of the catalogue entry that holds its preferred measurement.",
+                  "words": {
+                    "after": "Each object belongs to one scale domain: the one named by the source definition of the catalogue entry that holds its preferred measurement.",
+                    "before": "Each object belongs to the scale domain its source definition names."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d011d9a2392",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When a client lists releases, Univ Server shall return every release ever published, newest first, pruned releases included.",
+                  "words": {
+                    "after": "When a client lists releases, Univ Server shall return every release ever published, newest first, pruned releases included.",
+                    "before": "When a client lists releases, Univ Server shall return every release that has not been pruned, newest first."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When a client requests an object id that the release it reads from records as merged into another object or split into more than one, Univ Server shall direct the client to the objects of that release that replaced it.",
+                  "words": {
+                    "after": "When a client requests an object id that the release it reads from records as merged into another object or split into more than one, Univ Server shall direct the client to the objects of that release that replaced it.",
+                    "before": "When a client requests an object id that a later release merged into another object or split into more than one, Univ Server shall direct the client to the object or objects that replaced it."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d1c08830bee",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An id merged into one object answers with a permanent redirect to that object in the same release.",
+                  "words": {
+                    "after": "An id merged into one object answers with a permanent redirect to that object in the same release.",
+                    "before": "An id merged into one object answers with a permanent redirect to that object."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2d-251d-77d9-a8e5-ffa62e4598ec",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A read of a release in which the id still names an object returns that object, whatever later releases did to it.",
+                  "words": {
+                    "after": "A read of a release in which the id still names an object returns that object, whatever later releases did to it."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d164b16f644",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Results come in a stable order, so paging a query whose layers have not changed returns the same pages.",
+                  "words": {
+                    "after": "Results come in a stable order, so paging a query whose layers have not changed returns the same pages.",
+                    "before": "Results come in a stable order, so paging the same query twice returns the same pages."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22c8f33720f3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each cursor records the release the query reads and the change sequence of each layer whose items it reads.",
+                  "words": {
+                    "after": "Each cursor records the release the query reads and the change sequence of each layer whose items it reads."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a layer that a cursor records has changed since the cursor's first page, then Univ Server shall refuse the next page and name the layers that changed.",
+                  "words": {
+                    "after": "If a layer that a cursor records has changed since the cursor's first page, then Univ Server shall refuse the next page and name the layers that changed."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22ca5dbce89f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response status is 409 with problem details that list each changed layer with its current change sequence.",
+                  "words": {
+                    "after": "The response status is 409 with problem details that list each changed layer with its current change sequence."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22cbf2d197a5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No page is returned that skips or repeats a result because a layer changed between pages.",
+                  "words": {
+                    "after": "No page is returned that skips or repeats a result because a layer changed between pages."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When a client queries a bounded volume, Univ Server shall return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain.",
+                  "words": {
+                    "after": "When a client queries a bounded volume, Univ Server shall return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain.",
+                    "before": "When a client queries a bounded volume, Univ Server shall return the address of every octree node of each scale domain that intersects the volume."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d19cdceaeab",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The nodes of a scale domain are given at the deepest level, no deeper than the client asks for, at which no more than 4,096 nodes intersect the volume.",
+                  "words": {
+                    "after": "The nodes of a scale domain are given at the deepest level, no deeper than the client asks for, at which no more than 4,096 nodes intersect the volume.",
+                    "before": "The nodes are given at the deepest level of detail the client asks for, or at the deepest level of the octree when it asks for none."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22cc0ddcee28",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response names the level it chose for each scale domain.",
+                  "words": {
+                    "after": "The response names the level it chose for each scale domain."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-1cb3-7721-97a0-4f21a598c53b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A read of a retired layer by a caller allowed to read it answers 410 with problem details that give the retirement time.",
+                  "words": {
+                    "after": "A read of a retired layer by a caller allowed to read it answers 410 with problem details that give the retirement time.",
+                    "before": "A read of a retired layer answers 410 with problem details that give the retirement time."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3ba9446790",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A read of a retired private layer without its owning key answers 404, exactly as a layer that does not exist.",
+                  "words": {
+                    "after": "A read of a retired private layer without its owning key answers 404, exactly as a layer that does not exist."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a revision fails any check that publishing an item applies, then Univ Server shall refuse the revision and name each check that failed.",
+                  "words": {
+                    "after": "If a revision fails any check that publishing an item applies, then Univ Server shall refuse the revision and name each check that failed."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3d2ddc2ce9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A revision is checked for its geometry, time records, kind of value, links and sources exactly as a published item is.",
+                  "words": {
+                    "after": "A revision is checked for its geometry, time records, kind of value, links and sources exactly as a published item is."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3ebe384e68",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A revision that cites no source is refused.",
+                  "words": {
+                    "after": "A revision that cites no source is refused."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3f361ed80c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The problem details list each failing field by its JSON pointer, with the reason it failed.",
+                  "words": {
+                    "after": "The problem details list each failing field by its JSON pointer, with the reason it failed."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f40cb89a4da",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Nothing is stored, the item keeps its current version and the layer's change sequence is unchanged.",
+                  "words": {
+                    "after": "Nothing is stored, the item keeps its current version and the layer's change sequence is unchanged."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f25-5955-701e-b3cf-dd82152f55d7",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Cap bounded volume queries and return the tiles that cover the volume",
+                  "words": {
+                    "after": "Cap bounded volume queries and return the tiles that cover the volume\n\nA volume query returns at most 10,000 results in pages of 1,000, and at most 4,096 covering octree nodes per scale domain.",
+                    "before": "Cap bounded volume queries and return the tiles that cover the volume\n\nA volume query returns at most 10,000 results in pages of 1,000, and the octree nodes that cover the volume."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a19f25-5955-701e-b3cf-dd82152f55d7",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": null,
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65bef1ca65c",
+                  "kind": "feature_group",
+                  "label": null,
+                  "name": "Identity",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-1515b9ad9670",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Keep object ids stable",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-1516b502f718",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall decide each object's id by the catalogue entries it carries over from the previous release.",
+                  "parent": "01a19f23-636f-72bd-b194-1515b9ad9670"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-15178440da44",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object whose carried-over catalogue entries all belonged to one object of the previous release keeps that object's id, whatever new entries joined it.",
+                  "parent": "01a19f23-636f-72bd-b194-1516b502f718"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-151af96748e0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object that lost catalogue entries keeps its id while the entries it kept all belonged to it.",
+                  "parent": "01a19f23-636f-72bd-b194-1516b502f718"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2d-59a8-7398-b20d-5c59b10da0c2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object made only of catalogue entries new in this release gets a new id.",
+                  "parent": "01a19f23-636f-72bd-b194-1516b502f718"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2d-59a8-7398-b20d-5c5a34616724",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An id is never given to a second object.",
+                  "parent": "01a19f23-636f-72bd-b194-1516b502f718"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": null,
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-152a40334d81",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Build octree tiles",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects.",
+                  "parent": "01a19f23-636f-72bd-b194-152a40334d81"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-152dec6f0f74",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each object belongs to one scale domain: the one named by the source definition of the catalogue entry that holds its preferred measurement.",
+                  "parent": "01a19f23-636f-72bd-b194-152b36f5a5b5"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": null,
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": null,
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d003878f4e1",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "List and pin releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d011d9a2392",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When a client lists releases, Univ Server shall return every release ever published, newest first, pruned releases included.",
+                  "parent": "01a19f1e-d177-716d-b124-3d003878f4e1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Look up an object",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When a client requests an object id that the release it reads from records as merged into another object or split into more than one, Univ Server shall direct the client to the objects of that release that replaced it.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0d39dc9a3f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d1c08830bee",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An id merged into one object answers with a permanent redirect to that object in the same release.",
+                  "parent": "01a19f1e-d177-716d-b124-3d1b89e0362b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2d-251d-77d9-a8e5-ffa62e4598ec",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A read of a release in which the id still names an object returns that object, whatever later releases did to it.",
+                  "parent": "01a19f1e-d177-716d-b124-3d1b89e0362b"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6615e6965c1",
+                  "kind": "feature_group",
+                  "label": null,
+                  "name": "Spatial and temporal queries",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Query a bounded volume",
+                  "parent": "01a19f1a-685d-7357-b67e-d6615e6965c1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Server shall return at most 1,000 results per page and at most 10,000 results per bounded volume query.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d164b16f644",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Results come in a stable order, so paging a query whose layers have not changed returns the same pages.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d14df84914b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22c8f33720f3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each cursor records the release the query reads and the change sequence of each layer whose items it reads.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d14df84914b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a layer that a cursor records has changed since the cursor's first page, then Univ Server shall refuse the next page and name the layers that changed.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22ca5dbce89f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response status is 409 with problem details that list each changed layer with its current change sequence.",
+                  "parent": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22cbf2d197a5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No page is returned that skips or repeats a result because a layer changed between pages.",
+                  "parent": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When a client queries a bounded volume, Univ Server shall return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d19cdceaeab",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The nodes of a scale domain are given at the deepest level, no deeper than the client asks for, at which no more than 4,096 nodes intersect the volume.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d18140f9506"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-ae0d-773f-9bf7-22cc0ddcee28",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response names the level it chose for each scale domain.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d18140f9506"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d662fbe4f6f3",
+                  "kind": "feature_group",
+                  "label": null,
+                  "name": "Layers",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-1cb3-7721-97a0-4f182eae0369",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Create and configure a layer",
+                  "parent": "01a19f1a-685d-7357-b67e-d662fbe4f6f3"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-1cb3-7721-97a0-4f204ccf5beb",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the owning key retires a layer, Univ Server shall stop serving the layer and its items.",
+                  "parent": "01a19f20-1cb3-7721-97a0-4f182eae0369"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-1cb3-7721-97a0-4f21a598c53b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A read of a retired layer by a caller allowed to read it answers 410 with problem details that give the retirement time.",
+                  "parent": "01a19f20-1cb3-7721-97a0-4f204ccf5beb"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3ba9446790",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A read of a retired private layer without its owning key answers 404, exactly as a layer that does not exist.",
+                  "parent": "01a19f20-1cb3-7721-97a0-4f204ccf5beb"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-1cb3-7721-97a0-4f5588b2c1c4",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Revise or retract an item",
+                  "parent": "01a19f1a-685d-7357-b67e-d662fbe4f6f3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a revision fails any check that publishing an item applies, then Univ Server shall refuse the revision and name each check that failed.",
+                  "parent": "01a19f20-1cb3-7721-97a0-4f5588b2c1c4"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3d2ddc2ce9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A revision is checked for its geometry, time records, kind of value, links and sources exactly as a published item is.",
+                  "parent": "01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3ebe384e68",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A revision that cites no source is refused.",
+                  "parent": "01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f3f361ed80c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The problem details list each failing field by its JSON pointer, with the reason it failed.",
+                  "parent": "01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a19f2c-e7d7-7285-bdfa-6f40cb89a4da",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Nothing is stored, the item keeps its current version and the layer's change sequence is unchanged.",
+                  "parent": "01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a19f2d-59a8-7398-b20d-5c59b10da0c2",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "An object made only of catalogue entries new in this release gets a new id.",
+                    "path": "spec/products/univ-ingest/identity/keep-object-ids-stable.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2d-59a8-7398-b20d-5c5a34616724",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "An id is never given to a second object.",
+                    "path": "spec/products/univ-ingest/identity/keep-object-ids-stable.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2d-251d-77d9-a8e5-ffa62e4598ec",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 59,
+                    "name": "A read of a release in which the id still names an object returns that object, whatever later releases did to it.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-ae0d-773f-9bf7-22c8f33720f3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 46,
+                    "name": "Each cursor records the release the query reads and the change sequence of each layer whose items it reads.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f2c-ae0d-773f-9bf7-22c9f72e887f",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 48,
+                    "name": "If a layer that a cursor records has changed since the cursor's first page, then Univ Server shall refuse the next page and name the layers that changed.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-ae0d-773f-9bf7-22ca5dbce89f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 55,
+                    "name": "The response status is 409 with problem details that list each changed layer with its current change sequence.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-ae0d-773f-9bf7-22cbf2d197a5",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 57,
+                    "name": "No page is returned that skips or repeats a result because a layer changed between pages.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-ae0d-773f-9bf7-22cc0ddcee28",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 68,
+                    "name": "The response names the level it chose for each scale domain.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-e7d7-7285-bdfa-6f3ba9446790",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 46,
+                    "name": "A read of a retired private layer without its owning key answers 404, exactly as a layer that does not exist.",
+                    "path": "spec/products/univ-server/layers/create-and-configure-a-layer.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f2c-e7d7-7285-bdfa-6f3cb84ee6a5",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 50,
+                    "name": "If a revision fails any check that publishing an item applies, then Univ Server shall refuse the revision and name each check that failed.",
+                    "path": "spec/products/univ-server/layers/revise-or-retract-an-item.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-e7d7-7285-bdfa-6f3d2ddc2ce9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 57,
+                    "name": "A revision is checked for its geometry, time records, kind of value, links and sources exactly as a published item is.",
+                    "path": "spec/products/univ-server/layers/revise-or-retract-an-item.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-e7d7-7285-bdfa-6f3ebe384e68",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 59,
+                    "name": "A revision that cites no source is refused.",
+                    "path": "spec/products/univ-server/layers/revise-or-retract-an-item.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-e7d7-7285-bdfa-6f3f361ed80c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 61,
+                    "name": "The problem details list each failing field by its JSON pointer, with the reason it failed.",
+                    "path": "spec/products/univ-server/layers/revise-or-retract-an-item.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f2c-e7d7-7285-bdfa-6f40cb89a4da",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 63,
+                    "name": "Nothing is stored, the item keeps its current version and the layer's change sequence is unchanged.",
+                    "path": "spec/products/univ-server/layers/revise-or-retract-an-item.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636f-72bd-b194-1516b502f718",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 9,
+                    "name": "Univ Ingest shall decide each object's id by the catalogue entries it carries over from the previous release.",
+                    "path": "spec/products/univ-ingest/identity/keep-object-ids-stable.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f23-636f-72bd-b194-15178440da44",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 15,
+                    "name": "An object whose carried-over catalogue entries all belonged to one object of the previous release keeps that object's id, whatever new entries joined it.",
+                    "path": "spec/products/univ-ingest/identity/keep-object-ids-stable.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f23-636f-72bd-b194-151af96748e0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 21,
+                    "name": "An object that lost catalogue entries keeps its id while the entries it kept all belonged to it.",
+                    "path": "spec/products/univ-ingest/identity/keep-object-ids-stable.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f23-636f-72bd-b194-152dec6f0f74",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 19,
+                    "name": "Each object belongs to one scale domain: the one named by the source definition of the catalogue entry that holds its preferred measurement.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f1e-d177-716d-b124-3d011d9a2392",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 12,
+                    "name": "When a client lists releases, Univ Server shall return every release ever published, newest first, pruned releases included.",
+                    "path": "spec/products/univ-server/reference-data/list-and-pin-releases.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f1e-d177-716d-b124-3d1b89e0362b",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 46,
+                    "name": "When a client requests an object id that the release it reads from records as merged into another object or split into more than one, Univ Server shall direct the client to the objects of that release that replaced it.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1e-d177-716d-b124-3d1c08830bee",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 53,
+                    "name": "An id merged into one object answers with a permanent redirect to that object in the same release.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d164b16f644",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 42,
+                    "name": "Results come in a stable order, so paging a query whose layers have not changed returns the same pages.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d18140f9506",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 59,
+                    "name": "When a client queries a bounded volume, Univ Server shall return the addresses of the octree nodes of each scale domain that cover the volume, at most 4,096 per scale domain.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d19cdceaeab",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 66,
+                    "name": "The nodes of a scale domain are given at the deepest level, no deeper than the client asks for, at which no more than 4,096 nodes intersect the volume.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f20-1cb3-7721-97a0-4f21a598c53b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 44,
+                    "name": "A read of a retired layer by a caller allowed to read it answers 410 with problem details that give the retirement time.",
+                    "path": "spec/products/univ-server/layers/create-and-configure-a-layer.yaml"
+                  }
+                ],
+                "commit": "0dc1fa8f82f46c9da61ed27b6a25cffa584b558f",
+                "removed": [],
+                "revision": "0dc1fa8"
+              },
+              "errors": [],
+              "lock": null,
+              "outcome": "reported",
+              "repository": {
+                "branch": "feature/initial-spec",
+                "modified": [
+                  "spec/decisions/cap-volume-queries-and-return-covering-tiles.yaml",
+                  "spec/products/univ-ingest/identity/keep-object-ids-stable.yaml",
+                  "spec/products/univ-ingest/releases/build-octree-tiles.yaml",
+                  "spec/products/univ-server/layers/create-and-configure-a-layer.yaml",
+                  "spec/products/univ-server/layers/revise-or-retract-an-item.yaml",
+                  "spec/products/univ-server/reference-data/list-and-pin-releases.yaml",
+                  "spec/products/univ-server/reference-data/look-up-an-object.yaml",
+                  "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a19f2d-a037-70fc-9309-b476c55835fc
+    id: approve-review-fixes
+    kind: approval
+    versions:
+      - key: 01a19f2d-a038-77b8-be2a-14aa66bff3f2
+        at: 2026-11-03T02:12:09Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Approve the fixes for the eight review findings"
+        markdown: |-
+          Each finding is resolved where the review pointed. `loft fmt --check` and `loft check --fail-on warning` pass. Approving commits `spec/` as `spec: resolve review findings on the first draft`.
+
+          | # | Finding | Resolution |
+          |---|---|---|
+          | P1 | Unbounded octree-node list | At most **4,096 nodes per scale domain**, at the deepest level (no deeper than the client asks) that fits. The response names the level chosen. The decision's outcome says the same. |
+          | P2 | Retired private layer leaks with 410 | 410 only for callers allowed to read the layer. Everyone else gets the **same 404 as a missing layer**. |
+          | P2 | Revisions skip validation | New refusal Requirement: a revision is checked exactly like a publication, including **at least one source**. Nothing is stored, and the version and change sequence don't move. |
+          | P2 | Pruned releases listed and not listed | The listing returns **every release ever published**, with pruned ones marked by their pruning time. |
+          | P2 | Pages shift when layers change | Each cursor records the release and **each layer's change sequence**. A later page after a layer changed is refused with **409**, listing the layers, so a result is never skipped or repeated. Snapshots would need the as-of reads you dropped with 4D, so I didn't use them. |
+          | P2 | No scale domain for a cross-matched object | The object belongs to the domain named by the **source of its preferred measurement**. |
+          | P2 | Redirects break pinned reads | Merges and splits apply **as of the release read**: a pinned release where the id still exists returns that object. |
+          | P2 | Ids lost when new entries join | An object's id follows its **carried-over entries**. New entries joining, or entries dropping out, don't change it. An object made only of new entries gets a new id. |
+
+          One thing to look at: the 409 on a stale cursor means a client paging through a busy layer may have to restart its query. The alternative is a snapshot read, which needs the as-of machinery you removed.
+    responses:
+      - key: 01a19f2d-d459-7653-be52-5a8412adeae8
+        at: 2026-11-03T02:12:23Z
+        revision: 26
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a19f2d-dffe-73dd-b2e4-c0caef9ae500
+    id: review-fixes-summary
+    kind: note
+    versions:
+      - key: 01a19f2d-dffe-73dd-b2e4-c0cb0eca95ad
+        at: 2026-11-03T02:12:26Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        title: "Review findings resolved"
+        markdown: "All eight findings are resolved and approved, and committed as `spec: resolve review findings on the first draft` on `feature/initial-spec`. Nothing is merged. The build still waits to be asked for."
+        tone: success
+  - key: 01a19f2f-9ee4-7297-b040-ae34185f7f1a
+    id: published
+    kind: loft
+    versions:
+      - key: 01a19f2f-9ee4-7297-b040-ae359557d587
+        at: 2026-11-03T02:14:20Z
+        revision: 29
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        view: publish
+        note: "Published as **sequence 1** on `develop`, which `spec/loftspec.yaml` now names as the publish branch, at the owner's request. State root `d84d7a436045976e01bbeff555365768c13bebf8ba376ac10b00d03e773d48c7`. Labels assigned: 2 P, 11 FG, 33 F, 112 RQ, 292 AC, 46 CMP, 8 CON, 3 QA, 24 ADR."
+        recorded:
+          commit: "0eca2795b46076381fda83319ab6fd08c75c12bf"
+          branch: "develop"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T02:14:20Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 46,
+              "constraint": 8,
+              "criterion": 292,
+              "decision": 24,
+              "feature": 33,
+              "feature_group": 11,
+              "product": 2,
+              "quality_attribute": 3,
+              "requirement": 112
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "0eca2795b46076381fda83319ab6fd08c75c12bf",
+                "removed": [],
+                "revision": "0eca2795b46076381fda83319ab6fd08c75c12bf"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 1,
+                "publishedAt": "2026-11-03T02:14:13Z",
+                "stateRoot": "d84d7a436045976e01bbeff555365768c13bebf8ba376ac10b00d03e773d48c7"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

@@ -1,0 +1,64 @@
+# The overdensity of nearby galaxies in the north galactic hemisphere, the Virgo Supercluster of
+# de Vaucouleurs, as Tully 1982 bounds it in Cartesian supergalactic coordinates.
+name: Local Supercluster
+alternative_names: ["Virgo Supercluster"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: tully-1982
+    reference: "Tully 1982, ApJ 257, 389"
+    title: "The Local Supercluster"
+    bibcode: 1982ApJ...257..389T
+    read: "ADS scan of the article, its text layer (OCR) read beside the page images; the OCR's h^-1 restored"
+# The box the paper says roughly encloses the region of enhanced density, in h^-1 Mpc
+# (H0 = 100 h km/s/Mpc) from redshifts taken as distances.
+geometry:
+  kind: box
+  box:
+    frame: supergalactic
+    x:
+      - value: -10
+        unit: megaparsec_over_h
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: &limits
+          paper: tully-1982
+          sentence: "The region of enhanced density in the northern galactic hemisphere that is evident in Figures 1-3 and in the stereoscopic projections published by Yahil, Sandage, and Tammann (1980) is roughly enclosed by the limits: -10 h^-1 < SGX < +10 h^-1 Mpc, 0 < SGY < +15 h^-1 Mpc, -10 h^-1 < SGZ < +10 h^-1 Mpc."
+          page: 390
+      - value: 10
+        unit: megaparsec_over_h
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: *limits
+    y:
+      - value: 0
+        unit: megaparsec_over_h
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: *limits
+      - value: 15
+        unit: megaparsec_over_h
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: *limits
+    z:
+      - value: -10
+        unit: megaparsec_over_h
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: *limits
+      - value: 10
+        unit: megaparsec_over_h
+        kind: estimated
+        uncertainty: { form: none_reported }
+        cite: *limits
+values: {}
+disputes: []
+notes: >-
+  The box is the one the paper says roughly encloses the overdensity, not a boundary it traced:
+  distances are taken from redshifts with a strictly linear Hubble law, and the paper describes a
+  flattened disk and a halo of clouds within and somewhat beyond it. De Vaucouleurs named the
+  Local Supercluster earlier, on a distance scale since revised; this file uses Tully's
+  bounds. The scan's text layer garbles the h^-1 of each limit; the quote restores it as the page
+  prints it.

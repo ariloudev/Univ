@@ -1,0 +1,53 @@
+key: 01a19f1a-685d-7357-b67e-d658085bf5c8
+slug: univ-ingest
+name: "Univ Ingest"
+body: |
+  The command-line tool, run on the owner's machine, that downloads public sky data, normalizes
+  it, resolves catalogue entries into objects, and publishes the result as a release that Univ
+  Server serves.
+
+  Ingest runs offline from the server: nothing in Univ Server fetches from a data provider. A
+  release is built whole on the owner's machine and published only once it is complete.
+featureGroups:
+  - key: 01a19f1a-685d-7357-b67e-d6593dd0cb35
+    slug: acquisition
+    name: "Acquisition"
+    body: "Defining the sources a release draws on and fetching them reliably."
+    features:
+      - 01a19f22-2ad9-716e-876f-1831f423e25f
+      - 01a19f22-2ad9-716e-876f-18443b0ddcd6
+  - key: 01a19f1a-685d-7357-b67e-d65aba28b58f
+    slug: normalization
+    name: "Normalization"
+    body: "Turning each source's native records into the shared model, and deriving positions from them."
+    features:
+      - 01a19f22-2ad9-716e-876f-18530217fadb
+      - 01a19f22-2ad9-716e-876f-186219f4e104
+      - 01a19f22-2ad9-716e-876f-187ab1b6831a
+      - 01a1a825-fb4e-702c-a84f-bf71f70beb40
+  - key: 01a19f1a-685d-7357-b67e-d65bef1ca65c
+    slug: identity
+    name: "Identity"
+    body: "Resolving catalogue entries into one object per astrophysical body."
+    features:
+      - 01a19f23-636e-7035-8185-ab97eb9c2fb9
+      - 01a19f23-636e-7035-8185-aba1fc8f7bbd
+      - 01a19f23-636f-72bd-b194-1515b9ad9670
+  - key: 01a19f1a-685d-7357-b67e-d65c50ba74e7
+    slug: releases
+    name: "Releases"
+    body: "Building, publishing and pruning the immutable releases that Univ Server serves."
+    features:
+      - 01a19f23-636f-72bd-b194-151d9fb569d2
+      - 01a19f23-636f-72bd-b194-152a40334d81
+      - 01a19f23-636f-72bd-b194-15372421c144
+      - 01a19f23-636f-72bd-b194-153d515c188e
+  - key: 01a19f22-b0bc-76da-bac8-97900e1d406e
+    slug: operation
+    name: "Operation"
+    body: "Running Univ Ingest from a terminal and following what it does."
+    features:
+      - 01a19f22-b0bc-76da-bac8-977b37d09370
+constraints:
+  - key: 01a19f1a-685d-7357-b67e-d65d26c057bb
+    name: "Univ Ingest shall be a native Rust command-line program that runs on the owner's machine."

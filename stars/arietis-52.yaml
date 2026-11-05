@@ -1,0 +1,76 @@
+# 52 Arietis, B7Vn close visual binary (STF 346 AB) with a common-proper-motion companion C: Hipparcos-2 parallax error above a tenth, no Gaia parallax; unplaced.
+hip: 14376
+name: 52 Arietis
+alternative_names:
+- 52 Ari
+- HD 19134
+- HR 927
+- STF 346AB
+- ADS 2336
+papers:
+- id: gaia-edr3-2021
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021,
+    A&A 649, A1
+  title: Gaia Early Data Release 3. Summary of the contents and survey properties
+  bibcode: 2021A&A...649A...1G
+  doi: 10.1051/0004-6361/202039657
+  arxiv: '2012.01533'
+  read: catalogue table gaiadr3.gaia_source (astrometry identical to EDR3) queried by ADQL on the ESA
+    Gaia archive TAP; query and rows in texts/gaia-edr3-2021.txt (batch C section)
+- id: gaia-dr2-2018
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al.
+    2018, A&A 616, A1
+  title: Gaia Data Release 2. Summary of the contents and survey properties
+  bibcode: 2018A&A...616A...1G
+  doi: 10.1051/0004-6361/201833051
+  arxiv: '1804.09365'
+  read: catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; query and rows
+    in texts/gaia-dr2-2018.txt (batch C section)
+- id: tokovinin-2018
+  reference: Tokovinin 2018, ApJS 235, 6
+  title: The Updated Multiple Star Catalog
+  bibcode: 2018ApJS..235....6T
+  doi: 10.3847/1538-4365/aaa1a5
+  arxiv: '1712.04750'
+  read: components table J/ApJS/235/6/catalog (VizieR version of Dec 2023) queried by position on the
+    VizieR mirror vizier.cfa.harvard.edu; rows in texts/tokovinin-2018.txt
+- id: bailer-jones-2021
+  reference: Bailer-Jones, Rybizki, Fouesneau, Demleitner & Andrae 2021, AJ 161, 147
+  title: Estimating Distances from Parallaxes. V. Geometric and Photogeometric Distances to 1.47 Billion
+    Stars in Gaia Early Data Release 3
+  bibcode: 2021AJ....161..147B
+  doi: 10.3847/1538-3881/abd806
+  arxiv: '2012.05220'
+  read: table external.gaiaedr3_distance queried by ADQL on the ESA Gaia archive TAP for the companion's
+    source_id; row in texts/bailer-jones-2021.txt
+unplaced: No published distance for 52 Ari itself other than the Hipparcos-2 parallax, whose error is
+  above a tenth of the parallax; Gaia DR2 has no source for the primary and Gaia EDR3 only a two-parameter
+  solution (source 111968221155410560), and no cluster membership or modelling distance was found.
+disputes:
+- claim: The Multiple Star Catalog lists component C as part of the system, with a Gaia DR3 parallax of
+    5.32 mas.
+  cite:
+    paper: tokovinin-2018
+    table: J/ApJS/235/6/catalog
+    row: 03054+2515 C
+    column: plx; r_plx
+    cell: 5.32; DR3
+- claim: Gaia EDR3 gives C (source 111968221155410048) a parallax of 5.323047019157728 mas.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 111968221155410048
+    column: parallax
+    cell: '5.323047019157728'
+- claim: Bailer-Jones et al. give C a geometric distance of 186.96648 pc, between 185.84775 and 188.00052
+    pc.
+  cite:
+    paper: bailer-jones-2021
+    table: external.gaiaedr3_distance
+    row: source_id 111968221155410048
+    column: r_med_geo; r_lo_geo; r_hi_geo
+    cell: 186.96648; 185.84775; 188.00052
+notes: >-
+  Candidate from a companion, not used. No paper was found that applies C's distance to 52 Ari, and the
+  brief forbids applying it ourselves; the team made the same call for Almach and Rasalgethi. If companion
+  distances are accepted, this is the natural placement.

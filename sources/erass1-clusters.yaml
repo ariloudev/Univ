@@ -1,0 +1,146 @@
+id: erass1-clusters
+title: "eRASS1 galaxy clusters and groups, with optical properties"
+provider: erosita-de
+access:
+  method: files
+  files:
+    - { path: BulbulE_DR1/erass1cl_primary_v3.2.fits.tgz }
+    - { path: KlugeM_DR1/eRASS1_clusters_optical.fits.tgz }
+cuts:
+  - >-
+    Both files whole, 12,247 rows each: the primary catalogue of optically confirmed groups and
+    clusters detected as extended 0.2-2.3 keV sources over 13,116 deg^2 of the western Galactic
+    hemisphere (Bulbul et al. 2024), and their optical properties from the Legacy Surveys (Kluge et
+    al. 2024). The two are joined on DETUID. The cosmology subsample (5,259 rows) is not taken.
+  - >-
+    DETUID, NAME, RA, DEC, BEST_Z, BEST_ZERR, BEST_Z_TYPE and PCONT are read from the primary file;
+    Z_LAMBDA and Z_LAMBDA_ERR from the optical file (its own RA, DEC, BEST_Z and PCONT are not used).
+  - >-
+    BEST_Z_TYPE gives the kind of BEST_Z: photo_z rows (8,790 in the optical file) are photometric
+    estimates equal to the uncorrected Z_LAMBDA; spec_z_boot and cg_spec_z are spectroscopic
+    measurements; lit_z is literature, of mixed kind. BEST_Z spans 0.003 to 1.32.
+  - "PCONT is the probability that the source is a contaminant; it is kept, not cut on."
+  - "Positions are equatorial J2000 per the data model (ICRS or FK5 is not stated; no RADESYS keyword)."
+columns:
+  - { column: DETUID, field: identifier, unit: dimensionless }
+  - { column: NAME, field: name, unit: dimensionless }
+  - { column: RA, field: right_ascension, unit: degree }
+  - { column: DEC, field: declination, unit: degree }
+  - { column: BEST_Z, field: redshift, unit: dimensionless }
+  - { column: BEST_ZERR, field: redshift_error, unit: dimensionless }
+  - { column: BEST_Z_TYPE, field: quality, unit: dimensionless }
+  - { column: PCONT, field: quality, unit: dimensionless }
+  - { column: Z_LAMBDA, field: photometric_redshift, unit: dimensionless }
+  - { column: Z_LAMBDA_ERR, field: photometric_redshift_error, unit: dimensionless }
+frame: icrs
+epoch: 2000.0
+citation: >-
+  Bulbul E., Liu A., Kluge M., Zhang X., Sanders J.S., Bahar Y.E., et al. 2024, "The SRG/eROSITA
+  All-Sky Survey: The first catalog of galaxy clusters and groups in the Western Galactic
+  Hemisphere", A&A 685, A106. 2024A&A...685A.106B, doi:10.1051/0004-6361/202348264,
+  arXiv:2402.08452. Kluge M., Comparat J., Liu A., Balzer F., Bulbul E., Ider Chitham J., et al.
+  2024, "The SRG/eROSITA All-Sky Survey: Optical identification and properties of galaxy clusters
+  and groups in the western galactic hemisphere", A&A 688, A210. 2024A&A...688A.210K,
+  doi:10.1051/0004-6361/202349031, arXiv:2402.08453. DR1 reference: Merloni et al. 2024, A&A 682,
+  A34 (2024A&A...682A..34M).
+reference: { bibcode: "2024A&A...685A.106B", doi: "10.1051/0004-6361/202348264" }
+terms:
+  url: "https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/acknowledgement.html"
+  quote: "All publications based on eROSITA-DE data must include the following text:"
+  credit: |-
+    Cite Bulbul et al. 2024, A&A 685, A106; Kluge et al. 2024, A&A 688, A210; and Merloni et al. 2024, A&A 682, A34.
+    This work is based on data from eROSITA, the soft X-ray instrument aboard SRG, a joint Russian-German science mission supported by the Russian Space Agency (Roskosmos), in the interests of the Russian Academy of Sciences represented by its Space Research Institute (IKI), and the Deutsches Zentrum für Luft- und Raumfahrt (DLR). The SRG spacecraft was built by Lavochkin Association (NPOL) and its subcontractors, and is operated by NPOL with support from the Max Planck Institute for Extraterrestrial Physics (MPE).
+    The development and construction of the eROSITA X-ray instrument was led by MPE, with contributions from the Dr. Karl Remeis Observatory Bamberg & ECAP (FAU Erlangen-Nuernberg), the University of Hamburg Observatory, the Leibniz Institute for Astrophysics Potsdam (AIP), and the Institute for Astronomy and Astrophysics of the University of Tübingen, with the support of DLR and the Max Planck Society. The Argelander Institute for Astronomy of the University of Bonn and the Ludwig Maximilians Universität Munich also participated in the science preparation for eROSITA.
+    The eROSITA data shown here were processed using the eSASS software system developed by the German eROSITA consortium.
+    For the optical properties (https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/KlugeM_DR1/eRASS1_clusters_optical.html): The Legacy Surveys consist of three individual and complementary projects: the Dark Energy Camera Legacy Survey (DECaLS; Proposal ID #2014B-0404; PIs: David Schlegel and Arjun Dey), the Beijing-Arizona Sky Survey (BASS; NOAO Prop. ID #2015A-0801; PIs: Zhou Xu and Xiaohui Fan), and the Mayall z-band Legacy Survey (MzLS; Prop. ID #2016A-0453; PI: Arjun Dey). DECaLS, BASS and MzLS together include data obtained, respectively, at the Blanco telescope, Cerro Tololo Inter-American Observatory, NSF’s NOIRLab; the Bok telescope, Steward Observatory, University of Arizona; and the Mayall telescope, Kitt Peak National Observatory, NOIRLab. Pipeline processing and analyses of the data were supported by NOIRLab and the Lawrence Berkeley National Laboratory (LBNL). The Legacy Survey team makes use of data products from the Near-Earth Object Wide-field Infrared Survey Explorer (NEOWISE), which is a project of the Jet Propulsion Laboratory/California Institute of Technology. NEOWISE is funded by the National Aeronautics and Space Administration.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    The eROSITA-DE DR1 site states no licence (CC BY 4.0 was found only for the papers) and sets only
+    an acknowledgement requirement for publications, for data "released to the public" on 31 January
+    2024; CDS also republishes these tables in VizieR (J/A+A/685/A106, J/A+A/688/A210). Re-hosting the
+    raw files is not explicitly granted, so the files are fetched from their origin and derived values
+    carry the credit above. Provisional: judged again before any public deployment.
+scale_domain: cosmic_web
+mirrors:
+  - "https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1"
+fixes:
+  - defect: "BEST_Z_TYPE strings are NUL-padded in the optical file and space-padded in the primary file."
+    change: "Trailing NUL bytes and spaces are stripped from BEST_Z_TYPE before it is compared."
+    evidence: "Observed in both FITS tables on 2026-11-03 (values photo_z, spec_z_boot, cg_spec_z, lit_z)."
+  - defect: >-
+      The optical file has no EXTNAME (the data model calls the table HDU CATALOG) and no TUNIT
+      keywords, and the primary file's data-model page names it erass1cl_main_v3.2.fits while the
+      archive holds erass1cl_primary_v3.2.fits.
+    change: >-
+      The optical table is read from HDU 1 by position, with RA and DEC in degrees as the data model
+      gives them; the primary table is read from its HDU 1 (EXTNAME Joined), whatever the page calls
+      the file.
+    evidence: >-
+      Observed 2026-11-03: the optical FITS HDU 1 is a BINTABLE of 12,247 rows and 56 columns with no
+      EXTNAME or TUNIT; the primary tar member is erass1cl_primary_v3.2.fits with HDU 1 EXTNAME
+      Joined (12,247 rows, 85 columns), while
+      https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/BulbulE_DR1/erass1cl_primary_v3.2.html
+      says "Filename: erass1cl_main_v3.2.fits".
+  - defect: >-
+      On rows whose BEST_Z_TYPE is lit_z, the eROMaPPer photometric redshift Z_LAMBDA (and its error)
+      belongs to a foreground or background cluster, not to the X-ray cluster whose literature
+      redshift was adopted.
+    change: >-
+      On lit_z rows, Z_LAMBDA and Z_LAMBDA_ERR are dropped and the entry kept, with BEST_Z (the
+      literature redshift) as its redshift.
+    evidence: >-
+      Kluge et al. 2024 (arXiv:2402.08453v2 LaTeX source, read 2026-11-03), Appendix A
+      "Limitations & caveats", subsection "Cluster properties": "The cluster parameters were always
+      calculated at the photometric redshift $z_\lambda$. [...] In cases where the best redshift type
+      was changed to a literature redshift, the cluster parameters are not reliable because they
+      refer to a foreground or background cluster." Section 4.2.2 (Cluster redshifts) gives the 247
+      lit_z rows: (a) 126 outside the LS footprint, (b) 21 without an optical detection, (c) 95
+      whose optical detection is "in projection to the X-ray source", and (d) 5 whose z_lambda is
+      outside the red-sequence calibration range.
+    action:
+      kind: drop_when
+      columns: [Z_LAMBDA, Z_LAMBDA_ERR]
+      when: { column: BEST_Z_TYPE, is: [lit_z] }
+  - defect: >-
+      BEST_ZERR is -1.0 on 155 rows, all of them lit_z rows, including the Virgo cluster
+      (1eRASS J123049.2+122332, BEST_Z 0.003) and the Fornax cluster (1eRASS J033829.1-352701,
+      BEST_Z 0.005). The data model documents no sentinel: a negative one-sigma error cannot
+      stand, so the rows were left out under bad_uncertainty.
+    change: >-
+      A BEST_ZERR of exactly -1 is read as no error reported: the literature redshift is kept,
+      with its uncertainty marked as none reported, not as zero and not as -1.
+    evidence: >-
+      The data model of the primary file
+      (https://erosita.mpe.mpg.de/dr1/AllSkySurveyData_dr1/Catalogues_dr1/BulbulE_DR1/erass1cl_primary_v3.2.html,
+      read 2026-11-03) describes the column only as "BEST_ZERR float64 None 1 sigma error of
+      BEST_Z", with no sentinel. In erass1cl_primary_v3.2.fits (fetched 2026-11-03), 155 of the
+      12,247 rows have BEST_ZERR < 0, every one exactly -1.0 and every one with BEST_Z_TYPE
+      lit_z (of 247 lit_z rows); no other negative value occurs.
+    action: { kind: sentinel_error_is_none_reported, columns: [BEST_ZERR], value: -1.0 }
+normalization:
+  redshifts:
+    - column: BEST_Z
+      error: BEST_ZERR
+      frame: heliocentric
+      by_code:
+        column: BEST_Z_TYPE
+        codes:
+          photo_z: photometric
+          spec_z_boot: spectroscopic
+          cg_spec_z: spectroscopic
+          lit_z: photometric
+      basis: >-
+        Kluge et al. 2024 (arXiv:2402.08453v2, read 2026-11-03), Section 2: "Redshifts are given in
+        the heliocentric reference frame. No corrections for Virgo infall or the CMB dipole moment
+        have been applied." Section 3.4: "The literature redshift can either be photometric or
+        spectroscopic. We did not distinguish these two cases", so lit_z is taken as the less
+        certain kind, photometric.
+    - column: Z_LAMBDA
+      error: Z_LAMBDA_ERR
+      frame: heliocentric
+      kind: photometric
+      basis: >-
+        Kluge et al. 2024, Sections 2 and 3.2: z_lambda is the eROMaPPer red-sequence photometric
+        redshift, heliocentric as every redshift of the paper.

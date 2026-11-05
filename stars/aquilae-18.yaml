@@ -1,0 +1,43 @@
+# 18 Aquilae (Y Aql), B8III eclipsing spectroscopic binary with a visual companion (HEI 568): Hipparcos-2 parallax error above a tenth, no Gaia parallax; unplaced.
+hip: 93867
+name: 18 Aquilae
+alternative_names:
+- 18 Aql
+- Y Aql
+- HD 178125
+- HR 7248
+- HEI 568
+papers:
+- id: gaia-edr3-2021
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021,
+    A&A 649, A1
+  title: Gaia Early Data Release 3. Summary of the contents and survey properties
+  bibcode: 2021A&A...649A...1G
+  doi: 10.1051/0004-6361/202039657
+  arxiv: '2012.01533'
+  read: catalogue table gaiadr3.gaia_source (astrometry identical to EDR3) queried by ADQL on the ESA
+    Gaia archive TAP; query and rows in texts/gaia-edr3-2021.txt (batch C section)
+- id: gaia-dr2-2018
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al.
+    2018, A&A 616, A1
+  title: Gaia Data Release 2. Summary of the contents and survey properties
+  bibcode: 2018A&A...616A...1G
+  doi: 10.1051/0004-6361/201833051
+  arxiv: '1804.09365'
+  read: catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; query and rows
+    in texts/gaia-dr2-2018.txt (batch C section)
+- id: tokovinin-2018
+  reference: Tokovinin 2018, ApJS 235, 6
+  title: The Updated Multiple Star Catalog
+  bibcode: 2018ApJS..235....6T
+  doi: 10.3847/1538-4365/aaa1a5
+  arxiv: '1712.04750'
+  read: components table J/ApJS/235/6/catalog (VizieR version of Dec 2023) queried by position on the
+    VizieR mirror vizier.cfa.harvard.edu; rows in texts/tokovinin-2018.txt
+unplaced: No published distance other than the Hipparcos-2 parallax, whose error is above a tenth of the
+  parallax; Gaia DR2 and EDR3 give the star (source 4312637517357693696) only a two-parameter solution,
+  and no cluster membership or modelling distance was found.
+disputes: []
+notes: >-
+  The Multiple Star Catalog (Tokovinin 2018) carries only the Hipparcos-2 parallax for the system. Web
+  and arXiv searches found no dedicated study giving a distance.

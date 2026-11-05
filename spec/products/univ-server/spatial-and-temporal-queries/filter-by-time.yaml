@@ -1,0 +1,36 @@
+key: 01a19f1f-9fd7-7209-b7cb-5cf7de740462
+slug: filter-by-time
+name: "Filter by time"
+body: |
+  Narrowing a query to an interval of time by the time records of layer items, which is how
+  temporal layers are queried. Times in the first version are accepted in UTC or TT. UTC is
+  accepted from 1961-01-01, when it began, until the IERS leap-second table in force expires,
+  and is converted to TT with the IERS tables of TAI − UTC; earlier or later times are given in
+  TT, with any ΔT the client's to apply.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cfd642f3747
+requirements:
+  - key: 01a19f1f-9fd7-7209-b7cb-5cf8324f9e39
+    statement:
+      form: event_driven
+      when: "a query names an interval of time records"
+      system: "Univ Server"
+      shall: "return only the results whose time records of the named kind intersect the interval."
+    criteria:
+      - key: 01a19f1f-9fd7-7209-b7cb-5cf9a022ff00
+        name: "The query names the kind of time record compared: source event, arrival or discovery."
+      - key: 01a19f1f-9fd7-7209-b7cb-5cfa90995426
+        name: "A time record with an uncertainty interval matches when that interval intersects the query's interval."
+      - key: 01a19f1f-9fd7-7209-b7cb-5cfbeb2181d8
+        name: "A result with no time record of the named kind does not match."
+      - key: 01a19f1f-9fd7-7209-b7cb-5cfc576674a6
+        name: "A time given in UTC and a time given in TT are compared on TT."
+  - key: 01a19f1f-9fd7-7209-b7cb-5d002ef5c1f9
+    statement:
+      form: unwanted
+      if: "an interval ends before it starts or names an unknown timescale"
+      system: "Univ Server"
+      shall: "refuse the query and name the faulty bound or timescale."
+    criteria:
+      - key: 01a19f1f-9fd7-7209-b7cb-5d01d38e6cfa
+        name: "The response status is 400 with problem details that point at the faulty field."

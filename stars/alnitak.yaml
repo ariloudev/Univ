@@ -1,0 +1,60 @@
+# Alnitak, zeta Orionis A, O9.7Ib + B0.5IV binary in Orion's Belt: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 26727
+name: Alnitak
+alternative_names: ["zeta Orionis", "zet Ori", "50 Ori", "HD 37742"]
+papers:
+  - id: oplistilova-2023
+    reference: "Oplištilová, Mayer, Harmanec, Brož, Pigulski, Božić, Zasche, Šlechta, Pablo, Kołaczek-Szymański, Moffat, Lovekin, Wade, Zwintz, Popowicz & Weiss 2023, A&A 672, A31"
+    title: "Spectrum of the secondary component and new orbital elements of the massive triple star δ Ori A"
+    bibcode: 2023A&A...672A..31O
+    doi: 10.1051/0004-6361/202245272
+    arxiv: "2301.10290"
+    read: "arXiv PDF of 2301.10290v1, full text extracted with pypdf; abstract (PDF page 1), Sect. 3 (PDF page 3), Fig. 4 and Table 3 (PDF page 5) read"
+  - id: hummel-2013
+    reference: "Hummel, Rivinius, Nieva, Stahl, van Belle & Zavala 2013, A&A 554, A52"
+    title: "Dynamical mass of the O-type supergiant in Zeta Orionis A"
+    bibcode: 2013A&A...554A..52H
+    doi: 10.1051/0004-6361/201321434
+    arxiv: "1306.0330"
+    read: "arXiv PDF of 1306.0330v1, full text extracted with pypdf; abstract, Table 3 and Sects. 3.1-3.2 (PDF pages 4-5) read"
+distance:
+  value: 382
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 1 }
+  cite:
+    paper: oplistilova-2023
+    page: 3
+    sentence: "We used the distances of 131 members from the Gaia DR3 catalogue and estimated the median distance to be (382 ± 1) pc, using a cumulative distribution function that is sensitive to the local number density of stars (see Fig. 4)."
+  distance_kind: geometric
+  method: "median Gaia DR3 parallax distance of the members of the Orion OB1b subgroup (membership after Brown et al.)"
+membership:
+  paper: oplistilova-2023
+  table: "3"
+  row: "37742 ζ Ori"
+  column: "Notes"
+  cell: "OB1b, multiple"
+disputes:
+  - claim: "Hummel et al. derive an orbital parallax of 3.4 ± 0.2 mas, a distance of 294 ± 21 pc, from the NPOI orbit and the radial velocities of both components; it disagrees with the OB1b distance."
+    cite:
+      paper: hummel-2013
+      page: 4
+      sentence: "An orbital parallax of 3.4 ± 0.2 mas was derived, corresponding to a distance of d = 294 ± 21 pc and a distance modulus of 7.4."
+  - claim: "Hummel et al. estimate a photometric distance of 387 ± 54 pc for the system."
+    cite:
+      paper: hummel-2013
+      page: 5
+      sentence: "Taking 0.3 mag as combined uncertainty for the distance modulus from MV, mV, and AV, the photometric distance to the ζ Ori system is d = 387 ± 54 pc, i.e. the photometric parallax is πphot = 2.6^{+0.4}_{-0.3} mas."
+  - claim: "Hummel et al. themselves regard the photometric distance as more robust than their orbital parallax, which rests on low velocity amplitudes."
+    cite:
+      paper: hummel-2013
+      page: 5
+      sentence: "As the photometric distance is based on a reliable spectral classification of a non-supergiant for which recent calibrations of the absolute magnitude exist Nieva (2013), we regard the photometric distance as more robust than the orbital parallax, which is based on rather low velocity amplitudes."
+notes: >-
+  Choice made against the brief's default order and worth a second look. Hummel et al. give a
+  measured orbital parallax with an error under a tenth of its value, which would normally come
+  first. But the authors themselves prefer their photometric distance, which agrees with the
+  OB1b distance, and suspect small systematic radial-velocity errors from stellar winds. The OB1b
+  distance rests on Gaia DR3 parallaxes, so it is preferred here. Oplištilová et al. also list a
+  Gaia DR3 parallax for the faint ζ Ori C (their Table 3) without establishing that it is bound.
+  The error is the uncertainty of the median, not the depth of OB1b.

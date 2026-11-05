@@ -1,0 +1,30 @@
+# sigma Orionis (48 Ori), O9.5V multiple: Hipparcos-2 parallax 3.04 ± 8.92 mas is useless, no Gaia DR3 parallax; placed by its interferometric orbital parallax.
+hip: 26549
+name: sigma Orionis
+alternative_names: ["sigma Ori", "48 Ori", "HD 37468", "HR 1931"]
+papers:
+  - id: schaefer-2016
+    reference: "Schaefer, Hummel, Gies, Zavala, Monnier, Walter, Turner, Baron et al. 2016, AJ 152, 213"
+    title: "Orbits, Distance, and Stellar Masses of the Massive Triple Star σ Orionis"
+    bibcode: 2016AJ....152..213S
+    doi: 10.3847/0004-6256/152/6/213
+    arxiv: "1610.01984"
+    read: "arXiv PDF of 1610.01984v1, text extracted with pdfminer.six; bibcode checked on SIMBAD's reference page"
+parallax:
+  value: 2.5806
+  unit: milliarcsecond
+  kind: measured
+  uncertainty: { form: symmetric, sigma: 0.0088 }
+  cite:
+    paper: schaefer-2016
+    page: 11
+    sentence: "The orbital parallax of π = 2.5806 ± 0.0088 mas gives a distance d = 387.5 ± 1.3 pc to the σ Orionis system."
+  distance_kind: parallax
+  method: "orbital parallax: CHARA, NPOI and VLTI visual orbit of the spectroscopic pair Aa,Ab combined with radial velocities"
+disputes: []
+notes: >-
+  The abstract states that "The orbital parallax provides a precise distance of 387.5 ± 1.3 pc to the system."
+  The paper sets this against the Hipparcos-1 and Hipparcos-2 parallaxes, both far less precise, and notes that
+  "σ Orionis presents a difficult problem for the Hipparcos analysis as it is bright and occasionally
+  saturated". It also reviews earlier distances to the σ Orionis cluster. The orbital parallax belongs to the
+  Aa,Ab + B triple, which is the Hipparcos source. Gaia DR2 and EDR3 give the bright source no parallax.

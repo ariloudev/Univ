@@ -1,0 +1,115 @@
+key: 01a1a3ab-a8c7-73ad-a8eb-40a29a5dccd4
+id: w4-close
+versions:
+  - key: 01a1a3ab-a8c7-73ad-a8eb-40aa0df509d1
+    at: 2026-11-03T23:08:18Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W4 close: review, gate, trace, merge"
+    goal: "W4's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: planned
+  - key: 01a1a3c7-74b0-718e-8354-1e994a155971
+    at: 2026-11-03T23:38:40Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "W4 close: review, gate, trace, merge"
+    goal: "W4's review findings are fixed, the gate and integration run are green, its tests are traced, and it is merged into product/server"
+    status: done
+blocks:
+  - key: 01a1a3c7-74b0-718e-8354-1e9007a22c55
+    id: t4-review
+    kind: task
+    versions:
+      - key: 01a1a3c7-74b0-718e-8354-1e95d1cf71c6
+        at: 2026-11-03T23:38:40Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Review W4 and fix the findings"
+        detail: |-
+          Correctness and simplify reviews ran on W4's own diff. Fixed in ebf228b:
+          - failed credentials were never rate limited (owner secret guessable at any speed);
+          - a quota above 2^53−1 made a key unlistable and unrevocable;
+          - the lookup bench would hit the anonymous limit;
+          - the 429 e2e test could flip at a minute boundary;
+          - nothing held `wrangler.toml`'s limits to the tiers;
+          - one UPDATE … RETURNING per change, one hex encoder, humantime, headers carried by Problem, shared test helpers, and bindings resolved on use.
+
+          Deferred to W5: passing the caller to handlers, and reading bodies after authentication.
+        state: done
+  - key: 01a1a3c7-74b0-718e-8354-1e91c184bf72
+    id: t4-gate
+    kind: task
+    versions:
+      - key: 01a1a3c7-74b0-718e-8354-1e967b2ead4d
+        at: 2026-11-03T23:38:40Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration run"
+        detail: "`cargo xtask check` passed all 12 gates; `cargo xtask integration` passed 3 access e2e tests (including a real 429 on a basic key's 301st request) and 18 others."
+        state: done
+  - key: 01a1a3c7-74b0-718e-8354-1e922fd9ae6b
+    id: w4-trace
+    kind: loft
+    versions:
+      - key: 01a1a3c7-74b0-718e-8354-1e97276ec8db
+        at: 2026-11-03T23:38:40Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "W4 links 15 criteria: AC-261 to AC-269, AC-272, AC-277, AC-278, AC-280, and the three tier criteria. AC-258 to AC-260, AC-264, AC-270, AC-271 and AC-279 need layer writes and are linked in W5."
+        base: "cf774a1"
+        recorded:
+          commit: "c000ead1a3ee882c8867892dc9b80d25c7b871c4"
+          branch: "stage/server-w4"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-03T23:38:39Z
+        report: |
+          {
+            "base": "cf774a1",
+            "commit": "cf774a1f4e7b2bc6d2fcb09d5fd67077d0fe9326",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 335,
+              "linked": 253,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a3c7-74b0-718e-8354-1e9374f38dbd
+    id: w4-result
+    kind: note
+    versions:
+      - key: 01a1a3c7-74b0-718e-8354-1e98b49d3419
+        at: 2026-11-03T23:38:40Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What W4 produced"
+        markdown: |-
+          | Area | Result |
+          |---|---|
+          | Owner | `/v1/owner/keys`: issue, list, change, revoke, with the owner secret as bearer token (compared in constant time); 401 without it, changing nothing |
+          | Keys | 256-bit secrets, returned once, stored as SHA-256; default quotas (100 layers, 100,000 items, 64 KiB) and the standard tier |
+          | Authentication | bearer key checked before routing; unknown and revoked keys get identical 401s |
+          | Rate limits | anonymous 300/60 s per address (failed credentials included); basic 300, standard 1,200, extended 6,000 per key; 429 with `Retry-After: 60` |
+
+          **For W5:** quotas are stored and changeable but not yet enforced; usage per key needs layers; bodies are read before authentication.
+        tone: success

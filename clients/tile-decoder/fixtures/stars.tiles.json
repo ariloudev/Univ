@@ -1,0 +1,40 @@
+{
+  "about": "Tiles of Univ Ingest's fixture release, real data, as the Rust encoder writes them, with each point's position before quantization. Checked against what ingest builds by univ-ingest's test tile_decoder_fixtures; UPDATE_FIXTURES=1 cargo test -p univ-ingest --test tile_decoder_fixtures rewrites them.",
+  "scale_domain": "stars",
+  "tiles": [
+    {
+      "address": "r",
+      "hex": "5556544c02000000020000000000000000000000000070c000000000000070c000000000000070c00000000000008040fbe80080fe819b960080fe7706000000000000000700000000000000000001000100300064000202",
+      "points": [
+        {
+          "id": 6,
+          "position": [
+            209.96206870695423,
+            0.0033415011366218594,
+            3.991201965649772
+          ],
+          "source": "researched-star-distances",
+          "kind": "estimated",
+          "colour": [
+            0.482,
+            "B-V"
+          ]
+        },
+        {
+          "id": 7,
+          "position": [
+            45.21094783143046,
+            0.0029964362259579038,
+            -16.009003909399382
+          ],
+          "source": "hipparcos-2007",
+          "kind": "measured",
+          "colour": [
+            0.999,
+            "B-V"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+key: 01a19efd-1563-705e-a96b-1e48357b4d4f
+id: asked-toolu-01jnpjnhsh94kbenowexe2uh
+versions:
+  - key: 01a19efd-1563-705e-a96b-1e4a18327138
+    at: 2026-11-03T01:19:08Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+    title: "Asked in the session"
+    status: active
+blocks:
+  - key: 01a19efd-1563-705e-a96b-1e498a39273c
+    id: ask-toolu-01jnpjnhsh94kbenowexe2uh-1
+    kind: question
+    versions:
+      - key: 01a19efd-1563-705e-a96b-1e4bd03540a6
+        at: 2026-11-03T01:19:08Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "dbe06352-d73b-4e8a-b959-235a3a2018c7"
+        prompt: "There's no crate called `loft` at 2.3.0-alpha.3 on crates.io: `loft` is an unrelated scripting language, latest 0.0.1-alpha.22. The Loft tool is published as several crates that all have 2.3.0-alpha.3. Which one should univ-server depend on? (I'd pin it exactly with `=`, since a plain requirement would also accept 2.3.0-alpha.4.)"
+        header: "Loft crate"
+        options:
+          - label: "loftspec"
+            detail: "The Loft Specification Format library: document model, identity, canonical bytes, hashing. The usual choice if the server reads or writes Loft specs."
+            recommended: true
+          - label: "loft-cli"
+            detail: "The crate the `loft` command comes from. It's built mainly as a binary, so it may not work as a library dependency."
+          - label: "loftspec + loftspec-store"
+            detail: "The format library plus the memory and file stores for Loft documents."
+          - label: "No Cargo dependency"
+            detail: "The loft 2.3.0-alpha.3 CLI is already installed and the plugin is pinned to it, so skip Cargo.toml."
+        ownWords: true
+    responses:
+      - key: 01a19efd-eb60-73bc-a033-fe35e6926ae5
+        at: 2026-11-03T01:20:03Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "No Cargo dependency"

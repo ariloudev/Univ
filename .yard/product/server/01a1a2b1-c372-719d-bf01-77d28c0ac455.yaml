@@ -1,0 +1,48 @@
+key: 01a1a2b1-c372-719d-bf01-77d28c0ac455
+id: dev-process
+versions:
+  - key: 01a1a2b1-c372-719d-bf01-77d5730dd478
+    at: 2026-11-03T18:35:21Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Confirm the dev process"
+    goal: "The ingest dev process, with the full gate moved to each stage's or wave's end, is the agreed routine for Univ Server"
+    status: active
+  - key: 01a1a2b1-dff1-73e5-8071-c715f3d9bac7
+    at: 2026-11-03T18:35:28Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "Confirm the dev process"
+    goal: "The ingest dev process, with the full gate moved to each stage's or wave's end, is the agreed routine for Univ Server"
+    status: done
+blocks:
+  - key: 01a1a2b1-dff1-73e5-8071-c713a5a61038
+    id: process-carried-over
+    kind: note
+    versions:
+      - key: 01a1a2b1-dff1-73e5-8071-c7147f3bdde3
+        at: 2026-11-03T18:35:28Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The routine carried over from Univ Ingest, with one change"
+        markdown: |-
+          The routine settled on `product/ingest` (decisions 1–5 of its Yard Log) and the owner's standing rules apply to Univ Server. One change came with this request.
+
+          | Rule | How it applies to Univ Server |
+          |---|---|
+          | Waves | `stage/server-wN`, cut from `product/server`, each with its own Yard Log |
+          | Wave close | `/simplify` and `/code-review` in parallel, findings fixed as tasks in the wave |
+          | **Full gate (new)** | `cargo xtask check` runs **only at the end of each stage or wave**; between tasks, focused checks on what changed (`cargo test -p`, `cargo clippy -p … -D warnings`, `cargo fmt --check`, `loft check` after spec edits) |
+          | Committing on the gate | commit on the gate's own exit status, never via `\| tail` |
+          | Merges | none into `product/server`, `develop` or `main` until the owner asks |
+          | Spec first | `spec/` changes are approved before code; tests traced in `loft.trace.yaml` |
+          | Code rules | clippy pedantic + guards, 500 lines per `.rs` file, `cargo fmt --check`, no network in tests |
+          | Data | internal data YAML; JSON only where the spec fixes it (API, tile manifests) |
+          | Long fetches | in the background, monitored |
+        tone: info

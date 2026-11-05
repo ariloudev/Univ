@@ -1,0 +1,64 @@
+key: 01a19f25-5955-701e-b3cf-dd924403377d
+slug: derive-positions-at-ingest
+title: "Derive positions at ingest and serve them beside the native values"
+context: "Measured values such as redshifts must be kept, but every client needs ready three-dimensional positions, and computing them per request is costly."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dd95d40be69d
+  outcome: "Every derived value is computed at ingest under the release cosmology, beside the native value it came from."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dd9372051361
+    kind: local
+    label: "Honesty"
+    statement: "What was measured stays visible beside what was derived."
+  - key: 01a19f25-5955-701e-b3cf-dd9438e34c17
+    kind: local
+    label: "Fast clients"
+    statement: "A client gets positions without computing them."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dd95d40be69d
+    title: "Ingest derives, both served"
+    description: "Ingest stores native values and derives positions under a named cosmology."
+  - key: 01a19f25-5955-701e-b3cf-dd969f6f9a4a
+    title: "Native only"
+    description: "Clients derive positions with a shared library."
+  - key: 01a19f25-5955-701e-b3cf-dd976d397591
+    title: "Server derives on request"
+    description: "The Worker converts for any cosmology a request names."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dd95d40be69d
+    driver: 01a19f25-5955-701e-b3cf-dd9372051361
+    rating: supports
+    rationale: "native and derived values are both served with the transformation"
+  - option: 01a19f25-5955-701e-b3cf-dd95d40be69d
+    driver: 01a19f25-5955-701e-b3cf-dd9438e34c17
+    rating: supports
+    rationale: "positions are precomputed"
+  - option: 01a19f25-5955-701e-b3cf-dd969f6f9a4a
+    driver: 01a19f25-5955-701e-b3cf-dd9372051361
+    rating: supports
+    rationale: "only measured values are served"
+  - option: 01a19f25-5955-701e-b3cf-dd969f6f9a4a
+    driver: 01a19f25-5955-701e-b3cf-dd9438e34c17
+    rating: conflicts
+    rationale: "every client repeats the work"
+  - option: 01a19f25-5955-701e-b3cf-dd976d397591
+    driver: 01a19f25-5955-701e-b3cf-dd9372051361
+    rating: supports
+    rationale: "native values are kept"
+  - option: 01a19f25-5955-701e-b3cf-dd976d397591
+    driver: 01a19f25-5955-701e-b3cf-dd9438e34c17
+    rating: conflicts
+    rationale: "bulk conversions cost CPU per request"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dd9803d4528e
+    kind: cost
+    statement: "Another cosmology needs another ingest run."
+  - key: 01a19f25-5955-701e-b3cf-dd99521e1afe
+    kind: obligation
+    statement: "Each derived value records its cosmology and chain of transformations."
+subjects:
+  - role: affected
+    node: 01a19f22-2ad9-716e-876f-186219f4e104
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-18530217fadb

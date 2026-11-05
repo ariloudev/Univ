@@ -1,0 +1,95 @@
+session: 8a28c3c8-b122-421a-a3de-8664f4b8b6df
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-04T13:13:35Z
+turns:
+  - started: 2026-11-04T12:26:35Z
+    ended: 2026-11-04T13:03:51Z
+  - started: 2026-11-04T13:05:30Z
+    ended: 2026-11-04T13:05:34Z
+  - started: 2026-11-04T13:06:46Z
+    ended: 2026-11-04T13:11:03Z
+  - started: 2026-11-04T13:13:35Z
+subagents:
+  - agent: adcc1c1f63790dd4b
+    type: general-purpose
+    started: 2026-11-04T13:03:42Z
+    ended: 2026-11-04T13:05:30Z
+    stage: 01a1a686-8188-775c-986e-63222598951e
+plan:
+  - started: 2026-11-04T12:45:35Z
+    ended: 2026-11-04T12:46:25Z
+loft:
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-04T12:29:21Z
+    ended: 2026-11-04T12:29:22Z
+    failed: false
+    stage: 01a1a686-8188-775c-986e-63222598951e
+  - commands:
+      - check
+    agent: main
+    started: 2026-11-04T12:29:25Z
+    ended: 2026-11-04T12:29:26Z
+    failed: false
+    stage: 01a1a686-8188-775c-986e-63222598951e
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-04T13:02:32Z
+    ended: 2026-11-04T13:02:34Z
+    failed: false
+    stage: 01a1a686-8188-775c-986e-63222598951e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-04T13:02:55Z
+    ended: 2026-11-04T13:02:56Z
+    failed: false
+    stage: 01a1a686-8188-775c-986e-63222598951e
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-04T13:03:14Z
+    ended: 2026-11-04T13:03:15Z
+    failed: false
+    stage: 01a1a686-8188-775c-986e-63222598951e
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-04T13:03:18Z
+    ended: 2026-11-04T13:03:20Z
+    failed: false
+    stage: 01a1a686-8188-775c-986e-63222598951e
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-04T13:09:15Z
+    ended: 2026-11-04T13:09:30Z
+    failed: false
+    stage: 01a1a686-8188-775c-986e-63222598951e

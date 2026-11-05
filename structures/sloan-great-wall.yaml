@@ -1,0 +1,97 @@
+# The wall of galaxies seen in the SDSS equatorial slice, longer than the CfA2 Great Wall.
+name: Sloan Great Wall
+alternative_names: ["SDSS Great Wall"]
+kind: wall
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: gott-2005
+    reference: "Gott, Jurić, Schlegel, Hoyle, Vogeley, Tegmark, Bahcall & Brinkmann 2005, ApJ 624, 463"
+    title: "A Map of the Universe"
+    doi: 10.1086/428890
+    bibcode: 2005ApJ...624..463G
+    arxiv: "astro-ph/0310571"
+    read: "arXiv source (LaTeX) of astro-ph/0310571"
+# The wall as seen in the 4°-thick SDSS equatorial slice: its declination extent beyond the slice
+# is not given.
+geometry:
+  kind: sky_region
+  sky_region:
+    frame: equatorial_equinox_unstated
+    lon:
+      - value: 130.5
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "8.7h"
+        cite: &run
+          paper: gott-2005
+          sentence: "So although the CfA2 Great Wall stretches from 9h to 16.7h (or 7.7 hours of right ascension), as compared with the SDSS Great Wall which stretches from 8.7h to 13.7h (or 5 hours of right ascension) its real length in co-moving coordinates relative to the CfA2 Great Wall is, by this simple analysis, 2.5 × 5/(7.7 × 1.07) ≈ 1.74 times as long."
+      - value: 205.5
+        unit: degree
+        kind: estimated
+        uncertainty: { form: none_reported }
+        as_published: "13.7h"
+        cite: *run
+    lat:
+      - value: -2
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &slice
+          paper: gott-2005
+          sentence: "But virtually complete already is an equatorial slice 4 degrees wide (-2° < δ < 2°) centered on the celestial equator covering both northern and southern galactic hemispheres."
+      - value: 2
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *slice
+    near:
+      distance:
+        value: 215
+        unit: megaparsec
+        kind: estimated
+        uncertainty: { form: none_reported }
+        assumes: "comoving distance, H0 = 71 km/s/Mpc, Ωm = 0.27, ΩΛ = 0.73 (WMAP)"
+        cite: &depth
+          paper: gott-2005
+          sentence: "To the right, at RA of 9h-14h and at a distance of 215 -- 370 Mpc we can see a Sloan Great Wall in the SDSS data, longer than the Great Wall of Geller and Huchra (the CfA2 Great Wall)."
+    far:
+      distance:
+        value: 370
+        unit: megaparsec
+        kind: estimated
+        uncertainty: { form: none_reported }
+        assumes: "comoving distance, H0 = 71 km/s/Mpc, Ωm = 0.27, ΩΛ = 0.73 (WMAP)"
+        cite: *depth
+values:
+  median_distance:
+    value: 310
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: "comoving distance, H0 = 71 km/s/Mpc, Ωm = 0.27, ΩΛ = 0.73 (WMAP)"
+    cite: &length
+      paper: gott-2005
+      sentence: "The Sloan Great Wall is at a median distance of 310 Mpc. It's total length in co-moving coordinates is 450 Mpc as compared with the total length of the Great Wall of Geller and Huchra which is 240 Mpc long in co-moving coordinates."
+  comoving_length:
+    value: 450
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: "H0 = 71 km/s/Mpc, Ωm = 0.27, ΩΛ = 0.73 (WMAP)"
+    cite: *length
+  redshift:
+    value: 0.073
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: gott-2005
+      sentence: "The Sloan great wall is at a redshift of z = 0.073 so it's true observed length is 419 Mpc (or 1,365 million light years)."
+disputes: []
+notes: >-
+  The paper gives the wall's run in right ascension twice, as 8.7h to 14h (in the text describing
+  its map) and as 8.7h to 13.7h (in the comparison with the CfA2 wall); the second is used. It
+  splits into two strands between 11.3h and 9.8h. The declination bounds are those of the SDSS
+  slice, which only samples the wall. The equinox of the map is not stated.

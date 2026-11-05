@@ -1,0 +1,42 @@
+# Propus, eta Geminorum (7 Gem), M3III semiregular, eclipsing: Hipparcos-2 parallax error above a tenth, no Gaia DR3 parallax; unplaced.
+hip: 29655
+name: Propus
+alternative_names: ["eta Geminorum", "eta Gem", "7 Gem", "HD 42995", "HR 2216"]
+papers:
+  - id: torres-2022
+    reference: "Torres & Sakano 2022, MNRAS 516, 2514"
+    title: "η Geminorum: an eclipsing semiregular variable star orbited by a companion surrounded by an extended disc"
+    bibcode: 2022MNRAS.516.2514T
+    doi: 10.1093/mnras/stac2322
+    arxiv: "2208.07375"
+    read: "arXiv PDF of 2208.07375v1, text extracted with pdfminer.six; bibcode checked on SIMBAD's reference page"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+unplaced: "no published distance other than trigonometric parallaxes whose errors exceed a tenth of their values and which disagree with one another; Gaia DR3 gives no parallax"
+disputes:
+  - claim: "The original Hipparcos catalogue gave a parallax of 9.34±1.99 mas."
+    cite:
+      paper: torres-2022
+      page: 4
+      sentence: "Parallax determinations for η Gem have been problematic: the original Hipparcos catalog (ESA 1997, source identifier HIP 29655) reported a much different value of π = 9.34±1.99 mas."
+  - claim: "The revised Hipparcos catalogue gives 8.48 ± 1.23 mas, and Gaia DR3 gives no parallax."
+    cite:
+      paper: torres-2022
+      page: 4
+      sentence: "The revised Hipparcos catalog (van Leeuwen 2007) gives π = 8.48 ± 1.23 mas, and the most recent release of Gaia (DR3; Gaia Collaboration et al. 2022, source ID 3377072212924335488) gives no value at all."
+  - claim: "Gaia DR2 gives 4.73 ± 1.02 mas, the value Baines et al. adopted, with an error above a fifth of the parallax."
+    cite:
+      paper: torres-2022
+      page: 4
+      sentence: "Baines et al. (2021) converted this to an absolute radius using a distance inferred from the parallax of the star (πDR2 = 4.73 ± 1.02 mas), which they adopted from the second data release (DR2) of Gaia (Gaia Collaboration et al. 2018, source identifier 3377072212925223424)."
+notes: >-
+  Torres & Sakano 2022 call the parallax determinations of eta Gem problematic. They attribute this to the
+  star's large angular size and pulsation, which can shift its centre of light, and they adopt the Gaia DR2
+  parallax for their radius. The Gaia DR2 row is in texts/gaia-dr2-2018.txt. No orbital, group or modelling
+  distance was found. The eclipsing-binary solution of Torres & Sakano gives a relative radius, not a
+  distance.

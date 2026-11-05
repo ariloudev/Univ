@@ -1,0 +1,70 @@
+key: 01a19f23-636f-72bd-b194-152a40334d81
+slug: build-octree-tiles
+name: "Build octree tiles"
+body: |
+  Laying out each scale domain's points as an octree of tiles, so that a client loads a coarse
+  view first and finer detail only where it looks.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cf0a98909c1
+  - 01a19f1e-d177-716d-b124-3cf4d7ad065c
+requirements:
+  - key: 01a19f23-636f-72bd-b194-152b36f5a5b5
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-152c99726521
+        name: "Each scale domain has its own root: stars in parsecs, nearby galaxies and cosmic web in megaparsecs."
+      - key: 01a19f23-636f-72bd-b194-152dec6f0f74
+        name: "Each object belongs to one scale domain: stars where the source definition of the catalogue entry that holds its preferred distance names stars, and otherwise nearby galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the distance came from."
+      - key: 01a19f23-636f-72bd-b194-152e3b4f79ee
+        name: "A node is split when it holds more points than the release's split threshold, down to the release's maximum depth."
+      - key: 01a19f23-636f-72bd-b194-152f904380b9
+        name: "Each level holds an even random subsample, and a finer level adds points without repeating those of the levels above it."
+      - key: 01a19f23-636f-72bd-b194-15306fd09eef
+        name: "The subsample is drawn with a seed recorded in the tile manifest."
+  - key: 01a19f23-636f-72bd-b194-1531af0609ed
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "encode each point of a tile with its position, object id, source and kind of value."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-15326d1a7654
+        name: "Positions are quantized relative to their node, with a step no coarser than 1/65,536 of the node's edge."
+      - key: 01a19f23-636f-72bd-b194-1533772ccbaf
+        name: "The tile manifest states the encoding version and the quantization step of each level."
+  - key: 01a1a6e4-22e1-765d-b404-01fa1bdbef62
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "encode, from encoding version 2, each point's colour index where its object has one."
+    criteria:
+      - key: 01a1a6e4-22e1-765d-b404-01fbef6c729e
+        name: "A point of the stars domain carries its object's Gaia BP−RP where it has one, else its Hipparcos-2 B−V, else its BP−RP derived from the Gaia Catalogue of Nearby Stars, with the bands it is between."
+      - key: 01a1a6e4-22e1-765d-b404-01fc7402e820
+        name: "A point whose object has no colour index carries none, which no colour index encodes."
+      - key: 01a1a6e4-22e1-765d-b404-01fd633d5f44
+        name: "A colour index is encoded within 0.01 magnitudes of the value it was built from."
+  - key: 01a19f23-636f-72bd-b194-1534af285ad4
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "build byte-identical tiles from identical inputs."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-153527b1bfc8
+        name: "Two builds from the same sources, rules and seed give tiles with the same SHA-256."
+qualityAttributes:
+  - key: 01a19f23-636f-72bd-b194-1536b3b46eba
+    name: "Univ Ingest shall keep every tile within 1 MiB."
+    qaKind: capacity
+    qualityTarget:
+      metric: "tile.size"
+      band:
+        kind: at_most
+        upper: "1048576"
+      unit: "bytes"
+      aggregation: maximum
+      scenario: "Every tile of the first full release"
+      environment: "The release as built on the owner's machine"
+    verificationFate: proved

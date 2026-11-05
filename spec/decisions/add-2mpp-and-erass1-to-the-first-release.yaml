@@ -1,0 +1,66 @@
+key: 01a19f25-5955-701e-b3cf-dd72f555d5ab
+slug: add-2mpp-and-erass1-to-the-first-release
+title: "Add 2M++, its reconstruction and the eRASS1 clusters to the first release"
+context: "The owner proposed further datasets. Checked against their papers, 2M++, its reconstruction and the eRASS1 clusters are small and real, while DESI DR1 and COSMOS-Web need more."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-dd7523271f12
+  outcome: "The first release adds the 2M++ catalogue and groups, the 2M++ reconstruction and the eRASS1 clusters."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-dd73325c6cd4
+    kind: local
+    label: "Value"
+    statement: "Each addition adds sky, structures or an independent reconstruction."
+  - key: 01a19f25-5955-701e-b3cf-dd7461ac80d4
+    kind: local
+    label: "Effort"
+    statement: "The first release stays buildable."
+options:
+  - key: 01a19f25-5955-701e-b3cf-dd7523271f12
+    title: "2M++, its reconstruction and eRASS1"
+    description: "The three small additions, with COSMOS-Web and DESI later."
+  - key: 01a19f25-5955-701e-b3cf-dd76073a82d8
+    title: "All five"
+    description: "The three plus COSMOS-Web groups and DESI DR1."
+  - key: 01a19f25-5955-701e-b3cf-dd77e65537da
+    title: "None"
+    description: "The first release keeps its original sources."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-dd7523271f12
+    driver: 01a19f25-5955-701e-b3cf-dd73325c6cd4
+    rating: supports
+    rationale: "uniform all-sky galaxies, groups, X-ray clusters and a second reconstruction"
+  - option: 01a19f25-5955-701e-b3cf-dd7523271f12
+    driver: 01a19f25-5955-701e-b3cf-dd7461ac80d4
+    rating: supports
+    rationale: "each is small"
+  - option: 01a19f25-5955-701e-b3cf-dd76073a82d8
+    driver: 01a19f25-5955-701e-b3cf-dd73325c6cd4
+    rating: supports
+    rationale: "the most data"
+  - option: 01a19f25-5955-701e-b3cf-dd76073a82d8
+    driver: 01a19f25-5955-701e-b3cf-dd7461ac80d4
+    rating: conflicts
+    rationale: "DESI needs R2 shards and a new deep-field domain is needed for COSMOS-Web"
+  - option: 01a19f25-5955-701e-b3cf-dd77e65537da
+    driver: 01a19f25-5955-701e-b3cf-dd73325c6cd4
+    rating: conflicts
+    rationale: "nothing added"
+  - option: 01a19f25-5955-701e-b3cf-dd77e65537da
+    driver: 01a19f25-5955-701e-b3cf-dd7461ac80d4
+    rating: supports
+    rationale: "nothing to build"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-dd78913775fd
+    kind: benefit
+    statement: "Two independent reconstructions let a client show where they agree."
+  - key: 01a19f25-5955-701e-b3cf-dd795983cf02
+    kind: obligation
+    statement: "eRASS1's half-sky footprint is recorded, and the 2M++ reconstruction's download location is verified first."
+subjects:
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-18207fe78d15
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-182ccc78e8f6
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-182e57951b3d

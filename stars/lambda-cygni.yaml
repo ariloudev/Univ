@@ -1,0 +1,44 @@
+# lambda Cygni (54 Cyg), B6IV visual binary: Hipparcos-2 parallax error just above a tenth; Gaia EDR3 has a parallax for the primary, but its RUWE is above 1.4, so unplaced.
+hip: 102589
+name: lambda Cygni
+alternative_names: ["lam Cyg", "54 Cyg", "HD 198183", "HR 7963"]
+papers:
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue table gaiaedr3.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-edr3-2021.txt"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+unplaced: "no usable distance: the Gaia EDR3 parallax of the primary comes from a solution with a RUWE above the threshold of review rule B, the Hipparcos-2 parallax has an error above a tenth of its value, and no orbital, group or modelling distance was found"
+disputes:
+  - claim: "Gaia EDR3 gives the primary, source 1870779903225039872, a parallax of 4.265251079290525 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 1870779903225039872", column: "parallax", cell: "4.265251079290525" }
+  - claim: "Its Gaia EDR3 parallax error is 0.21516573 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 1870779903225039872", column: "parallax_error", cell: "0.21516573" }
+  - claim: "The primary's EDR3 solution has a RUWE of 1.5204493, above the review threshold of rule B, so the single-star solution is unreliable."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 1870779903225039872", column: "ruwe", cell: "1.5204493" }
+  - claim: "The companion, source 1870779903236215040, has an EDR3 parallax of 3.974775152574993 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 1870779903236215040", column: "parallax", cell: "3.974775152574993" }
+  - claim: "The companion's EDR3 parallax error is 0.15302129 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 1870779903236215040", column: "parallax_error", cell: "0.15302129" }
+  - claim: "The companion's EDR3 solution has a RUWE of 1.0067877."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 1870779903236215040", column: "ruwe", cell: "1.0067877" }
+  - claim: "Gaia DR2 gives the primary, source 1870779903225039872, a parallax of 4.98849655293038 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 1870779903225039872", column: "parallax", cell: "4.98849655293038" }
+  - claim: "Its Gaia DR2 parallax error is 0.3423001302394397 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 1870779903225039872", column: "parallax_error", cell: "0.3423001302394397" }
+notes: >-
+  Two bright Gaia sources lie within about an arcsecond of the Hipparcos position: the primary and a fainter
+  companion. Gaia DR2 linked HIP 102589 to the companion, which has no DR2 parallax. The table
+  gaiaedr3.hipparcos2_best_neighbour has no row for this star. The companion's EDR3 parallax has a good RUWE
+  and is close to the primary's. Whether a companion's parallax may place the system is a question for the
+  lead: it is the parallax of a different Gaia source, so it is left as a dispute. No orbital or group distance
+  was found.

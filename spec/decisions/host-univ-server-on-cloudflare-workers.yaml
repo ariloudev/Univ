@@ -1,0 +1,53 @@
+key: 01a19f25-5955-701e-b3cf-ddb94b8c7196
+slug: host-univ-server-on-cloudflare-workers
+title: "Host Univ Server on Cloudflare Workers in Rust"
+context: "The owner wants no infrastructure to build or run for now, and wants the server written in Rust."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddbc7967a9ec
+  outcome: "Univ Server is a Worker compiled from Rust, storing its data in D1 and R2."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddba14aefa03
+    kind: local
+    label: "No infrastructure"
+    statement: "Nothing to provision, patch or keep running."
+  - key: 01a19f25-5955-701e-b3cf-ddbb32b34f13
+    kind: local
+    label: "Rust"
+    statement: "The server is written in Rust, sharing its model with the ingest tool."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddbc7967a9ec
+    title: "Workers with workers-rs"
+    description: "A Cloudflare Worker compiled from Rust to WebAssembly, with D1 and R2 as storage."
+  - key: 01a19f25-5955-701e-b3cf-ddbd603c98bc
+    title: "A container or VM"
+    description: "A native Rust server, such as one built on axum, in a container or on a virtual machine, with its own database."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddbc7967a9ec
+    driver: 01a19f25-5955-701e-b3cf-ddba14aefa03
+    rating: supports
+    rationale: "Cloudflare runs the Worker and its storage"
+  - option: 01a19f25-5955-701e-b3cf-ddbc7967a9ec
+    driver: 01a19f25-5955-701e-b3cf-ddbb32b34f13
+    rating: supports
+    rationale: "workers-rs compiles Rust to WebAssembly"
+  - option: 01a19f25-5955-701e-b3cf-ddbd603c98bc
+    driver: 01a19f25-5955-701e-b3cf-ddba14aefa03
+    rating: conflicts
+    rationale: "the owner would run the host, the database and their updates"
+  - option: 01a19f25-5955-701e-b3cf-ddbd603c98bc
+    driver: 01a19f25-5955-701e-b3cf-ddbb32b34f13
+    rating: supports
+    rationale: "any Rust crate runs natively"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddbe880b30ba
+    kind: cost
+    statement: "Crates that need threads, a filesystem or native code cannot be used in the server."
+  - key: 01a19f25-5955-701e-b3cf-ddbfd0c9c738
+    kind: obligation
+    statement: "univ-model compiles both natively and to WebAssembly."
+subjects:
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3cf3def064d0
+  - role: outcome
+    node: 01a19f1a-685d-7357-b67e-d66582003f29

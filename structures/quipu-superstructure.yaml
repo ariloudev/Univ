@@ -1,0 +1,166 @@
+# A filament of X-ray galaxy clusters 428 Mpc long, found by friends-of-friends linking in the
+# CLASSIX cluster survey.
+name: Quipu Superstructure
+alternative_names: ["Quipu"]
+kind: filament
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: bohringer-2025
+    reference: "Böhringer, Chon, Trümper, Kraan-Korteweg & Schartel 2025, A&A 695, A59"
+    title: "Unveiling the largest structures in the nearby Universe: Discovery of the Quipu superstructure"
+    doi: 10.1051/0004-6361/202453582
+    arxiv: "2501.19236"
+    read: "arXiv PDF of 2501.19236 (the A&A proofs manuscript), text extracted: abstract, Sections 1, 3 and 4.1, Table 1 and Table A.1 read"
+# The box that holds the member clusters: the ranges of right ascension, declination and redshift
+# of Quipu's members in Table 1. The paper gives no centre.
+geometry:
+  kind: sky_region
+  sky_region:
+    frame: equatorial_equinox_unstated
+    lon:
+      - value: 27.7
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &ra
+          paper: bohringer-2025
+          table: "1"
+          row: "1. Quipu"
+          column: "RA"
+          cell: "27.7 - 119.4"
+      - value: 119.4
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *ra
+    lat:
+      - value: -69.8
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &dec
+          paper: bohringer-2025
+          table: "1"
+          row: "1. Quipu"
+          column: "DEC"
+          cell: "-69.8 – 51.7"
+      - value: 51.7
+        unit: degree
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *dec
+    near:
+      redshift:
+        value: 0.027
+        unit: dimensionless
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: &zrange
+          paper: bohringer-2025
+          table: "1"
+          row: "1. Quipu"
+          column: "z-range"
+          cell: "0.027 - 0.065"
+    far:
+      redshift:
+        value: 0.065
+        unit: dimensionless
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: *zrange
+values:
+  length:
+    value: 428
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: &cosmology
+      cosmology: "H0 = 70 km/s/Mpc, flat, Ωm = 0.3"
+      cite:
+        paper: bohringer-2025
+        sentence: "We adopt a Hubble parameter of H0 = 70 km s−1 Mpc−1, a flat cosmology, and a matter density parameter, Ωm = 0.3."
+    cite:
+      paper: bohringer-2025
+      table: "1"
+      row: "1. Quipu"
+      column: "length (in units of Mpc, the table notes)"
+      cell: "428"
+    note: "The largest distance between any two member clusters, as the paper determines the length of each superstructure."
+  member_clusters:
+    value: 68
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &members
+      paper: bohringer-2025
+      table: "1"
+      row: "1. Quipu"
+      column: "NCl"
+      cell: "68 (63)"
+  member_clusters_within_target_redshift_shell:
+    value: 63
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *members
+    note: "The bracketed number of the cell: the members inside the paper's target redshift shell, as the table notes say."
+  mean_redshift:
+    value: 0.043
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: bohringer-2025
+      table: "1"
+      row: "1. Quipu"
+      column: "< z >"
+      cell: "0.043"
+  cluster_overdensity:
+    value: 1.4
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: bohringer-2025
+      table: "1"
+      row: "1. Quipu"
+      column: "∆Cl"
+      cell: "1.4"
+  matter_overdensity:
+    value: 0.5
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite:
+      paper: bohringer-2025
+      table: "1"
+      row: "1. Quipu"
+      column: "∆DM"
+      cell: "0.5"
+    note: "The cluster overdensity scaled by a bias factor taken from theory and earlier CLASSIX work."
+  mean_right_ascension_northern_members:
+    value: 45.5
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &halves
+      paper: bohringer-2025
+      sentence: "The 20 clusters in the northern hemisphere have a mean right ascension of 45.5°. In the south the filament bends to the east and the 48 southern clusters have a mean right ascension of 89.3°."
+  mean_right_ascension_southern_members:
+    value: 89.3
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *halves
+disputes: []
+notes: >-
+  Quipu is the largest of five superstructures the paper finds by friends-of-friends linking of
+  CLASSIX X-ray clusters, with the linking length scaled to the local cluster density. The paper
+  sees it as a long filament with small side filaments, running north to south and bending east
+  in the south; the region drawn is the box that holds its member clusters, and the filament
+  fills only a part of it. Table 1 prints no equinox; the member positions of Table A.1 are
+  those of RXC clusters, but the equinox is not stated, so it is taken as unstated. The full
+  member list is only at CDS and was not read, so no members are drawn. In the north the
+  structure ends at the Zone of Avoidance and may continue behind it; in the south it ends close
+  to the Vela Supercluster. The estimated mass is left out, having no unit in univ-model.

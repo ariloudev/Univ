@@ -1,0 +1,36 @@
+# Q Scorpii (HD 159433), G8/K0III/IV: Hipparcos-2 parallax error just above a tenth; Gaia EDR3 has a parallax, but its RUWE is above 1.4, so unplaced.
+hip: 86170
+name: Q Scorpii
+alternative_names: ["Q Sco", "HD 159433", "HR 6546"]
+papers:
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue table gaiaedr3.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-edr3-2021.txt"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+unplaced: "no usable distance: the Gaia EDR3 parallax comes from a solution with a RUWE above the threshold of review rule B, the Hipparcos-2 parallax has an error above a tenth of its value, and no orbital, group or modelling distance was found"
+disputes:
+  - claim: "Gaia EDR3 gives source 5961830948155839360 a parallax of 20.692225649038413 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 5961830948155839360", column: "parallax", cell: "20.692225649038413" }
+  - claim: "Its Gaia EDR3 parallax error is 0.21609522 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 5961830948155839360", column: "parallax_error", cell: "0.21609522" }
+  - claim: "The EDR3 solution has a RUWE of 2.592326, above the review threshold of rule B, so the single-star solution is unreliable."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 5961830948155839360", column: "ruwe", cell: "2.592326" }
+  - claim: "Gaia DR2 gives source 5961830948142169216 a parallax of 19.248379818002643 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 5961830948142169216", column: "parallax", cell: "19.248379818002643" }
+  - claim: "Its Gaia DR2 parallax error is 0.6573670785279697 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 5961830948142169216", column: "parallax_error", cell: "0.6573670785279697" }
+notes: >-
+  The Gaia DR3 identifier SIMBAD gives for HD 159433 is source 5961830948155839360. That source has a
+  five-parameter EDR3 solution at the Hipparcos position, which DR3 republished unchanged. Its RUWE fails review
+  rule B, and the DR2 and EDR3 parallaxes differ by more than their errors, so neither places the star. The
+  table gaiaedr3.hipparcos2_best_neighbour has no row for this star. No other published distance was found.

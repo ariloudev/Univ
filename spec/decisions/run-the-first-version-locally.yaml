@@ -1,0 +1,53 @@
+key: 01a19f25-5955-701e-b3cf-ddedd70737d2
+slug: run-the-first-version-locally
+title: "Run the first version locally only"
+context: "The owner wants to avoid infrastructure for now, and the newsroom experiment also stayed local."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-ddf078eeccdb
+  outcome: "Univ Server runs under wrangler dev, and Univ Ingest publishes to its local storage."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-ddee37573c3c
+    kind: local
+    label: "No deployment"
+    statement: "Nothing to deploy or operate yet."
+  - key: 01a19f25-5955-701e-b3cf-ddef66d5989f
+    kind: local
+    label: "Deployable later"
+    statement: "Moving to Cloudflare later needs no redesign."
+options:
+  - key: 01a19f25-5955-701e-b3cf-ddf078eeccdb
+    title: "Local only"
+    description: "wrangler dev with local D1, R2 and rate limiting; ingest publishes there."
+  - key: 01a19f25-5955-701e-b3cf-ddf190bf692a
+    title: "Local plus one deployed"
+    description: "The same, plus one environment on the owner's Cloudflare account."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-ddf078eeccdb
+    driver: 01a19f25-5955-701e-b3cf-ddee37573c3c
+    rating: supports
+    rationale: "nothing is deployed"
+  - option: 01a19f25-5955-701e-b3cf-ddf078eeccdb
+    driver: 01a19f25-5955-701e-b3cf-ddef66d5989f
+    rating: supports
+    rationale: "the Worker runs on the same runtime that Cloudflare deploys"
+  - option: 01a19f25-5955-701e-b3cf-ddf190bf692a
+    driver: 01a19f25-5955-701e-b3cf-ddee37573c3c
+    rating: conflicts
+    rationale: "an environment to deploy and watch"
+  - option: 01a19f25-5955-701e-b3cf-ddf190bf692a
+    driver: 01a19f25-5955-701e-b3cf-ddef66d5989f
+    rating: supports
+    rationale: "already deployed"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-ddf2e228be71
+    kind: cost
+    statement: "No client outside the owner's machine can reach the server yet."
+  - key: 01a19f25-5955-701e-b3cf-ddf3c31eb4cd
+    kind: benefit
+    statement: "No availability target is needed for the first version."
+subjects:
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3ce63ee2f0df
+  - role: outcome
+    node: 01a19f23-636f-72bd-b194-153d515c188e

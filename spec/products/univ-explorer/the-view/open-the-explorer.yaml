@@ -1,0 +1,51 @@
+key: 01a1a497-e843-728a-bce8-402682c20f97
+slug: open-the-explorer
+name: "Open the explorer"
+body: "Starting the explorer against a running Univ Server and choosing the release it draws."
+realizes:
+  - 01a1a497-e843-728a-bce8-3fd1631f1368
+requirements:
+  - key: 01a1a497-e843-728a-bce8-4027880d6bf0
+    statement:
+      form: event_driven
+      when: "the person opens the explorer"
+      system: "Univ Explorer"
+      shall: "draw the release that latest points to and name it."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-4028add2863c
+        name: "The explorer reads the list of releases and draws the one latest points to."
+      - key: 01a1a497-e843-728a-bce8-4029408477ea
+        name: "The view names the release it draws."
+  - key: 01a1a497-e843-728a-bce8-402aecf36789
+    statement:
+      form: event_driven
+      when: "the person chooses another release"
+      system: "Univ Explorer"
+      shall: "draw that release in place of the one shown."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-402b1b713ac4
+        name: "Every release that is published and not pruned can be chosen."
+      - key: 01a1a497-e843-728a-bce8-402c7430235c
+        name: "Every read made after the choice names the chosen release."
+  - key: 01a1a497-e843-728a-bce8-402de61f7a43
+    statement:
+      form: unwanted
+      if: "Univ Server cannot be reached"
+      system: "Univ Explorer"
+      shall: "say so, say how to start it, and try again when asked."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-402e69057896
+        name: "The message names the address the explorer tried."
+      - key: 01a1a497-e843-728a-bce8-402f2c21ca9d
+        name: "The message gives the command that starts Univ Server and the explorer together."
+      - key: 01a1a497-e843-728a-bce8-4030e4feb6a1
+        name: "Trying again reads the releases anew without reloading the page."
+  - key: 01a1a497-e843-728a-bce8-40313c8ccea7
+    statement:
+      form: unwanted
+      if: "Univ Server refuses a read because the rate limit was reached"
+      system: "Univ Explorer"
+      shall: "read it again once the time the server gives has passed."
+    criteria:
+      - key: 01a1a497-e843-728a-bce8-4032ee17e718
+        name: "A read refused with status 429 is made again after the seconds its `Retry-After` header gives."

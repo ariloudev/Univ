@@ -1,0 +1,36 @@
+# Alnilam, epsilon Orionis, B0Ia supergiant in Orion's Belt: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 26311
+name: Alnilam
+alternative_names: ["epsilon Orionis", "eps Ori", "46 Ori", "HD 37128"]
+papers:
+  - id: oplistilova-2023
+    reference: "Oplištilová, Mayer, Harmanec, Brož, Pigulski, Božić, Zasche, Šlechta, Pablo, Kołaczek-Szymański, Moffat, Lovekin, Wade, Zwintz, Popowicz & Weiss 2023, A&A 672, A31"
+    title: "Spectrum of the secondary component and new orbital elements of the massive triple star δ Ori A"
+    bibcode: 2023A&A...672A..31O
+    doi: 10.1051/0004-6361/202245272
+    arxiv: "2301.10290"
+    read: "arXiv PDF of 2301.10290v1, full text extracted with pypdf; abstract (PDF page 1), Sect. 3 (PDF page 3), Fig. 4 and Table 3 (PDF page 5) read"
+distance:
+  value: 382
+  unit: parsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 1 }
+  cite:
+    paper: oplistilova-2023
+    page: 3
+    sentence: "We used the distances of 131 members from the Gaia DR3 catalogue and estimated the median distance to be (382 ± 1) pc, using a cumulative distribution function that is sensitive to the local number density of stars (see Fig. 4)."
+  distance_kind: geometric
+  method: "median Gaia DR3 parallax distance of the members of the Orion OB1b subgroup (membership after Brown et al.)"
+membership:
+  paper: oplistilova-2023
+  table: "3"
+  row: "37128 ε Ori"
+  column: "Notes"
+  cell: "OB1b, single, variable 0.05 mag"
+disputes: []
+notes: >-
+  The error is the uncertainty of the median, not the depth of the subgroup: the paper's radial
+  dispersion of OB1b is much larger, and is the better measure of how far an individual member
+  may lie from the median. The paper also notes that "the single star ε Ori has a similar
+  spectroscopic distance modulus", which supports the placement. The members' list behind the
+  median is that of Brown et al., not read here.

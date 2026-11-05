@@ -1,0 +1,50 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-03T15:32:09 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-03T15:32:09	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F94%2Fgroups&-out=1PGC%2CDMzp%2Ce_DMzp%2CDMav%2Ce_DMav%2CV3k%2CSGX%2CSGY%2CSGZ&-out.add=_RAJ%2C_DEJ&-out.max=5	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_19440094
+#Name: J/ApJ/944/94
+#Title: Cosmicflows-4 (Tully+, 2023)
+#INFO	ivoid=ivo://cds.vizier/j/apj/944/94	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/apj/944/94	    IVOID of underlying data collection
+#INFO	creator=Tully R.B.	    First author or institution
+#INFO	cites=bibcode:2023ApJ...944...94T	    Article or Data origin sources
+#INFO	journal=ApJ	    Journal name
+#INFO	original_date=2023	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJ/944/94	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.19440094	    Dataset identifier that can be used for citation
+#INFO	publication_date=2025-05-21	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Table	J_ApJ_944_94_groups:
+#Name: J/ApJ/944/94/groups
+#Title: Distances of galaxy groups (Table 3) and peculiar velocities (Table 4)
+#Column	_RAJ2000	(F10.6)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F10.6)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	1PGC	(I7)	[12/9003288] PGC ID, dominant galaxy in the group (G1)	[ucd=meta.id;meta.main]
+#Column	DMzp	(F6.3)	[20.36/39.44] Group, weighted average distance modulus, TRGB, cepheid and maser calibrators (1)	[ucd=phot.mag.distMod;stat.mean]
+#Column	e_DMzp	(F6.3)	[0.008/2.11] Uncertainty in DMzp	[ucd=stat.error;phot.mag.distMod]
+#Column	DMav	(F6.3)	[0/39.6] Group, weighted average distance modulus, arbitrary SNIa scale (2)	[ucd=phot.mag.distMod;stat.mean]
+#Column	e_DMav	(F6.3)	[0/2.11] Uncertainty in DMav	[ucd=stat.error;phot.mag.distMod]
+#Column	V3k	(I5)	[-617/32575] Group velocity, relative to cosmic background	[ucd=phys.veloc;pos.cmb]
+#Column	SGX	(I6)	[-22455/23499] Cartesian supergalactic coordinates of group, observed velocity units	[ucd=pos.cartesian.x;pos.supergalactic]
+#Column	SGY	(I6)	[-28286/28984] Cartesian supergalactic coordinates of group, observed velocity units	[ucd=pos.cartesian.y;pos.supergalactic]
+#Column	SGZ	(I6)	[-27377/27941] Cartesian supergalactic coordinates of group, observed velocity units	[ucd=pos.cartesian.z;pos.supergalactic]
+_RAJ2000	_DEJ2000	1PGC	DMzp	e_DMzp	DMav	e_DMav	V3k	SGX	SGY	SGZ
+deg	deg	 	mag	mag	mag	mag	km/s	Mpc	Mpc	Mpc
+----------	----------	-------	------	------	------	------	-----	------	------	------
+000.036000	-06.373900	     12	34.995	 0.410	35.142	 0.410	 6179	  1848	 -6271	  1312
+359.980500	+08.184600	     14	36.095	 0.380	36.242	 0.380	11474	  5942	 -9967	  3194
+000.047000	-05.158700	     16	34.655	 0.450	34.802	 0.450	 5354	  1733	 -5461	  1187
+000.093800	+39.495500	     35	29.730	 0.100	 0.000	 0.000	   28	   518	  -260	   215
+000.155800	+33.601000	     55	34.245	 0.390	34.392	 0.390	 4466	  4001	 -2589	  1713
+

@@ -1,0 +1,47 @@
+key: 01a19f22-2ad9-716e-876f-187ab1b6831a
+slug: record-a-researched-structure
+name: "Record a researched structure"
+body: |
+  Turning what papers say about a structure, such as the extent of a supercluster or the members
+  of a giant arc, into a structure of the release, without a single uncited number.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cee44add674
+  - 01a19f1e-d177-716d-b124-3cf3def064d0
+requirements:
+  - key: 01a19f22-2ad9-716e-876f-187be2150c85
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "read each researched structure from a structure file in which every number cites where it comes from."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-187cf88a2254
+        name: "Each number cites its paper and the sentence, table or figure it was taken from."
+      - key: 01a19f22-2ad9-716e-876f-187dd6a97fba
+        name: "The structure's geometry is one of the geometry kinds univ-model defines, in a named frame."
+  - key: 01a19f22-2ad9-716e-876f-187e0756dd85
+    statement:
+      form: unwanted
+      if: "a number in a structure file cites nothing"
+      system: "Univ Ingest"
+      shall: "refuse the structure and name the number."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-187fc51a43e0
+        name: "The message names the structure file, the field and the number."
+  - key: 01a19f22-2ad9-716e-876f-18803a9713b5
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "mark each value digitised from a figure as estimated."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-18814f7bf908
+        name: "A digitised value cites the figure it was read from."
+  - key: 01a19f22-2ad9-716e-876f-188208f7ba13
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "record, for a structure outlined from a volume grid, the grid, the threshold and the test that admitted the outline."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-1883e57d3f39
+        name: "The test compares the outline with the galaxy catalogues that cover it, as the earlier Univ work did for voids."
+      - key: 01a19f22-2ad9-716e-876f-188469a36f95
+        name: "A structure whose outline fails its test is published as a point at its published position, with the reason."

@@ -1,0 +1,58 @@
+key: 01a19f25-5955-701e-b3cf-de21752217fa
+slug: keep-time-in-temporal-layers
+title: "Keep time in temporal layers rather than a 4D store"
+context: "The owner first asked for 4D, spacetime-like storage: positions at an epoch, events in spacetime, lookback time and history. On reflection the owner dropped it, since layer items already carry time records and versions."
+state:
+  kind: accepted
+  selectedOption: 01a19f26-4a07-7397-bc96-122035ec7352
+  outcome: "Time lives in layers: items carry time records that queries filter on, and versions that stay readable by number. Reference data names each position's epoch but is not propagated in time."
+drivers:
+  - key: 01a19f26-4a07-7397-bc96-121e0533fd71
+    kind: local
+    label: "Events in time"
+    statement: "Cosmic events can be placed and queried in time."
+  - key: 01a19f26-4a07-7397-bc96-121f12f4121b
+    kind: local
+    label: "Simplicity"
+    statement: "The first version carries no time machinery it does not need."
+options:
+  - key: 01a19f26-4a07-7397-bc96-122035ec7352
+    title: "Temporal layers"
+    description: "Time records and versions on layer items, with queries filtered by time records."
+  - key: 01a19f26-4a07-7397-bc96-1221c0b73942
+    title: "4D store"
+    description: "Temporal layers plus star propagation to any epoch, lookback time on every object and as-of reads of layers at any past time."
+assessments:
+  - option: 01a19f26-4a07-7397-bc96-122035ec7352
+    driver: 01a19f26-4a07-7397-bc96-121e0533fd71
+    rating: supports
+    rationale: "items carry source-event, arrival and discovery times"
+  - option: 01a19f26-4a07-7397-bc96-122035ec7352
+    driver: 01a19f26-4a07-7397-bc96-121f12f4121b
+    rating: supports
+    rationale: "time lives in one place"
+  - option: 01a19f26-4a07-7397-bc96-1221c0b73942
+    driver: 01a19f26-4a07-7397-bc96-121e0533fd71
+    rating: supports
+    rationale: "items carry the same time records"
+  - option: 01a19f26-4a07-7397-bc96-1221c0b73942
+    driver: 01a19f26-4a07-7397-bc96-121f12f4121b
+    rating: conflicts
+    rationale: "propagation, lookback derivation and as-of reads add machinery to both products"
+consequences:
+  - key: 01a19f26-4a07-7397-bc96-12224f45c630
+    kind: cost
+    statement: "Stars are served at their catalogue epoch, J2016.0 for Gaia and J1991.25 for Hipparcos, and a client wanting another epoch propagates them itself."
+  - key: 01a19f26-4a07-7397-bc96-1223abfb5873
+    kind: cost
+    statement: "Objects carry no lookback time, and a client computes it from the redshift and the release cosmology."
+  - key: 01a19f26-4a07-7397-bc96-1224bc0774b3
+    kind: benefit
+    statement: "Release pinning and item versions still give a record of what was published."
+subjects:
+  - role: affected
+    node: 01a19f20-1cb3-7721-97a0-4f33a250acbb
+  - role: affected
+    node: 01a19f20-1cb3-7721-97a0-4f46c62a0358
+  - role: outcome
+    node: 01a19f1f-9fd7-7209-b7cb-5cf7de740462

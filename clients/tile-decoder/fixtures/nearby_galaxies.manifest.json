@@ -1,0 +1,142 @@
+{
+  "format": "univ-tile-manifest",
+  "manifest_version": 1,
+  "release": "1",
+  "scale_domain": "nearby_galaxies",
+  "frame": {
+    "name": "ICRS equatorial Cartesian",
+    "origin": "Solar System barycentre",
+    "axes": "x toward (RA, Dec) = (0 deg, 0 deg), y toward (90 deg, 0 deg), z toward Dec = +90 deg",
+    "epoch": "each object's position at the epoch of its preferred sky position, not propagated"
+  },
+  "unit": "Mpc",
+  "cosmology": {
+    "name": "Planck 2018 (A&A 641, A6, Table 2: TT,TE,EE+lowE+lensing+BAO)",
+    "hubble_constant": 67.66,
+    "omega_matter": 0.3111
+  },
+  "rotations": {
+    "applied_as": "row-major matrix times the ICRS column vector [x, y, z]",
+    "to_galactic": [
+      [
+        -0.05487556041621561,
+        -0.873437090234885,
+        -0.48383501554871317
+      ],
+      [
+        0.49410942787558354,
+        -0.44482962996001124,
+        0.7469822444972188
+      ],
+      [
+        -0.8676661490190047,
+        -0.1980763734312013,
+        0.45598377617506697
+      ]
+    ],
+    "galactic_basis": "Hipparcos catalogue (ESA 1997, vol. 1, sec. 1.5.3): the transpose of A_G",
+    "to_supergalactic": [
+      [
+        0.37501547780780486,
+        0.3413589618290254,
+        0.861880183426672
+      ],
+      [
+        -0.8983204556165199,
+        -0.09572714072498714,
+        0.4287851134887344
+      ],
+      [
+        0.22887496679521785,
+        -0.9350456532745492,
+        0.27075057870087615
+      ]
+    ],
+    "supergalactic_basis": "Lahav et al. 2000 (MNRAS 312, 166): pole at galactic (47.37, 6.32) deg, origin at (137.37, 0) deg"
+  },
+  "encoding": {
+    "version": 2,
+    "header_bytes": 48,
+    "point_bytes": 20,
+    "steps_per_edge": 65536,
+    "max_tile_bytes": 1048576,
+    "point_source": "the index in sources of the source of the point's preferred distance, which gives its kind of value too",
+    "kinds": [
+      "measured",
+      "estimated",
+      "inferred",
+      "reconstructed"
+    ],
+    "colour_bands": [
+      "BP-RP",
+      "B-V"
+    ]
+  },
+  "levels": [
+    {
+      "level": 0,
+      "edge": 16.0,
+      "step": 0.000244140625,
+      "fraction": 1.0
+    }
+  ],
+  "sampling": {
+    "seed": 1,
+    "generator": "ChaCha20, key the seed's 8 little-endian bytes then 24 zero bytes, stream the domain's number; level by level from the root, the nodes of a level in order of address, an inner node of n points keeps floor(level_points * n / m) of them, m the most points reaching any inner node of its level, drawn by a partial Fisher-Yates shuffle over its points in increasing id; a leaf keeps every point reaching it, the finest level of its region",
+    "stream": 1,
+    "split_threshold": 32768,
+    "level_points": 16384,
+    "max_depth": 16,
+    "statement": "Each scale domain is an octree over its placed objects' derived ICRS Cartesian positions. A node reached by more points than the split threshold is split, down to the maximum depth. Every split node of a level keeps the same fraction of the points reaching it, an even random subsample, the fullest keeping the level points; the rest go to its children, and a leaf keeps all its points."
+  },
+  "points": 9,
+  "radius": 8.829974302716726,
+  "sources": [
+    {
+      "index": 0,
+      "id": "cosmicflows-4",
+      "role": "distance_and_position",
+      "title": "Cosmicflows-4 group distances",
+      "citation": "Tully R.B., Kourkchi E., Courtois H.M., Anand G.S., Blakeslee J.P., Brout D., de Jaeger T., Dupuy A., Guinet D., Howlett C., et al. 2023, \"Cosmicflows-4\", ApJ 944, 94. 2023ApJ...944...94T, doi:10.3847/1538-4357/ac94d8. VizieR catalogue J/ApJ/944/94, doi:10.26093/cds/vizier.19440094. The positions of 148 groups that the table gives wrongly are those of Kourkchi E. & Tully R.B. 2017, \"Galaxy groups within 3500 km/s\", ApJ 843, 16, 2017ApJ...843...16K, VizieR catalogue J/ApJ/843/16 (fixes below).",
+      "credit": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23. Cite Tully et al. 2023, ApJ 944, 94, and Kourkchi & Tully 2017, ApJ 843, 16, for the 148 group positions taken from it."
+    },
+    {
+      "index": 1,
+      "id": "mcconnachie-2012",
+      "role": "distance_and_position",
+      "title": "McConnachie 2012 Local Group and nearby dwarf galaxies",
+      "citation": "McConnachie A.W. 2012, \"The observed properties of dwarf galaxies in and around the Local Group\", AJ 144, 4. 2012AJ....144....4M, doi:10.1088/0004-6256/144/1/4. VizieR catalogue J/AJ/144/4, doi:10.26093/cds/vizier.51440004.",
+      "credit": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23. Cite McConnachie 2012, AJ 144, 4."
+    },
+    {
+      "index": 2,
+      "id": "updated-nearby-galaxies",
+      "role": "distance_and_position",
+      "title": "Updated Nearby Galaxy Catalog (Karachentsev et al. 2013)",
+      "citation": "Karachentsev I.D., Makarov D.I., Kaisina E.I. 2013, \"Updated nearby galaxy catalog\", AJ 145, 101. 2013AJ....145..101K, doi:10.1088/0004-6256/145/4/101. VizieR catalogue J/AJ/145/101, doi:10.26093/cds/vizier.51450101.",
+      "credit": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23. Cite Karachentsev, Makarov & Kaisina 2013, AJ 145, 101."
+    }
+  ],
+  "nodes": [
+    {
+      "address": "r",
+      "level": 0,
+      "bounds": {
+        "min": [
+          -8.0,
+          -8.0,
+          -8.0
+        ],
+        "max": [
+          8.0,
+          8.0,
+          8.0
+        ]
+      },
+      "points": 9,
+      "sampled_from": 9,
+      "bytes": 228,
+      "sha256": "914e2c02cc78c91a41533c3aaeb7196309ddfacb6706fc839cc345054f869290"
+    }
+  ]
+}

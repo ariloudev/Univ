@@ -1,0 +1,5 @@
+source: gaia-dr3-bright
+url: https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=SELECT+TOP+5+g.source_id%2C+g.ra%2C+g.dec%2C+g.ra_error%2C+g.dec_error%2C+g.parallax%2C+g.parallax_error%2C+g.pmra%2C+g.pmdec%2C+g.radial_velocity%2C+g.radial_velocity_error%2C+g.phot_g_mean_mag%2C+g.bp_rp%2C+a.spectraltype_esphs+FROM+gaiadr3.gaia_source+AS+g+LEFT+OUTER+JOIN+gaiadr3.astrophysical_parameters+AS+a+ON+a.source_id+%3D+g.source_id+WHERE+g.phot_g_mean_mag+%3C+10+AND+MOD%28g.random_index%2C+16%29+%3D+0
+retrieved: 2026-11-04T14:55:54Z
+sha256: 30a2512da6fbefbf8d980286ab514618f041d32b58a2dbe0ba052349cb64c82e
+note: the first chunk's query cut to 5 rows

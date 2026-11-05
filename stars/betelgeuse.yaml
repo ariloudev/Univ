@@ -1,0 +1,53 @@
+# Betelgeuse, alpha Orionis, M1-M2Ia-Iab red supergiant: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 27989
+name: Betelgeuse
+alternative_names: ["alpha Orionis", "alf Ori", "58 Ori"]
+papers:
+  - id: joyce-2020
+    reference: "Joyce, Leung, Molnár, Ireland, Kobayashi & Nomoto 2020, ApJ 902, 63"
+    title: "Standing on the shoulders of giants: New mass and distance estimates for Betelgeuse through combined evolutionary, asteroseismic, and hydrodynamical simulations with MESA"
+    bibcode: 2020ApJ...902...63J
+    doi: 10.3847/1538-4357/abb8db
+    arxiv: "2006.09837"
+    read: "arXiv PDF of 2006.09837v5, full text extracted with pypdf; abstract, Table 2, Sect. 4.3 and conclusions read; pages are arXiv PDF pages"
+  - id: harper-2017
+    reference: "Harper, Brown, Guinan, O'Gorman, Richards, Kervella & Decin 2017, AJ 154, 11"
+    title: "An Updated 2017 Astrometric Solution for Betelgeuse"
+    bibcode: 2017AJ....154...11H
+    doi: 10.3847/1538-3881/aa6ff9
+    arxiv: "1706.06020"
+    read: "arXiv PDF of 1706.06020v1, full text extracted with pypdf; abstract read (it runs from PDF page 1 to 2)"
+distance:
+  value: 168
+  unit: parsec
+  kind: estimated
+  uncertainty: { form: interval, minus: 15, plus: 27 }
+  note: "The range is the 3σ range of Joyce et al. (their Section 4.3, and the comment column of their Table 2), not a one-sigma error."
+  cite:
+    paper: joyce-2020
+    page: 1
+    sentence: "In concert with additional constraints, this allows us to derive a new, independent distance estimate of 168^{+27}_{-15} pc and a parallax of π = 5.95^{+0.58}_{-0.85} mas, in good agreement with Hipparcos but less so with recent radio measurements."
+  uncertainty_cite:
+    paper: joyce-2020
+    page: 14
+    sentence: "Using an angular diameter of 42.28 ± 0.43 mas and the 3σ uncertainty range of the seismic radius estimate, 764^{+116}_{-62} R⊙, we calculate 168^{+27}_{-15} pc for the distance and π = 6.06^{+0.58}_{-0.85} mas for the parallax."
+  distance_kind: primary_indicator
+  method: "seismic radius from MESA/GYRE pulsation modelling combined with the measured limb-darkened angular diameter"
+disputes:
+  - claim: "Harper et al. measure a nominal parallax of 4.51 ± 0.80 mas (222^{+48}_{-34} pc) by combining VLA, e-MERLIN and ALMA radio positions with the revised Hipparcos intermediate data; Joyce et al. call their own distance in tension with this radio result."
+    cite:
+      paper: harper-2017
+      page: 1
+      sentence: "Furthermore, combining the VLA and new e-MERLIN and ALMA radio positions with the 2007 HIAD, and including radio Cosmic Noise of 2.4 mas, leads to a nominal parallax solution of 4.51 ± 0.80 mas (222^{+48}_{-34} pc), which while only 0.7σ different from the 2008 solution of Harper et al. it is 2.6σ different from the solution of van Leeuwen."
+  - claim: "In their Section 4.3 Joyce et al. print the seismic parallax as π = 6.06^{+0.58}_{-0.85} mas, which differs from the parallax given in their abstract, Table 2 and conclusions; the distance is the same in all places."
+    cite:
+      paper: joyce-2020
+      page: 14
+      sentence: "Using an angular diameter of 42.28 ± 0.43 mas and the 3σ uncertainty range of the seismic radius estimate, 764^{+116}_{-62} R⊙, we calculate 168^{+27}_{-15} pc for the distance and π = 6.06^{+0.58}_{-0.85} mas for the parallax."
+notes: >-
+  The distance is the seismic radius set against the measured angular diameter, so it is
+  model-dependent (estimated), not a parallax. Its range is a 3σ range, recorded as an interval.
+  The radio-plus-Hipparcos parallax of Harper et al. has an error above a tenth of the parallax,
+  so it would not be used as a parallax under the rules, and it places the star farther.
+  Betelgeuse is not assigned to an association with a measured distance in these papers. Joyce
+  et al. is preferred as the most recent dedicated determination.

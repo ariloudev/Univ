@@ -1,0 +1,51 @@
+key: 01a19f25-5955-701e-b3cf-de0332d4cea7
+slug: stand-independent-of-cosmic-newsroom
+title: "Design Univ Server independently of the cosmic-newsroom experiment"
+context: "The cosmic-newsroom experiment ships its own atlas data and stories, and the Univ rules keep experiments from sharing code unless asked."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-de068e176a4b
+  outcome: "Univ Server is specified on its own, and any move of the newsroom onto it is decided later."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-de04ed5f9eb1
+    kind: local
+    label: "Own goals"
+    statement: "The API serves Univ Server's goals, not one client's."
+  - key: 01a19f25-5955-701e-b3cf-de05c7815d42
+    kind: local
+    label: "Concrete target"
+    statement: "A known client gives the design something to test against."
+options:
+  - key: 01a19f25-5955-701e-b3cf-de068e176a4b
+    title: "Independent"
+    description: "The newsroom is prior art only, and no criterion depends on moving it over."
+  - key: 01a19f25-5955-701e-b3cf-de075a82ed8b
+    title: "Newsroom as first client"
+    description: "The API is shaped to replace the newsroom's files and host its stories."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-de068e176a4b
+    driver: 01a19f25-5955-701e-b3cf-de04ed5f9eb1
+    rating: supports
+    rationale: "no client's shape constrains the API"
+  - option: 01a19f25-5955-701e-b3cf-de068e176a4b
+    driver: 01a19f25-5955-701e-b3cf-de05c7815d42
+    rating: conflicts
+    rationale: "no existing client exercises it"
+  - option: 01a19f25-5955-701e-b3cf-de075a82ed8b
+    driver: 01a19f25-5955-701e-b3cf-de04ed5f9eb1
+    rating: conflicts
+    rationale: "the API bends toward one application"
+  - option: 01a19f25-5955-701e-b3cf-de075a82ed8b
+    driver: 01a19f25-5955-701e-b3cf-de05c7815d42
+    rating: supports
+    rationale: "the newsroom is a ready test"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-de080d51da38
+    kind: benefit
+    statement: "The Univ rule against sharing code between experiments holds."
+  - key: 01a19f25-5955-701e-b3cf-de0962f8cf56
+    kind: risk
+    statement: "The API meets its first real client only after it is built."
+subjects:
+  - role: outcome
+    node: 01a19f1a-685d-7357-b67e-d65e20557892

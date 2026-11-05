@@ -1,0 +1,76 @@
+# The large void below the supergalactic plane, as the Cosmicflows-3 reconstruction maps it.
+name: Sculptor Void
+alternative_names: []
+kind: void
+status: reconstructed
+scale_domain: cosmic_web
+papers:
+  - id: tully-2019
+    reference: "Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24"
+    title: "Cosmicflows-3: Cosmography of the Local Void"
+    doi: 10.3847/1538-4357/ab2597
+    bibcode: 2019ApJ...880...24T
+    arxiv: "1905.08329"
+    read: "arXiv source (LaTeX) of 1905.08329"
+# The nearest basin, Reticulum-2.6, which is also the deepest of the void's minima in Table 1.
+position:
+  frame: supergalactic
+  x:
+    value: -1200
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: &nearest
+      paper: tully-2019
+      sentence: "The nearest basin at density -1.68 lies at [-1200, -1700, -1700] km s-1 ≈ [-16, -23, -23] Mpc (Reticulum-2.6)."
+  y:
+    value: -1700
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *nearest
+  z:
+    value: -1700
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *nearest
+# Its extents at isodensity -0.7 along the supergalactic axes, drawn about its position: the
+# paper gives no centre, so where the void ends on each side is unknown.
+extents:
+  x: extent_sgx_at_isodensity_minus_0_7
+  y: extent_sgy_at_isodensity_minus_0_7
+  z: extent_sgz_at_isodensity_minus_0_7
+values:
+  density_at_nearest_basin:
+    value: -1.68
+    unit: dimensionless
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *nearest
+    note: "Wiener-filter density contrast of the Cosmicflows-3 reconstruction."
+  extent_sgx_at_isodensity_minus_0_7:
+    value: 14500
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &dimensions
+      paper: tully-2019
+      sentence: "Our Sculptor Void is very large, with rough dimensions at the isodensity level -0.7 of ΔSGX,SGY,SGZ = 14500,6500,10200 km s-1 = 193,87,136 Mpc, enclosing ~2 × 10^6 Mpc^3."
+  extent_sgy_at_isodensity_minus_0_7:
+    value: 6500
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *dimensions
+  extent_sgz_at_isodensity_minus_0_7:
+    value: 10200
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *dimensions
+disputes: []
+notes: >-
+  The void has nine minima in Table 1 of Tully et al. 2019; the position is the nearest, which is
+  also the deepest listed. Its foreground holds the Fornax Cluster and its far side the Southern
+  Wall. No published dispute was looked for.

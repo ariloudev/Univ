@@ -1,0 +1,5 @@
+source: twompp-reconstruction
+url: https://cosmicflows.iap.fr/assets/data/twompp_density.npy
+retrieved: 2026-11-03T03:56:28Z
+sha256: b7f56d888aee1fde0f8ee288d8d57803806e9034308af100c4e88a2bd30a3925
+note: the first 4096 bytes of the first file

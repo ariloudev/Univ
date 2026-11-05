@@ -1,0 +1,64 @@
+id: twompp-reconstruction
+title: "2M++ reconstructed density and predicted peculiar-velocity fields (Carrick et al. 2015)"
+provider: iap-cosmicflows
+access:
+  method: files
+  files:
+    - { path: twompp_density.npy }
+    - { path: twompp_velocity.npy }
+cuts:
+  - "The two NumPy files whole: the density field (257^3, float64) and the velocity field (3 x 257^3, float64). The ASCII twompp.txt.gz is not taken."
+  - "These are reconstructed fields, not measurements."
+  - >-
+    Grid: 257^3 cells in Galactic Cartesian comoving coordinates X, Y, Z in h^-1 Mpc, configuration
+    (real) space, Gaussian smoothing 4 h^-1 Mpc. Cell centres are X = (i - 128) * 400 / 256 h^-1 Mpc
+    (likewise Y with j, Z with k), from -200 to +200, spacing 1.5625 h^-1 Mpc; the Local Group is at
+    the centre of cell [128,128,128].
+  - "The density is the luminosity-weighted galaxy density contrast delta_g^*, not a matter density contrast."
+  - "The velocities are predicted peculiar velocities in km/s in the CMB frame, from delta_g^* with beta^* = 0.43, with the external dipole V_ext = [89, -131, 17] km/s already added."
+columns:
+  - { column: twompp_density.npy, field: density, unit: dimensionless }
+  - { column: twompp_velocity.npy, field: velocity_vector, unit: kilometre_per_second }
+frame: galactic
+epoch: 2000.0
+citation: >-
+  Carrick J., Turnbull S.J., Lavaux G., Hudson M.J. 2015, "Cosmological parameters from the
+  comparison of peculiar velocities with predictions from the 2M++ density field", MNRAS 450,
+  317-332. 2015MNRAS.450..317C, doi:10.1093/mnras/stv547, arXiv:1504.04627.
+reference: { bibcode: "2015MNRAS.450..317C", doi: "10.1093/mnras/stv547" }
+terms:
+  url: "https://cosmicflows.iap.fr/download/"
+  quote: >-
+    Please cite "Cosmological parameters from the comparison of peculiar velocities with predictions
+    from the 2M++ density field", Carrick J., Turnbull S., Lavaux G. & Hudson M. J., MNRAS, 2015.
+  credit: "Cite Carrick, Turnbull, Lavaux & Hudson 2015, MNRAS 450, 317 (doi:10.1093/mnras/stv547)."
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    The download page asks only for the citation and states no licence; it carries the notice
+    "© 2014-2020 Guilhem Lavaux, Michael J. Hudson, Jon Carrick & Stephen Turnbull", and nothing
+    grants re-hosting the files. The files are therefore fetched from their origin and only derived
+    products (sampled values, renders) carry the citation. Provisional: judged again before any
+    public deployment.
+scale_domain: cosmic_web
+# The Waterloo mirror the site footer names (cosmicflows.uwaterloo.ca) answers 404, so it is left out.
+mirrors:
+  - "https://cosmicflows.iap.fr/assets/data"
+fixes:
+  - defect: >-
+      The README says the cube is indexed "with i running fastest", which is wrong for the .npy
+      files; the download page says "k running fastest".
+    change: >-
+      twompp_density.npy is read as density[iX, iY, iZ] and twompp_velocity.npy as
+      velocity[c, iX, iY, iZ] with c = 0, 1, 2 for vX, vY, vZ (Galactic), in C order with k (Z)
+      fastest, as the NPY headers give fortran_order False.
+    evidence: >-
+      https://cosmicflows.iap.fr/assets/data/twompp_README.txt: "Specifically i,j,k index the 257^3
+      data cube in Galactic Cartesian comoving coordinates X,Y,Z in Mpc/h, with i running fastest."
+      https://cosmicflows.iap.fr/download/: "... with k running fastest." Observed 2026-11-03 by range
+      reads: indexed [iX][iY][iZ], the density is high at known clusters (Coma +9.99, Virgo +8.31,
+      Perseus +13.06, Norma/GA +12.37, Shapley A3558 +18.87, Hydra +5.57, Centaurus +10.39); indexed
+      [iZ][iY][iX] the same points give -0.55, -0.47, +1.93, -0.76, +1.78, -0.18, +3.86. The velocity
+      at [:,128,128,128] is (66.2, -576.3, 402.5) km/s, |v| = 706 km/s toward l = 276.5, b = 34.8 deg,
+      the Local Group's motion relative to the CMB, which confirms the (X, Y, Z) component order.

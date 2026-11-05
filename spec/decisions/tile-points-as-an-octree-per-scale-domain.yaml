@@ -1,0 +1,64 @@
+key: 01a19f25-5955-701e-b3cf-de1968d9f808
+slug: tile-points-as-an-octree-per-scale-domain
+title: "Tile points as a Cartesian octree per scale domain"
+context: "Points span from parsecs to gigaparsecs, and clients draw them in three dimensions and query them by volume."
+state:
+  kind: accepted
+  selectedOption: 01a19f25-5955-701e-b3cf-de1c9133690f
+  outcome: "Each scale domain is an octree in ICRS Cartesian coordinates, with rotations to galactic and supergalactic in its manifest."
+drivers:
+  - key: 01a19f25-5955-701e-b3cf-de1aad66dc38
+    kind: local
+    label: "3D views"
+    statement: "Tiles match how a three-dimensional view loads space."
+  - key: 01a19f25-5955-701e-b3cf-de1ba5b66933
+    kind: local
+    label: "Range of scales"
+    statement: "Stars and the cosmic web each get useful precision."
+options:
+  - key: 01a19f25-5955-701e-b3cf-de1c9133690f
+    title: "Octree per scale domain"
+    description: "A Cartesian octree in ICRS for each of stars, nearby galaxies and cosmic web."
+  - key: 01a19f25-5955-701e-b3cf-de1dab169112
+    title: "HEALPix and shells"
+    description: "Sky cells crossed with logarithmic distance shells."
+  - key: 01a19f25-5955-701e-b3cf-de1efd9166ec
+    title: "Decide later"
+    description: "The layout left to the build."
+assessments:
+  - option: 01a19f25-5955-701e-b3cf-de1c9133690f
+    driver: 01a19f25-5955-701e-b3cf-de1aad66dc38
+    rating: supports
+    rationale: "an octree follows a view's frustum"
+  - option: 01a19f25-5955-701e-b3cf-de1c9133690f
+    driver: 01a19f25-5955-701e-b3cf-de1ba5b66933
+    rating: supports
+    rationale: "each domain has its own root and unit"
+  - option: 01a19f25-5955-701e-b3cf-de1dab169112
+    driver: 01a19f25-5955-701e-b3cf-de1aad66dc38
+    rating: neutral
+    rationale: "fits an observer at Earth but not volumes elsewhere"
+  - option: 01a19f25-5955-701e-b3cf-de1dab169112
+    driver: 01a19f25-5955-701e-b3cf-de1ba5b66933
+    rating: supports
+    rationale: "logarithmic shells span scales"
+  - option: 01a19f25-5955-701e-b3cf-de1efd9166ec
+    driver: 01a19f25-5955-701e-b3cf-de1aad66dc38
+    rating: unknown
+    rationale: "unknown until built"
+  - option: 01a19f25-5955-701e-b3cf-de1efd9166ec
+    driver: 01a19f25-5955-701e-b3cf-de1ba5b66933
+    rating: unknown
+    rationale: "unknown until built"
+consequences:
+  - key: 01a19f25-5955-701e-b3cf-de1fd22e323a
+    kind: obligation
+    statement: "Tiles stay within 1 MiB and are built deterministically."
+  - key: 01a19f25-5955-701e-b3cf-de2028bdcf40
+    kind: cost
+    statement: "Clients that work in galactic coordinates rotate each tile."
+subjects:
+  - role: affected
+    node: 01a19f1f-9fd6-77e0-931c-f98491ea6241
+  - role: outcome
+    node: 01a19f23-636f-72bd-b194-152a40334d81

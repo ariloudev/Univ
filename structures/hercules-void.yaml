@@ -1,0 +1,77 @@
+# The void in front of the Hercules cluster complex, as the Cosmicflows-3 reconstruction maps it.
+name: Hercules Void
+alternative_names: ["Northern Local Void"]
+kind: void
+status: reconstructed
+scale_domain: cosmic_web
+papers:
+  - id: tully-2019
+    reference: "Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24"
+    title: "Cosmicflows-3: Cosmography of the Local Void"
+    doi: 10.3847/1538-4357/ab2597
+    bibcode: 2019ApJ...880...24T
+    arxiv: "1905.08329"
+    read: "arXiv source (LaTeX) of 1905.08329"
+# The deepest density minimum, Hercules-6.5 in Table 1.
+position:
+  frame: supergalactic
+  x:
+    value: -1200
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: &deepest
+      paper: tully-2019
+      sentence: "The deepest minimum in density of -1.87 occurs at [-1200, +4000, +5000] km s-1 ≈ [-16, +53, +67] Mpc."
+  y:
+    value: 4000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *deepest
+  z:
+    value: 5000
+    unit: kilometre_per_second
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *deepest
+# Its extents at isodensity -0.7 along the supergalactic axes, drawn about its position: the
+# paper gives no centre, so where the void ends on each side is unknown.
+extents:
+  x: extent_sgx_at_isodensity_minus_0_7
+  y: extent_sgy_at_isodensity_minus_0_7
+  z: extent_sgz_at_isodensity_minus_0_7
+values:
+  density_at_deepest_minimum:
+    value: -1.87
+    unit: dimensionless
+    kind: reconstructed
+    uncertainty: { form: none_reported }
+    cite: *deepest
+    note: "Wiener-filter density contrast of the Cosmicflows-3 reconstruction."
+  extent_sgx_at_isodensity_minus_0_7:
+    value: 11600
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &dimensions
+      paper: tully-2019
+      sentence: "The full dimension of what we are calling the Hercules Void at isodensity -0.7 is ΔSGX,SGY,SGZ = 11600,7800,14000 km s-1 = 155,104,187 Mpc, a volume of ~3 × 10^6 Mpc^3."
+  extent_sgy_at_isodensity_minus_0_7:
+    value: 7800
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *dimensions
+  extent_sgz_at_isodensity_minus_0_7:
+    value: 14000
+    unit: kilometre_per_second
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *dimensions
+disputes: []
+notes: >-
+  It lies in front of the Hercules cluster complex and joins the Local Void at the -0.7 isodensity,
+  near the Serpens Caput minimum. Table 1 of Tully et al. 2019 lists seven further minima. The
+  published km/s values are kept; the paper's Mpc figures convert them with the reconstruction's
+  Hubble constant. No published dispute was looked for.

@@ -1,0 +1,34 @@
+key: 01a19f23-636f-72bd-b194-1515b9ad9670
+slug: keep-object-ids-stable
+name: "Keep object ids stable"
+body: "Letting clients and layers point at an object across releases, even as cross-matching improves and objects merge or split."
+realizes:
+  - 01a19f1e-d177-716d-b124-3cef889e66e6
+  - 01a19f1e-d177-716d-b124-3cf1defde8b6
+requirements:
+  - key: 01a19f23-636f-72bd-b194-1516b502f718
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "decide each object's id by the catalogue entries it carries over from the previous release."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-15178440da44
+        name: "An object whose carried-over catalogue entries all belonged to one object of the previous release keeps that object's id, whatever new entries joined it."
+      - key: 01a19f23-636f-72bd-b194-15189cad9cac
+        name: "Two objects of the previous release that merge keep the older id, and the other id is recorded as merged into it."
+      - key: 01a19f23-636f-72bd-b194-151929ed3023
+        name: "An object of the previous release that splits gives each part a new id, and the old id is recorded as split into them."
+      - key: 01a19f23-636f-72bd-b194-151af96748e0
+        name: "An object that lost catalogue entries keeps its id while the entries it kept all belonged to it."
+      - key: 01a19f2d-59a8-7398-b20d-5c59b10da0c2
+        name: "An object made only of catalogue entries new in this release gets a new id."
+      - key: 01a19f2d-59a8-7398-b20d-5c5a34616724
+        name: "An id is never given to a second object."
+  - key: 01a19f23-636f-72bd-b194-151bff4f24f5
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "list in the release manifest every id merged, split or retired since the previous release."
+    criteria:
+      - key: 01a19f23-636f-72bd-b194-151c7fe18cca
+        name: "Each entry gives the old id, what happened to it and the ids that replaced it."

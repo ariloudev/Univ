@@ -1,0 +1,94 @@
+key: 01a1a8e8-8200-7742-b255-ae2caeffc79d
+id: e9-later
+versions:
+  - key: 01a1a8e8-8200-7742-b255-ae3009ccf31b
+    at: 2026-11-04T23:32:52Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E9 build"
+    goal: "The click centres the view, tested, gated and merged into product/release-8"
+    status: planned
+  - key: 01a1a8fc-92d2-7357-b655-348188e3bab9
+    at: 2026-11-04T23:54:47Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "E9 build"
+    goal: "The click centres the view, tested, gated and merged into product/release-8"
+    status: dropped
+blocks:
+  - key: 01a1a8fc-92d2-7357-b655-347d564598e3
+    id: e9-later-note
+    kind: note
+    versions:
+      - key: 01a1a8fc-92d2-7357-b655-348231b777b5
+        at: 2026-11-04T23:54:47Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        markdown: "Dropped: the build was done in the E9 stage itself, so this placeholder stage was not used."
+  - key: 01a1a90e-c061-72e2-9685-9e0919202704
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1a90e-c061-72e2-9685-9e0a2f4e3388
+        at: 2026-11-05T00:14:38Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: publish
+        note: "Published as **publish 5** on `develop` (111f715, state root `66786da4…`), after `product/release-8` was merged in (5550f89) with R2 to R4 and E7 to E9. `loft verify` passes; each wave passed `cargo xtask check` and `cargo xtask integration` before its merge."
+        recorded:
+          commit: "97dc033e53fdbc927c80d67b225bb8e0663b7586"
+          branch: "product/release-8"
+          loft: 2.3.0-alpha.5
+          at: 2026-11-05T00:14:38Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 53,
+              "constraint": 8,
+              "criterion": 443,
+              "decision": 28,
+              "feature": 41,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 151
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "111f715bab8ee229409540e36c0700b4e9187d51",
+                "removed": [],
+                "revision": "111f715bab8ee229409540e36c0700b4e9187d51"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 5,
+                "publishedAt": "2026-11-05T00:13:08Z",
+                "stateRoot": "66786da4430c04f826108f7ed5495bdf44eed301c9956215cd57c4294147c18f"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "product/release-8",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

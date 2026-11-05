@@ -1,0 +1,27 @@
+# beta Phoenicis (HD 6595), G8III + G8III visual binary: Hipparcos-2 parallax 0.12 ± 14.62 mas is useless, no Gaia parallax for the bright source; unplaced.
+hip: 5165
+name: beta Phoenicis
+alternative_names: ["bet Phe", "HD 6595", "HR 322", "WDS J01061-4643AB"]
+papers:
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue table gaiaedr3.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-edr3-2021.txt"
+unplaced: "no published distance found: the Hipparcos-2 parallax error exceeds the parallax, Gaia DR2 and EDR3 give the bright source no parallax, and no orbital parallax, cluster membership or modelling distance was found in the literature searched"
+disputes: []
+notes: >-
+  Gaia EDR3 has the bright source (source 4933453324590295040) without a parallax. Gaia DR2 has only a much
+  fainter source near the Hipparcos position, source 4933453324587749504. Its parallax error is above a fifth
+  of its value, and it is unclear whether it is a component of the pair or a spurious source. The pair has a
+  visual orbit, but no paper read here derives a dynamical or orbital parallax from it. Searched: arXiv
+  abstracts, web search, and Tokovinin's SOAR orbit papers (no entry for this pair).

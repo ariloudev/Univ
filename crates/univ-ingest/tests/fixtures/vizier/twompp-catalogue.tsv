@@ -1,0 +1,48 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-03T03:56:27 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-03T03:56:27	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FMNRAS%2F416%2F2840%2Fcatalog&-out=Name%2CHV%2Ce_HV%2CKsmag%2CGID%2CRef%2CCln&-out.add=_RAJ%2C_DEJ&-out.max=5	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_74162840
+#Name: J/MNRAS/416/2840
+#Title: The 2M++ galaxy redshift catalogue (Lavaux+, 2011)
+#INFO	ivoid=ivo://cds.vizier/j/mnras/416/2840	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/mnras/416/2840	    IVOID of underlying data collection
+#INFO	creator=Lavaux G.	    First author or institution
+#INFO	cites=bibcode:2011MNRAS.416.2840L	    Article or Data origin sources
+#INFO	journal=MNRA	    Journal name
+#INFO	original_date=2011	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/MNRAS/416/2840	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.74162840	    Dataset identifier that can be used for citation
+#INFO	publication_date=2024-07-15	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Table	J_MNRAS_416_2840_catalog:
+#Name: J/MNRAS/416/2840/catalog
+#Title: *The 2M++ catalogue
+#Column	_RAJ2000	(F11.7)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F11.7)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	Name	(A16)	Name of the galaxy as given in the 2MASS-XSC database (Cat. VII/233), or ZOA fake galaxy	[ucd=meta.id;meta.main]
+#Column	HV	(I5)	Heliocentric total apparent velocity	[ucd=spect.dopplerVeloc;pos.heliocentric]
+#Column	e_HV	(I6)	? Total apparent velocity error (equal to zero if not measured)	[ucd=stat.error]
+#Column	Ksmag	(F5.2)	Apparent magnitude in band K_S as defined in Section 2.2.	[ucd=phot.mag;em.IR.K]
+#Column	GID	(I4)	? Unique group identifier obtained from the algorithm of Section 4.	[ucd=meta.id]
+#Column	Ref	(A19)	Reference bibcode ("zoa" for fake galaxies in the Zone of Avoidance)	[ucd=meta.bib.bibcode]
+#Column	Cln	(I1)	[0/1] Flag to indicate if the redshift has been obtained by the cloning procedure of Section 2.3.	[ucd=meta.code]
+_RAJ2000	_DEJ2000	Name	HV	e_HV	Ksmag	GID	Ref	Cln
+deg	deg	 	km/s	km/s	mag	 	 	
+-----------	-----------	----------------	-----	------	-----	----	-------------------	-
+025.3962083	-89.3344722	01413509-8920041	 2429	     5	11.09	    	20096dF...C...0000J	0
+347.2322500	-88.9872500	23085574-8859141	 6140	    11	11.03	    	20112MRS.CTIO.0000H	0
+216.8362083	-87.7722222	14272069-8746200	 2251	    10	 9.93	    	2004AJ....128...16K	0
+235.8802917	-87.6785278	15433127-8740427	12651	   300	11.96	    	20096dF...C...0000J	0
+264.4156250	-87.1261667	17373975-8707342	13537	    72	12.05	    	20096dF...C...0000J	0
+

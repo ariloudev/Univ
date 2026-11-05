@@ -1,0 +1,96 @@
+key: 01a19f22-2ad9-716e-876f-18443b0ddcd6
+slug: fetch-a-source-durably
+name: "Fetch a source durably"
+body: |
+  Fetching a source from providers that fail intermittently, as CDS, NED and SkyServer did in the
+  earlier Univ work, without losing what already arrived and without publishing a partial source.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cede7d0b609
+  - 01a19f22-2ad9-716e-876f-181c48025787
+  - 01a19f22-2ad9-716e-876f-181dd6136c68
+  - 01a19f22-2ad9-716e-876f-181e1a7c9f8c
+  - 01a19f22-2ad9-716e-876f-181f3d870b42
+  - 01a19f22-2ad9-716e-876f-18207fe78d15
+  - 01a19f22-2ad9-716e-876f-182139b89dd9
+  - 01a19f22-2ad9-716e-876f-1822e01df492
+  - 01a19f22-2ad9-716e-876f-18236e86c3cd
+  - 01a19f22-2ad9-716e-876f-182403edb79e
+  - 01a19f22-2ad9-716e-876f-1825c9086ff6
+  - 01a19f22-2ad9-716e-876f-1826edbc9607
+  - 01a19f22-2ad9-716e-876f-18279019d046
+  - 01a19f22-2ad9-716e-876f-1828212cc2c0
+  - 01a19f22-2ad9-716e-876f-182993f18555
+  - 01a19f22-2ad9-716e-876f-182a6e02c9e0
+  - 01a19f22-2ad9-716e-876f-182ccc78e8f6
+  - 01a19f22-2ad9-716e-876f-182e57951b3d
+  - 01a19f22-2ad9-716e-876f-18308cd8dc6c
+  - 01a1a147-6017-72a6-9efa-ce6c1a364ff4
+requirements:
+  - key: 01a19f22-2ad9-716e-876f-1845b82daefd
+    statement:
+      form: event_driven
+      when: "a request to a provider fails or times out"
+      system: "Univ Ingest"
+      shall: "retry it with growing waits and then move to the source's next mirror."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-18463a5dce5c
+        name: "A request is retried at least four times on one mirror, with waits that double from two seconds."
+      - key: 01a19f22-2ad9-716e-876f-184791f85a52
+        name: "A mirror that fails all its retries is skipped for the rest of the run."
+  - key: 01a19f22-2ad9-716e-876f-184848d07285
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "fetch a large source in chunks and keep each chunk on disk as soon as it arrives."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-184902d146a6
+        name: "A run that stops part way resumes from the first chunk not yet on disk."
+      - key: 01a19f22-2ad9-716e-876f-184a18088c6b
+        name: "A chunk is written to a temporary file and renamed once complete, so a partial file is never read as a chunk."
+      - key: 01a19f22-2ad9-716e-876f-184b2e4614ad
+        name: "A chunk already on disk is not fetched again."
+  - key: 01a19f22-b0bc-76da-bac8-97757996f970
+    statement:
+      form: event_driven
+      when: "the download of a single file stops part way"
+      system: "Univ Ingest"
+      shall: "continue the download from the last byte on disk on the next run."
+    criteria:
+      - key: 01a19f22-b0bc-76da-bac8-9776aedb5264
+        name: "The download continues with an HTTP range request from the byte it reached."
+      - key: 01a19f22-b0bc-76da-bac8-9777e4054f04
+        name: "Where the provider does not honour range requests, the download starts over and the progress display says so."
+      - key: 01a19f22-b0bc-76da-bac8-9778f9150cca
+        name: "Where the provider changed the file since the partial download began, as its entity tag or length shows, the download starts over."
+      - key: 01a19f22-b0bc-76da-bac8-9779eea8a5c5
+        name: "The completed file is checked against the size and digest its provider publishes, where it publishes them."
+      - key: 01a19f22-b0bc-76da-bac8-977a62f6ff81
+        name: "The bytes of a partial download stay in a temporary file until the file is complete."
+  - key: 01a19f22-2ad9-716e-876f-184c59e4c9a1
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "record the SHA-256 and the retrieval time of every payload before parsing it."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-184dbfdb539d
+        name: "The source's provenance lists each payload with its digest, retrieval time and the URL it came from."
+  - key: 01a19f22-2ad9-716e-876f-184e679b3ea0
+    statement:
+      form: unwanted
+      if: "a chunk cannot be fetched from any mirror"
+      system: "Univ Ingest"
+      shall: "fail the source and build no release that holds it."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-184f18271ab3
+        name: "The message names the source, the chunk and the last error of each mirror."
+      - key: 01a19f22-2ad9-716e-876f-1850f88a0c79
+        name: "The chunks already on disk are kept for the next run."
+  - key: 01a19f22-2ad9-716e-876f-18512268f257
+    statement:
+      form: optional
+      where: "the owner runs Univ Ingest offline"
+      system: "Univ Ingest"
+      shall: "build from the chunks on disk alone and fail on the first chunk that is missing."
+    criteria:
+      - key: 01a19f22-2ad9-716e-876f-185248f45d00
+        name: "No request is made to any provider."
