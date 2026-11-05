@@ -10,3 +10,12 @@ versions:
     title: "W2 sources"
     goal: "The seven new source definitions exist with recorded fixtures, their access methods and matching rules, and fixture builds hold their entries; merged into product/release-10"
     status: planned
+  - key: 01a1a983-3658-7669-bc0a-ec5b508083f3
+    at: 2026-11-05T02:21:51Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W2 sources"
+    goal: "The seven new source definitions exist with recorded fixtures, their access methods and matching rules, and fixture builds hold their entries; merged into product/release-10"
+    status: active
