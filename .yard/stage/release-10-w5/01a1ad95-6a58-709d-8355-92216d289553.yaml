@@ -202,6 +202,15 @@ blocks:
         title: "GAMA DR4 and WISE × SuperCOSMOS in sources/, fetched"
         detail: "Done when both definitions are in `sources/` as permission pending without a date, with their matching pairs and fixture tests, and both are fetched into the downloads (WISE 1.7 GB) with their row counts checked."
         state: active
+      - key: 01a1adaa-b06e-7704-bfb2-e9261e7f6b2d
+        at: 2026-11-05T21:43:27Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "GAMA DR4 and WISE × SuperCOSMOS in sources/, fetched"
+        detail: "Definitions committed (`fa09c84`) as permission pending with no date, with their pairs, 2MPZ's pairs against both, and their tests in `tests/pending_surveys.rs`. Both fetched into Univ/downloads/univ-ingest: 1.8 GB in 1 min 55 s. An offline normalize of the three pending sources is checking their row counts."
+        state: active
   - key: 01a1ad96-13f9-72ef-92ac-7213e5fc657a
     id: spec-pending-date
     kind: loft

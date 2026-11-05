@@ -27,6 +27,12 @@ cuts:
     described by the archive; this reading is an inference.
   - "ra and dec are the WISE positions (ICRS, J2000)."
   - >-
+    3,789 designations (wiseX) appear on two rows each: one galaxy within 0.1 arcsec matched once
+    to the WISE all-sky catalogue (fromAllSky 1) and once to AllWISE (fromAllSky 0), with its own
+    wiseID, scosID and photo-z. The first row of each is kept, as for any repeated identifier: the
+    all-sky row for 3,788 of them (counted in the file fetched 2026-11-05). 20,412,353 entries
+    remain.
+  - >-
     Neither the 2 million sources rejected as possible stellar blends, which the page offers "WITH
     CARE", nor the SVM catalogue (wiseScosSvm.csv.gz) is taken.
   - "The epoch is that of the WISE all-sky observations, 2010; for galaxies it changes nothing."
