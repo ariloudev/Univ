@@ -4,23 +4,32 @@ use univ_model::units::{Dimension, Unit};
 
 pub use univ_model::release::rows::CatalogueError;
 
-use super::{Problem, blank, problem};
+use super::{Problem, RedshiftReading, blank, problem};
 
-/// Checks the catalogue error at `at` of a redshift read from a column in `column`: refused
-/// beside an error column, on a reading whose kind is given by code (it would reach rows of
-/// another kind), in a unit the column cannot take, or scaled by 1 + z on a column not of z.
+/// Checks the catalogue error at `at` of the redshift reading `r`, read from a column in
+/// `column`: refused unless the reading is the source's only redshift (`alone`: each value of
+/// the source would be taken as having it), beside an error column, on a reading whose kind is
+/// given by code (it would reach rows of another kind), in a unit the column cannot take, or
+/// scaled by 1 + z on a column not of z.
 pub(super) fn check(
     at: &str,
     c: &CatalogueError,
     column: Option<Unit>,
-    has_error_column: bool,
-    by_code: bool,
+    r: &RedshiftReading,
+    alone: bool,
 ) -> Result<(), Problem> {
+    if !alone {
+        return Err(problem(
+            at,
+            "is given on one of several redshifts: each value of the source would be taken as \
+             having it",
+        ));
+    }
     blank(&format!("{at}.basis"), &c.basis)?;
-    if has_error_column {
+    if r.error.is_some() {
         return Err(problem(at, "is given beside an error column"));
     }
-    if by_code {
+    if r.by_code.is_some() {
         return Err(problem(
             at,
             "is given on a redshift whose kind is given by code, so it would reach rows of \

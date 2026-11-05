@@ -351,3 +351,18 @@ fn candidate_links_are_written_with_no_duplicate_key() {
     let old = r#"[{"reason":{"method":"match","method":"position"}}]"#;
     assert!(no_duplicate_keys(old).is_err());
 }
+
+#[test]
+fn a_barycentric_redshift_reads_back_named_barycentric() {
+    // DESI's six recorded redshifts are barycentric (desi-dr1, normalization): D1 keeps the frame
+    // they were published in, and the object lookup names it.
+    let Decoded { pairs } = decoded();
+    let barycentric = pairs
+        .iter()
+        .flat_map(|(_, r)| &r.measurements)
+        .filter(|m| m.source == "desi-dr1")
+        .filter_map(|m| m.redshift.as_ref())
+        .filter(|d| d.published_frame == univ_model::redshift::RedshiftFrame::Barycentric)
+        .count();
+    assert_eq!(barycentric, 6);
+}

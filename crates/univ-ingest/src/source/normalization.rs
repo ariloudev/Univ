@@ -76,6 +76,10 @@ pub struct RedshiftReading {
     /// place of `error`.
     #[serde(default)]
     pub catalogue_error: Option<CatalogueError>,
+    /// The redshift's error is the `error` column's value times this, where the source defines
+    /// it so, such as half the error on an HI line's width; the basis says where.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error_scale: Option<f64>,
     pub frame: RedshiftFrame,
     #[serde(default)]
     pub kind: Option<RedshiftKind>,
@@ -409,20 +413,14 @@ fn check_redshift<'a>(
         c.read().map_err(|e| problem(&at, e.to_string()))?;
     }
     if let Some(c) = &r.catalogue_error {
-        if !alone {
-            return Err(problem(
-                format!("{at}.catalogue_error"),
-                "is given on one of several redshifts: each value of the source would be taken \
-                 as having it",
-            ));
-        }
-        catalogue_error::check(
-            &format!("{at}.catalogue_error"),
-            c,
-            table.unit(&r.column),
-            r.error.is_some(),
-            r.by_code.is_some(),
-        )?;
+        let at = format!("{at}.catalogue_error");
+        catalogue_error::check(&at, c, table.unit(&r.column), r, alone)?;
+    }
+    if r.error_scale
+        .is_some_and(|f| !(f.is_finite() && f > 0.0) || r.error.is_none())
+    {
+        let what = "scales an error column it lacks, or by a factor that is not positive";
+        return Err(problem(format!("{at}.error_scale"), what));
     }
     let mut read = vec![r.column.as_str()];
     if let Some(e) = &r.error {

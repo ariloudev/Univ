@@ -44,10 +44,17 @@ pub struct Fixture {
 }
 
 pub fn fixture() -> Fixture {
+    fixture_with(&[])
+}
+
+/// The fixture with the recorded answers of the sources `more` as well, such as DESI's, whose
+/// barycentric redshifts the shared fixture lacks: the shared one stays as the API's fixture
+/// and the end-to-end tests know it.
+pub fn fixture_with(more: &[&str]) -> Fixture {
     let cache = tempfile::tempdir().unwrap();
     let mut definitions = Vec::new();
     let mut normalized = Vec::new();
-    for id in SOURCES {
+    for id in SOURCES.iter().chain(more) {
         let n = normalized_fixture(id);
         record(cache.path(), id, &n.report);
         definitions.push(definition_of(id));

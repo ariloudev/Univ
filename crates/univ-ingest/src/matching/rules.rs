@@ -191,6 +191,15 @@ pub struct PairRule {
     pub basis: String,
 }
 
+impl PairRule {
+    /// The widest angle the pair matches at, its nearby tolerance included, degrees.
+    #[must_use]
+    pub fn widest_degrees(&self) -> f64 {
+        let nearby = self.nearby.as_ref().map(|n| n.angular_tolerance_arcsec);
+        self.angular_tolerance_arcsec.max(nearby.unwrap_or(0.0)) / 3_600.0
+    }
+}
+
 /// What comparing two entries under a pair rule found: within the tolerances, with this
 /// separation, difference and confidence.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -362,19 +371,6 @@ impl MatchingRules {
             }
         }
         table
-    }
-
-    /// The largest angular tolerance of any pair, degrees: the radius the sky index searches.
-    #[must_use]
-    pub fn search_radius_degrees(&self) -> f64 {
-        self.pairs
-            .iter()
-            .flat_map(|p| {
-                std::iter::once(p.angular_tolerance_arcsec)
-                    .chain(p.nearby.as_ref().map(|n| n.angular_tolerance_arcsec))
-            })
-            .map(|t| t / 3_600.0)
-            .fold(0.0, f64::max)
     }
 
     /// The confidence of a match at `separation` of tolerance `tolerance`, and the line-of-sight

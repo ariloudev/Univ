@@ -45,6 +45,10 @@ pub enum LeftOutReason {
     DuplicateIdentifier,
     /// A researched star whose papers publish no distance for it: its file says why.
     NoPublishedDistance,
+    /// A row the definition's selection leaves out, as a query's WHERE would for a source read
+    /// whole from a file: the rule's basis says why, such as another survey's redshift that a
+    /// compilation re-serves, or a star in a galaxy survey.
+    OutsideSelection,
 }
 
 /// A rule on the rows whose cells meet a condition, and every condition in `and`: they are left
@@ -76,13 +80,19 @@ pub struct DistanceOverride {
     pub method: Method,
 }
 
-/// A row whose trimmed cell in `column` is one of `is`: the same text, or the same number, so
-/// that `0` matches a cell `0.000`.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// A row whose trimmed cell in `column` meets exactly one test: it is one of `is` (the same
+/// text, or the same number, so that `0` matches a cell `0.000`), none of `is_not`, or a number
+/// below `below`.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Condition {
     pub column: String,
-    pub is: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_not: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub below: Option<f64>,
 }
 
 /// The values of `columns` take the kind of value `kind`.
@@ -161,7 +171,18 @@ pub enum FixAction {
 pub const MAX_FIXES: usize = 64;
 
 impl Condition {
-    /// Whether `cell`, trimmed, is one of the condition's values.
+    /// A condition on `column` that its cell is one of `values`.
+    #[must_use]
+    pub fn is(column: &str, values: &[&str]) -> Self {
+        Self {
+            column: column.to_owned(),
+            is: Some(values.iter().map(|&v| v.to_owned()).collect()),
+            ..Self::default()
+        }
+    }
+
+    /// Whether `cell`, trimmed, meets the condition's test. A blank or unparsable cell is below
+    /// no number.
     #[must_use]
     #[expect(
         clippy::float_cmp,
@@ -169,9 +190,38 @@ impl Condition {
     )]
     pub fn matches(&self, cell: &str) -> bool {
         let number = cell.parse::<f64>().ok();
-        self.is
-            .iter()
-            .any(|v| v == cell || number.is_some_and(|n| v.parse::<f64>().is_ok_and(|x| x == n)))
+        // Above 2^53 an f64 holds integers only to a spacing of 2 or more: identifiers that large,
+        // such as SDSS specObjIDs and DESI targetids, are listed values as text only.
+        let exact = |x: &f64| x.abs() <= 9_007_199_254_740_992.0;
+        let listed = |values: &[String]| {
+            values.iter().any(|v| {
+                v == cell
+                    || number.filter(exact).is_some_and(|n| {
+                        v.parse::<f64>().ok().filter(exact).is_some_and(|x| x == n)
+                    })
+            })
+        };
+        match (&self.is, &self.is_not, self.below) {
+            (Some(values), _, _) => listed(values),
+            (_, Some(values), _) => !listed(values),
+            (_, _, Some(below)) => number.is_some_and(|n| n < below),
+            (None, None, None) => false,
+        }
+    }
+
+    /// Checks the condition at `at`: a column of the table and exactly one test, a list that
+    /// names a value or a finite number.
+    fn check(&self, table: &Columns<'_>, at: &str) -> Result<(), Problem> {
+        table.known(&format!("{at}.column"), &self.column)?;
+        match (&self.is, &self.is_not, self.below) {
+            (Some(v), None, None) | (None, Some(v), None) if v.is_empty() => {
+                Err(problem(at, "lists no value"))
+            }
+            (Some(_), None, None) | (None, Some(_), None) => Ok(()),
+            (None, None, Some(b)) if b.is_finite() => Ok(()),
+            (None, None, Some(_)) => Err(problem(format!("{at}.below"), "is not a finite number")),
+            _ => Err(problem(at, "gives not exactly one of is, is_not and below")),
+        }
     }
 }
 
@@ -188,10 +238,7 @@ pub(super) fn check_rule(
         } else {
             format!("{at}.and[{}]", n - 1)
         };
-        table.known(&format!("{at}.column"), &c.column)?;
-        if c.is.is_empty() {
-            return Err(problem(format!("{at}.is"), "lists no value"));
-        }
+        c.check(table, &at)?;
     }
     match (&rule.leave_out, &rule.kind_of_value, &rule.distance) {
         (Some(_), None, None) => Ok(()),
@@ -238,11 +285,7 @@ pub(super) fn check_fixes(table: &Columns<'_>, fixes: &[Fix]) -> Result<(), Prob
             table.known(&at, c)?;
         }
         if let FixAction::DropWhen { when, .. } | FixAction::LeaveOutWhen { when, .. } = action {
-            let at = format!("fixes[{i}].action.when");
-            table.known(&format!("{at}.column"), &when.column)?;
-            if when.is.is_empty() {
-                return Err(problem(at, "lists no value"));
-            }
+            when.check(table, &format!("fixes[{i}].action.when"))?;
         }
         if let FixAction::ReplaceByKey {
             key,

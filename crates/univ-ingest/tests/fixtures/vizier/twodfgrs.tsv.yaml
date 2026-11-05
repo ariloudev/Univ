@@ -1,0 +1,5 @@
+source: twodfgrs
+url: http://vizier.china-vo.org/viz-bin/asu-tsv?-source=VII%2F250%2F2dfgrs&-out=Name%2Cz%2Cq_z%2CBjmag&-out.add=_RAJ%2C_DEJ&-out.max=5&q_z=3..5&z=0.002..0.5&SeqNum=1..30000
+retrieved: 2026-11-05T05:21:43Z
+sha256: bbc1fb35b0c0958cf4c0037684f57562a2936c84d9e3c33c291ae8b5897117d5
+note: the first slice's query cut to 5 rows

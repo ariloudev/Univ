@@ -1,0 +1,92 @@
+id: alfalfa-a100
+title: "ALFALFA \u03b1.100 extragalactic HI source catalogue, code 1 detections"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/ApJ/861/49/table2"
+  constraints: ["HI=1"]
+  rows: 25434
+cuts:
+  - "J/ApJ/861/49/table2, the complete ALFALFA catalogue of 31,502 HI sources (ReadMe), cut to HI code 1."
+  - >-
+    The ReadMe's Note (2): code 1 is a "Source of significant S/N and high quality insuring
+    reliability"; code 2 a "Source of slightly lower S/N which coincides with an optical counterpart
+    of known, coincident redshift". Counted as served by vizier.nao.ac.jp on 2026-11-05: 25,434
+    code 1, 6,068 code 2.
+  - >-
+    Positions are the "HI centroid" (ReadMe), as VizieR's _RAJ2000/_DEJ2000; the optical
+    counterparts' positions (RAO/DEO) are sexagesimal, which the source reader does not take.
+  - >-
+    Vhel is the "Heliocentric velocity of the HI profile midpoint" (ReadMe), in km/s. Haynes et al.
+    2018, Table 2, Col. 5: "Values adopt the optical convention δλ/λ, not the 'radio' one (δν/ν).
+    The statistical uncertainty on cz⊙ to be adopted is half the error on the width W50 tabulated
+    in Col. 6", so each Vhel's error is e_W50 / 2 (read from arxiv.org/html/1805.11499,
+    2026-11-05).
+  - >-
+    Dist, the "Adopted distance, where applicable" (ReadMe), is not taken: it is derived from the
+    velocity for most sources (Haynes et al. 2018; the method was not checked against the paper
+    here), not measured; each galaxy is placed by its redshift under the release cosmology instead.
+  - "logMHI (the HI mass) is not taken."
+columns:
+  - { column: AGC, field: identifier, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: Vhel, field: velocity, unit: kilometre_per_second }
+  - { column: e_W50, field: velocity_error, unit: kilometre_per_second }
+  - { column: HI, field: quality, unit: dimensionless }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Haynes M.P., Giovanelli R., Kent B.R., Adams E.A.K., Balonek T.J., Craig D.W., Fertig D., Finn
+  R., Giovanardi C., Hallenbeck G., et al. 2018, "The Arecibo Legacy Fast ALFA Survey: The ALFALFA
+  Extragalactic HI Source Catalog", ApJ 861, 49. 2018ApJ...861...49H, doi:10.3847/1538-4357/aac956.
+  VizieR catalogue J/ApJ/861/49, doi:10.26093/cds/vizier.18610049.
+reference: { bibcode: "2018ApJ...861...49H", doi: "10.3847/1538-4357/aac956" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  non_commercial: >-
+    The data retrieved with VizieR are free of usage in a scientific context ... The commercial
+    usage of the data is subject to rules depending of the origin (see section How to search
+    Copyright information).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Haynes et al. 2018, ApJ 861, 49.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS gives VizieR data as free of usage in a scientific context provided the original authors and
+    publication are cited, and says that "The commercial usage of the data is subject to rules
+    depending of the origin". The page's paragraph classing tables from AAS journals as CC-BY-NC is
+    inside an HTML comment, not shown, so it is not quoted; the shown clause on commercial usage
+    is, and the source is marked non-commercial (read 2026-11-05). The ALFALFA site (https://egg.astro.cornell.edu/alfalfa/data/) states no licence;
+    the article is copyright the AAS. Provisional: judged again before any public deployment.
+scale_domain: cosmic_web
+# VizieR's mirrors, checked 2026-11-05: China-VO answers these tables; NAO answered at first, then
+# reported its database unreachable (STDB_ERR); IDIA answered with empty bodies and CDS refused the
+# connection from the owner's machine, so they come after it.
+mirrors:
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+normalization:
+  redshifts:
+    - column: Vhel
+      error: e_W50
+      error_scale: 0.5
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        J/ApJ/861/49 ReadMe: Vhel is the "Heliocentric velocity of the HI profile midpoint", in
+        km/s. Haynes et al. 2018, Table 2, Col. 5: it adopts "the optical convention", so it is
+        cz, and "The statistical uncertainty on cz⊙ to be adopted is half the error on the width
+        W50 tabulated in Col. 6", e_W50 (read from arxiv.org/html/1805.11499, 2026-11-05).
