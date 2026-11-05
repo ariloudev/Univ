@@ -3,11 +3,12 @@
 //!
 //! - **Which rows.** An object's rows in [`SHARD_TABLES`] are in one object shard; every other
 //!   table's rows, and the index of the shards (`object_shards`, `shard_cells`,
-//!   `release_shards`), are in the catalogue database ([`Table::database`]).
+//!   `release_shards`), are in the catalogue database ([`Table::in_shard`]).
 //! - **Which shard.** The level-0 cells of each scale domain are taken in the order of their
 //!   [`morton`] codes, domain by domain, and packed into consecutive shards up to a budget, so
 //!   all the objects of one cell are in one shard and each shard holds one run of cells in each
-//!   domain it reaches. An object that is not placed is in shard [`unplaced`] of its id.
+//!   domain it reaches. An object that is not placed is given a shard by its id; a read by id
+//!   finds every object's shard in `object_shards`.
 //! - **Where.** Shard `i` is the database bound as `OBJECTS_{i}`; the catalogue is `DB`.
 
 use std::fmt;
@@ -75,21 +76,26 @@ impl fmt::Display for Database {
 }
 
 impl Table {
-    /// The database that holds this table's rows: an object shard for [`SHARD_TABLES`], the
-    /// catalogue for every other.
+    /// Whether an object shard holds this table's rows, as it does for [`SHARD_TABLES`]; the
+    /// catalogue holds every other's.
     #[must_use]
     pub fn in_shard(&self) -> bool {
         SHARD_TABLES.contains(&self.name)
     }
 }
 
-/// How far a cell index may lie from 0 along an axis for a Morton code: 2^20 cells, 10 million
-/// Mpc in the 10 Mpc cells of the cosmic web and 1 million Mpc in the 1 Mpc ones, beyond any
-/// placed object.
-pub const MORTON_REACH: i64 = 1 << 20;
+/// How far a cell index may lie from 0 along an axis for a Morton code: 2^16 cells, 655,360 Mpc
+/// in the 10 Mpc cells of the cosmic web, 65,536 Mpc in the 1 Mpc ones of nearby galaxies and
+/// 655 kpc in the 10 pc ones of stars, beyond any placed object. Each code then holds 51 bits,
+/// below 2^53: a double holds it exactly, as D1, `SQLite`'s `total()` and a JavaScript reader
+/// read it.
+pub const MORTON_REACH: i64 = 1 << 16;
+
+/// The bits of each axis in a Morton code.
+const MORTON_BITS: u32 = MORTON_REACH.trailing_zeros() + 1;
 
 /// The Morton (Z-order) code of a cell: the bits of its three indexes, each biased by
-/// [`MORTON_REACH`] to 21 bits, interleaved x, y, z from the lowest. Cells near each other in
+/// [`MORTON_REACH`] to 17 bits, interleaved x, y, z from the lowest. Cells near each other in
 /// space are mostly near each other in this order. None for a cell beyond the reach.
 #[must_use]
 pub fn morton(cell: Cell) -> Option<u64> {
@@ -101,21 +107,9 @@ pub fn morton(cell: Cell) -> Option<u64> {
     Some(spread(x) | spread(y) << 1 | spread(z) << 2)
 }
 
-/// The 21 low bits of `v`, each moved to every third bit.
+/// The [`MORTON_BITS`] low bits of `v`, each moved to every third bit.
 fn spread(v: u64) -> u64 {
-    let mut v = v & 0x1f_ffff;
-    v = (v | v << 32) & 0x001f_0000_0000_ffff;
-    v = (v | v << 16) & 0x001f_0000_ff00_00ff;
-    v = (v | v << 8) & 0x100f_00f0_0f00_f00f;
-    v = (v | v << 4) & 0x10c3_0c30_c30c_30c3;
-    v = (v | v << 2) & 0x1249_2492_4924_9249;
-    v
-}
-
-/// The shard of an object that is not placed, among `shards`: its id modulo their number.
-#[must_use]
-pub fn unplaced(id: u64, shards: u32) -> u32 {
-    u32::try_from(id % u64::from(shards.max(1))).unwrap_or(0)
+    (0..MORTON_BITS).fold(0, |code, bit| code | ((v >> bit) & 1) << (3 * bit))
 }
 
 #[cfg(test)]
@@ -129,8 +123,8 @@ mod tests {
     #[test]
     fn morton_codes_interleave_the_biased_indexes() {
         let origin = morton(cell(0, 0, 0)).unwrap();
-        // The bias sets bit 20 of each axis: bits 60, 61 and 62.
-        assert_eq!(origin, 0b111 << 60);
+        // The bias sets bit 16 of each axis: bits 48, 49 and 50.
+        assert_eq!(origin, 0b111 << 48);
         assert_eq!(morton(cell(1, 0, 0)).unwrap(), origin | 0b001);
         assert_eq!(morton(cell(0, 1, 0)).unwrap(), origin | 0b010);
         assert_eq!(morton(cell(0, 0, 1)).unwrap(), origin | 0b100);
@@ -141,9 +135,8 @@ mod tests {
         );
         assert!(morton(cell(MORTON_REACH, 0, 0)).is_none());
         assert!(morton(cell(0, -MORTON_REACH - 1, 0)).is_none());
-        assert!(
-            morton(cell(MORTON_REACH - 1, MORTON_REACH - 1, MORTON_REACH - 1)).unwrap() < 1 << 63
-        );
+        let far = morton(cell(MORTON_REACH - 1, MORTON_REACH - 1, MORTON_REACH - 1)).unwrap();
+        assert!(far < 1 << 53, "a double holds every code exactly");
     }
 
     #[test]
@@ -153,6 +146,5 @@ mod tests {
         assert_eq!(Database::from_dir("catalogue"), Some(Database::Catalogue));
         assert_eq!(Database::from_dir("shard-x"), None);
         assert_eq!(Database::Shard(7).binding(), "OBJECTS_7");
-        assert_eq!(unplaced(17, 8), 1);
     }
 }

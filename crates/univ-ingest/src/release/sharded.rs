@@ -6,18 +6,18 @@
 //! rows without writing them, only adding up the D1 bytes they would take in a shard
 //! ([`D1Writer::measuring`]), by cell; the cells are then packed ([`super::packing`]). Both
 //! passes write each object the same way ([`write_object`]), so the bytes packed are the bytes
-//! written.
-
-use std::collections::HashMap;
+//! written. The objects' ids are checked unique once, beforehand ([`repeated_id`]), so the
+//! writer forgets each object's keys once its rows are written.
 
 use univ_model::cosmology::Cosmology;
-use univ_model::release::cells::SPACES;
+use univ_model::release::Row;
 use univ_model::release::manifest::{D1Estimate, ShardCells, ShardManifest};
-use univ_model::release::rows::{ObjectCellRow, ObjectShardRow, ReleaseShardRow, ShardCellRow};
+use univ_model::release::rows::{
+    ObjectCellRow, ObjectRow, ObjectShardRow, ReleaseShardRow, ShardCellRow,
+};
 use univ_model::release::shards::Database;
-use univ_model::release::{Cell, Row};
 
-use super::cells::ObjectCell;
+use super::cells::{DomainCell, ObjectCells};
 use super::d1::D1Writer;
 use super::entries::Numbering;
 use super::objects::ObjectWriter;
@@ -28,60 +28,36 @@ use crate::source::SourceDefinition;
 use crate::watch::Watch;
 
 /// Objects turned into rows between two looks at the build's stop flag.
-const OBJECTS_BETWEEN_CHECKS: usize = 10_000;
+pub const OBJECTS_BETWEEN_CHECKS: usize = 10_000;
 
-/// The cell of each placed object, sorted by its id, with its domain's place in the packing
-/// order.
-pub struct Cells(Vec<(u64, usize, ObjectCell)>);
+/// The tables whose keys an object's own id leads, forgotten once its rows are written.
+const OWN_KEYS: [&str; 3] = [
+    ObjectRow::TABLE.name,
+    ObjectShardRow::TABLE.name,
+    ObjectCellRow::TABLE.name,
+];
 
-impl Cells {
-    /// The cells of `cells`, by object id.
-    #[must_use]
-    pub fn new(cells: Vec<ObjectCell>) -> Self {
-        let mut by_id: Vec<(u64, usize, ObjectCell)> = cells
-            .into_iter()
-            .map(|c| {
-                let place = SPACES
-                    .iter()
-                    .position(|s| s.name() == c.domain)
-                    .unwrap_or(SPACES.len());
-                (c.object_id, place, c)
-            })
-            .collect();
-        by_id.sort_unstable_by_key(|(id, _, _)| *id);
-        Self(by_id)
-    }
-
-    /// The cell of the object `id`, with its domain's place: none for an object not placed.
-    fn of(&self, id: u64) -> Option<(usize, &ObjectCell)> {
-        let i = self.0.binary_search_by_key(&id, |(k, _, _)| *k).ok()?;
-        let (_, place, cell) = &self.0[i];
-        Some((*place, cell))
-    }
-
-    /// The cells, as the cell index holds them.
-    #[must_use]
-    pub fn into_cells(self) -> Vec<ObjectCell> {
-        self.0.into_iter().map(|(_, _, c)| c).collect()
-    }
+/// The first id two of `objects` share, if any.
+#[must_use]
+pub fn repeated_id(objects: &[ReleaseObject]) -> Option<u64> {
+    let mut ids: Vec<u64> = objects.iter().map(|o| o.id.get()).collect();
+    ids.sort_unstable();
+    ids.windows(2).find(|w| w[0] == w[1]).map(|w| w[0])
 }
 
-fn cell(c: &ObjectCell) -> Cell {
-    Cell {
-        ix: c.ix,
-        iy: c.iy,
-        iz: c.iz,
-    }
-}
-
-/// What the objects are written with: their definitions and cosmology, and the cells.
+/// What the objects are written with: their definitions and cosmology, and their cells.
 pub struct Sharding<'a> {
     pub definitions: &'a [SourceDefinition],
     pub cosmology: &'a Cosmology,
-    pub cells: &'a Cells,
+    pub cells: &'a ObjectCells,
 }
 
 impl Sharding<'_> {
+    /// The cell of the object at `place`, with its place among the cells.
+    fn cell(&self, place: usize) -> Option<(usize, &DomainCell)> {
+        self.cells.of(place).map(|i| (i, &self.cells.cells[i]))
+    }
+
     /// Plans the shards of `objects` within `budget` estimated bytes each, `numbering` being the
     /// release's numbering as the objects' rows will begin from it.
     ///
@@ -98,31 +74,33 @@ impl Sharding<'_> {
     ) -> Result<Packing, String> {
         let mut writer = D1Writer::measuring(1);
         let mut rows = ObjectWriter::new(numbering.clone(), self.definitions, self.cosmology);
-        let mut loads: HashMap<(usize, Cell), CellLoad> = HashMap::new();
+        let mut loads: Vec<CellLoad> = self
+            .cells
+            .cells
+            .iter()
+            .map(|c| CellLoad {
+                domain: (c.place, c.domain),
+                cell: c.cell,
+                ..CellLoad::default()
+            })
+            .collect();
         let mut loose = Vec::new();
-        for (n, o) in objects.iter().enumerate() {
-            if n % OBJECTS_BETWEEN_CHECKS == 0 {
+        for (place, o) in objects.iter().enumerate() {
+            if place % OBJECTS_BETWEEN_CHECKS == 0 {
                 watch.check()?;
             }
             let before = writer.estimated_bytes_in(Database::Shard(0));
-            let at = self.cells.of(o.id.get());
-            write_object(&mut rows, &mut writer, o, at, 0)?;
+            let at = self.cell(place);
+            write_object(&mut rows, &mut writer, o, at.map(|(_, c)| c), 0)?;
             let bytes = writer.estimated_bytes_in(Database::Shard(0)) - before;
             match at {
-                Some((place, c)) => {
-                    let load = loads.entry((place, cell(c))).or_insert(CellLoad {
-                        domain: (place, c.domain),
-                        cell: cell(c),
-                        objects: 0,
-                        bytes: 0,
-                    });
-                    load.objects += 1;
-                    load.bytes += bytes;
+                Some((i, _)) => {
+                    loads[i].objects += 1;
+                    loads[i].bytes += bytes;
                 }
                 None => loose.push((o.id.get(), bytes)),
             }
         }
-        let loads: Vec<CellLoad> = loads.into_values().collect();
         pack(&loads, &loose, budget).map_err(|e| e.to_string())
     }
 
@@ -140,19 +118,18 @@ impl Sharding<'_> {
         packing: &Packing,
         watch: Watch<'_>,
     ) -> Result<(), String> {
-        for (n, o) in objects.iter().enumerate() {
-            if n % OBJECTS_BETWEEN_CHECKS == 0 {
+        for (place, o) in objects.iter().enumerate() {
+            if place % OBJECTS_BETWEEN_CHECKS == 0 {
                 watch.check()?;
             }
-            let at = self.cells.of(o.id.get());
+            let at = self.cell(place);
             let shard = match at {
-                Some((place, c)) => packing
-                    .shard_of_cell(place, cell(c))
-                    .ok_or_else(|| format!("object {}'s cell was not packed", o.id))?,
+                Some((i, _)) => packing.shard_of_cell(i),
                 None => packing.shard_of_unplaced(o.id.get()),
             };
-            write_object(rows, writer, o, at, shard)?;
+            write_object(rows, writer, o, at.map(|(_, c)| c), shard)?;
         }
+        writer.clear_shard();
         Ok(())
     }
 }
@@ -163,20 +140,20 @@ fn write_object(
     rows: &mut ObjectWriter<'_>,
     writer: &mut D1Writer<'_>,
     o: &ReleaseObject,
-    at: Option<(usize, &ObjectCell)>,
+    at: Option<&DomainCell>,
     shard: u32,
 ) -> Result<(), String> {
     writer.set_shard(shard);
     rows.write(writer, o)?;
     let release = rows.numbering.release;
-    if let Some((_, c)) = at {
+    if let Some(c) = at {
         writer.add(&ObjectCellRow {
             release,
             domain: rows.numbering.terms.id(c.domain),
-            ix: c.ix,
-            iy: c.iy,
-            iz: c.iz,
-            object_id: c.object_id,
+            ix: c.cell.ix,
+            iy: c.cell.iy,
+            iz: c.cell.iz,
+            object_id: o.id.get(),
         })?;
     }
     writer.add(&ObjectShardRow {
@@ -184,7 +161,7 @@ fn write_object(
         id: o.id.get(),
         shard,
     })?;
-    writer.forget_keys(&[ObjectShardRow::TABLE.name, ObjectCellRow::TABLE.name]);
+    writer.forget_keys(&OWN_KEYS);
     Ok(())
 }
 
@@ -196,8 +173,7 @@ pub fn write_shard_index(
     packing: &Packing,
     terms: &mut Terms,
 ) -> Result<(), String> {
-    for (i, shard) in packing.shards.iter().enumerate() {
-        let index = u32::try_from(i).unwrap_or(u32::MAX);
+    for (index, shard) in (0_u32..).zip(&packing.shards) {
         for run in &shard.runs {
             writer.add(&ShardCellRow {
                 release: number,
@@ -219,13 +195,11 @@ pub fn write_shard_index(
 
 /// Each object shard as the manifest names it, with its estimate.
 pub fn shard_manifests(packing: &Packing, estimates: Vec<D1Estimate>) -> Vec<ShardManifest> {
-    packing
-        .shards
-        .iter()
+    (0_u32..)
+        .zip(&packing.shards)
         .zip(estimates)
-        .enumerate()
-        .map(|(i, (shard, d1))| ShardManifest {
-            index: u32::try_from(i).unwrap_or(u32::MAX),
+        .map(|((index, shard), d1)| ShardManifest {
+            index,
             objects: shard.objects,
             unplaced: shard.unplaced,
             cells: shard

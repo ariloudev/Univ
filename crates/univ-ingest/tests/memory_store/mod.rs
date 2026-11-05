@@ -52,8 +52,6 @@ pub struct MemoryStore {
     pub corrupt_reads: bool,
     pub observer: Option<Observer>,
     pub uploads: usize,
-    /// The database the last D1 operation ran in.
-    pub last: Database,
 }
 
 impl Default for MemoryStore {
@@ -68,7 +66,6 @@ impl Default for MemoryStore {
             corrupt_reads: false,
             observer: None,
             uploads: 0,
-            last: Database::Catalogue,
         }
     }
 }
@@ -85,8 +82,9 @@ impl MemoryStore {
         Ok(())
     }
 
-    fn observe(&mut self) {
-        let db = match self.last {
+    /// Shows the observer the last operation, run in `database`, and D1 and R2 after it.
+    fn observe(&mut self, database: Database) {
+        let db = match database {
             Database::Catalogue => Some(&self.db),
             Database::Shard(i) => self.shards.get(&i),
         };
@@ -206,22 +204,20 @@ impl Store for MemoryStore {
     fn execute_file(&mut self, database: Database, file: &Path) -> Result<(), String> {
         let name = file.file_name().unwrap().to_string_lossy().into_owned();
         self.record(Op::Execute(format!("{}/{name}", database.dir())))?;
-        self.last = database;
         let sql = std::fs::read_to_string(file).map_err(|e| e.to_string())?;
         let done = trim_sql_query(&sql).and_then(|sql| {
             self.database(database)
                 .execute_batch(&sql)
                 .map_err(|e| e.to_string())
         });
-        self.observe();
+        self.observe(database);
         done
     }
 
     fn query(&mut self, database: Database, sql: &str) -> Result<Vec<QueryRow>, String> {
         self.record(Op::Query(sql.to_owned()))?;
-        self.last = database;
         let done = rows(self.database(database), sql).map_err(|e| e.to_string());
-        self.observe();
+        self.observe(database);
         done
     }
 
@@ -233,7 +229,7 @@ impl Store for MemoryStore {
         self.record(Op::Put(key.to_owned()))?;
         let bytes = std::fs::read(file).map_err(|e| e.to_string())?;
         self.r2.insert(key.to_owned(), bytes);
-        self.observe();
+        self.observe(Database::Catalogue);
         Ok(())
     }
 
@@ -253,7 +249,7 @@ impl Store for MemoryStore {
     fn delete(&mut self, key: &str) -> Result<(), String> {
         self.record(Op::Delete(key.to_owned()))?;
         self.r2.remove(key);
-        self.observe();
+        self.observe(Database::Catalogue);
         Ok(())
     }
 }

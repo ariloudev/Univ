@@ -1,7 +1,7 @@
-//! The Worker reads the database and bucket Univ Ingest publishes to: local D1 names a
+//! The Worker reads the databases and bucket Univ Ingest publishes to: local D1 names a
 //! database's file after its `database_id`, so the Worker's `wrangler.toml` must give the
-//! release database the same name and id as the root `wrangler.toml`, and the same bucket, or
-//! it opens an empty store and says nothing.
+//! catalogue database and each object shard the same name and id as the root `wrangler.toml`,
+//! and the same bucket, or it opens an empty store and says nothing.
 #![expect(
     clippy::unwrap_used,
     reason = "test helpers unwrap: a failure there is the test failing"
@@ -51,6 +51,18 @@ fn the_worker_reads_the_database_and_bucket_that_ingest_publishes_to() {
         value(&served, "database_id"),
         value(&published, "database_id")
     );
+    // And each object shard, under the same name, binding and id.
+    for i in 0..8 {
+        let marker = format!("database_name = \"univ-objects-{i}\"");
+        let (published, served) = (table_with(&ingest, &marker), table_with(&worker, &marker));
+        let binding = format!("OBJECTS_{i}");
+        assert_eq!(value(&served, "binding"), binding);
+        assert_eq!(value(&published, "binding"), binding);
+        assert_eq!(
+            value(&served, "database_id"),
+            value(&published, "database_id")
+        );
+    }
     let bucket = "bucket_name = \"univ-releases\"";
     assert_eq!(value(&table_with(&ingest, bucket), "binding"), "RELEASES");
     assert_eq!(value(&table_with(&worker, bucket), "binding"), "RELEASES");

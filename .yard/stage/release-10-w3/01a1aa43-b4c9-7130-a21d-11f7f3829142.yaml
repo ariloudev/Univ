@@ -174,6 +174,15 @@ blocks:
           session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
         title: "Store by database"
         state: active
+      - key: 01a1aa8f-08e8-7637-9df3-f04f05b3f4d2
+        at: 2026-11-05T07:14:23Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Store by database"
+        detail: "`execute_file`, `query` take a Database; `bound_shards`. Wrangler maps to `univ` / `univ-objects-i`; OBJECTS_0..7 in both wrangler.toml files with the same ids (tested). MemoryStore keeps one SQLite per database."
+        state: done
   - key: 01a1aa43-b4c9-7130-a21d-11fef13452a9
     id: w3-t6
     kind: task
@@ -186,6 +195,15 @@ blocks:
           session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
         title: "Publish per database and the unbound-shard refusal"
         state: open
+      - key: 01a1aa8f-08e9-75cd-a36b-14e9fdafca81
+        at: 2026-11-05T07:14:23Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Publish per database and the unbound-shard refusal"
+        detail: "Units by database; each shard's tables checked against its own fingerprints; `TooManyShards` before any upload; the cap per database (catalogue by `releases`, shards by `release_shards`). Real Wrangler: publish_wrangler and r2_batch (ignored tests) pass."
+        state: done
   - key: 01a1aa43-b4c9-7130-a21d-11ff3116ca08
     id: w3-t7
     kind: task
@@ -198,6 +216,15 @@ blocks:
           session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
         title: "Prune across every database"
         state: open
+      - key: 01a1aa8f-08e9-75cd-a36b-14ea5c32aaaf
+        at: 2026-11-05T07:14:23Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Prune across every database"
+        detail: "Each bound shard holding the schema, then the catalogue with the pruning time last; rows left checked in each."
+        state: done
   - key: 01a1aa43-b4c9-7130-a21d-12006bca2d7f
     id: w3-t8
     kind: task
@@ -210,6 +237,15 @@ blocks:
           session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
         title: "Normalizer's identifier set by hash"
         state: open
+      - key: 01a1aa8f-08e9-75cd-a36b-14eb197fb4d7
+        at: 2026-11-05T07:14:23Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Normalizer's identifier set by hash"
+        detail: "HashSet<u128> of two SipHash runs."
+        state: done
   - key: 01a1aa43-b4c9-7130-a21d-1201102bb2e2
     id: build-issues
     kind: note

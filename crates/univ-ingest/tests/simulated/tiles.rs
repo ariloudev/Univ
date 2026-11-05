@@ -76,6 +76,7 @@ pub fn gaia() -> [SourceId; 1] {
 pub fn point(id: u64, position: Vec3) -> DomainPoint {
     DomainPoint {
         id: ObjectId::new(id).unwrap(),
+        place: u32::try_from(id).unwrap(),
         position,
         source: 0,
         sky_source: 0,

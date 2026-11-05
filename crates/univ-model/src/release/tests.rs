@@ -207,3 +207,35 @@ fn version_5_adds_the_shards_index_per_release() {
         .collect();
     assert_eq!(sharded, super::shards::SHARD_TABLES);
 }
+
+#[test]
+fn a_tables_estimate_over_the_databases_adds_up_its_rows_and_fingerprint() {
+    use super::fingerprint::ColumnTotal;
+    use super::manifest::{TableEstimate, summed};
+    let table = |rows, total, sha: Option<&str>| TableEstimate {
+        table: "objects".to_owned(),
+        rows,
+        estimated_bytes: rows * 10,
+        fingerprint: vec![ColumnTotal {
+            column: "id".to_owned(),
+            total,
+            magnitude: None,
+            non_null: Some(rows),
+        }],
+        content_sha256: sha.map(str::to_owned),
+    };
+    let (a, b, empty) = (
+        table(3, 6.0, Some("a")),
+        table(2, 9.0, Some("b")),
+        table(0, 0.0, Some("empty")),
+    );
+    let sum = summed(&[&empty, &a, &b]).unwrap();
+    assert_eq!((sum.rows, sum.estimated_bytes), (5, 50));
+    assert_eq!(sum.fingerprint[0].total, 15.0);
+    assert_eq!(sum.fingerprint[0].non_null, Some(5));
+    // Two databases hold rows: no single digest stands for them.
+    assert_eq!(sum.content_sha256, None);
+    let one = summed(&[&empty, &a]).unwrap();
+    assert_eq!(one.content_sha256.as_deref(), Some("a"));
+    assert!(summed(&[]).is_none());
+}

@@ -1,7 +1,9 @@
 //! What local D1 records of a release and of `latest`, and the rows of a release a table holds.
 
+use std::collections::BTreeSet;
 use univ_model::release::fingerprint::{ROWS, alias, non_null_alias};
 use univ_model::release::manifest::TableEstimate;
+
 use univ_model::release::shards::Database;
 use univ_model::release::{ColumnKind, SqlValue, Table};
 
@@ -12,6 +14,8 @@ use super::{Latest, QueryRow, Store};
 pub struct Status {
     /// Whether D1 holds the schema's list of releases at all.
     pub schema: bool,
+    /// Whether the catalogue holds the index of the object shards (schema version 5).
+    pub shard_index: bool,
     /// The release `latest` points to, and when it was moved there.
     pub latest: Option<(u32, String)>,
     /// Whether D1 lists the release.
@@ -50,11 +54,8 @@ fn integer(row: &QueryRow, column: &str) -> Option<i64> {
 ///
 /// Fails when D1 cannot be queried or `latest` names no release number.
 pub fn published_status(store: &mut dyn Store, number: u32) -> Result<Status, String> {
-    let tables = store.query(
-        Database::Catalogue,
-        "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('releases', 'latest')",
-    )?;
-    if tables.len() < 2 {
+    let tables = tables_in(store, Database::Catalogue)?;
+    if !(tables.contains("releases") && tables.contains("latest")) {
         return Ok(Status::default());
     }
     let latest = match store
@@ -79,6 +80,7 @@ pub fn published_status(store: &mut dyn Store, number: u32) -> Result<Status, St
     let row = rows.first();
     Ok(Status {
         schema: true,
+        shard_index: tables.contains("release_shards"),
         latest,
         listed: row.is_some(),
         published_at: row.and_then(|r| text(r, "published_at")),
@@ -196,6 +198,19 @@ fn measure_name(table: &Table, column: &str) -> String {
         Some(ColumnKind::Text) => format!("total bytes of {column}"),
         _ => format!("total of {column}"),
     }
+}
+
+/// The tables the D1 database `database` holds.
+///
+/// # Errors
+///
+/// Fails when D1 cannot be queried.
+pub fn tables_in(store: &mut dyn Store, database: Database) -> Result<BTreeSet<String>, String> {
+    let rows = store.query(
+        database,
+        "SELECT name FROM sqlite_master WHERE type = 'table'",
+    )?;
+    Ok(rows.iter().filter_map(|r| text(r, "name")).collect())
 }
 
 /// The schema version the D1 database `database` records, if it records one.

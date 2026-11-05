@@ -9,15 +9,18 @@
 //! # Publishing
 //!
 //! [`publish`] reads release n's manifest from its build directory, and refuses the release
-//! when the state directory does not record it (its build stopped before it did) or when its D1
-//! estimate and those of every release not pruned together pass the CON-3 cap. It then
-//! uploads in this order, each unit checked before it is entered in the journal:
+//! when the state directory does not record it (its build stopped before it did), when it was
+//! built before object shards, when it needs more object shards than Univ Server binds, or when
+//! its D1 estimate in any database and those of every release not pruned together pass the CON-3
+//! cap. It then uploads in this order, each unit checked before it is entered in the journal:
 //!
-//! 1. `d1/0000-schema.sql`, checked by the schema version it records;
+//! 1. each database's schema, `d1/{dir}/0000-schema.sql`, the catalogue's first, checked by the
+//!    schema version it records;
 //! 2. each R2 file under `releases/{n}/`, read back and checked against its SHA-256 (AC-102);
-//! 3. each table's D1 files, checked by the count and fingerprint of the rows of release n the
-//!    table then holds against the manifest's (`univ_model::release::fingerprint`), so a row
-//!    dropped or altered on its way to D1 stops the publish naming the table and the measure;
+//! 3. each table's D1 files in each database, the catalogue's first, checked by the count and
+//!    fingerprint of the rows of release n the table then holds there against the manifest's
+//!    (`univ_model::release::fingerprint`), so a row dropped or altered on its way to D1 stops
+//!    the publish naming the database, the table and the measure;
 //! 4. `manifest.yaml`, read back and checked against the local file;
 //! 5. `latest`, moved to n by one single-statement write (AC-104), and only then the release's
 //!    `published_at`.

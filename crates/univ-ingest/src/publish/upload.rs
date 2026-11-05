@@ -3,7 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
-use univ_model::release::manifest::{D1Estimate, ManifestFile, Target};
+use univ_model::release::manifest::{D1Estimate, MANIFEST_VERSION, ManifestFile, Target};
 use univ_model::release::shards::Database;
 use univ_model::release::{ReleaseManifest, TABLES, Table, keys};
 
@@ -40,17 +40,14 @@ enum Unit<'m> {
 }
 
 /// The database and table a D1 file `d1/{dir}/{nnnn}-{table}-{part}.sql` loads, no table for a
-/// schema's file. A file directly under `d1/`, as releases were built before object shards,
-/// loads the catalogue database.
+/// schema's file.
 fn file_of(path: &str) -> Result<(Database, Option<&'static Table>), String> {
     let not_named = || format!("{path} is not named as a D1 file");
-    let rest = path
+    let (dir, file) = path
         .strip_prefix(&format!("{}/", keys::D1_DIR))
+        .and_then(|rest| rest.split_once('/'))
         .ok_or_else(not_named)?;
-    let (database, file) = match rest.split_once('/') {
-        Some((dir, file)) => (Database::from_dir(dir).ok_or_else(not_named)?, file),
-        None => (Database::Catalogue, rest),
-    };
+    let database = Database::from_dir(dir).ok_or_else(not_named)?;
     let name = file
         .strip_suffix(".sql")
         .and_then(|p| p.split_once('-'))
@@ -103,7 +100,7 @@ fn units(manifest: &ReleaseManifest) -> Result<Vec<Unit<'_>>, String> {
 fn estimate_of(manifest: &ReleaseManifest, database: Database) -> Option<&D1Estimate> {
     match database {
         Database::Catalogue => Some(&manifest.d1),
-        Database::Shard(i) => manifest.shards.iter().find(|s| s.index == i).map(|s| &s.d1),
+        Database::Shard(i) => manifest.shards.get(i as usize).map(|s| &s.d1),
     }
 }
 
@@ -126,6 +123,12 @@ fn read_release(
         });
     }
     let (manifest, bytes) = read_manifest(&dir, number).map_err(|e| e.to_string())?;
+    if manifest.manifest_version < MANIFEST_VERSION {
+        return Err(format!(
+            "it was built under manifest version {}, before object shards; build it again",
+            manifest.manifest_version
+        ));
+    }
     let state = State::read(options.state).map_err(|e| e.to_string())?;
     let name = number.to_string();
     if !state.ledger.releases().iter().any(|r| r.name == name) {
@@ -257,12 +260,11 @@ fn upload(
                 })?;
             let rows = check_rows(store, *db, table, n, want)?;
             // The count and fingerprint both matched.
-            let checked = match db {
-                Database::Catalogue => format!("{}: {rows} rows of release {n}", table.name),
-                Database::Shard(i) => {
-                    format!("{}: {rows} rows of release {n} in shard {i}", table.name)
-                }
+            let shard = match db {
+                Database::Catalogue => String::new(),
+                Database::Shard(i) => format!(" in shard {i}"),
             };
+            let checked = format!("{}: {rows} rows of release {n}{shard}", table.name);
             told(
                 last,
                 &format!("imported; {checked}"),
@@ -372,12 +374,12 @@ pub fn publish_with(
                 .or_else(|| journal.done.last().map(|d| d.at.clone()))
         })
         .flatten();
-    let (latest, schema) = refuse_published(store, number, done_at).map_err(|e| match e {
+    let (latest, holds) = refuse_published(store, number, done_at).map_err(|e| match e {
         Refused::Error(e) => e,
         Refused::Query(p) => stopped(Latest(None), 0, p),
     })?;
     unbound(store, &manifest)
-        .and_then(|()| within_caps(store, &manifest, schema))
+        .and_then(|()| within_caps(store, &manifest, holds))
         .map_err(|e| match e {
             Refused::Error(e) => e,
             Refused::Query(p) => stopped(latest, 0, p),

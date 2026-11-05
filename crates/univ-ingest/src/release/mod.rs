@@ -33,6 +33,7 @@ mod meta;
 mod objects;
 mod outline;
 mod packing;
+pub use packing::LOOSE_BUCKETS;
 mod place;
 mod placement;
 mod pointers;
@@ -49,7 +50,7 @@ use univ_model::ids::SourceId;
 use univ_model::release::ReleaseManifest;
 
 pub use assemble::{Written, write_release};
-pub use cells::{CellRows, ObjectCell, cell_rows, index_rows, object_cells};
+pub use cells::{CellRows, DomainCell, ObjectCells, index_rows, object_cells};
 pub use check::{
     D1_DERIVED, D1_FINITE, D1_KEYS, D1_SIZE, ENTRY_COUNTS, Failed, MANIFEST, REDISTRIBUTION,
     STRUCTURE_CITATIONS, Subject, TILE_OBJECTS, check_all, decimal_bytes, provisional, table_sizes,
@@ -68,7 +69,6 @@ pub use outline::{
     Admitted, OUTLINE_CENTRE, Outlined, TestCatalogues, admitted, not_drawn, outlines_on,
     result_record,
 };
-pub use packing::{CellLoad, PackError, Packed, Packing, Run, pack};
 pub use place::{SkyRanges, centre, index_bounds, ranges, sky_region};
 pub use placement::{Placement, placements};
 pub use rescaled::rescaled;

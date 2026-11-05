@@ -73,10 +73,10 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
             decimal_bytes(shard.d1.estimated_bytes)
         ));
     }
-    lines.extend([format!(
+    lines.push(format!(
         "cell index: {} placed objects, {} of {} structures with a bounding box",
         m.counts.object_cells, m.counts.structures_indexed, m.counts.structures
-    )]);
+    ));
     if !m.cell_index.not_indexed.is_empty() {
         let each: Vec<String> = m
             .cell_index

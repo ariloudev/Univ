@@ -22,7 +22,7 @@ use univ_model::release::manifest::{D1_CAP_BYTES, D1Estimate, TableEstimate};
 use univ_model::release::shards::Database;
 use univ_model::release::{Row, SCHEMA, SCHEMA_VERSION, SqlValue, TABLES, Table, keys};
 
-use state::{TableState, hash128, key_of, place_of};
+use state::{TableState, key_hash, key_of, place_of};
 
 use super::check::{D1_FINITE, D1_KEYS, Failed};
 
@@ -76,8 +76,10 @@ fn part_path(database: Database, place: usize, table: &str, part: usize) -> Stri
 /// of the bytes they would take.
 pub struct D1Writer<'s> {
     sink: Option<&'s mut dyn PartSink>,
-    /// The tables of each database: the catalogue's, then each shard's.
+    /// The tables of each database: the catalogue's, then each shard's ([`slot`]).
     databases: Vec<Vec<TableState>>,
+    /// The estimated bytes of each database's rows so far.
+    bytes: Vec<u64>,
     /// The shard of the object whose rows are being written.
     shard: Option<u32>,
 }
@@ -98,6 +100,14 @@ fn database(index: usize) -> Database {
     match index {
         0 => Database::Catalogue,
         i => Database::Shard(u32::try_from(i - 1).unwrap_or(u32::MAX)),
+    }
+}
+
+/// The place of `database` among the writer's, [`database`]'s inverse.
+fn slot(database: Database) -> usize {
+    match database {
+        Database::Catalogue => 0,
+        Database::Shard(i) => i as usize + 1,
     }
 }
 
@@ -122,23 +132,29 @@ impl<'s> D1Writer<'s> {
     }
 
     /// A writer that writes nothing and only adds up the estimated bytes of the rows it is
-    /// given, as [`D1Writer::estimated_bytes`] gives them.
+    /// given, as [`D1Writer::estimated_bytes_in`] gives them.
     #[must_use]
     pub fn measuring(shards: u32) -> Self {
-        let databases = (0..=shards)
+        let databases: Vec<Vec<TableState>> = (0..=shards)
             .map(|_| TABLES.iter().copied().map(TableState::new).collect())
             .collect();
         Self {
             sink: None,
+            bytes: vec![0; databases.len()],
             databases,
             shard: None,
         }
     }
 
     /// Sends the rows of the shard tables that follow to object shard `shard`, until another
-    /// is set.
+    /// is set or [`D1Writer::clear_shard`] is called.
     pub fn set_shard(&mut self, shard: u32) {
         self.shard = Some(shard);
+    }
+
+    /// Sends no more rows of the shard tables anywhere: one that follows is an error.
+    pub fn clear_shard(&mut self) {
+        self.shard = None;
     }
 
     /// Writes `row`.
@@ -178,7 +194,7 @@ impl<'s> D1Writer<'s> {
         let shard = self
             .shard
             .ok_or_else(|| format!("a row of {} has no object shard set", table.name))?;
-        let index = shard as usize + 1;
+        let index = slot(Database::Shard(shard));
         if index < self.databases.len() {
             Ok(index)
         } else {
@@ -195,8 +211,10 @@ impl<'s> D1Writer<'s> {
         let state = self.databases[db]
             .get_mut(place)
             .ok_or_else(|| format!("{} is not a table of the schema", table.name))?;
+        let bytes = table.estimated_bytes(values);
         state.rows += 1;
-        state.bytes += table.estimated_bytes(values);
+        state.bytes += bytes;
+        self.bytes[db] += bytes;
         let Some(sink) = self.sink.as_deref_mut() else {
             return Ok(());
         };
@@ -220,7 +238,7 @@ impl<'s> D1Writer<'s> {
                 key_of(table, values)
             ));
         }
-        if !state.keys.insert(hash128(&state.key, values)) {
+        if !state.keys.insert(key_hash(&state.key, values)) {
             state.repeated += 1;
             if state.first_repeated.is_none() {
                 state.first_repeated = Some(key_of(table, values));
@@ -235,12 +253,16 @@ impl<'s> D1Writer<'s> {
     /// Forgets the keys seen of `tables`, whose keys hold the object id, once an object's rows
     /// are all written: their keys are unique if unique within each object, the object's id
     /// being unique among the objects.
+    ///
+    /// Only the catalogue and the shard set are touched; a writer that only measures keeps no
+    /// keys.
     pub fn forget_keys(&mut self, tables: &[&str]) {
-        let shard = self.shard.map_or(0, |s| s as usize + 1);
-        let touched = [0, shard];
-        let databases = self.databases.iter_mut().enumerate();
-        for (_, tables_of) in databases.filter(|(i, _)| touched.contains(i)) {
-            for state in tables_of {
+        if self.sink.is_none() {
+            return;
+        }
+        let shard = self.shard.map_or(0, |s| slot(Database::Shard(s)));
+        for db in [0, shard] {
+            for state in &mut self.databases[db] {
                 if tables.contains(&state.table.name) {
                     state.keys.clear();
                 }
@@ -248,22 +270,10 @@ impl<'s> D1Writer<'s> {
         }
     }
 
-    /// The estimated D1 bytes of every row written so far, in every database.
-    #[must_use]
-    pub fn estimated_bytes(&self) -> u64 {
-        self.databases.iter().flatten().map(|t| t.bytes).sum()
-    }
-
     /// The estimated D1 bytes of the rows written so far to `database`.
     #[must_use]
     pub fn estimated_bytes_in(&self, database: Database) -> u64 {
-        let index = match database {
-            Database::Catalogue => 0,
-            Database::Shard(i) => i as usize + 1,
-        };
-        self.databases
-            .get(index)
-            .map_or(0, |tables| tables.iter().map(|t| t.bytes).sum())
+        self.bytes.get(slot(database)).copied().unwrap_or(0)
     }
 
     /// The rows written so far to the table `name`, in every database.

@@ -51,7 +51,9 @@ pub const SPACES: [CellSpace; 4] = [
 ];
 
 /// A cell's indices along x, y and z.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize,
+)]
 pub struct Cell {
     pub ix: i64,
     pub iy: i64,

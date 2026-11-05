@@ -447,14 +447,8 @@ pub fn normalize_until(
     Ok(normalizer.finish())
 }
 
-/// A 128-bit hash of an identifier, two `SipHash` runs under different keys: two identifiers of
-/// a catalogue share one with a chance of about n² / 2^129, 10^-24 for twenty million.
+/// A 128-bit hash of an identifier ([`crate::hash::hash128`]).
 fn identifier_hash(identifier: &str) -> u128 {
-    use std::hash::{BuildHasher, BuildHasherDefault, DefaultHasher, Hash, Hasher};
-    let hasher = BuildHasherDefault::<DefaultHasher>::default();
-    let low = hasher.hash_one(identifier);
-    let mut keyed = DefaultHasher::new();
-    0x5eed_u32.hash(&mut keyed);
-    identifier.hash(&mut keyed);
-    (u128::from(keyed.finish()) << 64) | u128::from(low)
+    use std::hash::Hash;
+    crate::hash::hash128(|h| identifier.hash(h))
 }

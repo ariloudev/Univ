@@ -29,20 +29,22 @@ pub fn database_name(database: Database) -> String {
 /// [`database_name`] names it, until the first missing.
 #[must_use]
 pub fn bound_shards(toml: &str) -> u32 {
-    let mut bound = 0;
-    loop {
-        let shard = Database::Shard(bound);
+    let blocks: Vec<&str> = toml
+        .split("[[d1_databases]]")
+        .skip(1)
+        .map(|block| block.split("[[").next().unwrap_or(block))
+        .collect();
+    let declared = |shard: Database| {
         let binding = format!("binding = \"{}\"", shard.binding());
         let name = format!("database_name = \"{}\"", database_name(shard));
-        let declared = toml.split("[[d1_databases]]").skip(1).any(|block| {
-            let block = block.split("[[").next().unwrap_or(block);
-            block.contains(&binding) && block.contains(&name)
-        });
-        if !declared {
-            return bound;
-        }
-        bound += 1;
-    }
+        blocks
+            .iter()
+            .any(|b| b.contains(&binding) && b.contains(&name))
+    };
+    let bound = (0..u32::MAX)
+        .take_while(|&i| declared(Database::Shard(i)))
+        .count();
+    u32::try_from(bound).unwrap_or(u32::MAX)
 }
 /// The R2 bucket `wrangler.toml` names.
 pub const BUCKET: &str = "univ-releases";
@@ -321,23 +323,10 @@ mod tests {
         let toml = std::fs::read_to_string(root.join("wrangler.toml")).unwrap();
         assert!(toml.contains(&format!("database_name = \"{DATABASE}\"")));
         assert_eq!(bound_shards(&toml), 8);
-        // Univ Server binds the same databases, by the same ids.
+        // Univ Server binds the same (univ-server's tests/config.rs checks their ids).
         let server =
             std::fs::read_to_string(root.join("crates/univ-server/wrangler.toml")).unwrap();
         assert_eq!(bound_shards(&server), 8);
-        // Each database's name and id lines, the Worker's own univ-layers left out.
-        let ids = |toml: &str| -> Vec<String> {
-            toml.split("[[")
-                .filter(|b| b.starts_with("d1_databases]]") && !b.contains("univ-layers"))
-                .flat_map(|b| {
-                    b.lines()
-                        .filter(|l| l.starts_with("database_"))
-                        .map(str::to_owned)
-                        .collect::<Vec<_>>()
-                })
-                .collect()
-        };
-        assert_eq!(ids(&toml), ids(&server));
         assert!(toml.contains(&format!("bucket_name = \"{BUCKET}\"")));
         assert!(!toml.contains("main ="), "no Worker entry");
         assert_eq!(

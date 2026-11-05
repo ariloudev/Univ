@@ -68,18 +68,52 @@ fn literal(db: &Connection, value: ValueRef<'_>) -> String {
     }
 }
 
-/// Release [`RELEASE`]'s rows of `table` as `INSERT INTO` statements, one a line.
-fn dump(db: &Connection, table: &str, out: &mut String) {
-    let mut q = db
-        .prepare(&format!("SELECT * FROM {table} WHERE release = ?1"))
-        .unwrap();
-    let columns = q.column_count();
-    let mut rows = q.query([RELEASE]).unwrap();
-    while let Some(row) = rows.next().unwrap() {
-        let values: Vec<String> = (0..columns)
-            .map(|i| literal(db, row.get_ref(i).unwrap()))
-            .collect();
-        writeln!(out, "INSERT INTO {table} VALUES({});", values.join(",")).unwrap();
+/// A key value, ordered as `SQLite` orders a key's integers and texts.
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+enum KeyValue {
+    Integer(i64),
+    Text(String),
+}
+
+/// Release [`RELEASE`]'s rows of `table` in each of `dbs` as `INSERT INTO` statements, one a
+/// line, in the order of the table's primary key whichever database holds them.
+fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut String) {
+    let key = univ_model::release::TABLES
+        .iter()
+        .find(|t| t.name == table)
+        .unwrap()
+        .key;
+    let mut lines = Vec::new();
+    for db in dbs {
+        let mut q = db
+            .prepare(&format!("SELECT * FROM {table} WHERE release = ?1"))
+            .unwrap();
+        let columns: Vec<String> = q.column_names().iter().map(|c| (*c).to_owned()).collect();
+        let mut rows = q.query([RELEASE]).unwrap();
+        while let Some(row) = rows.next().unwrap() {
+            let order: Vec<KeyValue> = key
+                .iter()
+                .map(|k| {
+                    let i = columns.iter().position(|c| c == k).unwrap();
+                    match row.get_ref(i).unwrap() {
+                        ValueRef::Integer(n) => KeyValue::Integer(n),
+                        ValueRef::Text(t) => KeyValue::Text(String::from_utf8_lossy(t).into()),
+                        other => unreachable!("a key of {table} holds {other:?}"),
+                    }
+                })
+                .collect();
+            let values: Vec<String> = (0..columns.len())
+                .map(|i| literal(db, row.get_ref(i).unwrap()))
+                .collect();
+            lines.push((
+                order,
+                format!("INSERT INTO {table} VALUES({});", values.join(",")),
+            ));
+        }
+    }
+    lines.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+    for (_, line) in lines {
+        writeln!(out, "{line}").unwrap();
     }
 }
 
@@ -104,11 +138,9 @@ fn text(store: &MemoryStore) -> String {
     .unwrap();
     for table in TABLES {
         if SHARD_TABLES.contains(&table) {
-            for shard in store.shards.values() {
-                dump(shard, table, &mut out);
-            }
+            dump(store.shards.values(), table, &mut out);
         } else {
-            dump(db, table, &mut out);
+            dump(std::iter::once(db), table, &mut out);
         }
     }
     out

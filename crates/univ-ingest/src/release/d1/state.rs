@@ -2,7 +2,7 @@
 //! fingerprint and the checks of their keys and numbers.
 
 use std::collections::HashSet;
-use std::hash::{DefaultHasher, Hash, Hasher};
+use std::hash::Hash;
 
 use univ_model::release::{Fingerprinter, SqlValue, Statements, TABLES, Table};
 
@@ -58,14 +58,11 @@ pub(super) fn key_of(table: &Table, row: &[SqlValue]) -> String {
     format!("({})", parts.join(", "))
 }
 
-/// A 128-bit hash of the key values of `row` at `places`, two `SipHash` runs apart, each value
-/// hashed with its type: a key is told from another by it, and no text is made of it.
-pub(super) fn hash128(places: &[usize], row: &[SqlValue]) -> u128 {
-    let mut a = DefaultHasher::new();
-    let mut b = DefaultHasher::new();
-    0x5eed_u32.hash(&mut b);
-    for &i in places {
-        for h in [&mut a, &mut b] {
+/// A 128-bit hash of the key values of `row` at `places` ([`crate::hash::hash128`]), each
+/// value hashed with its type: a key is told from another by it, and no text is made of it.
+pub(super) fn key_hash(places: &[usize], row: &[SqlValue]) -> u128 {
+    crate::hash::hash128(|h| {
+        for &i in places {
             match row.get(i) {
                 Some(SqlValue::Integer(n)) => (1_u8, n).hash(h),
                 Some(SqlValue::Real(x)) => (2_u8, x.to_bits()).hash(h),
@@ -73,8 +70,7 @@ pub(super) fn hash128(places: &[usize], row: &[SqlValue]) -> u128 {
                 Some(SqlValue::Null) | None => 0_u8.hash(h),
             }
         }
-    }
-    (u128::from(a.finish()) << 64) | u128::from(b.finish())
+    })
 }
 
 /// The place in `TABLES` of the table named `name`, worked out when compiled for a row type.

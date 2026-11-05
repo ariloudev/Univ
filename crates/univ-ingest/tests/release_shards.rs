@@ -9,32 +9,12 @@ mod common;
 mod release_fixture;
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::Path;
 
-use release_fixture::{SHARD_BUDGET, build_next, built, cross, fixture, tiles};
+use release_fixture::{SHARD_BUDGET, build_next, built, cross, fixture, loaded_in, tiles};
 use rusqlite::Connection;
-use univ_ingest::release::BuildError;
+use univ_ingest::release::{BuildError, LOOSE_BUCKETS};
 use univ_model::release::ReleaseManifest;
-use univ_model::release::shards::{Database, unplaced};
-
-/// The database `database` of the release in `dir`: its D1 files executed in path order.
-fn database(dir: &Path, m: &ReleaseManifest, database: Database) -> Connection {
-    let db = Connection::open_in_memory().unwrap();
-    let prefix = format!("d1/{}/", database.dir());
-    let mut paths: Vec<&str> = m
-        .files
-        .iter()
-        .map(|f| f.path.as_str())
-        .filter(|p| p.starts_with(&prefix))
-        .collect();
-    paths.sort_unstable();
-    assert!(!paths.is_empty(), "{database} has no files");
-    for path in paths {
-        db.execute_batch(&std::fs::read_to_string(dir.join(path)).unwrap())
-            .unwrap();
-    }
-    db
-}
+use univ_model::release::shards::{Database, SHARD_TABLES};
 
 fn ids(db: &Connection, sql: &str) -> BTreeSet<u64> {
     let mut statement = db.prepare(sql).unwrap();
@@ -62,11 +42,11 @@ fn sharded() -> Sharded {
     let release = build_next(&f);
     let m = release.manifest;
     assert!(m.shards.len() >= 2, "{} shard(s)", m.shards.len());
-    let catalogue = database(&release.dir, &m, Database::Catalogue);
+    let catalogue = loaded_in(&release.dir, &m, Database::Catalogue);
     let shards = m
         .shards
         .iter()
-        .map(|s| database(&release.dir, &m, Database::Shard(s.index)))
+        .map(|s| loaded_in(&release.dir, &m, Database::Shard(s.index)))
         .collect();
     Sharded {
         manifest: m,
@@ -96,7 +76,7 @@ fn each_object_is_in_exactly_one_shard_with_its_entries_measurements_designation
             assert!(seen.insert(*id), "object {id} is in two shards");
             assert_eq!(index[id], i as u64, "object {id}");
         }
-        for table in ["entries", "measurements", "designations", "object_cells"] {
+        for table in SHARD_TABLES.iter().filter(|t| **t != "objects") {
             let owners = ids(shard, &format!("SELECT DISTINCT object_id FROM {table}"));
             assert!(owners.is_subset(&objects), "{table} of shard {i}");
         }
@@ -104,13 +84,7 @@ fn each_object_is_in_exactly_one_shard_with_its_entries_measurements_designation
     }
     assert_eq!(seen.len(), index.len());
     // The catalogue holds no object's rows.
-    for table in [
-        "objects",
-        "entries",
-        "measurements",
-        "designations",
-        "object_cells",
-    ] {
+    for table in SHARD_TABLES {
         assert_eq!(count(&s.catalogue, table), 0, "{table}");
     }
 }
@@ -136,13 +110,15 @@ fn all_the_objects_of_one_cell_are_in_one_shard_and_one_not_placed_goes_by_its_i
             assert_eq!(owner, i, "cell {cell:?} is in two shards");
         }
     }
-    let shards = u32::try_from(s.shards.len()).unwrap();
+    // The objects not placed whose ids share a bucket share a shard.
+    let mut shard_of_bucket = BTreeMap::new();
     let mut loose = 0;
     for (i, shard) in s.shards.iter().enumerate() {
         for id in ids(shard, "SELECT id FROM objects") {
             if !placed.contains(&id) {
                 loose += 1;
-                assert_eq!(unplaced(id, shards) as usize, i, "object {id}");
+                let owner = *shard_of_bucket.entry(id % LOOSE_BUCKETS).or_insert(i);
+                assert_eq!(owner, i, "object {id}");
             }
         }
     }

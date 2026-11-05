@@ -196,7 +196,8 @@ fn a_number_that_is_not_finite_fails_the_build_naming_its_table_row_and_column()
 fn two_rows_with_one_primary_key_fail_the_build() {
     fails_and_uses_no_number(
         D1_KEYS,
-        "table objects: 1 row(s) repeat a primary key another row has, from (release = 1, id = ",
+        "table objects: object id 6 is given to two objects, whose rows repeat its key (release = \
+         1, id = 6)",
         |crossed, _, _, _| {
             let twin = crossed.objects[0].clone();
             crossed.objects.push(twin);
