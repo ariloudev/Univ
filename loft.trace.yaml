@@ -102,6 +102,18 @@ links:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_has_a_valid_definition"
         body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
+  - node: 01a1a931-2c8a-73a8-91f2-5900bff82962
+    reviewed: 163ab4d74852ed5e35ad3c11f2149684ce11198489786f36e9674e3af7cfa69a
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error"
+        body: 2ecdd9c514cb715b3b0d391fa2720d509e4ee433c7f206ff5e9d600138bad0bc
+  - node: 01a1a931-2c8a-73a8-91f2-5902c9bf1383
+    reviewed: e5321c7c7791d45e2cf1d3c2e9e407047ccf61ac53b182aee6ae25a85a174f70
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "the_rest_of_sdss_takes_distant_galaxies_and_quasars"
+        body: 17ec1f38d53b489780a7c496de06afca2495ef8f40d83ea4fb046fa21f6893df
   - node: 01a19f22-2ad9-716e-876f-18463a5dce5c
     reviewed: 814e7461a598ef1428907f53c73d0af791172f6a799ea9f189754719766b46db
     tests:
@@ -1172,13 +1184,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "the_manifest_lists_every_file_of_the_release_with_its_sha256"
-        body: 06295a9976607581eaa34c5b6570dc4d1b01de669b3d9914a1b665f71a8d5b59
+        body: edfed8a7f60c2cfc219c97f721256dce3c0da6846553c2dfc0a45e5e553b3102
   - node: 01a19f23-636f-72bd-b194-1522436dac01
     reviewed: 05eb9d6915f9e78496a1c9eefe387a01d8b27c5dd7cc50bd09a39f4813499c47
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "the_cell_index_holds_every_placed_object_in_the_cell_of_its_position"
-        body: 9b53940c55b3f335695917b94b57507f4afb6679bc3db5422338bd0f58f758aa
+        body: 243ab6069798ac452ba465ef89e610c1302900df74045de5743249c138a1b6bc
       - file: "crates/univ-ingest/tests/structure_cells.rs"
         name: "a_sky_region_over_every_longitude_spans_all_360_degrees"
         body: 394445a9585035a901186d90b339e7084cf498d868cb4069629469663a092069
@@ -1236,6 +1248,48 @@ links:
       - file: "crates/univ-ingest/tests/structure_details.rs"
         name: "every_structure_names_the_cited_values_its_shape_and_rescaled_lengths_come_from"
         body: 124ca5aaedf6d73f4f6b40d3d9ce843d9b46e129231cb804899c0ffd25a27607
+  - node: 01a1a931-2c8a-73a8-91f2-590689bd8862
+    reviewed: 22bccab386fd5da79bab0e74ac46da7cd67c07047944cb4cc28e0966a1dab0bf
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "each_object_is_in_exactly_one_shard_with_its_entries_measurements_designations_and_cell"
+        body: 7dac4eabf525c76b782cf12d6b499b4d4e4683c5582b6febaae02b73ccca4616
+  - node: 01a1a931-2c8a-73a8-91f2-59076b96877f
+    reviewed: d4749094a8a23e3f0b7b2ce15bca25496c800fbda3127b0a37887c5871922441
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "all_the_objects_of_one_cell_are_in_one_shard_and_one_not_placed_goes_by_its_id"
+        body: e3e857f43dacf6dc5c7bc61eb356d93f31d366e9a523f8a2c8acd432cb3312bc
+  - node: 01a1a931-2c8a-73a8-91f2-5908e94d50c7
+    reviewed: baaf35522e0ba1c8b89d953397bae05f5e1efaa9a76043fbce94533983ad35da
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "all_the_objects_of_one_cell_are_in_one_shard_and_one_not_placed_goes_by_its_id"
+        body: e3e857f43dacf6dc5c7bc61eb356d93f31d366e9a523f8a2c8acd432cb3312bc
+      - file: "crates/univ-ingest/src/release/packing.rs"
+        name: "objects_not_placed_go_by_their_ids_bucket_after_the_cells"
+        body: 4a76cf8e0ce2689126def32a1de799a84782a99a110e5c797a7a18d4ec5afc41
+  - node: 01a1a931-2c8a-73a8-91f2-59092cd5e331
+    reviewed: 750e42c44136c4783edd74a93fad61e2534e9285d050e51a7e15c64ff954fcae
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "the_catalogue_holds_the_sources_terms_structures_and_the_shard_of_every_object"
+        body: 0c03df151a46755a9340e8453892bd2194205a2d32c3ef1c1948409d521359c5
+  - node: 01a1a931-2c8a-73a8-91f2-590a9d7b0864
+    reviewed: b8341210fb710809c4e1a048cb4aa2bfe0c9a9c0e31426e0105faf4e65c37f59
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "the_manifest_names_each_shard_with_its_cells_and_estimated_size"
+        body: d659e450b466182db15fe3e5b3543a14889352c644b4f8a66579624621dbc9a6
+  - node: 01a1a931-2c8a-73a8-91f2-590cebe0fc8d
+    reviewed: b88d165f79b42d566b693c38ae0f3789b13f1bc16e7660807565f969bd3ebf9c
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "a_cell_beyond_a_shards_budget_refuses_the_build_naming_it_and_uses_no_number"
+        body: 8c4758b181fa273a8adde64044073f0ee6de7242ceb3c616c52f8a56d46ef88d
+      - file: "crates/univ-ingest/src/release/packing.rs"
+        name: "a_cell_or_bucket_past_the_budget_is_refused_by_name"
+        body: 1809661fbbb34b7275bb47edaaf63a5487ea00550ee7b98f8520ada21ea78322
   - node: 01a19f23-636f-72bd-b194-15248994b03f
     reviewed: 531442a7f316a2ed5e8fbade5d8190168bc1fd7e6f311bde2266d6665ab61149
     tests:
@@ -1256,7 +1310,7 @@ links:
         body: f07179f3028adf9442beb752a7687f3380c2c9935b97feaab70a9bddc47082e7
       - file: "crates/univ-ingest/tests/release_checks.rs"
         name: "two_rows_with_one_primary_key_fail_the_build"
-        body: 769da02dccbcedcf2ddf2f7c8700e6f105d57f4cb7b148aaf9d262ab6f5e1069
+        body: 74e9595d968c3dab9d90917e4a6721922c523740fe615a45637dd24eef8e82de
   - node: 01a19f23-636f-72bd-b194-152783fea6de
     reviewed: 01520aa8d0b35c138f530be5c920d7d64f28673d92b5109bcda577ee5a546ac3
     tests:
@@ -1376,49 +1430,61 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: e531c410577e618e86a9264343e0e8ce8f593a946340495639d1fbcfef08d726
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
   - node: 01a19f23-636f-72bd-b194-153a6cd80c2c
     reviewed: edecef9bacadbb74a84d828a30602a92afa9efa9fd80bb5a1165ea51d7013adf
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: e531c410577e618e86a9264343e0e8ce8f593a946340495639d1fbcfef08d726
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_it_prunes"
         body: 785d2b039b143e74fa690daf924ebbb3f258a625a5cbb3a0e85f3004cd39746a
+  - node: 01a1a931-2c8a-73a8-91f2-590d7b43ba10
+    reviewed: 27aeb1b20f3d830b77b26ed4002e4a8cee56e65bcac56b72fc7c3c8466a36a36
+    tests:
+      - file: "crates/univ-ingest/tests/prune.rs"
+        name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
   - node: 01a1a25a-c0ef-776c-a6c7-886eb1e11d8f
     reviewed: bea2fb0a7ee9c18e393825a7113f37a8566bb3130923ff278559adb560c6918e
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: e531c410577e618e86a9264343e0e8ce8f593a946340495639d1fbcfef08d726
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "a_release_never_listed_whose_files_were_uploaded_has_them_deleted"
-        body: 73f3c8929828b7d84ff39d31b246259934ef7395f2849463fefbea35bbe0f859
+        body: ca4417309220c3977e1caf167ded59984b36596f0cdf331d8d5b101d5a7c5d55
       - file: "crates/univ-ingest/tests/r2_batch.rs"
         name: "a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build"
-        body: b7208bd1c8f5be516f4bb1e2f9ad1574ec32164ea7143d13841a553cf818732e
+        body: 2b168b787c1926f3e6eeebe23a8905299b3ecf32838ce2f5525961f258e31f94
   - node: 01a1a25a-c0ef-776c-a6c7-886f2de1845d
     reviewed: e337109aaea3d77945c9723b02f45fc87a22a56f7d6e7b25e26efc3c00eb119a
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: e531c410577e618e86a9264343e0e8ce8f593a946340495639d1fbcfef08d726
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
       - file: "crates/univ-ingest/tests/r2_batch.rs"
         name: "a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build"
-        body: b7208bd1c8f5be516f4bb1e2f9ad1574ec32164ea7143d13841a553cf818732e
+        body: 2b168b787c1926f3e6eeebe23a8905299b3ecf32838ce2f5525961f258e31f94
   - node: 01a19f23-636f-72bd-b194-153c0959ad96
     reviewed: 923c577f1aecbd3eeffd01ceb1934112a852397c0a1368a013d129c8cf7887f7
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "the_release_latest_points_to_is_not_pruned"
-        body: eeb8634d983186f575ff71a36d3015ea3649ce9045e9ee6c92aed3b41c7fe7c5
+        body: ee526aff65345f9c58c566980f7342d142703c5e78d7e2e2afb268451c94cf34
+  - node: 01a1a931-2c8a-73a8-91f2-590ede3fd3b1
+    reviewed: a8c0b6d68aaf24863d18c032267e5daf4593b5c1ceb08573e1b59d2edfc15452
+    tests:
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
+        body: 9a553a15e77121d0ed3b7f3d0805f4b17b883df2b9ea15ce0e75ccbdc5581dff
   - node: 01a19f23-636f-72bd-b194-153fb0e0dd43
     reviewed: 4b050be2a02689e7494e6e0ffca8ebe0c752ad638e1219e36a8e1dd3031f0536
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
-        body: 54463247d6454c9bcd509ebd0c4d74bed4e9a1f76ab625d0f3e501d0899f73fa
+        body: 9a553a15e77121d0ed3b7f3d0805f4b17b883df2b9ea15ce0e75ccbdc5581dff
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "a_file_that_reads_back_with_another_sha256_stops_the_publish"
         body: c7b83958865dedd93b27fffec8020533d7ae587d84751edcd6f29c88bf2d9632
@@ -1427,7 +1493,7 @@ links:
         body: d3f6f4d29cb4a1d5594b0fb0cac492335c1d580f4f4c2d9d9b907ba0a9918555
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_row_altered_on_its_way_to_d1_stops_the_publish_naming_its_table_and_measure"
-        body: a235bb55002de1ab982a39128087f543596a0a3aa6c6fc983831c6b86295de59
+        body: 8497cdf086959691ffe02a78a188ae2a6f8c76c2f3e92899b77df5b0f41a96ec
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_text_holding_begin_transaction_reaches_d1_as_it_is"
         body: 0c4f8ce8c00fd98775f8853596bd04aa319c675db474e52ebf8f45c84a0ce82d
@@ -1445,13 +1511,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "until_latest_moves_reads_that_name_no_release_answer_from_the_previous_release"
-        body: 202c70a3769b58c0ea2d050941f475e3fdb11c7cd9824962c251990ae429d6f5
+        body: 498a53f8462e1017c49a598b599fbb5d1db639e76351a73bd823dc2ca0bf06da
   - node: 01a19f23-636f-72bd-b194-154133241de5
     reviewed: 9bc12f78064a0693282c0f25cff9e2759dedbc7cb4b5e4730f0739875cd3001c
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
-        body: 54463247d6454c9bcd509ebd0c4d74bed4e9a1f76ab625d0f3e501d0899f73fa
+        body: 9a553a15e77121d0ed3b7f3d0805f4b17b883df2b9ea15ce0e75ccbdc5581dff
   - node: 01a19f23-636f-72bd-b194-154384255e3e
     reviewed: b1716cd28b23d0bf2290e955aa9104a7aa0f13b90ebcf29af60067c06b444d42
     tests:
@@ -1470,6 +1536,12 @@ links:
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled"
         body: 00dd947c181fca15d4032ed49d80f7bdc538c376891cb57b439ac10e4b620c76
+  - node: 01a1a931-2c8a-73a8-91f2-5910680f6e67
+    reviewed: f4b560726e81714219c19477ea9f03d9d09412d693bda266233731c00ee84d76
+    tests:
+      - file: "crates/univ-ingest/tests/publish_checks.rs"
+        name: "a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload"
+        body: e66a64d803ae9d2a23a882847f9c12a92f783354fbbef671eb2b1596db5f6f78
   - node: 01a19f22-b0bc-76da-bac8-977d3868a411
     reviewed: cc37beca30b495d7bc6ca64117e2a846be04474bbe21d4eebfcd6054cd9631a6
     tests:
@@ -1505,10 +1577,10 @@ links:
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
+        body: 6734d689565d7fe767bbe24e6f63071233e3e2a97e585a9e7e12228c1af63f81
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
-        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
+        body: c3e8ebb1cda85a2b705a0cfe40ecbeb62176d75b62d6ca6bdfbfd182dc4a9b24
   - node: 01a19f22-b0bc-76da-bac8-97803a2ac7b3
     reviewed: 3e35a457eabc0a266e62b03c551f1d2599521cad6be77a3b6e2c6c2e3fc3b71f
     tests:
@@ -1550,7 +1622,7 @@ links:
         body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
-        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
+        body: c3e8ebb1cda85a2b705a0cfe40ecbeb62176d75b62d6ca6bdfbfd182dc4a9b24
   - node: 01a19f22-b0bc-76da-bac8-9788528129a0
     reviewed: 19235e59bf99c5023b529bc8c50f333800338d4e0428f3b34d429c7e2979ec19
     tests:
@@ -1580,7 +1652,7 @@ links:
         body: 82b975c4785d473109110da1c61fa98f2f1c72ffc16fcea510ab30d1bb3b310e
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
+        body: 6734d689565d7fe767bbe24e6f63071233e3e2a97e585a9e7e12228c1af63f81
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
         body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
@@ -1589,7 +1661,7 @@ links:
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
-        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
+        body: c3e8ebb1cda85a2b705a0cfe40ecbeb62176d75b62d6ca6bdfbfd182dc4a9b24
   - node: 01a19f22-b0bc-76da-bac8-978bd11f8a8a
     reviewed: 8873f5183472621d806a2ca4e2c84abfcc1e0453dbdaf7b1a8d4df1b4699d099
     tests:
@@ -1610,13 +1682,13 @@ links:
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
+        body: 6734d689565d7fe767bbe24e6f63071233e3e2a97e585a9e7e12228c1af63f81
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "the_fetch_ends_with_what_it_got_hit_failed_and_fetched"
         body: 7f2007f98ba30b6948371bd583e8ff2a05ae7b197fab612e3e13dbb352831138
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
-        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
+        body: c3e8ebb1cda85a2b705a0cfe40ecbeb62176d75b62d6ca6bdfbfd182dc4a9b24
   - node: 01a19f22-b0bc-76da-bac8-978c8f52c47a
     reviewed: 304e9a5c1577b8e86c9178d0caa43b6d46301ff3eeb41e3cfe485a95def6f62f
     tests:

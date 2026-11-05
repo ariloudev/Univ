@@ -260,3 +260,44 @@ blocks:
         markdown: |-
           | Issue | Found by | Fix | State |
           |---|---|---|---|
+      - key: 01a1aac1-f5f7-7629-bd49-170b572f1597
+        at: 2026-11-05T08:10:00Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | `assemble.rs` passed 500 lines | xtask lines | shard index writers moved to `sharded.rs` | fixed |
+          | `cargo xtask science` compared every loaded row against the catalogue's estimate only, failing every sharded release | /code-review | `ReleaseManifest::table_estimate` sums a table over the databases; `d1_estimate` judges the largest database | fixed |
+          | Morton codes of 7·2^60 and more broke the exact fingerprint (`total()` rounds) and JS readers | /code-review | reach 2^16 cells, 17 bits an axis, codes below 2^51 | fixed |
+          | Prune failed on a catalogue of schema 4 (`no such table: object_shards`), and probed all 8 bound shards | /code-review, efficiency, altitude | the catalogue's tables listed once; the release's shards from its `release_shards`; one loop count, delete, check | fixed |
+          | A repeated object id across shards escaped D1_KEYS | /code-review | ids checked unique once before writing (a D1_KEYS failure); each object's keys then forgotten | fixed |
+          | One `release_shards` query per shard at publish | /code-review, efficiency | one GROUP BY query; the index's presence from the status query | fixed |
+          | Each object's cell found by binary search over 2.2 GB; 35M cells kept only to be counted | efficiency, altitude | `object_cells` aligned with the objects (u32 each) over a table of distinct cells; the count from the writer | fixed |
+          | The reserve loop for objects not placed could refuse a packing that exists | altitude | 64 id buckets packed after the cells; `unplaced()` dropped from univ-model | fixed |
+          | Old flat D1 paths accepted per file | altitude | a manifest of version 1 is refused at publish (build it again); `file_of` parses only paths with a database directory | fixed |
+          | Two copies of the 128-bit hash; a doc claimed different keys | reuse, /code-review | `crate::hash::hash128` | fixed |
+          | Writer's database-to-slot arithmetic in four places; `forget_keys` over all databases; byte totals re-summed per object | simplify, efficiency | `slot()`, running totals, forget skipped when measuring | fixed |
+          | The shard cursor stayed set after the objects | altitude | `clear_shard` after them, so a later shard-table row is an error | fixed (a scoped handle not adopted: ObjectWriter and Measurements take the writer) |
+          | Test side: own D1 loader, hand-typed shard tables, a `last` field in the store, API fixture ordered by packing, shard ids checked in two crates | reuse, simplify, altitude | `loaded_in`, `SHARD_TABLES`, `observe(database)`, the fixture dumped in key order (diff to before W3: term ids only), ids in univ-server's config test | fixed |
+          | Server reads objects only from `DB` | /code-review | W4's task; product/release-10 is not published before W5 | open (W4) |
+          | The measuring pass builds every row again | efficiency, /code-review | kept: the bytes packed are the bytes written; to be timed on release 10 | skipped |
+          | About 42 part buffers of 32 MiB at once (about 1.3 GB) | efficiency | acceptable on 128 GB; streaming parts would change the sink | skipped |
+          | Databases loaded one after another; a fingerprint query per table | efficiency | parallel Wrangler on one local state unverified | skipped |
+          | Keys hashed twice in HashSet of u128 | efficiency | a few seconds | skipped |
+          | Trace links for the shard criteria | /code-review | at the wave's end | pending |
+  - key: 01a1aac1-f5f7-7629-bd49-170aba82888a
+    id: w3-review
+    kind: task
+    versions:
+      - key: 01a1aac1-f5f7-7629-bd49-170c7d29558d
+        at: 2026-11-05T08:10:00Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review, gate, trace and merge W3"
+        state: active
