@@ -175,7 +175,7 @@ impl<'a> ObjectWriter<'a> {
             w.add(&DesignationRow {
                 release,
                 source: self.numbering.sources.n(&d.source),
-                identifier: d.identifier.clone(),
+                identifier: d.identifier.to_string(),
                 object_id: id,
             })?;
         }

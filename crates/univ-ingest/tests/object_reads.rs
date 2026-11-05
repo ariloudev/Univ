@@ -54,7 +54,7 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             let entry = &e.entry;
             assert_eq!(read.entry, n);
             assert_eq!(read.source, entry.designation.source.as_str());
-            assert_eq!(read.identifier, entry.designation.identifier);
+            assert_eq!(read.identifier, &*entry.designation.identifier);
             assert_eq!(read.resolved_by, *e.resolved_by, "{}", o.id.get());
             assert_eq!(read.name, entry.name);
             assert_eq!(read.group_id, entry.group_id);
@@ -91,7 +91,7 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             let own = r
                 .entries
                 .iter()
-                .any(|e| e.source == d.source.as_str() && e.identifier == d.identifier);
+                .any(|e| e.source == d.source.as_str() && e.identifier == *d.identifier);
             let beside = r.entries.iter().any(|e| {
                 e.source == d.source.as_str()
                     && [&e.name, &e.group_id]
@@ -325,7 +325,7 @@ fn an_object_with_no_distance_has_a_sky_position_and_no_derived_position() {
             (icrs.ra, icrs.dec, icrs.epoch.0)
         );
         let entry = &r.entries[sky.entry as usize];
-        assert_eq!(entry.identifier, p.entry.identifier);
+        assert_eq!(&*entry.identifier, &*p.entry.identifier);
         assert_eq!(
             (sky.class, sky.uncertainty_mas),
             (p.class, p.uncertainty_mas)

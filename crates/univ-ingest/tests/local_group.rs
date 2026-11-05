@@ -99,7 +99,7 @@ fn a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link(
     assert!(scheme.tolerance_basis.as_deref().unwrap().contains("R2"));
     let fornax = recorded("mcconnachie-2012", "mcconnachie-2012-local-group.tsv")
         .into_iter()
-        .find(|e| e.designation.identifier == "Fornax")
+        .find(|e| &*e.designation.identifier == "Fornax")
         .unwrap();
     let p = fornax.position.as_ref().unwrap().icrs;
     let far = simulated::entry("updated-nearby-galaxies", "Fornax", p.ra, p.dec + 1.0);

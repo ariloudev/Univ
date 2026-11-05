@@ -88,7 +88,7 @@ fn a_group_kourkchi_tully_does_not_list_is_left_out_for_its_wrong_position() {
     assert!(
         n.entries
             .iter()
-            .all(|e| e.designation.identifier != "43423")
+            .all(|e| &*e.designation.identifier != "43423")
     );
     // Provenance counts the entries each fix changed: three replaced, one left out, none read
     // SGX, SGY and SGZ as km/s, as the replacement dropped them, and none is the Milky Way's

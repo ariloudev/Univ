@@ -220,7 +220,7 @@ pub fn entry<'a>(normalized: &'a Normalized, identifier: &str) -> &'a CatalogueE
     normalized
         .entries
         .iter()
-        .find(|e| e.designation.identifier == identifier)
+        .find(|e| &*e.designation.identifier == identifier)
         .unwrap_or_else(|| panic!("no entry {identifier}"))
 }
 

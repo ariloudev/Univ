@@ -79,7 +79,7 @@ pub fn entry_row(
         object_id,
         entry: small(n),
         source: numbering.sources.n(&d.source),
-        identifier: d.identifier.clone(),
+        identifier: d.identifier.to_string(),
         resolution: terms.id("anchor"),
         scheme: None,
         shared: None,
@@ -116,7 +116,7 @@ pub fn entry_row(
         } => {
             row.resolution = terms.id("cross_identification");
             row.scheme = Some(terms.id(scheme));
-            row.shared = (identifier != &d.identifier).then(|| identifier.clone());
+            row.shared = (**identifier != *d.identifier).then(|| identifier.clone());
             row.via_entry = via(through, &mut more)?;
             row.confidence = Some(confidence.get());
         }

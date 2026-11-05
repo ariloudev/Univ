@@ -30,7 +30,10 @@ pub struct SourceId(Arc<str>);
 pub struct Designation {
     #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub source: SourceId,
-    pub identifier: String,
+    /// Shared by every copy: an entry's designation is copied into its object's preferred
+    /// measurements and the id maps, for each of tens of millions of entries.
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
+    pub identifier: Arc<str>,
 }
 
 /// A designation as read, before its checks.
@@ -157,7 +160,10 @@ impl Designation {
         if identifier.trim().is_empty() {
             Err(IdError::EmptyIdentifier(source))
         } else {
-            Ok(Self { source, identifier })
+            Ok(Self {
+                source,
+                identifier: identifier.into(),
+            })
         }
     }
 }
