@@ -7,6 +7,7 @@ mod relation;
 mod resolved;
 
 use serde::{Deserialize, Serialize};
+use thin_vec::ThinVec;
 use thiserror::Error;
 
 pub use preferred::{
@@ -166,19 +167,22 @@ pub struct Object {
     #[serde(default)]
     pub kind: ObjectKind,
     /// Its catalogue entries, the anchor first, each with how it was resolved.
-    pub entries: Vec<ObjectEntry>,
+    ///
+    /// This and the lists below are thin: 8 bytes each, as an object is held for each of tens
+    /// of millions, and most have one entry and none of the rest.
+    pub entries: ThinVec<ObjectEntry>,
     /// The designations its entries' sources give beside the entries' own, such as the HIP
     /// number of the Gaia–Hipparcos table; [`Object::designations`] gives every one. An entry's
     /// own is not copied here: an object is held for each of tens of millions.
-    pub given: Vec<Designation>,
+    pub given: ThinVec<Designation>,
     /// Common names, each with the source that published it.
-    pub names: Vec<CommonName>,
+    pub names: ThinVec<CommonName>,
     /// Candidate matches to other objects.
-    pub links: Vec<CandidateLink>,
+    pub links: ThinVec<CandidateLink>,
     /// Typed relations to other objects, such as a group's dominant galaxy: neither object
     /// lends the other a measurement.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub relations: Vec<Relation>,
+    #[serde(default, skip_serializing_if = "ThinVec::is_empty")]
+    pub relations: ThinVec<Relation>,
     pub preferred_distance: Option<PreferredDistance>,
     pub preferred_position: Option<PreferredPosition>,
     pub placement: Placement,
@@ -200,11 +204,11 @@ impl Object {
     pub fn new(entries: Vec<ObjectEntry>) -> Self {
         Self {
             kind: ObjectKind::default(),
-            entries,
-            given: Vec::new(),
-            names: Vec::new(),
-            links: Vec::new(),
-            relations: Vec::new(),
+            entries: ThinVec::from(entries),
+            given: ThinVec::new(),
+            names: ThinVec::new(),
+            links: ThinVec::new(),
+            relations: ThinVec::new(),
             preferred_distance: None,
             preferred_position: None,
             placement: Placement::NotPlaced {

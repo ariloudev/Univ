@@ -279,8 +279,8 @@ fn every_candidate_match_reads_with_its_confidence() {
     let Decoded { pairs } = decoded();
     let mut links = 0;
     for (o, r) in pairs {
-        assert_eq!(r.links, o.object.links, "{}", o.id.get());
-        assert_eq!(r.relations, o.object.relations, "{}", o.id.get());
+        assert_eq!(r.links[..], o.object.links[..], "{}", o.id.get());
+        assert_eq!(r.relations[..], o.object.relations[..], "{}", o.id.get());
         for (read, link) in r.links.iter().zip(&o.object.links) {
             assert_eq!(read.confidence, link.confidence);
             links += 1;
