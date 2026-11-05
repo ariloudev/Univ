@@ -64,7 +64,7 @@ fn twomrs_rows_keep_cz_and_derive_heliocentric_and_cmb_redshifts() {
     assert_eq!((v.native.value, sigma(&v)), (-300.0, 4.0));
     let r = &m31.redshifts[0];
     assert_eq!(r.velocity.unwrap().value, -300.0);
-    assert_eq!(r.cmb.heliocentric.value, -300.0 / C);
+    assert_eq!(r.cmb.measured.value, -300.0 / C);
     // Worked in Python from the Hipparcos galactic matrix and the Planck 2018 dipole:
     // cos θ = -0.76785, so z_cmb = (1 + z)γ(1 + β cos θ) - 1 = -0.0019461909.
     assert!((r.cmb.value.value + 0.001_946_190_9).abs() < 1e-9);
@@ -74,7 +74,7 @@ fn twomrs_rows_keep_cz_and_derive_heliocentric_and_cmb_redshifts() {
     let ngc253 = entry(&n, "00473313-2517196");
     fk5(ngc253, 11.888_06, -25.288_8);
     assert_eq!(sigma(&ngc253.velocity.unwrap()), 2.0);
-    assert_eq!(ngc253.redshifts[0].cmb.heliocentric.value, 243.0 / C);
+    assert_eq!(ngc253.redshifts[0].cmb.measured.value, 243.0 / C);
 }
 
 #[test]
@@ -370,9 +370,9 @@ fn sdss_and_boss_rows_keep_z_and_derive_the_cmb_redshift() {
     let g = entry(&n, "1147416020424615936");
     assert_eq!(at(g), (184.859_21, 56.159_283, Frame::Icrs, Epoch::J2000));
     let r = &g.redshifts[0];
-    assert_eq!(r.cmb.heliocentric.value, 0.051_975_66);
+    assert_eq!(r.cmb.measured.value, 0.051_975_66);
     assert_eq!(
-        r.cmb.heliocentric.uncertainty,
+        r.cmb.measured.uncertainty,
         Uncertainty::Symmetric {
             sigma: 7.782_429e-6
         }
@@ -384,7 +384,7 @@ fn sdss_and_boss_rows_keep_z_and_derive_the_cmb_redshift() {
     assert_eq!(
         entry(&n, "7700273112517203968").redshifts[0]
             .cmb
-            .heliocentric
+            .measured
             .value,
         0.318_687_4
     );
@@ -393,11 +393,11 @@ fn sdss_and_boss_rows_keep_z_and_derive_the_cmb_redshift() {
     // Row 1: 5139964890614880256, 150.44297, 42.988546, z 0.4200288 ± 0.0001112926.
     let g = entry(&n, "5139964890614880256");
     assert_eq!(at(g).0, 150.442_97);
-    assert_eq!(g.redshifts[0].cmb.heliocentric.value, 0.420_028_8);
+    assert_eq!(g.redshifts[0].cmb.measured.value, 0.420_028_8);
     // Row 2: 7988347911129028608, zErr 7.802936E-05.
     let g = entry(&n, "7988347911129028608");
     assert_eq!(
-        g.redshifts[0].cmb.heliocentric.uncertainty,
+        g.redshifts[0].cmb.measured.uncertainty,
         Uncertainty::Symmetric {
             sigma: 7.802_936e-5
         }
@@ -448,18 +448,18 @@ fn erass1_clusters_join_the_optical_redshift_and_take_each_rows_redshift_kind() 
     let [best, lambda] = &c.redshifts[..] else {
         panic!("two redshifts")
     };
-    assert_eq!(best.cmb.heliocentric.value, 0.3153);
+    assert_eq!(best.cmb.measured.value, 0.3153);
     assert_eq!(
-        best.cmb.heliocentric.uncertainty,
+        best.cmb.measured.uncertainty,
         Uncertainty::Symmetric { sigma: 0.0079 }
     );
     assert_eq!(
         (best.kind, best.kind_of_value),
         (RedshiftKind::Photometric, KindOfValue::Estimated)
     );
-    assert_eq!(lambda.cmb.heliocentric.value, 0.315_28);
+    assert_eq!(lambda.cmb.measured.value, 0.315_28);
     assert_eq!(
-        lambda.cmb.heliocentric.uncertainty,
+        lambda.cmb.measured.uncertainty,
         Uncertainty::Symmetric { sigma: 0.007_94 }
     );
     assert_eq!(
@@ -470,11 +470,11 @@ fn erass1_clusters_join_the_optical_redshift_and_take_each_rows_redshift_kind() 
     // optical row 2: Z_LAMBDA 0.08594 ± 0.00976.
     let c = entry(&n, "em01_011174_020_ML00047_002_c010");
     let best = &c.redshifts[0];
-    assert_eq!(best.cmb.heliocentric.value, 0.0891);
+    assert_eq!(best.cmb.measured.value, 0.0891);
     assert_eq!(
         (best.kind, best.kind_of_value),
         (RedshiftKind::Spectroscopic, KindOfValue::Measured)
     );
-    assert_eq!(c.redshifts[1].cmb.heliocentric.value, 0.085_94);
+    assert_eq!(c.redshifts[1].cmb.measured.value, 0.085_94);
     assert_eq!(c.flags["PCONT"], "0");
 }

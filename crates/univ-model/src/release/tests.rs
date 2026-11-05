@@ -71,7 +71,6 @@ fn every_row_type_matches_its_table_in_the_schema() {
 
 #[test]
 fn version_3_adds_the_source_and_structure_details_per_release() {
-    assert_eq!(SCHEMA_VERSION, 3);
     for (name, columns) in [
         (
             "source_details",
@@ -105,6 +104,24 @@ fn version_3_adds_the_source_and_structure_details_per_release() {
         assert_eq!(table.scope, Scope::PerRelease, "{name}");
         assert_eq!(table.columns, columns, "{name}");
     }
+}
+
+#[test]
+fn version_4_adds_the_source_terms_per_release() {
+    assert_eq!(SCHEMA_VERSION, 4);
+    let columns = [
+        "release",
+        "source",
+        "non_commercial",
+        "permission",
+        "catalogue_uncertainties",
+    ];
+    let (declared, key) = declared("source_terms");
+    assert_eq!(declared, columns);
+    assert_eq!(key, columns[..2]);
+    let table = TABLES.iter().find(|t| t.name == "source_terms").unwrap();
+    assert_eq!(table.scope, Scope::PerRelease);
+    assert_eq!(table.columns, columns);
 }
 
 #[test]

@@ -39,6 +39,13 @@
 //! primary reference and the sky and radial coverage of its entries, and `structure_details`,
 //! each structure's placed geometry with how it was derived, the test of its outline on a volume
 //! grid, and its sizes published under another cosmology beside their rescaled values.
+//!
+//! # Source terms (schema version 4)
+//!
+//! Version 4 adds one table, changing none of version 3's: `source_terms`, the clause that
+//! limits a source to non-commercial use, the request for permission of a source whose status
+//! is `permission_pending`, and the uncertainties a source states once for its whole catalogue,
+//! which the object read gives each such measurement as its estimated basis.
 
 pub mod cells;
 pub mod chains;
@@ -58,7 +65,7 @@ pub use sql::{ColumnKind, Row, Scope, SqlValue, Statements, Table, Tree};
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].
-pub const SCHEMA_VERSION: u32 = 3;
+pub const SCHEMA_VERSION: u32 = 4;
 
 /// The D1 schema: every table and index, created only where missing.
 pub const SCHEMA: &str = include_str!("schema.sql");

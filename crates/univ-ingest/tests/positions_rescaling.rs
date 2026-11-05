@@ -221,7 +221,7 @@ fn a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms() {
             Uncertainty::NoneReported,
         )
         .unwrap(),
-        heliocentric: Quantity::new(0.0, Unit::Dimensionless, Uncertainty::NoneReported).unwrap(),
+        measured: Quantity::new(0.0, Unit::Dimensionless, Uncertainty::NoneReported).unwrap(),
         dipole: univ_model::redshift::DipoleModel::Planck2018,
         published: univ_model::redshift::RedshiftFrame::Heliocentric,
     };

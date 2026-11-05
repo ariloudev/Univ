@@ -40,17 +40,38 @@ links:
         name: "an_incomplete_definition_is_refused_naming_the_missing_field"
         body: fa2573a43f01ef5aa962c61e516935fc97d10b35c638c6be51a580c05e9555c1
   - node: 01a19f22-2ad9-716e-876f-183b90085a10
-    reviewed: 2e7a6f25b7efb02db5b6cc75688e5cfa3b7d47920d59b5557eead13427f14fac
+    reviewed: efb0a233681b67fffa0f799f74ed95880cfa5fb49dad984c3010d77b994ab867
     tests:
       - file: "crates/univ-ingest/tests/source_definitions.rs"
         name: "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
         body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_source_names_whom_permission_was_asked_of_and_when"
+        body: b23a616bcdb65086e676f2f78e7d1af970f523c4fd633c5ffd89e3fc36c86498
   - node: 01a19f22-2ad9-716e-876f-183ca629c7f8
     reviewed: 2f1322755357d3f990635c6e93b513eda5ef14fad23d0c687e6e7ef0ecd44c70
     tests:
       - file: "crates/univ-ingest/tests/source_definitions.rs"
         name: "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
         body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
+  - node: 01a1a931-2c8a-73a8-91f2-58fcaa8b8bee
+    reviewed: b3222a30a3a507a6f35f603a7cb7b57f3eace86fc50e3408fd0a902a336330db
+    tests:
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_source_names_whom_permission_was_asked_of_and_when"
+        body: b23a616bcdb65086e676f2f78e7d1af970f523c4fd633c5ffd89e3fc36c86498
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_status_without_its_request_is_refused"
+        body: 64a93ecefb064a152bde7504ce273050bf83d73754a16e019c1ef4a566895c9c
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_request_names_someone_and_a_calendar_date"
+        body: f64766ea4a820757280dbee492e91ff08004e904e934a8dffee299aab488f4b2
+  - node: 01a1a931-2c8a-73a8-91f2-58fd8e368264
+    reviewed: 609667b9d86e1ffdb10f132a59cfd93e1cd0be2ecaff048a175abf098497fb16
+    tests:
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_non_commercial_source_quotes_the_clause_that_limits_it"
+        body: b1d6f37775f0db802e24369627471096be6302c2f61ff9c6f1e64777412a6794
   - node: 01a19f22-2ad9-716e-876f-183ee3b99b68
     reviewed: 2f723b0329d6aa47d4eb94775be0f8194410404e044e2333b001edd141c70e64
     tests:
@@ -209,7 +230,7 @@ links:
         body: bb4a26be89d6d2a31cf13cf91b0f2a4d55ea10618f0136e4cf928d4935f74e62
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "a_redshift_distance_is_the_comoving_distance_of_the_cmb_frame_redshift"
-        body: 3a4209fa46d5f86a73ea190f7ca866f6c342574e00f4758d065397c31720a3f5
+        body: 4ddf83b7b9a4d8e80faf089ad71835b0096a72d71a50299553cddc13f9c07b27
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "a_luminosity_distance_at_z_0_1_converts_by_one_over_one_plus_z"
         body: 4918083ea62820839f22a063387203312620a654ec3988beb73d9f70f06b69f1
@@ -305,7 +326,7 @@ links:
         body: c2faeb3c5a338f7cd19473a1bd0adaeb3b760dadea09b675b9315959ac7b243c
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
-        body: 06605592dc942ad4e6fcaa0225da1f58d73838142bceb134a5e6774e36e9b9c6
+        body: 9d3c60471032192573472897a662e196d4eb767b7dcc61eba5572555c0fe9faf
   - node: 01a1a147-6018-75e1-9409-3f820e7bc1c8
     reviewed: b4375d7f47b119efcd6e7138b0fb93aaf0787d89683e9d508f5a5e21dc51e266
     tests:
@@ -323,7 +344,7 @@ links:
         body: 144efbcd727fee24dfc213198b3d978f42fc5b42d6ad28d02af5bd321a597039
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
-        body: 06605592dc942ad4e6fcaa0225da1f58d73838142bceb134a5e6774e36e9b9c6
+        body: 9d3c60471032192573472897a662e196d4eb767b7dcc61eba5572555c0fe9faf
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
         body: 47583b08559bd0d0fe4287e9e448faa1b9e27512585bcc67dab4806310cc2da3
@@ -372,6 +393,18 @@ links:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "a_value_published_without_an_error_is_marked_none_reported"
         body: 56dba62089058b4a311b1e7f4a6c2fe09216bcfcedb1777aaad131ff9ba76650
+  - node: 01a1a931-2c8a-73a8-91f2-59032696dddd
+    reviewed: 8625423a78ecb5044adb105a91987a2b8f86e64d471b78c9525a029d848a5f13
+    tests:
+      - file: "crates/univ-ingest/tests/catalogue_error.rs"
+        name: "an_rms_velocity_for_the_catalogue_is_each_velocitys_symmetric_error"
+        body: 3768a0f981df03c330a8ae81cb4421ea7b9a669600961045d7fab764c07b198c
+      - file: "crates/univ-ingest/tests/catalogue_error.rs"
+        name: "a_scatter_per_one_plus_z_grows_with_each_redshift"
+        body: 9b44d376e309908f4343eb4c39ba04cf79f7df606025acf09619e6daf3ea8835
+      - file: "crates/univ-api/src/objects/record_tests.rs"
+        name: "a_redshift_whose_source_states_one_uncertainty_for_its_catalogue_is_estimated"
+        body: 8899b50fa40ba3f85cb41bd509c83ab94f7aa48fbca3dd2b4dee4d9b95bd538a
   - node: 01a19f22-2ad9-716e-876f-186b82bcfc95
     reviewed: e0e3ed6f87d3fe392cc3f48fccf9c0ff007a23c3ddc82bab6a9dc180f8232100
     tests:
@@ -419,7 +452,16 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "a_heliocentric_redshift_is_kept_as_measured"
-        body: 29f0b711e2ad1a193c1d8b2f1590204523dc39b4437fc57c506dc2f0fb344dde
+        body: 151967d4e3c7ca2fa743a12846ce2ff017df35bb3caa9d9ca034d59d78e8a74b
+  - node: 01a1a931-2c8a-73a8-91f2-59042cfff012
+    reviewed: 7290c1739767a8083cb642090804fb3c94e437e00d05d290a337886a1d9a276d
+    tests:
+      - file: "crates/univ-model/src/redshift.rs"
+        name: "a_barycentric_redshift_is_kept_as_measured_and_named_barycentric"
+        body: cc425bee0b2e325ae150c6e8901eb556c746d218207e3a3dd4ab27670387e57b
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "a_barycentric_redshift_names_its_frame_in_the_distance_chain"
+        body: 88ac03efdc37df82452b120e5d4035c5fa2317831d6d6604ca36ac5884954660
   - node: 01a19f22-2ad9-716e-876f-187151a4aac5
     reviewed: 48167278d174524fd54b495a737e01d2ec207a3ec35123013d4ab8b8b1c6240e
     tests:
@@ -437,10 +479,10 @@ links:
     tests:
       - file: "crates/univ-model/src/redshift.rs"
         name: "the_derivation_keeps_the_measured_redshift_and_the_dipole"
-        body: 9d6f6d1a4d6eb36c9b8936802eba40d0cd12b235471de11a8cea4e3314196b49
+        body: dc383260020abecd1fa6066bcc9160460bd9bdf6658b7ec7805d4918aa7cafc6
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from"
-        body: b6efd372f0832aab9d1583dc1ecca6a7a3bcfcf4cc5ffafd94621115eb4b2ef1
+        body: 56af027218416fcd7f0b9295565332b04e964936fe35eb814b49c92c7e9c2cbb
   - node: 01a1a6e4-22e1-765d-b404-01f30c829322
     reviewed: 60945386f89db68da045a88683c59ffaab382acf891e19b20a8434bacec4ea48
     tests:
@@ -491,7 +533,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
-        body: 7ebcbad7464a20879a29c46560e2a836374869610c0da3c5663a2b98648a5354
+        body: dc86670011a64e4c3e89a25c5d41d0e0bd1e595f028135175bb112db658edc9b
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "a_failed_normalization_leaves_no_earlier_report_in_the_provenance"
         body: 6e1453a5679b1f7aa6c64dab890499b22209b0cc3555e0ae07004c333f845bf8
@@ -542,7 +584,7 @@ links:
         body: 8ff5307a44398fa3e1a466ffd9113fe837e45889d70a3e36f3ca2d7e573c634e
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
-        body: 7ebcbad7464a20879a29c46560e2a836374869610c0da3c5663a2b98648a5354
+        body: dc86670011a64e4c3e89a25c5d41d0e0bd1e595f028135175bb112db658edc9b
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
         body: d28231fcee59050bbc9b349224244cddab5527cf92e3503080b766d61a67ef4b
@@ -1824,6 +1866,12 @@ links:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_source_gives_its_terms_query_and_provenance"
         body: 68fc42f6d2d43d6a159456927b6c442f4dc9f103f3d9ff9d5daf55ef988bdf4a
+  - node: 01a1a931-2c8a-73a8-91f2-591121be3932
+    reviewed: 59b0d866d1e7090cc45c697aee20894a0a80c7bb9ffbe6bdd46d8388ebc37fd0
+    tests:
+      - file: "crates/univ-api/src/sources/tests.rs"
+        name: "the_terms_give_the_redistribution_status_and_any_non_commercial_clause"
+        body: c1e6fd16e2efd62d9721fc23f4ab60800ccb84eefb8aba446d0df6ca598d6867
   - node: 01a19f1e-d177-716d-b124-3d2711844898
     reviewed: 64fdc53e772b72fefbd149a9604a2fa0a93a8996b9837a9fe412591ec97ba6ad
     tests:

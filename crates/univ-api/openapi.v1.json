@@ -2555,6 +2555,17 @@
           "source": {
             "description": "The source that published it: its entry's.",
             "type": "string"
+          },
+          "uncertainty_basis": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UncertaintyBasis",
+                "description": "Where the uncertainty comes from when the source states one for its whole catalogue,\nnot one for each value: it is then estimated; absent when the source published it."
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -3249,6 +3260,25 @@
         ],
         "type": "object"
       },
+      "PermissionRequest": {
+        "additionalProperties": false,
+        "description": "A request for permission to redistribute a source, awaiting its answer: as its source\ndefinition writes it, as the release manifest records it, and as the API gives it.",
+        "properties": {
+          "asked_of": {
+            "description": "Whom it was asked of.",
+            "type": "string"
+          },
+          "asked_on": {
+            "description": "The date it was asked, YYYY-MM-DD.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asked_of",
+          "asked_on"
+        ],
+        "type": "object"
+      },
       "PointField": {
         "description": "A field of every point. The points' fields are stored as columns, in the order listed: the\ncolumn of a field starts at `header_bytes + column_offset × n`, `n` the tile's point count,\nand point `k` (from 0) holds its value at `bytes × k` within the column.",
         "properties": {
@@ -3821,6 +3851,7 @@
         "description": "The frame a redshift is published in.",
         "enum": [
           "heliocentric",
+          "barycentric",
           "local_group",
           "cmb"
         ],
@@ -4915,12 +4946,30 @@
             "description": "The credit the terms require.",
             "type": "string"
           },
+          "non_commercial": {
+            "description": "The clause of the terms that allows only non-commercial use, quoted; absent when the\nterms allow commercial use.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "permission": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PermissionRequest",
+                "description": "Whom permission to redistribute the source was asked of and when, while its\nredistribution is `permission_pending`."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "quote": {
             "description": "The terms, quoted verbatim.",
             "type": "string"
           },
           "redistribution": {
-            "description": "Whether the terms allow the source to be published, and on what condition.",
+            "description": "Whether the terms allow the source to be published, and on what condition:\n`permitted`, `permitted_with_credit` or `permission_pending`.",
             "type": "string"
           },
           "review": {
@@ -5419,6 +5468,35 @@
             "type": "object"
           },
           {
+            "description": "The comoving distance of a CMB-frame redshift in the release cosmology, moved from a\nredshift its source published relative to the Solar System barycentre.",
+            "properties": {
+              "barycentric_redshift": {
+                "format": "double",
+                "type": "number"
+              },
+              "cmb_redshift": {
+                "format": "double",
+                "type": "number"
+              },
+              "dipole": {
+                "$ref": "#/components/schemas/DipoleModel"
+              },
+              "step": {
+                "enum": [
+                  "comoving_from_barycentric_redshift"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "cmb_redshift",
+              "barycentric_redshift",
+              "dipole",
+              "step"
+            ],
+            "type": "object"
+          },
+          {
             "description": "The comoving distance in the release cosmology of a redshift its source published in the\nCMB frame, used as published, with no dipole step.",
             "properties": {
               "cmb_redshift": {
@@ -5789,6 +5867,24 @@
             "type": "object"
           }
         ]
+      },
+      "UncertaintyBasis": {
+        "description": "An uncertainty that is not the source's for this value, and where it comes from.",
+        "properties": {
+          "basis": {
+            "description": "Where the source states it, quoted or cited.",
+            "type": "string"
+          },
+          "kind_of_value": {
+            "$ref": "#/components/schemas/KindOfValue",
+            "description": "Estimated, for one stated for the whole catalogue."
+          }
+        },
+        "required": [
+          "kind_of_value",
+          "basis"
+        ],
+        "type": "object"
       },
       "Unit": {
         "description": "A unit that a source publishes a value in, or that a value is normalized to.",

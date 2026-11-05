@@ -15,8 +15,9 @@ mod placed;
 
 use std::collections::{BTreeMap, HashMap};
 
-use crate::api::objects::ObjectRecord;
+use crate::api::objects::{MeasuredQuantity, ObjectRecord};
 use crate::cosmology::Cosmology;
+use crate::release::rows::CatalogueUncertainty;
 use columns::Columns;
 
 /// One D1 row: column names to numbers, strings and nulls.
@@ -33,6 +34,9 @@ pub struct Vocabulary {
     sources: HashMap<i64, String>,
     term_ids: HashMap<String, i64>,
     source_ns: HashMap<String, i64>,
+    /// Each uncertainty a source states once for its whole catalogue, by the source's id: the
+    /// quantity it applies to and where the source states it.
+    catalogue_uncertainties: HashMap<String, Vec<(MeasuredQuantity, String)>>,
 }
 
 impl Vocabulary {
@@ -59,7 +63,35 @@ impl Vocabulary {
             terms,
             chains: chains.into_iter().collect(),
             sources,
+            catalogue_uncertainties: HashMap::new(),
         }
+    }
+
+    /// The vocabulary with the uncertainties its sources state once for their whole
+    /// catalogues, each as the source's id, the quantity and where the source states it.
+    #[must_use]
+    pub fn with_catalogue_uncertainties(
+        mut self,
+        uncertainties: impl IntoIterator<Item = (String, CatalogueUncertainty)>,
+    ) -> Self {
+        for (source, u) in uncertainties {
+            self.catalogue_uncertainties
+                .entry(source)
+                .or_default()
+                .push((u.quantity, u.error.basis));
+        }
+        self
+    }
+
+    /// Where source `source` states the one uncertainty of its whole catalogue for `quantity`,
+    /// when it states one.
+    #[must_use]
+    pub fn catalogue_uncertainty(&self, source: &str, quantity: MeasuredQuantity) -> Option<&str> {
+        self.catalogue_uncertainties
+            .get(source)?
+            .iter()
+            .find(|(q, _)| *q == quantity)
+            .map(|(_, basis)| basis.as_str())
     }
 
     #[must_use]

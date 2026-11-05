@@ -10,12 +10,14 @@ pub use access::{Access, Holds, RemoteFile, Slices, TapRun};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
-    Coded, ColourReading, ComovingVelocity, DistanceReading, ErrorColumns, MethodCodes,
-    Normalization, Published, RedshiftCodes, RedshiftReading, SpectralTypeReading,
+    CatalogueError, Coded, ColourReading, ComovingVelocity, DistanceReading, ErrorColumns,
+    MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading, SpectralTypeReading,
 };
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
 };
+pub use univ_model::api::sources::PermissionRequest;
+use univ_model::time::is_calendar_date;
 
 use std::collections::HashSet;
 use std::path::Path;
@@ -132,6 +134,10 @@ pub struct Terms {
     pub quote: String,
     /// The credit the source requires, quoted as published.
     pub credit: String,
+    /// The clause of the terms that allows only non-commercial use, quoted as published; none
+    /// when the terms allow commercial use.
+    #[serde(default)]
+    pub non_commercial: Option<String>,
 }
 
 /// Whether a source's data may be published in a release, judged from its terms.
@@ -142,6 +148,47 @@ pub struct Redistribution {
     /// Whether the judgement is provisional or settled. Every definition states it.
     pub review: Review,
     pub reasoning: String,
+    /// Whom permission to redistribute was asked of, and when: given exactly when the status
+    /// is permission pending.
+    #[serde(default)]
+    pub permission: Option<PermissionRequest>,
+}
+
+impl Redistribution {
+    /// A pending status names its request, and no other status names one.
+    fn check_permission(&self) -> Result<(), (String, String)> {
+        let pending = self.status == RedistributionStatus::PermissionPending;
+        match &self.permission {
+            None if pending => Err((
+                "redistribution.permission".to_owned(),
+                "is missing: a pending status names whom permission was asked of and when"
+                    .to_owned(),
+            )),
+            Some(_) if !pending => Err((
+                "redistribution.permission".to_owned(),
+                format!("is given for the status {}", self.status.as_str()),
+            )),
+            Some(request) => check_request(request),
+            None => Ok(()),
+        }
+    }
+}
+
+/// Checks a request for permission: someone named, on a calendar date.
+fn check_request(request: &PermissionRequest) -> Result<(), (String, String)> {
+    if request.asked_of.trim().is_empty() {
+        return Err((
+            "redistribution.permission.asked_of".to_owned(),
+            "is empty".to_owned(),
+        ));
+    }
+    if !is_calendar_date(&request.asked_on) {
+        return Err((
+            "redistribution.permission.asked_on".to_owned(),
+            format!("{} is not a date as YYYY-MM-DD", request.asked_on),
+        ));
+    }
+    Ok(())
 }
 
 /// How far the redistribution judgement has been reviewed. A local build reports the sources
@@ -174,6 +221,7 @@ impl RedistributionStatus {
         match self {
             Self::Permitted => "permitted",
             Self::PermittedWithCredit => "permitted_with_credit",
+            Self::PermissionPending => "permission_pending",
             Self::Forbidden => "forbidden",
         }
     }
@@ -184,6 +232,9 @@ impl RedistributionStatus {
 pub enum RedistributionStatus {
     Permitted,
     PermittedWithCredit,
+    /// The terms state no grant, and permission has been asked of the provider. Built and
+    /// published like a permitted source, with the request served beside the terms.
+    PermissionPending,
     Forbidden,
 }
 
@@ -263,6 +314,10 @@ impl SourceDefinition {
         blank("terms.quote", &self.terms.quote)?;
         blank("terms.credit", &self.terms.credit)?;
         blank("redistribution.reasoning", &self.redistribution.reasoning)?;
+        if let Some(clause) = &self.terms.non_commercial {
+            blank("terms.non_commercial", clause)?;
+        }
+        self.redistribution.check_permission()?;
         self.access.check()?;
         if self.columns.is_empty() && !matches!(self.access, Access::Repository { .. }) {
             return Err(("columns".to_owned(), "lists no column".to_owned()));

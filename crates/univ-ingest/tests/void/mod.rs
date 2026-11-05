@@ -95,7 +95,7 @@ pub fn entry(source: &str, n: usize, p: Vec3, redshift: bool) -> CatalogueEntry 
             velocity: None,
             cmb: CmbRedshift {
                 value: z(r),
-                heliocentric: z(r),
+                measured: z(r),
                 dipole: DipoleModel::Planck2018,
                 published: univ_model::redshift::RedshiftFrame::Heliocentric,
             },

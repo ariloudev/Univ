@@ -69,9 +69,11 @@ pub async fn get<B: Backend>(
         .releases(
             "SELECT s.id, s.title, s.provider, s.scale_domain, s.entries, s.citation, \
              s.terms_url, s.terms_quote, s.credit, s.redistribution, s.review, s.access, s.cuts, \
-             d.source AS detailed, d.bibcode, d.doi, d.reference_note, d.sky, d.radial \
+             d.source AS detailed, d.bibcode, d.doi, d.reference_note, d.sky, d.radial, \
+             t.non_commercial, t.permission \
              FROM sources s LEFT JOIN source_details d \
              ON d.release = s.release AND d.source = s.n \
+             LEFT JOIN source_terms t ON t.release = s.release AND t.source = s.n \
              WHERE s.release = ?1 AND s.id = ?2",
             &[json!(release), json!(id)],
         )
@@ -101,6 +103,8 @@ pub async fn get<B: Backend>(
             credit: column(&row, "credit")?,
             redistribution: column(&row, "redistribution")?,
             review: column(&row, "review")?,
+            non_commercial: column(&row, "non_commercial")?,
+            permission: json_column(&row, "permission")?,
         },
         query: json_column(&row, "access")?,
         cuts: json_column(&row, "cuts")?,

@@ -162,12 +162,16 @@ impl Row<'_, '_> {
             });
             let kind_of_value = self.kind(r.measured.value.index, default);
             let direction = direction.ok_or(LeftOutReason::MissingPosition)?;
-            let redshift =
-                match r.frame {
-                    RedshiftFrame::Cmb => Redshift::published_cmb,
-                    _ => Redshift::heliocentric,
-                }(measured, kind, kind_of_value, direction, self.cx.correction)
-                .map_err(entry_reason)?;
+            let correction = self.cx.correction;
+            let redshift = match r.frame {
+                RedshiftFrame::Cmb => {
+                    Redshift::published_cmb(measured, kind, kind_of_value, direction, correction)
+                }
+                frame => {
+                    Redshift::measured(frame, measured, kind, kind_of_value, direction, correction)
+                }
+            }
+            .map_err(entry_reason)?;
             redshifts.push(redshift);
         }
         let mut distances = Vec::with_capacity(plan.distances.len());
@@ -325,6 +329,16 @@ impl Row<'_, '_> {
                     probability: *probability,
                 },
                 _ => Uncertainty::NoneReported,
+            },
+            Some(Errors::Catalogue {
+                sigma,
+                times_one_plus_z,
+            }) => Uncertainty::Symmetric {
+                sigma: if *times_one_plus_z {
+                    sigma * (1.0 + value)
+                } else {
+                    *sigma
+                },
             },
         };
         Quantity::new(value, unit, uncertainty)

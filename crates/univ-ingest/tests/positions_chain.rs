@@ -32,7 +32,7 @@ fn redshift(z: f64, uncertainty: Uncertainty, kind: RedshiftKind) -> Redshift {
         velocity: None,
         cmb: CmbRedshift {
             value,
-            heliocentric: value,
+            measured: value,
             dipole: DipoleModel::Planck2018,
             published: univ_model::redshift::RedshiftFrame::Heliocentric,
         },

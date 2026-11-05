@@ -7,10 +7,13 @@ use serde_json::{Map, Value};
 
 use super::columns::Columns;
 use super::{ReadError, Row, Vocabulary};
-use crate::api::objects::{DistanceDetail, MeasuredQuantity, MeasurementRecord, RedshiftDetail};
+use crate::api::objects::{
+    DistanceDetail, MeasuredQuantity, MeasurementRecord, RedshiftDetail, UncertaintyBasis,
+};
 use crate::ids::Designation;
 use crate::redshift::RedshiftFrame;
 use crate::units::Unit;
+use crate::value::KindOfValue;
 
 const TABLE: &str = "measurements";
 
@@ -55,12 +58,19 @@ pub(super) fn measurement(
         .map(|x| c.quantity(x, c.typed("unit")?, ""))
         .transpose()?;
     let extra: Map<String, Value> = c.json_opt("extra")?.unwrap_or_default();
+    let uncertainty_basis =
+        v.catalogue_uncertainty(&source, quantity)
+            .map(|basis| UncertaintyBasis {
+                kind_of_value: KindOfValue::Estimated,
+                basis: basis.to_owned(),
+            });
     let mut record = MeasurementRecord {
         entry,
         source,
         quantity,
         n,
         kind_of_value: c.typed("kind_of_value")?,
+        uncertainty_basis,
         native,
         normalized,
         distance: None,

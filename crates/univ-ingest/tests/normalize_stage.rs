@@ -78,7 +78,7 @@ async fn the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_c
         .find(|e| e.designation.identifier == "C")
         .unwrap();
     assert_eq!(
-        c.redshifts[0].cmb.heliocentric.uncertainty,
+        c.redshifts[0].cmb.measured.uncertainty,
         Uncertainty::NoneReported
     );
 

@@ -12,8 +12,12 @@ use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
+pub use catalogue_error::CatalogueError;
+
 use super::rules::{self, Rule};
 use super::{Column, Field, Fix};
+
+mod catalogue_error;
 
 /// How a source's rows are read beyond the column each field comes from.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -68,6 +72,10 @@ pub struct RedshiftReading {
     pub column: String,
     #[serde(default)]
     pub error: Option<String>,
+    /// One uncertainty the source states for its whole catalogue rather than for each row, in
+    /// place of `error`.
+    #[serde(default)]
+    pub catalogue_error: Option<CatalogueError>,
     pub frame: RedshiftFrame,
     #[serde(default)]
     pub kind: Option<RedshiftKind>,
@@ -316,6 +324,7 @@ pub(super) fn check(
             &table,
             &format!("normalization.redshifts[{i}]"),
             r,
+            normalization.redshifts.len() == 1,
         )?);
     }
     for (i, d) in normalization.distances.iter().enumerate() {
@@ -365,6 +374,7 @@ fn check_redshift<'a>(
     table: &Columns<'_>,
     at: &str,
     r: &'a RedshiftReading,
+    alone: bool,
 ) -> Result<Vec<&'a str>, Problem> {
     blank(&format!("{at}.basis"), &r.basis)?;
     table.known(&format!("{at}.column"), &r.column)?;
@@ -377,8 +387,8 @@ fn check_redshift<'a>(
     if r.frame == RedshiftFrame::LocalGroup {
         return Err(problem(
             format!("{at}.frame"),
-            "only a heliocentric redshift, moved to the CMB frame, or one published in the CMB \
-             frame is read",
+            "only a heliocentric or barycentric redshift, moved to the CMB frame, or one \
+             published in the CMB frame is read",
         ));
     }
     if r.kind.is_some() == r.by_code.is_some() {
@@ -397,6 +407,22 @@ fn check_redshift<'a>(
             return Err(problem(&at, "starts at a velocity that is negative"));
         }
         c.read().map_err(|e| problem(&at, e.to_string()))?;
+    }
+    if let Some(c) = &r.catalogue_error {
+        if !alone {
+            return Err(problem(
+                format!("{at}.catalogue_error"),
+                "is given on one of several redshifts: each value of the source would be taken \
+                 as having it",
+            ));
+        }
+        catalogue_error::check(
+            &format!("{at}.catalogue_error"),
+            c,
+            table.unit(&r.column),
+            r.error.is_some(),
+            r.by_code.is_some(),
+        )?;
     }
     let mut read = vec![r.column.as_str()];
     if let Some(e) = &r.error {

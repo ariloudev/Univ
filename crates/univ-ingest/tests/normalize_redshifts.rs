@@ -13,9 +13,9 @@ fn a_heliocentric_redshift_is_kept_as_measured() {
     let sdss = normalized_fixture("sdss-dr17-galaxies");
     // Row 2: 375050326987794432, z 0.08733442 ± 2.054854E-05.
     let r = &entry(&sdss, "375050326987794432").redshifts[0];
-    assert_eq!(r.cmb.heliocentric.value, 0.087_334_42);
+    assert_eq!(r.cmb.measured.value, 0.087_334_42);
     assert_eq!(
-        r.cmb.heliocentric.uncertainty,
+        r.cmb.measured.uncertainty,
         Uncertainty::Symmetric {
             sigma: 2.054_854e-5
         }
@@ -43,11 +43,11 @@ fn the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from() {
     // Row 3: 09553318+6903549, cz -34 ± 4 km/s.
     let r = &entry(&twomrs, "09553318+6903549").redshifts[0];
     assert_eq!(r.velocity.unwrap().value, -34.0);
-    assert_eq!(r.cmb.heliocentric.value, -34.0 / 299_792.458);
-    assert_ne!(r.cmb.value.value, r.cmb.heliocentric.value);
+    assert_eq!(r.cmb.measured.value, -34.0 / 299_792.458);
+    assert_ne!(r.cmb.value.value, r.cmb.measured.value);
     let yaml = serde_norway::to_string(r).unwrap();
     assert!(
-        yaml.contains("heliocentric:") && yaml.contains("dipole: planck2018"),
+        yaml.contains("measured:") && yaml.contains("dipole: planck2018"),
         "{yaml}"
     );
 }

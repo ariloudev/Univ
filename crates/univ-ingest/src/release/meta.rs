@@ -3,11 +3,13 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
+use univ_model::api::objects::MeasuredQuantity;
 use univ_model::geometry::Aabb;
 use univ_model::ids::SourceId;
 use univ_model::release::keys;
 use univ_model::release::rows::{
-    NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, StructureRow,
+    CatalogueUncertainty, NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, SourceTermRow,
+    StructureRow,
 };
 
 use super::objects::{json, snake};
@@ -22,6 +24,22 @@ pub struct SourceRows {
     pub sources: Vec<SourceRow>,
     pub payloads: Vec<PayloadRow>,
     pub normalizations: Vec<NormalizationRow>,
+    /// One for each source whose terms limit it to non-commercial use, whose permission is
+    /// pending, or that states an uncertainty once for its whole catalogue.
+    pub terms: Vec<SourceTermRow>,
+}
+
+/// The uncertainties `d` states once for its whole catalogue, as `source_terms` holds them.
+fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<CatalogueUncertainty> {
+    d.normalization
+        .redshifts
+        .iter()
+        .filter_map(|r| r.catalogue_error.as_ref())
+        .map(|c| CatalogueUncertainty {
+            quantity: MeasuredQuantity::Redshift,
+            error: c.clone(),
+        })
+        .collect()
 }
 
 /// The rows of `definitions` in release `release`, each numbered by its place among them and
@@ -57,6 +75,19 @@ pub fn source_rows(
             cuts: json(&d.cuts)?,
             fixes: json(&d.fixes)?,
         });
+        let permission = d.redistribution.permission.as_ref();
+        let uncertainties = catalogue_uncertainties(d);
+        if d.terms.non_commercial.is_some() || permission.is_some() || !uncertainties.is_empty() {
+            rows.terms.push(SourceTermRow {
+                release,
+                source: n,
+                non_commercial: d.terms.non_commercial.clone(),
+                permission: permission.map(json).transpose()?,
+                catalogue_uncertainties: (!uncertainties.is_empty())
+                    .then(|| json(&uncertainties))
+                    .transpose()?,
+            });
+        }
         let provenance = Provenance::read(&cache.join(d.id.as_str()))
             .map_err(|e| format!("{id}: its provenance cannot be read: {e}"))?;
         for p in &provenance.payloads {
