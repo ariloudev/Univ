@@ -47,7 +47,7 @@ links:
         body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
       - file: "crates/univ-ingest/tests/source_terms.rs"
         name: "a_pending_source_names_whom_permission_was_asked_of_and_when"
-        body: b23a616bcdb65086e676f2f78e7d1af970f523c4fd633c5ffd89e3fc36c86498
+        body: 6ce343408275a60dc3e35b58cf5bd7a16690813db3a5b7c08ad9303eb0da6e0b
   - node: 01a19f22-2ad9-716e-876f-183ca629c7f8
     reviewed: 2f1322755357d3f990635c6e93b513eda5ef14fad23d0c687e6e7ef0ecd44c70
     tests:
@@ -55,14 +55,17 @@ links:
         name: "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
         body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
   - node: 01a1a931-2c8a-73a8-91f2-58fcaa8b8bee
-    reviewed: b3222a30a3a507a6f35f603a7cb7b57f3eace86fc50e3408fd0a902a336330db
+    reviewed: 14e62fbf724daf241edef3dca25762ed08d9ae4408d26912e8d29c2d7ca3bf4e
     tests:
       - file: "crates/univ-ingest/tests/source_terms.rs"
         name: "a_pending_source_names_whom_permission_was_asked_of_and_when"
-        body: b23a616bcdb65086e676f2f78e7d1af970f523c4fd633c5ffd89e3fc36c86498
+        body: 6ce343408275a60dc3e35b58cf5bd7a16690813db3a5b7c08ad9303eb0da6e0b
       - file: "crates/univ-ingest/tests/source_terms.rs"
         name: "a_pending_status_without_its_request_is_refused"
         body: 64a93ecefb064a152bde7504ce273050bf83d73754a16e019c1ef4a566895c9c
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_source_not_yet_asked_names_whom_and_no_date"
+        body: cd7fea5185f19180c775746ccb3e65b2379b9be312122aae1b9b53a5cfafdfff
       - file: "crates/univ-ingest/tests/source_terms.rs"
         name: "a_request_names_someone_and_a_calendar_date"
         body: f64766ea4a820757280dbee492e91ff08004e904e934a8dffee299aab488f4b2
@@ -203,7 +206,7 @@ links:
         body: f5c83cf46111f98ebe978744d278b8d181583fc3cf5c5d4e7595a6f4f68d9e4c
       - file: "crates/univ-ingest/tests/provenance.rs"
         name: "payloads_are_kept_in_item_order_whatever_order_they_arrive_in"
-        body: f7b6e62a4f8f25edd0912bb85c9f4d1d20b44528ed949fe7af9ed29b403d813a
+        body: 0da9273f71bfde1e5299e7744f54d887a327af74afb79928b03af72e19724b15
   - node: 01a19f22-2ad9-716e-876f-184f18271ab3
     reviewed: 182bebcb0e3e34fa7e3c3f04d73f7dc496e87cea2f1b41885d34bd956e4adb2b
     tests:
@@ -222,6 +225,39 @@ links:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk"
         body: 8c389bc75cc026ede3e6b9d1645eeba400f36f98238298da498ce219a2e3cd50
+  - node: 01a1ad9c-dc22-72c6-99cb-1a45af5083ab
+    reviewed: 02e6dbdc84a2ad8359b0eea9712788e8233ddd4611b767074dccac494b97515e
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_is_named_as_a_gzipped_csv_file_with_a_sha256"
+        body: ce6c343de8dd29314af08935b56cfa466b510905bee5d80746e9cca3e0ab9417
+  - node: 01a1ad9c-dc22-72c6-99cb-1a46049c41ff
+    reviewed: 274173d93f0b4dabd8f05e91f81d10a1a706c8259c63d2c524e18995106d2edb
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_whose_digest_differs_is_refused"
+        body: 83ca5cb1ff0a25e6e59556b73e1c2ca8f84dd7560ac4fd030fd6f77330ca211c
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_whose_rows_differ_is_refused"
+        body: 22ef2d00b2fc31dae33ee7909436ba94dffff99c203281acd229b4f6c2a1ecb2
+  - node: 01a1ad9c-dc22-72c6-99cb-1a470d130dde
+    reviewed: 20bc71d65cb9c84265783bc21b9f94d6f0cda8a2c6cdec494aba030d6bb07935
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_that_matches_its_definition_is_read_and_recorded_without_a_request"
+        body: 8bcaff783e1dda5c50c603b56ebfe20f0a7b624ef0c066df62bba8cf863cb247
+  - node: 01a1ad9c-f735-761b-8646-f276559d7943
+    reviewed: a24f015c0dfd418834d452b89ab40d9e75a3e73c3ac214033d58a574af859e5f
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_missing_prepared_file_fails_naming_its_script"
+        body: 57d7dfeb2ffeb51e242d161921a64093086e49f702feab2000e3925474b73c16
+  - node: 01a1ad9c-dc22-72c6-99cb-1a4853c15f56
+    reviewed: b28a9ece476778a73bc3443ecd2b72dbe7de15a11a05efdc2f7e6b8c6ad8449b
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_that_matches_its_definition_is_read_and_recorded_without_a_request"
+        body: 8bcaff783e1dda5c50c603b56ebfe20f0a7b624ef0c066df62bba8cf863cb247
   - node: 01a19f22-2ad9-716e-876f-185572e41a3f
     reviewed: 2d3cb4992519a620162990040dfc76aad5363aa90b920bfcea16ad0b6dd271d9
     tests:
@@ -1997,7 +2033,7 @@ links:
     tests:
       - file: "crates/univ-api/src/sources/tests.rs"
         name: "the_terms_give_the_redistribution_status_and_any_non_commercial_clause"
-        body: c1e6fd16e2efd62d9721fc23f4ab60800ccb84eefb8aba446d0df6ca598d6867
+        body: 3a6897809877da7357341ba4b0f6ec08c3f6a1a61eb3879a6a4203e9d918a620
   - node: 01a19f1e-d177-716d-b124-3d2711844898
     reviewed: 64fdc53e772b72fefbd149a9604a2fa0a93a8996b9837a9fe412591ec97ba6ad
     tests:
