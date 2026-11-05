@@ -105,12 +105,36 @@ links:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_has_a_valid_definition"
         body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
+  - node: 01a1a931-2c8a-73a8-91f2-58ff5749b30b
+    reviewed: 16663dbb47276992d7a8713420362d113e316a7a9dadc6c3396142dbabac8758
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "desi_redshifts_are_measured_spectroscopic_and_barycentric"
+        body: 88278b441b9fbe85a19103aecbc4da8fe6173d0d66aad54ba929d4433dce19b9
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "the_rest_of_sdss_takes_distant_galaxies_and_quasars"
+        body: 17ec1f38d53b489780a7c496de06afca2495ef8f40d83ea4fb046fa21f6893df
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "twodfgrs_gives_each_redshift_its_catalogues_rms"
+        body: 8b8bee0a826cb607d86844678eda709f460280586fcc4a832fe8e8b0912cb1f2
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "gama_keeps_its_own_redshifts_of_quality_three_or_more_above_the_stars"
+        body: 28aa7d6c3a1a28a7850a4139eb1e7132f101d2649674174f8b8dd641157ca6ce
   - node: 01a1a931-2c8a-73a8-91f2-5900bff82962
     reviewed: 163ab4d74852ed5e35ad3c11f2149684ce11198489786f36e9674e3af7cfa69a
     tests:
       - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
         name: "alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error"
         body: a11473699f41b428f4e4fc548080f3028c42b09e54deae9033978ea4d295275c
+  - node: 01a1a931-2c8a-73a8-91f2-59016fa68370
+    reviewed: 516fd5eca94e6b3c0fcd32cd853ec908784db27f56086ca114dd0f2172fba295
+    tests:
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "twompz_reads_its_prepared_file_with_the_catalogues_photometric_error"
+        body: cd9d3865bbbd4cfbf6983619ff351ab7aafe6ea0e58618de57c54a023ca7081d
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "wise_supercosmos_reads_its_gzipped_csv_with_the_catalogues_scatter"
+        body: 927da569e5249b5c9466323fef6663c4659accbc6d125e6a05e19628722ad681
   - node: 01a1a931-2c8a-73a8-91f2-5902c9bf1383
     reviewed: e5321c7c7791d45e2cf1d3c2e9e407047ccf61ac53b182aee6ae25a85a174f70
     tests:
