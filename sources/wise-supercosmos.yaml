@@ -1,0 +1,85 @@
+id: wise-supercosmos
+title: "WISE × SuperCOSMOS photometric redshift catalogue"
+provider: wfau-ssa
+access:
+  method: files
+  files:
+    - { path: cats/wiseScosPhotoz160708.csv.gz }
+cuts:
+  - >-
+    The whole file the SuperCOSMOS Science Archive links from its WISExSCOS page,
+    wiseScosPhotoz160708.csv.gz (1,709,149,603 bytes): "This catalogue includes 20,416,142
+    sources" (WISExSCOS page, read 2026-11-05). The archive's SQL form cancels any query of more
+    than a few hundred rows, so the file is read instead.
+  - >-
+    The released sample is Bilicki et al. 2016's core catalogue: |b| > 10 deg with a Bulge cutout,
+    B < 21 and R < 19.5 (AB), 13.8 < W1 < 17 (Vega), E(B-V) below 0.25, and no source flagged as a
+    star or quasar by the paper's colour cuts (WISExSCOS page, "What is released").
+  - >-
+    The paper's HEALPix mask (WISExSCOSmask.fits.gz, Nside 256) of areas the cuts leave
+    contaminated is not applied: the masked sample is 18.8 million (Bilicki et al. 2016, Table 1).
+    The catalogue is about 95% pure and 90% complete at high Galactic latitude (abstract); stars
+    remain, more of them nearer the Galactic plane.
+  - >-
+    zPhoto_Corr is taken, not zPhoto_ANN: the two are equal in the south and differ in the north
+    (checked on rows at Dec > 30 and Dec < -30, 2026-11-05), as the north-south offset that
+    Bilicki et al. 2016 (Section 5.2) add to the ANNz photo-z would make them. The column is not
+    described by the archive; this reading is an inference.
+  - "ra and dec are the WISE positions (ICRS, J2000)."
+  - >-
+    Neither the 2 million sources rejected as possible stellar blends, which the page offers "WITH
+    CARE", nor the SVM catalogue (wiseScosSvm.csv.gz) is taken.
+  - "The epoch is that of the WISE all-sky observations, 2010; for galaxies it changes nothing."
+columns:
+  - { column: wiseX, field: identifier, unit: dimensionless }
+  - { column: ra, field: right_ascension, unit: degree }
+  - { column: dec, field: declination, unit: degree }
+  - { column: zPhoto_Corr, field: photometric_redshift, unit: dimensionless }
+frame: icrs
+epoch: 2010.5
+citation: >-
+  Bilicki M., Peacock J.A., Jarrett T.H., Cluver M.E., Maddox N., Brown M.J.I., Taylor E.N.,
+  Hambly N.C., Solarz A., Holwerda B.W., et al. 2016, "WISE × SuperCOSMOS Photometric Redshift
+  Catalog: 20 Million Galaxies over 3π Steradians", ApJS 225, 5. 2016ApJS..225....5B,
+  doi:10.3847/0067-0049/225/1/5. Served by the SuperCOSMOS Science Archive, WFAU, Edinburgh.
+reference: { bibcode: "2016ApJS..225....5B", doi: "10.3847/0067-0049/225/1/5" }
+terms:
+  url: "http://ssa.roe.ac.uk/WISExSCOS.html"
+  quote: >-
+    Please reference this paper and acknowledge the Wide Field Astronomy Unit (WFAU) when using
+    these data. ... All data retrieved from the SuperCOSMOS Science Archive are subject to the
+    copyright given in this copyright summary. [credits.html; the summary is not linked]
+  credit: >-
+    Cite Bilicki et al. 2016, ApJS 225, 5. This research has made use of data obtained from the
+    SuperCOSMOS Science Archive, prepared and hosted by the Wide Field Astronomy Unit, Institute for
+    Astronomy, University of Edinburgh.
+redistribution:
+  status: permission_pending
+  review: provisional
+  reasoning: >-
+    The archive asks for the paper to be cited and WFAU acknowledged, and says its data are subject
+    to a copyright summary that no page links (credits.html, read 2026-11-05), so no terms of
+    redistribution can be read. Permission is to be asked of WFAU and of the catalogue's author;
+    the owner chose to build and publish the source while the answer is awaited. Provisional:
+    judged again when the answer comes.
+  permission: { asked_of: "WFAU (mar at roe.ac.uk) and M. Bilicki" }
+scale_domain: cosmic_web
+mirrors:
+  - "http://ssa.roe.ac.uk"
+normalization:
+  redshifts:
+    - column: zPhoto_Corr
+      frame: heliocentric
+      kind: photometric
+      catalogue_error:
+        value: 0.033
+        unit: dimensionless
+        times_one_plus_z: true
+        basis: >-
+          Bilicki et al. 2016, abstract: "The photometric redshifts have a mean bias of
+          |δz|∼10^−3, normalized scatter of σz=0.033 and less than 3% outliers beyond 3σz"; the
+          normalized scatter is σ(δz)/(1+z), unclipped (Table 3), so each redshift's error is
+          0.033 (1 + z).
+      basis: >-
+        Photometric redshifts trained on GAMA-II spectroscopic redshifts (Bilicki et al. 2016,
+        abstract), which are heliocentric (GAMA SpecObj, Z: "Heliocentric redshift").

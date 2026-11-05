@@ -1,0 +1,90 @@
+id: gama-dr4
+title: "GAMA DR4 SpecObj: the best redshift of each target, GAMA's own"
+provider: gama-survey
+access:
+  method: files
+  files:
+    - { path: dr4/data/cat/SpecCat/v27/SpecObjv27.fits, sha256: e997cace56d01924f3eef163ae30d64888726ff7ea09ca7d6b56f588935e42f2 }
+cuts:
+  - >-
+    SpecObj v27 of the SpecCat DMU (DR4), whose description reads: "This table lists each observed
+    target and the spectrum that provides its best redshift (from GAMA or otherwise)": 344,905 rows.
+  - >-
+    Rows whose best spectrum is another survey's are left out (SURVEY other than GAMA: SDSS 58,709,
+    2dFGRS 12,801, 2QZ 5,527, WiggleZ 2,790, MGC 2,611, 2SLAQ 1,413, 6dFGS 423 and others, counted
+    2026-11-05): SDSS, 2dFGRS and 6dFGS are taken from their own sources, and the rest are kept only
+    as GAMA re-serves them. GAMA_LT (16 rows, GAMA's own Liverpool Telescope spectra) is left out
+    with them.
+  - >-
+    Rows with NQ < 3 are left out: the column's description says "use nQ > 2 for science". 248,682
+    rows are GAMA's with NQ >= 3 (counted 2026-11-05).
+  - >-
+    Of those, 9,966 have z < 0.002 (cz < 600 km/s): stars, which GAMA measures at z near 0 with
+    NQ = 4; a rule leaves out rows below z = 0.002, leaving 238,716 galaxies.
+  - "RA and DEC are the spectrum's position (J2000); Z is the heliocentric redshift. No redshift error is published."
+columns:
+  - { column: CATAID, field: identifier, unit: dimensionless }
+  - { column: GAMA_NAME, field: name, unit: dimensionless }
+  - { column: RA, field: right_ascension, unit: degree }
+  - { column: DEC, field: declination, unit: degree }
+  - { column: Z, field: redshift, unit: dimensionless }
+  - { column: NQ, field: quality, unit: dimensionless }
+  - { column: SURVEY, field: quality, unit: dimensionless }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Driver S.P., Bellstedt S., Robotham A.S.G., Baldry I.K., Davies L.J., Liske J., Obreschkow D.,
+  Taylor E.N., Wright A.H., Alpaslan M., et al. 2022, "Galaxy And Mass Assembly (GAMA): Data Release
+  4", MNRAS 513, 439. 2022MNRAS.513..439D, doi:10.1093/mnras/stac472. SpecCat DMU, SpecObj v27
+  (Liske et al. 2015, MNRAS 452, 2087).
+reference: { bibcode: "2022MNRAS.513..439D", doi: "10.1093/mnras/stac472" }
+terms:
+  url: "https://www.gama-survey.org/dr4/"
+  quote: >-
+    If you are using GAMA DR4 data in a publication then please cite the DR4 paper (Driver et al.
+    2022) and acknowledge GAMA.
+  credit: >-
+    Cite Driver et al. 2022, MNRAS 513, 439. GAMA is a joint European-Australasian project based
+    around a spectroscopic campaign using the Anglo-Australian Telescope. The GAMA input catalogue is
+    based on data taken from the Sloan Digital Sky Survey and the UKIRT Infrared Deep Sky Survey.
+    Complementary imaging of the GAMA regions was obtained by a number of independent survey
+    programmes including GALEX MIS, VST KiDS, VISTA VIKING, WISE, Herschel-ATLAS, GMRT and ASKAP
+    providing UV to radio coverage. GAMA is funded by the STFC (UK), the ARC (Australia), the AAO,
+    and the participating institutions. The GAMA website is https://www.gama-survey.org/ .
+redistribution:
+  status: permission_pending
+  review: provisional
+  reasoning: >-
+    The DR4 page asks publications to cite Driver et al. 2022 and acknowledge GAMA, and says nothing
+    of redistribution; no licence is stated on the page or in the file (read 2026-11-05). Permission
+    is to be asked of the GAMA team; the owner chose to build and publish the source while the
+    answer is awaited. Provisional: judged again when the answer comes.
+  permission: { asked_of: "the GAMA team, gama@gama-survey.org" }
+scale_domain: cosmic_web
+mirrors:
+  - "https://www.gama-survey.org"
+normalization:
+  redshifts:
+    - column: Z
+      frame: heliocentric
+      kind: spectroscopic
+      basis: >-
+        SpecObj v27 column description (the VOTable in the file's primary HDU): Z is the
+        "Heliocentric redshift".
+  rules:
+    - when: { column: SURVEY, is_not: [GAMA] }
+      leave_out: outside_selection
+      basis: >-
+        SURVEY is the "Survey best matched spectrum originated from". Another survey's redshift
+        re-served by GAMA is kept from that survey's own source where Univ has one, and not
+        counted twice.
+    - when: { column: NQ, below: 3 }
+      leave_out: unsuitable_redshift
+      basis: >-
+        NQ is the "Normalised redshift quality (use nQ > 2 for science)" (SpecObj v27).
+    - when: { column: Z, below: 0.002 }
+      leave_out: outside_selection
+      basis: >-
+        Pipeline choice: GAMA measures stars at z near 0 with NQ = 4; in the 248,682 GAMA rows
+        with NQ >= 3, the 9,966 below z = 0.002 (cz < 600 km/s) are taken as stars (counted
+        2026-11-05). A galaxy that close would be lost with them; none was checked for.
