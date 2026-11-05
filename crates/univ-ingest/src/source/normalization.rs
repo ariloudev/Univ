@@ -421,6 +421,7 @@ fn check_redshift<'a>(
             c,
             table.unit(&r.column),
             r.error.is_some(),
+            r.by_code.is_some(),
         )?;
     }
     let mut read = vec![r.column.as_str()];

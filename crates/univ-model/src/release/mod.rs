@@ -43,8 +43,9 @@
 //! # Source terms (schema version 4)
 //!
 //! Version 4 adds one table, changing none of version 3's: `source_terms`, the clause that
-//! limits a source to non-commercial use and the request for permission of a source whose
-//! status is `permission_pending`.
+//! limits a source to non-commercial use, the request for permission of a source whose status
+//! is `permission_pending`, and the uncertainties a source states once for its whole catalogue,
+//! which the object read gives each such measurement as its estimated basis.
 
 pub mod cells;
 pub mod chains;

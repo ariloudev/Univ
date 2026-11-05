@@ -1,53 +1,31 @@
 //! An uncertainty a source states once for its whole catalogue, in place of an error column.
 
-use serde::{Deserialize, Serialize};
-use univ_model::cosmology::SPEED_OF_LIGHT;
 use univ_model::units::{Dimension, Unit};
+
+pub use univ_model::release::rows::CatalogueError;
 
 use super::{Problem, blank, problem};
 
-/// An uncertainty a source states once for its whole catalogue, such as 2dFGRS's rms of 85 km/s
-/// or a photometric redshift scatter σz / (1 + z): given to each value as a symmetric error,
-/// estimated, citing `basis`.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct CatalogueError {
-    pub value: f64,
-    /// Its unit: the column's, or km/s for a column of z (σz = σv / c).
-    pub unit: Unit,
-    /// Whether it is stated per unit of (1 + z), as σz / (1 + z) is.
-    #[serde(default)]
-    pub times_one_plus_z: bool,
-    /// Where the source states it, quoted or cited.
-    pub basis: String,
-}
-
-impl CatalogueError {
-    /// The error in the unit of a column in `column`, before any factor of (1 + z): none when
-    /// the units cannot meet, which [`check`] refuses.
-    #[must_use]
-    pub fn in_unit(&self, column: Unit) -> Option<f64> {
-        if column.dimension() == Dimension::Dimensionless
-            && self.unit.dimension() == Dimension::Velocity
-        {
-            let km_s = self.unit.factor_to(Unit::KilometrePerSecond).ok()?;
-            return Some(self.value * km_s / SPEED_OF_LIGHT);
-        }
-        Some(self.value * self.unit.factor_to(column).ok()?)
-    }
-}
-
-/// Checks the catalogue error at `at` of a redshift read from a column in `column`, refusing it
-/// beside an error column.
+/// Checks the catalogue error at `at` of a redshift read from a column in `column`: refused
+/// beside an error column, on a reading whose kind is given by code (it would reach rows of
+/// another kind), in a unit the column cannot take, or scaled by 1 + z on a column not of z.
 pub(super) fn check(
     at: &str,
     c: &CatalogueError,
     column: Option<Unit>,
     has_error_column: bool,
+    by_code: bool,
 ) -> Result<(), Problem> {
     blank(&format!("{at}.basis"), &c.basis)?;
     if has_error_column {
         return Err(problem(at, "is given beside an error column"));
+    }
+    if by_code {
+        return Err(problem(
+            at,
+            "is given on a redshift whose kind is given by code, so it would reach rows of \
+             another kind",
+        ));
     }
     if !(c.value.is_finite() && c.value > 0.0) {
         return Err(problem(at, "is not a positive number"));

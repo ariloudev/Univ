@@ -78,7 +78,7 @@ impl Vocabulary {
             self.catalogue_uncertainties
                 .entry(source)
                 .or_default()
-                .push((u.quantity, u.basis));
+                .push((u.quantity, u.error.basis));
         }
         self
     }

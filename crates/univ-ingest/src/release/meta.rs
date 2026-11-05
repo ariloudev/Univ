@@ -37,10 +37,7 @@ fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<CatalogueUncertainty> {
         .filter_map(|r| r.catalogue_error.as_ref())
         .map(|c| CatalogueUncertainty {
             quantity: MeasuredQuantity::Redshift,
-            value: c.value,
-            unit: c.unit,
-            times_one_plus_z: c.times_one_plus_z,
-            basis: c.basis.clone(),
+            error: c.clone(),
         })
         .collect()
 }

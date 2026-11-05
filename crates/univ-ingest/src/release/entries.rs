@@ -325,17 +325,23 @@ impl Measurements<'_, '_> {
         for (n, z) in entry.redshifts.iter().enumerate() {
             // As published: the velocity cz where the source gives one, else z; normalized to
             // the z of the frame it was published in, beside its CMB-frame value. A redshift
-            // published in the CMB frame says so, as no dipole moved it there.
+            // published in a frame other than heliocentric names it: in the CMB frame no dipole
+            // moved it there, and a barycentric one is never relabelled heliocentric.
             let published = z.cmb.as_published();
             let native = z.velocity.as_ref().unwrap_or(&published);
-            let cmb_frame = z.cmb.published == RedshiftFrame::Cmb;
+            let frame = match z.cmb.published {
+                RedshiftFrame::Heliocentric => None,
+                RedshiftFrame::Cmb => Some(r#"{"published_frame":"cmb"}"#),
+                RedshiftFrame::Barycentric => Some(r#"{"published_frame":"barycentric"}"#),
+                RedshiftFrame::LocalGroup => Some(r#"{"published_frame":"local_group"}"#),
+            };
             let terms = &mut numbering.terms;
             let detail = Detail {
                 kind: Some(terms.of(&z.kind)?),
                 method: Some(terms.of(&z.cmb.dipole)?),
                 measure: None,
                 cmb: Some(&z.cmb.value),
-                extra: cmb_frame.then(|| r#"{"published_frame":"cmb"}"#.to_owned()),
+                extra: frame.map(str::to_owned),
             };
             self.push(
                 numbering,
