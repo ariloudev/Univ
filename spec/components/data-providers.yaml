@@ -77,8 +77,8 @@ components:
         body: |
           The complete ALFALFA HI source catalogue (Haynes et al. 2018, ApJ 861, 49; VizieR
           J/ApJ/861/49): the 25,434 code 1 detections over about 7,000 square degrees, with heliocentric
-          21 cm velocities and the catalogue's own flow-model distances. An AAS table, CC BY-NC through
-          VizieR.
+          21 cm velocities. The catalogue's own distances, a Hubble-law distance above 6,000 km/s and a
+          flow model below, are not taken. An AAS table, for non-commercial use through VizieR.
   - key: 01a19f1e-d177-716d-b124-3cea65a86848
     name: "ESA Gaia Archive"
     body: "The TAP service of Gaia DR3 and the tables published beside it."
@@ -124,10 +124,9 @@ components:
         name: "DESI DR1 redshifts"
         body: |
           The redshift catalogue of DESI's first data release (DESI Collaboration 2026, AJ 171, 285):
-          one primary redshift per target with ZWARN = 0, about 13 million galaxies and 1.55 million
-          quasars of the Main Survey and about 15.8 million with its validation programmes, over about
-          9,700 square degrees, with barycentric redshifts and their errors. CC BY 4.0, with the DESI
-          acknowledgement.
+          one primary redshift per target with ZWARN = 0, the 13.1 million galaxies and 1.6 million
+          quasars of the Main Survey (the DR1 abstract) and those of its Survey Validation, with
+          barycentric redshifts and their errors. CC BY 4.0, with the DESI acknowledgement.
   - key: 01a1a931-2c8a-73a8-91f2-58d51ef988ca
     name: "SuperCOSMOS Science Archive"
     body: "The archive of the Wide Field Astronomy Unit in Edinburgh that holds the 2MASS and WISE photometric redshift catalogues."

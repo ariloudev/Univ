@@ -1,10 +1,16 @@
-//! Reading a provider's table a row at a time: `VizieR`'s `asu-tsv` and the CSV of `SkyServer`
-//! and TAP services. Each row's cells are lent as slices of the answer, so a cell is copied
+//! Reading a provider's table a row at a time: `VizieR`'s `asu-tsv`, the CSV of `SkyServer`
+//! and TAP services, and the pieces of a gzipped CSV file. Each row's cells are lent as slices of the answer, so a cell is copied
 //! only when CSV quoting must be undone.
 
 use std::borrow::Cow;
 
 use crate::source::Access;
+
+/// Whether a file of a files source is a gzipped CSV table, which is read a piece at a time.
+#[must_use]
+pub fn is_csv_gz(path: &str) -> bool {
+    path.ends_with(".csv.gz")
+}
 
 /// The format of a provider's table.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -33,8 +39,6 @@ impl<'a> TableReader<'a> {
     ///
     /// Fails when the answer is not UTF-8 or not a table of that format, such as an error page.
     pub fn new(access: &Access, body: &'a [u8]) -> Result<Self, String> {
-        let text =
-            std::str::from_utf8(body).map_err(|e| format!("the answer is not UTF-8: {e}"))?;
         let format = match access {
             Access::VizierTsv { .. } => Format::VizierTsv,
             Access::SkyserverSql { .. } | Access::Tap { .. } => Format::Csv,
@@ -42,6 +46,21 @@ impl<'a> TableReader<'a> {
                 return Err("files are read by their own readers".to_owned());
             }
         };
+        Self::read(format, body)
+    }
+
+    /// Starts reading `body` as CSV, such as a piece of a gzipped CSV file, and reads its header.
+    ///
+    /// # Errors
+    ///
+    /// Fails when `body` is not UTF-8 or holds no table.
+    pub fn csv(body: &'a [u8]) -> Result<Self, String> {
+        Self::read(Format::Csv, body)
+    }
+
+    fn read(format: Format, body: &'a [u8]) -> Result<Self, String> {
+        let text =
+            std::str::from_utf8(body).map_err(|e| format!("the answer is not UTF-8: {e}"))?;
         // Blank lines before the header are layout, as is the empty line ending an answer; a
         // blank line between rows is a blank row.
         let mut lines = without_final_blank_lines(text)

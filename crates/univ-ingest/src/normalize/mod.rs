@@ -3,6 +3,7 @@
 //! stay in memory for the next stage.
 
 mod bintable;
+mod csv_file;
 mod plan;
 mod row;
 
@@ -18,7 +19,7 @@ use univ_model::ids::SourceId;
 use univ_model::redshift::CmbCorrection;
 
 use crate::source::{Access, Field, Holds, LeftOutReason, SourceDefinition};
-use crate::table::TableReader;
+use crate::table::{TableReader, is_csv_gz};
 use bintable::BinTable;
 use plan::Plan;
 use row::{Changed, Context};
@@ -85,11 +86,15 @@ pub enum NormalizeError {
 const CANCEL_EVERY: usize = 4096;
 
 /// Whether normalization gives `definition` entries: a provider's answers, files that are all
-/// FITS tables, or the researched star distances, but not grids nor the researched structures.
+/// FITS tables or all gzipped CSV tables, or the researched star distances, but not grids nor
+/// the researched structures.
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
     match &definition.access {
-        Access::Files { files } => files.iter().all(|f| crate::fits::is_fits(&f.path)),
+        Access::Files { files } => {
+            files.iter().all(|f| crate::fits::is_fits(&f.path))
+                || files.iter().all(|f| is_csv_gz(&f.path))
+        }
         Access::Repository { holds, .. } => *holds == Holds::StarDistances,
         _ => true,
     }
@@ -163,6 +168,16 @@ impl<'a> Normalizer<'a> {
     /// Fails when the answer is not a table, a row has the wrong number of cells, or the table
     /// lacks a column the definition takes.
     pub fn table(&mut self, file: &Path, body: &[u8]) -> Result<(), NormalizeError> {
+        let table = TableReader::new(&self.definition.access, body);
+        self.rows(file, table)
+    }
+
+    /// Reads the rows of `table`, from the file `file`.
+    fn rows(
+        &mut self,
+        file: &Path,
+        table: Result<TableReader<'_>, String>,
+    ) -> Result<(), NormalizeError> {
         self.go_on(0)?;
         let source_id = &self.definition.id;
         let malformed = |error: String| NormalizeError::Table {
@@ -170,7 +185,7 @@ impl<'a> Normalizer<'a> {
             file: file.to_path_buf(),
             error,
         };
-        let mut table = TableReader::new(&self.definition.access, body).map_err(malformed)?;
+        let mut table = table.map_err(malformed)?;
         if table.columns().is_empty() {
             return Ok(());
         }
@@ -378,7 +393,12 @@ pub fn normalize_until(
             error: e.to_string(),
         })
     };
-    if matches!(definition.access, Access::Files { .. }) {
+    let csv = matches!(&definition.access, Access::Files { files } if files.iter().all(|f| is_csv_gz(&f.path)));
+    if csv {
+        for file in files {
+            normalizer.csv_file(file)?;
+        }
+    } else if matches!(definition.access, Access::Files { .. }) {
         let mut tables = Vec::new();
         for file in files {
             let name = file

@@ -2,10 +2,7 @@
 //! redshifts, the rest of SDSS DR17, 2dFGRS with its catalogue-wide rms and ALFALFA's HI
 //! velocities (normalize-records); and a definition can leave out rows below a redshift floor,
 //! or rows whose cell is none of a rule's values.
-#![expect(
-    clippy::unwrap_used,
-    reason = "a failed unwrap is the test failing"
-)]
+#![expect(clippy::unwrap_used, reason = "a failed unwrap is the test failing")]
 
 mod common;
 

@@ -232,6 +232,59 @@ blocks:
           > With thanks,
           > Serge Lobanovsky
         tone: info
+      - key: 01a1a9cb-7919-73ed-a262-2c96e5ccc97a
+        at: 2026-11-05T03:40:46Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Permission requests to send (drafts)"
+        markdown: |-
+          Three drafts for you to send. I send nothing myself. Each pending source records whom it asked and on which date, so its definition takes the date you send.
+
+          ### 1. WFAU: 2MPZ and WISE × SuperCOSMOS (permission, plus a 2MPZ file)
+          **To:** WFAU at the Royal Observatory Edinburgh. The SSA pages name mar.at.roe.ac.uk for technical questions (WISExSCOS page).
+          **Subject:** Redistributing 2MPZ and WISE×SuperCOSMOS in a non-commercial sky viewer, and a 2MPZ download
+
+          > Dear WFAU team,
+          >
+          > I run Univ, a non-commercial hobby project that builds a 3D map of the observable universe from public catalogues and serves it to a web viewer. Every value is cited to its catalogue and paper, and every source's terms are shown beside its data.
+          >
+          > I would like to include the WISE×SuperCOSMOS photometric redshift catalogue (your file cats/wiseScosPhotoz160708.csv.gz) and the 2MPZ catalogue (TWOMPZ..twompzPhotoz). For each galaxy I would redistribute its position, its photometric redshift and an identifier.
+          >
+          > The credits page says that data retrieved from the archive "are subject to the copyright given in this copyright summary", but I could not find the summary it refers to. May I redistribute these columns in this way, crediting WFAU and citing Bilicki et al. 2014 (ApJS 210, 9) and 2016 (ApJS 225, 5) as your pages ask? If there is a copyright summary or licence I should follow, I would be grateful for a link.
+          >
+          > Also, on 5 November 2026 the freeform SQL form cancelled every query of more than a few hundred rows of TWOMPZ..twompzPhotoz within about 3 seconds ("The operation was cancelled at the user's request"), including the full-catalogue query that the SQL Cookbook suggests. Could 2MPZ be offered as a file, like WISE×SuperCOSMOS, or is there another way to download it?
+          >
+          > With thanks,
+          > Serge Lobanovsky
+
+          ### 2. Maciej Bilicki: the same two catalogues, as their author
+          **To:** M. Bilicki. The SSA pages list maciek@ast.uct.ac.za (2MPZ) and bilicki at strw.leidenuniv.nl (WISE×SCOS); both are probably out of date, so check his current institution's page.
+          **Subject:** Redistributing 2MPZ and WISE×SuperCOSMOS photo-z in a non-commercial 3D sky map
+
+          > Dear Dr Bilicki,
+          >
+          > I run Univ, a non-commercial hobby project that draws a 3D map of galaxies from public catalogues, with every value cited and each source's terms shown. I would like to include 2MPZ and the WISE×SuperCOSMOS photometric redshifts, taken from the SuperCOSMOS Science Archive. For each galaxy I would redistribute its position, its photometric redshift and an identifier. The redshift would carry the catalogue-wide scatter you publish (σz = 0.015 for 2MPZ, σz/(1+z) = 0.033 for WISE×SCOS) as an estimated uncertainty. For WISE×SCOS I would use zPhoto_Corr, which I take to be the ANNz photo-z with the north/south offset of Section 5.2 added.
+          >
+          > Neither the archive nor the papers state terms for redistribution, so I am writing to ask whether you are happy for the catalogues to be used this way, with Bilicki et al. 2014 and 2016 cited and WFAU acknowledged. I have asked WFAU as well.
+          >
+          > With thanks,
+          > Serge Lobanovsky
+
+          ### 3. GAMA: DR4 SpecObj
+          **To:** gama@gama-survey.org (the DR4 page's contact)
+          **Subject:** Permission to redistribute GAMA DR4 redshifts in a non-commercial 3D sky map
+
+          > Dear GAMA team,
+          >
+          > I run Univ, a non-commercial hobby project that draws a 3D map of galaxies from public catalogues, with every value cited and each source's terms shown. I would like to include the redshifts of GAMA DR4's SpecObj table (v27): for the rows whose best spectrum is GAMA's own and whose NQ is at least 3, the CATAID, position and heliocentric redshift.
+          >
+          > The DR4 page asks publications to cite Driver et al. 2022 and acknowledge GAMA, which I would do, but it does not say whether the data may be redistributed. May I redistribute these columns in this way? If there are terms I should follow, I would be grateful to know them.
+          >
+          > With thanks,
+          > Serge Lobanovsky
+        tone: info
   - key: 01a1a9a2-2259-76e2-aa1b-d3361066c72e
     id: q-permission-date
     kind: question
@@ -253,3 +306,75 @@ blocks:
             detail: "Answer with the date in your own words once they are sent. The three definitions stay out of sources/ until then; if that is after W2 closes, they go in at the start of W5, before the build."
           - label: "Leave them out"
             detail: "Release 10 goes without 2MPZ, WISE × SuperCOSMOS and GAMA. They come back in a later release once permission is asked."
+  - key: 01a1a9cb-7919-73ed-a262-2c949cf02b83
+    id: q-permission-date-2
+    kind: question
+    versions:
+      - key: 01a1a9cb-7919-73ed-a262-2c9782a53667
+        at: 2026-11-05T03:40:46Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "When will you send the three permission requests (WFAU, M. Bilicki, GAMA), so that WISE × SuperCOSMOS and GAMA DR4 can record whom they asked and when?"
+        header: "Send date"
+        context: "Under the spec, a permission-pending source names whom it asked and on which date. The requests are not sent yet, so no true date exists. Meanwhile the rest of W2 goes ahead. The pending definitions wait in my scratchpad, out of `sources/`."
+        options:
+          - label: "Sending today"
+            detail: "I record 2026-11-05 as the date asked and put the definitions in sources/ straight away. Choose this only if you send them today."
+            recommended: true
+          - label: "I'll give the date"
+            detail: "Answer with the date in your own words once they are sent. The definitions stay out of sources/ until then; if that is after W2 closes, they go in at the start of W5, before the build."
+          - label: "Leave them out"
+            detail: "Release 10 goes without WISE × SuperCOSMOS and GAMA. They come back in a later release."
+      - key: 01a1a9cb-a7b8-74b0-ae7f-a9c87d3458d2
+        at: 2026-11-05T03:40:58Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "When will you send the three permission requests (WFAU, M. Bilicki, GAMA), so that WISE × SuperCOSMOS and GAMA DR4 can record whom they asked and when?"
+        header: "Send date"
+        context: "Under the spec, a permission-pending source names whom it asked and on which date. The requests are not sent yet, so no true date exists. Meanwhile the rest of W2 goes ahead. The pending definitions wait in my scratchpad, out of `sources/`."
+        options:
+          - label: "Sending today"
+            detail: "I record 2026-11-05 as the date asked and put the definitions in sources/ straight away. Choose this only if you send them today."
+            recommended: true
+          - label: "I'll give the date"
+            detail: "Answer with the date in your own words once they are sent. The definitions stay out of sources/ until then; if that is after W2 closes, they go in at the start of W5, before the build."
+          - label: "Leave them out"
+            detail: "Release 10 goes without WISE × SuperCOSMOS and GAMA. They come back in a later release."
+  - key: 01a1a9cb-7919-73ed-a262-2c9589b4e5b5
+    id: q-twompz-fetch
+    kind: question
+    versions:
+      - key: 01a1a9cb-7919-73ed-a262-2c98b9e41936
+        at: 2026-11-05T03:40:46Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "2MPZ cannot be fetched from the SuperCOSMOS Science Archive: its SQL form cancels any query of more than a few hundred rows within 3 s, and 2MPZ has no file download. What should release 10 do?"
+        header: "2MPZ"
+        context: "Tested 2026-11-05 with TOP 500 (answered), TOP 1000, 2500 and 5000, key and RA ranges, every output format and both servers: all cancelled with \"The operation was cancelled at the user's request\". Paging 934,175 rows a few hundred at a time would mean thousands of requests to a small academic service, so I have not done it. WISE × SuperCOSMOS is unaffected: it has a whole-file download (1.7 GB, csv.gz), read by a new gzipped-CSV reader. I have removed the `ssa_sql` access method I had built for these tables (kept aside in the scratchpad), since nothing can use it."
+        options:
+          - label: "Ask WFAU, wait"
+            detail: "The WFAU draft above now asks for a 2MPZ file. 2MPZ stays out of sources/ until one exists. If it arrives before W5's build, it goes in release 10 as a files source; otherwise in a later release. Most of 2MPZ's galaxies are also in WISE × SuperCOSMOS, 2MRS or 6dFGS."
+            recommended: true
+          - label: "Drop 2MPZ"
+            detail: "Take 2MPZ off release 10's list, and drop the line from the WFAU draft."
+      - key: 01a1a9cb-a7b8-74b0-ae7f-a9c9aa983c8a
+        at: 2026-11-05T03:40:58Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "2MPZ cannot be fetched from the SuperCOSMOS Science Archive: its SQL form cancels any query of more than a few hundred rows within 3 s, and 2MPZ has no file download. What should release 10 do?"
+        header: "2MPZ"
+        context: "Tested 2026-11-05 with TOP 500 (answered), TOP 1000, 2500 and 5000, key and RA ranges, every output format and both servers: all cancelled with \"The operation was cancelled at the user's request\". Paging 934,175 rows a few hundred at a time would mean thousands of requests to a small academic service, so I have not done it. WISE × SuperCOSMOS is unaffected: it has a whole-file download (1.7 GB, csv.gz), read by a new gzipped-CSV reader. It does not replace 2MPZ, since it leaves out sources brighter than W1 = 13.8. I have removed the `ssa_sql` access method I had built for these tables (kept aside in the scratchpad), since nothing can use it."
+        options:
+          - label: "Ask WFAU, wait"
+            detail: "The WFAU draft above now asks for a 2MPZ file. 2MPZ stays out of sources/ until one exists. If it arrives before W5's build, it goes in release 10 as a files source; otherwise in a later release."
+            recommended: true
+          - label: "Drop 2MPZ"
+            detail: "Take 2MPZ off release 10's list, and drop the line from the WFAU draft."
