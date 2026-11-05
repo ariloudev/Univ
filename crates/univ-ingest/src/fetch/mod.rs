@@ -74,6 +74,9 @@ pub struct Payload {
     /// gave. None for a file, which has no body check.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rows: Option<u64>,
+    /// The script of this repository that prepared the file, for a prepared source's file.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prepared_by: Option<String>,
 }
 
 /// What a chunk asks of a mirror.
@@ -376,6 +379,7 @@ impl<C: Clock> Fetcher<C> {
             bytes,
             retrieved: humantime::format_rfc3339_seconds(self.clock.now()).to_string(),
             rows,
+            prepared_by: None,
         }
     }
 }

@@ -36,7 +36,7 @@ impl<'a> TableReader<'a> {
         let format = match access {
             Access::VizierTsv { .. } => Format::VizierTsv,
             Access::SkyserverSql { .. } | Access::Tap { .. } => Format::Csv,
-            Access::Files { .. } | Access::Repository { .. } => {
+            Access::Files { .. } | Access::Prepared { .. } | Access::Repository { .. } => {
                 return Err("files are read by their own readers".to_owned());
             }
         };
