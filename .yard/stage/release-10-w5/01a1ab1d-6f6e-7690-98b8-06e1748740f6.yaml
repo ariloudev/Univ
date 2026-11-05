@@ -19,6 +19,15 @@ versions:
     title: "W5 release 10"
     goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it"
     status: active
+  - key: 01a1ad95-6a58-709d-8355-92356ee4a9c4
+    at: 2026-11-05T21:20:12Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 plan, decisions and first fetches"
+    goal: "W5's plan is recorded, the owner's decisions on the pending sources, 2MPZ's access and WISE's scope are taken, and DESI DR1, SDSS DR17 distant, 2dFGRS and ALFALFA α.100 are fetched"
+    status: done
 blocks:
   - key: 01a1ab1d-6f6e-7690-98b8-06e204148ae0
     id: w5-plan
@@ -284,3 +293,18 @@ blocks:
         title: "Make ingest leaner before release 10, so WISE × SuperCOSMOS goes in whole"
         consequence: "A wave of its own, on `stage/release-10-memory`, profiles where ingest's 3.6 KB per entry goes and brings a plan to cut it for approval. W5 waits for it, then builds release 10 with all 43 million entries. Two measured points (5.6 M entries: 22.1 GB; 21.4 M: 78.8 GB) put the cost almost all per entry, with about 2 GB fixed."
         question: 01a1ab77-a996-70a7-a65f-e0f59e9829fd
+  - key: 01a1ad95-6a58-709d-8355-921f9a94f928
+    id: w5-resume
+    kind: note
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-92362d9e6496
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Picked up after the memory wave"
+        markdown: |-
+          The memory wave is merged into `product/release-10` (`dd60de3`), and from there into this branch (`432878d`). Release 10's build should peak at about 59 GB, so WISE × SuperCOSMOS goes in whole. Downloads now live in /Users/admin/Locap/Univ/downloads/univ-ingest.
+
+          The work left is split into the stages below, one per step. The permission requests are the owner's to handle, and nothing here asks about them.

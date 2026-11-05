@@ -1,0 +1,91 @@
+key: 01a1ad95-6a58-709d-8355-92216d289553
+id: w5-sources
+versions:
+  - key: 01a1ad95-6a58-709d-8355-9238b9c485ad
+    at: 2026-11-05T21:20:12Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Release 10's remaining sources"
+    goal: "2dFGRS is fetched again, 2MPZ is read as a prepared file, and GAMA DR4 and WISE × SuperCOSMOS are defined as permission pending without a date and fetched"
+    status: planned
+blocks:
+  - key: 01a1ad95-6a58-709d-8355-9228c9c6bba7
+    id: s-twodfgrs
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-923ff4290833
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Fetch 2dFGRS again"
+        detail: "Done when 2dFGRS's 13 slices are in the downloads with its 221,414 rows, the definition's count."
+        state: open
+  - key: 01a1ad95-6a58-709d-8355-92295f5d0ba5
+    id: s-spec
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-92408f3ea753
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Spec: a pending source may leave its asked date empty"
+        detail: "Minor spec change, pre-approved: a permission-pending source names whom it asks, and the date it asked once the request is sent. Done when `loft check` passes and the spec-change view is recorded."
+        state: open
+  - key: 01a1ad95-6a58-709d-8355-922a464e1ec1
+    id: s-pending-date
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-9241ef42365b
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Source definitions accept a pending source without a date"
+        detail: "Done when `asked.on` is optional in a definition, `Read a source` reports it absent, and the tests of the changed criterion pass."
+        state: open
+  - key: 01a1ad95-6a58-709d-8355-922b454672a0
+    id: s-prepared
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-92423ca3e098
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The prepared access method"
+        detail: "Done when a definition can name a prepared file with the script that made it, its SHA-256 and row count; ingest checks both before reading it from the downloads, never fetches it, and refuses a file that differs; with tests."
+        state: open
+  - key: 01a1ad95-6a58-709d-8355-922c88a3fa53
+    id: s-twompz
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-924305485317
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "2MPZ as a prepared source"
+        detail: "Done when `scripts/fetch-twompz.py` is in the repository (writing to the downloads), the 2MPZ definition reads `twompz.csv.gz` from Univ/downloads/univ-ingest/twompz with its SHA-256 and 934,175 rows, its matching pairs are in `rules/matching.yaml`, and a fixture test reads it."
+        state: open
+  - key: 01a1ad95-6a58-709d-8355-922dc52e5afd
+    id: s-gama-wise
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-9244dcaea048
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "GAMA DR4 and WISE × SuperCOSMOS in sources/, fetched"
+        detail: "Done when both definitions are in `sources/` as permission pending without a date, with their matching pairs and fixture tests, and both are fetched into the downloads (WISE 1.7 GB) with their row counts checked."
+        state: open

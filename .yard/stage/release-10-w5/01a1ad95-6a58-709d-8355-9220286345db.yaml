@@ -1,0 +1,83 @@
+key: 01a1ad95-6a58-709d-8355-9220286345db
+id: w5-folder-audit
+versions:
+  - key: 01a1ad95-6a58-709d-8355-9237da93704b
+    at: 2026-11-05T21:20:12Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "The new download folder breaks nothing"
+    goal: "Every reader of Univ Ingest's downloads finds them in Univ/downloads/univ-ingest, and every writer puts new ones there"
+    status: active
+blocks:
+  - key: 01a1ad95-6a58-709d-8355-922504410caf
+    id: a-readers
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-923c5ff99d96
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Find every reader and writer of the downloads"
+        detail: "Done when every path to the download cache is listed and checked: the CLI, the release check and provenance, publish and prune, xtask, scripts, tests run by hand, docs, memory, and the files in the downloads themselves."
+        state: active
+      - key: 01a1ad95-8948-722b-b470-464a5e9bf59f
+        at: 2026-11-05T21:20:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Find every reader and writer of the downloads"
+        detail: |-
+          One path into the downloads: `--cache` of fetch, normalize, match, tiles and build (default `../downloads/univ-ingest`, or `UNIV_INGEST_CACHE`). Everything that reads them gets it from there: acquisition, provenance, the release's source rows and its check.
+
+          Unaffected, since their folders did not move:
+          - publish and prune: build, state, wrangler;
+          - xtask: `serve`, `explore`, the benches and `integration` use wrangler or the fixture state; `science` reads a built release;
+          - `scripts/r2-batch.mjs`;
+          - the explorer.
+
+          No file in the downloads, the id state or the built releases records the old path. No memory names it. Docs are updated. The hand-run tests in `grids.rs` and `outlines_real.rs` read it through `cache_dir()`, which follows the new default. All non-ignored tests use their own temporary caches.
+
+          One limit, the same as before the move: the default is relative, so commands run from the repository root. A git worktree elsewhere needs `UNIV_INGEST_CACHE` set.
+
+          To write the new folder: the 2MPZ script, when it enters the repository in the next stage.
+        state: done
+  - key: 01a1ad95-6a58-709d-8355-922660b20f9f
+    id: a-hand-tests
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-923dae062110
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Run the hand-run tests that read the real downloads"
+        detail: "Done when `grids::full_cached_files_parse` and the `outlines_real` tests pass reading /Users/admin/Locap/Univ/downloads/univ-ingest by default."
+        state: open
+      - key: 01a1ad95-8948-722b-b470-464b27c2b667
+        at: 2026-11-05T21:20:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Run the hand-run tests that read the real downloads"
+        detail: "Done when `grids::full_cached_files_parse` and the `outlines_real` tests pass reading /Users/admin/Locap/Univ/downloads/univ-ingest by default."
+        state: active
+  - key: 01a1ad95-6a58-709d-8355-9227498b0dac
+    id: a-fetch-writes
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-923e4bf0501d
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "A fetch writes to the new folder"
+        detail: "Done when a real fetch (2dFGRS's, in the next stage) lands its chunks and provenance in Univ/downloads/univ-ingest and nothing in univ-server/.cache."
+        state: open

@@ -3,7 +3,7 @@ key: 01a1ab1d-6f6e-7690-98b8-06e0487fa1be
 branch: "stage/release-10-w5"
 base: "develop"
 title: "stage/release-10-w5"
-revision: 7
+revision: 9
 opened:
   at: 2026-11-05T09:49:55Z
   revision: 1
@@ -13,6 +13,16 @@ opened:
 stages:
   - key: 01a1ab1d-6f6e-7690-98b8-06e1748740f6
     id: w5
+  - key: 01a1ad95-6a58-709d-8355-9220286345db
+    id: w5-folder-audit
+  - key: 01a1ad95-6a58-709d-8355-92216d289553
+    id: w5-sources
+  - key: 01a1ad95-6a58-709d-8355-9222678d049b
+    id: w5-build
+  - key: 01a1ad95-6a58-709d-8355-9223e802e095
+    id: w5-publish
+  - key: 01a1ad95-6a58-709d-8355-922452353fb6
+    id: w5-close
 submissions:
   - key: 01a1ab1d-b09b-7278-b15d-7b8ff22731fd
     blocks:
@@ -82,6 +92,16 @@ acts:
       session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
   - at: 2026-11-05T11:59:52Z
     revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T21:20:12Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T21:20:20Z
+    revision: 9
     by:
       host: claude-code
       session: "0dff9621-d0e9-418a-9aee-e82062f9f784"

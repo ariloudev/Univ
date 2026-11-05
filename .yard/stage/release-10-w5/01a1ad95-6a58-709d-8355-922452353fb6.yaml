@@ -1,0 +1,52 @@
+key: 01a1ad95-6a58-709d-8355-922452353fb6
+id: w5-close
+versions:
+  - key: 01a1ad95-6a58-709d-8355-923b108fa468
+    at: 2026-11-05T21:20:12Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Close W5"
+    goal: "A release note gives the counts per source and the shard sizes; /simplify and /code-review are done, the gate and integration green, the trace accepted, and W5 merged into product/release-10"
+    status: planned
+blocks:
+  - key: 01a1ad95-6a58-709d-8355-92328089e68f
+    id: c-note
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-9249eb723c38
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release note"
+        detail: "Counts per source, the shard sizes measured, the pending sources named."
+        state: open
+  - key: 01a1ad95-6a58-709d-8355-9233e6ab91d1
+    id: c-review
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-924a74984488
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "/simplify and /code-review, fixes"
+        detail: "Both run in parallel on W5's diff; findings fixed or skipped with a reason."
+        state: open
+  - key: 01a1ad95-6a58-709d-8355-92347fa4d376
+    id: c-gate
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-924bd8e8c144
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Gate, integration, trace, merge"
+        detail: "`cargo xtask check` and `cargo xtask integration` green, trace accepted, the log closed, merged `--no-ff` into product/release-10."
+        state: open

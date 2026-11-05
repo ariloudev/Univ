@@ -1,0 +1,39 @@
+key: 01a1ad95-6a58-709d-8355-9222678d049b
+id: w5-build
+versions:
+  - key: 01a1ad95-6a58-709d-8355-92397db61a6d
+    at: 2026-11-05T21:20:12Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build release 10"
+    goal: "Release 10 is built from every source, and `cargo xtask science` passes on it"
+    status: planned
+blocks:
+  - key: 01a1ad95-6a58-709d-8355-922e66bdea76
+    id: b-approve
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-9245cf1feb40
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The owner approves the full build"
+        detail: "Asked on Yard, with the sources, the expected memory and time, and what it writes."
+        state: open
+  - key: 01a1ad95-6a58-709d-8355-922fc6c1582f
+    id: b-build
+    kind: task
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-924663cc65ee
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build release 10 and run the science checks"
+        detail: "Done when `univ-ingest build` makes release 10 and `cargo xtask science` passes on it."
+        state: open
