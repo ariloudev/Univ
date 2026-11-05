@@ -3,9 +3,10 @@ slug: keep-objects-in-d1-until-a-desi-sized-source
 title: "Keep every object in D1 until a DESI-sized source arrives"
 context: "Every object is a D1 row, and one release must fit D1's 10 GB. The first release's roughly five million objects fit; DESI DR1's eighteen million would not."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 01a19f25-5955-701e-b3cf-ddd2a8ccbb6f
   outcome: "Objects live in D1 under a monitored 10 GB cap, and a larger source first needs a decision on R2 shards."
+  successor: 01a1a931-2c8a-73a8-91f2-58f331400c25
 drivers:
   - key: 01a19f25-5955-701e-b3cf-ddd0a1254659
     kind: local

@@ -30,6 +30,31 @@ requirements:
         name: "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline."
       - key: 01a1a304-2788-77fb-8f0d-273c7a6188dc
         name: "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology."
+  - key: 01a1a931-2c8a-73a8-91f2-59053781d70f
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "divide a release's objects among object shards, each a D1 database, by the cell of the cell index that holds each object."
+    criteria:
+      - key: 01a1a931-2c8a-73a8-91f2-590689bd8862
+        name: "Each object is in exactly one object shard, with its catalogue entries, measurements, designations and cell."
+      - key: 01a1a931-2c8a-73a8-91f2-59076b96877f
+        name: "All the objects of one cell of the cell index are in one object shard."
+      - key: 01a1a931-2c8a-73a8-91f2-5908e94d50c7
+        name: "An object that is not placed is assigned to an object shard by its object id."
+      - key: 01a1a931-2c8a-73a8-91f2-59092cd5e331
+        name: "The catalogue database holds the release's sources, terms, structures and grids, and the object shard of every object id."
+      - key: 01a1a931-2c8a-73a8-91f2-590a9d7b0864
+        name: "The release manifest names each object shard with the cells it holds and its estimated size."
+  - key: 01a1a931-2c8a-73a8-91f2-590b8ae658df
+    statement:
+      form: unwanted
+      if: "the objects of one cell would exceed an object shard's budget"
+      system: "Univ Ingest"
+      shall: "refuse the build and name the cell, its object count and its estimated size."
+    criteria:
+      - key: 01a1a931-2c8a-73a8-91f2-590cebe0fc8d
+        name: "No release number is used up by the refused build."
   - key: 01a19f23-636f-72bd-b194-15238aca1cc9
     statement:
       form: ubiquitous

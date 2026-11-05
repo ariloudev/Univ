@@ -26,6 +26,8 @@ requirements:
         name: "Each uncertainty is typed as a symmetric error, an asymmetric interval, a stated interval with no probability, an upper or lower limit, a credible region, or none reported."
       - key: 01a19f22-2ad9-716e-876f-186959bf0d6e
         name: "A value published without an uncertainty is marked as having none reported, never as having zero uncertainty."
+      - key: 01a1a931-2c8a-73a8-91f2-59032696dddd
+        name: "An uncertainty a source states once for its whole catalogue, such as 2dFGRS's rms of 85 km/s or 2MPZ's photometric redshift scatter of 0.015, is given to each of its values as an estimated uncertainty that cites where it is stated."
   - key: 01a19f22-2ad9-716e-876f-186a829fb7fa
     statement:
       form: ubiquitous
@@ -52,6 +54,8 @@ requirements:
     criteria:
       - key: 01a19f22-2ad9-716e-876f-187089f08fa0
         name: "A heliocentric redshift is kept as measured."
+      - key: 01a1a931-2c8a-73a8-91f2-59042cfff012
+        name: "A barycentric redshift, such as DESI's, is kept as measured and named barycentric, never relabelled heliocentric."
       - key: 01a19f22-2ad9-716e-876f-187151a4aac5
         name: "The CMB-frame redshift uses the Planck 2018 dipole of 369.82 km/s toward galactic longitude 264.021° and latitude 48.253°."
       - key: 01a19f22-2ad9-716e-876f-1872f4143cd2
