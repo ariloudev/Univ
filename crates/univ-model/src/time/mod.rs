@@ -245,6 +245,13 @@ fn instant_on_tt(instant: &str, timescale: Timescale) -> Result<f64, TimeError> 
     }
 }
 
+/// Whether `text` is a calendar date written `YYYY-MM-DD`, proleptic Gregorian, with a year
+/// from 1 to 9999: `2026-02-31` is not one.
+#[must_use]
+pub fn is_calendar_date(text: &str) -> bool {
+    !text.contains('T') && Civil::parse(&format!("{text}T00:00:00")).is_some()
+}
+
 /// A calendar instant, proleptic Gregorian.
 struct Civil {
     year: i64,

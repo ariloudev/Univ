@@ -3,11 +3,13 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
+use univ_model::api::objects::MeasuredQuantity;
 use univ_model::geometry::Aabb;
 use univ_model::ids::SourceId;
 use univ_model::release::keys;
 use univ_model::release::rows::{
-    NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, SourceTermRow, StructureRow,
+    CatalogueUncertainty, NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, SourceTermRow,
+    StructureRow,
 };
 
 use super::objects::{json, snake};
@@ -22,25 +24,23 @@ pub struct SourceRows {
     pub sources: Vec<SourceRow>,
     pub payloads: Vec<PayloadRow>,
     pub normalizations: Vec<NormalizationRow>,
-    /// One for each source whose terms limit it to non-commercial use or whose permission is
-    /// pending.
+    /// One for each source whose terms limit it to non-commercial use, whose permission is
+    /// pending, or that states an uncertainty once for its whole catalogue.
     pub terms: Vec<SourceTermRow>,
 }
 
 /// The uncertainties `d` states once for its whole catalogue, as `source_terms` holds them.
-fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<serde_json::Value> {
+fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<CatalogueUncertainty> {
     d.normalization
         .redshifts
         .iter()
         .filter_map(|r| r.catalogue_error.as_ref())
-        .map(|c| {
-            serde_json::json!({
-                "quantity": "redshift",
-                "value": c.value,
-                "unit": c.unit,
-                "times_one_plus_z": c.times_one_plus_z,
-                "basis": c.basis,
-            })
+        .map(|c| CatalogueUncertainty {
+            quantity: MeasuredQuantity::Redshift,
+            value: c.value,
+            unit: c.unit,
+            times_one_plus_z: c.times_one_plus_z,
+            basis: c.basis.clone(),
         })
         .collect()
 }
@@ -85,8 +85,7 @@ pub fn source_rows(
                 release,
                 source: n,
                 non_commercial: d.terms.non_commercial.clone(),
-                permission_asked_of: permission.map(|p| p.asked_of.clone()),
-                permission_asked_on: permission.map(|p| p.asked_on.clone()),
+                permission: permission.map(json).transpose()?,
                 catalogue_uncertainties: (!uncertainties.is_empty())
                     .then(|| json(&uncertainties))
                     .transpose()?,

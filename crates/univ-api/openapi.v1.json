@@ -3261,7 +3261,8 @@
         "type": "object"
       },
       "PermissionRequest": {
-        "description": "A request for permission to redistribute a source, awaiting its answer.",
+        "additionalProperties": false,
+        "description": "A request for permission to redistribute a source, awaiting its answer: as its source\ndefinition writes it, as the release manifest records it, and as the API gives it.",
         "properties": {
           "asked_of": {
             "description": "Whom it was asked of.",

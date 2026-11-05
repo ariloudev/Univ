@@ -16,6 +16,8 @@ pub use normalization::{
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
 };
+pub use univ_model::api::sources::PermissionRequest;
+use univ_model::time::is_calendar_date;
 
 use std::collections::HashSet;
 use std::path::Path;
@@ -152,16 +154,6 @@ pub struct Redistribution {
     pub permission: Option<PermissionRequest>,
 }
 
-/// A request for permission to redistribute a source, awaiting its answer.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct PermissionRequest {
-    /// Whom it was asked of: a person, an archive or an address.
-    pub asked_of: String,
-    /// The date it was asked, as YYYY-MM-DD.
-    pub asked_on: String,
-}
-
 impl Redistribution {
     /// A pending status names its request, and no other status names one.
     fn check_permission(&self) -> Result<(), (String, String)> {
@@ -176,45 +168,27 @@ impl Redistribution {
                 "redistribution.permission".to_owned(),
                 format!("is given for the status {}", self.status.as_str()),
             )),
-            Some(request) => request.check(),
+            Some(request) => check_request(request),
             None => Ok(()),
         }
     }
 }
 
-impl PermissionRequest {
-    fn check(&self) -> Result<(), (String, String)> {
-        if self.asked_of.trim().is_empty() {
-            return Err((
-                "redistribution.permission.asked_of".to_owned(),
-                "is empty".to_owned(),
-            ));
-        }
-        if !is_iso_date(&self.asked_on) {
-            return Err((
-                "redistribution.permission.asked_on".to_owned(),
-                format!("{} is not a date as YYYY-MM-DD", self.asked_on),
-            ));
-        }
-        Ok(())
+/// Checks a request for permission: someone named, on a calendar date.
+fn check_request(request: &PermissionRequest) -> Result<(), (String, String)> {
+    if request.asked_of.trim().is_empty() {
+        return Err((
+            "redistribution.permission.asked_of".to_owned(),
+            "is empty".to_owned(),
+        ));
     }
-}
-
-/// Whether `text` is a calendar date written YYYY-MM-DD.
-fn is_iso_date(text: &str) -> bool {
-    let parts: Vec<&str> = text.split('-').collect();
-    let [y, m, d] = parts.as_slice() else {
-        return false;
-    };
-    let number = |p: &str, len: usize| {
-        (p.len() == len && p.bytes().all(|b| b.is_ascii_digit()))
-            .then(|| p.parse::<u32>().ok())
-            .flatten()
-    };
-    let (Some(_), Some(m), Some(d)) = (number(y, 4), number(m, 2), number(d, 2)) else {
-        return false;
-    };
-    (1..=12).contains(&m) && (1..=31).contains(&d)
+    if !is_calendar_date(&request.asked_on) {
+        return Err((
+            "redistribution.permission.asked_on".to_owned(),
+            format!("{} is not a date as YYYY-MM-DD", request.asked_on),
+        ));
+    }
+    Ok(())
 }
 
 /// How far the redistribution judgement has been reviewed. A local build reports the sources

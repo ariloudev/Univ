@@ -49,7 +49,7 @@ fn cmb(z: f64, uncertainty: Uncertainty) -> CmbRedshift {
     let value = quantity(z, Unit::Dimensionless, uncertainty);
     CmbRedshift {
         value,
-        heliocentric: value,
+        measured: value,
         dipole: DipoleModel::Planck2018,
         published: univ_model::redshift::RedshiftFrame::Heliocentric,
     }
@@ -126,7 +126,7 @@ fn a_redshift_distance_is_the_comoving_distance_of_the_cmb_frame_redshift() {
                     (d.unit, radial.measure()),
                     (Unit::Megaparsec, Measure::Comoving)
                 );
-                let heliocentric = release.table().distance(r.cmb.heliocentric.value.max(0.0));
+                let heliocentric = release.table().distance(r.cmb.measured.value.max(0.0));
                 assert!((d.value - heliocentric.unwrap()).abs() > 1e-3);
                 assert!(matches!(
                     steps(radial.chain())[..],

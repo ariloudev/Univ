@@ -77,7 +77,7 @@ fn a_redshift_published_as_cz_keeps_cz_and_derives_z_and_its_cmb_value() {
     let e = entry();
     let r = &e.redshifts[0];
     assert_eq!(r.velocity.unwrap().value, -300.0);
-    let z = r.cmb.heliocentric;
+    let z = r.cmb.measured;
     assert!((z.value + 300.0 / SPEED_OF_LIGHT).abs() < 1e-15);
     assert_eq!(
         z.uncertainty,

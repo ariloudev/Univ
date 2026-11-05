@@ -6,6 +6,7 @@ use std::sync::Arc;
 use serde_json::{Value, json};
 use univ_model::cosmology::Cosmology;
 use univ_model::release::read::Vocabulary;
+use univ_model::release::rows::CatalogueUncertainty;
 
 use crate::backend::{Backend, column, first, json_column};
 use crate::problem::{Problem, ProblemType};
@@ -45,18 +46,12 @@ pub async fn vocabulary<B: Backend>(backend: &B, release: u32) -> Result<Arc<Voc
     let uncertainties: Vec<(String, Vec<CatalogueUncertainty>)> =
         json_column(&row, "uncertainties")?;
     let vocabulary = Vocabulary::new(release, cosmology, ranking_rule, terms, chains, sources)
-        .with_catalogue_uncertainties(uncertainties.into_iter().flat_map(|(source, each)| {
-            each.into_iter()
-                .map(move |u| (source.clone(), u.quantity, u.basis))
-        }));
+        .with_catalogue_uncertainties(
+            uncertainties
+                .into_iter()
+                .flat_map(|(source, each)| each.into_iter().map(move |u| (source.clone(), u))),
+        );
     Ok(backend.kept().vocabularies.keep(release, vocabulary))
-}
-
-/// One uncertainty a source states for its whole catalogue, as `source_terms` holds it.
-#[derive(serde::Deserialize)]
-struct CatalogueUncertainty {
-    quantity: String,
-    basis: String,
 }
 
 fn unreadable(why: &str) -> Problem {

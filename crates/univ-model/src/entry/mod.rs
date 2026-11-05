@@ -92,7 +92,7 @@ impl Redshift {
         direction: Vec3,
         correction: &CmbCorrection,
     ) -> Result<Self, EntryError> {
-        Self::measured_in(
+        Self::measured(
             RedshiftFrame::Heliocentric,
             measured,
             kind,
@@ -102,30 +102,14 @@ impl Redshift {
         )
     }
 
-    /// A redshift relative to the Solar System barycentre, as DESI publishes it, moved to the
-    /// CMB frame as a heliocentric one is and kept named barycentric.
+    /// A redshift measured in `frame`, heliocentric or barycentric (as DESI publishes it),
+    /// published as z or as a velocity cz, moved to the CMB frame by `correction` toward the
+    /// ICRS unit vector `direction` and kept named in its frame.
     ///
     /// # Errors
     ///
-    /// As [`Self::heliocentric`].
-    pub fn barycentric(
-        measured: Quantity,
-        kind: RedshiftKind,
-        kind_of_value: KindOfValue,
-        direction: Vec3,
-        correction: &CmbCorrection,
-    ) -> Result<Self, EntryError> {
-        Self::measured_in(
-            RedshiftFrame::Barycentric,
-            measured,
-            kind,
-            kind_of_value,
-            direction,
-            correction,
-        )
-    }
-
-    fn measured_in(
+    /// As [`Self::heliocentric`], and on a frame neither heliocentric nor barycentric.
+    pub fn measured(
         frame: RedshiftFrame,
         measured: Quantity,
         kind: RedshiftKind,

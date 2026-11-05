@@ -324,6 +324,7 @@ pub(super) fn check(
             &table,
             &format!("normalization.redshifts[{i}]"),
             r,
+            normalization.redshifts.len() == 1,
         )?);
     }
     for (i, d) in normalization.distances.iter().enumerate() {
@@ -373,6 +374,7 @@ fn check_redshift<'a>(
     table: &Columns<'_>,
     at: &str,
     r: &'a RedshiftReading,
+    alone: bool,
 ) -> Result<Vec<&'a str>, Problem> {
     blank(&format!("{at}.basis"), &r.basis)?;
     table.known(&format!("{at}.column"), &r.column)?;
@@ -407,6 +409,13 @@ fn check_redshift<'a>(
         c.read().map_err(|e| problem(&at, e.to_string()))?;
     }
     if let Some(c) = &r.catalogue_error {
+        if !alone {
+            return Err(problem(
+                format!("{at}.catalogue_error"),
+                "is given on one of several redshifts: each value of the source would be taken \
+                 as having it",
+            ));
+        }
         catalogue_error::check(
             &format!("{at}.catalogue_error"),
             c,

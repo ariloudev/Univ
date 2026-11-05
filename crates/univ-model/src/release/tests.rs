@@ -113,8 +113,7 @@ fn version_4_adds_the_source_terms_per_release() {
         "release",
         "source",
         "non_commercial",
-        "permission_asked_of",
-        "permission_asked_on",
+        "permission",
         "catalogue_uncertainties",
     ];
     let (declared, key) = declared("source_terms");

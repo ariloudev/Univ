@@ -51,7 +51,7 @@ fn an_rms_velocity_for_the_catalogue_is_each_velocitys_symmetric_error() {
         let cz = r.velocity.unwrap();
         assert_eq!(sigma(cz.uncertainty), 85.0);
         // The dimensionless z it was read as carries σz = σv / c.
-        let z = sigma(r.cmb.heliocentric.uncertainty);
+        let z = sigma(r.cmb.measured.uncertainty);
         assert!((z - 85.0 / SPEED_OF_LIGHT).abs() < 1e-12, "{z}");
     }
 }
@@ -71,7 +71,7 @@ fn a_scatter_per_one_plus_z_grows_with_each_redshift() {
     let n = normalize_body(&d, &fs::read(fixture_of(&d)).unwrap());
     assert_ne!(n.entries.len(), 0);
     for e in &n.entries {
-        let z = e.redshifts[0].cmb.heliocentric;
+        let z = e.redshifts[0].cmb.measured;
         let expected = 0.033 * (1.0 + z.value);
         assert!((sigma(z.uncertainty) - expected).abs() < 1e-15);
     }
@@ -107,5 +107,26 @@ fn a_catalogue_error_beside_an_error_column_or_scaled_on_a_velocity_is_refused()
     assert_eq!(
         refused_field(unbased),
         "normalization.redshifts[0].catalogue_error.basis"
+    );
+}
+
+#[test]
+fn a_catalogue_error_on_one_of_several_redshifts_is_refused() {
+    // Each value of the source would be taken as having it, whichever reading it came from.
+    let text = fs::read_to_string("../../sources/sixdfgs-dr3.yaml").unwrap();
+    let two = text
+        .replace(
+            "  redshifts:\n",
+            "  redshifts:\n    - { column: e_cz, frame: heliocentric, kind: spectroscopic, basis: \"b\" }\n",
+        )
+        .replace(
+            "      error: e_cz\n",
+            "      catalogue_error: { value: 85, unit: kilometre_per_second, basis: \"b\" }\n",
+        );
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("sixdfgs-dr3.yaml"), two).unwrap();
+    assert_eq!(
+        read_all(dir.path()).unwrap_err().field,
+        "normalization.redshifts[1].catalogue_error"
     );
 }

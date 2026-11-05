@@ -72,7 +72,8 @@ pub struct CmbRedshift {
     /// The redshift it was derived from, as measured, in the frame `published` names:
     /// heliocentric or barycentric. For a redshift published in the CMB frame, the heliocentric
     /// redshift derived back from it with `dipole`, only to compare it with heliocentric ones.
-    pub heliocentric: Quantity,
+    #[serde(alias = "heliocentric")]
+    pub measured: Quantity,
     pub dipole: DipoleModel,
     /// The frame its source published it in: heliocentric or barycentric, `value` then derived
     /// with `dipole`; or the CMB frame, `value` then the published redshift itself, with no
@@ -88,7 +89,7 @@ impl CmbRedshift {
     pub fn as_published(&self) -> Quantity {
         match self.published {
             RedshiftFrame::Cmb => self.value,
-            _ => self.heliocentric,
+            _ => self.measured,
         }
     }
 }
@@ -206,7 +207,7 @@ impl CmbCorrection {
         )?;
         Ok(CmbRedshift {
             value,
-            heliocentric: measured,
+            measured,
             dipole: self.model,
             published: frame,
         })
@@ -240,7 +241,7 @@ impl CmbCorrection {
         )?;
         Ok(CmbRedshift {
             value: published,
-            heliocentric,
+            measured: heliocentric,
             dipole: self.model,
             published: RedshiftFrame::Cmb,
         })
@@ -269,7 +270,7 @@ mod tests {
         let cmb = planck()
             .apply(z(0.01), RedshiftFrame::Heliocentric, direction)
             .unwrap();
-        (cmb.value.value - cmb.heliocentric.value) * SPEED_OF_LIGHT
+        (cmb.value.value - cmb.measured.value) * SPEED_OF_LIGHT
     }
 
     #[test]
@@ -291,10 +292,10 @@ mod tests {
         assert_eq!(cmb.published, RedshiftFrame::Cmb);
         // Its heliocentric redshift is derived back, and the correction takes it to the value.
         let again = planck()
-            .apply(cmb.heliocentric, RedshiftFrame::Heliocentric, direction)
+            .apply(cmb.measured, RedshiftFrame::Heliocentric, direction)
             .unwrap();
         assert!((again.value.value - 0.005).abs() < 1e-12);
-        assert!((cmb.heliocentric.value - 0.005).abs() * SPEED_OF_LIGHT > 100.0);
+        assert!((cmb.measured.value - 0.005).abs() * SPEED_OF_LIGHT > 100.0);
         let json = serde_norway::to_string(&cmb).unwrap();
         assert!(json.contains("published: cmb"), "{json}");
         let read: CmbRedshift = serde_norway::from_str(&json).unwrap();
@@ -348,7 +349,7 @@ mod tests {
         let cmb = planck()
             .apply(measured, RedshiftFrame::Heliocentric, [1.0, 0.0, 0.0])
             .unwrap();
-        assert_eq!(cmb.heliocentric, measured);
+        assert_eq!(cmb.measured, measured);
         assert_eq!(cmb.dipole, DipoleModel::Planck2018);
         let none = Quantity::new(0.02, Unit::Dimensionless, Uncertainty::NoneReported).unwrap();
         let cmb = planck()
@@ -368,7 +369,7 @@ mod tests {
             .apply(measured, RedshiftFrame::Heliocentric, direction)
             .unwrap();
         // Kept as measured, never relabelled heliocentric.
-        assert_eq!(bary.heliocentric, measured);
+        assert_eq!(bary.measured, measured);
         assert_eq!(bary.published, RedshiftFrame::Barycentric);
         assert_eq!(bary.as_published(), measured);
         // The CMB dipole is the barycentre's motion, applied as to a heliocentric value.

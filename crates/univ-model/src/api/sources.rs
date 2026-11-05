@@ -92,9 +92,11 @@ pub struct Terms {
     pub permission: Option<PermissionRequest>,
 }
 
-/// A request for permission to redistribute a source, awaiting its answer.
+/// A request for permission to redistribute a source, awaiting its answer: as its source
+/// definition writes it, as the release manifest records it, and as the API gives it.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
 pub struct PermissionRequest {
     /// Whom it was asked of.
     pub asked_of: String,

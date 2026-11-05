@@ -452,16 +452,16 @@ CREATE TABLE IF NOT EXISTS structure_details (
 
 -- The conditions of a source's terms beyond its status (version 4), source its sources.n,
 -- written only for a source that has one: the quoted clause limiting it to non-commercial use;
--- whom permission was asked of and when, while its status is permission_pending; and
--- catalogue_uncertainties, JSON array of the uncertainties the source states once for its whole
--- catalogue, each {"quantity", "value", "unit", "times_one_plus_z", "basis"}, which every value
--- of that quantity takes as an estimated uncertainty.
+-- permission, JSON {"asked_of", "asked_on"} of whom permission was asked of and when (YYYY-MM-DD),
+-- while its status is permission_pending; and catalogue_uncertainties, JSON array of the
+-- uncertainties the source states once for its whole catalogue, each {"quantity", "value",
+-- "unit", "times_one_plus_z", "basis"}, which every value of that quantity takes as an estimated
+-- uncertainty.
 CREATE TABLE IF NOT EXISTS source_terms (
   release INTEGER NOT NULL,
   source INTEGER NOT NULL,
   non_commercial TEXT,
-  permission_asked_of TEXT,
-  permission_asked_on TEXT,
+  permission TEXT,
   catalogue_uncertainties TEXT,
   PRIMARY KEY (release, source)
 ) WITHOUT ROWID;

@@ -83,8 +83,11 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
         .sources
         .iter()
         .filter_map(|s| {
-            let asked = s.permission_asked.as_ref()?;
-            Some(format!("{} (asked of {} on {})", s.id, asked.of, asked.on))
+            let asked = s.permission.as_ref()?;
+            Some(format!(
+                "{} (asked of {} on {})",
+                s.id, asked.asked_of, asked.asked_on
+            ))
         })
         .collect();
     if !pending.is_empty() {

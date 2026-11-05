@@ -13,7 +13,7 @@ use univ_model::redshift::CmbCorrection;
 use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
     CellIndex, CellSpaceInfo, Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestSource,
-    NotIndexed, PermissionAsked, RecordedFile, ReleaseManifest, Versions,
+    NotIndexed, RecordedFile, ReleaseManifest, Versions,
 };
 use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseRow};
 use univ_model::release::{Row, SCHEMA_VERSION, keys};
@@ -449,14 +449,7 @@ fn manifest_sources(
             redistribution: d.redistribution.status.as_str().to_owned(),
             review: d.redistribution.review.as_str().to_owned(),
             non_commercial: d.terms.non_commercial.clone(),
-            permission_asked: d
-                .redistribution
-                .permission
-                .as_ref()
-                .map(|p| PermissionAsked {
-                    of: p.asked_of.clone(),
-                    on: p.asked_on.clone(),
-                }),
+            permission: d.redistribution.permission.clone(),
             entries: per_source.get(&d.id).copied().unwrap_or(0),
         })
         .collect()

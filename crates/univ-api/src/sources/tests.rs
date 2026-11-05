@@ -85,7 +85,7 @@ fn the_terms_give_the_redistribution_status_and_any_non_commercial_clause() {
     db.exec(
         "UPDATE sources SET redistribution = 'permission_pending' WHERE release = 2 AND n = 0; \
          INSERT INTO source_terms VALUES (2, 0, 'Tabular data are under CC-BY-NC licence', \
-         'WFAU, mar@roe.ac.uk', '2026-11-05', NULL);",
+         '{\"asked_of\":\"WFAU, mar@roe.ac.uk\",\"asked_on\":\"2026-11-05\"}', NULL);",
     );
     let pending = body(&get(&db, "/v1/sources/hipparcos-2007"));
     let terms = &pending["terms"];

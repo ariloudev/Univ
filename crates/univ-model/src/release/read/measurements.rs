@@ -58,13 +58,12 @@ pub(super) fn measurement(
         .map(|x| c.quantity(x, c.typed("unit")?, ""))
         .transpose()?;
     let extra: Map<String, Value> = c.json_opt("extra")?.unwrap_or_default();
-    let uncertainty_basis = (quantity == MeasuredQuantity::Redshift)
-        .then(|| v.catalogue_uncertainty(&source, "redshift"))
-        .flatten()
-        .map(|basis| UncertaintyBasis {
-            kind_of_value: KindOfValue::Estimated,
-            basis: basis.to_owned(),
-        });
+    let uncertainty_basis =
+        v.catalogue_uncertainty(&source, quantity)
+            .map(|basis| UncertaintyBasis {
+                kind_of_value: KindOfValue::Estimated,
+                basis: basis.to_owned(),
+            });
     let mut record = MeasurementRecord {
         entry,
         source,

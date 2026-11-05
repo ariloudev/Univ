@@ -70,7 +70,7 @@ fn a_redshift_whose_source_states_one_uncertainty_for_its_catalogue_is_estimated
     // A fresh backend: the vocabulary of a release is read once and kept.
     let db = self::db();
     db.exec(&format!(
-        "INSERT INTO source_terms SELECT 2, n, NULL, NULL, NULL, \
+        "INSERT INTO source_terms SELECT 2, n, NULL, NULL, \
          '[{{\"quantity\":\"redshift\",\"value\":85.0,\"unit\":\"kilometre_per_second\",\
          \"times_one_plus_z\":false,\"basis\":\"Colless et al. 2001: rms 85 km/s\"}}]' \
          FROM sources WHERE release = 2 AND id = '{source}';"

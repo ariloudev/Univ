@@ -392,15 +392,27 @@ row! {
         /// The clause of its terms that allows only non-commercial use, quoted; none when its
         /// terms allow commercial use.
         non_commercial: Option<String>,
-        /// Whom permission to redistribute it was asked of, while its status is
-        /// `permission_pending`.
-        permission_asked_of: Option<String>,
-        /// The date that permission was asked, YYYY-MM-DD.
-        permission_asked_on: Option<String>,
-        /// JSON array of the uncertainties it states once for its whole catalogue, each
-        /// `{"quantity", "value", "unit", "times_one_plus_z", "basis"}`; none when it has none.
+        /// JSON of the request for permission to redistribute it,
+        /// [`crate::api::sources::PermissionRequest`], while its status is `permission_pending`.
+        permission: Option<String>,
+        /// JSON array of the uncertainties it states once for its whole catalogue, each a
+        /// [`CatalogueUncertainty`]; none when it has none.
         catalogue_uncertainties: Option<String>,
     }
+}
+
+/// An uncertainty a source states once for its whole catalogue, which every value of
+/// `quantity` from it takes as an estimated uncertainty, as `source_terms` holds it.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CatalogueUncertainty {
+    pub quantity: crate::api::objects::MeasuredQuantity,
+    pub value: f64,
+    pub unit: crate::units::Unit,
+    /// Whether it is stated per unit of (1 + z), as σz / (1 + z) is.
+    pub times_one_plus_z: bool,
+    /// Where the source states it, quoted or cited.
+    pub basis: String,
 }
 
 /// Every table a release writes rows to, in the order its D1 files load them.

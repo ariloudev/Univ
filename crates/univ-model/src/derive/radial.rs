@@ -349,12 +349,12 @@ impl Release {
             },
             RedshiftFrame::Barycentric => Transformation::ComovingFromBarycentricRedshift {
                 cmb_redshift: z.value,
-                barycentric_redshift: cmb.heliocentric.value,
+                barycentric_redshift: cmb.measured.value,
                 dipole: cmb.dipole,
             },
             _ => Transformation::ComovingFromRedshift {
                 cmb_redshift: z.value,
-                heliocentric_redshift: cmb.heliocentric.value,
+                heliocentric_redshift: cmb.measured.value,
                 dipole: cmb.dipole,
             },
         };

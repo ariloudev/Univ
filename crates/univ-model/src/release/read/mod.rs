@@ -15,8 +15,9 @@ mod placed;
 
 use std::collections::{BTreeMap, HashMap};
 
-use crate::api::objects::ObjectRecord;
+use crate::api::objects::{MeasuredQuantity, ObjectRecord};
 use crate::cosmology::Cosmology;
+use crate::release::rows::CatalogueUncertainty;
 use columns::Columns;
 
 /// One D1 row: column names to numbers, strings and nulls.
@@ -33,9 +34,9 @@ pub struct Vocabulary {
     sources: HashMap<i64, String>,
     term_ids: HashMap<String, i64>,
     source_ns: HashMap<String, i64>,
-    /// The basis of each uncertainty a source states once for its whole catalogue, by the
-    /// source's id and the quantity it applies to, such as `redshift`.
-    catalogue_uncertainties: HashMap<(String, String), String>,
+    /// Each uncertainty a source states once for its whole catalogue, by the source's id: the
+    /// quantity it applies to and where the source states it.
+    catalogue_uncertainties: HashMap<String, Vec<(MeasuredQuantity, String)>>,
 }
 
 impl Vocabulary {
@@ -71,22 +72,26 @@ impl Vocabulary {
     #[must_use]
     pub fn with_catalogue_uncertainties(
         mut self,
-        uncertainties: impl IntoIterator<Item = (String, String, String)>,
+        uncertainties: impl IntoIterator<Item = (String, CatalogueUncertainty)>,
     ) -> Self {
-        self.catalogue_uncertainties = uncertainties
-            .into_iter()
-            .map(|(source, quantity, basis)| ((source, quantity), basis))
-            .collect();
+        for (source, u) in uncertainties {
+            self.catalogue_uncertainties
+                .entry(source)
+                .or_default()
+                .push((u.quantity, u.basis));
+        }
         self
     }
 
     /// Where source `source` states the one uncertainty of its whole catalogue for `quantity`,
     /// when it states one.
     #[must_use]
-    pub fn catalogue_uncertainty(&self, source: &str, quantity: &str) -> Option<&str> {
+    pub fn catalogue_uncertainty(&self, source: &str, quantity: MeasuredQuantity) -> Option<&str> {
         self.catalogue_uncertainties
-            .get(&(source.to_owned(), quantity.to_owned()))
-            .map(String::as_str)
+            .get(source)?
+            .iter()
+            .find(|(q, _)| *q == quantity)
+            .map(|(_, basis)| basis.as_str())
     }
 
     #[must_use]
