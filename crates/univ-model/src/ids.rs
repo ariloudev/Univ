@@ -155,15 +155,12 @@ impl Designation {
     /// # Errors
     ///
     /// Fails on an empty or blank identifier.
-    pub fn new(source: SourceId, identifier: impl Into<String>) -> Result<Self, IdError> {
+    pub fn new(source: SourceId, identifier: impl Into<Arc<str>>) -> Result<Self, IdError> {
         let identifier = identifier.into();
         if identifier.trim().is_empty() {
             Err(IdError::EmptyIdentifier(source))
         } else {
-            Ok(Self {
-                source,
-                identifier: identifier.into(),
-            })
+            Ok(Self { source, identifier })
         }
     }
 }

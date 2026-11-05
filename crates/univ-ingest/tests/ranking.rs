@@ -31,7 +31,7 @@ fn object(entries: Vec<CatalogueEntry>) -> Object {
                 entry,
                 resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     )
 }
 

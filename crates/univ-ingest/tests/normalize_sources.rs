@@ -105,7 +105,7 @@ fn twompp_rows_keep_their_reference_and_no_group() {
     assert_eq!(g.redshifts[0].velocity.as_deref().unwrap().value, 2_429.0);
     assert_eq!(g.redshifts[0].kind_of_value, KindOfValue::Measured);
     assert_eq!(
-        (g.group_id.as_deref(), g.flags.get("Cln").unwrap().as_str()),
+        (g.group_id.as_deref(), g.flags.get("Cln").unwrap()),
         (None, "0")
     );
     // Row 4: 235.8802917 -87.6785278 15433127-8740427 12651 300 11.96.
@@ -208,8 +208,8 @@ fn mcconnachie_keeps_each_modulus_beside_the_distance_derived_from_it() {
     assert_eq!(d.kind_of_value, KindOfValue::Measured);
     assert_eq!(
         (
-            cma.flags.get("u_(m-M)").unwrap().as_str(),
-            cma.flags.get("f_HRV").unwrap().as_str()
+            cma.flags.get("u_(m-M)").unwrap(),
+            cma.flags.get("f_HRV").unwrap()
         ),
         ("b", "c")
     );
@@ -360,7 +360,7 @@ fn the_hipparcos_crossmatch_names_each_gaia_source_by_its_hip_number() {
     // Row 3: 5769897140331951744, 71404, 0.0036472648, 72.
     let s = entry(&n, "5769897140331951744");
     assert_eq!(
-        (s.name.as_deref(), s.flags.get("xm_flag").unwrap().as_str()),
+        (s.name.as_deref(), s.flags.get("xm_flag").unwrap()),
         (Some("71404"), "72")
     );
 }
@@ -470,8 +470,8 @@ fn erass1_clusters_join_the_optical_redshift_and_take_each_rows_redshift_kind() 
     );
     assert_eq!(
         (
-            c.flags.get("BEST_Z_TYPE").unwrap().as_str(),
-            c.flags.get("PCONT").unwrap().as_str()
+            c.flags.get("BEST_Z_TYPE").unwrap(),
+            c.flags.get("PCONT").unwrap()
         ),
         ("photo_z", "0.006")
     );

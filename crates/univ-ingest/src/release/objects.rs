@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use serde::Serialize;
 use univ_model::cosmology::Cosmology;
-use univ_model::derive::{DerivedPosition, MODEL_VERSION};
+use univ_model::derive::DerivedPosition;
 use univ_model::ids::{Designation, SourceId};
 use univ_model::ledger::Ledger;
 use univ_model::object::{FractionalUncertainty, MeasurementRef, Object, Placement};
@@ -175,7 +175,7 @@ impl<'a> ObjectWriter<'a> {
             w.add(&DesignationRow {
                 release,
                 source: self.numbering.sources.n(&d.source),
-                identifier: d.identifier.to_string(),
+                identifier: String::from(&*d.identifier),
                 object_id: id,
             })?;
         }
@@ -347,8 +347,8 @@ impl<'a> ObjectWriter<'a> {
         {
             lost.push("its native value or assumed cosmology");
         }
-        if position.cosmology() != self.cosmology || position.model_version() != MODEL_VERSION {
-            lost.push("the release cosmology or model version");
+        if position.cosmology() != self.cosmology {
+            lost.push("the release cosmology");
         }
         if Some(direction.published_in()) != entry_frame
             || Some(direction.icrs().ra) != row.ra

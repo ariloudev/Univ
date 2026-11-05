@@ -122,7 +122,7 @@ pub fn object(
                 entry,
                 resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     );
     let Some(m) = preferred else {
         return ReleaseObject {

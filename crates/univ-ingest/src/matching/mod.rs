@@ -31,7 +31,9 @@ use univ_model::position::Vec3;
 /// The objects resolved from a set of entries.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Matched {
-    pub objects: Vec<Object>,
+    /// The objects, each boxed where it is made: a release object holds its object boxed, so
+    /// it is never moved again, and the objects are never held twice.
+    pub objects: Vec<Box<Object>>,
     pub report: MatchReport,
 }
 
@@ -39,7 +41,7 @@ impl Matched {
     /// The object holding the entry `designation`, by a scan of the objects.
     #[must_use]
     pub fn find(&self, designation: &Designation) -> Option<&Object> {
-        self.position_of(designation).map(|i| &self.objects[i])
+        self.position_of(designation).map(|i| &*self.objects[i])
     }
 
     /// The place in `objects` of the object holding `designation`, by a scan of the objects.

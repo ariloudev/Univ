@@ -108,11 +108,8 @@ impl Serialize for DerivedPosition {
         s.serialize_field("distance", &self.distance)?;
         s.serialize_field("measure", &self.measure)?;
         s.serialize_field("icrs", &self.icrs)?;
-        s.serialize_field("galactic", &from_icrs(Frame::Galactic).apply(self.icrs))?;
-        s.serialize_field(
-            "supergalactic",
-            &from_icrs(Frame::Supergalactic).apply(self.icrs),
-        )?;
+        s.serialize_field("galactic", &self.rotated(Frame::Galactic))?;
+        s.serialize_field("supergalactic", &self.rotated(Frame::Supergalactic))?;
         s.serialize_field("cosmology", &*self.cosmology)?;
         s.serialize_field("chain", &self.chain())?;
         s.serialize_field("model_version", MODEL_VERSION)?;
@@ -124,19 +121,17 @@ impl DerivedPosition {
     /// The position `radial` along `direction`, recording each step after the radial chain.
     #[must_use]
     pub fn new(direction: Direction, radial: Radial) -> Self {
-        let cosmology = Arc::clone(radial.shared_cosmology());
-        let radial_chain: Box<[Step]> = radial.chain().into();
-        let (native, assumed, distance, measure) = radial.into_parts();
-        let icrs = scaled(direction.icrs.unit_vector(), distance.value);
+        let parts = radial.into_parts();
+        let icrs = scaled(direction.icrs.unit_vector(), parts.distance.value);
         Self {
             direction,
-            native,
-            assumed,
-            distance,
-            measure,
+            native: parts.native,
+            assumed: parts.assumed,
+            distance: parts.distance,
+            measure: parts.measure,
             icrs,
-            cosmology,
-            radial_chain,
+            cosmology: parts.cosmology,
+            radial_chain: parts.chain.into_boxed_slice(),
         }
     }
 
@@ -173,7 +168,7 @@ impl DerivedPosition {
     pub fn cartesian(&self, frame: Frame) -> Option<Vec3> {
         match frame {
             Frame::Icrs => Some(self.icrs),
-            Frame::Galactic | Frame::Supergalactic => Some(from_icrs(frame).apply(self.icrs)),
+            Frame::Galactic | Frame::Supergalactic => Some(self.rotated(frame)),
             _ => None,
         }
     }
@@ -229,9 +224,9 @@ impl DerivedPosition {
         chain
     }
 
-    #[must_use]
-    pub fn model_version(&self) -> &'static str {
-        MODEL_VERSION
+    /// The ICRS vector rotated to `frame`'s axes.
+    fn rotated(&self, frame: Frame) -> Vec3 {
+        from_icrs(frame).apply(self.icrs)
     }
 }
 

@@ -77,7 +77,7 @@ fn entry(
     Ok(EntryRecord {
         entry: number,
         source: own.source.as_str().to_owned(),
-        identifier: own.identifier.to_string(),
+        identifier: String::from(&*own.identifier),
         name: c.text_opt("name")?.map(str::to_owned),
         resolved_by: resolution(&c, own, &extra, heads)?,
         position: position(&c, &extra)?,
@@ -124,7 +124,7 @@ fn resolution(
             scheme: c.term("scheme")?.to_owned(),
             identifier: c
                 .text_opt("shared")?
-                .map_or_else(|| own.identifier.to_string(), str::to_owned),
+                .map_or_else(|| String::from(&*own.identifier), str::to_owned),
             via: via(c, extra, heads)?,
             confidence: confidence(c)?,
         },

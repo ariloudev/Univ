@@ -13,7 +13,7 @@ use simulated::{designation, matching_rules, ranking_rules, with_cz};
 use univ_ingest::matching::{MatchingRules, match_entries};
 use univ_ingest::ranking::rank_all;
 use univ_model::derive::Release;
-use univ_model::entry::CatalogueEntry;
+use univ_model::entry::{CatalogueEntry, Flags};
 use univ_model::object::{LineOfSight, MatchMethod, MeasurementRef, Object, Resolution};
 
 const IC5052: [(&str, &str); 8] = [
@@ -47,7 +47,12 @@ fn recorded() -> Vec<CatalogueEntry> {
     entries
 }
 
-fn holding<'a>(objects: &'a [Object], source: &str, id: &str) -> &'a Object {
+/// `flags` without the flags `names`.
+fn without(flags: &Flags, names: &[&str]) -> Flags {
+    flags.iter().filter(|(n, _)| !names.contains(n)).collect()
+}
+
+fn holding<'a>(objects: &'a [Box<Object>], source: &str, id: &str) -> &'a Object {
     objects
         .iter()
         .find(|o| o.entry(&designation(source, id)).is_some())
@@ -211,8 +216,7 @@ fn a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_a
     let entries: Vec<_> = recorded()
         .into_iter()
         .map(|mut e| {
-            e.flags.remove("a26");
-            e.flags.remove("Riso");
+            e.flags = without(&e.flags, &["a26", "Riso"]);
             e
         })
         .collect();
@@ -232,7 +236,7 @@ fn a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_a
             if e.designation == designation("updated-nearby-galaxies", "IC5052") {
                 e.velocity = None;
             }
-            e.flags.remove("Riso");
+            e.flags = without(&e.flags, &["Riso"]);
             e
         })
         .collect();

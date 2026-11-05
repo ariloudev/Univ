@@ -58,7 +58,8 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             assert_eq!(read.resolved_by, *e.resolved_by, "{}", o.id.get());
             assert_eq!(read.name.as_deref(), entry.name.as_deref());
             assert_eq!(read.group_id.as_deref(), entry.group_id.as_deref());
-            assert_eq!(read.flags, entry.flags);
+            let flags = read.flags.iter().map(|(n, v)| (n.as_str(), v.as_str()));
+            assert!(flags.eq(entry.flags.iter()));
             assert_eq!(read.references.as_slice(), &*entry.references);
             researched += usize::from(!read.references.is_empty());
             assert_eq!(

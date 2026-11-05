@@ -49,8 +49,8 @@ pub struct Inputs<'a> {
 
 /// An object of the release: its id, the object and its derived position, if placed.
 ///
-/// The object is boxed so that it is not moved again when its release object is made: the
-/// objects, boxed before placement, and the release objects are then never both held whole.
+/// The object is boxed, as matching made it, so that it is not moved again when its release
+/// object is made.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ReleaseObject {
     pub id: ObjectId,
@@ -154,7 +154,6 @@ pub fn cross_match_watched(
         assigned.replaced.len()
     ))?;
 
-    let objects: Vec<Box<Object>> = objects.into_iter().map(Box::new).collect();
     let mut placed = Vec::with_capacity(objects.len());
     for (mut object, id) in objects.into_iter().zip(ids) {
         let position = place(&mut object, inputs.release, &basis.ranking);
@@ -226,7 +225,7 @@ pub fn cross_match_watched(
 /// issued and replaced. The assignment's own objects are let go, a designation of every entry:
 /// the release objects hold the ids.
 fn ids_of(
-    objects: &[Object],
+    objects: &[Box<Object>],
     state: &State,
     ledger: &mut Ledger,
     release: &str,

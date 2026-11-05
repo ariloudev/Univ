@@ -24,7 +24,7 @@ fn ranked(entries: Vec<CatalogueEntry>) -> Object {
                 entry,
                 resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     );
     rank(&mut object, &ranking_rules(), &Release::planck_2018());
     object

@@ -34,7 +34,7 @@ fn recorded() -> Vec<CatalogueEntry> {
     entries
 }
 
-fn holding<'a>(objects: &'a [Object], source: &str, id: &str) -> &'a Object {
+fn holding<'a>(objects: &'a [Box<Object>], source: &str, id: &str) -> &'a Object {
     objects
         .iter()
         .find(|o| o.entry(&designation(source, id)).is_some())

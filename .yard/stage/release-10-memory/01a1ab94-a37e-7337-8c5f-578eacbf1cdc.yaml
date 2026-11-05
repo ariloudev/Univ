@@ -19,6 +19,15 @@ versions:
     title: "Make ingest leaner"
     goal: "Univ Ingest builds release 10's 43 million entries within the machine's memory, with the same release out as before"
     status: active
+  - key: 01a1ad14-03fb-7467-b689-4d94d832f759
+    at: 2026-11-05T18:58:52Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Make ingest leaner"
+    goal: "Univ Ingest builds release 10's 43 million entries within the machine's memory, with the same release out as before"
+    status: done
 blocks:
   - key: 01a1abb1-1d37-7718-b264-83b353843a1b
     id: memory-plan
@@ -229,6 +238,15 @@ blocks:
         title: "Compact objects"
         detail: "Done when the inline cost of objects and their entries is cut (ReleaseObject 744 B, ObjectEntry 400 B, Object 400 B) with the same fixture release and the peak measured. Mimalloc, found on the way, is recorded in the note 'The allocator held a third of the peak'."
         state: active
+      - key: 01a1acee-95cb-7191-af7b-969a11a4361e
+        at: 2026-11-05T18:17:59Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Compact objects"
+        detail: "Release objects box their object, boxed before placement (`9d22266`, −143 B per entry); an object's five lists are thin vectors (`8c8f0e5`, −73); the preferred distance's runner-up is boxed (`760046e`, −165); the derived position shares the cosmology and works out its galactic and supergalactic vectors (`013971f`). An entry's lists are thin and its name and group id boxed strings (`df099fd`, −134); a redshift's cz is boxed (`ac01439`, −27); an anchor's resolution is held as nothing (`47e0610`, −109); a designation's identifier is shared (`f8b9424`, −231). Fixture release byte-identical after each."
+        state: done
   - key: 01a1abb4-e013-7643-8968-691ead7aee95
     id: m-id-hashes
     kind: task
@@ -242,6 +260,15 @@ blocks:
         title: "Id maps keyed by 128-bit hashes"
         detail: "Done when id assignment keys its maps by hashes, with the same fixture release and the peak measured."
         state: open
+      - key: 01a1acee-95cb-7191-af7b-969b61c6f75c
+        at: 2026-11-05T18:17:59Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Id maps keyed by 128-bit hashes"
+        detail: "Overtaken. With a designation's identifier shared (`f8b9424`), an id map's key is 32 bytes with no allocation of its own, so hashed keys would save little. Letting the id assignment's objects go (`cda0786`) removed the copy that did cost."
+        state: dropped
   - key: 01a1abb4-e013-7643-8968-691f8d5bd8e0
     id: m-full
     kind: task
@@ -393,3 +420,31 @@ blocks:
 
           **Wave end** (needs your approval): `/simplify` and `/code-review`, the full gate, then the 21.4 M-entry rehearsal and the 43 M projection from two measured points.
         tone: info
+  - key: 01a1acee-95cb-7191-af7b-969931d36565
+    id: memory-result
+    kind: note
+    versions:
+      - key: 01a1acee-95cb-7191-af7b-969c2f6a764c
+        at: 2026-11-05T18:17:59Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Where the cuts stop"
+        markdown: |-
+          **DESI DR1 alone** (15,825,713 entries, empty state): **28.05 → 21.72 GB**, 1,772 → **1,372 B per entry**.
+
+          **Focused run** (2,432,397 entries, empty state): 5.49 GB at `cda0786` → **3.34 GB** at `ac01439`.
+
+          **Release 10 projection: about 43 M × 1.37 KB ≈ 59 GB, plus release 9's id state, against 156 GB at the start of the wave.** It fits the machine's 128 GB with a wide margin. That is 14% above the plan's "about 1.2 KB per entry".
+
+          **Why stop here.** What is left is mostly the entry's own data. Two more cuts would reach into the science code for about 170 B per entry together:
+          - **The radial chain** (about 88 B): held as a template rebuilt from the object at write time.
+          - **The redshift's CMB-frame value** (48 B): worked out when written.
+
+          Both are the next steps if wanted. Streaming the records from disk is not needed.
+
+          **Tried and dropped:** placing from the end of the array (fragmented memory under mimalloc) and id maps keyed by hashes (overtaken).
+
+          **Next:** `/simplify` and `/code-review`, the full gate, then the 21.4 M-entry rehearsal, after your approval, for the measured figure.
+        tone: success

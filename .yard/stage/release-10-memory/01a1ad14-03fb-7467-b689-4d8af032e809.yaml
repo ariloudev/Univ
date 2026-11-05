@@ -1,0 +1,176 @@
+key: 01a1ad14-03fb-7467-b689-4d8af032e809
+id: memory-review
+versions:
+  - key: 01a1ad14-03fb-7467-b689-4d953a430903
+    at: 2026-11-05T18:58:52Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review the memory wave"
+    goal: "The wave's diff passes /simplify and /code-review with their findings fixed or skipped with a reason, the fixture release still byte-identical, and the full gate green"
+    status: active
+blocks:
+  - key: 01a1ad14-03fb-7467-b689-4d8bbf4796d0
+    id: r-run-reviews
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d9694d6c6ef
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Run /simplify and /code-review in parallel"
+        detail: "Four /simplify reviewers (reuse, simplification, efficiency, altitude) and /code-review (high) on `git diff product/release-10...HEAD -- crates xtask`. /code-review found nothing that changes the release output. The findings are listed in the fix tasks below."
+        state: done
+  - key: 01a1ad14-03fb-7467-b689-4d8c0af9631e
+    id: r-fix-boxing
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d97be6aefc5
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Box objects where matching makes them"
+        detail: "`map(Box::new).collect()` reused the old object array's buffer in place, so the array and the boxes were both held until placement ended. Matching now boxes each object as it makes it (`Matched.objects: Vec<Box<Object>>`), and the conversion step is gone. Builds; not yet measured."
+        state: done
+  - key: 01a1ad14-03fb-7467-b689-4d8dba10d476
+    id: r-fix-lists
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d98601ccf50
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build thin lists directly, without a copy"
+        detail: "The object's entries, and the entry's distances, redshifts and colours, are built as thin vectors, trimmed only when a blank cell leaves room; no `ThinVec::from(Vec)` copy per row or object. Also reverted a stray thin vector that an earlier rewrite put in `outlines/compare.rs`."
+        state: done
+  - key: 01a1ad14-03fb-7467-b689-4d8ea6580fe1
+    id: r-fix-flags
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d991a96d66f
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Flag names shared per table, and a smaller Flags API"
+        detail: "The plan names its quality columns once (`Arc<str>`), so rows no longer take the global name lock. `get` returns `&str`, `Deserialize` is derived through `serde(from)`, and the test-only `remove` and `BTreeMap` equality moved into the tests. Index on Flags was not restored: the lints forbid its panic."
+        state: done
+  - key: 01a1ad14-03fb-7467-b689-4d8fa6a64613
+    id: r-fix-position
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d9a7be29299
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Derived position: move the chain, one rotation helper"
+        detail: "The radial chain is moved in, not cloned. One `rotated()` serves `cartesian()` and the serializer. The constant `model_version()` and its dead check in release writing are removed. Building: one unused import left."
+        state: active
+      - key: 01a1ad19-c0c5-7798-9718-60847d9f5556
+        at: 2026-11-05T19:05:08Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Derived position: move the chain, one rotation helper"
+        detail: "The radial chain is moved in, not cloned: `Radial::into_parts` hands over its cosmology and chain. One `rotated()` serves `cartesian()` and the serializer. The constant `model_version()` and its dead check in release writing are removed; the positions test reads the version from the serialized position. Builds."
+        state: done
+  - key: 01a1ad14-03fb-7467-b689-4d90dadf7f96
+    id: r-fix-rest
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d9b370763a1
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Remaining small fixes"
+        detail: "`given` pushed directly, without a temporary list. `Arc<str>` identifiers copied with `String::from`, not `to_string`. `Designation::new` takes `impl Into<Arc<str>>`. `Object.given` gets a serde default. `Resolved` is renamed `HeldResolution`, a clash with crossmatch's `Resolved`. `Assigned.objects` documents that the cross-match empties it; restructuring `assign_in_order` was skipped, as its objects feed `replacements` and the id tests. The snapshot test loses its dead `built_at` line and wrong doc."
+        state: open
+      - key: 01a1ad19-c0c5-7798-9718-6085a4354dd2
+        at: 2026-11-05T19:05:08Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Remaining small fixes"
+        detail: "`given` pushed directly, without a temporary list. `Arc<str>` identifiers copied with `String::from`, not `to_string`. `Designation::new` takes `impl Into<Arc<str>>`. `Object.given` gets a serde default. `Resolved` is renamed `HeldResolution`, a clash with crossmatch's `Resolved`. `Assigned.objects` documents that the cross-match empties it; restructuring `assign_in_order` was skipped, as its objects feed `replacements` and the id tests. The snapshot test loses its dead `built_at` line and wrong doc."
+        state: active
+      - key: 01a1ad29-349e-735a-9cc5-754dbd997c2c
+        at: 2026-11-05T19:22:01Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Remaining small fixes"
+        detail: |-
+          Done:
+          - `given` pushed directly.
+          - Identifiers copied with `String::from(&*…)`.
+          - `Designation::new` takes `impl Into<Arc<str>>`.
+          - `Object.given` has `serde(default, skip_serializing_if)`.
+          - `Resolved` renamed `HeldResolution`, its `Deserialize` derived through `serde(from)`.
+          - `Assigned.objects` documents that the cross-match empties it.
+          - The snapshot test's dead line and doc fixed.
+
+          Skipped: restructuring `assign_in_order`, as its objects feed `replacements` and the id tests.
+        state: done
+  - key: 01a1ad14-03fb-7467-b689-4d91b8f2080c
+    id: r-verify
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d9c24cf1d9c
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Check the fixes"
+        detail: "Lint across the workspace, the touched tests, the fixture snapshot byte-identical, and the focused peak measured again."
+        state: open
+      - key: 01a1ad29-349e-735a-9cc5-754eb4688139
+        at: 2026-11-05T19:22:01Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Check the fixes"
+        detail: "Lint across the workspace, the touched tests, the fixture snapshot byte-identical, and the focused peak measured again."
+        state: active
+  - key: 01a1ad14-03fb-7467-b689-4d927caed11c
+    id: r-gate
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d9d238c1742
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full gate"
+        detail: "`cargo xtask check` once, green, committed on its exit status."
+        state: open
+  - key: 01a1ad14-03fb-7467-b689-4d937cf4d42d
+    id: r-rehearsal
+    kind: task
+    versions:
+      - key: 01a1ad14-03fb-7467-b689-4d9ece4a8515
+        at: 2026-11-05T18:58:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full rehearsal, after the owner's approval"
+        detail: "The 21.4 M-entry offline rehearsal. It waits for your approval, and gives the measured figure behind the 43 M projection."
+        state: open

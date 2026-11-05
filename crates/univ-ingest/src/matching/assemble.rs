@@ -3,6 +3,7 @@
 
 use std::collections::VecDeque;
 
+use thin_vec::ThinVec;
 use univ_model::entry::CatalogueEntry;
 use univ_model::ids::Designation;
 use univ_model::object::{
@@ -97,7 +98,7 @@ pub(super) fn build(
     };
     let mut objects = Vec::with_capacity(plan.objects.len());
     for (o, members) in plan.objects.into_iter().enumerate() {
-        let mut list = Vec::with_capacity(members.len());
+        let mut list = ThinVec::with_capacity(members.len());
         for (e, via) in members {
             object_of[e] = o;
             let resolved_by = match via {
@@ -120,7 +121,7 @@ pub(super) fn build(
         if list.len() > 1 {
             report.multi_entry_objects += 1;
         }
-        let mut object = Object::new(list);
+        let mut object = Box::new(Object::new(list));
         if object.sources().any(|s| rules.galaxy_group(s).is_some()) {
             object.kind = ObjectKind::GalaxyGroup;
         }
@@ -193,17 +194,16 @@ pub(super) fn build(
 /// The designations and common names the object's entries carry beside their own, each with
 /// the source that gave it.
 fn attach_names(rules: &MatchingRules, object: &mut Object) {
-    let mut given = Vec::new();
     for e in &object.entries {
         let entry = &e.entry;
         let source = &entry.designation.source;
         for rule in rules.designations.iter().filter(|r| &r.source == source) {
             if let Some(text) = rule.field.read(entry)
                 && let Ok(d) = Designation::new(source.clone(), format!("{}{text}", rule.prefix))
-                && !object.designations().any(|o| *o == d)
-                && !given.contains(&d)
+                && !object.entries.iter().any(|o| o.entry.designation == d)
+                && !object.given.contains(&d)
             {
-                given.push(d);
+                object.given.push(d);
             }
         }
         for rule in rules.names.iter().filter(|r| &r.source == source) {
@@ -218,7 +218,6 @@ fn attach_names(rules: &MatchingRules, object: &mut Object) {
             }
         }
     }
-    object.given.extend(given);
 }
 
 #[cfg(test)]

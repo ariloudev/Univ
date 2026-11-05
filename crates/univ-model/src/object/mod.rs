@@ -2,20 +2,20 @@
 //! each entry kept with how it was resolved, the candidate matches kept apart from it, its
 //! designations and names with their sources, and its preferred measurements.
 
+mod held_resolution;
 mod preferred;
 mod relation;
-mod resolved;
 
 use serde::{Deserialize, Serialize};
 use thin_vec::ThinVec;
 use thiserror::Error;
 
+pub use held_resolution::HeldResolution;
 pub use preferred::{
     Decided, FractionalUncertainty, MeasurementRef, MethodRank, NotPlacedReason, Placement,
     PositionClass, PreferredDistance, PreferredPosition,
 };
 pub use relation::{ObjectKind, Relation, RelationKind};
-pub use resolved::Resolved;
 
 use crate::entry::CatalogueEntry;
 use crate::ids::{Designation, SourceId};
@@ -134,7 +134,7 @@ pub enum Resolution {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ObjectEntry {
     pub entry: CatalogueEntry,
-    pub resolved_by: Resolved,
+    pub resolved_by: HeldResolution,
 }
 
 /// A common name, such as M31 or the Large Magellanic Cloud, with the source that published it.
@@ -174,6 +174,7 @@ pub struct Object {
     /// The designations its entries' sources give beside the entries' own, such as the HIP
     /// number of the Gaia–Hipparcos table; [`Object::designations`] gives every one. An entry's
     /// own is not copied here: an object is held for each of tens of millions.
+    #[serde(default, skip_serializing_if = "ThinVec::is_empty")]
     pub given: ThinVec<Designation>,
     /// Common names, each with the source that published it.
     pub names: ThinVec<CommonName>,
@@ -201,10 +202,10 @@ impl Object {
     /// An object of `entries`, unranked: no preferred measurement yet, and not placed for
     /// lack of a distance until a ranking gives one.
     #[must_use]
-    pub fn new(entries: Vec<ObjectEntry>) -> Self {
+    pub fn new(entries: impl Into<ThinVec<ObjectEntry>>) -> Self {
         Self {
             kind: ObjectKind::default(),
-            entries: ThinVec::from(entries),
+            entries: entries.into(),
             given: ThinVec::new(),
             names: ThinVec::new(),
             links: ThinVec::new(),

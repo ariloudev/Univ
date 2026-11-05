@@ -38,7 +38,7 @@ fn preferred(entries: Vec<CatalogueEntry>) -> PreferredDistance {
                 entry,
                 resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     );
     rank(&mut o, &ranking_rules(), &Release::planck_2018());
     o.preferred_distance.unwrap()

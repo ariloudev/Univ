@@ -79,7 +79,7 @@ pub fn entry_row(
         object_id,
         entry: small(n),
         source: numbering.sources.n(&d.source),
-        identifier: d.identifier.to_string(),
+        identifier: String::from(&*d.identifier),
         resolution: terms.id("anchor"),
         scheme: None,
         shared: None,
