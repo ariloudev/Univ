@@ -1,0 +1,191 @@
+key: 01a1aa43-b4c9-7130-a21d-11f7f3829142
+id: w3
+versions:
+  - key: 01a1aa43-b4c9-7130-a21d-120250e7c35c
+    at: 2026-11-05T05:52:06Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3 shards in ingest"
+    goal: "Univ Ingest builds a release as a catalogue database and object shards by cell, publishes and prunes across them, and refuses the oversized cell and the unbound shard"
+    status: active
+blocks:
+  - key: 01a1aa43-b4c9-7130-a21d-11f8da75b00d
+    id: w3-plan
+    kind: plan
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-12031c9a2a9c
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W3 plan: shards in ingest"
+        markdown: |-
+          Builds the shard criteria of `build-a-release`, `publish-a-release-locally` and `prune-old-releases` (spec `ccb10b5`), as the release 10 plan set out.
+
+          ## Design
+
+          - **One schema, every database.** Each database (catalogue, `shard-00` …) is given the whole schema and holds only its own rows. The D1 schema goes to **version 5**: two catalogue tables are added and no table is changed.
+            - `object_shards(release, id, shard)`: the shard of every object id.
+            - `shard_cells(release, shard, domain, first, last)`: the Morton interval of level-0 cells each shard holds in each scale domain.
+          - **Routing by table.**
+            - To the object's shard: `objects`, `entries`, `measurements`, `designations` and `object_cells`.
+            - To the catalogue: everything else, including `names` (few, and looked up by key) and the new index.
+            - A single `D1Writer` holds the table states of every database and routes each row by its table and the object in hand. Files go to `d1/catalogue/…` and `d1/shard-NN/…`.
+          - **Packing.**
+            - A first pass estimates each object's bytes without writing SQL and sums them by level-0 cell.
+            - Cells are sorted by (domain, Morton code of ix, iy, iz), each axis biased by 2^20 (21 bits).
+            - They are packed into consecutive shards up to `shard_budget_bytes` from `rules/release.yaml` (default 4.5 GB). The fixture rules set it small, so the fixture release spans at least two shards.
+            - An object that is not placed goes to the shard `id mod S`. If that pushes a shard past the budget, the packing is redone with the budget reduced by the largest unplaced share.
+            - A cell above the budget refuses the build, naming the domain, the cell, its object count and its estimated size. Like every refused build, it uses up no number.
+          - **Manifest.** `d1` becomes the catalogue's estimate. A new `shards` list gives each shard's index, its domains with their Morton intervals, its object count and its estimate with the tables' fingerprints. CON-3's budget is checked for each database.
+          - **Store.** `execute_file` and `query` take a `Database` (catalogue or shard i).
+            - `Wrangler` maps a database to its D1 name: `univ`, or `univ-objects-i`, bound as `OBJECTS_i` in Univ Server's `wrangler.toml`.
+            - The in-memory store keeps one SQLite per database.
+          - **Publish.**
+            - Before uploading anything, publish refuses a release that needs more shards than `wrangler.toml` binds, naming both numbers.
+            - Each database is checked against the cap by the sum of every unpruned release's estimate for it. Earlier releases are read from `releases` and a new `release_shards` table.
+            - Each shard's files go only to that shard, and each is checked by its own fingerprints.
+          - **Prune.** A release's rows are deleted from the catalogue and from every shard the manifest names.
+
+          ## Tasks
+
+          | # | Task | Done when |
+          |---|---|---|
+          | 1 | Schema 5 and the manifest's shards in univ-model | model tests pass; the schema test names version 5 |
+          | 2 | Cell packing and the oversized-cell refusal | unit tests: Morton order, one cell per shard, unplaced by id, refusal names the cell |
+          | 3 | The D1 writer routes rows to the catalogue or the object's shard | unit test: object rows in its shard, `names` and the index in the catalogue |
+          | 4 | The build writes shards and their manifest | a fixture build spans two shards; each object is in exactly one |
+          | 5 | `Store` by database; `Wrangler` and the in-memory store | publish tests over several databases |
+          | 6 | Publish per database, the unbound-shard refusal and the per-database cap | tests of the refusal message and of rows per shard |
+          | 7 | Prune across every database | prune test: no row of the release is left in any database |
+          | 8 | The normalizer's identifier set holds hashes, not strings (from W2's review) | normalize tests pass |
+  - key: 01a1aa43-b4c9-7130-a21d-11f905abadb3
+    id: w3-t1
+    kind: task
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-12049fdb8cc3
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Schema 5 and the manifest's shards"
+        state: active
+      - key: 01a1aa4f-fafd-73a4-a305-caa211639566
+        at: 2026-11-05T06:05:30Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Schema 5 and the manifest's shards"
+        detail: "univ-model: `shards` (SHARD_TABLES, Database, morton, unplaced), rows ObjectShardRow, ShardCellRow, ReleaseShardRow; schema 5; manifest version 2 with `shards`."
+        state: done
+  - key: 01a1aa43-b4c9-7130-a21d-11fadb4eda79
+    id: w3-t2
+    kind: task
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-1205fea7d8e6
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Cell packing and the oversized-cell refusal"
+        state: open
+      - key: 01a1aa4f-fafd-73a4-a305-caa31652d9cb
+        at: 2026-11-05T06:05:30Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Cell packing and the oversized-cell refusal"
+        state: active
+  - key: 01a1aa43-b4c9-7130-a21d-11fb2bd01f5b
+    id: w3-t3
+    kind: task
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-120681e9e86e
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "D1 writer routes rows by database"
+        state: open
+  - key: 01a1aa43-b4c9-7130-a21d-11fc5f9bf1b7
+    id: w3-t4
+    kind: task
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-12070486db92
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build writes shards and their manifest"
+        state: open
+  - key: 01a1aa43-b4c9-7130-a21d-11fdb6376b7b
+    id: w3-t5
+    kind: task
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-120805a55b43
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Store by database"
+        state: open
+  - key: 01a1aa43-b4c9-7130-a21d-11fef13452a9
+    id: w3-t6
+    kind: task
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-1209540bc425
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Publish per database and the unbound-shard refusal"
+        state: open
+  - key: 01a1aa43-b4c9-7130-a21d-11ff3116ca08
+    id: w3-t7
+    kind: task
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-120af7b0dc30
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Prune across every database"
+        state: open
+  - key: 01a1aa43-b4c9-7130-a21d-12006bca2d7f
+    id: w3-t8
+    kind: task
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-120bee51d3cf
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Normalizer's identifier set by hash"
+        state: open
+  - key: 01a1aa43-b4c9-7130-a21d-1201102bb2e2
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1aa43-b4c9-7130-a21d-120c1a13761d
+        at: 2026-11-05T05:52:06Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|

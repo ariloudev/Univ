@@ -108,7 +108,6 @@ fn version_3_adds_the_source_and_structure_details_per_release() {
 
 #[test]
 fn version_4_adds_the_source_terms_per_release() {
-    assert_eq!(SCHEMA_VERSION, 4);
     let columns = [
         "release",
         "source",
@@ -175,4 +174,36 @@ fn a_name_key_ignores_case_and_white_space() {
         "largemagellaniccloud"
     );
     assert_eq!(name_key("M 31"), name_key("m31"));
+}
+
+#[test]
+fn version_5_adds_the_shards_index_per_release() {
+    assert_eq!(SCHEMA_VERSION, 5);
+    for (name, columns, key) in [
+        ("object_shards", &["release", "id", "shard"][..], 2),
+        (
+            "shard_cells",
+            &["release", "shard", "domain", "first", "last"][..],
+            3,
+        ),
+        (
+            "release_shards",
+            &["release", "shard", "objects", "estimated_bytes"][..],
+            2,
+        ),
+    ] {
+        let (declared, declared_key) = declared(name);
+        assert_eq!(declared, columns, "{name}");
+        assert_eq!(declared_key, columns[..key], "{name}");
+        let table = TABLES.iter().find(|t| t.name == name).unwrap();
+        assert_eq!(table.scope, Scope::PerRelease, "{name}");
+        assert_eq!(table.columns, columns, "{name}");
+        assert!(!table.in_shard(), "{name} is in the catalogue");
+    }
+    let sharded: Vec<&str> = TABLES
+        .iter()
+        .filter(|t| t.in_shard())
+        .map(|t| t.name)
+        .collect();
+    assert_eq!(sharded, super::shards::SHARD_TABLES);
 }

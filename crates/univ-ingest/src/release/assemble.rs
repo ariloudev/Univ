@@ -402,6 +402,7 @@ pub fn write_release(
             replaced: assigned.replaced.len() as u64,
         },
         d1: d1.estimate,
+        shards: Vec::new(),
         files,
     };
     Ok(Written { manifest, failed })

@@ -1,9 +1,10 @@
 //! The layout of a release as Univ Server reads it: its D1 schema with a Rust type per row, the
 //! R2 keys of its files, the cell index of bounded volume queries, and the release manifest.
 //!
-//! # One database, a release column
+//! # A release column in each database
 //!
-//! Every release lives in one D1 database. Each table that holds one release's rows has a
+//! Every release lives in the same D1 databases (since version 5 a catalogue database and object
+//! shards, [`shards`]). Each table that holds one release's rows has a
 //! `release` column leading its primary key, rather than a table per release:
 //!
 //! - **Publishing never disturbs the current release.** Release n + 1's rows are inserted
@@ -46,6 +47,14 @@
 //! limits a source to non-commercial use, the request for permission of a source whose status
 //! is `permission_pending`, and the uncertainties a source states once for its whole catalogue,
 //! which the object read gives each such measurement as its estimated basis.
+//!
+//! # Object shards (schema version 5)
+//!
+//! Version 5 divides a release among a catalogue database and object shards ([`shards`]), each
+//! given the whole schema, and adds three catalogue tables, changing none of version 4's:
+//! `object_shards`, the shard of each object id; `shard_cells`, the run of cells each shard holds
+//! in each scale domain; and `release_shards`, each shard's objects and estimate. CON-3's cap
+//! applies to each database, and so does the budget of one release.
 
 pub mod cells;
 pub mod chains;
@@ -54,6 +63,7 @@ pub mod keys;
 pub mod manifest;
 pub mod read;
 pub mod rows;
+pub mod shards;
 pub mod sql;
 pub mod uncertainty;
 
@@ -65,7 +75,7 @@ pub use sql::{ColumnKind, Row, Scope, SqlValue, Statements, Table, Tree};
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].
-pub const SCHEMA_VERSION: u32 = 4;
+pub const SCHEMA_VERSION: u32 = 5;
 
 /// The D1 schema: every table and index, created only where missing.
 pub const SCHEMA: &str = include_str!("schema.sql");

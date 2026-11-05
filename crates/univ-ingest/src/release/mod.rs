@@ -32,6 +32,7 @@ mod grids;
 mod meta;
 mod objects;
 mod outline;
+mod packing;
 mod place;
 mod placement;
 mod pointers;
@@ -66,6 +67,7 @@ pub use outline::{
     Admitted, OUTLINE_CENTRE, Outlined, TestCatalogues, admitted, not_drawn, outlines_on,
     result_record,
 };
+pub use packing::{CellLoad, PackError, Packed, Packing, Run, pack};
 pub use place::{SkyRanges, centre, index_bounds, ranges, sky_region};
 pub use placement::{Placement, placements};
 pub use rescaled::rescaled;
