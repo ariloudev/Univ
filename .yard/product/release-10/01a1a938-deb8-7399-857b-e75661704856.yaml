@@ -10,3 +10,12 @@ versions:
     title: "W5 release 10"
     goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it; merged into product/release-10"
     status: planned
+  - key: 01a1ab0b-7fa9-7533-8626-c49f9b40c3c4
+    at: 2026-11-05T09:30:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 release 10"
+    goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it; merged into product/release-10"
+    status: active
