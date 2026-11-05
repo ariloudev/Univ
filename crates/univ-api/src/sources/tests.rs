@@ -98,6 +98,18 @@ fn the_terms_give_the_redistribution_status_and_any_non_commercial_clause() {
         terms["permission"],
         json!({"asked_of": "WFAU, mar@roe.ac.uk", "asked_on": "2026-11-05"})
     );
+    assert!(terms.get("permission_to_ask").is_none());
+    // A request not yet sent names whom it is for, and no date.
+    db.exec(
+        "UPDATE source_terms SET permission = '{\"asked_of\":\"WFAU, mar@roe.ac.uk\"}' \
+         WHERE release = 2 AND source = 0;",
+    );
+    let unsent = body(&get(&db, "/v1/sources/hipparcos-2007"));
+    assert!(unsent["terms"].get("permission").is_none());
+    assert_eq!(
+        unsent["terms"]["permission_to_ask"],
+        json!({"asked_of": "WFAU, mar@roe.ac.uk"})
+    );
 }
 
 #[test]

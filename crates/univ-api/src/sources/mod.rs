@@ -5,7 +5,7 @@ pub(crate) mod provenance;
 pub use provenance::provenance;
 
 use serde_json::json;
-use univ_model::api::sources::{Coverage, Reference, SourceDetail, SourceList, Terms};
+use univ_model::api::sources::{Coverage, Permission, Reference, SourceDetail, SourceList, Terms};
 
 use crate::backend::{Backend, column, first, json_column, rows_as};
 use crate::http::{Request, Response};
@@ -80,6 +80,8 @@ pub async fn get<B: Backend>(
         .await?;
     let row = first(rows).ok_or_else(|| not_found(release, id))?;
     let detailed = column::<Option<u32>>(&row, "detailed")?.is_some();
+    let (permission, permission_to_ask) = json_column::<Option<Permission>>(&row, "permission")?
+        .map_or((None, None), Permission::served);
     let detail = SourceDetail {
         release,
         id: column(&row, "id")?,
@@ -104,7 +106,8 @@ pub async fn get<B: Backend>(
             redistribution: column(&row, "redistribution")?,
             review: column(&row, "review")?,
             non_commercial: column(&row, "non_commercial")?,
-            permission: json_column(&row, "permission")?,
+            permission,
+            permission_to_ask,
         },
         query: json_column(&row, "access")?,
         cuts: json_column(&row, "cuts")?,

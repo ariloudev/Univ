@@ -395,7 +395,7 @@ row! {
         /// terms allow commercial use.
         non_commercial: Option<String>,
         /// JSON of the request for permission to redistribute it,
-        /// [`crate::api::sources::PermissionRequest`], while its status is `permission_pending`.
+        /// [`crate::api::sources::Permission`], while its status is `permission_pending`.
         permission: Option<String>,
         /// JSON array of the uncertainties it states once for its whole catalogue, each a
         /// [`CatalogueUncertainty`]; none when it has none.

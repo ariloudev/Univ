@@ -3262,7 +3262,7 @@
       },
       "PermissionRequest": {
         "additionalProperties": false,
-        "description": "A request for permission to redistribute a source, awaiting its answer: as its source\ndefinition writes it, as the release manifest records it, and as the API gives it.",
+        "description": "A request for permission to redistribute a source, sent and awaiting its answer, as the API\ngives it.",
         "properties": {
           "asked_of": {
             "description": "Whom it was asked of.",
@@ -3276,6 +3276,20 @@
         "required": [
           "asked_of",
           "asked_on"
+        ],
+        "type": "object"
+      },
+      "PermissionToAsk": {
+        "additionalProperties": false,
+        "description": "A request for permission to redistribute a source that is not yet sent: whom it is for.",
+        "properties": {
+          "asked_of": {
+            "description": "Whom it is to be asked of.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asked_of"
         ],
         "type": "object"
       },
@@ -4957,7 +4971,18 @@
             "oneOf": [
               {
                 "$ref": "#/components/schemas/PermissionRequest",
-                "description": "Whom permission to redistribute the source was asked of and when, while its\nredistribution is `permission_pending`."
+                "description": "Whom permission to redistribute the source was asked of and when, while its\nredistribution is `permission_pending` and the request is sent."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "permission_to_ask": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PermissionToAsk",
+                "description": "Whom permission to redistribute the source is to be asked of, while its redistribution\nis `permission_pending` and the request is not yet sent."
               },
               {
                 "type": "null"

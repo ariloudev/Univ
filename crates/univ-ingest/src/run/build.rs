@@ -103,10 +103,10 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
         .iter()
         .filter_map(|s| {
             let asked = s.permission.as_ref()?;
-            Some(format!(
-                "{} (asked of {} on {})",
-                s.id, asked.asked_of, asked.asked_on
-            ))
+            Some(match &asked.asked_on {
+                Some(on) => format!("{} (asked of {} on {on})", s.id, asked.asked_of),
+                None => format!("{} (to ask of {}, not yet sent)", s.id, asked.asked_of),
+            })
         })
         .collect();
     if !pending.is_empty() {
