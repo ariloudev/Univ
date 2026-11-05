@@ -81,13 +81,13 @@ pub fn bare(src: &str, id: &str) -> CatalogueEntry {
         designation: designation(src, id),
         name: None,
         position: None,
-        distances: Vec::new(),
-        redshifts: Vec::new(),
+        distances: thin_vec::ThinVec::new(),
+        redshifts: thin_vec::ThinVec::new(),
         velocity: None,
         parallax: None,
         proper_motion: None,
         magnitude: None,
-        colours: Vec::new(),
+        colours: thin_vec::ThinVec::new(),
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
@@ -191,7 +191,7 @@ pub fn with_distance(
 
 /// The entry with the name `name` beside its identifier.
 pub fn named(mut e: CatalogueEntry, name: &str) -> CatalogueEntry {
-    e.name = Some(name.to_owned());
+    e.name = Some(name.into());
     e
 }
 

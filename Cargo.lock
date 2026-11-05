@@ -2560,6 +2560,7 @@ dependencies = [
  "sha2",
  "tar",
  "tempfile",
+ "thin-vec",
  "thiserror",
  "tokio",
  "univ-model",

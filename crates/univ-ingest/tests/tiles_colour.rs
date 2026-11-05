@@ -33,7 +33,7 @@ fn object(entries: Vec<(&str, Vec<ColourIndex>)>) -> Object {
     let entries = entries
         .into_iter()
         .map(|(source, colours)| CatalogueEntry {
-            colours,
+            colours: colours.into(),
             ..bare(source, "1")
         })
         .collect();

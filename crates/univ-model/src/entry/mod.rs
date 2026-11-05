@@ -6,6 +6,7 @@ mod flags;
 mod position;
 
 use serde::{Deserialize, Serialize};
+use thin_vec::ThinVec;
 use thiserror::Error;
 
 pub use colour::{ColourIndex, SpectralType};
@@ -201,7 +202,7 @@ pub struct CatalogueEntry {
     /// The source and the entry's identifier in it.
     pub designation: Designation,
     /// A second name the source gives, such as a Hipparcos number beside a Gaia `source_id`.
-    pub name: Option<String>,
+    pub name: Option<Box<str>>,
     /// The entry's position, or none when its source publishes no position: a source whose
     /// definition maps no position columns, such as the Bailer-Jones et al. 2021 distances or
     /// the Gaia DR3 to Hipparcos-2 cross-match, gives entries without one, and cross-matching
@@ -210,8 +211,10 @@ pub struct CatalogueEntry {
     /// maps position columns, a row whose position cell is blank is left out as missing its
     /// position.
     pub position: Option<Position>,
-    pub distances: Vec<Distance>,
-    pub redshifts: Vec<Redshift>,
+    /// This and the entry's other lists are thin, 8 bytes each when empty: an entry is held
+    /// for each of tens of millions of rows.
+    pub distances: ThinVec<Distance>,
+    pub redshifts: ThinVec<Redshift>,
     /// A radial velocity, or a recession velocity cz, as published. Boxed, as the parallax is:
     /// most entries have neither, and an entry is held for each of tens of millions of rows.
     pub velocity: Option<Box<Value>>,
@@ -220,9 +223,9 @@ pub struct CatalogueEntry {
     pub proper_motion: Option<Box<ProperMotion>>,
     pub magnitude: Option<Box<Magnitude>>,
     /// The colour indices its source publishes, or derives from two of its magnitudes.
-    pub colours: Vec<ColourIndex>,
+    pub colours: ThinVec<ColourIndex>,
     pub spectral_type: Option<Box<SpectralType>>,
-    pub group_id: Option<String>,
+    pub group_id: Option<Box<str>>,
     pub supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     /// The source's quality columns, by column name, as published.
     pub flags: Flags,
@@ -250,20 +253,20 @@ pub struct PaperReference {
 #[derive(Deserialize)]
 struct RawCatalogueEntry {
     designation: Designation,
-    name: Option<String>,
+    name: Option<Box<str>>,
     position: Option<Position>,
-    distances: Vec<Distance>,
-    redshifts: Vec<Redshift>,
+    distances: ThinVec<Distance>,
+    redshifts: ThinVec<Redshift>,
     velocity: Option<Box<Value>>,
     parallax: Option<Box<Value>>,
     proper_motion: Option<Box<ProperMotion>>,
     magnitude: Option<Box<Magnitude>>,
     // Absent from entries normalized before colours were read.
     #[serde(default)]
-    colours: Vec<ColourIndex>,
+    colours: ThinVec<ColourIndex>,
     #[serde(default)]
     spectral_type: Option<Box<SpectralType>>,
-    group_id: Option<String>,
+    group_id: Option<Box<str>>,
     supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     flags: Flags,
     // Absent from entries of catalogues.
@@ -374,10 +377,10 @@ impl CatalogueEntry {
         {
             return Err(EntryError::MixedDistanceUnits);
         }
-        let spectral_type = self.spectral_type.as_ref().map(|t| &t.text);
+        let spectral_type = self.spectral_type.as_ref().map(|t| t.text.as_str());
         for (field, text) in [
-            ("name", self.name.as_ref()),
-            ("group id", self.group_id.as_ref()),
+            ("name", self.name.as_deref()),
+            ("group id", self.group_id.as_deref()),
             ("spectral type", spectral_type),
         ] {
             if text.is_some_and(|t| t.trim().is_empty()) {

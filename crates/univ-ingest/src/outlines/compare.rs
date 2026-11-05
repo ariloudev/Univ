@@ -166,7 +166,7 @@ fn place<E: Borrow<CatalogueEntry>>(geometry: &GridGeometry, entries: &[E]) -> P
     let rotation = from_icrs(geometry.frame);
     let mut footprint = vec![false; RA_BINS * DEC_BINS];
     let mut counts = HashMap::new();
-    let mut distances = Vec::new();
+    let mut distances = thin_vec::ThinVec::new();
     for entry in entries {
         let entry: &CatalogueEntry = entry.borrow();
         let Some(position) = &entry.position else {

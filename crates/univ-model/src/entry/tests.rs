@@ -52,8 +52,8 @@ fn entry() -> CatalogueEntry {
             .unwrap(),
         name: None,
         position: Some(position),
-        distances: vec![distance],
-        redshifts: vec![redshift],
+        distances: thin_vec::thin_vec![distance],
+        redshifts: thin_vec::thin_vec![redshift],
         velocity: Some(Box::new(value(
             -300.0,
             Unit::KilometrePerSecond,
@@ -65,7 +65,7 @@ fn entry() -> CatalogueEntry {
             band: "Kcmag".to_owned(),
             value: value(0.797, Unit::Magnitude, Unit::Magnitude),
         })),
-        colours: Vec::new(),
+        colours: thin_vec::ThinVec::new(),
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
@@ -141,13 +141,13 @@ fn a_colour_index_is_in_magnitudes_and_a_spectral_type_is_never_blank() {
         value: value(0.65, unit, unit),
         derived_from: None,
     };
-    e.colours = vec![colour(Unit::Magnitude)];
+    e.colours = thin_vec::thin_vec![colour(Unit::Magnitude)];
     e.spectral_type = Some(Box::new(SpectralType {
         text: "G2V".to_owned(),
         kind: KindOfValue::Measured,
     }));
     assert_eq!(e.check(), Ok(()));
-    e.colours = vec![colour(Unit::Dimensionless)];
+    e.colours = thin_vec::thin_vec![colour(Unit::Dimensionless)];
     assert_eq!(
         e.check(),
         Err(EntryError::Unit("colour index", Unit::Dimensionless))

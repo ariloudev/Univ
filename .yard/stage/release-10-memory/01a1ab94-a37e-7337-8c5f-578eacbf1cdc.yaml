@@ -348,3 +348,48 @@ blocks:
 
           **Next.** The cost of reading the id state, then the object's own size (400 B: five list headers, the preferred distance and position).
         tone: info
+  - key: 01a1acc1-4a40-77c4-9482-028e27d2b637
+    id: memory-progress-4
+    kind: note
+    versions:
+      - key: 01a1acc1-4a40-77c4-9482-028fd13494f1
+        at: 2026-11-05T17:28:31Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Where we stand"
+        markdown: |-
+          **Cost per entry: about 3.6 KB at the start of the wave, about 1.7 KB now.** Release 10's projected peak is roughly **75–80 GB, down from 156 GB**. That fits the machine's 128 GB. The plan's goal is about 1.2 KB per entry (about 52 GB), so about 500 B per entry remain to cut.
+
+          **Measured on an empty state** (see "Measuring without the id state"):
+
+          | Run | Entries | Peak | Per entry |
+          |---|---|---|---|
+          | ALFALFA + 6dFGS | 150,081 | 0.42 GB | — |
+          | Focused (SDSS distant + ALFALFA + 6dFGS) at `f8b9424` | 2,432,397 | 4.66 GB | 1,915 B |
+          | DESI DR1 alone at `f8b9424` | 15,825,713 | 28.05 GB | 1,772 B |
+
+          From the first two rows, the marginal cost was about 1,860 B per entry and the fixed part about 0.14 GB.
+
+          **Since then**
+
+          | Step | Commit | Focused peak | Per entry |
+          |---|---|---|---|
+          | A designation's identifier shared | `f8b9424` | 4.66 GB | 1,915 B |
+          | Objects boxed before placement; old and new object arrays never both whole | `9d22266` | 4.31 GB | 1,772 B |
+          | An object's five lists as thin vectors | `8c8f0e5` | **4.13 GB** | **1,699 B** |
+
+          The fixture release was byte-identical after every step, and lint was clean across the workspace.
+
+          **In progress.** The entry's three lists as thin vectors, and its name and group id as boxed strings: about 80 B per entry. The library builds; two test comparisons remain.
+
+          **After that, in order of size:**
+          - the preferred distance's runner-up, boxed (about 50 B);
+          - the redshift's published cz, boxed (about 48 B);
+          - the radial chain held as a template and parameters (about 88 B).
+
+          Then a fresh profile, and a decision on whether to go on or close the wave.
+
+          **Wave end** (needs your approval): `/simplify` and `/code-review`, the full gate, then the 21.4 M-entry rehearsal and the 43 M projection from two measured points.
+        tone: info

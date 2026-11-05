@@ -274,15 +274,15 @@ impl StarFile {
             .collect();
         let entry = CatalogueEntry {
             designation,
-            name: Some(self.name.clone()),
+            name: Some(self.name.as_str().into()),
             position: None,
             distances: distances.into_iter().collect(),
-            redshifts: vec![],
+            redshifts: thin_vec::thin_vec![],
             velocity: None,
             parallax: parallax.map(Box::new),
             proper_motion: None,
             magnitude: None,
-            colours: vec![],
+            colours: thin_vec::thin_vec![],
             spectral_type: None,
             group_id: None,
             supergalactic_velocity: None,

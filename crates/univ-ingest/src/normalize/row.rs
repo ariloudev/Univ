@@ -180,10 +180,13 @@ impl Row<'_, '_> {
         let entry = CatalogueEntry {
             designation: Designation::new(self.cx.source.clone(), identifier)
                 .map_err(|_| LeftOutReason::MissingIdentifier)?,
-            name: plan.name.and_then(|c| self.text(c)),
+            name: plan
+                .name
+                .and_then(|c| self.text(c))
+                .map(String::into_boxed_str),
             position,
-            distances,
-            redshifts,
+            distances: distances.into(),
+            redshifts: redshifts.into(),
             velocity: self
                 .value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?
                 .map(Box::new),
@@ -192,9 +195,12 @@ impl Row<'_, '_> {
                 .map(Box::new),
             proper_motion: self.proper_motion()?.map(Box::new),
             magnitude: self.magnitude()?.map(Box::new),
-            colours: self.colours()?,
+            colours: self.colours()?.into(),
             spectral_type: self.spectral_type().map(Box::new),
-            group_id: plan.group_id.and_then(|c| self.text(c)),
+            group_id: plan
+                .group_id
+                .and_then(|c| self.text(c))
+                .map(String::into_boxed_str),
             supergalactic_velocity: self.supergalactic()?.map(Box::new),
             flags: plan
                 .flags

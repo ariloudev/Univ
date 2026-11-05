@@ -88,7 +88,7 @@ pub fn entry_row(
         separation_arcsec: None,
         difference: None,
         delta: None,
-        name: entry.name.clone(),
+        name: entry.name.as_deref().map(str::to_owned),
         frame: None,
         lon: None,
         lat: None,
@@ -100,7 +100,7 @@ pub fn entry_row(
         error_dec: None,
         error_unit: None,
         error_kind: None,
-        group_id: entry.group_id.clone(),
+        group_id: entry.group_id.as_deref().map(str::to_owned),
         flags: (!entry.flags.is_empty())
             .then(|| json(&entry.flags))
             .transpose()?,
