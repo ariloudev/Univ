@@ -2,9 +2,8 @@
 //! its normalized form.
 
 mod colour;
+mod flags;
 mod position;
-
-use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -20,6 +19,8 @@ use crate::redshift::{CmbCorrection, CmbRedshift, RedshiftError, RedshiftFrame};
 use crate::units::{Dimension, Unit};
 use crate::value::{KindOfValue, Quantity, Value};
 use position::in_unit;
+
+pub use flags::{Flags, name as flag_name};
 
 /// How a redshift was measured.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -223,7 +224,7 @@ pub struct CatalogueEntry {
     pub group_id: Option<String>,
     pub supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     /// The source's quality columns, by column name, as published.
-    pub flags: BTreeMap<String, String>,
+    pub flags: Flags,
     /// The papers a researched entry's values come from, the paper of its distance first; none
     /// for an entry of a catalogue, which its source's citation covers.
     #[serde(default, skip_serializing_if = "<[_]>::is_empty")]
@@ -263,7 +264,7 @@ struct RawCatalogueEntry {
     spectral_type: Option<Box<SpectralType>>,
     group_id: Option<String>,
     supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
-    flags: BTreeMap<String, String>,
+    flags: Flags,
     // Absent from entries of catalogues.
     #[serde(default)]
     references: Box<[PaperReference]>,

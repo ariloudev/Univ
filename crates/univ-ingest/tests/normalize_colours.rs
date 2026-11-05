@@ -82,7 +82,7 @@ fn the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_f
     let e = entry(&n, "2");
     let t = e.spectral_type.as_ref().unwrap();
     assert_eq!((t.text.as_str(), t.kind), ("K3V", KindOfValue::Measured));
-    assert_eq!(e.flags["r_SpType"], "4");
+    assert_eq!(e.flags.get("r_SpType").unwrap(), "4");
     assert!(e.position.is_none());
     // HIP 5: G8III.
     assert_eq!(entry(&n, "5").spectral_type.as_ref().unwrap().text, "G8III");

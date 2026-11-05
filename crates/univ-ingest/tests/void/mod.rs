@@ -9,7 +9,6 @@
               test failing"
 )]
 
-use std::collections::BTreeMap;
 use std::fs;
 
 use univ_ingest::outlines::{OutlineResult, Placed};
@@ -117,7 +116,7 @@ pub fn entry(source: &str, n: usize, p: Vec3, redshift: bool) -> CatalogueEntry 
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
-        flags: BTreeMap::new(),
+        flags: univ_model::entry::Flags::default(),
         references: Box::default(),
     }
 }

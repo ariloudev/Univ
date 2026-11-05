@@ -1,7 +1,6 @@
 //! One row of a table read into a catalogue entry, or left out with its reason.
 
 use std::borrow::Cow;
-use std::collections::BTreeMap;
 
 use univ_model::cosmology::AssumedCosmology;
 use univ_model::distance::{Distance, DistanceError, DistanceKind, Method};
@@ -196,13 +195,13 @@ impl Row<'_, '_> {
             flags: plan
                 .flags
                 .iter()
-                .filter_map(|c| self.text(c.index).map(|t| (c.name.clone(), t)))
+                .filter_map(|c| self.text(c.index).map(|t| (c.name.as_str(), t)))
                 .chain(
                     self.marks
                         .iter()
-                        .map(|(flag, text)| ((*flag).to_owned(), (*text).to_owned())),
+                        .map(|(flag, text)| (*flag, (*text).to_owned())),
                 )
-                .collect::<BTreeMap<_, _>>(),
+                .collect::<univ_model::entry::Flags>(),
             references: Box::default(),
         };
         entry.check().map_err(entry_reason)?;

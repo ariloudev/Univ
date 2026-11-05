@@ -8,7 +8,6 @@
     reason = "helpers shared by two test crates, each using a subset; a failed unwrap or panic is the test failing"
 )]
 
-use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use univ_ingest::matching::MatchingRules;
@@ -92,7 +91,7 @@ pub fn bare(src: &str, id: &str) -> CatalogueEntry {
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
-        flags: BTreeMap::new(),
+        flags: univ_model::entry::Flags::default(),
         references: Box::default(),
     }
 }

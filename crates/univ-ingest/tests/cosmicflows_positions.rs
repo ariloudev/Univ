@@ -103,7 +103,7 @@ fn a_replaced_group_position_names_kourkchi_and_tully_and_the_fix() {
     // whose position is as published carries no such flag.
     let n = recorded();
     let virgo = entry(&n, "41220");
-    let flag = &virgo.flags["position_source"];
+    let flag = &virgo.flags.get("position_source").unwrap();
     for text in [
         "Kourkchi & Tully 2017",
         "ApJ 843, 16",

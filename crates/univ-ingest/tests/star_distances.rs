@@ -122,7 +122,7 @@ fn a_star_files_value_keeps_its_kind_uncertainty_and_method() {
         p.native.uncertainty,
         Uncertainty::Symmetric { .. }
     ));
-    assert_eq!(entries[1].flags["method"], "SIMULATED orbit");
+    assert_eq!(entries[1].flags.get("method").unwrap(), "SIMULATED orbit");
 }
 
 #[test]

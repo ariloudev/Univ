@@ -29,7 +29,7 @@ fn cosmicflows_groups_without_a_five_method_distance_are_direct_calibrations() {
     let d = &entry(&n, "12").distances[0];
     assert_eq!(d.kind, DistanceKind::SecondaryIndicator);
     assert!(matches!(&d.method, Method::Mixed(m) if m.len() == 8));
-    assert_eq!(entry(&n, "12").flags["DMav"], "35.142");
+    assert_eq!(entry(&n, "12").flags.get("DMav").unwrap(), "35.142");
 }
 
 #[test]

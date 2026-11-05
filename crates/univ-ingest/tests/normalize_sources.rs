@@ -69,7 +69,7 @@ fn twomrs_rows_keep_cz_and_derive_heliocentric_and_cmb_redshifts() {
     // cos θ = -0.76785, so z_cmb = (1 + z)γ(1 + β cos θ) - 1 = -0.0019461909.
     assert!((r.cmb.value.value + 0.001_946_190_9).abs() < 1e-9);
     assert_eq!(m31.magnitude.as_ref().unwrap().value.native.value, 0.797);
-    assert_eq!(m31.flags["r_cz"], "1991RC3.9.C...0000d");
+    assert_eq!(m31.flags.get("r_cz").unwrap(), "1991RC3.9.C...0000d");
     // Row 2: 011.8880600 -25.2888000 00473313-2517196 243 2 3.815 2004AJ....128...16K.
     let ngc253 = entry(&n, "00473313-2517196");
     fk5(ngc253, 11.888_06, -25.288_8);
@@ -87,11 +87,11 @@ fn sixdfgs_rows_keep_cz_their_quality_and_magnitude() {
     assert_eq!(g.velocity.unwrap().native.value, 19_966.0);
     // Worked in Python as for 2MRS: cos θ = -0.84315, z_cmb = 0.0654908544.
     assert!((g.redshifts[0].cmb.value.value - 0.065_490_854_4).abs() < 1e-9);
-    assert_eq!(g.flags["q_cz"], "4");
+    assert_eq!(g.flags.get("q_cz").unwrap(), "4");
     // Row 5: 000.0184583 -0.0833333 g0000044-000500 5400 100 9 15.87.
     let g = entry(&n, "g0000044-000500");
     assert_eq!(sigma(&g.velocity.unwrap()), 100.0);
-    assert_eq!(g.flags["q_cz"], "9");
+    assert_eq!(g.flags.get("q_cz").unwrap(), "9");
     assert_eq!(g.magnitude.as_ref().unwrap().band, "bJmag");
 }
 
@@ -105,7 +105,7 @@ fn twompp_rows_keep_their_reference_and_no_group() {
     assert_eq!(g.redshifts[0].velocity.unwrap().value, 2_429.0);
     assert_eq!(g.redshifts[0].kind_of_value, KindOfValue::Measured);
     assert_eq!(
-        (g.group_id.as_deref(), g.flags["Cln"].as_str()),
+        (g.group_id.as_deref(), g.flags.get("Cln").unwrap().as_str()),
         (None, "0")
     );
     // Row 4: 235.8802917 -87.6785278 15433127-8740427 12651 300 11.96.
@@ -156,7 +156,7 @@ fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances(
     let agc = entry(&n, "AGC748778");
     assert!(agc.distances.is_empty() && agc.position.is_some());
     assert_eq!(agc.velocity.unwrap().native.value, 258.0);
-    assert_eq!(agc.flags["f_Dist"], "h'");
+    assert_eq!(agc.flags.get("f_Dist").unwrap(), "h'");
     assert_eq!(n.report.fixes[0].entries_changed, 1);
     // Row 1: 000.093750 +39.495556 UGC12894 8.47 TF 335 16.80.
     let g = entry(&n, "UGC12894");
@@ -180,7 +180,7 @@ fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances(
             &Method::TipOfTheRedGiantBranch
         )
     );
-    assert_eq!(wlm.flags["f_Dist"], "TRGB");
+    assert_eq!(wlm.flags.get("f_Dist").unwrap(), "TRGB");
 }
 
 #[test]
@@ -207,7 +207,10 @@ fn mcconnachie_keeps_each_modulus_beside_the_distance_derived_from_it() {
     assert_eq!(d.kind, DistanceKind::PrimaryIndicator);
     assert_eq!(d.kind_of_value, KindOfValue::Measured);
     assert_eq!(
-        (cma.flags["u_(m-M)"].as_str(), cma.flags["f_HRV"].as_str()),
+        (
+            cma.flags.get("u_(m-M)").unwrap().as_str(),
+            cma.flags.get("f_HRV").unwrap().as_str()
+        ),
         ("b", "c")
     );
     // Row 5: Ursa Major II 17.50 0.30 0.30 32 4 4 -116.5 1.9 13.3.
@@ -307,11 +310,11 @@ fn hipparcos_rows_keep_icrs_at_1991_25_and_their_solution_type() {
         ),
         (4.55, 1.33)
     );
-    assert_eq!(s.flags["Sn"], "5");
+    assert_eq!(s.flags.get("Sn").unwrap(), "5");
     // Row 2: HIP 2, Plx 20.85 ± 1.13, pmRA 182.88, Sn 75.
     let s = entry(&n, "2");
     assert_eq!(s.proper_motion.as_deref().unwrap().ra.native.value, 182.88);
-    assert_eq!(s.flags["Sn"], "75");
+    assert_eq!(s.flags.get("Sn").unwrap(), "75");
 }
 
 #[test]
@@ -337,7 +340,7 @@ fn bailer_jones_rows_keep_both_distances_as_credible_intervals_without_a_positio
         (photogeo.native.value, &photogeo.method),
         (144.3897, &Method::BayesianPhotogeometric)
     );
-    assert_eq!(s.flags["flag"], "10033");
+    assert_eq!(s.flags.get("flag").unwrap(), "10033");
     // Row 4: 196955487820819968, geo 2001.1107 (1926.5125, 2079.8193).
     let s = entry(&n, "196955487820819968");
     let Uncertainty::CredibleInterval { minus, .. } = s.distances[0].native.uncertainty else {
@@ -353,11 +356,11 @@ fn the_hipparcos_crossmatch_names_each_gaia_source_by_its_hip_number() {
     // Row 1: 4612085076726173440, 10768, 0.0012945472, 8.
     let s = entry(&n, "4612085076726173440");
     assert_eq!(s.name.as_deref(), Some("10768"));
-    assert_eq!(s.flags["angular_distance"], "0.0012945472");
+    assert_eq!(s.flags.get("angular_distance").unwrap(), "0.0012945472");
     // Row 3: 5769897140331951744, 71404, 0.0036472648, 72.
     let s = entry(&n, "5769897140331951744");
     assert_eq!(
-        (s.name.as_deref(), s.flags["xm_flag"].as_str()),
+        (s.name.as_deref(), s.flags.get("xm_flag").unwrap().as_str()),
         (Some("71404"), "72")
     );
 }
@@ -463,7 +466,10 @@ fn erass1_clusters_join_the_optical_redshift_and_take_each_rows_redshift_kind() 
         Uncertainty::Symmetric { sigma: 0.007_94 }
     );
     assert_eq!(
-        (c.flags["BEST_Z_TYPE"].as_str(), c.flags["PCONT"].as_str()),
+        (
+            c.flags.get("BEST_Z_TYPE").unwrap().as_str(),
+            c.flags.get("PCONT").unwrap().as_str()
+        ),
         ("photo_z", "0.006")
     );
     // Primary row 2: em01_011174_020_ML00047_002_c010, BEST_Z 0.0891 ± 0.0002 cg_spec_z;
@@ -476,5 +482,5 @@ fn erass1_clusters_join_the_optical_redshift_and_take_each_rows_redshift_kind() 
         (RedshiftKind::Spectroscopic, KindOfValue::Measured)
     );
     assert_eq!(c.redshifts[1].cmb.measured.value, 0.085_94);
-    assert_eq!(c.flags["PCONT"], "0");
+    assert_eq!(c.flags.get("PCONT").unwrap(), "0");
 }

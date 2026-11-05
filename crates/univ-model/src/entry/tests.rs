@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use super::*;
 use crate::distance::{DistanceKind, Measure, Method};
 use crate::ids::SourceId;
@@ -67,7 +69,7 @@ fn entry() -> CatalogueEntry {
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
-        flags: BTreeMap::from([("r_cz".to_owned(), "1991RC3.9.C...0000d".to_owned())]),
+        flags: BTreeMap::from([("r_cz".to_owned(), "1991RC3.9.C...0000d".to_owned())]).into(),
         references: Box::default(),
     }
 }
