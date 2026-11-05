@@ -19,6 +19,15 @@ versions:
     title: "W3 shards in ingest"
     goal: "Univ Ingest builds a release as a catalogue database and object shards by cell, publishes and prunes across them, and refuses the oversized cell and the unbound shard; merged into product/release-10"
     status: active
+  - key: 01a1aac9-f0ae-75f0-8f1b-3da333e96ea5
+    at: 2026-11-05T08:18:43Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3 shards in ingest"
+    goal: "Univ Ingest builds a release as a catalogue database and object shards by cell, publishes and prunes across them, and refuses the oversized cell and the unbound shard; merged into product/release-10"
+    status: done
 blocks:
   - key: 01a1aa41-5d94-739e-80cd-f50479af774f
     id: q-permission-date-3
@@ -41,3 +50,26 @@ blocks:
             detail: "Answer with the date once they are sent. The definitions stay out until then, and go in at the start of W5 at the latest."
           - label: "Leave them out"
             detail: "Release 10 goes without WISE × SuperCOSMOS and GAMA. They come back in a later release."
+  - key: 01a1aac9-f0ae-75f0-8f1b-3da136b31909
+    id: w3-merged
+    kind: note
+    versions:
+      - key: 01a1aac9-f0ae-75f0-8f1b-3da23439eeec
+        at: 2026-11-05T08:18:43Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W3 merged"
+        markdown: |-
+          Merged as `db6d46e`.
+
+          - **Gate:** 13 gates passed. The Wrangler tests, which are ignored by default, pass against real local D1 and R2. Trace accepted: 465 of 468 criteria linked.
+          - **Release format:** schema 5. A release is a catalogue database (`DB`) plus up to 8 object shards (`OBJECTS_0` to `OBJECTS_7`). Shards are packed by level-0 cells in Morton order up to 4.5 GB each. The manifest is now version 2, and an older manifest is refused at publish.
+          - **Reviews:** `/code-review` found these before any real data was built:
+            - science checks that would fail on every sharded release;
+            - Morton codes beyond exact doubles;
+            - prune failing on today's schema-4 catalogue;
+            - repeated ids escaping the key check.
+          - **Open for W4:** Univ Server still reads objects only from `DB`. Until W4 is done, a newly published release serves no objects.
+        tone: success
