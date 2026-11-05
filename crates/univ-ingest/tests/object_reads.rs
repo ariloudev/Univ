@@ -87,7 +87,7 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
         }
         // Every designation is an entry's own, or one its source gives beside it from a
         // field of the entry, such as the HIP number a Gaia–Hipparcos entry names.
-        for d in &o.object.designations {
+        for d in o.object.designations() {
             let own = r
                 .entries
                 .iter()
@@ -102,7 +102,7 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             assert!(own || beside, "{d:?}");
         }
         // The record's designations are the object's `designations` rows, each once, in order.
-        let rows: std::collections::BTreeSet<_> = o.object.designations.iter().collect();
+        let rows: std::collections::BTreeSet<_> = o.object.designations().collect();
         assert!(
             r.designations.iter().eq(rows.into_iter()),
             "{}: {:?}",

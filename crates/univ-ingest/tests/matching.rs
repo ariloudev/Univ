@@ -317,7 +317,7 @@ fn designations_and_common_names_keep_their_sources() {
         designation("gaia-dr3-hipparcos2", "HIP 10768"),
         designation("bailer-jones-2021", "4612085076726173440"),
     ] {
-        assert!(object.designations.contains(&d), "{d:?}");
+        assert!(object.designations().any(|o| *o == d), "{d:?}");
     }
     // AC-74: the LMC of McConnachie 2012 and of UNGC, 40" and 2% apart in distance (simulated
     // positions near the real ones): one object, its common name from McConnachie.
@@ -351,13 +351,13 @@ fn designations_and_common_names_keep_their_sources() {
     );
     assert!(
         object
-            .designations
-            .contains(&designation("updated-nearby-galaxies", "LMC"))
+            .designations()
+            .any(|o| o == &designation("updated-nearby-galaxies", "LMC"))
     );
     assert!(
         object
-            .designations
-            .contains(&designation("mcconnachie-2012", "LMC"))
+            .designations()
+            .any(|o| o == &designation("mcconnachie-2012", "LMC"))
     );
 }
 

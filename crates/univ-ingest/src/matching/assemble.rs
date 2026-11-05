@@ -190,15 +190,17 @@ pub(super) fn build(
 /// The designations and common names the object's entries carry beside their own, each with
 /// the source that gave it.
 fn attach_names(rules: &MatchingRules, object: &mut Object) {
+    let mut given = Vec::new();
     for e in &object.entries {
         let entry = &e.entry;
         let source = &entry.designation.source;
         for rule in rules.designations.iter().filter(|r| &r.source == source) {
             if let Some(text) = rule.field.read(entry)
                 && let Ok(d) = Designation::new(source.clone(), format!("{}{text}", rule.prefix))
-                && !object.designations.contains(&d)
+                && !object.designations().any(|o| *o == d)
+                && !given.contains(&d)
             {
-                object.designations.push(d);
+                given.push(d);
             }
         }
         for rule in rules.names.iter().filter(|r| &r.source == source) {
@@ -213,6 +215,7 @@ fn attach_names(rules: &MatchingRules, object: &mut Object) {
             }
         }
     }
+    object.given.extend(given);
 }
 
 #[cfg(test)]

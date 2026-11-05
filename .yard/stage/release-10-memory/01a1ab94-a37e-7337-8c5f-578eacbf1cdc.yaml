@@ -127,6 +127,15 @@ blocks:
         title: "Chains as templates in memory"
         detail: "Done when derived positions and distances hold a template and its parameters, the fixture release comes out the same, and the focused peak is measured."
         state: active
+      - key: 01a1abca-76fc-7420-ad48-e5cf02d96e29
+        at: 2026-11-05T12:58:55Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Chains as templates in memory"
+        detail: "A derived position keeps only its radial chain, as an exact-size slice; the direction's steps (equinox, to ICRS, Cartesian, two rotations) are added when read. Fixture release byte-identical. Focused peak 4,239 → 3,905 B per entry (−334)."
+        state: done
   - key: 01a1abb4-e013-7643-8968-691ba53298f6
     id: m-entries-once
     kind: task
@@ -140,6 +149,15 @@ blocks:
         title: "Entries held once"
         detail: "Done when objects hold their entries by index and designations are read from them, with the same fixture release and the peak measured."
         state: open
+      - key: 01a1abca-76fc-7420-ad48-e5d0814ecfa0
+        at: 2026-11-05T12:58:55Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Entries held once"
+        detail: "Done when objects hold their entries by index and designations are read from them, with the same fixture release and the peak measured."
+        state: active
   - key: 01a1abb4-e013-7643-8968-691cb67a36bb
     id: m-compact-entries
     kind: task

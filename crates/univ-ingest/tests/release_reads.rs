@@ -179,7 +179,7 @@ fn every_designation_and_name_resolves_to_its_object() {
     let Loaded { crossed, db, .. } = load();
     for o in &crossed.objects {
         let id = i64::try_from(o.id.get()).unwrap();
-        for d in &o.object.designations {
+        for d in o.object.designations() {
             let found: Option<i64> = db
                 .query_row(
                     "SELECT d.object_id FROM designations d JOIN sources s ON s.release = \

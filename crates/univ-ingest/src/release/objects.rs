@@ -170,7 +170,7 @@ impl<'a> ObjectWriter<'a> {
                 .or_default() += 1;
         }
         let release = self.numbering.release;
-        let designations: BTreeSet<&Designation> = object.designations.iter().collect();
+        let designations: BTreeSet<&Designation> = object.designations().collect();
         for d in designations {
             w.add(&DesignationRow {
                 release,

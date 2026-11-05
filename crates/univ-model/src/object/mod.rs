@@ -165,9 +165,10 @@ pub struct Object {
     pub kind: ObjectKind,
     /// Its catalogue entries, the anchor first, each with how it was resolved.
     pub entries: Vec<ObjectEntry>,
-    /// Each designation its entries carry, with the source that gave it: an entry's own, and
-    /// any its source gives beside it, such as the HIP number of the Gaia–Hipparcos table.
-    pub designations: Vec<Designation>,
+    /// The designations its entries' sources give beside the entries' own, such as the HIP
+    /// number of the Gaia–Hipparcos table; [`Object::designations`] gives every one. An entry's
+    /// own is not copied here: an object is held for each of tens of millions.
+    pub given: Vec<Designation>,
     /// Common names, each with the source that published it.
     pub names: Vec<CommonName>,
     /// Candidate matches to other objects.
@@ -182,18 +183,23 @@ pub struct Object {
 }
 
 impl Object {
+    /// Each designation its entries carry, with the source that gave it: each entry's own, in
+    /// the order of its entries, then those their sources give beside them.
+    pub fn designations(&self) -> impl Iterator<Item = &Designation> {
+        self.entries
+            .iter()
+            .map(|e| &e.entry.designation)
+            .chain(&self.given)
+    }
+
     /// An object of `entries`, unranked: no preferred measurement yet, and not placed for
     /// lack of a distance until a ranking gives one.
     #[must_use]
     pub fn new(entries: Vec<ObjectEntry>) -> Self {
-        let designations = entries
-            .iter()
-            .map(|e| e.entry.designation.clone())
-            .collect();
         Self {
             kind: ObjectKind::default(),
             entries,
-            designations,
+            given: Vec::new(),
             names: Vec::new(),
             links: Vec::new(),
             relations: Vec::new(),
