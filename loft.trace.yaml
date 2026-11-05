@@ -83,25 +83,25 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_has_a_valid_definition"
-        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
   - node: 01a19f22-2ad9-716e-876f-1841361113b6
     reviewed: 4b38c591f74484626e8ccaf5f74a9e71b5df699fadb8ca4aa11d568db31307af
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_has_a_valid_definition"
-        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
   - node: 01a19f22-2ad9-716e-876f-1842afd6d59e
     reviewed: 955d52425320c26ee0edee610bcdfdb09fc39ff114e71e55876f2cabf46df7e4
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_has_a_valid_definition"
-        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
   - node: 01a19f22-2ad9-716e-876f-18439d96b214
     reviewed: 85ed33936b18f9c512ce245a3e4c097b89d10b39bc5da07bc5bfab10acc5dadf
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_has_a_valid_definition"
-        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
   - node: 01a19f22-2ad9-716e-876f-18463a5dce5c
     reviewed: 814e7461a598ef1428907f53c73d0af791172f6a799ea9f189754719766b46db
     tests:
@@ -396,15 +396,36 @@ links:
   - node: 01a1a931-2c8a-73a8-91f2-59032696dddd
     reviewed: 8625423a78ecb5044adb105a91987a2b8f86e64d471b78c9525a029d848a5f13
     tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "twodfgrs_gives_each_redshift_its_catalogues_rms"
+        body: 8b8bee0a826cb607d86844678eda709f460280586fcc4a832fe8e8b0912cb1f2
       - file: "crates/univ-ingest/tests/catalogue_error.rs"
         name: "an_rms_velocity_for_the_catalogue_is_each_velocitys_symmetric_error"
-        body: 3768a0f981df03c330a8ae81cb4421ea7b9a669600961045d7fab764c07b198c
+        body: 0f9809e5f38ca25ee5db714908bf84a2ff8315e6909e9bc69bd3ee97c634ee95
       - file: "crates/univ-ingest/tests/catalogue_error.rs"
         name: "a_scatter_per_one_plus_z_grows_with_each_redshift"
-        body: 9b44d376e309908f4343eb4c39ba04cf79f7df606025acf09619e6daf3ea8835
+        body: b0e1ffa125c744e696eba795746a7914d48d2ce01267eec7cd48b7ee57b8fa1b
       - file: "crates/univ-api/src/objects/record_tests.rs"
         name: "a_redshift_whose_source_states_one_uncertainty_for_its_catalogue_is_estimated"
         body: 8899b50fa40ba3f85cb41bd509c83ab94f7aa48fbca3dd2b4dee4d9b95bd538a
+  - node: 01a1aa2d-9931-7550-bba8-ae02a06fd78a
+    reviewed: d2a3d12b48deb14507724d0ed681d0506333356e2353e1ea79cbe87b20c06205
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error"
+        body: 2ecdd9c514cb715b3b0d391fa2720d509e4ee433c7f206ff5e9d600138bad0bc
+  - node: 01a1aa2d-9931-7550-bba8-ae03b8e720b0
+    reviewed: 067ed9c38dfb714f6198967c0ef39b036242bf150a53ea31cd3c61249c26d295
+    tests:
+      - file: "crates/univ-ingest/src/normalize/csv_file.rs"
+        name: "a_gzipped_csv_file_is_read_whole_in_pieces_of_lines"
+        body: 7b8ebb50769ca0a84a83420c5325f3a84ced59ff1fe006c9cda7105ef4927524
+      - file: "crates/univ-ingest/src/normalize/csv_file.rs"
+        name: "comments_and_blank_lines_are_layout_wherever_a_piece_ends"
+        body: 550bccf5295554947abb88a9b655c935d12b17c39f9ebe6e1194a407d159b4f1
+      - file: "crates/univ-ingest/src/normalize/csv_file.rs"
+        name: "a_header_without_a_defined_column_is_an_error_even_with_no_rows"
+        body: a5b71eb0e5822317d500870bbce236288326b923f32755d98aa09d248e44f170
   - node: 01a19f22-2ad9-716e-876f-186b82bcfc95
     reviewed: e0e3ed6f87d3fe392cc3f48fccf9c0ff007a23c3ddc82bab6a9dc180f8232100
     tests:
@@ -456,6 +477,12 @@ links:
   - node: 01a1a931-2c8a-73a8-91f2-59042cfff012
     reviewed: 7290c1739767a8083cb642090804fb3c94e437e00d05d290a337886a1d9a276d
     tests:
+      - file: "crates/univ-ingest/tests/object_reads.rs"
+        name: "a_barycentric_redshift_reads_back_named_barycentric"
+        body: 9234b0724785f20a319b1e469dd07beb279020f980883fd64e4cd9e71e5eade8
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "desi_redshifts_are_measured_spectroscopic_and_barycentric"
+        body: 88278b441b9fbe85a19103aecbc4da8fe6173d0d66aad54ba929d4433dce19b9
       - file: "crates/univ-model/src/redshift.rs"
         name: "a_barycentric_redshift_is_kept_as_measured_and_named_barycentric"
         body: cc425bee0b2e325ae150c6e8901eb556c746d218207e3a3dd4ab27670387e57b
@@ -558,6 +585,33 @@ links:
       - file: "crates/univ-ingest/tests/normalize_rows.rs"
         name: "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
         body: 58b4f769505e894360d7e0f7464e4680ecb898f6a9650eed34d48683c5422e08
+  - node: 01a1aa2d-9931-7550-bba8-ae05fcc0d255
+    reviewed: 09b447c01704f6531fa29e9e5f8567bf0a22dbb3654389502fdcd29784af4468
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_rule_may_leave_out_rows_whose_cell_is_below_a_number"
+        body: abd3059567c5a1424219459b895c660e7bf075fa6361da2770333fa00a3fc6b9
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_rule_may_leave_out_rows_whose_cell_is_none_of_its_values"
+        body: 9e39abe2c9b3d974f0a574bb85a7825a21cf57c1e3fb4ce8088d2237a6c3cc4b
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_condition_gives_exactly_one_test"
+        body: c4b2885c4162445eaecb01f220ba358a8f4248cf0740c5b8774270a7a55f6480
+  - node: 01a1aa2d-9931-7550-bba8-ae06fd8a5b30
+    reviewed: d3d16c14832ba543f69509f67a4afc4adfb7993145d5538adc96660de7ebe2b9
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_rule_may_leave_out_rows_whose_cell_is_below_a_number"
+        body: abd3059567c5a1424219459b895c660e7bf075fa6361da2770333fa00a3fc6b9
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_rule_may_leave_out_rows_whose_cell_is_none_of_its_values"
+        body: 9e39abe2c9b3d974f0a574bb85a7825a21cf57c1e3fb4ce8088d2237a6c3cc4b
+  - node: 01a1aa2d-9931-7550-bba8-ae077f98b2cc
+    reviewed: 5957560547348ebae83843597177ccf682b1e37d3b2c9062fcd6365fd332bcd7
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "identifiers_beyond_two_to_the_53_compare_as_text"
+        body: 8195eb48e8503b1a706fc74c8966818bcce0063626df6b02acfadfcd481fdab6
   - node: 01a19f22-2ad9-716e-876f-1877e0c274f2
     reviewed: 05ea7f696d8d63e80d345077a13b6c6efb2bc8ec3f246770e85de49e7562a492
     tests:
@@ -587,7 +641,7 @@ links:
         body: dc86670011a64e4c3e89a25c5d41d0e0bd1e595f028135175bb112db658edc9b
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
-        body: d28231fcee59050bbc9b349224244cddab5527cf92e3503080b766d61a67ef4b
+        body: e3576cd6d5884051391f2087321b3f5a1e1957173a0c8aff1d1ec46a1911df45
   - node: 01a19f22-2ad9-716e-876f-187cf88a2254
     reviewed: add8e24c470b97fbc83bca5e65c152e361f002377e3cdeaef04479098482e4d9
     tests:
