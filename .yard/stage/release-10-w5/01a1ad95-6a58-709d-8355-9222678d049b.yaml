@@ -42,6 +42,15 @@ blocks:
         title: "The owner approves the full build"
         detail: "Asked on Yard, with the sources, the expected memory and time, and what it writes."
         state: active
+      - key: 01a1adaf-9e0d-76d0-a471-7948aed0044a
+        at: 2026-11-05T21:48:50Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The owner approves the full build"
+        detail: "Approved on Yard at 21:48 UTC, for me to run."
+        state: done
   - key: 01a1ad95-6a58-709d-8355-922fc6c1582f
     id: b-build
     kind: task
@@ -55,6 +64,31 @@ blocks:
         title: "Build release 10 and run the science checks"
         detail: "Done when `univ-ingest build` makes release 10 and `cargo xtask science` passes on it."
         state: open
+      - key: 01a1adaf-9e0d-76d0-a471-7949046a1f98
+        at: 2026-11-05T21:48:50Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build release 10 and run the science checks"
+        detail: "Done when `univ-ingest build` makes release 10 and `cargo xtask science` passes on it. Running `build-release-10.sh` in the background; its log is in the scratchpad's `build-10/run.log`."
+        state: active
+      - key: 01a1adbe-4b04-7574-b9e5-790661d21804
+        at: 2026-11-05T22:04:51Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build release 10 and run the science checks"
+        detail: |-
+          Built, exit 0, 15 min 10 s:
+          - 43,023,589 entries (117,452 left out), 36,947,173 objects (194,486 unplaced), 53 structures, 4,657 tiles;
+          - peak footprint 55.05 GB, 1,279 B per entry (the projection was 59 GB);
+          - D1 estimated at 0.78 GB for the catalogue and 4.50 GB for each of shards 0 to 5 and 3.88 GB for shard 6, against a cap of 10 GB; the release takes 38 GB on disk, 37 GB of it SQL;
+          - the three pending sources named "not yet sent".
+
+          `cargo xtask science` is running.
+        state: active
   - key: 01a1adae-817a-74cb-b154-48f0a7273807
     id: ap-build-10
     kind: approval
@@ -86,3 +120,12 @@ blocks:
           ```
 
           It streams the log, prints the footprint every 5 s, and ends with entries, peak, bytes per entry and time. Approve and I run it myself; or reject with "I'll run it", and tell me when it ends.
+    responses:
+      - key: 01a1adaf-9215-745a-982b-92fd9d2e654a
+        at: 2026-11-05T21:48:46Z
+        revision: 23
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved

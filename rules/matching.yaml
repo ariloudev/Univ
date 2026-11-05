@@ -604,11 +604,27 @@ extents:
         http://vizier.nao.ac.jp/ftp/cats/J/ApJS/199/26/ReadMe, 2026-11-03): "F5.3 [arcsec] Riso Log
         of K=20 mag/sq arcsec elliptical isophote semimajor axis", the 2MASS XSC isophotal radius
         (Jarrett et al. 2000, AJ 119, 2498). The radius is ten to the power Riso, in arcseconds.
-  pieces: [twomrs, twompp-catalogue, sixdfgs-dr3, sdss-dr17-galaxies, cosmicflows-4-galaxies]
+  pieces:
+    - twomrs
+    - twompp-catalogue
+    - sixdfgs-dr3
+    - sdss-dr17-galaxies
+    - cosmicflows-4-galaxies
+    # Release 10.
+    - desi-dr1
+    - sdss-dr17-distant
+    - twodfgrs
+    - gama-dr4
+    - alfalfa-a100
+    - twompz
+    - wise-supercosmos
   pieces_basis: >-
     The galaxy surveys and the Cosmicflows-4 galaxies, whose entries are a detection, a fibre
     target or an adopted centre of a galaxy, so that one large galaxy can stand in them as several
-    entries (IC 5052 and NGC 1507 above). UNGC and McConnachie 2012 list each galaxy once by name
+    entries (IC 5052 and NGC 1507 above). Release 10's surveys are such entries too: its first
+    build left 441 pairs of nearby galaxies 1 arcmin apart at one distance, almost all DESI DR1
+    fibres on DDO 125, NGC 4190, DDO 190 and other nearby galaxies (350 of them between two DESI
+    fibres of one galaxy), with ALFALFA detections and WISE × SuperCOSMOS sources among the rest. UNGC and McConnachie 2012 list each galaxy once by name
     and are never pieces; star sources and galaxy-group sources are never pieces.
   identities: [cosmicflows-4-galaxies, updated-nearby-galaxies, mcconnachie-2012]
   identities_basis: >-
