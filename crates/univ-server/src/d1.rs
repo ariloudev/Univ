@@ -4,6 +4,7 @@
 //! and `EXTENDED`, and the secret `OWNER_SECRET`.
 
 use serde_json::Value;
+use std::collections::BTreeMap;
 use std::sync::LazyLock;
 
 use univ_api::{Backend, BackendError, Kept, Limiter, Row};
@@ -142,12 +143,9 @@ impl Backend for D1 {
         statements: &[(u32, &str, &[Value])],
     ) -> Result<Vec<Vec<Row>>, BackendError> {
         // The statements of each shard, in their order, as one batch; the shards at once.
-        let mut by_shard: Vec<(u32, Vec<usize>)> = Vec::new();
+        let mut by_shard: BTreeMap<u32, Vec<usize>> = BTreeMap::new();
         for (place, (shard, _, _)) in statements.iter().enumerate() {
-            match by_shard.iter_mut().find(|(s, _)| s == shard) {
-                Some((_, places)) => places.push(place),
-                None => by_shard.push((*shard, vec![place])),
-            }
+            by_shard.entry(*shard).or_default().push(place);
         }
         let reads = by_shard.iter().map(|(shard, places)| async move {
             let database = self.database(&Database::Shard(*shard).binding())?;
@@ -159,7 +157,14 @@ impl Backend for D1 {
         });
         let answers = futures_util::future::try_join_all(reads).await?;
         let mut rows: Vec<Vec<Row>> = vec![Vec::new(); statements.len()];
-        for ((_, places), answer) in by_shard.iter().zip(answers) {
+        for ((shard, places), answer) in by_shard.iter().zip(answers) {
+            if answer.len() != places.len() {
+                return Err(BackendError(format!(
+                    "object shard {shard} answered a batch of {} reads with {}",
+                    places.len(),
+                    answer.len()
+                )));
+            }
             for (&place, each) in places.iter().zip(answer) {
                 rows[place] = each;
             }

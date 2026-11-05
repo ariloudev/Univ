@@ -52,6 +52,15 @@ blocks:
         title: "Shard reads in the backend, the Worker and the test backend"
         detail: "Done when univ-api's tests pass on a two-shard test backend and the Worker builds for wasm32."
         state: active
+      - key: 01a1aae4-8fa9-73be-84a1-c28f8700dae1
+        at: 2026-11-05T08:47:48Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Shard reads in the backend, the Worker and the test backend"
+        detail: "Backend::shards; the Worker groups statements into one D1 batch per shard and runs the shards at once; the test backend has eight shard databases and spreads fixtures written by hand over two. 196 univ-api tests pass; the Worker builds for wasm32."
+        state: done
   - key: 01a1aacb-d02a-7425-9f48-3b3be8f65718
     id: w4-lookup
     kind: task
@@ -65,6 +74,15 @@ blocks:
         title: "Lookup by id, designation and layer links through the id index"
         detail: "Done when objects/ and layers tests pass with objects in two shards."
         state: open
+      - key: 01a1aae4-8fa9-73be-84a1-c290f12b1b0a
+        at: 2026-11-05T08:47:48Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Lookup by id, designation and layer links through the id index"
+        detail: "object_shards gives the shard and whether a release holds an id; designations are read on every shard of the release; layer links read object_shards."
+        state: done
   - key: 01a1aacb-d02a-7425-9f48-3b3cf1e0ef6c
     id: w4-volume
     kind: task
@@ -78,6 +96,15 @@ blocks:
         title: "Volume query across shards, page order kept"
         detail: "Done when a test pages a query whose results come from two shards, in id order, cursor unchanged."
         state: open
+      - key: 01a1aae4-8fa9-73be-84a1-c291344a4c5f
+        at: 2026-11-05T08:47:48Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Volume query across shards, page order kept"
+        detail: "Shards chosen by the Morton range of the box's cells against shard_cells; each gives its first page, merged by id. A test pages one crowd placed three ways (one shard, by parity, uneven blocks over three) and gets identical pages and cursors."
+        state: done
   - key: 01a1aacb-d02a-7425-9f48-3b3d6c99201f
     id: w4-xtask
     kind: task
@@ -91,6 +118,15 @@ blocks:
         title: "Every shard database prepared by serve, integration, explore and the benches"
         detail: "Done when cargo xtask integration passes on the sharded fixture state."
         state: open
+      - key: 01a1aae4-8fa9-73be-84a1-c292c7e8a7be
+        at: 2026-11-05T08:47:48Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Every shard database prepared by serve, integration, explore and the benches"
+        detail: "release_tables runs the schema on each bound shard and the catalogue; the lookup bench samples ids from object_shards in the database whose latest names a release. Done when cargo xtask integration passes."
+        state: active
   - key: 01a1aacb-d02a-7425-9f48-3b3e75df2feb
     id: build-issues
     kind: note

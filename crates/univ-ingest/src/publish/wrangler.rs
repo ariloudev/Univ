@@ -12,10 +12,7 @@ use univ_model::release::shards::Database;
 use super::r2batch::R2Batch;
 use super::{QueryRow, ReadBack, Store};
 
-/// The catalogue database `wrangler.toml` names.
-pub const DATABASE: &str = univ_model::release::shards::CATALOGUE_NAME;
-
-pub use univ_model::release::shards::bound_shards;
+use univ_model::release::shards::bound_shards;
 
 /// The R2 bucket `wrangler.toml` names.
 pub const BUCKET: &str = "univ-releases";
@@ -286,13 +283,15 @@ impl Store for Wrangler {
 
 #[cfg(test)]
 mod tests {
+    use univ_model::release::shards::CATALOGUE_NAME;
+
     use super::*;
 
     #[test]
     fn the_names_are_those_of_the_repositorys_wrangler_toml() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let toml = std::fs::read_to_string(root.join("wrangler.toml")).unwrap();
-        assert!(toml.contains(&format!("database_name = \"{DATABASE}\"")));
+        assert!(toml.contains(&format!("database_name = \"{CATALOGUE_NAME}\"")));
         assert_eq!(bound_shards(&toml), 8);
         // Univ Server binds the same (univ-server's tests/config.rs checks their ids).
         let server =
@@ -316,7 +315,7 @@ mod tests {
         let recorded =
             include_bytes!("../../tests/fixtures/wrangler/d1-execute-syntax-error.stderr");
         assert!(recorded.contains(&0x1b), "the recording holds escapes");
-        let args = ["d1", "execute", DATABASE, "--command", "SELEC 1"];
+        let args = ["d1", "execute", CATALOGUE_NAME, "--command", "SELEC 1"];
         let message = said(&args, "exit status: 1", b"", recorded);
         assert!(!message.contains('\u{1b}'), "{message:?}");
         assert!(

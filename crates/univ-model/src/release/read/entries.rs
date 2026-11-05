@@ -27,27 +27,26 @@ fn designation(c: &Columns<'_>, source: &str, identifier: &str) -> Result<Design
         .map_err(|e| c.error("identifier", format!("{identifier:?}: {e}")))
 }
 
-/// The entry's number, source id and identifier, which other entries' resolutions name.
-pub(super) fn head(v: &Vocabulary, row: &Row) -> Result<(u32, Designation), ReadError> {
-    let c = Columns::new(v, TABLE, row);
+/// The designation a row of `c` gives: its source by number (`source`) and its `identifier`.
+fn coded(v: &Vocabulary, c: &Columns<'_>) -> Result<Designation, ReadError> {
     let n = c.int("source")?;
     let source = v
         .source(n)
         .ok_or_else(|| c.error("source", format!("{n} is not among the release's sources")))?;
-    Ok((
-        c.small("entry")?,
-        designation(&c, source, c.text("identifier")?)?,
-    ))
+    designation(c, source, c.text("identifier")?)
 }
 
-/// The designations of an object's `designations` rows, each its source's id (`source`) and
-/// `identifier`.
+/// The entry's number, source id and identifier, which other entries' resolutions name.
+pub(super) fn head(v: &Vocabulary, row: &Row) -> Result<(u32, Designation), ReadError> {
+    let c = Columns::new(v, TABLE, row);
+    Ok((c.small("entry")?, coded(v, &c)?))
+}
+
+/// The designations of an object's `designations` rows, each its source by number (`source`)
+/// and `identifier`, as the table holds them.
 pub(super) fn designations(v: &Vocabulary, rows: &[Row]) -> Result<Vec<Designation>, ReadError> {
     rows.iter()
-        .map(|row| {
-            let c = Columns::new(v, "designations", row);
-            designation(&c, c.text("source")?, c.text("identifier")?)
-        })
+        .map(|row| coded(v, &Columns::new(v, "designations", row)))
         .collect()
 }
 

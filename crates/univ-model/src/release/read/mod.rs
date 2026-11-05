@@ -155,8 +155,8 @@ impl std::fmt::Display for ReadError {
 impl std::error::Error for ReadError {}
 
 /// The object of row `object` with its `entries`, `measurements` and `designations` rows, each
-/// every row of the object in the release, in any order. A `designations` row holds `source`,
-/// its source's id, and `identifier`, as a join of `designations` with `sources` gives them.
+/// every row of the object in the release, in any order, as their tables hold them: a source by
+/// its number in the release, which the vocabulary names.
 ///
 /// The record's designations are those rows. A release built before the `designations` table
 /// holds none for any object: given no rows, the record gives the entries' own designations.

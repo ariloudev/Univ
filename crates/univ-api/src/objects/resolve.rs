@@ -154,15 +154,15 @@ pub async fn by_name<B: Backend>(
     Ok(objects)
 }
 
-/// The objects of `release` carrying the designation `identifier` of source `source`, by id:
-/// every object shard of the release is read at once, since a designation says nothing of
-/// where its object is.
+/// The objects of `release` carrying the designation `identifier` of source `source`, by id,
+/// each with the shard it is in: every object shard of the release is read at once, since a
+/// designation says nothing of where its object is.
 pub async fn by_designation<B: Backend>(
     backend: &B,
     release: u32,
     source: &str,
     identifier: &str,
-) -> Result<Vec<u64>, Problem> {
+) -> Result<Vec<(u64, u32)>, Problem> {
     let Some(n) = vocabulary(backend, release).await?.source_n(source) else {
         return Ok(Vec::new());
     };
@@ -180,14 +180,12 @@ pub async fn by_designation<B: Backend>(
             )
         })
         .collect();
-    let mut ids = backend
-        .shards(&statements)
-        .await?
-        .iter()
-        .flatten()
-        .map(|row| column(row, "object_id"))
-        .collect::<Result<Vec<u64>, _>>()?;
-    ids.sort_unstable();
-    ids.dedup();
-    Ok(ids)
+    let mut found = Vec::new();
+    for (&shard, rows) in map.shards.iter().zip(backend.shards(&statements).await?) {
+        for row in &rows {
+            found.push((column(row, "object_id")?, shard));
+        }
+    }
+    found.sort_unstable();
+    Ok(found)
 }

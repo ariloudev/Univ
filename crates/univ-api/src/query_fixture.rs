@@ -2,18 +2,17 @@
 //! positions, their cells as univ-model's cell index computes them, and the structures' cells.
 //! The positions are a TEST FIXTURE, not data.
 
-use std::collections::BTreeMap;
 use std::fmt::Write;
 
 use serde_json::{Value, json};
 use univ_model::geometry::Aabb;
 use univ_model::release::cells::{CellSpace, structure_cells};
-use univ_model::release::shards::morton;
 
 use crate::http::{Method, Request, Response};
 use crate::layers_fixture::db;
 pub use crate::testkit::pointers;
 use crate::testkit::{Sqlite, body};
+use crate::testkit_shards::by_parity;
 
 /// The terms the fixture's objects are coded in.
 pub const BODY: i64 = 100;
@@ -53,17 +52,13 @@ pub fn galaxy(id: u64, at: [f64; 3]) -> Placed {
 /// entry from hipparcos-2007 for each star and for galaxy 1002. Each object is in shard
 /// `id % 2` (`testkit_shards`).
 pub fn volume_db(objects: &[Placed]) -> Sqlite {
-    volume_db_in(objects, None)
+    volume_db_placed(objects, by_parity)
 }
 
-/// [`volume_db`] with each object in the object shard `shard` gives its id, the release's
-/// index of the shards written as a build writes it.
-pub fn volume_db_sharded(objects: &[Placed], shard: &dyn Fn(u64) -> u32) -> Sqlite {
-    volume_db_in(objects, Some(shard))
-}
-
-fn volume_db_in(objects: &[Placed], shard: Option<&dyn Fn(u64) -> u32>) -> Sqlite {
+/// [`volume_db`] with each of `objects` in the object shard `place` gives its id.
+pub fn volume_db_placed(objects: &[Placed], place: fn(u64) -> u32) -> Sqlite {
     let db = db();
+    db.place_by(place);
     db.exec(&format!(
         "INSERT INTO terms VALUES (2, {BODY}, 'body'), (2, {GROUP}, 'galaxy_group'), \
          (2, {COSMIC_WEB}, 'cosmic_web'), (2, {STARS}, 'stars');
@@ -77,7 +72,7 @@ fn volume_db_in(objects: &[Placed], shard: Option<&dyn Fn(u64) -> u32>) -> Sqlit
                           {{\"member\":\"tracer\",\"kind\":\"quasar\",\"at\":[320.0,0.0,0.0]}}]}}}}}}',
            '{{\"min\":[300.0,0.0,0.0],\"max\":[320.0,0.0,0.0]}}');"
     ));
-    let mut sql = objects_sql(objects, shard);
+    let mut sql = objects_sql(objects);
     let rows: Vec<(String, String)> = db
         .connection()
         .prepare("SELECT id, bounds FROM structures WHERE release = 2 AND bounds IS NOT NULL")
@@ -107,11 +102,9 @@ fn volume_db_in(objects: &[Placed], shard: Option<&dyn Fn(u64) -> u32>) -> Sqlit
     db
 }
 
-/// The rows of `objects`, their cells and entries, and with `shard` the index of their shards.
-fn objects_sql(objects: &[Placed], shard: Option<&dyn Fn(u64) -> u32>) -> String {
+/// The rows of `objects`, their cells and entries.
+fn objects_sql(objects: &[Placed]) -> String {
     let mut sql = String::new();
-    let mut runs: BTreeMap<(u32, i64), (u64, u64)> = BTreeMap::new();
-    let mut counts: BTreeMap<u32, u64> = BTreeMap::new();
     for object in objects {
         let space = if object.domain == STARS {
             CellSpace::Stars
@@ -120,18 +113,6 @@ fn objects_sql(objects: &[Placed], shard: Option<&dyn Fn(u64) -> u32>) -> String
         };
         let cell = space.cell(object.at).unwrap();
         let [x, y, z] = object.at;
-        if let Some(shard) = shard.map(|s| s(object.id)) {
-            writeln!(
-                sql,
-                "INSERT INTO object_shards VALUES (2, {}, {shard});",
-                object.id
-            )
-            .unwrap();
-            let code = morton(cell).unwrap();
-            let run = runs.entry((shard, object.domain)).or_insert((code, code));
-            *run = (run.0.min(code), run.1.max(code));
-            *counts.entry(shard).or_default() += 1;
-        }
         writeln!(
             sql,
             "INSERT INTO objects (release, id, kind, placed, scale_domain, x, y, z) \
@@ -156,22 +137,6 @@ fn objects_sql(objects: &[Placed], shard: Option<&dyn Fn(u64) -> u32>) -> String
             )
             .unwrap();
         }
-    }
-    for ((shard, domain), (first, last)) in runs {
-        writeln!(
-            sql,
-            "INSERT INTO shard_cells VALUES (2, {shard}, {domain}, {first}, {last}) \
-             ON CONFLICT DO UPDATE SET first = min(first, {first}), last = max(last, {last});"
-        )
-        .unwrap();
-    }
-    for (shard, n) in counts {
-        writeln!(
-            sql,
-            "INSERT INTO release_shards VALUES (2, {shard}, {n}, 0) \
-             ON CONFLICT DO UPDATE SET objects = objects + {n};"
-        )
-        .unwrap();
     }
     sql
 }

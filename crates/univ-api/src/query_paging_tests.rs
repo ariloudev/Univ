@@ -8,19 +8,18 @@ use serde_json::{Value, json};
 
 use crate::http::{Method, Request};
 use crate::layers_fixture::{layer, publish, sn1987a};
-use crate::query_fixture::{
-    galaxy, hits, pointers, query, request, sphere, volume_db, volume_db_sharded,
-};
+use crate::query_fixture::{galaxy, hits, pointers, query, request, sphere, volume_db_placed};
 use crate::testkit::Sqlite;
+use crate::testkit_shards::by_parity;
 
 /// `n` galaxies from id 3000 in a block about (-500, 5, 5) Mpc, and a public layer with an
 /// item there; the layer's id and its key.
 fn crowded(n: u64) -> (Sqlite, String, String) {
-    crowded_in(n, None)
+    crowded_placed(n, by_parity)
 }
 
-/// [`crowded`] with each galaxy in the object shard `shard` gives its id.
-fn crowded_in(n: u64, shard: Option<&dyn Fn(u64) -> u32>) -> (Sqlite, String, String) {
+/// [`crowded`] with each galaxy in the object shard `place` gives its id.
+fn crowded_placed(n: u64, place: fn(u64) -> u32) -> (Sqlite, String, String) {
     let objects: Vec<_> = (0..n)
         .map(|i| {
             let n = |v: u64| f64::from(u32::try_from(v).unwrap());
@@ -28,10 +27,7 @@ fn crowded_in(n: u64, shard: Option<&dyn Fn(u64) -> u32>) -> (Sqlite, String, St
             galaxy(3_000 + i, at)
         })
         .collect();
-    let db = match shard {
-        Some(shard) => volume_db_sharded(&objects, shard),
-        None => volume_db(&objects),
-    };
+    let db = volume_db_placed(&objects, place);
     let key = db.key();
     let id = layer(
         &db,
@@ -106,13 +102,11 @@ fn paging_a_query_whose_layers_did_not_change_gives_the_same_pages_in_one_order(
 
 #[test]
 fn a_page_holds_its_results_in_the_same_order_whichever_object_shards_they_come_from() {
-    let in_one: &dyn Fn(u64) -> u32 = &|_| 0;
-    let by_parity: &dyn Fn(u64) -> u32 = &|id| u32::try_from(id % 2).unwrap();
+    let in_one: fn(u64) -> u32 = |_| 0;
     // Uneven blocks over three shards: the first page draws mostly on one of them.
-    let in_blocks: &dyn Fn(u64) -> u32 =
-        &|id| [0, 0, 0, 2, 5][usize::try_from(id / 300 % 5).unwrap()];
-    let paged = |shard| {
-        let (db, _, _) = crowded_in(1_500, Some(shard));
+    let in_blocks: fn(u64) -> u32 = |id| [0, 0, 0, 2, 5][usize::try_from(id / 300 % 5).unwrap()];
+    let paged = |place| {
+        let (db, _, _) = crowded_placed(1_500, place);
         pages(&db, &crowd())
             .iter()
             .map(|p| (hits(p), p["next"].clone()))
@@ -123,7 +117,7 @@ fn a_page_holds_its_results_in_the_same_order_whichever_object_shards_they_come_
     assert_eq!(paged(by_parity), one);
     assert_eq!(paged(in_blocks), one);
     // The objects did come from the shards named.
-    let (db, _, _) = crowded_in(1_500, Some(in_blocks));
+    let (db, _, _) = crowded_placed(1_500, in_blocks);
     let count = |i: u32| -> i64 {
         db.shard(i)
             .query_row("SELECT COUNT(*) FROM objects WHERE id >= 3000", [], |r| {

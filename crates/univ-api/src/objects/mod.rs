@@ -13,11 +13,11 @@ use univ_model::api::lookup::{
     Ambiguity, LedgerChange, LookedUp, ObjectChoice, ObjectChoices, ObjectMerged,
 };
 use univ_model::api::objects::ObjectRecord;
-use univ_model::release::read::{self, Vocabulary};
+use univ_model::release::read;
 
 use self::resolve::{Resolved, by_designation, by_name, replaced};
 use self::vocabulary::vocabulary;
-use crate::backend::{Backend, Row, column, first};
+use crate::backend::{Backend, Row, first};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{RELEASE_PARAM, pinned, resolve};
@@ -55,7 +55,7 @@ pub async fn get<B: Backend>(
             format!("An object id is a positive whole number, not {id:?}."),
         )
     })?;
-    if let Some(record) = record(backend, release, id).await? {
+    if let Some(record) = record(backend, release, id, None).await? {
         return Ok(record);
     }
     let looked_up = LookedUp::Id { id };
@@ -122,6 +122,8 @@ pub async fn get<B: Backend>(
 )]
 pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
+    // The shard of each object a designation was found in, which saves asking the index.
+    let mut shards = Vec::new();
     let (looked_up, ambiguity, found) = match (
         request.param("name"),
         request.param("source"),
@@ -133,13 +135,14 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
         }
         (None, Some(source), Some(designation)) => {
             let found = by_designation(backend, release, &source, &designation).await?;
+            shards = found.iter().map(|&(_, shard)| shard).collect();
             (
                 LookedUp::Designation {
                     source,
                     designation,
                 },
                 Ambiguity::SharedDesignation,
-                found.into_iter().map(|id| (id, Vec::new())).collect(),
+                found.into_iter().map(|(id, _)| (id, Vec::new())).collect(),
             )
         }
         (name, source, designation) => {
@@ -158,7 +161,7 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
     };
     match found.as_slice() {
         [] => Err(not_found(release, &looked_up)),
-        [(id, _)] => present_after_all(backend, release, *id).await,
+        [(id, _)] => present_after_all(backend, release, *id, shards.first().copied()).await,
         _ => {
             let answer = choices(release, looked_up, ambiguity, Vec::new(), found)?;
             Ok(if request.param(RELEASE_PARAM).is_none() {
@@ -171,14 +174,20 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
 }
 
 /// The record of object `id` of `release`, or none when the release does not hold it: its
-/// shard from the catalogue's index, then every row of the object in one round trip to it.
+/// shard, `known` or from the catalogue's index, then every row of the object in one round trip
+/// to it.
 async fn record<B: Backend>(
     backend: &B,
     release: u32,
     id: u64,
+    known: Option<u32>,
 ) -> Result<Option<Response>, Problem> {
-    let Some(shard) = shard_of(backend, release, id).await? else {
-        return Ok(None);
+    let shard = match known {
+        Some(shard) => shard,
+        None => match shard_of(backend, release, id).await? {
+            Some(shard) => shard,
+            None => return Ok(None),
+        },
     };
     let params = [json!(release), json!(id)];
     let batch = backend
@@ -222,7 +231,6 @@ async fn record<B: Backend>(
         ));
     };
     let vocabulary = vocabulary(backend, release).await?;
-    let designations = by_source_id(&vocabulary, designations)?;
     let record = read::object(&vocabulary, &object, &entries, &measurements, &designations)
         .map_err(|error| {
             Problem::new(
@@ -233,43 +241,15 @@ async fn record<B: Backend>(
     Ok(Some(pinned(Response::json(&record)?, release)))
 }
 
-/// The `designations` rows of an object with each source named by its id, as the catalogue
-/// names it, in the order of source id and identifier.
-fn by_source_id(vocabulary: &Vocabulary, rows: Vec<Row>) -> Result<Vec<Row>, Problem> {
-    let mut named = rows
-        .into_iter()
-        .map(|mut row| {
-            let n: i64 = column(&row, "source")?;
-            let id = vocabulary.source(n).ok_or_else(|| {
-                Problem::new(
-                    ProblemType::InternalError,
-                    format!("A designation names source {n}, which the release does not list."),
-                )
-            })?;
-            row.insert("source".to_owned(), json!(id));
-            Ok(row)
-        })
-        .collect::<Result<Vec<Row>, Problem>>()?;
-    let key = |row: &Row| {
-        let text = |name| {
-            row.get(name)
-                .and_then(|v| v.as_str())
-                .unwrap_or_default()
-                .to_owned()
-        };
-        (text("source"), text("identifier"))
-    };
-    named.sort_by_key(key);
-    Ok(named)
-}
-
-/// The record of an object a lookup found, which the release holds.
+/// The record of an object a lookup found, which the release holds, in the shard `known` when
+/// the lookup found it there.
 async fn present_after_all<B: Backend>(
     backend: &B,
     release: u32,
     id: u64,
+    known: Option<u32>,
 ) -> Result<Response, Problem> {
-    record(backend, release, id).await?.ok_or_else(|| {
+    record(backend, release, id, known).await?.ok_or_else(|| {
         Problem::new(
             ProblemType::InternalError,
             format!("Release {release} names object {id}, which it does not hold."),

@@ -80,7 +80,14 @@ impl Sqlite {
     /// to its shard.
     pub fn exec(&self, sql: &str) -> &Self {
         self.connection.execute_batch(sql).unwrap();
-        Shards::distribute(&self.connection);
+        self.shards.distribute(&self.connection);
+        self
+    }
+
+    /// Places each object written from now on that no `object_shards` row places by `place`
+    /// rather than by the parity of its id.
+    pub fn place_by(&self, place: fn(u64) -> u32) -> &Self {
+        self.shards.place_by(place);
         self
     }
 

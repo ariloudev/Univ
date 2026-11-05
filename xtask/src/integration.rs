@@ -128,7 +128,8 @@ pub(crate) fn prepared_real_state(root: &Path) -> Option<std::path::PathBuf> {
 /// `state` lacks, the catalogue database and each object shard the Worker binds, as one built
 /// before the schema grew does: its rows stay as they are, and the Worker reads the new tables
 /// as holding nothing for it. The schema is only `CREATE … IF NOT EXISTS`; the schema version
-/// is Univ Ingest's to record when it publishes.
+/// is Univ Ingest's to record when it publishes. One database after another: Wrangler runs on
+/// one local state at once fail (`SQLITE_BUSY`), whichever databases they open.
 pub(crate) fn release_tables(root: &Path, state: &Path) -> bool {
     let file = root.join("target/serve/release-schema.sql");
     let written = file
@@ -169,7 +170,7 @@ pub(crate) fn migrate(root: &Path, state: &Path) -> bool {
 
 /// `npx wrangler <subcommand> --persist-to <state>`, run from the Worker's crate directory,
 /// quiet and without telemetry, as Univ Ingest runs Wrangler.
-fn wrangler(root: &Path, subcommand: &str, state: &Path) -> Command {
+pub(crate) fn wrangler(root: &Path, subcommand: &str, state: &Path) -> Command {
     let mut wrangler = command(&root.join(WORKER_DIR), "npx");
     wrangler
         .args(["--no-install", "wrangler", subcommand])
