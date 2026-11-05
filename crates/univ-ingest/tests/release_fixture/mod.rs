@@ -93,6 +93,8 @@ pub fn record(cache: &Path, id: &str, report: &NormalizationReport) {
 pub fn cross(f: &Fixture) -> CrossMatched {
     let mut basis = Basis::read(&workspace().join("rules"), &[]).unwrap();
     basis.structures.clone_from(&f.structures);
+    // Small enough that the fixture's objects take more than one object shard.
+    basis.config.shard_budget_bytes = Some(SHARD_BUDGET);
     let release =
         Release::planck_2018().with_peculiar_velocity(basis.ranking.peculiar_velocity_km_s);
     let state = State::read(f.state.path()).unwrap();
@@ -124,6 +126,9 @@ pub fn tiles(f: &Fixture, crossed: &CrossMatched) -> Built {
     };
     build_tiles(&crossed.objects, &context).unwrap()
 }
+
+/// The fixture's budget of an object shard, in estimated D1 bytes.
+pub const SHARD_BUDGET: u64 = 12_000;
 
 pub const BUILT_AT: &str = "2026-11-03T12:00:00Z";
 

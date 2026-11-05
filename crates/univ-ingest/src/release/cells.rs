@@ -45,6 +45,38 @@ fn space(name: &str) -> Option<CellSpace> {
     SPACES.into_iter().find(|s| s.name() == name)
 }
 
+/// The level-0 cell of each placed object of `objects`, in the scale domains `definitions` give
+/// them under `cosmology`.
+///
+/// # Errors
+///
+/// Fails when an object cannot be given its scale domain or a position is not finite.
+pub fn object_cells(
+    objects: &[ReleaseObject],
+    definitions: &[SourceDefinition],
+    cosmology: &Cosmology,
+) -> Result<Vec<ObjectCell>, String> {
+    let assigned = assign(objects, definitions, cosmology).map_err(|e| e.to_string())?;
+    let mut cells = Vec::new();
+    for (domain, points) in &assigned.domains {
+        let name = name_of(*domain);
+        let space = space(name).ok_or_else(|| format!("no cell space for {name}"))?;
+        for p in &points.points {
+            let cell = space
+                .cell(p.position)
+                .ok_or_else(|| format!("object {}'s position has no cell", p.id))?;
+            cells.push(ObjectCell {
+                domain: name,
+                ix: cell.ix,
+                iy: cell.iy,
+                iz: cell.iz,
+                object_id: p.id.get(),
+            });
+        }
+    }
+    Ok(cells)
+}
+
 /// The cell index of release `release`: the placed `objects`, in the scale domains
 /// `definitions` give them under `cosmology`, and the `structures`, each by its id with its
 /// ICRS bounding box in Mpc or the reason it has none.
@@ -59,24 +91,27 @@ pub fn cell_rows(
     cosmology: &Cosmology,
     structures: &[(String, Result<Aabb, String>)],
 ) -> Result<CellRows, String> {
-    let assigned = assign(objects, definitions, cosmology).map_err(|e| e.to_string())?;
-    let mut rows = CellRows::default();
-    for (domain, points) in &assigned.domains {
-        let name = name_of(*domain);
-        let space = space(name).ok_or_else(|| format!("no cell space for {name}"))?;
-        for p in &points.points {
-            let cell = space
-                .cell(p.position)
-                .ok_or_else(|| format!("object {}'s position has no cell", p.id))?;
-            rows.objects.push(ObjectCell {
-                domain: name,
-                ix: cell.ix,
-                iy: cell.iy,
-                iz: cell.iz,
-                object_id: p.id.get(),
-            });
-        }
-    }
+    index_rows(
+        release,
+        object_cells(objects, definitions, cosmology)?,
+        structures,
+    )
+}
+
+/// The cell index of release `release` of the objects' cells, `objects`, and the `structures`.
+///
+/// # Errors
+///
+/// Fails when a structure's bounding box has no cells.
+pub fn index_rows(
+    release: u32,
+    objects: Vec<ObjectCell>,
+    structures: &[(String, Result<Aabb, String>)],
+) -> Result<CellRows, String> {
+    let mut rows = CellRows {
+        objects,
+        ..CellRows::default()
+    };
     for (id, bounds) in structures {
         let bounds = match bounds {
             Ok(bounds) => bounds,

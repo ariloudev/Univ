@@ -100,7 +100,8 @@ fn the_manifest_lists_every_file_of_the_release_with_its_sha256() {
         }
     }
     for path in [
-        "d1/0000-schema.sql",
+        "d1/catalogue/0000-schema.sql",
+        "d1/shard-00/0000-schema.sql",
         "tiles/stars/manifest.json",
         "tiles/cosmic_web/r.bin",
         "rules/release.yaml",

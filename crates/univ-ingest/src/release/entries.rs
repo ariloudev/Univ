@@ -18,6 +18,7 @@ use super::json;
 use super::terms::{SourceIndex, Terms};
 
 /// What numbers the rows of a release: its number, terms and sources.
+#[derive(Clone)]
 pub struct Numbering {
     pub release: u32,
     pub terms: Terms,

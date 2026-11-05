@@ -103,6 +103,15 @@ blocks:
           session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
         title: "Cell packing and the oversized-cell refusal"
         state: active
+      - key: 01a1aa67-9589-726e-b9e6-bdf50a695973
+        at: 2026-11-05T06:31:17Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Cell packing and the oversized-cell refusal"
+        detail: "release/packing.rs: Morton order by domain, greedy fill, unplaced by id with a reserve, OversizedCell names the cell, objects and estimate."
+        state: done
   - key: 01a1aa43-b4c9-7130-a21d-11fb2bd01f5b
     id: w3-t3
     kind: task
@@ -115,6 +124,15 @@ blocks:
           session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
         title: "D1 writer routes rows by database"
         state: open
+      - key: 01a1aa67-9589-726e-b9e6-bdf67cf7b118
+        at: 2026-11-05T06:31:17Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "D1 writer routes rows by database"
+        detail: "release/d1/: one writer of the catalogue and N shards, routing by table and `set_shard`; a measuring mode without a sink; files under d1/catalogue and d1/shard-NN."
+        state: done
   - key: 01a1aa43-b4c9-7130-a21d-11fc5f9bf1b7
     id: w3-t4
     kind: task
@@ -127,6 +145,15 @@ blocks:
           session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
         title: "Build writes shards and their manifest"
         state: open
+      - key: 01a1aa67-9589-726e-b9e6-bdf7f405603a
+        at: 2026-11-05T06:31:17Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build writes shards and their manifest"
+        detail: "release/sharded.rs: a measuring pass by cell, packing, each object's rows with its cell to its shard and its shard to object_shards; shard_cells and release_shards; per-database size checks; `shard_budget_bytes` in the release config; tests/release_shards.rs (5 tests) on a fixture of two shards."
+        state: done
   - key: 01a1aa43-b4c9-7130-a21d-11fdb6376b7b
     id: w3-t5
     kind: task
@@ -139,6 +166,14 @@ blocks:
           session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
         title: "Store by database"
         state: open
+      - key: 01a1aa67-9589-726e-b9e6-bdf82de65ae9
+        at: 2026-11-05T06:31:17Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Store by database"
+        state: active
   - key: 01a1aa43-b4c9-7130-a21d-11fef13452a9
     id: w3-t6
     kind: task
