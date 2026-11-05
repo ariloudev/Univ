@@ -19,3 +19,32 @@ versions:
     title: "W2 sources"
     goal: "The seven new source definitions exist with recorded fixtures, their access methods and matching rules, and fixture builds hold their entries; merged into product/release-10"
     status: active
+  - key: 01a1aa41-5d94-739e-80cd-f506f7ffcb25
+    at: 2026-11-05T05:49:32Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W2 sources"
+    goal: "The seven new source definitions exist with recorded fixtures, their access methods and matching rules, and fixture builds hold their entries; merged into product/release-10"
+    status: done
+blocks:
+  - key: 01a1aa41-5d94-739e-80cd-f503c9a5e4db
+    id: w2-merged
+    kind: note
+    versions:
+      - key: 01a1aa41-5d94-739e-80cd-f5051069d598
+        at: 2026-11-05T05:49:32Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W2 merged"
+        markdown: |-
+          Merged as `9304264`.
+
+          - **Gate:** 13 gates passed; trace accepted.
+          - **In `sources/`:** DESI DR1, SDSS DR17 distant galaxies and quasars, 2dFGRS (221,414 galaxies), ALFALFA α.100 (code 1, errors e_W50 / 2).
+          - **Waiting, not in W2:** GAMA DR4 and WISE × SuperCOSMOS are ready in the scratchpad and wait for the permission send date. 2MPZ waits for its sequential download (about a third done). Each goes in by the start of W5.
+          - **Reviews:** `/code-review` found eight real defects, all fixed before any data was fetched. Among them: DESI chunks that would have missed negative ids, 2dFGRS quasars given a galaxy error, ALFALFA velocities without their published error, and every pair searched at 60″.
+        tone: success

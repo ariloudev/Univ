@@ -10,3 +10,34 @@ versions:
     title: "W3 shards in ingest"
     goal: "Univ Ingest builds a release as a catalogue database and object shards by cell, publishes and prunes across them, and refuses the oversized cell and the unbound shard; merged into product/release-10"
     status: planned
+  - key: 01a1aa41-5d94-739e-80cd-f50798506f08
+    at: 2026-11-05T05:49:32Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3 shards in ingest"
+    goal: "Univ Ingest builds a release as a catalogue database and object shards by cell, publishes and prunes across them, and refuses the oversized cell and the unbound shard; merged into product/release-10"
+    status: active
+blocks:
+  - key: 01a1aa41-5d94-739e-80cd-f50479af774f
+    id: q-permission-date-3
+    kind: question
+    versions:
+      - key: 01a1aa41-5d94-739e-80cd-f5081b7e0498
+        at: 2026-11-05T05:49:32Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "When will you send the three permission requests (WFAU, M. Bilicki, GAMA), so that WISE × SuperCOSMOS and GAMA DR4 can record whom they asked and when?"
+        header: "Send date"
+        context: "Asked again: closing W2's Yard Log withdrew the earlier copy. Under the spec, a permission-pending source names whom it asked and on which date. The definitions, tests and matching pairs are ready in my scratchpad, out of `sources/`. W3 and W4 don't need them; they go in at W5's start at the latest."
+        options:
+          - label: "Sending today"
+            detail: "I record 2026-11-05 as the date asked and put both definitions in sources/ during W3. Choose this only if you send them today."
+            recommended: true
+          - label: "I'll give the date"
+            detail: "Answer with the date once they are sent. The definitions stay out until then, and go in at the start of W5 at the latest."
+          - label: "Leave them out"
+            detail: "Release 10 goes without WISE × SuperCOSMOS and GAMA. They come back in a later release."

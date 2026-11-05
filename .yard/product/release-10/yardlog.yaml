@@ -3,7 +3,7 @@ key: 01a1a938-deb8-7399-857b-e75079c6c472
 branch: "product/release-10"
 base: "develop"
 title: "product/release-10"
-revision: 4
+revision: 5
 opened:
   at: 2026-11-05T01:00:38Z
   revision: 1
@@ -23,6 +23,17 @@ stages:
     id: wave-w4
   - key: 01a1a938-deb8-7399-857b-e75661704856
     id: wave-w5
+submissions:
+  - key: 01a1aa41-5d94-739e-80cd-f509a7e0fe77
+    blocks:
+      - 01a1aa41-5d94-739e-80cd-f50479af774f
+    changes:
+      - what: sent
+        at: 2026-11-05T05:49:32Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
 acts:
   - at: 2026-11-05T01:00:38Z
     revision: 1
@@ -41,6 +52,11 @@ acts:
       session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
   - at: 2026-11-05T02:21:51Z
     revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-05T05:49:32Z
+    revision: 5
     by:
       host: claude-code
       session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
