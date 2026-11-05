@@ -35,14 +35,15 @@ pub enum RedshiftKind {
 /// A redshift as its source published it, heliocentric, with the CMB-frame redshift derived from
 /// it and the dipole model of the derivation; or, where its source publishes only that, in the
 /// CMB frame, kept as published.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawRedshift")]
 pub struct Redshift {
     pub kind: RedshiftKind,
     pub kind_of_value: KindOfValue,
     /// The velocity cz as published, when the source gives cz rather than z: the redshift in
-    /// its published frame is then cz / c, the definition of cz.
-    pub velocity: Option<Quantity>,
+    /// its published frame is then cz / c, the definition of cz. Boxed, as most surveys
+    /// publish z.
+    pub velocity: Option<Box<Quantity>>,
     /// The heliocentric redshift as measured, and the CMB-frame redshift derived from it; or the
     /// CMB-frame redshift as published (see [`CmbRedshift::published`]).
     pub cmb: CmbRedshift,
@@ -73,7 +74,7 @@ impl TryFrom<RawRedshift> for Redshift {
         Ok(Self {
             kind: raw.kind,
             kind_of_value: raw.kind_of_value,
-            velocity: raw.velocity,
+            velocity: raw.velocity.map(Box::new),
             cmb: raw.cmb,
         })
     }
@@ -124,7 +125,7 @@ impl Redshift {
         Ok(Self {
             kind,
             kind_of_value,
-            velocity,
+            velocity: velocity.map(Box::new),
             cmb,
         })
     }
@@ -149,7 +150,7 @@ impl Redshift {
         Ok(Self {
             kind,
             kind_of_value,
-            velocity,
+            velocity: velocity.map(Box::new),
             cmb,
         })
     }

@@ -152,7 +152,7 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
                 let published = z.cmb.as_published();
                 check(
                     m,
-                    z.velocity.as_ref().unwrap_or(&published),
+                    z.velocity.as_deref().unwrap_or(&published),
                     &published,
                     z.kind_of_value,
                 );

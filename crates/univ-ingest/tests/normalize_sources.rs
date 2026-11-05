@@ -63,7 +63,7 @@ fn twomrs_rows_keep_cz_and_derive_heliocentric_and_cmb_redshifts() {
     let v = m31.velocity.as_deref().unwrap();
     assert_eq!((v.native.value, sigma(v)), (-300.0, 4.0));
     let r = &m31.redshifts[0];
-    assert_eq!(r.velocity.unwrap().value, -300.0);
+    assert_eq!(r.velocity.as_deref().unwrap().value, -300.0);
     assert_eq!(r.cmb.measured.value, -300.0 / C);
     // Worked in Python from the Hipparcos galactic matrix and the Planck 2018 dipole:
     // cos θ = -0.76785, so z_cmb = (1 + z)γ(1 + β cos θ) - 1 = -0.0019461909.
@@ -102,7 +102,7 @@ fn twompp_rows_keep_their_reference_and_no_group() {
     // Row 1: 025.3962083 -89.3344722 01413509-8920041 2429 5 11.09 (no GID) 20096dF...C...0000J 0.
     let g = entry(&n, "01413509-8920041");
     fk5(g, 25.396_208_3, -89.334_472_2);
-    assert_eq!(g.redshifts[0].velocity.unwrap().value, 2_429.0);
+    assert_eq!(g.redshifts[0].velocity.as_deref().unwrap().value, 2_429.0);
     assert_eq!(g.redshifts[0].kind_of_value, KindOfValue::Measured);
     assert_eq!(
         (g.group_id.as_deref(), g.flags.get("Cln").unwrap().as_str()),
@@ -380,7 +380,10 @@ fn sdss_and_boss_rows_keep_z_and_derive_the_cmb_redshift() {
             sigma: 7.782_429e-6
         }
     );
-    assert_eq!((r.kind, r.velocity), (RedshiftKind::Spectroscopic, None));
+    assert_eq!(
+        (r.kind, r.velocity.as_deref()),
+        (RedshiftKind::Spectroscopic, None)
+    );
     // Worked in Python: cos θ = 0.42846, z_cmb = 0.0525324715.
     assert!((r.cmb.value.value - 0.052_532_471_5).abs() < 1e-9);
     // Row 3: 7700273112517203968, z 0.3186874.

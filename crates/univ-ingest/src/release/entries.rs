@@ -329,7 +329,7 @@ impl Measurements<'_, '_> {
             // published in a frame other than heliocentric names it: in the CMB frame no dipole
             // moved it there, and a barycentric one is never relabelled heliocentric.
             let published = z.cmb.as_published();
-            let native = z.velocity.as_ref().unwrap_or(&published);
+            let native = z.velocity.as_deref().unwrap_or(&published);
             let frame = match z.cmb.published {
                 RedshiftFrame::Heliocentric => None,
                 RedshiftFrame::Cmb => Some(r#"{"published_frame":"cmb"}"#),

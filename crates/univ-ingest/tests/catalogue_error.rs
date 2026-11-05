@@ -48,7 +48,7 @@ fn an_rms_velocity_for_the_catalogue_is_each_velocitys_symmetric_error() {
     assert_ne!(n.entries.len(), 0);
     for e in &n.entries {
         let r = &e.redshifts[0];
-        let cz = r.velocity.unwrap();
+        let cz = r.velocity.as_deref().unwrap();
         assert_eq!(sigma(cz.uncertainty), 85.0);
         // The dimensionless z it was read as carries σz = σv / c.
         let z = sigma(r.cmb.measured.uncertainty);

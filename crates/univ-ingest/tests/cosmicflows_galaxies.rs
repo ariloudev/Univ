@@ -65,7 +65,7 @@ fn every_row_reads_with_its_own_modulus_group_and_cmb_velocity() {
     };
     assert_eq!(z.cmb.published, RedshiftFrame::Cmb);
     assert_eq!(z.cmb.value.value, 1608.0 / SPEED_OF_LIGHT);
-    assert_eq!(z.velocity.unwrap().value, 1608.0);
+    assert_eq!(z.velocity.as_deref().unwrap().value, 1608.0);
     // Centaurus A: 27.804 ± 0.038 mag, 3.64 Mpc.
     let cen_a = entry(&n, "46957");
     let mpc = cen_a.distances[0]

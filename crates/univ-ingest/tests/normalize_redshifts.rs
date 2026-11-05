@@ -42,7 +42,7 @@ fn the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from() {
     let twomrs = normalized_fixture("twomrs");
     // Row 3: 09553318+6903549, cz -34 ± 4 km/s.
     let r = &entry(&twomrs, "09553318+6903549").redshifts[0];
-    assert_eq!(r.velocity.unwrap().value, -34.0);
+    assert_eq!(r.velocity.as_deref().unwrap().value, -34.0);
     assert_eq!(r.cmb.measured.value, -34.0 / 299_792.458);
     assert_ne!(r.cmb.value.value, r.cmb.measured.value);
     let yaml = serde_norway::to_string(r).unwrap();
