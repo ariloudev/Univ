@@ -92,8 +92,49 @@ impl Redshift {
         direction: Vec3,
         correction: &CmbCorrection,
     ) -> Result<Self, EntryError> {
+        Self::measured_in(
+            RedshiftFrame::Heliocentric,
+            measured,
+            kind,
+            kind_of_value,
+            direction,
+            correction,
+        )
+    }
+
+    /// A redshift relative to the Solar System barycentre, as DESI publishes it, moved to the
+    /// CMB frame as a heliocentric one is and kept named barycentric.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::heliocentric`].
+    pub fn barycentric(
+        measured: Quantity,
+        kind: RedshiftKind,
+        kind_of_value: KindOfValue,
+        direction: Vec3,
+        correction: &CmbCorrection,
+    ) -> Result<Self, EntryError> {
+        Self::measured_in(
+            RedshiftFrame::Barycentric,
+            measured,
+            kind,
+            kind_of_value,
+            direction,
+            correction,
+        )
+    }
+
+    fn measured_in(
+        frame: RedshiftFrame,
+        measured: Quantity,
+        kind: RedshiftKind,
+        kind_of_value: KindOfValue,
+        direction: Vec3,
+        correction: &CmbCorrection,
+    ) -> Result<Self, EntryError> {
         let (z, velocity) = as_redshift(measured)?;
-        let cmb = correction.apply(z, RedshiftFrame::Heliocentric, direction)?;
+        let cmb = correction.apply(z, frame, direction)?;
         Ok(Self {
             kind,
             kind_of_value,

@@ -165,6 +165,7 @@ impl Row<'_, '_> {
             let redshift =
                 match r.frame {
                     RedshiftFrame::Cmb => Redshift::published_cmb,
+                    RedshiftFrame::Barycentric => Redshift::barycentric,
                     _ => Redshift::heliocentric,
                 }(measured, kind, kind_of_value, direction, self.cx.correction)
                 .map_err(entry_reason)?;
@@ -325,6 +326,16 @@ impl Row<'_, '_> {
                     probability: *probability,
                 },
                 _ => Uncertainty::NoneReported,
+            },
+            Some(Errors::Catalogue {
+                sigma,
+                times_one_plus_z,
+            }) => Uncertainty::Symmetric {
+                sigma: if *times_one_plus_z {
+                    sigma * (1.0 + value)
+                } else {
+                    *sigma
+                },
             },
         };
         Quantity::new(value, unit, uncertainty)

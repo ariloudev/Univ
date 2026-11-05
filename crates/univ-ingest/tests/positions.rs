@@ -370,3 +370,26 @@ fn an_object_without_a_distance_or_a_position_is_not_placed() {
             .is_none()
     );
 }
+
+#[test]
+fn a_barycentric_redshift_names_its_frame_in_the_distance_chain() {
+    let measured = quantity(
+        0.4,
+        Unit::Dimensionless,
+        Uncertainty::Symmetric { sigma: 1e-5 },
+    );
+    let correction = univ_model::redshift::CmbCorrection::new(DipoleModel::Planck2018);
+    let bary = correction
+        .apply(
+            measured,
+            univ_model::redshift::RedshiftFrame::Barycentric,
+            unit_vector(150.0, 2.0),
+        )
+        .unwrap();
+    let radial = Release::planck_2018().radial_from_redshift(&bary).unwrap();
+    assert!(matches!(
+        steps(radial.chain())[..],
+        [Transformation::ComovingFromBarycentricRedshift { barycentric_redshift, dipole: DipoleModel::Planck2018, .. }]
+            if *barycentric_redshift == 0.4
+    ));
+}

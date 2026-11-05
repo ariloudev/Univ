@@ -52,6 +52,43 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
 }
 
 #[test]
+fn a_redshift_whose_source_states_one_uncertainty_for_its_catalogue_is_estimated() {
+    let db = db();
+    let redshift = |record: &Value| -> Value {
+        record["measurements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|m| m["quantity"] == "redshift")
+            .cloned()
+            .unwrap()
+    };
+    let (_, before) = read(&db, "/v1/objects/1", "");
+    let published = redshift(&before);
+    assert!(published.get("uncertainty_basis").is_none(), "{published}");
+    let source = published["source"].as_str().unwrap().to_owned();
+    // A fresh backend: the vocabulary of a release is read once and kept.
+    let db = self::db();
+    db.exec(&format!(
+        "INSERT INTO source_terms SELECT 2, n, NULL, NULL, NULL, \
+         '[{{\"quantity\":\"redshift\",\"value\":85.0,\"unit\":\"kilometre_per_second\",\
+         \"times_one_plus_z\":false,\"basis\":\"Colless et al. 2001: rms 85 km/s\"}}]' \
+         FROM sources WHERE release = 2 AND id = '{source}';"
+    ));
+    let (_, after) = read(&db, "/v1/objects/1", "");
+    assert_eq!(
+        redshift(&after)["uncertainty_basis"],
+        serde_json::json!({"kind_of_value": "estimated", "basis": "Colless et al. 2001: rms 85 km/s"})
+    );
+    // Only the quantity it is stated for.
+    for m in after["measurements"].as_array().unwrap() {
+        if m["quantity"] != "redshift" {
+            assert!(m.get("uncertainty_basis").is_none(), "{m}");
+        }
+    }
+}
+
+#[test]
 fn the_preferred_measurement_names_the_ranking_rule_that_chose_it() {
     let preferred = &object(11)["preferred"];
     assert_eq!(

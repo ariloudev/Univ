@@ -33,6 +33,9 @@ pub struct Vocabulary {
     sources: HashMap<i64, String>,
     term_ids: HashMap<String, i64>,
     source_ns: HashMap<String, i64>,
+    /// The basis of each uncertainty a source states once for its whole catalogue, by the
+    /// source's id and the quantity it applies to, such as `redshift`.
+    catalogue_uncertainties: HashMap<(String, String), String>,
 }
 
 impl Vocabulary {
@@ -59,7 +62,31 @@ impl Vocabulary {
             terms,
             chains: chains.into_iter().collect(),
             sources,
+            catalogue_uncertainties: HashMap::new(),
         }
+    }
+
+    /// The vocabulary with the uncertainties its sources state once for their whole
+    /// catalogues, each as the source's id, the quantity and where the source states it.
+    #[must_use]
+    pub fn with_catalogue_uncertainties(
+        mut self,
+        uncertainties: impl IntoIterator<Item = (String, String, String)>,
+    ) -> Self {
+        self.catalogue_uncertainties = uncertainties
+            .into_iter()
+            .map(|(source, quantity, basis)| ((source, quantity), basis))
+            .collect();
+        self
+    }
+
+    /// Where source `source` states the one uncertainty of its whole catalogue for `quantity`,
+    /// when it states one.
+    #[must_use]
+    pub fn catalogue_uncertainty(&self, source: &str, quantity: &str) -> Option<&str> {
+        self.catalogue_uncertainties
+            .get(&(source.to_owned(), quantity.to_owned()))
+            .map(String::as_str)
     }
 
     #[must_use]

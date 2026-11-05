@@ -241,7 +241,7 @@ row! {
         terms_url: String,
         terms_quote: String,
         credit: String,
-        /// `permitted` or `permitted_with_credit`.
+        /// `permitted`, `permitted_with_credit` or `permission_pending`.
         redistribution: String,
         /// `provisional` or `settled`.
         review: String,
@@ -380,8 +380,31 @@ row! {
     }
 }
 
+row! {
+    /// The conditions of a source's terms beyond its status, and the uncertainties it states
+    /// once for its whole catalogue, beside its row in `sources` (schema version 4): written
+    /// only for a source that has one of them.
+    SourceTermRow => "source_terms", scope: PerRelease, key: ["release", "source"],
+    indexes: [], {
+        release: u32,
+        /// The source's `sources.n`.
+        source: u32,
+        /// The clause of its terms that allows only non-commercial use, quoted; none when its
+        /// terms allow commercial use.
+        non_commercial: Option<String>,
+        /// Whom permission to redistribute it was asked of, while its status is
+        /// `permission_pending`.
+        permission_asked_of: Option<String>,
+        /// The date that permission was asked, YYYY-MM-DD.
+        permission_asked_on: Option<String>,
+        /// JSON array of the uncertainties it states once for its whole catalogue, each
+        /// `{"quantity", "value", "unit", "times_one_plus_z", "basis"}`; none when it has none.
+        catalogue_uncertainties: Option<String>,
+    }
+}
+
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 20] = [
+pub const TABLES: [Table; 21] = [
     ReleaseRow::TABLE,
     TermRow::TABLE,
     SourceRow::TABLE,
@@ -402,6 +425,7 @@ pub const TABLES: [Table; 20] = [
     StructureCellRow::TABLE,
     SourceDetailRow::TABLE,
     StructureDetailRow::TABLE,
+    SourceTermRow::TABLE,
 ];
 
 /// The key a common name is looked up by: lower case, without white space.

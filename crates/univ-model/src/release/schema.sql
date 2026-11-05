@@ -1,6 +1,7 @@
--- The D1 schema of Univ releases, version 3 (univ_model::release::SCHEMA_VERSION).
+-- The D1 schema of Univ releases, version 4 (univ_model::release::SCHEMA_VERSION).
 --
 -- Version 3 adds source_details and structure_details and changes no table of version 2.
+-- Version 4 adds source_terms and changes no table of version 3.
 --
 -- One database holds every published release. A table that belongs to one release carries a
 -- `release` column that leads its primary key: publishing release n + 1 only inserts rows whose
@@ -447,4 +448,20 @@ CREATE TABLE IF NOT EXISTS structure_details (
   outline TEXT,
   rescaled TEXT,
   PRIMARY KEY (release, id)
+) WITHOUT ROWID;
+
+-- The conditions of a source's terms beyond its status (version 4), source its sources.n,
+-- written only for a source that has one: the quoted clause limiting it to non-commercial use;
+-- whom permission was asked of and when, while its status is permission_pending; and
+-- catalogue_uncertainties, JSON array of the uncertainties the source states once for its whole
+-- catalogue, each {"quantity", "value", "unit", "times_one_plus_z", "basis"}, which every value
+-- of that quantity takes as an estimated uncertainty.
+CREATE TABLE IF NOT EXISTS source_terms (
+  release INTEGER NOT NULL,
+  source INTEGER NOT NULL,
+  non_commercial TEXT,
+  permission_asked_of TEXT,
+  permission_asked_on TEXT,
+  catalogue_uncertainties TEXT,
+  PRIMARY KEY (release, source)
 ) WITHOUT ROWID;

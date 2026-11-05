@@ -1,0 +1,182 @@
+key: 01a1a93b-1b80-7724-88bd-03686e37d3fe
+id: w1
+versions:
+  - key: 01a1a93b-1b80-7724-88bd-0371263a35b9
+    at: 2026-11-05T01:03:05Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W1 terms and frames"
+    goal: "Source definitions carry permission_pending (with whom and when asked) and a non-commercial mark, served by Read a source; univ-model keeps barycentric redshifts and catalogue-wide estimated uncertainties"
+    status: active
+blocks:
+  - key: 01a1a93b-1b80-7724-88bd-0369bec43736
+    id: w1-plan
+    kind: plan
+    versions:
+      - key: 01a1a93b-1b80-7724-88bd-0372ebe5ff6f
+        at: 2026-11-05T01:03:05Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W1 plan"
+        markdown: |-
+          Within the release 10 build plan on `product/release-10`.
+
+          | Task | Change | Verified by |
+          |---|---|---|
+          | w1-pending | `RedistributionStatus::PermissionPending`; `redistribution.permission: {asked_of, asked_on}`, required for that status and refused otherwise; carried to the manifest, the `sources` D1 row and the API's `terms.permission`; build summary lists pending sources | `source_definitions` / `definitions` tests; `univ-api` sources tests |
+          | w1-noncommercial | `terms.non_commercial: <quoted clause>`, optional; carried to the manifest, D1 and the API's `terms.non_commercial` | same tests |
+          | w1-barycentric | `RedshiftFrame::Barycentric`, moved to the CMB frame by the same dipole as a heliocentric one (Planck's dipole is the barycentre's motion; the two frames differ by ≤ 13 m/s) and kept with `published: barycentric` | `univ-model` redshift tests; a normalization test |
+          | w1-catalogue-error | `normalization.redshifts[].catalogue_error: {value, unit, times_one_plus_z, basis}`, exclusive of `error`; each value gets a symmetric uncertainty marked estimated, citing `basis` | normalization tests over a fixture |
+          | w1-schema | D1 schema version 4 for the new `sources` columns; OpenAPI snapshot | snapshot test, fixture build |
+          | w1-review | `/simplify`, `/code-review`, fixes, `cargo xtask check`, trace, close, merge | gate exit status |
+  - key: 01a1a93b-1b80-7724-88bd-036aeae80e08
+    id: w1-pending
+    kind: task
+    versions:
+      - key: 01a1a93b-1b80-7724-88bd-0373d19a3e20
+        at: 2026-11-05T01:03:05Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "permission_pending with whom and when asked"
+        detail: "Source definitions, manifest, D1 sources row, API terms, build summary."
+        state: active
+      - key: 01a1a93f-7a08-73b6-8f5c-2e9fce5d6353
+        at: 2026-11-05T01:07:51Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "permission_pending with whom and when asked"
+        detail: "Source definitions, manifest, D1 source_terms (schema 4), API terms.permission, build summary; tests in tests/source_terms.rs and univ-api sources tests."
+        state: done
+  - key: 01a1a93b-1b80-7724-88bd-036b194497ad
+    id: w1-noncommercial
+    kind: task
+    versions:
+      - key: 01a1a93b-1b80-7724-88bd-03741a599595
+        at: 2026-11-05T01:03:05Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Non-commercial mark with its clause"
+        detail: "terms.non_commercial carried to manifest, D1 and the API."
+        state: open
+      - key: 01a1a93f-7a08-73b6-8f5c-2ea0b96ca56a
+        at: 2026-11-05T01:07:51Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Non-commercial mark with its clause"
+        detail: "terms.non_commercial carried to manifest, D1 source_terms and the API's terms.non_commercial."
+        state: done
+  - key: 01a1a93b-1b80-7724-88bd-036ccc91b041
+    id: w1-barycentric
+    kind: task
+    versions:
+      - key: 01a1a93b-1b80-7724-88bd-037514c4ec8c
+        at: 2026-11-05T01:03:05Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Barycentric redshift frame"
+        detail: "RedshiftFrame::Barycentric through normalization, CMB correction, placement and the chain."
+        state: open
+      - key: 01a1a93f-7a08-73b6-8f5c-2ea1d2964c57
+        at: 2026-11-05T01:07:51Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Barycentric redshift frame"
+        detail: "RedshiftFrame::Barycentric through normalization, CMB correction, placement and the chain."
+        state: active
+      - key: 01a1a951-bd43-776e-a916-6726d730846f
+        at: 2026-11-05T01:27:48Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Barycentric redshift frame"
+        detail: "RedshiftFrame::Barycentric moved to the CMB frame like a heliocentric one and kept with published: barycentric; ComovingFromBarycentricRedshift chain step; refused in structure files. Tests: redshift.rs unit test, tests/positions.rs."
+        state: done
+  - key: 01a1a93b-1b80-7724-88bd-036ddfa075c3
+    id: w1-catalogue-error
+    kind: task
+    versions:
+      - key: 01a1a93b-1b80-7724-88bd-03760ebc9651
+        at: 2026-11-05T01:03:05Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Catalogue-wide estimated uncertainty"
+        detail: "normalization.redshifts[].catalogue_error, typed estimated and cited."
+        state: open
+      - key: 01a1a951-bd43-776e-a916-672774918286
+        at: 2026-11-05T01:27:48Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Catalogue-wide estimated uncertainty"
+        detail: "normalization.redshifts[].catalogue_error (km/s on z converted by c, times_one_plus_z on z only); recorded once per source in source_terms.catalogue_uncertainties; the API gives each such redshift uncertainty_basis {estimated, basis}. Tests: tests/catalogue_error.rs, univ-api record test."
+        state: done
+  - key: 01a1a93b-1b80-7724-88bd-036eb127f07d
+    id: w1-schema
+    kind: task
+    versions:
+      - key: 01a1a93b-1b80-7724-88bd-037704a86fde
+        at: 2026-11-05T01:03:05Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "D1 schema 4 and OpenAPI snapshot"
+        detail: "New sources columns, schema version bump, snapshot."
+        state: open
+      - key: 01a1a951-bd43-776e-a916-67286c8fd052
+        at: 2026-11-05T01:27:48Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "D1 schema 4 and OpenAPI snapshot"
+        detail: "source_terms table (additive, like version 3), SCHEMA_VERSION 4, OpenAPI snapshot rewritten (additions only)."
+        state: done
+  - key: 01a1a93b-1b80-7724-88bd-036fce577bcb
+    id: w1-review
+    kind: task
+    versions:
+      - key: 01a1a93b-1b80-7724-88bd-0378e570122b
+        at: 2026-11-05T01:03:05Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review, gate, trace and merge W1"
+        detail: "/simplify, /code-review, cargo xtask check, loft reconcile, close, merge."
+        state: open
+  - key: 01a1a93b-1b80-7724-88bd-0370c0ea6af6
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1a93b-1b80-7724-88bd-03799172c950
+        at: 2026-11-05T01:03:05Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | none yet | | | |

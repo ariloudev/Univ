@@ -157,6 +157,10 @@ pub struct MeasurementRecord {
     pub kind_of_value: KindOfValue,
     /// The value as its source published it, with its unit and uncertainty.
     pub native: Quantity,
+    /// Where the uncertainty comes from when the source states one for its whole catalogue,
+    /// not one for each value: it is then estimated; absent when the source published it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uncertainty_basis: Option<UncertaintyBasis>,
     /// The value normalized; absent when it is the native value unchanged. For a redshift, the
     /// z of the frame it was published in.
     pub normalized: Option<Quantity>,
@@ -170,6 +174,16 @@ pub struct MeasurementRecord {
     /// The two magnitude columns a colour index was computed from, where its source publishes
     /// the magnitudes and not the colour.
     pub derived_from: Option<[String; 2]>,
+}
+
+/// An uncertainty that is not the source's for this value, and where it comes from.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct UncertaintyBasis {
+    /// Estimated, for one stated for the whole catalogue.
+    pub kind_of_value: KindOfValue,
+    /// Where the source states it, quoted or cited.
+    pub basis: String,
 }
 
 /// What a distance measurement is.

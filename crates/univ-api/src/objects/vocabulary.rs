@@ -28,7 +28,11 @@ pub async fn vocabulary<B: Backend>(backend: &B, release: u32) -> Result<Arc<Voc
              (SELECT json_group_array(json_array(id, json(steps))) FROM chains \
                WHERE release = ?1) AS chains, \
              (SELECT json_group_array(json_array(n, id)) FROM sources WHERE release = ?1) \
-               AS sources",
+               AS sources, \
+             (SELECT json_group_array(json_array(s.id, json(t.catalogue_uncertainties))) \
+               FROM source_terms t JOIN sources s ON s.release = t.release AND s.n = t.source \
+               WHERE t.release = ?1 AND t.catalogue_uncertainties IS NOT NULL) \
+               AS uncertainties",
             &[json!(release)],
         )
         .await?;
@@ -38,8 +42,21 @@ pub async fn vocabulary<B: Backend>(backend: &B, release: u32) -> Result<Arc<Voc
     let terms: Vec<(i64, String)> = json_column(&row, "terms")?;
     let chains: Vec<(i64, Value)> = json_column(&row, "chains")?;
     let sources: Vec<(i64, String)> = json_column(&row, "sources")?;
-    let vocabulary = Vocabulary::new(release, cosmology, ranking_rule, terms, chains, sources);
+    let uncertainties: Vec<(String, Vec<CatalogueUncertainty>)> =
+        json_column(&row, "uncertainties")?;
+    let vocabulary = Vocabulary::new(release, cosmology, ranking_rule, terms, chains, sources)
+        .with_catalogue_uncertainties(uncertainties.into_iter().flat_map(|(source, each)| {
+            each.into_iter()
+                .map(move |u| (source.clone(), u.quantity, u.basis))
+        }));
     Ok(backend.kept().vocabularies.keep(release, vocabulary))
+}
+
+/// One uncertainty a source states for its whole catalogue, as `source_terms` holds it.
+#[derive(serde::Deserialize)]
+struct CatalogueUncertainty {
+    quantity: String,
+    basis: String,
 }
 
 fn unreadable(why: &str) -> Problem {

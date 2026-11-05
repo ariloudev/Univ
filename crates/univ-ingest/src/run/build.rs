@@ -78,6 +78,21 @@ fn lines(built: &BuiltRelease) -> Vec<String> {
             ids.join(", ")
         ));
     }
+    let pending: Vec<String> = built
+        .manifest
+        .sources
+        .iter()
+        .filter_map(|s| {
+            let asked = s.permission_asked.as_ref()?;
+            Some(format!("{} (asked of {} on {})", s.id, asked.of, asked.on))
+        })
+        .collect();
+    if !pending.is_empty() {
+        lines.push(format!(
+            "permission to redistribute pending, published all the same: {}",
+            pending.join("; ")
+        ));
+    }
     lines
 }
 

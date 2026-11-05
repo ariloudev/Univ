@@ -15,6 +15,11 @@ use crate::value::{Quantity, Uncertainty, ValueError};
 pub enum RedshiftFrame {
     #[default]
     Heliocentric,
+    /// Relative to the barycentre of the Solar System, as DESI publishes its redshifts. It differs
+    /// from heliocentric by the Sun's motion about the barycentre, at most about 13 m/s, and the
+    /// CMB dipole is the barycentre's motion; it is moved to the CMB frame as a heliocentric one
+    /// is, and kept named barycentric.
+    Barycentric,
     /// Corrected to the barycentre of the Local Group.
     LocalGroup,
     /// Corrected to the rest frame of the cosmic microwave background.
@@ -64,13 +69,14 @@ impl DipoleModel {
 pub struct CmbRedshift {
     /// The dimensionless CMB-frame redshift.
     pub value: Quantity,
-    /// The heliocentric redshift it was derived from, as measured; for a redshift published in
-    /// the CMB frame, the heliocentric redshift derived back from it with `dipole`, only to
-    /// compare it with heliocentric ones.
+    /// The redshift it was derived from, as measured, in the frame `published` names:
+    /// heliocentric or barycentric. For a redshift published in the CMB frame, the heliocentric
+    /// redshift derived back from it with `dipole`, only to compare it with heliocentric ones.
     pub heliocentric: Quantity,
     pub dipole: DipoleModel,
-    /// The frame its source published it in: heliocentric, `value` then derived with `dipole`;
-    /// or the CMB frame, `value` then the published redshift itself, with no dipole applied.
+    /// The frame its source published it in: heliocentric or barycentric, `value` then derived
+    /// with `dipole`; or the CMB frame, `value` then the published redshift itself, with no
+    /// dipole applied.
     #[serde(default, skip_serializing_if = "is_heliocentric")]
     pub published: RedshiftFrame,
 }
@@ -98,7 +104,9 @@ fn is_heliocentric(frame: &RedshiftFrame) -> bool {
 /// A redshift that cannot be moved to the CMB frame.
 #[derive(Debug, Error, PartialEq)]
 pub enum RedshiftError {
-    #[error("only a heliocentric redshift is corrected here, not one in the {0:?} frame")]
+    #[error(
+        "only a heliocentric or barycentric redshift is corrected here, not one in the {0:?} frame"
+    )]
     NotHeliocentric(RedshiftFrame),
     #[error("a redshift is dimensionless, not in {0:?}")]
     NotDimensionless(Unit),
@@ -161,15 +169,18 @@ impl CmbCorrection {
     ///
     /// # Errors
     ///
-    /// Fails on a redshift not heliocentric or not dimensionless, or a direction that is not a
-    /// unit vector.
+    /// Fails on a redshift neither heliocentric nor barycentric, or not dimensionless, or a
+    /// direction that is not a unit vector.
     pub fn apply(
         &self,
         measured: Quantity,
         frame: RedshiftFrame,
         direction: Vec3,
     ) -> Result<CmbRedshift, RedshiftError> {
-        if frame != RedshiftFrame::Heliocentric {
+        if !matches!(
+            frame,
+            RedshiftFrame::Heliocentric | RedshiftFrame::Barycentric
+        ) {
             return Err(RedshiftError::NotHeliocentric(frame));
         }
         if measured.unit != Unit::Dimensionless {
@@ -197,7 +208,7 @@ impl CmbCorrection {
             value,
             heliocentric: measured,
             dipole: self.model,
-            published: RedshiftFrame::Heliocentric,
+            published: frame,
         })
     }
 
@@ -344,6 +355,28 @@ mod tests {
             .apply(none, RedshiftFrame::Heliocentric, [1.0, 0.0, 0.0])
             .unwrap();
         assert_eq!(cmb.value.uncertainty, Uncertainty::NoneReported);
+    }
+
+    #[test]
+    fn a_barycentric_redshift_is_kept_as_measured_and_named_barycentric() {
+        let direction = unit_vector(187.7, 12.4);
+        let measured = z(0.4);
+        let bary = planck()
+            .apply(measured, RedshiftFrame::Barycentric, direction)
+            .unwrap();
+        let helio = planck()
+            .apply(measured, RedshiftFrame::Heliocentric, direction)
+            .unwrap();
+        // Kept as measured, never relabelled heliocentric.
+        assert_eq!(bary.heliocentric, measured);
+        assert_eq!(bary.published, RedshiftFrame::Barycentric);
+        assert_eq!(bary.as_published(), measured);
+        // The CMB dipole is the barycentre's motion, applied as to a heliocentric value.
+        assert_eq!(bary.value, helio.value);
+        let json = serde_norway::to_string(&bary).unwrap();
+        assert!(json.contains("published: barycentric"), "{json}");
+        let read: CmbRedshift = serde_norway::from_str(&json).unwrap();
+        assert_eq!(read, bary);
     }
 
     #[test]

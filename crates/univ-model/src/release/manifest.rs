@@ -106,12 +106,30 @@ pub struct CellSpaceInfo {
 #[serde(deny_unknown_fields)]
 pub struct ManifestSource {
     pub id: String,
-    /// Its redistribution status, never `forbidden`.
+    /// Its redistribution status: `permitted`, `permitted_with_credit` or
+    /// `permission_pending`, never `forbidden`.
     pub redistribution: String,
     /// Whether that judgement is `provisional` or `settled`.
     pub review: String,
+    /// The clause of its terms that allows only non-commercial use, quoted; none when its terms
+    /// allow commercial use.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub non_commercial: Option<String>,
+    /// Whom permission was asked of and when (YYYY-MM-DD), while its status is
+    /// `permission_pending`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub permission_asked: Option<PermissionAsked>,
     /// Catalogue entries the release holds from it.
     pub entries: u64,
+}
+
+/// Whom permission to redistribute a source was asked of, and when.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PermissionAsked {
+    pub of: String,
+    /// YYYY-MM-DD.
+    pub on: String,
 }
 
 /// What the release holds.

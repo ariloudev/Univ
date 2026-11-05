@@ -77,10 +77,29 @@ pub struct Terms {
     pub quote: String,
     /// The credit the terms require.
     pub credit: String,
-    /// Whether the terms allow the source to be published, and on what condition.
+    /// Whether the terms allow the source to be published, and on what condition:
+    /// `permitted`, `permitted_with_credit` or `permission_pending`.
     pub redistribution: String,
     /// How that reading of the terms was reviewed.
     pub review: String,
+    /// The clause of the terms that allows only non-commercial use, quoted; absent when the
+    /// terms allow commercial use.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub non_commercial: Option<String>,
+    /// Whom permission to redistribute the source was asked of and when, while its
+    /// redistribution is `permission_pending`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub permission: Option<PermissionRequest>,
+}
+
+/// A request for permission to redistribute a source, awaiting its answer.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct PermissionRequest {
+    /// Whom it was asked of.
+    pub asked_of: String,
+    /// The date it was asked, YYYY-MM-DD.
+    pub asked_on: String,
 }
 
 /// Where a source's catalogue entries lie.

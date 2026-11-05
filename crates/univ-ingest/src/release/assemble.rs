@@ -7,12 +7,13 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use univ_model::derive::{MODEL_VERSION, Release};
+use univ_model::ids::SourceId;
 use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
 use univ_model::redshift::CmbCorrection;
 use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
     CellIndex, CellSpaceInfo, Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestSource,
-    NotIndexed, RecordedFile, ReleaseManifest, Versions,
+    NotIndexed, PermissionAsked, RecordedFile, ReleaseManifest, Versions,
 };
 use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseRow};
 use univ_model::release::{Row, SCHEMA_VERSION, keys};
@@ -30,6 +31,7 @@ use super::{
     structure_detail_rows, structure_rows,
 };
 use crate::crossmatch::RULES;
+use crate::source::SourceDefinition;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
 use crate::watch::Watch;
 
@@ -108,6 +110,7 @@ fn d1_rows(
     writer.add_all(&sources.sources)?;
     writer.add_all(&sources.payloads)?;
     writer.add_all(&sources.normalizations)?;
+    writer.add_all(&sources.terms)?;
     writer.add_all(chains.rows())?;
     let (issued, replaced) = ledger_rows(&crossed.next.ledger)?;
     writer.add_all(&issued)?;
@@ -381,16 +384,7 @@ pub fn write_release(
         },
         rules: recorded,
         cell_index: cell_index(&d1.cells),
-        sources: inputs
-            .definitions
-            .iter()
-            .map(|d| ManifestSource {
-                id: d.id.to_string(),
-                redistribution: d.redistribution.status.as_str().to_owned(),
-                review: d.redistribution.review.as_str().to_owned(),
-                entries: d1.objects.per_source.get(&d.id).copied().unwrap_or(0),
-            })
-            .collect(),
+        sources: manifest_sources(inputs.definitions, &d1.objects.per_source),
         counts: Counts {
             objects: d1.objects.objects,
             placed: d1.objects.placed,
@@ -440,4 +434,30 @@ fn cell_index(cells: &CellRows) -> CellIndex {
             })
             .collect(),
     }
+}
+
+/// Each of `definitions` as the release manifest lists it, with the entries the release holds
+/// from it among `per_source`.
+fn manifest_sources(
+    definitions: &[SourceDefinition],
+    per_source: &BTreeMap<SourceId, u64>,
+) -> Vec<ManifestSource> {
+    definitions
+        .iter()
+        .map(|d| ManifestSource {
+            id: d.id.to_string(),
+            redistribution: d.redistribution.status.as_str().to_owned(),
+            review: d.redistribution.review.as_str().to_owned(),
+            non_commercial: d.terms.non_commercial.clone(),
+            permission_asked: d
+                .redistribution
+                .permission
+                .as_ref()
+                .map(|p| PermissionAsked {
+                    of: p.asked_of.clone(),
+                    on: p.asked_on.clone(),
+                }),
+            entries: per_source.get(&d.id).copied().unwrap_or(0),
+        })
+        .collect()
 }

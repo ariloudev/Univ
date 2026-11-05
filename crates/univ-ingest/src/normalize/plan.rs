@@ -52,6 +52,12 @@ pub(super) enum Errors {
         high: Col,
         probability: f64,
     },
+    /// One error the source states for its whole catalogue, in the value's unit, times
+    /// (1 + z) where it is stated per unit of (1 + z).
+    Catalogue {
+        sigma: f64,
+        times_one_plus_z: bool,
+    },
 }
 
 /// A value and its error columns.
@@ -242,8 +248,18 @@ impl Resolver<'_> {
         };
         let error = r.error.clone().map(ErrorColumns::Symmetric);
         let comoving = r.comoving_velocity.as_ref().map(ComovingVelocity::read);
+        let mut measured = self.reading(&r.column, error.as_ref())?;
+        if let Some(c) = &r.catalogue_error {
+            let sigma = c
+                .in_unit(measured.value.unit)
+                .ok_or_else(|| self.unsupported("a catalogue error in another unit"))?;
+            measured.error = Some(Errors::Catalogue {
+                sigma,
+                times_one_plus_z: c.times_one_plus_z,
+            });
+        }
         Ok(RedshiftPlan {
-            measured: self.reading(&r.column, error.as_ref())?,
+            measured,
             kind,
             frame: r.frame,
             comoving: comoving
