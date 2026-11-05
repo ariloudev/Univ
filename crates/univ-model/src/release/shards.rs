@@ -56,6 +56,16 @@ impl Database {
             .flatten()
     }
 
+    /// The name `wrangler.toml` gives it: [`CATALOGUE_NAME`], or `univ-objects-{i}` for object
+    /// shard `i`.
+    #[must_use]
+    pub fn name(self) -> String {
+        match self {
+            Self::Catalogue => CATALOGUE_NAME.to_owned(),
+            Self::Shard(i) => format!("univ-objects-{i}"),
+        }
+    }
+
     /// The binding Univ Server reads it through: `DB` or `OBJECTS_{i}`.
     #[must_use]
     pub fn binding(self) -> String {
@@ -64,6 +74,31 @@ impl Database {
             Self::Shard(i) => format!("OBJECTS_{i}"),
         }
     }
+}
+
+/// The name `wrangler.toml` gives the catalogue database.
+pub const CATALOGUE_NAME: &str = "univ";
+
+/// How many object shards the configuration `toml` binds: `OBJECTS_0` onwards, each named as
+/// [`Database::name`] names it, until the first missing.
+#[must_use]
+pub fn bound_shards(toml: &str) -> u32 {
+    let blocks: Vec<&str> = toml
+        .split("[[d1_databases]]")
+        .skip(1)
+        .map(|block| block.split("[[").next().unwrap_or(block))
+        .collect();
+    let declared = |shard: Database| {
+        let binding = format!("binding = \"{}\"", shard.binding());
+        let name = format!("database_name = \"{}\"", shard.name());
+        blocks
+            .iter()
+            .any(|b| b.contains(&binding) && b.contains(&name))
+    };
+    let bound = (0..u32::MAX)
+        .take_while(|&i| declared(Database::Shard(i)))
+        .count();
+    u32::try_from(bound).unwrap_or(u32::MAX)
 }
 
 impl fmt::Display for Database {
@@ -107,6 +142,66 @@ pub fn morton(cell: Cell) -> Option<u64> {
     Some(spread(x) | spread(y) << 1 | spread(z) << 2)
 }
 
+/// The ranges of Morton codes, sorted and apart, that hold every cell within reach of the box
+/// from `min` to `max`, at most about `budget` of them.
+///
+/// A cube of side 2^l aligned on 2^l holds the codes from its least corner's on, 8^l of them,
+/// and nothing else. The box is cut into such cubes from the whole reach down, level by level:
+/// a cube inside the box is one range, a cube outside it none, and a cube across its edge is cut
+/// into its eight until another level would pass `budget`, then taken whole. The ranges hold
+/// more codes than the box only by those last cubes. One range from the codes of the box's
+/// corners would not do: a box across an index of 0 would take nearly every code, since the
+/// bias sets the top bit of each index from 0 up.
+#[must_use]
+pub fn morton_ranges(min: Cell, max: Cell, budget: usize) -> Vec<(u64, u64)> {
+    let biased = |i: i64| (i.clamp(-MORTON_REACH, MORTON_REACH - 1) + MORTON_REACH).unsigned_abs();
+    let lo = [biased(min.ix), biased(min.iy), biased(min.iz)];
+    let hi = [biased(max.ix), biased(max.iy), biased(max.iz)];
+    if (0..3).any(|a| lo[a] > hi[a]) {
+        return Vec::new();
+    }
+    let code = |c: [u64; 3]| spread(c[0]) | spread(c[1]) << 1 | spread(c[2]) << 2;
+    let range = |c: [u64; 3], level: u32| (code(c), code(c) + (1_u64 << (3 * level)) - 1);
+    let mut ranges = Vec::new();
+    // The cubes across the box's edge at `level`, by their least corners.
+    let mut across = vec![[0_u64; 3]];
+    let mut level = MORTON_BITS;
+    while !across.is_empty() {
+        if level == 0 || ranges.len() + 8 * across.len() > budget {
+            ranges.extend(across.iter().map(|&c| range(c, level)));
+            break;
+        }
+        level -= 1;
+        let side = 1_u64 << level;
+        let mut next = Vec::new();
+        for corner in across {
+            for octant in 0..8_u64 {
+                let c = [0, 1, 2].map(|a| corner[a] + ((octant >> a) & 1) * side);
+                let last = c.map(|v| v + side - 1);
+                if (0..3).any(|a| last[a] < lo[a] || c[a] > hi[a]) {
+                    continue;
+                }
+                if (0..3).all(|a| c[a] >= lo[a] && last[a] <= hi[a]) {
+                    ranges.push(range(c, level));
+                } else {
+                    next.push(c);
+                }
+            }
+        }
+        across = next;
+    }
+    ranges.sort_unstable();
+    // Ranges that meet are one.
+    let mut merged: Vec<(u64, u64)> = Vec::with_capacity(ranges.len());
+    for (first, last) in ranges {
+        match merged.last_mut() {
+            Some(prev) if prev.1 + 1 >= first => prev.1 = prev.1.max(last),
+            _ => merged.push((first, last)),
+        }
+    }
+    merged
+}
+
 /// The [`MORTON_BITS`] low bits of `v`, each moved to every third bit.
 fn spread(v: u64) -> u64 {
     (0..MORTON_BITS).fold(0, |code, bit| code | ((v >> bit) & 1) << (3 * bit))
@@ -137,6 +232,48 @@ mod tests {
         assert!(morton(cell(0, -MORTON_REACH - 1, 0)).is_none());
         let far = morton(cell(MORTON_REACH - 1, MORTON_REACH - 1, MORTON_REACH - 1)).unwrap();
         assert!(far < 1 << 53, "a double holds every code exactly");
+    }
+
+    #[test]
+    fn a_boxs_ranges_hold_every_cell_of_it_and_few_others() {
+        let held =
+            |ranges: &[(u64, u64)], code: u64| ranges.iter().any(|r| (r.0..=r.1).contains(&code));
+        // Across 0 on every axis, as a sphere about the Sun is.
+        let (min, max) = (cell(-3, -2, -1), cell(4, 5, 2));
+        let ranges = morton_ranges(min, max, 64);
+        assert!(ranges.len() <= 64 + 8, "{}", ranges.len());
+        let mut inside = 0_u64;
+        for ix in min.ix..=max.ix {
+            for iy in min.iy..=max.iy {
+                for iz in min.iz..=max.iz {
+                    assert!(
+                        held(&ranges, morton(cell(ix, iy, iz)).unwrap()),
+                        "({ix}, {iy}, {iz})"
+                    );
+                    inside += 1;
+                }
+            }
+        }
+        // The ranges hold a few times the box's cells, not the half of all codes one range
+        // from the corners' codes would.
+        let codes: u64 = ranges.iter().map(|r| r.1 - r.0 + 1).sum();
+        assert!(codes < 8 * inside, "{codes} codes for {inside} cells");
+        let (a, b) = (morton(min).unwrap(), morton(max).unwrap());
+        assert!(b - a > 1 << 40, "one range would take {}", b - a);
+        // A cell outside the box, between the corners' codes, is in no range.
+        assert!(!held(&ranges, morton(cell(40, 40, 40)).unwrap()));
+        // With room for every cell, the ranges are exact.
+        let exact = morton_ranges(min, max, 10_000);
+        let codes: u64 = exact.iter().map(|r| r.1 - r.0 + 1).sum();
+        assert_eq!(codes, inside);
+        // A box beyond the reach takes the cells within it; an empty box none.
+        let wide = morton_ranges(
+            cell(MORTON_REACH * 4, 0, 0),
+            cell(MORTON_REACH * 5, 0, 0),
+            64,
+        );
+        assert!(held(&wide, morton(cell(MORTON_REACH - 1, 0, 0)).unwrap()));
+        assert_eq!(morton_ranges(cell(1, 0, 0), cell(0, 0, 0), 64), Vec::new());
     }
 
     #[test]

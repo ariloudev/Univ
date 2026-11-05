@@ -163,14 +163,15 @@ fn a_designation_is_a_source_and_its_identifier() {
     let db = db();
     assert_eq!(
         block_on(by_designation(&db, 2, "hipparcos-2007", "HIP 1")).unwrap(),
-        [10]
+        [(10, 0)]
     );
     assert_eq!(
         block_on(by_designation(&db, 2, "hipparcos-2007", "HIP 2")).unwrap(),
-        [11, 12]
+        [(11, 1), (12, 0)],
+        "found in both shards"
     );
-    let none: Vec<u64> = block_on(by_designation(&db, 2, "twomrs", "HIP 1")).unwrap();
-    assert_eq!(none, Vec::<u64>::new());
+    let none: Vec<(u64, u32)> = block_on(by_designation(&db, 2, "twomrs", "HIP 1")).unwrap();
+    assert_eq!(none, Vec::<(u64, u32)>::new());
 }
 
 #[test]

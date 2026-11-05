@@ -165,12 +165,11 @@ fn load() -> Loaded {
             "SELECT * FROM measurements WHERE release = 1 AND object_id = ?1 ORDER BY n DESC",
             id,
         );
-        // As Univ Server queries them: each source by its id.
+        // As Univ Server reads them from the object's shard: each source by its number.
         let designations = rows(
             &db,
-            "SELECT s.id AS source, d.identifier FROM designations d JOIN sources s \
-             ON s.release = d.release AND s.n = d.source \
-             WHERE d.release = 1 AND d.object_id = ?1 ORDER BY d.identifier DESC",
+            "SELECT source, identifier FROM designations \
+             WHERE release = 1 AND object_id = ?1 ORDER BY identifier DESC",
             id,
         );
         let record = object(&v, &one.remove(0), &entries, &measurements, &designations)

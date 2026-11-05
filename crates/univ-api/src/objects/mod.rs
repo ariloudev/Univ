@@ -21,6 +21,7 @@ use crate::backend::{Backend, Row, first};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{RELEASE_PARAM, pinned, resolve};
+use crate::shards::shard_of;
 
 /// Reads one object of the release the request reads, by its id.
 ///
@@ -54,7 +55,7 @@ pub async fn get<B: Backend>(
             format!("An object id is a positive whole number, not {id:?}."),
         )
     })?;
-    if let Some(record) = record(backend, release, id).await? {
+    if let Some(record) = record(backend, release, id, None).await? {
         return Ok(record);
     }
     let looked_up = LookedUp::Id { id };
@@ -121,6 +122,8 @@ pub async fn get<B: Backend>(
 )]
 pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response, Problem> {
     let release = resolve(request, backend).await?;
+    // The shard of each object a designation was found in, which saves asking the index.
+    let mut shards = Vec::new();
     let (looked_up, ambiguity, found) = match (
         request.param("name"),
         request.param("source"),
@@ -132,13 +135,14 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
         }
         (None, Some(source), Some(designation)) => {
             let found = by_designation(backend, release, &source, &designation).await?;
+            shards = found.iter().map(|&(_, shard)| shard).collect();
             (
                 LookedUp::Designation {
                     source,
                     designation,
                 },
                 Ambiguity::SharedDesignation,
-                found.into_iter().map(|id| (id, Vec::new())).collect(),
+                found.into_iter().map(|(id, _)| (id, Vec::new())).collect(),
             )
         }
         (name, source, designation) => {
@@ -157,7 +161,7 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
     };
     match found.as_slice() {
         [] => Err(not_found(release, &looked_up)),
-        [(id, _)] => present_after_all(backend, release, *id).await,
+        [(id, _)] => present_after_all(backend, release, *id, shards.first().copied()).await,
         _ => {
             let answer = choices(release, looked_up, ambiguity, Vec::new(), found)?;
             Ok(if request.param(RELEASE_PARAM).is_none() {
@@ -169,33 +173,44 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
     }
 }
 
-/// The record of object `id` of `release`, or none when the release does not hold it.
+/// The record of object `id` of `release`, or none when the release does not hold it: its
+/// shard, `known` or from the catalogue's index, then every row of the object in one round trip
+/// to it.
 async fn record<B: Backend>(
     backend: &B,
     release: u32,
     id: u64,
+    known: Option<u32>,
 ) -> Result<Option<Response>, Problem> {
+    let shard = match known {
+        Some(shard) => shard,
+        None => match shard_of(backend, release, id).await? {
+            Some(shard) => shard,
+            None => return Ok(None),
+        },
+    };
     let params = [json!(release), json!(id)];
-    // One round trip for every row of the object; on a miss the three reads past the first
-    // are empty range scans of their primary keys.
     let batch = backend
-        .releases_batch(&[
+        .shards(&[
             (
+                shard,
                 "SELECT * FROM objects WHERE release = ?1 AND id = ?2",
                 &params,
             ),
             (
+                shard,
                 "SELECT * FROM entries WHERE release = ?1 AND object_id = ?2",
                 &params,
             ),
             (
+                shard,
                 "SELECT * FROM measurements WHERE release = ?1 AND object_id = ?2",
                 &params,
             ),
             (
-                "SELECT s.id AS source, d.identifier FROM designations d JOIN sources s \
-                 ON s.release = d.release AND s.n = d.source \
-                 WHERE d.release = ?1 AND d.object_id = ?2 ORDER BY s.id, d.identifier",
+                shard,
+                "SELECT source, identifier FROM designations \
+                 WHERE release = ?1 AND object_id = ?2",
                 &params,
             ),
         ])
@@ -204,11 +219,16 @@ async fn record<B: Backend>(
         batch.try_into().map_err(|_| {
             Problem::new(
                 ProblemType::InternalError,
-                "The release database answered a batch of four reads with another number.",
+                "An object shard answered a batch of four reads with another number.",
             )
         })?;
     let Some(object) = first(objects) else {
-        return Ok(None);
+        return Err(Problem::new(
+            ProblemType::InternalError,
+            format!(
+                "The index puts object {id} of release {release} in shard {shard}, which does not hold it."
+            ),
+        ));
     };
     let vocabulary = vocabulary(backend, release).await?;
     let record = read::object(&vocabulary, &object, &entries, &measurements, &designations)
@@ -221,13 +241,15 @@ async fn record<B: Backend>(
     Ok(Some(pinned(Response::json(&record)?, release)))
 }
 
-/// The record of an object a lookup found, which the release holds.
+/// The record of an object a lookup found, which the release holds, in the shard `known` when
+/// the lookup found it there.
 async fn present_after_all<B: Backend>(
     backend: &B,
     release: u32,
     id: u64,
+    known: Option<u32>,
 ) -> Result<Response, Problem> {
-    record(backend, release, id).await?.ok_or_else(|| {
+    record(backend, release, id, known).await?.ok_or_else(|| {
         Problem::new(
             ProblemType::InternalError,
             format!("Release {release} names object {id}, which it does not hold."),

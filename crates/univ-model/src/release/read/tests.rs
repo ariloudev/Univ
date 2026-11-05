@@ -197,17 +197,14 @@ fn a_link_reads_in_the_old_shape_with_its_tag_twice_and_in_the_new() {
     assert_eq!(read[0][0].confidence.get(), 0.4);
 }
 
-fn designation_row(source: &str, identifier: &str) -> Row {
+fn designation_row(source: i64, identifier: &str) -> Row {
     row(json!({"source": source, "identifier": identifier}))
 }
 
 #[test]
 fn the_designations_are_the_objects_rows_or_its_entries_own_before_that_table() {
     let v = vocabulary();
-    let rows = [
-        designation_row("twomrs", "J0042"),
-        designation_row("sixdfgs-dr3", "g1"),
-    ];
+    let rows = [designation_row(1, "J0042"), designation_row(0, "g1")];
     let read = object(&v, &object_row(), &[entry_row()], &[], &rows).unwrap();
     let named: Vec<(&str, &str)> = read
         .designations
@@ -218,7 +215,7 @@ fn the_designations_are_the_objects_rows_or_its_entries_own_before_that_table() 
     let before = object(&v, &object_row(), &[entry_row()], &[], &[]).unwrap();
     assert_eq!(before.designations.len(), 1);
     assert_eq!(before.designations[0].identifier, "J0042");
-    let bad = [designation_row("Not An Id", "x")];
+    let bad = [designation_row(9, "x")];
     let err = object(&v, &object_row(), &[entry_row()], &[], &bad).unwrap_err();
     assert!(err.0.contains("designations.source"), "{err}");
 }

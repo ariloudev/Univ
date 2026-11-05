@@ -42,10 +42,13 @@ mod query_time_tests;
 mod refusals;
 mod releases;
 mod routes;
+mod shards;
 mod sources;
 mod structures;
 #[cfg(test)]
 mod testkit;
+#[cfg(test)]
+mod testkit_shards;
 
 pub use access::Caller;
 pub use backend::{Backend, BackendError, Limiter, Row};
