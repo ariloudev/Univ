@@ -3,20 +3,21 @@
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 
-use univ_model::cosmology::{AssumedCosmology, Cosmology, SPEED_OF_LIGHT};
+use univ_model::cosmology::AssumedCosmology;
 use univ_model::distance::{Distance, DistanceError, DistanceKind, Method};
 use univ_model::entry::{
     CatalogueEntry, EntryError, Magnitude, NativePosition, Position, PositionErrors,
-    PositionUncertainty, ProperMotion, Redshift, RedshiftKind, SupergalacticVelocity,
+    PositionUncertainty, ProperMotion, SupergalacticVelocity,
 };
 use univ_model::ids::{Designation, SourceId};
 use univ_model::position::{Epoch, PositionError};
-use univ_model::redshift::{CmbCorrection, RedshiftFrame};
+use univ_model::redshift::CmbCorrection;
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
 
 mod colour;
 mod fixes;
+mod redshift;
 
 pub(super) use super::plan::Changed;
 use super::plan::{ByCode, Col, Errors, FixEffect, Measured, Plan, RuleAction};
@@ -146,33 +147,9 @@ impl Row<'_, '_> {
         // millions of times over.
         let mut redshifts = Vec::with_capacity(plan.redshifts.len());
         for r in &plan.redshifts {
-            let Some(mut measured) = self.quantity(&r.measured)? else {
-                continue;
-            };
-            let mut read_as = None;
-            if let Some((from, cosmology, kind_of_value)) = &r.comoving {
-                let comoving;
-                (measured, comoving) = comoving_redshift(measured, *from, cosmology)?;
-                read_as = comoving.then_some(*kind_of_value);
+            if let Some(redshift) = self.redshift(r, direction)? {
+                redshifts.push(redshift);
             }
-            let kind = self.by_code(&r.kind)?;
-            let default = read_as.unwrap_or(match kind {
-                RedshiftKind::Spectroscopic => KindOfValue::Measured,
-                RedshiftKind::Photometric => KindOfValue::Estimated,
-            });
-            let kind_of_value = self.kind(r.measured.value.index, default);
-            let direction = direction.ok_or(LeftOutReason::MissingPosition)?;
-            let correction = self.cx.correction;
-            let redshift = match r.frame {
-                RedshiftFrame::Cmb => {
-                    Redshift::published_cmb(measured, kind, kind_of_value, direction, correction)
-                }
-                frame => {
-                    Redshift::measured(frame, measured, kind, kind_of_value, direction, correction)
-                }
-            }
-            .map_err(entry_reason)?;
-            redshifts.push(redshift);
         }
         let mut distances = Vec::with_capacity(plan.distances.len());
         for (i, d) in plan.distances.iter().enumerate() {
@@ -458,32 +435,4 @@ fn entry_reason(error: EntryError) -> LeftOutReason {
         EntryError::Value(e) => value_reason(&e),
         _ => LeftOutReason::UnusableValue,
     }
-}
-
-/// `measured`, a velocity standing for H0 times a comoving distance in `cosmology` from `from`
-/// km/s up, as the redshift at that distance, its uncertainty scaled by dz/dv = E(z) / c, and
-/// true; below `from`, it is as published, a cz, and false.
-fn comoving_redshift(
-    measured: Quantity,
-    from: f64,
-    cosmology: &Cosmology,
-) -> Result<(Quantity, bool), LeftOutReason> {
-    let v = measured
-        .to(Unit::KilometrePerSecond)
-        .map_err(|_| LeftOutReason::UnusableValue)?;
-    if v.value < from {
-        return Ok((measured, false));
-    }
-    let z = cosmology
-        .redshift_at(v.value / cosmology.hubble_constant)
-        .map_err(|_| LeftOutReason::UnusableValue)?;
-    let om = cosmology.omega_matter;
-    let expansion = (om * (1.0 + z).powi(3) + 1.0 - om).sqrt();
-    Quantity::new(
-        z,
-        Unit::Dimensionless,
-        v.uncertainty.scaled(expansion / SPEED_OF_LIGHT),
-    )
-    .map(|q| (q, true))
-    .map_err(|_| LeftOutReason::UnusableValue)
 }

@@ -1,4 +1,5 @@
-//! The repository holds a valid definition for each source of the first release (RQ-5).
+//! The repository holds a valid definition for each source of the first release (RQ-5), and
+//! of the galaxy surveys release 10 adds.
 
 mod common;
 
@@ -31,18 +32,30 @@ const FIRST_RELEASE: [(&str, ScaleDomain); 21] = [
     ("researched-structures", ScaleDomain::CosmicWeb),
 ];
 
+/// The galaxy surveys added for release 10.
+const RELEASE_10: [(&str, ScaleDomain); 4] = [
+    ("desi-dr1", ScaleDomain::CosmicWeb),
+    ("sdss-dr17-distant", ScaleDomain::CosmicWeb),
+    ("twodfgrs", ScaleDomain::CosmicWeb),
+    ("alfalfa-a100", ScaleDomain::CosmicWeb),
+];
+
 #[test]
 fn every_source_of_the_first_release_has_a_valid_definition() {
     let definitions = read_all(&sources_dir()).unwrap_or_else(|e| panic!("{e}"));
     let ids: Vec<&str> = definitions.iter().map(|d| d.id.as_str()).collect();
-    for (id, domain) in FIRST_RELEASE {
+    for (id, domain) in FIRST_RELEASE.into_iter().chain(RELEASE_10) {
         let d = definitions
             .iter()
             .find(|d| d.id.as_str() == id)
             .unwrap_or_else(|| panic!("no definition for {id}; found {ids:?}"));
         assert_eq!(d.scale_domain, domain, "{id}");
     }
-    assert_eq!(definitions.len(), FIRST_RELEASE.len(), "{ids:?}");
+    assert_eq!(
+        definitions.len(),
+        FIRST_RELEASE.len() + RELEASE_10.len(),
+        "{ids:?}"
+    );
 }
 
 #[test]

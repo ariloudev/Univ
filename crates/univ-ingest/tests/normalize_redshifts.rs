@@ -87,6 +87,7 @@ fn a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entri
             when: Condition {
                 column: "Cln".into(),
                 is: vec!["x".into()],
+                not: false,
             },
         }),
     });

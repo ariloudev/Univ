@@ -1,0 +1,5 @@
+source: sdss-dr17-distant
+url: https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=SELECT+TOP+6+specObjID%2C+ra%2C+dec%2C+z%2C+zErr+FROM+SpecObj+WHERE+zWarning+%3D+0+AND+%28%28class+%3D+%27GALAXY%27+AND+z+%3E%3D+0.35+AND+z+%3C+1.2%29+OR+%28class+%3D+%27QSO%27+AND+z+%3E+0.005%29%29+AND+%28specObjID+%25+40%29+%3D+0&format=csv
+retrieved: 2026-11-05T02:30:26Z
+sha256: 585eba1b3d36a14cfde6dc7ce16204dd33ed783bf23398a10657e2c13ca07c3c
+note: the first chunk's query cut to 6 rows

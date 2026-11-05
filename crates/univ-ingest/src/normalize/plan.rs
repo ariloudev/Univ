@@ -85,6 +85,8 @@ pub(super) struct RedshiftPlan {
     /// From this velocity up (km/s), a comoving distance in velocity units in this cosmology,
     /// read as a redshift of this kind of value.
     pub comoving: Option<(f64, Cosmology, KindOfValue)>,
+    /// Below this value, in the column's unit, the row is left out.
+    pub floor: Option<f64>,
 }
 
 pub(super) struct DistancePlan {
@@ -262,6 +264,7 @@ impl Resolver<'_> {
             measured,
             kind,
             frame: r.frame,
+            floor: r.floor.as_ref().map(|f| f.below),
             comoving: comoving
                 .transpose()
                 .map_err(|e| self.unsupported(e.to_string()))?,

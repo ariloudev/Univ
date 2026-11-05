@@ -45,6 +45,8 @@ pub enum LeftOutReason {
     DuplicateIdentifier,
     /// A researched star whose papers publish no distance for it: its file says why.
     NoPublishedDistance,
+    /// A row a compilation re-serves from another survey, which that survey's own source holds.
+    OtherSurvey,
 }
 
 /// A rule on the rows whose cells meet a condition, and every condition in `and`: they are left
@@ -77,12 +79,15 @@ pub struct DistanceOverride {
 }
 
 /// A row whose trimmed cell in `column` is one of `is`: the same text, or the same number, so
-/// that `0` matches a cell `0.000`.
+/// that `0` matches a cell `0.000`; with `not`, a row whose cell is none of them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Condition {
     pub column: String,
     pub is: Vec<String>,
+    /// Whether the condition holds for a cell that is none of `is`.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub not: bool,
 }
 
 /// The values of `columns` take the kind of value `kind`.
@@ -161,7 +166,7 @@ pub enum FixAction {
 pub const MAX_FIXES: usize = 64;
 
 impl Condition {
-    /// Whether `cell`, trimmed, is one of the condition's values.
+    /// Whether `cell`, trimmed, is one of the condition's values, or with `not` none of them.
     #[must_use]
     #[expect(
         clippy::float_cmp,
@@ -169,9 +174,11 @@ impl Condition {
     )]
     pub fn matches(&self, cell: &str) -> bool {
         let number = cell.parse::<f64>().ok();
-        self.is
+        let listed = self
+            .is
             .iter()
-            .any(|v| v == cell || number.is_some_and(|n| v.parse::<f64>().is_ok_and(|x| x == n)))
+            .any(|v| v == cell || number.is_some_and(|n| v.parse::<f64>().is_ok_and(|x| x == n)));
+        listed != self.not
     }
 }
 

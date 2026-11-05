@@ -1,0 +1,44 @@
+#
+#   VizieR Astronomical Server vizier.nao.ac.jp
+#    Date: 2026-11-05T02:33:48 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-05T02:33:48	  Query execution date
+#INFO	request=https://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=VII%2F250%2F2dfgrs&-out=Name%2Cz%2Cq_z%2CBjmag&-out.add=_RAJ%2C_DEJ&-out.max=5&q_z=3..5&z=0.002..5&SeqNum=1..30000	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_7250
+#Name: VII/250
+#Title: The 2dF Galaxy Redshift Survey (2dFGRS) (2dFGRS Team, 1998-2003)
+#INFO	ivoid=ivo://cds.vizier/vii/250	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/vii/250	    IVOID of underlying data collection
+#INFO	creator=Colless M.	    First author or institution
+#INFO	cites=bibcode:2001MNRAS.328.1039C	    Article or Data origin sources
+#INFO	journal=MNRA	    Journal name
+#INFO	original_date=2001	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/VII/250	    Dataset landing page
+#INFO	publication_date=2017-06-22	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Table	VII_250_2dfgrs:
+#Name: VII/250/2dfgrs
+#Title: Best observations of 2dFGRS
+#Column	_RAJ2000	(F11.7)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F11.7)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	Name	(A10)	2dFGRS name (NAME)	[ucd=meta.id;meta.main]
+#Column	z	(F7.4)	? Best redshift (heliocentric) (Z_HELIO) (2)	[ucd=src.redshift]
+#Column	q_z	(I1)	[1,5] Redshift quality for best spectrum (reliable redshifts have quality>=3) (2)	[ucd=meta.code.qual;src.redshift]
+#Column	Bjmag	(F6.3)	Final bj magnitude (BJG) (1)	[ucd=phot.mag;em.opt.B]
+_RAJ2000	_DEJ2000	Name	z	q_z	Bjmag
+deg	deg	 	 	 	mag
+-----------	-----------	----------	-------	-	------
+003.6127083	-32.2707222	TGS436Z001	 0.2981	4	19.424
+003.6272917	-32.9668611	TGS496Z001	 0.1228	5	18.842
+003.5862917	-32.3880000	TGS435Z001	 0.1038	4	18.320
+003.6019583	-32.4965556	TGS436Z002	 0.2065	3	19.435
+003.6080000	-32.7115278	TGS435Z002	 0.1036	4	19.038
+

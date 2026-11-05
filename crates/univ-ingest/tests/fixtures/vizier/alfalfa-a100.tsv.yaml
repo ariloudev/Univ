@@ -1,0 +1,5 @@
+source: alfalfa-a100
+url: http://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=J%2FApJ%2F861%2F49%2Ftable2&-out=AGC%2CVhel%2CHI&-out.add=_RAJ%2C_DEJ&-out.max=5&HI=1
+retrieved: 2026-11-05T02:33:49Z
+sha256: 5526121df192ee89744d49f021b4103af8bd2f474dc3491afc7aa3eea0304ab5
+note: the first slice's query cut to 5 rows

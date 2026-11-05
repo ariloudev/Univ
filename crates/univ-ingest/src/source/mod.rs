@@ -11,7 +11,8 @@ pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
     CatalogueError, Coded, ColourReading, ComovingVelocity, DistanceReading, ErrorColumns,
-    MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading, SpectralTypeReading,
+    MethodCodes, Normalization, Published, RedshiftCodes, RedshiftFloor, RedshiftReading,
+    SpectralTypeReading,
 };
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,

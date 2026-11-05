@@ -1,0 +1,255 @@
+key: 01a1a98a-5cb2-7098-b9b7-f2a9ebf6274e
+id: w2
+versions:
+  - key: 01a1a98a-5cb2-7098-b9b7-f2b3000890f5
+    at: 2026-11-05T02:29:39Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W2 sources"
+    goal: "The seven new source definitions exist with recorded fixtures, their access methods and matching rules, and the fixture build holds their entries"
+    status: active
+blocks:
+  - key: 01a1a98a-5cb2-7098-b9b7-f2aab393dc7c
+    id: w2-plan
+    kind: plan
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2b47f224cd8
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W2 plan"
+        markdown: |-
+          Within the release 10 build plan. The live services were probed with three-row queries on 2026-11-05.
+
+          | Task | Source(s) | Access | Notes |
+          |---|---|---|---|
+          | w2-sdss | `sdss-dr17-distant` | `skyserver_sql`, chunked | GALAXY at 0.35 ≤ z < 1.2 and QSO at z > 0.005, `zWarning = 0` |
+          | w2-vizier | `twodfgrs`, `alfalfa-a100` | `vizier_tsv`. The NAO mirror answers; IDIA gives empty bodies | 2dFGRS VII/250 with q_z ≥ 3 and z ≥ 0.002, rms 85 km/s as `catalogue_error`, non-commercial. ALFALFA J/ApJ/861/49/table2 with HI = 1, Vhel heliocentric, error W50/2 as estimated, Dist as an estimated flow-model distance, non-commercial |
+          | w2-desi | `desi-dr1` | `tap` at Astro Data Lab, `desi_dr1.zpix` | `zcat_primary`, `zwarn = 0` (bit 0 is SKY), spectype GALAXY or QSO. Data Lab's zpix has no `target_ra`: positions are `mean_fiber_ra/dec`. Barycentric |
+          | w2-gama | `gama-dr4` | `files` SpecObjv27.fits | A rule condition `is_not` and a left-out reason `other_survey`, to keep SURVEY = GAMA and NQ ≥ 3. Permission pending |
+          | w2-ssa | `twompz`, `wise-supercosmos` | new `ssa_sql`: POST the freeform form, follow the `.csv.gz` link it writes | 2MPZ prefers zSpec where it is not −999. Catalogue errors 0.015 and 0.033 (1 + z). Permission pending |
+          | w2-matching | the matching rules for the new pairs | `rules/matching.yaml` | Photometric tolerances scaled to the scatter |
+          | w2-review | `/simplify`, `/code-review`, gate, trace, close, merge | | |
+  - key: 01a1a98a-5cb2-7098-b9b7-f2abbef2179c
+    id: w2-sdss
+    kind: task
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2b53adf15ca
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "SDSS DR17 distant galaxies and quasars"
+        detail: "skyserver_sql definition, fixture and tests."
+        state: active
+      - key: 01a1a992-c886-7502-9cec-832b94fb300c
+        at: 2026-11-05T02:38:51Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "SDSS DR17 distant galaxies and quasars"
+        detail: "sources/sdss-dr17-distant.yaml; recorded fixture skyserver/sdss-dr17-distant.csv (6 rows)."
+        state: done
+  - key: 01a1a98a-5cb2-7098-b9b7-f2ac0cf6b0ac
+    id: w2-vizier
+    kind: task
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2b6ec546908
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "2dFGRS and ALFALFA α.100"
+        detail: "vizier_tsv definitions, fixtures and tests."
+        state: open
+      - key: 01a1a992-c886-7502-9cec-832c8882d040
+        at: 2026-11-05T02:38:51Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "2dFGRS and ALFALFA α.100"
+        detail: "sources/twodfgrs.yaml (q_z 3-5, z >= 0.002, catalogue_error 85 km/s) and sources/alfalfa-a100.yaml (HI = 1); fixtures from VizieR NAO. Neither carries a non-commercial mark: the CDS CC-BY-NC paragraph for AAS tables is inside an HTML comment."
+        state: done
+  - key: 01a1a98a-5cb2-7098-b9b7-f2ad6906ac2b
+    id: w2-desi
+    kind: task
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2b7245a8d78
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "DESI DR1 via Data Lab TAP"
+        detail: "tap definition with barycentric redshifts, fixture and tests."
+        state: open
+      - key: 01a1a992-c886-7502-9cec-832d1bf27e4a
+        at: 2026-11-05T02:38:51Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "DESI DR1 via Data Lab TAP"
+        detail: "sources/desi-dr1.yaml written (barycentric, zcat_primary, zwarn = 0, GALAXY/QSO, 80 async chunks); fixture fetch retrying in the background, as Data Lab's sync endpoint timed out."
+        state: active
+  - key: 01a1a98a-5cb2-7098-b9b7-f2ae0013b7a1
+    id: w2-gama
+    kind: task
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2b866c9b66b
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "GAMA DR4 SpecObj"
+        detail: "files definition, is_not condition, other_survey reason, fixture and tests."
+        state: open
+      - key: 01a1a992-c886-7502-9cec-832e29931b01
+        at: 2026-11-05T02:38:51Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "GAMA DR4 SpecObj"
+        detail: "files definition, is_not condition, other_survey reason, fixture and tests."
+        state: active
+  - key: 01a1a98a-5cb2-7098-b9b7-f2af1e750517
+    id: w2-ssa
+    kind: task
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2b9bc6c73b1
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "2MPZ and WISE × SuperCOSMOS through ssa_sql"
+        detail: "New access method, two definitions, fixtures and tests."
+        state: open
+  - key: 01a1a98a-5cb2-7098-b9b7-f2b0c3ea8fce
+    id: w2-matching
+    kind: task
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2ba08376002
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Matching rules for the new pairs"
+        detail: "rules/matching.yaml tolerances; fixture build holds every new source."
+        state: open
+  - key: 01a1a98a-5cb2-7098-b9b7-f2b1d2aab6d1
+    id: w2-review
+    kind: task
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2bb088ca803
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review, gate, trace and merge W2"
+        detail: "/simplify, /code-review, cargo xtask check, loft reconcile, close, merge."
+        state: open
+  - key: 01a1a98a-5cb2-7098-b9b7-f2b20626db14
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1a98a-5cb2-7098-b9b7-f2bc3391c212
+        at: 2026-11-05T02:29:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | VizieR's IDIA mirror answers 200 with an empty body | probe | the NAO mirror first in the new definitions | worked around |
+          | Data Lab's `desi_dr1.zpix` has no `target_ra`/`target_dec` | probe | `mean_fiber_ra/dec`, stated in the cuts | worked around |
+  - key: 01a1a9a2-2259-76e2-aa1b-d3351b4c8d6c
+    id: permission-drafts
+    kind: note
+    versions:
+      - key: 01a1a9a2-2259-76e2-aa1b-d3374d6f4734
+        at: 2026-11-05T02:55:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Permission requests to send (drafts)"
+        markdown: |-
+          Three drafts for you to send. I send nothing myself. Each pending source records whom it asked and on which date, so its definition takes the date you send.
+
+          ### 1. WFAU: 2MPZ and WISE × SuperCOSMOS, as served by the SuperCOSMOS Science Archive
+          **To:** WFAU at the Royal Observatory Edinburgh. The SSA pages give no address. The IfA WFAU page is http://www.roe.ac.uk/ifa/wfau.
+          **Subject:** Permission to redistribute 2MPZ and WISE×SuperCOSMOS photometric redshifts in a non-commercial sky viewer
+
+          > Dear WFAU team,
+          >
+          > I run Univ, a non-commercial hobby project that builds a 3D map of the observable universe from public catalogues and serves it to a web viewer. Every value is cited to its catalogue and paper, and every source's terms are shown beside its data.
+          >
+          > I would like to include the 2MPZ catalogue (TWOMPZ..twompzPhotoz) and the WISE×SuperCOSMOS photometric redshift catalogue (WISExSCOSPZ..wiseScosPhotoz), queried from the SuperCOSMOS Science Archive. I would redistribute the position, the photometric redshift (and the spectroscopic one, where 2MPZ gives it) and an identifier for each galaxy.
+          >
+          > The credits page says that data retrieved from the archive "are subject to the copyright given in this copyright summary", but I could not find the summary it refers to. May I redistribute these columns in this way, crediting WFAU and citing Bilicki et al. 2014 (ApJS 210, 9) and 2016 (ApJS 225, 5) as your pages ask? If there is a copyright summary or licence I should follow, I would be grateful for a link.
+          >
+          > With thanks,
+          > Serge Lobanovsky
+
+          ### 2. Maciej Bilicki: the same two catalogues, as their author
+          **To:** M. Bilicki. The SSA pages list maciek@ast.uct.ac.za (2MPZ) and bilicki at strw.leidenuniv.nl (WISE×SCOS); both are probably out of date, so check his current institution's page.
+          **Subject:** Redistributing 2MPZ and WISE×SuperCOSMOS photo-z in a non-commercial 3D sky map
+
+          > Dear Dr Bilicki,
+          >
+          > I run Univ, a non-commercial hobby project that draws a 3D map of galaxies from public catalogues, with every value cited and each source's terms shown. I would like to include 2MPZ and the WISE×SuperCOSMOS photometric redshifts, taken from the SuperCOSMOS Science Archive. For each galaxy I would redistribute its position, its photometric redshift, given the catalogue-wide scatter you publish (σz = 0.015; σz/(1+z) = 0.033) as an estimated uncertainty, and an identifier.
+          >
+          > Neither the archive nor the papers state terms for redistribution, so I am writing to ask whether you are happy for the catalogues to be used this way, with Bilicki et al. 2014 and 2016 cited and WFAU acknowledged. I have asked WFAU as well.
+          >
+          > With thanks,
+          > Serge Lobanovsky
+
+          ### 3. GAMA: DR4 SpecObj
+          **To:** gama@gama-survey.org (the DR4 page's contact)
+          **Subject:** Permission to redistribute GAMA DR4 redshifts in a non-commercial 3D sky map
+
+          > Dear GAMA team,
+          >
+          > I run Univ, a non-commercial hobby project that draws a 3D map of galaxies from public catalogues, with every value cited and each source's terms shown. I would like to include the redshifts of GAMA DR4's SpecObj table (v27): for the rows whose best spectrum is GAMA's own and whose NQ is at least 3, the CATAID, position and heliocentric redshift.
+          >
+          > The DR4 page asks publications to cite Driver et al. 2022 and acknowledge GAMA, which I would do, but it does not say whether the data may be redistributed. May I redistribute these columns in this way? If there are terms I should follow, I would be grateful to know them.
+          >
+          > With thanks,
+          > Serge Lobanovsky
+        tone: info
+  - key: 01a1a9a2-2259-76e2-aa1b-d3361066c72e
+    id: q-permission-date
+    kind: question
+    versions:
+      - key: 01a1a9a2-2259-76e2-aa1b-d33860db71bc
+        at: 2026-11-05T02:55:37Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "When will you send the three permission requests (WFAU, M. Bilicki, GAMA), so 2MPZ, WISE × SuperCOSMOS and GAMA DR4 can record whom they asked and when?"
+        header: "Send date"
+        context: "Under the spec, a permission-pending source names whom it asked and on which date. The requests are not sent yet, so no true date exists. Meanwhile the rest of W2 goes ahead: DESI, the SDSS remainder, 2dFGRS, ALFALFA, the new `ssa_sql` access method and the GAMA reader. The three pending definitions wait in my scratchpad, out of `sources/`."
+        options:
+          - label: "Sending today"
+            detail: "I record 2026-11-05 as the date asked, and put the three definitions in sources/ straight away. Choose this only if you send them today."
+            recommended: true
+          - label: "I'll give the date"
+            detail: "Answer with the date in your own words once they are sent. The three definitions stay out of sources/ until then; if that is after W2 closes, they go in at the start of W5, before the build."
+          - label: "Leave them out"
+            detail: "Release 10 goes without 2MPZ, WISE × SuperCOSMOS and GAMA. They come back in a later release once permission is asked."
