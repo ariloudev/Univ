@@ -1,6 +1,8 @@
 //! Cartesian positions: a direction in the ICRS and a radial distance, in ICRS, galactic and
 //! supergalactic axes with the Solar System barycentre as origin.
 
+use std::sync::Arc;
+
 use serde::Serialize;
 
 use super::chain::{Step, Transformation};
@@ -79,9 +81,11 @@ impl Direction {
 /// supergalactic axes, with the release cosmology, the chain that made it and the univ-model
 /// version. It is made only from a [`Radial`], so never for an object without a distance.
 ///
-/// It is held for each of tens of millions of objects, so it keeps only the radial chain: the
-/// steps after it, which the direction alone decides, are added when the chain is read
-/// ([`Self::chain`]), and serialized with it.
+/// It is held for each of tens of millions of objects, so it keeps only what cannot be worked
+/// out again: the radial chain, whose later steps the direction alone decides and which are
+/// added when the chain is read ([`Self::chain`]); the ICRS vector, which the galactic and
+/// supergalactic ones are rotated from when read; and the release cosmology, shared. It is
+/// serialized with all of them.
 #[derive(Clone, Debug, PartialEq)]
 pub struct DerivedPosition {
     direction: Direction,
@@ -90,11 +94,8 @@ pub struct DerivedPosition {
     distance: Quantity,
     measure: Measure,
     icrs: Vec3,
-    galactic: Vec3,
-    supergalactic: Vec3,
-    cosmology: Cosmology,
+    cosmology: Arc<Cosmology>,
     radial_chain: Box<[Step]>,
-    model_version: &'static str,
 }
 
 impl Serialize for DerivedPosition {
@@ -107,11 +108,14 @@ impl Serialize for DerivedPosition {
         s.serialize_field("distance", &self.distance)?;
         s.serialize_field("measure", &self.measure)?;
         s.serialize_field("icrs", &self.icrs)?;
-        s.serialize_field("galactic", &self.galactic)?;
-        s.serialize_field("supergalactic", &self.supergalactic)?;
-        s.serialize_field("cosmology", &self.cosmology)?;
+        s.serialize_field("galactic", &from_icrs(Frame::Galactic).apply(self.icrs))?;
+        s.serialize_field(
+            "supergalactic",
+            &from_icrs(Frame::Supergalactic).apply(self.icrs),
+        )?;
+        s.serialize_field("cosmology", &*self.cosmology)?;
         s.serialize_field("chain", &self.chain())?;
-        s.serialize_field("model_version", &self.model_version)?;
+        s.serialize_field("model_version", MODEL_VERSION)?;
         s.end()
     }
 }
@@ -120,7 +124,7 @@ impl DerivedPosition {
     /// The position `radial` along `direction`, recording each step after the radial chain.
     #[must_use]
     pub fn new(direction: Direction, radial: Radial) -> Self {
-        let cosmology = radial.cosmology().clone();
+        let cosmology = Arc::clone(radial.shared_cosmology());
         let radial_chain: Box<[Step]> = radial.chain().into();
         let (native, assumed, distance, measure) = radial.into_parts();
         let icrs = scaled(direction.icrs.unit_vector(), distance.value);
@@ -131,11 +135,8 @@ impl DerivedPosition {
             distance,
             measure,
             icrs,
-            galactic: from_icrs(Frame::Galactic).apply(icrs),
-            supergalactic: from_icrs(Frame::Supergalactic).apply(icrs),
             cosmology,
             radial_chain,
-            model_version: MODEL_VERSION,
         }
     }
 
@@ -172,8 +173,7 @@ impl DerivedPosition {
     pub fn cartesian(&self, frame: Frame) -> Option<Vec3> {
         match frame {
             Frame::Icrs => Some(self.icrs),
-            Frame::Galactic => Some(self.galactic),
-            Frame::Supergalactic => Some(self.supergalactic),
+            Frame::Galactic | Frame::Supergalactic => Some(from_icrs(frame).apply(self.icrs)),
             _ => None,
         }
     }
@@ -231,7 +231,7 @@ impl DerivedPosition {
 
     #[must_use]
     pub fn model_version(&self) -> &'static str {
-        self.model_version
+        MODEL_VERSION
     }
 }
 

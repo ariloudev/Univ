@@ -10,7 +10,7 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
-serde = { version = "1.0.229", features = ["derive"] }
+serde = { version = "1.0.229", features = ["derive", "rc"] }
 # Exact float parsing: a tile manifest reads back to the same bytes.
 serde_json = { version = "1.0.154", features = ["float_roundtrip"] }
 thiserror = "2.0.21"

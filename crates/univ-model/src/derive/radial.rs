@@ -1,6 +1,8 @@
 //! Distances along the line of sight under the release cosmology, and lengths rescaled from the
 //! Hubble constant they were published for.
 
+use std::sync::Arc;
+
 use serde::Serialize;
 
 use super::chain::{Step, Transformation};
@@ -21,7 +23,7 @@ pub struct Radial {
     assumed: Option<AssumedCosmology>,
     distance: Quantity,
     measure: Measure,
-    cosmology: Cosmology,
+    cosmology: Arc<Cosmology>,
     chain: Vec<Step>,
     model_version: &'static str,
 }
@@ -53,6 +55,11 @@ impl Radial {
 
     #[must_use]
     pub fn cosmology(&self) -> &Cosmology {
+        &self.cosmology
+    }
+
+    /// The release cosmology, shared with the release and every distance derived under it.
+    pub(super) fn shared_cosmology(&self) -> &Arc<Cosmology> {
         &self.cosmology
     }
 
@@ -376,7 +383,7 @@ impl Release {
             assumed,
             distance,
             measure,
-            cosmology: self.cosmology().clone(),
+            cosmology: Arc::clone(self.table().shared_cosmology()),
             chain,
             model_version: MODEL_VERSION,
         }

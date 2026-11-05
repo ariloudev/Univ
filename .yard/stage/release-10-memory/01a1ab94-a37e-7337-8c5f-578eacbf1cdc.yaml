@@ -198,6 +198,15 @@ blocks:
         title: "Compact entries"
         detail: "Flags as one sorted slice with shared names (DESI's normalization 1,460 → 828 B per entry). Parallax and velocity boxed: focused peak 3,766 → 3,460 B per entry (−306). Fixture release byte-identical after each. Not done: the CMB-frame redshift worked out when written. Only its 48-byte value could go (the measured redshift and dipole stay), and it would move a science derivation into 24 read sites. Next: re-measure the entry's size and see what is left inline."
         state: active
+      - key: 01a1ac4f-69c4-72e3-b641-58b7c4660ec8
+        at: 2026-11-05T15:24:08Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Compact entries"
+        detail: "Flags as one sorted slice with shared names (`a82375c`): DESI's normalization 1,460 → 828 B per entry; focused peak 3,870 → 3,766. Parallax and velocity boxed (`0d8214f`): focused peak 3,766 → 3,460. Fixture release byte-identical after each. CMB-frame redshift computed at write time: left out. Only its 48-byte value could go (the measured redshift and dipole stay), and the change would move a science derivation into 24 read sites. CatalogueEntry is now 304 B inline, down from 504."
+        state: done
   - key: 01a1abb4-e013-7643-8968-691da40e15ad
     id: m-compact-objects
     kind: task
@@ -211,6 +220,15 @@ blocks:
         title: "Compact objects"
         detail: "Done when ReleaseObject's derived position is boxed or compacted, with the same fixture release and the peak measured."
         state: open
+      - key: 01a1ac42-74cc-70cf-b0c0-f1212f493cb1
+        at: 2026-11-05T15:09:58Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Compact objects"
+        detail: "Done when the inline cost of objects and their entries is cut (ReleaseObject 744 B, ObjectEntry 400 B, Object 400 B) with the same fixture release and the peak measured. Mimalloc, found on the way, is recorded in the note 'The allocator held a third of the peak'."
+        state: active
   - key: 01a1abb4-e013-7643-8968-691ead7aee95
     id: m-id-hashes
     kind: task
@@ -267,3 +285,35 @@ blocks:
 
           **Next.** In placement, the old object array (400 B per object) appears to stay allocated while the new `ReleaseObject` array (744 B per object) is built beside it. A fresh heap profile is running to confirm that before it is changed.
         tone: info
+  - key: 01a1ac42-74cc-70cf-b0c0-f11fb549fd4c
+    id: memory-progress-2
+    kind: note
+    versions:
+      - key: 01a1ac42-74cc-70cf-b0c0-f120c1a8bbd2
+        at: 2026-11-05T15:09:58Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The allocator held a third of the peak"
+        markdown: |-
+          **Where the peak sat.** Memory was sampled every half second against the run's log. The footprint jumped from 6.1 to 8.7 GB during placement and held until tiles began. dhat put the live heap at that point at about 5.9 GB. The other ~3 GB was memory the macOS allocator kept resident: pages left fragmented by the tens of millions of small blocks normalization frees.
+
+          **What it changed.** mimalloc replaced the global allocator (dhat still replaces it under `dhat-heap`). Commit `34f9d0c`. The fixture release is byte-identical.
+
+          | Focused run | Peak footprint | Per entry |
+          |---|---|---|
+          | Before (`0d8214f`) | 8.42 GB | 3,460 B |
+          | mimalloc, two runs | 6.53 / 6.65 GB | 2,684 / 2,733 B |
+
+          **Total so far: 10.31 → about 6.6 GB, −36%.**
+
+          **Tried and dropped.** Placing objects from the end of their array, and shrinking it as it empties, so the old and new object arrays are never both whole. Under the system allocator it saved nothing; under mimalloc it cost about 0.4 GB (6.97 / 7.06 GB over two runs), since the repeated shrinking reallocations fragment memory.
+
+          **How steps are checked from here** (owner's point: full runs aren't needed per change):
+          - the fixture-release snapshot, under a second;
+          - the tests of the changed code;
+          - the 16-second focused run for the % change.
+
+          The whole test suite runs once, at the wave's gate. Profiles use a small sample, and only to choose the next target. On a small run the fixed part (about 2 GB) is a larger share of the peak, so a step's % here understates its effect on release 10. The final projection takes bytes per entry from two run sizes.
+        tone: success
