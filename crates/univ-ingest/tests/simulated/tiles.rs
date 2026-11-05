@@ -127,7 +127,7 @@ pub fn object(
     let Some(m) = preferred else {
         return ReleaseObject {
             id: ObjectId::new(id).unwrap(),
-            object,
+            object: Box::new(object),
             position: None,
         };
     };
@@ -159,7 +159,7 @@ pub fn object(
     object.placement = Placement::Placed;
     ReleaseObject {
         id: ObjectId::new(id).unwrap(),
-        object,
+        object: Box::new(object),
         position: Some(position),
     }
 }

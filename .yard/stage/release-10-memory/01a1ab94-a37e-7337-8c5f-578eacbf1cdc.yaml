@@ -317,3 +317,34 @@ blocks:
 
           The whole test suite runs once, at the wave's gate. Profiles use a small sample, and only to choose the next target. On a small run the fixed part (about 2 GB) is a larger share of the peak, so a step's % here understates its effect on release 10. The final projection takes bytes per entry from two run sizes.
         tone: success
+  - key: 01a1ac8a-a3df-772b-88d4-ecd1db1e4116
+    id: memory-progress-3
+    kind: note
+    versions:
+      - key: 01a1ac8a-a3df-772b-88d4-ecd24994a3f2
+        at: 2026-11-05T16:28:49Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Measuring without the id state, and three more cuts"
+        markdown: |-
+          **The focused run was hiding per-entry savings.** Sampling the footprint itself (`footprint(1)`) showed two peaks:
+          - reading release 9's id state, 21 M entries of YAML, at the start of cross-matching;
+          - the end of placement.
+
+          The state is nine times this run's 2.4 M entries, so its fixed cost hid changes per entry (the resolution change showed 0 against it). Focused runs now start from a fresh, empty state directory; the cost of reading the state is measured and cut on its own. With the state, the focused run peaks 0.8 GB higher (6.04 against 5.22 GB at `47e0610`).
+
+          The focused runs also wrote a `pending` state into the real state directory. Nothing reads it (a build installs the state it made in memory, then deletes `pending`), so the real state was untouched. It was removed, and focused runs now use a scratch state.
+
+          | Step | Commit | Peak, empty state | Per entry |
+          |---|---|---|---|
+          | Before (after the shared cosmology) | `013971f` | about 5.5 GB | — |
+          | The id assignment's objects let go | `cda0786` | 5.49 GB | 2,255 B |
+          | An anchor's resolution held as nothing, others boxed | `47e0610` | 5.22 GB | 2,146 B |
+          | A designation's identifier shared by every copy (`Arc<str>`) | `f8b9424` | **4.66 GB** | **1,915 B** |
+
+          The id-assignment step was measured with the state (6.45 → 6.09 GB); the rows above it are on an empty state. The fixture release was byte-identical after each step. `Designation` is shared with univ-api: its JSON and OpenAPI schema are unchanged (the identifier is still a string).
+
+          **Next.** The cost of reading the id state, then the object's own size (400 B: five list headers, the preferred distance and position).
+        tone: info

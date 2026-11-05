@@ -37,7 +37,7 @@ fn object(entries: Vec<(&str, Vec<ColourIndex>)>) -> Object {
             ..bare(source, "1")
         })
         .collect();
-    release_object(1, entries, None).object
+    *release_object(1, entries, None).object
 }
 
 fn chosen(o: &Object) -> Option<(f64, ColourBands)> {
