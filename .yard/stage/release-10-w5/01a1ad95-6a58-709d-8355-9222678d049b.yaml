@@ -10,6 +10,15 @@ versions:
     title: "Build release 10"
     goal: "Release 10 is built from every source, and `cargo xtask science` passes on it"
     status: planned
+  - key: 01a1adae-817a-74cb-b154-48f4fc112c2d
+    at: 2026-11-05T21:47:37Z
+    revision: 21
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build release 10"
+    goal: "Release 10 is built from every source, and `cargo xtask science` passes on it"
+    status: active
 blocks:
   - key: 01a1ad95-6a58-709d-8355-922e66bdea76
     id: b-approve
@@ -24,6 +33,15 @@ blocks:
         title: "The owner approves the full build"
         detail: "Asked on Yard, with the sources, the expected memory and time, and what it writes."
         state: open
+      - key: 01a1adae-817a-74cb-b154-48f5ae4eef69
+        at: 2026-11-05T21:47:37Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The owner approves the full build"
+        detail: "Asked on Yard, with the sources, the expected memory and time, and what it writes."
+        state: active
   - key: 01a1ad95-6a58-709d-8355-922fc6c1582f
     id: b-build
     kind: task
@@ -37,3 +55,34 @@ blocks:
         title: "Build release 10 and run the science checks"
         detail: "Done when `univ-ingest build` makes release 10 and `cargo xtask science` passes on it."
         state: open
+  - key: 01a1adae-817a-74cb-b154-48f0a7273807
+    id: ap-build-10
+    kind: approval
+    versions:
+      - key: 01a1adae-817a-74cb-b154-48f62e1ca364
+        at: 2026-11-05T21:47:37Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build release 10: the full ingest"
+        markdown: |-
+          **What runs:** `univ-ingest build --offline` over all 28 definitions in `sources/`, reading only `Univ/downloads/univ-ingest` (every source's download is present).
+
+          **Size:** about 43 million entries: the rehearsal's 21.2 M, plus 2MPZ, GAMA, WISE × SuperCOSMOS and 2dFGRS (21.8 M).
+
+          **Memory and time:** the rehearsal measured 1,373 B per entry, so the peak should be about **59 GB** of the machine's 137 GB, and the run about 6 to 10 minutes. The rehearsal stopped at tiles; writing the release may add to the peak. Disk: 961 GB free.
+
+          **What it writes:**
+          - release 10 to `.cache/univ-ingest/build/releases/10`;
+          - once the release is complete and checked, the id state to `.cache/univ-ingest/state`.
+
+          A failed run uses up no release number and leaves the state as it was. Nothing is published, pushed or deployed.
+
+          **To run it yourself and watch** (you preferred this for the rehearsal):
+
+          ```
+          /private/tmp/claude-501/-Users-admin-Locap-Univ/0dff9621-d0e9-418a-9aee-e82062f9f784/scratchpad/scripts/build-release-10.sh
+          ```
+
+          It streams the log, prints the footprint every 5 s, and ends with entries, peak, bytes per entry and time. Approve and I run it myself; or reject with "I'll run it", and tell me when it ends.

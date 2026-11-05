@@ -19,6 +19,15 @@ versions:
     title: "Release 10's remaining sources"
     goal: "2dFGRS is fetched again, 2MPZ is read as a prepared file, and GAMA DR4 and WISE × SuperCOSMOS are defined as permission pending without a date and fetched"
     status: active
+  - key: 01a1adae-817a-74cb-b154-48f228399e80
+    at: 2026-11-05T21:47:37Z
+    revision: 21
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Release 10's remaining sources"
+    goal: "2dFGRS is fetched again, 2MPZ is read as a prepared file, and GAMA DR4 and WISE × SuperCOSMOS are defined as permission pending without a date and fetched"
+    status: done
 blocks:
   - key: 01a1ad95-6a58-709d-8355-9228c9c6bba7
     id: s-twodfgrs
@@ -211,6 +220,21 @@ blocks:
         title: "GAMA DR4 and WISE × SuperCOSMOS in sources/, fetched"
         detail: "Definitions committed (`fa09c84`) as permission pending with no date, with their pairs, 2MPZ's pairs against both, and their tests in `tests/pending_surveys.rs`. Both fetched into Univ/downloads/univ-ingest: 1.8 GB in 1 min 55 s. An offline normalize of the three pending sources is checking their row counts."
         state: active
+      - key: 01a1adae-817a-74cb-b154-48f15f6012a3
+        at: 2026-11-05T21:47:37Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "GAMA DR4 and WISE × SuperCOSMOS in sources/, fetched"
+        detail: |-
+          Both fetched (1.8 GB in 1 min 55 s), and normalized offline with 2MPZ in 21 s, peaking at 11.9 GB. Every count matches:
+          - WISE × SuperCOSMOS: 20,412,353 kept and 3,789 left out = 20,416,142, the page's count;
+          - GAMA DR4: 238,716 of 344,905, the definition's count;
+          - 2MPZ: all 934,175.
+
+          WISE's 3,789 left out are designations on two rows: one galaxy within 0.1″, matched once to WISE all-sky and once to AllWISE. The first row is kept, the all-sky one for 3,788 of them; this is now recorded in the definition (`512adf6`).
+        state: done
   - key: 01a1ad96-13f9-72ef-92ac-7213e5fc657a
     id: spec-pending-date
     kind: loft
@@ -3828,3 +3852,51 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1adae-817a-74cb-b154-48efb3a3f89c
+    id: sources-result
+    kind: note
+    versions:
+      - key: 01a1adae-817a-74cb-b154-48f309c5ca2d
+        at: 2026-11-05T21:47:37Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the sources stage produced"
+        markdown: |-
+          | Source | Access | Entries | Redshift |
+          |---|---|---|---|
+          | 2dFGRS | VizieR, 13 slices | 221,414 rows | spectroscopic |
+          | 2MPZ | **prepared** file, `scripts/fetch-twompz.py` | 934,175 | photometric, σ = 0.015 |
+          | GAMA DR4 | file (FITS) | 238,716 | spectroscopic |
+          | WISE × SuperCOSMOS | file (csv.gz, 1.7 GB) | 20,412,353 | photometric, σ = 0.033 (1 + z) |
+
+          - **Spec changes, minor and pre-approved:** a pending source's asked date may be absent until the request is sent; a source can be read from a prepared file, checked by SHA-256 and row count.
+          - **API:** /v1 serves an unsent request as the new `terms.permission_to_ask` (decision 1). The OpenAPI document only gains.
+          - **Matching:** 2MPZ joins the 2MASX scheme. Pairs: 9 for GAMA, 8 for WISE, 9 for 2MPZ.
+          - **Trace:** all 473 nodes linked.
+
+          The three pending sources name whom permission is to be asked of, and no date.
+        tone: success
+      - key: 01a1adae-9f7d-74e9-bb77-c3d3d597fa68
+        at: 2026-11-05T21:47:44Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the sources stage produced"
+        markdown: |-
+          | Source | Access | Entries | Redshift |
+          |---|---|---|---|
+          | 2dFGRS | VizieR, 13 slices | 221,414 rows | spectroscopic |
+          | 2MPZ | **prepared** file, `scripts/fetch-twompz.py` | 934,175 | photometric, σ = 0.015 |
+          | GAMA DR4 | file (FITS) | 238,716 | spectroscopic |
+          | WISE × SuperCOSMOS | file (csv.gz, 1.7 GB) | 20,412,353 | photometric, σ = 0.033 (1 + z) |
+
+          - **Spec changes, minor and pre-approved:** a pending source's asked date may be absent until the request is sent; a source can be read from a prepared file, checked by SHA-256 and row count.
+          - **API:** /v1 serves an unsent request as the new `terms.permission_to_ask` (decision 1). The OpenAPI document only gains.
+          - **Matching:** 2MPZ joins the 2MASX scheme. Pairs: 10 for GAMA, 9 for WISE, 9 for 2MPZ, counting the pairs among the three.
+          - **Trace:** all 473 nodes linked.
+
+          The three pending sources name whom permission is to be asked of, and no date.
+        tone: success
