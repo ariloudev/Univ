@@ -141,11 +141,13 @@ pub fn source_id(id: &str) -> SourceId {
     SourceId::new(id).expect("a valid source id")
 }
 
-/// The ingest cache the tests run by hand read: `UNIV_INGEST_CACHE`, or the workspace's
-/// `.cache/univ-ingest`.
+/// The ingest cache the tests run by hand read: `UNIV_INGEST_CACHE`, or the CLI's default, the
+/// Univ home folder's `downloads/univ-ingest` beside the workspace.
 pub fn cache_dir() -> PathBuf {
-    std::env::var_os("UNIV_INGEST_CACHE")
-        .map_or_else(|| workspace().join(".cache/univ-ingest"), PathBuf::from)
+    std::env::var_os("UNIV_INGEST_CACHE").map_or_else(
+        || workspace().join("../downloads/univ-ingest"),
+        PathBuf::from,
+    )
 }
 
 /// Every source definition in the repository.

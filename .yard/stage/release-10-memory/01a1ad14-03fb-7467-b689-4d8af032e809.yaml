@@ -10,6 +10,15 @@ versions:
     title: "Review the memory wave"
     goal: "The wave's diff passes /simplify and /code-review with their findings fixed or skipped with a reason, the fixture release still byte-identical, and the full gate green"
     status: active
+  - key: 01a1ad60-4275-762c-b000-d3734e06de4a
+    at: 2026-11-05T20:22:09Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review the memory wave"
+    goal: "The wave's diff passes /simplify and /code-review with their findings fixed or skipped with a reason, the fixture release still byte-identical, and the full gate green"
+    status: done
 blocks:
   - key: 01a1ad14-03fb-7467-b689-4d8bbf4796d0
     id: r-run-reviews
@@ -179,6 +188,18 @@ blocks:
         title: "Full gate"
         detail: "`cargo xtask check` once, green, committed on its exit status."
         state: active
+      - key: 01a1ad58-d988-71d5-bc5c-89f6ab8da1a1
+        at: 2026-11-05T20:14:03Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full gate"
+        detail: |-
+          Green on the third run: 13 steps passed, `loft verify` skipped (it runs on `develop`).
+          - **First run:** stopped at `loft reconcile`. 48 traced tests had changed after their links were recorded; the wave edited them only to fit the new types, so their links were accepted (`839c188`).
+          - **Second run:** stopped at univ-api's OpenAPI snapshot. A memory note in `Designation.identifier`'s doc comment had entered the API document; it is a plain comment now and the document is unchanged (`834c7fa`).
+        state: done
   - key: 01a1ad14-03fb-7467-b689-4d937cf4d42d
     id: r-rehearsal
     kind: task
@@ -192,3 +213,89 @@ blocks:
         title: "Full rehearsal, after the owner's approval"
         detail: "The 21.4 M-entry offline rehearsal. It waits for your approval, and gives the measured figure behind the 43 M projection."
         state: open
+      - key: 01a1ad58-d988-71d5-bc5c-89f786f72dd0
+        at: 2026-11-05T20:14:03Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full rehearsal, after the owner's approval"
+        detail: "Waiting for the owner's approval."
+        state: open
+      - key: 01a1ad5b-d7cb-70d4-b627-b12816a92c41
+        at: 2026-11-05T20:17:19Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full rehearsal, run by the owner"
+        detail: "The owner runs it to watch the progress (the approval was answered: \"I would like to run this myself and watch the progress\"). Script: `/private/tmp/claude-501/-Users-admin-Locap-Univ/0dff9621-d0e9-418a-9aee-e82062f9f784/scratchpad/scripts/rehearsal.sh`. It streams the run's log and the footprint every 5 s, then prints entries, the peak and bytes per entry. Done when its figures are recorded and the 43 M projection made from them."
+        state: open
+      - key: 01a1ad60-4275-762c-b000-d37162edb330
+        at: 2026-11-05T20:22:09Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full rehearsal, run by the owner"
+        detail: "Run by the owner with `rehearsal.sh` at `834c7fa`: 21,216,931 entries from 23 cached sources (2dFGRS left out), a copy of release 9's id state. Peak footprint **29.15 GB**, **1,373 B per entry**, 159 s, exit 0."
+        state: done
+  - key: 01a1ad58-d988-71d5-bc5c-89f5c2f8b433
+    id: a-rehearsal
+    kind: approval
+    versions:
+      - key: 01a1ad58-d988-71d5-bc5c-89f85afd79ee
+        at: 2026-11-05T20:14:03Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Run the full offline rehearsal"
+        markdown: |-
+          **What runs:** `univ-ingest tiles --offline` over every cached source but 2dFGRS: 23 sources, about 21.4 M entries, as the rehearsal before the wave. Measured with `/usr/bin/time -l` and the footprint sampled by stage.
+
+          **What it touches**
+          - Reads only the download cache; nothing is fetched.
+          - The id state is a **copy** of the real one (release 9) in the scratch folder, so the run pays the real cost of reading release 9's ids, and the real state directory is not written to.
+          - The tiles go to the scratch folder and are deleted afterwards. No release is built or published.
+
+          **Why 2dFGRS is left out:** this branch still has its old slice range, and a run would remove its cached chunks again. W5 refetches it.
+
+          **Expected:** about 30 GB at the peak, against 78.8 GB before the wave, and a few minutes. Then the 43 M projection from this run and DESI's measured figure, and the wave can close.
+
+          After this, the downloads move (stage "Move the downloads"), then the merge into `product/release-10`.
+    responses:
+      - key: 01a1ad5b-6323-72d4-ba58-4c319c9e84ee
+        at: 2026-11-05T20:16:49Z
+        revision: 23
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: rejected
+        reason: "I would like to run this myself and watch the progress. Possible?"
+  - key: 01a1ad60-4275-762c-b000-d370eb4aabaf
+    id: memory-final
+    kind: note
+    versions:
+      - key: 01a1ad60-4275-762c-b000-d372cb46b7c5
+        at: 2026-11-05T20:22:09Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The rehearsal's result"
+        markdown: |-
+          | | Before the wave | After |
+          |---|---|---|
+          | Rehearsal entries | 21.44 M | 21.22 M (2dFGRS left out) |
+          | Peak footprint | 78.8 GB | **29.15 GB** (−63%) |
+          | Per entry | ~3.6 KB | **1,373 B** |
+          | Time | — | 159 s |
+
+          The run: normalization 10 s, cross-matching 127 s (matching 93 s), tiles 4 s. 19,381,115 objects, 1,835,816 merges, 64,085 candidate links, 19,305,160 placed. The footprint peaked at 28.8 GB in the samples as tiles began, after the id state was written.
+
+          **Projection for release 10 (about 43 M entries).** Two measured points agree on about 1.37 KB per entry: DESI alone, 15.83 M entries at 21.72 GB, and this run, 21.22 M at 29.15 GB. They give (29.15 − 21.72) / 5.39 M ≈ 1,378 B per entry. So release 10 needs about **29.15 + 21.8 M × 1.37 KB ≈ 59 GB**, against 156 GB projected before the wave. That fits the machine's 128 GB with a wide margin. The plan's goal was about 1.2 KB per entry and 52 GB, and this is 14% above it; the two cuts that remain are recorded in "Where the cuts stop".
+
+          The release is unchanged: the fixture snapshot was byte-identical after every step, and the full gate is green.
+        tone: success

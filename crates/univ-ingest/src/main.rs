@@ -227,8 +227,9 @@ struct FetchArgs {
     /// Make no request: use only what is on disk, and fail on the first item missing.
     #[arg(long)]
     offline: bool,
-    /// Where chunks, files and provenance are kept between runs.
-    #[arg(long, default_value = ".cache/univ-ingest")]
+    /// Where chunks, files and provenance are kept between runs: by default the Univ home
+    /// folder's downloads, beside this repository, which its projects share.
+    #[arg(long, env = "UNIV_INGEST_CACHE", default_value = DEFAULT_CACHE)]
     cache: PathBuf,
     /// The directory of source definitions.
     #[arg(long, default_value = "sources")]
@@ -372,6 +373,10 @@ async fn every_stage(
 
 /// With the `dhat-heap` feature, every allocation goes through DHAT, which writes the heap's
 /// profile to `dhat-heap.json` when the run ends.
+/// The download cache, from the repository root, where Univ Ingest runs: the Univ home
+/// folder's `downloads/univ-ingest`.
+const DEFAULT_CACHE: &str = "../downloads/univ-ingest";
+
 #[cfg(feature = "dhat-heap")]
 #[global_allocator]
 static ALLOC: dhat::Alloc = dhat::Alloc;

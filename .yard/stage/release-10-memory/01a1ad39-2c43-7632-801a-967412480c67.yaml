@@ -10,6 +10,15 @@ versions:
     title: "Move the downloads to the Univ home folder"
     goal: "Univ Ingest's downloads live in the Univ home folder, and new downloads go there"
     status: planned
+  - key: 01a1ad60-4275-762c-b000-d374f172834a
+    at: 2026-11-05T20:22:09Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Move the downloads to the Univ home folder"
+    goal: "Univ Ingest's downloads live in the Univ home folder, and new downloads go there"
+    status: active
 blocks:
   - key: 01a1ad39-2c43-7632-801a-96752f23f7b2
     id: q-move-what

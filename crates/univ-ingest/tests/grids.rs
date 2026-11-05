@@ -5,7 +5,7 @@
 //!
 //! `full_cached_files_parse` reads the whole cached files and is run by hand:
 //! `cargo test -p univ-ingest --test grids -- --ignored`, with `UNIV_INGEST_CACHE` naming the
-//! cache directory when it is not the workspace's `.cache/univ-ingest`.
+//! cache directory when it is not the Univ home folder's `downloads/univ-ingest`.
 
 #![expect(
     clippy::unwrap_used,
