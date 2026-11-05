@@ -4,18 +4,22 @@ provider: vizier
 access:
   method: vizier_tsv
   table: "VII/250/2dfgrs"
-  constraints: ["q_z=3..5", "z=0.002..5"]
+  constraints: ["q_z=3..5", "z=0.002..0.5"]
   # SeqNum is the 2dFGRS serial number, I6, never blank (ReadMe); 245,591 records.
   slices: { column: SeqNum, from: 1, to: 270000, step: 30000 }
+  rows: 221414
 cuts:
-  - "VII/250/2dfgrs, the best observation of each of 245,591 objects (ReadMe), cut to redshift quality q_z >= 3 and z >= 0.002."
+  - "VII/250/2dfgrs, the best observation of each of 245,591 objects (ReadMe), cut to redshift quality q_z >= 3 and 0.002 <= z <= 0.5."
   - >-
     The ReadMe: "Reliable (quality>=3) redshifts were obtained for 221414 galaxies"; "Q>=3
-    redshifts are 98.4% reliable and have an rms uncertainty of 85 km/s." z >= 0.002 leaves out
-    stars (cz < 600 km/s); counted from the file on 2026-11-05: 233,251 rows with q_z >= 3, 221,509
-    of them at z >= 0.002. Quality 3+ objects reach z = 3.5: those are quasars, kept.
+    redshifts are 98.4% reliable and have an rms uncertainty of 85 km/s." Counted as served by
+    vizier.nao.ac.jp on 2026-11-05: 11,743 rows with q_z >= 3 lie below z = 0.002 (cz < 600 km/s,
+    stars) and 95 above z = 0.5, up to 3.4999 (quasars), with only 23 between 0.4 and 0.5. The cut
+    keeps 221,414 rows, the ReadMe's count of galaxies. The quasars are left out because the 85
+    km/s rms, given to every redshift below, was stated for the galaxies; DESI and SDSS serve
+    quasars with their own errors.
   - "z is the \"Best redshift (heliocentric)\" (ReadMe, Note 2: from the best spectrum)."
-  - "Positions are VizieR's _RAJ2000/_DEJ2000 from the catalogue's J2000 sexagesimal columns, which the APM survey measured on B1950 plates."
+  - "Positions are VizieR's _RAJ2000/_DEJ2000, computed from the catalogue's J2000 sexagesimal columns."
   - "There is no per-object redshift error: the catalogue's rms of 85 km/s is given to each redshift as an estimated uncertainty."
 columns:
   - { column: Name, field: identifier, unit: dimensionless }
@@ -61,11 +65,12 @@ redistribution:
     is, and the source is marked non-commercial (read 2026-11-05). Neither the ReadMe nor the 2dFGRS site (http://www.2dfgrs.net/) states a
     licence or a copyright of its own. Provisional: judged again before any public deployment.
 scale_domain: cosmic_web
-# VizieR's mirrors, checked 2026-11-05: NAO answers these tables; IDIA answered with empty bodies
-# and CDS refused the connection from the owner's machine, so they come after it.
+# VizieR's mirrors, checked 2026-11-05: China-VO answers these tables; NAO answered at first, then
+# reported its database unreachable (STDB_ERR); IDIA answered with empty bodies and CDS refused the
+# connection from the owner's machine, so they come after it.
 mirrors:
-  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
 normalization:

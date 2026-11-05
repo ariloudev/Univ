@@ -1,11 +1,12 @@
-//! A sky index: declination bands of the search radius' height, each cut into right-ascension
-//! cells at least as wide as the radius at the band's poleward edge. A query reads the cells
-//! that the cap of the radius around a position can touch, so it finds every point within the
-//! radius. Built once by sorting, it holds one cell key and one index per point.
+//! A sky index: declination bands of a cell size's height, each cut into right-ascension cells
+//! at least as wide as that size at the band's poleward edge. A query of any radius reads the
+//! cells that the cap of its radius around a position can touch, so it finds every point within
+//! that radius; a query near the cell size reads the fewest cells. Built once by sorting, it holds
+//! one cell key and one index per point.
 
-/// Points by cell, for finding the neighbours of a position within a fixed radius.
+/// Points by cell, for finding the neighbours of a position within a radius.
 pub struct SkyIndex {
-    /// Band height and search radius, degrees.
+    /// Band height and the cells' least width, degrees.
     radius: f64,
     /// Cells per band, by band.
     cells: Vec<u32>,
@@ -15,7 +16,7 @@ pub struct SkyIndex {
 
 impl SkyIndex {
     /// An index of `positions`, (right ascension, declination) in degrees, by their place in
-    /// the slice, for searches of `radius` degrees.
+    /// the slice, in cells of `radius` degrees: best for searches of about that radius.
     #[must_use]
     pub fn new(positions: &[(f64, f64)], radius: f64) -> Self {
         // A floor keeps the bands to a few million at most, should a radius be tiny.
@@ -52,13 +53,18 @@ impl SkyIndex {
         count(ra.rem_euclid(360.0) / 360.0 * f64::from(n)).min(n - 1)
     }
 
-    /// Every point that may lie within the radius of (`ra`, `dec`), and some beyond it: the
-    /// caller measures each.
+    /// Every point that may lie within the index's cell size of (`ra`, `dec`), and some beyond
+    /// it: the caller measures each.
     pub fn near(&self, ra: f64, dec: f64, out: &mut Vec<u32>) {
+        self.near_within(ra, dec, self.radius, out);
+    }
+
+    /// Every point that may lie within `r` degrees of (`ra`, `dec`), and some beyond it: the
+    /// caller measures each.
+    pub fn near_within(&self, ra: f64, dec: f64, r: f64, out: &mut Vec<u32>) {
         out.clear();
-        let r = self.radius;
-        let first = band_of((dec - r).max(-90.0), r);
-        let last = band_of((dec + r).min(90.0), r);
+        let first = band_of((dec - r).max(-90.0), self.radius);
+        let last = band_of((dec + r).min(90.0), self.radius);
         // The half-width in right ascension of a cap of radius r centred at dec.
         let half = if dec.abs() + r >= 90.0 {
             None
@@ -72,33 +78,25 @@ impl SkyIndex {
                 Some(h) if 2.0 * h < 360.0 - 360.0 / f64::from(n) => {
                     let from = self.cell_of(band, ra - h);
                     let to = self.cell_of(band, ra + h);
-                    let mut c = from;
-                    loop {
-                        self.read(cell_key(band, c), out);
-                        if c == to {
-                            break;
-                        }
-                        c = (c + 1) % n;
+                    // The cells of a band are consecutive keys: one range, or two across RA 0.
+                    if from <= to {
+                        self.read(band, from, to + 1, out);
+                    } else {
+                        self.read(band, from, n, out);
+                        self.read(band, 0, to + 1, out);
                     }
                 }
-                _ => {
-                    let (lo, hi) = (cell_key(band, 0), cell_key(band, n));
-                    let start = self.points.partition_point(|(k, _)| *k < lo);
-                    let end = self.points.partition_point(|(k, _)| *k < hi);
-                    out.extend(self.points[start..end].iter().map(|(_, i)| *i));
-                }
+                _ => self.read(band, 0, n, out),
             }
         }
     }
 
-    fn read(&self, key: u64, out: &mut Vec<u32>) {
-        let start = self.points.partition_point(|(k, _)| *k < key);
-        out.extend(
-            self.points[start..]
-                .iter()
-                .take_while(|(k, _)| *k == key)
-                .map(|(_, i)| *i),
-        );
+    /// The points of cells `from` up to `to` (not included) of `band`.
+    fn read(&self, band: u32, from: u32, to: u32, out: &mut Vec<u32>) {
+        let (lo, hi) = (cell_key(band, from), cell_key(band, to));
+        let start = self.points.partition_point(|(k, _)| *k < lo);
+        let end = start + self.points[start..].partition_point(|(k, _)| *k < hi);
+        out.extend(self.points[start..end].iter().map(|(_, i)| *i));
     }
 }
 
@@ -154,15 +152,17 @@ mod tests {
             (359.999, 0.0),
             (0.0005, 0.0),
         ]);
-        let radius = 3.0;
-        let index = SkyIndex::new(&sky, radius);
-        let mut out = Vec::new();
-        for (i, &(ra, dec)) in sky.iter().enumerate() {
-            index.near(ra, dec, &mut out);
-            let a = unit_vector(ra, dec);
-            for (j, &(rb, db)) in sky.iter().enumerate() {
-                if separation_degrees(a, unit_vector(rb, db)) <= radius {
-                    assert!(out.contains(&point(j)), "{i} misses {j}");
+        // Searches of the cell size, and of radii larger and smaller than it.
+        for (cells, radius) in [(3.0, 3.0), (1.0, 3.0), (3.0, 0.5)] {
+            let index = SkyIndex::new(&sky, cells);
+            let mut out = Vec::new();
+            for (i, &(ra, dec)) in sky.iter().enumerate() {
+                index.near_within(ra, dec, radius, &mut out);
+                let a = unit_vector(ra, dec);
+                for (j, &(rb, db)) in sky.iter().enumerate() {
+                    if separation_degrees(a, unit_vector(rb, db)) <= radius {
+                        assert!(out.contains(&point(j)), "{cells} {radius}: {i} misses {j}");
+                    }
                 }
             }
         }

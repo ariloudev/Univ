@@ -233,6 +233,38 @@ blocks:
           | The approved spec quoted unverified DESI counts | own check against arXiv:2503.14745 | the abstract's counts | fixed |
           | Adding DESI to the shared fixture shifts the API's object ids | univ-api tests | DESI added only to object_reads' fixture | worked around |
           | The WISE×SCOS HEALPix mask is not applied | design | stated in the cuts; stars remain near the plane | open |
+      - key: 01a1aa2e-715b-75fc-9acd-41010a5bf6bc
+        at: 2026-11-05T05:28:52Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | VizieR's IDIA mirror answers 200 with an empty body; NAO's database went down mid-session (STDB_ERR) | probes | China-VO first in the new definitions | worked around |
+          | Data Lab's `desi_dr1.zpix` has no `target_ra`/`target_dec` | probe | `mean_fiber_ra/dec`, stated in the cuts | worked around |
+          | Data Lab's `zcat_primary` is a boolean: `= 1` fails | probe | `= 'true'` | fixed |
+          | The SSA SQL form cancels answers above about 500 rows | probes | ssa_sql dropped; WISE×SCOS read from its file; 2MPZ paged sequentially (owner approved) | worked around |
+          | `row.rs` passed 500 lines; `entry` passed 100 | lines, clippy | `row/redshift.rs` | fixed |
+          | The approved spec quoted unverified DESI counts | own check against arXiv:2503.14745 | the abstract's counts | fixed |
+          | Adding DESI to the shared fixture shifts the API's object ids | univ-api tests | DESI only in object_reads' fixture (`fixture_with`) | worked around |
+          | A redshift `floor` was a second way to leave rows out | /simplify | one `Condition` of `is`, `is_not` or `below`; floor removed | fixed |
+          | `OtherSurvey` named one cut | /simplify | `outside_selection`, with the rule's basis | fixed |
+          | File tables classified twice; `rows` took a `Result`; piece loop nested | /simplify | `file_tables`, `TableReader` passed, flat loop, error helpers | fixed |
+          | **Cross-match searched every source at the widest tolerance of any pair (360″)** | /simplify, /code-review | one index per source in cells of its narrowest pair, each search at its own pair's radius, a band read as one key range | fixed |
+          | **DESI chunks miss a negative `targetid` the count holds** | /code-review | `targetid > 0` in the query and the count | fixed |
+          | **IDs above 2^53 compared equal as f64** | /code-review | listed values compared as numbers only when exact | fixed |
+          | **CSV pieces: a leading comment as header, blank lines at a cut, a header-only file unchecked** | /code-review | header is the first non-blank, non-comment line; blank and comment lines are layout; a header-only file is read as a table | fixed |
+          | **2dFGRS quasars given the galaxies' 85 km/s rms** | /code-review | cut at z <= 0.5: 221,414 rows, the ReadMe's galaxy count; 95 quasars above it left to DESI and SDSS. The cuts' earlier "quasars kept" corrected | fixed |
+          | **ALFALFA Vhel published with none reported though the paper defines its error** | /code-review | `error_scale: 0.5` on e_W50, quoting Haynes et al. 2018 Table 2 Col. 5 (optical convention verified) | fixed |
+          | New behaviour without spec criteria | /code-review | criteria for rule conditions, `outside_selection`, exact comparison, scaled errors and gzipped CSV in normalize-records, linked | fixed |
+          | A blank cell is below no number, while `is_not` matches it | /code-review | documented; a blank redshift is no redshift, the row kept | no change |
+          | A quoted newline cut across pieces | /code-review | the table reader is line-based already; no source quotes newlines | no change |
+          | Pair rules spelled out per pair in matching.yaml | /simplify | a pair-family schema changes the recorded rules: later | skipped |
+          | The duplicate-identifier set copies each identifier (about 1 GB at 20M rows) | /simplify | for W3 | open |
+          | The WISE×SCOS HEALPix mask is not applied | design | stated in the cuts; stars remain near the plane | open |
   - key: 01a1a9a2-2259-76e2-aa1b-d3351b4c8d6c
     id: permission-drafts
     kind: note

@@ -190,9 +190,15 @@ impl Condition {
     )]
     pub fn matches(&self, cell: &str) -> bool {
         let number = cell.parse::<f64>().ok();
+        // Above 2^53 an f64 holds integers only to a spacing of 2 or more: identifiers that large,
+        // such as SDSS specObjIDs and DESI targetids, are listed values as text only.
+        let exact = |x: &f64| x.abs() <= 9_007_199_254_740_992.0;
         let listed = |values: &[String]| {
             values.iter().any(|v| {
-                v == cell || number.is_some_and(|n| v.parse::<f64>().is_ok_and(|x| x == n))
+                v == cell
+                    || number.filter(exact).is_some_and(|n| {
+                        v.parse::<f64>().ok().filter(exact).is_some_and(|x| x == n)
+                    })
             })
         };
         match (&self.is, &self.is_not, self.below) {

@@ -52,6 +52,11 @@ pub(super) enum Errors {
         high: Col,
         probability: f64,
     },
+    /// An error column's value times a factor the source states.
+    Scaled {
+        error: Col,
+        factor: f64,
+    },
     /// One error the source states for its whole catalogue, in the value's unit, times
     /// (1 + z) where it is stated per unit of (1 + z).
     Catalogue {
@@ -249,6 +254,12 @@ impl Resolver<'_> {
         let error = r.error.clone().map(ErrorColumns::Symmetric);
         let comoving = r.comoving_velocity.as_ref().map(ComovingVelocity::read);
         let mut measured = self.reading(&r.column, error.as_ref())?;
+        if let (Some(factor), Some(Errors::Symmetric(error))) = (r.error_scale, &measured.error) {
+            measured.error = Some(Errors::Scaled {
+                error: error.clone(),
+                factor,
+            });
+        }
         if let Some(c) = &r.catalogue_error {
             let sigma = c
                 .in_unit(measured.value.unit)

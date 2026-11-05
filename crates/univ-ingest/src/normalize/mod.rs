@@ -434,11 +434,7 @@ pub fn normalize_until(
                 .unwrap_or_default();
             let table = crate::fits::unpack(&name, read(file)?)
                 .and_then(|fits| bintable::first_table(&fits))
-                .map_err(|error| NormalizeError::Table {
-                    source_id: definition.id.clone(),
-                    file: file.clone(),
-                    error: error.to_string(),
-                })?;
+                .map_err(|e| NormalizeError::table(&definition.id, file, e.to_string()))?;
             tables.push((file.clone(), table));
         }
         normalizer.fits(&tables)?;

@@ -69,14 +69,15 @@ fn twodfgrs_gives_each_redshift_its_catalogues_rms() {
 }
 
 #[test]
-fn alfalfa_velocities_are_heliocentric_cz_with_none_reported() {
+fn alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error() {
     let n = normalized_fixture("alfalfa-a100");
     assert_eq!((n.report.published, n.report.left_out_total()), (5, 0));
     // AGC 105367: Vhel 11983 km/s.
     let e = entry(&n, "105367");
     let cz = e.redshifts[0].velocity.unwrap();
     assert!((cz.value - 11_983.0).abs() < 1e-9);
-    assert_eq!(cz.uncertainty, Uncertainty::NoneReported);
+    // e_W50 39 km/s: Haynes et al. 2018 adopt half of it as the velocity's error.
+    assert_eq!(cz.uncertainty, Uncertainty::Symmetric { sigma: 19.5 });
 }
 
 /// `id`'s definition with a rule that leaves out rows `when` meets, as outside the selection.
@@ -103,7 +104,8 @@ fn a_rule_may_leave_out_rows_whose_cell_is_below_a_number() {
             ..Condition::default()
         },
     );
-    // One recorded row lies below 0.5: specObjID 5487829205420103680 at z = 0.4038015.
+    // One recorded row lies below 0.5: specObjID 5487829205420103680 at z = 0.4038015, counted as
+    // `outside_selection`.
     assert_eq!(n.report.published, 5);
     assert_eq!(left_out(&n, LeftOutReason::OutsideSelection), 1);
 }
@@ -146,4 +148,14 @@ fn a_condition_gives_exactly_one_test() {
             "{when}: {field}"
         );
     }
+}
+
+#[test]
+fn identifiers_beyond_two_to_the_53_compare_as_text() {
+    // SDSS specObjIDs near 7e18 lie 1024 apart as f64: two of them are not the same number.
+    let c = Condition::is("specObjID", &["7281375122652682240"]);
+    assert!(c.matches("7281375122652682240"));
+    assert!(!c.matches("7281375122652682241"));
+    // Small numbers still compare as numbers.
+    assert!(Condition::is("q_z", &["0"]).matches("0.000"));
 }

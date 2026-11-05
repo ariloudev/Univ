@@ -307,6 +307,12 @@ impl Row<'_, '_> {
                 },
                 _ => Uncertainty::NoneReported,
             },
+            Some(Errors::Scaled { error, factor }) => match self.error(error, unit)? {
+                Some(sigma) => Uncertainty::Symmetric {
+                    sigma: sigma * factor,
+                },
+                None => Uncertainty::NoneReported,
+            },
             Some(Errors::Catalogue {
                 sigma,
                 times_one_plus_z,

@@ -213,8 +213,8 @@ fn positioned_groups(work: &mut Work<'_>) -> Vec<Group> {
     groups
 }
 
-/// The positioned entries of one source and their sky index, searched at the widest tolerance
-/// of the source's pairs.
+/// The positioned entries of one source and their sky index, in cells of the narrowest
+/// tolerance of the source's pairs.
 struct Sky {
     index: SkyIndex,
     group_of: Vec<usize>,
@@ -251,7 +251,7 @@ fn skies(work: &Work<'_>, groups: &[Group]) -> Vec<Option<Sky>> {
                 .iter()
                 .flatten()
                 .map(|p| p.widest_degrees())
-                .reduce(f64::max)
+                .reduce(f64::min)
         })
         .collect();
     let mut points = vec![Points::default(); n];
@@ -280,9 +280,9 @@ fn skies(work: &Work<'_>, groups: &[Group]) -> Vec<Option<Sky>> {
 
 /// Every pair of groups with no source in common that some pair rule finds within its
 /// tolerances, through the pair of their entries with the highest confidence. Each entry is
-/// looked for only among the sources its own source is paired with, each indexed at the widest
-/// tolerance of its pairs, so a source of millions paired at 5 arcsec is not searched at the
-/// widest tolerance of a pair of nearby dwarfs.
+/// looked for only among the sources its own source is paired with, and within the widest
+/// tolerance of that pair alone, so two sources of millions paired at 5 arcsec are not searched
+/// at the 60 arcsec one of them has with a third.
 fn candidates(work: &Work<'_>, groups: &[Group]) -> Vec<Candidate> {
     let skies = skies(work, groups);
     let partners = partners(work);
@@ -300,7 +300,12 @@ fn candidates(work: &Work<'_>, groups: &[Group]) -> Vec<Candidate> {
                 let Some(sky) = &skies[other] else {
                     continue;
                 };
-                sky.index.near(at.icrs.ra, at.icrs.dec, &mut near);
+                let source = usize::from(work.source_of[a]);
+                let Some(pair) = work.pairs[source * work.sources.len() + other] else {
+                    continue;
+                };
+                sky.index
+                    .near_within(at.icrs.ra, at.icrs.dec, pair.widest_degrees(), &mut near);
                 for &found_at in &near {
                     let (j, b) = (
                         sky.group_of[found_at as usize],

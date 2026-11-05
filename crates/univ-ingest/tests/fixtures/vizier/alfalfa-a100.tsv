@@ -1,13 +1,13 @@
 #
-#   VizieR Astronomical Server vizier.nao.ac.jp
-#    Date: 2026-11-05T02:33:49 [V7.6.1]
+#   VizieR Astronomical Server vizier.china-vo.org
+#    Date: 2026-11-05T05:21:22 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-05T02:33:49	  Query execution date
-#INFO	request=https://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=J%2FApJ%2F861%2F49%2Ftable2&-out=AGC%2CVhel%2CHI&-out.add=_RAJ%2C_DEJ&-out.max=5&HI=1	  Full request URL
+#INFO	request_date=2026-11-05T05:21:22	  Query execution date
+#INFO	request=https://vizier.china-vo.org/viz-bin/asu-tsv?-source=J%2FApJ%2F861%2F49%2Ftable2&-out=AGC%2CVhel%2Ce_W50%2CHI&-out.add=_RAJ%2C_DEJ&-out.max=5&HI=1	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -22,7 +22,6 @@
 #INFO	journal=ApJ	    Journal name
 #INFO	original_date=2018	    Year of the article publication
 #INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJ/861/49	    Dataset landing page
-#INFO	citation=doi:10.26093/cds/vizier.18610049	    Dataset identifier that can be used for citation
 #INFO	publication_date=2019-11-27	    Date of first publication in the data centre
 #INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
 #Table	J_ApJ_861_49_table2:
@@ -30,15 +29,16 @@
 #Title: ALFALFA extragalactic HI source catalog; corrected version (August 2019)
 #Column	_RAJ2000	(F10.6)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
 #Column	_DEJ2000	(F10.6)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
-#Column	AGC	(A6)	[1/749512] UGC/AGC number (1)	[ucd=meta.id;meta.main]
-#Column	Vhel	(I5)	[-430/17823] Heliocentric velocity of the HI profile midpoint	[ucd=spect.dopplerVeloc;em.line.HI]
-#Column	HI	(I1)	[1/2] HI source code (2)	[ucd=meta.code]
-_RAJ2000	_DEJ2000	AGC	Vhel	HI
-deg	deg	 	km/s	
-----------	----------	------	-----	-
-000.001667	 +5.443333	105367	11983	1
-000.003750	+24.908889	333313	11181	1
-000.010417	+23.084722	331060	 4463	1
-000.010417	+15.872222	331061	 6007	1
-000.006667	+32.708333	104570	10614	1
+#Column	AGC	(A6)	[1/749512] UGC/AGC number (1)	[ucd=(unassigned);phys.veloc.orbital;arith.diff;spect.line.veloc;arith]
+#Column	Vhel	(I5)	[-430/17823] Heliocentric velocity of the HI profile midpoint	[ucd=(unassigned);phys.veloc.orbital;arith.diff;(unassigned);(unassigned);(unassigned)]
+#Column	e_W50	(I3)	[1/296] Uncertainty in W50	[ucd=(unassigned);phys.veloc.orbital;arith.diff;time.age;meta.main]
+#Column	HI	(I1)	[1/2] HI source code (2)	[ucd=(unassigned);phys.veloc.orbital;arith.diff;pos.eq.dec]
+_RAJ2000	_DEJ2000	AGC	Vhel	e_W50	HI
+deg	deg	 	km/s	km/s	
+----------	----------	------	-----	---	-
+000.001667	 +5.443333	105367	11983	 39	1
+000.003750	+24.908889	333313	11181	 20	1
+000.010417	+23.084722	331060	 4463	  4	1
+000.010417	+15.872222	331061	 6007	 45	1
+000.006667	+32.708333	104570	10614	  6	1
 

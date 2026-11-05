@@ -69,7 +69,7 @@ components:
         name: "2dFGRS"
         body: |
           The 2dF Galaxy Redshift Survey's final release (Colless et al. 2001, MNRAS 328, 1039; VizieR
-          VII/250): 221,509 galaxies of redshift quality 3 or better over about 1,500 square degrees,
+          VII/250): 221,414 galaxies of redshift quality 3 or better over about 1,500 square degrees,
           with heliocentric redshifts and one rms uncertainty of 85 km/s for the whole catalogue. Used
           under the VizieR terms, for scientific and non-commercial use with its citation.
       - key: 01a1a931-2c8a-73a8-91f2-58d2281c1099

@@ -7,12 +7,14 @@ access:
   # Validation) in 80 chunks of about 200,000, each run as a job at Astro Data Lab.
   query: >-
     SELECT targetid, mean_fiber_ra, mean_fiber_dec, z, zerr, spectype FROM desi_dr1.zpix
-    WHERE zcat_primary = 'true' AND zwarn = 0 AND spectype IN ('GALAXY', 'QSO')
+    WHERE targetid > 0 AND zcat_primary = 'true' AND zwarn = 0
+    AND spectype IN ('GALAXY', 'QSO')
     AND MOD(targetid, {chunks}) = {chunk}
   chunks: 80
   count: >-
     SELECT COUNT(*) AS n FROM desi_dr1.zpix
-    WHERE zcat_primary = 'true' AND zwarn = 0 AND spectype IN ('GALAXY', 'QSO')
+    WHERE targetid > 0 AND zcat_primary = 'true' AND zwarn = 0
+    AND spectype IN ('GALAXY', 'QSO')
   # Data Lab's synchronous endpoint did not answer a four-row query within 110 s on 2026-11-05,
   # then answered a six-row one in 2 s: a job outlasts such stalls. zcat_primary is a boolean
   # column there, compared with 'true'.
@@ -29,6 +31,9 @@ cuts:
     18.7M objects, of which 13.1M are spectroscopically classified as galaxies, 1.6M as quasars, and
     4M as stars". Stars are left out here; Survey Validation targets are kept. The count of rows this
     query takes is measured when the release is built.
+  - >-
+    targetid > 0: DESI gives negative TARGETIDs to fibres without a target, and MOD of a negative
+    id would fall in no chunk while the count still held it.
   - >-
     zwarn = 0 is the fitter's own judgement, not a visual inspection: no further cut is made on the
     redshift range or on quasar redshifts, whose systematic errors exceed zerr (unverified for DR1).

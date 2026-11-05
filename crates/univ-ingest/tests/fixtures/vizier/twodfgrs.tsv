@@ -1,13 +1,13 @@
 #
-#   VizieR Astronomical Server vizier.nao.ac.jp
-#    Date: 2026-11-05T02:33:48 [V7.6.1]
+#   VizieR Astronomical Server vizier.china-vo.org
+#    Date: 2026-11-05T05:21:42 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-05T02:33:48	  Query execution date
-#INFO	request=https://vizier.nao.ac.jp/viz-bin/asu-tsv?-source=VII%2F250%2F2dfgrs&-out=Name%2Cz%2Cq_z%2CBjmag&-out.add=_RAJ%2C_DEJ&-out.max=5&q_z=3..5&z=0.002..5&SeqNum=1..30000	  Full request URL
+#INFO	request_date=2026-11-05T05:21:42	  Query execution date
+#INFO	request=https://vizier.china-vo.org/viz-bin/asu-tsv?-source=VII%2F250%2F2dfgrs&-out=Name%2Cz%2Cq_z%2CBjmag&-out.add=_RAJ%2C_DEJ&-out.max=5&q_z=3..5&z=0.002..0.5&SeqNum=1..30000	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -29,10 +29,10 @@
 #Title: Best observations of 2dFGRS
 #Column	_RAJ2000	(F11.7)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
 #Column	_DEJ2000	(F11.7)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
-#Column	Name	(A10)	2dFGRS name (NAME)	[ucd=meta.id;meta.main]
-#Column	z	(F7.4)	? Best redshift (heliocentric) (Z_HELIO) (2)	[ucd=src.redshift]
-#Column	q_z	(I1)	[1,5] Redshift quality for best spectrum (reliable redshifts have quality>=3) (2)	[ucd=meta.code.qual;src.redshift]
-#Column	Bjmag	(F6.3)	Final bj magnitude (BJG) (1)	[ucd=phot.mag;em.opt.B]
+#Column	Name	(A10)	2dFGRS name (NAME)	[ucd=(unassigned);phys.veloc.orbital;arith.diff;spect.line.veloc;arith]
+#Column	z	(F7.4)	? Best redshift (heliocentric) (Z_HELIO) (2)	[ucd=(unassigned);(unassigned);(unassigned);pos.parallax;meta.main]
+#Column	q_z	(I1)	[1,5] Redshift quality for best spectrum (reliable redshifts have quality>=3) (2)	[ucd=(unassigned);phys.veloc.orbital;arith.diff;pos.cartesian;pos.parallax;meta.main]
+#Column	Bjmag	(F6.3)	Final bj magnitude (BJG) (1)	[ucd=(unassigned);(unassigned);(unassigned);stat.filling;(unassigned);(unassigned)]
 _RAJ2000	_DEJ2000	Name	z	q_z	Bjmag
 deg	deg	 	 	 	mag
 -----------	-----------	----------	-------	-	------
