@@ -10,6 +10,7 @@ use std::path::Path;
 use univ_ingest::acquire::acquire;
 use univ_ingest::source::Access;
 use univ_ingest::state::{State, pending};
+use univ_ingest::structures::{StructureGeometry, read_all_named};
 use wiremock::matchers::query_param;
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -70,6 +71,30 @@ async fn an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts() 
         !log.contains("Z Members "),
         "every member list is placed: {log}"
     );
+    // Every member list of the repository's structure files is placed from its own rows: no
+    // fixture object carries a member.
+    let lists: Vec<usize> = read_all_named(&workspace().join("structures"))
+        .unwrap()
+        .iter()
+        .filter_map(|(_, s)| match &s.geometry {
+            Some(StructureGeometry::Members(m)) => Some(m.rows.len()),
+            _ => None,
+        })
+        .collect();
+    let (count, members) = (lists.len(), lists.iter().sum::<usize>());
+    let counted = [
+        format!(
+            "Z Step cross-match: members: {count} member lists, {members} members placed from \
+             their own cited position and redshift\n"
+        ),
+        format!(
+            "{count} member lists placed, 0 member lists not placed, 0 members resolved by name \
+             only\n"
+        ),
+    ];
+    for line in &counted {
+        assert!(log.contains(line.as_str()), "{line}in\n{log}");
+    }
     for line in [
         "Z Stage cross-match: 5 items\n",
         "Z Step cross-match: matching: 20 entries into 20 objects, 0 candidate links\n",
@@ -78,12 +103,8 @@ async fn an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts() 
         // M81's only distance here is its 2MRS redshift (cz = -34 km/s, about +48 km/s in the
         // CMB frame), which the peculiar velocity makes about 600% uncertain: it is not placed.
         "Z Step cross-match: positions: 15 placed of 20\n",
-        "Z Step cross-match: members: 6 member lists, 275 members placed from their own cited \
-         position and redshift\n",
         "Z cross-match: 20 entries, 20 objects, 0 merges, 0 candidate links, 20 new ids, 0 ids \
-         replaced, 15 placed, 1 not placed (distance too uncertain), 4 not placed (no distance), \
-         6 member lists placed, 0 member lists \
-         not placed, 0 members resolved by name only\n",
+         replaced, 15 placed, 1 not placed (distance too uncertain), 4 not placed (no distance), ",
         "Z Stage cross-match done: 20 entries, ",
         "Z Stopped at cross-match: cross-match only; no release was asked for\n",
     ] {

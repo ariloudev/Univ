@@ -1,0 +1,115 @@
+# The supercluster that joins the rich clusters Coma and A1367, shown with a redshift survey of the
+# galaxies between them.
+name: Coma Supercluster
+alternative_names: ["Coma/A1367 Supercluster"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: gregory-1978
+    reference: "Gregory & Thompson 1978, ApJ 222, 784"
+    title: "The Coma/A1367 supercluster and its environs"
+    doi: 10.1086/156198
+    bibcode: 1978ApJ...222..784G
+    read: "ADS scan of the article: pages 784, 785, 787, 789, 791, 793 and 795 (Table 6) read on the page images"
+# The Coma cluster, the supercluster's richest member, not a centre of the supercluster, which the
+# paper does not give: its direction as the caption of Figure 1 gives it (the figure's axes are
+# for 1950) and its mean velocity out to three degrees from Table 6.
+position:
+  frame: fk4_b1950
+  lon:
+    value: 195
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    as_published: "13h"
+    cite: &caption
+      paper: gregory-1978
+      sentence: "The NGC 5416 cluster (α ≈ 14h, δ ≈ 10°) has a luminosity similar to that of the Coma (α ≈ 13h, δ ≈ 28°) and A1367 (α ≈ 11h40m, δ ≈ 20°) clusters."
+      page: 787
+  lat:
+    value: 28
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: *caption
+  velocity:
+    value: 6947
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: gregory-1978
+      table: "6"
+      row: "Coma* (rich cluster, out to radius = 3°)"
+      column: "V̄0"
+      cell: "6947"
+    note: "The Coma cluster's mean velocity. The paper corrected its own new redshifts for galactic rotation (Section II) but does not say the literature redshifts it combines with them were; it is placed as a heliocentric velocity, which so near the north galactic pole such a correction changes little."
+values:
+  supercluster_distance:
+    value: 70
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: gregory-1978
+      sentence: "This wide physical separation coupled with the Supercluster's proximity to our own Galaxy (the distance to the Supercluster is ~70 h−1 Mpc) make the angular separation ~20°, which is too large to be visually impressive at, say, the scale of the Sky Survey."
+      page: 784
+  supercluster_velocity:
+    value: 6900
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: gregory-1978
+      sentence: "An obvious peak is found at the redshift of the Supercluster (6900 km s−1), and a sharp cutoff is found for V0 < 6400 km s−1."
+      page: 791
+    note: "The peak of the redshifts of the isolated galaxies between Coma and A1367."
+  near_side_cutoff_velocity:
+    value: 6400
+    unit: kilometre_per_second
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: gregory-1978
+      sentence: "An obvious peak is found at the redshift of the Supercluster (6900 km s−1), and a sharp cutoff is found for V0 < 6400 km s−1."
+      page: 791
+    note: "Below it no isolated intercluster galaxies are found: the sharp near side of the intercluster region."
+  coma_a1367_separation:
+    value: 21
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: gregory-1978
+      sentence: "For the case of Coma and A1367 the separation is 21 h−1 Mpc."
+      page: 784
+  thickness:
+    value: 6.4
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: upper_limit }
+    cite:
+      paper: gregory-1978
+      sentence: "The observed σ = 318 km s−1 then yields a thickness of 6.4 h−1 Mpc."
+      page: 793
+    note: "The line-of-sight depth if the redshift dispersion of the intercluster galaxies were all differential Hubble expansion, which the paper calls only an upper limit."
+  depth_with_background:
+    value: 13
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite:
+      paper: gregory-1978
+      sentence: "However, if the 10 background galaxies indicate an extension on the far side of the Supercluster, then its depth would be ~13 h−1 Mpc."
+      page: 793
+disputes: []
+notes: >-
+  The paper shows that Coma and A1367 lie in one supercluster by the population of isolated
+  galaxies in the intercluster region between them, in a redshift survey of a box of the sky
+  between Coma and A1367. It prints no centre for the supercluster, and the survey box is no
+  bound of it, so the point is the Coma cluster, labelled as such: the direction the caption of
+  Figure 1 gives it, to the nearest hour and degree, at the cluster's own mean velocity. The
+  supercluster's distance and the peak of its intercluster redshifts are kept as values. The
+  paper notes the supercluster seems larger than its survey, reaching the NGC 5416 cluster.
+  Lengths are in h^-1 Mpc with h the Hubble constant over a hundred, as the paper defines it.

@@ -1,0 +1,24 @@
+# Sargas, theta Scorpii, F1II/F1III evolved fast rotator: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 86228
+name: Sargas
+alternative_names: ["theta Scorpii", "tet Sco", "HD 159532"]
+papers:
+  - id: desouza-2018
+    reference: "Domiciano de Souza, Bouchaud, Rieutord, Espinosa Lara & Putigny 2018, A&A 619, A167"
+    title: "The evolved fast rotator Sargas. Stellar parameters and evolutionary status from VLTI/PIONIER and VLT/UVES"
+    bibcode: 2018A&A...619A.167D
+    doi: 10.1051/0004-6361/201833450
+    arxiv: "1810.09903"
+    read: "arXiv PDF of 1810.09903v1, full text extracted with pypdf; Sect. 4 (model fitting, PDF page 7) read"
+unplaced: "No published distance other than ones based on the Hipparcos parallax, whose Hipparcos-2 error is above a tenth of the parallax; no Gaia DR2 or EDR3 parallax, and no cluster membership found."
+disputes:
+  - claim: "Domiciano de Souza et al. adopt, as a prior and not a result, a distance of 91.16 ± 12.51 pc from Hohle et al., based on revised Hipparcos parallaxes."
+    cite:
+      paper: desouza-2018
+      page: 7
+      sentence: "All these quantities were considered as free parameters to be fitted with emcee, except the distance, which was incorporated as a prior, following the value from Hohle et al. (2010, based on revised Hipparcos parallaxes): d = 91.16 ± 12.51 pc."
+notes: >-
+  The one dedicated modern study did not fit the distance: it used a Hipparcos-derived distance as
+  a prior, and notes that Sargas has no distance in the second Gaia data release. That prior has an error above a tenth of its value and adds nothing to Hipparcos. A
+  cone search of Gaia DR2 and EDR3 (GAVO TAP mirrors) found no source with a parallax at the
+  position. SIMBAD gives luminosity class III where stars.tsv gives II.

@@ -91,6 +91,11 @@ pub enum ColumnName {
     Redshift,
     Velocity,
     Distance,
+    /// A Cartesian coordinate along the table's frame's first, second or third axis, such as
+    /// supergalactic SGX, SGY and SGZ: with the other two, it gives the member's direction.
+    X,
+    Y,
+    Z,
     /// How many published entries one digitised point stands for, where points overlap.
     Count,
 }
@@ -189,9 +194,36 @@ impl TryFrom<RawMembers> for Members {
 }
 
 fn check_columns(columns: &[Column], source: &MemberSource) -> Result<(), String> {
-    for name in [ColumnName::Lon, ColumnName::Lat] {
-        if columns.iter().filter(|c| c.name == name).count() != 1 {
-            return Err(format!("the member table needs one {name:?} column"));
+    let one = |names: &[ColumnName]| {
+        names
+            .iter()
+            .all(|&name| columns.iter().filter(|c| c.name == name).count() == 1)
+    };
+    let none = |names: &[ColumnName]| !columns.iter().any(|c| names.contains(&c.name));
+    let (sky, cartesian) = (
+        [ColumnName::Lon, ColumnName::Lat],
+        [ColumnName::X, ColumnName::Y, ColumnName::Z],
+    );
+    if !(one(&sky) && none(&cartesian) || one(&cartesian) && none(&sky)) {
+        return Err(
+            "the member table needs one lon and one lat column, or one each of x, y and z"
+                .to_owned(),
+        );
+    }
+    // Cartesian coordinates give a member's direction only: its redshift places it.
+    if one(&cartesian) {
+        let units: Vec<_> = columns
+            .iter()
+            .filter(|c| cartesian.contains(&c.name))
+            .map(|c| c.unit)
+            .collect();
+        if units.windows(2).any(|w| w[0] != w[1]) {
+            return Err("the x, y and z columns are in one unit".to_owned());
+        }
+        if none(&[ColumnName::Redshift, ColumnName::Velocity]) {
+            return Err(
+                "a member table of x, y and z gives each member's redshift or velocity".to_owned(),
+            );
         }
     }
     for (i, c) in columns.iter().enumerate() {
@@ -200,7 +232,7 @@ fn check_columns(columns: &[Column], source: &MemberSource) -> Result<(), String
             ColumnName::Lon | ColumnName::Lat => dimension == Dimension::Angle,
             ColumnName::Redshift | ColumnName::Count => c.unit == Unit::Dimensionless,
             ColumnName::Velocity => dimension == Dimension::Velocity,
-            ColumnName::Distance => {
+            ColumnName::Distance | ColumnName::X | ColumnName::Y | ColumnName::Z => {
                 matches!(dimension, Dimension::Length | Dimension::HubbleScaledLength)
             }
         };

@@ -1,0 +1,2987 @@
+key: 01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+id: r2
+versions:
+  - key: 01a1a75c-8ab5-713f-a8e7-7c32f20ac84d
+    at: 2026-11-04T16:20:22Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R2: curated superstructures and the volumes their papers bound"
+    goal: "Release 8 holds every known superstructure its primary papers support, each cited, with Vela, Shapley and Horologium–Reticulum placed by the sky regions their papers quote, sky regions bounded by their own cells, and lower-limit shapes labelled \"(at least)\""
+    status: active
+  - key: 01a1a7ae-f81d-77f5-89df-ecca96b69c32
+    at: 2026-11-04T17:50:24Z
+    revision: 32
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R2: curated superstructures and the volumes their papers bound"
+    goal: "Release 8 holds every known superstructure its primary papers support, each cited, with Vela, Shapley and Horologium–Reticulum placed by the sky regions their papers quote, sky regions bounded by their own cells, and lower-limit shapes labelled \"(at least)\""
+    status: done
+blocks:
+  - key: 01a1a75c-8ab5-713f-a8e7-7c2ade30eea9
+    id: r2-t-list
+    kind: task
+    versions:
+      - key: 01a1a75c-8ab5-713f-a8e7-7c334c1cbe8f
+        at: 2026-11-04T16:20:22Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The curated list of candidates"
+        detail: |-
+          **Scope:** every candidate on Wikipedia's lists of the largest cosmic structures and of superclusters. For each:
+          - the primary paper;
+          - what that paper publishes of position and extent;
+          - whether release 8 includes it, and why or why not.
+
+          **Done when** a note in this stage lists every candidate with its decision. Release 7's 26 structures are counted among them.
+        state: active
+      - key: 01a1a776-bcf9-70d2-b192-9009b72f9d22
+        at: 2026-11-04T16:48:59Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The curated list"
+        detail: |-
+          **Scope:** every candidate from Wikipedia's lists of the largest cosmic structures and of superclusters, each with its primary paper, and included or left out, with the reason.
+
+          **Done when** the note lists them all.
+
+          **Result:** the note above. You chose the papers' superstructures and the named supervoids for R2. The catalogued voids and the Einasto 2001 superclusters go to a later wave, read as catalogue sources.
+        state: done
+  - key: 01a1a75c-8ab5-713f-a8e7-7c2b8d97fd50
+    id: r2-t-spec
+    kind: task
+    versions:
+      - key: 01a1a75c-8ab5-713f-a8e7-7c343c251d91
+        at: 2026-11-04T16:20:22Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for sky-region bounds and the \"(at least)\" label, approved"
+        detail: |-
+          **Scope:**
+          - read-a-structure: a sky region is bounded by the box around its cells between its near and far distances, and a structure's derivation says whether its shape comes from a lower limit;
+          - see-the-structures: such a structure is named with "(at least)" in the view and in its panel.
+
+          **Done when** the change passes `loft fmt --check` and `loft check --fail-on warning`, is approved, and is committed alone.
+        state: open
+      - key: 01a1a75d-fca4-73ca-8079-a968a973258d
+        at: 2026-11-04T16:21:57Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for sky-region bounds and the \"(at least)\" label, approved"
+        detail: |-
+          **Scope:**
+          - read-a-structure: a sky region is bounded by the box around its cells between its near and far distances, and a structure's derivation says whether its shape comes from a lower limit;
+          - see-the-structures: such a structure is named with "(at least)" in the view and in its panel.
+
+          **Done when** the change passes `loft fmt --check` and `loft check --fail-on warning`, is approved, and is committed alone.
+        state: active
+      - key: 01a1a774-0706-7349-ab2d-0b01cdb87ae7
+        at: 2026-11-04T16:46:01Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spec change for sky-region bounds and the \"(at least)\" label, approved"
+        detail: |-
+          **Scope:**
+          - read-a-structure: a sky region is bounded by the box around its cells between its near and far distances, and a structure's derivation says whether its shape is a lower limit on its extent;
+          - see-the-structures: such a structure is named with "(at least)" in the view and in its panel.
+
+          **Done when** the change passes `loft fmt --check` and `loft check --fail-on warning`, is approved, and is committed alone.
+
+          **Result:** the second version was approved on the page and committed alone. The first was withdrawn before you answered it, to move "at least" from single numbers to the region its paper qualifies.
+        state: done
+  - key: 01a1a75c-8ab5-713f-a8e7-7c2c36b2d221
+    id: r2-t-bounds
+    kind: task
+    versions:
+      - key: 01a1a75c-8ab5-713f-a8e7-7c350b8f34de
+        at: 2026-11-04T16:20:22Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Sky-region bounds from their cells"
+        detail: |-
+          **Scope:** `Geometry::bounds` for a sky region becomes the box around its cells between `near` and `far`, from each cell's centre and `healpix::radius_bound`, never smaller than the region.
+
+          **Done when** model tests show:
+          - the box holds every cell's corners and edges, sampled finely, at both distances;
+          - it is far tighter than the sphere of radius `far` for a small region;
+          - the whole sky still gives the sphere's box.
+        state: open
+      - key: 01a1a76e-be14-7796-bba2-e5d369da7c47
+        at: 2026-11-04T16:40:15Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Sky-region bounds from their cells"
+        detail: |-
+          **Scope:** `Geometry::bounds` for a sky region becomes the box around its cells between `near` and `far`, from each cell's centre and `healpix::radius_bound`, never smaller than the region.
+
+          **Done when** model tests show:
+          - the box holds every cell's corners and edges, sampled finely, at both distances;
+          - it is far tighter than the sphere of radius `far` for a small region;
+          - the whole sky still gives the sphere's box.
+
+          **Progress:**
+          - Written: along each axis, a cell at angle θ from it reaches at most cos(max(0, θ − ρ)).
+          - The tests pass. A Vela-like slab of order-6 cells is checked against every direction of a 0.25° sky grid at both distances, and the whole sky gives the sphere's box.
+          - A first draft took `far` on every side, which would have cut the box short on the sides the region does not face; it was caught in review before it ran.
+          - Uncommitted until the spec is approved.
+        state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b50fbbc01b
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Sky-region bounds from their cells"
+        detail: |-
+          **Scope:** `Geometry::bounds` for a sky region becomes the box around its cells between `near` and `far`.
+
+          **Done when** model tests show the box holds every cell at both distances, is far tighter than the sphere for a small region, and is the sphere's box for the whole sky.
+
+          **Result:** committed in `136d712`. All 92 suites pass in a clean worktree.
+        state: done
+  - key: 01a1a75c-8ab5-713f-a8e7-7c2de8941b52
+    id: r2-t-label
+    kind: task
+    versions:
+      - key: 01a1a75c-8ab5-713f-a8e7-7c36b6c1017f
+        at: 2026-11-04T16:20:22Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The \"(at least)\" label"
+        detail: |-
+          **Scope:**
+          - the structure detail's derivation states whether any number its shape comes from is a lower limit;
+          - the explorer appends "(at least)" to that structure's name in the view and in its panel.
+
+          **Done when** an ingest test shows the flag set for a sky region with a lower-limit bound and unset otherwise, and explorer tests show the label in the view and the panel.
+        state: open
+      - key: 01a1a76e-be14-7796-bba2-e5d49ef79d99
+        at: 2026-11-04T16:40:15Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The \"(at least)\" label"
+        detail: |-
+          **Scope:**
+          - a structure file's sky region may cite the sentence in which its paper gives the region as a lower limit on the extent (`at_least`);
+          - the derivation points at that citation;
+          - the explorer appends "(at least)" to the name in the view and in the panel.
+
+          **Done when** an ingest test shows the pointer set for a sky region whose paper says "at least" and unset otherwise, and explorer tests show the label in the view and the panel.
+
+          **Progress:**
+          - **Ingest:** `structure_details` shows Vela pointing at its "at least 25° × 20°" citation and Hercules SC not pointing at all, and every pointer resolves in its record.
+          - **Explorer:** tests show "Vela Supercluster (at least)" in the drawing's name and in the panel heading.
+          - Uncommitted until the spec is approved.
+        state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b606f8a4e9
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The \"(at least)\" label"
+        detail: |-
+          **Scope:** a sky region may cite its paper's "at least" sentence; the derivation points at it; the explorer appends "(at least)" in the view and the panel.
+
+          **Done when** the ingest and explorer tests show it.
+
+          **Result:** committed in `136d712`.
+        state: done
+  - key: 01a1a75c-8ab5-713f-a8e7-7c2e0aa3b35b
+    id: r2-t-volumes
+    kind: task
+    versions:
+      - key: 01a1a75c-8ab5-713f-a8e7-7c374bd6e869
+        at: 2026-11-04T16:20:22Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Vela, Shapley and Horologium–Reticulum as sky regions"
+        detail: |-
+          **Scope:** each structure file is placed by the sky region its paper quotes, with every bound quoted verbatim from the paper's text:
+          - Vela: l 255°–285°, |b| ≤ 10°, cz 16,000–24,000 km/s;
+          - Shapley: from the published A&A text, its self-disagreement settled and stated;
+          - Horologium–Reticulum: 12° × 12° about 03h19m, −50°02′, cz 17,000–22,500 km/s.
+
+          **Done when** the structure tests and the science checks pass, and the files' sentences are checked against the papers.
+        state: open
+      - key: 01a1a76e-be14-7796-bba2-e5d5bd2c7b3d
+        at: 2026-11-04T16:40:15Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Vela, Shapley and Horologium–Reticulum as sky regions"
+        detail: |-
+          **Scope:** each structure file is placed by the sky region its paper quotes, with every bound quoted verbatim from the paper's text:
+          - Vela: l 255°–285°, |b| ≤ 10°, cz 16,000–24,000 km/s;
+          - Shapley: from the published A&A text, its self-disagreement settled and stated;
+          - Horologium–Reticulum: 12° × 12° about 03h19m, −50°02′, cz 17,000–22,500 km/s.
+
+          **Done when** the structure tests and the science checks pass, and the files' sentences are checked against the papers.
+
+          **Progress:** all three are written and pass the file checks. Each quote was checked against the paper's arXiv TeX.
+          - **Vela:** the region of its Fig. 2, "255° ≤ l ≤ 285° and |b| < 10°". The number reader now takes "|b| < 10°" as ±10°. The paper writes its velocity range abbreviated ("16–24 000"), so its ends are cited where printed in full: "emerges at a distance cz ~ 16 000", and the top of Fig. 1's magenta band, 24000.
+          - **Shapley:** §4.1's surveyed area, "R.A. ≃ 12h40m to ≃ 14h10m and from Dec ≃ −24° to ≃ −38°", and the main body's 13000–18000 km/s. The abstract's "12 degrees by 30 degrees" disagrees with that box; the notes say so and keep the abstract's numbers as published. The A&A site refused automated reads, so the arXiv v1 text ("accepted for publication") is the one checked.
+          - **Horologium–Reticulum:** a new centred form of sky region holds "12° × 12° … centered at approximately α = 03h19m, δ = −50°02′", with its width turned into right ascension at its declination (18.68°). Its range is "at least the redshift range from 17,000 to 22,500".
+        state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b7880b5518
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Vela, Shapley and Horologium–Reticulum as sky regions"
+        detail: |-
+          **Scope:** each placed by the sky region its paper quotes.
+
+          **Done when** the structure tests pass, and the files' sentences are checked against the papers.
+
+          **Result:** committed in `136d712`. The science checks run on release 8 in R3.
+        state: done
+  - key: 01a1a75c-8ab5-713f-a8e7-7c2fe30b0d34
+    id: r2-t-voids
+    kind: task
+    versions:
+      - key: 01a1a75c-8ab5-713f-a8e7-7c3876c3b094
+        at: 2026-11-04T16:20:22Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The Hercules, Sculptor and Local voids' extents"
+        detail: |-
+          **Scope:** as your answer to the question in this stage decides. Either boxes of the published ΔSGX, ΔSGY and ΔSGZ, or the voids stay points at their deepest minima with their extents in the panel.
+
+          **Done when** the chosen form is in the files and tested.
+        state: open
+  - key: 01a1a75c-8ab5-713f-a8e7-7c304712dbbf
+    id: r2-t-files
+    kind: task
+    versions:
+      - key: 01a1a75c-8ab5-713f-a8e7-7c39d05096ca
+        at: 2026-11-04T16:20:22Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A structure file for each newly included structure"
+        detail: |-
+          **Scope:** one file per structure the list includes that release 7 lacks. Every number in it cites its paper's sentence, table or figure, verbatim.
+
+          **Done when** the structure tests pass, `cargo xtask science` passes on a release built from the fixtures, and each file's sentences are checked against its paper.
+        state: open
+      - key: 01a1a779-da64-726e-bcf6-4c9998c9933a
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structure files for the included superstructures and supervoids"
+        detail: |-
+          **Scope:** one file for each included structure in the list note, in three batches:
+          - members;
+          - points, regions and the box;
+          - supervoids.
+
+          Every quote is checked against the paper's text. A structure whose paper prints no single place is `unplaced`, with the reason.
+
+          **Done when** the file checker and the structure tests pass, and I have reviewed each file.
+        state: open
+      - key: 01a1a77a-0632-72e5-b062-86ecf28020a1
+        at: 2026-11-04T16:52:34Z
+        revision: 24
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structure files for the included superstructures and supervoids"
+        detail: |-
+          **Scope:** one file for each included structure in the list note, in three batches:
+          - members;
+          - points, regions and the box;
+          - supervoids.
+
+          Every quote is checked against the paper's text. A structure whose paper prints no single place is `unplaced`, with the reason.
+
+          **Done when** the file checker and the structure tests pass, and I have reviewed each file.
+
+          **Progress:** three agents are writing the batches in parallel. Pisces–Cetus waits for Cartesian member columns, and the Local Supercluster for the box primitive.
+        state: active
+      - key: 01a1a79c-6285-766e-9a54-3cb9b96b0666
+        at: 2026-11-04T17:30:06Z
+        revision: 30
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Structure files for the included superstructures and supervoids"
+        detail: |-
+          **Scope:** one file for each included structure in the list note, in three batches.
+
+          **Done when** the file checker and the structure tests pass, and I have reviewed each file.
+
+          **Result:**
+          - Committed in `a870209`: 27 files, with the Local Supercluster in `2f0c51a`. The note above lists them.
+          - **Review:**
+            - U1.11's 38 rows, KKL LQG 5's 13 rows and Pisces–Cetus's 36 rows checked against the extraction and the page images;
+            - the placements of the supervoids, Laniakea, Quipu, Sculptor Wall, Coma and Ophiuchus read in full;
+            - three velocity notes corrected to say an unstated frame is placed as heliocentric;
+            - the Boötes and SCL `assumes` made to follow the repository's convention.
+          - The cross-match test now counts member lists from the files.
+          - All 92 suites pass, and clippy is clean.
+          - Hydra–Centaurus is left out: its velocities are in the Local Group frame.
+        state: done
+  - key: 01a1a75c-8ab5-713f-a8e7-7c312a77b9d7
+    id: r2-t-close
+    kind: task
+    versions:
+      - key: 01a1a75c-8ab5-713f-a8e7-7c3a259da187
+        at: 2026-11-04T16:20:22Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace, review, gate, close, merge into product/release-8"
+        detail: |-
+          **Done when:**
+          - the new criteria are linked;
+          - the reviews' findings are fixed;
+          - `cargo xtask check` and `cargo xtask integration` pass;
+          - the Yard Log is closed and `stage/release-8-r2` is merged into `product/release-8`.
+        state: open
+      - key: 01a1a779-da64-726e-bcf6-4c9d95538107
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Close and merge into product/release-8"
+        detail: "**Done when** the Yard Log is closed and committed, and the branch is merged `--no-ff`."
+        state: open
+      - key: 01a1a7ae-f81d-77f5-89df-eccbd7e71eb2
+        at: 2026-11-04T17:50:24Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Close and merge into product/release-8"
+        detail: |-
+          **Done when** the Yard Log is closed and committed, and the branch is merged `--no-ff`.
+
+          **Result:** closed and merged into `product/release-8`.
+        state: done
+  - key: 01a1a75c-aa7f-71dc-9419-dec3498c9651
+    id: r2-q-voids
+    kind: question
+    versions:
+      - key: 01a1a75c-aa7f-71dc-9419-dec4caae693c
+        at: 2026-11-04T16:20:30Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "The three voids' papers give their extents but no centre. How should release 8 draw them?"
+        header: "Void boxes"
+        context: |-
+          S1's approval said the Hercules, Sculptor and Local voids get boxes along their published ΔSGX, ΔSGY and ΔSGZ. Reading the files again for R2, I found the papers (Tully et al. 2019, Cosmicflows-3) give each void's **extent** at isodensity −0.7 but **no centre** to put that box around:
+
+          | Void | Extent (ΔSGX, ΔSGY, ΔSGZ) | What the file places it at |
+          |---|---|---|
+          | Hercules | 11,600 × 7,800 × 14,000 km/s | its deepest minimum, [−1200, +4000, +5000] |
+          | Sculptor | 14,500 × 6,500 × 10,200 km/s | its *nearest* basin, [−1200, −1700, −1700] |
+          | Local | 5,200 × 3,000 × 4,500 km/s | its deepest minimum, Lacerta-2.4; the file notes "the paper gives no single centre" |
+
+          The deepest minimum need not be the middle of the void. For Sculptor, a 14,500 km/s box about its nearest basin would reach past the Milky Way to the other side.
+        options:
+          - label: "Keep them as points"
+            detail: "Each void stays a marker at the minimum its paper names, and its panel lists the three extents with their citations. Nothing is placed where the paper does not put it. The S1 item for voids is dropped."
+            recommended: true
+          - label: "Box about the minimum"
+            detail: "A box of the published extents, centred on the deepest minimum and drawn as approximate (dashed), its centre marked estimated. The size is right but its placement is a guess, and Sculptor's box would cover the Milky Way."
+    responses:
+      - key: 01a1a773-9516-74fa-aa38-c2e32a8b51cd
+        at: 2026-11-04T16:45:32Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        words: "Why don't we combine the two. Put a marker and 3 axes from it both + and - directions, without making it a box, indicating that it;s a voluminous object, but the bounds are unknown"
+  - key: 01a1a75d-fca4-73ca-8079-a9677c9f4b85
+    id: r2-spec
+    kind: loft
+    versions:
+      - key: 01a1a75d-fca4-73ca-8079-a969a159e2e6
+        at: 2026-11-04T16:21:57Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "S1's approved items 2 and 4, written as criteria. Items 1 and 3 are E8, already merged, and the structure files, which are data rather than spec."
+        recorded:
+          commit: "dbd2b16ab0e87737b0e4083d1a3dda729283813e"
+          branch: "stage/release-8-r2"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T16:21:56Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 3,
+              "graph.edges": 0,
+              "graph.nodes": 11,
+              "status.base.added": 3,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                  "words": {
+                    "after": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The derivation states whether any number the structure's shape comes from is a lower limit.",
+                  "words": {
+                    "after": "The derivation states whether any number the structure's shape comes from is a lower limit."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose shape comes from a lower limit is named with \"(at least)\" after its name, in the view and in its panel.",
+                  "words": {
+                    "after": "A structure whose shape comes from a lower limit is named with \"(at least)\" after its name, in the view and in its panel."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                  "kind": "feature",
+                  "label": "F-17",
+                  "name": "Read a structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                  "kind": "requirement",
+                  "label": "RQ-59",
+                  "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                  "parent": "01a19f1e-d177-716d-b124-3d3019ad55e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The derivation states whether any number the structure's shape comes from is a lower limit.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                  "kind": "requirement",
+                  "label": "RQ-142",
+                  "name": "Univ Explorer shall name each drawn structure in the view.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose shape comes from a lower limit is named with \"(at least)\" after its name, in the view and in its panel.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff56cfa0dc5"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "The derivation states whether any number the structure's shape comes from is a lower limit.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "A structure whose shape comes from a lower limit is named with \"(at least)\" after its name, in the view and in its panel.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "changed": [],
+                "commit": "dbd2b16ab0e87737b0e4083d1a3dda729283813e",
+                "removed": [],
+                "revision": "product/release-8"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 4,
+                "publishedAt": "2026-11-04T16:14:12Z",
+                "stateRoot": "4577f367600c2ad5b501e5ceb32291471f56b2418d7c671eb11d743f152f960c"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/release-8-r2",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml",
+                  "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a75e-11dd-7540-b475-3f472935badb
+    id: r2-approve
+    kind: approval
+    versions:
+      - key: 01a1a75e-11dd-7540-b475-3f48badc8011
+        at: 2026-11-04T16:22:02Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8: sky regions bounded by their cells, and the \"(at least)\" label"
+        markdown: |-
+          **What changes (the spec-change above):**
+          - **read-a-structure:**
+            - A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.
+            - The structure's derivation states whether any number its shape comes from is a lower limit.
+          - **see-the-structures:** such a structure is named with "(at least)" after its name, in the view and in its panel.
+
+          These are S1's approved items 2 and 4, written as criteria.
+
+          **Look at:**
+          - **Bounds:** ingest already bounds structure sky regions tightly from their longitude and latitude box, and the structure record gives that box. The change brings univ-model's own `bounds` (which layer items use) up to the same rule, so this criterion holds for every sky region, not only structures.
+          - **Lower limits:** "lower limit" means a cited number whose uncertainty is the lower-limit form, such as Vela's "at least 25°×20°". The flag lives in the derivation, so a client needs no record walk to show it.
+          - **Voids:** the question on the voids is separate, as its answer changes no criterion.
+  - key: 01a1a761-df94-7299-8da5-a0cca8d93208
+    id: r2-spec-2
+    kind: loft
+    versions:
+      - key: 01a1a761-df94-7299-8da5-a0cdc7090e96
+        at: 2026-11-04T16:26:11Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "The second round. The lower-limit criteria now speak of the **shape** being a lower limit on the structure's extent, cited where the paper says so, rather than of a number being a lower limit. The papers quoted for R2 say so of a region (\"at least 25° × 20°\", \"more than 12° × 12°\"), and a single near or far bound is not itself a lower limit."
+        recorded:
+          commit: "dbd2b16ab0e87737b0e4083d1a3dda729283813e"
+          branch: "stage/release-8-r2"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T16:26:11Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 3,
+              "graph.edges": 0,
+              "graph.nodes": 11,
+              "status.base.added": 3,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                  "words": {
+                    "after": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                  "words": {
+                    "after": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                  "words": {
+                    "after": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                  "kind": "feature",
+                  "label": "F-17",
+                  "name": "Read a structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                  "kind": "requirement",
+                  "label": "RQ-59",
+                  "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                  "parent": "01a19f1e-d177-716d-b124-3d3019ad55e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                  "kind": "requirement",
+                  "label": "RQ-142",
+                  "name": "Univ Explorer shall name each drawn structure in the view.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff56cfa0dc5"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "changed": [],
+                "commit": "dbd2b16ab0e87737b0e4083d1a3dda729283813e",
+                "removed": [],
+                "revision": "product/release-8"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 4,
+                "publishedAt": "2026-11-04T16:14:12Z",
+                "stateRoot": "4577f367600c2ad5b501e5ceb32291471f56b2418d7c671eb11d743f152f960c"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/release-8-r2",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml",
+                  "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a761-fa4d-7170-a041-8d2eb1e9a441
+    id: r2-approve-2
+    kind: approval
+    versions:
+      - key: 01a1a761-fa4d-7170-a041-8d2f7cc5684f
+        at: 2026-11-04T16:26:18Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8: sky regions bounded by their cells, and the \"(at least)\" label"
+        markdown: |-
+          **What changes (the spec-change above):**
+          - **read-a-structure:**
+            - A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.
+            - The structure's derivation states whether its papers give its shape as a lower limit on its extent, and cites where they say so.
+          - **see-the-structures:** such a structure is named with "(at least)" after its name, in the view and in its panel.
+
+          These are S1's approved items 2 and 4, written as criteria.
+
+          **Why I withdrew the first version:** it flagged a shape whose *numbers* were lower limits. The papers' text, now read, puts the "at least" on the region as a whole:
+          - Vela: "at least 25° × 20°";
+          - Horologium–Reticulum: "more than 12° × 12°" and "at least the redshift range from 17,000 to 22,500";
+          - Shapley's main plane is "filling the whole extent of our survey region".
+
+          A near bound of 17,000 km/s is not itself a lower limit. So a structure file's sky region will cite the paper's "at least" sentence, and the flag comes from that citation.
+
+          **Look at:**
+          - **Bounds:** ingest already bounds structure sky regions tightly. univ-model's own `bounds`, which layer items use, comes up to the same rule.
+          - **Voids:** the question on the voids is still open and separate.
+    responses:
+      - key: 01a1a773-c82f-7100-be72-9428f7bfb5d0
+        at: 2026-11-04T16:45:45Z
+        revision: 11
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1a773-1562-7409-887c-6e668bf315e6
+    id: r2-q-scope
+    kind: question
+    versions:
+      - key: 01a1a773-1562-7409-887c-6e67371ae581
+        at: 2026-11-04T16:44:59Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "Wikipedia's list of the largest cosmic structures yields about 150 entries, mostly catalogued voids. Which should release 8 include as structure files?"
+        header: "List scope"
+        context: |-
+          Every number below was read from the primary papers (some scanned papers were checked on the page images).
+
+          | Group | Entries | Examples | Sources |
+          |---|---|---|---|
+          | **Superstructures** | about 16 | U1.11 LQG, Quipu (Böhringer 2025), King Ghidorah (2023), Laniakea, Hyperion, KKL LQGs 2/5/8/11/12, Perseus–Pegasus Filament, Boötes Supercluster, Pisces–Cetus Supercluster, Coma, Hydra–Centaurus, Sculptor Wall, Pavo–Indus | one paper each, positions or member lists, quotable |
+          | **Named supervoids** | about 4 | Bahcall & Soneira 1982 void (also listed as B&B Abell-9 and Einasto row 10: one record), Northern and Southern Local Supervoids | Einasto 1994 Table 5; BS82 |
+          | **Catalogued voids** | about 110 | Mao 2017 BOSS voids (34), SSRS2 (15), IRAS (13), Batuski & Burns 1985 (14, plus 5 with ranges only), Tully 1986 (10), Einasto 1994 (3 more), Lu & Freudling 1995 (4), SSRS1 (3) | rows of catalogue tables, each a centre, distance and size; several below their own papers' significance cut |
+
+          **Leave out (11):**
+          - the "theoretical limit" row;
+          - the Virgo Supercluster: de Vaucouleurs 1953 prints no distance;
+          - the Ursa Major–Lynx and Pegasus superclusters: no primary paper uses these names;
+          - duplicates of structures already in, and two member clusters of Saraswati;
+          - the Pegasus Void: unverified, as its source is a book.
+
+          The survey also found several errors in Wikipedia's figures: light-year sizes with h dropped, KKL citations pointing to the wrong papers, and a wrong Northern Local Supervoid position.
+
+          The survey of the supercluster list is still running and may add to the first group.
+        options:
+          - label: "Superstructures and supervoids"
+            detail: "About 20 hand-cited files in R2: every superstructure and the named supervoids. The catalogued voids become a later wave that reads their tables as catalogue sources (each table one source with its terms and credit), rather than about 110 hand-written files, keeping each table's significance column."
+            recommended: true
+          - label: "Everything, as files"
+            detail: "About 130 hand-cited structure files in R2. All are quotable, but this is several times R2's planned size, and catalogue rows written by hand risk transcription errors that a table reader would not make."
+          - label: "Superstructures only"
+            detail: "About 16 files. The named supervoids and the catalogued voids are left for later."
+    responses:
+      - key: 01a1a774-0b6b-745d-8a5d-6e79ce714b65
+        at: 2026-11-04T16:46:02Z
+        revision: 13
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Superstructures and supervoids"
+  - key: 01a1a774-0706-7349-ab2d-0aff10bf2f37
+    id: r2-decision-spec
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1a774-0706-7349-ab2d-0b00868de274
+        at: 2026-11-04T16:46:01Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Sky regions are bounded by their cells, and lower-limit shapes are named \"(at least)\""
+        consequence: |-
+          **What follows:**
+          - A structure file's sky region may cite its paper's "at least" sentence (`at_least`).
+          - The derivation points at that citation, and the explorer names the structure "(at least)" in the view and the panel.
+          - univ-model bounds every sky region by its own cells, for layer items as well as structures.
+          - Vela, Shapley and Horologium–Reticulum are the first to cite such a sentence.
+  - key: 01a1a774-68e4-7515-b2cd-f61c7dadeaed
+    id: r2-q-scope-2
+    kind: question
+    versions:
+      - key: 01a1a774-68e4-7515-b2cd-f61d48837735
+        at: 2026-11-04T16:46:26Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        prompt: "Wikipedia's two lists yield about 190 includable entries, most of them catalogue rows. Which should release 8 include as structure files?"
+        header: "List scope"
+        context: |-
+          Both surveys are done: the list of the largest cosmic structures and the list of superclusters. Every number was read from the primary papers or catalogues (scanned papers on the page images, Einasto 2001 from VizieR).
+
+          | Group | Entries | Examples | What the source gives |
+          |---|---|---|---|
+          | **Superstructures from their own papers** | about 27 | U1.11 LQG, Quipu, King Ghidorah, Laniakea, Hyperion, KKL LQGs 2/5/8/11/12, Perseus–Pegasus Filament, Pisces–Cetus SC, Coma, Hydra–Centaurus, Corona Borealis, Sculptor Wall, Ophiuchus, Local SC (Tully 1982), Einasto SC, Lynx, COSMOS-z3.1-A, SCL@1604+43, SCL@0018+16, MS 0302+17 | a position or members, a redshift, and usually an extent |
+          | **Named supervoids** | about 3 | Bahcall & Soneira 1982 void (one record for three listings), Northern and Southern Local Supervoids | centre, distance, size |
+          | **Einasto 2001 catalogue superclusters** | about 22 | Leo, Draco, Grus, Microscopium, Aquarius, Boötes A, … | a B1950 centre, a distance in h⁻¹ Mpc and member Abell clusters; **no extent**; two rest mostly on estimated distances |
+          | **Catalogued voids** | about 110 | Mao 2017 BOSS voids, SSRS2, IRAS, Batuski & Burns 1985, Tully 1986, Lu & Freudling 1995, SSRS1 | rows of catalogue tables: centre, distance, a size; several below their own papers' significance cut |
+
+          **Leave out (about 15):**
+          - the "theoretical limit" row;
+          - the Virgo Supercluster as de Vaucouleurs 1953 gave it, with no distance;
+          - names no primary source uses: Ursa Major–Lynx, Pegasus SC, Columba, the Southern Supercluster;
+          - SCL@1338+27, whose paper prints no coordinates;
+          - the Pegasus Void, unverified because its source is a book;
+          - duplicates of structures already in, and Saraswati's member clusters.
+
+          The surveys also found errors in Wikipedia's figures: light-year sizes with h dropped, KKL citations pointing to the wrong papers, a wrong Northern Local Supervoid position, and "SA26" for SCL@0018+16, which its paper calls SA 68.
+        options:
+          - label: "Papers' structures and supervoids"
+            detail: "About 30 hand-cited files in R2. The Einasto 2001 superclusters and the catalogued voids come later as catalogue sources: each table one source with its terms and credit, read by the pipeline rather than retyped, keeping significance columns and estimated-distance flags."
+            recommended: true
+          - label: "Also Einasto's superclusters"
+            detail: "About 52 files in R2: the above plus the 22 Einasto 2001 rows, each placed as a point with its members. Each has no extent, so it is drawn as a marker. The catalogued voids come later."
+          - label: "Everything, as files"
+            detail: "About 160 hand-cited files in R2. Every row is quotable, but this is several times R2's planned size, and catalogue rows retyped by hand risk transcription errors a table reader would not make."
+    responses:
+      - key: 01a1a774-b8c4-7450-838c-96035f2d11a3
+        at: 2026-11-04T16:46:46Z
+        revision: 15
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Papers' structures and supervoids"
+  - key: 01a1a774-eada-7167-afc6-e9874396f234
+    id: r2-decision-voids
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1a774-eada-7167-afc6-e989b943115a
+        at: 2026-11-04T16:46:59Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The three voids are drawn as a marker with their published extents as three axes through it"
+        consequence: |-
+          **What follows:**
+          - Each void keeps its marker at the minimum its paper names.
+          - From the marker, three lines run along the supergalactic X, Y and Z axes, each as long as the paper's extent and running both ways, so the void reads as a volume whose bounds are unknown.
+          - No box is drawn, and nothing claims where the void ends.
+          - This needs a spec change (the record gives the extents about the position, and the explorer draws them), sent for approval before it is built.
+        question: 01a1a75c-aa7f-71dc-9419-dec3498c9651
+  - key: 01a1a774-eada-7167-afc6-e988edc3a0c3
+    id: r2-decision-scope
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1a774-eada-7167-afc6-e98ad755fab5
+        at: 2026-11-04T16:46:59Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "R2 includes the superstructures and the named supervoids"
+        consequence: |-
+          **What follows:**
+          - **Hand-cited files in R2:** each superstructure its own paper places, from both of Wikipedia's lists (about 27), and the named supervoids: Bahcall & Soneira 1982 as one record, and the Northern and Southern Local Supervoids.
+          - **A later wave:** the catalogued voids (about 110) and the 22 Einasto 2001 catalogue superclusters, read from their tables as catalogue sources.
+          - **Left out, with reasons in the list note:** about 15 entries.
+
+          The second scope question, sent after this one was answered, was withdrawn.
+        question: 01a1a773-1562-7409-887c-6e668bf315e6
+      - key: 01a1a776-6d3c-7504-9bf2-214fa1c8fa1b
+        at: 2026-11-04T16:48:38Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "R2 includes the superstructures and the named supervoids"
+        consequence: |-
+          **What follows:**
+          - **Hand-cited files in R2:** each superstructure its own paper places, from both of Wikipedia's lists (about 27), and the named supervoids: Bahcall & Soneira 1982 as one record, and the Northern and Southern Local Supervoids.
+          - **A later wave:** the catalogued voids (about 110) and the 22 Einasto 2001 catalogue superclusters, read from their tables as catalogue sources.
+          - **Left out, with reasons in the list note:** about 15 entries.
+
+          The second scope question, a resend after the list of superclusters came in, was answered the same way.
+        question: 01a1a773-1562-7409-887c-6e668bf315e6
+  - key: 01a1a776-6d3c-7504-9bf2-214daaa5aa9f
+    id: r2-spec-extents
+    kind: loft
+    versions:
+      - key: 01a1a776-6d3c-7504-9bf2-2150b899c47a
+        at: 2026-11-04T16:48:38Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: spec-change
+        note: "Three new criteria, from your answer on the voids. The extents are an annotation beside the structure's point, not a ninth geometry kind, so the accepted decision on a closed set of eight kinds stands. The bounds stay those of the point, so nothing claims where a void ends."
+        recorded:
+          commit: "1d49952111b211cd238a2e1282c44fee6756124c"
+          branch: "stage/release-8-r2"
+          dirty: true
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T16:48:38Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 6,
+              "graph.edges": 0,
+              "graph.nodes": 16,
+              "status.base.added": 6,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                  "words": {
+                    "after": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                  "words": {
+                    "after": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-807b84c53c7c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position.",
+                  "words": {
+                    "after": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                  "words": {
+                    "after": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                  "words": {
+                    "after": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                  "words": {
+                    "after": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                  "kind": "feature",
+                  "label": "F-17",
+                  "name": "Read a structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                  "kind": "requirement",
+                  "label": "RQ-59",
+                  "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                  "parent": "01a19f1e-d177-716d-b124-3d3019ad55e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-807b84c53c7c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                  "kind": "requirement",
+                  "label": "RQ-141",
+                  "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff084b48fab"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                  "kind": "requirement",
+                  "label": "RQ-142",
+                  "name": "Univ Explorer shall name each drawn structure in the view.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff56cfa0dc5"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                  "kind": "requirement",
+                  "label": "RQ-143",
+                  "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a776-3b75-725b-96e4-807b84c53c7c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 56,
+                    "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "changed": [],
+                "commit": "dbd2b16ab0e87737b0e4083d1a3dda729283813e",
+                "removed": [],
+                "revision": "product/release-8"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 4,
+                "publishedAt": "2026-11-04T16:14:12Z",
+                "stateRoot": "4577f367600c2ad5b501e5ceb32291471f56b2418d7c671eb11d743f152f960c"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/release-8-r2",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml",
+                  "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1a776-6d3c-7504-9bf2-214eee763c6c
+    id: r2-approve-extents
+    kind: approval
+    versions:
+      - key: 01a1a776-6d3c-7504-9bf2-2151bc3de72d
+        at: 2026-11-04T16:48:38Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Release 8: voids drawn as a marker with their published extents as three axes"
+        markdown: |-
+          **What changes:**
+          - **read-a-structure:** a structure whose papers give its extent along each axis of a frame, but not where it ends, gives those extents about its position: in ICRS megaparsecs, naming the frame they were published in, each citing its number. Its bounds stay those of its position.
+          - **see-the-structures:**
+            - such a structure is drawn as its marker with one line through it along each axis of that frame, as long as the extent along that axis and centred on the marker, and no box;
+            - its panel says its bounds are unknown and that the lines are its published extents about its position, which need not be its middle.
+
+          **Look at:** each line is the full published width, half each way from the marker. For Hercules that is ±5,800 km/s along supergalactic X.
+
+          **First users:** the Hercules, Sculptor and Local voids (Tully et al. 2019, extents at isodensity −0.7).
+    responses:
+      - key: 01a1a776-899f-70c7-a5a9-cd50b8893fbd
+        at: 2026-11-04T16:48:45Z
+        revision: 18
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1a776-bcf9-70d2-b192-90070f5fad69
+    id: r2-note-list
+    kind: note
+    versions:
+      - key: 01a1a776-bcf9-70d2-b192-900801f83790
+        at: 2026-11-04T16:48:59Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Every candidate from Wikipedia's two lists, with its decision"
+        markdown: |-
+          Read from the primary papers by two surveys: the list of the largest cosmic structures, and the list of superclusters. Scanned papers were checked on the page images. Notes and papers are in the session scratchpad, under `r2-research/`.
+
+          ### Included in R2: hand-cited structure files
+
+          | Structure | Primary source | Caveat |
+          |---|---|---|
+          | U1.11 LQG | Clowes et al. 2012, MNRAS 419, 556 | 2.95σ |
+          | Quipu | Böhringer et al. 2025, A&A 695, A59 | only 10 of 68 members printed; equinox unstated |
+          | King Ghidorah | Shimakawa et al. 2023, MNRAS 519, L45 | photometric redshifts |
+          | Laniakea | Tully et al. 2014, Nature 513, 71 | centroid of the attractor region; frame read from the figures as supergalactic |
+          | Hyperion | Cucciati et al. 2018, A&A 619, A49 | seven peaks |
+          | KKL LQGs 2, 5, 8, 11, 12 | Komberg, Kravtsov & Lukash 1996, MNRAS 282, 713 | Wikipedia cites the wrong papers; LQG 2's significance not evaluable |
+          | Perseus–Pegasus Filament | Batuski & Burns 1985, ApJ 299, 5 | "a possible filament" |
+          | Pisces–Cetus Supercluster | Tully 1987, ApJ 323, 1 | a component of the complex already in |
+          | Coma Supercluster | Gregory & Thompson 1978, ApJ 222, 784 | |
+          | Hydra–Centaurus | Chincarini & Rood 1979, ApJ 230, 648 | H = 50 |
+          | Corona Borealis | Postman, Geller & Huchra 1988, AJ 95, 267 | |
+          | Sculptor Wall | da Costa et al. 1988, ApJ 327, 544 | the paper's "wall" |
+          | Ophiuchus Supercluster | Hasegawa et al. 2000, MNRAS 316, 326 | lower limits on its extent; to be checked against the journal text |
+          | Local Supercluster | Tully 1982, ApJ 257, 389 | |
+          | Einasto Supercluster | Sankhyayan et al. 2023, ApJ 958, 62 | |
+          | Lynx Supercluster | Rosati et al. 1999, AJ 118, 76 | two clusters; extent is a separation |
+          | COSMOS-z3.1-A | Ramakrishnan et al. 2025, arXiv 2511.11826 | journal reference not yet on arXiv |
+          | SCL @ 1604+43 | Lubin et al. 2000, ApJ 531, L5 | "at least 5.5 h⁻¹ Mpc" |
+          | SCL @ 0018+16 | Connolly et al. 1996, ApJ 473, L67 | Selected Area 68, not Wikipedia's SA26 |
+          | MS 0302+17 | Kaiser et al. 1998 (arXiv) and Gavazzi et al. 2004, A&A 422, 407 | |
+          | Boötes Supercluster | Einasto et al. 1994 row 83 / 1997 SCL 138 | no discovery paper; Wikipedia's size unsourced |
+          | Bahcall & Soneira 1982 void | Bahcall & Soneira 1982, ApJ 262, 419 | one record for B&B Abell-9 and Einasto 1994 row 10 too |
+          | Northern Local Supervoid | Einasto et al. 1994, Table 5 row 24 | Wikipedia's position is wrong |
+          | Southern Local Supervoid | Einasto et al. 1994, Table 5 row 9 | |
+
+          Pavo–Indus (Winkler 1983) is in neither column for now. The first survey found it as the "Indus supercluster" of a non-refereed paper; the second found no source that names it Pavo–Indus. It stays out unless the plan says otherwise.
+
+          ### A later wave: read as catalogue sources
+          - the catalogued voids: Mao et al. 2017 (34), El-Ad & Piran 1997 SSRS2 (15), El-Ad, Piran & da Costa 1997 IRAS (13), Batuski & Burns 1985 (19), Tully 1986 (10), Einasto et al. 1994 (3), Lu & Freudling 1995 (4) and da Costa et al. 1988 SSRS1 (3);
+          - the 22 named Einasto 2001 superclusters, such as Leo, Draco, Grus, Microscopium and Aquarius.
+
+          ### Left out
+          | Entry | Why |
+          |---|---|
+          | "Theoretical limit" | a statistical bound, not a structure |
+          | Virgo Supercluster per de Vaucouleurs 1953 | no distance; the Local Supercluster per Tully 1982 is in |
+          | Ursa Major–Lynx, Pegasus SC, Columba, Southern Supercluster | no primary source uses the name or places it |
+          | SCL @ 1338+27 | its paper prints no coordinates |
+          | Pegasus Void | its source is a book I could not read |
+          | Abell 2361, ZwCl 2341.1+0000 | member clusters of Saraswati |
+          | IRAS voids 4 and 10, SSRS1 void 3, Tully void 5 | the Local, Sculptor and Boötes voids, already in |
+          | Saraswati, Perseus–Pisces, Hercules SC, Shapley, Pisces–Cetus complex, Horologium–Reticulum | already in |
+
+          **Wikipedia errors found:** most light-year sizes drop h; KKL citations point to unrelated papers; "1994EEDTAWSS" is Einasto 1994's Table 5; IRAS void 1's X is −10.7, not −10.4; the "SSRS2" void list is Einasto 1994's Table 5.
+        tone: info
+  - key: 01a1a776-ef6a-70d7-977d-5c28c064b0b7
+    id: r2-decision-extents
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1a776-ef6a-70d7-977d-5c296aebbc98
+        at: 2026-11-04T16:49:12Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A structure with published extents but no bounds is a marker with three lines along its extents' axes"
+        consequence: |-
+          **What follows:**
+          - A structure file may give `extents` along its position's frame axes, each one cited.
+          - The release turns them into ICRS megaparsec vectors beside the point, with the frame they were published in.
+          - The bounds stay at the point.
+          - The explorer draws the three lines centred on the marker, and the panel says the bounds are unknown.
+          - The set of geometry kinds stays as it is.
+
+          The spec change was approved and committed alone. The build is planned in plan mode next.
+  - key: 01a1a779-15a7-718e-b164-bc1be61f4d6d
+    id: plan-28-plan-glowing-questing-ullman-01a1a75c-8ab5-713f-a8e7-7c29b06f42d7
+    kind: plan
+    versions:
+      - key: 01a1a779-15a7-718e-b164-bc1c68367423
+        at: 2026-11-04T16:51:32Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Plan: R2, building release 8's curated superstructures"
+        markdown: |
+          # Plan: R2, building release 8's curated superstructures
+
+          ## Context
+
+          The plan you approved earlier (E5, E6, S1, release 8, E7) is unchanged in its order. E5, E6, S1,
+          R1 and the develop merge and publish 4 are done. This plan replaces only R2's tasks, because your
+          answers in the Yard Log changed R2's scope:
+
+          - **Scope:** the superstructures each paper places, from both Wikipedia lists, plus the named
+            supervoids, as hand-cited structure files. That is about 27 files. The catalogued voids
+            (about 110) and the 22 Einasto 2001 catalogue superclusters move to a later wave that reads
+            them as catalogue sources.
+          - **Voids with unknown bounds:** drawn as a marker with three lines along their published
+            extents, and no box. The spec change is approved and committed (`3d5545b`).
+          - **Sky-region bounds and "(at least)":** the spec change is approved and committed
+            (`1d49952`). Its code is written and tested but not committed yet.
+
+          Branch `stage/release-8-r2` (cut from `product/release-8`), Yard Log open, stage `r2`.
+
+          ## Tasks
+
+          | Task | Scope | Done when |
+          |---|---|---|
+          | **r2-t-bounds**, **r2-t-label**, **r2-t-volumes** (written) | Commit the uncommitted code. It covers: univ-model sky-region bounds from cells (`geometry/bounds.rs`); `Derivation.at_least`; the structure file's `at_least`, centred sky regions (`Sides`) and the `\|x\| < N` rule; Vela, Shapley and Horologium–Reticulum as sky regions; the explorer's "(at least)" (`structureName` in `scene/structures.ts`) | the background run of every workspace test and `pnpm check` is green; fixtures and the OpenAPI snapshot regenerated; one commit with `.yard/` |
+          | **r2-t-extents-ingest** | A structure file may give `extents: {x, y, z}` (each `Cited`, a length or a velocity) along its position's Cartesian frame axes. `structures/check.rs` checks the citations. `release/shapes.rs::point` sets `Derivation.extents = {frame, axes: [Vec3; 3], from}`, each axis the frame's unit vector turned to ICRS (the frame rotation `between(frame, Icrs)`) times the full extent in Mpc. A velocity extent is divided by the release H0, as the paper itself converts it; a length is rescaled with `place.rs::length`. Bounds stay at the point (`place.rs::point` unchanged). New `Extents` type in `univ-model/src/api/structures.rs`, `skip_serializing_if` none | `structure_details` test: the Hercules Void's SGX axis has ICRS length 11600/H0 Mpc and points along supergalactic X; its bounds are its point's; a structure without extents serializes none |
+          | **r2-t-extents-voids** | `extents` in hercules-, sculptor- and local-void.yaml, citing the sentences already in the files | the structure file tests pass |
+          | **r2-t-extents-explorer** | `api/structures.ts` reads `derivation.extents`; `drawingOf` adds three segments, centre ± axis/2, to a point's marker; the panel adds "Its bounds are unknown: the lines are its published extents about its position, which need not be its middle." | `structures.test.ts`: three segments of the given lengths centred on the marker, and no box; `StructuresPanel.test.tsx`: the sentence appears only with extents |
+          | **r2-t-member-xyz** | Member tables may give `x`, `y`, `z` columns (lengths, h-scaled allowed) in a Cartesian frame such as supergalactic, in place of lon/lat/redshift. `structures/members.rs` validates them; `crossmatch/members.rs` places such a row as a tracer at the rotated, rescaled point. Needed for Tully 1987's Pisces–Cetus Supercluster, whose table gives only SGX/SGY/SGZ | `structure_tracers` test: a supergalactic member at (0, 100, 0) h75⁻¹ Mpc lands at the rescaled ICRS point |
+          | **r2-t-box** | A structure primitive `box` given by published ranges along its frame's Cartesian axes, placed as univ-model's oriented box (`Primitive::Box`), its bounds the box. Needed for the Local Supercluster: Tully 1982's "roughly enclosed by the limits −10 < SGX < +10, 0 < SGY < +15, −10 < SGZ < +10 h⁻¹ Mpc" | a `structure_details` test on the Local Supercluster's half-extents (10, 7.5, 10) h⁻¹ Mpc, rescaled |
+          | **r2-t-files** (in three batches, by three agents in parallel, then reviewed by me file by file) | One file per included structure, following the existing files' format. Every quote is checked against the paper text in the scratchpad's `r2-research/` (or fetched again where only a summary was read, such as Ophiuchus). Positions use the frame as published (`fk4_b1950`, `icrs` for J2000, `equatorial_equinox_unstated`, `galactic`, `supergalactic`). Where a paper prints no single place, the file uses `unplaced:` with the reason, never an invented centre. | `cargo test -p univ-ingest --test structures` (the file checker) passes, and so do the structure tests |
+          | **r2-t-trace**, **r2-t-review**, **r2-t-gate**, **r2-t-close** | Link the tests to the five new criteria. Run `/simplify` and `/code-review` in parallel and fix their findings. Then `cargo xtask check` and `cargo xtask integration` once each, `loft reconcile --accept`, the trace view recorded, the Yard Log closed, and a `--no-ff` merge into `product/release-8` | each green once; the merge commit |
+
+          ### The three file batches
+
+          - **Members (tracers from tables):**
+            - U1.11 LQG (38 quasars, Clowes 2012 Table 2);
+            - KKL LQGs 2, 5, 8, 11 and 12 (KKL96 Table 1; equinox unstated);
+            - Perseus–Pegasus Filament (Batuski & Burns 1985, 20 clusters, galactic, z);
+            - Pisces–Cetus Supercluster (Tully 1987, 35 clusters, supergalactic xyz);
+            - Hyperion (Cucciati 2018, 7 peaks);
+            - COSMOS-z3.1-A (10 peaks);
+            - Hydra–Centaurus (Chincarini & Rood 1979, 8 groups, l, b and V0 in the Local Group frame);
+            - Lynx (Rosati 1999, 2 clusters);
+            - MS 0302+17 (Kaiser 1998, 3 clusters).
+          - **Points, sky regions and the box:**
+            - Quipu (sky region of its Table 1 RA, Dec and z ranges, which hold every member);
+            - King Ghidorah (point);
+            - Laniakea (point at the attractor centroid, supergalactic, km/s);
+            - Einasto Supercluster (point);
+            - Boötes Supercluster (Einasto 1997 SCL 138, B1950, h⁻¹ Mpc);
+            - Corona Borealis (Einasto 2001 SCl 158 point; Postman 1988 values);
+            - Coma (Gregory & Thompson 1978);
+            - Sculptor Wall (da Costa 1988);
+            - Ophiuchus (Hasegawa 2000);
+            - SCL @ 1604+43 and SCL @ 0018+16;
+            - the Local Supercluster (box).
+          - **Supervoids:**
+            - Bahcall & Soneira 1982 void (sky region of l 150°–240°, b 35°–50°, z 0.03–0.08);
+            - the Northern and Southern Local Supervoids (Einasto 1994 Table 5 points; the minor axis as a value).
+
+          Each file decides its own geometry from what its paper prints. The list above is the expected
+          outcome, not a licence to place a structure the paper does not place.
+
+          **Left out, as in the list note:** Pavo–Indus (no source names it so), and the ones the note lists.
+
+          ## Order
+
+          1. Commit the written code once the background run is green.
+          2. r2-t-extents-ingest, r2-t-member-xyz and r2-t-box in sequence: they share `shapes.rs` and `place.rs`.
+          3. The file agents start when the formats they need are in place. The member batch waits for
+             xyz, the points batch for the box. The supervoid batch can start at once.
+          4. Meanwhile: r2-t-extents-explorer and r2-t-extents-voids.
+          5. Review every file, then trace, reviews, gate, integration, close, merge.
+
+          Each task is marked active and done in the Yard Log as it runs. Focused checks between tasks:
+          `cargo test -p <crate> <filter>`, clippy on the crate, `pnpm vitest` on the touched explorer
+          files, and `cargo fmt`.
+
+          ## Verification
+
+          - **Files:** `cargo test -p univ-ingest` runs the file checker. It refuses an uncited number in
+            notes, an `as_published` that doesn't parse or match its quote, and a missing citation.
+          - **Placement:** `cargo test -p univ-ingest --test structure_details --test structure_cells
+            --test structure_tracers`.
+          - **Explorer:** `pnpm check` in `clients/explorer`.
+          - **Wave end:** `cargo xtask check` and `cargo xtask integration`, each once and green, with
+            the trace accepted.
+          - **After R3 builds release 8 (outside this wave):** `cargo xtask science` and the spot checks.
+            Laniakea and Vela must be present, Vela as a sky region labelled "(at least)", and the Hercules
+            Void drawn as a marker with three axes, checked live with a screenshot.
+
+          ## After R2
+
+          R3 (build release 8, science checks, spot checks), then E7 (star colours), as approved. The
+          catalogue wave for the voids and Einasto superclusters is planned when R3 is done.
+        planMode: true
+    responses:
+      - key: 01a1a779-a388-7318-a3da-6d80f25f51f3
+        at: 2026-11-04T16:52:09Z
+        revision: 22
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1a779-da64-726e-bcf6-4c8c0dcb1893
+    id: r2-t-extents-ingest
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c946a83dd69
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents in structure files and the derivation"
+        detail: |-
+          **Scope:**
+          - a structure file may give `extents: {x, y, z}`, each cited, along its position's Cartesian frame axes;
+          - the derivation carries `extents`: the frame, three ICRS axis vectors in Mpc (velocities divided by the release H0, lengths rescaled), and pointers;
+          - the bounds stay at the point.
+
+          **Done when** a `structure_details` test shows the Hercules Void's SGX axis has length 11600/H0 and points along supergalactic X, its bounds are its point's, and a structure without extents has none.
+        state: open
+      - key: 01a1a782-bd30-76ba-82d2-6c2c56820d52
+        at: 2026-11-04T17:02:05Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents in structure files and the derivation"
+        detail: |-
+          **Scope:**
+          - a structure file may give `extents: {x, y, z}`, naming three of its cited values, along its position's frame axes;
+          - the derivation carries `extents`: the frame, three ICRS axis vectors in the shape's unit (velocities divided by the release H0, lengths rescaled), and pointers;
+          - the bounds stay at the point.
+
+          **Done when** a `structure_details` test shows the Hercules Void's SGX axis has length 11600/H0 and points along supergalactic X, its bounds are its point's, and a structure without extents has none.
+
+          **Progress:**
+          - Written, with that test and a file-checker test: a missing value, an angle, or no position is refused.
+          - Verifying in a clean worktree, because the file agents' half-written files break any test that reads `structures/`.
+        state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b844b624e0
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents in structure files and the derivation"
+        detail: |-
+          **Scope:** `extents: {x, y, z}` naming three cited values; the derivation's `extents` as ICRS vectors; the bounds stay at the point.
+
+          **Done when** the Hercules Void test passes.
+
+          **Result:** committed in `136d712`, with a file-checker test. The OpenAPI snapshot gained `Extents`.
+        state: done
+  - key: 01a1a779-da64-726e-bcf6-4c8d1ac78719
+    id: r2-t-extents-voids
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c95d04f195d
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents for the Hercules, Sculptor and Local voids"
+        detail: |-
+          **Scope:** `extents` in the three void files, citing the sentences they already hold.
+
+          **Done when** the structure file tests pass.
+        state: open
+      - key: 01a1a782-bd30-76ba-82d2-6c2d674dd393
+        at: 2026-11-04T17:02:05Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents for the Hercules, Sculptor and Local voids"
+        detail: |-
+          **Scope:** `extents` in the three void files, citing the sentences they already hold.
+
+          **Done when** the structure file tests pass.
+
+          **Progress:** each names its three "extent_sg?_at_isodensity_minus_0_7" values. Verifying with r2-t-extents-ingest.
+        state: active
+      - key: 01a1a785-2655-772a-8b6f-f9b989cccd62
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Extents for the Hercules, Sculptor and Local voids"
+        detail: |-
+          **Scope:** `extents` in the three void files.
+
+          **Done when** the structure file tests pass.
+
+          **Result:** committed in `136d712`.
+        state: done
+  - key: 01a1a779-da64-726e-bcf6-4c8e0f2235b7
+    id: r2-t-extents-explorer
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9647551e78
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The explorer draws extents as three lines through the marker"
+        detail: |-
+          **Scope:**
+          - three segments, centre ± axis/2, beside a point's marker, and no box;
+          - the panel says the bounds are unknown and that the lines are the published extents about the position, which need not be its middle.
+
+          **Done when** the scene and panel tests show both, and `pnpm check` passes.
+        state: open
+      - key: 01a1a782-bd30-76ba-82d2-6c2ec5caf924
+        at: 2026-11-04T17:02:05Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The explorer draws extents as three lines through the marker"
+        detail: |-
+          **Scope:**
+          - three segments, centre ± axis/2, beside a point's marker, and no box;
+          - the panel says the bounds are unknown and that the lines are the published extents about the position, which need not be its middle.
+
+          **Done when** the scene and panel tests show both, and `pnpm check` passes.
+
+          **Result:**
+          - `structures.test.ts`: a point with extents (4, 6, 8) has six segment ends at ±2, ±3 and ±4 about its marker, is not approximate, and a point without extents has no segments.
+          - `StructuresPanel.test.tsx`: the sentence appears only with extents.
+          - Typecheck is clean; `pnpm check` runs with the gate.
+        state: done
+  - key: 01a1a779-da64-726e-bcf6-4c8f87fe38ff
+    id: r2-t-member-xyz
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9779e411dd
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Cartesian member columns"
+        detail: |-
+          **Scope:** member tables may give `x`, `y`, `z` lengths in a Cartesian frame (h-scaled allowed); such a row is placed as a tracer at the rotated, rescaled point. Tully 1987's Pisces–Cetus Supercluster needs it.
+
+          **Done when** a `structure_tracers` test shows a supergalactic member at (0, 100, 0) h75⁻¹ Mpc land at the rescaled ICRS point.
+        state: open
+      - key: 01a1a785-2655-772a-8b6f-f9ba44b209ca
+        at: 2026-11-04T17:04:43Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Cartesian member columns"
+        detail: |-
+          **Scope:** member tables may give `x`, `y`, `z` lengths in a Cartesian frame in place of lon and lat. Tully 1987's Pisces–Cetus Supercluster needs it.
+
+          As built, they give only the member's direction. Its distance comes from its row's redshift under the release cosmology, moved to the CMB frame like every other tracer's. Tully's table gives each member's redshift beside SGX, SGY and SGZ, so the h75⁻¹ Mpc coordinates are not rescaled into distances.
+
+          **Done when** a `structure_tracers` test shows a supergalactic member at (0, 100, 0) lies along supergalactic +Y at its redshift's comoving distance, and a table with both a sky position and Cartesian columns is refused.
+
+          **Progress:** written, being tested in the clean worktree.
+        state: active
+      - key: 01a1a78c-1cd7-741f-be62-0436f85a43f7
+        at: 2026-11-04T17:12:19Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Cartesian member columns"
+        detail: |-
+          **Scope:** member tables may give `x`, `y`, `z` in a Cartesian frame in place of lon and lat. They give only the member's direction; its distance comes from its row's redshift under the release cosmology, as every tracer's does.
+
+          **Done when** the `structure_tracers` test passes.
+
+          **Result:** committed in `bae89db`. A supergalactic member at (0, 100, 0) lies along supergalactic +Y at its redshift's comoving distance, and a table with both a sky position and Cartesian columns is refused. The members agent was told it can write Pisces–Cetus.
+        state: done
+  - key: 01a1a779-da64-726e-bcf6-4c900419a1d5
+    id: r2-t-box
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9893da6a1f
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A box primitive from published axis ranges"
+        detail: |-
+          **Scope:** a structure primitive `box` given by ranges along its frame's Cartesian axes, placed as univ-model's oriented box. Tully 1982's Local Supercluster needs it.
+
+          **Done when** a `structure_details` test shows the Local Supercluster's half-extents (10, 7.5, 10) h⁻¹ Mpc, rescaled.
+        state: open
+      - key: 01a1a78c-1cd7-741f-be62-0437ff40dceb
+        at: 2026-11-04T17:12:19Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "A box primitive from published axis ranges"
+        detail: |-
+          **Scope:** a structure geometry `box`, given by the published range along each Cartesian axis of its frame, placed as univ-model's oriented box in the ICRS.
+
+          **Done when** a test shows the Local Supercluster's half-extents (10, 7.5, 10) h⁻¹ Mpc, rescaled.
+
+          **Result:**
+          - Committed in `2f0c51a`, with `structures/local-supercluster.yaml`. I wrote that file myself: it quotes Tully 1982 p. 390, checked against the page image, since the scan's OCR garbles each h⁻¹.
+          - The test also checks the centre (0, 7.5, 0) h⁻¹ Mpc turned into the ICRS, and the orientation.
+          - The two tests that pinned 26 structure files now count the files and their unplaced ones.
+        state: done
+  - key: 01a1a779-da64-726e-bcf6-4c914e9c1b59
+    id: r2-t-trace
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9a2cce2925
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace the new criteria"
+        detail: |-
+          **Scope:** link the tests to the five new criteria and accept them.
+
+          **Done when** `loft reconcile` reports none stale and the trace view is recorded.
+        state: open
+      - key: 01a1a78c-9d6a-705f-a6fa-57c172184ca0
+        at: 2026-11-04T17:12:52Z
+        revision: 28
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace the new criteria"
+        detail: |-
+          **Scope:** link the tests to the six new criteria and accept them.
+
+          **Done when** `loft reconcile` reports none stale and the trace view is recorded.
+
+          **Progress:**
+          - All six are linked in `loft.trace.yaml`:
+            - sky-region bounds, to univ-model's bounds test;
+            - the lower-limit derivation, to `structure_details`;
+            - the "(at least)" name, to the explorer's scene and panel tests;
+            - extents in the record, to `structure_details` and the file checker;
+            - extents drawn, to the explorer's scene test;
+            - the panel's sentence, to the panel test.
+          - `loft reconcile` finds every test; 419 of 419 nodes are linked. Acceptance waits until after the reviews.
+        state: active
+      - key: 01a1a7aa-afd5-73e0-92a6-9838603d5d4b
+        at: 2026-11-04T17:45:43Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Trace the new criteria"
+        detail: |-
+          **Scope:** link the tests to the six new criteria and accept them.
+
+          **Done when** `loft reconcile` reports none stale and the trace view is recorded.
+
+          **Result:** `loft reconcile --accept-stale` recorded 8 test bodies. 419 of 419 nodes are linked, with no stale or unreviewed links. The trace view is above.
+        state: done
+  - key: 01a1a779-da64-726e-bcf6-4c922059772f
+    id: r2-t-review
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9ba30e7c5e
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "/simplify and /code-review"
+        detail: |-
+          **Scope:** run both in parallel on the wave's diff and fix their findings.
+
+          **Done when** every finding is fixed or skipped with a reason.
+        state: open
+      - key: 01a1a79c-6285-766e-9a54-3cba0c155927
+        at: 2026-11-04T17:30:06Z
+        revision: 30
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "/simplify and /code-review"
+        detail: |-
+          **Scope:** run both in parallel on the wave's diff, `product/release-8...HEAD`, without `.yard/`, `spec/`, `loft.trace.yaml` and the structure files, and fix their findings.
+
+          **Done when** every finding is fixed or skipped with a reason.
+        state: active
+      - key: 01a1a7aa-afd5-73e0-92a6-983606024d85
+        at: 2026-11-04T17:45:43Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "/simplify and /code-review"
+        detail: |-
+          **Scope:** both run in parallel on `product/release-8...HEAD`, without `.yard/`, `spec/`, the trace and the structure files.
+
+          **Done when** every finding is fixed or skipped with a reason.
+
+          **Result:** committed in `ae9db97`.
+
+          **Fixed:**
+          - univ-model scales every geometry kind exhaustively. Ingest's own per-kind rescaling left ellipsoids, paths and rays unscaled in a parsec domain.
+          - The sky-region bound evaluates its reach once per axis extreme, not per cell.
+          - A Cartesian member table needs redshifts and one unit. Its directions, published to the megaparsec, place members but are not used to check a name match at the 60″ tolerance, which would have refused Pisces–Cetus once a catalogue held its clusters.
+          - A centred sky region checks its centre and the poles in degrees.
+          - One walker for named pairs of cited bounds. The box's pairs are named as the sky region's, and the box is placed once, into its own type.
+          - The explorer frames a structure drawn by its extents by their span, not by its zero-size bounds.
+          - Tests read the structure files once, and the cannot-be-placed test no longer special-cases one file.
+          - A misplaced doc comment, a dead latitude reordering, and a duplicated length rule.
+
+          **Skipped, with reasons:**
+          - **One bounds path for sky regions** (index bounds from the cells rather than ingest's sampled box). It would change every sky region's index bounds and the unstated-equinox margin, so it belongs in a change of its own.
+          - **Velocity extents as v/H0.** That is how the papers convert them, and the derivation records the method.
+        state: done
+  - key: 01a1a779-da64-726e-bcf6-4c93a7bfa5b4
+    id: r2-t-gate
+    kind: task
+    versions:
+      - key: 01a1a779-da64-726e-bcf6-4c9c95afacb6
+        at: 2026-11-04T16:52:23Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration"
+        detail: "**Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green."
+        state: open
+      - key: 01a1a7aa-afd5-73e0-92a6-983924ce56a7
+        at: 2026-11-04T17:45:43Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration"
+        detail: "**Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green."
+        state: active
+      - key: 01a1a7ae-f81d-77f5-89df-ecc878b2c9e5
+        at: 2026-11-04T17:50:24Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Full gate and integration"
+        detail: |-
+          **Done when** `cargo xtask check` and `cargo xtask integration` each run once and are green.
+
+          **Result:**
+          - `cargo xtask check` passed 13 gates. `loft verify` was skipped, since it runs only on `develop`.
+          - `cargo xtask integration` passed, with the Worker's end-to-end tests and the explorer's 7 Playwright tests, axe included.
+        state: done
+  - key: 01a1a792-993c-74c5-b00f-53ac9781e90a
+    id: r2-note-files
+    kind: note
+    versions:
+      - key: 01a1a792-993d-7044-a574-dea1170951c2
+        at: 2026-11-04T17:19:24Z
+        revision: 29
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "The structure files written, and what was left out"
+        markdown: |-
+          27 new files, 53 in all. Every number is cited, and every quote was checked against the paper's text. Scanned pages were checked on their images.
+
+          | Placed by | Structures |
+          |---|---|
+          | Members | U1.11 LQG (38 quasars); KKL LQGs 2, 5, 8, 11 and 12; Perseus–Pegasus Filament (20 clusters); Pisces–Cetus Supercluster (36 clusters, supergalactic X/Y/Z); Hyperion (7 peaks); COSMOS-z3.1-A (10 peaks); Lynx (2 clusters); MS 0302+17 (3 clusters) |
+          | Point | King Ghidorah; Laniakea (attractor centroid); Einasto Supercluster; Boötes Supercluster; Corona Borealis; Coma (at the Coma cluster, so labelled); Sculptor Wall; Ophiuchus (at its cD cluster) |
+          | Sphere | Northern and Southern Local Supervoids (Einasto 1994's empty-sphere diameters, which the paper takes as minor axes) |
+          | Sky region | Quipu (the box holding its members); Bahcall–Soneira void (its most depleted volume) |
+          | Box | Local Supercluster (Tully 1982) |
+          | Unplaced, with values | SCL @ 1604+43 (only a member's position is printed); SA 68 Supercluster, SCL @ 0018+16 (its ellipse centre comes from a field the structure runs off) |
+
+          **Corrections to the survey:**
+          - Pisces–Cetus has 36 clusters, not 35. A281 was checked on the page image.
+          - Laniakea's frame is read from the Extended Data captions.
+          - The Coma and Ophiuchus notes now say their velocities are placed as heliocentric, which is how the pipeline reads an unstated frame.
+
+          **Left out, with reasons:**
+          - **Hydra–Centaurus.** Chincarini & Rood give Local Group-frame velocities, and the pipeline refuses that frame everywhere, sources included, because it has no cited Local Group apex. It moves to the catalogue wave, with a cited correction.
+          - **COSMOS-z3.1-A's per-peak position errors.** A member column holds one uncertainty. The file says so.
+          - **U1.11's 2.95σ and Perseus–Pegasus's "310h⁻¹".** The number reader cannot read a number printed glued to its symbol. Perseus–Pegasus keeps the abstract's "over 300".
+          - **Masses, areas and densities.** univ-model has no units for them.
+
+          **Shared name:** the Northern Local Supervoid (Einasto 1994) and the Hercules Void (Tully 2019) both carry "Northern Local Void". The supervoid's notes say they are kept apart, each as its paper places it.
+        tone: info
+  - key: 01a1a7aa-afd5-73e0-92a6-9835f4aadb78
+    id: r2-trace
+    kind: loft
+    versions:
+      - key: 01a1a7aa-afd5-73e0-92a6-9837aeb9d6f8
+        at: 2026-11-04T17:45:43Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        view: trace
+        note: "The six new criteria are linked and accepted: sky-region bounds, the lower-limit derivation, the \"(at least)\" name, extents in the record, extents drawn, and the panel's sentence. The info finding on AC-301 predates this wave."
+        recorded:
+          commit: "ae9db97d2f0100e8767129c913cb8ac461bdbe3f"
+          branch: "stage/release-8-r2"
+          loft: 2.3.0-alpha.3
+          at: 2026-11-04T17:45:43Z
+        report: |
+          {
+            "base": "product/release-8",
+            "commit": "dbd2b16ab0e87737b0e4083d1a3dda729283813e",
+            "counts": {
+              "features": 2
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d325ae1db12",
+                    "label": "AC-156",
+                    "name": "The geometry is one of the geometry kinds univ-model defines, in a named frame.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 38
+                          }
+                        ],
+                        "name": "the_geometry_is_a_univ_model_geometry_in_a_named_frame"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3396424fcd",
+                    "label": "AC-157",
+                    "name": "Each published number cites its source and the table, figure or sentence it was taken from.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "each_published_number_cites_its_source_and_where_it_was_taken_from"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "structures_are_listed_in_pages_and_read_with_their_citations"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-6c1b-7575-8a30-d059e1d0fd0e",
+                    "label": "AC-331",
+                    "name": "Each number derived from a published number names its derivation.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 61
+                          }
+                        ],
+                        "name": "each_number_derived_from_a_published_number_names_its_derivation"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d34432eb4b3",
+                    "label": "AC-158",
+                    "name": "A structure outlined from a reconstruction has the kind of value reconstructed.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 63,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "a_structure_outlined_from_a_reconstruction_has_the_kind_of_value_reconstructed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d359cc582f4",
+                    "label": "AC-159",
+                    "name": "A number digitised from a figure has the kind of value estimated.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 70,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "a_number_digitised_from_a_figure_has_the_kind_of_value_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3618ffc2c2",
+                    "label": "AC-160",
+                    "name": "Each member is given as an object id or as a tracer with its own position and kind, such as a quasar or an absorber.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 85
+                          }
+                        ],
+                        "name": "each_member_is_an_object_id_or_a_tracer_with_its_position_and_kind"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3742c0d34b",
+                    "label": "AC-161",
+                    "name": "A structure outlined from a volume grid names the grid, the threshold that outlined it and the test that admitted it.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 87,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "a_structure_outlined_from_a_grid_names_the_grid_threshold_and_test"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d381a2a11dd",
+                    "label": "AC-162",
+                    "name": "Each size published for another Hubble constant gives its native value beside the value rescaled to the release cosmology.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "a_size_published_for_another_hubble_constant_gives_its_native_and_rescaled_values"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 190,
+                            "lastLine": 206
+                          }
+                        ],
+                        "name": "a_size_published_under_h0_50_is_served_beside_its_rescaled_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cad6ced21c",
+                    "label": null,
+                    "name": "A structure placed by a sky region is bounded by the box around the region's directions between its near and far distances, not by the sphere of its far distance.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/geometry/bounds.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 311,
+                            "lastLine": 358
+                          }
+                        ],
+                        "name": "a_sky_region_is_bounded_by_its_cells_between_its_distances"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9cbdad20688",
+                    "label": null,
+                    "name": "The derivation states whether the structure's papers give its shape as a lower limit on its extent, citing where they say so.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 170,
+                            "lastLine": 188
+                          }
+                        ],
+                        "name": "a_shape_its_paper_gives_as_a_lower_limit_on_the_extent_says_where"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a776-3b75-725b-96e4-807b84c53c7c",
+                    "label": null,
+                    "name": "A structure whose papers give its extent along each axis of a frame but not where it ends gives those extents about its position, in ICRS megaparsecs with the frame they were published in, each citing its number, and its bounds stay those of its position.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 190,
+                            "lastLine": 228
+                          }
+                        ],
+                        "name": "a_void_with_extents_but_no_bounds_gives_them_about_its_point_and_is_bounded_by_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structures.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 433,
+                            "lastLine": 455
+                          }
+                        ],
+                        "name": "extents_name_lengths_or_velocities_among_the_values_about_a_placed_position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3a3c4e7f9d",
+                    "label": "AC-163",
+                    "name": "Each listed structure gives its id, name, kind, scale domain and the centre of its geometry.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 115,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "each_listed_structure_gives_its_id_name_kind_scale_domain_and_centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3b527de35f",
+                    "label": "AC-164",
+                    "name": "The listing is paginated with at most 500 structures per page and a cursor to the next page.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 154,
+                            "lastLine": 179
+                          }
+                        ],
+                        "name": "the_listing_comes_in_pages_of_at_most_500_with_a_cursor_to_the_next"
+                      },
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 181,
+                            "lastLine": 198
+                          }
+                        ],
+                        "name": "a_cursor_keeps_reading_its_release"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3de5813ad2",
+                    "label": "AC-165",
+                    "name": "The response status is 404 with problem details that name the requested id.",
+                    "requirement": "01a19f1e-d177-716d-b124-3d3c531de76d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/structures_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 207,
+                            "lastLine": 214
+                          }
+                        ],
+                        "name": "an_unknown_structure_answers_404_naming_it"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "structures_are_listed_in_pages_and_read_with_their_citations"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                "label": "F-17",
+                "name": "Read a structure",
+                "requirements": [
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                    "label": "RQ-59",
+                    "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                    "statement": {
+                      "condition": "a client requests a structure",
+                      "form": "event_driven",
+                      "shall": "return its geometry, members, kind of value and the citation of each of its numbers.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3909afed21",
+                    "label": "RQ-60",
+                    "name": "When a client lists structures, Univ Server shall return the structures of the release, filtered by the kinds and scale domains the client names.",
+                    "statement": {
+                      "condition": "a client lists structures",
+                      "form": "event_driven",
+                      "shall": "return the structures of the release, filtered by the kinds and scale domains the client names.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1e-d177-716d-b124-3d3c531de76d",
+                    "label": "RQ-61",
+                    "name": "If no structure has the requested id, then Univ Server shall answer that the structure was not found.",
+                    "statement": {
+                      "condition": "no structure has the requested id",
+                      "form": "unwanted",
+                      "shall": "answer that the structure was not found.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff1ded85aea",
+                    "label": "AC-401",
+                    "name": "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "draws a sphere as rings at its radius, in the frame and unit its shape names"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 47
+                          }
+                        ],
+                        "name": "draws an ellipsoid as rings along its axes, and an oriented box as its twelve edges"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff2f42a8c13",
+                    "label": "AC-402",
+                    "name": "Paths are drawn as lines, and member lists as their members' positions.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 49,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "draws a path as lines, members as markers at their positions, and a point as a marker"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 25,
+                            "lastLine": 30
+                          }
+                        ],
+                        "name": "draws its segments as lines and its markers as points, about its centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a4bd-9644-750a-a678-3906e3189ded",
+                    "label": "AC-403",
+                    "name": "A point is drawn as a marker at its place.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 49,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "draws a path as lines, members as markers at their positions, and a point as a marker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a4bd-9644-750a-a678-390771cfa729",
+                    "label": "AC-404",
+                    "name": "A grid is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 70,
+                            "lastLine": 77
+                          }
+                        ],
+                        "name": "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "say when a structure is drawn by its bounding box, or not placed at all"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                    "label": null,
+                    "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 58,
+                            "lastLine": 68
+                          }
+                        ],
+                        "name": "draws a point's published extents as a line along each, centred on its marker, and no box"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6d7-1b42-741d-95f7-ed4ee2759b78",
+                    "label": "AC-405",
+                    "name": "A sky region is drawn as the boundary of its cells on the spheres of its near and far distances, joined by radial edges at the region's extremes.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 79,
+                            "lastLine": 91
+                          }
+                        ],
+                        "name": "draws a sky region as the boundary of its cells at its near and far distances, joined by radial edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 104,
+                            "lastLine": 113
+                          }
+                        ],
+                        "name": "turns a sky region's cells from the frame its shape names"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 93,
+                            "lastLine": 102
+                          }
+                        ],
+                        "name": "draws by its box a sky region with no boundary to draw, and gives a band about the sky no radial edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 42
+                          }
+                        ],
+                        "name": "of one cell is its four edges, each from corner to corner"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 49
+                          }
+                        ],
+                        "name": "of two neighbours is six edges, the one they share inside the region"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff3a71f35c5",
+                    "label": "AC-406",
+                    "name": "A structure with no placed shape is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 70,
+                            "lastLine": 77
+                          }
+                        ],
+                        "name": "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 115,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "takes the bounds and centre in the centre's unit"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff4358efffd",
+                    "label": "AC-407",
+                    "name": "A structure with neither a shape nor a bounding box is listed but not drawn.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "lists but does not draw a structure with neither a shape nor a bounding box"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "say when a structure is drawn by its bounding box, or not placed at all"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff67c685244",
+                    "label": "AC-408",
+                    "name": "Each structure's name is drawn at its centre.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 68,
+                            "lastLine": 105
+                          }
+                        ],
+                        "name": "chooses a structure by the name it shows in the view, and still zooms over it"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 41
+                          }
+                        ],
+                        "name": "draws each structure's name at its centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                    "label": null,
+                    "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 18,
+                            "lastLine": 24
+                          }
+                        ],
+                        "name": "is followed by \"(at least)\" where its papers give its shape as a lower limit on its extent"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "name a structure whose shape is a lower limit on its extent \"(at least)\" in the panel"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff70e744c39",
+                    "label": "AC-409",
+                    "name": "Names that would overlap are not drawn over one another.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/labels.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 8,
+                            "lastLine": 11
+                          }
+                        ],
+                        "name": "are not drawn over one another: the nearer is kept"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 60
+                          }
+                        ],
+                        "name": "hides a structure's name that would overlap a nearer one"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff996141e6c",
+                    "label": "AC-410",
+                    "name": "Every structure of the release is listed by name and kind.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 66
+                          }
+                        ],
+                        "name": "lists the release's structures and reads one"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 37
+                          }
+                        ],
+                        "name": "are listed by name and kind, each to choose"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 66,
+                            "lastLine": 76
+                          }
+                        ],
+                        "name": "is read page after page, each in the release chosen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6b2-b217-764e-93d0-da8be265b690",
+                    "label": "AC-411",
+                    "name": "The chosen structure's outline, markers and name are drawn in a colour of their own, its markers larger, until another structure is chosen or its panel is closed.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 92
+                          }
+                        ],
+                        "name": "is the one the renderer draws as chosen, until another is chosen or none"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 23,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/SceneOverlay.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 22,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "writes the chosen structure's name in the chosen colour, and the others in the structures' own"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ffa426590e2",
+                    "label": "AC-412",
+                    "name": "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "give a structure's kind, scale domain, how it was placed, and the paper each number is cited from"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 68,
+                            "lastLine": 71
+                          }
+                        ],
+                        "name": "name a primitive shape by its form"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                    "label": null,
+                    "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 66
+                          }
+                        ],
+                        "name": "say a structure drawn by its extents has unknown bounds, and only then"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                "label": "F-39",
+                "name": "See the structures",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "label": "RQ-141",
+                    "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw each structure of the release by its placed shape.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "label": "RQ-142",
+                    "name": "Univ Explorer shall name each drawn structure in the view.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "name each drawn structure in the view.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "label": "RQ-143",
+                    "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                    "statement": {
+                      "condition": "the person chooses a structure, in the view or from the list of structures",
+                      "form": "event_driven",
+                      "shall": "show its record and fly to it.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 419,
+              "linked": 419,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1a7ae-f81d-77f5-89df-ecc761410c21
+    id: r2-note-done
+    kind: note
+    versions:
+      - key: 01a1a7ae-f81d-77f5-89df-ecc9d4ab0ac5
+        at: 2026-11-04T17:50:24Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What R2 leaves"
+        markdown: |-
+          **Built:**
+          - **Bounds:** sky regions are bounded by their own cells in univ-model. A sky region may be a centre and a size, and may cite its paper's "at least" sentence, which names the structure "(at least)" in the explorer.
+          - **Extents:** a structure may give its published extents about its point. The explorer draws them as three lines through the marker, and the panel says the bounds are unknown. The Hercules, Sculptor and Local voids use them.
+          - **New forms:** member tables may give Cartesian coordinates, and a structure may be a box along its frame's axes.
+          - **Structures:** 28 new structure files (53 in all), and Vela, Shapley and Horologium–Reticulum are placed by their papers' sky regions.
+          - **univ-model:** scales every geometry kind exhaustively.
+
+          **For R3:** release 8 is built from these files. Its spot checks should find Laniakea and Vela, Vela as a sky region labelled "(at least)", and the Hercules Void with its three axes. Check them live with a screenshot.
+
+          **Left open:**
+          - Hydra–Centaurus, whose velocities are in the Local Group frame.
+          - The catalogued voids and the Einasto 2001 superclusters, which go to a catalogue wave.
+          - One bounds path for sky regions (the index bounds from the cells), a change of its own.
+        tone: success

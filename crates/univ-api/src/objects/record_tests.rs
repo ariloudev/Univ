@@ -74,7 +74,8 @@ fn a_derived_position_names_its_frame_epoch_cosmology_and_transformation() {
 
 #[test]
 fn an_object_with_no_distance_has_a_sky_position_and_no_derived_position() {
-    let record = object(6);
+    // HIP 3, whose Hipparcos-2 parallax is too uncertain to invert.
+    let record = object(8);
     assert_eq!(record["position"], Value::Null);
     assert!(record["sky_position"]["ra"].is_number(), "{record}");
     assert!(record["not_placed"].is_string(), "{record}");

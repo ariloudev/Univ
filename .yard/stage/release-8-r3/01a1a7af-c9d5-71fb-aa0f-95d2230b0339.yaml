@@ -1,0 +1,450 @@
+key: 01a1a7af-c9d5-71fb-aa0f-95d2230b0339
+id: r3
+versions:
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d9a99797f5
+    at: 2026-11-04T17:51:17Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R3: release 8"
+    goal: "Release 8 is built from the current sources and structure files, published locally, and passes its science checks, its tile checks, QA-2 and QA-3, and the spot checks for star colours and the curated structures"
+    status: active
+  - key: 01a1a817-ba76-72db-8616-dc169c0ebe31
+    at: 2026-11-04T19:44:49Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+    title: "R3: build and check release 8"
+    goal: "Release 8 is built, published locally, and passes the science, tile, spot and QA checks"
+    status: done
+blocks:
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d3b008aac5
+    id: r3-t-build
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95da98a19090
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build release 8"
+        detail: |-
+          **Scope:** `univ-ingest build` with the defaults, in the background. It fetches the new colour and spectral-type columns R1 added, with every source's provenance.
+
+          **Done when** release 8 is complete under `.cache/univ-ingest/build/releases/8`, with its manifest checked.
+        state: active
+      - key: 01a1a7d0-aa19-762c-8a9e-56059998fafc
+        at: 2026-11-04T18:27:12Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build release 8"
+        detail: |-
+          **Scope:** `univ-ingest build` with the defaults, in the background.
+
+          **Done when** release 8 is complete under `.cache/univ-ingest/build/releases/8`, with its manifest checked.
+
+          **Progress:**
+          - The first run stalled at 25 of 99 fetch items on `gaia-dr3-bright`, whose joined query outlasted every synchronous request. It was stopped at 15 minutes, with nothing written.
+          - Restarted after r3-t-gaia-jobs. The fetch resumes from its cache.
+        state: active
+      - key: 01a1a7e9-b149-73a0-8489-988737adf9b0
+        at: 2026-11-04T18:54:32Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Build release 8"
+        detail: |-
+          **Scope:** `univ-ingest build` with the defaults, in the background.
+
+          **Done when** release 8 is complete under `.cache/univ-ingest/build/releases/8`, with its manifest checked.
+
+          **Result:** built at 18:54 UTC, on the third run.
+          - **Fetch:** 39 items got and 60 from the cache, no source failed, 170 MB. CDS Strasbourg was down. The run dropped it after its retries, IDIA broke off mid-body, and GCNS and Hipparcos came from the next mirror.
+          - **Normalize:** 3,083,452 entries, 3,829 left out.
+          - **Cross-match:** 2,099,181 objects, 2,085,809 placed, 263 new ids, 0 replaced; 18 member lists placed and none not placed.
+          - **Build:** 53 structures, 3 volume grids, 401 tiles and 540 files, every check passed.
+
+          **Runs:**
+          - The first stalled on Gaia, fixed in r3-t-gaia-jobs.
+          - The second polled each job on a dead pooled connection and resubmitted it, fixed in `c9e3007`.
+        state: done
+  - key: 01a1a7d0-aa19-762c-8a9e-560337ee3f2a
+    id: r3-t-gaia-jobs
+    kind: task
+    versions:
+      - key: 01a1a7d0-aa19-762c-8a9e-560444e9e1f7
+        at: 2026-11-04T18:27:12Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Fetch Gaia's bright stars as TAP jobs"
+        detail: |-
+          **Scope:** the first build of release 8 stalled on `gaia-dr3-bright`.
+
+          **Done when** a working way to fetch the joined query is found, built and tested, and the build is restarted.
+
+          **Result:**
+          - **Probes:**
+            - A synchronous chunk with R1's `astrophysical_parameters` join outlasted the 120 s read timeout on ESA's and ARI's mirrors. With indexed filters instead of `MOD`, it still outlasted 3 minutes on both.
+            - The same chunk without the join took 4 s.
+            - The same joined chunk run as an asynchronous job at ESA completed in 11 s, with 30,082 rows: 30,058 with BP−RP, and classes K, F, M, A, B and G, 286 blank and 72 "unknown", as R1 measured.
+          - **Built:** a TAP source may say `run: async`. Each chunk is then submitted as a UWS job, its phase polled every 5 s for up to half an hour, and its result fetched and recorded, with the usual retries and mirror fallback.
+          - **Tested** against a stand-in service: a job polled once while executing, then completed and kept; a job that ends in ERROR is retried, then moved to the next mirror. The access test checks the job suffix.
+          - **Committed** in `c60572a`. `gaia-dr3-bright` runs as jobs, its definition saying why.
+        state: done
+        type: fix
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d466f878f5
+    id: r3-t-publish
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95db8fcc673e
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Publish release 8 locally"
+        detail: |-
+          **Scope:** `univ-ingest publish` to the local D1 and R2 that `wrangler dev` reads.
+
+          **Done when** latest is release 8 and every file is checked against its SHA-256.
+        state: open
+      - key: 01a1a7e9-b149-73a0-8489-98882e7b6ac3
+        at: 2026-11-04T18:54:32Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Publish release 8 locally"
+        detail: |-
+          **Scope:** `univ-ingest publish` to the local D1 and R2 that `wrangler dev` reads.
+
+          **Done when** latest is release 8 and every file is checked against its SHA-256.
+        state: active
+      - key: 01a1a7f9-3d94-737b-af3e-740b4b0675ed
+        at: 2026-11-04T19:11:31Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Publish release 8 locally"
+        detail: |-
+          **Scope:** `univ-ingest publish 8 --persist-to .cache/univ-ingest/wrangler`, with the root `wrangler.toml` as release 7 was. A first try with the Worker's own config found no Wrangler beside it and stopped before uploading anything.
+
+          **Done when** latest is release 8 and every file is checked against its SHA-256.
+
+          **Result:** published at 19:05:09 UTC. Latest moved from release 7 to 8, and all 541 files were uploaded and checked by this run: 117 D1 files, 15 grid files, 4 rules files, 404 tile files and the manifest.
+        state: done
+  - key: 01a1a7f9-3d94-737b-af3e-740ad696b720
+    id: r3-t-mirrors
+    kind: task
+    versions:
+      - key: 01a1a7f9-3d94-737b-af3e-740c047cff4b
+        at: 2026-11-04T19:11:31Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "VizieR mirrors in the order they answer"
+        detail: |-
+          **Scope:** the build lost time on two slow mirrors while CDS was down; you asked for the source lists to be updated.
+
+          **Done when** every VizieR source lists its mirrors in the order they were found to answer, the reason is stated, and the definitions' tests pass.
+
+          **Result:** committed in `bfd5986`.
+          - **New order, in all ten VizieR sources:** CDS, China-VO, NAO, IDIA.
+          - **Checked on a Hipparcos query:** CDS (back up) and China-VO return the table. NAO returns "The database is not currently reachable". IDIA broke off mid-answer during the build.
+          - **Harvard CfA:** did not connect, so it is not added.
+          - All 79 ingest suites pass.
+        state: done
+        type: fix
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d5f035ceb1
+    id: r3-t-science
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95dc1077a22f
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science checks and tile checks"
+        detail: |-
+          **Scope:** `cargo xtask science` on release 8, and every tile decoded and checked against its SHA-256.
+
+          **Done when** every check passes, or a failure is explained and fixed.
+        state: open
+      - key: 01a1a7e9-b149-73a0-8489-98899ea94d43
+        at: 2026-11-04T18:54:32Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science checks and tile checks"
+        detail: |-
+          **Scope:** `cargo xtask science` on release 8, and every tile decoded and checked against its SHA-256.
+
+          **Done when** every check passes, or a failure is explained and fixed.
+        state: active
+      - key: 01a1a7f9-3d94-737b-af3e-740ddb7aea32
+        at: 2026-11-04T19:11:31Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science checks and tile checks"
+        detail: |-
+          **Scope:** `cargo xtask science` on release 8, and every tile checked against its SHA-256.
+
+          **Done when** every check passes, or a failure is explained and fixed.
+
+          **Progress:**
+          - **Science checks:** 32 run: 27 PASS, 0 FAIL, 3 CONCERN and 2 INFO. The concerns are the ones earlier releases carry:
+            - NGC 4889 at 98.8 Mpc against Scolnic et al.'s Coma distance;
+            - 154 redshift conflicts, as on release 4;
+            - 47 of those placed by the higher redshift, as on release 6.
+          - **Tiles:** the publish checked all 404 tile files against their SHA-256. The decode of every tile is next.
+        state: active
+      - key: 01a1a7fc-5ccf-76ec-ad47-a27f7619a09c
+        at: 2026-11-04T19:14:56Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Science checks and tile checks"
+        detail: |-
+          **Scope:** `cargo xtask science` on release 8, and every tile checked against its SHA-256.
+
+          **Done when** every check passes, or a failure is explained and fixed.
+
+          **Result:**
+          - **Science checks:** 32 run: 27 PASS, 0 FAIL, 3 CONCERN and 2 INFO. The concerns are the ones earlier releases carry:
+            - NGC 4889 at 98.8 Mpc against Scolnic et al.'s Coma distance;
+            - 154 redshift conflicts, as on release 4;
+            - 47 of those placed by the higher redshift, as on release 6.
+          - **Tiles:** `clients/tile-decoder/check-server.ts` fetched every tile of release 8 through Univ Server, checked each against its manifest's SHA-256 and decoded it:
+            - stars: 139 tiles, 780,441 points;
+            - nearby galaxies: 1 tile, 1,227 points;
+            - cosmic web: 261 tiles, 1,304,141 points.
+
+            All three domains passed.
+        state: done
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d6a2baa184
+    id: r3-t-spot
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95dd84ef84ad
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spot checks"
+        detail: |-
+          **Scope:** through the API on release 8:
+          - Sirius: B−V ≈ 0.00, spectral type A1V;
+          - Betelgeuse: B−V ≈ 1.85;
+          - Laniakea and Vela present, Vela as a sky region named "(at least)";
+          - the Hercules Void with its extents.
+
+          **Done when** each is read back and recorded, with a screenshot of the explorer showing the structures.
+        state: open
+      - key: 01a1a7fc-5ccf-76ec-ad47-a280d5dca326
+        at: 2026-11-04T19:14:56Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spot checks"
+        detail: |-
+          **Scope:** Sirius, Betelgeuse, Laniakea, Vela and the Hercules Void, read through Univ Server on release 8, and the explorer seen live with a screenshot.
+
+          **Done when** each reads as its sources publish it, and the explorer draws Vela as "(at least)" and the Hercules Void as a marker with three axes.
+
+          **Progress (API):**
+          - **Sirius (HIP 32349):** placed at 2.637 pc from its Hipparcos 2007 parallax of 379.21 ± 1.58 mas.
+            - B−V = 0.009 ± 0.007 and V−I = −0.02, from Hipparcos 2007.
+            - Spectral type "A0m...", from Hipparcos 1997, which is what I/239 prints. The plan's "A1V" is SIMBAD's, not this catalogue's.
+          - **Betelgeuse (HIP 27989):**
+            - B−V = 1.50 ± 0.51 and V−I = 2.32, from Hipparcos 2007. The plan's 1.85 is SIMBAD's; Hipparcos's value carries a large error for this variable.
+            - Spectral type M2Ib.
+            - **Not placed (no distance).** Its parallax of 6.55 ± 0.83 mas has a fractional error of 0.127, above the ranking rule's 0.1, and Gaia has no measure of a star this bright. Release 7 did not place it either.
+          - **Laniakea:** a basin, its point at 72.2 Mpc.
+          - **Vela:** a sky region at 290.7 Mpc, its derivation marked `at_least`.
+          - **Hercules Void:** a point at 95.8 Mpc, with extents of 171.4, 115.3 and 206.9 Mpc.
+          - **Local Supercluster:** an oriented box at 11.1 Mpc.
+          - **Pisces–Cetus:** placed from 36 members.
+        state: active
+      - key: 01a1a7fe-1bf9-7419-a626-6f0a3aee72bc
+        at: 2026-11-04T19:16:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Spot checks"
+        detail: |-
+          **Scope:** Sirius, Betelgeuse, Laniakea, Vela and the Hercules Void, read through Univ Server on release 8, and the explorer seen live with a screenshot.
+
+          **Done when** each reads as its sources publish it, and the explorer draws Vela as "(at least)" and the Hercules Void as a marker with three axes.
+
+          **Result:**
+          - **Sirius (HIP 32349):** placed at 2.637 pc from its Hipparcos 2007 parallax of 379.21 ± 1.58 mas.
+            - B−V = 0.009 ± 0.007 and V−I = −0.02, from Hipparcos 2007.
+            - Spectral type "A0m...", as Hipparcos 1997 (I/239) prints it. The plan's "A1V" is SIMBAD's.
+          - **Betelgeuse (HIP 27989):**
+            - B−V = 1.50 ± 0.51 and V−I = 2.32, from Hipparcos 2007. The plan's 1.85 is SIMBAD's.
+            - Spectral type M2Ib.
+            - **Not placed (no distance):** a parallax of 6.55 ± 0.83 mas has a fractional error of 0.127, over the ranking rule's 0.1, and Gaia has no measure of it. Release 7 did not place it either. Raised for E7, whose star colours need it drawn.
+          - **Structures:**
+            - Laniakea: a basin at 72.2 Mpc.
+            - Vela: a sky region marked `at_least`.
+            - Hercules Void: a point with extents of 171.4, 115.3 and 206.9 Mpc.
+            - Local Supercluster: an oriented box.
+            - Pisces–Cetus: placed from 36 members.
+          - **Explorer, live on release 8 (screenshots sent):**
+            - Vela and Horologium–Reticulum are labelled "(at least)".
+            - The Hercules Void, chosen, is drawn as a marker with crossing axis lines and no box.
+            - Its panel gives the sentence on unknown bounds and the three cited extents: 11,600, 7,800 and 14,000 km/s along SGX, SGY and SGZ.
+        state: done
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d7382ea444
+    id: r3-t-qa
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95ded1e0790b
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-2 and QA-3"
+        detail: |-
+          **Scope:** `cargo xtask bench lookup` (95th percentile under 200 ms) and `cargo xtask bench first-points` (95th percentile under 3 s) on release 8.
+
+          **Done when** both are within their limits.
+        state: open
+      - key: 01a1a7fc-5ccf-76ec-ad47-a2818bd697d7
+        at: 2026-11-04T19:14:56Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-2 and QA-3 benches"
+        detail: |-
+          **Scope:** `cargo xtask bench lookup` (QA-2: p95 < 200 ms) and `cargo xtask bench first-points` (p95 < 3 s), on release 8 in the real local state.
+
+          **Done when** both run and their percentiles are recorded against the targets.
+        state: active
+      - key: 01a1a7fe-1bf9-7419-a626-6f0bb22560f0
+        at: 2026-11-04T19:16:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "QA-2 and QA-3 benches"
+        detail: |-
+          **Scope:** the benches on release 8 in the real local state: `cargo xtask bench lookup` (QA-2), `bench volume` (QA-3) and `bench first-points`.
+
+          **Done when** each runs and its percentiles are recorded against the targets.
+
+          **Result:** every bench is within its bound.
+
+          | Bench | p50 | p95 | p99 | Bound at p95 | Requests not 200 |
+          |---|---|---|---|---|---|
+          | Object lookup, 1,000 requests | 5.4 ms | 8.0 ms | 14.2 ms | 200 ms | 0 of 1,020 |
+          | Volume query, first page, 200 requests | 32.3 ms | 47.3 ms | 55.9 ms | 500 ms | 0 of 220 |
+          | Explorer's first points, 10 loads | 173 ms | 210 ms | — | 3,000 ms | — |
+        state: done
+  - key: 01a1a7af-c9d5-71fb-aa0f-95d80a3642d3
+    id: r3-t-close
+    kind: task
+    versions:
+      - key: 01a1a7af-c9d5-71fb-aa0f-95dffc12a474
+        at: 2026-11-04T17:51:17Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Close and merge into product/release-8"
+        detail: "**Done when** the Yard Log is closed and committed and the branch is merged `--no-ff`."
+        state: open
+      - key: 01a1a7fe-1bf9-7419-a626-6f0cd603d228
+        at: 2026-11-04T19:16:50Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Review, gate, close and merge"
+        detail: |-
+          **Scope:** the code this stage changed: TAP jobs, polling on fresh connections, and the VizieR mirrors.
+
+          **Done when** `/simplify` and `/code-review` have run in parallel with their findings fixed, `cargo xtask check` has run once green, Yard Log is closed, and the stage is merged into `product/release-8` with `--no-ff`.
+        state: active
+      - key: 01a1a817-ba76-72db-8616-dc14fb65c76e
+        at: 2026-11-04T19:44:49Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "Review, gate, close and merge"
+        detail: |-
+          **Scope:** the code this stage changed: TAP jobs, polling on fresh connections, and the VizieR mirrors.
+
+          **Done when** `/simplify` and `/code-review` have run in parallel with their findings fixed, `cargo xtask check` has run once green, Yard Log is closed, and the stage is merged into `product/release-8` with `--no-ff`.
+
+          **Result:**
+          - **Reviews:** both found the same fault. A job's payload recorded its result address, which never ends with the chunk's request, so every kept job chunk would have been deleted and run again on the next build. Release 8 itself was built before this mattered.
+          - **Fixed in `1302670`:**
+            - A chunk's request is a typed `Ask` (a GET or a job), not a suffix with a magic prefix.
+            - A job records the request that ran it, so a kept chunk is matched and the query stays in provenance.
+            - A job that ends in error or outlasts 30 minutes goes to the next mirror, not resubmitted.
+            - A failed poll or result download is made again in place, and every job is deleted once done.
+            - The count is asked at once.
+            - One shared GET helper; the job tests moved to `tests/fetch_jobs.rs`, under 500 lines.
+          - **Tests:** five job tests pass. `a_job_kept_on_disk_with_its_record_is_not_run_again` is linked to "A chunk already on disk is not fetched again", and eight links whose tests now pass a typed ask were accepted as stale.
+          - **Skipped findings:**
+            - faster polling, worth about 30 s per source;
+            - pooled connections for jobs, since ESA drops idle ones;
+            - building the job client lazily, a few ms.
+          - **Gate:** `cargo xtask check` passed once: 13 gates, with `loft verify` skipped off its publish branch.
+          - **Integration:** not run. This stage changed only Univ Ingest, and integration covers the server and the explorer.
+        state: done
+  - key: 01a1a817-ba76-72db-8616-dc136def5623
+    id: r3-note-result
+    kind: note
+    versions:
+      - key: 01a1a817-ba76-72db-8616-dc153c3a237d
+        at: 2026-11-04T19:44:49Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "8a28c3c8-b122-421a-a3de-8664f4b8b6df"
+        title: "What R3 produced"
+        markdown: |-
+          **Release 8 is built, published locally and checked.**
+
+          | Check | Result |
+          |---|---|
+          | Build | 2,099,181 objects (2,085,809 placed), 53 structures, 401 tiles, 540 files |
+          | Publish | latest is release 8; 541 files checked |
+          | Science checks | 27 PASS, 0 FAIL, 3 CONCERN (as release 6), 2 INFO |
+          | Tiles through Univ Server | every tile of the three domains decoded and its SHA-256 matched |
+          | QA-2 lookup | p95 8.0 ms against 200 ms |
+          | QA-3 volume query | p95 47.3 ms against 500 ms |
+          | First points | p95 210 ms against 3 s |
+          | Explorer | "(at least)" on Vela and Horologium–Reticulum; the Hercules Void drawn with axis lines and no box |
+
+          **Fixed on the way:**
+          - Gaia's joined query runs as TAP jobs.
+          - Jobs are polled on fresh connections.
+          - A kept job is not run again.
+          - VizieR mirrors are listed in the order they answer.
+
+          **Left open for E7:** Betelgeuse is not placed. Its Hipparcos parallax has a 12.7% error, over the 10% rule, and Gaia does not measure it. Drawing it needs a cited distance.
+        tone: success

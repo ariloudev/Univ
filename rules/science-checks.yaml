@@ -241,6 +241,117 @@ checks:
       given. The check is of the placement from that velocity, so the tolerance is tight: 0.5%,
       about 100 km/s.
 
+  # ------------------------------------------------------------------ researched star distances
+  - id: betelgeuse-distance
+    title: Betelgeuse at Joyce et al.'s seismic 168 pc
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: hipparcos-2007, identifier: "27989" }
+    expect: { value: 0.000168, absolute: 0.0000005 }
+    cite:
+      - paper: "Joyce, Leung, Molnár, Ireland, Kobayashi & Nomoto 2020, ApJ 902, 63 (arXiv:2006.09837)"
+        locator: "abstract, arXiv PDF page 1"
+        quote: >-
+          "this allows us to derive a new, independent distance estimate of 168^{+27}_{-15} pc"
+        fetched: "this repository, stars/betelgeuse.yaml (arXiv PDF of 2006.09837v5)"
+    note: >-
+      An estimated distance from seismic and evolutionary modelling with the measured angular
+      diameter. Its range, 15 pc below and 27 above, is the paper's 3σ range, not a one-sigma
+      error, so the check holds the value to its last digit. Hipparcos-2's parallax of the star
+      is too uncertain to invert and Gaia gives none, so release 8 left it unplaced.
+
+  - id: betelgeuse-names-joyce
+    title: Betelgeuse is placed by its star file, which names Joyce et al. 2020
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id FROM objects o JOIN designations d ON d.release = o.release AND d.object_id = o.id
+        AND d.source = source('hipparcos-2007') AND d.identifier = '27989'
+        JOIN entries e ON e.release = o.release AND e.object_id = o.id AND e.entry = o.preferred_entry
+        WHERE o.release = :release AND e.source = source('researched-star-distances')
+        AND instr(coalesce(e.extra, ''), '2020ApJ...902...63J') > 0
+    expect: { equals: 1 }
+    cite:
+      - paper: "Joyce, Leung, Molnár, Ireland, Kobayashi & Nomoto 2020, ApJ 902, 63"
+        locator: "bibcode on ADS"
+        quote: "2020ApJ...902...63J"
+        fetched: "this repository, stars/betelgeuse.yaml, papers[0]"
+
+  - id: antares-distance
+    title: Antares at the Upper Scorpius distance of 145 ± 2 pc
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: hipparcos-2007, identifier: "80763" }
+    expect: { value: 0.000145, sigma: 0.000002 }
+    cite:
+      - paper: "de Zeeuw, Hoogerwerf, de Bruijne, Brown & Blaauw 1999, AJ 117, 354 (arXiv:astro-ph/9809227)"
+        locator: "§4.2, Upper Scorpius"
+        quote: >-
+          "The mean distance of US is 145 ±2 pc, where the error is the formal error on the
+          mean" and "We confirm the evolved supergiant Antares (α Sco, HIP80763, M1Ib) [...] as
+          members."
+        fetched: "this repository, stars/antares.yaml (arXiv PDF of astro-ph/9809227v1)"
+    note: >-
+      An inferred distance: the association's mean Hipparcos distance given to a member the same
+      paper confirms.
+
+  - id: sigma-orionis-distance
+    title: σ Ori at 387.5 ± 1.3 pc from its orbital parallax
+    severity: fail
+    select:
+      kind: object_distance
+      object: { source: hipparcos-2007, identifier: "26549" }
+    expect: { value: 0.0003875, sigma: 0.0000013 }
+    cite:
+      - paper: "Schaefer, Hummel, Gies, Zavala, Monnier, Walter, Turner, Baron et al. 2016, AJ 152, 213 (arXiv:1610.01984)"
+        locator: "arXiv PDF page 11"
+        quote: >-
+          "The orbital parallax of π = 2.5806 ± 0.0088 mas gives a distance d = 387.5 ± 1.3 pc to
+          the σ Orionis system."
+        fetched: "this repository, stars/sigma-orionis.yaml (arXiv PDF of 1610.01984v1)"
+    note: >-
+      A measured parallax, inverted by the ranking: the check holds the inversion to the
+      distance the paper itself gives.
+
+  - id: researched-stars-placed
+    title: Every star file with a distance or parallax places its star
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id FROM objects o JOIN entries e ON e.release = o.release AND e.object_id = o.id
+        AND e.entry = o.preferred_entry
+        WHERE o.release = :release AND o.placed = 1 AND e.source = source('researched-star-distances')
+    expect: { equals: 16 }
+    cite:
+      - paper: "univ-server researched star distances"
+        locator: "stars/, the files with a distance or parallax and no unplaced"
+        quote: "16 of the 51 star files give a distance or a parallax; the other 35 say why not"
+        fetched: "this repository, stars/*.yaml"
+    note: >-
+      Each placed star file's star is placed by it: its distance or parallax is the only candidate
+      left once the Hipparcos-2 parallax is too uncertain to invert. A star file whose star
+      another source placed instead, or which placed nothing, makes the count fall short.
+
+  - id: researched-entries-name-their-papers
+    title: Every researched star entry names the papers its values come from
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT e.object_id FROM entries e WHERE e.release = :release
+        AND e.source = source('researched-star-distances')
+        AND json_extract(coalesce(e.extra, '{}'), '$.references[0].citation') IS NULL
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, feature Record a researched star distance"
+        locator: "spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+        quote: "The entry of a star file names the paper its values come from."
+        fetched: "this repository, spec/products/univ-ingest/normalization/record-a-researched-star-distance.yaml"
+
   # ------------------------------------------------------------ cross-matching and kept rows
   - id: twompp-in-parent-surveys
     title: 2M++ entries sharing an object with a parent survey

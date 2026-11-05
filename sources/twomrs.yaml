@@ -62,11 +62,13 @@ redistribution:
     satisfy the team's terms (1)-(2); the AAS copyright policy was not checked. Provisional: judged
     again before any public deployment.
 scale_domain: cosmic_web
+# VizieR's mirrors, checked 2026-11-04: China-VO answers like CDS; NAO's database was unreachable
+# and IDIA broke off mid-answer, so they come last.
 mirrors:
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
-  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
-  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
 fixes:
   - defect: >-
       e_cz = 0 does not mean zero uncertainty: 788 rows give e_cz = 0, almost all with literature

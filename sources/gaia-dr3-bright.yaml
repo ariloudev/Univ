@@ -13,6 +13,10 @@ access:
     WHERE g.phot_g_mean_mag < 10 AND MOD(g.random_index, {chunks}) = {chunk}
   chunks: 16
   count: "SELECT COUNT(*) AS n FROM gaiadr3.gaia_source WHERE phot_g_mean_mag < 10"
+  # Each chunk runs as a job. On 2026-11-04 a chunk with the astrophysical_parameters join
+  # outlasted the synchronous endpoint's request (over three minutes, on both mirrors), while the
+  # same chunk as a job at ESA completed in 11 s; without the join, a synchronous chunk took 4 s.
+  run: async
 cuts:
   - "phot_g_mean_mag < 10 (PROVISIONAL: the owner is deciding the magnitude limit). Measured 2026-11-03: 482,106 rows."
   - "Rows with no G magnitude are excluded by the cut. These are gaia_source rows, not stars: duplicates and spurious bright sources are not removed."

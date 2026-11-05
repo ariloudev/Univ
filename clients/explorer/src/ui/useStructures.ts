@@ -1,6 +1,6 @@
 // The release's structures (see-the-structures): listed, read, and drawn into the view.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { Rotations } from "../api/schemas.ts";
 import { type StructureDetail, type StructureSummary, structureOf, structuresOf } from "../api/structures.ts";
@@ -9,6 +9,7 @@ import type { Lines } from "../scene/drawing.ts";
 import { APPROXIMATE_COLOUR, STRUCTURE_COLOUR } from "../scene/kinds.ts";
 import { type StructureDrawing, drawingOf } from "../scene/structures.ts";
 import { type Vec3, norm, sub } from "../scene/vec.ts";
+import type { NameLabel } from "./overlay.ts";
 import type { World } from "./useWorld.ts";
 
 /** What the explorer knows of the release's structures. */
@@ -20,6 +21,14 @@ export interface Structures {
 }
 
 const NONE: Structures = { list: [], details: new Map(), drawings: new Map(), problem: undefined };
+
+/** The structures, and those of them drawn: of no kind turned off (choose-what-is-drawn). */
+export interface ShownStructures extends Structures {
+  /** The structures drawn, listed and named over the view. */
+  shown: StructureSummary[];
+  /** The names of those drawn, to place over the view. */
+  names: NameLabel[];
+}
 
 /** Structure records read at once. */
 const PARALLEL = 6;
@@ -80,22 +89,44 @@ async function readAll(release: number, rotations: Rotations, signal: AbortSigna
 /** The renderer's name for structure `id`'s outline and markers. */
 const drawnAs = (id: string) => `structure:${id}`;
 
-/** Draws every structure of `structures` into `world`, and hands their names to the overlay. */
+/** Draws every structure of `structures` into `world`. */
 function drawAll(world: World, structures: Structures): void {
   for (const drawing of structures.drawings.values()) {
     const { lines, markers } = rendered(drawing);
     world.renderer.setLines(drawnAs(drawing.id), lines);
     world.renderer.setMarkers(drawnAs(drawing.id), markers);
   }
-  world.names = [...structures.drawings.values()].flatMap((d) =>
-    d.centre === undefined ? [] : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name }],
-  );
 }
 
+/** The names of the structures drawn of `shown`, to place over the view. */
+const namesOf = (structures: Structures, shown: ReadonlySet<string>): NameLabel[] =>
+  [...structures.drawings.values()].flatMap((d) =>
+    d.centre === undefined || !shown.has(d.id) ? [] : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name }],
+  );
+
 /** The structures of `release`, drawn into `world` once the rotations of its frames are read,
- * the one `chosen` in the chosen colour. */
-export function useStructures(release: number, world: World | undefined, rotations: Rotations | undefined, chosen?: string): Structures {
+ * the one `chosen` in the chosen colour, none of a kind in `hiddenKinds`. */
+export function useStructures(
+  release: number,
+  world: World | undefined,
+  rotations: Rotations | undefined,
+  chosen: string | undefined,
+  hiddenKinds: ReadonlySet<string>,
+): ShownStructures {
   const [structures, setStructures] = useState<Structures>(NONE);
+  // The names are worked out as the page renders, so that their elements are there for the
+  // frame that places them.
+  const shown = useMemo(() => {
+    const list = structures.list.filter((s) => !hiddenKinds.has(s.kind));
+    return { ...structures, shown: list, names: namesOf(structures, new Set(list.map((s) => s.id))) };
+  }, [structures, hiddenKinds]);
+  useEffect(() => {
+    if (world === undefined) return;
+    const named = new Set(shown.shown.map((s) => s.id));
+    world.renderer.hideNames(new Set([...shown.drawings.keys()].filter((id) => !named.has(id)).map(drawnAs)));
+    world.names = shown.names;
+    world.controller.invalidate();
+  }, [world, shown]);
   // After the render that holds them: a frame drawn before React has added the names' elements
   // would place none, and a still view draws no other.
   useEffect(() => {
@@ -116,5 +147,5 @@ export function useStructures(release: number, world: World | undefined, rotatio
       });
     return () => abort.abort();
   }, [release, world, rotations]);
-  return structures;
+  return shown;
 }

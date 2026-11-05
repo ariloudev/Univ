@@ -1,0 +1,38 @@
+# Shaula, lambda Scorpii, B1.5IV triple system: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 85927
+name: Shaula
+alternative_names: ["lambda Scorpii", "lam Sco", "35 Sco", "HD 158926"]
+papers:
+  - id: tango-2006
+    reference: "Tango, Davis, Ireland, Aerts, Uytterhoeven, Jacob, Mendez, North, Seneta & Tuthill 2006, MNRAS 370, 884"
+    title: "Orbital elements, masses and distance of λ Scorpii A and B determined with the Sydney University Stellar Interferometer and high resolution spectroscopy"
+    bibcode: 2006MNRAS.370..884T
+    doi: 10.1111/j.1365-2966.2006.10526.x
+    arxiv: "astro-ph/0605311"
+    read: "arXiv PDF of astro-ph/0605311v1, full text extracted with pypdf; abstract (PDF page 1) and Sect. 3.1 (PDF page 7) read"
+distance:
+  value: 112
+  unit: parsec
+  kind: estimated
+  uncertainty: { form: symmetric, sigma: 5 }
+  cite:
+    paper: tango-2006
+    page: 1
+    sentence: "We find the distance to λ Sco to be 112 ± 5 pc, which is approximately a factor of two closer than the HIPPARCOS value of 216 ± 42 pc."
+  distance_kind: primary_indicator
+  method: "dynamical parallax: SUSI interferometric orbit of the wide A-B pair (angular semimajor axis and period) with component masses from the mass ratio, the mass function, spectrum synthesis and a common age"
+disputes:
+  - claim: "The Hipparcos (ESA) parallax gives 216 ± 42 pc, about twice the dynamical-parallax distance; Tango et al. attribute the difference to orbital motion biasing the Hipparcos parallax."
+    cite:
+      paper: tango-2006
+      page: 1
+      sentence: "We find the distance to λ Sco to be 112 ± 5 pc, which is approximately a factor of two closer than the HIPPARCOS value of 216 ± 42 pc."
+notes: >-
+  The orbit is interferometric but the masses come partly from modelling (mass-luminosity relation
+  for the mass ratio, spectrum synthesis, equal ages), so the distance is recorded as estimated
+  rather than as a measured orbital parallax; it depends only weakly on the masses (cube root).
+  The paper prints only the distance (its Eq. 11), not the parallax in mas. The Hipparcos-2
+  parallax also points to a larger distance than this. Tango et al. note that the revised
+  distance matches that of Lower Centaurus Crux but that the star's Galactic coordinates "still
+  exclude it as a definite member", so no group distance is used. No later dedicated
+  determination was found.

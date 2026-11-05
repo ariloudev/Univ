@@ -35,23 +35,23 @@ mod numbers;
 mod outline;
 mod shape;
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use univ_model::ids::is_slug;
 
 use crate::source::ScaleDomain;
-use crate::yaml::{FileError, read_checked, read_dir};
+use crate::yaml::{FileError, read_checked, read_dir, slug_of};
 
+pub(crate) use check::{CitedFile, Evidence, Problem, problem};
 pub use citation::{Citation, Locator};
 pub use cited::{Assumes, Cited};
-pub use geometry::{Coordinates, Radial};
+pub use geometry::{AxisExtents, Coordinates, Radial};
 pub use members::{Column, ColumnName, Format, MemberSource, Members, Row};
 pub use outline::{
     Choice, ChosenBy, DensePlaces, GridOutline, OutlineTest, Rule, Seed, Side, Threshold,
 };
-pub use shape::{SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
+pub use shape::{AxisBox, Sides, SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
 
 /// A researched structure as its file describes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -70,6 +70,10 @@ pub struct Structure {
     pub position: Option<Coordinates>,
     #[serde(default)]
     pub geometry: Option<StructureGeometry>,
+    /// Its published extents along the axes of its position's frame, where its papers do not
+    /// say where it ends; it is placed at its position, with these about it.
+    #[serde(default)]
+    pub extents: Option<AxisExtents>,
     /// Why a structure has neither position nor geometry, when its papers give neither.
     #[serde(default)]
     pub unplaced: Option<String>,
@@ -167,21 +171,7 @@ impl Structure {
         if self.notes.trim().is_empty() {
             return problem("notes", "is empty");
         }
-        let mut ids = HashSet::new();
-        for (i, paper) in self.papers.iter().enumerate() {
-            if !is_slug(&paper.id) || !ids.insert(paper.id.as_str()) {
-                return problem(&format!("papers[{i}].id"), "is not a unique lowercase slug");
-            }
-            if paper.doi.is_none() && paper.bibcode.is_none() {
-                return problem(&format!("papers[{i}]"), "needs a DOI or a bibcode");
-            }
-            if paper.reference.trim().is_empty() || paper.read.trim().is_empty() {
-                return problem(
-                    &format!("papers[{i}]"),
-                    "needs its reference and how it was read",
-                );
-            }
-        }
+        let ids = self.check_papers()?;
         let placed = self.position.is_some() || self.geometry.is_some();
         match (placed, &self.unplaced) {
             (false, None) => return problem("unplaced", "give a position, a geometry or why not"),
@@ -200,42 +190,20 @@ impl Structure {
             self.check_citation(&field, &value.cite, Some(value))?;
             self.check_value(&field, value)?;
         }
-        for (i, dispute) in self.disputes.iter().enumerate() {
-            let field = format!("disputes[{i}]");
-            if dispute.claim.trim().is_empty() {
-                return problem(&field, "states no claim");
-            }
-            self.check_citation(&format!("{field}.cite"), &dispute.cite, None)?;
+        if let Some(StructureGeometry::SkyRegion(b)) = &self.geometry
+            && let Some(at_least) = &b.at_least
+        {
+            self.check_citation("geometry.sky_region.at_least", at_least, None)?;
         }
+        self.check_disputes(&self.disputes)?;
         if let Some(StructureGeometry::Members(m)) = &self.geometry
             && !ids.contains(m.source.paper())
         {
             return problem("geometry.members.source.paper", "is not among the papers");
         }
         self.check_members()?;
+        self.check_extents()?;
         self.check_free_text()
-    }
-
-    fn check_citation(
-        &self,
-        field: &str,
-        cite: &Citation,
-        value: Option<&Cited>,
-    ) -> Result<(), (String, String)> {
-        self.check_paper(&format!("{field}.cite"), cite)?;
-        if let (Some(value), Locator::Sentence { quote, .. }) = (value, &cite.locator)
-            && !value.appears_in(quote)
-        {
-            let shown = value
-                .as_published
-                .clone()
-                .unwrap_or_else(|| value.value().to_string());
-            return Err((
-                field.to_owned(),
-                format!("the number {shown} does not appear in the sentence it cites"),
-            ));
-        }
-        Ok(())
     }
 
     /// Every cited number in the file with its field path, except the cells of a member table,
@@ -300,20 +268,7 @@ pub fn read_all(dir: &Path) -> Result<Vec<Structure>, StructureError> {
 pub fn read_all_named(dir: &Path) -> Result<Vec<(String, Structure)>, StructureError> {
     read_dir(dir)?
         .iter()
-        .map(|file| {
-            let stem = file
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or_default();
-            if !is_slug(stem) {
-                return Err(FileError::new(
-                    file,
-                    "(file name)",
-                    "is not a kebab-case slug",
-                ));
-            }
-            Ok((stem.to_owned(), Structure::read(file)?))
-        })
+        .map(|file| Ok((slug_of(file)?.to_owned(), Structure::read(file)?)))
         .collect()
 }
 

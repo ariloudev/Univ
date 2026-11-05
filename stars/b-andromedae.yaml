@@ -1,0 +1,65 @@
+# b Andromedae (60 And), K4III spectroscopic binary: Hipparcos-2 parallax error above a tenth; Gaia DR2 parallax only, EDR3 none; unplaced.
+hip: 10340
+name: b Andromedae
+alternative_names:
+- 60 And
+- b And
+- HD 13520
+- HR 643
+papers:
+- id: gaia-edr3-2021
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021,
+    A&A 649, A1
+  title: Gaia Early Data Release 3. Summary of the contents and survey properties
+  bibcode: 2021A&A...649A...1G
+  doi: 10.1051/0004-6361/202039657
+  arxiv: '2012.01533'
+  read: catalogue table gaiadr3.gaia_source (astrometry identical to EDR3) queried by ADQL on the ESA
+    Gaia archive TAP; query and rows in texts/gaia-edr3-2021.txt (batch C section)
+- id: gaia-dr2-2018
+  reference: Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al.
+    2018, A&A 616, A1
+  title: Gaia Data Release 2. Summary of the contents and survey properties
+  bibcode: 2018A&A...616A...1G
+  doi: 10.1051/0004-6361/201833051
+  arxiv: '1804.09365'
+  read: catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; query and rows
+    in texts/gaia-dr2-2018.txt (batch C section)
+- id: tokovinin-2018
+  reference: Tokovinin 2018, ApJS 235, 6
+  title: The Updated Multiple Star Catalog
+  bibcode: 2018ApJS..235....6T
+  doi: 10.3847/1538-4365/aaa1a5
+  arxiv: '1712.04750'
+  read: components table J/ApJS/235/6/catalog (VizieR version of Dec 2023) queried by position on the
+    VizieR mirror vizier.cfa.harvard.edu; rows in texts/tokovinin-2018.txt
+unplaced: 'No usable distance: the Hipparcos-2 parallax whose error is above a tenth of the parallax;
+  Gaia DR2 gives a parallax, but Gaia EDR3 cut the same source back to a two-parameter solution, so the
+  DR2 value is not used; no cluster membership or modelling distance was found.'
+disputes:
+- claim: Gaia DR2 gives source 351761949008224512 a parallax of 5.263404981347411 mas.
+  cite:
+    paper: gaia-dr2-2018
+    table: gaiadr2.gaia_source
+    row: source_id 351761949008224512
+    column: parallax
+    cell: '5.263404981347411'
+- claim: The DR2 parallax error is 0.25763384919737703 mas.
+  cite:
+    paper: gaia-dr2-2018
+    table: gaiadr2.gaia_source
+    row: source_id 351761949008224512
+    column: parallax_error
+    cell: '0.25763384919737703'
+- claim: Gaia EDR3 gives the same source only a two-parameter solution, with no parallax.
+  cite:
+    paper: gaia-edr3-2021
+    table: gaiadr3.gaia_source
+    row: source_id 351761949008224512
+    column: astrometric_params_solved
+    cell: '3'
+notes: >-
+  The DR2 source is at the Hipparcos position and is the star; it is not in gaiadr2.hipparcos2_best_neighbour.
+  The star is a spectroscopic binary, which may be why EDR3 dropped its parallax. The Multiple Star Catalog
+  (Tokovinin 2018) carries the same DR2 parallax for the star. A candidate for later if a later Gaia release
+  or an orbit gives a parallax.

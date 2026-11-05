@@ -4,9 +4,10 @@
 // double precision once a frame, and its points' small offsets are float32.
 
 import type { View } from "./camera.ts";
-import { type Sphere, inSight, sightOf } from "./frustum.ts";
+import { type Sight, type Sphere, inSight, sightOf } from "./frustum.ts";
 import type { Drawer, Lines, Rgba } from "./drawing.ts";
 import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, pointOpacity, structureStyle } from "./kinds.ts";
+import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
@@ -18,9 +19,15 @@ export class NoWebGL extends Error {}
  * they lie in, to leave them undrawn when it is out of view. */
 export interface Points {
   id: string;
+  /** The scale domain of the tile, whose sources `sources` index. */
+  domain: string;
   centre: Vec3;
   offsets: Float32Array;
   kinds: Uint8Array;
+  /** Each point's source, by its index in its domain's manifest. */
+  sources: Uint16Array;
+  /** Each point's own colour as RGBA bytes, for a star; none for a point drawn by its kind. */
+  colours?: Uint8Array | undefined;
   extent: Sphere;
 }
 
@@ -36,6 +43,13 @@ interface Drawn {
 
 interface Outline extends Drawn {
   colour: Rgba;
+}
+
+/** The eye's axes, place and projection for one frame. */
+interface Frame {
+  axes: Mat3;
+  eye: Vec3;
+  projection: Float32Array;
 }
 
 /** A linked program and the locations of its uniforms. */
@@ -72,7 +86,13 @@ export class Renderer implements Drawer {
   private readonly lines: Program;
   private readonly lineColour: WebGLUniformLocation | null;
   /** Each tile's points, by its id, with the sphere they lie in. */
-  private readonly batches = new Map<string, Drawn & { extent: Points["extent"] }>();
+  private readonly batches = new Map<string, Drawn & { extent: Points["extent"]; domain: string }>();
+  /** What is turned off (choose-what-is-drawn). */
+  private masks: Masks = NO_MASKS;
+  private readonly hiddenKinds: WebGLUniformLocation | null;
+  private readonly hiddenSources: WebGLUniformLocation | null;
+  /** The outlines and markers not drawn, by name (choose-what-is-drawn). */
+  private hiddenNames: ReadonlySet<string> = new Set();
   private readonly outlines = new Map<string, Outline>();
   private readonly markers = new Map<string, Drawn>();
   /** The name of the outline and markers drawn as chosen, if any. */
@@ -93,20 +113,33 @@ export class Renderer implements Drawer {
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
+    this.hiddenKinds = gl.getUniformLocation(this.points.program, "u_hiddenKinds");
+    this.hiddenSources = gl.getUniformLocation(this.points.program, "u_hiddenSources");
+    // A batch without colours of its own leaves `a_colour` at this constant: no colour, so that
+    // its points take their kind's (WebGL's default would be opaque black).
+    gl.vertexAttrib4f(gl.getAttribLocation(this.points.program, "a_colour"), 0, 0, 0, 0);
+    // Nor sources: `a_source` beyond every mask's bits, so that nothing turned off hides them.
+    gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
     const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
     gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
     this.markerColour = gl.getUniformLocation(this.points.program, `u_colours[${MARKER_INDEX}]`);
   }
 
-  private buffer(program: WebGLProgram, name: string, data: Float32Array | Uint8Array, size: number): WebGLBuffer {
+  private buffer(
+    program: WebGLProgram,
+    name: string,
+    data: Float32Array | Uint8Array | Uint16Array,
+    size: number,
+    normalized = false,
+  ): WebGLBuffer {
     const gl = this.gl;
     const buffer = gl.createBuffer();
     const location = gl.getAttribLocation(program, name);
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(location);
-    const type = data instanceof Uint8Array ? gl.UNSIGNED_BYTE : gl.FLOAT;
-    gl.vertexAttribPointer(location, size, type, false, 0, 0);
+    const type = data instanceof Uint8Array ? gl.UNSIGNED_BYTE : data instanceof Uint16Array ? gl.UNSIGNED_SHORT : gl.FLOAT;
+    gl.vertexAttribPointer(location, size, type, normalized, 0, 0);
     return buffer;
   }
 
@@ -115,13 +148,15 @@ export class Renderer implements Drawer {
     for (const buffer of drawn.buffers) this.gl.deleteBuffer(buffer);
   }
 
-  private upload(points: Pick<Points, "centre" | "offsets" | "kinds">): Drawn {
+  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours"> & { sources?: Uint16Array }): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
       this.buffer(this.points.program, "a_offset", points.offsets, 3),
       this.buffer(this.points.program, "a_kind", points.kinds, 1),
     ];
+    if (points.sources !== undefined) buffers.push(this.buffer(this.points.program, "a_source", points.sources, 1));
+    if (points.colours !== undefined) buffers.push(this.buffer(this.points.program, "a_colour", points.colours, 4, true));
     this.gl.bindVertexArray(null);
     return { vao, buffers, centre: points.centre, count: points.kinds.length };
   }
@@ -129,7 +164,7 @@ export class Renderer implements Drawer {
   /** Adds a tile's points to what is drawn. */
   addPoints(points: Points): void {
     this.removePoints(points.id);
-    this.batches.set(points.id, { ...this.upload(points), extent: points.extent });
+    this.batches.set(points.id, { ...this.upload(points), extent: points.extent, domain: points.domain });
   }
 
   /** Draws the points of the tile `id` no more. */
@@ -138,6 +173,16 @@ export class Renderer implements Drawer {
     if (drawn === undefined) return;
     this.release(drawn);
     this.batches.delete(id);
+  }
+
+  /** Draws only the points `masks` leave on. */
+  setHidden(masks: Masks): void {
+    this.masks = masks;
+  }
+
+  /** Draws none of the outlines and markers named in `names`. */
+  hideNames(names: ReadonlySet<string>): void {
+    this.hiddenNames = names;
   }
 
   /** Draws the outline and markers named `name` as chosen, and none other; none for undefined. */
@@ -179,19 +224,40 @@ export class Renderer implements Drawer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     const sight = sightOf(view, toFrame, width, height);
     const frame = { axes: sight.axes, eye: sight.eye, projection: projection(view, width / height) };
+    this.drawOutlines(frame);
+    this.drawPoints(frame, sight, view.distance);
+    this.drawMarkers(frame);
+  }
+
+  private drawOutlines(frame: Frame): void {
     this.use(this.lines, frame);
     for (const [name, outline] of this.outlines) {
-      gl.uniform4f(this.lineColour, ...structureStyle(outline.colour, name === this.chosen).colour);
-      this.drawOne(this.lines, frame, outline, gl.LINES);
+      if (this.hiddenNames.has(name)) continue;
+      this.gl.uniform4f(this.lineColour, ...structureStyle(outline.colour, name === this.chosen).colour);
+      this.drawOne(this.lines, frame, outline, this.gl.LINES);
     }
+  }
+
+  /** The tiles' points in sight, but those turned off. */
+  private drawPoints(frame: Frame, sight: Sight, distance: number): void {
+    const gl = this.gl;
     this.use(this.points, frame);
     gl.uniform1f(this.pointSize, POINT_SIZE);
-    gl.uniform1f(this.opacity, pointOpacity(view.distance));
+    gl.uniform1f(this.opacity, pointOpacity(distance));
+    gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
     for (const batch of inSight(this.batches.values(), sight, (b) => b.extent)) {
+      if (this.masks.domains.has(batch.domain)) continue;
+      gl.uniform1ui(this.hiddenSources, this.masks.sources.get(batch.domain) ?? 0);
       this.drawOne(this.points, frame, batch, gl.POINTS);
     }
+  }
+
+  /** The structures' markers, of the kind no mask holds and of no source. */
+  private drawMarkers(frame: Frame): void {
+    const gl = this.gl;
     gl.uniform1f(this.opacity, 1);
     for (const [name, marker] of this.markers) {
+      if (this.hiddenNames.has(name)) continue;
       const style = structureStyle(STRUCTURE_COLOUR, name === this.chosen);
       gl.uniform1f(this.pointSize, style.markerSize);
       gl.uniform4f(this.markerColour, ...style.colour);

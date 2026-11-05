@@ -53,10 +53,18 @@ export function preferredText(preferred: NonNullable<ObjectRecord["preferred"]>)
   return `${distance} ± ${figures(fraction * 100, 2)} % (± ${formatDistance(fraction * preferred.distance_mpc)})`;
 }
 
-/** What the hover label says of a point: its id, scale domain, distance, and the source and
- * kind of value of that distance. */
+/** Two bands as a colour index names them, with a minus sign: `B−V`. */
+export const bandsText = (bands: string): string => bands.replace("-", "−");
+
+/** A colour index with its bands, such as `B−V 0.65`, to the tile's hundredth of a magnitude. */
+const colourText = (colour: { index: number; bands: string }): string =>
+  `${bandsText(colour.bands)} ${colour.index.toFixed(2).replace("-", "−")}`;
+
+/** What the hover label says of a point: its id, scale domain, distance, the source and kind of
+ * value of that distance, and its colour index where it has one. */
 export function pointText(point: ScenePoint): string {
-  return `${point.id} · ${words(point.domain)} · ${formatDistance(point.distanceMpc)} · ${point.source} · ${point.kind}`;
+  const colour = point.colour === undefined ? "" : ` · ${colourText(point.colour)}`;
+  return `${point.id} · ${words(point.domain)} · ${formatDistance(point.distanceMpc)} · ${point.source} · ${point.kind}${colour}`;
 }
 
 /** The heading of an object's panel: the name it was found by, else the first name its entries

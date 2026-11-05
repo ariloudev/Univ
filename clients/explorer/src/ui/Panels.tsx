@@ -1,7 +1,10 @@
+import { Swatch } from "./Swatch.tsx";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
 import { KINDS, cssColour } from "../scene/kinds.ts";
+import { GREY_CSS, KEY_TEMPERATURES, STAR_GRADIENT } from "../scene/starColour.ts";
+import { DWARF_SEQUENCE_CITATION } from "../scene/dwarfSequence.ts";
 import type { Controller } from "../scene/controller.ts";
 import { type Store, useStore } from "./store.ts";
 
@@ -73,18 +76,37 @@ function FrameStatement({ axes, basis, cosmology }: { axes: Axes; basis: string;
 }
 
 /** What the key reads of the catalogue. */
-export type Tally = Pick<Catalogue, "kinds" | "failed" | "unread" | "credits">;
+export type Tally = Pick<Catalogue, "kinds" | "stars" | "failed" | "unread" | "credits">;
 
 function Key({ catalogue, release }: { catalogue: Tally; release: number }) {
   const kinds = KINDS.map((kind, i) => [kind, catalogue.kinds[i] ?? 0] as const);
   const credits = catalogue.credits();
   return (
     <div className="fixed right-3 bottom-3 max-h-[35%] w-96 space-y-2 overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm">
-      <h2 className="font-semibold">Kind of value of each distance</h2>
+      <h2 className="font-semibold">Stars, by colour index</h2>
+      <div data-testid="star-key" className="space-y-1">
+        <div className="h-3 rounded" style={{ background: STAR_GRADIENT }} />
+        <div className="flex justify-between text-xs text-dim">
+          {KEY_TEMPERATURES.map((t) => (
+            <span key={t}>{t.toLocaleString("en-GB")} K</span>
+          ))}
+        </div>
+        <p className="text-xs">
+          {catalogue.stars.coloured.toLocaleString("en-GB")} stars in the colour of the temperature their colour
+          index gives, estimated along the dwarf sequence of {DWARF_SEQUENCE_CITATION}, as observed and not
+          corrected for reddening. The sequence's BP−RP stops at B9V, so a hotter star coloured by BP−RP is drawn
+          at about 10,700 K.
+        </p>
+        <p className="flex items-center gap-2 text-xs">
+          <Swatch colour={GREY_CSS} />
+          {catalogue.stars.grey.toLocaleString("en-GB")} stars in grey, with no colour index.
+        </p>
+      </div>
+      <h2 className="font-semibold">Other points, by the kind of value of each distance</h2>
       <ul data-testid="key">
         {kinds.map(([kind, count]) => (
           <li key={kind} className="flex items-center gap-2">
-            <span className="inline-block h-3 w-3 rounded-full" style={{ background: cssColour(kind) }} />
+            <Swatch colour={cssColour(kind)} />
             {kind}: {count.toLocaleString("en-GB")} points
           </li>
         ))}

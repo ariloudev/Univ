@@ -226,6 +226,32 @@ pub struct Derivation {
     /// For a structure placed as its admitted grid outline: the grid, the factor and the frame.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub grid: Option<GridPlacement>,
+    /// Where its papers give the shape as a lower limit on the structure's extent, such as
+    /// "at least 25° × 20°": a JSON pointer to that citation in the record. Absent when they do
+    /// not, so the structure is known to reach as far as its shape and no further.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub at_least: Option<String>,
+    /// For a structure placed at a point whose papers give its extent along each axis of a frame
+    /// but not where it ends: those extents about the point. Its bounds stay the point's.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extents: Option<Extents>,
+}
+
+/// A structure's published extents along the axes of the frame they were published in, about
+/// its point, where its papers do not say where it ends. The point need not be its middle.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct Extents {
+    /// The frame whose axes the extents were published along.
+    pub frame: Frame,
+    /// Each axis's whole extent as a vector in the ICRS, in the shape's unit, in the order of
+    /// the frame's axes: a line through the point runs half of it each way.
+    #[cfg_attr(feature = "openapi", schema(value_type = Vec<Vec<f64>>, min_items = 3, max_items = 3))]
+    pub axes: [Vec3; 3],
+    /// JSON pointers to the cited values each axis comes from, in the same order.
+    pub from: Vec<String>,
+    /// How each published extent became a length.
+    pub method: String,
 }
 
 /// Where a placed shape's distance comes from, and how it was found.
@@ -280,9 +306,13 @@ mod tests {
             },
             cosmology: "release".into(),
             grid: None,
+            at_least: None,
+            extents: None,
         };
         let text = serde_json::to_string(&derivation).unwrap();
         assert!(!text.contains("\"grid\""), "{text}");
+        assert!(!text.contains("\"at_least\""), "{text}");
+        assert!(!text.contains("\"extents\""), "{text}");
         let step = &serde_json::from_str::<Value>(&text).unwrap()["frame_chain"][1];
         assert_eq!(step["step"], "to_icrs");
         assert_eq!(step["from"], "equatorial_equinox_unstated");

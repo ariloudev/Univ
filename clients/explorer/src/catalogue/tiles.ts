@@ -1,11 +1,12 @@
 // Fetching, checking and decoding one tile (draw-the-catalogues), and the scale domains and
 // manifests of a release.
 
-import { type ManifestNode, decodeTile } from "univ-tile-decoder";
+import { type DecodedPoint, type ManifestNode, decodeTile } from "univ-tile-decoder";
 
 import { type ReadOptions, read, readJson } from "../api/client.ts";
 import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
+import { starBytes } from "../scene/starColour.ts";
 import { add, scale } from "../scene/vec.ts";
 import { type Extent, type Tile, extentOf } from "./lod.ts";
 
@@ -30,9 +31,48 @@ export interface Batch {
   kinds: Uint8Array;
   /** Each point's index in the manifest's sources. */
   sources: Uint16Array;
+  /** The stars' colours, for a tile of the stars domain; none for any other, whose points are
+   * drawn by their kind of value. */
+  stars?: StarColours | undefined;
   ids: Float64Array;
   /** Where the points lie. */
   extent: Extent;
+}
+
+/** The scale domain whose points are drawn in their stars' colours. */
+const STARS_DOMAIN = "stars";
+
+/** The colours of a tile's stars. */
+export interface StarColours {
+  /** Each star's colour as red, green, blue and opacity bytes: from its colour index, or grey. */
+  bytes: Uint8Array;
+  /** Each star's colour index in hundredths of a magnitude, as the tile holds it. */
+  hundredths: Int16Array;
+  /** Each star's colour bands, by the manifest's code: their place in its `colour_bands` plus
+   * one, 0 for a star without a colour index. */
+  bands: Uint8Array;
+  /** How many have a colour index. */
+  coloured: number;
+}
+
+/** The colours of the stars `points`, of a tile whose manifest names its colour bands `names`. */
+function starColoursOf(points: readonly DecodedPoint[], names: readonly string[]): StarColours {
+  const stars: StarColours = {
+    bytes: new Uint8Array(points.length * 4),
+    hundredths: new Int16Array(points.length),
+    bands: new Uint8Array(points.length),
+    coloured: 0,
+  };
+  points.forEach((p, i) => {
+    // A colour index in bands the manifest does not name is not read: the star is drawn grey.
+    const band = p.colour === undefined ? 0 : names.indexOf(p.colour.bands) + 1;
+    stars.bytes.set(starBytes(band === 0 ? undefined : p.colour), i * 4);
+    if (band === 0 || p.colour === undefined) return;
+    stars.hundredths[i] = Math.round(p.colour.index * 100);
+    stars.bands[i] = band;
+    stars.coloured += 1;
+  });
+  return stars;
 }
 
 /** A tile that did not match its manifest's SHA-256, or did not decode. */
@@ -102,7 +142,11 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
     sources[i] = p.source.index;
     ids[i] = p.id;
   });
-  return { tile, offsets, kinds, sources, ids, extent: extentOf(offsets, tile.centre) };
+  // A stars tile from before colour indices were kept lists no bands: its stars keep their
+  // kinds' colours rather than all turning grey.
+  const names = domain.manifest.encoding.colour_bands;
+  const stars = domain.name === STARS_DOMAIN && names !== undefined ? starColoursOf(points, names) : undefined;
+  return { tile, offsets, kinds, sources, ids, stars, extent: extentOf(offsets, tile.centre) };
 }
 
 /** Fetches, checks and decodes the tile of `tile` in `domain` of `release`. */

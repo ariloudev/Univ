@@ -1,0 +1,102 @@
+# A wall-like supercluster at z ≈ 0.54 in Selected Area 68, seen almost edge-on, traced by galaxy
+# redshifts and three X-ray clusters aligned with it.
+name: SA 68 Supercluster
+alternative_names: ["Selected Area 68 supercluster"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: connolly-1996
+    reference: "Connolly, Szalay, Koo, Romer, Holden, Nichol & Miyaji 1996, ApJ 473, L67"
+    title: "Superclustering at Redshift z = 0.54"
+    bibcode: 1996ApJ...473L..67C
+    arxiv: "astro-ph/9610047"
+    read: "arXiv PDF of astro-ph/9610047 (the preprint), text extracted: abstract and Sections 1 to 4 read"
+unplaced: >-
+  The paper centres an ellipse fitted to the galaxies in the supercluster's redshift range on a
+  B1950 position, but prints it in a compressed form (hours written hr, seconds and arcseconds
+  without their marks) that cannot be cited as printed; the position is left out until it can
+  be. The ellipse is the second moments of the galaxies inside the survey field, which the
+  structure reaches the edges of, so it bounds nothing.
+values:
+  redshift:
+    value: 0.54
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: connolly-1996
+      sentence: "We present strong evidence for the existence of a supercluster at a redshift of z = 0.54 in the direction of Selected Area 68."
+  redshift_low:
+    value: 0.530
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &range
+      paper: connolly-1996
+      sentence: "From the distribution of galaxies with spectroscopic redshifts we find that there is a large over-density of galaxies (a factor of four over the number expected in an unclustered universe) within the redshift range 0.530 < z < 0.555."
+  redshift_high:
+    value: 0.555
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *range
+  radial_extent:
+    value: 31
+    unit: megaparsec_over_h
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes: &cosmology
+      cosmology: "H0 = 100 km/s/Mpc, Ω = 1, lengths in h^-1 Mpc"
+      cite:
+        paper: connolly-1996
+        sentence: "For this letter we assume an Ho = 100 km s−1 Mpc−1 and Ω = 1 cosmology; at redshift z ∼ 0.54, the lookback time is nearly half the age of the universe and one degree spans 13.5 h−1Mpc."
+    cite: &dimensions
+      paper: connolly-1996
+      sentence: "Assuming a redshift of 0.54 for the distribution of galaxies and a FWHM dispersion in redshift of 0.020 this represents a coherent structure with a radial extent of 31 h−1Mpc, transverse dimension of 12 h−1Mpc, and a thickness of ∼ 4 h−1Mpc."
+    note: "The full width at half maximum of the galaxies' redshifts read as distance; the paper notes the dispersion is far larger than a cluster's velocities, so it takes it as depth."
+  transverse_dimension:
+    value: 12
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: *dimensions
+  thickness:
+    value: 4
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: *dimensions
+  redshift_fwhm:
+    value: 0.020
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *dimensions
+  position_angle:
+    value: 35
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: connolly-1996
+      sentence: "By considering the spatial distribution of galaxies within this redshift range (using spectroscopic and photometric redshifts) we show that the galaxies in SA68 form a linear structure passing from the South-West of the survey field through to the North-East (with a position angle of approximately 35◦ East of North)."
+    note: "East of north on the sky; the spectroscopic and photometric samples separately give somewhat smaller and larger angles."
+  extent_on_sky:
+    value: 0.5
+    unit: degree
+    kind: measured
+    uncertainty: { form: lower_limit }
+    cite:
+      paper: connolly-1996
+      sentence: "They show a linear structure of at least 0.5 degrees in extent (equivalent to 6.5 h−1Mpc at z = 0.54)."
+disputes: []
+notes: >-
+  The paper calls the structure a possible supercluster: a factor of four more galaxies with
+  spectroscopic redshifts in a narrow range than an unclustered universe gives, spread across
+  Selected Area 68 in a line running south-west to north-east, at the position angle of the
+  X-ray clusters CL0016+16, RX J0018.3+1618 and RX J0018.8+1602 near the supercluster's redshift.
+  It reads the structure as a wall seen nearly edge-on. Its radial extent rests on taking the
+  redshift spread as depth. The paper names the supercluster only by its field and redshift.

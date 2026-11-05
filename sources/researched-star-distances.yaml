@@ -1,0 +1,34 @@
+id: researched-star-distances
+title: "Researched star distances"
+provider: literature
+access:
+  method: repository
+  path: stars/
+  holds: star_distances
+cuts:
+  - "Every star file under stars/ in this repository; nothing is fetched."
+  - "The naked-eye stars (Hipparcos-2 Hp brighter than 6) that release 8 left unplaced: a Hipparcos-2 parallax whose error is more than a tenth of it, and no Gaia parallax."
+  - "Each star's distance or parallax is read from its papers and keeps its kind (measured, estimated or inferred), uncertainty and method as the papers give them; a star whose papers publish no distance keeps its file, saying why, and adds no entry."
+columns: []
+frame: icrs
+epoch: 2000.0
+citation: >-
+  None for the source as a whole: each star file gives the full citation, with bibcode or DOI,
+  of the papers its values come from, and the star's entry names those papers.
+reference:
+  none: >-
+    The researched star distances are a compilation with no paper of their own: each star file
+    cites the papers its values come from, by bibcode and DOI, and the star's entry names them.
+terms:
+  url: "stars/"
+  quote: "No provider terms: the values are read from published papers, and each star file cites its papers."
+  credit: "Cite the papers each star file lists."
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    Nothing is fetched from a provider: the star files hold values stated in published papers,
+    each with its citation, which is ordinary scholarly use. Provisional: judged again before any
+    public deployment.
+scale_domain: stars
+mirrors: []

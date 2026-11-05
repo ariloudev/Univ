@@ -54,6 +54,16 @@ pub fn fixture() -> Fixture {
         normalized.push(n);
     }
     definitions.push(definition_of("researched-structures"));
+    // The simulated star file of the tests, in place of the repository's researched stars.
+    let stars = definition_of("researched-star-distances");
+    let researched = univ_ingest::stars::normalize(
+        &stars,
+        &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stars"),
+    )
+    .unwrap();
+    record(cache.path(), stars.id.as_str(), &researched.report);
+    definitions.push(stars);
+    normalized.push(researched);
     Fixture {
         definitions,
         normalized,

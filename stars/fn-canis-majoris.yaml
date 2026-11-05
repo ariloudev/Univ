@@ -1,0 +1,63 @@
+# FN Canis Majoris (HD 53974), B0.7Ib + O6V((f))z close visual pair near CMa OB1: Hipparcos-2 parallax error above a tenth, no Gaia parallax; placed by its companion's distance as applied by Maíz Apellániz et al.
+hip: 34301
+name: FN Canis Majoris
+alternative_names:
+- FN CMa
+- HD 53974
+- HR 2678
+- ADS 5795
+papers:
+- id: maiz-apellaniz-2021
+  reference: Maíz Apellániz, Barbá, Fariña, Sota, Pantaleoni González, Holgado, Negueruela & Simón-Díaz
+    2021, A&A 646, A11
+  title: 'Lucky spectroscopy, an equivalent technique to Lucky Imaging: II. Spatially-resolved intermediate-resolution
+    blue-violet spectroscopy of 19 close massive binaries using the William Herschel Telescope'
+  bibcode: 2021A&A...646A..11M
+  doi: 10.1051/0004-6361/202039479
+  arxiv: '2011.12250'
+  read: arXiv PDF of 2011.12250 (A&A proofs version), text extracted with PyMuPDF; Sect. 3.1 read (it
+    starts on arXiv PDF p. 5 and the distance passage is on p. 6), and the distance passage rendered and
+    read visually
+- id: fernandes-2019
+  reference: Fernandes, Montmerle, Santos-Silva & Gregorio-Hetem 2019, A&A 628, A44
+  title: Runaways and shells around the CMa OB1 association
+  bibcode: 2019A&A...628A..44F
+  doi: 10.1051/0004-6361/201935484
+  arxiv: '1906.00113'
+  read: arXiv PDF of 1906.00113, text extracted with PyMuPDF; Sects. 1-2 and Appendix B (arXiv PDF p.
+    14) read
+distance:
+  value: 1.48
+  unit: kiloparsec
+  kind: inferred
+  uncertainty: {form: asymmetric, minus: 0.11, plus: 0.12}
+  cite:
+    paper: maiz-apellaniz-2021
+    page: 6
+    sentence: For its distance we use the Bayesian prior described by Maíz Apellániz (2001, 2005) with
+      the updated Galactic (young) disk parameters from Maíz Apellániz et al. (2008), apply a parallax
+      zero point of 0.040±0.010 mas (Maíz Apellániz et al., accepted in A&A), and obtain 1.48^{+0.12}_{-0.11}
+      kpc.
+  distance_kind: geometric
+  method: Gaia DR2 parallax of the wide companion FN CMa C with a Galactic-disk prior and a parallax zero-point
+    correction, applied by the authors to FN CMa A,B
+membership:
+  paper: maiz-apellaniz-2021
+  page: 6
+  sentence: To estimate its distance we assume that it is the same as component C in the system.
+disputes:
+- claim: Fernandes et al. treat HD 53974 as a runaway from CMa OB1 and assume the association's round
+    distance of 1 kpc without measuring one for the star.
+  cite:
+    paper: fernandes-2019
+    page: 14
+    sentence: Assuming that HD 53974 is at the same distance as CMa OB1 (r = 1 kpc), we find R = 8.74.
+notes: >-
+  The distance is the paper's own: Maíz Apellániz et al. apply the Gaia DR2 parallax of the wide companion
+  FN CMa C to the A,B pair, so this placement does not apply a companion's distance on our own account.
+  It rests on C being physically associated with A,B, which the paper assumes rather than demonstrates,
+  and on DR2 astrometry; nothing read contradicts the association. Gaia DR2 and DR3 give FN CMa A,B only
+  a two-parameter solution. The same paper reclassifies A as B0.7 Ib and B as an O6 dwarf, removing the
+  earlier argument (Rivinius et al.) that B is a background object. The Gaia-based studies of the Canis
+  Major region read for this research do not list HD 53974 as a group member. Whether the asymmetric error
+  is a one-sigma interval is not stated in the passage; it is recorded as the paper prints it.

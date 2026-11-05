@@ -7,7 +7,7 @@ use univ_ingest::source::{RedistributionStatus, ScaleDomain, read_all};
 
 /// The sources of the first release, by id, with their scale domains, the Cosmicflows-4
 /// galaxies added for the second, and the Hipparcos spectral types added for the eighth.
-const FIRST_RELEASE: [(&str, ScaleDomain); 20] = [
+const FIRST_RELEASE: [(&str, ScaleDomain); 21] = [
     ("sdss-dr17-galaxies", ScaleDomain::CosmicWeb),
     ("boss-dr17-great-wall", ScaleDomain::CosmicWeb),
     ("sixdfgs-dr3", ScaleDomain::CosmicWeb),
@@ -23,6 +23,7 @@ const FIRST_RELEASE: [(&str, ScaleDomain); 20] = [
     ("gaia-dr3-hipparcos2", ScaleDomain::Stars),
     ("hipparcos-2007", ScaleDomain::Stars),
     ("hipparcos-1997", ScaleDomain::Stars),
+    ("researched-star-distances", ScaleDomain::Stars),
     ("cf4pp-density", ScaleDomain::CosmicWeb),
     ("cf4-basins", ScaleDomain::CosmicWeb),
     ("twompp-reconstruction", ScaleDomain::CosmicWeb),

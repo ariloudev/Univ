@@ -1,0 +1,126 @@
+# A compact, dense supercluster of rich Abell clusters at z ≈ 0.07 in Corona Borealis.
+name: Corona Borealis Supercluster
+alternative_names: ["Cor Bor", "SCL 158"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: einasto-2001
+    reference: "Einasto, Einasto, Tago, Müller & Andernach 2001, AJ 122, 2222"
+    title: "Optical and X-Ray Clusters as Tracers of the Supercluster-Void Network. I. Superclusters of Abell and X-Ray Clusters"
+    doi: 10.1086/323707
+    bibcode: 2001AJ....122.2222E
+    arxiv: "astro-ph/0012536"
+    read: "arXiv PDF of astro-ph/0012536, text extracted (Section 2.1, Appendix A and Table A1); the row checked against VizieR J/AJ/122/2222/tablea1"
+  - id: postman-1988
+    reference: "Postman, Geller & Huchra 1988, AJ 95, 267"
+    title: "The dynamics of the Corona Borealis supercluster"
+    bibcode: 1988AJ.....95..267P
+    read: "ADS scan of the article: abstract, Sections I and II read on the rendered page 267"
+# SCL 158 of the 2001 catalogue: the centre derived from its eight member clusters' coordinates,
+# for equinox 1950.0, and its distance from us.
+position:
+  frame: fk4_b1950
+  lon:
+    value: 230.8
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-2001
+      table: "A1"
+      row: "158 (Corona Borealis)"
+      column: "(3) αC, the centre's right ascension (equinox 1950.0, Appendix A)"
+      cell: "230.8"
+  lat:
+    value: 29.7
+    unit: degree
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-2001
+      table: "A1"
+      row: "158 (Corona Borealis)"
+      column: "(4) δC, the centre's declination (equinox 1950.0, Appendix A)"
+      cell: "29.7"
+  distance:
+    value: 206
+    unit: megaparsec_over_h
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes:
+      cosmology: "the Mattig formula with q0 = 0.5, in h^-1 Mpc"
+      cite:
+        paper: einasto-2001
+        sentence: "We use H0 = 100 h−1 km s−1 Mpc−1, and q0 = 0.5."
+    cite:
+      paper: einasto-2001
+      table: "A1"
+      row: "158 (Corona Borealis)"
+      column: "(5) DC h−1Mpc, the distance of the centre from us"
+      cell: "206"
+    note: "Cluster distances follow from redshifts by the Mattig formula, its luminosity distance divided by one plus the redshift (equation 1), with the deceleration parameter one half: the comoving distance of a flat, matter-only universe."
+values:
+  member_clusters_2001:
+    value: 8
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: einasto-2001
+      table: "A1"
+      row: "158 (Corona Borealis)"
+      column: "(2) NCL"
+      cell: "8"
+    note: "A2019, A2061, A2065, A2067, A2079, A2089, A2092 and A2124: the six clusters of the 1988 definition and two more."
+  radius_1988:
+    value: 13
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: &h100
+      cosmology: "H0 = 100 km/s/Mpc"
+      cite:
+        paper: postman-1988
+        sentence: "We use the value H0 = 100 km s−1 Mpc−1 throughout."
+        page: 267
+    cite: &definition
+      paper: postman-1988
+      sentence: "For the purposes of this study, we define the Cor Bor supercluster as the six Abell clusters A2061, A2065, A2067, A2079, A2089, and A2092. These are the supercluster members identified at high space-density enhancement levels (f> 100; cf. Bahcall and Soneira 1984); they lie within a spherical volume ~13 Mpc in radius."
+      page: 267
+    note: "The radius of the sphere that holds the six clusters of the 1988 definition."
+  outlying_member_distance_1988:
+    value: 33
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *h100
+    cite:
+      paper: postman-1988
+      sentence: "At a lower space-density enhancement Bahcall and Soneira (1984) also include A2124, a cluster which lies ~33 Mpc from the central concentration."
+      page: 267
+    note: "How far Abell 2124, a member at a lower density enhancement, lies from the central concentration."
+  redshift:
+    value: 0.07
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &densest
+      paper: postman-1988
+      sentence: "Cor Bor is the densest nearby (z≅0.07) supercluster and consists of at least six rich Abell clusters. It lies at a high galactic latitude (bII = 55°)."
+      page: 267
+  galactic_latitude:
+    value: 55
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *densest
+disputes: []
+notes: >-
+  The point is the centre of SCL 158 in the 2001 catalogue of superclusters of Abell clusters,
+  found by friends-of-friends linking; its distance is in h^-1 Mpc from the Mattig formula with
+  the deceleration parameter one half, not a distance of the release cosmology. The 1988 study
+  defines the supercluster more tightly, as its six densest clusters, and gives their sphere's
+  radius and an outlying member's distance in Mpc for its Hubble constant of a hundred, lengths
+  equal to h^-1 Mpc. The 1988 abstract's supercluster mass, in solar masses, has no unit in
+  univ-model and is left out.

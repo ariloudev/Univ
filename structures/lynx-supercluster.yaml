@@ -1,0 +1,65 @@
+# The Lynx supercluster: a pair of X-ray clusters at z ≃ 1.27 in the ROSAT Deep Cluster Survey's
+# Lynx field.
+name: Lynx Supercluster
+alternative_names: []
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: rosati-1999
+    reference: "Rosati, Stanford, Eisenhardt, Elston, Spinrad, Stern & Dey 1999, AJ 118, 76"
+    title: "An X-ray Selected Galaxy Cluster at z = 1.26"
+    doi: 10.1086/300934
+    arxiv: "astro-ph/9903381"
+    read: "arXiv PDF text of astro-ph/9903381; Table 1 read from its text layer"
+geometry:
+  kind: members
+  members:
+    frame: icrs
+    tracer: galaxy cluster (position of its X-ray source)
+    source: { paper: rosati-1999, table: "1" }
+    columns:
+      - { name: lon, header: "RA (J2000)", unit: degree, format: hms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lat, header: "DEC (J2000)", unit: degree, format: dms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "Redshift", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+    rows:
+      - ["RXJ0848.9+4452", "08:48:56.2", "+44:52:00", 1.261]
+      - ["ClG J0848+4453 (RXJ0848.6+4453)", "08:48:34.2", "+44:53:35", 1.273]
+values:
+  redshift:
+    value: 1.27
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite: &pair
+      paper: rosati-1999
+      sentence: "These data provide evidence for the presence of a superstructure at z ≃ 1.27 consisting of two collapsed systems, which are likely in an advanced dynamical state, considering that X-ray emitting gas had the time to thermalize in their potential wells."
+  separation_angle:
+    value: 4.2
+    unit: arcminute
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &separation
+      paper: rosati-1999
+      sentence: "RXJ0848.9+4452 lies only 4.2′ away from ClG J0848+4453 (alias RXJ0848.6+4453), i.e. at a projected physical distance of 2.2 h50^-1 Mpc at that redshift (5.0 h50^-1 comoving Mpc)."
+  separation_comoving:
+    value: 5.0
+    unit: megaparsec
+    kind: inferred
+    uncertainty: { form: none_reported }
+    assumes:
+      cosmology: "comoving; h50^-1 Mpc: H0 = 50 km/s/Mpc, q0 = 0.5"
+      cite:
+        paper: rosati-1999
+        sentence: "Unless otherwise stated, we adopt the parameters H0 = 50 km s−1 Mpc−1, q0 = 0.5."
+    cite: *separation
+    note: "The projected comoving separation of the two clusters."
+disputes: []
+notes: >-
+  The two members are the X-ray clusters of Table 1 at the redshift of the superstructure, at
+  the J2000 positions of their ROSAT sources; the table's third source, a foreground cluster, is
+  not a member. RXJ0848.9+4452 is the cluster this paper discovered, its redshift the mean of
+  the members it measured with Keck; the redshift of ClG J0848+4453 is that of its discovery by
+  Stanford et al. The paper calls the pair the first superstructure detected beyond a redshift
+  of one, a supercluster in its discussion of the pair's mass; its X-ray luminosities are in
+  units univ-model does not have and are left out.

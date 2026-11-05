@@ -1,0 +1,22 @@
+# SIMULATED: a test star file, not a real determination. HIP 1's Hipparcos-2 parallax,
+# 4.55 ± 1.33 mas, is too uncertain to invert, so the star is placed only by this file.
+hip: 1
+name: "HIP 1 (SIMULATED)"
+papers:
+  - id: test-2020
+    reference: "Test & Fixture 2020, SIMULATED 1, 1"
+    title: "A simulated distance for testing"
+    bibcode: 2020SIM.....1....1T
+    read: "SIMULATED: written for the tests"
+distance:
+  value: 210
+  unit: parsec
+  kind: estimated
+  uncertainty: { form: asymmetric, minus: 15, plus: 27 }
+  cite:
+    paper: test-2020
+    sentence: "SIMULATED: we find a distance of 210^{+27}_{-15} pc."
+  distance_kind: primary_indicator
+  method: "SIMULATED stellar model"
+notes: >-
+  SIMULATED for the tests: a model distance with an asymmetric error, joined by HIP number.

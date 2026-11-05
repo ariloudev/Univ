@@ -87,6 +87,18 @@ pub fn write<T: Serialize>(file: &Path, value: &T) -> std::io::Result<()> {
     )
 }
 
+/// The slug `file` is named by: its stem, which must be a kebab-case slug.
+///
+/// # Errors
+///
+/// Fails, naming the file, when its stem is not a kebab-case slug.
+pub fn slug_of(file: &Path) -> Result<&str, FileError> {
+    file.file_stem()
+        .and_then(|s| s.to_str())
+        .filter(|s| univ_model::ids::is_slug(s))
+        .ok_or_else(|| FileError::new(file, "(file name)", "is not a kebab-case slug"))
+}
+
 /// The `.yaml` files in `dir`, in file-name order.
 ///
 /// # Errors

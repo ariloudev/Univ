@@ -1,0 +1,83 @@
+# The supercluster MS0302+17: three X-ray clusters at z ≃ 0.42, mapped by weak lensing.
+name: MS0302+17 Supercluster
+alternative_names: ["MS 0302+17", "MS0302+17"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: kaiser-1998
+    reference: "Kaiser, Wilson, Luppino, Kofman, Gioia, Metzger & Dahle 1998, arXiv:astro-ph/9809268"
+    title: "A Photometric and Weak Lensing Analysis of the z=0.42 Supercluster MS0302+17"
+    doi: 10.48550/arXiv.astro-ph/9809268
+    arxiv: "astro-ph/9809268"
+    read: "arXiv PDF of astro-ph/9809268; Table 1 and the quoted sentences read on rendered page images; no journal publication was found in its arXiv record"
+geometry:
+  kind: members
+  members:
+    frame: icrs
+    tracer: galaxy cluster (peak of its smoothed ROSAT HRI X-ray image)
+    source: { paper: kaiser-1998, table: "1" }
+    columns:
+      - { name: lon, header: "RA(J2000)", unit: degree, format: hms, kind: measured, uncertainty: { form: none_reported } }
+      - { name: lat, header: "DEC(J2000)", unit: degree, format: dms, kind: measured, uncertainty: { form: none_reported } }
+    rows:
+      - ["CL-S (MS0302+1659)", "03:05:31.49", "+17:10:16.32"]
+      - ["CL-E (CL0303+1706)", "03:06:18.98", "+17:18:33.91"]
+      - ["CL-N (MS0302+1717)", "03:05:17.81", "+17:28:37.64"]
+values:
+  redshift:
+    value: 0.42
+    unit: dimensionless
+    kind: estimated
+    uncertainty: { form: none_reported }
+    cite:
+      paper: kaiser-1998
+      sentence: "The target field, centered roughly on RA = 3h5m24s.0, DEC = 17°18′0″.0, (J2000) contains three prominent clusters in a supercluster at z ≃ 0.42."
+      page: 4
+  redshift_cl_e:
+    value: 0.418
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite:
+      paper: kaiser-1998
+      sentence: "It has a redshift of z = 0.418, a velocity dispersion σv = 912 km/s, and was the the target of an Einstein IPC pointed observation."
+      page: 4
+    note: "The redshift of CL0303+1706 (CL-E), from Dressler & Gunn."
+  redshift_cl_s:
+    value: 0.426
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: &emss
+      paper: kaiser-1998
+      sentence: "Analysis of the IPC image and optical follow up by the EMSS team (Gioia et al. 1990; Stocke et al. 1991; Gioia & Luppino 1994) revealed the presence of the two neighboring clusters MS0302+1659 and MS0302+1717 with redshifts z = 0.426, 0.425 and X-ray luminosities LX ≃ 5.0 × 10^44 h50^-2 erg/s 4.3 × 10^44 h50^-2 erg/s."
+      page: 4
+    note: "The redshift of MS0302+1659 (CL-S), from the EMSS team."
+  redshift_cl_n:
+    value: 0.425
+    unit: dimensionless
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: *emss
+    note: "The redshift of MS0302+1717 (CL-N), from the EMSS team."
+  sky_extent:
+    value: 30
+    unit: arcminute
+    kind: estimated
+    uncertainty: { form: upper_limit }
+    cite:
+      paper: kaiser-1998
+      sentence: "Also, the whole system fits conveniently within the approximately 30′ × 30′ field of view of the UH8K camera."
+      page: 5
+    note: "The system fits within the camera's field, so each side of it is an upper bound on the system's extent on the sky."
+disputes: []
+notes: >-
+  The members are the three clusters of Table 1 at the peaks of their smoothed ROSAT HRI images,
+  in J2000. Table 1 calls them CL-S, CL-E and CL-N, which the paper ties to MS0302+1659,
+  CL0303+1706 and MS0302+1717. Table 1 gives no redshifts; each cluster's redshift is cited from
+  the introduction, which quotes the discovery papers, and the members are placed at the
+  supercluster's redshift, the one the paper gives the whole system. The Dressler-Gunn cluster
+  lies in front of the two EMSS clusters along the line of sight. The X-ray luminosities, masses
+  and mass-to-light ratios are in units univ-model does not have and are left out, as are the
+  separations, which the paper prints with their numbers glued to their units.

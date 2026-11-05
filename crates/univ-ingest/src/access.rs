@@ -4,16 +4,17 @@
 use sha2::{Digest, Sha256};
 use url::form_urlencoded::Serializer;
 
-use crate::source::{Access, SourceDefinition};
+use crate::fetch::Ask;
+use crate::source::{Access, SourceDefinition, TapRun};
 use crate::table::TableReader;
 
-/// One chunk of a query: its name in events and provenance, its file on disk, and what is
-/// appended to each mirror to ask for it.
+/// One chunk of a query: its name in events and provenance, its file on disk, and how each
+/// mirror is asked for it.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ChunkRequest {
     pub item: String,
     pub file: String,
-    pub suffix: String,
+    pub ask: Ask,
 }
 
 /// The chunk requests of a query source, in order; none for a file source.
@@ -54,12 +55,12 @@ pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
                         }
                         None => "the whole table".to_owned(),
                     };
-                    request(item, i, "tsv", format!("?{}", query.finish()))
+                    request(item, i, "tsv", Ask::Get(format!("?{}", query.finish())))
                 })
                 .collect()
         }
         Access::SkyserverSql { query, chunks, .. } | Access::Tap { query, chunks, .. } => {
-            suffix_for(&definition.access).map_or_else(Vec::new, |s| split(query, *chunks, s))
+            ask_for(&definition.access).map_or_else(Vec::new, |a| split(query, *chunks, a))
         }
         Access::Files { .. } | Access::Repository { .. } => Vec::new(),
     }
@@ -101,66 +102,67 @@ fn vizier_query(
 }
 
 /// The chunks of a query whose text holds `{chunk}` and `{chunks}`.
-fn split(query: &str, chunks: u32, suffix: fn(&str) -> String) -> Vec<ChunkRequest> {
+fn split(query: &str, chunks: u32, ask: fn(&str) -> Ask) -> Vec<ChunkRequest> {
     (0..chunks)
         .map(|i| {
             let text = query
                 .replace("{chunks}", &chunks.to_string())
                 .replace("{chunk}", &i.to_string());
-            request(
-                format!("chunk {} of {chunks}", i + 1),
-                i,
-                "csv",
-                suffix(&text),
-            )
+            request(format!("chunk {} of {chunks}", i + 1), i, "csv", ask(&text))
         })
         .collect()
 }
 
 /// A chunk request whose file name carries a digest of what it asks, so that a chunk kept from
 /// a query split another way is never taken for one of this split.
-fn request(
-    item: String,
-    index: impl std::fmt::Display,
-    extension: &str,
-    suffix: String,
-) -> ChunkRequest {
-    let digest = Sha256::digest(suffix.as_bytes());
+fn request(item: String, index: impl std::fmt::Display, extension: &str, ask: Ask) -> ChunkRequest {
+    let digest = Sha256::digest(ask.suffix().as_bytes());
     let tag = crate::fetch::hex(&digest[..4]);
     ChunkRequest {
         item,
         file: format!("chunk-{index:0>4}-{tag}.{extension}"),
-        suffix,
+        ask,
     }
 }
 
-/// What is appended to a mirror to send a query of `access`, for the methods that take one.
-fn suffix_for(access: &Access) -> Option<fn(&str) -> String> {
+/// How a mirror is asked a query of `access`, for the methods that take one.
+fn ask_for(access: &Access) -> Option<fn(&str) -> Ask> {
     match access {
-        Access::SkyserverSql { .. } => Some(skyserver_suffix),
-        Access::Tap { .. } => Some(tap_suffix),
+        Access::SkyserverSql { .. } => Some(skyserver),
+        Access::Tap { run, .. } => Some(match run {
+            TapRun::Sync => tap,
+            TapRun::Async => tap_job,
+        }),
         Access::VizierTsv { .. } | Access::Files { .. } | Access::Repository { .. } => None,
     }
 }
 
-fn skyserver_suffix(sql: &str) -> String {
+fn skyserver(sql: &str) -> Ask {
     let mut q = Serializer::new(String::new());
     q.append_pair("cmd", sql);
     q.append_pair("format", "csv");
-    format!("?{}", q.finish())
+    Ask::Get(format!("?{}", q.finish()))
 }
 
-fn tap_suffix(adql: &str) -> String {
+fn tap(adql: &str) -> Ask {
+    Ask::Get(format!("/sync?{}", tap_form(adql)))
+}
+
+fn tap_job(adql: &str) -> Ask {
+    Ask::Job(format!("{}&PHASE=RUN", tap_form(adql)))
+}
+
+fn tap_form(adql: &str) -> String {
     let mut q = Serializer::new(String::new());
     q.append_pair("REQUEST", "doQuery");
     q.append_pair("LANG", "ADQL");
     q.append_pair("FORMAT", "csv");
     q.append_pair("QUERY", adql);
-    format!("/sync?{}", q.finish())
+    q.finish()
 }
 
 /// The request for the number of rows a source's chunks must hold, where its definition gives
-/// a count query.
+/// a count query. A count is one row, asked at once even of a source whose chunks run as jobs.
 #[must_use]
 pub fn count_request(definition: &SourceDefinition) -> Option<ChunkRequest> {
     let (Access::SkyserverSql {
@@ -172,13 +174,11 @@ pub fn count_request(definition: &SourceDefinition) -> Option<ChunkRequest> {
     else {
         return None;
     };
-    let suffix = suffix_for(&definition.access)?;
-    Some(request(
-        "row count".to_owned(),
-        "count",
-        "csv",
-        suffix(count),
-    ))
+    let ask = match &definition.access {
+        Access::Tap { .. } => tap,
+        _ => ask_for(&definition.access)?,
+    };
+    Some(request("row count".to_owned(), "count", "csv", ask(count)))
 }
 
 /// The single number a count query answered.

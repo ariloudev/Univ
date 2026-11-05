@@ -1,0 +1,36 @@
+# HD 40657 (HR 2113), K2III variable: Hipparcos-2 parallax error just above a tenth; Gaia EDR3 has a parallax, but its RUWE is above 1.4, so unplaced.
+hip: 28413
+name: HD 40657
+alternative_names: ["HR 2113", "NSV 2770", "BD-03 1256"]
+papers:
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue table gaiaedr3.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-edr3-2021.txt"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ARI Heidelberg TAP mirror of the Gaia archive (ESA's archive returned HTTP 503); queries and rows in texts/gaia-dr2-2018.txt"
+unplaced: "no usable distance: the Gaia EDR3 parallax comes from a solution with a RUWE above the threshold of review rule B, Gaia DR2, Gaia EDR3 and Hipparcos-2 disagree beyond their errors, and no orbital, group or modelling distance was found"
+disputes:
+  - claim: "Gaia EDR3 gives source 3024622798567336064 a parallax of 9.781727816501277 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 3024622798567336064", column: "parallax", cell: "9.781727816501277" }
+  - claim: "Its Gaia EDR3 parallax error is 0.24730511 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 3024622798567336064", column: "parallax_error", cell: "0.24730511" }
+  - claim: "The EDR3 solution has a RUWE of 3.82158, above the review threshold of rule B, so the single-star solution is unreliable."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 3024622798567336064", column: "ruwe", cell: "3.82158" }
+  - claim: "Gaia DR2 gives source 3024622798566818560, its best neighbour of HIP 28413, a parallax of 11.296817834951389 mas, well above the EDR3 value."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 3024622798566818560", column: "parallax", cell: "11.296817834951389" }
+  - claim: "Its Gaia DR2 parallax error is 0.2632838118620651 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 3024622798566818560", column: "parallax_error", cell: "0.2632838118620651" }
+notes: >-
+  The EDR3 source is the Gaia DR3 identifier SIMBAD gives for HD 40657 and lies at the Hipparcos position. The
+  table gaiaedr3.hipparcos2_best_neighbour has no row for this star. The Hipparcos-2 parallax is smaller than
+  either Gaia value. Its three trigonometric parallaxes disagree beyond their errors, and the EDR3 fit is poor.
+  No other published distance was found.

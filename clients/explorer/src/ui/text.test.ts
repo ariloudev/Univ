@@ -20,6 +20,9 @@ describe("the words for an object's values", () => {
     expect(pointText({ id: 7, domain: "nearby_galaxies", place: [0.7468, 0, 0], distanceMpc: 0.7468, source: "Cosmicflows-4", kind: "measured" })).toBe(
       "7 · nearby galaxies · 747 kpc (2.44 million ly) · Cosmicflows-4 · measured",
     );
+    const star = { id: 8, domain: "stars", place: [1.68e-4, 0, 0] as [number, number, number], distanceMpc: 1.68e-4, source: "Researched star distances", kind: "estimated" };
+    expect(pointText({ ...star, colour: { index: 1.85, bands: "B-V" } })).toMatch(/ · estimated · B−V 1\.85$/);
+    expect(pointText({ ...star, colour: { index: -0.04, bands: "BP-RP" } })).toMatch(/ · BP−RP −0\.04$/);
   });
 });
 

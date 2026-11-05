@@ -3,7 +3,7 @@
 mod common;
 
 use common::{accept, item, keep, rig, source};
-use univ_ingest::fetch::Fetched;
+use univ_ingest::fetch::{Ask, Fetched};
 use univ_ingest::provenance::{FILE, Provenance};
 use wiremock::matchers::method;
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -24,7 +24,7 @@ async fn the_provenance_lists_each_payload_with_its_digest_retrieval_time_and_ur
             .chunk(
                 &item(&format!("chunk {n}"), &dest),
                 &[server.uri()],
-                &format!("/q?chunk={n}"),
+                &Ask::Get(format!("/q?chunk={n}")),
                 &accept,
                 &keep,
             )

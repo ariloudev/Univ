@@ -1,0 +1,77 @@
+# Hyperion: a proto-supercluster of at least seven density peaks at z ~ 2.45 in the COSMOS field.
+name: Hyperion Proto-supercluster
+alternative_names: ["Hyperion"]
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: cucciati-2018
+    reference: "Cucciati, Lemaux, Zamorani, Le Fèvre, Tasca, Hathi, Lee, Bardelli, Cassata, Garilli, Le Brun, Maccagni, Pentericci, Thomas, Vanzella, Zucca, Lubin, Amorin, Cassarà, Cimatti, Talia, Vergani, Koekemoer, Pforr & Salvato 2018, A&A 619, A49"
+    title: "The progeny of a Cosmic Titan: a massive multi-component proto-supercluster in formation at z=2.45 in VUDS"
+    doi: 10.1051/0004-6361/201833655
+    arxiv: "1806.06073"
+    read: "arXiv PDF text of 1806.06073; Table 1 read from its text layer"
+geometry:
+  kind: members
+  members:
+    frame: equatorial_equinox_unstated
+    tracer: density peak (barycentre of a peak of the galaxy overdensity field, within its 5σδ contour)
+    source: { paper: cucciati-2018, table: "1" }
+    columns:
+      - { name: lon, header: "RApeak [deg]", unit: degree, kind: inferred, uncertainty: { form: none_reported } }
+      - { name: lat, header: "Decpeak [deg]", unit: degree, kind: inferred, uncertainty: { form: none_reported } }
+      - { name: redshift, header: "zpeak", unit: dimensionless, kind: inferred, uncertainty: { form: none_reported } }
+    rows:
+      - ["peak [1]", 150.0937, 2.4049, 2.468]
+      - ["peak [2]", 149.9765, 2.1124, 2.426]
+      - ["peak [3]", 149.9996, 2.2537, 2.444]
+      - ["peak [4]", 150.2556, 2.3423, 2.469]
+      - ["peak [5]", 150.2293, 2.3381, 2.507]
+      - ["peak [6]", 150.3316, 2.2427, 2.492]
+      - ["peak [7]", 149.9581, 2.2187, 2.423]
+values:
+  extent_short:
+    value: 60
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: &cosmology
+      cosmology: "comoving; flat ΛCDM, Ωm = 0.25, ΩΛ = 0.75, H0 = 70 km/s/Mpc"
+      cite:
+        paper: cucciati-2018
+        sentence: "Except where explicitly stated otherwise, we assume a flat ΛCDM cosmology with Ωm = 0.25, ΩΛ = 0.75, H0 = 70 km s−1 Mpc−1 and h = H0/100."
+    cite: &volume
+      paper: cucciati-2018
+      sentence: "This proto-structure, extended over a volume of ∼60 × 60 × 150 comoving Mpc3, has a very complex shape, and includes several density peaks within 2.42 < z < 2.51, possibly connected by filaments, that are more dense than the average volume density."
+    note: "Each of the two shorter sides of the volume the structure extends over; the paper does not name their axes."
+  extent_long:
+    value: 150
+    unit: megaparsec
+    kind: estimated
+    uncertainty: { form: none_reported }
+    assumes: *cosmology
+    cite: *volume
+    note: "The longest side of the volume the structure extends over; the paper does not name its axis."
+  redshift_low:
+    value: 2.42
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: *volume
+    note: "The lower end of the redshift range of the density peaks."
+  redshift_high:
+    value: 2.51
+    unit: dimensionless
+    kind: inferred
+    uncertainty: { form: none_reported }
+    cite: *volume
+    note: "The upper end of the redshift range of the density peaks."
+disputes: []
+notes: >-
+  The members are the barycentres of the seven density peaks of Table 1, ranked by decreasing
+  mass, each the pixel-weighted centre of a peak of the three-dimensional galaxy overdensity
+  field that the paper reconstructs from VUDS and zCOSMOS spectroscopic redshifts and COSMOS
+  photometric redshifts. The paper prints the barycentres in degrees without an equinox. The
+  peaks are said to be possibly connected by filaments. The total and per-peak masses (in solar
+  masses, which univ-model has no unit for), the spectroscopic member counts, the overdensities
+  and the peak volumes of Table 1 are left out.

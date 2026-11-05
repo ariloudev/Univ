@@ -1,0 +1,37 @@
+# HD 135160, B0.5V Be star in a visual double: Hipparcos-2 parallax error above a tenth; Gaia EDR3 parallax with RUWE above the review threshold; unplaced.
+hip: 74750
+name: HD 135160
+alternative_names: ["CPD-60 5698", "WDS J15166-6054A"]
+papers:
+  - id: gaia-edr3-2021
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Biermann et al. 2021, A&A 649, A1"
+    title: "Gaia Early Data Release 3. Summary of the contents and survey properties"
+    bibcode: 2021A&A...649A...1G
+    doi: 10.1051/0004-6361/202039657
+    arxiv: "2012.01533"
+    read: "catalogue tables gaiaedr3.gaia_source and gaiadr3.gaia_source (same astrometry) queried by ADQL on the ESA Gaia archive TAP; queries and rows in texts/gaia-edr3-2021.txt (batch D section)"
+  - id: gaia-dr2-2018
+    reference: "Gaia Collaboration, Brown, Vallenari, Prusti, de Bruijne, Babusiaux, Bailer-Jones et al. 2018, A&A 616, A1"
+    title: "Gaia Data Release 2. Summary of the contents and survey properties"
+    bibcode: 2018A&A...616A...1G
+    doi: 10.1051/0004-6361/201833051
+    arxiv: "1804.09365"
+    read: "catalogue table gaiadr2.gaia_source queried by ADQL on the ESA Gaia archive TAP; queries and rows in texts/gaia-dr2-2018.txt (batch D section)"
+unplaced: "no usable distance: the Gaia EDR3 parallax comes from a solution whose RUWE is above the threshold of review rule B, the Hipparcos-2 parallax has an error above a tenth of its value, and no orbital, group or modelling distance was found"
+disputes:
+  - claim: "Gaia EDR3 gives source 5875492519139336704 a parallax of 1.2190287814742715 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 5875492519139336704", column: "parallax", cell: "1.2190287814742715" }
+  - claim: "Its Gaia EDR3 parallax error is 0.07487285 mas."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 5875492519139336704", column: "parallax_error", cell: "0.07487285" }
+  - claim: "The EDR3 solution has a RUWE of 1.4900463, above the review threshold of rule B."
+    cite: { paper: gaia-edr3-2021, table: "gaiaedr3.gaia_source", row: "source 5875492519139336704", column: "ruwe", cell: "1.4900463" }
+  - claim: "Gaia DR2 gave the same source a parallax of 1.0380905811776857 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 5875492519139336704", column: "parallax", cell: "1.0380905811776857" }
+  - claim: "Its Gaia DR2 parallax error is 0.1267707682606368 mas."
+    cite: { paper: gaia-dr2-2018, table: "gaiadr2.gaia_source", row: "source 5875492519139336704", column: "parallax_error", cell: "0.1267707682606368" }
+notes: >-
+  SIMBAD resolves HIP 74750 to HD 135160, a Be star and the primary of the visual double WDS J15166-6054;
+  its Gaia DR3 identifier is source 5875492519139336704, at the Hipparcos-2 position. The fainter
+  source 5875492519159307392 next to it has only a two-parameter solution. The EDR3 RUWE is only just above
+  the review threshold, but the rule is applied as written. The star is not in the de Zeeuw et al. lists of
+  the nearby OB associations, and no other published distance was found.

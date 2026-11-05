@@ -24,6 +24,7 @@ featureGroups:
       - 01a19f22-2ad9-716e-876f-18530217fadb
       - 01a19f22-2ad9-716e-876f-186219f4e104
       - 01a19f22-2ad9-716e-876f-187ab1b6831a
+      - 01a1a825-fb4e-702c-a84f-bf71f70beb40
   - key: 01a19f1a-685d-7357-b67e-d65bef1ca65c
     slug: identity
     name: "Identity"

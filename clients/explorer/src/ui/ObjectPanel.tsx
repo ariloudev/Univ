@@ -1,6 +1,7 @@
 import { type ObjectRecord, distancesOf } from "../api/objects.ts";
 import type { ChosenObject } from "./useChosen.ts";
-import { headingOf, natureOf, preferredText, valueText, words } from "./text.ts";
+import { colourIndices, estimatedClass, publishedTypes } from "./starText.ts";
+import { bandsText, headingOf, natureOf, preferredText, valueText, words } from "./text.ts";
 
 /** The chosen object's record: its names, its preferred and other distances, its frame. */
 export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObject; onChoose: (id: number) => void; onClose: () => void }) {
@@ -92,7 +93,64 @@ function Record({ record }: { record: ObjectRecord }) {
           </ul>
         </div>
       )}
+      <Star record={record} />
+      <Papers record={record} />
       <Frame record={record} />
+    </div>
+  );
+}
+
+/** A star's published spectral types, its colour indices, and the class its colour index
+ * suggests where no source publishes a type. */
+function Star({ record }: { record: ObjectRecord }) {
+  const types = publishedTypes(record);
+  const colours = colourIndices(record);
+  const estimated = estimatedClass(types, colours);
+  if (types.length === 0 && colours.length === 0) return null;
+  return (
+    <div data-testid="star">
+      <h3 className="text-xs text-dim">Spectral type and colour</h3>
+      <ul>
+        {types.map((t) => (
+          <li key={`t:${t.source}:${t.text}`}>
+            {t.text} <span className="text-dim">({t.kind}, {t.source})</span>
+          </li>
+        ))}
+        {estimated === undefined ? null : (
+          <li>
+            Estimated class {estimated}
+          </li>
+        )}
+        {colours.map((m) => (
+          <li key={`c:${m.entry}:${m.n}`}>
+            {bandsText(m.band ?? "colour index")} {valueText(m.native)}{" "}
+            <span className="text-dim">
+              ({m.kind_of_value}, {m.source}
+              {m.derived_from === null || m.derived_from === undefined ? "" : `, derived from ${m.derived_from.join(" − ")}`})
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** The papers each researched entry's values come from. */
+function Papers({ record }: { record: ObjectRecord }) {
+  const researched = record.entries.filter((e) => (e.references ?? []).length > 0);
+  if (researched.length === 0) return null;
+  return (
+    <div data-testid="papers">
+      <h3 className="text-xs text-dim">Papers of the researched values</h3>
+      <ul>
+        {researched.flatMap((e) =>
+          (e.references ?? []).map((r) => (
+            <li key={`${e.source}:${r.citation}`}>
+              {r.citation} <span className="text-dim">({[r.bibcode, r.doi, e.source].filter((x) => x !== null && x !== undefined).join(", ")})</span>
+            </li>
+          )),
+        )}
+      </ul>
     </div>
   );
 }

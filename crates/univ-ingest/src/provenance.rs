@@ -62,6 +62,7 @@ impl Provenance {
     ///
     /// Fails when the file cannot be written.
     pub fn write(&self, dir: &Path) -> std::io::Result<()> {
+        std::fs::create_dir_all(dir)?;
         crate::yaml::write(&dir.join(FILE), self)
     }
 

@@ -14,6 +14,7 @@ use univ_ingest::lock::StateLock;
 use univ_ingest::release::release_dir;
 use univ_ingest::source::Access;
 use univ_ingest::state::{State, pending};
+use univ_ingest::structures::read_all_named;
 use univ_ingest::tiles::sha256;
 use univ_model::release::{ReleaseManifest, keys};
 use wiremock::matchers::query_param;
@@ -73,6 +74,14 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
     let log = String::from_utf8(run.stderr).unwrap();
     assert!(run.status.success(), "{log}");
     let dir = release_dir(out.path(), 1);
+    // The repository's structure files: those whose papers place them nowhere are not indexed.
+    let structures = read_all_named(&workspace().join("structures")).unwrap();
+    let unplaced: Vec<&str> = structures
+        .iter()
+        .filter(|(_, s)| s.unplaced.is_some())
+        .map(|(id, _)| id.as_str())
+        .collect();
+    let (all, first) = (structures.len(), unplaced[0]);
     for line in [
         "Z Stage tiles: 3 items\n".to_owned(),
         // The build's phases, each a step of its six.
@@ -88,11 +97,16 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
              {}\n",
             dir.join("manifest.yaml").display()
         ),
-        "Z Step build: cell index: 16 placed objects, 24 of 26 structures with a bounding box\n"
-            .to_owned(),
-        "Z Step build: cell index: 2 structures not indexed: hercules-corona-borealis-great-wall \
-         (it publishes no position or geometry); "
-            .to_owned(),
+        format!(
+            "Z Step build: cell index: 16 placed objects, {} of {all} structures with a bounding \
+             box\n",
+            all - unplaced.len()
+        ),
+        format!(
+            "Z Step build: cell index: {} structures not indexed: {first} (it publishes no \
+             position or geometry); ",
+            unplaced.len()
+        ),
         "Z Step build: provisional redistribution review, judged again before any public \
          deployment: cosmicflows-4, hipparcos-2007, mcconnachie-2012, researched-structures, \
          twomrs, updated-nearby-galaxies\n"

@@ -74,11 +74,13 @@ fn refusal(text: &str) -> StructureError {
 #[test]
 fn every_ported_structure_loads() {
     let structures = read_all(&repository_structures()).unwrap();
-    assert_eq!(
-        structures.len(),
-        26,
-        "the 26 structures of the newsroom atlas"
-    );
+    let files = fs::read_dir(repository_structures())
+        .unwrap()
+        .filter(|e| e.as_ref().unwrap().path().extension() == Some("yaml".as_ref()))
+        .count();
+    // The newsroom atlas's 26, and those release 8 adds.
+    assert!(structures.len() > 26, "{} structures", structures.len());
+    assert_eq!(structures.len(), files, "every structure file loads");
     let names: HashSet<&str> = structures.iter().map(|s| s.name.as_str()).collect();
     assert_eq!(names.len(), structures.len(), "names are unique");
 }
@@ -426,4 +428,28 @@ fn a_structure_names_its_scale_domain_or_is_refused() {
         refusal(&VALID.replace("scale_domain: cosmic_web", "scale_domain: superclusters"));
     assert_eq!(unknown.field, "scale_domain", "{unknown}");
     assert_eq!(read(VALID).unwrap().scale_domain, ScaleDomain::CosmicWeb);
+}
+
+#[test]
+fn extents_name_lengths_or_velocities_among_the_values_about_a_placed_position() {
+    let with = |extents: &str| VALID.replace("values:\n", &format!("{extents}values:\n"));
+    let ok = read(&with("extents: { x: extent, y: extent, z: extent }\n")).unwrap();
+    assert_eq!(ok.extents.unwrap().names(), ["extent"; 3]);
+    let missing = refusal(&with("extents: { x: extent, y: depth, z: extent }\n"));
+    assert_eq!(missing.field, "extents.y");
+    assert!(missing.problem.contains("depth"), "{}", missing.problem);
+    let angle = with("extents: { x: extent, y: extent, z: extent }\n").replace(
+        "unit: kilometre_per_second\n    kind: estimated",
+        "unit: degree\n    kind: estimated",
+    );
+    assert_eq!(refusal(&angle).field, "extents.x");
+    let text = with("extents: { x: extent, y: extent, z: extent }\n");
+    let (head, tail) = (
+        &text[..text.find("position:").unwrap()],
+        &text[text.find("extents:").unwrap()..],
+    );
+    let unplaced = refusal(&format!(
+        "{head}unplaced: \"No position is published.\"\n{tail}"
+    ));
+    assert_eq!(unplaced.field, "extents");
 }

@@ -46,7 +46,8 @@ fn a_volume_query_finds_objects_structures_by_their_shapes_and_tiles_to_fetch() 
     let page = json(response);
     assert_eq!(
         of_type(&page, "object").len(),
-        16,
+        // 16 by their catalogues, and HIP 1 by its SIMULATED star file.
+        17,
         "every placed object of the fixture release"
     );
     let structures: Vec<&str> = of_type(&page, "structure")

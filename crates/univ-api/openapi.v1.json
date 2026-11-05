@@ -380,6 +380,13 @@
       "Derivation": {
         "description": "How a structure's placed shape was derived from its published numbers:\n`structure_details.derivation`.",
         "properties": {
+          "at_least": {
+            "description": "Where its papers give the shape as a lower limit on the structure's extent, such as\n\"at least 25° × 20°\": a JSON pointer to that citation in the record. Absent when they do\nnot, so the structure is known to reach as far as its shape and no further.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "cosmology": {
             "description": "The cosmology it is placed under: always `release`.",
             "type": "string"
@@ -387,6 +394,17 @@
           "distance": {
             "$ref": "#/components/schemas/DistanceDerivation",
             "description": "How its distance was found."
+          },
+          "extents": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Extents",
+                "description": "For a structure placed at a point whose papers give its extent along each axis of a frame\nbut not where it ends: those extents about the point. Its bounds stay the point's."
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "frame_chain": {
             "description": "Each move of frame, cited as an object's derivation cites it.",
@@ -890,6 +908,13 @@
               }
             ]
           },
+          "references": {
+            "description": "The papers a researched entry's values come from, the paper of its distance first;\nempty for an entry of a catalogue, which its source's citation covers.",
+            "items": {
+              "$ref": "#/components/schemas/PaperReference"
+            },
+            "type": "array"
+          },
           "resolved_by": {
             "$ref": "#/components/schemas/Resolution",
             "description": "How it was resolved into the object: the anchor, a published cross-identification, or a\nmatch with its method, separation, line-of-sight difference and confidence, each through\nthe entry it names."
@@ -916,6 +941,46 @@
           "identifier",
           "resolved_by",
           "flags"
+        ],
+        "type": "object"
+      },
+      "Extents": {
+        "description": "A structure's published extents along the axes of the frame they were published in, about\nits point, where its papers do not say where it ends. The point need not be its middle.",
+        "properties": {
+          "axes": {
+            "description": "Each axis's whole extent as a vector in the ICRS, in the shape's unit, in the order of\nthe frame's axes: a line through the point runs half of it each way.",
+            "items": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
+          },
+          "frame": {
+            "$ref": "#/components/schemas/Frame",
+            "description": "The frame whose axes the extents were published along."
+          },
+          "from": {
+            "description": "JSON pointers to the cited values each axis comes from, in the same order.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "method": {
+            "description": "How each published extent became a length.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "frame",
+          "axes",
+          "from",
+          "method"
         ],
         "type": "object"
       },
@@ -3118,6 +3183,31 @@
           "refused"
         ],
         "type": "string"
+      },
+      "PaperReference": {
+        "description": "A paper a researched entry's values come from.",
+        "properties": {
+          "bibcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "citation": {
+            "description": "Authors, year, journal, volume and page, such as `Joyce et al. 2020, ApJ 902, 63`.",
+            "type": "string"
+          },
+          "doi": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "citation"
+        ],
+        "type": "object"
       },
       "Payload": {
         "description": "One payload fetched.",

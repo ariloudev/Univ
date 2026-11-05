@@ -75,8 +75,8 @@
   "levels": [
     {
       "level": 0,
-      "edge": 128.0,
-      "step": 0.001953125,
+      "edge": 512.0,
+      "step": 0.0078125,
       "fraction": 1.0
     }
   ],
@@ -89,11 +89,19 @@
     "max_depth": 16,
     "statement": "Each scale domain is an octree over its placed objects' derived ICRS Cartesian positions. A node reached by more points than the split threshold is split, down to the maximum depth. Every split node of a level keeps the same fraction of the points reaching it, an even random subsample, the fullest keeping the level points; the rest go to its children, and a leaf keeps all its points."
   },
-  "points": 1,
-  "radius": 47.96163069544364,
+  "points": 2,
+  "radius": 210.0,
   "sources": [
     {
       "index": 0,
+      "id": "researched-star-distances",
+      "role": "distance",
+      "title": "Researched star distances",
+      "citation": "None for the source as a whole: each star file gives the full citation, with bibcode or DOI, of the papers its values come from, and the star's entry names those papers.",
+      "credit": "Cite the papers each star file lists."
+    },
+    {
+      "index": 1,
       "id": "hipparcos-2007",
       "role": "distance_and_position",
       "title": "Hipparcos, the new reduction (van Leeuwen 2007)",
@@ -107,20 +115,20 @@
       "level": 0,
       "bounds": {
         "min": [
-          -64.0,
-          -64.0,
-          -64.0
+          -256.0,
+          -256.0,
+          -256.0
         ],
         "max": [
-          64.0,
-          64.0,
-          64.0
+          256.0,
+          256.0,
+          256.0
         ]
       },
-      "points": 1,
-      "sampled_from": 1,
-      "bytes": 68,
-      "sha256": "c13d4cea2f70597bc2ebbb79a31f2b0a1837d2b967fdc8f95880299f9652cb07"
+      "points": 2,
+      "sampled_from": 2,
+      "bytes": 88,
+      "sha256": "e241912c8dd02d51944a4b7ed7b696e38c159180f0464e98a8c463a783afb667"
     }
   ]
 }

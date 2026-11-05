@@ -142,6 +142,9 @@ pub fn entry_row(
     if let Some(t) = &entry.spectral_type {
         more.insert("spectral_type".into(), to_json(t)?);
     }
+    if !entry.references.is_empty() {
+        more.insert("references".into(), to_json(&entry.references)?);
+    }
     row.extra = extra(&more)?;
     Ok(row)
 }

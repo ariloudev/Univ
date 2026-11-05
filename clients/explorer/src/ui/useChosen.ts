@@ -5,8 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ApiError } from "../api/client.ts";
 import { type Choices, type ObjectRecord, nameOf, objectOf, placeOf } from "../api/objects.ts";
-import { viewingDistance } from "../scene/controls.ts";
-import { norm } from "../scene/vec.ts";
+import { setInAddress } from "./address.ts";
 import type { World } from "./useWorld.ts";
 
 /** What the panel knows of the chosen object. */
@@ -40,14 +39,8 @@ export function objectInAddress(search: string): { id: number; as: string | unde
 }
 
 /** The page's address naming `request`'s object and the name it was found by, or no object. */
-function keepInAddress(request: Request | undefined): void {
-  const url = new URL(location.href);
-  url.searchParams.delete("as");
-  if (request === undefined) url.searchParams.delete("object");
-  else url.searchParams.set("object", String(request.id));
-  if (request?.as !== undefined) url.searchParams.set("as", request.as);
-  history.replaceState(history.state, "", url);
-}
+const keepInAddress = (request: Request | undefined): void =>
+  setInAddress({ object: request === undefined ? undefined : String(request.id), as: request?.as });
 
 function failure(id: number, error: unknown): ChosenObject {
   if (error instanceof ApiError) return { kind: "failed", id, status: error.status, title: error.title };
@@ -59,7 +52,7 @@ function arrive(world: World, record: ObjectRecord, fly: boolean): void {
   const place = placeOf(record);
   world.chosen = place;
   world.controller.invalidate();
-  if (fly && place !== undefined) world.controller.flyTo(place, viewingDistance(norm(place)));
+  if (fly && place !== undefined) world.controller.approach(place);
 }
 
 /** The chosen object of `release` in `world`, and the way to choose another. */

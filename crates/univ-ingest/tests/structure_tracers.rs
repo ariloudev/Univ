@@ -173,3 +173,86 @@ fn saraswati_s_cluster_redshifts_are_estimated_as_some_are_photometric() {
         assert!(slope > 0.0 && (far - m.distance_mpc) < 0.01 * m.distance_mpc);
     }
 }
+
+/// A cluster table that gives each member's supergalactic X, Y and Z, as Tully 1987's Table 1
+/// does, beside its redshift.
+const SUPERGALACTIC: &str = r#"
+name: Test Supercluster
+kind: supercluster
+status: observed
+scale_domain: cosmic_web
+papers:
+  - id: tully-1987
+    reference: "Tully 1987, ApJ 323, 1"
+    title: "More about clustering on a scale of 0.1 c"
+    doi: 10.1086/165803
+    read: "ADS scan"
+geometry:
+  kind: members
+  members:
+    frame: supergalactic
+    tracer: galaxy cluster
+    source: { paper: tully-1987, table: "1" }
+    columns:
+      - { name: redshift, header: "z", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }
+      - { name: x, header: "SGX", unit: megaparsec, kind: inferred, uncertainty: { form: none_reported }, assumes: "h75^-1 Mpc: H0 = 75 km/s/Mpc" }
+      - { name: y, header: "SGY", unit: megaparsec, kind: inferred, uncertainty: { form: none_reported }, assumes: "h75^-1 Mpc: H0 = 75 km/s/Mpc" }
+      - { name: z, header: "SGZ", unit: megaparsec, kind: inferred, uncertainty: { form: none_reported }, assumes: "h75^-1 Mpc: H0 = 75 km/s/Mpc" }
+    rows:
+      - ["A1", 0.03, 0, 100, 0]
+notes: "A test structure."
+"#;
+
+#[test]
+fn a_member_given_by_cartesian_coordinates_lies_in_their_direction_at_its_redshift() {
+    let dir = tempfile::tempdir().unwrap();
+    let file = dir.path().join("test-supercluster.yaml");
+    std::fs::write(&file, SUPERGALACTIC).unwrap();
+    let s = Structure::read(&file).unwrap();
+    let release = Release::planck_2018();
+    let correction = CmbCorrection::new(DipoleModel::Planck2018);
+    let placer = FilePlacer::new(&release, &correction);
+    let lists = resolve_all(&[s], &NameIndex::new(&[]), 60.0, Some(&placer));
+    let list = &lists[0];
+    assert!(list.unplaced.is_empty(), "{:?}", list.unplaced);
+    let Some(Geometry::Members { members }) = list.shape.as_ref().map(|s| &s.geometry) else {
+        panic!("placed whole")
+    };
+    let Member::Tracer { at, .. } = &members[0] else {
+        panic!("a tracer")
+    };
+    // Along supergalactic +Y, at the comoving distance of its CMB-frame redshift.
+    let toward =
+        univ_model::position::between(Frame::Supergalactic, Frame::Icrs).apply([0.0, 1.0, 0.0]);
+    let record = &list.from_file[0];
+    let distance = univ_model::position::norm(*at);
+    assert!((distance - record.distance_mpc).abs() < 1e-9);
+    for (got, want) in at.iter().zip(toward) {
+        assert!(
+            (got / distance - want).abs() < 1e-12,
+            "{at:?} vs {toward:?}"
+        );
+    }
+    // A table with both a sky position and Cartesian coordinates is refused.
+    let both = SUPERGALACTIC.replace(
+        "    columns:\n",
+        "    columns:\n      - { name: lon, header: \"SGL\", unit: degree, kind: measured, uncertainty: { form: none_reported } }\n",
+    );
+    std::fs::write(&file, both).unwrap();
+    assert!(Structure::read(&file).is_err());
+    // Coordinates give only the direction, so a table without redshifts is refused, as are
+    // coordinates in two units.
+    let no_redshift = SUPERGALACTIC.replace(
+        "      - { name: redshift, header: \"z\", unit: dimensionless, kind: measured, uncertainty: { form: none_reported } }\n",
+        "",
+    ).replace("[\"A1\", 0.03, ", "[\"A1\", ");
+    std::fs::write(&file, no_redshift).unwrap();
+    assert!(Structure::read(&file).is_err());
+    let two_units = SUPERGALACTIC.replacen(
+        "{ name: z, header: \"SGZ\", unit: megaparsec",
+        "{ name: z, header: \"SGZ\", unit: megaparsec_over_h",
+        1,
+    );
+    std::fs::write(&file, two_units).unwrap();
+    assert!(Structure::read(&file).is_err());
+}

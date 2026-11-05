@@ -93,6 +93,7 @@ pub fn bare(src: &str, id: &str) -> CatalogueEntry {
         group_id: None,
         supergalactic_velocity: None,
         flags: BTreeMap::new(),
+        references: Box::default(),
     }
 }
 

@@ -1,0 +1,61 @@
+# gamma2 Velorum, WC8 + O7.5III-V Wolf-Rayet binary: Hipparcos-2 parallax error above a tenth of the parallax, no Gaia parallax.
+hip: 39953
+name: gamma2 Velorum
+alternative_names: ["gam02 Vel", "WR 11", "HD 68273", "Suhail al Muhlif"]
+papers:
+  - id: schmutz-2026
+    reference: "Schmutz, Hummel, Koenigsberger, Millour & Sanchez-Bermudez 2026, A&A (accepted), arXiv:2606.27265"
+    title: "Revised orbital parameters of the γ2 Velorum system"
+    doi: 10.48550/arXiv.2606.27265
+    arxiv: "2606.27265"
+    read: "arXiv PDF of 2606.27265v1 (accepted by A&A, manuscript aa60042-26; no journal bibcode yet, so the arXiv DOI is given), full text extracted with pypdf; abstract and Sect. 5 (PDF page 5) read"
+  - id: north-2007
+    reference: "North, Tuthill, Tango & Davis 2007, MNRAS 377, 415"
+    title: "γ2 Velorum: Orbital Solution and Fundamental Parameter Determination with SUSI"
+    bibcode: 2007MNRAS.377..415N
+    doi: 10.1111/j.1365-2966.2007.11608.x
+    arxiv: "astro-ph/0702375"
+    read: "arXiv PDF of astro-ph/0702375v1, full text extracted with pypdf; abstract read"
+  - id: maiz-apellaniz-2022
+    reference: "Maíz Apellániz, Barbá, Fernández Aranda, Pantaleoni González, Crespo Bellido, Sota & Alfaro 2022, A&A 657, A131"
+    title: "The Villafranca catalog of Galactic OB groups. II. From Gaia DR2 to EDR3 and ten new systems with O stars"
+    bibcode: 2022A&A...657A.131M
+    doi: 10.1051/0004-6361/202142364
+    arxiv: "2110.01464"
+    read: "arXiv PDF of 2110.01464v2, full text extracted with pypdf; Table 1 and Sect. 3.2.8 read"
+distance:
+  value: 346
+  unit: parsec
+  kind: measured
+  uncertainty: { form: symmetric, sigma: 7 }
+  cite:
+    paper: schmutz-2026
+    page: 5
+    sentence: "With the combined velocity amplitude K = 160 ± 3 km/s (Schmutz et al. 1997) and the measured angle separation of the major axis given in Tab. 3, a = 3.483 ± 0.008 mas, we derive a distance d = 346 ± 7 pc."
+  distance_kind: parallax
+  method: "orbital parallax: angular semimajor axis from VLT/GRAVITY and earlier interferometry combined with the double-lined spectroscopic velocity amplitude"
+disputes:
+  - claim: "North et al. derive 336^{+8}_{-7} pc from the earlier SUSI orbit."
+    cite:
+      paper: north-2007
+      page: 1
+      sentence: "In combination with the latest radial-velocity results, our orbital solution produces a distance of 336^{+8}_{-7} pc, significantly more distant than the Hipparcos estimation (Schaerer et al. 1997; van der Hucht et al. 1997)."
+  - claim: "The Gaia EDR3 γ Vel cluster (Villafranca O-024) lies at 336 ± 1 pc, as Schmutz et al. quote from Maíz Apellániz et al., and Schmutz et al. take this cluster distance as the most accurate one."
+    cite:
+      paper: schmutz-2026
+      page: 5
+      sentence: "Maíz Apellániz et al. (2022) have investigated the stars in the γ Vel cluster Villafranca O-024 and found 138 members at a distance of d_cluster = 336 ± 1 pc."
+  - claim: "Hipparcos astrometry gives 258 ± 35 pc."
+    cite:
+      paper: schmutz-2026
+      page: 5
+      sentence: "This conclusion is supported by Hipparcos astrometry (ESA 1997) γ2 Vel, which yielded d_Hip = 258 ± 35 pc, µα Hip = −5.93 ± 0.53 mas/a, and µδ Hip = 9.90 ± 0.43 mas/a."
+notes: >-
+  An orbital (interferometric plus double-lined spectroscopic) distance of the star itself, so the
+  brief's first category; the paper prints it as a distance in pc, not as a parallax in mas, so it
+  is recorded as distance. It is a preprint accepted by A&A and not yet in ADS when read. Schmutz
+  et al. find the difference from the cluster distance not significant and themselves "conclude
+  that the cluster distance represents the most accurate distance"; Maíz Apellániz et al. say the
+  cluster "includes γ2 Vel". The orbital value is kept here because the brief ranks the star's own
+  orbit first and the two agree; the cluster value is the alternative if group distances are
+  preferred.

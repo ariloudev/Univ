@@ -35,6 +35,12 @@ position:
     kind: reconstructed
     uncertainty: { form: none_reported }
     cite: *deepest
+# Its extents at isodensity -0.7 along the supergalactic axes, drawn about its position: the
+# paper gives no centre, so where the void ends on each side is unknown.
+extents:
+  x: extent_sgx_at_isodensity_minus_0_7
+  y: extent_sgy_at_isodensity_minus_0_7
+  z: extent_sgz_at_isodensity_minus_0_7
 values:
   density_at_deepest_minimum:
     value: -1.87

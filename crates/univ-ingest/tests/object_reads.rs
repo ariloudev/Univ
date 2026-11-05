@@ -36,7 +36,7 @@ fn find(
 fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
     // AC-131.
     let Decoded { pairs } = decoded();
-    let mut types = 0;
+    let (mut types, mut researched) = (0, 0);
     for (o, r) in pairs {
         assert_eq!(r.entries.len(), o.object.entries.len(), "{}", o.id.get());
         // A Hipparcos catalogue entry attaches to the Hipparcos-2 star of the same HIP number.
@@ -59,6 +59,8 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             assert_eq!(read.name, entry.name);
             assert_eq!(read.group_id, entry.group_id);
             assert_eq!(read.flags, entry.flags);
+            assert_eq!(read.references.as_slice(), &*entry.references);
+            researched += usize::from(!read.references.is_empty());
             assert_eq!(
                 read.spectral_type
                     .as_ref()
@@ -111,6 +113,10 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
     assert_eq!(
         types, 5,
         "the five Hipparcos catalogue entries read with their spectral types"
+    );
+    assert_eq!(
+        researched, 1,
+        "the simulated star file's entry reads with its paper"
     );
 }
 
