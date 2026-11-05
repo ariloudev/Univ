@@ -60,8 +60,8 @@ fn twomrs_rows_keep_cz_and_derive_heliocentric_and_cmb_redshifts() {
     // Row 1: 010.6847100 +41.2687500 00424433+4116074 -300 4 0.797 1991RC3.9.C...0000d.
     let m31 = entry(&n, "00424433+4116074");
     fk5(m31, 10.684_71, 41.268_75);
-    let v = m31.velocity.unwrap();
-    assert_eq!((v.native.value, sigma(&v)), (-300.0, 4.0));
+    let v = m31.velocity.as_deref().unwrap();
+    assert_eq!((v.native.value, sigma(v)), (-300.0, 4.0));
     let r = &m31.redshifts[0];
     assert_eq!(r.velocity.unwrap().value, -300.0);
     assert_eq!(r.cmb.measured.value, -300.0 / C);
@@ -73,7 +73,7 @@ fn twomrs_rows_keep_cz_and_derive_heliocentric_and_cmb_redshifts() {
     // Row 2: 011.8880600 -25.2888000 00473313-2517196 243 2 3.815 2004AJ....128...16K.
     let ngc253 = entry(&n, "00473313-2517196");
     fk5(ngc253, 11.888_06, -25.288_8);
-    assert_eq!(sigma(&ngc253.velocity.unwrap()), 2.0);
+    assert_eq!(sigma(ngc253.velocity.as_deref().unwrap()), 2.0);
     assert_eq!(ngc253.redshifts[0].cmb.measured.value, 243.0 / C);
 }
 
@@ -84,13 +84,13 @@ fn sixdfgs_rows_keep_cz_their_quality_and_magnitude() {
     // Row 1: 000.0107500 -23.3680278 g0000026-232205 19966 45 4 16.64.
     let g = entry(&n, "g0000026-232205");
     fk5(g, 0.010_75, -23.368_027_8);
-    assert_eq!(g.velocity.unwrap().native.value, 19_966.0);
+    assert_eq!(g.velocity.as_deref().unwrap().native.value, 19_966.0);
     // Worked in Python as for 2MRS: cos θ = -0.84315, z_cmb = 0.0654908544.
     assert!((g.redshifts[0].cmb.value.value - 0.065_490_854_4).abs() < 1e-9);
     assert_eq!(g.flags.get("q_cz").unwrap(), "4");
     // Row 5: 000.0184583 -0.0833333 g0000044-000500 5400 100 9 15.87.
     let g = entry(&n, "g0000044-000500");
-    assert_eq!(sigma(&g.velocity.unwrap()), 100.0);
+    assert_eq!(sigma(g.velocity.as_deref().unwrap()), 100.0);
     assert_eq!(g.flags.get("q_cz").unwrap(), "9");
     assert_eq!(g.magnitude.as_ref().unwrap().band, "bJmag");
 }
@@ -110,7 +110,7 @@ fn twompp_rows_keep_their_reference_and_no_group() {
     );
     // Row 4: 235.8802917 -87.6785278 15433127-8740427 12651 300 11.96.
     let g = entry(&n, "15433127-8740427");
-    assert_eq!(sigma(&g.velocity.unwrap()), 300.0);
+    assert_eq!(sigma(g.velocity.as_deref().unwrap()), 300.0);
     assert_eq!(g.magnitude.as_ref().unwrap().value.normalized.value, 11.96);
 }
 
@@ -155,7 +155,7 @@ fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances(
     assert_eq!(n.report.left_out.len(), 0);
     let agc = entry(&n, "AGC748778");
     assert!(agc.distances.is_empty() && agc.position.is_some());
-    assert_eq!(agc.velocity.unwrap().native.value, 258.0);
+    assert_eq!(agc.velocity.as_deref().unwrap().native.value, 258.0);
     assert_eq!(agc.flags.get("f_Dist").unwrap(), "h'");
     assert_eq!(n.report.fixes[0].entries_changed, 1);
     // Row 1: 000.093750 +39.495556 UGC12894 8.47 TF 335 16.80.
@@ -168,7 +168,7 @@ fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances(
         (d.kind, &d.method),
         (DistanceKind::SecondaryIndicator, &Method::TullyFisher)
     );
-    assert_eq!(g.velocity.unwrap().native.value, 335.0);
+    assert_eq!(g.velocity.as_deref().unwrap().native.value, 335.0);
     // Row 2: 000.492083 -15.461111 WLM 0.97 TRGB -122 11.03.
     let wlm = entry(&n, "WLM");
     let d = &wlm.distances[0];
@@ -215,8 +215,8 @@ fn mcconnachie_keeps_each_modulus_beside_the_distance_derived_from_it() {
     );
     // Row 5: Ursa Major II 17.50 0.30 0.30 32 4 4 -116.5 1.9 13.3.
     let uma2 = entry(&n, "Ursa Major II");
-    let v = uma2.velocity.unwrap();
-    assert_eq!((v.native.value, sigma(&v)), (-116.5, 1.9));
+    let v = uma2.velocity.as_deref().unwrap();
+    assert_eq!((v.native.value, sigma(v)), (-116.5, 1.9));
     assert_eq!(uma2.magnitude.as_ref().unwrap().value.native.value, 13.3);
 }
 
@@ -241,13 +241,13 @@ fn gaia_rows_keep_icrs_at_2016_their_errors_parallax_and_proper_motion() {
     };
     assert_eq!(errors.ra.native.value, 0.029_688_16);
     assert!(near(errors.ra.normalized.value, 0.029_688_16 * MAS, 1e-12));
-    let plx = s.parallax.unwrap();
+    let plx = s.parallax.as_deref().unwrap();
     assert_eq!(
         (plx.native.value, plx.native.unit),
         (6.890_716_839_201_723_5, Unit::Milliarcsecond)
     );
     assert_eq!(plx.normalized.unit, Unit::Degree);
-    assert_eq!(s.velocity.unwrap().native.value, -3.105_404);
+    assert_eq!(s.velocity.as_deref().unwrap().native.value, -3.105_404);
     assert_eq!(
         s.proper_motion.as_deref().unwrap().ra.native.value,
         -42.073_116_442_981_636
@@ -255,7 +255,7 @@ fn gaia_rows_keep_icrs_at_2016_their_errors_parallax_and_proper_motion() {
     assert_eq!(s.redshifts, []);
     // Row 4: 196955487820819968, parallax 0.455010455134798 ± 0.020734983, G 9.768232.
     let s = entry(&n, "196955487820819968");
-    assert_eq!(sigma(&s.parallax.unwrap()), 0.020_734_983);
+    assert_eq!(sigma(s.parallax.as_deref().unwrap()), 0.020_734_983);
     assert_eq!(s.magnitude.as_ref().unwrap().value.native.value, 9.768_232);
 }
 
@@ -286,7 +286,7 @@ fn gcns_rows_keep_their_distance_posterior_as_a_credible_interval() {
         (d.kind, d.kind_of_value),
         (DistanceKind::Geometric, KindOfValue::Estimated)
     );
-    assert_eq!(sigma(&s.velocity.unwrap()), 0.4477);
+    assert_eq!(sigma(s.velocity.as_deref().unwrap()), 0.4477);
     // Row 2: 530685166960018816, no RV, Dist50 0.05581 kpc.
     let s = entry(&n, "530685166960018816");
     assert!(s.velocity.is_none());
@@ -305,8 +305,8 @@ fn hipparcos_rows_keep_icrs_at_1991_25_and_their_solution_type() {
     );
     assert_eq!(
         (
-            s.parallax.unwrap().native.value,
-            sigma(&s.parallax.unwrap())
+            s.parallax.as_deref().unwrap().native.value,
+            sigma(s.parallax.as_deref().unwrap())
         ),
         (4.55, 1.33)
     );

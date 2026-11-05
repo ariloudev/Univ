@@ -170,8 +170,8 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
             let pm = entry.proper_motion.as_ref();
             let sgv = entry.supergalactic_velocity.as_ref();
             let values = [
-                (MeasuredQuantity::Parallax, entry.parallax.as_ref()),
-                (MeasuredQuantity::Velocity, entry.velocity.as_ref()),
+                (MeasuredQuantity::Parallax, entry.parallax.as_deref()),
+                (MeasuredQuantity::Velocity, entry.velocity.as_deref()),
                 (MeasuredQuantity::ProperMotionRa, pm.map(|p| &p.ra)),
                 (MeasuredQuantity::ProperMotionDec, pm.map(|p| &p.dec)),
                 (MeasuredQuantity::SupergalacticVelocityX, sgv.map(|v| &v.x)),

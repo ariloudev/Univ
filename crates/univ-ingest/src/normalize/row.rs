@@ -184,8 +184,12 @@ impl Row<'_, '_> {
             position,
             distances,
             redshifts,
-            velocity: self.value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?,
-            parallax: self.value(plan.parallax.as_ref(), Unit::Degree)?,
+            velocity: self
+                .value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?
+                .map(Box::new),
+            parallax: self
+                .value(plan.parallax.as_ref(), Unit::Degree)?
+                .map(Box::new),
             proper_motion: self.proper_motion()?.map(Box::new),
             magnitude: self.magnitude()?.map(Box::new),
             colours: self.colours()?,

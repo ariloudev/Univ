@@ -116,7 +116,7 @@ fn preferred_native(
         MeasurementRef::Redshift { index, .. } => {
             entry.redshifts.get(*index).map(|z| (z.cmb.value, None))
         }
-        MeasurementRef::Parallax { .. } => entry.parallax.map(|p| (p.native, None)),
+        MeasurementRef::Parallax { .. } => entry.parallax.as_deref().map(|p| (p.native, None)),
     }
 }
 

@@ -158,6 +158,15 @@ blocks:
         title: "Entries held once"
         detail: "Done when objects hold their entries by index and designations are read from them, with the same fixture release and the peak measured."
         state: active
+      - key: 01a1abf1-f18d-7685-89ad-9b715a036ebf
+        at: 2026-11-05T13:42:02Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Entries held once"
+        detail: "Entries were already moved into their objects, not copied, so the profile's 1,059 B was the entries themselves (step 3's target). What was copied was each entry's designation: an object now keeps only the designations its sources give beside its entries' own. Fixture release byte-identical. Focused peak 3,905 → 3,870 B per entry (−35), far below the 300 estimated."
+        state: done
   - key: 01a1abb4-e013-7643-8968-691cb67a36bb
     id: m-compact-entries
     kind: task
@@ -171,6 +180,15 @@ blocks:
         title: "Compact entries"
         detail: "Done when the rare values are in one optional boxed part and CMB redshifts are worked out when written, with the same fixture release and the peak measured."
         state: open
+      - key: 01a1abf1-f18d-7685-89ad-9b7210c1df6d
+        at: 2026-11-05T13:42:02Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Compact entries"
+        detail: "Flags done: an entry's flags are one sorted slice with shared names, not a map per entry. DESI's normalization went from 1,460 to 828 B per entry (−632, about 10 GB over DESI); the focused run went from 3,870 to 3,766 (it holds few flags). Fixture release byte-identical. Next: parallax and velocity boxed (104 B each inline), and the redshift's stored CMB value."
+        state: active
   - key: 01a1abb4-e013-7643-8968-691da40e15ad
     id: m-compact-objects
     kind: task

@@ -59,8 +59,9 @@ fn a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance() {
         Uncertainty::Symmetric { sigma: 0.83 },
     )
     .unwrap();
-    hipparcos.parallax =
-        Some(Value::normalize(parallax, Unit::Degree, KindOfValue::Measured).unwrap());
+    hipparcos.parallax = Some(Box::new(
+        Value::normalize(parallax, Unit::Degree, KindOfValue::Measured).unwrap(),
+    ));
     let mut entries = vec![hipparcos];
     entries.extend(researched.entries);
     let basis = Basis {

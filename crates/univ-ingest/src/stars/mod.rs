@@ -279,7 +279,7 @@ impl StarFile {
             distances: distances.into_iter().collect(),
             redshifts: vec![],
             velocity: None,
-            parallax,
+            parallax: parallax.map(Box::new),
             proper_motion: None,
             magnitude: None,
             colours: vec![],

@@ -64,7 +64,7 @@ fn virgo_takes_the_kourkchi_tully_centre_and_its_wrong_cartesian_is_dropped() {
     assert!(virgo.supergalactic_velocity.is_none());
     // Its distance and velocity (V3k, in the CMB frame) are kept as published.
     assert_eq!(virgo.distances[0].native.value, 31.048);
-    assert_eq!(virgo.velocity.unwrap().native.value, 1479.0);
+    assert_eq!(virgo.velocity.as_ref().unwrap().native.value, 1479.0);
     // 1PGC 1816 had KT17's galactic angles as its supergalactic ones; it takes KT17's centre,
     // where its one table2 member lies (7.4238, -51.5207).
     let (ra, dec) = at(entry(&n, "1816"));

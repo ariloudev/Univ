@@ -54,11 +54,11 @@ fn entry() -> CatalogueEntry {
         position: Some(position),
         distances: vec![distance],
         redshifts: vec![redshift],
-        velocity: Some(value(
+        velocity: Some(Box::new(value(
             -300.0,
             Unit::KilometrePerSecond,
             Unit::KilometrePerSecond,
-        )),
+        ))),
         parallax: None,
         proper_motion: None,
         magnitude: Some(Box::new(Magnitude {
@@ -97,7 +97,11 @@ fn an_entry_reads_back_as_it_was_written_and_is_checked_when_read() {
     assert_eq!(serde_norway::from_str::<CatalogueEntry>(&yaml).unwrap(), e);
 
     let mut wrong = entry();
-    wrong.velocity = Some(value(300.0, Unit::KilometrePerSecond, Unit::MetrePerSecond));
+    wrong.velocity = Some(Box::new(value(
+        300.0,
+        Unit::KilometrePerSecond,
+        Unit::MetrePerSecond,
+    )));
     let yaml = serde_norway::to_string(&wrong).unwrap();
     assert!(serde_norway::from_str::<CatalogueEntry>(&yaml).is_err());
 
@@ -112,12 +116,16 @@ fn an_entry_reads_back_as_it_was_written_and_is_checked_when_read() {
 #[test]
 fn angles_are_normalized_to_degrees_and_distances_to_one_unit() {
     let mut e = entry();
-    e.parallax = Some(value(10.0, Unit::Milliarcsecond, Unit::Milliarcsecond));
+    e.parallax = Some(Box::new(value(
+        10.0,
+        Unit::Milliarcsecond,
+        Unit::Milliarcsecond,
+    )));
     assert_eq!(
         e.check(),
         Err(EntryError::Unit("parallax", Unit::Milliarcsecond))
     );
-    e.parallax = Some(value(10.0, Unit::Milliarcsecond, Unit::Degree));
+    e.parallax = Some(Box::new(value(10.0, Unit::Milliarcsecond, Unit::Degree)));
     assert_eq!(e.check(), Ok(()));
     let mut parsecs = e.distances[0].clone();
     parsecs.normalized = parsecs.normalized.to(Unit::Parsec).unwrap();

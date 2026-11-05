@@ -197,12 +197,12 @@ pub fn named(mut e: CatalogueEntry, name: &str) -> CatalogueEntry {
 
 /// The entry with a parallax of `mas` ± `sigma` mas, as published, normalized to degrees.
 pub fn with_parallax(mut e: CatalogueEntry, mas: f64, sigma: f64) -> CatalogueEntry {
-    e.parallax = Some(value(
+    e.parallax = Some(Box::new(value(
         mas,
         Unit::Milliarcsecond,
         Unit::Degree,
         Uncertainty::Symmetric { sigma },
-    ));
+    )));
     e
 }
 

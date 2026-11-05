@@ -357,8 +357,8 @@ impl Measurements<'_, '_> {
         let pm = entry.proper_motion.as_ref();
         let sgv = entry.supergalactic_velocity.as_ref();
         let values: [(&str, Option<&Value>); 7] = [
-            ("parallax", entry.parallax.as_ref()),
-            ("velocity", entry.velocity.as_ref()),
+            ("parallax", entry.parallax.as_deref()),
+            ("velocity", entry.velocity.as_deref()),
             ("proper_motion_ra", pm.map(|p| &p.ra)),
             ("proper_motion_dec", pm.map(|p| &p.dec)),
             ("supergalactic_velocity_x", sgv.map(|v| &v.x)),

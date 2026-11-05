@@ -212,10 +212,11 @@ pub struct CatalogueEntry {
     pub position: Option<Position>,
     pub distances: Vec<Distance>,
     pub redshifts: Vec<Redshift>,
-    /// A radial velocity, or a recession velocity cz, as published.
-    pub velocity: Option<Value>,
+    /// A radial velocity, or a recession velocity cz, as published. Boxed, as the parallax is:
+    /// most entries have neither, and an entry is held for each of tens of millions of rows.
+    pub velocity: Option<Box<Value>>,
     /// A parallax, normalized to degrees as every angle is.
-    pub parallax: Option<Value>,
+    pub parallax: Option<Box<Value>>,
     pub proper_motion: Option<Box<ProperMotion>>,
     pub magnitude: Option<Box<Magnitude>>,
     /// The colour indices its source publishes, or derives from two of its magnitudes.
@@ -253,8 +254,8 @@ struct RawCatalogueEntry {
     position: Option<Position>,
     distances: Vec<Distance>,
     redshifts: Vec<Redshift>,
-    velocity: Option<Value>,
-    parallax: Option<Value>,
+    velocity: Option<Box<Value>>,
+    parallax: Option<Box<Value>>,
     proper_motion: Option<Box<ProperMotion>>,
     magnitude: Option<Box<Magnitude>>,
     // Absent from entries normalized before colours were read.
