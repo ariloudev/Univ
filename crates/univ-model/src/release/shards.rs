@@ -56,6 +56,16 @@ impl Database {
             .flatten()
     }
 
+    /// The name `wrangler.toml` gives it: [`CATALOGUE_NAME`], or `univ-objects-{i}` for object
+    /// shard `i`.
+    #[must_use]
+    pub fn name(self) -> String {
+        match self {
+            Self::Catalogue => CATALOGUE_NAME.to_owned(),
+            Self::Shard(i) => format!("univ-objects-{i}"),
+        }
+    }
+
     /// The binding Univ Server reads it through: `DB` or `OBJECTS_{i}`.
     #[must_use]
     pub fn binding(self) -> String {
@@ -64,6 +74,31 @@ impl Database {
             Self::Shard(i) => format!("OBJECTS_{i}"),
         }
     }
+}
+
+/// The name `wrangler.toml` gives the catalogue database.
+pub const CATALOGUE_NAME: &str = "univ";
+
+/// How many object shards the configuration `toml` binds: `OBJECTS_0` onwards, each named as
+/// [`Database::name`] names it, until the first missing.
+#[must_use]
+pub fn bound_shards(toml: &str) -> u32 {
+    let blocks: Vec<&str> = toml
+        .split("[[d1_databases]]")
+        .skip(1)
+        .map(|block| block.split("[[").next().unwrap_or(block))
+        .collect();
+    let declared = |shard: Database| {
+        let binding = format!("binding = \"{}\"", shard.binding());
+        let name = format!("database_name = \"{}\"", shard.name());
+        blocks
+            .iter()
+            .any(|b| b.contains(&binding) && b.contains(&name))
+    };
+    let bound = (0..u32::MAX)
+        .take_while(|&i| declared(Database::Shard(i)))
+        .count();
+    u32::try_from(bound).unwrap_or(u32::MAX)
 }
 
 impl fmt::Display for Database {
@@ -107,6 +142,20 @@ pub fn morton(cell: Cell) -> Option<u64> {
     Some(spread(x) | spread(y) << 1 | spread(z) << 2)
 }
 
+/// The Morton code of the cell within reach nearest `cell`, each index clamped to it. A code
+/// grows with each index, so every cell of a box within reach has a code from that of its
+/// clamped least corner to that of its clamped greatest: the range of codes a box can meet.
+#[must_use]
+pub fn morton_clamped(cell: Cell) -> u64 {
+    let clamp = |i: i64| i.clamp(-MORTON_REACH, MORTON_REACH - 1);
+    let within = Cell {
+        ix: clamp(cell.ix),
+        iy: clamp(cell.iy),
+        iz: clamp(cell.iz),
+    };
+    morton(within).unwrap_or(0)
+}
+
 /// The [`MORTON_BITS`] low bits of `v`, each moved to every third bit.
 fn spread(v: u64) -> u64 {
     (0..MORTON_BITS).fold(0, |code, bit| code | ((v >> bit) & 1) << (3 * bit))
@@ -137,6 +186,24 @@ mod tests {
         assert!(morton(cell(0, -MORTON_REACH - 1, 0)).is_none());
         let far = morton(cell(MORTON_REACH - 1, MORTON_REACH - 1, MORTON_REACH - 1)).unwrap();
         assert!(far < 1 << 53, "a double holds every code exactly");
+    }
+
+    #[test]
+    fn every_cell_of_a_box_has_a_code_between_its_clamped_corners() {
+        let (min, max) = (cell(-3, 2, -1), cell(4, 5, 2));
+        let (lo, hi) = (morton_clamped(min), morton_clamped(max));
+        for ix in min.ix..=max.ix {
+            for iy in min.iy..=max.iy {
+                for iz in min.iz..=max.iz {
+                    let code = morton(cell(ix, iy, iz)).unwrap();
+                    assert!((lo..=hi).contains(&code), "({ix}, {iy}, {iz})");
+                }
+            }
+        }
+        // A box reaching beyond takes the codes of the cells within reach.
+        let wide = morton_clamped(cell(MORTON_REACH * 4, 0, 0));
+        assert_eq!(wide, morton(cell(MORTON_REACH - 1, 0, 0)).unwrap());
+        assert_eq!(morton_clamped(cell(i64::MIN, i64::MIN, i64::MIN)), 0);
     }
 
     #[test]

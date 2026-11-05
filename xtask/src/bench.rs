@@ -203,17 +203,15 @@ fn ms(duration: Duration) -> f64 {
 }
 
 /// [`SAMPLES`] + [`WARM_UP`] object ids of the latest release, at random, read from the
-/// release database of the local state before the Worker opens it.
+/// catalogue database of the local state, which names every object's shard, before the Worker
+/// opens it.
 fn sample_ids(state: &Path) -> Result<Vec<u64>, String> {
-    let file = release_database(state)?;
-    let db =
-        rusqlite::Connection::open_with_flags(&file, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
-            .map_err(|e| e.to_string())?;
+    let db = catalogue_database(state)?;
     let count = i64::try_from(SAMPLES + WARM_UP).map_err(|e| e.to_string())?;
     let mut query = db
         .prepare(
-            "SELECT id FROM objects WHERE release = (SELECT release FROM latest WHERE one = 1) \
-             ORDER BY random() LIMIT ?1",
+            "SELECT id FROM object_shards WHERE release = \
+             (SELECT release FROM latest WHERE one = 1) ORDER BY random() LIMIT ?1",
         )
         .map_err(|e| e.to_string())?;
     let ids = query
@@ -233,17 +231,33 @@ fn sample_ids(state: &Path) -> Result<Vec<u64>, String> {
     Ok(ids)
 }
 
-/// The largest D1 database file of the local state: the release database, which dwarfs the
-/// layers database.
-fn release_database(state: &Path) -> Result<PathBuf, String> {
+/// The catalogue database of the local state, opened to read: of its D1 database files, the
+/// one whose `latest` points to a release. Wrangler names each file by a hash, and an object
+/// shard holds the same tables, empty.
+fn catalogue_database(state: &Path) -> Result<rusqlite::Connection, String> {
     let dir = state.join("v3/d1/miniflare-D1DatabaseObject");
     let entries = std::fs::read_dir(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
-    entries
+    let files: Vec<PathBuf> = entries
         .filter_map(Result::ok)
         .map(|entry| entry.path())
         .filter(|path| path.extension().is_some_and(|ext| ext == "sqlite"))
-        .max_by_key(|path| path.metadata().map_or(0, |m| m.len()))
-        .ok_or_else(|| format!("{} holds no D1 database", dir.display()))
+        .collect();
+    for file in files {
+        let flags = rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY;
+        let Ok(db) = rusqlite::Connection::open_with_flags(&file, flags) else {
+            continue;
+        };
+        let latest = db.query_row("SELECT release FROM latest WHERE one = 1", [], |row| {
+            row.get::<_, i64>(0)
+        });
+        if latest.is_ok() {
+            return Ok(db);
+        }
+    }
+    Err(format!(
+        "no D1 database of {} has a latest release: publish one first",
+        dir.display()
+    ))
 }
 
 #[cfg(test)]

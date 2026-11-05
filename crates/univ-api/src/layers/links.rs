@@ -81,7 +81,7 @@ async fn replaced<B: Backend>(
         let mut rows = backend
             .releases_batch(&[
                 (
-                    "SELECT id FROM objects WHERE release = ?1 \
+                    "SELECT id FROM object_shards WHERE release = ?1 \
                      AND id IN (SELECT value FROM json_each(?2))",
                     &[json!(release), held.clone()],
                 ),

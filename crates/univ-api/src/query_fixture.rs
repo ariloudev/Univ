@@ -2,11 +2,13 @@
 //! positions, their cells as univ-model's cell index computes them, and the structures' cells.
 //! The positions are a TEST FIXTURE, not data.
 
+use std::collections::BTreeMap;
 use std::fmt::Write;
 
 use serde_json::{Value, json};
 use univ_model::geometry::Aabb;
 use univ_model::release::cells::{CellSpace, structure_cells};
+use univ_model::release::shards::morton;
 
 use crate::http::{Method, Request, Response};
 use crate::layers_fixture::db;
@@ -48,8 +50,19 @@ pub fn galaxy(id: u64, at: [f64; 3]) -> Placed {
 
 /// The release with `objects` placed, the structures' cells, two structures that the release
 /// holds no placed shape of (one with a bounding box alone, one with a member list) and an
-/// entry from hipparcos-2007 for each star and for galaxy 1002.
+/// entry from hipparcos-2007 for each star and for galaxy 1002. Each object is in shard
+/// `id % 2` (`testkit_shards`).
 pub fn volume_db(objects: &[Placed]) -> Sqlite {
+    volume_db_in(objects, None)
+}
+
+/// [`volume_db`] with each object in the object shard `shard` gives its id, the release's
+/// index of the shards written as a build writes it.
+pub fn volume_db_sharded(objects: &[Placed], shard: &dyn Fn(u64) -> u32) -> Sqlite {
+    volume_db_in(objects, Some(shard))
+}
+
+fn volume_db_in(objects: &[Placed], shard: Option<&dyn Fn(u64) -> u32>) -> Sqlite {
     let db = db();
     db.exec(&format!(
         "INSERT INTO terms VALUES (2, {BODY}, 'body'), (2, {GROUP}, 'galaxy_group'), \
@@ -64,40 +77,7 @@ pub fn volume_db(objects: &[Placed]) -> Sqlite {
                           {{\"member\":\"tracer\",\"kind\":\"quasar\",\"at\":[320.0,0.0,0.0]}}]}}}}}}',
            '{{\"min\":[300.0,0.0,0.0],\"max\":[320.0,0.0,0.0]}}');"
     ));
-    let mut sql = String::new();
-    for object in objects {
-        let space = if object.domain == STARS {
-            CellSpace::Stars
-        } else {
-            CellSpace::CosmicWeb
-        };
-        let cell = space.cell(object.at).unwrap();
-        let [x, y, z] = object.at;
-        writeln!(
-            sql,
-            "INSERT INTO objects (release, id, kind, placed, scale_domain, x, y, z) \
-             VALUES (2, {}, {}, 1, {}, {x:?}, {y:?}, {z:?});
-             INSERT INTO object_cells VALUES (2, {}, {}, {}, {}, {});",
-            object.id,
-            object.kind,
-            object.domain,
-            object.domain,
-            cell.ix,
-            cell.iy,
-            cell.iz,
-            object.id
-        )
-        .unwrap();
-        if object.domain == STARS || object.id == 1002 {
-            writeln!(
-                sql,
-                "INSERT INTO entries (release, object_id, entry, source, identifier, resolution) \
-                 VALUES (2, {}, 0, 0, 'HIP {}', 0);",
-                object.id, object.id
-            )
-            .unwrap();
-        }
-    }
+    let mut sql = objects_sql(objects, shard);
     let rows: Vec<(String, String)> = db
         .connection()
         .prepare("SELECT id, bounds FROM structures WHERE release = 2 AND bounds IS NOT NULL")
@@ -125,6 +105,75 @@ pub fn volume_db(objects: &[Placed]) -> Sqlite {
     );
     db.put("releases/2/tiles/stars/manifest.json", manifest(48.0, 1));
     db
+}
+
+/// The rows of `objects`, their cells and entries, and with `shard` the index of their shards.
+fn objects_sql(objects: &[Placed], shard: Option<&dyn Fn(u64) -> u32>) -> String {
+    let mut sql = String::new();
+    let mut runs: BTreeMap<(u32, i64), (u64, u64)> = BTreeMap::new();
+    let mut counts: BTreeMap<u32, u64> = BTreeMap::new();
+    for object in objects {
+        let space = if object.domain == STARS {
+            CellSpace::Stars
+        } else {
+            CellSpace::CosmicWeb
+        };
+        let cell = space.cell(object.at).unwrap();
+        let [x, y, z] = object.at;
+        if let Some(shard) = shard.map(|s| s(object.id)) {
+            writeln!(
+                sql,
+                "INSERT INTO object_shards VALUES (2, {}, {shard});",
+                object.id
+            )
+            .unwrap();
+            let code = morton(cell).unwrap();
+            let run = runs.entry((shard, object.domain)).or_insert((code, code));
+            *run = (run.0.min(code), run.1.max(code));
+            *counts.entry(shard).or_default() += 1;
+        }
+        writeln!(
+            sql,
+            "INSERT INTO objects (release, id, kind, placed, scale_domain, x, y, z) \
+             VALUES (2, {}, {}, 1, {}, {x:?}, {y:?}, {z:?});
+             INSERT INTO object_cells VALUES (2, {}, {}, {}, {}, {});",
+            object.id,
+            object.kind,
+            object.domain,
+            object.domain,
+            cell.ix,
+            cell.iy,
+            cell.iz,
+            object.id
+        )
+        .unwrap();
+        if object.domain == STARS || object.id == 1002 {
+            writeln!(
+                sql,
+                "INSERT INTO entries (release, object_id, entry, source, identifier, resolution) \
+                 VALUES (2, {}, 0, 0, 'HIP {}', 0);",
+                object.id, object.id
+            )
+            .unwrap();
+        }
+    }
+    for ((shard, domain), (first, last)) in runs {
+        writeln!(
+            sql,
+            "INSERT INTO shard_cells VALUES (2, {shard}, {domain}, {first}, {last}) \
+             ON CONFLICT DO UPDATE SET first = min(first, {first}), last = max(last, {last});"
+        )
+        .unwrap();
+    }
+    for (shard, n) in counts {
+        writeln!(
+            sql,
+            "INSERT INTO release_shards VALUES (2, {shard}, {n}, 0) \
+             ON CONFLICT DO UPDATE SET objects = objects + {n};"
+        )
+        .unwrap();
+    }
+    sql
 }
 
 /// A full octree `depth` levels deep below a root from `-radius` to `radius` on each axis: each

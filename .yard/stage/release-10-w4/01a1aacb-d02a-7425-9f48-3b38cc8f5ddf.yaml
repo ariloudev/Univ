@@ -1,0 +1,107 @@
+key: 01a1aacb-d02a-7425-9f48-3b38cc8f5ddf
+id: w4
+versions:
+  - key: 01a1aacb-d02a-7425-9f48-3b3fe2d48b67
+    at: 2026-11-05T08:20:46Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4 shards in the server"
+    goal: "Univ Server reads a sharded release through the catalogue's id index and per-shard routing, with page order independent of shards, and its integration tests pass"
+    status: active
+blocks:
+  - key: 01a1aacb-d02a-7425-9f48-3b3983cdd0ff
+    id: w4-plan
+    kind: plan
+    versions:
+      - key: 01a1aacb-d02a-7425-9f48-3b40f99f9cd2
+        at: 2026-11-05T08:20:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W4 plan"
+        markdown: |-
+          Release 10's plan, wave W4, worked out from the code. It is recorded under the unattended permission and does not wait for approval.
+
+          | Read | Today | Sharded |
+          |---|---|---|
+          | Object by id (`record`, `present`) | one batch on `DB` | the shard from `object_shards` (catalogue), then one batch on that shard; designations' source numbers named through the kept vocabulary rather than a join |
+          | By designation | join of `designations` and `sources` | the source number from the vocabulary, then the release's every shard at once, merged |
+          | Volume query page | one `UNION ALL` on `DB` | the shards whose `shard_cells` run of a domain overlaps the Morton range of the box's cells, each with its own `UNION ALL` and `LIMIT`; pages merged by id, so the cursor is unchanged |
+          | Layer links | `objects` on `DB` | `object_shards` on the catalogue |
+          | Everything else | `DB` | unchanged: the catalogue |
+
+          - **Backend:** one new read, `shards(&[(shard, sql, params)])`. The Worker groups the statements by shard into one D1 batch each, runs the shards at once (`futures-util`), and gives the rows back in order. A shard's runs and the release's shards are read once per release and kept.
+          - **Test backend:** eight in-memory shard databases beside the catalogue. Fixture rows written to the catalogue are moved to the shard their `object_shards` row names. A fixture written by hand gets `id % 2`, and its `shard_cells` and `release_shards` are derived, so every univ-api test runs on two shards.
+          - **xtask:** `serve`, `integration`, `explore` and the benches give every shard database the release schema.
+          - **No fallback** for a release built before shards: schema-4 releases are pruned in W5, as the spec's decision says.
+
+          Criteria: the page-order criterion of query-a-bounded-volume, with the existing look-up, query and source criteria still holding on two shards.
+  - key: 01a1aacb-d02a-7425-9f48-3b3a3a063335
+    id: w4-backend
+    kind: task
+    versions:
+      - key: 01a1aacb-d02a-7425-9f48-3b41376cb976
+        at: 2026-11-05T08:20:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Shard reads in the backend, the Worker and the test backend"
+        detail: "Done when univ-api's tests pass on a two-shard test backend and the Worker builds for wasm32."
+        state: active
+  - key: 01a1aacb-d02a-7425-9f48-3b3be8f65718
+    id: w4-lookup
+    kind: task
+    versions:
+      - key: 01a1aacb-d02a-7425-9f48-3b4243d38e8e
+        at: 2026-11-05T08:20:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Lookup by id, designation and layer links through the id index"
+        detail: "Done when objects/ and layers tests pass with objects in two shards."
+        state: open
+  - key: 01a1aacb-d02a-7425-9f48-3b3cf1e0ef6c
+    id: w4-volume
+    kind: task
+    versions:
+      - key: 01a1aacb-d02a-7425-9f48-3b435baefd04
+        at: 2026-11-05T08:20:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Volume query across shards, page order kept"
+        detail: "Done when a test pages a query whose results come from two shards, in id order, cursor unchanged."
+        state: open
+  - key: 01a1aacb-d02a-7425-9f48-3b3d6c99201f
+    id: w4-xtask
+    kind: task
+    versions:
+      - key: 01a1aacb-d02a-7425-9f48-3b445b418f00
+        at: 2026-11-05T08:20:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Every shard database prepared by serve, integration, explore and the benches"
+        detail: "Done when cargo xtask integration passes on the sharded fixture state."
+        state: open
+  - key: 01a1aacb-d02a-7425-9f48-3b3e75df2feb
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1aacb-d02a-7425-9f48-3b45ea67db67
+        at: 2026-11-05T08:20:46Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|

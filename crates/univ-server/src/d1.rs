@@ -1,16 +1,18 @@
-//! The backend of the Worker: the release database as its D1 binding `DB`, the univ-layers
-//! database as `LAYERS`, the releases bucket as its R2 binding `RELEASES`, the rate limiters
-//! `ANON`, `BASIC`, `STANDARD` and `EXTENDED`, and the secret `OWNER_SECRET`.
+//! The backend of the Worker: the releases' catalogue database as its D1 binding `DB`, their
+//! object shards as `OBJECTS_0` … `OBJECTS_7`, the univ-layers database as `LAYERS`, the
+//! releases bucket as its R2 binding `RELEASES`, the rate limiters `ANON`, `BASIC`, `STANDARD`
+//! and `EXTENDED`, and the secret `OWNER_SECRET`.
 
 use serde_json::Value;
 use std::sync::LazyLock;
 
 use univ_api::{Backend, BackendError, Kept, Limiter, Row};
 use univ_model::api::keys::RateLimitTier;
+use univ_model::release::shards::Database;
 use worker::wasm_bindgen::JsValue;
 use worker::{D1Database, Env};
 
-/// The binding of the release database, as `wrangler.toml` names it.
+/// The binding of the releases' catalogue database, as `wrangler.toml` names it.
 const RELEASES: &str = "DB";
 
 /// The binding of the univ-layers database, as `wrangler.toml` names it.
@@ -133,6 +135,36 @@ impl Backend for D1 {
         statements: &[(&str, &[Value])],
     ) -> Result<Vec<Vec<Row>>, BackendError> {
         batch(&self.database(RELEASES)?, statements).await
+    }
+
+    async fn shards(
+        &self,
+        statements: &[(u32, &str, &[Value])],
+    ) -> Result<Vec<Vec<Row>>, BackendError> {
+        // The statements of each shard, in their order, as one batch; the shards at once.
+        let mut by_shard: Vec<(u32, Vec<usize>)> = Vec::new();
+        for (place, (shard, _, _)) in statements.iter().enumerate() {
+            match by_shard.iter_mut().find(|(s, _)| s == shard) {
+                Some((_, places)) => places.push(place),
+                None => by_shard.push((*shard, vec![place])),
+            }
+        }
+        let reads = by_shard.iter().map(|(shard, places)| async move {
+            let database = self.database(&Database::Shard(*shard).binding())?;
+            let each: Vec<(&str, &[Value])> = places
+                .iter()
+                .map(|&p| (statements[p].1, statements[p].2))
+                .collect();
+            batch(&database, &each).await
+        });
+        let answers = futures_util::future::try_join_all(reads).await?;
+        let mut rows: Vec<Vec<Row>> = vec![Vec::new(); statements.len()];
+        for ((_, places), answer) in by_shard.iter().zip(answers) {
+            for (&place, each) in places.iter().zip(answer) {
+                rows[place] = each;
+            }
+        }
+        Ok(rows)
     }
 
     async fn blob(&self, key: &str) -> Result<Option<Vec<u8>>, BackendError> {

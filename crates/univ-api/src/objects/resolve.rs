@@ -13,8 +13,10 @@ use serde_json::json;
 use univ_model::api::lookup::LedgerChange;
 use univ_model::release::rows::name_key;
 
+use super::vocabulary::vocabulary;
 use crate::backend::{Backend, column, first, json_column};
 use crate::problem::{Problem, ProblemType};
+use crate::shards::{shard_map, shard_of};
 
 /// The most ids the ledger is followed through from one id. Real chains are one or two
 /// changes long; a ledger that leads further is faulty, and is reported as such.
@@ -48,15 +50,9 @@ impl Resolved {
     }
 }
 
-/// Whether `release` holds object `id`.
+/// Whether `release` holds object `id`: whether the catalogue's index names its shard.
 pub async fn present<B: Backend>(backend: &B, release: u32, id: u64) -> Result<bool, Problem> {
-    let rows = backend
-        .releases(
-            "SELECT 1 AS present FROM objects WHERE release = ?1 AND id = ?2",
-            &[json!(release), json!(id)],
-        )
-        .await?;
-    Ok(!rows.is_empty())
+    Ok(shard_of(backend, release, id).await?.is_some())
 }
 
 /// The ledger's change of `id` recorded by a release up to `release`.
@@ -158,20 +154,40 @@ pub async fn by_name<B: Backend>(
     Ok(objects)
 }
 
-/// The objects of `release` carrying the designation `identifier` of source `source`, by id.
+/// The objects of `release` carrying the designation `identifier` of source `source`, by id:
+/// every object shard of the release is read at once, since a designation says nothing of
+/// where its object is.
 pub async fn by_designation<B: Backend>(
     backend: &B,
     release: u32,
     source: &str,
     identifier: &str,
 ) -> Result<Vec<u64>, Problem> {
-    let rows = backend
-        .releases(
-            "SELECT DISTINCT d.object_id FROM designations d JOIN sources s \
-             ON s.release = d.release AND s.n = d.source \
-             WHERE d.release = ?1 AND s.id = ?2 AND d.identifier = ?3 ORDER BY d.object_id",
-            &[json!(release), json!(source), json!(identifier)],
-        )
-        .await?;
-    rows.iter().map(|row| column(row, "object_id")).collect()
+    let Some(n) = vocabulary(backend, release).await?.source_n(source) else {
+        return Ok(Vec::new());
+    };
+    let map = shard_map(backend, release).await?;
+    let params = [json!(release), json!(n), json!(identifier)];
+    let statements: Vec<(u32, &str, &[serde_json::Value])> = map
+        .shards
+        .iter()
+        .map(|&shard| {
+            (
+                shard,
+                "SELECT DISTINCT object_id FROM designations \
+                 WHERE release = ?1 AND source = ?2 AND identifier = ?3",
+                &params[..],
+            )
+        })
+        .collect();
+    let mut ids = backend
+        .shards(&statements)
+        .await?
+        .iter()
+        .flatten()
+        .map(|row| column(row, "object_id"))
+        .collect::<Result<Vec<u64>, _>>()?;
+    ids.sort_unstable();
+    ids.dedup();
+    Ok(ids)
 }

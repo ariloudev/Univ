@@ -67,7 +67,7 @@ pub use prune::{PruneError, Pruned, prune, prune_with};
 pub use r2batch::{R2Batch, SCRIPT};
 pub use upload::{Published, move_latest, publish, publish_with};
 pub use wrangler::{
-    BUCKET, DATABASE, STDERR_LINES, Wrangler, bound_shards, database_name, ingest_dir, strip_ansi,
+    BUCKET, DATABASE, STDERR_LINES, Wrangler, bound_shards, ingest_dir, strip_ansi,
 };
 
 /// Where publishing and pruning find a release and keep their journals, and their clock.

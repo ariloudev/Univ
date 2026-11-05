@@ -1,5 +1,6 @@
-//! What the native tests answer requests from: the release database as an in-memory SQLite
-//! database with the real schema, and a way to run a handler's future to its end.
+//! What the native tests answer requests from: the catalogue database and the object shards as
+//! in-memory SQLite databases with the real schema (`testkit_shards`), and a way to run a
+//! handler's future to its end.
 
 use std::future::Future;
 use std::pin::pin;
@@ -10,6 +11,7 @@ use serde_json::Value;
 
 use crate::backend::{Backend, BackendError, Row};
 use crate::http::{Method, Request, Response};
+use crate::testkit_shards::Shards;
 
 /// Runs `future` to its end. The backends of the tests never wait, so a future that is not
 /// ready after many polls is a fault of the test.
@@ -24,9 +26,10 @@ pub fn block_on<F: Future>(future: F) -> F::Output {
     panic!("the future never finished");
 }
 
-/// The release database, with univ-model's schema, in memory.
+/// The catalogue database and the object shards, with univ-model's schema, in memory.
 pub struct Sqlite {
     connection: rusqlite::Connection,
+    shards: Shards,
     kept: crate::Kept,
     /// The univ-layers database, with its migrations applied.
     pub layers: rusqlite::Connection,
@@ -52,8 +55,10 @@ impl Sqlite {
         connection
             .execute_batch(univ_model::release::SCHEMA)
             .unwrap();
+        let shards = Shards::new(&connection);
         Self {
             connection,
+            shards,
             kept: crate::Kept::default(),
             layers: layers_database(),
             counted: std::cell::RefCell::default(),
@@ -66,15 +71,22 @@ impl Sqlite {
         }
     }
 
-    /// The release database, to read what a fixture needs.
+    /// The catalogue database, to read what a fixture needs.
     pub fn connection(&self) -> &rusqlite::Connection {
         &self.connection
     }
 
-    /// Runs `sql`, statements that write the fixture's rows.
+    /// Runs `sql`, statements that write the fixture's rows, then moves the rows of each object
+    /// to its shard.
     pub fn exec(&self, sql: &str) -> &Self {
         self.connection.execute_batch(sql).unwrap();
+        Shards::distribute(&self.connection);
         self
+    }
+
+    /// Object shard `index`, to read what a test needs.
+    pub fn shard(&self, index: u32) -> &rusqlite::Connection {
+        self.shards.get(index).unwrap()
     }
 
     /// The answer to `request`.
@@ -182,6 +194,25 @@ impl Backend for Sqlite {
             statements
                 .iter()
                 .map(|(sql, params)| run(&self.connection, sql, params))
+                .collect(),
+        )
+    }
+
+    fn shards(
+        &self,
+        statements: &[(u32, &str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>> {
+        let mut used: Vec<u32> = statements.iter().map(|s| s.0).collect();
+        used.sort_unstable();
+        used.dedup();
+        self.statements.set(self.statements.get() + used.len());
+        std::future::ready(
+            statements
+                .iter()
+                .map(|(shard, sql, params)| match self.shards.get(*shard) {
+                    Some(connection) => run(connection, sql, params),
+                    None => Err(BackendError(format!("no object shard {shard} is bound"))),
+                })
                 .collect(),
         )
     }

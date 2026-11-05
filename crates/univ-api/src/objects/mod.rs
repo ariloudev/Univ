@@ -13,14 +13,15 @@ use univ_model::api::lookup::{
     Ambiguity, LedgerChange, LookedUp, ObjectChoice, ObjectChoices, ObjectMerged,
 };
 use univ_model::api::objects::ObjectRecord;
-use univ_model::release::read;
+use univ_model::release::read::{self, Vocabulary};
 
 use self::resolve::{Resolved, by_designation, by_name, replaced};
 use self::vocabulary::vocabulary;
-use crate::backend::{Backend, Row, first};
+use crate::backend::{Backend, Row, column, first};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{RELEASE_PARAM, pinned, resolve};
+use crate::shards::shard_of;
 
 /// Reads one object of the release the request reads, by its id.
 ///
@@ -169,33 +170,38 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
     }
 }
 
-/// The record of object `id` of `release`, or none when the release does not hold it.
+/// The record of object `id` of `release`, or none when the release does not hold it: its
+/// shard from the catalogue's index, then every row of the object in one round trip to it.
 async fn record<B: Backend>(
     backend: &B,
     release: u32,
     id: u64,
 ) -> Result<Option<Response>, Problem> {
+    let Some(shard) = shard_of(backend, release, id).await? else {
+        return Ok(None);
+    };
     let params = [json!(release), json!(id)];
-    // One round trip for every row of the object; on a miss the three reads past the first
-    // are empty range scans of their primary keys.
     let batch = backend
-        .releases_batch(&[
+        .shards(&[
             (
+                shard,
                 "SELECT * FROM objects WHERE release = ?1 AND id = ?2",
                 &params,
             ),
             (
+                shard,
                 "SELECT * FROM entries WHERE release = ?1 AND object_id = ?2",
                 &params,
             ),
             (
+                shard,
                 "SELECT * FROM measurements WHERE release = ?1 AND object_id = ?2",
                 &params,
             ),
             (
-                "SELECT s.id AS source, d.identifier FROM designations d JOIN sources s \
-                 ON s.release = d.release AND s.n = d.source \
-                 WHERE d.release = ?1 AND d.object_id = ?2 ORDER BY s.id, d.identifier",
+                shard,
+                "SELECT source, identifier FROM designations \
+                 WHERE release = ?1 AND object_id = ?2",
                 &params,
             ),
         ])
@@ -204,13 +210,19 @@ async fn record<B: Backend>(
         batch.try_into().map_err(|_| {
             Problem::new(
                 ProblemType::InternalError,
-                "The release database answered a batch of four reads with another number.",
+                "An object shard answered a batch of four reads with another number.",
             )
         })?;
     let Some(object) = first(objects) else {
-        return Ok(None);
+        return Err(Problem::new(
+            ProblemType::InternalError,
+            format!(
+                "The index puts object {id} of release {release} in shard {shard}, which does not hold it."
+            ),
+        ));
     };
     let vocabulary = vocabulary(backend, release).await?;
+    let designations = by_source_id(&vocabulary, designations)?;
     let record = read::object(&vocabulary, &object, &entries, &measurements, &designations)
         .map_err(|error| {
             Problem::new(
@@ -219,6 +231,36 @@ async fn record<B: Backend>(
             )
         })?;
     Ok(Some(pinned(Response::json(&record)?, release)))
+}
+
+/// The `designations` rows of an object with each source named by its id, as the catalogue
+/// names it, in the order of source id and identifier.
+fn by_source_id(vocabulary: &Vocabulary, rows: Vec<Row>) -> Result<Vec<Row>, Problem> {
+    let mut named = rows
+        .into_iter()
+        .map(|mut row| {
+            let n: i64 = column(&row, "source")?;
+            let id = vocabulary.source(n).ok_or_else(|| {
+                Problem::new(
+                    ProblemType::InternalError,
+                    format!("A designation names source {n}, which the release does not list."),
+                )
+            })?;
+            row.insert("source".to_owned(), json!(id));
+            Ok(row)
+        })
+        .collect::<Result<Vec<Row>, Problem>>()?;
+    let key = |row: &Row| {
+        let text = |name| {
+            row.get(name)
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_owned()
+        };
+        (text("source"), text("identifier"))
+    };
+    named.sort_by_key(key);
+    Ok(named)
 }
 
 /// The record of an object a lookup found, which the release holds.

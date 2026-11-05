@@ -13,39 +13,10 @@ use super::r2batch::R2Batch;
 use super::{QueryRow, ReadBack, Store};
 
 /// The catalogue database `wrangler.toml` names.
-pub const DATABASE: &str = "univ";
+pub const DATABASE: &str = univ_model::release::shards::CATALOGUE_NAME;
 
-/// The name `wrangler.toml` gives the D1 database `database`: the catalogue's [`DATABASE`], or
-/// `univ-objects-{i}` for object shard `i`, bound as `OBJECTS_{i}`.
-#[must_use]
-pub fn database_name(database: Database) -> String {
-    match database {
-        Database::Catalogue => DATABASE.to_owned(),
-        Database::Shard(i) => format!("univ-objects-{i}"),
-    }
-}
+pub use univ_model::release::shards::bound_shards;
 
-/// How many object shards the configuration `toml` binds: `OBJECTS_0` onwards, each named as
-/// [`database_name`] names it, until the first missing.
-#[must_use]
-pub fn bound_shards(toml: &str) -> u32 {
-    let blocks: Vec<&str> = toml
-        .split("[[d1_databases]]")
-        .skip(1)
-        .map(|block| block.split("[[").next().unwrap_or(block))
-        .collect();
-    let declared = |shard: Database| {
-        let binding = format!("binding = \"{}\"", shard.binding());
-        let name = format!("database_name = \"{}\"", database_name(shard));
-        blocks
-            .iter()
-            .any(|b| b.contains(&binding) && b.contains(&name))
-    };
-    let bound = (0..u32::MAX)
-        .take_while(|&i| declared(Database::Shard(i)))
-        .count();
-    u32::try_from(bound).unwrap_or(u32::MAX)
-}
 /// The R2 bucket `wrangler.toml` names.
 pub const BUCKET: &str = "univ-releases";
 /// The most lines of Wrangler's standard error a failure gives: its last.
@@ -255,13 +226,13 @@ impl Store for Wrangler {
     fn execute_file(&mut self, database: Database, file: &Path) -> Result<(), String> {
         let file = absolute(file)?;
         let file = file.to_string_lossy();
-        let name = database_name(database);
+        let name = database.name();
         self.run_ok(&["d1", "execute", &name, "--file", &file])
             .map(drop)
     }
 
     fn query(&mut self, database: Database, sql: &str) -> Result<Vec<QueryRow>, String> {
-        let name = database_name(database);
+        let name = database.name();
         let output = self.run_ok(&["d1", "execute", &name, "--command", sql, "--json"])?;
         let value: Value = serde_json::from_slice(&output.stdout)
             .map_err(|e| format!("wrangler d1 execute gave no JSON: {e}"))?;
