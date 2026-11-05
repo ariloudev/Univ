@@ -123,3 +123,19 @@ fn two_fibres_each_on_a_galaxy_of_its_own_identity_stay_apart() {
     assert_eq!(ids(holding(&m, "sdss-dr17-galaxies", "s1")), ["1001", "s1"]);
     assert_eq!(ids(holding(&m, "sdss-dr17-galaxies", "s2")), ["1002", "s2"]);
 }
+
+#[test]
+fn only_the_fibre_surveys_the_rules_list_join() {
+    // 2MRS is no fibre survey of the rule: two of its entries 20 arcsec apart at one cz stay two.
+    let twomrs = |id: &str, east: f64| {
+        let (ra, dec) = offset(RA, DEC, east, 0.0);
+        with_cz(entry("twomrs", id, ra, dec), 400.0, 5.0)
+    };
+    let m = match_entries(&matching_rules(), vec![twomrs("x", 0.0), twomrs("y", 20.0)]);
+    assert_eq!(m.objects.len(), 2, "{:#?}", m.objects);
+    let listed = &matching_rules().extents.unwrap().fibres.unwrap().surveys;
+    assert!(
+        listed.iter().any(|s| s.as_str() == "desi-dr1"),
+        "{listed:?}"
+    );
+}

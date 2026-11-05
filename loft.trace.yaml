@@ -999,6 +999,18 @@ links:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "gaia_is_preferred_over_hipparcos_and_either_over_a_survey_unless_an_error_says_otherwise"
         body: 8082c54f277f03dc8b1f89178b9499f43117f2c56f87d41239a255af853d1581
+  - node: 01a1adfa-315f-708f-8cd8-bf4bc1cdc275
+    reviewed: af3212bc10502113c6edabd1c59bcd07bfbfe4f3953247aaa83b43d8f05409ae
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_galaxy_that_took_pieces_takes_its_own_position_whatever_the_order_of_its_entries"
+        body: 10585bb033cd2952c73b0e0abb1fd5bdacfd701e9449fe6c32fbcf340929319c
+  - node: 01a1adfa-315f-708f-8cd8-bf4cdd697c86
+    reviewed: 5184cb1296d0ae24912c9b561459893036e006522427549b6142d7e64959288d
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "a_21_cm_beam_position_ranks_after_a_survey_position"
+        body: 972d890097967354b0ef09bce7984ec1a2bb32e2184c5c1cce86f4ba21891ddc
   - node: 01a19f23-636e-7035-8185-aba03617706c
     reviewed: 8c0c0dc0af0b94b7c703e25b0d5e4fa0383eb71bef167f46e9f9b6e5311097ef
     tests:
@@ -1125,6 +1137,36 @@ links:
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
         body: f8504af5ab2575df9ef8ed094dbb6f9d37c7cdbfe03e56281542ee03e59568c8
+  - node: 01a1adfa-315f-708f-8cd8-bf4e61ca16c8
+    reviewed: 650c396500f971b8181e7f19b374c624aa444b8d2235f788c64be8ac2df21870
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy"
+        body: 424b58c22fe1c8b2e3da4196dd2e7fc40aef17060a1ea8a3facfa5915e0082e3
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "a_fibre_beyond_an_arcminute_of_any_fibre_joined_stays_apart"
+        body: 46c076b478bb3ec29da6b410c891ba2c982c0cac00d48387475e40e9bbdb83d2
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "fibres_beyond_the_nearby_volume_or_its_velocity_tolerance_stay_apart"
+        body: 32f1144033dce751451dcaa691686d3fa8db44d9ad291e56ef979244ecc48fb6
+  - node: 01a1adfa-315f-708f-8cd8-bf4fa228b618
+    reviewed: 520ff683b67403e4389582e142852ef0a70b81349698e5cdc42878b2eb30c89a
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "only_the_fibre_surveys_the_rules_list_join"
+        body: 4eabb05bbbcb31e30b0995a8762c8d519bb1f8aad9631a9eb0e98e33ae38ce5f
+  - node: 01a1adfa-315f-708f-8cd8-bf5086a0f213
+    reviewed: ce65142c89a3752a304d6b3ebd642e18a91d1df1a7eea9363ad7acd425e1ea85
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "two_fibres_each_on_a_galaxy_of_its_own_identity_stay_apart"
+        body: e00e61a61dfb00ca440d03ce53c02626a434213faa9ed26ab16447a77a6b3ce0
+  - node: 01a1adfa-315f-708f-8cd8-bf51d418d386
+    reviewed: b2918ae69d4dd1a71be616e4db8ab240088ba12648857f0a745b3a7a6c42db00
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy"
+        body: 424b58c22fe1c8b2e3da4196dd2e7fc40aef17060a1ea8a3facfa5915e0082e3
   - node: 01a1a147-6018-75e1-9409-3f7cf003d8aa
     reviewed: d84c25e841aaaa925be888e8854088c0ade631f97e5f6365408c13377ad04083
     tests:
