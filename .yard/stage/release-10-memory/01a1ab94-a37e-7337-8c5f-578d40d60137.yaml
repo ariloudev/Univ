@@ -1,0 +1,90 @@
+key: 01a1ab94-a37e-7337-8c5f-578d40d60137
+id: profile
+versions:
+  - key: 01a1ab94-a37e-7337-8c5f-5791d3792b45
+    at: 2026-11-05T12:00:07Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Profile ingest's memory"
+    goal: "A heap profile names the structures that make up ingest's 3.6 KB per entry, and a plan to cut them is put to the owner"
+    status: active
+  - key: 01a1abb4-e013-7643-8968-6920da7a59f2
+    at: 2026-11-05T12:35:20Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Profile ingest's memory"
+    goal: "A heap profile names the structures that make up ingest's 3.6 KB per entry, and a plan to cut them is put to the owner"
+    status: done
+blocks:
+  - key: 01a1ab94-a37e-7337-8c5f-578f64782f69
+    id: profile-measured
+    kind: note
+    versions:
+      - key: 01a1ab94-a37e-7337-8c5f-57935c7bf05d
+        at: 2026-11-05T12:00:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What is measured so far"
+        markdown: |-
+          Offline runs through the tile stage, with no release built, measured by `/usr/bin/time -l` (W5, 2026-11-05):
+
+          | Entries | Peak footprint | Peak resident | Time |
+          |---|---|---|---|
+          | 5.61 M (no DESI) | 22.1 GB | 23.0 GB | 29 s |
+          | 21.44 M (with DESI) | 78.8 GB | 67.3 GB | 164 s |
+
+          - **Cost:** about 3.6 KB per entry, with about 2 GB fixed.
+          - **Release 10's 43 M entries:** about 156 GB of footprint, on a 128 GB machine.
+          - **Raw data:** about 130 bytes per entry in the cache.
+  - key: 01a1ab94-a37e-7337-8c5f-5790834745db
+    id: profile-dhat
+    kind: task
+    versions:
+      - key: 01a1ab94-a37e-7337-8c5f-5794541a93ee
+        at: 2026-11-05T12:00:07Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Heap-profile one offline run"
+        detail: "A `dhat-heap` feature of univ-ingest puts dhat's allocator in place. One offline `tiles` run on the galaxy surveys reports the allocation sites by bytes live at the peak. Done when the profile names what makes up most of the bytes per entry."
+        state: active
+      - key: 01a1abb1-1d37-7718-b264-83b4a06a0e38
+        at: 2026-11-05T12:31:13Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Heap-profile one offline run"
+        detail: "dhat on SDSS DR17 distant, ALFALFA α.100 and 6dFGS: 2.43 M entries. At the peak, 7.24 GB in 40.7 M blocks, about 2,980 bytes per entry. 2dFGRS dropped out: this branch has the old slices, which removed 9 of its cached chunks. W5 fetches them again."
+        state: done
+  - key: 01a1abb1-1d37-7718-b264-83b2d5ff850b
+    id: profile-found
+    kind: note
+    versions:
+      - key: 01a1abb1-1d37-7718-b264-83b5a05df0fd
+        at: 2026-11-05T12:31:13Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Where the 3 KB per entry goes"
+        markdown: |-
+          The heap at its peak, by where it was allocated, per entry. One object per entry in this run.
+
+          | Allocated in | Bytes per entry | What it is |
+          |---|---|---|
+          | matching | 1,059 | Each entry moved into its object as an `ObjectEntry` (600 inline: the whole `CatalogueEntry` and its resolution), and its designation copied beside it |
+          | cross-matching | 752 | The `Vec<ReleaseObject>`: 752 bytes inline each, an `Object` (400) and an optional `DerivedPosition` (344) |
+          | placement | 418 | Each object's transformation chain, spelled out step by step; D1 already stores chains as shared templates |
+          | id assignment | 251 | Maps keyed by strings |
+          | normalization | 219 | Each entry's own heap: identifier, `Vec<Redshift>` (160 each, with the CMB-frame value stored beside the measured one), flag maps |
+          | others | about 280 | Ranking, dhat's own bookkeeping |
+
+          Most of it is room for what a galaxy never has: `CatalogueEntry` is 504 bytes inline, mostly empty `Option`s for parallax, proper motion, spectral type, colours and the like, against about 130 bytes of raw data.

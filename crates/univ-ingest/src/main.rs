@@ -370,8 +370,16 @@ async fn every_stage(
     stages.run(display.clone(), normalized, until).await;
 }
 
+/// With the `dhat-heap` feature, every allocation goes through DHAT, which writes the heap's
+/// profile to `dhat-heap.json` when the run ends.
+#[cfg(feature = "dhat-heap")]
+#[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
+
 #[tokio::main]
 async fn main() -> ExitCode {
+    #[cfg(feature = "dhat-heap")]
+    let _profiler = dhat::Profiler::new_heap();
     let (args, until) = match Cli::parse().command {
         Command::Fetch(args) => (args, Until::Fetch),
         Command::Normalize(args) => (args, Until::Normalize),

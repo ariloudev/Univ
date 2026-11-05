@@ -30,6 +30,12 @@ tar = "0.4.46"
 rand_chacha = "0.10.0"
 serde_json = "1.0.154"
 cdshealpix = "=0.10.1"
+# A heap profiler, only with the `dhat-heap` feature: `cargo run --release --features dhat-heap`
+# writes dhat-heap.json, which DHAT's viewer reads.
+dhat = { version = "0.3.3", optional = true }
+
+[features]
+dhat-heap = ["dep:dhat"]
 
 [dev-dependencies]
 rusqlite = { version = "0.32.1", features = ["bundled"] }

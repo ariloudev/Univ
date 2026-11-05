@@ -1,0 +1,176 @@
+key: 01a1ab94-a37e-7337-8c5f-578eacbf1cdc
+id: build-memory
+versions:
+  - key: 01a1ab94-a37e-7337-8c5f-5792e646db45
+    at: 2026-11-05T12:00:07Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Make ingest leaner"
+    goal: "Univ Ingest builds release 10's 43 million entries within the machine's memory, with the same release out as before"
+    status: planned
+  - key: 01a1abb4-e013-7643-8968-69215f21cb8c
+    at: 2026-11-05T12:35:20Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Make ingest leaner"
+    goal: "Univ Ingest builds release 10's 43 million entries within the machine's memory, with the same release out as before"
+    status: active
+blocks:
+  - key: 01a1abb1-1d37-7718-b264-83b353843a1b
+    id: memory-plan
+    kind: plan
+    versions:
+      - key: 01a1abb1-1d37-7718-b264-83b629fe4ff1
+        at: 2026-11-05T12:31:13Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Make ingest leaner: plan"
+        markdown: |-
+          **Goal:** release 10's 43 million entries build within memory, at no more than about **1.2 KB per entry at the peak** (about 52 GB), down from 3.6 KB. The release comes out the same.
+
+          ## Approach
+          Keep one pass in memory, but compact. Cross-matching genuinely needs every entry's position and match keys at once, and these steps shrink what is held per entry. Writing the full records by streaming them from disk is held back as a further step, taken only if the measured result misses the goal.
+
+          ## Steps
+          Each step is measured on the 21.4 M-entry offline rehearsal. The savings are estimates.
+
+          | # | Change | Estimated saving per entry |
+          |---|---|---|
+          | 1 | **Chains as templates in memory.** A derived position or distance holds its chain's template and parameters, as D1 already stores them. The steps are spelled out only when rows are written. | 400–600 B |
+          | 2 | **Entries held once.** Objects hold the indexes of their entries in one entry table, not moved copies. Designations are read from the entries, not copied beside them. | about 300 B |
+          | 3 | **Compact entries.** The values a survey seldom gives (proper motion, spectral type, colours, supergalactic velocity, group, flags, references, a second name) move into one optional boxed part. A redshift's CMB-frame value is worked out when written, not stored. | about 400 B |
+          | 4 | **Compact objects.** The derived position is boxed or compacted in `ReleaseObject`. | about 300 B |
+          | 5 | **Id maps keyed by 128-bit hashes**, as the D1 writer's key checks already are. | about 150 B |
+
+          ## How it is checked
+          - **The release comes out the same.** The fixture release built before and after each step has the same files: the same SHA-256 for every file in the manifest, and the same D1 fingerprints.
+          - **No step changes what a release holds.**
+          - **The gates.** The full `cargo xtask check` passes, and `cargo xtask science` passes on the rehearsal.
+          - **Memory is measured.** The peak per entry is reported after each step. The wave ends with the 43 M-entry figure, projected from two measured points.
+
+          ## Not in this wave
+          No spec change: memory is not a criterion today. If you want it held, I can add a quality attribute for release 10's build, such as "within 64 GB".
+
+          ## After the wave
+          The wave merges into `product/release-10`. W5 then takes it, adds 2MPZ as a prepared file and WISE × SuperCOSMOS and GAMA as permission pending, and builds release 10.
+    responses:
+      - key: 01a1abb3-86cc-7715-aa62-051efe3c7860
+        at: 2026-11-05T12:33:51Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1abb4-e013-7643-8968-691805ea5b5e
+    id: memory-measuring
+    kind: note
+    versions:
+      - key: 01a1abb4-e013-7643-8968-6922ac026d13
+        at: 2026-11-05T12:35:20Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "How each step is measured"
+        markdown: |-
+          Under your rule to approve any full ingest run first, each step is measured on a focused offline run of SDSS DR17 distant, ALFALFA α.100 and 6dFGS: 2.43 M entries, about 10 seconds without the profiler. The 21.4 M-entry rehearsal runs once, at the wave's end, after you approve it.
+
+          2dFGRS is kept out of the focused runs. This branch has its old slices, which would remove its cached chunks again.
+  - key: 01a1abb4-e013-7643-8968-6919db7c8560
+    id: m-baseline
+    kind: task
+    versions:
+      - key: 01a1abb4-e013-7643-8968-692393c0bf7b
+        at: 2026-11-05T12:35:20Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Baseline: the fixture release's files and the focused run's peak"
+        detail: "Done when the fixture release's manifest (each file's SHA-256 and the D1 fingerprints) is kept to compare against, and the focused run's peak per entry is measured without the profiler."
+        state: active
+  - key: 01a1abb4-e013-7643-8968-691a98ce4333
+    id: m-chains
+    kind: task
+    versions:
+      - key: 01a1abb4-e013-7643-8968-6924b87e5507
+        at: 2026-11-05T12:35:20Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Chains as templates in memory"
+        detail: "Done when derived positions and distances hold a template and its parameters, the fixture release comes out the same, and the focused peak is measured."
+        state: open
+  - key: 01a1abb4-e013-7643-8968-691ba53298f6
+    id: m-entries-once
+    kind: task
+    versions:
+      - key: 01a1abb4-e013-7643-8968-69254cbff0f3
+        at: 2026-11-05T12:35:20Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Entries held once"
+        detail: "Done when objects hold their entries by index and designations are read from them, with the same fixture release and the peak measured."
+        state: open
+  - key: 01a1abb4-e013-7643-8968-691cb67a36bb
+    id: m-compact-entries
+    kind: task
+    versions:
+      - key: 01a1abb4-e013-7643-8968-69261b34e79b
+        at: 2026-11-05T12:35:20Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Compact entries"
+        detail: "Done when the rare values are in one optional boxed part and CMB redshifts are worked out when written, with the same fixture release and the peak measured."
+        state: open
+  - key: 01a1abb4-e013-7643-8968-691da40e15ad
+    id: m-compact-objects
+    kind: task
+    versions:
+      - key: 01a1abb4-e013-7643-8968-6927281e8728
+        at: 2026-11-05T12:35:20Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Compact objects"
+        detail: "Done when ReleaseObject's derived position is boxed or compacted, with the same fixture release and the peak measured."
+        state: open
+  - key: 01a1abb4-e013-7643-8968-691ead7aee95
+    id: m-id-hashes
+    kind: task
+    versions:
+      - key: 01a1abb4-e013-7643-8968-6928cee2ccec
+        at: 2026-11-05T12:35:20Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Id maps keyed by 128-bit hashes"
+        detail: "Done when id assignment keys its maps by hashes, with the same fixture release and the peak measured."
+        state: open
+  - key: 01a1abb4-e013-7643-8968-691f8d5bd8e0
+    id: m-full
+    kind: task
+    versions:
+      - key: 01a1abb4-e013-7643-8968-692904f2e384
+        at: 2026-11-05T12:35:20Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full rehearsal, after the owner's approval"
+        detail: "Done when the 21.4 M-entry offline rehearsal's peak is measured and the 43 M figure projected from two points."
+        state: open
