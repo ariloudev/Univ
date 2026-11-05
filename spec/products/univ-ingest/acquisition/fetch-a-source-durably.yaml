@@ -101,3 +101,20 @@ requirements:
     criteria:
       - key: 01a19f22-2ad9-716e-876f-185248f45d00
         name: "No request is made to any provider."
+  - key: 01a1ad9c-dc22-72c6-99cb-1a44aeb16de5
+    statement:
+      form: optional
+      where: "a source's provider serves it only through an interface that Univ Ingest cannot page, such as a form that cancels long answers"
+      system: "Univ Ingest"
+      shall: "read the source from a prepared file in its download cache, made by a script kept in the repository, after checking the file against its definition."
+    criteria:
+      - key: 01a1ad9c-dc22-72c6-99cb-1a45af5083ab
+        name: "The source definition names the script that prepared the file, the file, its SHA-256 and its row count."
+      - key: 01a1ad9c-dc22-72c6-99cb-1a46049c41ff
+        name: "A prepared file whose SHA-256 or row count differs from its definition's is refused, naming the file, the value expected and the value found."
+      - key: 01a1ad9c-dc22-72c6-99cb-1a470d130dde
+        name: "Univ Ingest makes no request for a prepared source."
+      - key: 01a1ad9c-f735-761b-8646-f276559d7943
+        name: "A prepared file missing from the cache fails its source, naming the script that prepares it."
+      - key: 01a1ad9c-dc22-72c6-99cb-1a4853c15f56
+        name: "The source's provenance lists the prepared file with its digest and the script that made it."
