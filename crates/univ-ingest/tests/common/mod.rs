@@ -248,7 +248,8 @@ pub fn count_rows(definition: &SourceDefinition) -> u64 {
         .expect("a table")
 }
 
-/// The sources that are provider tables, each with its recorded answer normalized.
+/// The sources that are provider tables, each with its recorded answer normalized; files, a
+/// prepared file and the repository's own are read by tests of their own.
 pub fn every_table() -> Vec<(SourceDefinition, Normalized)> {
     read_sources()
         .into_iter()
@@ -256,6 +257,7 @@ pub fn every_table() -> Vec<(SourceDefinition, Normalized)> {
             !matches!(
                 d.access,
                 univ_ingest::source::Access::Files { .. }
+                    | univ_ingest::source::Access::Prepared { .. }
                     | univ_ingest::source::Access::Repository { .. }
             )
         })

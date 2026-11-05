@@ -94,10 +94,12 @@ cross_identifications:
     basis: >-
       2MRS (Huchra et al. 2012, ApJS 199, 26) and 2M++ (Lavaux & Hudson 2011, MNRAS 416, 2840)
       both name each galaxy by its 2MASS Extended Source Catalog designation (Jarrett et al.
-      2000, AJ 119, 2498), as the recorded answers show (00424433+4116074 in 2MRS).
+      2000, AJ 119, 2498), as the recorded answers show (00424433+4116074 in 2MRS); so does 2MPZ
+      (Bilicki et al. 2014, ApJS 210, 9) in twomassX, the "2MASS source designation".
     members:
       - { source: twomrs, field: identifier }
       - { source: twompp-catalogue, field: identifier }
+      - { source: twompz, field: identifier }
   - scheme: sdss-specobjid
     basis: >-
       All three sources are queries of the SDSS DR17 SpecObj table (Abdurro'uf et al. 2022, ApJS
@@ -438,6 +440,45 @@ pairs:
     angular_tolerance_arcsec: 60.0
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
     basis: *alfalfa
+
+  # Release 10, permission pending: 2MPZ's photometric redshifts.
+  - sources: [twompz, twomrs]
+    angular_tolerance_arcsec: 2.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: &twompz_xsc >-
+      2MPZ, 2MRS and 2M++ all take positions from the 2MASS XSC, so 2 arcsec as for 2MRS and
+      2M++; most pairs join by their shared 2MASX name first. 2MPZ's photometric redshifts err by
+      0.015 for the whole catalogue (Bilicki et al. 2014): three times that is 0.045, 13,500 km/s
+      in cz, a pipeline choice that rejects only a galaxy far in front of or behind the other.
+  - sources: [twompz, twompp-catalogue]
+    angular_tolerance_arcsec: 2.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz_xsc
+  - sources: [twompz, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: &twompz >-
+      2MPZ positions are the 2MASS XSC's; 5 arcsec is a pipeline choice, as for the fibre surveys
+      against 2MRS. 2MPZ's photometric redshifts err by 0.015 (Bilicki et al. 2014): three times
+      that is 0.045, 13,500 km/s in cz, a pipeline choice that rejects only a spectroscopic galaxy
+      far in front of or behind the photometric one. Within 5 arcsec a merge rests on the
+      position.
+  - sources: [twompz, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, twodfgrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, desi-dr1]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
 
 # The extent rule (step 3). Point-source tolerances cannot join the pieces of one extended nearby
 # galaxy: release 4 kept IC 5052 (UNGC a26 = 8.13 arcmin, edge-on, b/a = 0.14) as one object of

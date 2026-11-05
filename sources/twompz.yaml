@@ -1,0 +1,92 @@
+id: twompz
+title: "2MASS Photometric Redshift catalogue (2MPZ)"
+provider: wfau-ssa
+access:
+  method: prepared
+  # The archive's freeform SQL form cancels any answer of more than a few hundred rows (TOP 500
+  # answered, TOP 800 cancelled, 2026-11-05), and 2MPZ has no whole-file download, so the script
+  # reads the table in key ranges, one query at a time, and joins them. Its run of 2026-11-05 made
+  # this file: 2,968 ranges, every row's twomassID once, the total equal to COUNT(*).
+  file: twompz.csv.gz
+  script: scripts/fetch-twompz.py
+  sha256: "10df357b216aabe56ee2842fdc142079e22cb2e0a7bfd92ad07bdf381cb7d1b7"
+  rows: 934175
+cuts:
+  - >-
+    Every row of TWOMPZ..twompzPhotoz at the SuperCOSMOS Science Archive, 934,175 by COUNT(*) on
+    2026-11-05: the 928,352 sources of version 1.1 ("This catalogue includes 928,352 sources") and
+    "5823 supplimental sources ... which have matches in WISE allwise_sc, rather than WISE
+    wise_allskysc" added on 2016-06-06 (TWOMPZ page, read 2026-11-05).
+  - >-
+    Version 1.1 holds the 2MASS extended sources with Ks < 13.9 and J - Ks > 0 (extinction
+    corrected) that have all eight magnitudes B, R, I, J, H, Ks, W1 and W2, outside high
+    extinction and stellar density (TWOMPZ page, "What is released"). "In high extinction, large
+    stellar density or low Galactic latitude regions, the photo-z's are likely to be biased
+    (usually underestimated)" (Note 1): no cut on latitude is made here.
+  - >-
+    zPhoto, the ANNz photometric redshift every row has, is taken. zSpec, the spectroscopic
+    redshift of 311,277 rows, is not: it repeats the redshifts of the training surveys (2MRS, SDSS,
+    6dFGS, 2dFGRS and ZCAT, TWOMPZ page), which release 10 holds from all but ZCAT themselves, and
+    a galaxy with one is matched to their entry by position or by its 2MASS designation.
+  - >-
+    728 rows have a zPhoto below zero, the deepest -0.015: the network's estimate for galaxies
+    very near, kept as published, since the catalogue's error of 0.015 covers them.
+  - >-
+    ra and dec are the 2MASS XSC position "based on the peak pixel" (twompzPhotoz schema), J2000 in
+    the 2MASS reference frame, which is tied to the ICRS through Tycho-2.
+  - "twomassX is the 2MASS XSC designation, as 2MRS and 2M++ name the same galaxies."
+  - "The epoch is that of the 2MASS observations, 1997 to 2001; for galaxies it changes nothing."
+columns:
+  - { column: twomassX, field: identifier, unit: dimensionless }
+  - { column: ra, field: right_ascension, unit: degree }
+  - { column: dec, field: declination, unit: degree }
+  - { column: zPhoto, field: photometric_redshift, unit: dimensionless }
+frame: icrs
+epoch: 2000.0
+citation: >-
+  Bilicki M., Jarrett T.H., Peacock J.A., Cluver M.E., Steward L. 2014, "Two Micron All Sky
+  Survey Photometric Redshift Catalog: A Comprehensive Three-dimensional Census of the Whole Sky",
+  ApJS 210, 9. 2014ApJS..210....9B, doi:10.1088/0067-0049/210/1/9. Served by the SuperCOSMOS
+  Science Archive, WFAU, Edinburgh.
+reference: { bibcode: "2014ApJS..210....9B", doi: "10.1088/0067-0049/210/1/9" }
+terms:
+  url: "http://ssa.roe.ac.uk/TWOMPZ.html"
+  quote: >-
+    This catalogue is described in Bilicki et al. 2014, ApJS, 210, 9 . ... Please reference this
+    paper and acknowledge the Wide Field Astronomy Unit (WFAU) when using these data.
+  credit: >-
+    Cite Bilicki et al. 2014, ApJS 210, 9. This research has made use of data obtained from the
+    SuperCOSMOS Science Archive, prepared and hosted by the Wide Field Astronomy Unit, Institute for
+    Astronomy, University of Edinburgh.
+redistribution:
+  status: permission_pending
+  review: provisional
+  reasoning: >-
+    The 2MPZ page asks for the paper to be cited and WFAU acknowledged, and states no terms of
+    redistribution; the archive's credits page names a copyright summary that no page links, so
+    none can be read. Permission is to be asked of the catalogue's author and of WFAU; the owner
+    chose to build and publish the source while the answer is awaited. Provisional: judged again
+    when the answer comes.
+  permission: { asked_of: "M. Bilicki and WFAU (mar at roe.ac.uk)" }
+scale_domain: cosmic_web
+mirrors:
+  - "http://ssa.roe.ac.uk:8080/ssa/SSASQL"
+normalization:
+  redshifts:
+    - column: zPhoto
+      frame: heliocentric
+      kind: photometric
+      catalogue_error:
+        value: 0.015
+        unit: dimensionless
+        times_one_plus_z: false
+        basis: >-
+          Bilicki et al. 2014, abstract: "The derived photometric redshifts have errors nearly
+          independent of distance, with an all-sky accuracy of sigma_z=0.015 and a very small
+          percentage of outliers"; the TWOMPZ page gives the same "all-sky accuracy of σz =
+          0.015", so each photometric redshift's error is 0.015.
+      basis: >-
+        Photometric redshifts trained on the redshifts of 2MRS, SDSS, 6dFGS, 2dFGRS and ZCAT
+        (TWOMPZ page), each heliocentric as its survey publishes it (2MRS: corrected to the solar
+        system barycentre), so they are read as heliocentric. The archive does not name the frame:
+        this reading is an inference.

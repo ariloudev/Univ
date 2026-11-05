@@ -135,6 +135,15 @@ blocks:
         title: "The prepared access method"
         detail: "Done when a definition can name a prepared file with the script that made it, its SHA-256 and row count; ingest checks both before reading it from the downloads, never fetches it, and refuses a file that differs; with tests."
         state: active
+      - key: 01a1ada1-329a-77f9-ad5b-bff619df4716
+        at: 2026-11-05T21:33:05Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The prepared access method"
+        detail: "`method: prepared` names `file` (a `.csv.gz` in the source's download directory), `script`, `sha256` and `rows`. Acquisition never fetches it. It refuses a missing file, naming the script, and a file whose SHA-256 or row count differs, naming both values. A good file is recorded in provenance with `prepared_by`. Normalization reads it as a gzipped CSV. Five tests in `tests/prepared.rs`, which also check that no request reaches the mirror."
+        state: done
   - key: 01a1ad95-6a58-709d-8355-922c88a3fa53
     id: s-twompz
     kind: task
@@ -148,6 +157,15 @@ blocks:
         title: "2MPZ as a prepared source"
         detail: "Done when `scripts/fetch-twompz.py` is in the repository (writing to the downloads), the 2MPZ definition reads `twompz.csv.gz` from Univ/downloads/univ-ingest/twompz with its SHA-256 and 934,175 rows, its matching pairs are in `rules/matching.yaml`, and a fixture test reads it."
         state: open
+      - key: 01a1ada1-329a-77f9-ad5b-bff7346c39a0
+        at: 2026-11-05T21:33:05Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "2MPZ as a prepared source"
+        detail: "Done when `scripts/fetch-twompz.py` is in the repository (writing to the downloads), the 2MPZ definition reads `twompz.csv.gz` from Univ/downloads/univ-ingest/twompz with its SHA-256 and 934,175 rows, its matching pairs are in `rules/matching.yaml`, and a fixture test reads it."
+        state: active
   - key: 01a1ad95-6a58-709d-8355-922dc52e5afd
     id: s-gama-wise
     kind: task
