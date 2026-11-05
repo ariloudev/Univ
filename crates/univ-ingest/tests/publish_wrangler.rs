@@ -137,8 +137,8 @@ fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
         &mut store,
         &format!(
             "SELECT COUNT(*) FROM ids_issued i JOIN (SELECT value AS id FROM json_each('[{list}]')) \
-             x ON x.id BETWEEN i.first AND i.last WHERE x.id IN (SELECT id FROM objects WHERE \
-             release = 2) OR x.id IN (SELECT id FROM ids_replaced)"
+             x ON x.id BETWEEN i.first AND i.last WHERE x.id IN (SELECT id FROM object_shards \
+             WHERE release = 2) OR x.id IN (SELECT id FROM ids_replaced)"
         ),
     );
     assert_eq!(resolved, i64::try_from(ids.len()).unwrap());

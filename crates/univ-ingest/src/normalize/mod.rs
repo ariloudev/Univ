@@ -141,8 +141,9 @@ pub struct Normalizer<'a> {
     definition: &'a SourceDefinition,
     correction: &'a CmbCorrection,
     entries: Vec<CatalogueEntry>,
-    /// The identifiers of the entries kept so far.
-    identifiers: HashSet<String>,
+    /// The identifiers of the entries kept so far, each by its [`identifier_hash`]: a copy of
+    /// each would take a gigabyte for a catalogue of twenty million rows.
+    identifiers: HashSet<u128>,
     left_out: BTreeMap<LeftOutReason, u64>,
     /// Entries each fix changed, by the fix's index in the definition.
     changed: Vec<u64>,
@@ -244,7 +245,7 @@ impl<'a> Normalizer<'a> {
             Ok((entry, changed)) => {
                 if self
                     .identifiers
-                    .insert(entry.designation.identifier.clone())
+                    .insert(identifier_hash(&entry.designation.identifier))
                 {
                     self.entries.push(entry);
                 } else {
@@ -444,4 +445,16 @@ pub fn normalize_until(
         }
     }
     Ok(normalizer.finish())
+}
+
+/// A 128-bit hash of an identifier, two `SipHash` runs under different keys: two identifiers of
+/// a catalogue share one with a chance of about n² / 2^129, 10^-24 for twenty million.
+fn identifier_hash(identifier: &str) -> u128 {
+    use std::hash::{BuildHasher, BuildHasherDefault, DefaultHasher, Hash, Hasher};
+    let hasher = BuildHasherDefault::<DefaultHasher>::default();
+    let low = hasher.hash_one(identifier);
+    let mut keyed = DefaultHasher::new();
+    0x5eed_u32.hash(&mut keyed);
+    identifier.hash(&mut keyed);
+    (u128::from(keyed.finish()) << 64) | u128::from(low)
 }
