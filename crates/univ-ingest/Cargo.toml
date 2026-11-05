@@ -33,6 +33,9 @@ cdshealpix = "=0.10.1"
 # A heap profiler, only with the `dhat-heap` feature: `cargo run --release --features dhat-heap`
 # writes dhat-heap.json, which DHAT's viewer reads.
 dhat = { version = "0.3.3", optional = true }
+# The global allocator: the system one keeps the pages of the many small blocks normalization
+# frees, which held about a third of a run's peak footprint.
+mimalloc = { version = "0.1", default-features = false }
 
 [features]
 dhat-heap = ["dep:dhat"]

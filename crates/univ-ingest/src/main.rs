@@ -376,6 +376,12 @@ async fn every_stage(
 #[global_allocator]
 static ALLOC: dhat::Alloc = dhat::Alloc;
 
+/// mimalloc, except under the heap profiler: it gives back the pages of freed small blocks,
+/// which the system allocator keeps.
+#[cfg(not(feature = "dhat-heap"))]
+#[global_allocator]
+static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 #[tokio::main]
 async fn main() -> ExitCode {
     #[cfg(feature = "dhat-heap")]

@@ -189,6 +189,15 @@ blocks:
         title: "Compact entries"
         detail: "Flags done: an entry's flags are one sorted slice with shared names, not a map per entry. DESI's normalization went from 1,460 to 828 B per entry (−632, about 10 GB over DESI); the focused run went from 3,870 to 3,766 (it holds few flags). Fixture release byte-identical. Next: parallax and velocity boxed (104 B each inline), and the redshift's stored CMB value."
         state: active
+      - key: 01a1ac16-8d1e-73a2-b798-b5eedc901011
+        at: 2026-11-05T14:22:01Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Compact entries"
+        detail: "Flags as one sorted slice with shared names (DESI's normalization 1,460 → 828 B per entry). Parallax and velocity boxed: focused peak 3,766 → 3,460 B per entry (−306). Fixture release byte-identical after each. Not done: the CMB-frame redshift worked out when written. Only its 48-byte value could go (the measured redshift and dipole stay), and it would move a science derivation into 24 read sites. Next: re-measure the entry's size and see what is left inline."
+        state: active
   - key: 01a1abb4-e013-7643-8968-691da40e15ad
     id: m-compact-objects
     kind: task
@@ -228,3 +237,33 @@ blocks:
         title: "Full rehearsal, after the owner's approval"
         detail: "Done when the 21.4 M-entry offline rehearsal's peak is measured and the 43 M figure projected from two points."
         state: open
+  - key: 01a1ac2a-2d68-7132-b2b1-8dfcbf513727
+    id: memory-progress-1
+    kind: note
+    versions:
+      - key: 01a1ac2a-2d68-7132-b2b1-8dfddf6c75b8
+        at: 2026-11-05T14:43:27Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Savings so far"
+        markdown: |-
+          Peak memory footprint of the focused run: SDSS DR17 distant, ALFALFA α.100 and 6dFGS, 2,432,397 entries, offline through tiles. Measured with `/usr/bin/time -l`. The fixture release stayed byte-identical after every step.
+
+          | Step | Commit | Peak footprint | Per entry |
+          |---|---|---|---|
+          | Baseline | `a91d41f` | 10.31 GB | 4,239 B |
+          | Chains held without the direction's steps | `a8b01b0` | 9.50 GB | 3,905 B |
+          | Objects stop copying their entries' designations | `52306b2` | 9.41 GB | 3,870 B |
+          | Flags as one shared-name list, not a map per entry | `a82375c` | 9.16 GB | 3,766 B |
+          | Parallax and velocity boxed | `0d8214f` | 8.42 GB | 3,460 B |
+
+          Overall: **−1.9 GB (−18%)**, about 780 B less per entry.
+
+          **DESI gains more.** Its entries carry flags, and these three surveys carry few. Normalizing DESI DR1 alone (15,825,713 entries) dropped from **23.1 GB to 13.1 GB** (1,460 → 828 B per entry) with the flag change.
+
+          **Projection for release 10.** This is an extrapolation, not a measurement. Each entry now costs about 780 B less, so the earlier ~3.6 KB per entry falls to roughly 2.8 KB: about **120 GB instead of 156 GB** for 43 M entries. That is still too close to the machine's 128 GB, and the plan's goal is about 1.2 KB per entry. The full 21.4 M-entry rehearsal that measures it waits for the owner's approval at the wave's end.
+
+          **Next.** In placement, the old object array (400 B per object) appears to stay allocated while the new `ReleaseObject` array (744 B per object) is built beside it. A fresh heap profile is running to confirm that before it is changed.
+        tone: info
