@@ -148,6 +148,15 @@ blocks:
         title: "Check the fixes"
         detail: "Lint across the workspace, the touched tests, the fixture snapshot byte-identical, and the focused peak measured again."
         state: active
+      - key: 01a1ad38-9f4f-73aa-afae-2befb5d3740e
+        at: 2026-11-05T19:38:51Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Check the fixes"
+        detail: "Lint clean across the workspace. Touched tests pass. Clippy's `vec_box` flagged two test helpers returning `Vec<Box<Object>>`; they return `Matched` now. Fixture snapshot identical. The only difference was `built_at`, which the test no longer clears (the fixture pins it); the baseline was re-pinned. Focused peak 3.39 GB, against 3.34 before the fixes, within run-to-run noise. Committed."
+        state: done
   - key: 01a1ad14-03fb-7467-b689-4d927caed11c
     id: r-gate
     kind: task
@@ -161,6 +170,15 @@ blocks:
         title: "Full gate"
         detail: "`cargo xtask check` once, green, committed on its exit status."
         state: open
+      - key: 01a1ad38-9f4f-73aa-afae-2bf0619d662c
+        at: 2026-11-05T19:38:51Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full gate"
+        detail: "`cargo xtask check` once, green, committed on its exit status."
+        state: active
   - key: 01a1ad14-03fb-7467-b689-4d937cf4d42d
     id: r-rehearsal
     kind: task
