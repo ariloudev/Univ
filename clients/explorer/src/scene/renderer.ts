@@ -101,6 +101,8 @@ export class Renderer implements Drawer {
   private readonly fades = new Fades();
   /** The share of each tile's points, its first, that may be drawn, by its id. */
   private share: (id: string) => number = () => 1;
+  /** How opaque the points are drawn with the eye `distance` from the focus. */
+  private opacityAt: (distance: number) => number = pointOpacity;
   /** How each domain's points are drawn, by its name. */
   private detail: (domain: string) => Detail = () => EVERYTHING;
   private readonly detailAt: Record<"levels" | "onsets" | "cumulative" | "slice" | "count", WebGLUniformLocation | null>;
@@ -205,6 +207,11 @@ export class Renderer implements Drawer {
     this.share = share;
   }
 
+  /** Draws the points as opaque as `opacityAt` gives with the eye at a distance from the focus. */
+  setOpacity(opacityAt: (distance: number) => number): void {
+    this.opacityAt = opacityAt;
+  }
+
   /** Draws each domain's points as `detail` gives, by its name. */
   setDetail(detail: (domain: string) => Detail): void {
     this.detail = detail;
@@ -294,7 +301,7 @@ export class Renderer implements Drawer {
     this.use(this.points, frame);
     gl.uniform1f(this.pointSize, POINT_SIZE);
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
-    const opacity = pointOpacity(distance);
+    const opacity = this.opacityAt(distance);
     const fade = (id: string) => this.fades.opacity(id, now);
     this.detailOf = undefined;
     for (const drawn of drawList(this.batches.values(), { sight, masks: this.masks, share: this.share, fade })) {

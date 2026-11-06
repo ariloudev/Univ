@@ -7,6 +7,7 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 import type { Rotations } from "../api/schemas.ts";
 import { Catalogue } from "../catalogue/catalogue.ts";
 import { EVERYTHING } from "../catalogue/lod.ts";
+import { pointOpacity } from "../scene/kinds.ts";
 import { type Batch, type Domain, domainsOf } from "../catalogue/tiles.ts";
 import { Controller, type Surroundings } from "../scene/controller.ts";
 import { viewingDistance } from "../scene/controls.ts";
@@ -257,6 +258,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
     const state = emptyWorld(new Controller(renderer, around), renderer);
     renderer.setShare((id) => state.catalogue?.share(id) ?? 1);
     renderer.setDetail((domain) => state.catalogue?.detail(domain) ?? EVERYTHING);
+    renderer.setOpacity((distance) => pointOpacity(distance, state.catalogue?.thinned === true));
     setWorld(state);
     const abort = new AbortController();
     startCatalogue(release, state, abort.signal)

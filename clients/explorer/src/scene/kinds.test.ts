@@ -18,6 +18,12 @@ describe("the kinds of value", () => {
     expect(pointOpacity(4000)).toBeCloseTo(0.25);
     expect(pointOpacity(1e9)).toBe(0.03);
   });
+
+  it("are drawn as opaque at every distance where level of detail thins them", () => {
+    expect(pointOpacity(400, true)).toBe(1);
+    expect(pointOpacity(4000, true)).toBe(1);
+    expect(pointOpacity(1e9, true)).toBe(1);
+  });
 });
 
 describe("a structure's style", () => {

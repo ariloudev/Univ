@@ -6002,3 +6002,13 @@ blocks:
         detail: "pointOpacity(distance, thinned) in kinds.ts; the renderer reads it through setOpacity; kinds.test."
         state: active
         type: fix
+      - key: 01a1b0b8-a743-7055-99cb-7783130a3a52
+        at: 2026-11-06T11:57:33Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "No distance fade while level of detail thins the points"
+        detail: "pointOpacity(distance, thinned) in kinds.ts; the renderer reads it through setOpacity; kinds.test. Seen on release 10 at 400 Mpc, 1.5 Gpc and 5.85 Gpc: the shape shows from afar, the centre is not washed out. Explorer check: 235 tests, fallow, build."
+        state: done
+        type: fix

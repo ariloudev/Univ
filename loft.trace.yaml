@@ -3564,6 +3564,18 @@ links:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
         body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
+  - node: 01a1b0b8-3632-76bc-88e5-8dd265a1a28d
+    reviewed: 4a2213903851f577a6534a6f706ef590ba93c4b4b784ab32a3c2f54b654b42ca
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn as opaque at every distance where level of detail thins them"
+        body: de15855f0972fea94d4b2af899a0b24b4c615506a9ae030e5932b147ba4366dc
+  - node: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
+    reviewed: d47965b8b7bb6ebfa414dc8a99346638ee39d5f003353bcdc628b44cc26a11e6
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn fainter as the eye withdraws beyond a gigaparsec, never vanishing"
+        body: 7aa258e01941e7c85869e224f7d16d1d4c9e8a0248b1c0f37a410358ee9b621d
   - node: 01a1b093-647d-7308-9b46-bdce5099b2f5
     reviewed: 66009151f7032987facdb56d1a2e55dde96081f117f29c5c6e7798ce83c12778
     tests:

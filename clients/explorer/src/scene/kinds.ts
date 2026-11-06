@@ -27,8 +27,10 @@ const FADE_FROM = 1000;
 const FADE_FLOOR = 0.03;
 
 /** The opacity the points are drawn at, of their kind's, with the eye `distance` from the focus:
- * in proportion to the inverse distance, as the points crowd into fewer pixels. */
-export const pointOpacity = (distance: number): number => Math.max(FADE_FLOOR, Math.min(1, FADE_FROM / distance));
+ * in proportion to the inverse distance, as every point crowds into fewer pixels; or all of it
+ * where they are `thinned` by distance (level of detail), as then they crowd no more. */
+export const pointOpacity = (distance: number, thinned = false): number =>
+  thinned ? 1 : Math.max(FADE_FLOOR, Math.min(1, FADE_FROM / distance));
 
 /** The colours of `KINDS`, in order, for the renderer's table: the one colour for each. */
 export const KIND_COLOURS: readonly Rgba[] = KINDS.map(() => POINT_COLOUR);

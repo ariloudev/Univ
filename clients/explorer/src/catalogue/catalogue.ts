@@ -184,6 +184,11 @@ export class Catalogue {
     };
   }
 
+  /** Whether level of detail is on: the points drawn thinned by distance. */
+  get thinned(): boolean {
+    return this.levelOfDetail;
+  }
+
   /** Turns level of detail on or off: off, every tile is fetched, the coarser levels first, and
    * none dropped; on again, the tiles held come back within the budget. */
   setLevelOfDetail(on: boolean): void {
