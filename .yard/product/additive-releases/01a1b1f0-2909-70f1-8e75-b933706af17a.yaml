@@ -1,0 +1,12 @@
+key: 01a1b1f0-2909-70f1-8e75-b933706af17a
+id: w2
+versions:
+  - key: 01a1b1f0-2909-70f1-8e75-b9394e3a75a5
+    at: 2026-11-06T17:37:48Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W2: Schema 6 and Univ Server reads shared rows"
+    goal: "Every read of Univ Server selects the rows valid in its release and reads files by hash, and pinned reads agree over shared and retired rows."
+    status: planned

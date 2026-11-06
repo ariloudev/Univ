@@ -1,0 +1,12 @@
+key: 01a1b1f0-2909-70f1-8e75-b936956c9b88
+id: w5
+versions:
+  - key: 01a1b1f0-2909-70f1-8e75-b93cada4e31c
+    at: 2026-11-06T17:37:48Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: Migrate release 10 and make release 11"
+    goal: "Local release 10 is under schema 6 with pinned reads unchanged, and release 11 is built and published as its change alone."
+    status: planned

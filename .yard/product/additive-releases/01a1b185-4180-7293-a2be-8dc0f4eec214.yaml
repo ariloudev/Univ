@@ -10,3 +10,12 @@ versions:
     title: "Build additive releases"
     goal: "A release that adds a structure, or one source, is built and published without rebuilding or re-publishing what did not change."
     status: planned
+  - key: 01a1b1f0-2909-70f1-8e75-b938ed75cf19
+    at: 2026-11-06T17:37:48Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W1: Stable numbering and stable shards"
+    goal: "Terms, sources and chains keep their numbers across releases and objects keep their shard, so an unchanged object writes identical rows in the next release."
+    status: active

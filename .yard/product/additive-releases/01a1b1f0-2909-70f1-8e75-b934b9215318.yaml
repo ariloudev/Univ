@@ -1,0 +1,12 @@
+key: 01a1b1f0-2909-70f1-8e75-b934b9215318
+id: w3
+versions:
+  - key: 01a1b1f0-2909-70f1-8e75-b93aaccc70c9
+    at: 2026-11-06T17:37:48Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3: Ingest writes the change"
+    goal: "A build writes only added and changed rows, retirements and new files, with a manifest of each table's change and of the rows valid in the release."
+    status: planned

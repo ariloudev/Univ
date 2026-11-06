@@ -2,12 +2,12 @@ format: yardtokens/2
 session: 0dff9621-d0e9-418a-9aee-e82062f9f784
 host: claude-code
 firstEnded: 2026-11-06T15:41:17Z
-lastEnded: 2026-11-06T17:32:23Z
+lastEnded: 2026-11-06T17:37:51Z
 tokens:
-  input: 130
-  cacheRead: 16759758
-  cacheWrite: 728076
-  output: 42734
+  input: 232
+  cacheRead: 22838220
+  cacheWrite: 1101773
+  output: 77246
 stages:
   - stage: 01a1b185-4180-7293-a2be-8dbd31c993b2
     input: 88
@@ -37,24 +37,61 @@ stages:
         cacheRead: 10730294
         cacheWrite: 30227
         output: 15675
-  - stage: 01a1b1eb-24d7-7794-b4e5-455c6af627ad
+  - stage: 01a1b185-4180-7293-a2be-8dc0f4eec214
     input: 2
-    cacheRead: 0
-    cacheWrite: 550954
-    output: 976
+    cacheRead: 161740
+    cacheWrite: 1884
+    output: 1523
     agents:
       - agent: main
         input: 2
-        cacheRead: 0
-        cacheWrite: 550954
-        output: 976
+        cacheRead: 161740
+        cacheWrite: 1884
+        output: 1523
+  - stage: 01a1b1eb-24d7-7794-b4e5-455c6af627ad
+    input: 102
+    cacheRead: 5916722
+    cacheWrite: 922767
+    output: 33965
+    agents:
+      - agent: main
+        input: 18
+        cacheRead: 2811287
+        cacheWrite: 696796
+        output: 11764
+      - agent: a2fe468f0c9096d1a
+        type: Explore
+        input: 46
+        cacheRead: 1975175
+        cacheWrite: 129530
+        output: 10603
+      - agent: a67183a49e4039163
+        type: Explore
+        input: 38
+        cacheRead: 1130260
+        cacheWrite: 96441
+        output: 11598
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 56
-    cacheRead: 13758025
-    cacheWrite: 602674
-    output: 27453
+    input: 74
+    cacheRead: 16731052
+    cacheWrite: 750400
+    output: 39764
+  - agent: a2fe468f0c9096d1a
+    type: Explore
+    model: claude-opus-5-5
+    input: 46
+    cacheRead: 1975175
+    cacheWrite: 129530
+    output: 10603
+  - agent: a67183a49e4039163
+    type: Explore
+    model: claude-opus-5-5
+    input: 38
+    cacheRead: 1130260
+    cacheWrite: 96441
+    output: 11598
   - agent: adeca6dde4cf288d3
     type: Explore
     model: claude-opus-5-5

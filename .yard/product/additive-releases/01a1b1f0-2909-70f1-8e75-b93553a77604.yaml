@@ -1,0 +1,12 @@
+key: 01a1b1f0-2909-70f1-8e75-b93553a77604
+id: w4
+versions:
+  - key: 01a1b1f0-2909-70f1-8e75-b93bdbc2b807
+    at: 2026-11-06T17:37:48Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4: Publish and prune the change"
+    goal: "Publish uploads only a release's change and checks the rows valid in it; prune deletes only what no kept release holds."
+    status: planned
