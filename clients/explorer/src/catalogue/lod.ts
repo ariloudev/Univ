@@ -25,7 +25,7 @@ export interface Tile {
 }
 
 /** The most points the explorer holds at once. */
-export const POINT_BUDGET = 3_000_000;
+export const POINT_BUDGET = 6_000_000;
 
 /** A node is refined while its points lie farther apart on screen than this, pixels. */
 export const REFINE_SPACING = 3;

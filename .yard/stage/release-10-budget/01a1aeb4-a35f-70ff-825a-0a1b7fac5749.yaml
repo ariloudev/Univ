@@ -1,0 +1,52 @@
+key: 01a1aeb4-a35f-70ff-825a-0a1b7fac5749
+id: budget
+versions:
+  - key: 01a1aeb4-a35f-70ff-825a-0a1f5e2ea630
+    at: 2026-11-06T02:33:56Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "A larger budget, and no hole as the view moves"
+    goal: "The explorer holds 6,000,000 points, and a tile dropped to make room stays drawn until the tiles fetched in its place are drawn"
+    status: active
+blocks:
+  - key: 01a1aeb4-a35f-70ff-825a-0a1cc18aa988
+    id: b-double
+    kind: task
+    versions:
+      - key: 01a1aeb4-a35f-70ff-825a-0a203cb0644c
+        at: 2026-11-06T02:33:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Double the point budget to 6,000,000"
+        detail: "The owner's call. `POINT_BUDGET` 6,000,000, the spec criterion and the README with it; the simulated octree's tiles doubled to 800 points so the budget still fills. About 15 bytes a point on the GPU: some 90 MB of vertex buffers at the budget, and as much in decoded tiles. The decision on WebGL2 still names \"up to three million points\" in its context; left as written, since an accepted decision is superseded, not edited."
+        state: done
+  - key: 01a1aeb4-a35f-70ff-825a-0a1d71a5a2d8
+    id: b-keep
+    kind: task
+    versions:
+      - key: 01a1aeb4-a35f-70ff-825a-0a21078ee1ed
+        at: 2026-11-06T02:33:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Keep a dropped tile drawn until its replacements are"
+        detail: "Make-before-break in the catalogue: a tile dropped to make room is kept drawn, outside the budget, until every tile fetched in the same round is drawn or given up; within an allowance above the budget, the oldest let go first; a kept tile the view wants again is drawn again without a fetch."
+        state: active
+  - key: 01a1aeb4-a35f-70ff-825a-0a1e7feace7d
+    id: b-gate
+    kind: task
+    versions:
+      - key: 01a1aeb4-a35f-70ff-825a-0a225e29a6fa
+        at: 2026-11-06T02:33:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review, gate, merge"
+        detail: "/simplify and /code-review, `cargo xtask check` and `cargo xtask integration`, trace accepted, merged into product/release-10. The owner's two temporary display edits stay out of every commit."
+        state: open

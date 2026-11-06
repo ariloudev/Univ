@@ -3389,19 +3389,19 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
-        body: 9101fbdea4208aad8da6b4b7e36f504dec0f92848114cdaa3eda485333e6c071
+        body: 4c628499d9866e731ea06217509c923c676ee3f914a3323efdd332cd7b220d53
   - node: 01a1aead-1e30-7695-bbd5-099c2f301565
     reviewed: dc850f3fb6fe277e64094fde2aa04f623c05d085327d711a29d36c91cbc15fa8
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
-        body: 9101fbdea4208aad8da6b4b7e36f504dec0f92848114cdaa3eda485333e6c071
+        body: 4c628499d9866e731ea06217509c923c676ee3f914a3323efdd332cd7b220d53
   - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
-    reviewed: d56d1e83e4cfbb1a73c3bc5393c25caa8ee7bb5c00b587c47d326bf8fd2283fd
+    reviewed: 7fbd45cc7ade9bab68f3b5575662f8b135c03c30b90a126fad2508cf9d5fa72b
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "holds no more than 3,000,000 points, counting those on their way"
-        body: fe131166d4f30d069df1b7f4cb44a11ad2bf237a3a901b4a5964db76a2b92b97
+        name: "holds no more than 6,000,000 points, counting those on their way"
+        body: 9964014668f6dbfc0258c0db3418218e5a8edf17715c25ad8f4c93ff040bc444
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
         body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa

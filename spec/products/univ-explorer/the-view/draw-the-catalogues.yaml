@@ -44,7 +44,7 @@ requirements:
       - key: 01a1aead-1e30-7695-bbd5-099c2f301565
         name: "A held tile counts as in view until it lies more than 1 degree outside the view, so that a view turning a little does not drop a tile at its edge and fetch it again as it turns back."
       - key: 01a1a497-e843-728a-bce8-4006f5c2ce8f
-        name: "No more than 3,000,000 points are held at once."
+        name: "No more than 6,000,000 points are held at once."
   - key: 01a1a689-0b25-768a-9f1e-cc27109fed3c
     statement:
       form: event_driven

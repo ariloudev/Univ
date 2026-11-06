@@ -1,0 +1,21 @@
+format: yardlog/1
+key: 01a1aeb4-a35f-70ff-825a-0a1a490caf76
+branch: "stage/release-10-budget"
+base: "develop"
+title: "stage/release-10-budget"
+revision: 1
+opened:
+  at: 2026-11-06T02:33:56Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1aeb4-a35f-70ff-825a-0a1b7fac5749
+    id: budget
+acts:
+  - at: 2026-11-06T02:33:56Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"

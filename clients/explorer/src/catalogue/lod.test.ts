@@ -157,8 +157,8 @@ describe("choosing tiles", () => {
     expect(spacing(TILES[0] as Tile, from, extent)).toBeLessThan(spacing(TILES[0] as Tile, from, { ...extent, core: extent }));
   });
 
-  it("holds no more than 3,000,000 points, counting those on their way", () => {
-    expect(POINT_BUDGET).toBe(3_000_000);
+  it("holds no more than 6,000,000 points, counting those on their way", () => {
+    expect(POINT_BUDGET).toBe(6_000_000);
     // The root's children in view, r7 and r1, come as a family of 20 points: with room for 25
     // they are fetched, with room for 15 and nothing to drop they are not.
     expect(ids(plan(treeOf(TILES), holding(ROOTS, POINT_BUDGET - 25), sight([300, 300, 300]), 10).fetch)).toEqual(["web/r7", "web/r1"]);
@@ -331,15 +331,15 @@ describe("a view that moves a little", () => {
 
   it("settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn", () => {
     expect(HELD_VIEW_MARGIN).toBeCloseTo(Math.PI / 180);
-    // SIMULATED: an octree five levels deep over a cloud 1,500 Mpc in radius, 400 points a tile,
-    // more than the budget of 3,000,000 can hold, seen from 1,500 Mpc off a focus 670 Mpc from
+    // SIMULATED: an octree five levels deep over a cloud 1,500 Mpc in radius, 800 points a tile,
+    // more than the budget of 6,000,000 can hold, seen from 1,500 Mpc off a focus 670 Mpc from
     // its centre, so that the view's sides cut through it.
-    const tiles: Tile[] = [tile("web/r", [0, 0, 0], 4000, 400)];
+    const tiles: Tile[] = [tile("web/r", [0, 0, 0], 4000, 800)];
     const inCloud = (edge: number) => (c: Vec3) => Math.hypot(...c) - edge * 0.433 <= 1500;
     for (let level = 0, edge = 4000; level < 5; level += 1, edge /= 2) {
-      for (const parent of tiles.filter((t) => t.edge === edge)) tiles.push(...children(parent.id, parent.centre, edge, 400, inCloud(edge)));
+      for (const parent of tiles.filter((t) => t.edge === edge)) tiles.push(...children(parent.id, parent.centre, edge, 800, inCloud(edge)));
     }
-    expect(tiles.length * 400).toBeGreaterThan(POINT_BUDGET);
+    expect(tiles.length * 800).toBeGreaterThan(POINT_BUDGET);
     const catalogue = simulatedCatalogue(treeOf(tiles));
     const turned = (yaw: number) => sightOf({ focus: [600, 300, 0], distance: 1500, yaw, pitch: 0.2 }, IDENTITY, 1000, 700);
     const turn = (0.1 * Math.PI) / 180;
