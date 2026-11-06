@@ -3,18 +3,14 @@ import { describe, expect, it } from "vitest";
 import type { Sight } from "./frustum.ts";
 import { type Listed, drawList } from "./drawList.ts";
 import { NO_MASKS } from "./masks.ts";
-import type { Vec3 } from "./vec.ts";
+import { IDENTITY, type Vec3 } from "./vec.ts";
 
 const tile = (id: string, domain: string, centre: Vec3, count = 100): Listed => ({ id, domain, count, extent: { centre, radius: 1 } });
 
 /** A sight that sees what lies where x ≥ 0. */
 const sight: Sight = {
   eye: [0, 0, 0],
-  axes: [
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1],
-  ],
+  axes: IDENTITY,
   focal: 1000,
   inView: (centre) => centre[0] >= 0,
 };

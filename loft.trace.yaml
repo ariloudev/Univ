@@ -3474,6 +3474,9 @@ links:
   - node: 01a1b07b-8157-7546-927e-2724ac33dc33
     reviewed: 4ef267326d10412e4ad89616756fd1b15d6f5bcabc69491a2f723a1cb9bfb287
     tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "drops what the view does not want once level of detail is on again, though every fetch is still on its way"
+        body: 6fcc37a62dadd95663ecc636543993a00934948f938b120486d980d17a47491f
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "is followed, once turned on again, by dropping what the view does not want until the points held fit the budget"
         body: 90d5ea88f17640060d178574d4167c1fe71e9591c7b4f0d7c5e517e605ac3180
@@ -3494,10 +3497,10 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "rises level by level as a typical tile of the level above has its points from 3 to 6 pixels apart"
-        body: 6a48c3892f50d9e60f57f389094705d72a16be5910d6cdfc7d507eabbeb9c52c
+        body: 4021694088a1127cc2950c7117309f175854f529bc494cc78240b61bae089e48
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
-        body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
+        body: a774ab157253d5e165cc64c008f48b6062fb87ad78ea1c67cfef4d518301919c
       - file: "clients/explorer/src/scene/drawList.test.ts"
         name: "is each tile in sight and not turned off, its share of its points and as opaque as its fade"
         body: ae19fa1f30f9bbe477a47ec9a5a37ef9577358f14e3c1f73364e445265c340c2
@@ -3521,16 +3524,16 @@ links:
         body: f1a40cd740d3aca5249990cc645caaefdaf85ca6d456f557c99caae9ae302016
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
-        body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
+        body: a774ab157253d5e165cc64c008f48b6062fb87ad78ea1c67cfef4d518301919c
   - node: 01a1b093-81da-759e-8532-70d7aa4d0ff1
     reviewed: 28de97338d549340c430468715db45e4b4417cf8bf086804edfd794eb492a9b4
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "draws every point of a root, and of a tile the first whose rank lies below the share its nearest points need"
-        body: d80013a59f1bb7260d8593791f8d02ca6f9a5b6450c0e5a4d6c8a6c603d10037
+        body: 682592f8cb21bb8ab8efff142be7d376d42e6daea0d9954abbeb8784fdadacf4
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
-        body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
+        body: a774ab157253d5e165cc64c008f48b6062fb87ad78ea1c67cfef4d518301919c
   - node: 01a1b093-647d-7308-9b46-bdcbf842c1af
     reviewed: a51a9aa2816658a01a4e18771131d9864b6b8fc71b179f36c83dce2013e27047
     tests:
@@ -3548,10 +3551,10 @@ links:
     tests:
       - file: "clients/explorer/src/scene/fades.test.ts"
         name: "rises from none to full over 0.3 seconds once the tile arrives"
-        body: 6f2f793758eb719e962e1b18691e1cb08729237ff96e0f0856cfac1974421040
+        body: 02f85beaaf310b33c3e0d3f41e4439868791e6b8f9e7eac052138b3ca703dfb4
       - file: "clients/explorer/src/scene/fades.test.ts"
         name: "falls to none over 0.3 seconds once the tile goes, and only then is the tile gone"
-        body: 1fdb023bd0288bd330665ab1519fc1d5564aade760fc5bf147d10f18ec8a4b71
+        body: be5244e92ed198132e5200f524d726c42d24caf93ebe6ef003c246f528799b5f
       - file: "clients/explorer/src/scene/fades.test.ts"
         name: "turns from where it is when the tile comes back before it is gone, or goes before it is in"
         body: 6cfde9927e6e3d68c619c0cb9584720223e25477e6f3d4f04464a093e2862dc5
@@ -3563,13 +3566,22 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
-        body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
+        body: a774ab157253d5e165cc64c008f48b6062fb87ad78ea1c67cfef4d518301919c
   - node: 01a1b0b8-3632-76bc-88e5-8dd265a1a28d
-    reviewed: 4a2213903851f577a6534a6f706ef590ba93c4b4b784ab32a3c2f54b654b42ca
+    reviewed: e728a1aba6b6d4eb674d19d344d82ea2a91788a2f115bb523ef9688634d96986
     tests:
       - file: "clients/explorer/src/scene/kinds.test.ts"
-        name: "are drawn as opaque at every distance where level of detail thins them"
-        body: de15855f0972fea94d4b2af899a0b24b4c615506a9ae030e5932b147ba4366dc
+        name: "are drawn as opaque while level of detail still thins their domain as the eye withdraws, and fade beyond"
+        body: 47fc5be6cc9d8b329788604685ff10493b45c8d3460c088fb1fec39b5ac131c2
+  - node: 01a1b0c4-82ea-7058-b4c4-959c016ec0f3
+    reviewed: b34938be9f5b8b2d6a19d1d67396595d2639225c7472c16bb8310920807e7338
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn as opaque while level of detail still thins their domain as the eye withdraws, and fade beyond"
+        body: 47fc5be6cc9d8b329788604685ff10493b45c8d3460c088fb1fec39b5ac131c2
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "fade as the eye withdraws for a domain of one level, or with level of detail off"
+        body: 3854a34830cff4b0cd7788513935714d64f8374003f8ff138875dc4ced16be03
   - node: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
     reviewed: d47965b8b7bb6ebfa414dc8a99346638ee39d5f003353bcdc628b44cc26a11e6
     tests:
@@ -3579,12 +3591,9 @@ links:
   - node: 01a1b093-647d-7308-9b46-bdce5099b2f5
     reviewed: 66009151f7032987facdb56d1a2e55dde96081f117f29c5c6e7798ce83c12778
     tests:
-      - file: "clients/explorer/src/scene/pick.test.ts"
-        name: "passes over the points beyond those drawn of a batch's share"
-        body: 0bd429616af3a0cf75a1b4b12a4856eb9cf6efb8696f79cb9b0ad17a8cbc4168
       - file: "clients/explorer/src/ui/scenePoint.test.ts"
-        name: "is found under the pointer only where it is drawn: within its tile's share, and below the share its distance needs"
-        body: 2b8e80b420ca162db0465f75960a623667d96e9c2e673922375d6d1dd005c435
+        name: "is found under the pointer only where it is drawn, its rank below the share its distance needs"
+        body: d22daa31814d87b046f1e1633d1def3387da5d685edd15c8677604e491e267a3
   - node: 01a1a689-0b25-768a-9f1e-cc2c484365d4
     reviewed: e82b1fb1e371fca155aeaa6795d4f08bf91215034ad308160bd02a5eac646c7f
     tests:
@@ -3986,7 +3995,7 @@ links:
         body: 7ff258700eb7cccdd4b78ebf6cacb49a317eccee6f8253952279257cd9a27408
       - file: "clients/explorer/src/ui/scenePoint.test.ts"
         name: "is found under the pointer, or nothing is"
-        body: 48dde47ae4c82c10a015db4884bca0d51f1c3c2dc0a81d588f0de3e54c112f64
+        body: eaaf914f981b9cfbcdb4635d2758d02b87b4cbd2e02f14381487eec097efd022
       - file: "clients/explorer/src/scene/pick.test.ts"
         name: "finds the point under the pointer, across batches"
         body: 37f02fcb621ce6620054c55f7a57f43067e7079259e99239af4c80c72c60e157

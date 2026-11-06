@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { APPROXIMATE_COLOUR, CHOSEN_COLOUR, KINDS, KIND_COLOURS, KIND_INDEX, POINT_CSS, STRUCTURE_COLOUR, css, pointOpacity, structureStyle } from "./kinds.ts";
+import { EVERYTHING, LEVELS } from "../catalogue/lod.ts";
+import { APPROXIMATE_COLOUR, CHOSEN_COLOUR, KINDS, KIND_COLOURS, KIND_INDEX, POINT_CSS, STRUCTURE_COLOUR, css, detailOpacity, pointOpacity, structureStyle } from "./kinds.ts";
 
 describe("the kinds of value", () => {
   it("are drawn in one colour, in one order whatever a manifest lists", () => {
@@ -19,10 +20,22 @@ describe("the kinds of value", () => {
     expect(pointOpacity(1e9)).toBe(0.03);
   });
 
-  it("are drawn as opaque at every distance where level of detail thins them", () => {
-    expect(pointOpacity(400, true)).toBe(1);
-    expect(pointOpacity(4000, true)).toBe(1);
-    expect(pointOpacity(1e9, true)).toBe(1);
+  it("are drawn as opaque while level of detail still thins their domain as the eye withdraws, and fade beyond", () => {
+    // The view starts to need the level below the root within 58,677 Mpc, as for release 10's
+    // cosmic web: up to there the points are fully opaque, beyond it they fade.
+    const onsets = new Float32Array(LEVELS);
+    onsets[1] = 58_677;
+    const thinned = { onsets, cumulative: new Float32Array(LEVELS).fill(1) };
+    expect(detailOpacity(thinned, 400)).toBe(1);
+    expect(detailOpacity(thinned, 20_000)).toBe(1);
+    expect(detailOpacity(thinned, 117_354)).toBeCloseTo(0.5);
+    expect(detailOpacity(thinned, 117_354)).toBeGreaterThan(pointOpacity(117_354));
+  });
+
+  it("fade as the eye withdraws for a domain of one level, or with level of detail off", () => {
+    expect(detailOpacity(EVERYTHING, 400)).toBe(pointOpacity(400));
+    expect(detailOpacity(EVERYTHING, 4000)).toBe(pointOpacity(4000));
+    expect(detailOpacity(EVERYTHING, 1e9)).toBe(0.03);
   });
 });
 

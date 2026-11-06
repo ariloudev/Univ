@@ -5,6 +5,7 @@
 
 import type { KindOfValue } from "univ-tile-decoder";
 
+import type { Detail } from "../catalogue/lod.ts";
 import type { Rgba } from "./drawing.ts";
 
 /** The kinds of value, in the order points index them and the renderer colours them. */
@@ -27,10 +28,18 @@ const FADE_FROM = 1000;
 const FADE_FLOOR = 0.03;
 
 /** The opacity the points are drawn at, of their kind's, with the eye `distance` from the focus:
- * in proportion to the inverse distance, as every point crowds into fewer pixels; or all of it
- * where they are `thinned` by distance (level of detail), as then they crowd no more. */
-export const pointOpacity = (distance: number, thinned = false): number =>
-  thinned ? 1 : Math.max(FADE_FLOOR, Math.min(1, FADE_FROM / distance));
+ * in proportion to the inverse distance, as every point crowds into fewer pixels. */
+export const pointOpacity = (distance: number): number => Math.max(FADE_FLOOR, Math.min(1, FADE_FROM / distance));
+
+/** The opacity a domain's points are drawn at with its level of detail `detail`, the eye
+ * `distance` from the focus: all of it while the view still thins the domain as the eye withdraws,
+ * within the distance where it starts to need the level below the root, and fading beyond it as
+ * the points crowd again; never fainter than `pointOpacity`, which is all a domain of one level,
+ * or one with level of detail off, gets. */
+export function detailOpacity(detail: Detail, distance: number): number {
+  const thinned = Math.min(1, (detail.onsets[1] ?? 0) / distance);
+  return Math.max(pointOpacity(distance), thinned);
+}
 
 /** The colours of `KINDS`, in order, for the renderer's table: the one colour for each. */
 export const KIND_COLOURS: readonly Rgba[] = KINDS.map(() => POINT_COLOUR);

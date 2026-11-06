@@ -15,6 +15,7 @@ import {
   type Tree,
   apparentSize,
   extentOf,
+  detailOf,
   drawnShare,
   neededAt,
   onsetsOf,
@@ -35,6 +36,7 @@ function tile(id: string, centre: Vec3, edge: number, points = 10): Tile {
     centre,
     edge,
     points,
+    slice: [0, 1],
   };
 }
 
@@ -409,19 +411,20 @@ describe("the share of a domain drawn", () => {
   // focal length of 1000 px, level 1 is needed within 33,333 Mpc and level 2 within 16,667 Mpc.
   const levels: Levels = { edges: [1000, 500, 250], points: [100, 100, 0], cumulative: [0.1, 0.4, 1] };
   const onsets = onsetsOf(levels, 1000);
+  const detail = detailOf(levels, onsets);
   const parent = tile("web/r", [0, 0, 0], 1000, 100);
 
   it("rises level by level as a typical tile of the level above has its points from 3 to 6 pixels apart", () => {
     expect(onsets[1]).toBeCloseTo(100_000 / 3);
     expect(onsets[2]).toBeCloseTo(50_000 / 3);
     expect(spacing(parent, levels, { ...sight([0, 0, 0]), eye: [onsets[1] ?? 0, 0, 0] }, { centre: [0, 0, 0], radius: 0, core: { centre: [0, 0, 0], radius: 0 } })).toBeCloseTo(3);
-    expect(neededAt(levels, onsets, 1e6)).toBeCloseTo(0.1);
-    expect(neededAt(levels, onsets, 100_000 / 3)).toBeCloseTo(0.1);
-    expect(neededAt(levels, onsets, 200_000 / 9)).toBeCloseTo(0.25);
-    expect(neededAt(levels, onsets, 50_000 / 3)).toBeCloseTo(0.4);
-    expect(neededAt(levels, onsets, 100_000 / 9)).toBeCloseTo(0.7);
-    expect(neededAt(levels, onsets, 25_000 / 3)).toBeCloseTo(1);
-    expect(neededAt(levels, onsets, 1)).toBeCloseTo(1);
+    expect(neededAt(detail, 1e6)).toBeCloseTo(0.1);
+    expect(neededAt(detail, 100_000 / 3)).toBeCloseTo(0.1);
+    expect(neededAt(detail, 200_000 / 9)).toBeCloseTo(0.25);
+    expect(neededAt(detail, 50_000 / 3)).toBeCloseTo(0.4);
+    expect(neededAt(detail, 100_000 / 9)).toBeCloseTo(0.7);
+    expect(neededAt(detail, 25_000 / 3)).toBeCloseTo(1);
+    expect(neededAt(detail, 1)).toBeCloseTo(1);
   });
 
   it("ranks a tile's points evenly through its slice, in their order", () => {
@@ -432,11 +435,11 @@ describe("the share of a domain drawn", () => {
   it("draws every point of a root, and of a tile the first whose rank lies below the share its nearest points need", () => {
     const root = { ...parent, slice: [0, 0.1] as const };
     const child = { ...tile("web/r0", [0, 0, 0], 500, 100), slice: [0.1, 0.4] as const };
-    const from = (distance: number): Sight => ({ ...sight([distance, 0, 0], true), focal: 1000 });
+    const from = (distance: number): Vec3 => [distance, 0, 0];
     const at = { centre: [0, 0, 0] as Vec3, radius: 0 };
-    expect(drawnShare(root, levels, from(1e9), at)).toBe(1);
-    expect(drawnShare(child, levels, from(1e6), at)).toBe(0);
-    expect(drawnShare(child, levels, from(200_000 / 9), at)).toBeCloseTo(0.5);
-    expect(drawnShare(child, levels, from(1000), at)).toBe(1);
+    expect(drawnShare(root, detail, from(1e9), at)).toBe(1);
+    expect(drawnShare(child, detail, from(1e6), at)).toBeCloseTo(0, 6);
+    expect(drawnShare(child, detail, from(200_000 / 9), at)).toBeCloseTo(0.5);
+    expect(drawnShare(child, detail, from(1000), at)).toBe(1);
   });
 });

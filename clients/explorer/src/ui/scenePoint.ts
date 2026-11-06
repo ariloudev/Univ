@@ -1,6 +1,5 @@
 // A drawn point as the hover label and the chosen object know it, read from its tile.
 
-import { drawnOf } from "../catalogue/lod.ts";
 import type { Batch, Domain } from "../catalogue/tiles.ts";
 import type { StarColourIndex } from "../scene/starColour.ts";
 import { KINDS } from "../scene/kinds.ts";
@@ -61,11 +60,7 @@ function both(shown: Shown | undefined, drawn: ((index: number) => boolean) | un
 /** The point of `world` under `pointer`, if any, of the points drawn. */
 export function pointUnder(world: World, pointer: Pointer): ScenePoint | undefined {
   const { controller, catalogue } = world;
-  const drawn = world.pickable.map((p) => ({
-    ...p,
-    count: drawnOf(p.offsets.length / 3, catalogue?.share(p.batch.tile.id) ?? 1),
-    shown: both(p.shown, catalogue?.drawnPoints(p.batch)),
-  }));
+  const drawn = world.pickable.map((p) => ({ ...p, shown: both(p.shown, catalogue?.drawnPoints(p.batch)) }));
   const picked = pick(drawn, controller.view, controller.toFrame, pointer);
   const entry = picked === undefined ? undefined : world.pickable[picked.batch];
   if (picked === undefined || entry === undefined || catalogue === undefined) return undefined;

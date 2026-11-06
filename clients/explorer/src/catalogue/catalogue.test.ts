@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { Http } from "../api/client.ts";
 import { DOMAINS, bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts";
 import { Catalogue, KEEP_ALLOWANCE } from "./catalogue.ts";
+import { EVERYTHING } from "./lod.ts";
 import { NO_MASKS, masksOf } from "../scene/masks.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
 import type { Sight } from "../scene/frustum.ts";
@@ -291,19 +292,43 @@ describe("the catalogue", () => {
     // Seen from so far that the domain needs no more than its root holds, 8 of its 60 points.
     catalogue.update({ ...looking(true), focal: 1e-9 });
     expect(catalogue.share(root.id)).toBe(1);
-    expect(catalogue.share(child.id)).toBe(0);
+    expect(catalogue.share(child.id)).toBeCloseTo(0, 6);
     expect(every(rootBatch, catalogue.drawnPoints(rootBatch))).not.toContain(false);
     expect(every(childBatch, catalogue.drawnPoints(childBatch))).not.toContain(true);
     const detail = catalogue.detail("simulated");
-    expect(detail.levels).toBe(2);
     expect(detail.cumulative[0]).toBeCloseTo(8 / 60);
     expect(detail.cumulative[1]).toBe(1);
     expect(detail.onsets[1]).toBeLessThan(1e-6);
     catalogue.setLevelOfDetail(false);
     expect(catalogue.share(child.id)).toBe(1);
     expect(every(childBatch, catalogue.drawnPoints(childBatch))).not.toContain(false);
-    expect(catalogue.detail("simulated")).toEqual(expect.objectContaining({ levels: 1 }));
-    expect(catalogue.detail("simulated").cumulative[0]).toBe(1);
+    expect(catalogue.detail("simulated")).toBe(EVERYTHING);
+    await steady(drawn);
+  });
+
+  it("drops what the view does not want once level of detail is on again, though every fetch is still on its way", async () => {
+    // Level of detail off, on a budget of the root alone: the root and r0 and r1 arrive, and the
+    // six other children are held back, so that every fetch is on its way.
+    const gate = gated(server(undefined, undefined, ["simulated"]));
+    gate.hold(["r2", "r3", "r4", "r5", "r6", "r7"]);
+    const domains = await domainsOf(2, { http: gate.http });
+    const root = domains[0]?.tiles.find((t) => t.parent === undefined);
+    if (root === undefined) throw new Error("no root");
+    const drawn: string[] = [];
+    const events = {
+      onBatch: (b: Batch) => drawn.push(b.tile.id),
+      onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
+      onChange: () => undefined,
+    };
+    const catalogue = new Catalogue(2, domains, events, { http: gate.http, budget: root.points, keep: 0 });
+    catalogue.setLevelOfDetail(false);
+    catalogue.update(sight());
+    await until(() => drawn.length === 3);
+    await steady(drawn);
+    expect([...drawn].sort()).toEqual(["simulated/r", "simulated/r0", "simulated/r1"]);
+    catalogue.setLevelOfDetail(true);
+    expect(drawn).toEqual(["simulated/r"]);
+    gate.release();
     await steady(drawn);
   });
 

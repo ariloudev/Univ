@@ -23,8 +23,8 @@ export interface Tile {
   edge: number;
   points: number;
   /** The share of its domain's points its level holds, from what the levels above hold to what
-   * its level adds, or to all for a leaf; all of the domain where none is given. */
-  slice?: readonly [number, number];
+   * its level adds, or to all for a leaf. */
+  slice: readonly [number, number];
 }
 
 /** The most points the explorer holds at once. */
@@ -122,8 +122,11 @@ export interface Levels {
   cumulative: readonly number[];
 }
 
+/** The depth below its domain's root of the tile at `address`, the root's being "r". */
+export const levelOfAddress = (address: string): number => address.length - 1;
+
 /** A tile's depth below its domain's root. */
-const levelOf = (tile: Tile): number => tile.address.length - 1;
+const levelOf = (tile: Tile): number => levelOfAddress(tile.address);
 
 /** The levels of each domain of `tiles`, by domain, split tiles being those with `children`. */
 function levelsOf(tiles: readonly Tile[], children: ReadonlyMap<string, readonly Tile[]>): Map<string, Levels> {
@@ -139,7 +142,7 @@ function levelsOf(tiles: readonly Tile[], children: ReadonlyMap<string, readonly
     if (!children.has(tile.id)) continue;
     sum.points[level] = (sum.points[level] ?? 0) + tile.points;
     sum.split[level] = (sum.split[level] ?? 0) + 1;
-    sum.cumulative[level] = tile.slice?.[1] ?? 1;
+    sum.cumulative[level] = tile.slice[1];
   }
   const levels = new Map<string, Levels>();
   for (const [domain, sum] of sums) {
@@ -177,24 +180,21 @@ const refines = (tile: Tile, levels: Levels | undefined, sight: Sight, extent: E
   levels !== undefined && sight.inView(extent.centre, extent.radius) && spacing(tile, levels, sight, extent) > limit;
 
 /** The distance, for each level below the root, within which the view starts to need it: where
- * a typical tile of the level above has its points `REFINE_SPACING` apart on screen; 0 for a
- * level never needed. */
+ * a typical tile of the level above has its points `REFINE_SPACING` apart on screen, its spacing
+ * from a reach of 1 over that; 0 for the root, always needed, and for a level never needed. */
 export function onsetsOf(levels: Levels, focal: number): number[] {
-  return levels.edges.map((_, level) => {
-    if (level === 0) return Number.POSITIVE_INFINITY;
-    const points = levels.points[level - 1] ?? 0;
-    return points > 0 ? ((levels.edges[level - 1] ?? 0) * focal) / (REFINE_SPACING * Math.sqrt(points)) : 0;
-  });
+  return levels.edges.map((_, level) => (level === 0 ? 0 : typicalSpacing(levels, level - 1, 1, focal) / REFINE_SPACING));
 }
 
-/** The share of a domain the view needs at `distance` from the eye: what the root holds, and of
- * each level below it the share it adds, in proportion as a typical tile of the level above has
- * its points from 3 to 6 pixels apart on screen there, its `onsets` distance and half of it. */
-export function neededAt(levels: Levels, onsets: readonly number[], distance: number): number {
-  let share = levels.cumulative[0] ?? 1;
-  for (let level = 1; level < levels.cumulative.length; level += 1) {
-    const added = (levels.cumulative[level] ?? 1) - (levels.cumulative[level - 1] ?? 1);
-    share += added * Math.min(1, Math.max(0, (onsets[level] ?? 0) / Math.max(distance, 1e-12) - 1));
+/** The share of a domain the view needs at `distance` from the eye, from the `detail` the point
+ * shader is given and as its `needed` works it out: what the root holds, and of each level below
+ * it the share it adds, in proportion as a typical tile of the level above has its points from 3
+ * to 6 pixels apart on screen there, its onset distance and half of it. */
+export function neededAt({ onsets, cumulative }: Detail, distance: number): number {
+  let share = cumulative[0] ?? 1;
+  const near = 1 / Math.max(distance, 1e-12);
+  for (let level = 1; level < LEVELS; level += 1) {
+    share += ((cumulative[level] ?? 1) - (cumulative[level - 1] ?? 1)) * Math.min(1, Math.max(0, (onsets[level] ?? 0) * near - 1));
   }
   return share;
 }
@@ -202,29 +202,52 @@ export function neededAt(levels: Levels, onsets: readonly number[], distance: nu
 /** The rank in its domain of point `index` of the `count` points of `tile`: its place in the
  * tile's slice, the points dividing it evenly in their order. */
 export function rankOf(tile: Tile, index: number, count: number): number {
-  const [lo, hi] = tile.slice ?? [0, 1];
+  const [lo, hi] = tile.slice;
   return lo + ((hi - lo) * (index + 0.5)) / Math.max(1, count);
 }
 
-/** The share of `tile`'s points, its first, that may be drawn for `sight`: those whose rank lies
- * below the share its domain needs at the tile's nearest points, in `extent`. */
-export function drawnShare(tile: Tile, levels: Levels, sight: Sight, extent: Sphere = cubeExtent(tile)): number {
-  const [lo, hi] = tile.slice ?? [0, 1];
-  const needed = neededAt(levels, onsetsOf(levels, sight.focal), Math.max(norm(sub(extent.centre, sight.eye)) - extent.radius, 0));
+/** The share of `tile`'s points, its first, that may be drawn from `eye` with its domain's
+ * `detail`: those whose rank lies below the share its domain needs at the tile's nearest points,
+ * in `extent`. The nearest point is taken at its true distance, not `reachOf`'s, so that the share
+ * holds every point the shader draws; by hand, as it is worked out for every tile every frame. */
+export function drawnShare(tile: Tile, detail: Detail, eye: Vec3, extent: Sphere = cubeExtent(tile)): number {
+  const [lo, hi] = tile.slice;
+  const dx = extent.centre[0] - eye[0];
+  const dy = extent.centre[1] - eye[1];
+  const dz = extent.centre[2] - eye[2];
+  const needed = neededAt(detail, Math.max(Math.sqrt(dx * dx + dy * dy + dz * dz) - extent.radius, 0));
   if (hi <= lo) return needed > lo ? 1 : 0;
   return Math.min(1, Math.max(0, (needed - lo) / (hi - lo)));
 }
 
-/** How the renderer draws a domain's points: `levels` levels, the distance within which the view
- * starts to need each, and the share of the domain the levels down to each hold, `LEVELS` of each. */
+/** How the renderer draws a domain's points: for each of `LEVELS` levels, the distance within
+ * which the view starts to need it and the share of the domain the levels down to it hold; a
+ * level beyond the domain's depth is never needed and adds nothing. */
 export interface Detail {
-  levels: number;
   onsets: Float32Array;
   cumulative: Float32Array;
 }
 
-/** Every point drawn, as with level of detail off: one level holding all of the domain. */
-export const EVERYTHING: Detail = { levels: 1, onsets: new Float32Array(LEVELS), cumulative: new Float32Array(LEVELS).fill(1) };
+/** Every point drawn, as with level of detail off: every level holding all of the domain. */
+export const EVERYTHING: Detail = { onsets: new Float32Array(LEVELS), cumulative: new Float32Array(LEVELS).fill(1) };
+
+/** The detail of a domain of `levels` whose levels are needed within `onsets`. */
+export function detailOf(levels: Levels, onsets: readonly number[]): Detail {
+  const detail = { onsets: new Float32Array(LEVELS), cumulative: new Float32Array(LEVELS).fill(1) };
+  detail.onsets.set(onsets);
+  detail.cumulative.set(levels.cumulative);
+  return detail;
+}
+
+/** What the renderer reads of level of detail: the share of each tile's points, its first, it
+ * may draw, by the tile's id, and each domain's detail, by its name. */
+export interface DrawnDetail {
+  share: (id: string) => number;
+  detail: (domain: string) => Detail;
+}
+
+/** Every point of every tile drawn, before there is a catalogue to say otherwise. */
+export const EVERY_POINT: DrawnDetail = { share: () => 1, detail: () => EVERYTHING };
 
 /** How many of `points` points a share of `share` draws. */
 export const drawnOf = (points: number, share: number): number => Math.round(points * share);
@@ -238,6 +261,8 @@ export interface Tree<T extends Tile> {
   byId: ReadonlyMap<string, T>;
   /** Each domain's levels, by its name. */
   levels: ReadonlyMap<string, Levels>;
+  /** Every tile, the coarser levels first. */
+  byDepth: readonly T[];
 }
 
 export function treeOf<T extends Tile>(tiles: readonly T[]): Tree<T> {
@@ -254,6 +279,7 @@ export function treeOf<T extends Tile>(tiles: readonly T[]): Tree<T> {
     children,
     byId: new Map(tiles.map((t) => [t.id, t])),
     levels: levelsOf(tiles, children),
+    byDepth: [...tiles].sort((a, b) => levelOf(a) - levelOf(b)),
   };
 }
 
@@ -338,8 +364,12 @@ const isOpen = (holding: Holding, id: string): boolean => !holding.settled.has(i
 /** What to fetch with level of detail off: `count` of the tiles not yet held, the coarser levels
  * first, whatever the view and the budget, and nothing to drop. */
 export function planEvery<T extends Tile>(tree: Tree<T>, holding: Holding, count: number): Plan<T> {
-  const open = tree.tiles.filter((t) => isOpen(holding, t.id));
-  return { fetch: open.sort((a, b) => a.address.length - b.address.length).slice(0, count), drop: [] };
+  const fetch: T[] = [];
+  for (const tile of tree.byDepth) {
+    if (fetch.length >= count) break;
+    if (isOpen(holding, tile.id)) fetch.push(tile);
+  }
+  return { fetch, drop: [] };
 }
 
 /** What to fetch and drop for `sight`: every root first; then each wanted family whose parent is
@@ -379,7 +409,9 @@ export function plan<T extends Tile>(
 class Room<T extends Tile> {
   readonly drop: T[] = [];
   private readonly dropped = new Set<string>();
+  /** The leaves that may be dropped, least needed first, and the next of them. */
   private spare: T[] = [];
+  private at = 0;
   private points: number;
 
   constructor(
@@ -394,13 +426,14 @@ class Room<T extends Tile> {
 
   /** Makes room for `points` more, dropping what it must; nothing is dropped where they cannot fit. */
   make(points: number): boolean {
-    const before = { drops: this.drop.length, points: this.points, spare: [...this.spare] };
+    const before = { drops: this.drop.length, points: this.points, spare: this.spare, at: this.at };
     while (this.points + points > this.budget) {
       const next = this.next();
       if (next === undefined) {
         for (const t of this.drop.splice(before.drops)) this.dropped.delete(t.id);
         this.points = before.points;
         this.spare = before.spare;
+        this.at = before.at;
         return false;
       }
       this.take(next);
@@ -427,8 +460,13 @@ class Room<T extends Tile> {
 
   /** The next tile to drop: the least needed leaf of what is held and not wanted. */
   private next(): T | undefined {
-    if (this.spare.length === 0) this.spare = this.leaves();
-    return this.spare.shift();
+    if (this.at >= this.spare.length) {
+      this.spare = this.leaves();
+      this.at = 0;
+    }
+    const next = this.spare[this.at];
+    this.at += 1;
+    return next;
   }
 
   /** The held tiles not wanted, nor a root, nor with a child drawn or on its way, least needed first. */

@@ -8,7 +8,7 @@ import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
 import { starBytes } from "../scene/starColour.ts";
 import { add, scale } from "../scene/vec.ts";
-import { type Extent, type Tile, extentOf } from "./lod.ts";
+import { type Extent, type Tile, extentOf, levelOfAddress } from "./lod.ts";
 import { shuffled } from "./shuffle.ts";
 
 /** A tile of a domain, with the manifest's node for it. */
@@ -90,7 +90,7 @@ export function tilesOf(name: string, manifest: ExplorerManifest): DomainTile[] 
   const split = new Set(manifest.nodes.map((node) => node.address.slice(0, -1)));
   return manifest.nodes.map((node) => {
     const { min, max } = node.bounds;
-    const level = node.address.length - 1;
+    const level = levelOfAddress(node.address);
     const above = level === 0 ? 0 : (held[level - 1] ?? 1);
     return {
       id: `${name}/${node.address}`,
@@ -110,7 +110,8 @@ export function tilesOf(name: string, manifest: ExplorerManifest): DomainTile[] 
  * level keeps the level's fraction of the points that reach it, the rest going down. */
 function cumulativeOf(manifest: ExplorerManifest): number[] {
   const fractions = new Map(manifest.levels.map((l) => [l.level, l.fraction]));
-  const depth = Math.max(0, ...manifest.nodes.map((node) => node.address.length));
+  let depth = 0;
+  for (const node of manifest.nodes) depth = Math.max(depth, levelOfAddress(node.address) + 1);
   const held: number[] = [];
   let left = 1;
   for (let level = 0; level < depth; level += 1) {

@@ -69,7 +69,8 @@ again.
   rises level by level as a typical tile of the level above has its points from 3 to 6 px apart,
   so density thins smoothly with distance, regions at one distance keep their relative density,
   and no tile's cube shows as an edge. A tile also fades in and out over 0.3 s. Only the points
-  drawn can be picked. The **Level of
+  drawn can be picked. Thinned, a domain's points stay fully opaque as the eye withdraws, fading
+  only beyond the distance where its root alone is drawn (with level of detail off, beyond 1 Gpc). The **Level of
   detail** switch in the top bar turns all this off (`?lod=off` in the address): every tile is
   fetched, the coarser levels first, whatever the view and the budget, and none is dropped;
   turned on again, the tiles the view does not want are dropped until the budget holds. Each tile is

@@ -6,7 +6,21 @@ import type { ManifestSource } from "univ-tile-decoder";
 
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
-import { type Detail, EVERYTHING, LEVELS, POINT_BUDGET, type Tree, drawnShare, neededAt, onsetsOf, plan, planEvery, rankOf, treeOf } from "./lod.ts";
+import {
+  type Detail,
+  type DrawnDetail,
+  EVERYTHING,
+  POINT_BUDGET,
+  type Tree,
+  detailOf,
+  drawnShare,
+  neededAt,
+  onsetsOf,
+  plan,
+  planEvery,
+  rankOf,
+  treeOf,
+} from "./lod.ts";
 import { KINDS } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
@@ -35,6 +49,7 @@ export interface CatalogueEvents {
  * the most points of dropped tiles it keeps drawn (by default a quarter of its budget). */
 export type CatalogueOptions = ReadOptions & { budget?: number; keep?: number };
 
+
 /** A source of the drawn points, with the domain whose manifest credits it. */
 export type Credit = ManifestSource & { domain: string };
 
@@ -62,7 +77,7 @@ function histogramOf(batch: Batch, sources: number): Histogram {
 }
 
 /** The tiles held for `release`, fetched and dropped as `update` is told what the eye sees. */
-export class Catalogue {
+export class Catalogue implements DrawnDetail {
   readonly release: number;
   private readonly domains: ReadonlyMap<string, Domain>;
   private readonly tree: Tree<DomainTile>;
@@ -86,6 +101,9 @@ export class Catalogue {
   private sight: Sight | undefined;
   /** Whether the tiles held follow the view within the budget; off, every tile is fetched. */
   private levelOfDetail = true;
+  /** Each domain's detail as the view needs it at `viewedFocal`, by domain. */
+  private readonly viewedDomains = new Map<string, Detail>();
+  private viewedFocal = 0;
   /** Points drawn outside the stars domain of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
   /** Stars drawn in the colour of their colour index, and in grey for want of one. */
@@ -121,8 +139,10 @@ export class Catalogue {
   /** Fetches the tiles `sight` needs next, dropping those it needs least to make room. */
   update(sight: Sight): void {
     this.sight = sight;
-    const room = PARALLEL - this.pending.size;
-    if (room <= 0) return;
+    // With no room to fetch, only held points beyond the budget, as level of detail turned on
+    // again leaves them, are worth a plan: it drops what the view does not want.
+    const room = Math.max(0, PARALLEL - this.pending.size);
+    if (room === 0 && this.points <= (this.options.budget ?? POINT_BUDGET)) return;
     const pending = this.resting.size === 0 ? this.pending : new Set([...this.pending, ...this.resting]);
     const holding = { settled: this.settled, drawn: this.drawn, pending, points: this.points };
     const next = this.levelOfDetail ? plan(this.tree, holding, sight, room, this.options.budget) : planEvery(this.tree, holding, room);
@@ -143,50 +163,54 @@ export class Catalogue {
     if (revived) queueMicrotask(() => this.update(sight));
   }
 
+  /** `domain`'s detail as the view last seen needs it, worked out once for each focal length:
+   * none with level of detail off or before the view is known. */
+  private viewed(domain: string): Detail | undefined {
+    const levels = this.tree.levels.get(domain);
+    if (!this.levelOfDetail || this.sight === undefined || levels === undefined) return undefined;
+    if (this.sight.focal !== this.viewedFocal) {
+      this.viewedDomains.clear();
+      this.viewedFocal = this.sight.focal;
+    }
+    let viewed = this.viewedDomains.get(domain);
+    if (viewed === undefined) {
+      viewed = detailOf(levels, onsetsOf(levels, this.sight.focal));
+      this.viewedDomains.set(domain, viewed);
+    }
+    return viewed;
+  }
+
   /** The share of the tile `id`'s points, its first, that may be drawn for the view last seen:
    * every one with level of detail off, or before the view is known. */
   share(id: string): number {
     const tile = this.tree.byId.get(id);
-    const levels = tile === undefined ? undefined : this.tree.levels.get(tile.domain);
-    if (!this.levelOfDetail || this.sight === undefined || tile === undefined || levels === undefined) return 1;
+    const viewed = tile === undefined ? undefined : this.viewed(tile.domain);
+    if (tile === undefined || viewed === undefined || this.sight === undefined) return 1;
     const read = this.drawn.get(id) ?? this.kept.get(id);
-    return drawnShare(tile, levels, this.sight, read?.extent);
+    return drawnShare(tile, viewed, this.sight.eye, read?.extent);
   }
 
-  /** What the renderer needs to draw the points of `domain` for the view last seen: for each
-   * level, the distance within which the view starts to need it and the share of the domain the
-   * levels down to it hold, `LEVELS` of each; with level of detail off, all of it everywhere. */
+  /** What the renderer needs to draw the points of `domain` for the view last seen; with level of
+   * detail off, all of it everywhere. */
   detail(domain: string): Detail {
-    const levels = this.tree.levels.get(domain);
-    if (!this.levelOfDetail || this.sight === undefined || levels === undefined) return EVERYTHING;
-    const onsets = new Float32Array(LEVELS);
-    const cumulative = new Float32Array(LEVELS).fill(1);
-    onsets.set(onsetsOf(levels, this.sight.focal).slice(0, LEVELS).map((d) => Math.min(d, 3e38)));
-    cumulative.set(levels.cumulative.slice(0, LEVELS));
-    return { levels: Math.min(LEVELS, levels.cumulative.length), onsets, cumulative };
+    return this.viewed(domain) ?? EVERYTHING;
   }
 
   /** Which points of `batch` are drawn for the view last seen: those whose rank lies below the
    * share of their domain the view needs at their own distance from the eye. */
   drawnPoints(batch: Batch): (index: number) => boolean {
-    const levels = this.tree.levels.get(batch.tile.domain);
-    const sight = this.sight;
-    if (!this.levelOfDetail || sight === undefined || levels === undefined) return () => true;
-    const onsets = onsetsOf(levels, sight.focal);
-    const { centre } = batch.tile;
-    const { offsets } = batch;
+    const viewed = this.viewed(batch.tile.domain);
+    const eye = this.sight?.eye;
+    if (viewed === undefined || eye === undefined) return () => true;
+    const { tile, offsets } = batch;
     const count = offsets.length / 3;
     return (i) => {
-      const dx = centre[0] + (offsets[i * 3] ?? 0) - sight.eye[0];
-      const dy = centre[1] + (offsets[i * 3 + 1] ?? 0) - sight.eye[1];
-      const dz = centre[2] + (offsets[i * 3 + 2] ?? 0) - sight.eye[2];
-      return rankOf(batch.tile, i, count) < neededAt(levels, onsets, Math.hypot(dx, dy, dz));
+      // By hand, not by vec.ts, which would allocate for every point tested.
+      const dx = tile.centre[0] + (offsets[i * 3] ?? 0) - eye[0];
+      const dy = tile.centre[1] + (offsets[i * 3 + 1] ?? 0) - eye[1];
+      const dz = tile.centre[2] + (offsets[i * 3 + 2] ?? 0) - eye[2];
+      return rankOf(tile, i, count) < neededAt(viewed, Math.sqrt(dx * dx + dy * dy + dz * dz));
     };
-  }
-
-  /** Whether level of detail is on: the points drawn thinned by distance. */
-  get thinned(): boolean {
-    return this.levelOfDetail;
   }
 
   /** Turns level of detail on or off: off, every tile is fetched, the coarser levels first, and
