@@ -10,6 +10,15 @@ versions:
     title: "Close W5"
     goal: "A release note gives the counts per source and the shard sizes; /simplify and /code-review are done, the gate and integration green, the trace accepted, and W5 merged into product/release-10"
     status: planned
+  - key: 01a1ae86-428b-711f-9c8f-79da9f0bcc67
+    at: 2026-11-06T01:43:16Z
+    revision: 40
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Close W5"
+    goal: "A release note gives the counts per source and the shard sizes; /simplify and /code-review are done, the gate and integration green, the trace accepted, and W5 merged into product/release-10"
+    status: active
 blocks:
   - key: 01a1ad95-6a58-709d-8355-92328089e68f
     id: c-note
@@ -24,6 +33,15 @@ blocks:
         title: "Release note"
         detail: "Counts per source, the shard sizes measured, the pending sources named."
         state: open
+      - key: 01a1ae86-428b-711f-9c8f-79dcaabcba04
+        at: 2026-11-06T01:43:16Z
+        revision: 40
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release note"
+        detail: "Written above: entries per source with their redistribution, the estimated and measured D1 sizes, build, publish, benches and science."
+        state: done
   - key: 01a1ad95-6a58-709d-8355-9233e6ab91d1
     id: c-review
     kind: task
@@ -50,3 +68,73 @@ blocks:
         title: "Gate, integration, trace, merge"
         detail: "`cargo xtask check` and `cargo xtask integration` green, trace accepted, the log closed, merged `--no-ff` into product/release-10."
         state: open
+  - key: 01a1ae86-428b-711f-9c8f-79d74310bc3f
+    id: release-10-note
+    kind: note
+    versions:
+      - key: 01a1ae86-428b-711f-9c8f-79db10f2dffc
+        at: 2026-11-06T01:43:16Z
+        revision: 40
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10"
+        markdown: |-
+          Release 10, built 2026-11-05 and published locally 2026-11-06 01:32 UTC: **43,023,589 entries from 28 sources, 36,944,696 objects** (36,751,819 placed), 53 structures, 3 volume grids, 4,657 tiles. Schema 5: one catalogue database and seven object shards.
+
+          **Entries per source**
+
+          | Source | Entries | Redistribution |
+          |---|---:|---|
+          | WISE × SuperCOSMOS | 20,412,353 | **permission pending**, to ask of WFAU and M. Bilicki |
+          | DESI DR1 | 15,825,713 | permitted with credit |
+          | SDSS DR17 distant | 2,282,316 | permitted with credit |
+          | SDSS DR17 galaxies | 1,097,297 | permitted with credit |
+          | 2MPZ | 934,175 | **permission pending**, to ask of M. Bilicki and WFAU |
+          | Gaia DR3 bright | 482,106 | permitted with credit |
+          | Bailer-Jones 2021 | 477,502 | permitted with credit |
+          | GCNS | 331,312 | permitted with credit |
+          | GAMA DR4 | 238,716 | **permission pending**, to ask of the GAMA team |
+          | 2dFGRS | 221,414 | permitted with credit |
+          | 6dFGS DR3 | 124,647 | permitted with credit |
+          | Hipparcos 1997 | 118,218 | permitted with credit |
+          | Hipparcos 2007 | 117,955 | permitted with credit |
+          | Gaia DR3 × Hipparcos-2 | 99,525 | permitted with credit |
+          | 2M++ catalogue | 69,160 | permitted with credit |
+          | Cosmicflows-4 galaxies | 55,877 | permitted with credit |
+          | 2MRS | 44,599 | permitted with credit |
+          | Cosmicflows-4 groups | 38,044 | permitted with credit |
+          | ALFALFA α.100 | 25,434 | permitted with credit |
+          | BOSS DR17 Great Wall | 13,992 | permitted with credit |
+          | eRASS1 clusters | 12,247 | permitted with credit |
+          | UNGC | 869 | permitted with credit |
+          | McConnachie 2012 | 102 | permitted with credit |
+          | Researched star distances | 16 | permitted with credit |
+
+          Four more sources give grids or structures, not entries: CF4 basins, CF4++ density, the 2M++ reconstruction and the researched structures. Every source's review is provisional, to be judged again before any public deployment.
+
+          **D1 sizes**: estimated by the build, measured in the local D1 as pages × page size.
+
+          | Database | Objects | Estimated | Measured |
+          |---|---:|---:|---:|
+          | catalogue | – | 0.78 GB | 0.51 GB |
+          | shard 0 | 4,820,179 | 4.50 GB | 3.28 GB |
+          | shard 1 | 5,751,426 | 4.50 GB | 3.27 GB |
+          | shard 2 | 5,849,727 | 4.50 GB | 3.24 GB |
+          | shard 3 | 4,793,728 | 4.50 GB | 3.30 GB |
+          | shard 4 | 5,566,640 | 4.50 GB | 3.24 GB |
+          | shard 5 | 5,208,901 | 4.50 GB | 3.27 GB |
+          | shard 6 | 4,954,095 | 3.85 GB | 2.76 GB |
+
+          The estimate errs high by about 27%, and every database is well inside D1's 10 GB.
+
+          **Build:** peak 55.12 GB, 845 s, 1,281 B per entry. **Publish:** 40.5 GB in 1 h 35 min.
+
+          **Benches:** lookup p95 4.3 ms (QA-2: 200 ms); volume p95 145.9 ms (QA-3: 500 ms); first points p95 197 ms (3 s).
+
+          **Science:** 32 PASS, 1 FAIL, 3 CONCERN, 2 INFO.
+          - **FAIL:** local-group-duplicates, 30 pairs, a known limitation the owner accepted. The causes: photo-z entries block the extent check, ALFALFA links outlive their fibres' join, and DESI galaxies wider than 1′.
+          - **CONCERNS:** Coma's NGC 4889, as in release 9; 278 redshift conflicts, 103 of them placed by the higher redshift.
+
+          **Matching changes this release:** the extent rule takes release 10's surveys as pieces; nearby fibres of one survey join as one galaxy; a galaxy that took pieces keeps its own position; 21 cm beam positions rank last.
+        tone: success

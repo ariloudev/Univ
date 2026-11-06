@@ -19,6 +19,15 @@ versions:
     title: "Publish release 10 and measure it"
     goal: "Release 10 is published to the local D1 and R2, release 9 pruned, and QA-2, QA-3 and first points measured on it"
     status: active
+  - key: 01a1ae86-428b-711f-9c8f-79d99c7a5071
+    at: 2026-11-06T01:43:16Z
+    revision: 40
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Publish release 10 and measure it"
+    goal: "Release 10 is published to the local D1 and R2, release 9 pruned, and QA-2, QA-3 and first points measured on it"
+    status: done
 blocks:
   - key: 01a1ad95-6a58-709d-8355-9230b64a7959
     id: p-publish
@@ -42,6 +51,15 @@ blocks:
         title: "Publish release 10 locally and prune release 9"
         detail: "Done when release 10 is in the local D1 and R2 under `--persist-to .cache/univ-ingest/wrangler`, and release 9 is pruned."
         state: active
+      - key: 01a1ae84-03ef-70a9-bb24-c2b60a8a4493
+        at: 2026-11-06T01:40:49Z
+        revision: 38
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Publish release 10 locally and prune release 9"
+        detail: "Published: 1,215 D1 files and 4,680 R2 objects, uploaded and checked in 1 h 35 min. They landed in `.wrangler/state` and were moved into `.cache/univ-ingest/wrangler` (see the note). Release 9's catalogue and R2 are set aside rather than pruned; they can be deleted once release 10 serves."
+        state: done
   - key: 01a1ad95-6a58-709d-8355-9231af62573e
     id: p-benches
     kind: task
@@ -55,3 +73,67 @@ blocks:
         title: "Benches on release 10"
         detail: "Done when `bench lookup` (QA-2: 200 ms at p95), `bench volume` (QA-3: 500 ms) and `bench first-points` (3 s) are measured on release 10. A missed target is a stop-and-ask."
         state: open
+      - key: 01a1ae84-03ef-70a9-bb24-c2b7622ce6ec
+        at: 2026-11-06T01:40:49Z
+        revision: 38
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Benches on release 10"
+        detail: "Done when `bench lookup` (QA-2: 200 ms at p95), `bench volume` (QA-3: 500 ms) and `bench first-points` (3 s) are measured on release 10. A missed target is a stop-and-ask."
+        state: active
+      - key: 01a1ae86-428b-711f-9c8f-79d8a2ba99c5
+        at: 2026-11-06T01:43:16Z
+        revision: 40
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Benches on release 10"
+        detail: |-
+          All met on release 10, served from `.cache/univ-ingest/wrangler`:
+          - lookup (QA-2): p50 2.8 ms, p95 4.3 ms, against 200 ms; 0 of 1,020 requests not 200;
+          - volume, first page (QA-3): p50 77.3 ms, p95 145.9 ms, against 500 ms; 0 of 220 not 200;
+          - first points: p50 188 ms, p95 197 ms over 10 loads, against 3 s.
+        state: done
+  - key: 01a1ae84-03ee-7728-aa82-b5ac7c0fb7c0
+    id: publish-misplaced
+    kind: note
+    versions:
+      - key: 01a1ae84-03ef-70a9-bb24-c2b582f82f7f
+        at: 2026-11-06T01:40:49Z
+        revision: 38
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10 was published to the wrong local state, and moved"
+        markdown: |-
+          **What happened.** I ran `univ-ingest publish 10` without `--persist-to .cache/univ-ingest/wrangler`. The command's default was Wrangler's own `.wrangler/state`, so the 95-minute publish (40.5 GB, every file checked) went there, where nothing reads releases, and not to the state that serve, explore and the benches use. Release 9 was published with the option; this run left it out. The downloads move had nothing to do with it.
+
+          **Fixed without publishing again.** No process held either state, so I moved files within one disk:
+          - release 10's catalogue, its seven shards and its R2 store went into `.cache/univ-ingest/wrangler`, with its publish journal;
+          - release 9's catalogue and R2 went to `.cache/univ-ingest/wrangler-release-9-set-aside/` (7.3 GB), which stands in for the planned prune of release 9;
+          - univ-layers (keys and layers) stayed untouched.
+
+          Checked: the catalogue passes `quick_check`, `latest` is 10, each shard's object count equals `release_shards`' (36,944,696 in all), and R2 holds 4,680 objects, all under `releases/10/`.
+
+          **So it cannot recur.** `DEFAULT_PERSIST` is now `.cache/univ-ingest/wrangler`, the directory xtask reads (`bcd`).
+        tone: warning
+      - key: 01a1ae84-1a82-767a-9ae4-401d704679b2
+        at: 2026-11-06T01:40:55Z
+        revision: 39
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10 was published to the wrong local state, and moved"
+        markdown: |-
+          **What happened.** I ran `univ-ingest publish 10` without `--persist-to .cache/univ-ingest/wrangler`. The command's default was Wrangler's own `.wrangler/state`, so the 95-minute publish (40.5 GB, every file checked) went there, where nothing reads releases, and not to the state that serve, explore and the benches use. Release 9 was published with the option; this run left it out. The downloads move had nothing to do with it.
+
+          **Fixed without publishing again.** No process held either state, so I moved files within one disk:
+          - release 10's catalogue, its seven shards and its R2 store went into `.cache/univ-ingest/wrangler`, with its publish journal;
+          - release 9's catalogue and R2 went to `.cache/univ-ingest/wrangler-release-9-set-aside/` (7.3 GB), which stands in for the planned prune of release 9;
+          - univ-layers (keys and layers) stayed untouched.
+
+          Checked: the catalogue passes `quick_check`, `latest` is 10, each shard's object count equals `release_shards`' (36,944,696 in all), and R2 holds 4,680 objects, all under `releases/10/`.
+
+          **So it cannot recur.** `DEFAULT_PERSIST` is now `.cache/univ-ingest/wrangler`, the directory xtask reads (`401c8ae`).
+        tone: warning
