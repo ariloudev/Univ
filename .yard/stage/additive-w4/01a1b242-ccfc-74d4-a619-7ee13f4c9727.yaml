@@ -10,6 +10,15 @@ versions:
     title: "W4: Publish and prune the change"
     goal: "Publish uploads only files R2 does not hold, the cap counts the rows every kept release holds once, and the integration fixture publishes and prunes a chain of releases that share rows."
     status: active
+  - key: 01a1b258-1d9b-765b-a8b6-55588897a3f1
+    at: 2026-11-06T19:31:21Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4: Publish and prune the change"
+    goal: "Publish uploads only files R2 does not hold, the cap counts the rows every kept release holds once, and the integration fixture publishes and prunes a chain of releases that share rows."
+    status: done
 blocks:
   - key: 01a1b242-ccfc-74d4-a619-7ee2ab14b867
     id: w4-held
@@ -90,6 +99,15 @@ blocks:
         title: "Review and gate"
         detail: "/simplify (four angles) and /code-review high ran; fixes applied, see the note. Gate and integration next."
         state: active
+      - key: 01a1b258-1d9b-765b-a8b6-5556db76c7cb
+        at: 2026-11-06T19:31:21Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "Fixes in 9a05688; cargo xtask check passed (13 gates) and cargo xtask integration passed again on local Wrangler."
+        state: done
   - key: 01a1b253-5a1a-7270-98f7-cd8aa2d4ea4b
     id: w4-findings
     kind: note
@@ -114,3 +132,26 @@ blocks:
           | A missing count read as 0; unchecked arithmetic | A missing count is an error; the sums saturate |
 
           **Not changed:** the cap still estimates rows held at the release's bytes per row (1 KiB for a table it holds none of), not D1's measured size: measuring needs the store to report `meta.size_after` for every database, which the memory store and the Wrangler store would both have to give. Whether R2 still holds a file the parent maps is not checked: the parent is `latest`, which is never pruned.
+  - key: 01a1b258-1d9b-765b-a8b6-55554ec64a0d
+    id: w4-produced
+    kind: note
+    versions:
+      - key: 01a1b258-1d9b-765b-a8b6-55572bb2dbc0
+        at: 2026-11-06T19:31:21Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What W4 produced"
+        markdown: |-
+          | | Before | After W4 |
+          |---|---|---|
+          | R2 files a child release uploads | every file | only those its parent (`latest`) does not map; the rest counted as held |
+          | CON-3 | every unpruned release's whole estimate, summed: shared rows counted once per release | rows D1 holds outside the release's view, less those it keeps, at its bytes per row, plus its estimate |
+          | Publish refusals | read every shard | read the shards the store binds; one table list per database shared by every check |
+          | Prune | (W3) rows no kept release holds | unchanged; the half-published test now stops at a named step |
+
+          Integration on local Wrangler publishes fixture release 2 as its change from 1, prunes 1, and the Worker and the explorer read release 2.
+
+          **Left for W5:** migrate the real release 10 (schema 5, `releases/{n}/` keys, no row index) and make release 11, after the owner's approval for the real run.
+        tone: success
