@@ -99,6 +99,10 @@ requirements:
         name: "A tile fades in over 0.3 seconds once its points arrive, and out over 0.3 seconds before they are drawn no more."
       - key: 01a1b093-647d-7308-9b46-bdcd4901ec3c
         name: "With level of detail off, every point of every held tile is drawn."
+      - key: 01a1b0b8-3632-76bc-88e5-8dd265a1a28d
+        name: "With level of detail on, points are drawn as opaque whatever the eye's distance from the focus, since they crowd no more as it withdraws."
+      - key: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
+        name: "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white."
       - key: 01a1b093-647d-7308-9b46-bdce5099b2f5
         name: "Only the points drawn can be pointed at or clicked."
   - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
