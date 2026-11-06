@@ -13,6 +13,7 @@ mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Rows, publishing};
 use release_fixture::{build_next, fixture};
+use univ_ingest::release::local_d1::{D1_FILES, LocalD1};
 use univ_ingest::release::reindex::reindex;
 use univ_ingest::release::{Kept, NUMBERING, ROWS};
 use univ_ingest::state::State;
@@ -62,4 +63,58 @@ fn a_reindex_from_the_store_gives_the_numbering_the_build_kept_and_an_index_it_w
             assert_eq!((t.added, t.retired), (Some(0), Some(0)), "{}", t.table);
         }
     }
+}
+
+#[test]
+fn the_local_d1_is_read_from_its_files_each_told_by_what_it_holds() {
+    let f = fixture();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    let (out, state) = (f.out.path(), f.state.path());
+    for n in [1, 2] {
+        build_next(&f);
+        publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
+    }
+    // Each database written to a file named as Miniflare names it, by no order of its own, beside
+    // a database of no release and a shard bound but never loaded.
+    let persist = tempfile::tempdir().unwrap();
+    let files = persist.path().join(D1_FILES);
+    std::fs::create_dir_all(&files).unwrap();
+    let databases = std::iter::once(&store.db).chain(store.shards.values());
+    for (i, db) in databases.enumerate() {
+        let file = files.join(format!(
+            "{:064x}.sqlite",
+            0x9e37_79b9_u64.wrapping_mul(i as u64 + 1)
+        ));
+        db.execute(&format!("VACUUM INTO '{}'", file.display()), [])
+            .unwrap();
+    }
+    let layers = rusqlite::Connection::open(files.join("layers.sqlite")).unwrap();
+    layers
+        .execute_batch("CREATE TABLE layers (id TEXT)")
+        .unwrap();
+    let empty = rusqlite::Connection::open(files.join("empty.sqlite")).unwrap();
+    empty.execute_batch(univ_model::release::SCHEMA).unwrap();
+
+    let mut local = LocalD1::open(persist.path()).unwrap();
+    assert_eq!((local.latest, local.version), (2, 6));
+    let (a, b) = (tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap());
+    let from_files = reindex(&mut local, (2, 6), a.path()).unwrap();
+    let from_store = reindex(&mut Rows(&store), (2, 6), b.path()).unwrap();
+    assert_eq!(from_files, from_store);
+    assert_eq!(from_files.kept, State::read(state).unwrap().kept);
+    // The same index, file for file.
+    let listed = |dir: &std::path::Path| -> Vec<(String, Vec<u8>)> {
+        let mut all = Vec::new();
+        for db in std::fs::read_dir(dir.join(ROWS)).unwrap() {
+            for t in std::fs::read_dir(db.unwrap().path()).unwrap() {
+                let t = t.unwrap().path();
+                let name = t.strip_prefix(dir).unwrap().display().to_string();
+                all.push((name, std::fs::read(&t).unwrap()));
+            }
+        }
+        all.sort();
+        all
+    };
+    assert_eq!(listed(a.path()), listed(b.path()));
 }

@@ -148,19 +148,24 @@ fn kept(source: &mut dyn RowSource, databases: &[Database], filter: &str) -> Res
             codes.sort_unstable();
             codes.dedup();
         }
+        let mut loose = Vec::new();
+        source.rows(database, &objects, filter, &mut |row| {
+            if integer(&objects, row, "placed")? == 0 {
+                loose.push(integer(&objects, row, "id")?.unsigned_abs() % LOOSE_BUCKETS);
+            }
+            Ok(())
+        })?;
+        // A shard bound but holding nothing of the release is none of its shards.
+        if held.is_empty() && loose.is_empty() {
+            continue;
+        }
+        kept.loose
+            .extend(loose.into_iter().map(|bucket| (bucket, shard)));
         let at = shard as usize;
         if kept.cells.len() <= at {
             kept.cells.resize(at + 1, BTreeMap::new());
         }
         kept.cells[at] = held;
-        let loose = &mut kept.loose;
-        source.rows(database, &objects, filter, &mut |row| {
-            if integer(&objects, row, "placed")? == 0 {
-                let id = integer(&objects, row, "id")?.unsigned_abs();
-                loose.insert(id % LOOSE_BUCKETS, shard);
-            }
-            Ok(())
-        })?;
     }
     Ok(kept)
 }

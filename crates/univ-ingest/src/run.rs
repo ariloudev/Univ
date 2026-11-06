@@ -11,6 +11,7 @@ use tokio::time::MissedTickBehavior;
 mod build;
 mod cross;
 mod publish;
+mod reindex;
 mod tiles;
 mod used;
 
@@ -20,6 +21,7 @@ pub use publish::{
     DEFAULT_CONFIG, DEFAULT_PERSIST, Shown, StoreCommand, StoreRun, now, prune_command,
     publish_command, store_command,
 };
+pub use reindex::reindex_command;
 pub use tiles::{DEFAULT_TILES, TileOptions, tiles_stage};
 pub use used::Reached;
 

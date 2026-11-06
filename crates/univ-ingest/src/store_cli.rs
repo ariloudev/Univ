@@ -9,9 +9,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use clap::Args;
 use univ_ingest::display::Outcome;
 use univ_ingest::events::Event;
+use univ_ingest::lock::StateLock;
 use univ_ingest::run::{
     DEFAULT_BUILD, DEFAULT_CONFIG, DEFAULT_PERSIST, StoreCommand, StoreRun, display_for_stderr,
-    drawing, owner_interrupt, store_command,
+    drawing, now, owner_interrupt, reindex_command, store_command,
 };
 use univ_ingest::state::DEFAULT_STATE;
 
@@ -24,6 +25,37 @@ pub struct MigrateArgs {
     /// the `node_modules` beside it.
     #[arg(long, value_name = "FILE", default_value = DEFAULT_CONFIG)]
     pub config: PathBuf,
+}
+
+#[derive(Args)]
+pub struct ReindexArgs {
+    /// The state directory, whose current state takes the row index and numbering.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_STATE)]
+    pub state: PathBuf,
+    /// Wrangler's local state directory, as `wrangler dev --persist-to` takes it.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_PERSIST)]
+    pub persist_to: PathBuf,
+}
+
+/// Runs `univ-ingest reindex`, holding the state directory's lock.
+pub fn reindex(args: &ReindexArgs) -> ExitCode {
+    let _lock = match StateLock::take(&args.state, std::process::id(), &now()) {
+        Ok(lock) => lock,
+        Err(error) => {
+            eprintln!("univ-ingest: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
+    match reindex_command(&args.state, &args.persist_to) {
+        Ok(done) => {
+            eprintln!("univ-ingest: {done}");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("univ-ingest: reindex: {error}");
+            ExitCode::FAILURE
+        }
+    }
 }
 
 #[derive(Args)]

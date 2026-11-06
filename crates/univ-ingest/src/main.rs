@@ -25,7 +25,7 @@ use univ_model::redshift::{CmbCorrection, DipoleModel};
 
 mod store_cli;
 
-use store_cli::{MigrateArgs, StoreArgs, on_store};
+use store_cli::{MigrateArgs, ReindexArgs, StoreArgs, on_store, reindex};
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
 const INTERRUPTED: u8 = 130;
@@ -78,6 +78,10 @@ enum Command {
     /// finished by the next; a store already at schema 6 is left as it is. A publish does the
     /// same first.
     Migrate(MigrateArgs),
+    /// Makes again, from the local D1, the state's row index and numbering of the release latest
+    /// points to: what the next build compares its rows with to write only its change. The
+    /// state's last release must be the one latest points to, and the local D1 of schema 6.
+    Reindex(ReindexArgs),
 }
 
 #[derive(Args)]
@@ -327,6 +331,7 @@ async fn main() -> ExitCode {
         }
         Command::Publish(args) => return on_store(args.into(), StoreCommand::Publish).await,
         Command::Prune(args) => return on_store(args.into(), StoreCommand::Prune).await,
+        Command::Reindex(args) => return reindex(&args),
         Command::Migrate(args) => {
             let run = StoreRun {
                 number: 0,

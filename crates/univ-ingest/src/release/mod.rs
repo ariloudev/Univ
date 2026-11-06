@@ -37,6 +37,7 @@ mod objects;
 mod outline;
 mod packing;
 pub use packing::LOOSE_BUCKETS;
+pub mod local_d1;
 mod place;
 mod placement;
 mod placing;
