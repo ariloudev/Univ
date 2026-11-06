@@ -3365,28 +3365,37 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles, within a budget too small for all it wants, and fetches no tile twice"
-        body: 8bce0ca6a9c8621d4f0e9ef470f03ff92974338e9629c5db1eb1f30e90ffa256
+        body: 77d12239af96d2ee71fd5992224abf18baf76ef75efefe6f399775016a8970d3
   - node: 01a1aea7-5e8b-7623-8601-48fb7856d2e3
     reviewed: d0ae82b35820ce31556ac95579d8fcad1c72507095e7586b29b5253aa7dcce9e
     tests:
-      - file: "clients/explorer/src/catalogue/lod.moving.test.ts"
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "keeps a held tile's children while its points lie farther apart on screen than 2 pixels"
-        body: c3b027b04076848ddfc2f3a5a32742cc7f498ae403e19447e2d9fce379bbbaca
+        body: b92e1bfbdd083bbfefb66e76838c940435a00567cc9d209f32452d7ba43e5d3e
   - node: 01a1aea7-5e8b-7623-8601-48fc4cf3ff3f
-    reviewed: 0564e49555fc87629cbb9f934574a2bc7b8853c076dbad06812023598f8d076d
+    reviewed: 7dc0a74be5dcaad89b92d099edfd7c82864d04934ee4320b5d838d0f33b7b32a
     tests:
-      - file: "clients/explorer/src/catalogue/lod.moving.test.ts"
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "keeps the held family where the other is less than half again its size on screen"
-        body: 77aeda2ed7832a8a2481cdcdfd2be147e44050fe050ac3212171a8c41a1ad992
-      - file: "clients/explorer/src/catalogue/lod.moving.test.ts"
+        body: b4fd1b9ff9b6bbcac1cb279dfea05ddbd7b32f137a741f9d1facb7877fa33a00
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "trades it for the other once that is more than half again its size on screen"
-        body: 1e527827a7248243116317f8547f9a399f5ad335ea14195c58f18d50cb8cba32
+        body: 4eb5e4863c23f4e17c7bfb3ea98c008176ead46e4bddc662b55173c7d952e62d
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "prefers a family that holds only some of its tiles in view"
+        body: 6a3bd5489d4805808ed452d592ee180e7a83a5dea0aed8498c38197612bf3147
   - node: 01a1aea7-5e8b-7623-8601-48fd8492b9c4
     reviewed: 1fa81cb6e956d955ca3b5a055ae1df08ad6ee7614c94408f2cc2fe238824e2e2
     tests:
-      - file: "clients/explorer/src/catalogue/lod.moving.test.ts"
-        name: "settles when turned by 0.1 degree and back again and again, its budget full"
-        body: 8e191652f14fe68ac32da3c58600e5639e290b543c1468cd00ae7dc743a5ac79
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
+        body: 9101fbdea4208aad8da6b4b7e36f504dec0f92848114cdaa3eda485333e6c071
+  - node: 01a1aead-1e30-7695-bbd5-099c2f301565
+    reviewed: dc850f3fb6fe277e64094fde2aa04f623c05d085327d711a29d36c91cbc15fa8
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
+        body: 9101fbdea4208aad8da6b4b7e36f504dec0f92848114cdaa3eda485333e6c071
   - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
     reviewed: d56d1e83e4cfbb1a73c3bc5393c25caa8ee7bb5c00b587c47d326bf8fd2283fd
     tests:
