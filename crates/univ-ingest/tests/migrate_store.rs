@@ -15,7 +15,7 @@ mod release_fixture;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
-use memory_store::{Clock, MemoryStore, Op, publishing};
+use memory_store::{Clock, MemoryStore, Op, pruning, publishing};
 use release_fixture::{build_next, fixture, read_manifest};
 use rusqlite::Connection;
 use rusqlite::types::Value;
@@ -238,4 +238,31 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
             .iter()
             .any(|o| matches!(o, Op::Execute(_) | Op::Put(_) | Op::Delete(_)))
     );
+
+    // Pruning release 1 deletes the files it alone maps, though its manifest names its old keys.
+    let held_by = |store: &MemoryStore, n: u32| -> BTreeSet<String> {
+        let sql = format!(
+            "SELECT DISTINCT sha256 FROM release_files WHERE {}",
+            valid_in("", n)
+        );
+        rows(&store.db, &sql)
+            .into_iter()
+            .map(|r| match &r[0] {
+                Value::Text(t) => keys::file(t),
+                other => panic!("{other:?}"),
+            })
+            .collect()
+    };
+    let (first, second) = (held_by(&b, 1), held_by(&b, 2));
+    let only_first: Vec<&String> = first.difference(&second).collect();
+    assert!(
+        !only_first.is_empty(),
+        "release 1 maps files release 2 does not"
+    );
+    // A journal of schema 5 named the old keys: only the map of paths names the new ones.
+    std::fs::remove_file(univ_ingest::publish::journal::file(journals.path(), 1)).unwrap();
+    let pruned = pruning(&mut b, 1, &out, &state, journals.path(), &clock).unwrap();
+    assert!(pruned.files > 0);
+    assert!(only_first.iter().all(|k| !b.r2.contains_key(*k)));
+    assert!(second.iter().all(|k| b.r2.contains_key(k)));
 }

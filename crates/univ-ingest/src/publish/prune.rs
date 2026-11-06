@@ -131,10 +131,21 @@ fn r2_keys(
 ) -> Result<(Option<BTreeSet<String>>, bool), String> {
     let manifest = manifest_of(store, number, options.out)?;
     let journal = Journal::read(options.journals, number).map_err(|e| e.to_string())?;
-    if manifest.is_none() && journal.is_none() {
+    // The files its map of paths names: a release brought under shared rows has a manifest
+    // that names their keys under its prefix.
+    let mapped = if tables_in(store, Database::Catalogue)?.contains("release_files") {
+        let sql = format!(
+            "SELECT DISTINCT sha256 FROM release_files WHERE {}",
+            valid_in("", number)
+        );
+        sha256s(store, &sql)?
+    } else {
+        BTreeSet::new()
+    };
+    if manifest.is_none() && journal.is_none() && mapped.is_empty() {
         return Ok((None, false));
     }
-    let mut found = BTreeSet::new();
+    let mut found: BTreeSet<String> = mapped.iter().map(|s| keys::file(s)).collect();
     if let Some(m) = &manifest {
         let r2 = m.files.iter().filter(|f| f.target == Target::R2);
         found.extend(r2.filter_map(|f| f.key.clone()));
