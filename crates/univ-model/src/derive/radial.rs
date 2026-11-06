@@ -1,6 +1,8 @@
 //! Distances along the line of sight under the release cosmology, and lengths rescaled from the
 //! Hubble constant they were published for.
 
+use std::sync::Arc;
+
 use serde::Serialize;
 
 use super::chain::{Step, Transformation};
@@ -21,7 +23,7 @@ pub struct Radial {
     assumed: Option<AssumedCosmology>,
     distance: Quantity,
     measure: Measure,
-    cosmology: Cosmology,
+    cosmology: Arc<Cosmology>,
     chain: Vec<Step>,
     model_version: &'static str,
 }
@@ -66,9 +68,26 @@ impl Radial {
         self.model_version
     }
 
-    pub(super) fn into_parts(self) -> (Quantity, Option<AssumedCosmology>, Quantity, Measure) {
-        (self.native, self.assumed, self.distance, self.measure)
+    pub(super) fn into_parts(self) -> RadialParts {
+        RadialParts {
+            native: self.native,
+            assumed: self.assumed,
+            distance: self.distance,
+            measure: self.measure,
+            cosmology: self.cosmology,
+            chain: self.chain,
+        }
     }
+}
+
+/// A [`Radial`] taken apart, for the position made from it.
+pub(super) struct RadialParts {
+    pub native: Quantity,
+    pub assumed: Option<AssumedCosmology>,
+    pub distance: Quantity,
+    pub measure: Measure,
+    pub cosmology: Arc<Cosmology>,
+    pub chain: Vec<Step>,
 }
 
 /// A length beside the length it was published as and the cosmology that was for.
@@ -347,9 +366,14 @@ impl Release {
             RedshiftFrame::Cmb => Transformation::ComovingFromPublishedCmbRedshift {
                 cmb_redshift: z.value,
             },
+            RedshiftFrame::Barycentric => Transformation::ComovingFromBarycentricRedshift {
+                cmb_redshift: z.value,
+                barycentric_redshift: cmb.measured.value,
+                dipole: cmb.dipole,
+            },
             _ => Transformation::ComovingFromRedshift {
                 cmb_redshift: z.value,
-                heliocentric_redshift: cmb.heliocentric.value,
+                heliocentric_redshift: cmb.measured.value,
                 dipole: cmb.dipole,
             },
         };
@@ -371,7 +395,7 @@ impl Release {
             assumed,
             distance,
             measure,
-            cosmology: self.cosmology().clone(),
+            cosmology: Arc::clone(self.table().shared_cosmology()),
             chain,
             model_version: MODEL_VERSION,
         }

@@ -1,0 +1,89 @@
+id: twodfgrs
+title: "2dF Galaxy Redshift Survey (2dFGRS) final release, best redshifts"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "VII/250/2dfgrs"
+  constraints: ["q_z=3..5", "z=0.002..0.5"]
+  # SeqNum is the 2dFGRS serial number, I6, never blank (ReadMe). The table holds 245,591
+  # records, but their serial numbers run from 1 to 389,712 (counted at China-VO, 2026-11-05).
+  slices: { column: SeqNum, from: 1, to: 390000, step: 30000 }
+  rows: 221414
+cuts:
+  - "VII/250/2dfgrs, the best observation of each of 245,591 objects (ReadMe), cut to redshift quality q_z >= 3 and 0.002 <= z <= 0.5."
+  - >-
+    The ReadMe: "Reliable (quality>=3) redshifts were obtained for 221414 galaxies"; "Q>=3
+    redshifts are 98.4% reliable and have an rms uncertainty of 85 km/s." Counted as served by
+    vizier.nao.ac.jp on 2026-11-05: 11,743 rows with q_z >= 3 lie below z = 0.002 (cz < 600 km/s,
+    stars) and 95 above z = 0.5, up to 3.4999 (quasars), with only 23 between 0.4 and 0.5. The cut
+    keeps 221,414 rows, the ReadMe's count of galaxies. The quasars are left out because the 85
+    km/s rms, given to every redshift below, was stated for the galaxies; DESI and SDSS serve
+    quasars with their own errors.
+  - "z is the \"Best redshift (heliocentric)\" (ReadMe, Note 2: from the best spectrum)."
+  - "Positions are VizieR's _RAJ2000/_DEJ2000, computed from the catalogue's J2000 sexagesimal columns."
+  - "There is no per-object redshift error: the catalogue's rms of 85 km/s is given to each redshift as an estimated uncertainty."
+columns:
+  - { column: Name, field: identifier, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: z, field: redshift, unit: dimensionless }
+  - { column: q_z, field: quality, unit: dimensionless }
+  - { column: Bjmag, field: magnitude, unit: magnitude }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Colless M., Dalton G., Maddox S., Sutherland W., Norberg P., Cole S., Bland-Hawthorn J.,
+  Bridges T., Cannon R., Collins C., et al. 2001, "The 2dF Galaxy Redshift Survey: spectra and
+  redshifts", MNRAS 328, 1039. 2001MNRAS.328.1039C, doi:10.1046/j.1365-8711.2001.04902.x. Final
+  release: Colless et al. 2003, arXiv:astro-ph/0306581. VizieR catalogue VII/250.
+reference: { bibcode: "2001MNRAS.328.1039C", doi: "10.1046/j.1365-8711.2001.04902.x" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  non_commercial: >-
+    The data retrieved with VizieR are free of usage in a scientific context ... The commercial
+    usage of the data is subject to rules depending of the origin (see section How to search
+    Copyright information).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Colless et al. 2001, MNRAS 328, 1039, and the final data release, Colless et
+    al. 2003, arXiv:astro-ph/0306581.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS gives VizieR data as free of usage in a scientific context provided the original authors and
+    publication are cited, and says that "The commercial usage of the data is subject to rules
+    depending of the origin". The page's paragraph classing tables from AAS journals as CC-BY-NC is
+    inside an HTML comment, not shown, so it is not quoted; the shown clause on commercial usage
+    is, and the source is marked non-commercial (read 2026-11-05). Neither the ReadMe nor the 2dFGRS site (http://www.2dfgrs.net/) states a
+    licence or a copyright of its own. Provisional: judged again before any public deployment.
+scale_domain: cosmic_web
+# VizieR's mirrors, checked 2026-11-05: China-VO answers these tables; NAO answered at first, then
+# reported its database unreachable (STDB_ERR); IDIA answered with empty bodies and CDS refused the
+# connection from the owner's machine, so they come after it.
+mirrors:
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+  - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+normalization:
+  redshifts:
+    - column: z
+      frame: heliocentric
+      kind: spectroscopic
+      catalogue_error:
+        value: 85
+        unit: kilometre_per_second
+        basis: >-
+          VII/250 ReadMe (read from http://vizier.nao.ac.jp/ftp/cats/VII/250/ReadMe, 2026-11-05):
+          "Q>=3 redshifts are 98.4% reliable and have an rms uncertainty of 85 km/s."
+      basis: >-
+        VII/250 ReadMe (2026-11-05): z is the "Best redshift (heliocentric) (Z_HELIO)".

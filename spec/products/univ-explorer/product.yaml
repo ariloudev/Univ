@@ -8,7 +8,7 @@ body: |
 
   It reads Univ Server's public API alone and draws only what a release placed, each point at the
   position the release derived for it, each star in the colour of the temperature its colour
-  index gives and every other point by the kind of value of its distance, with the sources
+  index gives and every other point in one colour, with the sources
   credited as their terms require. Clicking a point reads its object; the structures are
   drawn by their placed shapes.
 

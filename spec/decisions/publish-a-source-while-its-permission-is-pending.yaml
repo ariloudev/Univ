@@ -1,0 +1,67 @@
+key: 01a1a931-2c8a-73a8-91f2-58eab95e4bc8
+slug: publish-a-source-while-its-permission-is-pending
+title: "Publish a source while its permission is pending"
+context: "2MPZ, WISE × SuperCOSMOS and GAMA DR4 ask for citation and acknowledgement but state no terms for redistribution: the SuperCOSMOS Science Archive defers to a copyright summary it does not link, and GAMA's page speaks only of publications. Permission is asked of their providers. The owner wants them ingested by default while the answer is awaited."
+state:
+  kind: accepted
+  selectedOption: 01a1a931-2c8a-73a8-91f2-58ed6fc7a66a
+  outcome: "A source definition may carry the status permission pending, and Univ Ingest builds and publishes such a source like a permitted one, serving its status with its terms."
+drivers:
+  - key: 01a1a931-2c8a-73a8-91f2-58ebb961ba8c
+    kind: local
+    label: "Completeness"
+    statement: "The catalogue holds every galaxy survey worth drawing."
+  - key: 01a1a931-2c8a-73a8-91f2-58ecf58c0e20
+    kind: local
+    label: "Respect terms"
+    statement: "No source is redistributed against its terms."
+options:
+  - key: 01a1a931-2c8a-73a8-91f2-58ed6fc7a66a
+    title: "Included everywhere"
+    description: "Pending sources are ingested and published by default, wherever releases go, with their status served."
+  - key: 01a1a931-2c8a-73a8-91f2-58eea30ddf49
+    title: "Local only, flagged"
+    description: "Pending sources are ingested and published locally, and a public deployment is refused while any is pending."
+  - key: 01a1a931-2c8a-73a8-91f2-58ef6adacf26
+    title: "Opt-in flag"
+    description: "Pending sources are left out unless a flag includes them."
+assessments:
+  - option: 01a1a931-2c8a-73a8-91f2-58ed6fc7a66a
+    driver: 01a1a931-2c8a-73a8-91f2-58ebb961ba8c
+    rating: supports
+    rationale: "every pending source is in every release"
+  - option: 01a1a931-2c8a-73a8-91f2-58ed6fc7a66a
+    driver: 01a1a931-2c8a-73a8-91f2-58ecf58c0e20
+    rating: conflicts
+    rationale: "a public deployment would redistribute data its provider has not cleared"
+  - option: 01a1a931-2c8a-73a8-91f2-58eea30ddf49
+    driver: 01a1a931-2c8a-73a8-91f2-58ebb961ba8c
+    rating: supports
+    rationale: "every pending source is in every local release"
+  - option: 01a1a931-2c8a-73a8-91f2-58eea30ddf49
+    driver: 01a1a931-2c8a-73a8-91f2-58ecf58c0e20
+    rating: supports
+    rationale: "nothing pending leaves the owner's machine"
+  - option: 01a1a931-2c8a-73a8-91f2-58ef6adacf26
+    driver: 01a1a931-2c8a-73a8-91f2-58ebb961ba8c
+    rating: conflicts
+    rationale: "a default build leaves them out"
+  - option: 01a1a931-2c8a-73a8-91f2-58ef6adacf26
+    driver: 01a1a931-2c8a-73a8-91f2-58ecf58c0e20
+    rating: supports
+    rationale: "nothing pending is built unless asked for"
+consequences:
+  - key: 01a1a931-2c8a-73a8-91f2-58f084a3b921
+    kind: risk
+    statement: "A public deployment made before a provider answers redistributes that provider's data without its permission."
+  - key: 01a1a931-2c8a-73a8-91f2-58f19a9e24d3
+    kind: obligation
+    statement: "Each pending source names whom permission was asked of and when, and its status changes once they answer."
+  - key: 01a1a931-2c8a-73a8-91f2-58f2fda0b28f
+    kind: benefit
+    statement: "Release 10 holds the photometric surveys and GAMA from its first build."
+subjects:
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3d24f2c252fc
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-183a6daa9364

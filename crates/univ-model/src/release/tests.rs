@@ -71,7 +71,6 @@ fn every_row_type_matches_its_table_in_the_schema() {
 
 #[test]
 fn version_3_adds_the_source_and_structure_details_per_release() {
-    assert_eq!(SCHEMA_VERSION, 3);
     for (name, columns) in [
         (
             "source_details",
@@ -105,6 +104,23 @@ fn version_3_adds_the_source_and_structure_details_per_release() {
         assert_eq!(table.scope, Scope::PerRelease, "{name}");
         assert_eq!(table.columns, columns, "{name}");
     }
+}
+
+#[test]
+fn version_4_adds_the_source_terms_per_release() {
+    let columns = [
+        "release",
+        "source",
+        "non_commercial",
+        "permission",
+        "catalogue_uncertainties",
+    ];
+    let (declared, key) = declared("source_terms");
+    assert_eq!(declared, columns);
+    assert_eq!(key, columns[..2]);
+    let table = TABLES.iter().find(|t| t.name == "source_terms").unwrap();
+    assert_eq!(table.scope, Scope::PerRelease);
+    assert_eq!(table.columns, columns);
 }
 
 #[test]
@@ -158,4 +174,68 @@ fn a_name_key_ignores_case_and_white_space() {
         "largemagellaniccloud"
     );
     assert_eq!(name_key("M 31"), name_key("m31"));
+}
+
+#[test]
+fn version_5_adds_the_shards_index_per_release() {
+    assert_eq!(SCHEMA_VERSION, 5);
+    for (name, columns, key) in [
+        ("object_shards", &["release", "id", "shard"][..], 2),
+        (
+            "shard_cells",
+            &["release", "shard", "domain", "first", "last"][..],
+            3,
+        ),
+        (
+            "release_shards",
+            &["release", "shard", "objects", "estimated_bytes"][..],
+            2,
+        ),
+    ] {
+        let (declared, declared_key) = declared(name);
+        assert_eq!(declared, columns, "{name}");
+        assert_eq!(declared_key, columns[..key], "{name}");
+        let table = TABLES.iter().find(|t| t.name == name).unwrap();
+        assert_eq!(table.scope, Scope::PerRelease, "{name}");
+        assert_eq!(table.columns, columns, "{name}");
+        assert!(!table.in_shard(), "{name} is in the catalogue");
+    }
+    let sharded: Vec<&str> = TABLES
+        .iter()
+        .filter(|t| t.in_shard())
+        .map(|t| t.name)
+        .collect();
+    assert_eq!(sharded, super::shards::SHARD_TABLES);
+}
+
+#[test]
+fn a_tables_estimate_over_the_databases_adds_up_its_rows_and_fingerprint() {
+    use super::fingerprint::ColumnTotal;
+    use super::manifest::{TableEstimate, summed};
+    let table = |rows, total, sha: Option<&str>| TableEstimate {
+        table: "objects".to_owned(),
+        rows,
+        estimated_bytes: rows * 10,
+        fingerprint: vec![ColumnTotal {
+            column: "id".to_owned(),
+            total,
+            magnitude: None,
+            non_null: Some(rows),
+        }],
+        content_sha256: sha.map(str::to_owned),
+    };
+    let (a, b, empty) = (
+        table(3, 6.0, Some("a")),
+        table(2, 9.0, Some("b")),
+        table(0, 0.0, Some("empty")),
+    );
+    let sum = summed(&[&empty, &a, &b]).unwrap();
+    assert_eq!((sum.rows, sum.estimated_bytes), (5, 50));
+    assert_eq!(sum.fingerprint[0].total, 15.0);
+    assert_eq!(sum.fingerprint[0].non_null, Some(5));
+    // Two databases hold rows: no single digest stands for them.
+    assert_eq!(sum.content_sha256, None);
+    let one = summed(&[&empty, &a]).unwrap();
+    assert_eq!(one.content_sha256.as_deref(), Some("a"));
+    assert!(summed(&[]).is_none());
 }

@@ -362,6 +362,7 @@ fn manifest(files: Vec<ManifestFile>, tables: Vec<TableEstimate>) -> ReleaseMani
             estimated_bytes: 1000,
             tables,
         },
+        shards: Vec::new(),
         files,
     }
 }

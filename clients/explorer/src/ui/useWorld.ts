@@ -20,6 +20,8 @@ import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts
 import type { Hidden } from "./hidden.ts";
 import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
+import { NOTHING, type Volume } from "../scene/volume.ts";
+import { insideInAddress } from "./inside.ts";
 
 /** What is under the pointer, where the pointer is: a structure's name, which a click
  * chooses, or else a point. */
@@ -96,6 +98,14 @@ export function hide(world: World, hidden: Pick<Hidden, "domain" | "source" | "k
   world.controller.invalidate();
 }
 
+/** Culls `world` to `volume`, or no longer where it is none (see-the-structures): only the
+ * points inside it drawn, picked, counted and fetched. The renderer reads each tile's mask from
+ * the catalogue as it draws. */
+export function cull(world: World, volume: Volume | undefined): void {
+  world.catalogue?.setCull(volume);
+  world.controller.invalidate();
+}
+
 /** What a release's catalogue starts from: its domains, and the rotations of its frames. */
 interface Started {
   domains: Domain[];
@@ -115,7 +125,7 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
       const { id, centre } = batch.tile;
       const { extent } = batch;
       const { offsets, kinds, sources } = batch;
-      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes });
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice: batch.tile.slice });
       // Picking tests a sphere about the tile's centre: the one holding the points' own.
       const radius = norm(sub(extent.centre, centre)) + extent.radius;
       world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });
@@ -130,6 +140,8 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
     onChange: () => controller.invalidate(),
   };
   world.catalogue = new Catalogue(release, domains, events, { signal });
+  // A cull the address asks for holds back every tile until the structure it names is read.
+  if (insideInAddress(location.search) !== undefined) world.catalogue.setCull(NOTHING);
   world.catalogue.update(controller.sight);
   return { domains, rotations };
 }
@@ -223,6 +235,7 @@ export function drawn(world: World, overlay: Overlay, size: { width: number; hei
 function animate(world: World, overlay: RefObject<Overlay>, size: Surroundings["size"]): () => void {
   let marked = false;
   let frame = requestAnimationFrame(function loop() {
+    if (world.renderer.fading()) world.controller.invalidate();
     if (world.controller.tick()) marked = drawn(world, overlay.current, size(), marked);
     frame = requestAnimationFrame(loop);
   });
@@ -252,6 +265,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
     }
     const around = surroundings(element);
     const state = emptyWorld(new Controller(renderer, around), renderer);
+    renderer.setDetail(() => state.catalogue);
     setWorld(state);
     const abort = new AbortController();
     startCatalogue(release, state, abort.signal)

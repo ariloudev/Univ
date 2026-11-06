@@ -1,0 +1,197 @@
+key: 01a1ad39-2c43-7632-801a-967412480c67
+id: downloads-move
+versions:
+  - key: 01a1ad39-2c43-7632-801a-967786058c87
+    at: 2026-11-05T19:39:27Z
+    revision: 19
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Move the downloads to the Univ home folder"
+    goal: "Univ Ingest's downloads live in the Univ home folder, and new downloads go there"
+    status: planned
+  - key: 01a1ad60-4275-762c-b000-d374f172834a
+    at: 2026-11-05T20:22:09Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Move the downloads to the Univ home folder"
+    goal: "Univ Ingest's downloads live in the Univ home folder, and new downloads go there"
+    status: active
+  - key: 01a1ad7e-05b8-759f-8000-89120b264bcf
+    at: 2026-11-05T20:54:39Z
+    revision: 27
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Move the downloads to the Univ home folder"
+    goal: "Univ Ingest's downloads live in the Univ home folder, and new downloads go there"
+    status: done
+blocks:
+  - key: 01a1ad39-2c43-7632-801a-96752f23f7b2
+    id: q-move-what
+    kind: question
+    versions:
+      - key: 01a1ad39-2c43-7632-801a-9678e67623e0
+        at: 2026-11-05T19:39:27Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Which parts of univ-server/.cache/univ-ingest should move to the Univ home folder?"
+        header: "What moves"
+        context: |-
+          The folder holds four things, all on one disk, so a move is an instant rename:
+
+          | Part | Size |
+          |---|---|
+          | Source downloads: chunks, files and provenance, one folder per source | ~3 GB |
+          | `wrangler`: the local D1 and R2 that releases are published to | 8.2 GB |
+          | `build`: built releases | 6.7 GB |
+          | `state`: the id ledger and the last release's entry ids | 1.8 GB |
+
+          The move happens after the memory wave's review stage. The default of `--cache` (and of the other folders that move) changes to match, an environment variable can override it, and the code, tests, xtask, CLAUDE.md, AGENTS.md and the spec, where they name the path, are updated.
+        options:
+          - label: "Downloads only"
+            detail: "The ~3 GB of source downloads move. The id state, built releases and local D1/R2 stay in univ-server: they are this project's own outputs, not shared data, and `xtask serve`/`explore`/benches keep their paths."
+            recommended: true
+          - label: "Downloads and builds"
+            detail: "Source downloads and built releases move (~10 GB). The id state and local D1/R2 stay with the project."
+          - label: "Everything"
+            detail: "The whole 20 GB folder moves, the id state and local D1/R2 included. Every path in univ-ingest and xtask changes."
+    responses:
+      - key: 01a1ad39-efe3-7041-9d43-915bc540b7f4
+        at: 2026-11-05T19:40:17Z
+        revision: 20
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Downloads only"
+  - key: 01a1ad39-2c43-7632-801a-96765bedab66
+    id: q-move-where
+    kind: question
+    versions:
+      - key: 01a1ad39-2c43-7632-801a-9679acc3ff19
+        at: 2026-11-05T19:39:27Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Where in the Univ home folder should the downloads go?"
+        header: "Where"
+        context: "The Univ home folder is /Users/admin/Locap/Univ. It is not a git repository, so nothing there is committed."
+        options:
+          - label: "Univ/downloads/univ-ingest"
+            detail: "A visible `downloads` folder, with one subfolder per tool so other projects can keep theirs beside it."
+            recommended: true
+          - label: "Univ/.cache/univ-ingest"
+            detail: "Hidden, the same layout as today one level up."
+          - label: "Univ/downloads"
+            detail: "The source folders straight under `downloads`, with no subfolder for Univ Ingest."
+    responses:
+      - key: 01a1ad39-efe3-7041-9d43-915cdc3d3b5f
+        at: 2026-11-05T19:40:17Z
+        revision: 20
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Univ/downloads/univ-ingest"
+  - key: 01a1ad3a-053f-73b0-a2ba-3395a66d3b19
+    id: d-move-what
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1ad3a-053f-73b0-a2ba-339771302e5e
+        at: 2026-11-05T19:40:23Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Only the source downloads move"
+        consequence: "The per-source chunks, files and provenance (~3 GB) leave univ-server. The id state, built releases and local D1/R2 stay in `.cache/univ-ingest`, so `build`, `publish`, `serve`, `explore` and the benches keep their paths; only the `--cache` default changes."
+        question: 01a1ad39-2c43-7632-801a-96752f23f7b2
+  - key: 01a1ad3a-053f-73b0-a2ba-33961acc1a9b
+    id: d-move-where
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1ad3a-053f-73b0-a2ba-339857fb78c1
+        at: 2026-11-05T19:40:23Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Downloads go to Univ/downloads/univ-ingest"
+        consequence: "`--cache` defaults to /Users/admin/Locap/Univ/downloads/univ-ingest, resolved from the repository's parent, not hard-coded, with an environment variable to override it. Other projects can keep their downloads beside it under `Univ/downloads/`."
+        question: 01a1ad39-2c43-7632-801a-96765bedab66
+  - key: 01a1ad6e-a428-7579-a81b-4c8b165934ed
+    id: m-move-code
+    kind: task
+    versions:
+      - key: 01a1ad6e-a428-7579-a81b-4c8eb77249ad
+        at: 2026-11-05T20:37:51Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Point --cache at Univ/downloads/univ-ingest"
+        detail: "`--cache` defaults to `../downloads/univ-ingest` from the repository root, and `UNIV_INGEST_CACHE` overrides it (the variable the hand-run tests already read; clap's `env` feature on). The tests' `cache_dir()` and two test docs follow it. AGENTS.md (CLAUDE.md links to it) gains a \"Local data\" section, and the umbrella Univ/CLAUDE.md a rule on `downloads/<tool>/`. The spec does not name the path; the release records provenance but not the cache's path. Commit `5b58aab`."
+        state: done
+  - key: 01a1ad6e-a428-7579-a81b-4c8c0c1db7ca
+    id: m-move-files
+    kind: task
+    versions:
+      - key: 01a1ad6e-a428-7579-a81b-4c8f0554da05
+        at: 2026-11-05T20:37:51Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Move the source downloads"
+        detail: "24 source folders (2.7 GB) renamed into /Users/admin/Locap/Univ/downloads/univ-ingest. `.cache/univ-ingest/` keeps `build`, `state` and `wrangler`. A focused offline run reads every chunk from the new folder: 48 hits, 0 fetched, 2,432,397 entries as before."
+        state: done
+  - key: 01a1ad6e-a428-7579-a81b-4c8d20d0e42b
+    id: m-move-gate
+    kind: task
+    versions:
+      - key: 01a1ad6e-a428-7579-a81b-4c90284a7b61
+        at: 2026-11-05T20:37:51Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full gate"
+        detail: "`cargo xtask check`, then close Yard Log and merge `--no-ff` into `product/release-10`."
+        state: active
+      - key: 01a1ad7e-05b8-759f-8000-891171a300f6
+        at: 2026-11-05T20:54:39Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Full gate"
+        detail: "`cargo xtask check` green: 13 steps, `loft verify` skipped (it runs on `develop`)."
+        state: done
+  - key: 01a1ad7e-05b8-759f-8000-891075378e3d
+    id: move-result
+    kind: note
+    versions:
+      - key: 01a1ad7e-05b8-759f-8000-89139b3ca2b8
+        at: 2026-11-05T20:54:39Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the move left"
+        markdown: |-
+          - **Downloads:** /Users/admin/Locap/Univ/downloads/univ-ingest/, 24 source folders, 2.7 GB. New downloads go there: it is the default of `univ-ingest --cache`, and `UNIV_INGEST_CACHE` names another.
+          - **Project outputs:** univ-server/.cache/univ-ingest/ keeps `state`, `build` and `wrangler`.
+          - **Documented** in univ-server's AGENTS.md ("Local data") and the umbrella Univ/CLAUDE.md.
+
+          **For W5:** the 2dFGRS refetch and the WISE, GAMA and 2MPZ downloads land in the new folder.
+        tone: success

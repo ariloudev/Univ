@@ -1,4 +1,4 @@
-# Local storage that Univ Ingest publishes releases to: one D1 database and one R2 bucket,
+# Local storage that Univ Ingest publishes releases to: the D1 databases and one R2 bucket,
 # written with `wrangler d1 execute --local` and `wrangler r2 object put --local`.
 #
 # There is no Worker entry and there are no routes here, on purpose: Univ Server's Worker is a
@@ -11,6 +11,48 @@ compatibility_date = "2026-11-01"
 binding = "DB"
 database_name = "univ"
 database_id = "00000000-0000-0000-0000-000000000000"
+
+# The object shards (univ_model::release::shards): a release's objects divided among them by
+# cell, OBJECTS_{i} named univ-objects-{i}. Univ Server binds the same, by the same ids.
+[[d1_databases]]
+binding = "OBJECTS_0"
+database_name = "univ-objects-0"
+database_id = "00000000-0000-0000-0000-000000000100"
+
+[[d1_databases]]
+binding = "OBJECTS_1"
+database_name = "univ-objects-1"
+database_id = "00000000-0000-0000-0000-000000000101"
+
+[[d1_databases]]
+binding = "OBJECTS_2"
+database_name = "univ-objects-2"
+database_id = "00000000-0000-0000-0000-000000000102"
+
+[[d1_databases]]
+binding = "OBJECTS_3"
+database_name = "univ-objects-3"
+database_id = "00000000-0000-0000-0000-000000000103"
+
+[[d1_databases]]
+binding = "OBJECTS_4"
+database_name = "univ-objects-4"
+database_id = "00000000-0000-0000-0000-000000000104"
+
+[[d1_databases]]
+binding = "OBJECTS_5"
+database_name = "univ-objects-5"
+database_id = "00000000-0000-0000-0000-000000000105"
+
+[[d1_databases]]
+binding = "OBJECTS_6"
+database_name = "univ-objects-6"
+database_id = "00000000-0000-0000-0000-000000000106"
+
+[[d1_databases]]
+binding = "OBJECTS_7"
+database_name = "univ-objects-7"
+database_id = "00000000-0000-0000-0000-000000000107"
 
 [[r2_buckets]]
 binding = "RELEASES"

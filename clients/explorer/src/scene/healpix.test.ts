@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { boundary, centreOf, corners } from "./healpix.ts";
+import { boundary, cellOf, centreOf, corners } from "./healpix.ts";
 import type { Vec3 } from "./vec.ts";
 
 /** The unit vector at longitude `lon` and latitude `lat`, radians. */
@@ -29,6 +29,29 @@ describe("a HEALPix cell", () => {
       const [lon = 0, lat = 0] = vertices[i] ?? [];
       near(corner, at(lon, lat));
     });
+  });
+});
+
+describe("the cell of a direction", () => {
+  it("is the cell whose centre it is, for every cell of order 6 and a few of order 12", () => {
+    for (let cell = 0; cell < 12 * 4 ** 6; cell += 1) expect(cellOf(6, centreOf(6, cell))).toBe(cell);
+    for (const cell of [0, 1, 4 ** 12 - 1, 5 * 4 ** 12 + 12_345, 12 * 4 ** 12 - 1]) expect(cellOf(12, centreOf(12, cell))).toBe(cell);
+  });
+
+  it("is the cell a point just inside each corner lies in, at the poles and seams too", () => {
+    for (const cell of [0, 3, 4 ** 6 - 1, 4 * 4 ** 6, 8 * 4 ** 6 + 7, 12 * 4 ** 6 - 1]) {
+      const centre = centreOf(6, cell);
+      for (const corner of corners(6, cell)) {
+        const near: [number, number, number] = [0, 1, 2].map((i) => 0.999 * (corner[i] ?? 0) + 0.001 * (centre[i] ?? 0)) as [number, number, number];
+        expect(cellOf(6, near)).toBe(cell);
+      }
+    }
+    expect(cellOf(6, [0, 0, 1])).toBeLessThan(4 * 4 ** 6);
+    expect(cellOf(6, [0, 0, -1])).toBeGreaterThanOrEqual(8 * 4 ** 6);
+  });
+
+  it("does not need a unit vector", () => {
+    expect(cellOf(6, [300, -40, 120])).toBe(cellOf(6, [3, -0.4, 1.2]));
   });
 });
 

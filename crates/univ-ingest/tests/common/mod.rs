@@ -141,11 +141,13 @@ pub fn source_id(id: &str) -> SourceId {
     SourceId::new(id).expect("a valid source id")
 }
 
-/// The ingest cache the tests run by hand read: `UNIV_INGEST_CACHE`, or the workspace's
-/// `.cache/univ-ingest`.
+/// The ingest cache the tests run by hand read: `UNIV_INGEST_CACHE`, or the CLI's default, the
+/// Univ home folder's `downloads/univ-ingest` beside the workspace.
 pub fn cache_dir() -> PathBuf {
-    std::env::var_os("UNIV_INGEST_CACHE")
-        .map_or_else(|| workspace().join(".cache/univ-ingest"), PathBuf::from)
+    std::env::var_os("UNIV_INGEST_CACHE").map_or_else(
+        || workspace().join("../downloads/univ-ingest"),
+        PathBuf::from,
+    )
 }
 
 /// Every source definition in the repository.
@@ -156,12 +158,21 @@ pub fn read_sources() -> Vec<SourceDefinition> {
 /// A definition of `test-galaxies` with `access`, columns `ra` and `dec`, and one mirror,
 /// written to `dir` and read as a run reads it.
 pub fn definition(dir: &tempfile::TempDir, access: &str, mirror: &str) -> SourceDefinition {
+    try_definition(dir, access, mirror).expect("a valid definition")
+}
+
+/// A test definition with this access, or why it is refused.
+pub fn try_definition(
+    dir: &tempfile::TempDir,
+    access: &str,
+    mirror: &str,
+) -> Result<SourceDefinition, String> {
     let yaml = format!(
         "id: test-galaxies\ntitle: t\nprovider: p\naccess:\n{access}\ncuts: []\ncolumns:\n  - {{ column: ra, field: right_ascension, unit: degree }}\n  - {{ column: dec, field: declination, unit: degree }}\nframe: icrs\nepoch: 2000.0\ncitation: c\nreference: {{ doi: \"10.1000/test\" }}\nterms: {{ url: u, quote: q, credit: c }}\nredistribution: {{ status: permitted, review: provisional, reasoning: r }}\nscale_domain: cosmic_web\nmirrors: [\"{mirror}\"]\n"
     );
     let path = dir.path().join("test-galaxies.yaml");
     std::fs::write(&path, yaml).expect("written");
-    SourceDefinition::read(&path).expect("a valid definition")
+    SourceDefinition::read(&path).map_err(|e| e.to_string())
 }
 
 /// The source definition `id` from the repository.
@@ -196,9 +207,14 @@ pub fn normalize_body(definition: &SourceDefinition, body: &[u8]) -> Normalized 
 
 /// The recorded answer of the source `id`, normalized.
 pub fn normalized_fixture(id: &str) -> Normalized {
-    let definition = definition_of(id);
-    let body = std::fs::read(fixture_of(&definition)).expect("a recorded answer");
-    normalize_body(&definition, &body)
+    normalized_definition(&definition_of(id))
+}
+
+/// The recorded answer of `definition`'s source, normalized as `definition`, which a test may
+/// have changed.
+pub fn normalized_definition(definition: &SourceDefinition) -> Normalized {
+    let body = std::fs::read(fixture_of(definition)).expect("a recorded answer");
+    normalize_body(definition, &body)
 }
 
 /// The recorded answer `file`, beside the source `id`'s own under its provider's fixtures,
@@ -215,7 +231,7 @@ pub fn entry<'a>(normalized: &'a Normalized, identifier: &str) -> &'a CatalogueE
     normalized
         .entries
         .iter()
-        .find(|e| e.designation.identifier == identifier)
+        .find(|e| &*e.designation.identifier == identifier)
         .unwrap_or_else(|| panic!("no entry {identifier}"))
 }
 
@@ -232,7 +248,8 @@ pub fn count_rows(definition: &SourceDefinition) -> u64 {
         .expect("a table")
 }
 
-/// The sources that are provider tables, each with its recorded answer normalized.
+/// The sources that are provider tables, each with its recorded answer normalized; files, a
+/// prepared file and the repository's own are read by tests of their own.
 pub fn every_table() -> Vec<(SourceDefinition, Normalized)> {
     read_sources()
         .into_iter()
@@ -240,6 +257,7 @@ pub fn every_table() -> Vec<(SourceDefinition, Normalized)> {
             !matches!(
                 d.access,
                 univ_ingest::source::Access::Files { .. }
+                    | univ_ingest::source::Access::Prepared(_)
                     | univ_ingest::source::Access::Repository { .. }
             )
         })

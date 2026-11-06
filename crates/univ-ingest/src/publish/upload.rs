@@ -3,12 +3,14 @@
 
 use std::path::{Path, PathBuf};
 
-use univ_model::release::manifest::{ManifestFile, Target};
-use univ_model::release::{D1_CAP_BYTES, ReleaseManifest, TABLES, Table, keys};
+use univ_model::release::manifest::{D1Estimate, MANIFEST_VERSION, ManifestFile, Target};
+use univ_model::release::shards::Database;
+use univ_model::release::{ReleaseManifest, TABLES, Table, keys};
 
-use super::check::{check_rows, published_status, schema_version, sql_text};
+use super::check::{check_rows, schema_version, sql_text};
 use super::journal::{Done, Journal};
 use super::progress::{FileDone, Lines, Progress};
+use super::refuse::{Refused, refuse_published, unbound, within_caps};
 use super::{Latest, PublishError, Store, StoreOptions};
 use crate::release::{RELEASES, read_manifest, release_dir};
 use crate::state::State;
@@ -29,53 +31,77 @@ pub struct Published {
     pub journaled: usize,
 }
 
-/// A unit uploaded and checked as one: the schema, an R2 file, or a table's D1 files.
+/// A unit uploaded and checked as one: a database's schema, an R2 file, or a table's D1 files
+/// in one database.
 enum Unit<'m> {
-    Schema(&'m ManifestFile),
+    Schema(Database, &'m ManifestFile),
     R2(&'m ManifestFile),
-    Table(&'static Table, Vec<&'m ManifestFile>),
+    Table(Database, &'static Table, Vec<&'m ManifestFile>),
 }
 
-/// The table a D1 file `d1/{nnnn}-{table}-{part}.sql` loads, or none for the schema's file.
-fn table_of(path: &str) -> Result<Option<&'static Table>, String> {
-    let name = path
+/// The database and table a D1 file `d1/{dir}/{nnnn}-{table}-{part}.sql` loads, no table for a
+/// schema's file.
+fn file_of(path: &str) -> Result<(Database, Option<&'static Table>), String> {
+    let not_named = || format!("{path} is not named as a D1 file");
+    let (dir, file) = path
         .strip_prefix(&format!("{}/", keys::D1_DIR))
-        .and_then(|p| p.strip_suffix(".sql"))
+        .and_then(|rest| rest.split_once('/'))
+        .ok_or_else(not_named)?;
+    let database = Database::from_dir(dir).ok_or_else(not_named)?;
+    let name = file
+        .strip_suffix(".sql")
         .and_then(|p| p.split_once('-'))
-        .map(|(_, rest)| rest.rsplit_once('-').map_or(rest, |(table, _)| table));
-    match name {
-        Some("schema") => Ok(None),
-        Some(name) => TABLES
-            .iter()
-            .find(|t| t.name == name)
-            .map(Some)
-            .ok_or_else(|| format!("{path} loads no table of the schema")),
-        None => Err(format!("{path} is not named as a D1 file")),
+        .map(|(_, rest)| rest.rsplit_once('-').map_or(rest, |(table, _)| table))
+        .ok_or_else(not_named)?;
+    if name == "schema" {
+        return Ok((database, None));
     }
+    let table = TABLES
+        .iter()
+        .find(|t| t.name == name)
+        .ok_or_else(|| format!("{path} loads no table of the schema"))?;
+    Ok((database, Some(table)))
 }
 
-/// The release's units in the order they are uploaded: the schema, the R2 files, then each
-/// table's D1 files in the order of the schema's tables.
+/// The release's units in the order they are uploaded: each database's schema, the R2 files,
+/// then each database's tables' D1 files, the catalogue's first, each in the order of the
+/// schema's tables.
 fn units(manifest: &ReleaseManifest) -> Result<Vec<Unit<'_>>, String> {
-    let mut schema = Vec::new();
+    let mut schemas = Vec::new();
     let mut r2 = Vec::new();
-    let mut tables: Vec<(&'static Table, Vec<&ManifestFile>)> = Vec::new();
+    let mut tables: Vec<(Database, &'static Table, Vec<&ManifestFile>)> = Vec::new();
     for f in &manifest.files {
         match f.target {
             Target::R2 => r2.push(Unit::R2(f)),
-            Target::D1 => match table_of(&f.path)? {
-                None => schema.push(Unit::Schema(f)),
-                Some(t) => match tables.iter_mut().find(|(u, _)| u.name == t.name) {
-                    Some((_, files)) => files.push(f),
-                    None => tables.push((t, vec![f])),
+            Target::D1 => match file_of(&f.path)? {
+                (db, None) => schemas.push((db, f)),
+                (db, Some(t)) => match tables
+                    .iter_mut()
+                    .find(|(d, u, _)| *d == db && u.name == t.name)
+                {
+                    Some((_, _, files)) => files.push(f),
+                    None => tables.push((db, t, vec![f])),
                 },
             },
         }
     }
-    tables.sort_by_key(|(t, _)| TABLES.iter().position(|u| u.name == t.name));
-    schema.extend(r2);
-    schema.extend(tables.into_iter().map(|(t, f)| Unit::Table(t, f)));
-    Ok(schema)
+    schemas.sort_by_key(|(db, _)| *db);
+    tables.sort_by_key(|(db, t, _)| (*db, TABLES.iter().position(|u| u.name == t.name)));
+    let mut units: Vec<Unit<'_>> = schemas
+        .into_iter()
+        .map(|(db, f)| Unit::Schema(db, f))
+        .collect();
+    units.extend(r2);
+    units.extend(tables.into_iter().map(|(db, t, f)| Unit::Table(db, t, f)));
+    Ok(units)
+}
+
+/// The manifest's estimate of the rows of `database`.
+fn estimate_of(manifest: &ReleaseManifest, database: Database) -> Option<&D1Estimate> {
+    match database {
+        Database::Catalogue => Some(&manifest.d1),
+        Database::Shard(i) => manifest.shards.get(i as usize).map(|s| &s.d1),
+    }
 }
 
 /// The complete release `number` in the build output: its directory, its manifest and the
@@ -97,6 +123,12 @@ fn read_release(
         });
     }
     let (manifest, bytes) = read_manifest(&dir, number).map_err(|e| e.to_string())?;
+    if manifest.manifest_version < MANIFEST_VERSION {
+        return Err(format!(
+            "it was built under manifest version {}, before object shards; build it again",
+            manifest.manifest_version
+        ));
+    }
     let state = State::read(options.state).map_err(|e| e.to_string())?;
     let name = number.to_string();
     if !state.ledger.releases().iter().any(|r| r.name == name) {
@@ -168,19 +200,19 @@ fn upload(
         });
     };
     match unit {
-        Unit::Schema(f) => {
+        Unit::Schema(db, f) => {
             let path = dir.join(&f.path);
             local(&path, f)?;
-            store.execute_file(&path)?;
+            store.execute_file(*db, &path)?;
             let want = i64::from(manifest.versions.d1_schema);
-            match schema_version(store)? {
+            match schema_version(store, *db)? {
                 Some(v) if v >= want => {
-                    let checked = format!("schema version {v}");
+                    let checked = format!("schema version {v} in {db}");
                     told(f, &checked, None);
                     Ok(vec![done(f, checked)])
                 }
                 v => Err(format!(
-                    "D1 records schema version {v:?} once {} ran, not {want}",
+                    "{db} records schema version {v:?} once {} ran, not {want}",
                     f.path
                 )),
             }
@@ -198,7 +230,7 @@ fn upload(
             told(f, &checked, None);
             Ok(vec![done(f, checked)])
         }
-        Unit::Table(table, files) => {
+        Unit::Table(db, table, files) => {
             let Some((last, before)) = files.split_last() else {
                 return Ok(vec![]);
             };
@@ -206,9 +238,9 @@ fn upload(
             for (k, f) in before.iter().enumerate() {
                 let path = dir.join(&f.path);
                 local(&path, f)?;
-                store.execute_file(&path)?;
+                store.execute_file(*db, &path)?;
                 let said = format!(
-                    "imported, {} of {} files of {}",
+                    "imported, {} of {} files of {} in {db}",
                     k + 1,
                     files.len(),
                     table.name
@@ -217,16 +249,22 @@ fn upload(
             }
             let path = dir.join(&last.path);
             local(&path, last)?;
-            store.execute_file(&path)?;
-            let want = manifest
-                .d1
-                .tables
-                .iter()
-                .find(|t| t.table == table.name)
-                .ok_or_else(|| format!("the manifest gives no fingerprint of {}", table.name))?;
-            let rows = check_rows(store, table, n, want)?;
+            store.execute_file(*db, &path)?;
+            let want = estimate_of(manifest, *db)
+                .and_then(|e| e.tables.iter().find(|t| t.table == table.name))
+                .ok_or_else(|| {
+                    format!(
+                        "the manifest gives no fingerprint of {} in {db}",
+                        table.name
+                    )
+                })?;
+            let rows = check_rows(store, *db, table, n, want)?;
             // The count and fingerprint both matched.
-            let checked = format!("{}: {rows} rows of release {n}", table.name);
+            let shard = match db {
+                Database::Catalogue => String::new(),
+                Database::Shard(i) => format!(" in shard {i}"),
+            };
+            let checked = format!("{}: {rows} rows of release {n}{shard}", table.name);
             told(
                 last,
                 &format!("imported; {checked}"),
@@ -239,8 +277,8 @@ fn upload(
 
 fn unit_files<'u>(unit: &'u Unit<'_>) -> Vec<&'u ManifestFile> {
     match unit {
-        Unit::Schema(f) | Unit::R2(f) => vec![f],
-        Unit::Table(_, files) => files.clone(),
+        Unit::Schema(_, f) | Unit::R2(f) => vec![f],
+        Unit::Table(_, _, files) => files.clone(),
     }
 }
 
@@ -255,13 +293,16 @@ pub fn move_latest(number: u32, at: &str) -> String {
 }
 
 /// Records when release `number` was published, once `latest` has moved to it.
-fn record_published(store: &mut dyn Store, number: u32, at: &str) -> Result<(), String> {
+pub(super) fn record_published(store: &mut dyn Store, number: u32, at: &str) -> Result<(), String> {
     store
-        .query(&format!(
-            "UPDATE releases SET published_at = {} WHERE number = {number} AND published_at IS \
+        .query(
+            Database::Catalogue,
+            &format!(
+                "UPDATE releases SET published_at = {} WHERE number = {number} AND published_at IS \
              NULL",
-            sql_text(at)
-        ))
+                sql_text(at)
+            ),
+        )
         .map(drop)
 }
 
@@ -333,14 +374,16 @@ pub fn publish_with(
                 .or_else(|| journal.done.last().map(|d| d.at.clone()))
         })
         .flatten();
-    let (latest, schema) = refuse_published(store, number, done_at).map_err(|e| match e {
+    let (latest, holds) = refuse_published(store, number, done_at).map_err(|e| match e {
         Refused::Error(e) => e,
         Refused::Query(p) => stopped(Latest(None), 0, p),
     })?;
-    within_cap(store, number, manifest.d1.estimated_bytes, schema).map_err(|e| match e {
-        Refused::Error(e) => e,
-        Refused::Query(p) => stopped(latest, 0, p),
-    })?;
+    unbound(store, &manifest)
+        .and_then(|()| within_caps(store, &manifest, holds))
+        .map_err(|e| match e {
+            Refused::Error(e) => e,
+            Refused::Query(p) => stopped(latest, 0, p),
+        })?;
     let journaled = journal.done.len();
     progress.started(total - journaled);
     if journaled > 0 {
@@ -368,7 +411,7 @@ pub fn publish_with(
     }
     let at = (options.now)();
     store
-        .query(&move_latest(number, &at))
+        .query(Database::Catalogue, &move_latest(number, &at))
         .map_err(|p| stopped(latest, journal.done.len(), p))?;
     journal.latest_moved_at = Some(at.clone());
     let moved = Latest(Some(number));
@@ -383,95 +426,6 @@ pub fn publish_with(
         uploaded: total - journaled,
         journaled,
     })
-}
-
-/// Checks the estimate `this` of release `number`'s rows, with those of every other release D1
-/// lists that is not pruned, against the cap (CON-3); `schema` is whether D1 holds the schema.
-fn within_cap(store: &mut dyn Store, number: u32, this: u64, schema: bool) -> Result<(), Refused> {
-    let (others, releases) = if schema {
-        let rows = store
-            .query(&format!(
-                "SELECT total(d1_estimated_bytes) AS bytes, COUNT(*) AS n FROM releases WHERE \
-                 pruned_at IS NULL AND number <> {number}"
-            ))
-            .map_err(Refused::Query)?;
-        let row = rows.first();
-        #[expect(
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss,
-            reason = "a sum of byte counts, whole and positive"
-        )]
-        let bytes = row
-            .and_then(|r| r.get("bytes"))
-            .and_then(serde_json::Value::as_f64)
-            .map_or(0, |b| b as u64);
-        let n = row
-            .and_then(|r| r.get("n"))
-            .and_then(serde_json::Value::as_u64)
-            .unwrap_or(0);
-        (bytes, n)
-    } else {
-        (0, 0)
-    };
-    if this + others > D1_CAP_BYTES {
-        return Err(Refused::Error(PublishError::OverCap {
-            number,
-            this,
-            others,
-            releases,
-        }));
-    }
-    Ok(())
-}
-
-/// Why publishing was refused before anything was uploaded.
-enum Refused {
-    Error(PublishError),
-    Query(String),
-}
-
-/// Where `latest` points, and whether D1 holds the schema, once release `number` is found
-/// neither published nor pruned, nor older than the release `latest` points to. A release whose publication time is missing is
-/// recorded as published, and refused as such, when `latest` points to it (at the time it moved
-/// there) or when `done_at` gives the time the journal says it was whole, whatever `latest`
-/// points to.
-fn refuse_published(
-    store: &mut dyn Store,
-    number: u32,
-    done_at: Option<String>,
-) -> Result<(Latest, bool), Refused> {
-    let status = published_status(store, number).map_err(Refused::Query)?;
-    let latest = status.latest();
-    let refused = |e| Err(Refused::Error(e));
-    if let Some(published_at) = status.published_at {
-        return refused(PublishError::AlreadyPublished {
-            number,
-            published_at,
-            latest,
-        });
-    }
-    if let Some(pruned_at) = status.pruned_at {
-        return refused(PublishError::Pruned { number, pruned_at });
-    }
-    let recovered = match (&status.latest, done_at) {
-        // Moved by a run stopped before it recorded the publication time.
-        (Some((n, moved_at)), _) if *n == number => Some(moved_at.clone()),
-        // Whole by its journal, and a newer release published since.
-        (Some((n, _)), Some(at)) if *n > number && status.listed => Some(at),
-        _ => None,
-    };
-    if let Some(published_at) = recovered {
-        record_published(store, number, &published_at).map_err(Refused::Query)?;
-        return refused(PublishError::AlreadyPublished {
-            number,
-            published_at,
-            latest,
-        });
-    }
-    match status.latest {
-        Some((n, _)) if n > number => refused(PublishError::NotNewer { number, latest: n }),
-        _ => Ok((latest, status.schema)),
-    }
 }
 
 /// The journal of release `number` under the manifest with SHA-256 `manifest_sha`: the one an

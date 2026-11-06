@@ -12,8 +12,12 @@ use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
+pub use catalogue_error::CatalogueError;
+
 use super::rules::{self, Rule};
 use super::{Column, Field, Fix};
+
+mod catalogue_error;
 
 /// How a source's rows are read beyond the column each field comes from.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -68,6 +72,14 @@ pub struct RedshiftReading {
     pub column: String,
     #[serde(default)]
     pub error: Option<String>,
+    /// One uncertainty the source states for its whole catalogue rather than for each row, in
+    /// place of `error`.
+    #[serde(default)]
+    pub catalogue_error: Option<CatalogueError>,
+    /// The redshift's error is the `error` column's value times this, where the source defines
+    /// it so, such as half the error on an HI line's width; the basis says where.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error_scale: Option<f64>,
     pub frame: RedshiftFrame,
     #[serde(default)]
     pub kind: Option<RedshiftKind>,
@@ -316,6 +328,7 @@ pub(super) fn check(
             &table,
             &format!("normalization.redshifts[{i}]"),
             r,
+            normalization.redshifts.len() == 1,
         )?);
     }
     for (i, d) in normalization.distances.iter().enumerate() {
@@ -365,6 +378,7 @@ fn check_redshift<'a>(
     table: &Columns<'_>,
     at: &str,
     r: &'a RedshiftReading,
+    alone: bool,
 ) -> Result<Vec<&'a str>, Problem> {
     blank(&format!("{at}.basis"), &r.basis)?;
     table.known(&format!("{at}.column"), &r.column)?;
@@ -377,8 +391,8 @@ fn check_redshift<'a>(
     if r.frame == RedshiftFrame::LocalGroup {
         return Err(problem(
             format!("{at}.frame"),
-            "only a heliocentric redshift, moved to the CMB frame, or one published in the CMB \
-             frame is read",
+            "only a heliocentric or barycentric redshift, moved to the CMB frame, or one \
+             published in the CMB frame is read",
         ));
     }
     if r.kind.is_some() == r.by_code.is_some() {
@@ -397,6 +411,16 @@ fn check_redshift<'a>(
             return Err(problem(&at, "starts at a velocity that is negative"));
         }
         c.read().map_err(|e| problem(&at, e.to_string()))?;
+    }
+    if let Some(c) = &r.catalogue_error {
+        let at = format!("{at}.catalogue_error");
+        catalogue_error::check(&at, c, table.unit(&r.column), r, alone)?;
+    }
+    if r.error_scale
+        .is_some_and(|f| !(f.is_finite() && f > 0.0) || r.error.is_none())
+    {
+        let what = "scales an error column it lacks, or by a factor that is not positive";
+        return Err(problem(format!("{at}.error_scale"), what));
     }
     let mut read = vec![r.column.as_str()];
     if let Some(e) = &r.error {

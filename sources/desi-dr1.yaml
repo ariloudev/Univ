@@ -1,0 +1,111 @@
+id: desi-dr1
+title: "DESI Data Release 1 redshift catalogue: galaxies and quasars"
+provider: noirlab-datalab
+access:
+  method: tap
+  # Some 15 million rows (13.1M galaxies and 1.6M quasars of the main survey, plus Survey
+  # Validation) in 80 chunks of about 200,000, each run as a job at Astro Data Lab.
+  query: >-
+    SELECT targetid, mean_fiber_ra, mean_fiber_dec, z, zerr, spectype FROM desi_dr1.zpix
+    WHERE targetid > 0 AND zcat_primary = 'true' AND zwarn = 0
+    AND spectype IN ('GALAXY', 'QSO')
+    AND MOD(targetid, {chunks}) = {chunk}
+  chunks: 80
+  count: >-
+    SELECT COUNT(*) AS n FROM desi_dr1.zpix
+    WHERE targetid > 0 AND zcat_primary = 'true' AND zwarn = 0
+    AND spectype IN ('GALAXY', 'QSO')
+  # Data Lab's synchronous endpoint did not answer a four-row query within 110 s on 2026-11-05,
+  # then answered a six-row one in 2 s: a job outlasts such stalls. zcat_primary is a boolean
+  # column there, compared with 'true'.
+  run: async
+cuts:
+  - >-
+    desi_dr1.zpix at NOIRLab's Astro Data Lab, its copy of DESI DR1's zall-pix redshift catalogue
+    (one row per target and healpix coadd), cut to zcat_primary true (the one row of each target
+    that DESI marks primary), zwarn = 0 (no warning bit set by the redshift fitter, Redrock) and
+    spectype GALAXY or QSO. zpix carries no OBJTYPE column, so sky fibres are left out by zwarn,
+    whose bit 0 flags a sky fibre, not by OBJTYPE.
+  - >-
+    The DR1 abstract (arXiv:2503.14745): "The DR1 main survey includes high-confidence redshifts for
+    18.7M objects, of which 13.1M are spectroscopically classified as galaxies, 1.6M as quasars, and
+    4M as stars". Stars are left out here; Survey Validation targets are kept. The count of rows this
+    query takes is measured when the release is built.
+  - >-
+    targetid > 0: DESI gives negative TARGETIDs to fibres without a target, and MOD of a negative
+    id would fall in no chunk while the count still held it.
+  - >-
+    zwarn = 0 is the fitter's own judgement, not a visual inspection: no further cut is made on the
+    redshift range or on quasar redshifts, whose systematic errors exceed zerr (unverified for DR1).
+  - >-
+    Data Lab's zpix has no TARGET_RA/TARGET_DEC: positions are mean_fiber_ra/mean_fiber_dec, the mean
+    position of the fibres on the target, ICRS, measured when observed (DR1: 2021 to 2022). For
+    galaxies and quasars the epoch makes no difference.
+  - "Redshift completeness depends on fibre assignment, which differs by target class and across the footprint."
+columns:
+  - { column: targetid, field: identifier, unit: dimensionless }
+  - { column: mean_fiber_ra, field: right_ascension, unit: degree }
+  - { column: mean_fiber_dec, field: declination, unit: degree }
+  - { column: z, field: redshift, unit: dimensionless }
+  - { column: zerr, field: redshift_error, unit: dimensionless }
+  - { column: spectype, field: quality, unit: dimensionless }
+frame: icrs
+epoch: 2022.0
+citation: >-
+  DESI Collaboration, Abdul-Karim M., et al. 2026, "Data Release 1 of the Dark Energy
+  Spectroscopic Instrument", AJ 171, 285. 2026AJ....171..285D, doi:10.3847/1538-3881/ae4c43,
+  arXiv:2503.14745. Read through NOIRLab's Astro Data Lab (desi_dr1.zpix).
+reference: { bibcode: "2026AJ....171..285D", doi: "10.3847/1538-3881/ae4c43" }
+terms:
+  url: "https://data.desi.lbl.gov/doc/acknowledgments/"
+  quote: >-
+    The Dark Energy Spectroscopic Instrument (DESI) data are licensed under the Creative Commons
+    Attribution 4.0 International License ("CC BY 4.0", Summary, Full Legal Code). Users are free to
+    share, copy, redistribute, adapt, transform, and build upon the DESI data available through this
+    website for any purpose, including commercially, as long as they Cite the corresponding data
+    release paper. ... Indicate if any changes are made (if re-distributing DESI data). Include the
+    following acknowledgments text in any publications or derived works.
+  credit: >-
+    Cite DESI Collaboration 2026, "Data Release 1 of the Dark Energy Spectroscopic Instrument", AJ
+    171, 285. Changes made: the rows of desi_dr1.zpix are cut as the cuts say, positions and
+    redshifts are normalized and cross-matched, and distances are derived. This research used data
+    obtained with the Dark Energy Spectroscopic Instrument (DESI). DESI construction and operations
+    is managed by the Lawrence Berkeley National Laboratory. This material is based upon work
+    supported by the U.S. Department of Energy, Office of Science, Office of High-Energy Physics,
+    under Contract No. DE–AC02–05CH11231, and by the National Energy Research Scientific Computing
+    Center, a DOE Office of Science User Facility under the same contract. Additional support for
+    DESI was provided by the U.S. National Science Foundation (NSF), Division of Astronomical
+    Sciences under Contract No. AST-0950945 to the NSF’s National Optical-Infrared Astronomy
+    Research Laboratory; the Science and Technology Facilities Council of the United Kingdom; the
+    Gordon and Betty Moore Foundation; the Heising-Simons Foundation; the French Alternative
+    Energies and Atomic Energy Commission (CEA); the National Council of Humanities, Science and
+    Technology of Mexico (CONAHCYT); the Ministry of Science and Innovation of Spain (MICINN), and by
+    the DESI Member Institutions: www.desi.lbl.gov/collaborating-institutions. The DESI
+    collaboration is honored to be permitted to conduct scientific research on I’oligam Du’ag (Kitt
+    Peak), a mountain with particular significance to the Tohono O’odham Nation. Any opinions,
+    findings, and conclusions or recommendations expressed in this material are those of the
+    author(s) and do not necessarily reflect the views of the U.S. National Science Foundation, the
+    U.S. Department of Energy, or any of the listed funding agencies. This research uses services or
+    data provided by the Astro Data Lab, which is part of the Community Science and Data Center
+    (CSDC) Program at NSF NOIRLab.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    DESI DR1 is CC BY 4.0, which allows redistribution for any purpose, commercial included, on
+    condition of citing the DR1 paper, indicating the changes made and including the
+    acknowledgments; the credit does all three. Read 2026-11-05. Provisional only in that the
+    Astro Data Lab acknowledgement is taken from its usual wording and was not read on its own page.
+scale_domain: cosmic_web
+mirrors:
+  - "https://datalab.noirlab.edu/tap"
+normalization:
+  redshifts:
+    - column: z
+      error: zerr
+      frame: barycentric
+      kind: spectroscopic
+      basis: >-
+        DESI DR1 release page (https://data.desi.lbl.gov/doc/releases/dr1/, read 2026-11-05):
+        "Wavelength system: vacuum barycentric", so the redshifts fitted to the spectra are relative
+        to the Solar System barycentre.

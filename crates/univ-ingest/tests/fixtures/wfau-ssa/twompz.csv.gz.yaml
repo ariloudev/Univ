@@ -1,0 +1,8 @@
+source: twompz
+url: http://ssa.roe.ac.uk:8080/ssa/SSASQL
+retrieved: 2026-11-05T09:01:33Z
+sha256: c0a567804f7d6c8bfdcc599afdd9e8eaa4e198a3044942d53ba1d22e5dd62b46
+note: >-
+  Eight rows of the prepared file twompz.csv.gz that scripts/fetch-twompz.py made from the
+  archive's freeform SQL form on 2026-11-05, with its header, among them a negative zPhoto
+  (twomassID 15144) and M81, NGC 205 and M86 (5000004, 5000009, 5000059).

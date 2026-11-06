@@ -1,0 +1,29 @@
+SIMPLE  =                    T / Standard FITS format                           BITPIX  =                    8 / Character data                                 NAXIS   =                    1 / Text string                                    NAXIS1  =                 3981 / Number of characters                           VOTMETA =                    T / Table metadata in VOTable format               EXTEND  =                    T / There are standard extensions                  COMMENT                                                                         COMMENT The data in this primary HDU consists of bytes which                    COMMENT comprise a VOTABLE document.                                            COMMENT The VOTable describes the metadata of the table contained               COMMENT in the following BINTABLE extension.                                    COMMENT Such a BINTABLE extension can be used on its own as a perfectly         COMMENT good table, but the information from this HDU may provide some          COMMENT useful additional metadata.                                             COMMENT There is one following BINTABLE.                                        NTABLE  =                    1 / Number of following BINTABLE HDUs              END                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             <?xml version='1.0'?>
+<VOTABLE version="1.4"
+ xmlns="http://www.ivoa.net/xml/VOTable/v1.3">
+<!--
+ !  VOTable written by STIL version 4.0 (uk.ac.starlink.votable.VOTableWriter)
+ !  at 2021-08-31T23:35:01
+ !-->
+<RESOURCE>
+<!-- Describes BINTABLE extensions in the following HDU.-->
+<TABLE name="SpecObj" nrows="344905">
+<DESCRIPTION>
+This table lists each observed target and the spectrum that
+provides its best redshift (from GAMA or otherwise).
+</DESCRIPTION>
+<PARAM arraysize="7" datatype="char" name="DMU" ucd="meta.id.parent" value="SpecCat">
+<DESCRIPTION>DMU that produced this table</DESCRIPTION>
+</PARAM>
+<PARAM arraysize="3" datatype="char" name="Version" ucd="meta.version" value="v27">
+<DESCRIPTION>Version of this table</DESCRIPTION>
+</PARAM>
+<PARAM arraysize="10" datatype="char" name="Date" ucd="time.creation" value="2015-05-21">
+<DESCRIPTION>Publication date</DESCRIPTION>
+</PARAM>
+<PARAM arraysize="39" datatype="char" name="Contact" ucd="meta.curation" value="Joe Liske &lt;jochen.liske@uni-hamburg.de&gt;">
+<DESCRIPTION>Author or contact person</DESCRIPTION>
+</PARAM>
+<FIELD datatype="int" name="CATAID" ucd="meta.id;meta.main">
+<DESCRIPTION>Unique ID of GAMA object</DESCRIPTION>
+<VALUES null='-214

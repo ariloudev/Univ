@@ -59,6 +59,22 @@ requirements:
         name: "More than one entry of one source may join one galaxy as its pieces, and the preferred measurement is still chosen among all of them."
       - key: 01a1a232-7345-778b-a4c5-046e89676561
         name: "Each piece records the rule as its method, its separation from the galaxy's centre and its velocity difference."
+  - key: 01a1adfa-315f-708f-8cd8-bf4d9f766f81
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "join as pieces of one galaxy the fibres of one fibre survey that lie together in the nearby volume at one velocity, where no source of the release publishes the galaxy's extent."
+    criteria:
+      - key: 01a1adfa-315f-708f-8cd8-bf4e61ca16c8
+        name: "Fibres of one survey join below the matching rules' velocity of the nearby volume, each within their angle and velocity tolerance of every fibre already joined."
+      - key: 01a1adfa-315f-708f-8cd8-bf4fa228b618
+        name: "The fibre surveys whose fibres may join are those the matching rules list."
+      - key: 01a1adfa-315f-708f-8cd8-bf5086a0f213
+        name: "Two groups that each hold an entry of a source naming its own galaxy are never joined as one galaxy."
+      - key: 01a1ae91-90f5-716e-b3d3-07b944951329
+        name: "Two groups that each hold an entry of one source other than a fibre survey, such as two ALFALFA detections, are never joined as one galaxy."
+      - key: 01a1adfa-315f-708f-8cd8-bf51d418d386
+        name: "Each joined fibre records the rule as its method, its separation and its velocity difference."
   - key: 01a1a147-6018-75e1-9409-3f7ba5142e0f
     statement:
       form: ubiquitous

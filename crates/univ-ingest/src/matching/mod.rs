@@ -6,6 +6,7 @@
 mod assemble;
 mod cross_id;
 pub mod extent;
+mod fibres;
 mod groups;
 mod index;
 mod pieces;
@@ -31,7 +32,9 @@ use univ_model::position::Vec3;
 /// The objects resolved from a set of entries.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Matched {
-    pub objects: Vec<Object>,
+    /// The objects, each boxed where it is made: a release object holds its object boxed, so
+    /// it is never moved again, and the objects are never held twice.
+    pub objects: Vec<Box<Object>>,
     pub report: MatchReport,
 }
 
@@ -39,7 +42,7 @@ impl Matched {
     /// The object holding the entry `designation`, by a scan of the objects.
     #[must_use]
     pub fn find(&self, designation: &Designation) -> Option<&Object> {
-        self.position_of(designation).map(|i| &self.objects[i])
+        self.position_of(designation).map(|i| &*self.objects[i])
     }
 
     /// The place in `objects` of the object holding `designation`, by a scan of the objects.
@@ -71,6 +74,10 @@ pub struct MatchReport {
     /// counted among the merges by position.
     #[serde(default)]
     pub pieces_within_extent: u64,
+    /// Joins of two groups as fibres of one survey on one nearby galaxy without an extent; each
+    /// is also counted among the merges by position.
+    #[serde(default)]
+    pub fibres_of_one_galaxy: u64,
 }
 
 /// Why two entries were joined.
@@ -103,11 +110,15 @@ struct Work<'a> {
     joins: Vec<Edge>,
     /// Candidate links, each with its confidence.
     links: Vec<(Edge, f64)>,
+    /// For each group that took pieces within an extent, by root: the galaxy that took them,
+    /// or, where that galaxy was itself taken in as a piece of a larger group, that group's.
+    hosts: HashMap<usize, usize>,
 }
 
 /// Resolves `entries` into objects under `rules`: cross-identifications, then positions, then
-/// the pieces of nearby galaxies within their published extents, then the relations of galaxy
-/// groups to their dominant galaxies.
+/// the pieces of nearby galaxies within their published extents, then the fibres of one survey
+/// on one nearby galaxy without one, then the relations of galaxy groups to their dominant
+/// galaxies.
 /// Objects are in the order of their first entry, so a run on the same entries gives the same
 /// objects.
 #[must_use]
@@ -138,18 +149,42 @@ pub fn match_entries(rules: &MatchingRules, entries: Vec<CatalogueEntry>) -> Mat
         units,
         joins: Vec::new(),
         links: Vec::new(),
+        hosts: HashMap::new(),
     };
     cross_id::apply(&mut work);
     positions::apply(&mut work);
-    let pieces = pieces::apply(&mut work);
+    // The entries of every group, which the extent and fibre passes share and keep up to date:
+    // built only when the rules have an extent rule, which both passes need.
+    let (pieces, fibres) = if rules.extents.is_some() {
+        let mut members = pieces::Members::new(&mut work);
+        let pieces = pieces::apply(&mut work, &mut members);
+        (pieces, fibres::apply(&mut work, &mut members))
+    } else {
+        (0, 0)
+    };
     let plan = assemble::plan(&mut work);
     let relations = relations::find(&work);
     let mut matched = assemble::build(rules, entries, plan, relations);
     matched.report.pieces_within_extent = pieces;
+    matched.report.fibres_of_one_galaxy = fibres;
     matched
 }
 
+/// A join of `a` and `b` by position under the comparison `c`.
+fn edge(a: usize, b: usize, c: Comparison) -> Edge {
+    Edge {
+        a,
+        b,
+        join: Join::Position(c),
+    }
+}
+
 impl Work<'_> {
+    /// For each source of the run, by number, whether `list` names it.
+    fn in_list(&self, list: &[SourceId]) -> Vec<bool> {
+        self.sources.iter().map(|s| list.contains(s)).collect()
+    }
+
     /// The pair rule of the sources of entries `a` and `b`.
     fn pair(&self, a: usize, b: usize) -> Option<&PairRule> {
         let n = self.sources.len();

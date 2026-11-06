@@ -1,0 +1,78 @@
+key: 01a1a938-deb8-7399-857b-e7517659e06d
+id: plan-release-10
+versions:
+  - key: 01a1a938-deb8-7399-857b-e7575c131e35
+    at: 2026-11-05T01:00:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Plan release 10's build"
+    goal: "The build plan maps every new or changed criterion of ccb10b5 to a wave, a task and its tests, and is recorded here"
+    status: active
+  - key: 01a1a93a-3b97-70af-8367-5994ead55c4c
+    at: 2026-11-05T01:02:08Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Plan release 10's build"
+    goal: "The build plan maps every new or changed criterion of ccb10b5 to a wave, a task and its tests, and is recorded here"
+    status: done
+blocks:
+  - key: 01a1a93a-2c7b-75aa-a1bd-70ed312076cf
+    id: build-plan
+    kind: plan
+    versions:
+      - key: 01a1a93a-2c7b-75aa-a1bd-70ee339b7d08
+        at: 2026-11-05T01:02:04Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10 build plan"
+        markdown: |-
+          This plan builds what spec commit `ccb10b5` adds. It is recorded under the unattended permission granted in R1, and the waves run without waiting for its approval. Plan mode's `ExitPlanMode` would have waited, so the plan is written here instead.
+
+          ## Design choices the spec leaves to the build
+
+          - **Shard layout.**
+            - The catalogue database keeps the existing `DB` binding (`univ`).
+            - Object shards are `OBJECTS_0` … `OBJECTS_7` (`univ-objects-0` … `-7`) in both `wrangler.toml` files. Eight shards at 4.5 GB per release cover about 36 GB.
+            - Release 10 is estimated at ~35 M objects × 0.83 kB ≈ 29 GB once WISE×SuperCOSMOS is in. That is larger than the 15–18 GB said earlier, which left WISE×SuperCOSMOS out.
+          - **Cell to shard.**
+            - Level-0 cells of each scale domain, taken in Morton (z-order) order, are packed into consecutive shards until the next cell would pass the budget. Each shard therefore covers a compact region of space, and a volume query reads few shards.
+            - Objects that are not placed go to a shard by a hash of their object id.
+            - The budget is `shard_budget_bytes` in `rules/release.yaml`: 4.5 GB. The fixture build sets it small, so the fixture release spans at least two shards.
+          - **Tables.**
+            - In the shards: `objects`, `entries`, `measurements`, `designations` (and `designations_by_object`), `object_cells`.
+            - In the catalogue database: every other table, plus a new `object_shards(release, id, shard)` index and `shard_cells` ranges.
+            - Release schema version 3 → 4. Older releases are pruned rather than read; the owner agreed that releases 6–9 can go.
+          - **Science checks.** `cargo xtask science` loads the catalogue and every shard into one scratch SQLite. Tables are disjoint by shard, so the checks keep working unchanged.
+
+          ## Waves and the criteria each meets
+
+          | Wave | Tasks | Criteria met (spec `ccb10b5`) | Tests |
+          |---|---|---|---|
+          | **W1 terms and frames** | (1) `RedistributionStatus::PermissionPending` with `asked: {of, on}`; (2) `non_commercial: {clause}` on terms; (3) `RedshiftFrame::Barycentric`, CMB derivation from it; (4) catalogue-wide uncertainty in normalization (`uncertainty: {catalogue: value, cites}` in a source's redshift column), typed estimated; (5) D1 `terms`/`sources` columns and the API's source response; (6) OpenAPI snapshot | AC-7 as changed; pending names whom and when; non-commercial marked with its clause; barycentric kept and named; catalogue-wide uncertainty estimated and cited; *Read a source* gives status and non-commercial mark | unit tests in `univ-ingest` source parsing, `univ-model` redshift and uncertainty, `univ-api` sources handler; fixture build |
+          | **W2 sources** | (1) DESI DR1 via Astro Data Lab TAP `desi_dr1.zpix` (fallback: the `zall-pix` file, read with the FITS reader); (2) SDSS DR17 distant galaxies and quasars (SkyServer SQL, chunked); (3) 2dFGRS and ALFALFA α.100 (VizieR TSV, Cornell CSV as mirror); (4) GAMA DR4 SpecObj FITS file, `SURVEY = 'GAMA'`, NQ ≥ 3; (5) 2MPZ (SuperCOSMOS SQL; a new `ssa_sql` access method if needed) and WISE×SuperCOSMOS (the CSV.gz file; gzip CSV reading if missing); (6) matching rules for the new pairs, with photometric redshift tolerances scaled to their scatter; (7) recorded fixtures and the release 10 source list check | the release 10 source requirement and its four criteria; providers' terms quoted (pending sources name WFAU / Bilicki / GAMA and the date asked); quasars beside galaxies | per-source fixture tests (no network), a matching rules test, a fixture build holding each new source's entries |
+          | **W3 shards in ingest** | (1) shard assignment by Morton-packed cells and budget; (2) the D1 writer routes rows to catalogue or shard files (`d1/catalogue/…`, `d1/shard-NN/…`); (3) manifest lists shards, their cells and estimates; the id index; (4) refusal of an oversized cell; (5) `Store` takes a database; `Wrangler` and `MemoryStore` follow; publish per database with CON-3's cap per database; (6) refusal when the release needs more shards than `wrangler.toml` binds; (7) prune across every database | the build-a-release shard requirement and its five criteria; the oversized-cell refusal; publish's rows-per-shard criterion and its refusal; prune's catalogue-and-shards criterion; CON-3 as monitored | unit tests of packing and routing; `tests/` publish and prune with `MemoryStore` over several databases; fixture build spanning two shards |
+          | **W4 shards in the server** | (1) `Backend` gains shard reads (`catalogue`, `shard(i)`, `shards_batch`) with the Worker and SQLite test backends; (2) lookup by id through `object_shards`; (3) designation and name lookup across shards; (4) volume query: shards from `shard_cells`, a k-way merge in the existing stable order, cursor unchanged; (5) structures, layers' links and validation via the index; (6) `xtask serve`/`integration`/`explore` create and migrate every shard database | the page-order criterion; the existing lookup, query and source criteria still hold on a sharded fixture | `univ-api` tests over a two-shard SQLite testkit; e2e tests in `crates/univ-server/tests` on the sharded fixture state; `cargo xtask integration` |
+          | **W5 release 10** | (1) prune releases 6–9 (the owner allowed it); (2) real fetches in the background, monitored; (3) build release 10 and run `cargo xtask science`; (4) publish locally; (5) `bench lookup`, `bench volume`, `bench first-points` against QA-2 (200 ms), QA-3 (500 ms) and 3 s; (6) a release note with counts per source and the measured shard sizes; (7) draft the three permission requests | QA-2 and QA-3 on a release spanning several shards; CON-3 measured per database | the benches' printed percentiles; science checks all PASS |
+
+          ## Each wave
+
+          1. Cut `stage/release-10-wN` from `product/release-10`.
+          2. Write its plan block and register its tasks.
+          3. Keep a `build-issues` note.
+          4. Run focused checks between tasks.
+          5. Run `/simplify` then `/code-review` and fix what they confirm.
+          6. Run `cargo xtask check` once, plus `cargo xtask integration` for W4 and W5, committing on its own exit status.
+          7. Link the tests in `loft.trace.yaml`, accept them, and record a `trace` view.
+          8. Close the wave's Yard Log and merge `--no-ff` into `product/release-10`.
+
+          ## Risks named now
+
+          - **Building ~40 M entries in memory.** The machine has 128 GB. If the build exceeds it, W5 stops and asks before restructuring.
+          - **Data Lab TAP limits** may force the 22.4 GB DESI file. There is 576 GB free.
+          - **Pending sources.** If a provider refuses, the source becomes `forbidden` and the release is rebuilt without it.

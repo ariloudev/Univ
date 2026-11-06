@@ -60,21 +60,21 @@ fn twomrs_rows_keep_cz_and_derive_heliocentric_and_cmb_redshifts() {
     // Row 1: 010.6847100 +41.2687500 00424433+4116074 -300 4 0.797 1991RC3.9.C...0000d.
     let m31 = entry(&n, "00424433+4116074");
     fk5(m31, 10.684_71, 41.268_75);
-    let v = m31.velocity.unwrap();
-    assert_eq!((v.native.value, sigma(&v)), (-300.0, 4.0));
+    let v = m31.velocity.as_deref().unwrap();
+    assert_eq!((v.native.value, sigma(v)), (-300.0, 4.0));
     let r = &m31.redshifts[0];
-    assert_eq!(r.velocity.unwrap().value, -300.0);
-    assert_eq!(r.cmb.heliocentric.value, -300.0 / C);
+    assert_eq!(r.velocity.as_deref().unwrap().value, -300.0);
+    assert_eq!(r.cmb.measured.value, -300.0 / C);
     // Worked in Python from the Hipparcos galactic matrix and the Planck 2018 dipole:
     // cos θ = -0.76785, so z_cmb = (1 + z)γ(1 + β cos θ) - 1 = -0.0019461909.
     assert!((r.cmb.value.value + 0.001_946_190_9).abs() < 1e-9);
     assert_eq!(m31.magnitude.as_ref().unwrap().value.native.value, 0.797);
-    assert_eq!(m31.flags["r_cz"], "1991RC3.9.C...0000d");
+    assert_eq!(m31.flags.get("r_cz").unwrap(), "1991RC3.9.C...0000d");
     // Row 2: 011.8880600 -25.2888000 00473313-2517196 243 2 3.815 2004AJ....128...16K.
     let ngc253 = entry(&n, "00473313-2517196");
     fk5(ngc253, 11.888_06, -25.288_8);
-    assert_eq!(sigma(&ngc253.velocity.unwrap()), 2.0);
-    assert_eq!(ngc253.redshifts[0].cmb.heliocentric.value, 243.0 / C);
+    assert_eq!(sigma(ngc253.velocity.as_deref().unwrap()), 2.0);
+    assert_eq!(ngc253.redshifts[0].cmb.measured.value, 243.0 / C);
 }
 
 #[test]
@@ -84,14 +84,14 @@ fn sixdfgs_rows_keep_cz_their_quality_and_magnitude() {
     // Row 1: 000.0107500 -23.3680278 g0000026-232205 19966 45 4 16.64.
     let g = entry(&n, "g0000026-232205");
     fk5(g, 0.010_75, -23.368_027_8);
-    assert_eq!(g.velocity.unwrap().native.value, 19_966.0);
+    assert_eq!(g.velocity.as_deref().unwrap().native.value, 19_966.0);
     // Worked in Python as for 2MRS: cos θ = -0.84315, z_cmb = 0.0654908544.
     assert!((g.redshifts[0].cmb.value.value - 0.065_490_854_4).abs() < 1e-9);
-    assert_eq!(g.flags["q_cz"], "4");
+    assert_eq!(g.flags.get("q_cz").unwrap(), "4");
     // Row 5: 000.0184583 -0.0833333 g0000044-000500 5400 100 9 15.87.
     let g = entry(&n, "g0000044-000500");
-    assert_eq!(sigma(&g.velocity.unwrap()), 100.0);
-    assert_eq!(g.flags["q_cz"], "9");
+    assert_eq!(sigma(g.velocity.as_deref().unwrap()), 100.0);
+    assert_eq!(g.flags.get("q_cz").unwrap(), "9");
     assert_eq!(g.magnitude.as_ref().unwrap().band, "bJmag");
 }
 
@@ -102,15 +102,15 @@ fn twompp_rows_keep_their_reference_and_no_group() {
     // Row 1: 025.3962083 -89.3344722 01413509-8920041 2429 5 11.09 (no GID) 20096dF...C...0000J 0.
     let g = entry(&n, "01413509-8920041");
     fk5(g, 25.396_208_3, -89.334_472_2);
-    assert_eq!(g.redshifts[0].velocity.unwrap().value, 2_429.0);
+    assert_eq!(g.redshifts[0].velocity.as_deref().unwrap().value, 2_429.0);
     assert_eq!(g.redshifts[0].kind_of_value, KindOfValue::Measured);
     assert_eq!(
-        (g.group_id.as_deref(), g.flags["Cln"].as_str()),
+        (g.group_id.as_deref(), g.flags.get("Cln").unwrap()),
         (None, "0")
     );
     // Row 4: 235.8802917 -87.6785278 15433127-8740427 12651 300 11.96.
     let g = entry(&n, "15433127-8740427");
-    assert_eq!(sigma(&g.velocity.unwrap()), 300.0);
+    assert_eq!(sigma(g.velocity.as_deref().unwrap()), 300.0);
     assert_eq!(g.magnitude.as_ref().unwrap().value.normalized.value, 11.96);
 }
 
@@ -155,8 +155,8 @@ fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances(
     assert_eq!(n.report.left_out.len(), 0);
     let agc = entry(&n, "AGC748778");
     assert!(agc.distances.is_empty() && agc.position.is_some());
-    assert_eq!(agc.velocity.unwrap().native.value, 258.0);
-    assert_eq!(agc.flags["f_Dist"], "h'");
+    assert_eq!(agc.velocity.as_deref().unwrap().native.value, 258.0);
+    assert_eq!(agc.flags.get("f_Dist").unwrap(), "h'");
     assert_eq!(n.report.fixes[0].entries_changed, 1);
     // Row 1: 000.093750 +39.495556 UGC12894 8.47 TF 335 16.80.
     let g = entry(&n, "UGC12894");
@@ -168,7 +168,7 @@ fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances(
         (d.kind, &d.method),
         (DistanceKind::SecondaryIndicator, &Method::TullyFisher)
     );
-    assert_eq!(g.velocity.unwrap().native.value, 335.0);
+    assert_eq!(g.velocity.as_deref().unwrap().native.value, 335.0);
     // Row 2: 000.492083 -15.461111 WLM 0.97 TRGB -122 11.03.
     let wlm = entry(&n, "WLM");
     let d = &wlm.distances[0];
@@ -180,7 +180,7 @@ fn updated_nearby_galaxies_take_each_rows_method_and_leave_out_hubble_distances(
             &Method::TipOfTheRedGiantBranch
         )
     );
-    assert_eq!(wlm.flags["f_Dist"], "TRGB");
+    assert_eq!(wlm.flags.get("f_Dist").unwrap(), "TRGB");
 }
 
 #[test]
@@ -207,13 +207,16 @@ fn mcconnachie_keeps_each_modulus_beside_the_distance_derived_from_it() {
     assert_eq!(d.kind, DistanceKind::PrimaryIndicator);
     assert_eq!(d.kind_of_value, KindOfValue::Measured);
     assert_eq!(
-        (cma.flags["u_(m-M)"].as_str(), cma.flags["f_HRV"].as_str()),
+        (
+            cma.flags.get("u_(m-M)").unwrap(),
+            cma.flags.get("f_HRV").unwrap()
+        ),
         ("b", "c")
     );
     // Row 5: Ursa Major II 17.50 0.30 0.30 32 4 4 -116.5 1.9 13.3.
     let uma2 = entry(&n, "Ursa Major II");
-    let v = uma2.velocity.unwrap();
-    assert_eq!((v.native.value, sigma(&v)), (-116.5, 1.9));
+    let v = uma2.velocity.as_deref().unwrap();
+    assert_eq!((v.native.value, sigma(v)), (-116.5, 1.9));
     assert_eq!(uma2.magnitude.as_ref().unwrap().value.native.value, 13.3);
 }
 
@@ -238,13 +241,13 @@ fn gaia_rows_keep_icrs_at_2016_their_errors_parallax_and_proper_motion() {
     };
     assert_eq!(errors.ra.native.value, 0.029_688_16);
     assert!(near(errors.ra.normalized.value, 0.029_688_16 * MAS, 1e-12));
-    let plx = s.parallax.unwrap();
+    let plx = s.parallax.as_deref().unwrap();
     assert_eq!(
         (plx.native.value, plx.native.unit),
         (6.890_716_839_201_723_5, Unit::Milliarcsecond)
     );
     assert_eq!(plx.normalized.unit, Unit::Degree);
-    assert_eq!(s.velocity.unwrap().native.value, -3.105_404);
+    assert_eq!(s.velocity.as_deref().unwrap().native.value, -3.105_404);
     assert_eq!(
         s.proper_motion.as_deref().unwrap().ra.native.value,
         -42.073_116_442_981_636
@@ -252,7 +255,7 @@ fn gaia_rows_keep_icrs_at_2016_their_errors_parallax_and_proper_motion() {
     assert_eq!(s.redshifts, []);
     // Row 4: 196955487820819968, parallax 0.455010455134798 ± 0.020734983, G 9.768232.
     let s = entry(&n, "196955487820819968");
-    assert_eq!(sigma(&s.parallax.unwrap()), 0.020_734_983);
+    assert_eq!(sigma(s.parallax.as_deref().unwrap()), 0.020_734_983);
     assert_eq!(s.magnitude.as_ref().unwrap().value.native.value, 9.768_232);
 }
 
@@ -283,7 +286,7 @@ fn gcns_rows_keep_their_distance_posterior_as_a_credible_interval() {
         (d.kind, d.kind_of_value),
         (DistanceKind::Geometric, KindOfValue::Estimated)
     );
-    assert_eq!(sigma(&s.velocity.unwrap()), 0.4477);
+    assert_eq!(sigma(s.velocity.as_deref().unwrap()), 0.4477);
     // Row 2: 530685166960018816, no RV, Dist50 0.05581 kpc.
     let s = entry(&n, "530685166960018816");
     assert!(s.velocity.is_none());
@@ -302,16 +305,16 @@ fn hipparcos_rows_keep_icrs_at_1991_25_and_their_solution_type() {
     );
     assert_eq!(
         (
-            s.parallax.unwrap().native.value,
-            sigma(&s.parallax.unwrap())
+            s.parallax.as_deref().unwrap().native.value,
+            sigma(s.parallax.as_deref().unwrap())
         ),
         (4.55, 1.33)
     );
-    assert_eq!(s.flags["Sn"], "5");
+    assert_eq!(s.flags.get("Sn").unwrap(), "5");
     // Row 2: HIP 2, Plx 20.85 ± 1.13, pmRA 182.88, Sn 75.
     let s = entry(&n, "2");
     assert_eq!(s.proper_motion.as_deref().unwrap().ra.native.value, 182.88);
-    assert_eq!(s.flags["Sn"], "75");
+    assert_eq!(s.flags.get("Sn").unwrap(), "75");
 }
 
 #[test]
@@ -337,7 +340,7 @@ fn bailer_jones_rows_keep_both_distances_as_credible_intervals_without_a_positio
         (photogeo.native.value, &photogeo.method),
         (144.3897, &Method::BayesianPhotogeometric)
     );
-    assert_eq!(s.flags["flag"], "10033");
+    assert_eq!(s.flags.get("flag").unwrap(), "10033");
     // Row 4: 196955487820819968, geo 2001.1107 (1926.5125, 2079.8193).
     let s = entry(&n, "196955487820819968");
     let Uncertainty::CredibleInterval { minus, .. } = s.distances[0].native.uncertainty else {
@@ -353,11 +356,11 @@ fn the_hipparcos_crossmatch_names_each_gaia_source_by_its_hip_number() {
     // Row 1: 4612085076726173440, 10768, 0.0012945472, 8.
     let s = entry(&n, "4612085076726173440");
     assert_eq!(s.name.as_deref(), Some("10768"));
-    assert_eq!(s.flags["angular_distance"], "0.0012945472");
+    assert_eq!(s.flags.get("angular_distance").unwrap(), "0.0012945472");
     // Row 3: 5769897140331951744, 71404, 0.0036472648, 72.
     let s = entry(&n, "5769897140331951744");
     assert_eq!(
-        (s.name.as_deref(), s.flags["xm_flag"].as_str()),
+        (s.name.as_deref(), s.flags.get("xm_flag").unwrap()),
         (Some("71404"), "72")
     );
 }
@@ -370,21 +373,24 @@ fn sdss_and_boss_rows_keep_z_and_derive_the_cmb_redshift() {
     let g = entry(&n, "1147416020424615936");
     assert_eq!(at(g), (184.859_21, 56.159_283, Frame::Icrs, Epoch::J2000));
     let r = &g.redshifts[0];
-    assert_eq!(r.cmb.heliocentric.value, 0.051_975_66);
+    assert_eq!(r.cmb.measured.value, 0.051_975_66);
     assert_eq!(
-        r.cmb.heliocentric.uncertainty,
+        r.cmb.measured.uncertainty,
         Uncertainty::Symmetric {
             sigma: 7.782_429e-6
         }
     );
-    assert_eq!((r.kind, r.velocity), (RedshiftKind::Spectroscopic, None));
+    assert_eq!(
+        (r.kind, r.velocity.as_deref()),
+        (RedshiftKind::Spectroscopic, None)
+    );
     // Worked in Python: cos θ = 0.42846, z_cmb = 0.0525324715.
     assert!((r.cmb.value.value - 0.052_532_471_5).abs() < 1e-9);
     // Row 3: 7700273112517203968, z 0.3186874.
     assert_eq!(
         entry(&n, "7700273112517203968").redshifts[0]
             .cmb
-            .heliocentric
+            .measured
             .value,
         0.318_687_4
     );
@@ -393,11 +399,11 @@ fn sdss_and_boss_rows_keep_z_and_derive_the_cmb_redshift() {
     // Row 1: 5139964890614880256, 150.44297, 42.988546, z 0.4200288 ± 0.0001112926.
     let g = entry(&n, "5139964890614880256");
     assert_eq!(at(g).0, 150.442_97);
-    assert_eq!(g.redshifts[0].cmb.heliocentric.value, 0.420_028_8);
+    assert_eq!(g.redshifts[0].cmb.measured.value, 0.420_028_8);
     // Row 2: 7988347911129028608, zErr 7.802936E-05.
     let g = entry(&n, "7988347911129028608");
     assert_eq!(
-        g.redshifts[0].cmb.heliocentric.uncertainty,
+        g.redshifts[0].cmb.measured.uncertainty,
         Uncertainty::Symmetric {
             sigma: 7.802_936e-5
         }
@@ -448,33 +454,36 @@ fn erass1_clusters_join_the_optical_redshift_and_take_each_rows_redshift_kind() 
     let [best, lambda] = &c.redshifts[..] else {
         panic!("two redshifts")
     };
-    assert_eq!(best.cmb.heliocentric.value, 0.3153);
+    assert_eq!(best.cmb.measured.value, 0.3153);
     assert_eq!(
-        best.cmb.heliocentric.uncertainty,
+        best.cmb.measured.uncertainty,
         Uncertainty::Symmetric { sigma: 0.0079 }
     );
     assert_eq!(
         (best.kind, best.kind_of_value),
         (RedshiftKind::Photometric, KindOfValue::Estimated)
     );
-    assert_eq!(lambda.cmb.heliocentric.value, 0.315_28);
+    assert_eq!(lambda.cmb.measured.value, 0.315_28);
     assert_eq!(
-        lambda.cmb.heliocentric.uncertainty,
+        lambda.cmb.measured.uncertainty,
         Uncertainty::Symmetric { sigma: 0.007_94 }
     );
     assert_eq!(
-        (c.flags["BEST_Z_TYPE"].as_str(), c.flags["PCONT"].as_str()),
+        (
+            c.flags.get("BEST_Z_TYPE").unwrap(),
+            c.flags.get("PCONT").unwrap()
+        ),
         ("photo_z", "0.006")
     );
     // Primary row 2: em01_011174_020_ML00047_002_c010, BEST_Z 0.0891 ± 0.0002 cg_spec_z;
     // optical row 2: Z_LAMBDA 0.08594 ± 0.00976.
     let c = entry(&n, "em01_011174_020_ML00047_002_c010");
     let best = &c.redshifts[0];
-    assert_eq!(best.cmb.heliocentric.value, 0.0891);
+    assert_eq!(best.cmb.measured.value, 0.0891);
     assert_eq!(
         (best.kind, best.kind_of_value),
         (RedshiftKind::Spectroscopic, KindOfValue::Measured)
     );
-    assert_eq!(c.redshifts[1].cmb.heliocentric.value, 0.085_94);
-    assert_eq!(c.flags["PCONT"], "0");
+    assert_eq!(c.redshifts[1].cmb.measured.value, 0.085_94);
+    assert_eq!(c.flags.get("PCONT").unwrap(), "0");
 }

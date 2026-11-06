@@ -40,17 +40,41 @@ links:
         name: "an_incomplete_definition_is_refused_naming_the_missing_field"
         body: fa2573a43f01ef5aa962c61e516935fc97d10b35c638c6be51a580c05e9555c1
   - node: 01a19f22-2ad9-716e-876f-183b90085a10
-    reviewed: 2e7a6f25b7efb02db5b6cc75688e5cfa3b7d47920d59b5557eead13427f14fac
+    reviewed: efb0a233681b67fffa0f799f74ed95880cfa5fb49dad984c3010d77b994ab867
     tests:
       - file: "crates/univ-ingest/tests/source_definitions.rs"
         name: "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
         body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_source_names_whom_permission_was_asked_of_and_when"
+        body: 6ce343408275a60dc3e35b58cf5bd7a16690813db3a5b7c08ad9303eb0da6e0b
   - node: 01a19f22-2ad9-716e-876f-183ca629c7f8
     reviewed: 2f1322755357d3f990635c6e93b513eda5ef14fad23d0c687e6e7ef0ecd44c70
     tests:
       - file: "crates/univ-ingest/tests/source_definitions.rs"
         name: "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
         body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
+  - node: 01a1a931-2c8a-73a8-91f2-58fcaa8b8bee
+    reviewed: 14e62fbf724daf241edef3dca25762ed08d9ae4408d26912e8d29c2d7ca3bf4e
+    tests:
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_source_names_whom_permission_was_asked_of_and_when"
+        body: 6ce343408275a60dc3e35b58cf5bd7a16690813db3a5b7c08ad9303eb0da6e0b
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_status_without_its_request_is_refused"
+        body: 64a93ecefb064a152bde7504ce273050bf83d73754a16e019c1ef4a566895c9c
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_source_not_yet_asked_names_whom_and_no_date"
+        body: cd7fea5185f19180c775746ccb3e65b2379b9be312122aae1b9b53a5cfafdfff
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_request_names_someone_and_a_calendar_date"
+        body: f64766ea4a820757280dbee492e91ff08004e904e934a8dffee299aab488f4b2
+  - node: 01a1a931-2c8a-73a8-91f2-58fd8e368264
+    reviewed: 609667b9d86e1ffdb10f132a59cfd93e1cd0be2ecaff048a175abf098497fb16
+    tests:
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_non_commercial_source_quotes_the_clause_that_limits_it"
+        body: b1d6f37775f0db802e24369627471096be6302c2f61ff9c6f1e64777412a6794
   - node: 01a19f22-2ad9-716e-876f-183ee3b99b68
     reviewed: 2f723b0329d6aa47d4eb94775be0f8194410404e044e2333b001edd141c70e64
     tests:
@@ -61,26 +85,62 @@ links:
     reviewed: d94647fbce6f3baf72d24be4d11d4f239a8395f58460d9aecca34bca05f29034
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
-        name: "every_source_of_the_first_release_has_a_valid_definition"
-        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+        name: "every_source_has_a_valid_definition"
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
   - node: 01a19f22-2ad9-716e-876f-1841361113b6
     reviewed: 4b38c591f74484626e8ccaf5f74a9e71b5df699fadb8ca4aa11d568db31307af
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
-        name: "every_source_of_the_first_release_has_a_valid_definition"
-        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+        name: "every_source_has_a_valid_definition"
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
   - node: 01a19f22-2ad9-716e-876f-1842afd6d59e
     reviewed: 955d52425320c26ee0edee610bcdfdb09fc39ff114e71e55876f2cabf46df7e4
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
-        name: "every_source_of_the_first_release_has_a_valid_definition"
-        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+        name: "every_source_has_a_valid_definition"
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
   - node: 01a19f22-2ad9-716e-876f-18439d96b214
     reviewed: 85ed33936b18f9c512ce245a3e4c097b89d10b39bc5da07bc5bfab10acc5dadf
     tests:
       - file: "crates/univ-ingest/tests/definitions.rs"
-        name: "every_source_of_the_first_release_has_a_valid_definition"
-        body: 566300eec9ff38cfee9253df79bfa805c39351def4067faea77638c9d0d730af
+        name: "every_source_has_a_valid_definition"
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
+  - node: 01a1a931-2c8a-73a8-91f2-58ff5749b30b
+    reviewed: 16663dbb47276992d7a8713420362d113e316a7a9dadc6c3396142dbabac8758
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "desi_redshifts_are_measured_spectroscopic_and_barycentric"
+        body: 88278b441b9fbe85a19103aecbc4da8fe6173d0d66aad54ba929d4433dce19b9
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "the_rest_of_sdss_takes_distant_galaxies_and_quasars"
+        body: 17ec1f38d53b489780a7c496de06afca2495ef8f40d83ea4fb046fa21f6893df
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "twodfgrs_gives_each_redshift_its_catalogues_rms"
+        body: 8b8bee0a826cb607d86844678eda709f460280586fcc4a832fe8e8b0912cb1f2
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "gama_keeps_its_own_redshifts_of_quality_three_or_more_above_the_stars"
+        body: 28aa7d6c3a1a28a7850a4139eb1e7132f101d2649674174f8b8dd641157ca6ce
+  - node: 01a1a931-2c8a-73a8-91f2-5900bff82962
+    reviewed: 163ab4d74852ed5e35ad3c11f2149684ce11198489786f36e9674e3af7cfa69a
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error"
+        body: a11473699f41b428f4e4fc548080f3028c42b09e54deae9033978ea4d295275c
+  - node: 01a1a931-2c8a-73a8-91f2-59016fa68370
+    reviewed: 516fd5eca94e6b3c0fcd32cd853ec908784db27f56086ca114dd0f2172fba295
+    tests:
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "twompz_reads_its_prepared_file_with_the_catalogues_photometric_error"
+        body: cd9d3865bbbd4cfbf6983619ff351ab7aafe6ea0e58618de57c54a023ca7081d
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "wise_supercosmos_reads_its_gzipped_csv_with_the_catalogues_scatter"
+        body: 927da569e5249b5c9466323fef6663c4659accbc6d125e6a05e19628722ad681
+  - node: 01a1a931-2c8a-73a8-91f2-5902c9bf1383
+    reviewed: e5321c7c7791d45e2cf1d3c2e9e407047ccf61ac53b182aee6ae25a85a174f70
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "the_rest_of_sdss_takes_distant_galaxies_and_quasars"
+        body: 17ec1f38d53b489780a7c496de06afca2495ef8f40d83ea4fb046fa21f6893df
   - node: 01a19f22-2ad9-716e-876f-18463a5dce5c
     reviewed: 814e7461a598ef1428907f53c73d0af791172f6a799ea9f189754719766b46db
     tests:
@@ -170,7 +230,7 @@ links:
         body: f5c83cf46111f98ebe978744d278b8d181583fc3cf5c5d4e7595a6f4f68d9e4c
       - file: "crates/univ-ingest/tests/provenance.rs"
         name: "payloads_are_kept_in_item_order_whatever_order_they_arrive_in"
-        body: f7b6e62a4f8f25edd0912bb85c9f4d1d20b44528ed949fe7af9ed29b403d813a
+        body: 0da9273f71bfde1e5299e7744f54d887a327af74afb79928b03af72e19724b15
   - node: 01a19f22-2ad9-716e-876f-184f18271ab3
     reviewed: 182bebcb0e3e34fa7e3c3f04d73f7dc496e87cea2f1b41885d34bd956e4adb2b
     tests:
@@ -189,6 +249,39 @@ links:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk"
         body: 8c389bc75cc026ede3e6b9d1645eeba400f36f98238298da498ce219a2e3cd50
+  - node: 01a1ad9c-dc22-72c6-99cb-1a45af5083ab
+    reviewed: 02e6dbdc84a2ad8359b0eea9712788e8233ddd4611b767074dccac494b97515e
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_is_named_as_a_gzipped_csv_file_with_a_sha256"
+        body: ce6c343de8dd29314af08935b56cfa466b510905bee5d80746e9cca3e0ab9417
+  - node: 01a1ad9c-dc22-72c6-99cb-1a46049c41ff
+    reviewed: 274173d93f0b4dabd8f05e91f81d10a1a706c8259c63d2c524e18995106d2edb
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_whose_digest_differs_is_refused"
+        body: 83ca5cb1ff0a25e6e59556b73e1c2ca8f84dd7560ac4fd030fd6f77330ca211c
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_whose_rows_differ_is_refused"
+        body: 22ef2d00b2fc31dae33ee7909436ba94dffff99c203281acd229b4f6c2a1ecb2
+  - node: 01a1ad9c-dc22-72c6-99cb-1a470d130dde
+    reviewed: 20bc71d65cb9c84265783bc21b9f94d6f0cda8a2c6cdec494aba030d6bb07935
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_that_matches_its_definition_is_read_and_recorded_without_a_request"
+        body: 8bcaff783e1dda5c50c603b56ebfe20f0a7b624ef0c066df62bba8cf863cb247
+  - node: 01a1ad9c-f735-761b-8646-f276559d7943
+    reviewed: a24f015c0dfd418834d452b89ab40d9e75a3e73c3ac214033d58a574af859e5f
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_missing_prepared_file_fails_naming_its_script"
+        body: 57d7dfeb2ffeb51e242d161921a64093086e49f702feab2000e3925474b73c16
+  - node: 01a1ad9c-dc22-72c6-99cb-1a4853c15f56
+    reviewed: b28a9ece476778a73bc3443ecd2b72dbe7de15a11a05efdc2f7e6b8c6ad8449b
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_that_matches_its_definition_is_read_and_recorded_without_a_request"
+        body: 8bcaff783e1dda5c50c603b56ebfe20f0a7b624ef0c066df62bba8cf863cb247
   - node: 01a19f22-2ad9-716e-876f-185572e41a3f
     reviewed: 2d3cb4992519a620162990040dfc76aad5363aa90b920bfcea16ad0b6dd271d9
     tests:
@@ -209,7 +302,7 @@ links:
         body: bb4a26be89d6d2a31cf13cf91b0f2a4d55ea10618f0136e4cf928d4935f74e62
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "a_redshift_distance_is_the_comoving_distance_of_the_cmb_frame_redshift"
-        body: 3a4209fa46d5f86a73ea190f7ca866f6c342574e00f4758d065397c31720a3f5
+        body: 4ddf83b7b9a4d8e80faf089ad71835b0096a72d71a50299553cddc13f9c07b27
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "a_luminosity_distance_at_z_0_1_converts_by_one_over_one_plus_z"
         body: 4918083ea62820839f22a063387203312620a654ec3988beb73d9f70f06b69f1
@@ -227,19 +320,19 @@ links:
         body: f5b66287a4248decae140f8e7298c8c07e536eb7ef68e744b3d4dc184ec5c609
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
-        body: 4dabd2bf63a2450519b1326be4219096bccbf4041ec046dd2cc66ce280e5aaf8
+        body: 145d543ac8700c7dcc8f439b051f9eaf6ebc892b2d770a13380229f4ec15d19b
   - node: 01a19f22-2ad9-716e-876f-18581d266d87
     reviewed: b0628e3a2ff8a552c79740e3cadb9ca161a367ddba50c1ad9c41135224ef2ac5
     tests:
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "each_derived_value_records_the_release_cosmology_its_chain_and_the_model_version"
-        body: 81acdf14732e949cf36569d96dbf2e0e1c3bfc2a4a131842d3b93fb803266556
+        body: dd40b613656c2ba1f80dce9b1e68186e4d019671c70361deda87b62330aa3c8f
       - file: "crates/univ-ingest/tests/positions_chain.rs"
         name: "an_inverted_parallax_starts_from_the_published_parallax_and_its_zero_point"
         body: bad7fb097039edf4b1dd99d65ab35637decd2d903c6640c117f71ba973a5ea5e
       - file: "crates/univ-ingest/tests/positions_chain.rs"
         name: "an_unstated_equinox_is_taken_as_j2000_before_it_is_moved_to_the_icrs"
-        body: 1436bdc4423123b11657a113b3ba0c409c1b489b8424541ce5384519596bdf35
+        body: 9673405ffb99ada8aa561c0410e6980d8e0dbead54bbe796002e7199837c0ac5
   - node: 01a19f22-2ad9-716e-876f-185a4c7f512f
     reviewed: fe3459e698e168a8dc527ccb0e54bbc53ab85123ed9d2d2e95d729d7fcf1907c
     tests:
@@ -284,7 +377,7 @@ links:
         body: 4c9364dd1cbd7acbf93d8077d07fa9d74afc53643da89c3b0e598cfa3b03bf39
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
-        body: 4dabd2bf63a2450519b1326be4219096bccbf4041ec046dd2cc66ce280e5aaf8
+        body: 145d543ac8700c7dcc8f439b051f9eaf6ebc892b2d770a13380229f4ec15d19b
   - node: 01a19f22-2ad9-716e-876f-18610047a726
     reviewed: 8d1059018ea0ccc9f9db37c3cfd24bc457f7b44ce026c27f427025c03adab502
     tests:
@@ -296,7 +389,7 @@ links:
         body: 4c9364dd1cbd7acbf93d8077d07fa9d74afc53643da89c3b0e598cfa3b03bf39
       - file: "crates/univ-ingest/tests/positions.rs"
         name: "the_galactic_centre_and_the_supergalactic_pole_round_trip"
-        body: 4dabd2bf63a2450519b1326be4219096bccbf4041ec046dd2cc66ce280e5aaf8
+        body: 145d543ac8700c7dcc8f439b051f9eaf6ebc892b2d770a13380229f4ec15d19b
   - node: 01a1a147-6018-75e1-9409-3f8182b395ba
     reviewed: b79ad5d448ce16016665a10ec2e01c53242631b5496979eaef4d0b172c30d71e
     tests:
@@ -305,7 +398,7 @@ links:
         body: c2faeb3c5a338f7cd19473a1bd0adaeb3b760dadea09b675b9315959ac7b243c
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
-        body: 06605592dc942ad4e6fcaa0225da1f58d73838142bceb134a5e6774e36e9b9c6
+        body: 9d3c60471032192573472897a662e196d4eb767b7dcc61eba5572555c0fe9faf
   - node: 01a1a147-6018-75e1-9409-3f820e7bc1c8
     reviewed: b4375d7f47b119efcd6e7138b0fb93aaf0787d89683e9d508f5a5e21dc51e266
     tests:
@@ -323,7 +416,7 @@ links:
         body: 144efbcd727fee24dfc213198b3d978f42fc5b42d6ad28d02af5bd321a597039
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
-        body: 06605592dc942ad4e6fcaa0225da1f58d73838142bceb134a5e6774e36e9b9c6
+        body: 9d3c60471032192573472897a662e196d4eb767b7dcc61eba5572555c0fe9faf
       - file: "crates/univ-ingest/tests/positions_rescaling.rs"
         name: "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
         body: 47583b08559bd0d0fe4287e9e448faa1b9e27512585bcc67dab4806310cc2da3
@@ -332,7 +425,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "each_native_value_keeps_its_published_unit_beside_the_normalized_value"
-        body: 5e861c37097715c029a91c167d87d4c6dfa645c3c85708ac7fab48e0ef7755e1
+        body: a5b433ecbb828c6c9754114a5dc12d3111cc3a43811ce8b52a0bef1878bc0eb4
   - node: 01a19f22-2ad9-716e-876f-18663bbd5e71
     reviewed: 853f065a4bda52a9486c7faa79ddbfd0069d1d8fcfeae994ae0f7f8401fbffd6
     tests:
@@ -344,7 +437,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "each_value_is_classified_by_its_kind_of_value"
-        body: 3b0cd2b58065181d0da0cbaac5cf301bf6dcd7515e1740634c35a8ac4a5ac0d7
+        body: c3fb6ecf8ede7a0795b6e9f6e5b141806bb489c79e8b17b4826772742510b4a3
   - node: 01a1a232-7345-778b-a4c5-046f187e8323
     reviewed: 4a8d69d1f00e45dbaee2c22c4549fce9512fe8c98ce6020a10a2910984562496
     tests:
@@ -371,7 +464,40 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "a_value_published_without_an_error_is_marked_none_reported"
-        body: 56dba62089058b4a311b1e7f4a6c2fe09216bcfcedb1777aaad131ff9ba76650
+        body: 24a202964028b4cc5944d212f0ea2425025737c381c4cc9d83788bc8a6138bc8
+  - node: 01a1a931-2c8a-73a8-91f2-59032696dddd
+    reviewed: 8625423a78ecb5044adb105a91987a2b8f86e64d471b78c9525a029d848a5f13
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "twodfgrs_gives_each_redshift_its_catalogues_rms"
+        body: 8b8bee0a826cb607d86844678eda709f460280586fcc4a832fe8e8b0912cb1f2
+      - file: "crates/univ-ingest/tests/catalogue_error.rs"
+        name: "an_rms_velocity_for_the_catalogue_is_each_velocitys_symmetric_error"
+        body: 5344161d609d5d6a59421a350663602e07cb220d5d1ea353bc7990a68a523dfe
+      - file: "crates/univ-ingest/tests/catalogue_error.rs"
+        name: "a_scatter_per_one_plus_z_grows_with_each_redshift"
+        body: b0e1ffa125c744e696eba795746a7914d48d2ce01267eec7cd48b7ee57b8fa1b
+      - file: "crates/univ-api/src/objects/record_tests.rs"
+        name: "a_redshift_whose_source_states_one_uncertainty_for_its_catalogue_is_estimated"
+        body: 8899b50fa40ba3f85cb41bd509c83ab94f7aa48fbca3dd2b4dee4d9b95bd538a
+  - node: 01a1aa2d-9931-7550-bba8-ae02a06fd78a
+    reviewed: d2a3d12b48deb14507724d0ed681d0506333356e2353e1ea79cbe87b20c06205
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error"
+        body: a11473699f41b428f4e4fc548080f3028c42b09e54deae9033978ea4d295275c
+  - node: 01a1aa2d-9931-7550-bba8-ae03b8e720b0
+    reviewed: 067ed9c38dfb714f6198967c0ef39b036242bf150a53ea31cd3c61249c26d295
+    tests:
+      - file: "crates/univ-ingest/src/normalize/csv_file.rs"
+        name: "a_gzipped_csv_file_is_read_whole_in_pieces_of_lines"
+        body: 7b8ebb50769ca0a84a83420c5325f3a84ced59ff1fe006c9cda7105ef4927524
+      - file: "crates/univ-ingest/src/normalize/csv_file.rs"
+        name: "comments_and_blank_lines_are_layout_wherever_a_piece_ends"
+        body: 550bccf5295554947abb88a9b655c935d12b17c39f9ebe6e1194a407d159b4f1
+      - file: "crates/univ-ingest/src/normalize/csv_file.rs"
+        name: "a_header_without_a_defined_column_is_an_error_even_with_no_rows"
+        body: a5b71eb0e5822317d500870bbce236288326b923f32755d98aa09d248e44f170
   - node: 01a19f22-2ad9-716e-876f-186b82bcfc95
     reviewed: e0e3ed6f87d3fe392cc3f48fccf9c0ff007a23c3ddc82bab6a9dc180f8232100
     tests:
@@ -386,7 +512,7 @@ links:
         body: d438af5a89d59be6e2f88ad0e5be9658adce0b187a47549c4945f11ae1c2f793
       - file: "crates/univ-ingest/tests/normalize_distances.rs"
         name: "cosmicflows_groups_without_a_five_method_distance_are_direct_calibrations"
-        body: 7a98857d40f35c1e19816910273995849e8615df667d0f81265d81cbbfaef1ce
+        body: b4d9ad26eedd2af42c3dbf3752109301cd5d8649a768b1c682cea169b8646916
   - node: 01a19f22-2ad9-716e-876f-186d9b7a0c04
     reviewed: b3f786d959b07585023f2e30a6c4ffc3898a117f8be8bf926a5dd01f51e8b224
     tests:
@@ -419,7 +545,22 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "a_heliocentric_redshift_is_kept_as_measured"
-        body: 29f0b711e2ad1a193c1d8b2f1590204523dc39b4437fc57c506dc2f0fb344dde
+        body: 151967d4e3c7ca2fa743a12846ce2ff017df35bb3caa9d9ca034d59d78e8a74b
+  - node: 01a1a931-2c8a-73a8-91f2-59042cfff012
+    reviewed: 7290c1739767a8083cb642090804fb3c94e437e00d05d290a337886a1d9a276d
+    tests:
+      - file: "crates/univ-ingest/tests/object_reads.rs"
+        name: "a_barycentric_redshift_reads_back_named_barycentric"
+        body: 9234b0724785f20a319b1e469dd07beb279020f980883fd64e4cd9e71e5eade8
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "desi_redshifts_are_measured_spectroscopic_and_barycentric"
+        body: 88278b441b9fbe85a19103aecbc4da8fe6173d0d66aad54ba929d4433dce19b9
+      - file: "crates/univ-model/src/redshift.rs"
+        name: "a_barycentric_redshift_is_kept_as_measured_and_named_barycentric"
+        body: cc425bee0b2e325ae150c6e8901eb556c746d218207e3a3dd4ab27670387e57b
+      - file: "crates/univ-ingest/tests/positions.rs"
+        name: "a_barycentric_redshift_names_its_frame_in_the_distance_chain"
+        body: 88ac03efdc37df82452b120e5d4035c5fa2317831d6d6604ca36ac5884954660
   - node: 01a19f22-2ad9-716e-876f-187151a4aac5
     reviewed: 48167278d174524fd54b495a737e01d2ec207a3ec35123013d4ab8b8b1c6240e
     tests:
@@ -437,10 +578,10 @@ links:
     tests:
       - file: "crates/univ-model/src/redshift.rs"
         name: "the_derivation_keeps_the_measured_redshift_and_the_dipole"
-        body: 9d6f6d1a4d6eb36c9b8936802eba40d0cd12b235471de11a8cea4e3314196b49
+        body: dc383260020abecd1fa6066bcc9160460bd9bdf6658b7ec7805d4918aa7cafc6
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from"
-        body: b6efd372f0832aab9d1583dc1ecca6a7a3bcfcf4cc5ffafd94621115eb4b2ef1
+        body: d17b5eadf004eb87a9ae1327701663b62511ead15d2420e826909b65bcadb5cf
   - node: 01a1a6e4-22e1-765d-b404-01f30c829322
     reviewed: 60945386f89db68da045a88683c59ffaab382acf891e19b20a8434bacec4ea48
     tests:
@@ -452,7 +593,7 @@ links:
         body: b197f00cd66d1b4b402ba6b0f03aec1250b86128b59a4e3d9148ef92e24ac489
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
-        body: 284a9694a515f74decd15afbb2b400280dc7e21f3ab92b3731fa58b82d319835
+        body: ac4e62bf3962e397e1efd6905f47afd2faafa1e25795a37103ff597a546e81b2
   - node: 01a1a6e4-22e1-765d-b404-01f45f5a703d
     reviewed: 3f1abf092f4639561f40d8ee5b8f7bdd333ebc8c857c4e6b43350494439c2cba
     tests:
@@ -470,7 +611,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize_colours.rs"
         name: "the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_flag"
-        body: 56054f4ea089b93798dee246cd558f8f388a2c12da5103d10b06b15dcaddb76c
+        body: 8943aa6c9e024db425451b08c93203a6cecb4a1ff7ed20812a5b59bbf0d65f99
       - file: "crates/univ-ingest/tests/normalize_colours.rs"
         name: "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
         body: b197f00cd66d1b4b402ba6b0f03aec1250b86128b59a4e3d9148ef92e24ac489
@@ -479,7 +620,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize_colours.rs"
         name: "the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_flag"
-        body: 56054f4ea089b93798dee246cd558f8f388a2c12da5103d10b06b15dcaddb76c
+        body: 8943aa6c9e024db425451b08c93203a6cecb4a1ff7ed20812a5b59bbf0d65f99
   - node: 01a1a6e4-22e1-765d-b404-01f9d5d7fa2d
     reviewed: 351a554d174dfc2bfa6985fef0e34e940dea2b40d7367653be2b82eea7a0feda
     tests:
@@ -491,7 +632,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
-        body: 7ebcbad7464a20879a29c46560e2a836374869610c0da3c5663a2b98648a5354
+        body: e8f616f18cb4971f306bdd58c0243158d881c67b301a24ffc5514232a9631c12
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "a_failed_normalization_leaves_no_earlier_report_in_the_provenance"
         body: 6e1453a5679b1f7aa6c64dab890499b22209b0cc3555e0ae07004c333f845bf8
@@ -516,6 +657,33 @@ links:
       - file: "crates/univ-ingest/tests/normalize_rows.rs"
         name: "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
         body: 58b4f769505e894360d7e0f7464e4680ecb898f6a9650eed34d48683c5422e08
+  - node: 01a1aa2d-9931-7550-bba8-ae05fcc0d255
+    reviewed: 09b447c01704f6531fa29e9e5f8567bf0a22dbb3654389502fdcd29784af4468
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_rule_may_leave_out_rows_whose_cell_is_below_a_number"
+        body: abd3059567c5a1424219459b895c660e7bf075fa6361da2770333fa00a3fc6b9
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_rule_may_leave_out_rows_whose_cell_is_none_of_its_values"
+        body: 9e39abe2c9b3d974f0a574bb85a7825a21cf57c1e3fb4ce8088d2237a6c3cc4b
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_condition_gives_exactly_one_test"
+        body: c4b2885c4162445eaecb01f220ba358a8f4248cf0740c5b8774270a7a55f6480
+  - node: 01a1aa2d-9931-7550-bba8-ae06fd8a5b30
+    reviewed: d3d16c14832ba543f69509f67a4afc4adfb7993145d5538adc96660de7ebe2b9
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_rule_may_leave_out_rows_whose_cell_is_below_a_number"
+        body: abd3059567c5a1424219459b895c660e7bf075fa6361da2770333fa00a3fc6b9
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "a_rule_may_leave_out_rows_whose_cell_is_none_of_its_values"
+        body: 9e39abe2c9b3d974f0a574bb85a7825a21cf57c1e3fb4ce8088d2237a6c3cc4b
+  - node: 01a1aa2d-9931-7550-bba8-ae077f98b2cc
+    reviewed: 5957560547348ebae83843597177ccf682b1e37d3b2c9062fcd6365fd332bcd7
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "identifiers_beyond_two_to_the_53_compare_as_text"
+        body: 8195eb48e8503b1a706fc74c8966818bcce0063626df6b02acfadfcd481fdab6
   - node: 01a19f22-2ad9-716e-876f-1877e0c274f2
     reviewed: 05ea7f696d8d63e80d345077a13b6c6efb2bc8ec3f246770e85de49e7562a492
     tests:
@@ -527,7 +695,7 @@ links:
         body: 5deb87cee6c488fb5c22311f971bea9477f624315e661d74fde6ea9eba072203
       - file: "crates/univ-ingest/tests/cosmicflows_positions.rs"
         name: "a_replaced_group_position_names_kourkchi_and_tully_and_the_fix"
-        body: a4db9595640397b45d4136cdab45d303c1ad8cf2d1e18bec8f7528b90412d8e3
+        body: 3052b9accfa2a2f668a5131f2accc61b42e73b4dddfb963cf1c1921055ba1aff
   - node: 01a19f22-2ad9-716e-876f-187827977f54
     reviewed: 8d536e278ed4392974c0d26d4330f48c176ff5c8323cd6f57a37e8e73ede4c46
     tests:
@@ -542,10 +710,10 @@ links:
         body: 8ff5307a44398fa3e1a466ffd9113fe837e45889d70a3e36f3ca2d7e573c634e
       - file: "crates/univ-ingest/tests/normalize_stage.rs"
         name: "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
-        body: 7ebcbad7464a20879a29c46560e2a836374869610c0da3c5663a2b98648a5354
+        body: e8f616f18cb4971f306bdd58c0243158d881c67b301a24ffc5514232a9631c12
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
-        body: d28231fcee59050bbc9b349224244cddab5527cf92e3503080b766d61a67ef4b
+        body: e3576cd6d5884051391f2087321b3f5a1e1957173a0c8aff1d1ec46a1911df45
   - node: 01a19f22-2ad9-716e-876f-187cf88a2254
     reviewed: add8e24c470b97fbc83bca5e65c152e361f002377e3cdeaef04479098482e4d9
     tests:
@@ -644,13 +812,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/star_distances.rs"
         name: "a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance"
-        body: 71893b48866b7532663c1facd61f2bb740a2d8ee5f74fe6eb04837a541d98526
+        body: 0ff756109f836f4dd54c8569104bc5496aee42c64a91dd45d286b840a21afb76
   - node: 01a1a825-fb4e-702c-a84f-bf7588585aa4
     reviewed: 930917042ad420d02dd8944aef0cb7cfc75418d6dcb9ea63a23c5be238d8b864
     tests:
       - file: "crates/univ-ingest/tests/star_distances.rs"
         name: "a_star_files_value_keeps_its_kind_uncertainty_and_method"
-        body: 68a8e348d2efd2007a40f56594578022e019f8e6588c3e4fb4fa009e1902ce48
+        body: 89c023fc957b16f43f76659cb8b460b1cd323ba7ada7683e6cc6fba8d8c7ad5e
       - file: "crates/univ-ingest/tests/star_distances.rs"
         name: "a_parallax_the_ranking_could_not_invert_is_refused"
         body: f2dfb9a74cce64d65d42360c3d9c5afd731177d32a7b771ad6da068f4cd61fbf
@@ -668,7 +836,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/star_distances.rs"
         name: "a_star_file_joins_its_hipparcos_star_and_places_it_by_its_distance"
-        body: 71893b48866b7532663c1facd61f2bb740a2d8ee5f74fe6eb04837a541d98526
+        body: 0ff756109f836f4dd54c8569104bc5496aee42c64a91dd45d286b840a21afb76
   - node: 01a1a825-fb4e-702c-a84f-bf793b4b68ec
     reviewed: e0548a4638729ccb1bfdf4668535e2689f3c6a1f9a81513a5f801e7c7f02f547
     tests:
@@ -686,13 +854,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "a_redshift_distance_beats_tully_fisher_at_15000_km_s_and_loses_at_1000"
-        body: a257950bf695344755dbec84d22f8fe93994e8e35b8717e731a86e350cfe217b
+        body: 43235970b05f28129c3a4ff7371a43e70cfc59a48dbdd627a5612791e899bfa3
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "the_peculiar_velocity_term_is_the_rule_s_parameter"
         body: 3c79cd95913cb511c86a0fd9b8c3ccd50c4c51f25e35dadd845a8d9c3a05364d
       - file: "crates/univ-ingest/tests/ranking_parallax.rs"
         name: "a_redshift_without_an_error_ranks_by_its_peculiar_velocity_term"
-        body: d9d7794662d24bfebb89d464b11c489e8885e920e693cf98a5b7d44653c5712c
+        body: 58d7a70448dea7029db0a493d8d9f639a2319db9e8c1631a4c131b5a2970d797
       - file: "crates/univ-ingest/tests/positions_chain.rs"
         name: "a_redshift_without_an_error_keeps_the_peculiar_velocity_term_and_a_stated_interval_its_bounds"
         body: 4b89e0a980e066a907e0c85da7fae616a350499d47101dd9811bf40622282e3e
@@ -722,7 +890,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
         name: "a_redshift_without_a_velocity_error_ranks_after_one_with_one_and_is_given_none"
-        body: ac2d5dc22c08829b7a620f8888be710ed6df0c32369d0201aef26bf7ff266987
+        body: 3449460b7927155626cc0503a7b3346c515ee0f666128bbd2c2a0eb72454000f
   - node: 01a1a24c-8649-746c-8af0-2d36092547c6
     reviewed: add68b3894ff7ae765dc2de88433bbf81ea826c1d23cec18c990111ac15c2f55
     tests:
@@ -831,6 +999,21 @@ links:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "gaia_is_preferred_over_hipparcos_and_either_over_a_survey_unless_an_error_says_otherwise"
         body: 8082c54f277f03dc8b1f89178b9499f43117f2c56f87d41239a255af853d1581
+  - node: 01a1adfa-315f-708f-8cd8-bf4bc1cdc275
+    reviewed: af3212bc10502113c6edabd1c59bcd07bfbfe4f3953247aaa83b43d8f05409ae
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_galaxy_that_took_pieces_takes_its_own_position_whatever_the_order_of_its_entries"
+        body: 10585bb033cd2952c73b0e0abb1fd5bdacfd701e9449fe6c32fbcf340929319c
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_smaller_galaxy_that_takes_a_larger_ones_group_hosts_it_and_gives_the_position"
+        body: 97dae0ea4ca2a64f78a155bc835f01001a817ce9533befcc9355ebc20c3cf9e3
+  - node: 01a1adfa-315f-708f-8cd8-bf4cdd697c86
+    reviewed: 5184cb1296d0ae24912c9b561459893036e006522427549b6142d7e64959288d
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "a_21_cm_beam_position_ranks_after_a_survey_position"
+        body: 972d890097967354b0ef09bce7984ec1a2bb32e2184c5c1cce86f4ba21891ddc
   - node: 01a19f23-636e-7035-8185-aba03617706c
     reviewed: 8c0c0dc0af0b94b7c703e25b0d5e4fa0383eb71bef167f46e9f9b6e5311097ef
     tests:
@@ -857,22 +1040,22 @@ links:
         body: 5046880a59aee71d2e9a75c4c3dacc258521674cd115c52082e740b8e058f991
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "a_shared_2masx_name_joins_entries_beyond_the_positional_tolerance"
-        body: 92f1057a69a2de78f0ef4bb67bd593c29a023f212c654a912ddfa1a2b27cc55c
+        body: 5db545d8489a09b45eebd5dd389f89d334a1d6e9718c22ca40f54877a65a8d12
       - file: "crates/univ-ingest/tests/matching_linkage.rs"
         name: "a_cross_identification_two_entries_of_one_source_claim_joins_neither"
         body: 9451d30b56a83313ed6a5dbdf78bb8cebfd95823b78cb50a7b4706a5f4a09203
       - file: "crates/univ-ingest/tests/local_group.rs"
         name: "a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link"
-        body: ed3800dca78455357b64827ae9bb1b911da5bdcfe0e0c870cb693990a46e6ef5
+        body: 4029472e22e89856d4e9b3e89f9a61144577e5892e86da2d81649b58cb5c56a3
       - file: "crates/univ-ingest/tests/local_group.rs"
         name: "messier_compares_as_m_by_the_rules_alias_which_names_its_basis"
-        body: 12e7935ac7258521afaa2f2b87cb388fb11f0233269c00d3e90a18ec559d1f39
+        body: a435451e75a3613ab1bba0ac2c38f47273c3a5eaf43decca67dad3ec58fcd413
   - node: 01a19f23-636f-72bd-b194-150a909c8f0e
     reviewed: 23bd90e2ea5f02a35571b02e6ce29e75659bfc0ec5fbad0cf52bb671fad0fdf0
     tests:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "the_object_records_the_cross_identification_that_resolved_it"
-        body: dc0082893362b1b04e4be6b8ee04845927570a45e5eb112465844b8a4259318d
+        body: 7222acd6d371116d0228355a06e41d22e1d08a5e86376c5a97fb3bfae88f2160
   - node: 01a19f23-636f-72bd-b194-150cc0a7de4d
     reviewed: 149dd72735ea72ce3d9141b32916aeafbeca2edae2425073d2353704573844bf
     tests:
@@ -905,7 +1088,7 @@ links:
         body: d8d4246588d895e233a958065dca1d2f9a2ddfcfb6145fc390dc57827da69a59
       - file: "crates/univ-ingest/tests/local_group.rs"
         name: "a_shared_name_beyond_the_angular_tolerance_is_left_apart_as_a_candidate_link"
-        body: ed3800dca78455357b64827ae9bb1b911da5bdcfe0e0c870cb693990a46e6ef5
+        body: 4029472e22e89856d4e9b3e89f9a61144577e5892e86da2d81649b58cb5c56a3
   - node: 01a19f23-636f-72bd-b194-15114b1cd667
     reviewed: 4041399c59e701a49c5982850626ab94b9297b454de46d995d84523ef0dca5eb
     tests:
@@ -923,7 +1106,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
-        body: ac443a53dd530e602b1ada4bba7429fe2efc255ffe653ab2c0e36163d4854992
+        body: f8504af5ab2575df9ef8ed094dbb6f9d37c7cdbfe03e56281542ee03e59568c8
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "an_extent_rule_without_a_basis_or_with_a_length_unit_is_refused"
         body: 69a1ef9ace1b974df80da7e39a6ce8827edcb2e96eadba865940c7df366c697d
@@ -932,13 +1115,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_apart"
-        body: 3f0f04cacb853e25d42bf79573c478513184600ebedea46e04771260daf6bf21
+        body: 968276525d1394ccbe3c6480d68a8aa5f8c6e3ddcea32e1706ff5617a02b27ec
   - node: 01a1a232-7345-778b-a4c5-046bd3dc53bc
     reviewed: 522dd56411ca97e82d77d14525e7f89ef89d4b75ff303498c0153fdf2d8a077c
     tests:
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_apart"
-        body: 3f0f04cacb853e25d42bf79573c478513184600ebedea46e04771260daf6bf21
+        body: 968276525d1394ccbe3c6480d68a8aa5f8c6e3ddcea32e1706ff5617a02b27ec
   - node: 01a1a232-7345-778b-a4c5-046c26fef149
     reviewed: 20d136aaae9e1a6f000c8cdfad674c3328f23469556e759fb321e470319e7aef
     tests:
@@ -950,13 +1133,49 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
-        body: ac443a53dd530e602b1ada4bba7429fe2efc255ffe653ab2c0e36163d4854992
+        body: f8504af5ab2575df9ef8ed094dbb6f9d37c7cdbfe03e56281542ee03e59568c8
   - node: 01a1a232-7345-778b-a4c5-046e89676561
     reviewed: 51cd1549ea1570d4043561fb0ea9dd27714d222dd97a61ddf3d5656ae9c5abad
     tests:
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
-        body: ac443a53dd530e602b1ada4bba7429fe2efc255ffe653ab2c0e36163d4854992
+        body: f8504af5ab2575df9ef8ed094dbb6f9d37c7cdbfe03e56281542ee03e59568c8
+  - node: 01a1adfa-315f-708f-8cd8-bf4e61ca16c8
+    reviewed: 650c396500f971b8181e7f19b374c624aa444b8d2235f788c64be8ac2df21870
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy"
+        body: b1815f9e8e8177234cdf17bddeebd4214fcdb341aa46447d76cb2e6a8554d17c
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "a_fibre_beyond_an_arcminute_of_any_fibre_joined_stays_apart"
+        body: ef6137f46cb4130e38fffbca0bf6eee7930cd2cdba2fba7366833ca193fc3c51
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "fibres_beyond_the_nearby_volume_or_its_velocity_tolerance_stay_apart"
+        body: 32f1144033dce751451dcaa691686d3fa8db44d9ad291e56ef979244ecc48fb6
+  - node: 01a1adfa-315f-708f-8cd8-bf4fa228b618
+    reviewed: 520ff683b67403e4389582e142852ef0a70b81349698e5cdc42878b2eb30c89a
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "only_the_fibre_surveys_the_rules_list_join"
+        body: 4eabb05bbbcb31e30b0995a8762c8d519bb1f8aad9631a9eb0e98e33ae38ce5f
+  - node: 01a1adfa-315f-708f-8cd8-bf5086a0f213
+    reviewed: ce65142c89a3752a304d6b3ebd642e18a91d1df1a7eea9363ad7acd425e1ea85
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "two_fibres_each_on_a_galaxy_of_its_own_identity_stay_apart"
+        body: e1a307c56b9153644f89996f49f6e2d14d5deb46d82e458c6ce5b2cbdd9b8910
+  - node: 01a1ae91-90f5-716e-b3d3-07b944951329
+    reviewed: a17bbfb85db7a6afceda7f202a2dd077d4b32c5fa75b5b89ac3e8c55f172d85a
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "a_fibre_never_joins_a_galaxy_whose_extent_a_source_publishes_or_a_group_of_a_shared_source"
+        body: 979a0c24341cb50a1c83e476419f3b0f4818fb267404b7f06a08df0438b010b7
+  - node: 01a1adfa-315f-708f-8cd8-bf51d418d386
+    reviewed: b2918ae69d4dd1a71be616e4db8ab240088ba12648857f0a745b3a7a6c42db00
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy"
+        body: b1815f9e8e8177234cdf17bddeebd4214fcdb341aa46447d76cb2e6a8554d17c
   - node: 01a1a147-6018-75e1-9409-3f7cf003d8aa
     reviewed: d84c25e841aaaa925be888e8854088c0ade631f97e5f6365408c13377ad04083
     tests:
@@ -965,7 +1184,7 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 072cf48ab65e19c2adb1c8e6aae2c4a29481e16e14b46adcfe85bbf137049a5e
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a1a147-6018-75e1-9409-3f7dc2dcf028
     reviewed: 61c386ef5097b43d23d5e94bfa265b030c5dd7f155a070337a5d33777b500670
     tests:
@@ -974,7 +1193,7 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 072cf48ab65e19c2adb1c8e6aae2c4a29481e16e14b46adcfe85bbf137049a5e
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a1a147-6018-75e1-9409-3f7eb363692b
     reviewed: 4280d632212de0675748d7bba795251d2e7e0da5f6007e553a2388e94652edbb
     tests:
@@ -983,19 +1202,19 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 072cf48ab65e19c2adb1c8e6aae2c4a29481e16e14b46adcfe85bbf137049a5e
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a19f23-636f-72bd-b194-1513f385222f
     reviewed: 66f206a5eefa8b76732be7488e54f99a84eaaaf7358ea6a5f1667028732ec2bc
     tests:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "designations_and_common_names_keep_their_sources"
-        body: a55b5c4d34f6b514df3c25720c84dd82ee14fbb4357f1beee203f85ce5e722e5
+        body: d48e58b91c78ab53f4ddec1b1444a62d86e40751f2427adc2e629b4d261efeca
   - node: 01a19f23-636f-72bd-b194-15144dcb948e
     reviewed: 75d95472819b7b0b695520cfb33e4f210e085f5a6dbb0b04bcbbf336cd45532f
     tests:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "designations_and_common_names_keep_their_sources"
-        body: a55b5c4d34f6b514df3c25720c84dd82ee14fbb4357f1beee203f85ce5e722e5
+        body: d48e58b91c78ab53f4ddec1b1444a62d86e40751f2427adc2e629b4d261efeca
   - node: 01a19f23-636f-72bd-b194-15178440da44
     reviewed: d30b961b6c19837c70435a379c1919ce9154776e6c5131e472332bc73349fdaf
     tests:
@@ -1076,13 +1295,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "the_manifest_lists_every_file_of_the_release_with_its_sha256"
-        body: 06295a9976607581eaa34c5b6570dc4d1b01de669b3d9914a1b665f71a8d5b59
+        body: edfed8a7f60c2cfc219c97f721256dce3c0da6846553c2dfc0a45e5e553b3102
   - node: 01a19f23-636f-72bd-b194-1522436dac01
     reviewed: 05eb9d6915f9e78496a1c9eefe387a01d8b27c5dd7cc50bd09a39f4813499c47
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "the_cell_index_holds_every_placed_object_in_the_cell_of_its_position"
-        body: 9b53940c55b3f335695917b94b57507f4afb6679bc3db5422338bd0f58f758aa
+        body: 243ab6069798ac452ba465ef89e610c1302900df74045de5743249c138a1b6bc
       - file: "crates/univ-ingest/tests/structure_cells.rs"
         name: "a_sky_region_over_every_longitude_spans_all_360_degrees"
         body: 394445a9585035a901186d90b339e7084cf498d868cb4069629469663a092069
@@ -1109,7 +1328,7 @@ links:
         body: 222d94095679b250c707de97ca3c7977fef78cc5966ef0ae8093f6671f1b707e
       - file: "crates/univ-ingest/tests/source_coverage.rs"
         name: "the_radial_ranges_of_hipparcos_and_cosmicflows_4_are_their_parallaxes_and_distances"
-        body: b51698a03ea1d42ad6ca75bb91930927a4d567d69dfe513b3be64fc0ea8fc7b0
+        body: e2856b5dc80d36196159b408632dbdb2c4d3dbe71e43d38f505861e4f0847adc
       - file: "crates/univ-ingest/tests/release_details.rs"
         name: "the_fixture_release_records_each_sources_reference_and_coverage"
         body: 358989dca152c5e5c2b6179a27a3e60923254e88baf3c6a0d6ec2db64b7ccba0
@@ -1140,6 +1359,48 @@ links:
       - file: "crates/univ-ingest/tests/structure_details.rs"
         name: "every_structure_names_the_cited_values_its_shape_and_rescaled_lengths_come_from"
         body: 124ca5aaedf6d73f4f6b40d3d9ce843d9b46e129231cb804899c0ffd25a27607
+  - node: 01a1a931-2c8a-73a8-91f2-590689bd8862
+    reviewed: 22bccab386fd5da79bab0e74ac46da7cd67c07047944cb4cc28e0966a1dab0bf
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "each_object_is_in_exactly_one_shard_with_its_entries_measurements_designations_and_cell"
+        body: 7dac4eabf525c76b782cf12d6b499b4d4e4683c5582b6febaae02b73ccca4616
+  - node: 01a1a931-2c8a-73a8-91f2-59076b96877f
+    reviewed: d4749094a8a23e3f0b7b2ce15bca25496c800fbda3127b0a37887c5871922441
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "all_the_objects_of_one_cell_are_in_one_shard_and_one_not_placed_goes_by_its_id"
+        body: e3e857f43dacf6dc5c7bc61eb356d93f31d366e9a523f8a2c8acd432cb3312bc
+  - node: 01a1a931-2c8a-73a8-91f2-5908e94d50c7
+    reviewed: baaf35522e0ba1c8b89d953397bae05f5e1efaa9a76043fbce94533983ad35da
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "all_the_objects_of_one_cell_are_in_one_shard_and_one_not_placed_goes_by_its_id"
+        body: e3e857f43dacf6dc5c7bc61eb356d93f31d366e9a523f8a2c8acd432cb3312bc
+      - file: "crates/univ-ingest/src/release/packing.rs"
+        name: "objects_not_placed_go_by_their_ids_bucket_after_the_cells"
+        body: 4a76cf8e0ce2689126def32a1de799a84782a99a110e5c797a7a18d4ec5afc41
+  - node: 01a1a931-2c8a-73a8-91f2-59092cd5e331
+    reviewed: 750e42c44136c4783edd74a93fad61e2534e9285d050e51a7e15c64ff954fcae
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "the_catalogue_holds_the_sources_terms_structures_and_the_shard_of_every_object"
+        body: 0c03df151a46755a9340e8453892bd2194205a2d32c3ef1c1948409d521359c5
+  - node: 01a1a931-2c8a-73a8-91f2-590a9d7b0864
+    reviewed: b8341210fb710809c4e1a048cb4aa2bfe0c9a9c0e31426e0105faf4e65c37f59
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "the_manifest_names_each_shard_with_its_cells_and_estimated_size"
+        body: d659e450b466182db15fe3e5b3543a14889352c644b4f8a66579624621dbc9a6
+  - node: 01a1a931-2c8a-73a8-91f2-590cebe0fc8d
+    reviewed: b88d165f79b42d566b693c38ae0f3789b13f1bc16e7660807565f969bd3ebf9c
+    tests:
+      - file: "crates/univ-ingest/tests/release_shards.rs"
+        name: "a_cell_beyond_a_shards_budget_refuses_the_build_naming_it_and_uses_no_number"
+        body: 8c4758b181fa273a8adde64044073f0ee6de7242ceb3c616c52f8a56d46ef88d
+      - file: "crates/univ-ingest/src/release/packing.rs"
+        name: "a_cell_or_bucket_past_the_budget_is_refused_by_name"
+        body: 1809661fbbb34b7275bb47edaaf63a5487ea00550ee7b98f8520ada21ea78322
   - node: 01a19f23-636f-72bd-b194-15248994b03f
     reviewed: 531442a7f316a2ed5e8fbade5d8190168bc1fd7e6f311bde2266d6665ab61149
     tests:
@@ -1160,7 +1421,7 @@ links:
         body: f07179f3028adf9442beb752a7687f3380c2c9935b97feaab70a9bddc47082e7
       - file: "crates/univ-ingest/tests/release_checks.rs"
         name: "two_rows_with_one_primary_key_fail_the_build"
-        body: 769da02dccbcedcf2ddf2f7c8700e6f105d57f4cb7b148aaf9d262ab6f5e1069
+        body: 74e9595d968c3dab9d90917e4a6721922c523740fe615a45637dd24eef8e82de
   - node: 01a19f23-636f-72bd-b194-152783fea6de
     reviewed: 01520aa8d0b35c138f530be5c920d7d64f28673d92b5109bcda577ee5a546ac3
     tests:
@@ -1280,49 +1541,61 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: e531c410577e618e86a9264343e0e8ce8f593a946340495639d1fbcfef08d726
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
   - node: 01a19f23-636f-72bd-b194-153a6cd80c2c
     reviewed: edecef9bacadbb74a84d828a30602a92afa9efa9fd80bb5a1165ea51d7013adf
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: e531c410577e618e86a9264343e0e8ce8f593a946340495639d1fbcfef08d726
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_it_prunes"
         body: 785d2b039b143e74fa690daf924ebbb3f258a625a5cbb3a0e85f3004cd39746a
+  - node: 01a1a931-2c8a-73a8-91f2-590d7b43ba10
+    reviewed: 27aeb1b20f3d830b77b26ed4002e4a8cee56e65bcac56b72fc7c3c8466a36a36
+    tests:
+      - file: "crates/univ-ingest/tests/prune.rs"
+        name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
   - node: 01a1a25a-c0ef-776c-a6c7-886eb1e11d8f
     reviewed: bea2fb0a7ee9c18e393825a7113f37a8566bb3130923ff278559adb560c6918e
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: e531c410577e618e86a9264343e0e8ce8f593a946340495639d1fbcfef08d726
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "a_release_never_listed_whose_files_were_uploaded_has_them_deleted"
-        body: 73f3c8929828b7d84ff39d31b246259934ef7395f2849463fefbea35bbe0f859
+        body: ca4417309220c3977e1caf167ded59984b36596f0cdf331d8d5b101d5a7c5d55
       - file: "crates/univ-ingest/tests/r2_batch.rs"
         name: "a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build"
-        body: b7208bd1c8f5be516f4bb1e2f9ad1574ec32164ea7143d13841a553cf818732e
+        body: 2b168b787c1926f3e6eeebe23a8905299b3ecf32838ce2f5525961f258e31f94
   - node: 01a1a25a-c0ef-776c-a6c7-886f2de1845d
     reviewed: e337109aaea3d77945c9723b02f45fc87a22a56f7d6e7b25e26efc3c00eb119a
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
-        body: e531c410577e618e86a9264343e0e8ce8f593a946340495639d1fbcfef08d726
+        body: df8942703aed1b6d4d707497c57624b96e2b37b4b7368e6527680519031e8f49
       - file: "crates/univ-ingest/tests/r2_batch.rs"
         name: "a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build"
-        body: b7208bd1c8f5be516f4bb1e2f9ad1574ec32164ea7143d13841a553cf818732e
+        body: 2b168b787c1926f3e6eeebe23a8905299b3ecf32838ce2f5525961f258e31f94
   - node: 01a19f23-636f-72bd-b194-153c0959ad96
     reviewed: 923c577f1aecbd3eeffd01ceb1934112a852397c0a1368a013d129c8cf7887f7
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "the_release_latest_points_to_is_not_pruned"
-        body: eeb8634d983186f575ff71a36d3015ea3649ce9045e9ee6c92aed3b41c7fe7c5
+        body: ee526aff65345f9c58c566980f7342d142703c5e78d7e2e2afb268451c94cf34
+  - node: 01a1a931-2c8a-73a8-91f2-590ede3fd3b1
+    reviewed: a8c0b6d68aaf24863d18c032267e5daf4593b5c1ceb08573e1b59d2edfc15452
+    tests:
+      - file: "crates/univ-ingest/tests/publish.rs"
+        name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
+        body: 9a553a15e77121d0ed3b7f3d0805f4b17b883df2b9ea15ce0e75ccbdc5581dff
   - node: 01a19f23-636f-72bd-b194-153fb0e0dd43
     reviewed: 4b050be2a02689e7494e6e0ffca8ebe0c752ad638e1219e36a8e1dd3031f0536
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
-        body: 54463247d6454c9bcd509ebd0c4d74bed4e9a1f76ab625d0f3e501d0899f73fa
+        body: 9a553a15e77121d0ed3b7f3d0805f4b17b883df2b9ea15ce0e75ccbdc5581dff
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "a_file_that_reads_back_with_another_sha256_stops_the_publish"
         body: c7b83958865dedd93b27fffec8020533d7ae587d84751edcd6f29c88bf2d9632
@@ -1331,7 +1604,7 @@ links:
         body: d3f6f4d29cb4a1d5594b0fb0cac492335c1d580f4f4c2d9d9b907ba0a9918555
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_row_altered_on_its_way_to_d1_stops_the_publish_naming_its_table_and_measure"
-        body: a235bb55002de1ab982a39128087f543596a0a3aa6c6fc983831c6b86295de59
+        body: 8497cdf086959691ffe02a78a188ae2a6f8c76c2f3e92899b77df5b0f41a96ec
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_text_holding_begin_transaction_reaches_d1_as_it_is"
         body: 0c4f8ce8c00fd98775f8853596bd04aa319c675db474e52ebf8f45c84a0ce82d
@@ -1349,13 +1622,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "until_latest_moves_reads_that_name_no_release_answer_from_the_previous_release"
-        body: 202c70a3769b58c0ea2d050941f475e3fdb11c7cd9824962c251990ae429d6f5
+        body: 498a53f8462e1017c49a598b599fbb5d1db639e76351a73bd823dc2ca0bf06da
   - node: 01a19f23-636f-72bd-b194-154133241de5
     reviewed: 9bc12f78064a0693282c0f25cff9e2759dedbc7cb4b5e4730f0739875cd3001c
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
-        body: 54463247d6454c9bcd509ebd0c4d74bed4e9a1f76ab625d0f3e501d0899f73fa
+        body: 9a553a15e77121d0ed3b7f3d0805f4b17b883df2b9ea15ce0e75ccbdc5581dff
   - node: 01a19f23-636f-72bd-b194-154384255e3e
     reviewed: b1716cd28b23d0bf2290e955aa9104a7aa0f13b90ebcf29af60067c06b444d42
     tests:
@@ -1374,6 +1647,12 @@ links:
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled"
         body: 00dd947c181fca15d4032ed49d80f7bdc538c376891cb57b439ac10e4b620c76
+  - node: 01a1a931-2c8a-73a8-91f2-5910680f6e67
+    reviewed: f4b560726e81714219c19477ea9f03d9d09412d693bda266233731c00ee84d76
+    tests:
+      - file: "crates/univ-ingest/tests/publish_checks.rs"
+        name: "a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload"
+        body: e66a64d803ae9d2a23a882847f9c12a92f783354fbbef671eb2b1596db5f6f78
   - node: 01a19f22-b0bc-76da-bac8-977d3868a411
     reviewed: cc37beca30b495d7bc6ca64117e2a846be04474bbe21d4eebfcd6054cd9631a6
     tests:
@@ -1409,10 +1688,10 @@ links:
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
+        body: 6734d689565d7fe767bbe24e6f63071233e3e2a97e585a9e7e12228c1af63f81
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
-        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
+        body: c3e8ebb1cda85a2b705a0cfe40ecbeb62176d75b62d6ca6bdfbfd182dc4a9b24
   - node: 01a19f22-b0bc-76da-bac8-97803a2ac7b3
     reviewed: 3e35a457eabc0a266e62b03c551f1d2599521cad6be77a3b6e2c6c2e3fc3b71f
     tests:
@@ -1454,7 +1733,7 @@ links:
         body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
-        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
+        body: c3e8ebb1cda85a2b705a0cfe40ecbeb62176d75b62d6ca6bdfbfd182dc4a9b24
   - node: 01a19f22-b0bc-76da-bac8-9788528129a0
     reviewed: 19235e59bf99c5023b529bc8c50f333800338d4e0428f3b34d429c7e2979ec19
     tests:
@@ -1484,7 +1763,7 @@ links:
         body: 82b975c4785d473109110da1c61fa98f2f1c72ffc16fcea510ab30d1bb3b310e
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
+        body: 6734d689565d7fe767bbe24e6f63071233e3e2a97e585a9e7e12228c1af63f81
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
         body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
@@ -1493,7 +1772,7 @@ links:
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
-        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
+        body: c3e8ebb1cda85a2b705a0cfe40ecbeb62176d75b62d6ca6bdfbfd182dc4a9b24
   - node: 01a19f22-b0bc-76da-bac8-978bd11f8a8a
     reviewed: 8873f5183472621d806a2ca4e2c84abfcc1e0453dbdaf7b1a8d4df1b4699d099
     tests:
@@ -1505,7 +1784,7 @@ links:
         body: 3c4566d86e5e7b71ba175859e0e526267ffd40d0a0c35abcd42232304f8eda7d
       - file: "crates/univ-ingest/src/publish/wrangler.rs"
         name: "a_failure_gives_wranglers_standard_error_without_its_escapes"
-        body: fb3233969c3b0a55c726aae02e8cf6bdec7cb47fc1252d96f0717c912178ea25
+        body: 66fabba418acbff588677fd15e36332851998365f4894b7b62e54cc7d905d60f
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
         body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
@@ -1514,13 +1793,13 @@ links:
         body: 1e65c12cbe80d2a3357bdb4d0778bf24981700aae4652bc1f0838bd18464aabe
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c19ff1b1d6148c71bd898bc94e8a5e78e8d489771743015db44984ef5499c395
+        body: 6734d689565d7fe767bbe24e6f63071233e3e2a97e585a9e7e12228c1af63f81
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "the_fetch_ends_with_what_it_got_hit_failed_and_fetched"
         body: 7f2007f98ba30b6948371bd583e8ff2a05ae7b197fab612e3e13dbb352831138
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
-        body: 0e59cb4e26fc3f22c230f40f688eddcc0bc8b954da0ebf2811916fd8e68c8eec
+        body: c3e8ebb1cda85a2b705a0cfe40ecbeb62176d75b62d6ca6bdfbfd182dc4a9b24
   - node: 01a19f22-b0bc-76da-bac8-978c8f52c47a
     reviewed: 304e9a5c1577b8e86c9178d0caa43b6d46301ff3eeb41e3cfe485a95def6f62f
     tests:
@@ -1637,7 +1916,7 @@ links:
         body: 5a3aff19cc24e1d793d29fdba67e93c1cc9cb5c2e9818d15efcafeae631c8cd2
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
-        body: 064e474c997dc87ca720f05abda0d310cc9f20b01d52cac713e62f2f78bd4c9a
+        body: afec8b55dcbf49d5de6535c17dca69b3a81b63defd998220e73c8106ab06139f
       - file: "crates/univ-server/tests/e2e.rs"
         name: "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
         body: 435d37c3a828395e58e075c44bf41e7ef6709cf1397a577bfbb3168ddd502aaa
@@ -1649,7 +1928,7 @@ links:
         body: 26283df6ba7360e9baf810bfa9cd288a53b35bc2a78ae948446c101520b44522
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
-        body: 284a9694a515f74decd15afbb2b400280dc7e21f3ab92b3731fa58b82d319835
+        body: ac4e62bf3962e397e1efd6905f47afd2faafa1e25795a37103ff597a546e81b2
   - node: 01a19f1e-d177-716d-b124-3d11207d1f43
     reviewed: ac193fa9e2b6b44b02fd3160919b2f8f02210ea2a9316ae3052ac3cf61759587
     tests:
@@ -1658,7 +1937,7 @@ links:
         body: 7facc694f4db11c0f072619c37fc0a5abfa39bbd01f1f66fcac4b17558c28a72
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "the_preferred_measurement_reads_with_the_ranking_that_chose_it"
-        body: 049ff04b2994a1fa4586fe5303e9478e05ddbfa485d79d8bd18bdbcd9758c087
+        body: 7590e5887e3571d9655433c624601699e093fd62bbae0a3f227fe8c5bf040e5d
       - file: "crates/univ-server/tests/e2e.rs"
         name: "an_object_is_read_by_id_by_name_and_by_designation_through_the_worker"
         body: 435d37c3a828395e58e075c44bf41e7ef6709cf1397a577bfbb3168ddd502aaa
@@ -1667,13 +1946,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
-        body: 064e474c997dc87ca720f05abda0d310cc9f20b01d52cac713e62f2f78bd4c9a
+        body: afec8b55dcbf49d5de6535c17dca69b3a81b63defd998220e73c8106ab06139f
   - node: 01a1a825-fb4e-702c-a84f-bf7cb64ddb9e
     reviewed: 7b0ec7f57fd6f67746b716ae271e18d25514fcba5f5997f795720ebaaa360f5b
     tests:
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_catalogue_entry_reads_with_its_source_designation_and_resolution"
-        body: 064e474c997dc87ca720f05abda0d310cc9f20b01d52cac713e62f2f78bd4c9a
+        body: afec8b55dcbf49d5de6535c17dca69b3a81b63defd998220e73c8106ab06139f
   - node: 01a19f1e-d177-716d-b124-3d1233780c6e
     reviewed: bfc71725b8808dc589e327e577d331796355ed8f9b7069e46a80890d2a9e54dc
     tests:
@@ -1691,7 +1970,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "every_candidate_match_reads_with_its_confidence"
-        body: af941171e3ca0f20e8bc0ab059ea6fb6c56208d680a2fbf56be7b6091b085f86
+        body: bd184b3c434b8091a4e0d1cd1a7ed6b9e1862a699ce420b5241d868af3ee1e0b
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "candidate_links_are_written_with_no_duplicate_key"
         body: de69981a2e1405831a4a9b426c873fe59aab6326607963cbdd5e343fe20d1b71
@@ -1703,13 +1982,13 @@ links:
         body: d60bd9464db5136bcc3210269a6762d873737f5e3ddbda7ebe758c40b0a6485c
       - file: "crates/univ-ingest/tests/object_reads.rs"
         name: "an_object_with_no_distance_has_a_sky_position_and_no_derived_position"
-        body: 5a9f9cd36effb406f050e7b56671cc082765e078c6df111dcb1c05368aa202dd
+        body: 2b4678377440d59730a1af5068f227ef697710122aead8492981d3c881acbc23
   - node: 01a19f1e-d177-716d-b124-3d17358a5809
     reviewed: 7ab03469c4059395be5c134b03db12f18ac0d000291e9955e4e43a3bb4604074
     tests:
       - file: "crates/univ-api/src/objects/tests.rs"
         name: "a_designation_is_a_source_and_its_identifier"
-        body: 1789407d072a7ba7d99aecdae79fd63f3c2522e49116196efcd9fdc01d260ef0
+        body: b6f9b480a0593c14269b81ef407f374e3812b65a61232b5a749dca9c62b56ec0
       - file: "crates/univ-api/src/objects/record_tests.rs"
         name: "a_designation_resolves_to_its_object"
         body: 149545eb02b931a139e98ede46679901ccab37a00ac29e93d836de8efe9dc937
@@ -1824,6 +2103,12 @@ links:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_source_gives_its_terms_query_and_provenance"
         body: 68fc42f6d2d43d6a159456927b6c442f4dc9f103f3d9ff9d5daf55ef988bdf4a
+  - node: 01a1a931-2c8a-73a8-91f2-591121be3932
+    reviewed: 59b0d866d1e7090cc45c697aee20894a0a80c7bb9ffbe6bdd46d8388ebc37fd0
+    tests:
+      - file: "crates/univ-api/src/sources/tests.rs"
+        name: "the_terms_give_the_redistribution_status_and_any_non_commercial_clause"
+        body: 3a6897809877da7357341ba4b0f6ec08c3f6a1a61eb3879a6a4203e9d918a620
   - node: 01a19f1e-d177-716d-b124-3d2711844898
     reviewed: 64fdc53e772b72fefbd149a9604a2fa0a93a8996b9837a9fe412591ec97ba6ad
     tests:
@@ -2244,6 +2529,15 @@ links:
       - file: "crates/univ-api/src/query_paging_tests.rs"
         name: "paging_a_query_whose_layers_did_not_change_gives_the_same_pages_in_one_order"
         body: 01e31e54f3ace36a3fdcee00716d2ede9cb22a4dee0b04b37826445e5411a799
+  - node: 01a1a931-2c8a-73a8-91f2-59122e92f2fd
+    reviewed: 9153c6188810ce215ca5e885fd5dac15f9a2def39502029a4e47c025e1a17c8b
+    tests:
+      - file: "crates/univ-api/src/query_paging_tests.rs"
+        name: "a_page_holds_its_results_in_the_same_order_whichever_object_shards_they_come_from"
+        body: ff0bf5a27ecea040e0361cb0f9433cd2aea46fe6c489619a723e6a35c54f28d1
+      - file: "crates/univ-api/src/shards.rs"
+        name: "a_box_meets_the_shards_whose_codes_its_own_overlap"
+        body: 22a964b7e171526122f14a0b121f1d26423acc6f362f363a16c3906de0ea3e96
   - node: 01a19f1f-9fd7-7209-b7cb-5d174e903e62
     reviewed: 65781d1b4fb6302dcfa214e3d113285a51074387e369da64ec7e7ad51c4e2705
     tests:
@@ -3017,7 +3311,7 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
         name: "is drawn at the ICRS positions its points give, in megaparsecs"
-        body: 7f97650638312e76168858e8c0208d2f1cca1d430c3c60ef31b48e7dcee88ad7
+        body: 98b8453cbedc7c768387a761481504f34c461395fd721b8f68b155b3395ebcbe
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
         name: "is read from a manifest in parsecs or megaparsecs, and no other unit"
         body: 4e8fd4247352f16c31d616ce00c5a9bc97cfd2ad67898fbdd30db21e75153de7
@@ -3026,7 +3320,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "marks Earth as the Solar System barycentre, and says when it cannot draw"
-        body: 540201203d9e919336a94c7754c572656419fd92d3f69369214769d80ea385c3
+        body: 94620e9d119b36e0c6589c7ec8d72940ec2faa52a3fbbba496056ad56a65fbd5
   - node: 01a1a497-e843-728a-bce8-40026e7286d2
     reviewed: c351be9f44274d24780c20b9925fd09dc4e021d26e7cf3ce0502f2f699a0a1c8
     tests:
@@ -3035,7 +3329,7 @@ links:
         body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
         name: "is drawn at the ICRS positions its points give, in megaparsecs"
-        body: 7f97650638312e76168858e8c0208d2f1cca1d430c3c60ef31b48e7dcee88ad7
+        body: 98b8453cbedc7c768387a761481504f34c461395fd721b8f68b155b3395ebcbe
   - node: 01a1a497-e843-728a-bce8-40049983aed9
     reviewed: 60a2b90ff670f3de8d8fe9683d0c4d71ba1b5bfffd53e88f1e14b8a0af170115
     tests:
@@ -3049,17 +3343,20 @@ links:
         name: "fetches the children in view of held tiles, the largest on screen first, and none wholly outside it"
         body: c2c33def47f95d820c7ccd7a095f22577417720f74fd96c55fb0efa334acc1fc
   - node: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
-    reviewed: 5ed7dccb7622bfee3d4e5db93c8315efab04352e1bd81219b3316277718534be
+    reviewed: b044070b583849b0de27ca6cc0fded2fe0a2d4bd7a35ce52e9e4541702dab792
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "refines a tile only while its points lie farther apart on screen than 3 pixels"
-        body: 8ba68e794c4bd18cd89a3e9ee31268fe8ffb5da699e52febd4312d6e384d0fac
+        name: "refines a tile only while a typical tile of its level would have its points farther apart on screen than 3 pixels"
+        body: 751a37794630c7eca353be02241468b8bfa78c85d83635af7231c1f8815548cf
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "measures a tile read by where its points lie, not by its cube"
-        body: 1a17468adad6abb34288a32a151705a7e05e22f393fd089b3187fa673aa94776
+        name: "refines regions at one distance alike, however many points their tiles hold"
+        body: f1a40cd740d3aca5249990cc645caaefdaf85ca6d456f557c99caae9ae302016
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "measures a tile read by the distance of its points, not of its cube"
+        body: 8f7bb80d09abc90f4538be56f0c5e816446ba7b27f201a3c600dea5011c6e6a8
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "measures how far apart a tile's points lie by where most of them are, not by the farthest"
-        body: 39947fd6f4fef34defe138ed42b8a43db532f6703b6c56a874b4a2e84e48056a
+        body: 0bc33ced020f748a359e46e3b5e9f01f905ca0af4858647e0a67e9e095eafe3d
   - node: 01a1a6a7-c540-7210-8492-7dfc16d279b8
     reviewed: 9f4cc14d2503bc59adb7e1a124667fb809a1d93c75a2cbdc2559edba4c61454a
     tests:
@@ -3071,16 +3368,46 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles, within a budget too small for all it wants, and fetches no tile twice"
-        body: 8bce0ca6a9c8621d4f0e9ef470f03ff92974338e9629c5db1eb1f30e90ffa256
-  - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
-    reviewed: d56d1e83e4cfbb1a73c3bc5393c25caa8ee7bb5c00b587c47d326bf8fd2283fd
+        body: 77d12239af96d2ee71fd5992224abf18baf76ef75efefe6f399775016a8970d3
+  - node: 01a1aea7-5e8b-7623-8601-48fb7856d2e3
+    reviewed: 2b42a71575a3d3daa305c4872dbd031bd2c88f655185ab427f32c1bac419ff01
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "holds no more than 3,000,000 points, counting those on their way"
-        body: fe131166d4f30d069df1b7f4cb44a11ad2bf237a3a901b4a5964db76a2b92b97
+        name: "keeps a held tile's children while its points lie farther apart on screen than 2 pixels"
+        body: d75d913d72cb82bba3c3ea0929072f71769e1c49d6ba875f2219005bc9250a69
+  - node: 01a1aea7-5e8b-7623-8601-48fc4cf3ff3f
+    reviewed: 7dc0a74be5dcaad89b92d099edfd7c82864d04934ee4320b5d838d0f33b7b32a
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "keeps the held family where the other is less than half again its size on screen"
+        body: b4fd1b9ff9b6bbcac1cb279dfea05ddbd7b32f137a741f9d1facb7877fa33a00
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "trades it for the other once that is more than half again its size on screen"
+        body: 4eb5e4863c23f4e17c7bfb3ea98c008176ead46e4bddc662b55173c7d952e62d
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "prefers a family that holds only some of its tiles in view"
+        body: 6a3bd5489d4805808ed452d592ee180e7a83a5dea0aed8498c38197612bf3147
+  - node: 01a1aea7-5e8b-7623-8601-48fd8492b9c4
+    reviewed: 1fa81cb6e956d955ca3b5a055ae1df08ad6ee7614c94408f2cc2fe238824e2e2
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
+        body: b864009a152e7d5c93be849799d7a1ce934fc561c31d23f28f4f9638ca131de1
+  - node: 01a1aead-1e30-7695-bbd5-099c2f301565
+    reviewed: dc850f3fb6fe277e64094fde2aa04f623c05d085327d711a29d36c91cbc15fa8
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
+        body: b864009a152e7d5c93be849799d7a1ce934fc561c31d23f28f4f9638ca131de1
+  - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
+    reviewed: a669ebb08831bd0a2a062ec3860089a0c1d7a3e250c11cdd027ebc864c241870
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "holds no more than 6,000,000 points, counting those on their way"
+        body: 9964014668f6dbfc0258c0db3418218e5a8edf17715c25ad8f4c93ff040bc444
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
-        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+        body: 4e8231ab7a8388ec058fb7488245fd0539501bfedf1a312d974b5dd705990df0
   - node: 01a1a689-0b25-768a-9f1e-cc28566a82e6
     reviewed: 0f0300380b27121d826afc8c0e7dd3d9978b3d798112fc7285c73e261c06f158
     tests:
@@ -3089,7 +3416,7 @@ links:
         body: cbc6dc35af6d259a19ba2449a57ff89fca41dca9bccb14340164f4684c89b391
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
-        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+        body: 4e8231ab7a8388ec058fb7488245fd0539501bfedf1a312d974b5dd705990df0
   - node: 01a1a689-0b25-768a-9f1e-cc29da0f0de4
     reviewed: 1d5455cdbc3aca3bca0e11ef6bc102883720f6feb22b1f928751910e82f77132
     tests:
@@ -3107,7 +3434,166 @@ links:
         body: 91f97e6594163e1f2b626d7a2b378d4f47885fb41a8010dfb04ded0b418f28ad
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
-        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+        body: 4e8231ab7a8388ec058fb7488245fd0539501bfedf1a312d974b5dd705990df0
+  - node: 01a1aeb6-f18d-7787-9cbd-de2cfdcfe714
+    reviewed: 8e05ddea9a4655f672d96d6af478bcb15cca1c2ae50e128978fd6871eeae5423
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "keeps the tiles it drops drawn and counted until the tiles fetched in their place are drawn"
+        body: aa5c3376b2a334f3561638347209bd19170e55b21d61a12fdd6c2fdcd1591007
+  - node: 01a1aeb6-f18d-7787-9cbd-de2dfa8b12aa
+    reviewed: c046a7265ffa18169546c43ef8414fef7c7912ca23c56369c38175d597a608ab
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "keeps no dropped tile drawn beyond its allowance"
+        body: ee4a9d04f63c577c8fd19dd0a4c76d1957b67dd038044623e3af372652f426ce
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "keeps the dropped tiles that fit its allowance drawn, and those beyond it no more"
+        body: ffb8fd890e42be58b7e3caf005f89224b43d1242f44c1e04478a86cfdeafa670
+  - node: 01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b
+    reviewed: 860bc11fb48cdb57922047668acbdb1261bd4a45b3f2092796b7c8b020492b74
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws on a kept tile the view wants again without reading it again"
+        body: b93e89567385e23ef9d5e6f1db114eca11980f2ec792b3460fe3c3f35639a25a
+  - node: 01a1b07b-8157-7546-927e-2722e634b9b0
+    reviewed: 973c23c057b8b79645b5e62fc25abf5705ec9ef8fa98cdeddb32248b0de765b8
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "holds a level-of-detail switch in its top bar, on by default, that turns it off and on"
+        body: 46e498f3b666c3712acbc973b616ba8eaf98d0b9a226bc6bcbe436b06a68cea8
+  - node: 01a1b07b-8157-7546-927e-272335750e5f
+    reviewed: 5a51da406e444405ddac395036b21c4c46ad6e2fbf010814eedda68bdfbc0f5d
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "fetches every tile, the coarser levels first, whatever the view and the budget, and drops none"
+        body: 80caf7fe8316ce1ee60dfef99ff49e24f094b1a8f08f57c195c54ad7ea0701b2
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every tile with level of detail off, whatever the view and the budget, and comes back within the budget once it is on"
+        body: 2e8b428ae89f3499c1e18522379d939bd65a2287f25569d9d1421c7e1d8e6b35
+  - node: 01a1b07b-8157-7546-927e-2724ac33dc33
+    reviewed: 4ef267326d10412e4ad89616756fd1b15d6f5bcabc69491a2f723a1cb9bfb287
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "drops what the view does not want once level of detail is on again, though every fetch is still on its way"
+        body: 6fcc37a62dadd95663ecc636543993a00934948f938b120486d980d17a47491f
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "is followed, once turned on again, by dropping what the view does not want until the points held fit the budget"
+        body: 90d5ea88f17640060d178574d4167c1fe71e9591c7b4f0d7c5e517e605ac3180
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every tile with level of detail off, whatever the view and the budget, and comes back within the budget once it is on"
+        body: 2e8b428ae89f3499c1e18522379d939bd65a2287f25569d9d1421c7e1d8e6b35
+  - node: 01a1b07b-8157-7546-927e-2725108d8df2
+    reviewed: 680958061e9619ee39ac4c22b050510ad1b8157055d4fa1532868212ce81d94d
+    tests:
+      - file: "clients/explorer/src/ui/levelOfDetail.test.ts"
+        name: "is kept off in the address, beside what else it holds, and leaves it once on again"
+        body: 75c7f7c0ef7e1b935ee3842a5a473bc034b7885413ef271fa35f1aecc86fefd9
+      - file: "clients/explorer/src/ui/levelOfDetail.test.ts"
+        name: "starts off where the address turns it off, as after a reload"
+        body: 670d683cf11a7c53613fd188ea0749dd01330d4eee32ecdebf1dbf66acbf7de0
+  - node: 01a1b093-647d-7308-9b46-bdca66fcbd08
+    reviewed: c6f09b384aca690df926a4e2c7eb5b4078951cc841c52bd0ec782cbe508a7d2a
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "rises level by level as a typical tile of the level above has its points from 3 to 6 pixels apart"
+        body: 4021694088a1127cc2950c7117309f175854f529bc494cc78240b61bae089e48
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
+        body: a774ab157253d5e165cc64c008f48b6062fb87ad78ea1c67cfef4d518301919c
+      - file: "clients/explorer/src/scene/drawList.test.ts"
+        name: "is each tile in sight and not turned off, its share of its points and as opaque as its fade"
+        body: ae19fa1f30f9bbe477a47ec9a5a37ef9577358f14e3c1f73364e445265c340c2
+      - file: "clients/explorer/src/scene/drawList.test.ts"
+        name: "leaves out a tile whose share draws no point, or whose fade is nothing"
+        body: e5533e9b1f7997d32bb580ab3cf50814791c50ded65c55f01d50a5f74e2825ef
+  - node: 01a1b0a9-6982-71c6-b321-0cfc1d1f8a93
+    reviewed: 84ad6ec6d02a1538d80b70df16ba419c7e60cc4a468bdbc4310a6f72baf9189c
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "ranks a tile's points evenly through its slice, in their order"
+        body: 595f8605efecdf0603b19e9606fca61e01590f8952efbf902c97baf4d43af096
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "holds its slice of its domain: from what the levels above keep to what its own level adds, or all that is left for a leaf"
+        body: 1117cdcf777b89dc7f885a658a9e7161da1482fafa36e97e5911bab4ee0ecb9b
+  - node: 01a1b0a9-6982-71c6-b321-0cfd3507cc88
+    reviewed: 5340b71a72933cc136420c1164a46702781b947122711b2486205138d33bd772
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "refines regions at one distance alike, however many points their tiles hold"
+        body: f1a40cd740d3aca5249990cc645caaefdaf85ca6d456f557c99caae9ae302016
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
+        body: a774ab157253d5e165cc64c008f48b6062fb87ad78ea1c67cfef4d518301919c
+  - node: 01a1b093-81da-759e-8532-70d7aa4d0ff1
+    reviewed: 28de97338d549340c430468715db45e4b4417cf8bf086804edfd794eb492a9b4
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "draws every point of a root, and of a tile the first whose rank lies below the share its nearest points need"
+        body: 682592f8cb21bb8ab8efff142be7d376d42e6daea0d9954abbeb8784fdadacf4
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
+        body: a774ab157253d5e165cc64c008f48b6062fb87ad78ea1c67cfef4d518301919c
+  - node: 01a1b093-647d-7308-9b46-bdcbf842c1af
+    reviewed: a51a9aa2816658a01a4e18771131d9864b6b8fc71b179f36c83dce2013e27047
+    tests:
+      - file: "clients/explorer/src/catalogue/shuffle.test.ts"
+        name: "holds every point once, in the same order for the same id and another for another id"
+        body: 2920859a20dd36d04ab81da2903070d7200e86f76814adc3c1401bf7a3cfa2d4
+      - file: "clients/explorer/src/catalogue/shuffle.test.ts"
+        name: "makes its first points, however many, an even sample of all"
+        body: 4f3000151e04fd7ba8cc1daaa941bff8a7646afcb44d81c97051729746609741
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "orders its points shuffled by its id, the same on every read"
+        body: d3d63e9831cee4f0c5a7e6032c434c3a440eb4fa1007fd00dfc03d9b59396fe1
+  - node: 01a1b093-647d-7308-9b46-bdcc1ec02df7
+    reviewed: 709badc47d89f400ec8fb44cb013166592dc230c09c84c0922dd9aa1590187fc
+    tests:
+      - file: "clients/explorer/src/scene/fades.test.ts"
+        name: "rises from none to full over 0.3 seconds once the tile arrives"
+        body: 02f85beaaf310b33c3e0d3f41e4439868791e6b8f9e7eac052138b3ca703dfb4
+      - file: "clients/explorer/src/scene/fades.test.ts"
+        name: "falls to none over 0.3 seconds once the tile goes, and only then is the tile gone"
+        body: be5244e92ed198132e5200f524d726c42d24caf93ebe6ef003c246f528799b5f
+      - file: "clients/explorer/src/scene/fades.test.ts"
+        name: "turns from where it is when the tile comes back before it is gone, or goes before it is in"
+        body: 6cfde9927e6e3d68c619c0cb9584720223e25477e6f3d4f04464a093e2862dc5
+      - file: "clients/explorer/src/scene/drawList.test.ts"
+        name: "is each tile in sight and not turned off, its share of its points and as opaque as its fade"
+        body: ae19fa1f30f9bbe477a47ec9a5a37ef9577358f14e3c1f73364e445265c340c2
+  - node: 01a1b093-647d-7308-9b46-bdcd4901ec3c
+    reviewed: a1ecdc079dd0c923cfb0910a83b2400459b93f055f797b7d929261e708a0813a
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
+        body: a774ab157253d5e165cc64c008f48b6062fb87ad78ea1c67cfef4d518301919c
+  - node: 01a1b0b8-3632-76bc-88e5-8dd265a1a28d
+    reviewed: e728a1aba6b6d4eb674d19d344d82ea2a91788a2f115bb523ef9688634d96986
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn as opaque while level of detail still thins their domain as the eye withdraws, and fade beyond"
+        body: 47fc5be6cc9d8b329788604685ff10493b45c8d3460c088fb1fec39b5ac131c2
+  - node: 01a1b0c4-82ea-7058-b4c4-959c016ec0f3
+    reviewed: b34938be9f5b8b2d6a19d1d67396595d2639225c7472c16bb8310920807e7338
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn as opaque while level of detail still thins their domain as the eye withdraws, and fade beyond"
+        body: 47fc5be6cc9d8b329788604685ff10493b45c8d3460c088fb1fec39b5ac131c2
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "fade as the eye withdraws for a domain of one level, or with level of detail off"
+        body: 3854a34830cff4b0cd7788513935714d64f8374003f8ff138875dc4ced16be03
+  - node: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
+    reviewed: d47965b8b7bb6ebfa414dc8a99346638ee39d5f003353bcdc628b44cc26a11e6
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn fainter as the eye withdraws beyond a gigaparsec, never vanishing"
+        body: 7aa258e01941e7c85869e224f7d16d1d4c9e8a0248b1c0f37a410358ee9b621d
+  - node: 01a1b093-647d-7308-9b46-bdce5099b2f5
+    reviewed: 66009151f7032987facdb56d1a2e55dde96081f117f29c5c6e7798ce83c12778
+    tests:
+      - file: "clients/explorer/src/ui/scenePoint.test.ts"
+        name: "is found under the pointer only where it is drawn, its rank below the share its distance needs"
+        body: d22daa31814d87b046f1e1633d1def3387da5d685edd15c8677604e491e267a3
   - node: 01a1a689-0b25-768a-9f1e-cc2c484365d4
     reviewed: e82b1fb1e371fca155aeaa6795d4f08bf91215034ad308160bd02a5eac646c7f
     tests:
@@ -3142,17 +3628,17 @@ links:
         name: "state the tiles that failed their check, and those that could not be read"
         body: eddaaa991540ec699571322f43e215e0db9a8433185691df244d9880fd03da63
   - node: 01a1a497-e843-728a-bce8-400b9b581384
-    reviewed: 1284393bdcb4d4bcc3f01b8681b95b35941e9431cc7a4c5d80027f3a379f83fa
+    reviewed: 4704df3bae54b0df61e7cd72be5e0ff47813c2af2c2eafcf8b406ca1b0132374
     tests:
       - file: "clients/explorer/src/scene/kinds.test.ts"
-        name: "are drawn in four distinct colours, in one order whatever a manifest lists"
-        body: 3dc2440a8a8d49922db1fb8f36e716e8a7cd2f948741776057090fdf25326ba3
+        name: "are drawn in one colour, in one order whatever a manifest lists"
+        body: 340dc9e183c96b138a8e6152bd544705b763166959b433268874aa6fd5ab88a1
   - node: 01a1a497-e843-728a-bce8-400c71ad8ebe
-    reviewed: 28ec7f93a5e7dc872109f9e51747747af7b8f9842acaaaff7069bd08a573fadf
+    reviewed: f58b703866d7f6f3a757209f121ad7bcefb18a7a2ca7fb0b09291987c2594cf2
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
-        name: "count the points of each kind of value beside its colour"
-        body: e82a6a2ee5d1dcf1379228e0432725c6b88ec04841bc9bb61ce0d814c3406f98
+        name: "count the points of each kind of value under their one colour"
+        body: a434f0d188bc220f479fa49db1e951676e800cc9da9017b9182bb656766baa8d
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
         body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
@@ -3170,7 +3656,7 @@ links:
         body: 3ce41de51be292c112400e8f35d90acc6a655bffeaf588b8647ff3a4345ea45f
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
         name: "gives each star the colour of its colour index, and every other point none of its own"
-        body: 5e5e62dfbd4b85c9c059f990adfe5ce771c8ca0079109281b66308e89b46c523
+        body: b1db8583fb9a432b109d7e8fbb9225013d71e58095a855016dcb4d74207feb86
   - node: 01a1a8ac-052e-72b3-a33e-b340d68ae618
     reviewed: 592b26cb582bfd4c216d62c46c77b3faf26dcb2c07df87a001a4b24792c48b71
     tests:
@@ -3287,7 +3773,7 @@ links:
         body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance"
-        body: 38d68c485757b44aac35758e7873c9becbd6eaba176f22c08eba21bdbd714870
+        body: b461f565a04bbefe0e069acf69de268bd8e42dfaf1f79bf0f7cc34716dd3805f
   - node: 01a1a8e8-6326-709f-aa5e-4610311af683
     reviewed: 1174f20dd1a7c960a058c69bc1a4f4b5ec2af79cfc50772ad17920a33030d44c
     tests:
@@ -3509,7 +3995,7 @@ links:
         body: 7ff258700eb7cccdd4b78ebf6cacb49a317eccee6f8253952279257cd9a27408
       - file: "clients/explorer/src/ui/scenePoint.test.ts"
         name: "is found under the pointer, or nothing is"
-        body: d2e67af0e2d29ae5a46eb54d97aa55f5f1c5ff6f5426748463c89abbb3c26602
+        body: eaaf914f981b9cfbcdb4635d2758d02b87b4cbd2e02f14381487eec097efd022
       - file: "clients/explorer/src/scene/pick.test.ts"
         name: "finds the point under the pointer, across batches"
         body: 37f02fcb621ce6620054c55f7a57f43067e7079259e99239af4c80c72c60e157
@@ -3639,6 +4125,15 @@ links:
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "draws an ellipsoid as rings along its axes, and an oriented box as its twelve edges"
         body: b74437aba36e7e19c7a644ef0f0fb3465b30ff29975a981199fb09e983daa8a2
+  - node: 01a1b16b-4634-7511-aec8-71c45009817c
+    reviewed: 50ff6d5e62ae0059f44adbc4e239e1a38c4155555645677e9cc40bfb1057e52a
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
+        body: ac7168252ef85098892ee5ecb4ed1dc61a1873d31e1363010b47e4dc23c9574d
+      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
+        name: "shows each kind of structure's colour beside its box"
+        body: 36027fd57d2e962e3d067e174e71d4baa24e5e7367441320f936101aa6886a1f
   - node: 01a1a497-e843-728a-bce8-3ff2f42a8c13
     reviewed: e1cc72ff569ef79da218abd83bb3344b2fc602ac03f482cae2232f1de175d9d3
     tests:
@@ -3752,10 +4247,19 @@ links:
         body: 1551c8b75dc6542272f5f2ea759e09ea208d28d1b14b5d140aba772f532bd123
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
-        body: 90c6b0a6f69393e273411eec927bd4870ba6e690fe8e2bdcecfff97259fb143d
+        body: 8899e6232d6ff2def6eef43000ada6a2e01d137888c052578ed019ceda2f8165
       - file: "clients/explorer/src/ui/SceneOverlay.test.tsx"
         name: "writes the chosen structure's name in the chosen colour, and the others in the structures' own"
         body: 0a660037479bd1b47d0abf7efc51c4df4edbe758ed17c4cbe4dc49bcaffe6119
+  - node: 01a1b16b-4634-7511-aec8-71c5715ace5e
+    reviewed: 5104796bc92fef83de2aa1d1f919896a098d6646bad4f1e0ed62681279979d18
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "draws the chosen structure's outline thicker than any other's"
+        body: ef7f0befbcb7192c8917d32b4ddbd4fa2060379a3417a609476415c6b21ab0df
+      - file: "clients/explorer/src/scene/ribbon.test.ts"
+        name: "draws each segment as two triangles covering both its sides, from end to end"
+        body: b1eac9b99f854bc464d1bee14bb8815f3e9d26a212cd40cacef270a85edf1d32
   - node: 01a1a497-e843-728a-bce8-3ffa426590e2
     reviewed: f0b8b7ee41de7be2ce86c64da40f91c05bc36dcc41c0bcfc3c8cb094a930a4c5
     tests:
@@ -3771,3 +4275,144 @@ links:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "say a structure drawn by its extents has unknown bounds, and only then"
         body: b407b42fc3eef6aeeebed30623ea0fd1e4e0508d9b660a27fdf90877760f6521
+  - node: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
+    reviewed: d63fb94e1efce06f6668abab935caaaabd14436f5a20736f89667cc294395495
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "offer the cull to a structure's volume only where it has one, cleared until it is turned on"
+        body: d89c6505d168f5760de71b4ec62fd38d89b3df7663407c37aa5a0c15fbbbb49b
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "is kept in the address beside what else it holds, and leaves it once off"
+        body: 0f720741a6e5c89db0f960ee12ef21e5c47dca98dac9eff13efc03c302402d14
+  - node: 01a1b13c-1e10-748d-8008-e7e2ed4a3967
+    reviewed: 017e3734d840668129daa6afd0dd99b53438638c5928418e81d2380042ef632c
+    tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is none for a structure drawn as a point, a path, a ray or a range alone, or with neither a shape nor bounds"
+        body: 9fe07cf317440747b313f561f9169f4c34bf1a9ccda6bee1a7e5dd95b631282e
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "offer the cull to a structure's volume only where it has one, cleared until it is turned on"
+        body: d89c6505d168f5760de71b4ec62fd38d89b3df7663407c37aa5a0c15fbbbb49b
+  - node: 01a1b13c-1e10-748d-8008-e7e33e6ecd76
+    reviewed: 12ed190b87e410b4f054f5c408b4637e51717a6d627b37c3a022a26e93dcc50f
+    tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the solid of a sphere, in the frame and unit its shape names"
+        body: 64f03363779673adcb0b89ee74a6cafdca9aef906ca423c879391b6a845ee377
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the solid of an ellipsoid along its own axes"
+        body: ad6e2d5419fd03efbd0fe735617117164072457dd484ba9877c36d5bac165695
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the solid of an oriented box, to its corners"
+        body: 268e30f1086c5c48f2c40b68552ca39e5f30b89924484f902453d241bca39421
+  - node: 01a1b13c-1e10-748d-8008-e7e496894c39
+    reviewed: d73b90a162b69188708d45a9c46771be3723618ff9e8b699d17d4bc4707bf4ad
+    tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is a sky region's cells between its near and far distances"
+        body: 95327f3b5d547814f2a0efcad19dad7768ed03f9dcae608cf25aca80119228a2
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "is the cell whose centre it is, for every cell of order 6 and a few of order 12"
+        body: b5e88b4abf479b24af637f5ac87fe33e024d5c7cc02628d1cc435f398890da50
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "is the cell a point just inside each corner lies in, at the poles and seams too"
+        body: f33b0ff4aa0161f23cd5337e2091b2fb00d86d747e70d8b4090de8a31a068692
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "does not need a unit vector"
+        body: a51856182f8254725e68ddc43ec7c58ea3fa0ae0f20e483717c8e4d0da2fc0c6
+  - node: 01a1b13c-1e10-748d-8008-e7e5419cfeb6
+    reviewed: a8d410ba7e524d039a067df7ca234f6f75b15a8bf6160d73caa855e2b23fe47e
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a point's extents along their ICRS vectors, whatever frame its point is given in"
+        body: 06697c7f245de8de53b19f19cd14683985d6b1e6d6c5f81821439727b4792c88
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the box bounding a member list's members, approximate"
+        body: 515fac31e33566af398941ad8dccefdc1a408ab4e46450986978139d02c5767d
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the box a point's published extents span about it, approximate"
+        body: 54890b30a3fdcf6d3f51416968c61640f6690be64a32e68f9672e34dad283cb1
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the bounding box of a structure with no shape, approximate"
+        body: d286d572cbe32923235fbd196bf7def3d3375764a4c528ccb3653090255d1e29
+  - node: 01a1b13c-1e10-748d-8008-e7e6a6d53737
+    reviewed: 018fe936ff4a24bbef13ba2ab9c61366f936612afeb8da5bea2879ac84327dd8
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
+        body: 69773c0644b9c0c0de6b23e04fde43451e35aeb97074c468be4c91c43907094f
+  - node: 01a1b13c-1e10-748d-8008-e7e71f42aabb
+    reviewed: 0733e22659d58cffd715875dd2db7dcd14f8979d13095aab033b602f36ddf1f5
+    tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "marks each of a tile's points inside or not, by its offset from the tile's centre"
+        body: b7eddc847c87223b4a8d4b7a58eca444cee7bf41d20b80ed582d339da8f779ba
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws, and so lets the pointer name, only the points inside"
+        body: c3076ce0e359373172cdfbc97f9a1131ac47479bc13e8c6c3178002dc2c66b47
+  - node: 01a1b166-0bb4-703d-a861-7c307a08ae0b
+    reviewed: a7ad37edaf164eccc42b087ecdec2fe04312c749b7d4b8e402162d2d94901a48
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn fully opaque inside a structure the view is culled to, twice as bright as the brightest without it"
+        body: d553521c83f3f9e5e44476c577339d44374bec2a5ed7885dae7f1094b46b43c2
+  - node: 01a1b13c-1e10-748d-8008-e7e859257b94
+    reviewed: 0b794c1cc9e9db9b28e278653c25b002f60c2eda7e53bb0a5ed79cc4cdc3aa9e
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
+        body: 69773c0644b9c0c0de6b23e04fde43451e35aeb97074c468be4c91c43907094f
+  - node: 01a1b13c-1e10-748d-8008-e7e934fc10cf
+    reviewed: a35c5f0b49cf807da6580558bed132d233fdc807d61e4863f2ed629db423a897
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws none of a tile with no point inside, and counts none"
+        body: 2539751fb6668a089acf327eb0d19ec050914411306b3d4bd23261c96b08a304
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws, and so lets the pointer name, only the points inside"
+        body: c3076ce0e359373172cdfbc97f9a1131ac47479bc13e8c6c3178002dc2c66b47
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "counts in the key only the points inside, and every point once no longer culled"
+        body: a89b64b5e5d217e7e64cf34426c46b5ba1728a12d3ad641eba9fc2084ee1728d
+  - node: 01a1b13c-1e10-748d-8008-e7ea46d6c6e6
+    reviewed: ba0e5bc09cd32904a2fb855d98a4014b03262a66b49271793cf33991b7dfe7da
+    tests:
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "stays on when another structure is chosen, for that structure"
+        body: 7b50a395cc57500e1e5fea89ebaac0e7fb4857affe0a610b70574da7f3fd0a00
+  - node: 01a1b13c-1e10-748d-8008-e7eb103d71ac
+    reviewed: 4e3d928a637497b28d1c76a4cf70bec10aece98f94c2a31ac6b756b20d7455a2
+    tests:
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "is turned off when the structure's panel is closed"
+        body: 0df02b086b9f73ea953b6a5108ad807fbf80d32861466461b0b180e53cdf02d4
+  - node: 01a1b13c-1e10-748d-8008-e7ed28949521
+    reviewed: a0c9a04ab6ff8a0af77a2c6e9c73ae180f690cadeb8d5ef222483ab043f3512e
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "fetches no tile, a root neither, whose cube misses the box, nor any while culled to nothing"
+        body: b182b44022a07b7cca820763498b8339818e000db55069320be438754e39e293
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "fetches only the tiles whose cubes meet the box bounding the volume, with level of detail on or off"
+        body: 2a7e13e99544c3a51c1865be241940273932978f25ea777a09064b8dafe6ca73
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "drops the tiles held whose cubes miss it, and fetches them again once no longer culled"
+        body: 540472fe0b02c626d3612d4485fd9f544d57807d22b4ab0a4eed028a2e9874e1
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is met by a tile's cube that reaches its bounding box, and by no other"
+        body: abd1013881b2c17c09ba1b68333dedb4b83c5ba167f5b728bd1e871dfe9e0563
+  - node: 01a1b13c-1e10-748d-8008-e7eed8679d94
+    reviewed: 5aa102bb660b206fcb332d72480bf850281d58609b4523882698e8ed54f68933
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "fetches only the tiles whose cubes meet the box bounding the volume, with level of detail on or off"
+        body: 2a7e13e99544c3a51c1865be241940273932978f25ea777a09064b8dafe6ca73
+  - node: 01a1b13c-1e10-748d-8008-e7f0dcf15117
+    reviewed: 2e1f3bd4d462d047f04505dabba650ff793badc8980f92c321a36346b6307845
+    tests:
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "chooses the structure and culls to it where the address names it, as after a reload"
+        body: 4b9dfa6931b28ef4f93423b1e78503b4be64c57e2be26c9beccb89483cd22223
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "is named in the address by the structure it culls to"
+        body: 7665828ee4ed91a37092c6c24760fcc830d9489f939ec269e8731992d2510874

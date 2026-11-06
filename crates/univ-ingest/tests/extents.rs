@@ -3,18 +3,17 @@
 //! and in 6dFGS as four fibres 6 to 28 arcsec off, all within 51 km/s of its 584 km/s; point-
 //! source tolerances leave them six objects, the extent of UNGC makes them one. M51 and its
 //! companion NGC 5195, 4.6 arcmin apart within M51's extent at 446 and 455 km/s, stay two.
-#![expect(clippy::unwrap_used, reason = "a failed unwrap is the test failing")]
 
 mod common;
 mod simulated;
 
 use common::normalized_file;
-use simulated::{designation, matching_rules, ranking_rules, with_cz};
+use simulated::{designation, holding, matching_rules, ranking_rules, with_cz};
 use univ_ingest::matching::{MatchingRules, match_entries};
 use univ_ingest::ranking::rank_all;
 use univ_model::derive::Release;
-use univ_model::entry::CatalogueEntry;
-use univ_model::object::{LineOfSight, MatchMethod, MeasurementRef, Object, Resolution};
+use univ_model::entry::{CatalogueEntry, Flags};
+use univ_model::object::{LineOfSight, MatchMethod, MeasurementRef, Resolution};
 
 const IC5052: [(&str, &str); 8] = [
     ("updated-nearby-galaxies", "IC5052"),
@@ -47,11 +46,9 @@ fn recorded() -> Vec<CatalogueEntry> {
     entries
 }
 
-fn holding<'a>(objects: &'a [Object], source: &str, id: &str) -> &'a Object {
-    objects
-        .iter()
-        .find(|o| o.entry(&designation(source, id)).is_some())
-        .unwrap()
+/// `flags` without the flags `names`.
+fn without(flags: &Flags, names: &[&str]) -> Flags {
+    flags.iter().filter(|(n, _)| !names.contains(n)).collect()
 }
 
 fn without_extents() -> MatchingRules {
@@ -87,7 +84,7 @@ fn ic_5052_is_one_object_of_its_pieces_within_its_published_extent() {
     let pieces: Vec<_> = ic5052
         .entries
         .iter()
-        .filter_map(|e| match &e.resolved_by {
+        .filter_map(|e| match &*e.resolved_by {
             Resolution::Match(r) if r.method == MatchMethod::WithinExtent => Some(r),
             _ => None,
         })
@@ -120,6 +117,27 @@ fn ic_5052_is_one_object_of_its_pieces_within_its_published_extent() {
         "{p:?}"
     );
     assert!((p.distance_mpc - 6.0).abs() < 0.5, "{}", p.distance_mpc);
+}
+
+#[test]
+fn a_galaxy_that_took_pieces_takes_its_own_position_whatever_the_order_of_its_entries() {
+    // The 6dFGS fibres read first, as an HI source sorting before UNGC would be: the galaxy still
+    // anchors the object, and the position is never a piece's.
+    let mut entries = recorded();
+    entries.sort_by_key(|e| e.designation.source.as_str() != "sixdfgs-dr3");
+    let mut m = match_entries(&matching_rules(), entries);
+    rank_all(&mut m.objects, &ranking_rules(), &Release::planck_2018());
+    for galaxy in ["IC5052", "NGC5194"] {
+        let o = holding(&m.objects, "updated-nearby-galaxies", galaxy);
+        let p = o.preferred_position.as_ref().unwrap();
+        assert_eq!(
+            p.entry,
+            designation("updated-nearby-galaxies", galaxy),
+            "{o:#?}"
+        );
+        assert!(matches!(&*o.entries[0].resolved_by, Resolution::Anchor));
+        assert_eq!(o.entries[0].entry.designation, p.entry);
+    }
 }
 
 #[test]
@@ -211,8 +229,7 @@ fn a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_a
     let entries: Vec<_> = recorded()
         .into_iter()
         .map(|mut e| {
-            e.flags.remove("a26");
-            e.flags.remove("Riso");
+            e.flags = without(&e.flags, &["a26", "Riso"]);
             e
         })
         .collect();
@@ -232,7 +249,7 @@ fn a_piece_at_another_velocity_or_without_one_or_a_galaxy_without_a_size_stays_a
             if e.designation == designation("updated-nearby-galaxies", "IC5052") {
                 e.velocity = None;
             }
-            e.flags.remove("Riso");
+            e.flags = without(&e.flags, &["Riso"]);
             e
         })
         .collect();
@@ -253,4 +270,39 @@ fn an_extent_rule_without_a_basis_or_with_a_length_unit_is_refused() {
     let mut rules = matching_rules();
     rules.extents.as_mut().unwrap().sources[0].unit = univ_model::units::Unit::Megaparsec;
     assert_eq!(rules.check().unwrap_err().0, "extents.sources[0].unit");
+}
+
+#[test]
+fn a_smaller_galaxy_that_takes_a_larger_ones_group_hosts_it_and_gives_the_position() {
+    // A 2MRS galaxy of radius 100 arcsec (Riso 2.0) takes a 6dFGS fibre 20 arcsec east first, as
+    // the larger. A UNGC galaxy of radius 60 arcsec (a26 2.0 arcmin) 45 arcsec east then takes
+    // that whole group. UNGC's galaxy is the host: it anchors the object and gives its position.
+    let (ra, dec) = (150.0, 2.0);
+    let at = |src: &str, id: &str, east: f64, flag: Option<(&str, &str)>| {
+        let (r, d) = simulated::offset(ra, dec, east, 0.0);
+        let mut e = with_cz(simulated::entry(src, id, r, d), 500.0, 10.0);
+        if let Some(f) = flag {
+            e.flags = [f].into_iter().collect();
+        }
+        e
+    };
+    let entries = vec![
+        at("twomrs", "big", 0.0, Some(("Riso", "2.0"))),
+        at("sixdfgs-dr3", "fibre", 20.0, None),
+        at(
+            "updated-nearby-galaxies",
+            "UNGC1",
+            45.0,
+            Some(("a26", "2.0")),
+        ),
+    ];
+    let mut m = match_entries(&matching_rules(), entries);
+    rank_all(&mut m.objects, &ranking_rules(), &Release::planck_2018());
+    assert_eq!(m.objects.len(), 1, "{:#?}", m.objects);
+    // Two joins by the extent rule: the fibre to 2MRS's galaxy, then that group to UNGC's.
+    assert_eq!(m.report.pieces_within_extent, 2);
+    let o = &m.objects[0];
+    let ungc = designation("updated-nearby-galaxies", "UNGC1");
+    assert_eq!(o.entries[0].entry.designation, ungc, "{o:#?}");
+    assert_eq!(o.preferred_position.as_ref().unwrap().entry, ungc);
 }

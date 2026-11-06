@@ -2,12 +2,15 @@
 //! each entry kept with how it was resolved, the candidate matches kept apart from it, its
 //! designations and names with their sources, and its preferred measurements.
 
+mod held_resolution;
 mod preferred;
 mod relation;
 
 use serde::{Deserialize, Serialize};
+use thin_vec::ThinVec;
 use thiserror::Error;
 
+pub use held_resolution::HeldResolution;
 pub use preferred::{
     Decided, FractionalUncertainty, MeasurementRef, MethodRank, NotPlacedReason, Placement,
     PositionClass, PreferredDistance, PreferredPosition,
@@ -80,6 +83,9 @@ pub enum MatchMethod {
     /// As a piece of a nearby galaxy: within the extent its source publishes, at a heliocentric
     /// cz agreeing with the galaxy's.
     WithinExtent,
+    /// As a fibre of one survey on one nearby galaxy that no source gives an extent: within the
+    /// rule's angle and heliocentric cz of every fibre of the galaxy already joined.
+    FibresOfOneGalaxy,
 }
 
 /// The difference along the line of sight between two matched entries.
@@ -113,7 +119,8 @@ pub struct MatchRecord {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "by")]
 pub enum Resolution {
-    /// The entry the object was resolved around: the first of its entries in the order read.
+    /// The entry the object was resolved around: the first of its entries in the order read,
+    /// or, for a nearby galaxy that took pieces, the galaxy's own entry.
     Anchor,
     /// A published cross-identification: the entry shares the identifier `identifier` of
     /// `scheme`, such as a Gaia `source_id` or a HIP number, with `via`.
@@ -131,7 +138,7 @@ pub enum Resolution {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ObjectEntry {
     pub entry: CatalogueEntry,
-    pub resolved_by: Resolution,
+    pub resolved_by: HeldResolution,
 }
 
 /// A common name, such as M31 or the Large Magellanic Cloud, with the source that published it.
@@ -164,39 +171,49 @@ pub struct Object {
     #[serde(default)]
     pub kind: ObjectKind,
     /// Its catalogue entries, the anchor first, each with how it was resolved.
-    pub entries: Vec<ObjectEntry>,
-    /// Each designation its entries carry, with the source that gave it: an entry's own, and
-    /// any its source gives beside it, such as the HIP number of the Gaia–Hipparcos table.
-    pub designations: Vec<Designation>,
+    ///
+    /// This and the lists below are thin: 8 bytes each, as an object is held for each of tens
+    /// of millions, and most have one entry and none of the rest.
+    pub entries: ThinVec<ObjectEntry>,
+    /// The designations its entries' sources give beside the entries' own, such as the HIP
+    /// number of the Gaia–Hipparcos table; [`Object::designations`] gives every one. An entry's
+    /// own is not copied here: an object is held for each of tens of millions.
+    #[serde(default, skip_serializing_if = "ThinVec::is_empty")]
+    pub given: ThinVec<Designation>,
     /// Common names, each with the source that published it.
-    pub names: Vec<CommonName>,
+    pub names: ThinVec<CommonName>,
     /// Candidate matches to other objects.
-    pub links: Vec<CandidateLink>,
+    pub links: ThinVec<CandidateLink>,
     /// Typed relations to other objects, such as a group's dominant galaxy: neither object
     /// lends the other a measurement.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub relations: Vec<Relation>,
+    #[serde(default, skip_serializing_if = "ThinVec::is_empty")]
+    pub relations: ThinVec<Relation>,
     pub preferred_distance: Option<PreferredDistance>,
     pub preferred_position: Option<PreferredPosition>,
     pub placement: Placement,
 }
 
 impl Object {
+    /// Each designation its entries carry, with the source that gave it: each entry's own, in
+    /// the order of its entries, then those their sources give beside them.
+    pub fn designations(&self) -> impl Iterator<Item = &Designation> {
+        self.entries
+            .iter()
+            .map(|e| &e.entry.designation)
+            .chain(&self.given)
+    }
+
     /// An object of `entries`, unranked: no preferred measurement yet, and not placed for
     /// lack of a distance until a ranking gives one.
     #[must_use]
-    pub fn new(entries: Vec<ObjectEntry>) -> Self {
-        let designations = entries
-            .iter()
-            .map(|e| e.entry.designation.clone())
-            .collect();
+    pub fn new(entries: impl Into<ThinVec<ObjectEntry>>) -> Self {
         Self {
             kind: ObjectKind::default(),
-            entries,
-            designations,
-            names: Vec::new(),
-            links: Vec::new(),
-            relations: Vec::new(),
+            entries: entries.into(),
+            given: ThinVec::new(),
+            names: ThinVec::new(),
+            links: ThinVec::new(),
+            relations: ThinVec::new(),
             preferred_distance: None,
             preferred_position: None,
             placement: Placement::NotPlaced {

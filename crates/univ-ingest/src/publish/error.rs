@@ -3,6 +3,7 @@
 use std::fmt;
 
 use univ_model::release::D1_CAP_BYTES;
+use univ_model::release::shards::Database;
 
 use super::Latest;
 use crate::release::decimal_bytes;
@@ -22,9 +23,11 @@ pub enum PublishError {
     Pruned { number: u32, pruned_at: String },
     /// `latest` points to a newer release.
     NotNewer { number: u32, latest: u32 },
-    /// The release's rows and those of the releases not pruned are estimated beyond the cap.
+    /// The release's rows and those of the releases not pruned are estimated beyond the cap in
+    /// one database.
     OverCap {
         number: u32,
+        database: Database,
         /// The release's own estimate, bytes.
         this: u64,
         /// The estimates of the other releases not pruned, summed, bytes.
@@ -32,6 +35,8 @@ pub enum PublishError {
         /// How many releases those are.
         releases: u64,
     },
+    /// The release needs more object shards than Univ Server binds.
+    TooManyShards { number: u32, needs: u32, binds: u32 },
     /// The journal cannot be used.
     Journal { number: u32, problem: String },
     /// An upload or check failed part way; the next run continues from the journal.
@@ -70,16 +75,28 @@ impl fmt::Display for PublishError {
             ),
             Self::OverCap {
                 number,
+                database,
                 this,
                 others,
                 releases,
             } => write!(
                 f,
-                "release {number} is not published: its D1 rows are estimated at {this} bytes and \
-                 those of the {releases} release(s) not pruned at {others} bytes, together {} \
-                 bytes, beyond the {} cap of {D1_CAP_BYTES} bytes; prune a release first",
+                "release {number} is not published: its rows in {database} are estimated at \
+                 {this} bytes and those of the {releases} release(s) not pruned at {others} \
+                 bytes, together {} bytes, beyond the {} cap of {D1_CAP_BYTES} bytes; prune a \
+                 release first",
                 this + others,
                 decimal_bytes(D1_CAP_BYTES)
+            ),
+            Self::TooManyShards {
+                number,
+                needs,
+                binds,
+            } => write!(
+                f,
+                "release {number} is not published: it needs {needs} object shards and Univ \
+                 Server binds {binds}; bind more in both wrangler.toml files, or build it with a \
+                 larger shard budget"
             ),
             Self::Journal { number, problem } => {
                 write!(f, "release {number} is not published: {problem}")

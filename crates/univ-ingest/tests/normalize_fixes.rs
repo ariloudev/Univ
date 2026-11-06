@@ -70,7 +70,7 @@ fn a_sentinel_error_is_none_reported_and_the_row_kept_where_a_fix_says_so() {
     let with = twomrs_with_error("-1", true);
     assert_eq!(with.report.left_out_total(), 0);
     let r = &entry(&with, "00473313-2517196").redshifts[0];
-    assert_eq!(r.cmb.heliocentric.uncertainty, Uncertainty::NoneReported);
+    assert_eq!(r.cmb.measured.uncertainty, Uncertainty::NoneReported);
     assert_eq!(with.report.fixes.last().map(|f| f.entries_changed), Some(1));
     // Any other negative error still leaves the row out.
     let other = twomrs_with_error("-2", true);

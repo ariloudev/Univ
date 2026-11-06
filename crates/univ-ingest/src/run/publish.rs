@@ -16,9 +16,8 @@ use crate::publish::{
 };
 use crate::release::release_dir;
 
-/// Where Wrangler keeps local D1 and R2 by default: what `wrangler dev` reads from the
-/// repository root.
-pub const DEFAULT_PERSIST: &str = ".wrangler/state";
+/// The local D1 and R2 that releases are published to: the real local state.
+pub const DEFAULT_PERSIST: &str = univ_model::release::REAL_LOCAL_STATE;
 /// The Wrangler configuration naming the local D1 and R2 bindings.
 pub const DEFAULT_CONFIG: &str = "wrangler.toml";
 
@@ -63,7 +62,8 @@ pub struct Shown<'a> {
     stop: &'a AtomicBool,
     /// The files done by this run of each kind, in the order first seen.
     files: Vec<(&'static str, u64)>,
-    /// The rows of the release each table holds once checked by this run, in the order checked.
+    /// The rows of the release each table holds once checked by this run, in every database,
+    /// in the order first checked.
     tables: Vec<(&'static str, u64)>,
 }
 
@@ -128,7 +128,12 @@ impl Progress for Shown<'_> {
             Some((_, n)) => *n += 1,
             None => self.files.push((kind, 1)),
         }
-        self.tables.extend(file.rows);
+        if let Some((table, rows)) = file.rows {
+            match self.tables.iter_mut().find(|(t, _)| *t == table) {
+                Some((_, n)) => *n += rows,
+                None => self.tables.push((table, rows)),
+            }
+        }
         self.sink.emit(Event::Uploaded {
             stage: self.stage,
             step: file.line,

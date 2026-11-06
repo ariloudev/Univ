@@ -72,6 +72,7 @@ fn a_payload_recorded_after_normalization_drops_the_report_it_no_longer_matches(
         bytes: 3,
         retrieved: "2026-11-03T00:00:00Z".to_owned(),
         rows: Some(1),
+        prepared_by: None,
     };
     Provenance::record(dir.path(), &source(), &payload).unwrap();
     assert_eq!(Provenance::read(dir.path()).unwrap().normalization, None);
@@ -87,6 +88,7 @@ fn payloads_are_kept_in_item_order_whatever_order_they_arrive_in() {
         bytes: 3,
         retrieved: "2026-11-03T00:00:00Z".to_owned(),
         rows: Some(1),
+        prepared_by: None,
     };
     for item in [
         "row count",

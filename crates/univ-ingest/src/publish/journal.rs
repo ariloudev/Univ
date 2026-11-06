@@ -10,10 +10,10 @@
 //! manifest_sha256: 9f2c…
 //! started_at: 2026-11-03T12:00:00Z
 //! done:
-//! - path: d1/0000-schema.sql
+//! - path: d1/catalogue/0000-schema.sql
 //!   target: d1
 //!   sha256: 41ab…
-//!   checked: schema version 1
+//!   checked: schema version 5 in the catalogue database
 //!   at: 2026-11-03T12:00:01Z
 //! - path: rules/matching.yaml
 //!   target: r2

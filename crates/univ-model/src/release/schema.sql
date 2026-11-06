@@ -1,8 +1,16 @@
--- The D1 schema of Univ releases, version 3 (univ_model::release::SCHEMA_VERSION).
+-- The D1 schema of Univ releases, version 5 (univ_model::release::SCHEMA_VERSION).
 --
 -- Version 3 adds source_details and structure_details and changes no table of version 2.
+-- Version 4 adds source_terms and changes no table of version 3.
+-- Version 5 adds object_shards, shard_cells and release_shards and changes no table of version 4.
 --
--- One database holds every published release. A table that belongs to one release carries a
+-- Object shards (version 5). Every database, the catalogue database and each object shard, is
+-- given this whole schema, and holds only its own rows of each release: an object's rows in
+-- objects, entries, measurements, designations and object_cells are in one object shard
+-- (univ_model::release::shards::SHARD_TABLES), and every other table's rows, with the index of
+-- the shards (object_shards, shard_cells, release_shards), are in the catalogue database.
+--
+-- Each database holds every published release. A table that belongs to one release carries a
 -- `release` column that leads its primary key: publishing release n + 1 only inserts rows whose
 -- release is n + 1, which no read of release n selects, and `latest` moves in one write once
 -- they are all in. Pruning release n deletes its rows from those tables and sets its
@@ -447,4 +455,51 @@ CREATE TABLE IF NOT EXISTS structure_details (
   outline TEXT,
   rescaled TEXT,
   PRIMARY KEY (release, id)
+) WITHOUT ROWID;
+
+-- The conditions of a source's terms beyond its status (version 4), source its sources.n,
+-- written only for a source that has one: the quoted clause limiting it to non-commercial use;
+-- permission, JSON {"asked_of", "asked_on"} of whom permission was asked of and when (YYYY-MM-DD),
+-- while its status is permission_pending; and catalogue_uncertainties, JSON array of the
+-- uncertainties the source states once for its whole catalogue, each {"quantity", "value",
+-- "unit", "times_one_plus_z", "basis"}, which every value of that quantity takes as an estimated
+-- uncertainty.
+CREATE TABLE IF NOT EXISTS source_terms (
+  release INTEGER NOT NULL,
+  source INTEGER NOT NULL,
+  non_commercial TEXT,
+  permission TEXT,
+  catalogue_uncertainties TEXT,
+  PRIMARY KEY (release, source)
+) WITHOUT ROWID;
+
+-- The object shard of every object of a release (version 5), in the catalogue database: a read
+-- by id goes to that shard alone.
+CREATE TABLE IF NOT EXISTS object_shards (
+  release INTEGER NOT NULL,
+  id INTEGER NOT NULL,
+  shard INTEGER NOT NULL,
+  PRIMARY KEY (release, id)
+) WITHOUT ROWID;
+
+-- The level-0 cells of each scale domain (term) an object shard holds (version 5): those whose
+-- Morton code (univ_model::release::shards::morton) lies from first to last. A volume query
+-- reads only the shards whose cells its box can meet.
+CREATE TABLE IF NOT EXISTS shard_cells (
+  release INTEGER NOT NULL,
+  shard INTEGER NOT NULL,
+  domain INTEGER NOT NULL,
+  first INTEGER NOT NULL,
+  last INTEGER NOT NULL,
+  PRIMARY KEY (release, shard, domain)
+) WITHOUT ROWID;
+
+-- Each object shard of a release (version 5): its objects and the CON-3 estimate of its rows,
+-- which publishing sums over the releases not pruned to check that shard's database.
+CREATE TABLE IF NOT EXISTS release_shards (
+  release INTEGER NOT NULL,
+  shard INTEGER NOT NULL,
+  objects INTEGER NOT NULL,
+  estimated_bytes INTEGER NOT NULL,
+  PRIMARY KEY (release, shard)
 ) WITHOUT ROWID;

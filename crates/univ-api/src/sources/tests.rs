@@ -72,6 +72,47 @@ fn the_terms_of_use_and_credit_are_given_as_the_definition_states_them() {
 }
 
 #[test]
+fn the_terms_give_the_redistribution_status_and_any_non_commercial_clause() {
+    let db = db();
+    let permitted = body(&get(&db, "/v1/sources/hipparcos-2007"));
+    // Terms that allow commercial use and grant redistribution carry neither mark.
+    assert_eq!(
+        permitted["terms"]["redistribution"],
+        "permitted_with_credit"
+    );
+    assert!(permitted["terms"].get("non_commercial").is_none());
+    assert!(permitted["terms"].get("permission").is_none());
+    db.exec(
+        "UPDATE sources SET redistribution = 'permission_pending' WHERE release = 2 AND n = 0; \
+         INSERT INTO source_terms VALUES (2, 0, 'Tabular data are under CC-BY-NC licence', \
+         '{\"asked_of\":\"WFAU, mar@roe.ac.uk\",\"asked_on\":\"2026-11-05\"}', NULL);",
+    );
+    let pending = body(&get(&db, "/v1/sources/hipparcos-2007"));
+    let terms = &pending["terms"];
+    assert_eq!(terms["redistribution"], "permission_pending");
+    assert_eq!(
+        terms["non_commercial"],
+        "Tabular data are under CC-BY-NC licence"
+    );
+    assert_eq!(
+        terms["permission"],
+        json!({"asked_of": "WFAU, mar@roe.ac.uk", "asked_on": "2026-11-05"})
+    );
+    assert!(terms.get("permission_to_ask").is_none());
+    // A request not yet sent names whom it is for, and no date.
+    db.exec(
+        "UPDATE source_terms SET permission = '{\"asked_of\":\"WFAU, mar@roe.ac.uk\"}' \
+         WHERE release = 2 AND source = 0;",
+    );
+    let unsent = body(&get(&db, "/v1/sources/hipparcos-2007"));
+    assert!(unsent["terms"].get("permission").is_none());
+    assert_eq!(
+        unsent["terms"]["permission_to_ask"],
+        json!({"asked_of": "WFAU, mar@roe.ac.uk"})
+    );
+}
+
+#[test]
 fn the_query_and_the_cuts_are_the_ones_the_fetch_ran_verbatim() {
     let source = read("/v1/sources/hipparcos-2007");
     assert_eq!(

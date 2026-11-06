@@ -1,6 +1,8 @@
 //! Acquiring a whole source: every chunk or file fetched and recorded, then checked against the
 //! number of rows the source must hold, so a provider's silent row limit never passes for a
-//! complete source.
+//! complete source. A prepared source is checked against its definition instead.
+
+mod prepared;
 
 use std::collections::HashSet;
 use std::ffi::OsStr;
@@ -53,17 +55,36 @@ pub enum AcquireError {
     },
     #[error("{source_id}: {} is not in the repository", path.display())]
     NotInRepository { source_id: SourceId, path: PathBuf },
+    #[error("{source_id}: {} is not there; {script} prepares it", path.display())]
+    NotPrepared {
+        source_id: SourceId,
+        path: PathBuf,
+        script: String,
+    },
+    #[error(
+        "{source_id}: {} has the {what} {found} where its definition gives {expected}, so it is \
+         not the file the definition names and is not read",
+        path.display()
+    )]
+    PreparedDiffers {
+        source_id: SourceId,
+        path: PathBuf,
+        what: &'static str,
+        expected: String,
+        found: String,
+    },
 }
 
 /// Fetches every chunk or file of `definition` into its directory under `cache`, records each
 /// payload's provenance before it is renamed into place, and checks the rows against the
 /// source's count where it has one. A source kept in the repository is found under
-/// `repository`.
+/// `repository`; a prepared source's file is found in its directory and checked, never fetched.
 ///
 /// # Errors
 ///
 /// Fails when a chunk or file cannot be fetched, provenance cannot be written, the rows fall
-/// short of or exceed the count, or a repository source's path does not exist.
+/// short of or exceed the count, a repository source's path does not exist, or a prepared file
+/// is missing or differs from its definition.
 pub async fn acquire<C: Clock>(
     fetcher: &Fetcher<C>,
     definition: &SourceDefinition,
@@ -82,6 +103,10 @@ pub async fn acquire<C: Clock>(
         return Ok(Acquired { files: vec![path] });
     }
     let dir = cache.join(source.as_str());
+    if let Access::Prepared(prepared) = &definition.access {
+        let file = prepared::acquire_prepared(definition, &dir, prepared)?;
+        return Ok(Acquired { files: vec![file] });
+    }
     std::fs::create_dir_all(&dir).map_err(|e| disk(source, &e))?;
     let known = Provenance::read(&dir).map_err(|e| disk(source, &e))?;
     let run = Run {

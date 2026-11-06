@@ -69,6 +69,10 @@ requirements:
     criteria:
       - key: 01a19f23-636e-7035-8185-ab9e42fa2c14
         name: "A Gaia position is preferred over a Hipparcos one, and either over a survey position, unless a published uncertainty says otherwise."
+      - key: 01a1adfa-315f-708f-8cd8-bf4bc1cdc275
+        name: "An object that holds pieces of a nearby galaxy takes the position of the galaxy whose extent took them, never a piece's."
+      - key: 01a1adfa-315f-708f-8cd8-bf4cdd697c86
+        name: "Among positions without a published uncertainty, a position from a 21 cm survey's beam ranks after an optical or infrared survey's."
   - key: 01a19f23-636e-7035-8185-ab9fe065861e
     statement:
       form: unwanted

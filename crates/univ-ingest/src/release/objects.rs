@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use serde::Serialize;
 use univ_model::cosmology::Cosmology;
-use univ_model::derive::{DerivedPosition, MODEL_VERSION};
+use univ_model::derive::DerivedPosition;
 use univ_model::ids::{Designation, SourceId};
 use univ_model::ledger::Ledger;
 use univ_model::object::{FractionalUncertainty, MeasurementRef, Object, Placement};
@@ -116,7 +116,7 @@ fn preferred_native(
         MeasurementRef::Redshift { index, .. } => {
             entry.redshifts.get(*index).map(|z| (z.cmb.value, None))
         }
-        MeasurementRef::Parallax { .. } => entry.parallax.map(|p| (p.native, None)),
+        MeasurementRef::Parallax { .. } => entry.parallax.as_deref().map(|p| (p.native, None)),
     }
 }
 
@@ -170,12 +170,12 @@ impl<'a> ObjectWriter<'a> {
                 .or_default() += 1;
         }
         let release = self.numbering.release;
-        let designations: BTreeSet<&Designation> = object.designations.iter().collect();
+        let designations: BTreeSet<&Designation> = object.designations().collect();
         for d in designations {
             w.add(&DesignationRow {
                 release,
                 source: self.numbering.sources.n(&d.source),
-                identifier: d.identifier.clone(),
+                identifier: String::from(&*d.identifier),
                 object_id: id,
             })?;
         }
@@ -288,7 +288,7 @@ impl<'a> ObjectWriter<'a> {
                 row.preferred_measurement,
                 row.preferred_velocity,
             ) = fraction(&p.uncertainty);
-            if let Some((m, u)) = &p.runner_up {
+            if let Some((m, u)) = p.runner_up.as_deref() {
                 let (entry, quantity, n) = reference(object, m);
                 row.runner_up_entry = entry;
                 row.runner_up_quantity = Some(terms.id(quantity));
@@ -347,8 +347,8 @@ impl<'a> ObjectWriter<'a> {
         {
             lost.push("its native value or assumed cosmology");
         }
-        if position.cosmology() != self.cosmology || position.model_version() != MODEL_VERSION {
-            lost.push("the release cosmology or model version");
+        if position.cosmology() != self.cosmology {
+            lost.push("the release cosmology");
         }
         if Some(direction.published_in()) != entry_frame
             || Some(direction.icrs().ra) != row.ra

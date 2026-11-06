@@ -17,6 +17,7 @@ use release_fixture::{build_next, fixture, read_manifest};
 use univ_ingest::publish::journal::Journal;
 use univ_ingest::publish::{Latest, PublishError};
 use univ_model::release::D1_CAP_BYTES;
+use univ_model::release::shards::Database;
 
 /// What `latest` points to, by D1.
 fn latest(store: &MemoryStore) -> Option<i64> {
@@ -63,7 +64,7 @@ fn a_row_altered_on_its_way_to_d1_stops_the_publish_naming_its_table_and_measure
     build_next(&f);
     let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
     let mut store = MemoryStore {
-        observer: Some(Box::new(|op, db, _| {
+        observer: Some(Box::new(|op, db, _, _| {
             if matches!(op, Op::Execute(name) if name.contains("-sources-")) {
                 db.execute(
                     "UPDATE sources SET title = title || '!' WHERE release = 1 AND id = \
@@ -145,6 +146,7 @@ fn a_release_beyond_the_cap_with_those_not_pruned_is_refused_with_both_estimates
         refused,
         PublishError::OverCap {
             number: 2,
+            database: Database::Catalogue,
             this,
             others,
             releases: 1
@@ -152,8 +154,9 @@ fn a_release_beyond_the_cap_with_those_not_pruned_is_refused_with_both_estimates
     );
     let message = refused.to_string();
     assert!(
-        message.contains(&format!("estimated at {this} bytes"))
-            && message.contains(&format!("1 release(s) not pruned at {others} bytes"))
+        message.contains(&format!(
+            "its rows in the catalogue database are estimated at {this} bytes"
+        )) && message.contains(&format!("1 release(s) not pruned at {others} bytes"))
             && message.contains("beyond the 10 GB cap of 10000000000 bytes"),
         "{message}"
     );
@@ -231,4 +234,99 @@ fn a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled() {
     assert_eq!(recorded, moved);
     assert_eq!(store.uploaded(), Vec::<String>::new());
     assert_eq!(latest(&store), Some(2));
+}
+
+#[test]
+fn a_release_beyond_the_cap_in_one_object_shard_is_refused_naming_the_shard() {
+    let f = fixture();
+    build_next(&f);
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    publishing(
+        &mut store,
+        1,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap();
+    // Release 1 as if its shard 1 took nearly all of the cap.
+    let others = D1_CAP_BYTES - 10;
+    store
+        .db
+        .execute(
+            &format!(
+                "UPDATE release_shards SET estimated_bytes = {others} WHERE release = 1 AND \
+                 shard = 1"
+            ),
+            [],
+        )
+        .unwrap();
+    let built = build_next(&f);
+    store.reset();
+    let refused = publishing(
+        &mut store,
+        2,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap_err();
+    assert_eq!(
+        refused,
+        PublishError::OverCap {
+            number: 2,
+            database: Database::Shard(1),
+            this: built.manifest.shards[1].d1.estimated_bytes,
+            others,
+            releases: 1
+        }
+    );
+    assert!(
+        refused
+            .to_string()
+            .contains("its rows in object shard 1 are estimated at")
+    );
+    assert_eq!(store.uploaded(), Vec::<String>::new());
+}
+
+#[test]
+fn a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload() {
+    let f = fixture();
+    let built = build_next(&f);
+    let needs = u32::try_from(built.manifest.shards.len()).unwrap();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore {
+        bound: needs - 1,
+        ..MemoryStore::default()
+    };
+    let refused = publishing(
+        &mut store,
+        1,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap_err();
+    assert_eq!(
+        refused,
+        PublishError::TooManyShards {
+            number: 1,
+            needs,
+            binds: needs - 1
+        }
+    );
+    let message = refused.to_string();
+    assert!(
+        message.contains(&format!(
+            "it needs {needs} object shards and Univ Server binds {}",
+            needs - 1
+        )),
+        "{message}"
+    );
+    assert_eq!(store.uploaded(), Vec::<String>::new());
+    assert!(store.r2.is_empty() && store.shards.is_empty());
 }

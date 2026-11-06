@@ -805,7 +805,7 @@ checks:
         fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
 
   - id: d1-budget
-    title: The manifest's D1 estimate within the 4.5 GB release budget
+    title: The manifest's D1 estimate of each database within the 4.5 GB release budget
     severity: fail
     select: { kind: d1_estimate }
     expect: { at_most: 4500000000 }
@@ -813,8 +813,9 @@ checks:
       - paper: "univ-model release manifest, CON-3"
         locator: "crates/univ-model/src/release/manifest.rs, RELEASE_BUDGET_BYTES"
         quote: >-
-          "The most D1 storage a build lets one release take: under half the cap, so release n + 1
-          is published beside release n" (4,500,000,000 bytes; the CON-3 cap is 10 GB)
+          "The most D1 storage a build lets one release take in one database: under half the cap,
+          so release n + 1 is published beside release n" (4,500,000,000 bytes; the CON-3 cap is
+          10 GB)
         fetched: "this repository, crates/univ-model/src/release/manifest.rs"
 
   - id: fingerprints

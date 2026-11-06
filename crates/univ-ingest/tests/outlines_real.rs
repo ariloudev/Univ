@@ -4,8 +4,8 @@
 //!
 //! `cargo test --release -p univ-ingest --test outlines_real -- --ignored --nocapture`
 //!
-//! `UNIV_INGEST_CACHE` names the cache holding `cf4pp-density/` (default: the workspace's
-//! `.cache/univ-ingest`), and `UNIV_INGEST_CATALOGUES` the cache holding the catalogues' chunks
+//! `UNIV_INGEST_CACHE` names the cache holding `cf4pp-density/` (default: the Univ home folder's
+//! `downloads/univ-ingest`), and `UNIV_INGEST_CATALOGUES` the cache holding the catalogues' chunks
 //! (default: the same).
 
 mod common;

@@ -57,6 +57,53 @@ export function corners(order: number, cell: number): [Vec3, Vec3, Vec3, Vec3] {
 /** The centre of cell `cell` of `order`. */
 export const centreOf = (order: number, cell: number): Vec3 => across(order, cell, 0.5, 0.5);
 
+/** `v`'s bits spread to the even bits of the result: by 32-bit masks for a column or row under
+ * 2^15, as at the orders sky regions use, and by arithmetic beyond, past 32 bits. */
+function spread(v: number): number {
+  if (v < 0x8000) {
+    let x = v;
+    x = (x | (x << 8)) & 0x00ff00ff;
+    x = (x | (x << 4)) & 0x0f0f0f0f;
+    x = (x | (x << 2)) & 0x33333333;
+    return (x | (x << 1)) & 0x55555555;
+  }
+  let out = 0;
+  for (let bit = 0, rest = v; rest > 0; bit += 1, rest = Math.floor(rest / 2)) out += (rest % 2) * 4 ** bit;
+  return out;
+}
+
+/** The cell of `order` (at most 24, whose cells' numbers stay exact) that holds the direction of
+ * `(x, y, z)`, `norm` long and not zero: Univ Model's `healpix::hash`, after healpix_cxx's `loc2pix`. By numbers,
+ * not a vector, so that culling millions of points allocates nothing. */
+export function cellAt(order: number, x: number, y: number, z: number, norm: number): number {
+  const side = 2 ** order;
+  const zn = z / norm;
+  const za = Math.abs(zn);
+  const tt = (((Math.atan2(y, x) / (Math.PI / 2)) % 4) + 4) % 4;
+  if (za <= 2 / 3) {
+    const t1 = side * (0.5 + tt);
+    const t2 = side * zn * 0.75;
+    const jp = Math.floor(t1 - t2);
+    const jm = Math.floor(t1 + t2);
+    const ifp = Math.floor(jp / side);
+    const ifm = Math.floor(jm / side);
+    const face = ifp === ifm ? ifp | 4 : ifp < ifm ? ifp : ifm + 8;
+    return face * side * side + spread(jm % side) + 2 * spread(side - (jp % side) - 1);
+  }
+  const ntt = Math.min(Math.floor(tt), 3);
+  const tp = tt - ntt;
+  // Near a pole 1 − |z| loses digits: the sine of the colatitude keeps them.
+  const tmp = za > 0.99 ? (side * (Math.sqrt(x * x + y * y) / norm)) / Math.sqrt((1 + za) / 3) : side * Math.sqrt(3 * (1 - za));
+  const jp = Math.min(Math.floor(tp * tmp), side - 1);
+  const jm = Math.min(Math.floor((1 - tp) * tmp), side - 1);
+  if (zn >= 0) return ntt * side * side + spread(side - jm - 1) + 2 * spread(side - jp - 1);
+  return (ntt + 8) * side * side + spread(jp) + 2 * spread(jm);
+}
+
+/** The cell of `order` (at most 24) that holds the direction of `v`, which need
+ * not be a unit vector but must not be zero. */
+export const cellOf = (order: number, v: Vec3): number => cellAt(order, v[0], v[1], v[2], Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]));
+
 /** A cell's corners across it, south, east, north and west; its edges run from each to the next. */
 const CORNERS: readonly (readonly [number, number])[] = [
   [0, 0],

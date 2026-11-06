@@ -91,7 +91,7 @@ impl EntryField {
     #[must_use]
     pub fn read(self, entry: &CatalogueEntry) -> Option<&str> {
         let text = match self {
-            Self::Identifier => Some(entry.designation.identifier.as_str()),
+            Self::Identifier => Some(&*entry.designation.identifier),
             Self::Name => entry.name.as_deref(),
             Self::GroupId => entry.group_id.as_deref(),
         }?;
@@ -189,6 +189,15 @@ pub struct PairRule {
     #[serde(default)]
     pub nearby: Option<NearbyTolerance>,
     pub basis: String,
+}
+
+impl PairRule {
+    /// The widest angle the pair matches at, its nearby tolerance included, degrees.
+    #[must_use]
+    pub fn widest_degrees(&self) -> f64 {
+        let nearby = self.nearby.as_ref().map(|n| n.angular_tolerance_arcsec);
+        self.angular_tolerance_arcsec.max(nearby.unwrap_or(0.0)) / 3_600.0
+    }
 }
 
 /// What comparing two entries under a pair rule found: within the tolerances, with this
@@ -364,17 +373,11 @@ impl MatchingRules {
         table
     }
 
-    /// The largest angular tolerance of any pair, degrees: the radius the sky index searches.
+    /// The line-of-sight factor of a difference `delta` against its tolerance `tolerance`:
+    /// 1 when they agree exactly, falling to 0 at the tolerance, by the rule's exponent.
     #[must_use]
-    pub fn search_radius_degrees(&self) -> f64 {
-        self.pairs
-            .iter()
-            .flat_map(|p| {
-                std::iter::once(p.angular_tolerance_arcsec)
-                    .chain(p.nearby.as_ref().map(|n| n.angular_tolerance_arcsec))
-            })
-            .map(|t| t / 3_600.0)
-            .fold(0.0, f64::max)
+    pub fn line_of_sight_factor(&self, delta: f64, tolerance: f64) -> f64 {
+        1.0 - (delta / tolerance).powf(self.confidence.exponent)
     }
 
     /// The confidence of a match at `separation` of tolerance `tolerance`, and the line-of-sight
@@ -418,7 +421,6 @@ impl MatchingRules {
         if separation > theta {
             return None;
         }
-        let p = self.confidence.exponent;
         let (method, difference, factor) = match pair.line_of_sight {
             LineOfSightRule::None => (MatchMethod::Position, None, 1.0),
             LineOfSightRule::Velocity {
@@ -433,7 +435,7 @@ impl MatchingRules {
                     (
                         MatchMethod::PositionAndRedshift,
                         Some(d),
-                        1.0 - (delta / tau).powf(p),
+                        self.line_of_sight_factor(delta, tau),
                     )
                 }
                 _ => (
@@ -456,7 +458,7 @@ impl MatchingRules {
                     (
                         MatchMethod::PositionAndDistance,
                         Some(d),
-                        1.0 - (delta / tau).powf(p),
+                        self.line_of_sight_factor(delta, tau),
                     )
                 }
                 _ => (

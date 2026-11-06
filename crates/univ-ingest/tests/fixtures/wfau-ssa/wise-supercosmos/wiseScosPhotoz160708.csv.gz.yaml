@@ -1,0 +1,7 @@
+source: wise-supercosmos
+url: http://ssa.roe.ac.uk/cats/wiseScosPhotoz160708.csv.gz
+retrieved: 2026-11-05T04:21:19Z
+sha256: d286c2b2cf75c514926213ac6591d5f47f8eb8bf10991cbd5110f8f638ae43b3
+note: >-
+  The header and first 6 rows of the file, as unpacked from its first 65,536 bytes, gzipped
+  again (gzip -n); the whole file is 1,709,149,603 bytes.

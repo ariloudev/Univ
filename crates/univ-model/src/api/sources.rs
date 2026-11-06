@@ -77,10 +77,77 @@ pub struct Terms {
     pub quote: String,
     /// The credit the terms require.
     pub credit: String,
-    /// Whether the terms allow the source to be published, and on what condition.
+    /// Whether the terms allow the source to be published, and on what condition:
+    /// `permitted`, `permitted_with_credit` or `permission_pending`.
     pub redistribution: String,
     /// How that reading of the terms was reviewed.
     pub review: String,
+    /// The clause of the terms that allows only non-commercial use, quoted; absent when the
+    /// terms allow commercial use.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub non_commercial: Option<String>,
+    /// Whom permission to redistribute the source was asked of and when, while its
+    /// redistribution is `permission_pending` and the request is sent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub permission: Option<PermissionRequest>,
+    /// Whom permission to redistribute the source is to be asked of, while its redistribution
+    /// is `permission_pending` and the request is not yet sent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub permission_to_ask: Option<PermissionToAsk>,
+}
+
+/// A request for permission to redistribute a source, sent and awaiting its answer, as the API
+/// gives it.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
+pub struct PermissionRequest {
+    /// Whom it was asked of.
+    pub asked_of: String,
+    /// The date it was asked, YYYY-MM-DD.
+    pub asked_on: String,
+}
+
+/// A request for permission to redistribute a source that is not yet sent: whom it is for.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
+pub struct PermissionToAsk {
+    /// Whom it is to be asked of.
+    pub asked_of: String,
+}
+
+/// A request for permission to redistribute a source, as its source definition writes it and
+/// the release records it: whom it is asked of, and the date it was asked once it is sent.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Permission {
+    pub asked_of: String,
+    /// YYYY-MM-DD; absent until the request is sent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub asked_on: Option<String>,
+}
+
+impl Permission {
+    /// As the API gives it: a request sent, with its date, or one still to be sent.
+    #[must_use]
+    pub fn served(self) -> (Option<PermissionRequest>, Option<PermissionToAsk>) {
+        match self.asked_on {
+            Some(asked_on) => (
+                Some(PermissionRequest {
+                    asked_of: self.asked_of,
+                    asked_on,
+                }),
+                None,
+            ),
+            None => (
+                None,
+                Some(PermissionToAsk {
+                    asked_of: self.asked_of,
+                }),
+            ),
+        }
+    }
 }
 
 /// Where a source's catalogue entries lie.

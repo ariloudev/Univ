@@ -48,13 +48,16 @@ pub struct ZeroPointRule {
     pub basis: String,
 }
 
-/// Which sources give Gaia and Hipparcos positions; every other source gives a survey position.
+/// Which sources give Gaia and Hipparcos positions, and which a 21 cm beam's; every other source
+/// gives a survey position.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PositionRule {
     pub statement: String,
     pub gaia: Vec<SourceId>,
     pub hipparcos: Vec<SourceId>,
+    #[serde(default)]
+    pub beam: Vec<SourceId>,
     pub basis: String,
 }
 
@@ -158,6 +161,8 @@ impl RankingRules {
             PositionClass::Gaia
         } else if self.position.hipparcos.contains(source) {
             PositionClass::Hipparcos
+        } else if self.position.beam.contains(source) {
+            PositionClass::Beam
         } else {
             PositionClass::Survey
         }

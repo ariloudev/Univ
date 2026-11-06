@@ -15,6 +15,8 @@ import { type Mat3, type Vec3, add, cross, dot, norm, normalize, scale, sub, tra
 export interface StructureDrawing {
   id: string;
   name: string;
+  /** Its kind, whose colour it is drawn in. */
+  kind: string;
   /** Where its name is drawn; none when it is not drawn. */
   centre: Vec3 | undefined;
   /** The diagonal of its bounding box, megaparsecs, where it has one. */
@@ -36,23 +38,47 @@ type Place = (v: Vec3) => Vec3;
 /** A direction in the shape's frame, in the ICRS. */
 type Turn = (v: Vec3) => Vec3;
 
-type Primitive = Extract<Geometry, { kind: "primitive" }>["primitive"];
+/** How a shape is placed in ICRS megaparsecs: a position, a direction, the rotation from the
+ * ICRS to its frame, and the megaparsecs in its unit. The view's outline and the cull to its
+ * volume both place a shape by it. */
+export interface Placing {
+  place: Place;
+  turn: Turn;
+  toFrame: Mat3;
+  k: number;
+}
 
-function primitiveOutline(primitive: Primitive, place: Place, turn: Turn, k: number): Outline {
+/** How a shape in `frame` and `unit` is placed; none where the explorer cannot place it. */
+export function placingOf(shape: { frame: string; unit: string }, rotations: Rotations): Placing | undefined {
+  const k = toMpc(shape.unit);
+  const toFrame = toFrameOf(shape.frame, rotations);
+  if (k === undefined || toFrame === undefined) return undefined;
+  const turn: Turn = (v) => unapply(toFrame, v);
+  return { place: (v) => turn(scale(v, k)), turn, toFrame, k };
+}
+
+export type Primitive = Extract<Geometry, { kind: "primitive" }>["primitive"];
+
+/** A sphere, an ellipsoid or an oriented box as its centre and half-axes in ICRS megaparsecs,
+ * round or not. A sphere's axes are those of its shape's frame. */
+export function primitiveAxes(primitive: Primitive, { place, turn, k }: Placing): { round: boolean; centre: Vec3; axes: [Vec3, Vec3, Vec3] } {
   const centre = place(primitive.centre);
   if (primitive.form === "sphere") {
-    // Rings in the planes of the shape's own frame.
     const r = primitive.radius * k;
-    return lines(rings(centre, [turn([r, 0, 0]), turn([0, r, 0]), turn([0, 0, r])]));
+    return { round: true, centre, axes: [turn([r, 0, 0]), turn([0, r, 0]), turn([0, 0, r])] };
   }
   // The columns of `orientation` are the solid's axes in the frame.
   const [u, v, w] = transpose(primitive.orientation);
   const [a, b, c] = primitive.form === "ellipsoid" ? primitive.semi_axes : primitive.half_extents;
-  const axes: [Vec3, Vec3, Vec3] = [turn(scale(u, a * k)), turn(scale(v, b * k)), turn(scale(w, c * k))];
-  return lines(primitive.form === "ellipsoid" ? rings(centre, axes) : boxEdges(centre, axes));
+  return { round: primitive.form === "ellipsoid", centre, axes: [place(scale(u, a)), place(scale(v, b)), place(scale(w, c))] };
 }
 
-type SkyRegion = Extract<Geometry, { kind: "sky_region" }>;
+function primitiveOutline(primitive: Primitive, placing: Placing): Outline {
+  const { round, centre, axes } = primitiveAxes(primitive, placing);
+  return lines(round ? rings(centre, axes) : boxEdges(centre, axes));
+}
+
+export type SkyRegion = Extract<Geometry, { kind: "sky_region" }>;
 
 /** The corners where a region's radial edges run: the boundary's points furthest each way along
  * two axes across `towards`, the region's mean direction. */
@@ -71,9 +97,9 @@ function extremes(points: readonly Vec3[], towards: Vec3): Vec3[] {
   return [furthest(across, 1), furthest(across, -1), furthest(up, 1), furthest(up, -1)];
 }
 
-/** The finest order whose cells the explorer outlines: finer cells' numbers and corners are
- * beyond its arithmetic. Univ Ingest makes regions of order 6. */
-const FINEST_ORDER = 20;
+/** The finest order whose cells the explorer outlines and culls to: finer cells' numbers and
+ * corners are beyond its arithmetic. Univ Ingest makes regions of order 6. */
+export const FINEST_ORDER = 20;
 
 /** How far the boundary's mean direction must reach, of its points', for the region to have
  * extremes: a band about the sky has none. */
@@ -98,7 +124,8 @@ function skyRegionOutline(region: SkyRegion, turn: Turn, k: number): Outline | u
 }
 
 /** The outline of `geometry`; none for a grid, which is drawn by its box. */
-function outlineOf(geometry: Geometry, place: Place, turn: Turn, k: number): Outline | undefined {
+function outlineOf(geometry: Geometry, placing: Placing): Outline | undefined {
+  const { place, turn, k } = placing;
   switch (geometry.kind) {
     case "point":
       return { segments: [], markers: [place(geometry.at)] };
@@ -107,7 +134,7 @@ function outlineOf(geometry: Geometry, place: Place, turn: Turn, k: number): Out
     case "range":
       return lines([place(scale(geometry.direction, geometry.near)), place(scale(geometry.direction, geometry.far))]);
     case "primitive":
-      return primitiveOutline(geometry.primitive, place, turn, k);
+      return primitiveOutline(geometry.primitive, placing);
     case "path":
       return lines(polyline(geometry.points.map(place)));
     case "members":
@@ -119,30 +146,36 @@ function outlineOf(geometry: Geometry, place: Place, turn: Turn, k: number): Out
   }
 }
 
+/** Half of each of a point's published extents, in ICRS megaparsecs: they are whole lengths
+ * centred on it, already ICRS vectors in the shape's unit, which has `k` megaparsecs, so they
+ * are scaled and not turned. */
+export const halfExtents = (axes: readonly [Vec3, Vec3, Vec3], k: number): [Vec3, Vec3, Vec3] => [
+  scale(axes[0], 0.5 * k),
+  scale(axes[1], 0.5 * k),
+  scale(axes[2], 0.5 * k),
+];
+
 /** One line along each of a point's published extents, centred on the point. */
-function extentLines(at: Vec3, axes: readonly Vec3[], place: Place): Vec3[] {
-  return axes.flatMap((axis) => [place(sub(at, scale(axis, 0.5))), place(add(at, scale(axis, 0.5)))]);
+function extentLines(at: Vec3, axes: readonly [Vec3, Vec3, Vec3], { place, k }: Placing): Vec3[] {
+  const centre = place(at);
+  return halfExtents(axes, k).flatMap((half) => [sub(centre, half), add(centre, half)]);
 }
 
 /** The shape's outline in ICRS megaparsecs; none where its frame, unit or kind can't be drawn.
  * A point with published extents has a line through it along each. */
 function shapeOutline(detail: StructureDetail, rotations: Rotations): Outline | undefined {
   const shape = detail.shape;
-  if (shape === null) return undefined;
-  const k = toMpc(shape.unit);
-  const toFrame = toFrameOf(shape.frame, rotations);
-  if (k === undefined || toFrame === undefined) return undefined;
-  const turn: Turn = (v) => unapply(toFrame, v);
-  const place: Place = (v) => turn(scale(v, k));
-  const outline = outlineOf(shape.geometry, place, turn, k);
+  const placing = shape === null ? undefined : placingOf(shape, rotations);
+  if (shape === null || placing === undefined) return undefined;
+  const outline = outlineOf(shape.geometry, placing);
   const extents = detail.derivation?.extents;
   if (outline === undefined || shape.geometry.kind !== "point" || extents === undefined) return outline;
-  return { ...outline, segments: extentLines(shape.geometry.at, extents.axes, place) };
+  return { ...outline, segments: extentLines(shape.geometry.at, extents.axes, placing) };
 }
 
 /** The structure's centre and bounds in ICRS megaparsecs: both are given in the centre's unit
  * (and its frame, the ICRS). */
-function placed(detail: StructureDetail): { centre: Vec3 | undefined; min: Vec3; max: Vec3 } | undefined {
+export function placed(detail: StructureDetail): { centre: Vec3 | undefined; min: Vec3; max: Vec3 } | undefined {
   const c = detail.centre;
   const k = c === null ? undefined : toMpc(c.unit);
   if (c === null || k === undefined) return undefined;
@@ -167,7 +200,7 @@ export function structureName(detail: StructureDetail): string {
 
 /** How `detail` is drawn, its shape turned into the ICRS by `rotations`. */
 export function drawingOf(detail: StructureDetail, rotations: Rotations): StructureDrawing {
-  const base = { id: detail.id, name: structureName(detail) };
+  const base = { id: detail.id, name: structureName(detail), kind: detail.kind };
   const where = placed(detail);
   const size = extentsSize(detail) ?? (where === undefined || detail.bounds === null ? undefined : norm(sub(where.max, where.min)));
   const outline = shapeOutline(detail, rotations);

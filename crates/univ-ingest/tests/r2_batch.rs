@@ -25,6 +25,7 @@ use univ_ingest::release::release_dir;
 use univ_ingest::tiles::sha256;
 use univ_model::release::keys;
 use univ_model::release::manifest::Target;
+use univ_model::release::shards::Database;
 
 /// Runs `wrangler r2 object …` against the local state `persist`.
 fn wrangler_r2(persist: &Path, args: &[&str]) -> Output {
@@ -146,8 +147,9 @@ fn wrangler(persist: &Path) -> Wrangler {
     Wrangler::new(&workspace().join("wrangler.toml"), persist).unwrap()
 }
 
+/// The single integer a query of the catalogue database gives.
 fn int(store: &mut dyn Store, sql: &str) -> i64 {
-    let rows = store.query(sql).unwrap();
+    let rows = store.query(Database::Catalogue, sql).unwrap();
     rows[0].values().next().unwrap().as_i64().unwrap()
 }
 
@@ -202,7 +204,10 @@ fn a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build() {
     drop(batch);
     let mut store = wrangler(persist.path());
     assert_eq!(
-        int(&mut store, "SELECT COUNT(*) FROM objects WHERE release = 1"),
+        int(
+            &mut store,
+            "SELECT COUNT(*) FROM object_shards WHERE release = 1"
+        ),
         0
     );
 
@@ -218,12 +223,16 @@ struct Interrupted<'s> {
 }
 
 impl Store for Interrupted<'_> {
-    fn execute_file(&mut self, file: &Path) -> Result<(), String> {
-        self.store.execute_file(file)
+    fn execute_file(&mut self, database: Database, file: &Path) -> Result<(), String> {
+        self.store.execute_file(database, file)
     }
 
-    fn query(&mut self, sql: &str) -> Result<Vec<QueryRow>, String> {
-        self.store.query(sql)
+    fn query(&mut self, database: Database, sql: &str) -> Result<Vec<QueryRow>, String> {
+        self.store.query(database, sql)
+    }
+
+    fn bound_shards(&mut self) -> Result<u32, String> {
+        self.store.bound_shards()
     }
 
     fn put(&mut self, key: &str, file: &Path) -> Result<(), String> {

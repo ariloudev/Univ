@@ -27,6 +27,16 @@ The specification in `spec/` is the contract. It is published from `develop`.
 | `clients/explorer` | Univ Explorer: Vite, React, TypeScript and its own WebGL2 renderer; see its `README.md` |
 | `scripts/r2-batch.mjs` | Every R2 operation of a publish or prune through one Node process, on Wrangler's local bucket |
 
+## Local data
+
+- **Downloads** (each source's chunks, files and provenance) are kept outside the repository, in
+  the Univ home folder's `downloads/univ-ingest/` (`../downloads/univ-ingest` from here), the
+  default of `univ-ingest --cache`. `UNIV_INGEST_CACHE` names another, for the CLI and for the
+  tests run by hand.
+- **This project's own outputs** stay in `.cache/univ-ingest/`, which git ignores: the id state
+  (`state/`), built releases (`build/`), and the local D1 and R2 that releases are published to
+  (`wrangler/`).
+
 ## Commands
 
 Run them from this directory.

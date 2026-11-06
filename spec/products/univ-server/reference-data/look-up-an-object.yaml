@@ -84,6 +84,6 @@ qualityAttributes:
         upper: "200"
       unit: "ms"
       aggregation: p95
-      scenario: "Looking up 1,000 random object ids of the first full release"
+      scenario: "Looking up 1,000 random object ids of a release whose objects span several object shards"
       environment: "wrangler dev with local D1 on the owner's laptop"
     verificationFate: sampled

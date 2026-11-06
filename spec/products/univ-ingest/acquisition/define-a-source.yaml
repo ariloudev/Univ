@@ -41,9 +41,13 @@ requirements:
       shall: "record in each source definition whether its terms permit redistributing its data, with the terms it rests on."
     criteria:
       - key: 01a19f22-2ad9-716e-876f-183b90085a10
-        name: "The redistribution status is permitted, permitted with credit, or forbidden."
+        name: "The redistribution status is permitted, permitted with credit, permission pending, or forbidden."
       - key: 01a19f22-2ad9-716e-876f-183ca629c7f8
         name: "The source definition quotes the terms of use it judged and states the reasoning for its status."
+      - key: 01a1a931-2c8a-73a8-91f2-58fcaa8b8bee
+        name: "A source whose status is permission pending names whom permission is asked of, and the date it was asked once the request is sent."
+      - key: 01a1a931-2c8a-73a8-91f2-58fd8e368264
+        name: "A source whose terms allow only non-commercial use is marked non-commercial, with the clause that says so quoted."
   - key: 01a19f22-2ad9-716e-876f-183d2d91487a
     statement:
       form: unwanted
@@ -67,3 +71,17 @@ requirements:
         name: "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances."
       - key: 01a19f22-2ad9-716e-876f-18439d96b214
         name: "The structure and field sources are the CF4++ density grid, CF4 basins of attraction, 2M++ reconstruction, eRASS1 clusters and Researched structures."
+  - key: 01a1a931-2c8a-73a8-91f2-58fec7b6f3d1
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "provide a source definition for each source that release 10 adds."
+    criteria:
+      - key: 01a1a931-2c8a-73a8-91f2-58ff5749b30b
+        name: "The spectroscopic sources are DESI DR1 redshifts, SDSS DR17 distant galaxies and quasars, 2dFGRS and GAMA DR4 redshifts."
+      - key: 01a1a931-2c8a-73a8-91f2-5900bff82962
+        name: "The 21 cm source is ALFALFA α.100."
+      - key: 01a1a931-2c8a-73a8-91f2-59016fa68370
+        name: "The photometric redshift sources are 2MPZ and WISE × SuperCOSMOS photometric redshifts."
+      - key: 01a1a931-2c8a-73a8-91f2-5902c9bf1383
+        name: "The quasars of DESI DR1 and SDSS DR17 are taken beside their galaxies."

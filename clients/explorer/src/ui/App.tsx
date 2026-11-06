@@ -4,6 +4,7 @@ import type { ReleaseSummary } from "../api/schemas.ts";
 import { ReleasePicker } from "./ReleasePicker.tsx";
 import { Scene } from "./Scene.tsx";
 import { ServerUnreachable, TryAgain } from "./ServerUnreachable.tsx";
+import { useLevelOfDetail } from "./levelOfDetail.ts";
 import { useReleases } from "./useReleases.ts";
 
 /** Univ Explorer: the releases of Univ Server, and the view of the one chosen. */
@@ -34,6 +35,7 @@ export function App() {
 
 function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: number }) {
   const [release, setRelease] = useState(latest);
+  const [levelOfDetail, setLevelOfDetail] = useLevelOfDetail();
   const shown = releases.find((r) => r.number === release);
   return (
     <div className="flex h-full flex-col">
@@ -44,9 +46,20 @@ function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: nu
           Drawing release {release}
           {shown === undefined ? "" : `, ${shown.cosmology.name}`}
         </p>
+        <label className="ml-auto flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            role="switch"
+            checked={levelOfDetail}
+            onChange={(event) => {
+              setLevelOfDetail(event.currentTarget.checked);
+            }}
+          />
+          Level of detail
+        </label>
       </header>
       <section aria-label="The view" className="relative flex-1" data-release={release}>
-        <Scene key={release} release={release} cosmology={shown?.cosmology.name ?? ""} />
+        <Scene key={release} release={release} cosmology={shown?.cosmology.name ?? ""} levelOfDetail={levelOfDetail} />
       </section>
     </div>
   );

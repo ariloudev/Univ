@@ -20,6 +20,8 @@ requirements:
         name: "The citation gives the bibcode or DOI of the source's primary reference."
       - key: 01a19f1e-d177-716d-b124-3d267490d236
         name: "The terms of use and the required credit are given as the source definition states them."
+      - key: 01a1a931-2c8a-73a8-91f2-591121be3932
+        name: "The response gives the source's redistribution status and whether its terms allow only non-commercial use."
       - key: 01a19f1e-d177-716d-b124-3d2711844898
         name: "The query and the cuts are the ones the fetch ran, verbatim."
       - key: 01a19f1e-d177-716d-b124-3d2878dbdf48

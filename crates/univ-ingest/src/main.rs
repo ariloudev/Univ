@@ -227,8 +227,9 @@ struct FetchArgs {
     /// Make no request: use only what is on disk, and fail on the first item missing.
     #[arg(long)]
     offline: bool,
-    /// Where chunks, files and provenance are kept between runs.
-    #[arg(long, default_value = ".cache/univ-ingest")]
+    /// Where chunks, files and provenance are kept between runs: by default the Univ home
+    /// folder's downloads, beside this repository, which its projects share.
+    #[arg(long, env = "UNIV_INGEST_CACHE", default_value = DEFAULT_CACHE)]
     cache: PathBuf,
     /// The directory of source definitions.
     #[arg(long, default_value = "sources")]
@@ -370,8 +371,26 @@ async fn every_stage(
     stages.run(display.clone(), normalized, until).await;
 }
 
+/// With the `dhat-heap` feature, every allocation goes through DHAT, which writes the heap's
+/// profile to `dhat-heap.json` when the run ends.
+/// The download cache, from the repository root, where Univ Ingest runs: the Univ home
+/// folder's `downloads/univ-ingest`.
+const DEFAULT_CACHE: &str = "../downloads/univ-ingest";
+
+#[cfg(feature = "dhat-heap")]
+#[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
+
+/// mimalloc, except under the heap profiler: it gives back the pages of freed small blocks,
+/// which the system allocator keeps.
+#[cfg(not(feature = "dhat-heap"))]
+#[global_allocator]
+static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 #[tokio::main]
 async fn main() -> ExitCode {
+    #[cfg(feature = "dhat-heap")]
+    let _profiler = dhat::Profiler::new_heap();
     let (args, until) = match Cli::parse().command {
         Command::Fetch(args) => (args, Until::Fetch),
         Command::Normalize(args) => (args, Until::Normalize),

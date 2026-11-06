@@ -169,7 +169,7 @@ impl TryFrom<RawCoordinates> for Coordinates {
             Some(_) if !matches!(radial, Some(Radial::Redshift(_) | Radial::Velocity(_))) => {
                 return Err("redshift_frame is given only with a redshift or velocity".to_owned());
             }
-            Some(RedshiftFrame::LocalGroup) => {
+            Some(RedshiftFrame::LocalGroup | RedshiftFrame::Barycentric) => {
                 return Err("redshift_frame is heliocentric or cmb".to_owned());
             }
             _ => {}
