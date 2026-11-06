@@ -64,6 +64,7 @@ pub mod manifest;
 pub mod read;
 pub mod rows;
 pub mod shards;
+pub mod shared;
 pub mod sql;
 pub mod uncertainty;
 
@@ -77,7 +78,8 @@ pub use cells::{Cell, CellRange, CellSpace};
 pub use fingerprint::{ColumnTotal, Fingerprinter};
 pub use manifest::{D1_CAP_BYTES, RELEASE_BUDGET_BYTES, ReleaseManifest};
 pub use rows::TABLES;
-pub use sql::{ColumnKind, RETIRED, Row, Scope, SqlValue, Statements, Table, Tree, valid_in};
+pub use shared::{RETIRED, valid_in};
+pub use sql::{ColumnKind, Row, Scope, SqlValue, Statements, Table, Tree};
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].

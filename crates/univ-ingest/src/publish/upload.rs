@@ -10,7 +10,7 @@ use univ_model::release::{ReleaseManifest, TABLES, Table, keys};
 use super::check::{check_rows, schema_version, sql_text};
 use super::journal::{Done, Journal};
 use super::progress::{FileDone, Lines, Progress};
-use super::refuse::{Refused, refuse_published, unbound, within_caps};
+use super::refuse::{Refused, older_schema, refuse_published, unbound, within_caps};
 use super::{Latest, PublishError, Store, StoreOptions};
 use crate::release::{RELEASES, read_manifest, release_dir};
 use crate::state::State;
@@ -378,6 +378,7 @@ pub fn publish_with(
         Refused::Query(p) => stopped(Latest(None), 0, p),
     })?;
     unbound(store, &manifest)
+        .and_then(|()| older_schema(store, &manifest))
         .and_then(|()| within_caps(store, &manifest, holds))
         .map_err(|e| match e {
             Refused::Error(e) => e,

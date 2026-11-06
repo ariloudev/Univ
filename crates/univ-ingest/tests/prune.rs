@@ -314,3 +314,45 @@ fn a_release_never_listed_whose_files_were_uploaded_has_them_deleted() {
     let again = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap_err();
     assert_eq!(again, PruneError::NotListed { number: 1 });
 }
+
+#[test]
+fn a_file_a_release_part_way_through_publishing_holds_is_not_pruned() {
+    let f = fixture();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    let (out, state) = (f.out.path(), f.state.path());
+    for n in [1, 2] {
+        build_next(&f);
+        publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
+    }
+    // Release 3 stops once its R2 files are up, before its release_files reach D1.
+    let third = build_next(&f);
+    let schemas = 1 + third.manifest.shards.len();
+    let r2 = third
+        .manifest
+        .files
+        .iter()
+        .filter(|f| f.key.is_some())
+        .count();
+    store.uploads = 0;
+    store.fail_after = Some(schemas + r2);
+    publishing(&mut store, 3, out, state, journals.path(), &clock).unwrap_err();
+    store.fail_after = None;
+    // A tile release 2 no longer holds, but release 3 does: only 3's journal says so.
+    let tile = third
+        .manifest
+        .files
+        .iter()
+        .find(|f| f.path.starts_with("tiles/") && !f.path.ends_with("manifest.json"))
+        .unwrap();
+    store
+        .db
+        .execute(
+            "DELETE FROM release_files WHERE release = 2 AND path = ?1",
+            [&tile.path],
+        )
+        .unwrap();
+    let pruned = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap();
+    assert!(pruned.files > 0);
+    assert!(store.r2.contains_key(&keys::file(&tile.sha256)));
+}

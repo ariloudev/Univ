@@ -265,49 +265,15 @@ impl Scope {
     #[must_use]
     pub fn filter(self, number: u32) -> String {
         match self {
-            Self::PerRelease => valid_in("", number),
+            Self::PerRelease => super::shared::valid_in("", number),
             Self::Ledger => format!("release <= {number}"),
             Self::Releases => format!("number = {number}"),
         }
     }
 }
 
-/// The column of a table of [`Scope::PerRelease`] that names the release from which its row is
-/// no longer valid, NULL while it is: the schema gives it to every such table, after the
-/// columns its row type writes, and only a later release's retirement sets it.
-pub const RETIRED: &str = "retired";
-
-/// The SQL condition selecting the rows of a table of [`Scope::PerRelease`] valid in release
-/// `number`, its columns qualified by `alias` (such as `o.`, or empty for none): those whose
-/// `release` is at most `number` and that no release up to `number` retired.
-#[must_use]
-pub fn valid_in(alias: &str, number: impl std::fmt::Display) -> String {
-    format!(
-        "{alias}release <= {number} AND ({alias}{RETIRED} IS NULL OR {alias}{RETIRED} > {number})"
-    )
-}
-
-/// [`valid_in`] written at compile time, for a statement written as a literal: the condition
-/// selecting the rows valid in the release bound to the parameter `$release` (such as `"?1"`),
-/// columns qualified by `$alias` (such as `"o."`, or `""` for none). It expands to a string
-/// literal, so `concat!` can take it into a statement.
-#[macro_export]
-macro_rules! valid_in {
-    ($alias:literal, $release:literal) => {
-        concat!(
-            $alias,
-            "release <= ",
-            $release,
-            " AND (",
-            $alias,
-            "retired IS NULL OR ",
-            $alias,
-            "retired > ",
-            $release,
-            ")"
-        )
-    };
-}
+/// The `retired` a shared row is estimated with: a release number SQLite stores in two bytes.
+const RETIRED_AT: SqlValue = SqlValue::Integer(1_000);
 
 /// A table of the schema: its columns in the order rows give them with the type of each, its
 /// primary key and its secondary indexes, each by column names, and which of its rows belong to
@@ -346,8 +312,9 @@ impl Table {
     /// page whole.
     #[must_use]
     pub fn estimated_bytes(&self, values: &[SqlValue]) -> u64 {
-        // A row shared between releases also stores its `retired`, NULL when written.
-        let retired = (self.scope == Scope::PerRelease).then_some(&SqlValue::Null);
+        // A row shared between releases also stores its `retired`: NULL when written, a release
+        // number once a later release retires it, counted at two bytes so the estimate errs high.
+        let retired = (self.scope == Scope::PerRelease).then_some(&RETIRED_AT);
         let stored = values.iter().chain(retired);
         let mut bytes = stored_bytes(payload_bytes(stored), self.tree());
         for index in self.indexes {
@@ -504,10 +471,10 @@ mod tests {
             SqlValue::Integer(300),
             SqlValue::from("abcd"),
         ];
-        // Record: header 1 + 4 serial types (the last for `retired`, NULL), body 0 + 2 + 4,
-        // cell 4: 15. Index on (name, release, id): header 4, body 4 + 0 + 2, cell 4: 14.
-        // 29 / 0.65 = 44.6, rounded up.
-        assert_eq!(T.estimated_bytes(&row), 45);
+        // Record: header 1 + 4 serial types (the last for `retired`, two bytes), body 0 + 2 +
+        // 4 + 2, cell 4: 17. Index on (name, release, id): header 4, body 4 + 0 + 2, cell 4:
+        // 14. 31 / 0.65 = 47.7, rounded up.
+        assert_eq!(T.estimated_bytes(&row), 48);
     }
 
     #[test]

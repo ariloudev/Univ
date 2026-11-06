@@ -146,10 +146,38 @@ fn r2_keys(
         .collect();
     let any_journaled = !journaled.is_empty();
     found.extend(journaled);
-    let held = held_elsewhere(store, number)?;
+    let mut held = held_elsewhere(store, number)?;
+    held.extend(journaled_elsewhere(options.journals, number)?);
     let manifest = keys::manifest(number);
     found.retain(|k| *k == manifest || (k.starts_with(keys::FILES) && !held.contains(k)));
     Ok((Some(found), any_journaled))
+}
+
+/// The R2 keys that the publish journal of a release other than `number` records as uploaded:
+/// a release part way through publishing holds its files before its `release_files` are in D1.
+fn journaled_elsewhere(journals: &Path, number: u32) -> Result<BTreeSet<String>, String> {
+    let Ok(entries) = std::fs::read_dir(journals) else {
+        return Ok(BTreeSet::new());
+    };
+    let mut keys = BTreeSet::new();
+    for entry in entries.filter_map(Result::ok) {
+        let name = entry.file_name();
+        let other = name
+            .to_str()
+            .and_then(|n| n.strip_prefix("publish-")?.strip_suffix(".yaml"))
+            .and_then(|n| n.parse::<u32>().ok())
+            .filter(|&n| n != number);
+        let Some(other) = other else { continue };
+        let journal = Journal::read(journals, other).map_err(|e| e.to_string())?;
+        keys.extend(
+            journal
+                .iter()
+                .flat_map(|j| &j.done)
+                .filter(|d| d.target == Target::R2)
+                .filter_map(|d| d.key.clone()),
+        );
+    }
+    Ok(keys)
 }
 
 /// The R2 keys of the files that a release left unpruned, other than `number`, maps a path to.

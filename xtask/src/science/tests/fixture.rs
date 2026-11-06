@@ -300,7 +300,7 @@ pub fn build(dir: &Path) {
     let header = serde_json::json!({
         "axes": ["z", "y", "x"], "shape": [2, 2, 2], "origin": [-1.0, -1.0, -1.0], "cell": 2.0,
         "unit": "megaparsec_over_h", "frame": "supergalactic",
-        "fields": [{"samples": "releases/1/grids/g/field-0.f32",
+        "fields": [{"samples": keys::file(&hex(&Sha256::digest(&samples))),
                     "labels": [{"label": 1, "name": "West"}, {"label": 2, "name": "East"}]}]
     });
     file(
