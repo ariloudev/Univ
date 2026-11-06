@@ -28,10 +28,30 @@ pub fn key(n: u32, path: &str) -> String {
     format!("{}{path}", prefix(n))
 }
 
+/// The prefix of the R2 key of every file kept by its SHA-256.
+pub const FILES: &str = "files/";
+
 /// The R2 key of the file whose SHA-256 is `sha256`, in lower-case hex.
 #[must_use]
 pub fn file(sha256: &str) -> String {
-    format!("files/{sha256}")
+    format!("{FILES}{sha256}")
+}
+
+/// The R2 key of release `n`'s manifest, the one file kept under the release's own prefix.
+#[must_use]
+pub fn manifest(n: u32) -> String {
+    key(n, MANIFEST)
+}
+
+/// The R2 key of the file of release `n` at `path` whose SHA-256 is `sha256`: the release's
+/// manifest under the release, any other file under its SHA-256.
+#[must_use]
+pub fn r2_key(n: u32, path: &str, sha256: &str) -> String {
+    if path == MANIFEST {
+        manifest(n)
+    } else {
+        file(sha256)
+    }
 }
 
 /// The release manifest's path within the release directory.

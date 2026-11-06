@@ -273,6 +273,7 @@ fn version_6_shares_rows_and_maps_files_by_hash() {
         "o.release <= 4 AND (o.retired IS NULL OR o.retired > 4)"
     );
     assert_eq!(Scope::PerRelease.filter(4), valid_in("", 4));
+    assert_eq!(crate::valid_in!("o.", "?1"), valid_in("o.", "?1"));
     // Every index is led by its own columns, the release after them.
     for table in TABLES {
         for index in table.indexes {

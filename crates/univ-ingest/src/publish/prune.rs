@@ -103,7 +103,7 @@ fn manifest_of(
     number: u32,
     out: &Path,
 ) -> Result<Option<ReleaseManifest>, String> {
-    let key = keys::key(number, keys::MANIFEST);
+    let key = keys::manifest(number);
     if let Some(bytes) = store.get(&key)? {
         let text = String::from_utf8_lossy(&bytes);
         return parse_manifest(Path::new(&key), &text, number)
@@ -127,7 +127,6 @@ fn r2_keys(
     number: u32,
     options: &StoreOptions<'_>,
 ) -> Result<(Option<BTreeSet<String>>, bool), String> {
-    let prefix = keys::prefix(number);
     let manifest = manifest_of(store, number, options.out)?;
     let journal = Journal::read(options.journals, number).map_err(|e| e.to_string())?;
     if manifest.is_none() && journal.is_none() {
@@ -137,7 +136,7 @@ fn r2_keys(
     if let Some(m) = &manifest {
         let r2 = m.files.iter().filter(|f| f.target == Target::R2);
         found.extend(r2.filter_map(|f| f.key.clone()));
-        found.insert(keys::key(number, keys::MANIFEST));
+        found.insert(keys::manifest(number));
     }
     let journaled: Vec<String> = journal
         .iter()
@@ -148,12 +147,10 @@ fn r2_keys(
     let any_journaled = !journaled.is_empty();
     found.extend(journaled);
     let held = held_elsewhere(store, number)?;
-    found.retain(|k| k.starts_with(&prefix) || (k.starts_with(FILES) && !held.contains(k)));
+    let manifest = keys::manifest(number);
+    found.retain(|k| *k == manifest || (k.starts_with(keys::FILES) && !held.contains(k)));
     Ok((Some(found), any_journaled))
 }
-
-/// The prefix of the R2 keys of files kept by their SHA-256.
-const FILES: &str = "files/";
 
 /// The R2 keys of the files that a release left unpruned, other than `number`, maps a path to.
 fn held_elsewhere(store: &mut dyn Store, number: u32) -> Result<BTreeSet<String>, String> {
@@ -176,7 +173,7 @@ fn held_elsewhere(store: &mut dyn Store, number: u32) -> Result<BTreeSet<String>
 
 /// Deletes `keys`: all but the release's manifest in one batch, then the manifest.
 fn delete_all(store: &mut dyn Store, number: u32, keys: &BTreeSet<String>) -> Result<(), String> {
-    let manifest = keys::key(number, keys::MANIFEST);
+    let manifest = keys::manifest(number);
     let rest: Vec<String> = keys.iter().filter(|k| **k != manifest).cloned().collect();
     store.delete_keys(&rest)?;
     if keys.contains(&manifest) {

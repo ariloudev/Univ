@@ -7,7 +7,7 @@
 
 use serde_json::{Value, json};
 use univ_model::api::structures::{Centre, StructureDetail, StructurePage, StructureSummary};
-use univ_model::release::valid_in;
+use univ_model::valid_in;
 
 use crate::backend::{Backend, Row, column, first, json_column};
 use crate::http::{Request, Response};
@@ -50,13 +50,13 @@ pub async fn list<B: Backend>(request: &Request, backend: &B) -> Result<Response
     let limit = PAGE + 1;
     let rows = backend
         .releases(
-            &format!(
+            concat!(
                 "SELECT s.id, s.name, s.kind, s.scale_domain, s.centre_x, s.centre_y, s.centre_z \
-                 FROM structures s WHERE s.id > ?2 AND {} \
-                 AND (?3 IS NULL OR s.kind IN (SELECT value FROM json_each(?3))) \
+                 FROM structures s WHERE s.id > ?2 AND ",
+                valid_in!("s.", "?1"),
+                " AND (?3 IS NULL OR s.kind IN (SELECT value FROM json_each(?3))) \
                  AND (?4 IS NULL OR s.scale_domain IN (SELECT value FROM json_each(?4))) \
-                 ORDER BY s.id LIMIT ?5",
-                valid_in("s.", "?1")
+                 ORDER BY s.id LIMIT ?5"
             ),
             &[json!(release), json!(after), kinds, domains, json!(limit)],
         )
@@ -107,15 +107,15 @@ pub async fn get<B: Backend>(
     let release = resolve(request, backend).await?;
     let rows = backend
         .releases(
-            &format!(
+            concat!(
                 "SELECT s.id, s.name, s.kind, s.status, s.scale_domain, s.centre_x, s.centre_y, \
                  s.centre_z, s.record, s.members, s.bounds, \
                  sd.shape, sd.derivation, sd.outline, sd.rescaled \
                  FROM structures s \
-                 LEFT JOIN structure_details sd ON sd.id = s.id AND {} \
-                 WHERE s.id = ?2 AND {}",
-                valid_in("sd.", "?1"),
-                valid_in("s.", "?1")
+                 LEFT JOIN structure_details sd ON sd.id = s.id AND ",
+                valid_in!("sd.", "?1"),
+                " WHERE s.id = ?2 AND ",
+                valid_in!("s.", "?1")
             ),
             &[json!(release), json!(id)],
         )

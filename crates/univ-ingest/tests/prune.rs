@@ -88,12 +88,19 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     );
     assert!(ledger_before.1 > 0, "release 2 retired some ids");
     let rows_of_2 = store.int_everywhere("SELECT COUNT(*) FROM objects WHERE release = 2");
-    let keys_of_2: Vec<String> = store
-        .r2
-        .keys()
-        .filter(|k| k.starts_with(&keys::prefix(2)))
-        .cloned()
-        .collect();
+    // Release 2's files and manifest, and the files release 1 alone held.
+    let r2_of = |n: u32| -> BTreeSet<String> {
+        let mut held: BTreeSet<String> = read_manifest(&univ_ingest::release::release_dir(&out, n))
+            .files
+            .iter()
+            .filter_map(|f| f.key.clone())
+            .collect();
+        held.insert(keys::manifest(n));
+        held
+    };
+    let keys_of_2 = r2_of(2);
+    let only_1: BTreeSet<String> = r2_of(1).difference(&keys_of_2).cloned().collect();
+    assert!(only_1.len() > 1, "release 1 holds files release 2 does not");
     store.reset();
     let built_1 = univ_ingest::release::release_dir(&out, 1);
     // The local build is deleted last: it is there after every D1 and R2 operation.
@@ -111,7 +118,7 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     assert!(univ_ingest::release::release_dir(&out, 2).exists());
     assert_eq!(pruned.latest, Latest(Some(2)));
     assert!(pruned.rows > 0 && pruned.files > 1);
-    assert!(!store.r2.keys().any(|k| k.starts_with(&keys::prefix(1))));
+    assert!(!store.r2.keys().any(|k| only_1.contains(k)));
     assert!(keys_of_2.iter().all(|k| store.r2.contains_key(k)));
     // The release's rows are gone from the catalogue and from every object shard.
     let loaded = store.int_everywhere("SELECT COUNT(*) FROM schema_version");
@@ -237,7 +244,7 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
     };
     let held_by_2 = r2_of(2);
     let mut keys_of_1: BTreeSet<String> = r2_of(1).difference(&held_by_2).cloned().collect();
-    keys_of_1.insert(keys::key(1, keys::MANIFEST));
+    keys_of_1.insert(keys::manifest(1));
     // R2 lost the manifest, and the build output no longer holds the release.
     store.r2.remove(&keys::key(1, keys::MANIFEST));
     std::fs::remove_dir_all(univ_ingest::release::release_dir(out, 1)).unwrap();

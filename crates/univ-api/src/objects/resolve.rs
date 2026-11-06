@@ -12,7 +12,7 @@ use std::collections::{HashSet, VecDeque};
 use serde_json::json;
 use univ_model::api::lookup::LedgerChange;
 use univ_model::release::rows::name_key;
-use univ_model::release::valid_in;
+use univ_model::valid_in;
 
 use super::vocabulary::vocabulary;
 use crate::backend::{Backend, column, first, json_column};
@@ -138,10 +138,10 @@ pub async fn by_name<B: Backend>(
 ) -> Result<Vec<(u64, Vec<String>)>, Problem> {
     let rows = backend
         .releases(
-            &format!(
-                "SELECT DISTINCT object_id, name FROM names WHERE key = ?2 AND {} \
-                 ORDER BY object_id, name",
-                valid_in("", "?1")
+            concat!(
+                "SELECT DISTINCT object_id, name FROM names WHERE key = ?2 AND ",
+                valid_in!("", "?1"),
+                " ORDER BY object_id, name"
             ),
             &[json!(release), json!(name_key(name))],
         )
@@ -172,15 +172,15 @@ pub async fn by_designation<B: Backend>(
     };
     let map = shard_map(backend, release).await?;
     let params = [json!(release), json!(n), json!(identifier)];
-    let sql = format!(
+    let sql = concat!(
         "SELECT DISTINCT object_id FROM designations \
-         WHERE source = ?2 AND identifier = ?3 AND {}",
-        valid_in("", "?1")
+         WHERE source = ?2 AND identifier = ?3 AND ",
+        valid_in!("", "?1")
     );
     let statements: Vec<(u32, &str, &[serde_json::Value])> = map
         .shards
         .iter()
-        .map(|&shard| (shard, sql.as_str(), &params[..]))
+        .map(|&shard| (shard, sql, &params[..]))
         .collect();
     let mut found = Vec::new();
     for (&shard, rows) in map.shards.iter().zip(backend.shards(&statements).await?) {

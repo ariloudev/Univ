@@ -240,7 +240,7 @@ fn file(dir: &Path, path: &str, bytes: &[u8], target: Target, files: &mut Vec<Ma
     files.push(ManifestFile {
         path: path.to_owned(),
         target,
-        key: (target == Target::R2).then(|| keys::key(1, path)),
+        key: (target == Target::R2).then(|| keys::file(&hex(&Sha256::digest(bytes)))),
         bytes: bytes.len() as u64,
         sha256: hex(&Sha256::digest(bytes)),
     });

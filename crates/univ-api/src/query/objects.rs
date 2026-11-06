@@ -19,8 +19,8 @@ use serde_json::json;
 use univ_model::api::query::{HitPosition, ObjectHit, QueryResult};
 use univ_model::position::Frame;
 use univ_model::release::cells::{CellRange, CellSpace, SPACES};
-use univ_model::release::valid_in;
 use univ_model::units::{Unit, scale_domain_unit};
+use univ_model::valid_in;
 use univ_model::volume::Region;
 
 use super::Query;
@@ -43,21 +43,24 @@ struct Row {
 /// cells are in `cells`: the release's rows of `object_cells`, `objects` and, filtering by
 /// source, `entries`, each valid in release ?1 whichever release added it.
 fn select(domain: i64, cells: &CellRange, region: &Region) -> String {
-    let (valid_c, valid_o, valid_e) = (
-        valid_in("c.", "?1"),
-        valid_in("o.", "?1"),
-        valid_in("e.", "?1"),
-    );
     format!(
-        "SELECT * FROM (SELECT o.id AS id, o.kind AS kind, o.scale_domain AS domain, \
-         o.x AS x, o.y AS y, o.z AS z FROM object_cells c CROSS JOIN objects o \
-         ON o.id = c.object_id AND {valid_o} WHERE c.domain = {domain} \
-         AND c.ix BETWEEN {} AND {} AND c.iy BETWEEN {} AND {} \
-         AND c.iz BETWEEN {} AND {} AND c.object_id > ?2 AND {valid_c} AND {} \
-         AND (?4 IS NULL OR o.kind IN (SELECT value FROM json_each(?4))) \
-         AND (?5 IS NULL OR EXISTS (SELECT 1 FROM entries e WHERE e.object_id = o.id \
-         AND {valid_e} AND e.source IN (SELECT value FROM json_each(?5)))) \
-         ORDER BY c.object_id LIMIT ?3)",
+        concat!(
+            "SELECT * FROM (SELECT o.id AS id, o.kind AS kind, o.scale_domain AS domain, \
+             o.x AS x, o.y AS y, o.z AS z FROM object_cells c CROSS JOIN objects o \
+             ON o.id = c.object_id AND ",
+            valid_in!("o.", "?1"),
+            " WHERE c.domain = {} \
+             AND c.ix BETWEEN {} AND {} AND c.iy BETWEEN {} AND {} \
+             AND c.iz BETWEEN {} AND {} AND c.object_id > ?2 AND ",
+            valid_in!("c.", "?1"),
+            " AND {} \
+             AND (?4 IS NULL OR o.kind IN (SELECT value FROM json_each(?4))) \
+             AND (?5 IS NULL OR EXISTS (SELECT 1 FROM entries e WHERE e.object_id = o.id AND ",
+            valid_in!("e.", "?1"),
+            " AND e.source IN (SELECT value FROM json_each(?5)))) \
+             ORDER BY c.object_id LIMIT ?3)"
+        ),
+        domain,
         cells.min.ix,
         cells.max.ix,
         cells.min.iy,

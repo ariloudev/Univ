@@ -287,6 +287,28 @@ pub fn valid_in(alias: &str, number: impl std::fmt::Display) -> String {
     )
 }
 
+/// [`valid_in`] written at compile time, for a statement written as a literal: the condition
+/// selecting the rows valid in the release bound to the parameter `$release` (such as `"?1"`),
+/// columns qualified by `$alias` (such as `"o."`, or `""` for none). It expands to a string
+/// literal, so `concat!` can take it into a statement.
+#[macro_export]
+macro_rules! valid_in {
+    ($alias:literal, $release:literal) => {
+        concat!(
+            $alias,
+            "release <= ",
+            $release,
+            " AND (",
+            $alias,
+            "retired IS NULL OR ",
+            $alias,
+            "retired > ",
+            $release,
+            ")"
+        )
+    };
+}
+
 /// A table of the schema: its columns in the order rows give them with the type of each, its
 /// primary key and its secondary indexes, each by column names, and which of its rows belong to
 /// a release.

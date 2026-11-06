@@ -68,7 +68,7 @@ fn every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last() {
             .unwrap();
         assert_eq!(store.ops[put + 1], Op::Get(key.into()), "{key} read back");
     }
-    assert!(store.r2.contains_key(&keys::key(1, keys::MANIFEST)));
+    assert!(store.r2.contains_key(&keys::manifest(1)));
     // Each D1 table holds the rows the manifest counts.
     for t in m.d1.tables.iter().filter(|t| t.rows > 0) {
         let column = if t.table == "releases" {
@@ -159,6 +159,12 @@ fn a_file_that_reads_back_with_another_sha256_stops_the_publish() {
     // A local file changed after its build is refused as it is checked, before it is uploaded.
     let (mut store, journals) = (MemoryStore::default(), tempfile::tempdir().unwrap());
     let dir = univ_ingest::release::release_dir(f.out.path(), 1);
+    let rules_key = release_fixture::read_manifest(&dir)
+        .files
+        .iter()
+        .find(|m| m.path == keys::rules("matching"))
+        .and_then(|m| m.key.clone())
+        .unwrap();
     std::fs::write(dir.join(keys::rules("matching")), "changed").unwrap();
     let refused = publishing(
         &mut store,
@@ -174,11 +180,7 @@ fn a_file_that_reads_back_with_another_sha256_stops_the_publish() {
             if problem == "rules/matching.yaml no longer matches its SHA-256"),
         "{refused}"
     );
-    assert!(
-        !store
-            .r2
-            .contains_key(&keys::key(1, &keys::rules("matching")))
-    );
+    assert!(!store.r2.contains_key(&rules_key));
     assert_eq!(latest(&store), None);
 }
 

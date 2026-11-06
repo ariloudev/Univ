@@ -16,10 +16,10 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use univ_model::api::bulk::{ScaleDomainList, ScaleDomainSummary, TileFormat};
 use univ_model::geometry::Aabb;
-use univ_model::release::valid_in;
 use univ_model::tile::format::layout;
 use univ_model::tile::manifest::{NodeIndex, TileManifest, TileManifestIndex};
 use univ_model::units::scale_domain_unit;
+use univ_model::valid_in;
 use utoipa::{PartialSchema, ToSchema};
 
 use crate::backend::{Backend, rows_as};
@@ -245,10 +245,10 @@ pub(crate) async fn domains_of<B: Backend>(
     }
     let rows = backend
         .releases(
-            &format!(
-                "SELECT name, radius, points, nodes, manifest_key FROM scale_domains \
-                 WHERE {} ORDER BY name",
-                valid_in("", "?1")
+            concat!(
+                "SELECT name, radius, points, nodes, manifest_key FROM scale_domains WHERE ",
+                valid_in!("", "?1"),
+                " ORDER BY name"
             ),
             &[json!(release)],
         )

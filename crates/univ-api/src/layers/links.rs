@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 use univ_model::api::layers::ItemVersion;
-use univ_model::release::valid_in;
+use univ_model::valid_in;
 
 use crate::backend::{Backend, column, json_column};
 use crate::http::Request;
@@ -82,10 +82,10 @@ async fn replaced<B: Backend>(
         let mut rows = backend
             .releases_batch(&[
                 (
-                    &format!(
+                    concat!(
                         "SELECT id FROM object_shards \
-                         WHERE id IN (SELECT value FROM json_each(?2)) AND {}",
-                        valid_in("", "?1")
+                         WHERE id IN (SELECT value FROM json_each(?2)) AND ",
+                        valid_in!("", "?1")
                     ),
                     &[json!(release), held.clone()],
                 ),

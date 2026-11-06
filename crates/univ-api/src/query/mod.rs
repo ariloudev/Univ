@@ -22,9 +22,9 @@ use serde_json::json;
 use univ_model::api::query::{Filters, MAX_RESULTS, QueryResult, RESULTS_PER_PAGE, VolumePage};
 use univ_model::object::ObjectKind;
 use univ_model::release::read::Vocabulary;
-use univ_model::release::valid_in;
 use univ_model::time::TimeKind;
 use univ_model::units::{Unit, scale_domain_unit};
+use univ_model::valid_in;
 use univ_model::volume::Region;
 
 use crate::access::Caller;
@@ -248,10 +248,10 @@ async fn resolved<B: Backend>(
         };
     let structure_kinds = in_release(
         backend,
-        &format!(
+        concat!(
             "SELECT DISTINCT kind AS value FROM structures \
-             WHERE kind IN (SELECT value FROM json_each(?2)) AND {}",
-            valid_in("", "?1")
+             WHERE kind IN (SELECT value FROM json_each(?2)) AND ",
+            valid_in!("", "?1")
         ),
         release,
         filters.kinds.as_ref(),

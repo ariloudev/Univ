@@ -218,12 +218,7 @@ fn upload(
             }
         }
         Unit::R2(f) => {
-            // Each file lies under its SHA-256; the release manifest alone under the release.
-            let key = if f.path == keys::MANIFEST {
-                keys::key(n, keys::MANIFEST)
-            } else {
-                keys::file(&f.sha256)
-            };
+            let key = keys::r2_key(n, &f.path, &f.sha256);
             if f.key.as_deref() != Some(key.as_str()) {
                 return Err(format!("{} is not keyed as {key} in the manifest", f.path));
             }
@@ -356,7 +351,7 @@ pub fn publish_with(
     let itself = ManifestFile {
         path: keys::MANIFEST.to_owned(),
         target: Target::R2,
-        key: Some(keys::key(number, keys::MANIFEST)),
+        key: Some(keys::manifest(number)),
         bytes: manifest_bytes.len() as u64,
         sha256: sha256(&manifest_bytes),
     };
