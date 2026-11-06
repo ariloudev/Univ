@@ -1,7 +1,7 @@
 key: 01a1a497-e843-728a-bce8-3ffe4657fb77
 slug: draw-the-catalogues
 name: "Draw the catalogues"
-body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least."
+body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least. A switch turns level of detail off, so that every tile is fetched whatever the view."
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
   - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
@@ -44,7 +44,7 @@ requirements:
       - key: 01a1aead-1e30-7695-bbd5-099c2f301565
         name: "A held tile counts as in view until it lies more than 1 degree outside the view, so that a view turning a little does not drop a tile at its edge and fetch it again as it turns back."
       - key: 01a1a497-e843-728a-bce8-4006f5c2ce8f
-        name: "No more than 6,000,000 points are held at once."
+        name: "While level of detail is on, no more than 6,000,000 points are held at once."
   - key: 01a1a689-0b25-768a-9f1e-cc27109fed3c
     statement:
       form: event_driven
@@ -64,6 +64,21 @@ requirements:
         name: "The dropped tiles kept drawn hold no more than a quarter of the budget, 1,500,000 points, beyond it, and those beyond it are drawn no more at once."
       - key: 01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b
         name: "A dropped tile still drawn that the view wants again is drawn on without being read again."
+  - key: 01a1b07b-8157-7546-927e-272151c4d940
+    statement:
+      form: state_driven
+      while: "the person has turned level of detail off"
+      system: "Univ Explorer"
+      shall: "fetch every tile of the release, the coarser levels first, whatever the view, and drop none."
+    criteria:
+      - key: 01a1b07b-8157-7546-927e-2722e634b9b0
+        name: "The top bar holds a switch that turns level of detail on and off, on when the page's address does not turn it off."
+      - key: 01a1b07b-8157-7546-927e-272335750e5f
+        name: "With level of detail off, every tile of every scale domain is fetched, the tiles of each level asked for before those of the level below, and no tile is dropped, whatever the view and the budget."
+      - key: 01a1b07b-8157-7546-927e-2724ac33dc33
+        name: "Turned on again, level of detail drops the tiles the view does not need until the points held fit the budget."
+      - key: 01a1b07b-8157-7546-927e-2725108d8df2
+        name: "The page's address keeps level of detail turned off, so that a reload or a shared link keeps it off."
   - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
     statement:
       form: ubiquitous

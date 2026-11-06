@@ -10,6 +10,15 @@ versions:
     title: "Rendering fixes"
     goal: "Every point outside the stars domain is drawn in one colour, the key still counts them by the kind of value of their distance, and the near and far planes are restored; level of detail stays disabled in the working tree only."
     status: active
+  - key: 01a1b07b-b527-7609-a67a-e10448855673
+    at: 2026-11-06T10:50:59Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Rendering fixes"
+    goal: "Every point outside the stars domain is drawn in one colour, the key still counts them by the kind of value of their distance, and the near and far planes are restored; level of detail stays disabled in the working tree only."
+    status: done
 blocks:
   - key: 01a1b075-0a32-77d3-9791-6adf06dc63db
     id: one-colour
@@ -24,6 +33,16 @@ blocks:
         title: "Draw every non-star point in one colour"
         detail: "Spec, kinds.ts, the key and the Show panel; kinds.test and Panels.test pass."
         state: active
+        type: fix
+      - key: 01a1b076-e39f-713b-ac63-70ed49984112
+        at: 2026-11-06T10:45:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Draw every non-star point in one colour"
+        detail: "Spec 498724b, code 3b1d908. Trace links of AC-362 and AC-363 renamed and accepted. Explorer gate on the commit in a clean worktree: typecheck, 208 tests, fallow, build."
+        state: done
         type: fix
   - key: 01a1b075-0a32-77d3-9791-6ae0bcea94f4
     id: near-far
@@ -2545,3 +2564,23 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1b076-e39f-713b-ac63-70ec0bfc607e
+    id: progress-1
+    kind: note
+    versions:
+      - key: 01a1b076-e39f-713b-ac63-70eecbe31bb0
+        at: 2026-11-06T10:45:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Where the branch stands"
+        markdown: |-
+          | Change | State |
+          |---|---|
+          | One colour for every point outside the stars domain | committed (`498724b` spec, `3b1d908` code) |
+          | Near and far planes | restored, as on `product/release-10` |
+          | Level of detail | disabled in the working tree only, uncommitted |
+
+          The branch stays open until the owner says to close it; `/simplify`, `/code-review`, the full gate and integration run then.
+        tone: info
