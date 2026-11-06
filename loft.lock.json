@@ -3,9 +3,9 @@
   "algorithm": "sha256-jcs/1",
   "documentKey": "01a19efc-b4c1-7350-8274-8feccad0e0fb",
   "stateView": 2,
-  "stateRoot": "66786da4430c04f826108f7ed5495bdf44eed301c9956215cd57c4294147c18f",
-  "contentRoot": "af810039de6eedd5844fba3da62f8971897e8ea794d8cc8f3f76788566f54738",
-  "bindingRoot": "62bea1d80769cd9fc50c7c18ddb70b22ffc0568e2d98c260975a0331f98541ca",
-  "publishSequence": 5,
-  "publishedAt": "2026-11-05T00:13:08Z"
+  "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd",
+  "contentRoot": "96c1efe49473448ed491491a633db74d61063cee5762b89baaee78ca400767bb",
+  "bindingRoot": "765f1af44092fdb51a997a4dc7e742abfc936c3021fec311f44b7c4fd5fac2d4",
+  "publishSequence": 6,
+  "publishedAt": "2026-11-06T15:38:55Z"
 }

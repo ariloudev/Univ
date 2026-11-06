@@ -2,12 +2,12 @@ counters:
   P: 4
   FG: 14
   F: 42
-  RQ: 152
-  AC: 444
-  CMP: 54
+  RQ: 164
+  AC: 519
+  CMP: 64
   CON: 9
   QA: 5
-  ADR: 29
+  ADR: 33
 bindings:
   - key: 01a19f1a-685d-7357-b67e-d658085bf5c8
     label: P-1
@@ -1045,8 +1045,8 @@ bindings:
     publishedHistory: 32b063a0f18375f72b99b014dbbcdacaf654b941d583e98a069c6175b446a27c
   - key: 01a19f25-5955-701e-b3cf-ddcffaf7bf98
     label: ADR-13
-    publishedState: accepted
-    publishedHistory: 3761f1c5d106ebe9e30072ef7f6723a38253651ab8e23eedc271528566272adc
+    publishedState: superseded
+    publishedHistory: c23b28c1b34a2259513b6873cd9bfd6a0b0d8bcdaa662a9c14358d90d4be1761
   - key: 01a19f25-5955-701e-b3cf-ddd6c363d1fe
     label: ADR-15
     publishedState: accepted
@@ -1553,3 +1553,213 @@ bindings:
     label: AC-429
   - key: 01a1a8e8-6326-709f-aa5e-46117cf024e6
     label: AC-430
+  - key: 01a1a931-2c8a-73a8-91f2-58d0bd77ebdc
+    label: CMP-54
+  - key: 01a1a931-2c8a-73a8-91f2-58d1c13261fc
+    label: CMP-55
+  - key: 01a1a931-2c8a-73a8-91f2-58d2281c1099
+    label: CMP-56
+  - key: 01a1a931-2c8a-73a8-91f2-58d3b98ead8a
+    label: CMP-57
+  - key: 01a1a931-2c8a-73a8-91f2-58d4eab51e82
+    label: CMP-58
+  - key: 01a1a931-2c8a-73a8-91f2-58d51ef988ca
+    label: CMP-59
+  - key: 01a1a931-2c8a-73a8-91f2-58d66f8d9197
+    label: CMP-60
+  - key: 01a1a931-2c8a-73a8-91f2-58d7b4335c3a
+    label: CMP-61
+  - key: 01a1a931-2c8a-73a8-91f2-58d805dbe294
+    label: CMP-62
+  - key: 01a1a931-2c8a-73a8-91f2-58d918ceb9bc
+    label: CMP-63
+  - key: 01a1a931-2c8a-73a8-91f2-58da6aab49a1
+    label: ADR-29
+    publishedState: accepted
+    publishedHistory: 86fc8016e5cbea0073672cebeb303d2124cf8462968d181669cab82271f44b6f
+  - key: 01a1a931-2c8a-73a8-91f2-58e3584b3f25
+    label: ADR-30
+    publishedState: accepted
+    publishedHistory: c913207d7bd4ced3df869b3540b2682cac2bf521e0ae66a145da7c6dbed22e80
+  - key: 01a1a931-2c8a-73a8-91f2-58eab95e4bc8
+    label: ADR-31
+    publishedState: accepted
+    publishedHistory: bf4d8d4290e967be93b61e1d62c437fe8d8936ca1ce74bb7c50deba2c4222869
+  - key: 01a1a931-2c8a-73a8-91f2-58f331400c25
+    label: ADR-32
+    publishedState: accepted
+    publishedHistory: 9bd6988c0cb8f7a7e0b4ba7d30f3aac716ba1fab6edd497ce617153314bcc400
+  - key: 01a1a931-2c8a-73a8-91f2-58fcaa8b8bee
+    label: AC-444
+  - key: 01a1a931-2c8a-73a8-91f2-58fd8e368264
+    label: AC-445
+  - key: 01a1a931-2c8a-73a8-91f2-58fec7b6f3d1
+    label: RQ-152
+  - key: 01a1a931-2c8a-73a8-91f2-58ff5749b30b
+    label: AC-446
+  - key: 01a1a931-2c8a-73a8-91f2-5900bff82962
+    label: AC-447
+  - key: 01a1a931-2c8a-73a8-91f2-59016fa68370
+    label: AC-448
+  - key: 01a1a931-2c8a-73a8-91f2-5902c9bf1383
+    label: AC-449
+  - key: 01a1a931-2c8a-73a8-91f2-59032696dddd
+    label: AC-455
+  - key: 01a1a931-2c8a-73a8-91f2-59042cfff012
+    label: AC-458
+  - key: 01a1a931-2c8a-73a8-91f2-59053781d70f
+    label: RQ-156
+  - key: 01a1a931-2c8a-73a8-91f2-590689bd8862
+    label: AC-469
+  - key: 01a1a931-2c8a-73a8-91f2-59076b96877f
+    label: AC-470
+  - key: 01a1a931-2c8a-73a8-91f2-5908e94d50c7
+    label: AC-471
+  - key: 01a1a931-2c8a-73a8-91f2-59092cd5e331
+    label: AC-472
+  - key: 01a1a931-2c8a-73a8-91f2-590a9d7b0864
+    label: AC-473
+  - key: 01a1a931-2c8a-73a8-91f2-590b8ae658df
+    label: RQ-157
+  - key: 01a1a931-2c8a-73a8-91f2-590cebe0fc8d
+    label: AC-474
+  - key: 01a1a931-2c8a-73a8-91f2-590d7b43ba10
+    label: AC-475
+  - key: 01a1a931-2c8a-73a8-91f2-590ede3fd3b1
+    label: AC-476
+  - key: 01a1a931-2c8a-73a8-91f2-590fd0e5d484
+    label: RQ-158
+  - key: 01a1a931-2c8a-73a8-91f2-5910680f6e67
+    label: AC-477
+  - key: 01a1a931-2c8a-73a8-91f2-591121be3932
+    label: AC-478
+  - key: 01a1a931-2c8a-73a8-91f2-59122e92f2fd
+    label: AC-479
+  - key: 01a1aa2d-9931-7550-bba8-ae02a06fd78a
+    label: AC-456
+  - key: 01a1aa2d-9931-7550-bba8-ae03b8e720b0
+    label: AC-457
+  - key: 01a1aa2d-9931-7550-bba8-ae0461c674ae
+    label: RQ-154
+  - key: 01a1aa2d-9931-7550-bba8-ae05fcc0d255
+    label: AC-459
+  - key: 01a1aa2d-9931-7550-bba8-ae06fd8a5b30
+    label: AC-460
+  - key: 01a1aa2d-9931-7550-bba8-ae077f98b2cc
+    label: AC-461
+  - key: 01a1ad9c-dc22-72c6-99cb-1a44aeb16de5
+    label: RQ-153
+  - key: 01a1ad9c-dc22-72c6-99cb-1a45af5083ab
+    label: AC-450
+  - key: 01a1ad9c-dc22-72c6-99cb-1a46049c41ff
+    label: AC-451
+  - key: 01a1ad9c-dc22-72c6-99cb-1a470d130dde
+    label: AC-452
+  - key: 01a1ad9c-dc22-72c6-99cb-1a4853c15f56
+    label: AC-454
+  - key: 01a1ad9c-f735-761b-8646-f276559d7943
+    label: AC-453
+  - key: 01a1adfa-315f-708f-8cd8-bf4bc1cdc275
+    label: AC-462
+  - key: 01a1adfa-315f-708f-8cd8-bf4cdd697c86
+    label: AC-463
+  - key: 01a1adfa-315f-708f-8cd8-bf4d9f766f81
+    label: RQ-155
+  - key: 01a1adfa-315f-708f-8cd8-bf4e61ca16c8
+    label: AC-464
+  - key: 01a1adfa-315f-708f-8cd8-bf4fa228b618
+    label: AC-465
+  - key: 01a1adfa-315f-708f-8cd8-bf5086a0f213
+    label: AC-466
+  - key: 01a1adfa-315f-708f-8cd8-bf51d418d386
+    label: AC-468
+  - key: 01a1ae91-90f5-716e-b3d3-07b944951329
+    label: AC-467
+  - key: 01a1aea7-5e8b-7623-8601-48fb7856d2e3
+    label: AC-480
+  - key: 01a1aea7-5e8b-7623-8601-48fc4cf3ff3f
+    label: AC-481
+  - key: 01a1aea7-5e8b-7623-8601-48fd8492b9c4
+    label: AC-482
+  - key: 01a1aead-1e30-7695-bbd5-099c2f301565
+    label: AC-483
+  - key: 01a1aeb6-f18d-7787-9cbd-de2cfdcfe714
+    label: AC-484
+  - key: 01a1aeb6-f18d-7787-9cbd-de2dfa8b12aa
+    label: AC-485
+  - key: 01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b
+    label: AC-486
+  - key: 01a1b07b-8157-7546-927e-272151c4d940
+    label: RQ-159
+  - key: 01a1b07b-8157-7546-927e-2722e634b9b0
+    label: AC-487
+  - key: 01a1b07b-8157-7546-927e-272335750e5f
+    label: AC-488
+  - key: 01a1b07b-8157-7546-927e-2724ac33dc33
+    label: AC-489
+  - key: 01a1b07b-8157-7546-927e-2725108d8df2
+    label: AC-490
+  - key: 01a1b093-647d-7308-9b46-bdc985f6f0e9
+    label: RQ-160
+  - key: 01a1b093-647d-7308-9b46-bdca66fcbd08
+    label: AC-491
+  - key: 01a1b093-647d-7308-9b46-bdcbf842c1af
+    label: AC-495
+  - key: 01a1b093-647d-7308-9b46-bdcc1ec02df7
+    label: AC-496
+  - key: 01a1b093-647d-7308-9b46-bdcd4901ec3c
+    label: AC-497
+  - key: 01a1b093-647d-7308-9b46-bdce5099b2f5
+    label: AC-501
+  - key: 01a1b093-81da-759e-8532-70d7aa4d0ff1
+    label: AC-494
+  - key: 01a1b0a9-6982-71c6-b321-0cfc1d1f8a93
+    label: AC-492
+  - key: 01a1b0a9-6982-71c6-b321-0cfd3507cc88
+    label: AC-493
+  - key: 01a1b0b8-3632-76bc-88e5-8dd265a1a28d
+    label: AC-498
+  - key: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
+    label: AC-500
+  - key: 01a1b0c4-82ea-7058-b4c4-959c016ec0f3
+    label: AC-499
+  - key: 01a1b13c-1e10-748d-8008-e7e063283348
+    label: RQ-161
+  - key: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
+    label: AC-504
+  - key: 01a1b13c-1e10-748d-8008-e7e2ed4a3967
+    label: AC-505
+  - key: 01a1b13c-1e10-748d-8008-e7e33e6ecd76
+    label: AC-506
+  - key: 01a1b13c-1e10-748d-8008-e7e496894c39
+    label: AC-507
+  - key: 01a1b13c-1e10-748d-8008-e7e5419cfeb6
+    label: AC-508
+  - key: 01a1b13c-1e10-748d-8008-e7e6a6d53737
+    label: AC-509
+  - key: 01a1b13c-1e10-748d-8008-e7e71f42aabb
+    label: AC-510
+  - key: 01a1b13c-1e10-748d-8008-e7e859257b94
+    label: AC-512
+  - key: 01a1b13c-1e10-748d-8008-e7e934fc10cf
+    label: AC-513
+  - key: 01a1b13c-1e10-748d-8008-e7ea46d6c6e6
+    label: AC-514
+  - key: 01a1b13c-1e10-748d-8008-e7eb103d71ac
+    label: AC-515
+  - key: 01a1b13c-1e10-748d-8008-e7ece437e733
+    label: RQ-162
+  - key: 01a1b13c-1e10-748d-8008-e7ed28949521
+    label: AC-516
+  - key: 01a1b13c-1e10-748d-8008-e7eed8679d94
+    label: AC-517
+  - key: 01a1b13c-1e10-748d-8008-e7ef2701bb3c
+    label: RQ-163
+  - key: 01a1b13c-1e10-748d-8008-e7f0dcf15117
+    label: AC-518
+  - key: 01a1b166-0bb4-703d-a861-7c307a08ae0b
+    label: AC-511
+  - key: 01a1b16b-4634-7511-aec8-71c45009817c
+    label: AC-502
+  - key: 01a1b16b-4634-7511-aec8-71c5715ace5e
+    label: AC-503
