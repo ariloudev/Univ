@@ -9,6 +9,7 @@ import { KIND_INDEX } from "../scene/kinds.ts";
 import { starBytes } from "../scene/starColour.ts";
 import { add, scale } from "../scene/vec.ts";
 import { type Extent, type Tile, extentOf } from "./lod.ts";
+import { shuffled } from "./shuffle.ts";
 
 /** A tile of a domain, with the manifest's node for it. */
 export interface DomainTile extends Tile {
@@ -128,7 +129,8 @@ function decoded(domain: Domain, tile: DomainTile, bytes: Uint8Array) {
 /** The points of `bytes`, the tile of `tile` in `domain`, checked against the manifest. */
 export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Array<ArrayBuffer>): Promise<Batch> {
   if ((await sha256(bytes)) !== tile.node.sha256) throw new TileFailed(`${tile.id} does not match its SHA-256`);
-  const points = decoded(domain, tile, bytes);
+  // Shuffled by the tile's id, so that its first points, however many, are an even sample.
+  const points = shuffled(decoded(domain, tile, bytes), tile.id);
   const offsets = new Float32Array(points.length * 3);
   const kinds = new Uint8Array(points.length);
   const sources = new Uint16Array(points.length);

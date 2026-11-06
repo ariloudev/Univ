@@ -271,6 +271,22 @@ describe("the catalogue", () => {
     expect(total()).toBeLessThanOrEqual(budget);
   });
 
+  it("draws every point of a root, a share of its children's by how far apart the root's lie on screen, and every one with level of detail off", async () => {
+    const { catalogue, drawn, root, side, looking } = await twoSides(server(undefined, undefined, ["simulated"]));
+    catalogue.update(looking(true));
+    await steady(drawn);
+    const [child] = side(true);
+    if (child === undefined) throw new Error("no child");
+    expect(catalogue.share(root.id)).toBe(1);
+    expect(catalogue.share(child.id)).toBe(1);
+    catalogue.update({ ...looking(true), focal: 1e-9 });
+    expect(catalogue.share(root.id)).toBe(1);
+    expect(catalogue.share(child.id)).toBe(0);
+    catalogue.setLevelOfDetail(false);
+    expect(catalogue.share(child.id)).toBe(1);
+    await steady(drawn);
+  });
+
   it("does not count a tile Univ Server could not serve as failing its check", async () => {
     const drawn: string[] = [];
     const catalogue = await loaded(server(undefined, "stars/r"), drawn);

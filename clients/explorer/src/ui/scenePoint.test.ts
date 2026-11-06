@@ -27,11 +27,22 @@ function starBatch() {
 describe("a drawn point", () => {
   it("is found under the pointer, or nothing is", () => {
     const { domain, batch } = starBatch();
-    const world = fakeWorld({ catalogue: { domain: () => domain } as never });
+    const world = fakeWorld({ catalogue: { domain: () => domain, share: () => 1 } as never });
     world.pickable.push({ centre: batch.tile.centre, radius: 1, offsets: batch.offsets, batch });
     world.controller.flyTo([3e-6, 4e-6, 0], 1e-5);
     expect(pointUnder(world, { width: 800, height: 600, x: 400, y: 300 })?.id).toBe(42);
     expect(pointUnder(world, { width: 800, height: 600, x: 10, y: 10 })).toBeUndefined();
+  });
+
+  it("is found under the pointer only where its tile's share draws it", () => {
+    const { domain, batch } = starBatch();
+    let share = 0;
+    const world = fakeWorld({ catalogue: { domain: () => domain, share: () => share } as never });
+    world.pickable.push({ centre: batch.tile.centre, radius: 1, offsets: batch.offsets, batch });
+    world.controller.flyTo([3e-6, 4e-6, 0], 1e-5);
+    expect(pointUnder(world, { width: 800, height: 600, x: 400, y: 300 })).toBeUndefined();
+    share = 1;
+    expect(pointUnder(world, { width: 800, height: 600, x: 400, y: 300 })?.id).toBe(42);
   });
 
   it("is known by its id, scale domain, place and distance, the source and kind of its distance, and its colour index", () => {

@@ -3311,7 +3311,7 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
         name: "is drawn at the ICRS positions its points give, in megaparsecs"
-        body: 7f97650638312e76168858e8c0208d2f1cca1d430c3c60ef31b48e7dcee88ad7
+        body: 98b8453cbedc7c768387a761481504f34c461395fd721b8f68b155b3395ebcbe
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
         name: "is read from a manifest in parsecs or megaparsecs, and no other unit"
         body: 4e8fd4247352f16c31d616ce00c5a9bc97cfd2ad67898fbdd30db21e75153de7
@@ -3329,7 +3329,7 @@ links:
         body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
         name: "is drawn at the ICRS positions its points give, in megaparsecs"
-        body: 7f97650638312e76168858e8c0208d2f1cca1d430c3c60ef31b48e7dcee88ad7
+        body: 98b8453cbedc7c768387a761481504f34c461395fd721b8f68b155b3395ebcbe
   - node: 01a1a497-e843-728a-bce8-40049983aed9
     reviewed: 60a2b90ff670f3de8d8fe9683d0c4d71ba1b5bfffd53e88f1e14b8a0af170115
     tests:
@@ -3486,6 +3486,72 @@ links:
       - file: "clients/explorer/src/ui/levelOfDetail.test.ts"
         name: "starts off where the address turns it off, as after a reload"
         body: 670d683cf11a7c53613fd188ea0749dd01330d4eee32ecdebf1dbf66acbf7de0
+  - node: 01a1b093-647d-7308-9b46-bdca66fcbd08
+    reviewed: 66740e36724fdceb03d812c39777bf602a59b9ba4e639ec9999b7ad191582046
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "rises in proportion from none, where the parent's points lie 3 pixels apart, to all where they lie 6"
+        body: 06e32b60e0f4fa244e534b5424c4130fc76565b12bf0253d799d35ccb7cd8593
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every point of a root, a share of its children's by how far apart the root's lie on screen, and every one with level of detail off"
+        body: 0e494e849b143fbd5b14e17013ef1e3ab88e26af60bc764488022f2c99c10ae5
+      - file: "clients/explorer/src/scene/drawList.test.ts"
+        name: "is each tile in sight and not turned off, its share of its points and as opaque as its fade"
+        body: ae19fa1f30f9bbe477a47ec9a5a37ef9577358f14e3c1f73364e445265c340c2
+      - file: "clients/explorer/src/scene/drawList.test.ts"
+        name: "leaves out a tile whose share draws no point, or whose fade is nothing"
+        body: e5533e9b1f7997d32bb580ab3cf50814791c50ded65c55f01d50a5f74e2825ef
+  - node: 01a1b093-81da-759e-8532-70d7aa4d0ff1
+    reviewed: 28de97338d549340c430468715db45e4b4417cf8bf086804edfd794eb492a9b4
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "is every point of a root"
+        body: b1188dc93944fabd5e6b3087e6d310aac7c299fb8fa3e75d92694302e5948cf8
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every point of a root, a share of its children's by how far apart the root's lie on screen, and every one with level of detail off"
+        body: 0e494e849b143fbd5b14e17013ef1e3ab88e26af60bc764488022f2c99c10ae5
+  - node: 01a1b093-647d-7308-9b46-bdcbf842c1af
+    reviewed: a51a9aa2816658a01a4e18771131d9864b6b8fc71b179f36c83dce2013e27047
+    tests:
+      - file: "clients/explorer/src/catalogue/shuffle.test.ts"
+        name: "holds every point once, in the same order for the same id and another for another id"
+        body: 2920859a20dd36d04ab81da2903070d7200e86f76814adc3c1401bf7a3cfa2d4
+      - file: "clients/explorer/src/catalogue/shuffle.test.ts"
+        name: "makes its first points, however many, an even sample of all"
+        body: 4f3000151e04fd7ba8cc1daaa941bff8a7646afcb44d81c97051729746609741
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "orders its points shuffled by its id, the same on every read"
+        body: d3d63e9831cee4f0c5a7e6032c434c3a440eb4fa1007fd00dfc03d9b59396fe1
+  - node: 01a1b093-647d-7308-9b46-bdcc1ec02df7
+    reviewed: 709badc47d89f400ec8fb44cb013166592dc230c09c84c0922dd9aa1590187fc
+    tests:
+      - file: "clients/explorer/src/scene/fades.test.ts"
+        name: "rises from none to full over 0.3 seconds once the tile arrives"
+        body: 6f2f793758eb719e962e1b18691e1cb08729237ff96e0f0856cfac1974421040
+      - file: "clients/explorer/src/scene/fades.test.ts"
+        name: "falls to none over 0.3 seconds once the tile goes, and only then is the tile gone"
+        body: 1fdb023bd0288bd330665ab1519fc1d5564aade760fc5bf147d10f18ec8a4b71
+      - file: "clients/explorer/src/scene/fades.test.ts"
+        name: "turns from where it is when the tile comes back before it is gone, or goes before it is in"
+        body: 6cfde9927e6e3d68c619c0cb9584720223e25477e6f3d4f04464a093e2862dc5
+      - file: "clients/explorer/src/scene/drawList.test.ts"
+        name: "is each tile in sight and not turned off, its share of its points and as opaque as its fade"
+        body: ae19fa1f30f9bbe477a47ec9a5a37ef9577358f14e3c1f73364e445265c340c2
+  - node: 01a1b093-647d-7308-9b46-bdcd4901ec3c
+    reviewed: a1ecdc079dd0c923cfb0910a83b2400459b93f055f797b7d929261e708a0813a
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every point of a root, a share of its children's by how far apart the root's lie on screen, and every one with level of detail off"
+        body: 0e494e849b143fbd5b14e17013ef1e3ab88e26af60bc764488022f2c99c10ae5
+  - node: 01a1b093-647d-7308-9b46-bdce5099b2f5
+    reviewed: 66009151f7032987facdb56d1a2e55dde96081f117f29c5c6e7798ce83c12778
+    tests:
+      - file: "clients/explorer/src/scene/pick.test.ts"
+        name: "passes over the points beyond those drawn of a batch's share"
+        body: 0bd429616af3a0cf75a1b4b12a4856eb9cf6efb8696f79cb9b0ad17a8cbc4168
+      - file: "clients/explorer/src/ui/scenePoint.test.ts"
+        name: "is found under the pointer only where its tile's share draws it"
+        body: cde9a02ed910041dbd4fbb2eb3c5240df5d2533ca6ce52833ad089cc34487fe1
   - node: 01a1a689-0b25-768a-9f1e-cc2c484365d4
     reviewed: e82b1fb1e371fca155aeaa6795d4f08bf91215034ad308160bd02a5eac646c7f
     tests:
@@ -3526,7 +3592,7 @@ links:
         name: "are drawn in one colour, in one order whatever a manifest lists"
         body: 340dc9e183c96b138a8e6152bd544705b763166959b433268874aa6fd5ab88a1
   - node: 01a1a497-e843-728a-bce8-400c71ad8ebe
-    reviewed: b740c81d3b1c12f9ab75976ef7cec36aac400a8a5ebd2efd3df12fa53a5d5533
+    reviewed: f58b703866d7f6f3a757209f121ad7bcefb18a7a2ca7fb0b09291987c2594cf2
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "count the points of each kind of value under their one colour"
@@ -3548,7 +3614,7 @@ links:
         body: 3ce41de51be292c112400e8f35d90acc6a655bffeaf588b8647ff3a4345ea45f
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
         name: "gives each star the colour of its colour index, and every other point none of its own"
-        body: 5e5e62dfbd4b85c9c059f990adfe5ce771c8ca0079109281b66308e89b46c523
+        body: b1db8583fb9a432b109d7e8fbb9225013d71e58095a855016dcb4d74207feb86
   - node: 01a1a8ac-052e-72b3-a33e-b340d68ae618
     reviewed: 592b26cb582bfd4c216d62c46c77b3faf26dcb2c07df87a001a4b24792c48b71
     tests:
@@ -3887,7 +3953,7 @@ links:
         body: 7ff258700eb7cccdd4b78ebf6cacb49a317eccee6f8253952279257cd9a27408
       - file: "clients/explorer/src/ui/scenePoint.test.ts"
         name: "is found under the pointer, or nothing is"
-        body: d2e67af0e2d29ae5a46eb54d97aa55f5f1c5ff6f5426748463c89abbb3c26602
+        body: 7ed2653a36aea2005a6cbaa718272bf821dc0d031efed97dc69d0e38b28f1055
       - file: "clients/explorer/src/scene/pick.test.ts"
         name: "finds the point under the pointer, across batches"
         body: 37f02fcb621ce6620054c55f7a57f43067e7079259e99239af4c80c72c60e157

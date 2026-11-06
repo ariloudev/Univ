@@ -14,6 +14,9 @@ export interface Pickable {
   /** Which points may be picked: every one where none is given. A point not drawn is passed
    * over, so that it never hides one drawn behind it. */
   shown?: Shown | undefined;
+  /** How many of its points, the first, are drawn and may be picked: every one where none is
+   * given. */
+  count?: number | undefined;
 }
 
 /** The point picked: its batch and its index in the batch. */
@@ -93,7 +96,8 @@ function pickIn(batch: Pickable, index: number, axes: Mat3, eye: Vec3, f: number
   if (batch.shown === "none" || !mayHold(centre, batch.radius, rayOf(f, pointer), f)) return best;
   const shown = typeof batch.shown === "function" ? batch.shown : () => true;
   let found = best;
-  for (let i = 0; i < batch.offsets.length / 3; i += 1) {
+  const count = Math.min(batch.count ?? Number.POSITIVE_INFINITY, batch.offsets.length / 3);
+  for (let i = 0; i < count; i += 1) {
     const at = onScreen(batch.offsets, i, centre, axes, f, pointer);
     if (at !== undefined && shown(i) && better(at.d2, at.depth, found)) found = { batch: index, index: i, ...at };
   }

@@ -4,6 +4,7 @@ import { type Sight, sightOf } from "../scene/frustum.ts";
 import { IDENTITY, type Vec3 } from "../scene/vec.ts";
 import {
   type Extent,
+  FULL_SPACING,
   HELD_PREFERENCE,
   type Holding,
   HELD_VIEW_MARGIN,
@@ -16,6 +17,7 @@ import {
   extentOf,
   plan,
   planEvery,
+  shareOf,
   spacing,
   treeOf,
 } from "./lod.ts";
@@ -368,5 +370,28 @@ describe("level of detail turned off", () => {
     const next = plan(treeOf(TILES), holding(ids(TILES), 60), sight([300, 300, 300]), 6, 30);
     expect(next.fetch).toEqual([]);
     expect(ids(next.drop)).toEqual(["web/r0", "web/r70", "web/r1"]);
+  });
+});
+
+describe("the share of a tile drawn", () => {
+  // A parent of one point whose core, of radius 1, lies 100 from the eye: its points lie
+  // focal / 50 pixels apart on screen.
+  const parent = tile("web/r", [0, 0, 0], 1000, 1);
+  const read: Extent = { centre: [0, 0, 0], radius: 1, core: { centre: [0, 0, 0], radius: 1 } };
+  const apart = (pixels: number): Sight => ({ ...sight([101, 0, 0], true), focal: pixels * 50 });
+
+  it("is every point of a root", () => {
+    expect(shareOf(undefined, apart(0.1))).toBe(1);
+  });
+
+  it("rises in proportion from none, where the parent's points lie 3 pixels apart, to all where they lie 6", () => {
+    expect(FULL_SPACING).toBe(2 * REFINE_SPACING);
+    expect(spacing(parent, apart(4.5), read)).toBeCloseTo(4.5);
+    expect(shareOf(parent, apart(2), read)).toBe(0);
+    expect(shareOf(parent, apart(3), read)).toBeCloseTo(0);
+    expect(shareOf(parent, apart(3.75), read)).toBeCloseTo(0.25);
+    expect(shareOf(parent, apart(4.5), read)).toBeCloseTo(0.5);
+    expect(shareOf(parent, apart(6), read)).toBeCloseTo(1);
+    expect(shareOf(parent, apart(60), read)).toBe(1);
   });
 });

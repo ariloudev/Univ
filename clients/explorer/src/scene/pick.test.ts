@@ -56,4 +56,16 @@ describe("picking", () => {
     const hidingAll = { ...hidingNear, shown: "none" as const };
     expect(pick([hidingAll], view, IDENTITY, { ...SIZE, x: target.x, y: target.y })).toBeUndefined();
   });
+
+  it("passes over the points beyond those drawn of a batch's share", () => {
+    const eye = eyeOf(view, IDENTITY);
+    const toward = (k: number): Vec3 => [eye[0] * (1 - k) + 1 * k, eye[1] * (1 - k) + 1 * k, eye[2] * (1 - k)];
+    const far = toward(1.5);
+    const near = toward(0.5);
+    const target = at(near);
+    const pointer = { ...SIZE, x: target.x, y: target.y };
+    expect(pick([{ ...batch([0, 0, 0], [far, near]), count: 1 }], view, IDENTITY, pointer)).toEqual({ batch: 0, index: 0 });
+    expect(pick([{ ...batch([0, 0, 0], [far, near]), count: 0 }], view, IDENTITY, pointer)).toBeUndefined();
+    expect(pick([{ ...batch([0, 0, 0], [far, near]), count: 2 }], view, IDENTITY, pointer)).toEqual({ batch: 0, index: 1 });
+  });
 });

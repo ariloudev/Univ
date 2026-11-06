@@ -108,6 +108,22 @@ export function extentOf(offsets: Float32Array, centre: Vec3): Extent {
   };
 }
 
+/** The spacing on screen of a tile's parent's points, pixels, at which every point of the tile is
+ * drawn: twice the spacing that refines the parent, at which none is. */
+export const FULL_SPACING = 2 * REFINE_SPACING;
+
+/** The share of a tile's points drawn, 0 to 1, for `sight`: every one of a root's; of a tile
+ * whose parent is `parent`, its points lying in `extent`, rising in proportion from none where
+ * they lie `REFINE_SPACING` apart on screen to all where they lie `FULL_SPACING` apart. */
+export function shareOf(parent: Tile | undefined, sight: Sight, extent?: Extent): number {
+  if (parent === undefined) return 1;
+  const apart = spacing(parent, sight, extent);
+  return Math.min(1, Math.max(0, (apart - REFINE_SPACING) / (FULL_SPACING - REFINE_SPACING)));
+}
+
+/** How many of `points` points a share of `share` draws. */
+export const drawnOf = (points: number, share: number): number => Math.round(points * share);
+
 /** How far apart a tile's points lie on screen, pixels: its points spread over the square their
  * core covers on screen, every point of its depth landing on that square. */
 export function spacing(tile: Tile, sight: Sight, extent = cubeExtent(tile)): number {
@@ -126,6 +142,8 @@ export interface Tree<T extends Tile> {
   tiles: readonly T[];
   roots: readonly T[];
   children: ReadonlyMap<string, readonly T[]>;
+  /** Every tile by its id. */
+  byId: ReadonlyMap<string, T>;
 }
 
 export function treeOf<T extends Tile>(tiles: readonly T[]): Tree<T> {
@@ -136,7 +154,7 @@ export function treeOf<T extends Tile>(tiles: readonly T[]): Tree<T> {
     if (siblings === undefined) children.set(t.parent, [t]);
     else siblings.push(t);
   }
-  return { tiles, roots: tiles.filter((t) => t.parent === undefined), children };
+  return { tiles, roots: tiles.filter((t) => t.parent === undefined), children, byId: new Map(tiles.map((t) => [t.id, t])) };
 }
 
 /** What a catalogue holds, as the plan reads it. */

@@ -4,7 +4,9 @@
 // double precision once a frame, and its points' small offsets are float32.
 
 import type { View } from "./camera.ts";
-import { type Sight, type Sphere, inSight, sightOf } from "./frustum.ts";
+import { drawList } from "./drawList.ts";
+import { Fades } from "./fades.ts";
+import { type Sight, type Sphere, sightOf } from "./frustum.ts";
 import type { Drawer, Lines, Rgba } from "./drawing.ts";
 import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, pointOpacity, structureStyle } from "./kinds.ts";
 import { type Masks, NO_MASKS } from "./masks.ts";
@@ -86,7 +88,11 @@ export class Renderer implements Drawer {
   private readonly lines: Program;
   private readonly lineColour: WebGLUniformLocation | null;
   /** Each tile's points, by its id, with the sphere they lie in. */
-  private readonly batches = new Map<string, Drawn & { extent: Points["extent"]; domain: string }>();
+  private readonly batches = new Map<string, Drawn & { id: string; extent: Points["extent"]; domain: string }>();
+  /** How opaque each tile is as it fades in and out. */
+  private readonly fades = new Fades();
+  /** The share of each tile's points drawn, by its id. */
+  private share: (id: string) => number = () => 1;
   /** What is turned off (choose-what-is-drawn). */
   private masks: Masks = NO_MASKS;
   private readonly hiddenKinds: WebGLUniformLocation | null;
@@ -161,18 +167,34 @@ export class Renderer implements Drawer {
     return { vao, buffers, centre: points.centre, count: points.kinds.length };
   }
 
-  /** Adds a tile's points to what is drawn. */
-  addPoints(points: Points): void {
-    this.removePoints(points.id);
-    this.batches.set(points.id, { ...this.upload(points), extent: points.extent, domain: points.domain });
+  /** Adds a tile's points to what is drawn, fading them in from `now`. */
+  addPoints(points: Points, now = performance.now()): void {
+    this.forget(points.id);
+    this.batches.set(points.id, { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain });
+    this.fades.arrive(points.id, now);
   }
 
-  /** Draws the points of the tile `id` no more. */
-  removePoints(id: string): void {
+  /** Draws the points of the tile `id` no more, once they have faded out from `now`. */
+  removePoints(id: string, now = performance.now()): void {
+    if (this.batches.has(id)) this.fades.leave(id, now);
+  }
+
+  /** Lets go of the points of the tile `id` at once. */
+  private forget(id: string): void {
     const drawn = this.batches.get(id);
     if (drawn === undefined) return;
     this.release(drawn);
     this.batches.delete(id);
+  }
+
+  /** Draws the share `share` gives of each tile's points, by its id. */
+  setShare(share: (id: string) => number): void {
+    this.share = share;
+  }
+
+  /** Whether a tile is fading in or out at `now`, so that frames are drawn until none is. */
+  fading(now = performance.now()): boolean {
+    return this.fades.moving(now);
   }
 
   /** Draws only the points `masks` leave on. */
@@ -238,17 +260,20 @@ export class Renderer implements Drawer {
     }
   }
 
-  /** The tiles' points in sight, but those turned off. */
+  /** The tiles' points in sight, but those turned off: of each its share, as opaque as its fade. */
   private drawPoints(frame: Frame, sight: Sight, distance: number): void {
     const gl = this.gl;
+    const now = performance.now();
+    for (const id of this.fades.gone(now)) this.forget(id);
     this.use(this.points, frame);
     gl.uniform1f(this.pointSize, POINT_SIZE);
-    gl.uniform1f(this.opacity, pointOpacity(distance));
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
-    for (const batch of inSight(this.batches.values(), sight, (b) => b.extent)) {
-      if (this.masks.domains.has(batch.domain)) continue;
+    const opacity = pointOpacity(distance);
+    const fade = (id: string) => this.fades.opacity(id, now);
+    for (const { batch, count, fade: faded } of drawList(this.batches.values(), { sight, masks: this.masks, share: this.share, fade })) {
+      gl.uniform1f(this.opacity, opacity * faded);
       gl.uniform1ui(this.hiddenSources, this.masks.sources.get(batch.domain) ?? 0);
-      this.drawOne(this.points, frame, batch, gl.POINTS);
+      this.drawOne(this.points, frame, batch, gl.POINTS, count);
     }
   }
 
@@ -272,8 +297,8 @@ export class Renderer implements Drawer {
     gl.uniformMatrix3fv(program.axes, true, frame.axes.flat());
   }
 
-  /** Draws `drawn`, its centre placed from the eye in double precision. */
-  private drawOne(program: Program, frame: { axes: Mat3; eye: Vec3 }, drawn: Drawn, mode: number): void {
+  /** Draws the first `count` of `drawn`, its centre placed from the eye in double precision. */
+  private drawOne(program: Program, frame: { axes: Mat3; eye: Vec3 }, drawn: Drawn, mode: number, count = drawn.count): void {
     const { axes, eye } = frame;
     const dx = drawn.centre[0] - eye[0];
     const dy = drawn.centre[1] - eye[1];
@@ -281,13 +306,14 @@ export class Renderer implements Drawer {
     const row = (r: Vec3) => r[0] * dx + r[1] * dy + r[2] * dz;
     this.gl.uniform3f(program.centre, row(axes[0]), row(axes[1]), row(axes[2]));
     this.gl.bindVertexArray(drawn.vao);
-    this.gl.drawArrays(mode, 0, drawn.count);
+    this.gl.drawArrays(mode, 0, count);
   }
 
   /** Lets go of everything drawn, as when the view closes. */
   dispose(): void {
     for (const drawn of [...this.batches.values(), ...this.outlines.values(), ...this.markers.values()]) this.release(drawn);
     this.batches.clear();
+    this.fades.clear();
     this.outlines.clear();
     this.markers.clear();
   }

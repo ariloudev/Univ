@@ -2860,6 +2860,15 @@ blocks:
         title: "The share of each tile, shuffled order and picking"
         detail: "lod.ts share(), the seeded shuffle in tiles.ts, the renderer's count, pick limited to the drawn share."
         state: open
+      - key: 01a1b09e-99db-70d1-a8c1-cb19831907af
+        at: 2026-11-06T11:29:06Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The share of each tile, shuffled order and picking"
+        detail: "lod.ts shareOf/drawnOf, catalogue.share, shuffle.ts (seeded Fisher–Yates on decode), scene/drawList.ts, renderer draws the first share, pick limited to it. Tests: lod, catalogue, shuffle, tiles, drawList, pick, scenePoint."
+        state: done
   - key: 01a1b093-9edf-7778-9f90-2e93cc7020a9
     id: fade
     kind: task
@@ -2873,3 +2882,25 @@ blocks:
         title: "Fade tiles in and out over 0.3 s"
         detail: "Renderer keeps a leaving tile for the fade and the frame loop keeps drawing while any tile fades."
         state: open
+      - key: 01a1b09e-99db-70d1-a8c1-cb1abda88c12
+        at: 2026-11-06T11:29:06Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Fade tiles in and out over 0.3 s"
+        detail: "scene/fades.ts; the renderer keeps a leaving tile through its fade, and the frame loop draws while any tile fades. Tests: fades, drawList."
+        state: done
+  - key: 01a1b09e-99db-70d1-a8c1-cb18a723e007
+    id: smooth-check
+    kind: note
+    versions:
+      - key: 01a1b09e-99db-70d1-a8c1-cb1b28f479ba
+        at: 2026-11-06T11:29:06Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Seen running on the real state"
+        markdown: "Explorer check: 231 tests, fallow, build. On release 10 under `cargo xtask explore`, zooming from 79 to 43 Mpc drew 3.9–4.1 M points a frame, falling steadily with no jump, and no console errors. The xtask binary had been built from the deleted `wt-budget` worktree (shared target directory, path compiled in), so it was rebuilt for the main tree first."
+        tone: success

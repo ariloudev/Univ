@@ -1,5 +1,6 @@
 // A drawn point as the hover label and the chosen object know it, read from its tile.
 
+import { drawnOf } from "../catalogue/lod.ts";
 import type { Batch, Domain } from "../catalogue/tiles.ts";
 import type { StarColourIndex } from "../scene/starColour.ts";
 import { KINDS } from "../scene/kinds.ts";
@@ -49,10 +50,11 @@ function colourOf(batch: Batch, index: number, names: readonly StarColourIndex["
   return bands === undefined || hundredths === undefined ? undefined : { index: hundredths / 100, bands };
 }
 
-/** The point of `world` under `pointer`, if any. */
+/** The point of `world` under `pointer`, if any, of the points drawn. */
 export function pointUnder(world: World, pointer: Pointer): ScenePoint | undefined {
   const { controller, catalogue } = world;
-  const picked = pick(world.pickable, controller.view, controller.toFrame, pointer);
+  const drawn = world.pickable.map((p) => ({ ...p, count: drawnOf(p.offsets.length / 3, catalogue?.share(p.batch.tile.id) ?? 1) }));
+  const picked = pick(drawn, controller.view, controller.toFrame, pointer);
   const entry = picked === undefined ? undefined : world.pickable[picked.batch];
   if (picked === undefined || entry === undefined || catalogue === undefined) return undefined;
   return pointOf((name) => catalogue.domain(name), entry.batch, picked.index);

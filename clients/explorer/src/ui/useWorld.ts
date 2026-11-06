@@ -223,6 +223,7 @@ export function drawn(world: World, overlay: Overlay, size: { width: number; hei
 function animate(world: World, overlay: RefObject<Overlay>, size: Surroundings["size"]): () => void {
   let marked = false;
   let frame = requestAnimationFrame(function loop() {
+    if (world.renderer.fading()) world.controller.invalidate();
     if (world.controller.tick()) marked = drawn(world, overlay.current, size(), marked);
     frame = requestAnimationFrame(loop);
   });
@@ -252,6 +253,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
     }
     const around = surroundings(element);
     const state = emptyWorld(new Controller(renderer, around), renderer);
+    renderer.setShare((id) => state.catalogue?.share(id) ?? 1);
     setWorld(state);
     const abort = new AbortController();
     startCatalogue(release, state, abort.signal)

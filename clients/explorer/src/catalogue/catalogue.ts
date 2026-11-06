@@ -6,7 +6,7 @@ import type { ManifestSource } from "univ-tile-decoder";
 
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
-import { POINT_BUDGET, type Tree, plan, planEvery, treeOf } from "./lod.ts";
+import { POINT_BUDGET, type Tree, plan, planEvery, shareOf, treeOf } from "./lod.ts";
 import { KINDS } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
@@ -143,11 +143,21 @@ export class Catalogue {
     if (revived) queueMicrotask(() => this.update(sight));
   }
 
+  /** The share of the tile `id`'s points drawn for the view last seen: every one with level of
+   * detail off, or before the view is known. */
+  share(id: string): number {
+    const parent = this.tree.byId.get(id)?.parent;
+    if (!this.levelOfDetail || this.sight === undefined || parent === undefined) return 1;
+    const read = this.drawn.get(parent) ?? this.kept.get(parent);
+    return shareOf(this.tree.byId.get(parent), this.sight, read?.extent);
+  }
+
   /** Turns level of detail on or off: off, every tile is fetched, the coarser levels first, and
    * none dropped; on again, the tiles held come back within the budget. */
   setLevelOfDetail(on: boolean): void {
     if (on === this.levelOfDetail) return;
     this.levelOfDetail = on;
+    this.events.onChange();
     if (this.sight !== undefined) this.update(this.sight);
   }
 
