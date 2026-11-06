@@ -23,7 +23,7 @@ use std::path::{Path, PathBuf};
 
 use univ_model::release::manifest::Target;
 use univ_model::release::shards::Database;
-use univ_model::release::{ReleaseManifest, Scope, TABLES, keys};
+use univ_model::release::{ReleaseManifest, Scope, TABLES, keys, valid_in};
 
 use super::check::{Status, published_status, sql_text, tables_in};
 use super::journal::{self, Journal};
@@ -119,8 +119,9 @@ fn manifest_of(
         .map_err(|e| e.to_string())
 }
 
-/// The R2 keys of release `number` that its manifest and its publish journal name, or none
-/// when neither is left; and whether the journal named any.
+/// The R2 keys of release `number` that its manifest and its publish journal name and that no
+/// other release left unpruned holds, or none when neither is left; and whether the journal
+/// named any.
 fn r2_keys(
     store: &mut dyn Store,
     number: u32,
@@ -146,8 +147,31 @@ fn r2_keys(
         .collect();
     let any_journaled = !journaled.is_empty();
     found.extend(journaled);
-    found.retain(|k| k.starts_with(&prefix));
+    let held = held_elsewhere(store, number)?;
+    found.retain(|k| k.starts_with(&prefix) || (k.starts_with(FILES) && !held.contains(k)));
     Ok((Some(found), any_journaled))
+}
+
+/// The prefix of the R2 keys of files kept by their SHA-256.
+const FILES: &str = "files/";
+
+/// The R2 keys of the files that a release left unpruned, other than `number`, maps a path to.
+fn held_elsewhere(store: &mut dyn Store, number: u32) -> Result<BTreeSet<String>, String> {
+    let sql = format!(
+        "SELECT DISTINCT f.sha256 AS sha256 FROM release_files f JOIN releases r \
+         ON r.pruned_at IS NULL AND r.number != {number} AND {}",
+        valid_in("f.", "r.number")
+    );
+    store
+        .query(Database::Catalogue, &sql)?
+        .iter()
+        .map(|row| {
+            row.get("sha256")
+                .and_then(serde_json::Value::as_str)
+                .map(keys::file)
+                .ok_or_else(|| "release_files gives a row with no sha256".to_owned())
+        })
+        .collect()
 }
 
 /// Deletes `keys`: all but the release's manifest in one batch, then the manifest.
@@ -302,7 +326,6 @@ pub fn prune_with(
         return Err(PruneError::Latest { number });
     }
     let (listing, journaled) = r2_keys(store, number, options).map_err(failed)?;
-    let prefix = keys::prefix(number);
     if !status.listed {
         let Some(keys) = listing.filter(|_| journaled) else {
             return Err(PruneError::NotListed { number });
@@ -312,7 +335,7 @@ pub fn prune_with(
         delete_all(store, number, &keys).map_err(failed)?;
         progress.line(format!(
             "release {number}: never listed in D1, but its journal records R2 uploads: the {} \
-             keys under {prefix} its journal and manifest name deleted",
+             keys its journal and manifest name that no other release holds deleted",
             keys.len()
         ));
         let pruned_at = (options.now)();
@@ -340,7 +363,7 @@ pub fn prune_with(
         None => return Err(PruneError::NoFileList { number }),
     };
     progress.line(format!(
-        "release {number}: {files} R2 files under {prefix} deleted"
+        "release {number}: {files} R2 files that no release left unpruned holds deleted"
     ));
     if progress.stopping() {
         return Err(failed(STOPPED.to_owned()));

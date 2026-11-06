@@ -94,7 +94,8 @@ fn the_manifest_lists_every_file_of_the_release_with_its_sha256() {
         assert_eq!(file.bytes, bytes.len() as u64, "{}", file.path);
         assert_eq!(file.sha256, sha256(&bytes), "{}", file.path);
         match file.target {
-            Target::R2 => assert_eq!(file.key, Some(format!("releases/1/{}", file.path))),
+            // Each file lies under its SHA-256 in R2, shared by every release that holds it.
+            Target::R2 => assert_eq!(file.key, Some(keys::file(&file.sha256))),
             Target::D1 => {
                 assert!(file.path.starts_with("d1/") && file.key.is_none());
             }

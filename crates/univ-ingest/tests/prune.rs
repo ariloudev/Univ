@@ -12,7 +12,9 @@ mod memory_store;
 mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Op, pruning, publishing};
-use release_fixture::{build_next, fixture};
+use std::collections::BTreeSet;
+
+use release_fixture::{build_next, fixture, read_manifest};
 use univ_ingest::publish::{Latest, PruneError};
 use univ_model::release::{Scope, TABLES, keys};
 
@@ -225,12 +227,17 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
         build_next(&f);
         publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
     }
-    let keys_of_1: Vec<String> = store
-        .r2
-        .keys()
-        .filter(|k| k.starts_with(&keys::prefix(1)))
-        .cloned()
-        .collect();
+    // Release 1's files that release 2, left unpruned, does not hold, and its manifest.
+    let r2_of = |n: u32| -> BTreeSet<String> {
+        read_manifest(&univ_ingest::release::release_dir(out, n))
+            .files
+            .iter()
+            .filter_map(|f| f.key.clone())
+            .collect()
+    };
+    let held_by_2 = r2_of(2);
+    let mut keys_of_1: BTreeSet<String> = r2_of(1).difference(&held_by_2).cloned().collect();
+    keys_of_1.insert(keys::key(1, keys::MANIFEST));
     // R2 lost the manifest, and the build output no longer holds the release.
     store.r2.remove(&keys::key(1, keys::MANIFEST));
     std::fs::remove_dir_all(univ_ingest::release::release_dir(out, 1)).unwrap();
@@ -258,7 +265,8 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
     let pruned = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap();
     assert!(pruned.listed && pruned.rows > 0);
     assert_eq!(pruned.files, keys_of_1.len());
-    assert!(!store.r2.keys().any(|k| k.starts_with(&keys::prefix(1))));
+    assert!(!store.r2.keys().any(|k| keys_of_1.contains(k)));
+    assert!(held_by_2.iter().all(|k| store.r2.contains_key(k)));
 }
 
 #[test]

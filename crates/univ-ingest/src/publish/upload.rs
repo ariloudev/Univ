@@ -218,14 +218,18 @@ fn upload(
             }
         }
         Unit::R2(f) => {
-            let key = f
-                .key
-                .as_deref()
-                .filter(|k| k.starts_with(&keys::prefix(n)))
-                .ok_or_else(|| format!("{} has no key under {}", f.path, keys::prefix(n)))?;
+            // Each file lies under its SHA-256; the release manifest alone under the release.
+            let key = if f.path == keys::MANIFEST {
+                keys::key(n, keys::MANIFEST)
+            } else {
+                keys::file(&f.sha256)
+            };
+            if f.key.as_deref() != Some(key.as_str()) {
+                return Err(format!("{} is not keyed as {key} in the manifest", f.path));
+            }
             let path = dir.join(&f.path);
             local(&path, f)?;
-            put_checked(store, key, &path, f.bytes, &f.sha256)?;
+            put_checked(store, &key, &path, f.bytes, &f.sha256)?;
             let checked = "read back with its SHA-256".to_owned();
             told(f, &checked, None);
             Ok(vec![done(f, checked)])

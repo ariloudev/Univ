@@ -9,8 +9,10 @@ mod common;
 use serde::Deserialize;
 use univ_ingest::grids::{Window, read_cf4_basins, read_cf4pp};
 use univ_ingest::release::grid_files;
+use univ_ingest::tiles::sha256;
 use univ_model::derive::Release;
 use univ_model::grid::{Grid, Samples};
+use univ_model::release::keys;
 
 #[derive(Deserialize)]
 struct Sidecar {
@@ -49,10 +51,13 @@ fn written(grid: &Grid, id: &str) -> (Vec<(String, Vec<u8>)>, serde_json::Value)
         .find(|(p, _)| p == &format!("grids/{id}/header.json"))
         .map(|(_, b)| serde_json::from_slice(b).unwrap())
         .unwrap();
-    assert_eq!(
-        files.row.header_key,
-        format!("releases/3/grids/{id}/header.json")
-    );
+    let header_bytes = &files
+        .files
+        .iter()
+        .find(|(p, _)| p == &format!("grids/{id}/header.json"))
+        .unwrap()
+        .1;
+    assert_eq!(files.row.header_key, keys::file(&sha256(header_bytes)));
     (files.files, header)
 }
 
@@ -95,9 +100,9 @@ fn a_grid_is_written_as_its_header_and_float_samples_in_its_own_layout() {
     for (i, field) in grid.fields.iter().enumerate() {
         let entry = &header["fields"][i];
         let path = format!("grids/cf4pp-density/field-{i}.f32");
-        assert_eq!(entry["samples"], format!("releases/3/{path}"));
-        assert_eq!(entry["kind"], "reconstructed");
         let bytes = &files.iter().find(|(p, _)| p == &path).unwrap().1;
+        assert_eq!(entry["samples"], keys::file(&sha256(bytes)));
+        assert_eq!(entry["kind"], "reconstructed");
         let Samples::Real(values) = &field.samples else {
             unreachable!("CF4++ is real")
         };
