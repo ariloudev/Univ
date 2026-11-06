@@ -10,6 +10,15 @@ versions:
     title: "W3: Ingest writes the change"
     goal: "A build writes only the rows it adds or changes and the retirements of those it drops, by comparing with the row index of the release before, and records the change in manifest v3."
     status: active
+  - key: 01a1b23d-8026-71c1-a9b6-b1575c41e175
+    at: 2026-11-06T19:02:17Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3: Ingest writes the change"
+    goal: "A build writes only the rows it adds or changes and the retirements of those it drops, by comparing with the row index of the release before, and records the change in manifest v3."
+    status: done
 blocks:
   - key: 01a1b22c-9b0c-7557-ac17-0f54b8413107
     id: w3-index
@@ -111,6 +120,15 @@ blocks:
         title: "Review and gate"
         detail: "/simplify (reuse, simplification, efficiency, altitude) and /code-review high ran; fixes applied, see the note. Gate next."
         state: active
+      - key: 01a1b23d-8026-71c1-a9b6-b15543bc9adc
+        at: 2026-11-06T19:02:17Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify (four angles) and /code-review high; fixes in 023b97a; eight criteria linked (f98ba6e); cargo xtask check passed, 13 gates."
+        state: done
   - key: 01a1b23b-15e4-74bd-8f7e-3ad8dd753036
     id: w3-findings
     kind: note
@@ -139,3 +157,38 @@ blocks:
           **Not changed:** the API fixture keeps release 2 written whole (`release = 2`, never retired): univ-api's testkit has its own releases 1–3, and the rows valid in 2 are what it reads; the old states' YAML stays (only the replaced row index is removed); the held-shard count stays derived from `Kept`.
 
           **Carried forward:** a state with releases and no row index cannot build until W5 seeds release 10's; R2 files are still all written and uploaded (skipping held ones is W4's publish step).
+  - key: 01a1b23d-8026-71c1-a9b6-b154b7c2d05b
+    id: w3-produced
+    kind: note
+    versions:
+      - key: 01a1b23d-8026-71c1-a9b6-b156cae11279
+        at: 2026-11-06T19:02:17Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What W3 produced"
+        markdown: |-
+          ```mermaid
+          flowchart LR
+            I["rows/ of release n-1\nkey + content hash per row"] --> C{"each row of release n"}
+            C -->|same key, same content| K["not written\nkeeps its release"]
+            C -->|new or changed| W["written as release n"]
+            I -->|not kept| R["retired = n\nby key, -r001 files"]
+            C --> N["rows.part/ → states/n/rows"]
+          ```
+
+          | | Before W3 | After |
+          |---|---|---|
+          | Rows a structure-only release writes | every row | the structures' rows; no object-shard row or file |
+          | Retirement | every earlier row, whole tables | by key, only what changed or went |
+          | Manifest | v2 | v3: `parent`, rows added and retired per table |
+          | Publish | checks tables it loads | also checks tables it writes no file of; refuses a parent `latest` does not point to |
+          | Prune | `release = n` | rows valid in n and no kept release, bounded by the nearest kept on each side |
+          | `xtask science` | one build's files | the build loaded through its parent chain |
+
+          The index hashes with SHA-256, so a toolchain upgrade changes nothing; at ~100 M rows it holds ~3.3 GB during the build and reads mostly in order.
+
+          **Carried forward to W4:** files already held are still written and uploaded; CON-3 still sums shared rows once per release (errs high); fixture state and integration on chains of releases.
+          **To W5:** the real state has no row index, so it cannot build until release 10's is seeded.
+        tone: success
