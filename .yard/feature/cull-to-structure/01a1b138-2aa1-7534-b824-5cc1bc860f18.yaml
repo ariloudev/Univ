@@ -10,3 +10,3527 @@ versions:
     title: "Review and gate"
     goal: "/simplify and /code-review findings answered, gate and integration green, the branch ready to merge when asked."
     status: planned
+  - key: 01a1b15d-66f6-7446-a1fe-f28cddfe1c1d
+    at: 2026-11-06T14:57:30Z
+    revision: 18
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review and gate"
+    goal: "/simplify and /code-review findings answered, gate and integration green, the branch ready to merge when asked."
+    status: active
+blocks:
+  - key: 01a1b166-3ffe-746a-a2e6-44d9faa819af
+    id: t-bright
+    kind: task
+    versions:
+      - key: 01a1b166-3ffe-746a-a2e6-44db5c869fc8
+        at: 2026-11-06T15:07:10Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Brighter points while culled"
+        detail: "Asked by the owner mid-review: points inside drawn fully opaque, twice as bright, and not faded by distance while the cull is on. Spec criterion first, then the renderer and a test."
+        state: active
+  - key: 01a1b166-3ffe-746a-a2e6-44da4810cba2
+    id: spec-bright
+    kind: loft
+    versions:
+      - key: 01a1b166-3ffe-746a-a2e6-44dc8f0ff95c
+        at: 2026-11-06T15:07:10Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: spec-change
+        note: "The owner asked for brighter galaxies while the cull is on. Every point is drawn at half opacity; culled, the points inside go to full opacity whatever the distance. A minor change, committed alone before the code."
+        recorded:
+          commit: "89d1ae384750810421d38318b53519e62bd62be4"
+          branch: "feature/cull-to-structure"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-06T15:07:10Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 5,
+              "graph.diff": 113,
+              "graph.edges": 24,
+              "graph.nodes": 142,
+              "status.base.added": 95,
+              "status.base.changed": 13,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "changed",
+                  "key": "01a19f25-5955-701e-b3cf-ddcffaf7bf98",
+                  "kind": "decision",
+                  "label": "ADR-13",
+                  "name": "Keep every object in D1 until a DESI-sized source arrives",
+                  "words": {
+                    "after": "Keep every object in D1 until a DESI-sized source arrives\n\nObjects live in D1 under a monitored 10 GB cap, and a larger source first needs a decision on R2 shards.",
+                    "before": "Keep every object in D1 until a DESI-sized source arrives\n\nObjects live in D1 under a monitored 10 GB cap, and a larger source first needs a decision on R2 shards."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58da6aab49a1",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Add DESI DR1 and seven more galaxy surveys to release 10",
+                  "words": {
+                    "after": "Add DESI DR1 and seven more galaxy surveys to release 10\n\nRelease 10 adds DESI DR1, the rest of SDSS DR17, 2dFGRS, GAMA DR4, ALFALFA α.100, 2MPZ and WISE × SuperCOSMOS, quasars included, while Euclid waits for its first full data release and the COSMOS-Web groups for a deep-field scale domain."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58e3584b3f25",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Admit sources for non-commercial use, marked as such",
+                  "words": {
+                    "after": "Admit sources for non-commercial use, marked as such\n\nA source whose terms allow only non-commercial use is admitted, marked non-commercial in its source definition, and served with that mark."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58eab95e4bc8",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Publish a source while its permission is pending",
+                  "words": {
+                    "after": "Publish a source while its permission is pending\n\nA source definition may carry the status permission pending, and Univ Ingest builds and publishes such a source like a permitted one, serving its status with its terms."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58f331400c25",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Shard a release's objects across several D1 databases",
+                  "words": {
+                    "after": "Shard a release's objects across several D1 databases\n\nA release keeps its sources, structures and an index of object ids in a catalogue database, and its objects in object shards divided by cell, each within the 10 GB cap."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-183b90085a10",
+                  "kind": "criterion",
+                  "label": "AC-7",
+                  "name": "The redistribution status is permitted, permitted with credit, permission pending, or forbidden.",
+                  "words": {
+                    "after": "The redistribution status is permitted, permitted with credit, permission pending, or forbidden.",
+                    "before": "The redistribution status is permitted, permitted with credit, or forbidden."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58fcaa8b8bee",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source whose status is permission pending names whom permission is asked of, and the date it was asked once the request is sent.",
+                  "words": {
+                    "after": "A source whose status is permission pending names whom permission is asked of, and the date it was asked once the request is sent."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58fd8e368264",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source whose terms allow only non-commercial use is marked non-commercial, with the clause that says so quoted.",
+                  "words": {
+                    "after": "A source whose terms allow only non-commercial use is marked non-commercial, with the clause that says so quoted."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall provide a source definition for each source that release 10 adds.",
+                  "words": {
+                    "after": "Univ Ingest shall provide a source definition for each source that release 10 adds."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58ff5749b30b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The spectroscopic sources are DESI DR1 redshifts, SDSS DR17 distant galaxies and quasars, 2dFGRS and GAMA DR4 redshifts.",
+                  "words": {
+                    "after": "The spectroscopic sources are DESI DR1 redshifts, SDSS DR17 distant galaxies and quasars, 2dFGRS and GAMA DR4 redshifts."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-5900bff82962",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The 21 cm source is ALFALFA α.100.",
+                  "words": {
+                    "after": "The 21 cm source is ALFALFA α.100."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59016fa68370",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The photometric redshift sources are 2MPZ and WISE × SuperCOSMOS photometric redshifts.",
+                  "words": {
+                    "after": "The photometric redshift sources are 2MPZ and WISE × SuperCOSMOS photometric redshifts."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-5902c9bf1383",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The quasars of DESI DR1 and SDSS DR17 are taken beside their galaxies.",
+                  "words": {
+                    "after": "The quasars of DESI DR1 and SDSS DR17 are taken beside their galaxies."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a44aeb16de5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Where a source's provider serves it only through an interface that Univ Ingest cannot page, such as a form that cancels long answers, Univ Ingest shall read the source from a prepared file in its download cache, made by a script kept in the repository, after checking the file against its definition.",
+                  "words": {
+                    "after": "Where a source's provider serves it only through an interface that Univ Ingest cannot page, such as a form that cancels long answers, Univ Ingest shall read the source from a prepared file in its download cache, made by a script kept in the repository, after checking the file against its definition."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a45af5083ab",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The source definition names the script that prepared the file, the file, its SHA-256 and its row count.",
+                  "words": {
+                    "after": "The source definition names the script that prepared the file, the file, its SHA-256 and its row count."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a46049c41ff",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A prepared file whose SHA-256 or row count differs from its definition's is refused, naming the file, the value expected and the value found.",
+                  "words": {
+                    "after": "A prepared file whose SHA-256 or row count differs from its definition's is refused, naming the file, the value expected and the value found."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a470d130dde",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Univ Ingest makes no request for a prepared source.",
+                  "words": {
+                    "after": "Univ Ingest makes no request for a prepared source."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-f735-761b-8646-f276559d7943",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A prepared file missing from the cache fails its source, naming the script that prepares it.",
+                  "words": {
+                    "after": "A prepared file missing from the cache fails its source, naming the script that prepares it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a4853c15f56",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The source's provenance lists the prepared file with its digest and the script that made it.",
+                  "words": {
+                    "after": "The source's provenance lists the prepared file with its digest and the script that made it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59032696dddd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An uncertainty a source states once for its whole catalogue, such as 2dFGRS's rms of 85 km/s or 2MPZ's photometric redshift scatter of 0.015, is given to each of its values as an estimated uncertainty that cites where it is stated.",
+                  "words": {
+                    "after": "An uncertainty a source states once for its whole catalogue, such as 2dFGRS's rms of 85 km/s or 2MPZ's photometric redshift scatter of 0.015, is given to each of its values as an estimated uncertainty that cites where it is stated."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae02a06fd78a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A redshift error that a source defines as a multiple of another column, such as ALFALFA's half the error on the HI line's width, is that column's value times the stated factor.",
+                  "words": {
+                    "after": "A redshift error that a source defines as a multiple of another column, such as ALFALFA's half the error on the HI line's width, is that column's value times the stated factor."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae03b8e720b0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source read from files reads FITS binary tables or gzipped CSV tables, the latter in pieces of whole lines, so that no file is held unpacked whole.",
+                  "words": {
+                    "after": "A source read from files reads FITS binary tables or gzipped CSV tables, the latter in pieces of whole lines, so that no file is held unpacked whole."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59042cfff012",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A barycentric redshift, such as DESI's, is kept as measured and named barycentric, never relabelled heliocentric.",
+                  "words": {
+                    "after": "A barycentric redshift, such as DESI's, is kept as measured and named barycentric, never relabelled heliocentric."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae0461c674ae",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall leave out the rows that a source definition's rules select out, as a query's WHERE clause would for a source read whole from a file, and count them.",
+                  "words": {
+                    "after": "Univ Ingest shall leave out the rows that a source definition's rules select out, as a query's WHERE clause would for a source read whole from a file, and count them."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae05fcc0d255",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A rule's condition tests one column with exactly one of: the cell is one of a list of values, none of a list of values, or a number below a bound.",
+                  "words": {
+                    "after": "A rule's condition tests one column with exactly one of: the cell is one of a list of values, none of a list of values, or a number below a bound."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae06fd8a5b30",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row a rule selects out of the source, such as another survey's redshift that GAMA re-serves or a star in a galaxy survey, is counted under the reason `outside_selection`, and the rule's basis says why.",
+                  "words": {
+                    "after": "A row a rule selects out of the source, such as another survey's redshift that GAMA re-serves or a star in a galaxy survey, is counted under the reason `outside_selection`, and the rule's basis says why."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae077f98b2cc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A cell too large for a double to hold exactly, such as an SDSS specObjID, is compared with a condition's values as text.",
+                  "words": {
+                    "after": "A cell too large for a double to hold exactly, such as an SDSS specObjID, is compared with a condition's values as text."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4bc1cdc275",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object that holds pieces of a nearby galaxy takes the position of the galaxy whose extent took them, never a piece's.",
+                  "words": {
+                    "after": "An object that holds pieces of a nearby galaxy takes the position of the galaxy whose extent took them, never a piece's."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4cdd697c86",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Among positions without a published uncertainty, a position from a 21 cm survey's beam ranks after an optical or infrared survey's.",
+                  "words": {
+                    "after": "Among positions without a published uncertainty, a position from a 21 cm survey's beam ranks after an optical or infrared survey's."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4d9f766f81",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall join as pieces of one galaxy the fibres of one fibre survey that lie together in the nearby volume at one velocity, where no source of the release publishes the galaxy's extent.",
+                  "words": {
+                    "after": "Univ Ingest shall join as pieces of one galaxy the fibres of one fibre survey that lie together in the nearby volume at one velocity, where no source of the release publishes the galaxy's extent."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4e61ca16c8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Fibres of one survey join below the matching rules' velocity of the nearby volume, each within their angle and velocity tolerance of every fibre already joined.",
+                  "words": {
+                    "after": "Fibres of one survey join below the matching rules' velocity of the nearby volume, each within their angle and velocity tolerance of every fibre already joined."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4fa228b618",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The fibre surveys whose fibres may join are those the matching rules list.",
+                  "words": {
+                    "after": "The fibre surveys whose fibres may join are those the matching rules list."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf5086a0f213",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Two groups that each hold an entry of a source naming its own galaxy are never joined as one galaxy.",
+                  "words": {
+                    "after": "Two groups that each hold an entry of a source naming its own galaxy are never joined as one galaxy."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ae91-90f5-716e-b3d3-07b944951329",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Two groups that each hold an entry of one source other than a fibre survey, such as two ALFALFA detections, are never joined as one galaxy.",
+                  "words": {
+                    "after": "Two groups that each hold an entry of one source other than a fibre survey, such as two ALFALFA detections, are never joined as one galaxy."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf51d418d386",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each joined fibre records the rule as its method, its separation and its velocity difference.",
+                  "words": {
+                    "after": "Each joined fibre records the rule as its method, its separation and its velocity difference."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall divide a release's objects among object shards, each a D1 database, by the cell of the cell index that holds each object.",
+                  "words": {
+                    "after": "Univ Ingest shall divide a release's objects among object shards, each a D1 database, by the cell of the cell index that holds each object."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590689bd8862",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each object is in exactly one object shard, with its catalogue entries, measurements, designations and cell.",
+                  "words": {
+                    "after": "Each object is in exactly one object shard, with its catalogue entries, measurements, designations and cell."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59076b96877f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "All the objects of one cell of the cell index are in one object shard.",
+                  "words": {
+                    "after": "All the objects of one cell of the cell index are in one object shard."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-5908e94d50c7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object that is not placed is assigned to an object shard by its object id.",
+                  "words": {
+                    "after": "An object that is not placed is assigned to an object shard by its object id."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59092cd5e331",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The catalogue database holds the release's sources, terms, structures and grids, and the object shard of every object id.",
+                  "words": {
+                    "after": "The catalogue database holds the release's sources, terms, structures and grids, and the object shard of every object id."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590a9d7b0864",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release manifest names each object shard with the cells it holds and its estimated size.",
+                  "words": {
+                    "after": "The release manifest names each object shard with the cells it holds and its estimated size."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590b8ae658df",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If the objects of one cell would exceed an object shard's budget, then Univ Ingest shall refuse the build and name the cell, its object count and its estimated size.",
+                  "words": {
+                    "after": "If the objects of one cell would exceed an object shard's budget, then Univ Ingest shall refuse the build and name the cell, its object count and its estimated size."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590cebe0fc8d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No release number is used up by the refused build.",
+                  "words": {
+                    "after": "No release number is used up by the refused build."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590d7b43ba10",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release's rows are deleted from the catalogue database and from every object shard.",
+                  "words": {
+                    "after": "The release's rows are deleted from the catalogue database and from every object shard."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-153ee5a17619",
+                  "kind": "requirement",
+                  "label": "RQ-41",
+                  "name": "When the owner publishes a complete release, Univ Ingest shall upload its files to local R2 and its tables to the catalogue database and object shards of local D1, and only then point latest at it.",
+                  "words": {
+                    "after": "When the owner publishes a complete release, Univ Ingest shall upload its files to local R2 and its tables to the catalogue database and object shards of local D1, and only then point latest at it.",
+                    "before": "When the owner publishes a complete release, Univ Ingest shall upload its files to local R2 and its tables to local D1, and only then point latest at it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590ede3fd3b1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each object shard receives only the rows the release manifest assigns to it.",
+                  "words": {
+                    "after": "Each object shard receives only the rows the release manifest assigns to it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590fd0e5d484",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If the release needs more object shards than Univ Server binds, then Univ Ingest shall refuse to publish it before uploading anything.",
+                  "words": {
+                    "after": "If the release needs more object shards than Univ Server binds, then Univ Ingest shall refuse to publish it before uploading anything."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-5910680f6e67",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the number of object shards the release needs and the number Univ Server binds.",
+                  "words": {
+                    "after": "The message names the number of object shards the release needs and the number Univ Server binds."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d22c902253b",
+                  "kind": "quality_attribute",
+                  "label": "QA-2",
+                  "name": "Univ Server shall answer an object lookup within 200 milliseconds at the 95th percentile.",
+                  "words": {
+                    "after": "Univ Server shall answer an object lookup within 200 milliseconds at the 95th percentile.",
+                    "before": "Univ Server shall answer an object lookup within 200 milliseconds at the 95th percentile."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-591121be3932",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives the source's redistribution status and whether its terms allow only non-commercial use.",
+                  "words": {
+                    "after": "The response gives the source's redistribution status and whether its terms allow only non-commercial use."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59122e92f2fd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A page holds its results in the same order whichever object shards they come from.",
+                  "words": {
+                    "after": "A page holds its results in the same order whichever object shards they come from."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d1eda7c8eb5",
+                  "kind": "quality_attribute",
+                  "label": "QA-3",
+                  "name": "Univ Server shall answer the first page of a bounded volume query within 500 milliseconds at the 95th percentile.",
+                  "words": {
+                    "after": "Univ Server shall answer the first page of a bounded volume query within 500 milliseconds at the 95th percentile.",
+                    "before": "Univ Server shall answer the first page of a bounded volume query within 500 milliseconds at the 95th percentile."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "words": {
+                    "after": "Univ Explorer\n\nA web application that draws what Univ Server knows in three dimensions, around Earth, and lets\na person move through it with the mouse: from the nearest stars to the largest structures of\nthe universe.\n\nIt reads Univ Server's public API alone and draws only what a release placed, each point at the\nposition the release derived for it, each star in the colour of the temperature its colour\nindex gives and every other point in one colour, with the sources\ncredited as their terms require. Clicking a point reads its object; the structures are\ndrawn by their placed shapes.\n\nThe first version runs locally, beside Univ Server under `wrangler dev`. Flying with the\nkeyboard, editing layers, time and phones are outside it.",
+                    "before": "Univ Explorer\n\nA web application that draws what Univ Server knows in three dimensions, around Earth, and lets\na person move through it with the mouse: from the nearest stars to the largest structures of\nthe universe.\n\nIt reads Univ Server's public API alone and draws only what a release placed, each point at the\nposition the release derived for it, each star in the colour of the temperature its colour\nindex gives and every other point by the kind of value of its distance, with the sources\ncredited as their terms require. Clicking a point reads its object; the structures are\ndrawn by their placed shapes.\n\nThe first version runs locally, beside Univ Server under `wrangler dev`. Flying with the\nkeyboard, editing layers, time and phones are outside it."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3ffe4657fb77",
+                  "kind": "feature",
+                  "label": "F-34",
+                  "name": "Draw the catalogues",
+                  "words": {
+                    "after": "Draw the catalogues\n\nDrawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least. Each point is drawn by its rank against the share of its domain the view needs at its own distance, so that detail thins out smoothly with distance and no tile's edge shows, and tiles fade in and out. A switch turns level of detail off, so that every tile is fetched whatever the view.",
+                    "before": "Draw the catalogues\n\nDrawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a689-0b25-768a-9f1e-cc267f67e3c1",
+                  "kind": "criterion",
+                  "label": "AC-352",
+                  "name": "A tile's children are fetched only while a typical tile of its level, with the mean points of the level's split tiles and the level's edge, would have its points farther apart on screen than 3 pixels at the distance of the tile's nearest points, so that a region far away or seen whole is not refined beyond what the screen shows, and regions at one distance are refined alike.",
+                  "words": {
+                    "after": "A tile's children are fetched only while a typical tile of its level, with the mean points of the level's split tiles and the level's edge, would have its points farther apart on screen than 3 pixels at the distance of the tile's nearest points, so that a region far away or seen whole is not refined beyond what the screen shows, and regions at one distance are refined alike.",
+                    "before": "A tile's children are fetched only while its points lie farther apart on screen than 3 pixels, so that a region far away or seen whole is not refined beyond what the screen shows."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aea7-5e8b-7623-8601-48fb7856d2e3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A tile whose children are held keeps them while a typical tile of its level would have its points farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched.",
+                  "words": {
+                    "after": "A tile whose children are held keeps them while a typical tile of its level would have its points farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aea7-5e8b-7623-8601-48fc4cf3ff3f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where the budget cannot hold every family of tiles the view needs, a family that holds any of its tiles in view counts as half again its size on screen, so that a view moving a little does not trade it for a family of nearly its size.",
+                  "words": {
+                    "after": "Where the budget cannot hold every family of tiles the view needs, a family that holds any of its tiles in view counts as half again its size on screen, so that a view moving a little does not trade it for a family of nearly its size."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aea7-5e8b-7623-8601-48fd8492b9c4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A view whose budget is full, turned by 0.1 degree and back again and again, drops and fetches no tile after its first turn.",
+                  "words": {
+                    "after": "A view whose budget is full, turned by 0.1 degree and back again and again, drops and fetches no tile after its first turn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aead-1e30-7695-bbd5-099c2f301565",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A held tile counts as in view until it lies more than 1 degree outside the view, so that a view turning a little does not drop a tile at its edge and fetch it again as it turns back.",
+                  "words": {
+                    "after": "A held tile counts as in view until it lies more than 1 degree outside the view, so that a view turning a little does not drop a tile at its edge and fetch it again as it turns back."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-4006f5c2ce8f",
+                  "kind": "criterion",
+                  "label": "AC-355",
+                  "name": "While level of detail is on, no more than 6,000,000 points are held at once.",
+                  "words": {
+                    "after": "While level of detail is on, no more than 6,000,000 points are held at once.",
+                    "before": "No more than 3,000,000 points are held at once."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aeb6-f18d-7787-9cbd-de2cfdcfe714",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A dropped tile stays drawn, its points counted and its sources credited, until no tile is on its way, so that a moving view shows no region emptier while its new tiles arrive.",
+                  "words": {
+                    "after": "A dropped tile stays drawn, its points counted and its sources credited, until no tile is on its way, so that a moving view shows no region emptier while its new tiles arrive."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aeb6-f18d-7787-9cbd-de2dfa8b12aa",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The dropped tiles kept drawn hold no more than a quarter of the budget, 1,500,000 points, beyond it, and those beyond it are drawn no more at once.",
+                  "words": {
+                    "after": "The dropped tiles kept drawn hold no more than a quarter of the budget, 1,500,000 points, beyond it, and those beyond it are drawn no more at once."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A dropped tile still drawn that the view wants again is drawn on without being read again.",
+                  "words": {
+                    "after": "A dropped tile still drawn that the view wants again is drawn on without being read again."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-272151c4d940",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned level of detail off, Univ Explorer shall fetch every tile of the release, the coarser levels first, whatever the view, and drop none.",
+                  "words": {
+                    "after": "While the person has turned level of detail off, Univ Explorer shall fetch every tile of the release, the coarser levels first, whatever the view, and drop none."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-2722e634b9b0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds a switch that turns level of detail on and off, on when the page's address does not turn it off.",
+                  "words": {
+                    "after": "The top bar holds a switch that turns level of detail on and off, on when the page's address does not turn it off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-272335750e5f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail off, every tile of every scale domain is fetched, the tiles of each level asked for before those of the level below, and no tile is dropped, whatever the view and the budget.",
+                  "words": {
+                    "after": "With level of detail off, every tile of every scale domain is fetched, the tiles of each level asked for before those of the level below, and no tile is dropped, whatever the view and the budget."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-2724ac33dc33",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Turned on again, level of detail drops the tiles the view does not need until the points held fit the budget.",
+                  "words": {
+                    "after": "Turned on again, level of detail drops the tiles the view does not need until the points held fit the budget."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-2725108d8df2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps level of detail turned off, so that a reload or a shared link keeps it off.",
+                  "words": {
+                    "after": "The page's address keeps level of detail turned off, so that a reload or a shared link keeps it off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdc985f6f0e9",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw each point of a held tile while its rank lies below the share of its domain the view needs at the point's own distance, and fade each tile in as it arrives and out as it goes.",
+                  "words": {
+                    "after": "Univ Explorer shall draw each point of a held tile while its rank lies below the share of its domain the view needs at the point's own distance, and fade each tile in as it arrives and out as it goes."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdca66fcbd08",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The share of a domain the view needs at a distance rises, level by level below the root, from the share the levels above hold to the share the level adds, in proportion as a typical tile of the level above would have its points from 3 to 6 pixels apart on screen at that distance.",
+                  "words": {
+                    "after": "The share of a domain the view needs at a distance rises, level by level below the root, from the share the levels above hold to the share the level adds, in proportion as a typical tile of the level above would have its points from 3 to 6 pixels apart on screen at that distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0a9-6982-71c6-b321-0cfc1d1f8a93",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point's rank lies in its tile's slice of its domain, from the share the levels above the tile's hold to the share its level adds, or to all for a leaf, the tile's points dividing the slice evenly in their shuffled order.",
+                  "words": {
+                    "after": "A point's rank lies in its tile's slice of its domain, from the share the levels above the tile's hold to the share its level adds, or to all for a leaf, the tile's points dividing the slice evenly in their shuffled order."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0a9-6982-71c6-b321-0cfd3507cc88",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Points at one distance are drawn at one share of their domain whichever tiles hold them, so that where the tiles the view needs are held no tile's cube shows as an edge.",
+                  "words": {
+                    "after": "Points at one distance are drawn at one share of their domain whichever tiles hold them, so that where the tiles the view needs are held no tile's cube shows as an edge."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-81da-759e-8532-70d7aa4d0ff1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every point of a root tile is drawn.",
+                  "words": {
+                    "after": "Every point of a root tile is drawn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdcbf842c1af",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The share drawn is the first points of the tile in an order shuffled by the tile's id, so that every share is an even sample of its points, the same on every read.",
+                  "words": {
+                    "after": "The share drawn is the first points of the tile in an order shuffled by the tile's id, so that every share is an even sample of its points, the same on every read."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdcc1ec02df7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A tile fades in over 0.3 seconds once its points arrive, and out over 0.3 seconds before they are drawn no more.",
+                  "words": {
+                    "after": "A tile fades in over 0.3 seconds once its points arrive, and out over 0.3 seconds before they are drawn no more."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdcd4901ec3c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail off, every point of every held tile is drawn.",
+                  "words": {
+                    "after": "With level of detail off, every point of every held tile is drawn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0b8-3632-76bc-88e5-8dd265a1a28d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail on, a domain's points are drawn fully opaque while, at the eye's distance from the focus, the view still needs more of the domain than its root holds, since thinned they crowd no more as the eye withdraws.",
+                  "words": {
+                    "after": "With level of detail on, a domain's points are drawn fully opaque while, at the eye's distance from the focus, the view still needs more of the domain than its root holds, since thinned they crowd no more as the eye withdraws."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0c4-82ea-7058-b4c4-959c016ec0f3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail on, a domain's points fade beyond the distance where the view needs no more of it than its root holds, as they crowd again, never fainter than with level of detail off.",
+                  "words": {
+                    "after": "With level of detail on, a domain's points fade beyond the distance where the view needs no more of it than its root holds, as they crowd again, never fainter than with level of detail off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0b8-5967-707c-ba41-c9e3bc5755a6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white.",
+                  "words": {
+                    "after": "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdce5099b2f5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Only the points drawn can be pointed at or clicked.",
+                  "words": {
+                    "after": "Only the points drawn can be pointed at or clicked."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                  "kind": "requirement",
+                  "label": "RQ-123",
+                  "name": "Univ Explorer shall draw every point outside the stars domain in one colour and count in the key the points drawn of each kind of value of distance.",
+                  "words": {
+                    "after": "Univ Explorer shall draw every point outside the stars domain in one colour and count in the key the points drawn of each kind of value of distance.",
+                    "before": "Univ Explorer shall colour each point outside the stars domain by the kind of value of its distance and show the key to the colours."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400b9b581384",
+                  "kind": "criterion",
+                  "label": "AC-362",
+                  "name": "Points outside the stars domain are drawn in one colour, whatever the kind of value of their distance.",
+                  "words": {
+                    "after": "Points outside the stars domain are drawn in one colour, whatever the kind of value of their distance.",
+                    "before": "Points outside the stars domain whose distances are measured, estimated, inferred and reconstructed are drawn in four distinct colours."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400c71ad8ebe",
+                  "kind": "criterion",
+                  "label": "AC-363",
+                  "name": "The key shows that colour and counts the points of the tiles held of each kind of value: measured, estimated, inferred and reconstructed.",
+                  "words": {
+                    "after": "The key shows that colour and counts the points of the tiles held of each kind of value: measured, estimated, inferred and reconstructed.",
+                    "before": "The key names each colour's kind of value and counts the points drawn in it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e063283348",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person checks \"Only what lies inside\" in the panel of the chosen structure, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                  "words": {
+                    "after": "When the person checks \"Only what lies inside\" in the panel of the chosen structure, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e17df5ce8a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure drawn as a volume offers a checkbox \"Only what lies inside\", cleared unless the page's address turns it on.",
+                  "words": {
+                    "after": "The panel of a structure drawn as a volume offers a checkbox \"Only what lies inside\", cleared unless the page's address turns it on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e2ed4a3967",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure drawn with no volume, as a point, a path, a ray or a range alone, offers no such checkbox.",
+                  "words": {
+                    "after": "A structure drawn with no volume, as a point, a path, a ray or a range alone, offers no such checkbox."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e33e6ecd76",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Inside a sphere, an ellipsoid or an oriented box is inside the solid, in the frame and unit its shape names.",
+                  "words": {
+                    "after": "Inside a sphere, an ellipsoid or an oriented box is inside the solid, in the frame and unit its shape names."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e496894c39",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Inside a sky region is in one of its cells and between its near and far distances.",
+                  "words": {
+                    "after": "Inside a sky region is in one of its cells and between its near and far distances."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e5419cfeb6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Inside a member list is inside the box bounding its members, inside a structure drawn by its extents is inside the box they span about its position, and inside a structure drawn by its bounding box is inside that box.",
+                  "words": {
+                    "after": "Inside a member list is inside the box bounding its members, inside a structure drawn by its extents is inside the box they span about its position, and inside a structure drawn by its bounding box is inside that box."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e6a6d53737",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel says the cull is approximate for a structure culled by a box that is not its published shape.",
+                  "words": {
+                    "after": "The panel says the cull is approximate for a structure culled by a box that is not its published shape."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e71f42aabb",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every point is tested alike, whatever its scale domain or kind, at its preferred distance and with no margin.",
+                  "words": {
+                    "after": "Every point is tested alike, whatever its scale domain or kind, at its preferred distance and with no margin."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b166-0bb4-703d-a861-7c307a08ae0b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "While the cull is on, the points inside are drawn fully opaque whatever the eye's distance from the focus, twice as bright as the brightest they are drawn without it, since those outside no longer crowd them.",
+                  "words": {
+                    "after": "While the cull is on, the points inside are drawn fully opaque whatever the eye's distance from the focus, twice as bright as the brightest they are drawn without it, since those outside no longer crowd them."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e859257b94",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn.",
+                  "words": {
+                    "after": "The panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e934fc10cf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point outside the volume is not named by the pointer nor chosen by a click, and the key does not count it.",
+                  "words": {
+                    "after": "A point outside the volume is not named by the pointer nor chosen by a click, and the key does not count it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7ea46d6c6e6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Choosing another structure keeps the cull on, for that structure.",
+                  "words": {
+                    "after": "Choosing another structure keeps the cull on, for that structure."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7eb103d71ac",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Closing the structure's panel turns the cull off.",
+                  "words": {
+                    "after": "Closing the structure's panel turns the cull off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7ece437e733",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the cull to a structure is on, Univ Explorer shall fetch and keep only the tiles whose cubes meet the box bounding the structure's volume.",
+                  "words": {
+                    "after": "While the cull to a structure is on, Univ Explorer shall fetch and keep only the tiles whose cubes meet the box bounding the structure's volume."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7ed28949521",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No tile whose cube lies wholly outside the box bounding the volume is fetched or kept.",
+                  "words": {
+                    "after": "No tile whose cube lies wholly outside the box bounding the volume is fetched or kept."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7eed8679d94",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The tiles that meet the box are planned within the point budget, and thinned by level of detail, as every tile is without the cull.",
+                  "words": {
+                    "after": "The tiles that meet the box are planned within the point budget, and thinned by level of detail, as every tile is without the cull."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7ef2701bb3c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall keep the cull to the chosen structure in the page's address.",
+                  "words": {
+                    "after": "Univ Explorer shall keep the cull to the chosen structure in the page's address."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7f0dcf15117",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Reloading the page, or opening its address elsewhere, draws the same structure chosen with the cull on.",
+                  "words": {
+                    "after": "Reloading the page, or opening its address elsewhere, draws the same structure chosen with the cull on."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3ce3944cd7e5",
+                  "kind": "component",
+                  "label": "CMP-3",
+                  "name": "D1",
+                  "words": {
+                    "after": "D1\n\nSQLite databases: the catalogue database of the releases, which holds their sources, structures and the object shard of each object id; the object shards, which hold objects, identities and the cell index; and the layers and keys.",
+                    "before": "D1\n\nSQLite databases: objects, identities, the cell index, layers and keys."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d0bd77ebdc",
+                  "kind": "component",
+                  "label": null,
+                  "name": "SDSS DR17 distant galaxies and quasars",
+                  "words": {
+                    "after": "SDSS DR17 distant galaxies and quasars\n\nThe rest of SDSS DR17's spectroscopy (Abdurro'uf et al. 2022, ApJS 259, 35) with zWarning = 0: the galaxies at 0.35 ≤ z < 1.2, about 1.53 million, mostly BOSS and eBOSS, and the quasars at any redshift, about 753,000. Public, with the SDSS acknowledgement."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d1c13261fc",
+                  "kind": "component",
+                  "label": null,
+                  "name": "2dFGRS",
+                  "words": {
+                    "after": "2dFGRS\n\nThe 2dF Galaxy Redshift Survey's final release (Colless et al. 2001, MNRAS 328, 1039; VizieR\nVII/250): 221,414 galaxies of redshift quality 3 or better over about 1,500 square degrees,\nwith heliocentric redshifts and one rms uncertainty of 85 km/s for the whole catalogue. Used\nunder the VizieR terms, for scientific and non-commercial use with its citation."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d2281c1099",
+                  "kind": "component",
+                  "label": null,
+                  "name": "ALFALFA α.100",
+                  "words": {
+                    "after": "ALFALFA α.100\n\nThe complete ALFALFA HI source catalogue (Haynes et al. 2018, ApJ 861, 49; VizieR\nJ/ApJ/861/49): the 25,434 code 1 detections over about 7,000 square degrees, with heliocentric\n21 cm velocities. The catalogue's own distances, a Hubble-law distance above 6,000 km/s and a\nflow model below, are not taken. An AAS table, for non-commercial use through VizieR."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d3b98ead8a",
+                  "kind": "component",
+                  "label": null,
+                  "name": "DESI public data release",
+                  "words": {
+                    "after": "DESI public data release\n\nThe public data release site of the Dark Energy Spectroscopic Instrument, with its copies at NOIRLab's Astro Data Lab."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d4eab51e82",
+                  "kind": "component",
+                  "label": null,
+                  "name": "DESI DR1 redshifts",
+                  "words": {
+                    "after": "DESI DR1 redshifts\n\nThe redshift catalogue of DESI's first data release (DESI Collaboration 2026, AJ 171, 285):\none primary redshift per target with ZWARN = 0, the 13.1 million galaxies and 1.6 million\nquasars of the Main Survey (the DR1 abstract) and those of its Survey Validation, with\nbarycentric redshifts and their errors. CC BY 4.0, with the DESI acknowledgement."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d51ef988ca",
+                  "kind": "component",
+                  "label": null,
+                  "name": "SuperCOSMOS Science Archive",
+                  "words": {
+                    "after": "SuperCOSMOS Science Archive\n\nThe archive of the Wide Field Astronomy Unit in Edinburgh that holds the 2MASS and WISE photometric redshift catalogues."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d66f8d9197",
+                  "kind": "component",
+                  "label": null,
+                  "name": "2MPZ",
+                  "words": {
+                    "after": "2MPZ\n\nThe 2MASS Photometric Redshift catalogue (Bilicki et al. 2014, ApJS 210, 9): 928,352\ngalaxies over nearly the whole sky, with photometric redshifts of scatter 0.015 for the whole\ncatalogue and spectroscopic ones where they exist. Permission to redistribute is pending."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d7b4335c3a",
+                  "kind": "component",
+                  "label": null,
+                  "name": "WISE × SuperCOSMOS photometric redshifts",
+                  "words": {
+                    "after": "WISE × SuperCOSMOS photometric redshifts\n\nThe WISE × SuperCOSMOS photometric redshift catalogue (Bilicki et al. 2016, ApJS 225, 5):\nabout 18.5 million galaxies over three quarters of the sky away from the Galactic plane, with\na scatter of 0.033 (1 + z) for the whole catalogue. Permission to redistribute is pending."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d805dbe294",
+                  "kind": "component",
+                  "label": null,
+                  "name": "GAMA data release site",
+                  "words": {
+                    "after": "GAMA data release site\n\nThe data release site of the Galaxy And Mass Assembly survey."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d918ceb9bc",
+                  "kind": "component",
+                  "label": null,
+                  "name": "GAMA DR4 redshifts",
+                  "words": {
+                    "after": "GAMA DR4 redshifts\n\nThe best redshift of each GAMA target in its fourth data release (Driver et al. 2022, MNRAS\n513, 439): the redshifts of quality 3 or better that GAMA measured itself, 248,682 before\nstars are left out, over\nabout 286 square degrees in five fields, heliocentric. Permission to redistribute is\npending."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3cf23344602c",
+                  "kind": "constraint",
+                  "label": "CON-3",
+                  "name": "The Release publisher shall keep every D1 database of the releases, the catalogue database and each object shard, within D1's 10 GB database cap, budgeting each release at 4.5 GB in each so the next release can be published before the previous one is pruned.",
+                  "words": {
+                    "after": "The Release publisher shall keep every D1 database of the releases, the catalogue database and each object shard, within D1's 10 GB database cap, budgeting each release at 4.5 GB in each so the next release can be published before the previous one is pruned.",
+                    "before": "The Release publisher shall keep the D1 tables of every unpruned release together within D1's 10 GB database cap, budgeting each release at 4.5 GB so the next release can be published before the previous one is pruned."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f25-5955-701e-b3cf-ddcffaf7bf98",
+                  "kind": "decision",
+                  "label": "ADR-13",
+                  "name": "Keep every object in D1 until a DESI-sized source arrives",
+                  "words": {
+                    "after": "Keep every object in D1 until a DESI-sized source arrives\n\nObjects live in D1 under a monitored 10 GB cap, and a larger source first needs a decision on R2 shards.",
+                    "before": "Keep every object in D1 until a DESI-sized source arrives\n\nObjects live in D1 under a monitored 10 GB cap, and a larger source first needs a decision on R2 shards."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58da6aab49a1",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Add DESI DR1 and seven more galaxy surveys to release 10",
+                  "words": {
+                    "after": "Add DESI DR1 and seven more galaxy surveys to release 10\n\nRelease 10 adds DESI DR1, the rest of SDSS DR17, 2dFGRS, GAMA DR4, ALFALFA α.100, 2MPZ and WISE × SuperCOSMOS, quasars included, while Euclid waits for its first full data release and the COSMOS-Web groups for a deep-field scale domain."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58e3584b3f25",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Admit sources for non-commercial use, marked as such",
+                  "words": {
+                    "after": "Admit sources for non-commercial use, marked as such\n\nA source whose terms allow only non-commercial use is admitted, marked non-commercial in its source definition, and served with that mark."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58eab95e4bc8",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Publish a source while its permission is pending",
+                  "words": {
+                    "after": "Publish a source while its permission is pending\n\nA source definition may carry the status permission pending, and Univ Ingest builds and publishes such a source like a permitted one, serving its status with its terms."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58f331400c25",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Shard a release's objects across several D1 databases",
+                  "words": {
+                    "after": "Shard a release's objects across several D1 databases\n\nA release keeps its sources, structures and an index of object ids in a catalogue database, and its objects in object shards divided by cell, each within the 10 GB cap."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3ce3944cd7e5"
+                },
+                {
+                  "from": "01a19f1e-d177-716d-b124-3d23daf70123",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3ce3944cd7e5"
+                },
+                {
+                  "from": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3ce3944cd7e5"
+                },
+                {
+                  "from": "01a19f22-2ad9-716e-876f-18443b0ddcd6",
+                  "kind": "realizes",
+                  "to": "01a1a931-2c8a-73a8-91f2-58d0bd77ebdc"
+                },
+                {
+                  "from": "01a19f22-2ad9-716e-876f-18443b0ddcd6",
+                  "kind": "realizes",
+                  "to": "01a1a931-2c8a-73a8-91f2-58d1c13261fc"
+                },
+                {
+                  "from": "01a19f22-2ad9-716e-876f-18443b0ddcd6",
+                  "kind": "realizes",
+                  "to": "01a1a931-2c8a-73a8-91f2-58d2281c1099"
+                },
+                {
+                  "from": "01a19f22-2ad9-716e-876f-18443b0ddcd6",
+                  "kind": "realizes",
+                  "to": "01a1a931-2c8a-73a8-91f2-58d4eab51e82"
+                },
+                {
+                  "from": "01a19f22-2ad9-716e-876f-18443b0ddcd6",
+                  "kind": "realizes",
+                  "to": "01a1a931-2c8a-73a8-91f2-58d66f8d9197"
+                },
+                {
+                  "from": "01a19f22-2ad9-716e-876f-18443b0ddcd6",
+                  "kind": "realizes",
+                  "to": "01a1a931-2c8a-73a8-91f2-58d7b4335c3a"
+                },
+                {
+                  "from": "01a19f22-2ad9-716e-876f-18443b0ddcd6",
+                  "kind": "realizes",
+                  "to": "01a1a931-2c8a-73a8-91f2-58d918ceb9bc"
+                },
+                {
+                  "from": "01a19f23-636f-72bd-b194-151d9fb569d2",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a19f23-636f-72bd-b194-15372421c144",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3ce3944cd7e5"
+                },
+                {
+                  "from": "01a19f23-636f-72bd-b194-15372421c144",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a19f23-636f-72bd-b194-153d515c188e",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3ce3944cd7e5"
+                },
+                {
+                  "from": "01a19f23-636f-72bd-b194-153d515c188e",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a19f25-5955-701e-b3cf-ddcffaf7bf98",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a1a931-2c8a-73a8-91f2-58da6aab49a1",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1"
+                },
+                {
+                  "from": "01a1a931-2c8a-73a8-91f2-58e3584b3f25",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1a931-2c8a-73a8-91f2-58fd8e368264"
+                },
+                {
+                  "from": "01a1a931-2c8a-73a8-91f2-58e3584b3f25",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a1a931-2c8a-73a8-91f2-591121be3932"
+                },
+                {
+                  "from": "01a1a931-2c8a-73a8-91f2-58eab95e4bc8",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a19f1e-d177-716d-b124-3d24f2c252fc"
+                },
+                {
+                  "from": "01a1a931-2c8a-73a8-91f2-58eab95e4bc8",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a19f22-2ad9-716e-876f-183a6daa9364"
+                },
+                {
+                  "from": "01a1a931-2c8a-73a8-91f2-58f331400c25",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a19f1e-d177-716d-b124-3ce3944cd7e5"
+                },
+                {
+                  "from": "01a1a931-2c8a-73a8-91f2-58f331400c25",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a1a931-2c8a-73a8-91f2-58f331400c25",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1a931-2c8a-73a8-91f2-59053781d70f"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6593dd0cb35",
+                  "kind": "feature_group",
+                  "label": "FG-1",
+                  "name": "Acquisition",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                  "kind": "feature",
+                  "label": "F-1",
+                  "name": "Define a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                  "kind": "requirement",
+                  "label": "RQ-3",
+                  "name": "Univ Ingest shall record in each source definition whether its terms permit redistributing its data, with the terms it rests on.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f22-2ad9-716e-876f-183b90085a10",
+                  "kind": "criterion",
+                  "label": "AC-7",
+                  "name": "The redistribution status is permitted, permitted with credit, permission pending, or forbidden.",
+                  "parent": "01a19f22-2ad9-716e-876f-183a6daa9364"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58fcaa8b8bee",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source whose status is permission pending names whom permission is asked of, and the date it was asked once the request is sent.",
+                  "parent": "01a19f22-2ad9-716e-876f-183a6daa9364"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58fd8e368264",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source whose terms allow only non-commercial use is marked non-commercial, with the clause that says so quoted.",
+                  "parent": "01a19f22-2ad9-716e-876f-183a6daa9364"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall provide a source definition for each source that release 10 adds.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58ff5749b30b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The spectroscopic sources are DESI DR1 redshifts, SDSS DR17 distant galaxies and quasars, 2dFGRS and GAMA DR4 redshifts.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-5900bff82962",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The 21 cm source is ALFALFA α.100.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59016fa68370",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The photometric redshift sources are 2MPZ and WISE × SuperCOSMOS photometric redshifts.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-5902c9bf1383",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The quasars of DESI DR1 and SDSS DR17 are taken beside their galaxies.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-18443b0ddcd6",
+                  "kind": "feature",
+                  "label": "F-2",
+                  "name": "Fetch a source durably",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a44aeb16de5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Where a source's provider serves it only through an interface that Univ Ingest cannot page, such as a form that cancels long answers, Univ Ingest shall read the source from a prepared file in its download cache, made by a script kept in the repository, after checking the file against its definition.",
+                  "parent": "01a19f22-2ad9-716e-876f-18443b0ddcd6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a45af5083ab",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The source definition names the script that prepared the file, the file, its SHA-256 and its row count.",
+                  "parent": "01a1ad9c-dc22-72c6-99cb-1a44aeb16de5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a46049c41ff",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A prepared file whose SHA-256 or row count differs from its definition's is refused, naming the file, the value expected and the value found.",
+                  "parent": "01a1ad9c-dc22-72c6-99cb-1a44aeb16de5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a470d130dde",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Univ Ingest makes no request for a prepared source.",
+                  "parent": "01a1ad9c-dc22-72c6-99cb-1a44aeb16de5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-f735-761b-8646-f276559d7943",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A prepared file missing from the cache fails its source, naming the script that prepares it.",
+                  "parent": "01a1ad9c-dc22-72c6-99cb-1a44aeb16de5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ad9c-dc22-72c6-99cb-1a4853c15f56",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The source's provenance lists the prepared file with its digest and the script that made it.",
+                  "parent": "01a1ad9c-dc22-72c6-99cb-1a44aeb16de5"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-18637db5e446",
+                  "kind": "requirement",
+                  "label": "RQ-15",
+                  "name": "Univ Ingest shall convert each catalogue entry into univ-model values while keeping each native value.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59032696dddd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An uncertainty a source states once for its whole catalogue, such as 2dFGRS's rms of 85 km/s or 2MPZ's photometric redshift scatter of 0.015, is given to each of its values as an estimated uncertainty that cites where it is stated.",
+                  "parent": "01a19f22-2ad9-716e-876f-18637db5e446"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae02a06fd78a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A redshift error that a source defines as a multiple of another column, such as ALFALFA's half the error on the HI line's width, is that column's value times the stated factor.",
+                  "parent": "01a19f22-2ad9-716e-876f-18637db5e446"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae03b8e720b0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source read from files reads FITS binary tables or gzipped CSV tables, the latter in pieces of whole lines, so that no file is held unpacked whole.",
+                  "parent": "01a19f22-2ad9-716e-876f-18637db5e446"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186f83aad488",
+                  "kind": "requirement",
+                  "label": "RQ-17",
+                  "name": "Univ Ingest shall keep each redshift in the frame its source published it in and derive its value in the CMB frame.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59042cfff012",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A barycentric redshift, such as DESI's, is kept as measured and named barycentric, never relabelled heliocentric.",
+                  "parent": "01a19f22-2ad9-716e-876f-186f83aad488"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae0461c674ae",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall leave out the rows that a source definition's rules select out, as a query's WHERE clause would for a source read whole from a file, and count them.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae05fcc0d255",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A rule's condition tests one column with exactly one of: the cell is one of a list of values, none of a list of values, or a number below a bound.",
+                  "parent": "01a1aa2d-9931-7550-bba8-ae0461c674ae"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae06fd8a5b30",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row a rule selects out of the source, such as another survey's redshift that GAMA re-serves or a star in a galaxy survey, is counted under the reason `outside_selection`, and the rule's basis says why.",
+                  "parent": "01a1aa2d-9931-7550-bba8-ae0461c674ae"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aa2d-9931-7550-bba8-ae077f98b2cc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A cell too large for a double to hold exactly, such as an SDSS specObjID, is compared with a condition's values as text.",
+                  "parent": "01a1aa2d-9931-7550-bba8-ae0461c674ae"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65bef1ca65c",
+                  "kind": "feature_group",
+                  "label": "FG-3",
+                  "name": "Identity",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636e-7035-8185-ab97eb9c2fb9",
+                  "kind": "feature",
+                  "label": "F-6",
+                  "name": "Choose the preferred measurement",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636e-7035-8185-ab9dfac6edfe",
+                  "kind": "requirement",
+                  "label": "RQ-25",
+                  "name": "Univ Ingest shall take an object's sky position from its catalogue entry with the smallest position uncertainty.",
+                  "parent": "01a19f23-636e-7035-8185-ab97eb9c2fb9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4bc1cdc275",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object that holds pieces of a nearby galaxy takes the position of the galaxy whose extent took them, never a piece's.",
+                  "parent": "01a19f23-636e-7035-8185-ab9dfac6edfe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4cdd697c86",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Among positions without a published uncertainty, a position from a 21 cm survey's beam ranks after an optical or infrared survey's.",
+                  "parent": "01a19f23-636e-7035-8185-ab9dfac6edfe"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636e-7035-8185-aba1fc8f7bbd",
+                  "kind": "feature",
+                  "label": "F-7",
+                  "name": "Cross-match catalogues",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4d9f766f81",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall join as pieces of one galaxy the fibres of one fibre survey that lie together in the nearby volume at one velocity, where no source of the release publishes the galaxy's extent.",
+                  "parent": "01a19f23-636e-7035-8185-aba1fc8f7bbd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4e61ca16c8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Fibres of one survey join below the matching rules' velocity of the nearby volume, each within their angle and velocity tolerance of every fibre already joined.",
+                  "parent": "01a1adfa-315f-708f-8cd8-bf4d9f766f81"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf4fa228b618",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The fibre surveys whose fibres may join are those the matching rules list.",
+                  "parent": "01a1adfa-315f-708f-8cd8-bf4d9f766f81"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf5086a0f213",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Two groups that each hold an entry of a source naming its own galaxy are never joined as one galaxy.",
+                  "parent": "01a1adfa-315f-708f-8cd8-bf4d9f766f81"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1ae91-90f5-716e-b3d3-07b944951329",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Two groups that each hold an entry of one source other than a fibre survey, such as two ALFALFA detections, are never joined as one galaxy.",
+                  "parent": "01a1adfa-315f-708f-8cd8-bf4d9f766f81"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1adfa-315f-708f-8cd8-bf51d418d386",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each joined fibre records the rule as its method, its separation and its velocity difference.",
+                  "parent": "01a1adfa-315f-708f-8cd8-bf4d9f766f81"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": "FG-4",
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-151d9fb569d2",
+                  "kind": "feature",
+                  "label": "F-9",
+                  "name": "Build a release",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall divide a release's objects among object shards, each a D1 database, by the cell of the cell index that holds each object.",
+                  "parent": "01a19f23-636f-72bd-b194-151d9fb569d2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590689bd8862",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each object is in exactly one object shard, with its catalogue entries, measurements, designations and cell.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-59053781d70f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59076b96877f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "All the objects of one cell of the cell index are in one object shard.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-59053781d70f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-5908e94d50c7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object that is not placed is assigned to an object shard by its object id.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-59053781d70f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59092cd5e331",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The catalogue database holds the release's sources, terms, structures and grids, and the object shard of every object id.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-59053781d70f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590a9d7b0864",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release manifest names each object shard with the cells it holds and its estimated size.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-59053781d70f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590b8ae658df",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If the objects of one cell would exceed an object shard's budget, then Univ Ingest shall refuse the build and name the cell, its object count and its estimated size.",
+                  "parent": "01a19f23-636f-72bd-b194-151d9fb569d2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590cebe0fc8d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No release number is used up by the refused build.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-590b8ae658df"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-15372421c144",
+                  "kind": "feature",
+                  "label": "F-11",
+                  "name": "Prune old releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-1538be54b520",
+                  "kind": "requirement",
+                  "label": "RQ-39",
+                  "name": "When the owner prunes a release, Univ Ingest shall delete the release's files and tables and record when it was pruned.",
+                  "parent": "01a19f23-636f-72bd-b194-15372421c144"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590d7b43ba10",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release's rows are deleted from the catalogue database and from every object shard.",
+                  "parent": "01a19f23-636f-72bd-b194-1538be54b520"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-153d515c188e",
+                  "kind": "feature",
+                  "label": "F-12",
+                  "name": "Publish a release locally",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-153ee5a17619",
+                  "kind": "requirement",
+                  "label": "RQ-41",
+                  "name": "When the owner publishes a complete release, Univ Ingest shall upload its files to local R2 and its tables to the catalogue database and object shards of local D1, and only then point latest at it.",
+                  "parent": "01a19f23-636f-72bd-b194-153d515c188e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590ede3fd3b1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each object shard receives only the rows the release manifest assigns to it.",
+                  "parent": "01a19f23-636f-72bd-b194-153ee5a17619"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-590fd0e5d484",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If the release needs more object shards than Univ Server binds, then Univ Ingest shall refuse to publish it before uploading anything.",
+                  "parent": "01a19f23-636f-72bd-b194-153d515c188e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-5910680f6e67",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the number of object shards the release needs and the number Univ Server binds.",
+                  "parent": "01a1a931-2c8a-73a8-91f2-590fd0e5d484"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                  "kind": "feature",
+                  "label": "F-15",
+                  "name": "Look up an object",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d23daf70123",
+                  "kind": "feature",
+                  "label": "F-16",
+                  "name": "Read a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d24f2c252fc",
+                  "kind": "requirement",
+                  "label": "RQ-56",
+                  "name": "When a client requests a source, Univ Server shall return its citation, terms of use, required credit, provider, query, cuts and coverage.",
+                  "parent": "01a19f1e-d177-716d-b124-3d23daf70123"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-591121be3932",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives the source's redistribution status and whether its terms allow only non-commercial use.",
+                  "parent": "01a19f1e-d177-716d-b124-3d24f2c252fc"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6615e6965c1",
+                  "kind": "feature_group",
+                  "label": "FG-8",
+                  "name": "Spatial and temporal queries",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00",
+                  "kind": "feature",
+                  "label": "F-22",
+                  "name": "Query a bounded volume",
+                  "parent": "01a19f1a-685d-7357-b67e-d6615e6965c1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1f-9fd7-7209-b7cb-5d14df84914b",
+                  "kind": "requirement",
+                  "label": "RQ-73",
+                  "name": "Univ Server shall return at most 1,000 results per page and at most 10,000 results per bounded volume query.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d0c87a2ef00"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-59122e92f2fd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A page holds its results in the same order whichever object shards they come from.",
+                  "parent": "01a19f1f-9fd7-7209-b7cb-5d14df84914b"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3ffe4657fb77",
+                  "kind": "feature",
+                  "label": "F-34",
+                  "name": "Draw the catalogues",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-4003ade9ca4b",
+                  "kind": "requirement",
+                  "label": "RQ-119",
+                  "name": "When the view changes, Univ Explorer shall fetch the tiles the view needs, those in view and the largest on screen first, within a budget of points.",
+                  "parent": "01a1a497-e843-728a-bce8-3ffe4657fb77"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a689-0b25-768a-9f1e-cc267f67e3c1",
+                  "kind": "criterion",
+                  "label": "AC-352",
+                  "name": "A tile's children are fetched only while a typical tile of its level, with the mean points of the level's split tiles and the level's edge, would have its points farther apart on screen than 3 pixels at the distance of the tile's nearest points, so that a region far away or seen whole is not refined beyond what the screen shows, and regions at one distance are refined alike.",
+                  "parent": "01a1a497-e843-728a-bce8-4003ade9ca4b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aea7-5e8b-7623-8601-48fb7856d2e3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A tile whose children are held keeps them while a typical tile of its level would have its points farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched.",
+                  "parent": "01a1a497-e843-728a-bce8-4003ade9ca4b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aea7-5e8b-7623-8601-48fc4cf3ff3f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where the budget cannot hold every family of tiles the view needs, a family that holds any of its tiles in view counts as half again its size on screen, so that a view moving a little does not trade it for a family of nearly its size.",
+                  "parent": "01a1a497-e843-728a-bce8-4003ade9ca4b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aea7-5e8b-7623-8601-48fd8492b9c4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A view whose budget is full, turned by 0.1 degree and back again and again, drops and fetches no tile after its first turn.",
+                  "parent": "01a1a497-e843-728a-bce8-4003ade9ca4b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aead-1e30-7695-bbd5-099c2f301565",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A held tile counts as in view until it lies more than 1 degree outside the view, so that a view turning a little does not drop a tile at its edge and fetch it again as it turns back.",
+                  "parent": "01a1a497-e843-728a-bce8-4003ade9ca4b"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-4006f5c2ce8f",
+                  "kind": "criterion",
+                  "label": "AC-355",
+                  "name": "While level of detail is on, no more than 6,000,000 points are held at once.",
+                  "parent": "01a1a497-e843-728a-bce8-4003ade9ca4b"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a689-0b25-768a-9f1e-cc27109fed3c",
+                  "kind": "requirement",
+                  "label": "RQ-120",
+                  "name": "When a tile the view needs would take the points held beyond the budget, Univ Explorer shall drop the held tiles the view needs least until the tile fits.",
+                  "parent": "01a1a497-e843-728a-bce8-3ffe4657fb77"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aeb6-f18d-7787-9cbd-de2cfdcfe714",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A dropped tile stays drawn, its points counted and its sources credited, until no tile is on its way, so that a moving view shows no region emptier while its new tiles arrive.",
+                  "parent": "01a1a689-0b25-768a-9f1e-cc27109fed3c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aeb6-f18d-7787-9cbd-de2dfa8b12aa",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The dropped tiles kept drawn hold no more than a quarter of the budget, 1,500,000 points, beyond it, and those beyond it are drawn no more at once.",
+                  "parent": "01a1a689-0b25-768a-9f1e-cc27109fed3c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A dropped tile still drawn that the view wants again is drawn on without being read again.",
+                  "parent": "01a1a689-0b25-768a-9f1e-cc27109fed3c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-272151c4d940",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned level of detail off, Univ Explorer shall fetch every tile of the release, the coarser levels first, whatever the view, and drop none.",
+                  "parent": "01a1a497-e843-728a-bce8-3ffe4657fb77"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-2722e634b9b0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds a switch that turns level of detail on and off, on when the page's address does not turn it off.",
+                  "parent": "01a1b07b-8157-7546-927e-272151c4d940"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-272335750e5f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail off, every tile of every scale domain is fetched, the tiles of each level asked for before those of the level below, and no tile is dropped, whatever the view and the budget.",
+                  "parent": "01a1b07b-8157-7546-927e-272151c4d940"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-2724ac33dc33",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Turned on again, level of detail drops the tiles the view does not need until the points held fit the budget.",
+                  "parent": "01a1b07b-8157-7546-927e-272151c4d940"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b07b-8157-7546-927e-2725108d8df2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps level of detail turned off, so that a reload or a shared link keeps it off.",
+                  "parent": "01a1b07b-8157-7546-927e-272151c4d940"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdc985f6f0e9",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw each point of a held tile while its rank lies below the share of its domain the view needs at the point's own distance, and fade each tile in as it arrives and out as it goes.",
+                  "parent": "01a1a497-e843-728a-bce8-3ffe4657fb77"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdca66fcbd08",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The share of a domain the view needs at a distance rises, level by level below the root, from the share the levels above hold to the share the level adds, in proportion as a typical tile of the level above would have its points from 3 to 6 pixels apart on screen at that distance.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0a9-6982-71c6-b321-0cfc1d1f8a93",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point's rank lies in its tile's slice of its domain, from the share the levels above the tile's hold to the share its level adds, or to all for a leaf, the tile's points dividing the slice evenly in their shuffled order.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0a9-6982-71c6-b321-0cfd3507cc88",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Points at one distance are drawn at one share of their domain whichever tiles hold them, so that where the tiles the view needs are held no tile's cube shows as an edge.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-81da-759e-8532-70d7aa4d0ff1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every point of a root tile is drawn.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdcbf842c1af",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The share drawn is the first points of the tile in an order shuffled by the tile's id, so that every share is an even sample of its points, the same on every read.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdcc1ec02df7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A tile fades in over 0.3 seconds once its points arrive, and out over 0.3 seconds before they are drawn no more.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdcd4901ec3c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail off, every point of every held tile is drawn.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0b8-3632-76bc-88e5-8dd265a1a28d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail on, a domain's points are drawn fully opaque while, at the eye's distance from the focus, the view still needs more of the domain than its root holds, since thinned they crowd no more as the eye withdraws.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0c4-82ea-7058-b4c4-959c016ec0f3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail on, a domain's points fade beyond the distance where the view needs no more of it than its root holds, as they crowd again, never fainter than with level of detail off.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b0b8-5967-707c-ba41-c9e3bc5755a6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b093-647d-7308-9b46-bdce5099b2f5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Only the points drawn can be pointed at or clicked.",
+                  "parent": "01a1b093-647d-7308-9b46-bdc985f6f0e9"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                  "kind": "requirement",
+                  "label": "RQ-123",
+                  "name": "Univ Explorer shall draw every point outside the stars domain in one colour and count in the key the points drawn of each kind of value of distance.",
+                  "parent": "01a1a497-e843-728a-bce8-3ffe4657fb77"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400b9b581384",
+                  "kind": "criterion",
+                  "label": "AC-362",
+                  "name": "Points outside the stars domain are drawn in one colour, whatever the kind of value of their distance.",
+                  "parent": "01a1a497-e843-728a-bce8-400ade54e0e1"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-400c71ad8ebe",
+                  "kind": "criterion",
+                  "label": "AC-363",
+                  "name": "The key shows that colour and counts the points of the tiles held of each kind of value: measured, estimated, inferred and reconstructed.",
+                  "parent": "01a1a497-e843-728a-bce8-400ade54e0e1"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e063283348",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person checks \"Only what lies inside\" in the panel of the chosen structure, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e17df5ce8a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure drawn as a volume offers a checkbox \"Only what lies inside\", cleared unless the page's address turns it on.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e2ed4a3967",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure drawn with no volume, as a point, a path, a ray or a range alone, offers no such checkbox.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e33e6ecd76",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Inside a sphere, an ellipsoid or an oriented box is inside the solid, in the frame and unit its shape names.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e496894c39",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Inside a sky region is in one of its cells and between its near and far distances.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e5419cfeb6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Inside a member list is inside the box bounding its members, inside a structure drawn by its extents is inside the box they span about its position, and inside a structure drawn by its bounding box is inside that box.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e6a6d53737",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel says the cull is approximate for a structure culled by a box that is not its published shape.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e71f42aabb",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every point is tested alike, whatever its scale domain or kind, at its preferred distance and with no margin.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b166-0bb4-703d-a861-7c307a08ae0b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "While the cull is on, the points inside are drawn fully opaque whatever the eye's distance from the focus, twice as bright as the brightest they are drawn without it, since those outside no longer crowd them.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e859257b94",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7e934fc10cf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point outside the volume is not named by the pointer nor chosen by a click, and the key does not count it.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7ea46d6c6e6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Choosing another structure keeps the cull on, for that structure.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7eb103d71ac",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Closing the structure's panel turns the cull off.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7ece437e733",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the cull to a structure is on, Univ Explorer shall fetch and keep only the tiles whose cubes meet the box bounding the structure's volume.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7ed28949521",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No tile whose cube lies wholly outside the box bounding the volume is fetched or kept.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7ece437e733"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7eed8679d94",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The tiles that meet the box are planned within the point budget, and thinned by level of detail, as every tile is without the cull.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7ece437e733"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7ef2701bb3c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall keep the cull to the chosen structure in the page's address.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b13c-1e10-748d-8008-e7f0dcf15117",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Reloading the page, or opening its address elsewhere, draws the same structure chosen with the cull on.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7ef2701bb3c"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce12c3a03b8",
+                  "kind": "component",
+                  "label": "CMP-1",
+                  "name": "Cloudflare platform",
+                  "parent": null
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3ce3944cd7e5",
+                  "kind": "component",
+                  "label": "CMP-3",
+                  "name": "D1",
+                  "parent": "01a19f1e-d177-716d-b124-3ce12c3a03b8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce7c64960ab",
+                  "kind": "component",
+                  "label": "CMP-7",
+                  "name": "Data providers",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce87476d831",
+                  "kind": "component",
+                  "label": "CMP-8",
+                  "name": "SDSS SkyServer",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d0bd77ebdc",
+                  "kind": "component",
+                  "label": null,
+                  "name": "SDSS DR17 distant galaxies and quasars",
+                  "parent": "01a19f1e-d177-716d-b124-3ce87476d831"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce94dbc10f4",
+                  "kind": "component",
+                  "label": "CMP-11",
+                  "name": "VizieR",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d1c13261fc",
+                  "kind": "component",
+                  "label": null,
+                  "name": "2dFGRS",
+                  "parent": "01a19f1e-d177-716d-b124-3ce94dbc10f4"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d2281c1099",
+                  "kind": "component",
+                  "label": null,
+                  "name": "ALFALFA α.100",
+                  "parent": "01a19f1e-d177-716d-b124-3ce94dbc10f4"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d3b98ead8a",
+                  "kind": "component",
+                  "label": null,
+                  "name": "DESI public data release",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d4eab51e82",
+                  "kind": "component",
+                  "label": null,
+                  "name": "DESI DR1 redshifts",
+                  "parent": "01a1a931-2c8a-73a8-91f2-58d3b98ead8a"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d51ef988ca",
+                  "kind": "component",
+                  "label": null,
+                  "name": "SuperCOSMOS Science Archive",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d66f8d9197",
+                  "kind": "component",
+                  "label": null,
+                  "name": "2MPZ",
+                  "parent": "01a1a931-2c8a-73a8-91f2-58d51ef988ca"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d7b4335c3a",
+                  "kind": "component",
+                  "label": null,
+                  "name": "WISE × SuperCOSMOS photometric redshifts",
+                  "parent": "01a1a931-2c8a-73a8-91f2-58d51ef988ca"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d805dbe294",
+                  "kind": "component",
+                  "label": null,
+                  "name": "GAMA data release site",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1a931-2c8a-73a8-91f2-58d918ceb9bc",
+                  "kind": "component",
+                  "label": null,
+                  "name": "GAMA DR4 redshifts",
+                  "parent": "01a1a931-2c8a-73a8-91f2-58d805dbe294"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ceccbdcd63e",
+                  "kind": "component",
+                  "label": "CMP-33",
+                  "name": "Ingest pipeline",
+                  "parent": null
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3cf1defde8b6",
+                  "kind": "component",
+                  "label": "CMP-38",
+                  "name": "Release publisher",
+                  "parent": "01a19f1e-d177-716d-b124-3ceccbdcd63e"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58fcaa8b8bee",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 47,
+                    "name": "A source whose status is permission pending names whom permission is asked of, and the date it was asked once the request is sent.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58fd8e368264",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 49,
+                    "name": "A source whose terms allow only non-commercial use is marked non-commercial, with the clause that says so quoted.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 74,
+                    "name": "Univ Ingest shall provide a source definition for each source that release 10 adds.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58ff5749b30b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 80,
+                    "name": "The spectroscopic sources are DESI DR1 redshifts, SDSS DR17 distant galaxies and quasars, 2dFGRS and GAMA DR4 redshifts.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-5900bff82962",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 82,
+                    "name": "The 21 cm source is ALFALFA α.100.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-59016fa68370",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 84,
+                    "name": "The photometric redshift sources are 2MPZ and WISE × SuperCOSMOS photometric redshifts.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-5902c9bf1383",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 86,
+                    "name": "The quasars of DESI DR1 and SDSS DR17 are taken beside their galaxies.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1ad9c-dc22-72c6-99cb-1a44aeb16de5",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 104,
+                    "name": "Where a source's provider serves it only through an interface that Univ Ingest cannot page, such as a form that cancels long answers, Univ Ingest shall read the source from a prepared file in its download cache, made by a script kept in the repository, after checking the file against its definition.",
+                    "path": "spec/products/univ-ingest/acquisition/fetch-a-source-durably.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1ad9c-dc22-72c6-99cb-1a45af5083ab",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 111,
+                    "name": "The source definition names the script that prepared the file, the file, its SHA-256 and its row count.",
+                    "path": "spec/products/univ-ingest/acquisition/fetch-a-source-durably.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1ad9c-dc22-72c6-99cb-1a46049c41ff",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 113,
+                    "name": "A prepared file whose SHA-256 or row count differs from its definition's is refused, naming the file, the value expected and the value found.",
+                    "path": "spec/products/univ-ingest/acquisition/fetch-a-source-durably.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1ad9c-dc22-72c6-99cb-1a470d130dde",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 115,
+                    "name": "Univ Ingest makes no request for a prepared source.",
+                    "path": "spec/products/univ-ingest/acquisition/fetch-a-source-durably.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1ad9c-f735-761b-8646-f276559d7943",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 117,
+                    "name": "A prepared file missing from the cache fails its source, naming the script that prepares it.",
+                    "path": "spec/products/univ-ingest/acquisition/fetch-a-source-durably.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1ad9c-dc22-72c6-99cb-1a4853c15f56",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 119,
+                    "name": "The source's provenance lists the prepared file with its digest and the script that made it.",
+                    "path": "spec/products/univ-ingest/acquisition/fetch-a-source-durably.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-59032696dddd",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 29,
+                    "name": "An uncertainty a source states once for its whole catalogue, such as 2dFGRS's rms of 85 km/s or 2MPZ's photometric redshift scatter of 0.015, is given to each of its values as an estimated uncertainty that cites where it is stated.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aa2d-9931-7550-bba8-ae02a06fd78a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 31,
+                    "name": "A redshift error that a source defines as a multiple of another column, such as ALFALFA's half the error on the HI line's width, is that column's value times the stated factor.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aa2d-9931-7550-bba8-ae03b8e720b0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 33,
+                    "name": "A source read from files reads FITS binary tables or gzipped CSV tables, the latter in pieces of whole lines, so that no file is held unpacked whole.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-59042cfff012",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 61,
+                    "name": "A barycentric redshift, such as DESI's, is kept as measured and named barycentric, never relabelled heliocentric.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1aa2d-9931-7550-bba8-ae0461c674ae",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 104,
+                    "name": "Univ Ingest shall leave out the rows that a source definition's rules select out, as a query's WHERE clause would for a source read whole from a file, and count them.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aa2d-9931-7550-bba8-ae05fcc0d255",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 110,
+                    "name": "A rule's condition tests one column with exactly one of: the cell is one of a list of values, none of a list of values, or a number below a bound.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aa2d-9931-7550-bba8-ae06fd8a5b30",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 112,
+                    "name": "A row a rule selects out of the source, such as another survey's redshift that GAMA re-serves or a star in a galaxy survey, is counted under the reason `outside_selection`, and the rule's basis says why.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aa2d-9931-7550-bba8-ae077f98b2cc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 114,
+                    "name": "A cell too large for a double to hold exactly, such as an SDSS specObjID, is compared with a condition's values as text.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1adfa-315f-708f-8cd8-bf4bc1cdc275",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 72,
+                    "name": "An object that holds pieces of a nearby galaxy takes the position of the galaxy whose extent took them, never a piece's.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1adfa-315f-708f-8cd8-bf4cdd697c86",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 74,
+                    "name": "Among positions without a published uncertainty, a position from a 21 cm survey's beam ranks after an optical or infrared survey's.",
+                    "path": "spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1adfa-315f-708f-8cd8-bf4d9f766f81",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 62,
+                    "name": "Univ Ingest shall join as pieces of one galaxy the fibres of one fibre survey that lie together in the nearby volume at one velocity, where no source of the release publishes the galaxy's extent.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1adfa-315f-708f-8cd8-bf4e61ca16c8",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 68,
+                    "name": "Fibres of one survey join below the matching rules' velocity of the nearby volume, each within their angle and velocity tolerance of every fibre already joined.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1adfa-315f-708f-8cd8-bf4fa228b618",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 70,
+                    "name": "The fibre surveys whose fibres may join are those the matching rules list.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1adfa-315f-708f-8cd8-bf5086a0f213",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 72,
+                    "name": "Two groups that each hold an entry of a source naming its own galaxy are never joined as one galaxy.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1ae91-90f5-716e-b3d3-07b944951329",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 74,
+                    "name": "Two groups that each hold an entry of one source other than a fibre survey, such as two ALFALFA detections, are never joined as one galaxy.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1adfa-315f-708f-8cd8-bf51d418d386",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 76,
+                    "name": "Each joined fibre records the rule as its method, its separation and its velocity difference.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 33,
+                    "name": "Univ Ingest shall divide a release's objects among object shards, each a D1 database, by the cell of the cell index that holds each object.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-590689bd8862",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "Each object is in exactly one object shard, with its catalogue entries, measurements, designations and cell.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-59076b96877f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 41,
+                    "name": "All the objects of one cell of the cell index are in one object shard.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-5908e94d50c7",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "An object that is not placed is assigned to an object shard by its object id.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-59092cd5e331",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 45,
+                    "name": "The catalogue database holds the release's sources, terms, structures and grids, and the object shard of every object id.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-590a9d7b0864",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 47,
+                    "name": "The release manifest names each object shard with the cells it holds and its estimated size.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a931-2c8a-73a8-91f2-590b8ae658df",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 49,
+                    "name": "If the objects of one cell would exceed an object shard's budget, then Univ Ingest shall refuse the build and name the cell, its object count and its estimated size.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-590cebe0fc8d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 56,
+                    "name": "No release number is used up by the refused build.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-590d7b43ba10",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 21,
+                    "name": "The release's rows are deleted from the catalogue database and from every object shard.",
+                    "path": "spec/products/univ-ingest/releases/prune-old-releases.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-590ede3fd3b1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 20,
+                    "name": "Each object shard receives only the rows the release manifest assigns to it.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a931-2c8a-73a8-91f2-590fd0e5d484",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 46,
+                    "name": "If the release needs more object shards than Univ Server binds, then Univ Ingest shall refuse to publish it before uploading anything.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-5910680f6e67",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 53,
+                    "name": "The message names the number of object shards the release needs and the number Univ Server binds.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-591121be3932",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "The response gives the source's redistribution status and whether its terms allow only non-commercial use.",
+                    "path": "spec/products/univ-server/reference-data/read-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-59122e92f2fd",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 57,
+                    "name": "A page holds its results in the same order whichever object shards they come from.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aea7-5e8b-7623-8601-48fb7856d2e3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 38,
+                    "name": "A tile whose children are held keeps them while a typical tile of its level would have its points farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aea7-5e8b-7623-8601-48fc4cf3ff3f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 40,
+                    "name": "Where the budget cannot hold every family of tiles the view needs, a family that holds any of its tiles in view counts as half again its size on screen, so that a view moving a little does not trade it for a family of nearly its size.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aea7-5e8b-7623-8601-48fd8492b9c4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 42,
+                    "name": "A view whose budget is full, turned by 0.1 degree and back again and again, drops and fetches no tile after its first turn.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aead-1e30-7695-bbd5-099c2f301565",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 44,
+                    "name": "A held tile counts as in view until it lies more than 1 degree outside the view, so that a view turning a little does not drop a tile at its edge and fetch it again as it turns back.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aeb6-f18d-7787-9cbd-de2cfdcfe714",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 61,
+                    "name": "A dropped tile stays drawn, its points counted and its sources credited, until no tile is on its way, so that a moving view shows no region emptier while its new tiles arrive.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aeb6-f18d-7787-9cbd-de2dfa8b12aa",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 63,
+                    "name": "The dropped tiles kept drawn hold no more than a quarter of the budget, 1,500,000 points, beyond it, and those beyond it are drawn no more at once.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 65,
+                    "name": "A dropped tile still drawn that the view wants again is drawn on without being read again.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b07b-8157-7546-927e-272151c4d940",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 67,
+                    "name": "While the person has turned level of detail off, Univ Explorer shall fetch every tile of the release, the coarser levels first, whatever the view, and drop none.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b07b-8157-7546-927e-2722e634b9b0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 74,
+                    "name": "The top bar holds a switch that turns level of detail on and off, on when the page's address does not turn it off.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b07b-8157-7546-927e-272335750e5f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 76,
+                    "name": "With level of detail off, every tile of every scale domain is fetched, the tiles of each level asked for before those of the level below, and no tile is dropped, whatever the view and the budget.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b07b-8157-7546-927e-2724ac33dc33",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 78,
+                    "name": "Turned on again, level of detail drops the tiles the view does not need until the points held fit the budget.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b07b-8157-7546-927e-2725108d8df2",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 80,
+                    "name": "The page's address keeps level of detail turned off, so that a reload or a shared link keeps it off.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b093-647d-7308-9b46-bdc985f6f0e9",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 82,
+                    "name": "Univ Explorer shall draw each point of a held tile while its rank lies below the share of its domain the view needs at the point's own distance, and fade each tile in as it arrives and out as it goes.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b093-647d-7308-9b46-bdca66fcbd08",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 88,
+                    "name": "The share of a domain the view needs at a distance rises, level by level below the root, from the share the levels above hold to the share the level adds, in proportion as a typical tile of the level above would have its points from 3 to 6 pixels apart on screen at that distance.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b0a9-6982-71c6-b321-0cfc1d1f8a93",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 90,
+                    "name": "A point's rank lies in its tile's slice of its domain, from the share the levels above the tile's hold to the share its level adds, or to all for a leaf, the tile's points dividing the slice evenly in their shuffled order.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b0a9-6982-71c6-b321-0cfd3507cc88",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 92,
+                    "name": "Points at one distance are drawn at one share of their domain whichever tiles hold them, so that where the tiles the view needs are held no tile's cube shows as an edge.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b093-81da-759e-8532-70d7aa4d0ff1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 94,
+                    "name": "Every point of a root tile is drawn.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b093-647d-7308-9b46-bdcbf842c1af",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 96,
+                    "name": "The share drawn is the first points of the tile in an order shuffled by the tile's id, so that every share is an even sample of its points, the same on every read.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b093-647d-7308-9b46-bdcc1ec02df7",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 98,
+                    "name": "A tile fades in over 0.3 seconds once its points arrive, and out over 0.3 seconds before they are drawn no more.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b093-647d-7308-9b46-bdcd4901ec3c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 100,
+                    "name": "With level of detail off, every point of every held tile is drawn.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b0b8-3632-76bc-88e5-8dd265a1a28d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 102,
+                    "name": "With level of detail on, a domain's points are drawn fully opaque while, at the eye's distance from the focus, the view still needs more of the domain than its root holds, since thinned they crowd no more as the eye withdraws.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b0c4-82ea-7058-b4c4-959c016ec0f3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 104,
+                    "name": "With level of detail on, a domain's points fade beyond the distance where the view needs no more of it than its root holds, as they crowd again, never fainter than with level of detail off.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b0b8-5967-707c-ba41-c9e3bc5755a6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 106,
+                    "name": "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b093-647d-7308-9b46-bdce5099b2f5",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 108,
+                    "name": "Only the points drawn can be pointed at or clicked.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 58,
+                    "name": "When the person checks \"Only what lies inside\" in the panel of the chosen structure, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e17df5ce8a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 65,
+                    "name": "The panel of a structure drawn as a volume offers a checkbox \"Only what lies inside\", cleared unless the page's address turns it on.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e2ed4a3967",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 67,
+                    "name": "A structure drawn with no volume, as a point, a path, a ray or a range alone, offers no such checkbox.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e33e6ecd76",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 69,
+                    "name": "Inside a sphere, an ellipsoid or an oriented box is inside the solid, in the frame and unit its shape names.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e496894c39",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 71,
+                    "name": "Inside a sky region is in one of its cells and between its near and far distances.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e5419cfeb6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 73,
+                    "name": "Inside a member list is inside the box bounding its members, inside a structure drawn by its extents is inside the box they span about its position, and inside a structure drawn by its bounding box is inside that box.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e6a6d53737",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 75,
+                    "name": "The panel says the cull is approximate for a structure culled by a box that is not its published shape.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e71f42aabb",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 77,
+                    "name": "Every point is tested alike, whatever its scale domain or kind, at its preferred distance and with no margin.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b166-0bb4-703d-a861-7c307a08ae0b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 79,
+                    "name": "While the cull is on, the points inside are drawn fully opaque whatever the eye's distance from the focus, twice as bright as the brightest they are drawn without it, since those outside no longer crowd them.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e859257b94",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 81,
+                    "name": "The panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e934fc10cf",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 83,
+                    "name": "A point outside the volume is not named by the pointer nor chosen by a click, and the key does not count it.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7ea46d6c6e6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 85,
+                    "name": "Choosing another structure keeps the cull on, for that structure.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7eb103d71ac",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 87,
+                    "name": "Closing the structure's panel turns the cull off.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b13c-1e10-748d-8008-e7ece437e733",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 89,
+                    "name": "While the cull to a structure is on, Univ Explorer shall fetch and keep only the tiles whose cubes meet the box bounding the structure's volume.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7ed28949521",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 96,
+                    "name": "No tile whose cube lies wholly outside the box bounding the volume is fetched or kept.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7eed8679d94",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 98,
+                    "name": "The tiles that meet the box are planned within the point budget, and thinned by level of detail, as every tile is without the cull.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b13c-1e10-748d-8008-e7ef2701bb3c",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 100,
+                    "name": "Univ Explorer shall keep the cull to the chosen structure in the page's address.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7f0dcf15117",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 106,
+                    "name": "Reloading the page, or opening its address elsewhere, draws the same structure chosen with the cull on.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d0bd77ebdc",
+                    "kind": "component",
+                    "label": null,
+                    "line": 20,
+                    "name": "SDSS DR17 distant galaxies and quasars",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d1c13261fc",
+                    "kind": "component",
+                    "label": null,
+                    "line": 68,
+                    "name": "2dFGRS",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d2281c1099",
+                    "kind": "component",
+                    "label": null,
+                    "line": 75,
+                    "name": "ALFALFA α.100",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d3b98ead8a",
+                    "kind": "component",
+                    "label": null,
+                    "line": 119,
+                    "name": "DESI public data release",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d4eab51e82",
+                    "kind": "component",
+                    "label": null,
+                    "line": 123,
+                    "name": "DESI DR1 redshifts",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d51ef988ca",
+                    "kind": "component",
+                    "label": null,
+                    "line": 130,
+                    "name": "SuperCOSMOS Science Archive",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d66f8d9197",
+                    "kind": "component",
+                    "label": null,
+                    "line": 134,
+                    "name": "2MPZ",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d7b4335c3a",
+                    "kind": "component",
+                    "label": null,
+                    "line": 140,
+                    "name": "WISE × SuperCOSMOS photometric redshifts",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d805dbe294",
+                    "kind": "component",
+                    "label": null,
+                    "line": 146,
+                    "name": "GAMA data release site",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-58d918ceb9bc",
+                    "kind": "component",
+                    "label": null,
+                    "line": 150,
+                    "name": "GAMA DR4 redshifts",
+                    "path": "spec/components/data-providers.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a19f22-2ad9-716e-876f-183b90085a10",
+                    "kind": "criterion",
+                    "label": "AC-7",
+                    "line": 43,
+                    "name": "The redistribution status is permitted, permitted with credit, permission pending, or forbidden.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "kind": "requirement",
+                    "label": "RQ-41",
+                    "line": 13,
+                    "name": "When the owner publishes a complete release, Univ Ingest shall upload its files to local R2 and its tables to the catalogue database and object shards of local D1, and only then point latest at it.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f1e-d177-716d-b124-3d22c902253b",
+                    "kind": "quality_attribute",
+                    "label": "QA-2",
+                    "line": 77,
+                    "name": "Univ Server shall answer an object lookup within 200 milliseconds at the 95th percentile.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f1f-9fd7-7209-b7cb-5d1eda7c8eb5",
+                    "kind": "quality_attribute",
+                    "label": "QA-3",
+                    "line": 99,
+                    "name": "Univ Server shall answer the first page of a bounded volume query within 500 milliseconds at the 95th percentile.",
+                    "path": "spec/products/univ-server/spatial-and-temporal-queries/query-a-bounded-volume.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                    "kind": "product",
+                    "label": "P-3",
+                    "line": 1,
+                    "name": "Univ Explorer",
+                    "path": "spec/products/univ-explorer/product.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a1a497-e843-728a-bce8-3ffe4657fb77",
+                    "kind": "feature",
+                    "label": "F-34",
+                    "line": 1,
+                    "name": "Draw the catalogues",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a689-0b25-768a-9f1e-cc267f67e3c1",
+                    "kind": "criterion",
+                    "label": "AC-352",
+                    "line": 32,
+                    "name": "A tile's children are fetched only while a typical tile of its level, with the mean points of the level's split tiles and the level's edge, would have its points farther apart on screen than 3 pixels at the distance of the tile's nearest points, so that a region far away or seen whole is not refined beyond what the screen shows, and regions at one distance are refined alike.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a497-e843-728a-bce8-4006f5c2ce8f",
+                    "kind": "criterion",
+                    "label": "AC-355",
+                    "line": 46,
+                    "name": "While level of detail is on, no more than 6,000,000 points are held at once.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a497-e843-728a-bce8-400ade54e0e1",
+                    "kind": "requirement",
+                    "label": "RQ-123",
+                    "line": 129,
+                    "name": "Univ Explorer shall draw every point outside the stars domain in one colour and count in the key the points drawn of each kind of value of distance.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a497-e843-728a-bce8-400b9b581384",
+                    "kind": "criterion",
+                    "label": "AC-362",
+                    "line": 135,
+                    "name": "Points outside the stars domain are drawn in one colour, whatever the kind of value of their distance.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a497-e843-728a-bce8-400c71ad8ebe",
+                    "kind": "criterion",
+                    "label": "AC-363",
+                    "line": 137,
+                    "name": "The key shows that colour and counts the points of the tiles held of each kind of value: measured, estimated, inferred and reconstructed.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f1e-d177-716d-b124-3ce3944cd7e5",
+                    "kind": "component",
+                    "label": "CMP-3",
+                    "line": 10,
+                    "name": "D1",
+                    "path": "spec/components/cloudflare-platform.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1e-d177-716d-b124-3cf23344602c",
+                    "kind": "constraint",
+                    "label": "CON-3",
+                    "line": 24,
+                    "name": "The Release publisher shall keep every D1 database of the releases, the catalogue database and each object shard, within D1's 10 GB database cap, budgeting each release at 4.5 GB in each so the next release can be published before the previous one is pruned.",
+                    "path": "spec/components/ingest-pipeline.yaml"
+                  }
+                ],
+                "commit": "f29a4da615a49a2cd4b646f3c87767a6cdaef23e",
+                "removed": [],
+                "revision": "develop"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 5,
+                "publishedAt": "2026-11-05T00:13:08Z",
+                "stateRoot": "66786da4430c04f826108f7ed5495bdf44eed301c9956215cd57c4294147c18f"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "feature/cull-to-structure",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

@@ -76,6 +76,8 @@ requirements:
         name: "The panel says the cull is approximate for a structure culled by a box that is not its published shape."
       - key: 01a1b13c-1e10-748d-8008-e7e71f42aabb
         name: "Every point is tested alike, whatever its scale domain or kind, at its preferred distance and with no margin."
+      - key: 01a1b166-0bb4-703d-a861-7c307a08ae0b
+        name: "While the cull is on, the points inside are drawn fully opaque whatever the eye's distance from the focus, twice as bright as the brightest they are drawn without it, since those outside no longer crowd them."
       - key: 01a1b13c-1e10-748d-8008-e7e859257b94
         name: "The panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn."
       - key: 01a1b13c-1e10-748d-8008-e7e934fc10cf

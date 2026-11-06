@@ -19,6 +19,15 @@ versions:
     title: "Build the cull"
     goal: "Points outside the chosen structure's volume are not drawn, picked or counted while the cull is on, with the tests traced."
     status: active
+  - key: 01a1b15d-66f6-7446-a1fe-f28a1830165e
+    at: 2026-11-06T14:57:30Z
+    revision: 18
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the cull"
+    goal: "Points outside the chosen structure's volume are not drawn, picked or counted while the cull is on, with the tests traced."
+    status: done
 blocks:
   - key: 01a1b152-2ef1-71b2-9e7d-327878cb1e25
     id: t-cell
@@ -201,3 +210,38 @@ blocks:
         title: "Trace the new criteria"
         detail: "14 criteria linked and accepted: 516 of 516 nodes linked."
         state: done
+  - key: 01a1b15d-66f6-7446-a1fe-f289fa96304b
+    id: build-produced
+    kind: note
+    versions:
+      - key: 01a1b15d-66f6-7446-a1fe-f28bbf384f1c
+        at: 2026-11-06T14:57:30Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the build produced"
+        markdown: |-
+          Committed as `89d1ae3`.
+
+          ```mermaid
+          flowchart LR
+            D[Structure detail] --> V[volumeOf]
+            V -->|bounds| P[Planner: tiles meeting the box]
+            V -->|insideOf| M[Mask per tile]
+            M --> R[Shader a_inside]
+            M --> K[Key histograms]
+            M --> PK[Picking]
+          ```
+
+          | Shape | Cull | Count |
+          |---|---|---|
+          | Sphere, ellipsoid, oriented box | exact solid | 7 spheres |
+          | Sky region | HEALPix cell + distance range | 10 |
+          | Member list | members' box, approximate | 20 |
+          | Extents, bounds | their box, approximate | 16 |
+
+          **Live:** Bahcall–Soneira Void fills exactly its outline, with 35,744 measured points inside; Huge-LQG culls to its box with the approximate line; closing clears the address.
+
+          **Left open:** on a reload with `?inside=`, tiles load for the whole view until the structure's record arrives, then the cull drops them. The explorer's dev server went down partway through, so the refactor after the first live check (two hooks moved out of Scene) is covered by unit tests only.
+        tone: success
