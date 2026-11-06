@@ -7,6 +7,7 @@
 
 use serde_json::{Value, json};
 use univ_model::api::structures::{Centre, StructureDetail, StructurePage, StructureSummary};
+use univ_model::release::valid_in;
 
 use crate::backend::{Backend, Row, column, first, json_column};
 use crate::http::{Request, Response};
@@ -49,11 +50,14 @@ pub async fn list<B: Backend>(request: &Request, backend: &B) -> Result<Response
     let limit = PAGE + 1;
     let rows = backend
         .releases(
-            "SELECT s.id, s.name, s.kind, s.scale_domain, s.centre_x, s.centre_y, s.centre_z \
-             FROM structures s WHERE s.release = ?1 AND s.id > ?2 \
-             AND (?3 IS NULL OR s.kind IN (SELECT value FROM json_each(?3))) \
-             AND (?4 IS NULL OR s.scale_domain IN (SELECT value FROM json_each(?4))) \
-             ORDER BY s.id LIMIT ?5",
+            &format!(
+                "SELECT s.id, s.name, s.kind, s.scale_domain, s.centre_x, s.centre_y, s.centre_z \
+                 FROM structures s WHERE s.id > ?2 AND {} \
+                 AND (?3 IS NULL OR s.kind IN (SELECT value FROM json_each(?3))) \
+                 AND (?4 IS NULL OR s.scale_domain IN (SELECT value FROM json_each(?4))) \
+                 ORDER BY s.id LIMIT ?5",
+                valid_in("s.", "?1")
+            ),
             &[json!(release), json!(after), kinds, domains, json!(limit)],
         )
         .await?;
@@ -103,12 +107,16 @@ pub async fn get<B: Backend>(
     let release = resolve(request, backend).await?;
     let rows = backend
         .releases(
-            "SELECT s.id, s.name, s.kind, s.status, s.scale_domain, s.centre_x, s.centre_y, \
-             s.centre_z, s.record, s.members, s.bounds, \
-             sd.shape, sd.derivation, sd.outline, sd.rescaled \
-             FROM structures s \
-             LEFT JOIN structure_details sd ON sd.release = s.release AND sd.id = s.id \
-             WHERE s.release = ?1 AND s.id = ?2",
+            &format!(
+                "SELECT s.id, s.name, s.kind, s.status, s.scale_domain, s.centre_x, s.centre_y, \
+                 s.centre_z, s.record, s.members, s.bounds, \
+                 sd.shape, sd.derivation, sd.outline, sd.rescaled \
+                 FROM structures s \
+                 LEFT JOIN structure_details sd ON sd.id = s.id AND {} \
+                 WHERE s.id = ?2 AND {}",
+                valid_in("sd.", "?1"),
+                valid_in("s.", "?1")
+            ),
             &[json!(release), json!(id)],
         )
         .await?;

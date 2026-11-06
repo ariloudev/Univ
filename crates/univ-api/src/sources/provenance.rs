@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 use serde::Deserialize;
 use serde_json::json;
 use univ_model::api::sources::{EntryCounts, Fix, SourceProvenance};
+use univ_model::release::valid_in;
 
 use crate::backend::{Backend, column, first, json_column, rows_as};
 use crate::http::{Request, Response};
@@ -51,10 +52,13 @@ pub async fn provenance<B: Backend>(
     let release = resolve(request, backend).await?;
     let rows = backend
         .releases(
-            "SELECT s.n, s.fixes, nm.published, nm.left_out, nm.fixes AS applied \
-             FROM sources s LEFT JOIN normalizations nm \
-             ON nm.release = s.release AND nm.source = s.n \
-             WHERE s.release = ?1 AND s.id = ?2",
+            &format!(
+                "SELECT s.n, s.fixes, nm.published, nm.left_out, nm.fixes AS applied \
+                 FROM sources s LEFT JOIN normalizations nm ON nm.source = s.n AND {} \
+                 WHERE s.id = ?2 AND {}",
+                valid_in("nm.", "?1"),
+                valid_in("s.", "?1")
+            ),
             &[json!(release), json!(id)],
         )
         .await?;
@@ -62,8 +66,11 @@ pub async fn provenance<B: Backend>(
     let n: u32 = column(&source, "n")?;
     let payloads = backend
         .releases(
-            "SELECT item, url, sha256, bytes, retrieved, rows FROM payloads \
-             WHERE release = ?1 AND source = ?2 ORDER BY item",
+            &format!(
+                "SELECT item, url, sha256, bytes, retrieved, rows FROM payloads \
+                 WHERE source = ?2 AND {} ORDER BY item",
+                valid_in("", "?1")
+            ),
             &[json!(release), json!(n)],
         )
         .await?;

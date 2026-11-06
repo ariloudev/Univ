@@ -22,6 +22,7 @@ use serde_json::json;
 use univ_model::api::query::{Filters, MAX_RESULTS, QueryResult, RESULTS_PER_PAGE, VolumePage};
 use univ_model::object::ObjectKind;
 use univ_model::release::read::Vocabulary;
+use univ_model::release::valid_in;
 use univ_model::time::TimeKind;
 use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::volume::Region;
@@ -245,7 +246,17 @@ async fn resolved<B: Backend>(
                 }
             }
         };
-    let structure_kinds = in_release(backend, "SELECT DISTINCT kind AS value FROM structures WHERE release = ?1 AND kind IN (SELECT value FROM json_each(?2))", release, filters.kinds.as_ref()).await?;
+    let structure_kinds = in_release(
+        backend,
+        &format!(
+            "SELECT DISTINCT kind AS value FROM structures \
+             WHERE kind IN (SELECT value FROM json_each(?2)) AND {}",
+            valid_in("", "?1")
+        ),
+        release,
+        filters.kinds.as_ref(),
+    )
+    .await?;
     let object_kind = |kind: &str| serde_json::from_value::<ObjectKind>(json!(kind)).is_ok();
     check(
         "kinds",

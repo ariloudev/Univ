@@ -72,7 +72,7 @@ fn a_redshift_whose_source_states_one_uncertainty_for_its_catalogue_is_estimated
     db.exec(&format!(
         "INSERT INTO source_terms SELECT 2, n, NULL, NULL, \
          '[{{\"quantity\":\"redshift\",\"value\":85.0,\"unit\":\"kilometre_per_second\",\
-         \"times_one_plus_z\":false,\"basis\":\"Colless et al. 2001: rms 85 km/s\"}}]' \
+         \"times_one_plus_z\":false,\"basis\":\"Colless et al. 2001: rms 85 km/s\"}}]', NULL \
          FROM sources WHERE release = 2 AND id = '{source}';"
     ));
     let (_, after) = read(&db, "/v1/objects/1", "");

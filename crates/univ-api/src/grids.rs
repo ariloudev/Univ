@@ -9,6 +9,7 @@ use std::sync::Arc;
 use serde::Deserialize;
 use serde_json::json;
 use univ_model::api::bulk::{GridField, GridList, GridSummary};
+use univ_model::release::valid_in;
 use univ_model::units::Unit;
 
 use crate::backend::{Backend, Row, column, first, json_column};
@@ -39,9 +40,13 @@ pub async fn list<B: Backend>(request: &Request, backend: &B) -> Result<Response
     let release = resolve(request, backend).await?;
     let rows = backend
         .releases(
-            "SELECT g.id, s.id AS source, g.unit, g.shape, g.fields FROM grids g \
-             JOIN sources s ON s.release = g.release AND s.n = g.source \
-             WHERE g.release = ?1 ORDER BY g.id",
+            &format!(
+                "SELECT g.id, s.id AS source, g.unit, g.shape, g.fields FROM grids g \
+                 JOIN sources s ON s.n = g.source AND {} \
+                 WHERE {} ORDER BY g.id",
+                valid_in("s.", "?1"),
+                valid_in("g.", "?1")
+            ),
             &[json!(release)],
         )
         .await?;
@@ -253,7 +258,10 @@ async fn grid_keys<B: Backend>(
     }
     let rows = backend
         .releases(
-            "SELECT header_key FROM grids WHERE release = ?1 AND id = ?2",
+            &format!(
+                "SELECT header_key FROM grids WHERE id = ?2 AND {}",
+                valid_in("", "?1")
+            ),
             &[json!(release), json!(id)],
         )
         .await?;

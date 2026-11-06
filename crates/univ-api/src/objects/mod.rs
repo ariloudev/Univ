@@ -14,6 +14,7 @@ use univ_model::api::lookup::{
 };
 use univ_model::api::objects::ObjectRecord;
 use univ_model::release::read;
+use univ_model::release::valid_in;
 
 use self::resolve::{Resolved, by_designation, by_name, replaced};
 use self::vocabulary::vocabulary;
@@ -190,31 +191,18 @@ async fn record<B: Backend>(
         },
     };
     let params = [json!(release), json!(id)];
-    let batch = backend
-        .shards(&[
-            (
-                shard,
-                "SELECT * FROM objects WHERE release = ?1 AND id = ?2",
-                &params,
-            ),
-            (
-                shard,
-                "SELECT * FROM entries WHERE release = ?1 AND object_id = ?2",
-                &params,
-            ),
-            (
-                shard,
-                "SELECT * FROM measurements WHERE release = ?1 AND object_id = ?2",
-                &params,
-            ),
-            (
-                shard,
-                "SELECT source, identifier FROM designations \
-                 WHERE release = ?1 AND object_id = ?2",
-                &params,
-            ),
-        ])
-        .await?;
+    let valid = valid_in("", "?1");
+    let sql = [
+        format!("SELECT * FROM objects WHERE id = ?2 AND {valid}"),
+        format!("SELECT * FROM entries WHERE object_id = ?2 AND {valid}"),
+        format!("SELECT * FROM measurements WHERE object_id = ?2 AND {valid}"),
+        format!("SELECT source, identifier FROM designations WHERE object_id = ?2 AND {valid}"),
+    ];
+    let statements: Vec<(u32, &str, &[serde_json::Value])> = sql
+        .iter()
+        .map(|sql| (shard, sql.as_str(), &params[..]))
+        .collect();
+    let batch = backend.shards(&statements).await?;
     let [objects, entries, measurements, designations]: [Vec<Row>; 4] =
         batch.try_into().map_err(|_| {
             Problem::new(

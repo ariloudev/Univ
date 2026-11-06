@@ -85,7 +85,7 @@ fn the_terms_give_the_redistribution_status_and_any_non_commercial_clause() {
     db.exec(
         "UPDATE sources SET redistribution = 'permission_pending' WHERE release = 2 AND n = 0; \
          INSERT INTO source_terms VALUES (2, 0, 'Tabular data are under CC-BY-NC licence', \
-         '{\"asked_of\":\"WFAU, mar@roe.ac.uk\",\"asked_on\":\"2026-11-05\"}', NULL);",
+         '{\"asked_of\":\"WFAU, mar@roe.ac.uk\",\"asked_on\":\"2026-11-05\"}', NULL, NULL);",
     );
     let pending = body(&get(&db, "/v1/sources/hipparcos-2007"));
     let terms = &pending["terms"];
@@ -221,7 +221,8 @@ fn two_reads_pinned_to_one_release_return_identical_data_whatever_was_published_
     let db = db();
     let before = db.get("/v1/sources/hipparcos-2007", "release=2");
     db.exec(
-        "UPDATE releases SET published_at = '2026-11-03T08:00:00Z' WHERE number = 3;
+        "UPDATE sources SET retired = 3 WHERE id = 'hipparcos-2007';
+         UPDATE releases SET published_at = '2026-11-03T08:00:00Z' WHERE number = 3;
          UPDATE latest SET release = 3 WHERE one = 1;",
     );
     let after = db.get("/v1/sources/hipparcos-2007", "release=2");
@@ -231,6 +232,6 @@ fn two_reads_pinned_to_one_release_return_identical_data_whatever_was_published_
     let unpinned = db.get("/v1/sources/hipparcos-2007", "");
     assert_eq!(
         unpinned.status, 404,
-        "latest moved to release 3, which has no such source"
+        "latest moved to release 3, which retired the source"
     );
 }
