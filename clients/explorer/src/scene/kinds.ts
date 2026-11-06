@@ -49,10 +49,42 @@ export function detailOpacity(detail: Detail, distance: number): number {
 /** The colours of `KINDS`, in order, for the renderer's table: the one colour for each. */
 export const KIND_COLOURS: readonly Rgba[] = KINDS.map(() => POINT_COLOUR);
 
-/** The colour of structures' outlines and markers, after the kinds' in the renderer's table. */
+/** The colour of structures' names, and of the outlines and markers of a kind of structure with
+ * no colour of its own. */
 export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
-/** The colour of a structure drawn by its bounding box, marked approximate: fainter. */
-export const APPROXIMATE_COLOUR: Rgba = [STRUCTURE_COLOUR[0], STRUCTURE_COLOUR[1], STRUCTURE_COLOUR[2], 0.3];
+
+/** Each kind of structure's colour for its outline and markers (see-the-structures), apart from
+ * one another, from the points' blue and from the chosen structure's white: violets for what is
+ * emptier than its surroundings, oranges and reds for what is denser, greens for walls and
+ * filaments, yellows for the quasar and burst structures of the distant universe. */
+const STRUCTURE_KIND_COLOURS: Readonly<Record<string, readonly [number, number, number]>> = {
+  void: [0.62, 0.45, 1],
+  repeller: [0.88, 0.4, 0.95],
+  supercluster: [1, 0.55, 0.35],
+  supercluster_complex: [1, 0.33, 0.3],
+  basin: [1, 0.78, 0.3],
+  overdensity: [0.95, 0.62, 0.55],
+  wall: [0.45, 0.95, 0.35],
+  filament: [0.2, 0.8, 0.65],
+  quasar_group: [1, 0.92, 0.2],
+  ring: [0.85, 1, 0.5],
+  arc: [0.7, 0.85, 0.15],
+  shell: [1, 0.5, 0.78],
+};
+
+/** How opaque a structure's outline and markers are drawn, and fainter where it is drawn by its
+ * bounding box, marked approximate. */
+const STRUCTURE_OPACITY = 0.9;
+const APPROXIMATE_OPACITY = 0.3;
+
+/** The colour `kind` of structure is drawn in, fainter where it is drawn `approximate`. */
+export function structureColour(kind: string, approximate: boolean): Rgba {
+  const [r, g, b] = STRUCTURE_KIND_COLOURS[kind] ?? STRUCTURE_COLOUR;
+  return [r, g, b, approximate ? APPROXIMATE_OPACITY : STRUCTURE_OPACITY];
+}
+
+/** `kind` of structure's colour for CSS, as the panel of what is drawn shows it. */
+export const structureCss = (kind: string): string => css(structureColour(kind, false));
 /** The colour of the chosen structure's outline, markers and name (see-the-structures): white,
  * apart from the structures' orange and from every kind of value's colour. */
 export const CHOSEN_COLOUR: Rgba = [1, 1, 1, 1];
@@ -62,10 +94,18 @@ export const MARKER_INDEX = KINDS.length;
 const MARKER_SIZE = 6;
 /** The diameter of the chosen structure's markers: a structure placed by a point shows as chosen. */
 const CHOSEN_MARKER_SIZE = 16;
+/** The width of a structure's outline, device pixels. */
+const LINE_WIDTH = 1.5;
+/** The width of the chosen structure's outline: thick enough that it shows as chosen among
+ * the others it crosses. */
+const CHOSEN_LINE_WIDTH = 5;
 
-/** How a structure drawn in `colour` is drawn: so, or in the chosen colour, its markers larger. */
-export const structureStyle = (colour: Rgba, chosen: boolean): { colour: Rgba; markerSize: number } =>
-  chosen ? { colour: CHOSEN_COLOUR, markerSize: CHOSEN_MARKER_SIZE } : { colour, markerSize: MARKER_SIZE };
+/** How a structure drawn in `colour` is drawn: so, or in the chosen colour, its markers larger
+ * and its outline thicker. */
+export const structureStyle = (colour: Rgba, chosen: boolean): { colour: Rgba; markerSize: number; lineWidth: number } =>
+  chosen
+    ? { colour: CHOSEN_COLOUR, markerSize: CHOSEN_MARKER_SIZE, lineWidth: CHOSEN_LINE_WIDTH }
+    : { colour, markerSize: MARKER_SIZE, lineWidth: LINE_WIDTH };
 
 /** A colour, red, green and blue each 0 to 1, for CSS. */
 export const css = ([r = 0, g = 0, b = 0]: readonly number[]): string =>

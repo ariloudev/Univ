@@ -75,13 +75,40 @@ void main() {
   colour = vec4(v_colour.rgb, v_colour.a * (1.0 - r * r));
 }`;
 
+// Outlines as ribbons (ribbon.ts): each corner of a segment's two triangles placed at its end of
+// the segment, then moved across the segment on the view by half the line's width.
 export const LINE_VERTEX = `#version 300 es
-in vec3 a_offset;
+in vec3 a_from;
+in vec3 a_to;
+// Which end of its segment the corner is at, 0 or 1, and on which side of it, -1 or 1.
+in vec2 a_corner;
 uniform mat3 u_axes;
 uniform vec3 u_centre;
 uniform mat4 u_projection;
+// Device pixels per clip-space unit across and up the view, and the line's width in them.
+uniform vec2 u_pixels;
+uniform float u_width;
+// Just in front of the eye: an end behind it is moved along its segment to here, so that the
+// segment's direction on the view is defined.
+const float NEAR = 1e-9;
+vec4 inFront(vec4 end, vec4 other) {
+  return end.w >= NEAR ? end : mix(end, other, (NEAR - end.w) / (other.w - end.w));
+}
 void main() {
-  gl_Position = u_projection * vec4(u_axes * a_offset + u_centre, 1.0);
+  vec4 a = u_projection * vec4(u_axes * a_from + u_centre, 1.0);
+  vec4 b = u_projection * vec4(u_axes * a_to + u_centre, 1.0);
+  if (a.w < NEAR && b.w < NEAR) {
+    // Wholly behind the eye: outside the clip volume, not drawn.
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    return;
+  }
+  vec4 from = inFront(a, b);
+  vec4 to = inFront(b, a);
+  vec2 along = (to.xy / to.w - from.xy / from.w) * u_pixels;
+  vec2 dir = length(along) > 0.0 ? normalize(along) : vec2(1.0, 0.0);
+  vec2 across = vec2(-dir.y, dir.x) * a_corner.y * 0.5 * u_width / u_pixels;
+  vec4 at = a_corner.x < 0.5 ? from : to;
+  gl_Position = vec4(at.xy + across * at.w, at.zw);
 }`;
 
 export const LINE_FRAGMENT = `#version 300 es

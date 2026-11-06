@@ -4125,6 +4125,15 @@ links:
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "draws an ellipsoid as rings along its axes, and an oriented box as its twelve edges"
         body: b74437aba36e7e19c7a644ef0f0fb3465b30ff29975a981199fb09e983daa8a2
+  - node: 01a1b16b-4634-7511-aec8-71c45009817c
+    reviewed: 50ff6d5e62ae0059f44adbc4e239e1a38c4155555645677e9cc40bfb1057e52a
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
+        body: ac7168252ef85098892ee5ecb4ed1dc61a1873d31e1363010b47e4dc23c9574d
+      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
+        name: "shows each kind of structure's colour beside its box"
+        body: 36027fd57d2e962e3d067e174e71d4baa24e5e7367441320f936101aa6886a1f
   - node: 01a1a497-e843-728a-bce8-3ff2f42a8c13
     reviewed: e1cc72ff569ef79da218abd83bb3344b2fc602ac03f482cae2232f1de175d9d3
     tests:
@@ -4238,10 +4247,19 @@ links:
         body: 1551c8b75dc6542272f5f2ea759e09ea208d28d1b14b5d140aba772f532bd123
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
-        body: 90c6b0a6f69393e273411eec927bd4870ba6e690fe8e2bdcecfff97259fb143d
+        body: 8899e6232d6ff2def6eef43000ada6a2e01d137888c052578ed019ceda2f8165
       - file: "clients/explorer/src/ui/SceneOverlay.test.tsx"
         name: "writes the chosen structure's name in the chosen colour, and the others in the structures' own"
         body: 0a660037479bd1b47d0abf7efc51c4df4edbe758ed17c4cbe4dc49bcaffe6119
+  - node: 01a1b16b-4634-7511-aec8-71c5715ace5e
+    reviewed: 5104796bc92fef83de2aa1d1f919896a098d6646bad4f1e0ed62681279979d18
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "draws the chosen structure's outline thicker than any other's"
+        body: ef7f0befbcb7192c8917d32b4ddbd4fa2060379a3417a609476415c6b21ab0df
+      - file: "clients/explorer/src/scene/ribbon.test.ts"
+        name: "draws each segment as two triangles covering both its sides, from end to end"
+        body: b1eac9b99f854bc464d1bee14bb8815f3e9d26a212cd40cacef270a85edf1d32
   - node: 01a1a497-e843-728a-bce8-3ffa426590e2
     reviewed: f0b8b7ee41de7be2ce86c64da40f91c05bc36dcc41c0bcfc3c8cb094a930a4c5
     tests:

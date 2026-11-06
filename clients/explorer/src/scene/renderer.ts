@@ -12,6 +12,7 @@ import type { Drawer, Lines, Rgba } from "./drawing.ts";
 import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpacity, structureStyle } from "./kinds.ts";
 import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
+import { ribbonOf } from "./ribbon.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
 
@@ -96,6 +97,8 @@ export class Renderer implements Drawer {
   private readonly points: Program;
   private readonly lines: Program;
   private readonly lineColour: WebGLUniformLocation | null;
+  private readonly lineWidth: WebGLUniformLocation | null;
+  private readonly linePixels: WebGLUniformLocation | null;
   /** Each tile's points, by its id, with the sphere they lie in. */
   private readonly batches = new Map<string, Batch>();
   /** The domain whose detail the point program holds, while a frame is drawn, and how opaque its
@@ -116,7 +119,7 @@ export class Renderer implements Drawer {
   /** The outlines and markers not drawn, by name (choose-what-is-drawn). */
   private hiddenNames: ReadonlySet<string> = new Set();
   private readonly outlines = new Map<string, Outline>();
-  private readonly markers = new Map<string, Drawn>();
+  private readonly markers = new Map<string, Drawn & { colour: Rgba }>();
   /** The name of the outline and markers drawn as chosen, if any. */
   private chosen: string | undefined;
   private readonly pointSize: WebGLUniformLocation | null;
@@ -132,6 +135,8 @@ export class Renderer implements Drawer {
     this.points = compile(gl, POINT_VERTEX, POINT_FRAGMENT);
     this.lines = compile(gl, LINE_VERTEX, LINE_FRAGMENT);
     this.lineColour = gl.getUniformLocation(this.lines.program, "u_colour");
+    this.lineWidth = gl.getUniformLocation(this.lines.program, "u_width");
+    this.linePixels = gl.getUniformLocation(this.lines.program, "u_pixels");
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
@@ -274,14 +279,15 @@ export class Renderer implements Drawer {
     this.chosen = name;
   }
 
-  /** Draws markers at `offsets` from `centre` under `name`, in place of what was drawn under it. */
-  setMarkers(name: string, markers: { centre: Vec3; offsets: Float32Array } | undefined): void {
+  /** Draws markers at `offsets` from `centre` under `name`, in `colour`, in place of what was
+   * drawn under it. */
+  setMarkers(name: string, markers: { centre: Vec3; offsets: Float32Array; colour: Rgba } | undefined): void {
     const old = this.markers.get(name);
     if (old !== undefined) this.release(old);
     this.markers.delete(name);
     if (markers === undefined) return;
     const kinds = new Uint8Array(markers.offsets.length / 3).fill(MARKER_INDEX);
-    this.markers.set(name, this.upload({ ...markers, kinds }));
+    this.markers.set(name, { ...this.upload({ ...markers, kinds }), colour: markers.colour });
   }
 
   /** Draws `lines` under `name`, in place of what was drawn under it; nothing for none. */
@@ -290,12 +296,16 @@ export class Renderer implements Drawer {
     if (old !== undefined) this.release(old);
     this.outlines.delete(name);
     if (lines === undefined) return;
+    const ribbon = ribbonOf(lines.offsets);
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
-    const buffers = [this.buffer(this.lines.program, "a_offset", lines.offsets, 3)];
+    const buffers = [
+      this.buffer(this.lines.program, "a_from", ribbon.from, 3),
+      this.buffer(this.lines.program, "a_to", ribbon.to, 3),
+      this.buffer(this.lines.program, "a_corner", ribbon.corners, 2),
+    ];
     this.gl.bindVertexArray(null);
-    const count = lines.offsets.length / 3;
-    this.outlines.set(name, { vao, buffers, centre: lines.centre, count, colour: lines.colour });
+    this.outlines.set(name, { vao, buffers, centre: lines.centre, count: ribbon.count, colour: lines.colour });
   }
 
   /** Draws the view on a canvas `width` × `height` device pixels. */
@@ -308,17 +318,20 @@ export class Renderer implements Drawer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     const sight = sightOf(view, toFrame, width, height);
     const frame = { axes: sight.axes, eye: sight.eye, projection: projection(view, width / height) };
-    this.drawOutlines(frame);
+    this.drawOutlines(frame, width, height);
     this.drawPoints(frame, sight, view.distance);
     this.drawMarkers(frame);
   }
 
-  private drawOutlines(frame: Frame): void {
+  private drawOutlines(frame: Frame, width: number, height: number): void {
     this.use(this.lines, frame);
+    this.gl.uniform2f(this.linePixels, width / 2, height / 2);
     for (const [name, outline] of this.outlines) {
       if (this.hiddenNames.has(name)) continue;
-      this.gl.uniform4f(this.lineColour, ...structureStyle(outline.colour, name === this.chosen).colour);
-      this.drawOne(this.lines, frame, outline, this.gl.LINES);
+      const style = structureStyle(outline.colour, name === this.chosen);
+      this.gl.uniform4f(this.lineColour, ...style.colour);
+      this.gl.uniform1f(this.lineWidth, style.lineWidth);
+      this.drawOne(this.lines, frame, outline, this.gl.TRIANGLES);
     }
   }
 
@@ -368,7 +381,7 @@ export class Renderer implements Drawer {
     gl.uniform2f(this.detailAt.slice, 0, 0);
     for (const [name, marker] of this.markers) {
       if (this.hiddenNames.has(name)) continue;
-      const style = structureStyle(STRUCTURE_COLOUR, name === this.chosen);
+      const style = structureStyle(marker.colour, name === this.chosen);
       gl.uniform1f(this.pointSize, style.markerSize);
       gl.uniform4f(this.markerColour, ...style.colour);
       this.drawOne(this.points, frame, marker, gl.POINTS);

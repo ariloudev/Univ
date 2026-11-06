@@ -85,7 +85,9 @@ again; so is a structure the view is culled to (`?inside=<structure id>`).
   along it are read.
 - **Structures.** Spheres, ellipsoids and boxes are drawn as outlines, paths as lines, members and
   points as markers; sky regions, grids and structures with no placed shape as their bounding
-  box, marked approximate.
+  box, marked approximate. Each kind of structure has a colour of its own (the Show panel shows
+  it beside the kind). Outlines are drawn as ribbons, two triangles a segment widened across the
+  view, since WebGL draws lines one pixel wide; the chosen structure's are thicker, and white.
 - **Culling to a structure.** Spheres, ellipsoids, oriented boxes and sky regions (a HEALPix cell
   and a distance range) cull exactly; member lists, published extents and bounds cull to a box,
   which the panel calls approximate. Each tile's points are tested once on the CPU into a mask

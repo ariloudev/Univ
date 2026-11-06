@@ -15,6 +15,8 @@ import { type Mat3, type Vec3, add, cross, dot, norm, normalize, scale, sub, tra
 export interface StructureDrawing {
   id: string;
   name: string;
+  /** Its kind, whose colour it is drawn in. */
+  kind: string;
   /** Where its name is drawn; none when it is not drawn. */
   centre: Vec3 | undefined;
   /** The diagonal of its bounding box, megaparsecs, where it has one. */
@@ -198,7 +200,7 @@ export function structureName(detail: StructureDetail): string {
 
 /** How `detail` is drawn, its shape turned into the ICRS by `rotations`. */
 export function drawingOf(detail: StructureDetail, rotations: Rotations): StructureDrawing {
-  const base = { id: detail.id, name: structureName(detail) };
+  const base = { id: detail.id, name: structureName(detail), kind: detail.kind };
   const where = placed(detail);
   const size = extentsSize(detail) ?? (where === undefined || detail.bounds === null ? undefined : norm(sub(where.max, where.min)));
   const outline = shapeOutline(detail, rotations);
