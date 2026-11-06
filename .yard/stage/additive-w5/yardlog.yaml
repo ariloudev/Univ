@@ -3,7 +3,7 @@ key: 01a1b25b-660e-755d-a6cb-868cf9774f32
 branch: "stage/additive-w5"
 base: "develop"
 title: "stage/additive-w5"
-revision: 3
+revision: 6
 opened:
   at: 2026-11-06T19:34:56Z
   revision: 1
@@ -13,6 +13,17 @@ opened:
 stages:
   - key: 01a1b25b-660e-755d-a6cb-868dd87d8330
     id: w5
+submissions:
+  - key: 01a1b295-3112-707c-8a09-7332e46ab9bb
+    blocks:
+      - 01a1b295-3112-707c-8a09-732f23794a8c
+    changes:
+      - what: sent
+        at: 2026-11-06T20:38:04Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
 acts:
   - at: 2026-11-06T19:34:56Z
     revision: 1
@@ -26,6 +37,21 @@ acts:
       session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
   - at: 2026-11-06T20:02:57Z
     revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T20:06:25Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T20:32:20Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T20:38:04Z
+    revision: 6
     by:
       host: claude-code
       session: "0dff9621-d0e9-418a-9aee-e82062f9f784"

@@ -135,6 +135,15 @@ blocks:
         title: "xtask science --store"
         detail: "Read a release's rows valid in it from the local D1 files."
         state: active
+      - key: 01a1b278-3934-7133-92cf-aed1047cbe2d
+        at: 2026-11-06T20:06:25Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "xtask science --store"
+        detail: "916da6c: rows of the release from the local D1 files (catalogue by latest, shards via object_shards, each shard found once), files from its build. Test: the fixture as a catalogue + shard file beside a decoy judges as from its build, but for the shard index rows the test adds."
+        state: done
   - key: 01a1b25b-660e-755d-a6cb-8693c644f9a7
     id: w5-run
     kind: task
@@ -148,3 +157,89 @@ blocks:
         title: "Real run (owner's approval)"
         detail: "Stop the dev server; publish migrates; reindex; QA-2 bench; build and publish release 11; measure build, publish and storage."
         state: open
+  - key: 01a1b278-3934-7133-92cf-aed0795f5357
+    id: w5-review
+    kind: task
+    versions:
+      - key: 01a1b278-3934-7133-92cf-aed2c9203d1c
+        at: 2026-11-06T20:06:25Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W5 review and gate"
+        detail: "/simplify and /code-review in parallel, fixes, cargo xtask check, cargo xtask integration, trace links."
+        state: active
+      - key: 01a1b295-3112-707c-8a09-7330f5b455d8
+        at: 2026-11-06T20:38:04Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W5 review and gate"
+        detail: "Reviews applied (see the review note); cargo xtask check passed (13 gates, loft verify skipped off develop); cargo xtask integration passed; trace 535/535 linked and accepted."
+        state: done
+  - key: 01a1b28f-f262-73cf-aca6-b5a69877e023
+    id: w5-review-note
+    kind: note
+    versions:
+      - key: 01a1b28f-f262-73cf-aca6-b5a7dba659a8
+        at: 2026-11-06T20:32:20Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W5 review: what was fixed and what was left"
+        markdown: |-
+          Four cleanup reviewers and `/code-review high` ran on the W5 diff.
+
+          **Fixed (correctness)**
+          - The migration left `scale_domains.manifest_key` naming the old key it then deleted: every tile read of a migrated release would have failed. Every column ending `_key` is now renamed through a table of moved keys, and the test's schema-5 store names its files by their old keys (the test fails without the fix).
+          - A run stopped while deleting the old keys orphaned the rest: they are now listed in the journals first, and the next run deletes them.
+          - A release a schema-5 publish left part way is refused, telling the owner to prune it.
+          - Each R2 copy is checked against its SHA-256 as R2 gives it back.
+          - `univ-ingest migrate` honours a first Ctrl-C.
+          - A reindex that fails no longer leaves a partial row index: it is written beside and swapped in whole.
+
+          **Fixed (quality)**
+          - The reindex now reads every row once, gathering the numbering as it indexes.
+          - The hash is back to its plain form; `-0.0` becomes `0.0` where reals become SQL values.
+          - Each row's `release` is estimated at a fixed width, so `release_shards` no longer changes as the release number grows.
+          - Retirement is folded into the copy; `science --store` sets each copied row's release as it copies it.
+          - Code is shared: `execute_sql`, `r2_manifest`, one rusqlite row reader, `LOCAL_D1_FILES`, typed table constants and `packing::bucket`.
+          - The trace links are complete: 535 of 535 nodes.
+
+          **Left, with reasons**
+          - **Tile manifests and grid headers name their release, so each release rewrites them** (3 scale domains plus any grids, a few small R2 objects and rows). The tests now count these rewrites exactly instead of leaving the tables out. There are two ways to stop the rewrite:
+            - drop the field: the tile manifest's is required in OpenAPI v1;
+            - make it mean the first release to publish it: the grid header's is fixed by the spec (*names the release that published it*).
+            Either is a contract change for the owner.
+          - The `--store` file identification in xtask duplicates `LocalD1::open`: xtask must not depend on univ-ingest. They share the path constant.
+          - No `Store::copy` op: the 1.13 GB of R2 still passes through disk, which costs minutes, once.
+          - A publish onto a schema-6 store makes one or two extra Wrangler calls for the migration check.
+          - Prune does not migrate first: its file-map guard still serves an empty catalogue.
+          - The journal-only prune path is tested by `a_release_never_listed_whose_files_were_uploaded_has_them_deleted`, so that review finding was a false positive.
+        tone: warning
+  - key: 01a1b295-3112-707c-8a09-732f23794a8c
+    id: w5-run-approval
+    kind: approval
+    versions:
+      - key: 01a1b295-3112-707c-8a09-73313b02ad9b
+        at: 2026-11-06T20:38:04Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Run W5 on the real local state"
+        markdown: |-
+          The code for W5 is done, reviewed and gated. Nothing has touched `.cache/univ-ingest` yet. I'd like to run it on the real state, in this order. Each step stops on any error, and every step before it can be run again.
+
+          1. **Stop the `wrangler dev` running on the real state.** It holds the D1 files open, and the migration rewrites them. If you'd rather stop it yourself, reject with that reason.
+          2. **Back up `.cache/univ-ingest/wrangler`** (about 21 GB) and `state/states/10` to `.cache/univ-ingest/backup-pre-w5/`, so release 10 can be restored as it is now.
+          3. **`univ-ingest migrate`**: rebuilds the catalogue and 6 shards in place under schema 6, and copies release 10's 4,680 R2 files (1.13 GB) to `files/{sha256}`, each checked against its SHA-256. I expect tens of minutes.
+          4. **`univ-ingest reindex`**: writes release 10's row index and `numbering.yaml` into `state/states/10`.
+          5. **Benches on release 10 after the migration:** `bench lookup` (QA-2, 200 ms at p95) and `bench first-points` (3 s), plus a spot check that pinned reads of sample objects, a volume page and structures match what they gave before.
+          6. **Build release 11 with one structure correction.** This is a full `univ-ingest build` run. Tell me which structure you want corrected, or I'll pick a cited coordinate fix from the structures file and show it to you first.
+          7. **`univ-ingest publish 11`**, then measure: build time, publish time, D1 and R2 growth, and the explorer showing release 11.
+
+          I won't push, merge into `develop` or `main`, `loft publish`, or deploy anything. After the run I'll write up the numbers, close W5 and merge `stage/additive-w5` into `product/additive-releases`.
