@@ -1,0 +1,261 @@
+key: 01a1b138-2aa1-7534-b824-5cbe21472440
+id: discuss
+versions:
+  - key: 01a1b138-2aa1-7534-b824-5cc8c94355b4
+    at: 2026-11-06T14:16:50Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Shape the cull"
+    goal: "What 'inside the chosen structure' means for each kind of shape, what is culled, where the control lives and how loading follows it are settled with the owner."
+    status: active
+  - key: 01a1b13b-b825-73ae-9757-53ddaa596bc4
+    at: 2026-11-06T14:20:43Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Shape the cull"
+    goal: "What 'inside the chosen structure' means for each kind of shape, what is culled, where the control lives and how loading follows it are settled with the owner."
+    status: done
+blocks:
+  - key: 01a1b138-2aa1-7534-b824-5cc219dec227
+    id: what-is-there
+    kind: note
+    versions:
+      - key: 01a1b138-2aa1-7534-b824-5ccc4587cf1b
+        at: 2026-11-06T14:16:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The 53 structures by how their volume is known"
+        markdown: |-
+          | Shape | Count | Kinds | An inside test |
+          |---|---|---|---|
+          | Sphere | 7 | 6 voids, 1 shell | exact, one uniform in the shader |
+          | Sky region (HEALPix cells between a near and far distance) | 10 | superclusters, walls, filaments, a void, a complex | exact: the point's cell in the set and its distance in range; cells on the CPU or a cell texture in the shader |
+          | Member list | 20 | 8 quasar groups, 6 superclusters, rings, an arc, a filament | none published: needs a rule (members' box, hull, or spheres about members) |
+          | Point with published extents, or bounds only | 16 | superclusters, voids, walls, Laniakea, the Dipole Repeller | approximate: the extents' box or the bounds' box, as already drawn |
+
+          Ellipsoids and oriented boxes are in the schema but no structure uses one yet.
+
+          Points are placed at their preferred distance. A cluster's galaxies are smeared along the line of sight by peculiar velocities and distance errors, so a strict cut trims real members at the near and far faces.
+        tone: info
+  - key: 01a1b138-2aa1-7534-b824-5cc36d220134
+    id: q-what
+    kind: question
+    versions:
+      - key: 01a1b138-2aa1-7534-b824-5ccd0166acb4
+        at: 2026-11-06T14:16:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Which points does the cull hide when they lie outside the chosen structure?"
+        header: "What culls"
+        options:
+          - label: "Every point"
+            detail: "Stars, galaxies, quasars alike: a plain 'only what lies inside'. Stars only survive for structures around Earth (Local Void, Laniakea, Local Supercluster), which is correct. One rule, nothing to explain."
+            recommended: true
+          - label: "All but stars"
+            detail: "Galaxies and other extragalactic points outside are hidden; the Milky Way's stars always stay as the frame of reference near Earth."
+          - label: "Galaxies only"
+            detail: "Only galaxy points are hidden; quasars, clusters and stars always stay. Narrowest reading of 'galaxies'."
+    responses:
+      - key: 01a1b13b-8b64-74e8-9071-e3feff5f6e41
+        at: 2026-11-06T14:20:31Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Every point"
+  - key: 01a1b138-2aa1-7534-b824-5cc48276155b
+    id: q-shapes
+    kind: question
+    versions:
+      - key: 01a1b138-2aa1-7534-b824-5ccefeacaa3d
+        at: 2026-11-06T14:16:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "What is 'inside' for the 36 structures with no published volume (member lists, extents, bounds)?"
+        header: "No volume"
+        options:
+          - label: "Their drawn box"
+            detail: "Members' bounds, the extents' box or the bounds' box: the box already drawn and marked approximate. The cull says 'approximate' beside it. Works for every structure the view draws as a volume; quick, honest about what it is."
+            recommended: true
+          - label: "Spheres and sky regions only"
+            detail: "The cull is offered only for the 17 with a true volume; for the rest the switch is greyed with the reason. Strictest science, but most structures can't use it."
+          - label: "Hull of the members"
+            detail: "For member lists, the convex hull of members (grown by a margin); boxes for extents and bounds. Tighter for elongated groups, but the hull is our construction, not a published shape, and a margin has to be chosen."
+    responses:
+      - key: 01a1b13b-8b64-74e8-9071-e3ff81c3da76
+        at: 2026-11-06T14:20:31Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Their drawn box"
+  - key: 01a1b138-2aa1-7534-b824-5cc5e5273278
+    id: q-control
+    kind: question
+    versions:
+      - key: 01a1b138-2aa1-7534-b824-5ccfafead303
+        at: 2026-11-06T14:16:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Where does the switch live, and how long does it hold?"
+        header: "Control"
+        options:
+          - label: "In the structure panel"
+            detail: "A checkbox 'Only what lies inside' in the chosen structure's panel; kept in the address; off when the panel closes, and choosing another structure moves it to that one. It sits beside what it acts on."
+            recommended: true
+          - label: "Top-bar switch"
+            detail: "Like Level of detail: one switch that applies to whichever structure is chosen, and does nothing while none is. Always visible, but its effect depends on a choice made elsewhere."
+    responses:
+      - key: 01a1b13b-8b64-74e8-9071-e40094d0dc63
+        at: 2026-11-06T14:20:31Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "In the structure panel"
+  - key: 01a1b138-2aa1-7534-b824-5cc605af26c6
+    id: q-loading
+    kind: question
+    versions:
+      - key: 01a1b138-2aa1-7534-b824-5cd0bb95044f
+        at: 2026-11-06T14:16:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Should loading follow the cull?"
+        header: "Loading"
+        options:
+          - label: "Spend budget inside"
+            detail: "While the cull is on, only tiles that meet the structure's volume are fetched and kept, so its interior fills to full density within the 6 M budget. Needs the planner to skip tiles outside the volume's box; a modest change to catalogue.ts."
+            recommended: true
+          - label: "Only hide"
+            detail: "Loading is unchanged; points outside are simply not drawn. Cheapest, but with level of detail on a distant structure stays as thin as before, and most of the budget goes to points that are hidden."
+    responses:
+      - key: 01a1b13b-8b64-74e8-9071-e4011efb31f9
+        at: 2026-11-06T14:20:31Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Spend budget inside"
+  - key: 01a1b138-2aa1-7534-b824-5cc751be6fe1
+    id: q-margin
+    kind: question
+    versions:
+      - key: 01a1b138-2aa1-7534-b824-5cd103b919eb
+        at: 2026-11-06T14:16:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Cut exactly at the shape, or with a margin for distance smearing?"
+        header: "Edges"
+        options:
+          - label: "Exact cut"
+            detail: "Inside means inside the shape as published or drawn. Members smeared past the near and far faces are hidden; the panel says points are placed at their preferred distance. Plain and checkable."
+            recommended: true
+          - label: "Fixed margin"
+            detail: "The volume grows by a fixed share (say 10%) in every direction. Keeps more smeared members, also lets in neighbours; the share is our choice, not a measurement."
+          - label: "Margin slider"
+            detail: "A slider from 0 to 50% beside the switch. Most flexible; one more control to spec and test."
+    responses:
+      - key: 01a1b13b-8b64-74e8-9071-e402165c7a52
+        at: 2026-11-06T14:20:31Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Exact cut"
+  - key: 01a1b13b-b825-73ae-9757-53d359b3593d
+    id: d-what
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1b13b-b825-73ae-9757-53d812fd4896
+        at: 2026-11-06T14:20:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Every point outside is hidden"
+        consequence: "One rule for every domain: stars stay only for structures around Earth. The shader's existing hide test gains a volume test; masks and kinds are untouched."
+        question: 01a1b138-2aa1-7534-b824-5cc36d220134
+  - key: 01a1b13b-b825-73ae-9757-53d4d673484f
+    id: d-shapes
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1b13b-b825-73ae-9757-53d9e6e1b51e
+        at: 2026-11-06T14:20:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "No published volume: the drawn box"
+        consequence: "Spheres, ellipsoids, oriented boxes and sky regions cull exactly; member lists, extents and bounds cull by the box the view already draws, and the panel says the cull is approximate for them. A structure drawn with no volume (a point alone, a path) offers no cull."
+        question: 01a1b138-2aa1-7534-b824-5cc48276155b
+  - key: 01a1b13b-b825-73ae-9757-53d5f7547f9a
+    id: d-control
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1b13b-b825-73ae-9757-53daa07316bd
+        at: 2026-11-06T14:20:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "A checkbox in the structure's panel"
+        consequence: "The cull belongs to the chosen structure: kept in the address beside it, carried to the next one chosen, and off when its panel closes."
+        question: 01a1b138-2aa1-7534-b824-5cc5e5273278
+  - key: 01a1b13b-b825-73ae-9757-53d60d8dbecb
+    id: d-loading
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1b13b-b825-73ae-9757-53dbde43f994
+        at: 2026-11-06T14:20:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The budget is spent inside the volume"
+        consequence: "While culling, the planner fetches and keeps only tiles whose cubes meet the volume's box, so the interior reaches full density; level of detail still thins it by distance."
+        question: 01a1b138-2aa1-7534-b824-5cc605af26c6
+  - key: 01a1b13b-b825-73ae-9757-53d7fbde5c4d
+    id: d-margin
+    kind: decision
+    number: 5
+    versions:
+      - key: 01a1b13b-b825-73ae-9757-53dc9cc73e75
+        at: 2026-11-06T14:20:43Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "An exact cut at the shape"
+        consequence: "No margin to choose or explain; members placed past a face by their preferred distance are hidden, and the panel says so."
+        question: 01a1b138-2aa1-7534-b824-5cc751be6fe1

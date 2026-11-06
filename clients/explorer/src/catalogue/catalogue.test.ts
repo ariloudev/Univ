@@ -9,6 +9,7 @@ import { NO_MASKS, masksOf } from "../scene/masks.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
 import type { Sight } from "../scene/frustum.ts";
 import type { Vec3 } from "../scene/vec.ts";
+import { NOTHING, type Volume } from "../scene/volume.ts";
 import { type Batch, domainsOf } from "./tiles.ts";
 
 /** Univ Server's answer to `path` on the fixture release; `corrupt` (domain/address) altered,
@@ -330,6 +331,131 @@ describe("the catalogue", () => {
     expect(drawn).toEqual(["simulated/r"]);
     gate.release();
     await steady(drawn);
+  });
+
+  describe("culled to a structure's volume", () => {
+    /** The simulated domain with level of detail off, culled where `culled` from the start, every
+     * tile it wants drawn; and the box east of its root's centre, which its eastern children's
+     * cubes meet and its western children's do not. */
+    async function culled(culledFirst: boolean, levelOfDetail = false) {
+      const http = server(undefined, undefined, ["simulated"]);
+      const domains = await domainsOf(2, { http });
+      const root = domains[0]?.tiles.find((t) => t.parent === undefined);
+      if (root === undefined) throw new Error("no root");
+      const big = root.edge * 10;
+      const east: Volume = {
+        kind: "box",
+        approximate: true,
+        bounds: { min: [root.centre[0] + root.edge / 100, -big, -big], max: [big, big, big] },
+      };
+      const drawn: string[] = [];
+      const batches = new Map<string, Batch>();
+      const events = {
+        onBatch: (b: Batch) => {
+          batches.set(b.tile.id, b);
+          drawn.push(b.tile.id);
+        },
+        onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
+        onChange: () => undefined,
+      };
+      const catalogue = new Catalogue(2, domains, events, { http, keep: 0 });
+      catalogue.setLevelOfDetail(levelOfDetail);
+      if (culledFirst) catalogue.setCull(east);
+      catalogue.update(sight());
+      await steady(drawn);
+      const eastern = domains[0]?.tiles.filter((t) => t.parent !== undefined && t.centre[0] > root.centre[0]).map((t) => t.id) ?? [];
+      const inEast = (b: Batch, i: number) => b.tile.centre[0] + (b.offsets[3 * i] ?? 0) >= east.bounds.min[0];
+      const counted = () => catalogue.kinds.reduce((sum, n) => sum + n, 0);
+      return { catalogue, drawn, batches, root, east, eastern, inEast, counted };
+    }
+
+    it("fetches only the tiles whose cubes meet the box bounding the volume, with level of detail on or off", async () => {
+      for (const levelOfDetail of [false, true]) {
+        const { drawn, root, eastern } = await culled(true, levelOfDetail);
+        expect([...drawn].sort()).toEqual([root.id, ...eastern].sort());
+      }
+    });
+
+    it("fetches no tile, a root neither, whose cube misses the box, nor any while culled to nothing", async () => {
+      for (const levelOfDetail of [false, true]) {
+        const http = server(undefined, undefined, ["simulated"]);
+        const domains = await domainsOf(2, { http });
+        const root = domains[0]?.tiles.find((t) => t.parent === undefined);
+        if (root === undefined) throw new Error("no root");
+        const far = root.centre[0] + root.edge * 10;
+        const away: Volume = { kind: "box", approximate: true, bounds: { min: [far, far, far], max: [far + 1, far + 1, far + 1] } };
+        for (const volume of [away, NOTHING]) {
+          const drawn: string[] = [];
+          const events = { onBatch: (b: Batch) => drawn.push(b.tile.id), onDrop: () => undefined, onChange: () => undefined };
+          const catalogue = new Catalogue(2, domains, events, { http, keep: 0 });
+          catalogue.setLevelOfDetail(levelOfDetail);
+          catalogue.setCull(volume);
+          catalogue.update(sight());
+          await steady(drawn);
+          expect(drawn).toEqual([]);
+        }
+      }
+    });
+
+    it("draws none of a tile with no point inside, and counts none", async () => {
+      const { catalogue, drawn, root, east, eastern } = await culled(false);
+      catalogue.setCull(east);
+      await steady(drawn);
+      const western = drawn.filter((id) => id !== root.id && !eastern.includes(id));
+      expect(western).toEqual([]);
+      // Culled to a sliver in its cube's corner, which no point reaches, the root is held but
+      // draws nothing.
+      const corner = root.centre.map((c) => c + root.edge * 0.499) as unknown as Vec3;
+      const sliver: Volume = { kind: "box", approximate: true, bounds: { min: corner, max: corner } };
+      catalogue.setCull(sliver);
+      expect(catalogue.inside(root.id)).toBeDefined();
+      expect(catalogue.share(root.id)).toBe(0);
+      expect(catalogue.kinds.reduce((sum, n) => sum + n, 0)).toBe(0);
+    });
+
+    it("drops the tiles held whose cubes miss it, and fetches them again once no longer culled", async () => {
+      const { catalogue, drawn, root, east, eastern } = await culled(false);
+      expect(drawn).toHaveLength(9);
+      catalogue.setCull(east);
+      await steady(drawn);
+      expect([...drawn].sort()).toEqual([root.id, ...eastern].sort());
+      catalogue.setCull(undefined);
+      await steady(drawn);
+      expect(drawn).toHaveLength(9);
+    });
+
+    it("counts in the key only the points inside, and every point once no longer culled", async () => {
+      const { catalogue, drawn, batches, east, inEast, counted } = await culled(false);
+      const all = counted();
+      catalogue.setCull(east);
+      await steady(drawn);
+      let inside = 0;
+      for (const id of drawn) {
+        const b = batches.get(id);
+        for (let i = 0; b !== undefined && i < b.kinds.length; i += 1) if (inEast(b, i)) inside += 1;
+      }
+      expect(inside).toBeGreaterThan(0);
+      expect(counted()).toBe(inside);
+      catalogue.setCull(undefined);
+      await steady(drawn);
+      expect(counted()).toBe(all);
+    });
+
+    it("draws, and so lets the pointer name, only the points inside", async () => {
+      const { catalogue, batches, root, east, inEast } = await culled(false);
+      catalogue.setCull(east);
+      const batch = batches.get(root.id);
+      if (batch === undefined) throw new Error("no root drawn");
+      const drawnPoint = catalogue.drawnPoints(batch);
+      const marked = catalogue.inside(root.id);
+      for (let i = 0; i < batch.kinds.length; i += 1) {
+        expect(drawnPoint(i)).toBe(inEast(batch, i));
+        expect(marked?.[i]).toBe(inEast(batch, i) ? 1 : 0);
+      }
+      catalogue.setCull(undefined);
+      expect(catalogue.inside(root.id)).toBeUndefined();
+      expect(catalogue.drawnPoints(batch)(0)).toBe(true);
+    });
   });
 
   it("does not count a tile Univ Server could not serve as failing its check", async () => {

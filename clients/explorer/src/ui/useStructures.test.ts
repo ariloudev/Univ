@@ -12,6 +12,7 @@ import { rendered, settled, structureView, useStructures } from "./useStructures
 const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing["centre"] = [10, 0, 0]): StructureDrawing => ({
   id: "s",
   name: "S",
+  kind: "void",
   centre,
   outline,
   approximate: false,

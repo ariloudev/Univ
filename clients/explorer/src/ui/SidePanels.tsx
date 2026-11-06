@@ -3,7 +3,7 @@ import { ObjectPanel } from "./ObjectPanel.tsx";
 import { Panels } from "./Panels.tsx";
 import { SearchBox } from "./SearchBox.tsx";
 import { ShowPanel, type ShowPanelProps } from "./ShowPanel.tsx";
-import { StructureList, StructurePanel } from "./StructuresPanel.tsx";
+import { type Inside, StructureList, StructurePanel } from "./StructuresPanel.tsx";
 import type { ChooseOptions, ChosenObject } from "./useChosen.ts";
 import type { ShownStructures } from "./useStructures.ts";
 import type { World } from "./useWorld.ts";
@@ -14,6 +14,9 @@ export interface Selection {
   structure: StructureDetail | undefined;
   /** Whether the chosen structure is drawn by its bounding box. */
   approximate: boolean;
+  /** Whether the view is culled to the chosen structure, and the way to turn it on or off;
+   * none where the structure has no volume to cull to. */
+  inside: Inside | undefined;
   object: (id: number, options?: ChooseOptions) => void;
   structureById: (id: string) => void;
   close: () => void;
@@ -44,7 +47,7 @@ export function SidePanels({ world, release, cosmology, structures, selection, s
         <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />
         <ObjectPanel chosen={selection.chosen} onChoose={(id) => selection.object(id, { fly: true })} onClose={selection.close} />
         {selection.structure === undefined ? null : (
-          <StructurePanel detail={selection.structure} approximate={selection.approximate} onClose={selection.close} />
+          <StructurePanel detail={selection.structure} approximate={selection.approximate} inside={selection.inside} onClose={selection.close} />
         )}
       </div>
     </>

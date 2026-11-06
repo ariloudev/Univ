@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { StructureDetail } from "../api/structures.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { shapeOf, structureDetail } from "../test/structures.ts";
+import { frameOf } from "./frames.ts";
 import { drawingOf } from "./structures.ts";
 import { type Vec3, norm, normalize, sub, unapply } from "./vec.ts";
 
@@ -65,6 +66,19 @@ describe("a structure's shape", () => {
     // Its size, which frames it when chosen, is the diagonal its extents span.
     expect(drawing.size).toBeCloseTo(Math.hypot(4, 6, 8));
     expect(drawingOf(detail(point), ROTATIONS).outline.segments).toEqual([]);
+  });
+
+  it("draws a point's extents along their ICRS vectors, whatever frame its point is given in", () => {
+    // The extents are ICRS vectors already: only the point is turned from its frame.
+    const supergalactic = frameOf("supergalactic", ROTATIONS)?.toFrame;
+    if (supergalactic === undefined) throw new Error("no supergalactic frame");
+    const point = shapeOf({ frame: "supergalactic", unit: "kiloparsec", geometry: { kind: "point", at: [10_000, 0, 0] } });
+    const axes: [[number, number, number], [number, number, number], [number, number, number]] = [[4000, 0, 0], [0, 6000, 0], [0, 0, 8000]];
+    const drawing = drawingOf({ ...detail(point), derivation: { from: [], extents: { frame: "supergalactic", axes } } }, ROTATIONS);
+    const at = unapply(supergalactic, [10, 0, 0]);
+    const ends = drawing.outline.segments.map((p) => sub(p, at));
+    const expected: Vec3[] = [[-2, 0, 0], [2, 0, 0], [0, -3, 0], [0, 3, 0], [0, 0, -4], [0, 0, 4]];
+    ends.forEach((end, i) => expect(norm(sub(end, expected[i] ?? [0, 0, 0]))).toBeLessThan(1e-9));
   });
 
   it("draws a grid, or a structure with no placed shape, as its bounding box, marked approximate", () => {

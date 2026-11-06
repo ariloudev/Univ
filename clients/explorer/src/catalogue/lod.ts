@@ -9,6 +9,7 @@
 
 import type { Sight, Sphere } from "../scene/frustum.ts";
 import { type Vec3, norm, sub } from "../scene/vec.ts";
+import { type Box, meets } from "../scene/volume.ts";
 
 /** One node of a domain's octree, in megaparsecs. */
 export interface Tile {
@@ -240,14 +241,16 @@ export function detailOf(levels: Levels, onsets: readonly number[]): Detail {
 }
 
 /** What the renderer reads of level of detail: the share of each tile's points, its first, it
- * may draw, by the tile's id, and each domain's detail, by its name. */
+ * may draw, by the tile's id, and each domain's detail, by its name; and, where the view is
+ * culled to a structure's volume, which of a tile's points lie inside it (see-the-structures). */
 export interface DrawnDetail {
   share: (id: string) => number;
   detail: (domain: string) => Detail;
+  inside: (id: string) => Uint8Array | undefined;
 }
 
 /** Every point of every tile drawn, before there is a catalogue to say otherwise. */
-export const EVERY_POINT: DrawnDetail = { share: () => 1, detail: () => EVERYTHING };
+export const EVERY_POINT: DrawnDetail = { share: () => 1, detail: () => EVERYTHING, inside: () => undefined };
 
 /** How many of `points` points a share of `share` draws. */
 export const drawnOf = (points: number, share: number): number => Math.round(points * share);
@@ -330,12 +333,15 @@ function insert<T extends Tile>(frontier: Family<T>[], family: Family<T>): void 
  * children are kept down to `KEEP_SPACING`, out to `HELD_VIEW_MARGIN` beyond the view, and a
  * held family counts as `HELD_PREFERENCE` times its size, so that what a view holds once it has fetched what it wants is what it wants, and a
  * view that does not change settles. */
-function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, budget: number): Family<T>[] {
-  let points = tree.roots.reduce((sum, t) => sum + t.points, 0);
+function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, budget: number, within: Box | undefined): Family<T>[] {
+  const roots = tree.roots.filter((t) => isWithin(t, within));
+  let points = roots.reduce((sum, t) => sum + t.points, 0);
   const frontier: Family<T>[] = [];
   const isHeld = (t: T) => holds(holding, t.id);
-  // A held tile counts as in view out to `HELD_VIEW_MARGIN` beyond the view's edge.
+  // A held tile counts as in view out to `HELD_VIEW_MARGIN` beyond the view's edge; none
+  // counts whose cube misses the box the view is culled to.
   const inView = (t: T) =>
+    isWithin(t, within) &&
     sight.inView(t.centre, radiusOf(t) + (isHeld(t) ? norm(sub(t.centre, sight.eye)) * Math.tan(HELD_VIEW_MARGIN) : 0));
   const open = (tile: T) => {
     const tiles = (tree.children.get(tile.id) ?? []).filter(inView);
@@ -347,7 +353,7 @@ function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, b
     const size = held ? largest * HELD_PREFERENCE : largest;
     insert(frontier, { parent: tile, tiles, points: tiles.reduce((sum, c) => sum + c.points, 0), size });
   };
-  for (const root of tree.roots) open(root);
+  for (const root of roots) open(root);
   const chosen: Family<T>[] = [];
   for (let next = frontier.pop(); next !== undefined; next = frontier.pop()) {
     if (points + next.points > budget) continue;
@@ -358,16 +364,20 @@ function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, b
   return chosen;
 }
 
+/** Whether `tile`'s cube meets the box `within` the view is culled to, if it is culled. */
+export const isWithin = (tile: Tile, within: Box | undefined): boolean => within === undefined || meets(within, tile.centre, tile.edge);
+
 /** Whether the tile `id` is neither settled nor on its way. */
 const isOpen = (holding: Holding, id: string): boolean => !holding.settled.has(id) && !holding.pending.has(id);
 
-/** What to fetch with level of detail off: `count` of the tiles not yet held, the coarser levels
- * first, whatever the view and the budget, and nothing to drop. */
-export function planEvery<T extends Tile>(tree: Tree<T>, holding: Holding, count: number): Plan<T> {
+/** What to fetch with level of detail off: `count` of the tiles not yet held whose cubes meet
+ * the box `within` the view is culled to, if it is, the coarser levels first, whatever the view
+ * and the budget, and nothing to drop. */
+export function planEvery<T extends Tile>(tree: Tree<T>, holding: Holding, count: number, within?: Box): Plan<T> {
   const fetch: T[] = [];
   for (const tile of tree.byDepth) {
     if (fetch.length >= count) break;
-    if (isOpen(holding, tile.id)) fetch.push(tile);
+    if (isOpen(holding, tile.id) && isWithin(tile, within)) fetch.push(tile);
   }
   return { fetch, drop: [] };
 }
@@ -376,18 +386,20 @@ export function planEvery<T extends Tile>(tree: Tree<T>, holding: Holding, count
  * settled, the most needed first, its tiles not yet held all at once once the budget has room,
  * made by dropping held tiles the view does not want. At most `count` families start at once.
  * Held points beyond the budget, as level of detail turned on again leaves them, are dropped
- * the same way until they fit. */
+ * the same way until they fit. Culled to the box `within`, no tile whose cube misses it is
+ * wanted. */
 export function plan<T extends Tile>(
   tree: Tree<T>,
   holding: Holding,
   sight: Sight,
   count: number,
   budget = POINT_BUDGET,
+  within?: Box,
 ): Plan<T> {
   const open = (t: T) => isOpen(holding, t.id);
-  const roots = tree.roots.filter(open);
+  const roots = tree.roots.filter((t) => open(t) && isWithin(t, within));
   if (roots.length > 0) return { fetch: roots.slice(0, count), drop: [] };
-  const families = wanted(tree, holding, sight, budget);
+  const families = wanted(tree, holding, sight, budget, within);
   const want = new Set(families.flatMap((f) => f.tiles.map((t) => t.id)));
   const room = new Room(tree, holding, sight, want, budget);
   const fetch: T[] = [];

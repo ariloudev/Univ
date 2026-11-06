@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import type { Rotations } from "../api/schemas.ts";
 import { type StructureDetail, type StructureSummary, structureOf, structuresOf } from "../api/structures.ts";
 import { viewingDistance } from "../scene/controls.ts";
-import type { Lines } from "../scene/drawing.ts";
-import { APPROXIMATE_COLOUR, STRUCTURE_COLOUR } from "../scene/kinds.ts";
+import type { Lines, Rgba } from "../scene/drawing.ts";
+import { structureColour } from "../scene/kinds.ts";
 import { type StructureDrawing, drawingOf } from "../scene/structures.ts";
 import { type Vec3, norm, sub } from "../scene/vec.ts";
 import type { NameLabel } from "./overlay.ts";
@@ -37,14 +37,14 @@ const PARALLEL = 6;
 const offsetsFrom = (centre: Vec3, points: readonly Vec3[]) => new Float32Array(points.flatMap((p) => sub(p, centre)));
 
 /** What the renderer draws of `drawing`: its lines and its markers, about a centre. */
-export function rendered(drawing: StructureDrawing): { lines: Lines | undefined; markers: { centre: Vec3; offsets: Float32Array } | undefined } {
+export function rendered(drawing: StructureDrawing): { lines: Lines | undefined; markers: { centre: Vec3; offsets: Float32Array; colour: Rgba } | undefined } {
   const { segments, markers } = drawing.outline;
   const centre = drawing.centre ?? segments[0] ?? markers[0];
   if (centre === undefined) return { lines: undefined, markers: undefined };
-  const colour = drawing.approximate ? APPROXIMATE_COLOUR : STRUCTURE_COLOUR;
+  const colour = structureColour(drawing.kind, drawing.approximate);
   return {
     lines: segments.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, segments), colour },
-    markers: markers.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, markers) },
+    markers: markers.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, markers), colour: structureColour(drawing.kind, false) },
   };
 }
 
@@ -53,6 +53,14 @@ export function structureView(structures: Structures, id: string): { centre: Vec
   const drawing = structures.drawings.get(id);
   if (drawing?.centre === undefined) return undefined;
   return { centre: drawing.centre, distance: viewingDistance(norm(drawing.centre), drawing.size) };
+}
+
+/** Flies `world`'s view to the structure `id` of `structures`: whether it is read and placed, and
+ * so flown to. */
+export function flyToStructure(world: World, structures: Structures, id: string): boolean {
+  const view = structureView(structures, id);
+  if (view !== undefined) world.controller.flyTo(view.centre, view.distance);
+  return view !== undefined;
 }
 
 /** `run` on each of `items`, at most `limit` at once, each settled whatever the others do. */

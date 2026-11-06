@@ -24,7 +24,7 @@ const structures: ShownStructures = {
 const none = () => undefined;
 
 function show(structure: StructureDetail | undefined, hidden = NOTHING_HIDDEN, shown = structures.shown) {
-  const selection: Selection = { chosen: { kind: "none" }, structure, approximate: false, object: none, structureById: none, close: none };
+  const selection: Selection = { chosen: { kind: "none" }, structure, approximate: false, inside: undefined, object: none, structureById: none, close: none };
   const choices = { domains: ["cosmic_web"], sources: [], structureKinds: [{ kind: "void", count: 1 }] };
   render(
     <SidePanels

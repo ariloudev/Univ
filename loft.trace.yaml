@@ -4125,6 +4125,15 @@ links:
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "draws an ellipsoid as rings along its axes, and an oriented box as its twelve edges"
         body: b74437aba36e7e19c7a644ef0f0fb3465b30ff29975a981199fb09e983daa8a2
+  - node: 01a1b16b-4634-7511-aec8-71c45009817c
+    reviewed: 50ff6d5e62ae0059f44adbc4e239e1a38c4155555645677e9cc40bfb1057e52a
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
+        body: ac7168252ef85098892ee5ecb4ed1dc61a1873d31e1363010b47e4dc23c9574d
+      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
+        name: "shows each kind of structure's colour beside its box"
+        body: 36027fd57d2e962e3d067e174e71d4baa24e5e7367441320f936101aa6886a1f
   - node: 01a1a497-e843-728a-bce8-3ff2f42a8c13
     reviewed: e1cc72ff569ef79da218abd83bb3344b2fc602ac03f482cae2232f1de175d9d3
     tests:
@@ -4238,10 +4247,19 @@ links:
         body: 1551c8b75dc6542272f5f2ea759e09ea208d28d1b14b5d140aba772f532bd123
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
-        body: 90c6b0a6f69393e273411eec927bd4870ba6e690fe8e2bdcecfff97259fb143d
+        body: 8899e6232d6ff2def6eef43000ada6a2e01d137888c052578ed019ceda2f8165
       - file: "clients/explorer/src/ui/SceneOverlay.test.tsx"
         name: "writes the chosen structure's name in the chosen colour, and the others in the structures' own"
         body: 0a660037479bd1b47d0abf7efc51c4df4edbe758ed17c4cbe4dc49bcaffe6119
+  - node: 01a1b16b-4634-7511-aec8-71c5715ace5e
+    reviewed: 5104796bc92fef83de2aa1d1f919896a098d6646bad4f1e0ed62681279979d18
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "draws the chosen structure's outline thicker than any other's"
+        body: ef7f0befbcb7192c8917d32b4ddbd4fa2060379a3417a609476415c6b21ab0df
+      - file: "clients/explorer/src/scene/ribbon.test.ts"
+        name: "draws each segment as two triangles covering both its sides, from end to end"
+        body: b1eac9b99f854bc464d1bee14bb8815f3e9d26a212cd40cacef270a85edf1d32
   - node: 01a1a497-e843-728a-bce8-3ffa426590e2
     reviewed: f0b8b7ee41de7be2ce86c64da40f91c05bc36dcc41c0bcfc3c8cb094a930a4c5
     tests:
@@ -4257,3 +4275,144 @@ links:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "say a structure drawn by its extents has unknown bounds, and only then"
         body: b407b42fc3eef6aeeebed30623ea0fd1e4e0508d9b660a27fdf90877760f6521
+  - node: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
+    reviewed: d63fb94e1efce06f6668abab935caaaabd14436f5a20736f89667cc294395495
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "offer the cull to a structure's volume only where it has one, cleared until it is turned on"
+        body: d89c6505d168f5760de71b4ec62fd38d89b3df7663407c37aa5a0c15fbbbb49b
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "is kept in the address beside what else it holds, and leaves it once off"
+        body: 0f720741a6e5c89db0f960ee12ef21e5c47dca98dac9eff13efc03c302402d14
+  - node: 01a1b13c-1e10-748d-8008-e7e2ed4a3967
+    reviewed: 017e3734d840668129daa6afd0dd99b53438638c5928418e81d2380042ef632c
+    tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is none for a structure drawn as a point, a path, a ray or a range alone, or with neither a shape nor bounds"
+        body: 9fe07cf317440747b313f561f9169f4c34bf1a9ccda6bee1a7e5dd95b631282e
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "offer the cull to a structure's volume only where it has one, cleared until it is turned on"
+        body: d89c6505d168f5760de71b4ec62fd38d89b3df7663407c37aa5a0c15fbbbb49b
+  - node: 01a1b13c-1e10-748d-8008-e7e33e6ecd76
+    reviewed: 12ed190b87e410b4f054f5c408b4637e51717a6d627b37c3a022a26e93dcc50f
+    tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the solid of a sphere, in the frame and unit its shape names"
+        body: 64f03363779673adcb0b89ee74a6cafdca9aef906ca423c879391b6a845ee377
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the solid of an ellipsoid along its own axes"
+        body: ad6e2d5419fd03efbd0fe735617117164072457dd484ba9877c36d5bac165695
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the solid of an oriented box, to its corners"
+        body: 268e30f1086c5c48f2c40b68552ca39e5f30b89924484f902453d241bca39421
+  - node: 01a1b13c-1e10-748d-8008-e7e496894c39
+    reviewed: d73b90a162b69188708d45a9c46771be3723618ff9e8b699d17d4bc4707bf4ad
+    tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is a sky region's cells between its near and far distances"
+        body: 95327f3b5d547814f2a0efcad19dad7768ed03f9dcae608cf25aca80119228a2
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "is the cell whose centre it is, for every cell of order 6 and a few of order 12"
+        body: b5e88b4abf479b24af637f5ac87fe33e024d5c7cc02628d1cc435f398890da50
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "is the cell a point just inside each corner lies in, at the poles and seams too"
+        body: f33b0ff4aa0161f23cd5337e2091b2fb00d86d747e70d8b4090de8a31a068692
+      - file: "clients/explorer/src/scene/healpix.test.ts"
+        name: "does not need a unit vector"
+        body: a51856182f8254725e68ddc43ec7c58ea3fa0ae0f20e483717c8e4d0da2fc0c6
+  - node: 01a1b13c-1e10-748d-8008-e7e5419cfeb6
+    reviewed: a8d410ba7e524d039a067df7ca234f6f75b15a8bf6160d73caa855e2b23fe47e
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a point's extents along their ICRS vectors, whatever frame its point is given in"
+        body: 06697c7f245de8de53b19f19cd14683985d6b1e6d6c5f81821439727b4792c88
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the box bounding a member list's members, approximate"
+        body: 515fac31e33566af398941ad8dccefdc1a408ab4e46450986978139d02c5767d
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the box a point's published extents span about it, approximate"
+        body: 54890b30a3fdcf6d3f51416968c61640f6690be64a32e68f9672e34dad283cb1
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is the bounding box of a structure with no shape, approximate"
+        body: d286d572cbe32923235fbd196bf7def3d3375764a4c528ccb3653090255d1e29
+  - node: 01a1b13c-1e10-748d-8008-e7e6a6d53737
+    reviewed: 018fe936ff4a24bbef13ba2ab9c61366f936612afeb8da5bea2879ac84327dd8
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
+        body: 69773c0644b9c0c0de6b23e04fde43451e35aeb97074c468be4c91c43907094f
+  - node: 01a1b13c-1e10-748d-8008-e7e71f42aabb
+    reviewed: 0733e22659d58cffd715875dd2db7dcd14f8979d13095aab033b602f36ddf1f5
+    tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "marks each of a tile's points inside or not, by its offset from the tile's centre"
+        body: b7eddc847c87223b4a8d4b7a58eca444cee7bf41d20b80ed582d339da8f779ba
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws, and so lets the pointer name, only the points inside"
+        body: c3076ce0e359373172cdfbc97f9a1131ac47479bc13e8c6c3178002dc2c66b47
+  - node: 01a1b166-0bb4-703d-a861-7c307a08ae0b
+    reviewed: a7ad37edaf164eccc42b087ecdec2fe04312c749b7d4b8e402162d2d94901a48
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn fully opaque inside a structure the view is culled to, twice as bright as the brightest without it"
+        body: d553521c83f3f9e5e44476c577339d44374bec2a5ed7885dae7f1094b46b43c2
+  - node: 01a1b13c-1e10-748d-8008-e7e859257b94
+    reviewed: 0b794c1cc9e9db9b28e278653c25b002f60c2eda7e53bb0a5ed79cc4cdc3aa9e
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
+        body: 69773c0644b9c0c0de6b23e04fde43451e35aeb97074c468be4c91c43907094f
+  - node: 01a1b13c-1e10-748d-8008-e7e934fc10cf
+    reviewed: a35c5f0b49cf807da6580558bed132d233fdc807d61e4863f2ed629db423a897
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws none of a tile with no point inside, and counts none"
+        body: 2539751fb6668a089acf327eb0d19ec050914411306b3d4bd23261c96b08a304
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws, and so lets the pointer name, only the points inside"
+        body: c3076ce0e359373172cdfbc97f9a1131ac47479bc13e8c6c3178002dc2c66b47
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "counts in the key only the points inside, and every point once no longer culled"
+        body: a89b64b5e5d217e7e64cf34426c46b5ba1728a12d3ad641eba9fc2084ee1728d
+  - node: 01a1b13c-1e10-748d-8008-e7ea46d6c6e6
+    reviewed: ba0e5bc09cd32904a2fb855d98a4014b03262a66b49271793cf33991b7dfe7da
+    tests:
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "stays on when another structure is chosen, for that structure"
+        body: 7b50a395cc57500e1e5fea89ebaac0e7fb4857affe0a610b70574da7f3fd0a00
+  - node: 01a1b13c-1e10-748d-8008-e7eb103d71ac
+    reviewed: 4e3d928a637497b28d1c76a4cf70bec10aece98f94c2a31ac6b756b20d7455a2
+    tests:
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "is turned off when the structure's panel is closed"
+        body: 0df02b086b9f73ea953b6a5108ad807fbf80d32861466461b0b180e53cdf02d4
+  - node: 01a1b13c-1e10-748d-8008-e7ed28949521
+    reviewed: a0c9a04ab6ff8a0af77a2c6e9c73ae180f690cadeb8d5ef222483ab043f3512e
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "fetches no tile, a root neither, whose cube misses the box, nor any while culled to nothing"
+        body: b182b44022a07b7cca820763498b8339818e000db55069320be438754e39e293
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "fetches only the tiles whose cubes meet the box bounding the volume, with level of detail on or off"
+        body: 2a7e13e99544c3a51c1865be241940273932978f25ea777a09064b8dafe6ca73
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "drops the tiles held whose cubes miss it, and fetches them again once no longer culled"
+        body: 540472fe0b02c626d3612d4485fd9f544d57807d22b4ab0a4eed028a2e9874e1
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "is met by a tile's cube that reaches its bounding box, and by no other"
+        body: abd1013881b2c17c09ba1b68333dedb4b83c5ba167f5b728bd1e871dfe9e0563
+  - node: 01a1b13c-1e10-748d-8008-e7eed8679d94
+    reviewed: 5aa102bb660b206fcb332d72480bf850281d58609b4523882698e8ed54f68933
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "fetches only the tiles whose cubes meet the box bounding the volume, with level of detail on or off"
+        body: 2a7e13e99544c3a51c1865be241940273932978f25ea777a09064b8dafe6ca73
+  - node: 01a1b13c-1e10-748d-8008-e7f0dcf15117
+    reviewed: 2e1f3bd4d462d047f04505dabba650ff793badc8980f92c321a36346b6307845
+    tests:
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "chooses the structure and culls to it where the address names it, as after a reload"
+        body: 4b9dfa6931b28ef4f93423b1e78503b4be64c57e2be26c9beccb89483cd22223
+      - file: "clients/explorer/src/ui/inside.test.ts"
+        name: "is named in the address by the structure it culls to"
+        body: 7665828ee4ed91a37092c6c24760fcc830d9489f939ec269e8731992d2510874
