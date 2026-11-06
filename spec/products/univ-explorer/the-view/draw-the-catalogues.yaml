@@ -1,7 +1,7 @@
 key: 01a1a497-e843-728a-bce8-3ffe4657fb77
 slug: draw-the-catalogues
 name: "Draw the catalogues"
-body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least. Each tile's points are drawn in a share that grows with the detail the view needs, and tiles fade in and out, so that detail comes and goes smoothly. A switch turns level of detail off, so that every tile is fetched whatever the view."
+body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least. Each point is drawn by its rank against the share of its domain the view needs at its own distance, so that detail thins out smoothly with distance and no tile's edge shows, and tiles fade in and out. A switch turns level of detail off, so that every tile is fetched whatever the view."
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
   - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
@@ -30,13 +30,13 @@ requirements:
       - key: 01a1a497-e843-728a-bce8-400536d8f2b5
         name: "The tiles the view needs are fetched in order of their size on screen, largest first, and a tile wholly outside the view is not fetched."
       - key: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
-        name: "A tile's children are fetched only while its points lie farther apart on screen than 3 pixels, so that a region far away or seen whole is not refined beyond what the screen shows."
+        name: "A tile's children are fetched only while a typical tile of its level, with the mean points of the level's split tiles and the level's edge, would have its points farther apart on screen than 3 pixels at the distance of the tile's nearest points, so that a region far away or seen whole is not refined beyond what the screen shows, and regions at one distance are refined alike."
       - key: 01a1a6a7-c540-7210-8492-7dfc16d279b8
         name: "A tile's children in view are fetched together or not at all, so that no part of a region is left coarser than the rest."
       - key: 01a1a6a7-c540-7210-8492-7dfdf91c2ccf
         name: "A view that does not change stops fetching and dropping tiles once it holds what it needs."
       - key: 01a1aea7-5e8b-7623-8601-48fb7856d2e3
-        name: "A tile whose children are held keeps them while its points lie farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched."
+        name: "A tile whose children are held keeps them while a typical tile of its level would have its points farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched."
       - key: 01a1aea7-5e8b-7623-8601-48fc4cf3ff3f
         name: "Where the budget cannot hold every family of tiles the view needs, a family that holds any of its tiles in view counts as half again its size on screen, so that a view moving a little does not trade it for a family of nearly its size."
       - key: 01a1aea7-5e8b-7623-8601-48fd8492b9c4
@@ -83,10 +83,14 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Explorer"
-      shall: "draw a share of each held tile's points that grows smoothly with the detail the view needs, and fade each tile in as it arrives and out as it goes."
+      shall: "draw each point of a held tile while its rank lies below the share of its domain the view needs at the point's own distance, and fade each tile in as it arrives and out as it goes."
     criteria:
       - key: 01a1b093-647d-7308-9b46-bdca66fcbd08
-        name: "The share of a tile with a parent rises in proportion from none, where the parent's points lie 3 pixels apart on screen or closer, to all, where they lie 6 pixels apart or farther."
+        name: "The share of a domain the view needs at a distance rises, level by level below the root, from the share the levels above hold to the share the level adds, in proportion as a typical tile of the level above would have its points from 3 to 6 pixels apart on screen at that distance."
+      - key: 01a1b0a9-6982-71c6-b321-0cfc1d1f8a93
+        name: "A point's rank lies in its tile's slice of its domain, from the share the levels above the tile's hold to the share its level adds, or to all for a leaf, the tile's points dividing the slice evenly in their shuffled order."
+      - key: 01a1b0a9-6982-71c6-b321-0cfd3507cc88
+        name: "Points at one distance are drawn at one share of their domain whichever tiles hold them, so that where the tiles the view needs are held no tile's cube shows as an edge."
       - key: 01a1b093-81da-759e-8532-70d7aa4d0ff1
         name: "Every point of a root tile is drawn."
       - key: 01a1b093-647d-7308-9b46-bdcbf842c1af

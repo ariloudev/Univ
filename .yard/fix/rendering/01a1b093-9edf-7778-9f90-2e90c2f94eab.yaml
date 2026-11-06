@@ -10,6 +10,15 @@ versions:
     title: "Smooth level of detail"
     goal: "Each held tile draws a share of its points that rises smoothly with the detail the view needs (an even sample, shuffled by tile id), tiles fade in and out over 0.3 s, and only drawn points can be picked."
     status: active
+  - key: 01a1b0a9-8e0b-72e7-b122-6a90c0566f1a
+    at: 2026-11-06T11:41:04Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Smooth level of detail"
+    goal: "Each held tile draws a share of its points that rises smoothly with the detail the view needs (an even sample, shuffled by tile id), tiles fade in and out over 0.3 s, and only drawn points can be picked."
+    status: done
 blocks:
   - key: 01a1b093-9edf-7778-9f90-2e91f69b39cb
     id: spec-smooth-lod
