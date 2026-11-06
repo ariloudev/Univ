@@ -183,8 +183,9 @@ fn version_5_adds_the_shards_index_per_release() {
         ("object_shards", &["release", "id", "shard"][..], 2),
         (
             "shard_cells",
+            // Keyed by its first cell too: a shard may hold several runs of one domain.
             &["release", "shard", "domain", "first", "last"][..],
-            3,
+            4,
         ),
         (
             "release_shards",
