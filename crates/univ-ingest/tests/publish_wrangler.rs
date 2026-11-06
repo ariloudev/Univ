@@ -67,7 +67,7 @@ fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
         ),
         25
     );
-    let manifest = store.get(&keys::key(1, keys::MANIFEST)).unwrap().unwrap();
+    let manifest = store.get(&keys::manifest(1)).unwrap().unwrap();
     assert_eq!(
         manifest,
         std::fs::read(built.dir.join(keys::MANIFEST)).unwrap()
@@ -125,7 +125,7 @@ fn the_fixture_release_is_published_to_local_d1_and_r2_and_pruned() {
         ),
         1
     );
-    assert_eq!(store.get(&keys::key(1, keys::MANIFEST)).unwrap(), None);
+    assert_eq!(store.get(&keys::manifest(1)).unwrap(), None);
     // Every id of release 1 resolves: issued by a release the ledger records, and in release 2
     // or replaced.
     let list = ids

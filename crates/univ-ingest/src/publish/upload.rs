@@ -10,7 +10,7 @@ use univ_model::release::{ReleaseManifest, TABLES, Table, keys};
 use super::check::{check_rows, schema_version, sql_text};
 use super::journal::{Done, Journal};
 use super::progress::{FileDone, Lines, Progress};
-use super::refuse::{Refused, refuse_published, unbound, within_caps};
+use super::refuse::{Refused, older_schema, refuse_published, unbound, within_caps};
 use super::{Latest, PublishError, Store, StoreOptions};
 use crate::release::{RELEASES, read_manifest, release_dir};
 use crate::state::State;
@@ -218,14 +218,13 @@ fn upload(
             }
         }
         Unit::R2(f) => {
-            let key = f
-                .key
-                .as_deref()
-                .filter(|k| k.starts_with(&keys::prefix(n)))
-                .ok_or_else(|| format!("{} has no key under {}", f.path, keys::prefix(n)))?;
+            let key = keys::r2_key(n, &f.path, &f.sha256);
+            if f.key.as_deref() != Some(key.as_str()) {
+                return Err(format!("{} is not keyed as {key} in the manifest", f.path));
+            }
             let path = dir.join(&f.path);
             local(&path, f)?;
-            put_checked(store, key, &path, f.bytes, &f.sha256)?;
+            put_checked(store, &key, &path, f.bytes, &f.sha256)?;
             let checked = "read back with its SHA-256".to_owned();
             told(f, &checked, None);
             Ok(vec![done(f, checked)])
@@ -352,7 +351,7 @@ pub fn publish_with(
     let itself = ManifestFile {
         path: keys::MANIFEST.to_owned(),
         target: Target::R2,
-        key: Some(keys::key(number, keys::MANIFEST)),
+        key: Some(keys::manifest(number)),
         bytes: manifest_bytes.len() as u64,
         sha256: sha256(&manifest_bytes),
     };
@@ -379,6 +378,7 @@ pub fn publish_with(
         Refused::Query(p) => stopped(Latest(None), 0, p),
     })?;
     unbound(store, &manifest)
+        .and_then(|()| older_schema(store, &manifest))
         .and_then(|()| within_caps(store, &manifest, holds))
         .map_err(|e| match e {
             Refused::Error(e) => e,

@@ -37,6 +37,14 @@ pub enum PublishError {
     },
     /// The release needs more object shards than Univ Server binds.
     TooManyShards { number: u32, needs: u32, binds: u32 },
+    /// A database holds releases of a schema older than the release's, whose rows are not
+    /// shared: they must be brought under it before anything is published.
+    OlderSchema {
+        number: u32,
+        database: String,
+        holds: u32,
+        needs: u32,
+    },
     /// The journal cannot be used.
     Journal { number: u32, problem: String },
     /// An upload or check failed part way; the next run continues from the journal.
@@ -97,6 +105,17 @@ impl fmt::Display for PublishError {
                 "release {number} is not published: it needs {needs} object shards and Univ \
                  Server binds {binds}; bind more in both wrangler.toml files, or build it with a \
                  larger shard budget"
+            ),
+            Self::OlderSchema {
+                number,
+                database,
+                holds,
+                needs,
+            } => write!(
+                f,
+                "release {number} is not published: {database} holds releases of D1 schema \
+                 version {holds}, whose rows each belong to one release, and this release is of \
+                 version {needs}, whose rows are shared between releases; nothing was uploaded"
             ),
             Self::Journal { number, problem } => {
                 write!(f, "release {number} is not published: {problem}")

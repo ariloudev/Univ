@@ -330,3 +330,45 @@ fn a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload() {
     assert_eq!(store.uploaded(), Vec::<String>::new());
     assert!(store.r2.is_empty() && store.shards.is_empty());
 }
+
+#[test]
+fn a_database_of_an_older_schema_is_refused_before_anything_is_uploaded() {
+    let f = fixture();
+    build_next(&f);
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    // A catalogue of schema 5, whose rows each belong to one release.
+    store
+        .db
+        .execute_batch(
+            "CREATE TABLE schema_version (version INTEGER PRIMARY KEY);
+             INSERT INTO schema_version VALUES (5);",
+        )
+        .unwrap();
+    let error = publishing(
+        &mut store,
+        1,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap_err();
+    assert!(
+        matches!(
+            &error,
+            PublishError::OlderSchema {
+                holds: 5,
+                needs: 6,
+                ..
+            }
+        ),
+        "{error}"
+    );
+    assert!(
+        error.to_string().contains("nothing was uploaded"),
+        "{error}"
+    );
+    assert!(store.r2.is_empty());
+    assert!(!store.ops.iter().any(|o| matches!(o, Op::Execute(_))));
+}

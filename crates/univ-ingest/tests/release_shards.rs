@@ -147,7 +147,7 @@ fn the_catalogue_holds_the_sources_terms_structures_and_the_shard_of_every_objec
         let version: i64 = db
             .query_row("SELECT version FROM schema_version", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 5);
+        assert_eq!(version, 6);
     }
     assert_eq!(
         count(&s.catalogue, "object_shards"),

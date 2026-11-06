@@ -1,0 +1,52 @@
+format: yardlog/1
+key: 01a1b206-4078-7382-ac6f-76a5b7091aa8
+branch: "stage/additive-w2"
+base: "develop"
+title: "stage/additive-w2"
+revision: 6
+opened:
+  at: 2026-11-06T18:01:56Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1b206-4078-7382-ac6f-76a671c22514
+    id: w2
+closed:
+  at: 2026-11-06T18:27:23Z
+  revision: 6
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+acts:
+  - at: 2026-11-06T18:01:56Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T18:03:58Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T18:11:02Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T18:13:44Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T18:27:23Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T18:27:23Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"

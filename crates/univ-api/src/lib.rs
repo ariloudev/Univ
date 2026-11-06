@@ -43,6 +43,8 @@ mod refusals;
 mod releases;
 mod routes;
 mod shards;
+#[cfg(test)]
+mod shared_rows_tests;
 mod sources;
 mod structures;
 #[cfg(test)]

@@ -7,6 +7,7 @@ use serde_json::{Value, json};
 use univ_model::cosmology::Cosmology;
 use univ_model::release::read::Vocabulary;
 use univ_model::release::rows::CatalogueUncertainty;
+use univ_model::valid_in;
 
 use crate::backend::{Backend, column, first, json_column};
 use crate::problem::{Problem, ProblemType};
@@ -22,18 +23,25 @@ pub async fn vocabulary<B: Backend>(backend: &B, release: u32) -> Result<Arc<Voc
     }
     let rows = backend
         .releases(
-            "SELECT (SELECT cosmology FROM releases WHERE number = ?1) AS cosmology, \
-             (SELECT ranking_rule_name FROM releases WHERE number = ?1) AS ranking_rule, \
-             (SELECT json_group_array(json_array(id, term)) FROM terms WHERE release = ?1) \
-               AS terms, \
-             (SELECT json_group_array(json_array(id, json(steps))) FROM chains \
-               WHERE release = ?1) AS chains, \
-             (SELECT json_group_array(json_array(n, id)) FROM sources WHERE release = ?1) \
-               AS sources, \
-             (SELECT json_group_array(json_array(s.id, json(t.catalogue_uncertainties))) \
-               FROM source_terms t JOIN sources s ON s.release = t.release AND s.n = t.source \
-               WHERE t.release = ?1 AND t.catalogue_uncertainties IS NOT NULL) \
-               AS uncertainties",
+            concat!(
+                "SELECT (SELECT cosmology FROM releases WHERE number = ?1) AS cosmology, \
+                 (SELECT ranking_rule_name FROM releases WHERE number = ?1) AS ranking_rule, \
+                 (SELECT json_group_array(json_array(id, term)) FROM terms WHERE ",
+                valid_in!("", "?1"),
+                ") AS terms, \
+                 (SELECT json_group_array(json_array(id, json(steps))) FROM chains WHERE ",
+                valid_in!("", "?1"),
+                ") AS chains, \
+                 (SELECT json_group_array(json_array(n, id)) FROM sources WHERE ",
+                valid_in!("", "?1"),
+                ") AS sources, \
+                 (SELECT json_group_array(json_array(s.id, json(t.catalogue_uncertainties))) \
+                   FROM source_terms t JOIN sources s ON s.n = t.source AND ",
+                valid_in!("s.", "?1"),
+                " WHERE t.catalogue_uncertainties IS NOT NULL AND ",
+                valid_in!("t.", "?1"),
+                ") AS uncertainties"
+            ),
             &[json!(release)],
         )
         .await?;

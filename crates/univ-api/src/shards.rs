@@ -14,6 +14,7 @@ use serde_json::json;
 use univ_model::release::Cell;
 use univ_model::release::rows::ShardCellRow;
 use univ_model::release::shards::morton_ranges;
+use univ_model::valid_in;
 
 use crate::backend::{Backend, column, first, rows_as};
 use crate::problem::Problem;
@@ -67,10 +68,17 @@ pub async fn shard_map<B: Backend>(backend: &B, release: u32) -> Result<Arc<Shar
     let mut batch = backend
         .releases_batch(&[
             (
-                "SELECT shard FROM release_shards WHERE release = ?1 ORDER BY shard",
+                concat!(
+                    "SELECT shard FROM release_shards WHERE ",
+                    valid_in!("", "?1"),
+                    " ORDER BY shard"
+                ),
                 &params,
             ),
-            ("SELECT * FROM shard_cells WHERE release = ?1", &params),
+            (
+                concat!("SELECT * FROM shard_cells WHERE ", valid_in!("", "?1")),
+                &params,
+            ),
         ])
         .await?
         .into_iter();
@@ -100,7 +108,10 @@ pub async fn shard_of<B: Backend>(
 ) -> Result<Option<u32>, Problem> {
     let rows = backend
         .releases(
-            "SELECT shard FROM object_shards WHERE release = ?1 AND id = ?2",
+            concat!(
+                "SELECT shard FROM object_shards WHERE id = ?2 AND ",
+                valid_in!("", "?1")
+            ),
             &[json!(release), json!(id)],
         )
         .await?;

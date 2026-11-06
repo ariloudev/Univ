@@ -14,6 +14,7 @@ use univ_model::api::lookup::{
 };
 use univ_model::api::objects::ObjectRecord;
 use univ_model::release::read;
+use univ_model::valid_in;
 
 use self::resolve::{Resolved, by_designation, by_name, replaced};
 use self::vocabulary::vocabulary;
@@ -194,23 +195,34 @@ async fn record<B: Backend>(
         .shards(&[
             (
                 shard,
-                "SELECT * FROM objects WHERE release = ?1 AND id = ?2",
+                concat!(
+                    "SELECT * FROM objects WHERE id = ?2 AND ",
+                    valid_in!("", "?1")
+                ),
                 &params,
             ),
             (
                 shard,
-                "SELECT * FROM entries WHERE release = ?1 AND object_id = ?2",
+                concat!(
+                    "SELECT * FROM entries WHERE object_id = ?2 AND ",
+                    valid_in!("", "?1")
+                ),
                 &params,
             ),
             (
                 shard,
-                "SELECT * FROM measurements WHERE release = ?1 AND object_id = ?2",
+                concat!(
+                    "SELECT * FROM measurements WHERE object_id = ?2 AND ",
+                    valid_in!("", "?1")
+                ),
                 &params,
             ),
             (
                 shard,
-                "SELECT source, identifier FROM designations \
-                 WHERE release = ?1 AND object_id = ?2",
+                concat!(
+                    "SELECT source, identifier FROM designations WHERE object_id = ?2 AND ",
+                    valid_in!("", "?1")
+                ),
                 &params,
             ),
         ])

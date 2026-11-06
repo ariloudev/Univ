@@ -9,10 +9,10 @@ use std::path::Path;
 use univ_model::derive::{MODEL_VERSION, Release};
 use univ_model::redshift::CmbCorrection;
 use univ_model::release::manifest::{
-    Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, RELEASE_BUDGET_BYTES, RecordedFile,
-    ReleaseManifest, ShardManifest, Versions,
+    Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestFile, RELEASE_BUDGET_BYTES,
+    RecordedFile, ReleaseManifest, ShardManifest, Target, Versions,
 };
-use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseRow};
+use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseFileRow, ReleaseRow};
 use univ_model::release::shards::Database;
 use univ_model::release::{Row, SCHEMA_VERSION, keys};
 
@@ -111,7 +111,9 @@ fn d1_rows(
     };
     let budget = crossed.basis.config.shard_budget();
     let packing = sharding.plan(&crossed.objects, &numbering, budget, previous, watch)?;
+    let files = file_rows(number, &sink.files);
     let mut writer = D1Writer::new(sink, packing.count())?;
+    writer.retire_earlier(number)?;
     let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
     sharding.write(&crossed.objects, &mut objects, &mut writer, &packing, watch)?;
     let ObjectWriter {
@@ -144,6 +146,7 @@ fn d1_rows(
         write_structures(&mut writer, inputs, number, release, grids, &index)?;
     writer.add_all(&domain_rows(number, inputs.tiles))?;
     writer.add_all(&grids.rows)?;
+    writer.add_all(&files)?;
     drop(cells);
     let cells = index_rows(number, &bounds)?;
     writer.add_all(&cells.structures)?;
@@ -320,7 +323,7 @@ pub fn write_release(
     previous: &Kept,
     watch: Watch<'_>,
 ) -> Result<Written, String> {
-    let mut sink = DirSink::new(dir, number, watch)?;
+    let mut sink = DirSink::new(dir, watch)?;
     let recorded = rules(inputs, &mut sink)?;
     watch.step(format!("rules: {} files", recorded.len()));
     for d in &inputs.tiles.domains {
@@ -416,6 +419,20 @@ pub fn write_release(
         failed,
         kept: d1.kept,
     })
+}
+
+/// The rows of `release_files` of release `number`: each R2 file of `files` by its path and
+/// SHA-256.
+fn file_rows(number: u32, files: &[ManifestFile]) -> Vec<ReleaseFileRow> {
+    files
+        .iter()
+        .filter(|f| f.target == Target::R2)
+        .map(|f| ReleaseFileRow {
+            release: number,
+            path: f.path.clone(),
+            sha256: f.sha256.clone(),
+        })
+        .collect()
 }
 
 /// The row of release `number` in `releases`, holding `objects`, `structures` and `grids`, its

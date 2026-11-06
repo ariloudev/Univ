@@ -209,9 +209,10 @@ fn ms(duration: Duration) -> f64 {
 /// before the Worker opens it.
 fn sample_ids(root: &Path, state: &Path) -> Result<Vec<u64>, String> {
     let count = SAMPLES + WARM_UP;
+    let latest = "(SELECT release FROM latest WHERE one = 1)";
     let sql = format!(
-        "SELECT id FROM object_shards WHERE release = \
-         (SELECT release FROM latest WHERE one = 1) ORDER BY random() LIMIT {count}"
+        "SELECT id FROM object_shards WHERE {} ORDER BY random() LIMIT {count}",
+        univ_model::release::valid_in("", latest)
     );
     let output = wrangler(root, "d1", state)
         .args([

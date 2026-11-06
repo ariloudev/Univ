@@ -12,6 +12,7 @@ use univ_model::api::query::{MatchedBy, QueryResult, StructureHit};
 use univ_model::geometry::{Aabb, Shape};
 use univ_model::release::cells::structure_ranges;
 use univ_model::units::Unit;
+use univ_model::valid_in;
 use univ_model::volume::Region;
 
 use super::Query;
@@ -66,15 +67,21 @@ pub(super) async fn page<B: Backend>(
         return Ok(Vec::new());
     }
     let sql = format!(
-        "SELECT s.id, s.name, s.kind, s.scale_domain, s.centre_x, s.centre_y, s.centre_z, \
-         s.members, s.bounds, sd.shape FROM structures s \
-         LEFT JOIN structure_details sd ON sd.release = s.release AND sd.id = s.id \
-         WHERE s.release = ?1 AND s.id > ?2 AND s.id IN (SELECT structure FROM structure_cells \
-         WHERE release = ?1 AND ({})) \
-         AND (?3 IS NULL OR s.kind IN (SELECT value FROM json_each(?3))) \
-         AND (?4 IS NULL OR s.scale_domain IN (SELECT value FROM json_each(?4))) \
-         ORDER BY s.id LIMIT {CHUNK}",
-        cells.join(" OR ")
+        concat!(
+            "SELECT s.id, s.name, s.kind, s.scale_domain, s.centre_x, s.centre_y, s.centre_z, \
+             s.members, s.bounds, sd.shape FROM structures s \
+             LEFT JOIN structure_details sd ON sd.id = s.id AND ",
+            valid_in!("sd.", "?1"),
+            " WHERE s.id > ?2 AND ",
+            valid_in!("s.", "?1"),
+            " AND s.id IN (SELECT structure FROM structure_cells WHERE ({cells}) AND ",
+            valid_in!("", "?1"),
+            ") AND (?3 IS NULL OR s.kind IN (SELECT value FROM json_each(?3))) \
+             AND (?4 IS NULL OR s.scale_domain IN (SELECT value FROM json_each(?4))) \
+             ORDER BY s.id LIMIT {chunk}"
+        ),
+        cells = cells.join(" OR "),
+        chunk = CHUNK,
     );
     let mut regions: HashMap<String, Option<Region>> = HashMap::new();
     let mut from = after.unwrap_or_default().to_owned();

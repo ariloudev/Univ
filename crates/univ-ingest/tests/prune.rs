@@ -12,7 +12,9 @@ mod memory_store;
 mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Op, pruning, publishing};
-use release_fixture::{build_next, fixture};
+use std::collections::BTreeSet;
+
+use release_fixture::{build_next, fixture, read_manifest};
 use univ_ingest::publish::{Latest, PruneError};
 use univ_model::release::{Scope, TABLES, keys};
 
@@ -86,12 +88,19 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     );
     assert!(ledger_before.1 > 0, "release 2 retired some ids");
     let rows_of_2 = store.int_everywhere("SELECT COUNT(*) FROM objects WHERE release = 2");
-    let keys_of_2: Vec<String> = store
-        .r2
-        .keys()
-        .filter(|k| k.starts_with(&keys::prefix(2)))
-        .cloned()
-        .collect();
+    // Release 2's files and manifest, and the files release 1 alone held.
+    let r2_of = |n: u32| -> BTreeSet<String> {
+        let mut held: BTreeSet<String> = read_manifest(&univ_ingest::release::release_dir(&out, n))
+            .files
+            .iter()
+            .filter_map(|f| f.key.clone())
+            .collect();
+        held.insert(keys::manifest(n));
+        held
+    };
+    let keys_of_2 = r2_of(2);
+    let only_1: BTreeSet<String> = r2_of(1).difference(&keys_of_2).cloned().collect();
+    assert!(only_1.len() > 1, "release 1 holds files release 2 does not");
     store.reset();
     let built_1 = univ_ingest::release::release_dir(&out, 1);
     // The local build is deleted last: it is there after every D1 and R2 operation.
@@ -109,7 +118,7 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     assert!(univ_ingest::release::release_dir(&out, 2).exists());
     assert_eq!(pruned.latest, Latest(Some(2)));
     assert!(pruned.rows > 0 && pruned.files > 1);
-    assert!(!store.r2.keys().any(|k| k.starts_with(&keys::prefix(1))));
+    assert!(!store.r2.keys().any(|k| only_1.contains(k)));
     assert!(keys_of_2.iter().all(|k| store.r2.contains_key(k)));
     // The release's rows are gone from the catalogue and from every object shard.
     let loaded = store.int_everywhere("SELECT COUNT(*) FROM schema_version");
@@ -225,12 +234,17 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
         build_next(&f);
         publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
     }
-    let keys_of_1: Vec<String> = store
-        .r2
-        .keys()
-        .filter(|k| k.starts_with(&keys::prefix(1)))
-        .cloned()
-        .collect();
+    // Release 1's files that release 2, left unpruned, does not hold, and its manifest.
+    let r2_of = |n: u32| -> BTreeSet<String> {
+        read_manifest(&univ_ingest::release::release_dir(out, n))
+            .files
+            .iter()
+            .filter_map(|f| f.key.clone())
+            .collect()
+    };
+    let held_by_2 = r2_of(2);
+    let mut keys_of_1: BTreeSet<String> = r2_of(1).difference(&held_by_2).cloned().collect();
+    keys_of_1.insert(keys::manifest(1));
     // R2 lost the manifest, and the build output no longer holds the release.
     store.r2.remove(&keys::key(1, keys::MANIFEST));
     std::fs::remove_dir_all(univ_ingest::release::release_dir(out, 1)).unwrap();
@@ -258,7 +272,8 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
     let pruned = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap();
     assert!(pruned.listed && pruned.rows > 0);
     assert_eq!(pruned.files, keys_of_1.len());
-    assert!(!store.r2.keys().any(|k| k.starts_with(&keys::prefix(1))));
+    assert!(!store.r2.keys().any(|k| keys_of_1.contains(k)));
+    assert!(held_by_2.iter().all(|k| store.r2.contains_key(k)));
 }
 
 #[test]
@@ -298,4 +313,46 @@ fn a_release_never_listed_whose_files_were_uploaded_has_them_deleted() {
     // Nothing is left of it: pruning again finds nothing to prune.
     let again = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap_err();
     assert_eq!(again, PruneError::NotListed { number: 1 });
+}
+
+#[test]
+fn a_file_a_release_part_way_through_publishing_holds_is_not_pruned() {
+    let f = fixture();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    let (out, state) = (f.out.path(), f.state.path());
+    for n in [1, 2] {
+        build_next(&f);
+        publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
+    }
+    // Release 3 stops once its R2 files are up, before its release_files reach D1.
+    let third = build_next(&f);
+    let schemas = 1 + third.manifest.shards.len();
+    let r2 = third
+        .manifest
+        .files
+        .iter()
+        .filter(|f| f.key.is_some())
+        .count();
+    store.uploads = 0;
+    store.fail_after = Some(schemas + r2);
+    publishing(&mut store, 3, out, state, journals.path(), &clock).unwrap_err();
+    store.fail_after = None;
+    // A tile release 2 no longer holds, but release 3 does: only 3's journal says so.
+    let tile = third
+        .manifest
+        .files
+        .iter()
+        .find(|f| f.path.starts_with("tiles/") && !f.path.ends_with("manifest.json"))
+        .unwrap();
+    store
+        .db
+        .execute(
+            "DELETE FROM release_files WHERE release = 2 AND path = ?1",
+            [&tile.path],
+        )
+        .unwrap();
+    let pruned = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap();
+    assert!(pruned.files > 0);
+    assert!(store.r2.contains_key(&keys::file(&tile.sha256)));
 }

@@ -247,7 +247,7 @@ fn a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they
         "{text}"
     );
 
-    build_next(&f);
+    let second = build_next(&f);
     let (out, state) = (f.out.path(), f.state.path());
     publishing(&mut store, 2, out, state, journals.path(), &clock).unwrap();
     let events = RecordingSink::default();
@@ -267,11 +267,12 @@ fn a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they
     ] {
         assert!(text.contains(line), "{line} in\n{text}");
     }
-    let r2 = built
-        .manifest
-        .files
-        .iter()
-        .filter(|f| f.key.is_some())
+    // Release 1's files that release 2 does not share, and its manifest.
+    let keys_of = |m: &univ_model::release::ReleaseManifest| -> std::collections::BTreeSet<String> {
+        m.files.iter().filter_map(|f| f.key.clone()).collect()
+    };
+    let r2 = keys_of(&built.manifest)
+        .difference(&keys_of(&second.manifest))
         .count()
         + 1;
     let deleted = format!("Z Stage prune done: {r2} R2 files deleted, ");

@@ -20,7 +20,9 @@ use sha2::{Digest, Sha256};
 use univ_model::release::fingerprint::canonical_row;
 use univ_model::release::manifest::{D1_CAP_BYTES, D1Estimate, TableEstimate};
 use univ_model::release::shards::Database;
-use univ_model::release::{Row, SCHEMA, SCHEMA_VERSION, SqlValue, TABLES, Table, keys};
+use univ_model::release::{
+    RETIRED, Row, SCHEMA, SCHEMA_VERSION, Scope, SqlValue, TABLES, Table, keys,
+};
 
 use state::{TableState, key_hash, key_of, place_of};
 
@@ -274,6 +276,38 @@ impl<'s> D1Writer<'s> {
     #[must_use]
     pub fn estimated_bytes_in(&self, database: Database) -> u64 {
         self.bytes.get(slot(database)).copied().unwrap_or(0)
+    }
+
+    /// Writes, into each database, a file for each table of [`Scope::PerRelease`] it holds that
+    /// retires every row a release before `number` added and no release has retired yet: the
+    /// rows of release `number` are all written again, so none of those stays valid in it. The
+    /// file is the table's part 0, loaded with its other parts; release 1 retires nothing.
+    ///
+    /// # Errors
+    ///
+    /// Fails when the sink cannot take a file.
+    pub fn retire_earlier(&mut self, number: u32) -> Result<(), String> {
+        let Some(sink) = self.sink.as_deref_mut() else {
+            return Ok(());
+        };
+        if number <= 1 {
+            return Ok(());
+        }
+        for (i, tables) in self.databases.iter().enumerate() {
+            let db = database(i);
+            let held = tables.iter().enumerate().filter(|(_, t)| {
+                t.table.scope == Scope::PerRelease
+                    && t.table.in_shard() == matches!(db, Database::Shard(_))
+            });
+            for (place, state) in held {
+                let name = state.table.name;
+                let sql = format!(
+                    "UPDATE {name} SET {RETIRED} = {number} WHERE {RETIRED} IS NULL AND release < {number};\n"
+                );
+                sink.put(part_path(db, place, name, 0), sql.as_bytes())?;
+            }
+        }
+        Ok(())
     }
 
     /// The rows written so far to the table `name`, in every database.

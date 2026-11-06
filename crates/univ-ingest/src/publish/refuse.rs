@@ -1,6 +1,7 @@
 //! What refuses a publish before anything is uploaded: the release already published, pruned
-//! or older than `latest`'s; more object shards than Univ Server binds; or, in any database,
-//! its rows and those of the releases not pruned estimated beyond the CON-3 cap.
+//! or older than `latest`'s; more object shards than Univ Server binds; a database of an older
+//! schema version; or, in any database, its rows and those of the releases not pruned estimated
+//! beyond the CON-3 cap.
 
 use std::collections::BTreeMap;
 
@@ -21,6 +22,41 @@ pub(super) fn unbound(store: &mut dyn Store, manifest: &ReleaseManifest) -> Resu
             needs,
             binds,
         }));
+    }
+    Ok(())
+}
+
+/// Refuses a release when a database it loads holds releases of an older schema version than
+/// its own: the tables of such a database are not shared between releases, and the release's
+/// rows would not load into them. A database that holds no schema yet takes the release's.
+pub(super) fn older_schema(
+    store: &mut dyn Store,
+    manifest: &ReleaseManifest,
+) -> Result<(), Refused> {
+    let needs = manifest.versions.d1_schema;
+    let shards = (0..u32::try_from(manifest.shards.len()).unwrap_or(u32::MAX)).map(Database::Shard);
+    for database in std::iter::once(Database::Catalogue).chain(shards) {
+        let has = store
+            .query(
+                database,
+                "SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'schema_version'",
+            )
+            .map_err(Refused::Query)?;
+        if sum_and_count(has.first()).1 == 0 {
+            continue;
+        }
+        let rows = store
+            .query(database, "SELECT MAX(version) AS n FROM schema_version")
+            .map_err(Refused::Query)?;
+        let holds = sum_and_count(rows.first()).1;
+        if holds > 0 && holds < u64::from(needs) {
+            return Err(Refused::Error(PublishError::OlderSchema {
+                number: manifest.release,
+                database: database.to_string(),
+                holds: u32::try_from(holds).unwrap_or(u32::MAX),
+                needs,
+            }));
+        }
     }
     Ok(())
 }

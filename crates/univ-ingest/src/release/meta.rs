@@ -18,7 +18,7 @@ use super::placement::Placement;
 use super::terms::SourceIndex;
 use crate::provenance::Provenance;
 use crate::source::SourceDefinition;
-use crate::tiles::{Built, name_of, unit_symbol};
+use crate::tiles::{Built, name_of, sha256, unit_symbol};
 
 /// The rows of a release's sources and their provenance.
 #[derive(Debug, Default)]
@@ -184,7 +184,7 @@ pub fn domain_rows(release: u32, tiles: &Built) -> Vec<ScaleDomainRow> {
                 radius: d.manifest.radius,
                 points: d.points() as u64,
                 nodes: d.nodes.len() as u64,
-                manifest_key: keys::key(release, &keys::tile_manifest(name)),
+                manifest_key: keys::file(&sha256(&d.json)),
             }
         })
         .collect()

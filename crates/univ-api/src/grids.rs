@@ -10,6 +10,7 @@ use serde::Deserialize;
 use serde_json::json;
 use univ_model::api::bulk::{GridField, GridList, GridSummary};
 use univ_model::units::Unit;
+use univ_model::valid_in;
 
 use crate::backend::{Backend, Row, column, first, json_column};
 use crate::http::{Body, Request, Response};
@@ -39,9 +40,14 @@ pub async fn list<B: Backend>(request: &Request, backend: &B) -> Result<Response
     let release = resolve(request, backend).await?;
     let rows = backend
         .releases(
-            "SELECT g.id, s.id AS source, g.unit, g.shape, g.fields FROM grids g \
-             JOIN sources s ON s.release = g.release AND s.n = g.source \
-             WHERE g.release = ?1 ORDER BY g.id",
+            concat!(
+                "SELECT g.id, s.id AS source, g.unit, g.shape, g.fields FROM grids g \
+                 JOIN sources s ON s.n = g.source AND ",
+                valid_in!("s.", "?1"),
+                " WHERE ",
+                valid_in!("g.", "?1"),
+                " ORDER BY g.id"
+            ),
             &[json!(release)],
         )
         .await?;
@@ -253,7 +259,10 @@ async fn grid_keys<B: Backend>(
     }
     let rows = backend
         .releases(
-            "SELECT header_key FROM grids WHERE release = ?1 AND id = ?2",
+            concat!(
+                "SELECT header_key FROM grids WHERE id = ?2 AND ",
+                valid_in!("", "?1")
+            ),
             &[json!(release), json!(id)],
         )
         .await?;

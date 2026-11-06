@@ -162,7 +162,7 @@ fn a_release_directory_already_there_is_never_overwritten() {
 fn a_number_that_is_not_finite_fails_the_build_naming_its_table_row_and_column() {
     fails_and_uses_no_number(
         D1_FINITE,
-        "table measurements, row (release = 1, object_id = ",
+        "table measurements, row (object_id = ",
         |crossed, _, _, _| {
             let distance = crossed
                 .objects
