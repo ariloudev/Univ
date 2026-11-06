@@ -12,6 +12,7 @@ use super::check::Tables;
 use super::check::{check_rows, schema_version, sql_text};
 use super::held::tables_and_held;
 use super::journal::{Done, Journal};
+use super::migrate::migrate;
 use super::progress::{FileDone, Lines, Progress};
 use super::refuse::{Refused, off_latest, older_schema, refuse_published, unbound};
 use super::units::{Unit, check_kept, estimate_of, unit_files, units};
@@ -265,8 +266,10 @@ pub fn publish_with(
 ) -> Result<Published, PublishError> {
     let (dir, manifest, manifest_bytes) = read_release(options, number)
         .map_err(|problem| PublishError::NotBuilt { number, problem })?;
-    let (tables, held) =
-        tables_and_held(store, &manifest).map_err(|problem| PublishError::Interrupted {
+    // A store of schema 5 is brought under shared rows first, in place.
+    let (tables, held) = migrate(store, &options.journals.join("migrate"), progress)
+        .and_then(|()| tables_and_held(store, &manifest))
+        .map_err(|problem| PublishError::Interrupted {
             number,
             latest: Latest(None),
             done: 0,
