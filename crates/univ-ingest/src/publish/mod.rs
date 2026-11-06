@@ -42,13 +42,16 @@
 //! `latest` points to by then: the time `latest` moved, as `latest` or the journal gives it, or
 //! else the time its last unit was checked.
 
+mod cap;
 mod check;
 mod error;
+mod held;
 pub mod journal;
 mod progress;
 mod prune;
 mod r2batch;
 mod refuse;
+mod units;
 mod upload;
 mod wrangler;
 

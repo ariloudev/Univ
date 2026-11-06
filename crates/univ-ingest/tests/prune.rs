@@ -360,20 +360,8 @@ fn a_file_a_release_part_way_through_publishing_holds_is_not_pruned() {
         build_next(&f);
         publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
     }
-    // Release 3 stops once its R2 files are up, before its release_files reach D1.
     let third = build_next(&f);
-    let schemas = 1 + third.manifest.shards.len();
-    let r2 = third
-        .manifest
-        .files
-        .iter()
-        .filter(|f| f.key.is_some())
-        .count();
-    store.uploads = 0;
-    store.fail_after = Some(schemas + r2);
-    publishing(&mut store, 3, out, state, journals.path(), &clock).unwrap_err();
-    store.fail_after = None;
-    // A tile release 2 no longer holds, but release 3 does: only 3's journal says so.
+    // A tile releases 1 and 3 hold, but not 2: release 3 uploads it.
     let tile = third
         .manifest
         .files
@@ -387,6 +375,12 @@ fn a_file_a_release_part_way_through_publishing_holds_is_not_pruned() {
             [&tile.path],
         )
         .unwrap();
+    // Release 3 stops at its first table, its R2 files up and its release_files not yet in D1:
+    // only its journal says it holds the tile.
+    store.reset();
+    store.fail_at = Some(|op| matches!(op, Op::Execute(p) if !p.contains("schema")));
+    publishing(&mut store, 3, out, state, journals.path(), &clock).unwrap_err();
+    store.reset();
     let pruned = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap();
     assert!(pruned.files > 0);
     assert!(store.r2.contains_key(&keys::file(&tile.sha256)));

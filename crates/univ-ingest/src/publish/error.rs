@@ -36,9 +36,10 @@ pub enum PublishError {
         database: Database,
         /// The release's own estimate, bytes.
         this: u64,
-        /// The estimates of the other releases not pruned, summed, bytes.
+        /// The rows the database holds already that the release does not keep, estimated,
+        /// bytes.
         others: u64,
-        /// How many releases those are.
+        /// How many releases not pruned it holds besides.
         releases: u64,
     },
     /// The release needs more object shards than Univ Server binds.
@@ -107,9 +108,9 @@ impl fmt::Display for PublishError {
             } => write!(
                 f,
                 "release {number} is not published: its rows in {database} are estimated at \
-                 {this} bytes and those of the {releases} release(s) not pruned at {others} \
-                 bytes, together {} bytes, beyond the {} cap of {D1_CAP_BYTES} bytes; prune a \
-                 release first",
+                 {this} bytes and those {database} holds already that it does not keep, of the \
+                 {releases} release(s) not pruned, at {others} bytes, together {} bytes, beyond \
+                 the {} cap of {D1_CAP_BYTES} bytes; prune a release first",
                 this + others,
                 decimal_bytes(D1_CAP_BYTES)
             ),

@@ -1,0 +1,157 @@
+key: 01a1b242-ccfc-74d4-a619-7ee13f4c9727
+id: w4
+versions:
+  - key: 01a1b242-ccfc-74d4-a619-7ee6f6f69e37
+    at: 2026-11-06T19:08:04Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4: Publish and prune the change"
+    goal: "Publish uploads only files R2 does not hold, the cap counts the rows every kept release holds once, and the integration fixture publishes and prunes a chain of releases that share rows."
+    status: active
+  - key: 01a1b258-1d9b-765b-a8b6-55588897a3f1
+    at: 2026-11-06T19:31:21Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4: Publish and prune the change"
+    goal: "Publish uploads only files R2 does not hold, the cap counts the rows every kept release holds once, and the integration fixture publishes and prunes a chain of releases that share rows."
+    status: done
+blocks:
+  - key: 01a1b242-ccfc-74d4-a619-7ee2ab14b867
+    id: w4-held
+    kind: task
+    versions:
+      - key: 01a1b242-ccfc-74d4-a619-7ee7b63532c8
+        at: 2026-11-06T19:08:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Publish skips files the parent holds"
+        detail: "held.rs: the SHA-256s release_files maps for the parent (latest, never pruned) are journaled as held, not uploaded; the journal names them, so prune keeps them while the publish is part way. shared_rows asserts publishing release 2 puts none of release 1's files."
+        state: done
+  - key: 01a1b242-ccfc-74d4-a619-7ee3e26759e3
+    id: w4-cap
+    kind: task
+    versions:
+      - key: 01a1b242-ccfc-74d4-a619-7ee833d742c9
+        at: 2026-11-06T19:08:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "CON-3 counts live rows once"
+        detail: "cap.rs: per database, the rows D1 holds already (counted per table) less those the release keeps, at the release's bytes per row, plus the release's estimate. Replaces summing every unpruned release's whole estimate, which counted shared rows once per release. The cap tests drive it through the rows D1 holds."
+        state: done
+  - key: 01a1b242-ccfc-74d4-a619-7ee49b6c4f17
+    id: w4-integration
+    kind: task
+    versions:
+      - key: 01a1b242-ccfc-74d4-a619-7ee965fa5351
+        at: 2026-11-06T19:08:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Integration on releases that share rows"
+        detail: "cargo xtask integration: fixture releases 1 and 2 published, 1 pruned, Univ Server and the explorer read release 2."
+        state: active
+      - key: 01a1b246-08db-73ad-8aca-01d8075c39cf
+        at: 2026-11-06T19:11:36Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Integration on releases that share rows"
+        detail: "cargo xtask integration passed on real local Wrangler D1 and R2: fixture release 2 written as its change from 1 (retirement statements and all), 1 pruned; the Worker's end-to-end tests and the explorer's 9 Playwright tests read release 2."
+        state: done
+  - key: 01a1b242-ccfc-74d4-a619-7ee51362e319
+    id: w4-review
+    kind: task
+    versions:
+      - key: 01a1b242-ccfc-74d4-a619-7eea4fb11e8e
+        at: 2026-11-06T19:08:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify and /code-review, fixes, cargo xtask check."
+        state: open
+      - key: 01a1b246-08db-73ad-8aca-01d9268f3457
+        at: 2026-11-06T19:11:36Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify and /code-review, fixes, cargo xtask check."
+        state: active
+      - key: 01a1b253-5a1a-7270-98f7-cd8c055a6adb
+        at: 2026-11-06T19:26:09Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify (four angles) and /code-review high ran; fixes applied, see the note. Gate and integration next."
+        state: active
+      - key: 01a1b258-1d9b-765b-a8b6-5556db76c7cb
+        at: 2026-11-06T19:31:21Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "Fixes in 9a05688; cargo xtask check passed (13 gates) and cargo xtask integration passed again on local Wrangler."
+        state: done
+  - key: 01a1b253-5a1a-7270-98f7-cd8aa2d4ea4b
+    id: w4-findings
+    kind: note
+    versions:
+      - key: 01a1b253-5a1a-7270-98f7-cd8b6a93acb4
+        at: 2026-11-06T19:26:09Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the W4 reviews found, and what was done"
+        markdown: |-
+          | Finding | Done |
+          |---|---|
+          | A resumed publish counted the rows it had loaded twice, and could be refused for good | The cap counts only rows outside the release's view; a test stops a publish mid-way and resumes it under a cap its own rows would pass if counted twice |
+          | The id ledger counted twice (each release's estimate carries the whole ledger) | Each table filtered by its scope: shared tables by other releases (less those kept), the ledger by later releases, the list of releases by the others |
+          | Held files journaled as uploaded though nothing uploaded them; the counts and the "already uploaded" note said so | Held files are left out of the units when they are made; `Published.held` and the run's summary count them apart; the journal lists only real uploads |
+          | A held file whose key is not its content's | Only files keyed `files/{sha256}` are taken as held |
+          | The kept-rows subtraction untested; cap tests weakened to `>=` | A test that a release is not charged again for the rows it keeps; both new tests fail with their fix undone |
+          | Every shard's tables read, so an unbound shard fails before the shard refusal | Only the shards the store binds are read |
+          | `release_files` hashes, per-table counts and kept releases each written twice; `Status.schema`, half of `sum_and_count`, `over_cap`'s tuple left dead | One `sha256s`, `counts_of`, `kept_releases`, `tables_of` in `check.rs`; the dead code removed; the units moved to `units.rs` |
+          | A missing count read as 0; unchecked arithmetic | A missing count is an error; the sums saturate |
+
+          **Not changed:** the cap still estimates rows held at the release's bytes per row (1 KiB for a table it holds none of), not D1's measured size: measuring needs the store to report `meta.size_after` for every database, which the memory store and the Wrangler store would both have to give. Whether R2 still holds a file the parent maps is not checked: the parent is `latest`, which is never pruned.
+  - key: 01a1b258-1d9b-765b-a8b6-55554ec64a0d
+    id: w4-produced
+    kind: note
+    versions:
+      - key: 01a1b258-1d9b-765b-a8b6-55572bb2dbc0
+        at: 2026-11-06T19:31:21Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What W4 produced"
+        markdown: |-
+          | | Before | After W4 |
+          |---|---|---|
+          | R2 files a child release uploads | every file | only those its parent (`latest`) does not map; the rest counted as held |
+          | CON-3 | every unpruned release's whole estimate, summed: shared rows counted once per release | rows D1 holds outside the release's view, less those it keeps, at its bytes per row, plus its estimate |
+          | Publish refusals | read every shard | read the shards the store binds; one table list per database shared by every check |
+          | Prune | (W3) rows no kept release holds | unchanged; the half-published test now stops at a named step |
+
+          Integration on local Wrangler publishes fixture release 2 as its change from 1, prunes 1, and the Worker and the explorer read release 2.
+
+          **Left for W5:** migrate the real release 10 (schema 5, `releases/{n}/` keys, no row index) and make release 11, after the owner's approval for the real run.
+        tone: success

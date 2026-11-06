@@ -13,7 +13,7 @@ mod memory_store;
 mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Op, int, publishing};
-use release_fixture::{build_next, fixture};
+use release_fixture::{build_next, fixture, read_manifest};
 use univ_ingest::publish::journal::Journal;
 use univ_ingest::publish::{Latest, PublishError};
 use univ_ingest::tiles::sha256;
@@ -281,9 +281,17 @@ fn an_interrupted_publish_leaves_latest_and_continues_from_its_journal() {
     else {
         panic!("{error}")
     };
+    // Every file but those release 1 holds already, and the manifest.
+    let first = read_manifest(&univ_ingest::release::release_dir(f.out.path(), 1));
+    let held = built
+        .manifest
+        .files
+        .iter()
+        .filter(|f| f.key.is_some() && first.files.iter().any(|g| g.sha256 == f.sha256))
+        .count();
     assert_eq!(
         (*at, *total),
-        (Latest(Some(1)), built.manifest.files.len() + 1)
+        (Latest(Some(1)), built.manifest.files.len() + 1 - held)
     );
     assert!(*done > 0 && *done < *total, "{error}");
     let message = error.to_string();

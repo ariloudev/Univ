@@ -25,7 +25,9 @@ use univ_model::release::manifest::Target;
 use univ_model::release::shards::Database;
 use univ_model::release::{ReleaseManifest, Scope, TABLES, keys, valid_in};
 
-use super::check::{Status, published_status, sql_text, tables_in};
+use super::check::{
+    Status, counts_of, kept_releases, published_status, sha256s, sql_text, tables_in,
+};
 use super::journal::{self, Journal};
 use super::progress::{Lines, Progress};
 use super::{Latest, Store, StoreOptions};
@@ -187,16 +189,10 @@ fn held_elsewhere(store: &mut dyn Store, number: u32) -> Result<BTreeSet<String>
          ON r.pruned_at IS NULL AND r.number != {number} AND {}",
         valid_in("f.", "r.number")
     );
-    store
-        .query(Database::Catalogue, &sql)?
+    Ok(sha256s(store, &sql)?
         .iter()
-        .map(|row| {
-            row.get("sha256")
-                .and_then(serde_json::Value::as_str)
-                .map(keys::file)
-                .ok_or_else(|| "release_files gives a row with no sha256".to_owned())
-        })
-        .collect()
+        .map(|s| keys::file(s))
+        .collect())
 }
 
 /// Deletes `keys`: all but the release's manifest in one batch, then the manifest.
@@ -278,23 +274,6 @@ fn databases(
     Ok(held)
 }
 
-/// The releases listed and not pruned other than `number`: those whose rows a prune of it keeps.
-fn kept_releases(store: &mut dyn Store, number: u32) -> Result<Vec<u32>, String> {
-    let sql = format!(
-        "SELECT number FROM releases WHERE pruned_at IS NULL AND number != {number} ORDER BY number"
-    );
-    store
-        .query(Database::Catalogue, &sql)?
-        .iter()
-        .map(|row| {
-            row.get("number")
-                .and_then(serde_json::Value::as_u64)
-                .and_then(|n| u32::try_from(n).ok())
-                .ok_or_else(|| "releases gives a row with no number".to_owned())
-        })
-        .collect()
-}
-
 /// The SQL condition selecting the rows a prune of release `number` deletes: those valid in it
 /// and in none of the releases `kept`. A row is valid in an unbroken run of releases, from its
 /// `release` until its `retired`, so it is valid in no kept release when that run lies after
@@ -309,23 +288,15 @@ fn pruned_rows(number: u32, kept: &[u32]) -> String {
         .join(" AND ")
 }
 
-/// The rows `filter` selects in `tables` of `database`, as one sum of counts (D1 limits the
-/// terms of a compound `SELECT`, so no `UNION`).
+/// The rows `filter` selects in `tables` of `database`, summed.
 fn rows_of(
     store: &mut dyn Store,
     database: Database,
     tables: &[&str],
     filter: &str,
 ) -> Result<u64, String> {
-    let counts: Vec<String> = tables
-        .iter()
-        .map(|t| format!("(SELECT COUNT(*) FROM {t} WHERE {filter})"))
-        .collect();
-    let rows = store.query(database, &format!("SELECT {} AS n", counts.join(" + ")))?;
-    rows.first()
-        .and_then(|r| r.get("n"))
-        .and_then(serde_json::Value::as_u64)
-        .ok_or_else(|| format!("{database} gave no count of rows where {filter}"))
+    let each: Vec<(&str, String)> = tables.iter().map(|t| (*t, filter.to_owned())).collect();
+    Ok(counts_of(store, database, &each)?.iter().sum())
 }
 
 /// Deletes the rows of `tables` from `database` that `filter` selects, and runs `then` after,

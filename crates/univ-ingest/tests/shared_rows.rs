@@ -14,7 +14,7 @@ mod release_fixture;
 
 use std::collections::BTreeMap;
 
-use memory_store::{Clock, MemoryStore, pruning, publishing};
+use memory_store::{Clock, MemoryStore, Op, pruning, publishing};
 use release_fixture::{build_next, fixture};
 use rusqlite::Connection;
 use univ_model::release::{Scope, TABLES, valid_in};
@@ -171,6 +171,7 @@ fn a_file_two_releases_hold_is_kept_once_under_its_sha256() {
     publishing(&mut store, 1, out, state, journals.path(), &clock).unwrap();
     let after_first = store.r2.len();
     let second = build_next(&f);
+    store.reset();
     publishing(&mut store, 2, out, state, journals.path(), &clock).unwrap();
     let r2 = |m: &univ_model::release::ReleaseManifest| -> std::collections::BTreeSet<String> {
         m.files.iter().filter_map(|f| f.key.clone()).collect()
@@ -178,6 +179,17 @@ fn a_file_two_releases_hold_is_kept_once_under_its_sha256() {
     let (a, b) = (r2(&first.manifest), r2(&second.manifest));
     let shared = a.intersection(&b).count();
     assert!(shared > 0, "the fixture's releases share their tiles");
+    // Publishing release 2 puts none of the files release 1 holds: R2 has them already.
+    let put: Vec<&String> = store
+        .ops
+        .iter()
+        .filter_map(|o| match o {
+            Op::Put(key) => Some(key),
+            _ => None,
+        })
+        .collect();
+    assert_ne!(put.len(), 0, "release 2 puts its manifest and new files");
+    assert!(put.iter().all(|k| !a.contains(*k)), "{put:?}");
     // R2 grew by release 2's manifest and the files release 1 did not hold, nothing more.
     assert_eq!(store.r2.len(), after_first + 1 + b.difference(&a).count());
     // Each release maps each of its paths to its file's SHA-256.
