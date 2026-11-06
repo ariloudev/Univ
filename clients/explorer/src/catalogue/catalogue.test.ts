@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Http } from "../api/client.ts";
 import { DOMAINS, bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts";
-import { Catalogue } from "./catalogue.ts";
+import { Catalogue, KEEP_ALLOWANCE } from "./catalogue.ts";
 import { NO_MASKS, masksOf } from "../scene/masks.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
 import type { Sight } from "../scene/frustum.ts";
@@ -84,6 +84,62 @@ async function loaded(http: Http, drawn: string[], budget?: number) {
   return catalogue;
 }
 
+/** `http` with the answers for tiles whose address is held back until released. */
+function gated(http: Http) {
+  let held = new Set<string>();
+  let open: () => void = () => undefined;
+  let gate = Promise.resolve();
+  const counts = new Map<string, number>();
+  const address = (url: string) => /\/tiles\/(\w+)/.exec(url)?.[1];
+  return {
+    http: {
+      ...http,
+      fetch: async (url: string) => {
+        const at = address(url);
+        if (at !== undefined) counts.set(at, (counts.get(at) ?? 0) + 1);
+        if (at !== undefined && held.has(at)) await gate;
+        return http.fetch(url);
+      },
+    },
+    /** Holds back the answers for tiles `addresses` until `release`. */
+    hold(addresses: string[]) {
+      held = new Set(addresses);
+      gate = new Promise((resolve) => (open = resolve));
+    },
+    release() {
+      held = new Set();
+      open();
+    },
+    /** How many times the tile `at` was read. */
+    reads: (at: string) => counts.get(at) ?? 0,
+  };
+}
+
+/** The simulated domain on `http`: a root and eight children, four on each side of it in x;
+ * room for the root and the larger side's children, and one more tile where `slack`; `keep`
+ * points of dropped tiles kept drawn. */
+async function twoSides(http: Http, keep?: number, slack = false) {
+  const tiles = (await domainsOf(2, { http }))[0]?.tiles ?? [];
+  const root = tiles.find((t) => t.parent === undefined);
+  if (root === undefined) throw new Error("no root");
+  const side = (east: boolean) => tiles.filter((t) => t.parent !== undefined && t.centre[0] >= root.centre[0] === east);
+  const points = (ts: typeof tiles) => ts.reduce((sum, t) => sum + t.points, 0);
+  const largest = Math.max(...tiles.map((t) => t.points));
+  const budget = root.points + Math.max(points(side(true)), points(side(false))) + (slack ? largest : 0);
+  const drawn: string[] = [];
+  const events = {
+    onBatch: (b: Batch) => drawn.push(b.tile.id),
+    onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
+    onChange: () => undefined,
+  };
+  const catalogue = new Catalogue(2, await domainsOf(2, { http }), events, keep === undefined ? { http, budget } : { http, budget, keep });
+  const looking = (east: boolean) => {
+    const away = new Set(side(!east).map((t) => t.id));
+    return sight((centre) => tiles.some((t) => away.has(t.id) && t.centre[0] === centre[0] && t.centre[1] === centre[1] && t.centre[2] === centre[2]));
+  };
+  return { catalogue, drawn, root, side, looking, budget };
+}
+
 describe("the catalogue", () => {
   it("draws every root tile, counts each kind of value, and credits the drawn domains' sources", async () => {
     const http = server();
@@ -111,27 +167,8 @@ describe("the catalogue", () => {
   });
 
   it("drops the tiles the view leaves to make room for those it turns to, and counts their points out", async () => {
-    // The simulated domain: a root and eight children, four on each side of it in x; room for the
-    // root and the larger side's children.
-    const http = server(undefined, undefined, ["simulated"]);
-    const tiles = (await domainsOf(2, { http }))[0]?.tiles ?? [];
-    const root = tiles.find((t) => t.parent === undefined);
-    if (root === undefined) throw new Error("no root");
-    const side = (east: boolean) => tiles.filter((t) => t.parent !== undefined && t.centre[0] >= root.centre[0] === east);
-    const points = (ts: typeof tiles) => ts.reduce((sum, t) => sum + t.points, 0);
-    const budget = root.points + Math.max(points(side(true)), points(side(false)));
-    const drawn: string[] = [];
-    const events = {
-      onBatch: (b: Batch) => drawn.push(b.tile.id),
-      onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
-      onChange: () => undefined,
-    };
-    const catalogue = new Catalogue(2, await domainsOf(2, { http }), events, { http, budget });
+    const { catalogue, drawn, root, side, looking, budget } = await twoSides(server(undefined, undefined, ["simulated"]));
     const total = () => catalogue.kinds.reduce((a, b) => a + b, 0);
-    const looking = (east: boolean) => {
-      const away = new Set(side(!east).map((t) => t.id));
-      return sight((centre) => tiles.some((t) => away.has(t.id) && t.centre[0] === centre[0] && t.centre[1] === centre[1] && t.centre[2] === centre[2]));
-    };
     catalogue.update(looking(true));
     await steady(drawn);
     expect([...drawn].sort()).toEqual([root.id, ...side(true).map((t) => t.id)].sort());
@@ -141,6 +178,61 @@ describe("the catalogue", () => {
     await steady(drawn);
     expect([...drawn].sort()).toEqual([root.id, ...side(false).map((t) => t.id)].sort());
     expect(total()).toBeLessThanOrEqual(budget);
+  });
+
+  it("keeps the tiles it drops drawn and counted until the tiles fetched in their place are drawn", async () => {
+    const gate = gated(server(undefined, undefined, ["simulated"]));
+    const { catalogue, drawn, root, side, looking } = await twoSides(gate.http);
+    const total = () => catalogue.kinds.reduce((a, b) => a + b, 0);
+    catalogue.update(looking(true));
+    await steady(drawn);
+    const before = total();
+    // Turned to the other side, whose tiles are held back: the first side stays drawn, counted.
+    gate.hold(side(false).map((t) => t.address));
+    catalogue.update(looking(false));
+    await steady(drawn);
+    expect([...drawn].sort()).toEqual([root.id, ...side(true).map((t) => t.id)].sort());
+    expect(total()).toBe(before);
+    // Once they are drawn, the first side is let go.
+    gate.release();
+    await steady(drawn);
+    expect([...drawn].sort()).toEqual([root.id, ...side(false).map((t) => t.id)].sort());
+  });
+
+  it("keeps no dropped tile drawn beyond its allowance", async () => {
+    expect(KEEP_ALLOWANCE).toBe(1_500_000);
+    // An allowance of none: the first side is let go as soon as it is dropped.
+    const gate = gated(server(undefined, undefined, ["simulated"]));
+    const sides = await twoSides(gate.http, 0);
+    const { catalogue, drawn, root, side, looking } = sides;
+    catalogue.update(looking(true));
+    await steady(drawn);
+    gate.hold(side(false).map((t) => t.address));
+    catalogue.update(looking(false));
+    await steady(drawn);
+    expect(drawn).toEqual([root.id]);
+    gate.release();
+    await steady(drawn);
+  });
+
+  it("draws on a kept tile the view wants again without reading it again", async () => {
+    // Room for one more tile: turned back while one tile of the second side is held back, the
+    // view drops the second side's drawn tiles and wants the first side's again, still kept.
+    const gate = gated(server(undefined, undefined, ["simulated"]));
+    const { catalogue, drawn, root, side, looking } = await twoSides(gate.http, undefined, true);
+    catalogue.update(looking(true));
+    await steady(drawn);
+    const [late] = side(false);
+    if (late === undefined) throw new Error("no tile");
+    gate.hold([late.address]);
+    catalogue.update(looking(false));
+    await steady(drawn);
+    catalogue.update(looking(true));
+    await steady(drawn);
+    expect(drawn).toEqual(expect.arrayContaining([root.id, ...side(true).map((t) => t.id)]));
+    for (const t of side(true)) expect(gate.reads(t.address)).toBe(1);
+    gate.release();
+    await steady(drawn);
   });
 
   it("does not count a tile Univ Server could not serve as failing its check", async () => {

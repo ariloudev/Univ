@@ -55,7 +55,11 @@ again.
   each wanted tile whose points lie more than 3 px apart on screen, all of a tile's children
   together, within 6,000,000 points. Tiles are fetched as the view wants them; held tiles it no
   longer wants are dropped only when the budget needs room, those out of view first, then the
-  smallest on screen, never a root nor a tile whose children are held. Once read, a tile is
+  smallest on screen, never a root nor a tile whose children are held. A dropped tile stays
+  drawn until the tiles fetched in its place are, within 1,500,000 points beyond the budget, so
+  a moving view shows no hole while they arrive. A held tile's children are kept down to 2 px
+  and 1° beyond the view, and a family that holds a tile counts half again its size, so that a
+  view moving a little does not drop and fetch the same tiles over and over. Once read, a tile is
   measured by where its points lie, not by its cube, which can be far larger. Each tile is
   checked against its manifest's SHA-256 and decoded by the reference decoder in
   `../tile-decoder`; a tile that fails is not drawn and is counted.
