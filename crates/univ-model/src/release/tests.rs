@@ -179,7 +179,7 @@ fn a_row_gives_its_values_in_column_order() {
         change: "merged_into".into(),
         replaced_by: "[3]".into(),
     };
-    let statements = super::sql::inserts(IdReplacedRow::TABLE, &[replaced.values()]);
+    let statements = super::statements::inserts(IdReplacedRow::TABLE, &[replaced.values()]);
     assert_eq!(
         statements,
         [
@@ -238,6 +238,8 @@ fn a_tables_estimate_over_the_databases_adds_up_its_rows_and_fingerprint() {
         table: "objects".to_owned(),
         rows,
         estimated_bytes: rows * 10,
+        added: None,
+        retired: None,
         fingerprint: vec![ColumnTotal {
             column: "id".to_owned(),
             total,

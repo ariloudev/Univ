@@ -19,6 +19,7 @@ use release_fixture::{build_next, fixture};
 use rusqlite::Connection;
 use rusqlite::types::ValueRef;
 use univ_model::release::shards::SHARD_TABLES;
+use univ_model::release::{RETIRED, valid_in};
 
 /// The variable that asks the test to rewrite the file.
 const UPDATE: &str = "UPDATE_FIXTURES";
@@ -75,8 +76,10 @@ enum KeyValue {
     Text(String),
 }
 
-/// Release [`RELEASE`]'s rows of `table` in each of `dbs` as `INSERT INTO` statements, one a
-/// line, in the order of the table's primary key whichever database holds them.
+/// The rows of `table` valid in release [`RELEASE`] in each of `dbs` as `INSERT INTO`
+/// statements, one a line, in the order of the table's primary key whichever database holds
+/// them. Each is written as release [`RELEASE`]'s own, never retired, the rows it shares with
+/// release 1 included: the file is the release whole, as one database holds it.
 fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut String) {
     let key = univ_model::release::TABLES
         .iter()
@@ -86,7 +89,10 @@ fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut St
     let mut lines = Vec::new();
     for db in dbs {
         let mut q = db
-            .prepare(&format!("SELECT * FROM {table} WHERE release = ?1"))
+            .prepare(&format!(
+                "SELECT * FROM {table} WHERE {}",
+                valid_in("", "?1")
+            ))
             .unwrap();
         let columns: Vec<String> = q.column_names().iter().map(|c| (*c).to_owned()).collect();
         let mut rows = q.query([RELEASE]).unwrap();
@@ -103,7 +109,11 @@ fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut St
                 })
                 .collect();
             let values: Vec<String> = (0..columns.len())
-                .map(|i| literal(db, row.get_ref(i).unwrap()))
+                .map(|i| match columns[i].as_str() {
+                    "release" => RELEASE.to_string(),
+                    RETIRED => "NULL".to_owned(),
+                    _ => literal(db, row.get_ref(i).unwrap()),
+                })
                 .collect();
             lines.push((
                 order,

@@ -356,70 +356,12 @@ pub fn write_tuple(values: &[SqlValue], out: &mut String) {
     out.push(')');
 }
 
-/// A table's `INSERT OR IGNORE` statements made one row at a time: a statement is given once
-/// the next row would take it over [`MAX_STATEMENT_BYTES`].
-pub struct Statements {
-    head: String,
-    current: String,
-    /// The row being added, as its tuple: one buffer for every row.
-    tuple: String,
-}
-
-impl Statements {
-    /// No statement yet, into `table`.
-    #[must_use]
-    pub fn new(table: Table) -> Self {
-        Self {
-            head: table.insert_head(),
-            current: String::new(),
-            tuple: String::new(),
-        }
-    }
-
-    /// Adds a row, giving the statement it closed, if any.
-    pub fn push(&mut self, row: &[SqlValue]) -> Option<String> {
-        self.tuple.clear();
-        write_tuple(row, &mut self.tuple);
-        let tuple = &self.tuple;
-        let mut closed = None;
-        if !self.current.is_empty() && self.current.len() + tuple.len() + 3 > MAX_STATEMENT_BYTES {
-            self.current.push_str(";\n");
-            closed = Some(std::mem::take(&mut self.current));
-        }
-        if self.current.is_empty() {
-            self.current.push_str(&self.head);
-        } else {
-            self.current.push_str(",\n");
-        }
-        self.current.push_str(tuple);
-        closed
-    }
-
-    /// The last statement, if a row was added since one was given.
-    pub fn finish(&mut self) -> Option<String> {
-        if self.current.is_empty() {
-            return None;
-        }
-        self.current.push_str(";\n");
-        Some(std::mem::take(&mut self.current))
-    }
-}
-
 /// A row of a table of the schema.
 pub trait Row {
     /// The table it is a row of.
     const TABLE: Table;
     /// Its values in the order of the table's columns.
     fn values(&self) -> Vec<SqlValue>;
-}
-
-/// The statements [`Statements`] makes of `rows`, for a test.
-#[cfg(test)]
-pub(crate) fn inserts(table: Table, rows: &[Vec<SqlValue>]) -> Vec<String> {
-    let mut statements = Statements::new(table);
-    let mut out: Vec<String> = rows.iter().filter_map(|r| statements.push(r)).collect();
-    out.extend(statements.finish());
-    out
 }
 
 #[cfg(test)]
@@ -475,25 +417,5 @@ mod tests {
         // 4 + 2, cell 4: 17. Index on (name, release, id): header 4, body 4 + 0 + 2, cell 4:
         // 14. 31 / 0.65 = 47.7, rounded up.
         assert_eq!(T.estimated_bytes(&row), 48);
-    }
-
-    #[test]
-    fn inserts_split_before_the_statement_limit() {
-        let long = "x".repeat(40_000);
-        let rows: Vec<Vec<SqlValue>> = (0..5)
-            .map(|i| {
-                vec![
-                    SqlValue::Integer(1),
-                    SqlValue::Integer(i),
-                    long.as_str().into(),
-                ]
-            })
-            .collect();
-        let statements = inserts(T, &rows);
-        assert_eq!(statements.len(), 3, "two rows of 40 kB to a statement");
-        assert!(statements.iter().all(|s| s.len() <= MAX_STATEMENT_BYTES));
-        assert!(statements[0].starts_with("INSERT OR IGNORE INTO t (release, id, name) VALUES\n"));
-        assert!(statements[2].ends_with(");\n"));
-        assert_eq!(inserts(T, &[]), Vec::<String>::new());
     }
 }

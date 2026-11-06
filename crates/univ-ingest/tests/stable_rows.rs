@@ -144,6 +144,43 @@ fn a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before
         assert_eq!(a, b, "table {table}");
     }
     assert_eq!(kept(f.state.path()).cells, numbering.cells);
+
+    // It writes no object, entry, measurement, designation or cell of an object, and retires
+    // none: every one is the release before's, shared.
+    let m = read_manifest(&second.dir);
+    assert_eq!(m.parent, Some(first.number));
+    for shard in &m.shards {
+        for t in &shard.d1.tables {
+            assert_eq!(
+                (t.added, t.retired),
+                (Some(0), Some(0)),
+                "shard {} {}",
+                shard.index,
+                t.table
+            );
+            if SHARD_TABLES.iter().any(|(name, _)| *name == t.table) {
+                let written = m.files.iter().any(|f| {
+                    f.path
+                        .starts_with(&format!("d1/{}/", Database::Shard(shard.index).dir()))
+                        && f.path.contains(&format!("-{}-", t.table))
+                });
+                assert!(
+                    !written,
+                    "shard {} writes a file of {}",
+                    shard.index, t.table
+                );
+            }
+        }
+    }
+    let structures =
+        m.d1.tables
+            .iter()
+            .find(|t| t.table == "structures")
+            .unwrap();
+    assert!(
+        structures.added.unwrap() > 0,
+        "the structure added is written"
+    );
 }
 
 #[test]

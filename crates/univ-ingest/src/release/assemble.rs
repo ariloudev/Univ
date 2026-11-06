@@ -19,7 +19,7 @@ use univ_model::release::{Row, SCHEMA_VERSION, keys};
 use super::cells::cell_index;
 use super::check::D1_KEYS;
 use super::check::{Failed, Subject, check_all, d1_derived, d1_size};
-use super::d1::{D1Writer, PartSink};
+use super::d1::{Before, D1Writer, PartSink};
 use super::entries::Numbering;
 use super::files::DirSink;
 use super::kept::Kept;
@@ -97,9 +97,10 @@ fn d1_rows(
     grids: &WrittenGrids,
     release: &Release,
     numbering: Numbering,
-    previous: &Kept,
+    before: &Before<'_>,
     watch: Watch<'_>,
 ) -> Result<D1Done, String> {
+    let previous = before.kept;
     let crossed = inputs.crossed;
     let number = numbering.release;
     let repeated = repeated_id(&crossed.objects);
@@ -113,7 +114,7 @@ fn d1_rows(
     let packing = sharding.plan(&crossed.objects, &numbering, budget, previous, watch)?;
     let files = file_rows(number, &sink.files);
     let mut writer = D1Writer::new(sink, packing.count())?;
-    writer.retire_earlier(number)?;
+    writer.compare_with(before, number)?;
     let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
     sharding.write(&crossed.objects, &mut objects, &mut writer, &packing, watch)?;
     let ObjectWriter {
@@ -320,9 +321,10 @@ pub fn write_release(
     inputs: &Inputs<'_>,
     number: u32,
     dir: &Path,
-    previous: &Kept,
+    before: &Before<'_>,
     watch: Watch<'_>,
 ) -> Result<Written, String> {
+    let previous = before.kept;
     let mut sink = DirSink::new(dir, watch)?;
     let recorded = rules(inputs, &mut sink)?;
     watch.step(format!("rules: {} files", recorded.len()));
@@ -345,7 +347,7 @@ pub fn write_release(
     let grids = write_grids(inputs, number, &mut sink, &release, &mut sources)?;
     let numbering = Numbering::kept(number, sources, previous);
     let d1 = d1_rows(
-        inputs, &mut sink, &grids, &release, numbering, previous, watch,
+        inputs, &mut sink, &grids, &release, numbering, before, watch,
     )?;
     let sql_files = sink.files.iter().filter(|f| f.key.is_none()).count();
     watch.step(format!(
@@ -405,6 +407,7 @@ pub fn write_release(
             object_cells: d1.object_cells,
             structure_cells: d1.cells.structures.len() as u64,
         },
+        parent: before.rows.map(|_| number - 1),
         ids: Ids {
             issued_first: assigned.issued.map(|r| r.first.get()),
             issued_last: assigned.issued.map(|r| r.last.get()),

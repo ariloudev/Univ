@@ -66,6 +66,7 @@ pub mod rows;
 pub mod shards;
 pub mod shared;
 pub mod sql;
+pub mod statements;
 pub mod uncertainty;
 
 /// The real local state, relative to the workspace: the local D1 and R2 that `univ-ingest
@@ -79,7 +80,8 @@ pub use fingerprint::{ColumnTotal, Fingerprinter};
 pub use manifest::{D1_CAP_BYTES, RELEASE_BUDGET_BYTES, ReleaseManifest};
 pub use rows::TABLES;
 pub use shared::{RETIRED, valid_in};
-pub use sql::{ColumnKind, Row, Scope, SqlValue, Statements, Table, Tree};
+pub use sql::{ColumnKind, Row, Scope, SqlValue, Table, Tree};
+pub use statements::Statements;
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].

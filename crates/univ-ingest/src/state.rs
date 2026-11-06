@@ -35,6 +35,7 @@ use univ_model::ids::{Designation, ObjectId, SourceId};
 use univ_model::ledger::Ledger;
 
 use crate::ids::EntryIds;
+use crate::release::ROWS;
 use crate::release::{Kept, NUMBERING};
 use crate::yaml::{FileError, read_checked, version_is, write};
 
@@ -217,19 +218,23 @@ impl State {
 impl State {
     /// Makes this the state of the state directory `dir` in one step: writes it whole into
     /// `states/{n}/`, n the releases its ledger records, with `kept`, what the release
-    /// numbered and placed, in place of its own, then renames `current.part`, naming that directory, over `current`.
+    /// numbered and placed, in place of its own, and `rows`, the release's row index, moved
+    /// into it; then renames `current.part`, naming that directory, over `current`. The row
+    /// index of the state it replaces, which no build compares with again, is removed.
     ///
     /// # Errors
     ///
     /// Fails, leaving the state of `dir` as it was, when a directory or file cannot be written.
-    pub fn install(&self, dir: &Path, kept: &Kept) -> io::Result<()> {
+    pub fn install(&self, dir: &Path, kept: &Kept, rows: &Path) -> io::Result<()> {
         let name = format!("{STATES}/{}", self.ledger.releases().len());
         let target = dir.join(&name);
         let part = dir.join(format!("{name}.part"));
         if part.exists() {
             std::fs::remove_dir_all(&part)?;
         }
+        let replaced = rows_dir(dir).ok().flatten();
         self.write_with(&part, kept)?;
+        std::fs::rename(rows, part.join(ROWS))?;
         // A directory of this number that `current` does not name was left by a build that
         // stopped before it switched `current`.
         if target.exists() {
@@ -243,6 +248,8 @@ impl State {
         );
         if switched.is_err() {
             let _ = std::fs::remove_dir_all(&target);
+        } else if let Some(replaced) = replaced.filter(|r| !r.starts_with(&target)) {
+            let _ = std::fs::remove_dir_all(replaced);
         }
         switched
     }
@@ -292,6 +299,24 @@ fn current_dir(dir: &Path) -> Result<PathBuf, FileError> {
         ));
     }
     Ok(dir.join(named))
+}
+
+/// The row index of the state of the state directory `dir`, which the next build compares its
+/// rows with: none before the first release, or for a state written before row indexes were.
+///
+/// # Errors
+///
+/// Fails when `current` cannot be read.
+pub fn rows_dir(dir: &Path) -> Result<Option<PathBuf>, FileError> {
+    let rows = current_dir(dir)?.join(ROWS);
+    Ok(rows.is_dir().then_some(rows))
+}
+
+/// Where a build writes the row index of the release it makes, within the state directory
+/// `dir`, until the state is installed with it.
+#[must_use]
+pub fn next_rows_dir(dir: &Path) -> PathBuf {
+    dir.join(format!("{ROWS}.part"))
 }
 
 /// The directory of the state a cross-match prepared, within `dir`.

@@ -146,7 +146,21 @@ impl Fingerprinter {
 
     /// Adds a row's values, in the order of [`Table::columns`].
     pub fn add(&mut self, row: &[SqlValue]) {
-        for (count, value) in self.non_null.iter_mut().zip(row) {
+        self.add_values(row.iter());
+    }
+
+    /// Adds a row's values with the one at `at` replaced by `value`: a row a release shares
+    /// with an earlier one, counted with the release that added it, without a copy of it.
+    pub fn add_replacing(&mut self, row: &[SqlValue], at: usize, value: &SqlValue) {
+        self.add_values(
+            row.iter()
+                .enumerate()
+                .map(|(i, v)| if i == at { value } else { v }),
+        );
+    }
+
+    fn add_values<'v>(&mut self, row: impl Iterator<Item = &'v SqlValue> + Clone) {
+        for (count, value) in self.non_null.iter_mut().zip(row.clone()) {
             *count += u64::from(!matches!(value, SqlValue::Null));
         }
         for (total, value) in self.totals.iter_mut().zip(row) {

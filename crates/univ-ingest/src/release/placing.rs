@@ -87,7 +87,17 @@ pub(super) fn place(
         }
     }
     let cell_shards: Vec<u32> = cell_shards.into_iter().map(|s| s.unwrap_or(0)).collect();
-    fill.drop_empty_tail(&mut bucket_shards);
+    // A shard the release before held anything in stays, so that its rows can be retired.
+    let held = previous
+        .cells
+        .iter()
+        .rposition(|c| !c.is_empty())
+        .map(|i| i + 1)
+        .into_iter()
+        .chain(previous.loose.values().map(|&s| s as usize + 1))
+        .max()
+        .unwrap_or(1);
+    fill.drop_empty_tail(held, &mut bucket_shards);
     let held = fill.runs(cells, order, &cell_shards);
     Packing {
         shards: fill.shards,
@@ -162,15 +172,15 @@ impl Fill {
         self.shards[index as usize].bytes > self.budget
     }
 
-    /// Drops the shards at the end that hold nothing, and the buckets' claim on them: always
-    /// leaving one.
-    fn drop_empty_tail(&mut self, bucket_shards: &mut [Option<u32>]) {
+    /// Drops the shards at the end that hold nothing, and the buckets' claim on them, but the
+    /// first `keep`: always leaving one.
+    fn drop_empty_tail(&mut self, keep: usize, bucket_shards: &mut [Option<u32>]) {
         let used = self
             .shards
             .iter()
             .rposition(|s| s.objects > 0)
             .map_or(1, |last| last + 1);
-        self.shards.truncate(used);
+        self.shards.truncate(used.max(keep).min(self.shards.len()));
         for shard in bucket_shards.iter_mut() {
             if shard.is_some_and(|s| s as usize >= self.shards.len()) {
                 *shard = None;

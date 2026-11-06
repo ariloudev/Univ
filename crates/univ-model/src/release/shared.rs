@@ -38,3 +38,11 @@ macro_rules! valid_in {
         )
     };
 }
+
+impl super::Table {
+    /// The columns of its key but `release`: the key a row has among those valid in one
+    /// release, and that a later release keeps it or retires it by.
+    pub fn natural_key(&self) -> impl Iterator<Item = &'static str> {
+        self.key.iter().copied().filter(|c| *c != "release")
+    }
+}
