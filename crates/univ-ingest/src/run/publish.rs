@@ -16,9 +16,11 @@ use crate::publish::{
 };
 use crate::release::release_dir;
 
-/// Where Wrangler keeps local D1 and R2 by default: what `wrangler dev` reads from the
-/// repository root.
-pub const DEFAULT_PERSIST: &str = ".wrangler/state";
+/// The local D1 and R2 that releases are published to: the real local state, which `cargo xtask
+/// serve`, `explore` and the benches run Univ Server on (`--persist-to` of `wrangler dev`). Not
+/// Wrangler's own default, `.wrangler/state`, which nothing reads releases from: release 10 was
+/// once published there by a run that left the option out.
+pub const DEFAULT_PERSIST: &str = ".cache/univ-ingest/wrangler";
 /// The Wrangler configuration naming the local D1 and R2 bindings.
 pub const DEFAULT_CONFIG: &str = "wrangler.toml";
 

@@ -19,6 +19,15 @@ versions:
     title: "Build release 10"
     goal: "Release 10 is built from every source, and `cargo xtask science` passes on it"
     status: active
+  - key: 01a1ae25-c761-72a3-a5cd-be00985aaf70
+    at: 2026-11-05T23:57:53Z
+    revision: 37
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build release 10"
+    goal: "Release 10 is built from every source, and `cargo xtask science` passes on it"
+    status: done
 blocks:
   - key: 01a1ad95-6a58-709d-8355-922e66bdea76
     id: b-approve
@@ -98,6 +107,24 @@ blocks:
         title: "Build release 10 and run the science checks"
         detail: "First build: 43,023,589 entries, 36,947,173 objects, peak 55.05 GB, 15 min. Science: 32 PASS, 1 FAIL (local-group-duplicates, 441), 3 CONCERN. Fixed the extent rule (`223718d`). With the owner's approval (22:29 UTC) the first build is set aside in `.cache/univ-ingest/discarded/first-10/` and the state points back to release 9. Rebuilding."
         state: active
+      - key: 01a1ae00-dcfa-7122-b631-e29fd59dfe7f
+        at: 2026-11-05T23:17:34Z
+        revision: 36
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build release 10 and run the science checks"
+        detail: "Second build set aside in `.cache/univ-ingest/discarded/second-10/`; the state points back to release 9. Third build running (approved at 23:09 UTC), then the science checks."
+        state: active
+      - key: 01a1ae25-c761-72a3-a5cd-bdffde4d7b31
+        at: 2026-11-05T23:57:53Z
+        revision: 37
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build release 10 and run the science checks"
+        detail: "Third build, kept: 36,944,696 objects, 845 s, 55.12 GB. Science: 32 PASS, 1 FAIL (30 duplicate pairs, accepted as a known limitation), 3 CONCERN as in release 9."
+        state: done
   - key: 01a1adae-817a-74cb-b154-48f0a7273807
     id: ap-build-10
     kind: approval
@@ -386,6 +413,23 @@ blocks:
         title: "Position and nearby-fibre fixes"
         detail: "Done when the spec changes pass `loft check` with their views recorded, the ranking and matching changes are in with their tests, and univ-ingest's tests pass. Then the third build, approved at 23:09 UTC."
         state: active
+      - key: 01a1ae00-dcfa-7122-b631-e29ee47b5d50
+        at: 2026-11-05T23:17:34Z
+        revision: 36
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Position and nearby-fibre fixes"
+        detail: |-
+          Spec `a8ff8eb`; code `c56d226`; tests and trace `a3440ea`.
+          - **Fibre pass:** a fourth matching pass. Below 1,000 km/s, fibres of DESI, SDSS (both), 2dFGRS, GAMA or 6dFGS join one galaxy when each lies within 60″ and 300 km/s of every fibre already joined. Two groups that each hold an identity source's entry, or that a link joins, stay apart. A joined fibre records `fibres_of_one_galaxy`.
+          - **Anchor:** a group that took pieces is anchored at its galaxy, so each piece's resolution leads back to it.
+          - **Position:** an object that took pieces never takes a piece's position (one reached through an extent or fibre join), and the new class `beam` (ALFALFA) ranks after `survey`.
+
+          The OpenAPI document gained `fibres_of_one_galaxy` and `beam`. univ-model, univ-ingest and univ-api tests pass; clippy and fmt are clean; all 479 nodes are linked.
+
+          One effect to watch: M51 now takes UNGC's centre, which the extents test records as 2.35′ north of the 2MASX nucleus, as the rule you chose asks.
+        state: done
   - key: 01a1adfa-4355-75e8-b42c-eb415906bfdf
     id: spec-position-fibres
     kind: loft
@@ -2491,3 +2535,41 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1ae25-c761-72a3-a5cd-bdfb591a57fb
+    id: science-10-third
+    kind: note
+    versions:
+      - key: 01a1ae25-c761-72a3-a5cd-bdfd25124589
+        at: 2026-11-05T23:57:53Z
+        revision: 37
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10, third build: science checks"
+        markdown: |-
+          Third build: 43,023,589 entries, 36,944,696 objects, peak 55.12 GB, 845 s. Science: **32 PASS, 1 FAIL, 3 CONCERN, 2 INFO**, the same as release 9's apart from the duplicates.
+
+          | | First build | Second (extent) | Third (fibres, position) |
+          |---|---|---|---|
+          | local-group-duplicates | 441 | 240 | **30** |
+          | nothing inside 1 Mpc outside the LG | PASS | FAIL (IC 1613) | PASS |
+          | nearby-galaxy points drawn | 13,372 | 13,116 | 12,941 |
+
+          The 30 left have three causes:
+          - about 8: a WISE × SuperCOSMOS photo-z merged with a fibre blocks the extent rule's velocity check;
+          - about 10: an ALFALFA detection that met several fibres of one galaxy keeps candidate links after the fibres join;
+          - 11: DESI galaxies wider than 1′, which complete linkage keeps as two groups.
+        tone: info
+  - key: 01a1ae25-c761-72a3-a5cd-bdfc60f9e731
+    id: d-publish-30
+    kind: decision
+    number: 7
+    versions:
+      - key: 01a1ae25-c761-72a3-a5cd-bdfecfe4eb87
+        at: 2026-11-05T23:57:53Z
+        revision: 37
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10 is published with the 30 duplicate pairs as a known limitation"
+        consequence: "The owner chose, in the session at 23:53 UTC, to publish the third build and continue rather than fix the photo-z and ALFALFA-link causes now. local-group-duplicates stays FAIL with 30 pairs and is named in the release note; the two fixes are left for a later wave."
