@@ -92,10 +92,11 @@ test("centres the view on a point clicked, keeping the distance", async ({ page 
   await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("names")).toBeVisible();
   // The ring drawn over the chosen object, centred on it (its box's corner is at the object).
   const mark = page.getByTestId("chosen-mark").locator("span");
+  // The ring is placed on the frame after the object is read: until then it is not drawn.
   await expect
     .poll(async () => {
-      const now = await centreOf(mark);
-      return Math.hypot(now.x - canvas.x, now.y - canvas.y);
+      const box = await mark.boundingBox();
+      return box === null ? Number.POSITIVE_INFINITY : Math.hypot(box.x + box.width / 2 - canvas.x, box.y + box.height / 2 - canvas.y);
     })
     .toBeLessThan(3);
   await expect(distance).toHaveText(before);
