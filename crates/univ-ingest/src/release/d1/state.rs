@@ -17,6 +17,13 @@ pub(super) struct TableState {
     pub(super) fingerprint: Fingerprinter,
     /// The places of the key's columns among the table's.
     pub(super) key: Vec<usize>,
+    /// The places of the key's columns without `release`, and of every other column but it.
+    pub(super) natural: Vec<usize>,
+    pub(super) content_at: Vec<usize>,
+    /// The rows written, new or changed, where the rows are compared with the release before.
+    pub(super) added: u64,
+    /// The rows of the release before retired.
+    pub(super) retired: u64,
     /// The rows of a table checked by its content, kept for their digest: a few hundred.
     pub(super) content: Option<Vec<Vec<SqlValue>>>,
     pub(super) keys: HashSet<u128>,
@@ -36,6 +43,10 @@ impl TableState {
             bytes: 0,
             fingerprint: Fingerprinter::new(table),
             key: table.key.iter().filter_map(|c| table.position(c)).collect(),
+            natural: super::index::places(&table).0,
+            content_at: super::index::places(&table).1,
+            added: 0,
+            retired: 0,
             content: table.checked_by_content().then(Vec::new),
             keys: HashSet::new(),
             repeated: 0,

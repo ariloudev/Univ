@@ -12,7 +12,7 @@ use crate::cosmology::Cosmology;
 /// The name a release manifest gives its format.
 pub const FORMAT: &str = "univ-release-manifest";
 /// The version of the manifest's own layout.
-pub const MANIFEST_VERSION: u32 = 2;
+pub const MANIFEST_VERSION: u32 = 3;
 /// The most D1 storage one database may take (CON-3: 10 GB, decimal gigabytes).
 pub const D1_CAP_BYTES: u64 = 10_000_000_000;
 /// The most D1 storage a build lets one release take in one database: under half the cap, so
@@ -43,6 +43,10 @@ pub struct ReleaseManifest {
     pub sources: Vec<ManifestSource>,
     pub counts: Counts,
     pub ids: Ids,
+    /// The release whose rows this one was compared with and written as its change from
+    /// (manifest version 3): none for a release written whole.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent: Option<u32>,
     /// The catalogue database's rows (since manifest version 2; before it, every row).
     pub d1: D1Estimate,
     /// The object shards, in order (manifest version 2): none in a release of one database.
@@ -241,9 +245,18 @@ pub struct ShardCells {
 #[serde(deny_unknown_fields)]
 pub struct TableEstimate {
     pub table: String,
+    /// The rows valid in the release, those it shares with the release before included.
     pub rows: u64,
     pub estimated_bytes: u64,
+    /// The fingerprint of the rows valid in the release, each with the release that added it.
     pub fingerprint: Vec<ColumnTotal>,
+    /// The rows the release writes, new or changed (manifest version 3); none for a release
+    /// written whole, which writes every row.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub added: Option<u64>,
+    /// The rows of the release before that it retires (manifest version 3).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub retired: Option<u64>,
     /// For a table checked by its content, the SHA-256, in hex, of its rows in the order of the
     /// primary key, each in [`super::fingerprint::canonical_row`]'s form.
     #[serde(default, skip_serializing_if = "Option::is_none")]

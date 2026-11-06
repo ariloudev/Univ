@@ -376,12 +376,16 @@ mod tests {
     }
 
     #[test]
-    fn an_emptied_bucket_keeps_its_shard_and_an_emptied_last_shard_goes() {
+    fn an_emptied_bucket_keeps_its_shard_and_an_emptied_last_shard_goes_once_its_rows_are_retired()
+    {
         let cells = [load(2, cell(0, 0, 0), 500), load(2, cell(1, 0, 0), 500)];
         let first = pack(&cells, &[], 600, &Kept::default()).unwrap();
         assert_eq!(first.count(), 2);
-        // The second cell is gone: the last shard, now empty, is dropped.
-        let next = pack(&cells[..1], &[], 600, &kept(&first)).unwrap();
+        // The second cell is gone: the last shard, now empty, stays one release, so that its
+        // rows can be retired, and goes the next.
+        let emptied = pack(&cells[..1], &[], 600, &kept(&first)).unwrap();
+        assert_eq!(emptied.count(), 2);
+        let next = pack(&cells[..1], &[], 600, &kept(&emptied)).unwrap();
         assert_eq!(next.count(), 1);
         // Shard 0 held bucket 5; with no object in it now, the bucket keeps its shard all the
         // same, and its objects return to it.

@@ -16,7 +16,7 @@ use std::collections::BTreeSet;
 
 use release_fixture::{build_next, fixture, read_manifest};
 use univ_ingest::publish::{Latest, PruneError};
-use univ_model::release::{Scope, TABLES, keys};
+use univ_model::release::{Scope, TABLES, keys, valid_in};
 
 /// The ids an id stands for in release `latest`, following the ledger's replacements: empty
 /// when retired. Fails when the ledger and the release do not account for the id.
@@ -26,7 +26,8 @@ fn resolve(store: &MemoryStore, id: i64, latest: i64) -> Vec<i64> {
     ));
     assert_eq!(issued, 1, "the ledger records which release issued {id}");
     let present = store.int(&format!(
-        "SELECT COUNT(*) FROM object_shards WHERE release = {latest} AND id = {id}"
+        "SELECT COUNT(*) FROM object_shards WHERE {} AND id = {id}",
+        valid_in("", latest)
     ));
     if present == 1 {
         return vec![id];
@@ -50,12 +51,46 @@ fn resolve(store: &MemoryStore, id: i64, latest: i64) -> Vec<i64> {
 fn ids_of(store: &MemoryStore, number: u32) -> Vec<i64> {
     let mut s = store
         .db
-        .prepare("SELECT id FROM object_shards WHERE release = ?1")
+        .prepare(&format!(
+            "SELECT id FROM object_shards WHERE {}",
+            valid_in("", "?1")
+        ))
         .unwrap();
     s.query_map([number], |r| r.get(0))
         .unwrap()
         .map(Result::unwrap)
         .collect()
+}
+
+/// Each table's count of the rows valid in release `n`, in every database.
+fn valid_counts(store: &MemoryStore, n: u32) -> Vec<i64> {
+    TABLES
+        .iter()
+        .filter(|t| t.scope == Scope::PerRelease)
+        .map(|t| {
+            store.int_everywhere(&format!(
+                "SELECT COUNT(*) FROM {} WHERE {}",
+                t.name,
+                valid_in("", n)
+            ))
+        })
+        .collect()
+}
+
+/// The rows valid in release `n` and not in `kept`, of every table, in every database.
+fn only_in(store: &MemoryStore, n: u32, kept: u32) -> i64 {
+    TABLES
+        .iter()
+        .filter(|t| t.scope == Scope::PerRelease)
+        .map(|t| {
+            store.int_everywhere(&format!(
+                "SELECT COUNT(*) FROM {} WHERE {} AND NOT ({})",
+                t.name,
+                valid_in("", n),
+                valid_in("", kept)
+            ))
+        })
+        .sum()
 }
 
 #[test]
@@ -87,7 +122,15 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
         store.int("SELECT COUNT(*) FROM ids_replaced"),
     );
     assert!(ledger_before.1 > 0, "release 2 retired some ids");
-    let rows_of_2 = store.int_everywhere("SELECT COUNT(*) FROM objects WHERE release = 2");
+    // Each table's rows valid in release 2, some of them added by release 1 and shared.
+    let rows_of_2 = valid_counts(&store, 2);
+    assert!(
+        store.int_everywhere(&format!(
+            "SELECT COUNT(*) FROM objects WHERE release = 1 AND {}",
+            valid_in("", 2)
+        )) > 0,
+        "release 2 shares rows release 1 added"
+    );
     // Release 2's files and manifest, and the files release 1 alone held.
     let r2_of = |n: u32| -> BTreeSet<String> {
         let mut held: BTreeSet<String> = read_manifest(&univ_ingest::release::release_dir(&out, n))
@@ -120,23 +163,15 @@ fn pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_r
     assert!(pruned.rows > 0 && pruned.files > 1);
     assert!(!store.r2.keys().any(|k| only_1.contains(k)));
     assert!(keys_of_2.iter().all(|k| store.r2.contains_key(k)));
-    // The release's rows are gone from the catalogue and from every object shard.
+    // The rows release 1 alone held are gone from the catalogue and from every object shard;
+    // those it shares with release 2 are kept.
     let loaded = store.int_everywhere("SELECT COUNT(*) FROM schema_version");
     assert!(
         loaded >= 3,
         "the fixture spans object shards: {loaded} databases"
     );
-    for t in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
-        let left = store.int_everywhere(&format!(
-            "SELECT COUNT(*) FROM {} WHERE release = 1",
-            t.name
-        ));
-        assert_eq!(left, 0, "{}", t.name);
-    }
-    assert_eq!(
-        store.int_everywhere("SELECT COUNT(*) FROM objects WHERE release = 2"),
-        rows_of_2
-    );
+    assert_eq!(only_in(&store, 1, 2), 0);
+    assert_eq!(valid_counts(&store, 2), rows_of_2);
 
     // AC-100: the release stays in the list of releases, with its pruning time.
     let (published, pruned_at): (Option<String>, Option<String>) = store

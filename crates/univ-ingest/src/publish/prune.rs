@@ -1,5 +1,5 @@
-//! Pruning release n: its R2 files and its rows of the tables of one release deleted, and its
-//! pruning time recorded in the list of releases, which keeps it (AC-100), beside the id
+//! Pruning release n: the R2 files and the rows of the tables of releases that n holds and no
+//! release left unpruned shares deleted, and its pruning time recorded in the list of releases, which keeps it (AC-100), beside the id
 //! ledger, which is never pruned (AC-99). The release `latest` points to is refused (AC-101).
 //!
 //! The steps can run again: R2 files are deleted first, all but the manifest in one batch and
@@ -253,7 +253,10 @@ fn databases(
     let per_release = || TABLES.iter().filter(|t| t.scope == Scope::PerRelease);
     let mut held = Vec::new();
     if status.shard_index {
-        let sql = format!("SELECT shard FROM release_shards WHERE release = {number}");
+        let sql = format!(
+            "SELECT shard FROM release_shards WHERE {}",
+            valid_in("", number)
+        );
         for row in store.query(Database::Catalogue, &sql)? {
             let shard = row
                 .get("shard")
@@ -275,37 +278,63 @@ fn databases(
     Ok(held)
 }
 
-/// The rows of release `number` in `tables` of `database`, as one sum of counts (D1 limits the
+/// The releases listed and not pruned other than `number`: those whose rows a prune of it keeps.
+fn kept_releases(store: &mut dyn Store, number: u32) -> Result<Vec<u32>, String> {
+    let sql = format!(
+        "SELECT number FROM releases WHERE pruned_at IS NULL AND number != {number} ORDER BY number"
+    );
+    store
+        .query(Database::Catalogue, &sql)?
+        .iter()
+        .map(|row| {
+            row.get("number")
+                .and_then(serde_json::Value::as_u64)
+                .and_then(|n| u32::try_from(n).ok())
+                .ok_or_else(|| "releases gives a row with no number".to_owned())
+        })
+        .collect()
+}
+
+/// The SQL condition selecting the rows a prune of release `number` deletes: those valid in it
+/// and in none of the releases `kept`, which share the rest.
+fn pruned_rows(number: u32, kept: &[u32]) -> String {
+    std::iter::once(valid_in("", number))
+        .chain(kept.iter().map(|k| format!("NOT ({})", valid_in("", k))))
+        .collect::<Vec<_>>()
+        .join(" AND ")
+}
+
+/// The rows `filter` selects in `tables` of `database`, as one sum of counts (D1 limits the
 /// terms of a compound `SELECT`, so no `UNION`).
 fn rows_of(
     store: &mut dyn Store,
     database: Database,
     tables: &[&str],
-    number: u32,
+    filter: &str,
 ) -> Result<u64, String> {
     let counts: Vec<String> = tables
         .iter()
-        .map(|t| format!("(SELECT COUNT(*) FROM {t} WHERE release = {number})"))
+        .map(|t| format!("(SELECT COUNT(*) FROM {t} WHERE {filter})"))
         .collect();
     let rows = store.query(database, &format!("SELECT {} AS n", counts.join(" + ")))?;
     rows.first()
         .and_then(|r| r.get("n"))
         .and_then(serde_json::Value::as_u64)
-        .ok_or_else(|| format!("{database} gave no count of the rows of release {number}"))
+        .ok_or_else(|| format!("{database} gave no count of rows where {filter}"))
 }
 
-/// Deletes release `number`'s rows of `tables` from `database`, and runs `then` after, in one
-/// file written to `journals`.
+/// Deletes the rows of `tables` from `database` that `filter` selects, and runs `then` after,
+/// in one file written to `journals`, named for release `number`.
 fn delete_rows(
     store: &mut dyn Store,
     (database, tables): (Database, &[&str]),
-    number: u32,
+    (number, filter): (u32, &str),
     journals: &Path,
     then: Option<String>,
 ) -> Result<(), String> {
     let mut statements: Vec<String> = tables
         .iter()
-        .map(|t| format!("DELETE FROM {t} WHERE release = {number};"))
+        .map(|t| format!("DELETE FROM {t} WHERE {filter};"))
         .collect();
     statements.extend(then);
     let sql = statements.join("\n") + "\n";
@@ -396,9 +425,11 @@ pub fn prune_with(
     // Each object shard's rows, then the catalogue's with the pruning time, last: a prune
     // stopped part way still finds the shards by the catalogue's index.
     let held = databases(store, number, &status).map_err(failed)?;
+    let kept = kept_releases(store, number).map_err(failed)?;
+    let filter = pruned_rows(number, &kept);
     let mut rows = 0;
     for (database, tables) in &held {
-        rows += rows_of(store, *database, tables, number).map_err(failed)?;
+        rows += rows_of(store, *database, tables, &filter).map_err(failed)?;
         let then = (*database == Database::Catalogue).then(|| {
             format!(
                 "UPDATE releases SET pruned_at = {} WHERE number = {number} AND pruned_at IS \
@@ -406,17 +437,25 @@ pub fn prune_with(
                 sql_text(&(options.now)())
             )
         });
-        delete_rows(store, (*database, tables), number, options.journals, then).map_err(failed)?;
-        let left = rows_of(store, *database, tables, number).map_err(failed)?;
+        delete_rows(
+            store,
+            (*database, tables),
+            (number, &filter),
+            options.journals,
+            then,
+        )
+        .map_err(failed)?;
+        let left = rows_of(store, *database, tables, &filter).map_err(failed)?;
         if left > 0 {
             return Err(failed(format!(
-                "{database} still holds {left} rows of release {number}"
+                "{database} still holds {left} rows of release {number} that no release kept \
+                 holds"
             )));
         }
     }
     let shards = held.len().saturating_sub(1);
     progress.line(format!(
-        "release {number}: {rows} rows deleted from the tables of one release, in the \
+        "release {number}: {rows} rows that no release left unpruned holds deleted, in the \
          catalogue database and {shards} object shard(s); the list of releases and the id \
          ledger are kept"
     ));

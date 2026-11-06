@@ -282,6 +282,8 @@ pub fn build(dir: &Path) {
             rows: mine.len() as u64,
             estimated_bytes: 100,
             fingerprint: fp.finish(),
+            added: None,
+            retired: None,
             content_sha256: content,
         });
     }
@@ -357,6 +359,7 @@ fn manifest(files: Vec<ManifestFile>, tables: Vec<TableEstimate>) -> ReleaseMani
             issued_last: None,
             replaced: 0,
         },
+        parent: None,
         d1: D1Estimate {
             cap_bytes: 10_000_000_000,
             estimated_bytes: 1000,

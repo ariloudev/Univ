@@ -14,15 +14,17 @@
 //! and every number finite, so `INSERT OR IGNORE` can only skip a row written before,
 //! identical, and no NULL stands for a number.
 
+mod compare;
+pub mod index;
 mod state;
+
+pub use compare::{Before, Comparing};
 
 use sha2::{Digest, Sha256};
 use univ_model::release::fingerprint::canonical_row;
 use univ_model::release::manifest::{D1_CAP_BYTES, D1Estimate, TableEstimate};
 use univ_model::release::shards::Database;
-use univ_model::release::{
-    RETIRED, Row, SCHEMA, SCHEMA_VERSION, Scope, SqlValue, TABLES, Table, keys,
-};
+use univ_model::release::{Row, SCHEMA, SCHEMA_VERSION, Scope, SqlValue, TABLES, Table, keys};
 
 use state::{TableState, key_hash, key_of, place_of};
 
@@ -64,6 +66,17 @@ pub fn content_sha256(rows: &[Vec<SqlValue>]) -> String {
     crate::fetch::hex(&Sha256::digest(&bytes))
 }
 
+/// The path of retirement part `part` (from 1) of the table at `place` (from 0) in `TABLES` in
+/// `database`: loaded with the table's other parts, as publish groups a table's files by name.
+fn retire_path(database: Database, place: usize, table: &str, part: usize) -> String {
+    format!(
+        "{}/{}/{:04}-{table}-r{part:03}.sql",
+        keys::D1_DIR,
+        database.dir(),
+        place + 1
+    )
+}
+
 /// The path of part `part` (from 1) of the table at `place` (from 0) in `TABLES` in `database`.
 fn part_path(database: Database, place: usize, table: &str, part: usize) -> String {
     format!(
@@ -84,6 +97,8 @@ pub struct D1Writer<'s> {
     bytes: Vec<u64>,
     /// The shard of the object whose rows are being written.
     shard: Option<u32>,
+    /// The comparison with the release before, where there is one.
+    comparing: Option<Comparing>,
 }
 
 /// What the writer made of a release's rows once every file is written.
@@ -95,6 +110,8 @@ pub struct D1Written {
     pub shards: Vec<D1Estimate>,
     /// The checks of the rows that failed.
     pub failed: Vec<Failed>,
+    /// The directory of the next release's row index, where the rows were compared.
+    pub index: Option<std::path::PathBuf>,
 }
 
 /// The database at `index` among the writer's: the catalogue, then the shards.
@@ -145,7 +162,15 @@ impl<'s> D1Writer<'s> {
             bytes: vec![0; databases.len()],
             databases,
             shard: None,
+            comparing: None,
         }
+    }
+
+    /// Writes only what the rows that follow change from the release before, as `comparing`
+    /// gives it: each row kept unchanged is not written, and once every row is in, those the
+    /// release no longer holds are retired.
+    pub fn compare_with(&mut self, comparing: Comparing) {
+        self.comparing = Some(comparing);
     }
 
     /// Sends the rows of the shard tables that follow to object shard `shard`, until another
@@ -220,6 +245,18 @@ impl<'s> D1Writer<'s> {
         let Some(sink) = self.sink.as_deref_mut() else {
             return Ok(());
         };
+        let shared = table.scope == Scope::PerRelease;
+        let kept = match self.comparing.as_mut().filter(|_| shared) {
+            Some(c) => c.row(
+                database(db),
+                table,
+                (&state.natural, &state.content_at),
+                values,
+            )?,
+            None => None,
+        };
+        let written = kept.is_none();
+        let values = kept.as_deref().unwrap_or(values);
         state.fingerprint.add(values);
         if let Some(content) = &mut state.content {
             content.push(values.to_vec());
@@ -240,12 +277,23 @@ impl<'s> D1Writer<'s> {
                 key_of(table, values)
             ));
         }
-        if !state.keys.insert(key_hash(&state.key, values)) {
+        // A shared row's key is unique without its release, which a kept row carries from the
+        // release before.
+        let key = if shared {
+            index::hash_at(&state.natural, values)
+        } else {
+            key_hash(&state.key, values)
+        };
+        if !state.keys.insert(key) {
             state.repeated += 1;
             if state.first_repeated.is_none() {
                 state.first_repeated = Some(key_of(table, values));
             }
         }
+        if !written {
+            return Ok(());
+        }
+        state.added += 1;
         if let Some(statement) = state.statements.push(values) {
             to_part(sink, database(db), place, state, &statement)?;
         }
@@ -278,38 +326,6 @@ impl<'s> D1Writer<'s> {
         self.bytes.get(slot(database)).copied().unwrap_or(0)
     }
 
-    /// Writes, into each database, a file for each table of [`Scope::PerRelease`] it holds that
-    /// retires every row a release before `number` added and no release has retired yet: the
-    /// rows of release `number` are all written again, so none of those stays valid in it. The
-    /// file is the table's part 0, loaded with its other parts; release 1 retires nothing.
-    ///
-    /// # Errors
-    ///
-    /// Fails when the sink cannot take a file.
-    pub fn retire_earlier(&mut self, number: u32) -> Result<(), String> {
-        let Some(sink) = self.sink.as_deref_mut() else {
-            return Ok(());
-        };
-        if number <= 1 {
-            return Ok(());
-        }
-        for (i, tables) in self.databases.iter().enumerate() {
-            let db = database(i);
-            let held = tables.iter().enumerate().filter(|(_, t)| {
-                t.table.scope == Scope::PerRelease
-                    && t.table.in_shard() == matches!(db, Database::Shard(_))
-            });
-            for (place, state) in held {
-                let name = state.table.name;
-                let sql = format!(
-                    "UPDATE {name} SET {RETIRED} = {number} WHERE {RETIRED} IS NULL AND release < {number};\n"
-                );
-                sink.put(part_path(db, place, name, 0), sql.as_bytes())?;
-            }
-        }
-        Ok(())
-    }
-
     /// The rows written so far to the table `name`, in every database.
     #[must_use]
     pub fn rows(&self, name: &str) -> u64 {
@@ -328,6 +344,7 @@ impl<'s> D1Writer<'s> {
     ///
     /// Fails when a file cannot be put.
     pub fn finish(mut self) -> Result<D1Written, String> {
+        self.retire()?;
         let mut estimates = Vec::with_capacity(self.databases.len());
         let mut failed = Vec::new();
         for (db, tables) in std::mem::take(&mut self.databases).into_iter().enumerate() {
@@ -345,11 +362,53 @@ impl<'s> D1Writer<'s> {
         let estimate = estimates
             .next()
             .ok_or("the writer has no catalogue database")?;
+        let index = match self.comparing.take() {
+            Some(c) => Some(c.finish()?),
+            None => None,
+        };
         Ok(D1Written {
             estimate,
             shards: estimates.collect(),
             failed,
+            index,
         })
+    }
+
+    /// Writes, for each table of each database the release before held rows of, the files that
+    /// retire the rows this release no longer holds, as the table's parts `r001` on.
+    fn retire(&mut self) -> Result<(), String> {
+        let (Some(c), Some(sink)) = (self.comparing.as_ref(), self.sink.as_deref_mut()) else {
+            return Ok(());
+        };
+        for db in c.databases() {
+            let tables = self.databases.get_mut(slot(db)).ok_or_else(|| {
+                format!("{db} holds rows of the release before, which this release has no longer")
+            })?;
+            for (place, state) in tables.iter_mut().enumerate() {
+                let (statements, retired) = c.retirements(db, &state.table)?;
+                state.retired = retired;
+                let mut part = String::new();
+                let mut parts = 0;
+                for statement in statements {
+                    if !part.is_empty() && part.len() + statement.len() > MAX_FILE_BYTES {
+                        parts += 1;
+                        sink.put(
+                            retire_path(db, place, state.table.name, parts),
+                            part.as_bytes(),
+                        )?;
+                        part.clear();
+                    }
+                    part.push_str(&statement);
+                }
+                if !part.is_empty() {
+                    sink.put(
+                        retire_path(db, place, state.table.name, parts + 1),
+                        part.as_bytes(),
+                    )?;
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Puts the table's last part in `db` and gives its estimate, adding its failed checks.
@@ -393,6 +452,8 @@ impl<'s> D1Writer<'s> {
             rows: state.rows,
             estimated_bytes: state.bytes,
             fingerprint: state.fingerprint.finish(),
+            added: self.comparing.as_ref().map(|_| state.added),
+            retired: self.comparing.as_ref().map(|_| state.retired),
             content_sha256: state.content.map(|mut rows| {
                 state.table.sort_by_key(&mut rows);
                 content_sha256(&rows)

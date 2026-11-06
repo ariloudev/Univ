@@ -30,6 +30,7 @@ mod entries;
 mod files;
 mod grids;
 mod kept;
+pub use d1::index::ROWS;
 pub use kept::{Kept, NUMBERING};
 mod meta;
 mod objects;
@@ -60,6 +61,7 @@ pub use check::{
 };
 pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
 pub use coverage::{Coverage, coverages, source_detail_rows};
+pub use d1::Before;
 pub use d1::{D1Writer, D1Written, InMemory, MAX_FILE_BYTES, PartSink, content_sha256};
 pub use details::structure_detail_rows;
 pub use files::{
@@ -215,11 +217,25 @@ pub fn build_watched(
     }
     let dir = release_dir(out, number);
     let building = out.join(RELEASES).join(format!(".building-{number}"));
-    let written =
-        write_release(inputs, number, &building, &current.kept, watch).map_err(|problem| {
-            let _ = std::fs::remove_dir_all(&building);
-            fail(problem)
-        })?;
+    let rows = crate::state::rows_dir(state).map_err(|e| fail(e.to_string()))?;
+    if rows.is_none() && made > 0 {
+        return Err(fail(format!(
+            "the state in {} holds no row index of release {made}, which release {number} \
+             would be compared with: every row would be written again and none of release \
+             {made}'s retired",
+            state.display()
+        )));
+    }
+    let next_rows = crate::state::next_rows_dir(state);
+    let before = Before {
+        kept: &current.kept,
+        rows: rows.as_deref(),
+        next_rows: &next_rows,
+    };
+    let written = write_release(inputs, number, &building, &before, watch).map_err(|problem| {
+        let _ = std::fs::remove_dir_all(&building);
+        fail(problem)
+    })?;
     if let Err(stopped) = watch.check() {
         let _ = std::fs::remove_dir_all(&building);
         return Err(fail(stopped));
@@ -253,7 +269,7 @@ pub fn build_watched(
         let _ = std::fs::remove_dir_all(&building);
         fail(format!("{} cannot be made complete: {e}", dir.display()))
     })?;
-    if let Err(problem) = record(state, &inputs.crossed.next, &written.kept, number) {
+    if let Err(problem) = record(state, &inputs.crossed.next, &written, number) {
         let _ = std::fs::remove_dir_all(&dir);
         return Err(fail(problem));
     }
@@ -286,13 +302,13 @@ pub fn unrecorded(out: &Path, made: usize) -> Vec<PathBuf> {
 
 /// Installs `next`, the state the cross-match made for release `number`, as the state
 /// directory's: the one step that uses the number up.
-fn record(state: &Path, next: &State, kept: &Kept, number: u32) -> Result<(), String> {
+fn record(state: &Path, next: &State, written: &Written, number: u32) -> Result<(), String> {
     let last = next.ledger.releases().last().map(|r| r.name.as_str());
     if last != Some(number.to_string().as_str()) {
         return Err(format!(
             "the cross-match's state is not that of release {number}"
         ));
     }
-    next.install(state, kept)
+    next.install(state, &written.kept, &written.index)
         .map_err(|e| format!("the state cannot be recorded in {}: {e}", state.display()))
 }

@@ -238,6 +238,8 @@ fn a_tables_estimate_over_the_databases_adds_up_its_rows_and_fingerprint() {
         table: "objects".to_owned(),
         rows,
         estimated_bytes: rows * 10,
+        added: None,
+        retired: None,
         fingerprint: vec![ColumnTotal {
             column: "id".to_owned(),
             total,
