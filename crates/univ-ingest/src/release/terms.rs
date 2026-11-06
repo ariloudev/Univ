@@ -8,8 +8,6 @@ use serde::ser::{self, Impossible};
 use univ_model::ids::SourceId;
 use univ_model::release::rows::{ChainRow, TermRow};
 
-use super::kept::next_after;
-
 /// The name serde gives a unit variant, without writing anything: none for any other value.
 struct VariantName;
 
@@ -155,14 +153,85 @@ pub fn variant_name<T: Serialize + ?Sized>(value: &T) -> Option<&'static str> {
     value.serialize(VariantName).ok()
 }
 
-/// The terms of a release, each numbered once: by the number the release before gave it, or,
-/// when new, by the next number never given, in the order first named.
+/// Numbers given to names once and never again: each name keeps the number a release before
+/// gave it, and a new name takes the next number after every number ever given, so a number
+/// that a release no longer uses is never given to another name.
+#[derive(Clone, Debug, Default)]
+struct Numbers {
+    /// Each name's number and, once this release uses it, its place among the names it uses.
+    ids: HashMap<String, (u32, Option<usize>)>,
+    next: u32,
+    used: usize,
+}
+
+/// A name's number as [`Numbers::give`] gives it.
+struct Given {
+    number: u32,
+    /// The name's place among the names this release uses.
+    place: usize,
+    /// Whether this is the release's first use of the name.
+    first: bool,
+}
+
+impl Numbers {
+    /// The numbers a release before gave, `kept`.
+    fn kept(kept: &BTreeMap<String, u32>) -> Self {
+        Self {
+            ids: kept
+                .iter()
+                .map(|(n, id)| (n.clone(), (*id, None)))
+                .collect(),
+            next: kept.values().max().map_or(0, |m| m.saturating_add(1)),
+            used: 0,
+        }
+    }
+
+    /// The number of `name`, given it when new, counting this release's use of it.
+    fn give(&mut self, name: &str) -> Given {
+        if let Some((number, place)) = self.ids.get_mut(name) {
+            let first = place.is_none();
+            let place = *place.get_or_insert_with(|| {
+                self.used += 1;
+                self.used - 1
+            });
+            return Given {
+                number: *number,
+                place,
+                first,
+            };
+        }
+        let given = Given {
+            number: self.next,
+            place: self.used,
+            first: true,
+        };
+        self.next = self.next.saturating_add(1);
+        self.used += 1;
+        self.ids
+            .insert(name.to_owned(), (given.number, Some(given.place)));
+        given
+    }
+
+    /// The number of `name`, where it has one.
+    fn get(&self, name: &str) -> Option<u32> {
+        self.ids.get(name).map(|(number, _)| *number)
+    }
+
+    /// Every number ever given, by its name, for the next release to keep.
+    fn numbering(&self) -> BTreeMap<String, u32> {
+        self.ids
+            .iter()
+            .map(|(n, (id, _))| (n.clone(), *id))
+            .collect()
+    }
+}
+
+/// The terms of a release, each numbered once by [`Numbers`], in the order first named.
 #[derive(Clone, Debug, Default)]
 pub struct Terms {
-    ids: HashMap<String, u32>,
-    next: u32,
-    /// The terms this release names, by id.
-    named: BTreeMap<u32, String>,
+    numbers: Numbers,
+    /// The terms this release names, as (id, term), in the order first named.
+    named: Vec<(u32, String)>,
 }
 
 impl Terms {
@@ -170,24 +239,18 @@ impl Terms {
     #[must_use]
     pub fn kept(kept: &BTreeMap<String, u32>) -> Self {
         Self {
-            ids: kept.iter().map(|(t, id)| (t.clone(), *id)).collect(),
-            next: next_after(kept.values()),
-            named: BTreeMap::new(),
+            numbers: Numbers::kept(kept),
+            named: Vec::new(),
         }
     }
 
     /// The id of `term`, numbering it when new.
     pub fn id(&mut self, term: &str) -> u32 {
-        let id = if let Some(id) = self.ids.get(term) {
-            *id
-        } else {
-            let id = self.next;
-            self.next = self.next.saturating_add(1);
-            self.ids.insert(term.to_owned(), id);
-            id
-        };
-        self.named.entry(id).or_insert_with(|| term.to_owned());
-        id
+        let given = self.numbers.give(term);
+        if given.first {
+            self.named.push((given.number, term.to_owned()));
+        }
+        given.number
     }
 
     /// The id of the term `value` serializes as: its variant name, or its JSON when it is not a
@@ -205,33 +268,34 @@ impl Terms {
         }
     }
 
-    /// The rows of release `release`: the terms it names.
+    /// The rows of release `release`: the terms it names, by id.
     #[must_use]
     pub fn rows(&self, release: u32) -> Vec<TermRow> {
-        self.named
+        let mut rows: Vec<TermRow> = self
+            .named
             .iter()
             .map(|(id, term)| TermRow {
                 release,
                 id: *id,
                 term: term.clone(),
             })
-            .collect()
+            .collect();
+        rows.sort_unstable_by_key(|r| r.id);
+        rows
     }
 
     /// Every term ever numbered, by its id, for the next release to keep.
     #[must_use]
     pub fn numbering(&self) -> BTreeMap<String, u32> {
-        self.ids.iter().map(|(t, id)| (t.clone(), *id)).collect()
+        self.numbers.numbering()
     }
 }
 
-/// The index of each source of a release, `sources.n`: the index the release before gave it,
-/// or, for a source new to it, the next index never given, the release's sources first, in
-/// order, then any other source a row names.
+/// The index of each source of a release, `sources.n`, numbered once by [`Numbers`]: the
+/// release's sources first, in order, then any other source a row names.
 #[derive(Clone, Debug, Default)]
 pub struct SourceIndex {
-    ids: HashMap<SourceId, u32>,
-    next: u32,
+    numbers: Numbers,
 }
 
 impl SourceIndex {
@@ -242,11 +306,7 @@ impl SourceIndex {
         sources: impl IntoIterator<Item = &'a SourceId>,
     ) -> Self {
         let mut index = Self {
-            ids: kept
-                .iter()
-                .filter_map(|(id, n)| Some((SourceId::new(id).ok()?, *n)))
-                .collect(),
-            next: next_after(kept.values()),
+            numbers: Numbers::kept(kept),
         };
         for s in sources {
             index.n(s);
@@ -256,30 +316,33 @@ impl SourceIndex {
 
     /// The index of `source`, numbering it when new.
     pub fn n(&mut self, source: &SourceId) -> u32 {
-        if let Some(n) = self.ids.get(source) {
-            return *n;
-        }
-        let n = self.next;
-        self.next = self.next.saturating_add(1);
-        self.ids.insert(source.clone(), n);
-        n
+        self.numbers.give(source.as_str()).number
+    }
+
+    /// The index of `source`, which the release's sources all have.
+    ///
+    /// # Errors
+    ///
+    /// Fails when `source` has none.
+    pub fn indexed(&self, source: &SourceId) -> Result<u32, String> {
+        self.numbers
+            .get(source.as_str())
+            .ok_or_else(|| format!("source {source} has no index among the release's sources"))
     }
 
     /// Every source ever indexed, by its id, for the next release to keep.
     #[must_use]
     pub fn numbering(&self) -> BTreeMap<String, u32> {
-        self.ids.iter().map(|(s, n)| (s.to_string(), *n)).collect()
+        self.numbers.numbering()
     }
 }
 
-/// The distinct transformation chains of a release, by their template's JSON, each with the id
-/// the release before gave it or, when new, the next id never given.
+/// The distinct transformation chains of a release, by their template's JSON, each numbered
+/// once by [`Numbers`].
 #[derive(Clone, Debug, Default)]
 pub struct Chains {
-    ids: HashMap<String, u32>,
-    next: u32,
-    /// The place in `list` of each chain this release holds, by id.
-    places: HashMap<u32, usize>,
+    numbers: Numbers,
+    /// The row of each chain this release holds, in the order first used.
     list: Vec<ChainRow>,
 }
 
@@ -288,36 +351,27 @@ impl Chains {
     #[must_use]
     pub fn kept(kept: &BTreeMap<String, u32>) -> Self {
         Self {
-            ids: kept.iter().map(|(t, id)| (t.clone(), *id)).collect(),
-            next: next_after(kept.values()),
-            ..Self::default()
+            numbers: Numbers::kept(kept),
+            list: Vec::new(),
         }
     }
 
     /// The id of the chain whose template is `steps`, taking `params` parameters, counting one
     /// more object of it.
     pub fn id(&mut self, release: u32, steps: String, params: usize) -> u32 {
-        let id = if let Some(&id) = self.ids.get(&steps) {
-            id
-        } else {
-            let id = self.next;
-            self.next = self.next.saturating_add(1);
-            self.ids.insert(steps.clone(), id);
-            id
-        };
-        if let Some(row) = self.places.get(&id).and_then(|&at| self.list.get_mut(at)) {
-            row.objects += 1;
-        } else {
-            self.places.insert(id, self.list.len());
+        let given = self.numbers.give(&steps);
+        if given.first {
             self.list.push(ChainRow {
                 release,
-                id,
+                id: given.number,
                 steps,
                 params: u32::try_from(params).unwrap_or(u32::MAX),
                 objects: 1,
             });
+        } else if let Some(row) = self.list.get_mut(given.place) {
+            row.objects += 1;
         }
-        id
+        given.number
     }
 
     /// Each chain's row.
@@ -329,7 +383,7 @@ impl Chains {
     /// Every chain ever numbered, by its template, for the next release to keep.
     #[must_use]
     pub fn numbering(&self) -> BTreeMap<String, u32> {
-        self.ids.iter().map(|(t, id)| (t.clone(), *id)).collect()
+        self.numbers.numbering()
     }
 }
 

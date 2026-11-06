@@ -13,9 +13,9 @@ mod release_fixture;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
-use release_fixture::{Fixture, built, cross, fixture, loaded_in, read_manifest, tiles};
-use univ_ingest::release::{BuiltRelease, Kept, NUMBERING};
-use univ_ingest::state::current_dir;
+use release_fixture::{build_next, fixture, loaded_in, read_manifest};
+use univ_ingest::release::{BuiltRelease, Kept};
+use univ_ingest::state::State;
 use univ_model::release::shards::Database;
 
 /// The object shard tables, each with the column naming its object.
@@ -96,18 +96,11 @@ fn numbered(r: &BuiltRelease, sql: &str) -> BTreeMap<i64, String> {
 
 /// The numbering the state directory `state` keeps for the next release.
 fn kept(state: &Path) -> Kept {
-    Kept::read(&current_dir(state).unwrap()).unwrap()
-}
-
-/// Builds the fixture's next release with the structures `f.structures` lists.
-fn build(f: &Fixture) -> BuiltRelease {
-    let crossed = cross(f);
-    let tiles = tiles(f, &crossed);
-    built(f, &crossed, &tiles, &f.definitions, &f.structures).unwrap()
+    State::read(state).unwrap().kept
 }
 
 /// The values both maps hold for each key `a` holds, where they differ.
-fn changed<V: PartialEq + Clone>(a: &BTreeMap<String, V>, b: &BTreeMap<String, V>) -> Vec<String> {
+fn changed<V: PartialEq>(a: &BTreeMap<String, V>, b: &BTreeMap<String, V>) -> Vec<String> {
     a.iter()
         .filter(|(k, v)| b.get(*k) != Some(*v))
         .map(|(k, _)| k.clone())
@@ -120,18 +113,12 @@ fn a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before
     let last = f.structures.pop().unwrap();
     // Release 1 stores its number in no bytes, as SQLite does 0 and 1, so its rows are
     // estimated a byte smaller than any later release's: the comparison starts at release 2.
-    build(&f);
-    let first = build(&f);
+    build_next(&f);
+    let first = build_next(&f);
     let numbering = kept(f.state.path());
-    assert!(
-        current_dir(f.state.path())
-            .unwrap()
-            .join(NUMBERING)
-            .exists()
-    );
-    assert!(!numbering.terms.is_empty() && !numbering.shards.is_empty());
+    assert!(!numbering.terms.is_empty() && !numbering.cells.is_empty());
     f.structures.push(last);
-    let second = build(&f);
+    let second = build_next(&f);
     assert_eq!(second.number, first.number + 1);
 
     let (before, after) = (object_rows(&first), object_rows(&second));
@@ -156,19 +143,23 @@ fn a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before
         );
         assert_eq!(a, b, "table {table}");
     }
-    assert_eq!(kept(f.state.path()).shards, numbering.shards);
+    assert_eq!(kept(f.state.path()).cells, numbering.cells);
 }
 
 #[test]
-fn a_release_that_adds_a_source_keeps_the_numbers_and_rows_of_what_it_leaves_alone() {
+fn a_release_that_adds_a_source_keeps_the_numbers_rows_and_shards_of_what_it_leaves_alone() {
     const ADDED: &str = "mcconnachie-2012";
     let mut f = fixture();
-    let at = f
+    let at_definition = f
         .definitions
         .iter()
         .position(|d| d.id.as_str() == ADDED)
         .unwrap();
-    let definition = f.definitions.remove(at);
+    assert!(
+        at_definition + 1 < f.definitions.len(),
+        "a source in the middle"
+    );
+    let definition = f.definitions.remove(at_definition);
     let at = f
         .normalized
         .iter()
@@ -179,35 +170,30 @@ fn a_release_that_adds_a_source_keeps_the_numbers_and_rows_of_what_it_leaves_alo
         })
         .unwrap();
     let normalized = f.normalized.remove(at);
-    let first = build(&f);
-    f.definitions.push(definition);
+    let first = build_next(&f);
+    // Put back where it was, among the others: the sources after it keep their numbers.
+    f.definitions.insert(at_definition, definition);
     f.normalized.push(normalized);
-    let second = build(&f);
+    let second = build_next(&f);
 
     let added = numbered(&second, "SELECT n, id FROM sources")
         .into_iter()
         .find(|(_, id)| id == ADDED)
         .map(|(n, _)| format!("designations: source=Integer({n}) "))
         .unwrap();
-    let content = |r: &BuiltRelease| -> BTreeMap<String, BTreeSet<String>> {
-        object_rows(r)
-            .into_iter()
-            .map(|(k, rows)| (k, rows.into_iter().map(|(_, t)| t).collect()))
-            .collect()
-    };
-    let (before, after) = (content(&first), content(&second));
+    let (before, after) = (object_rows(&first), object_rows(&second));
     let touched: BTreeSet<&String> = after
         .iter()
-        .filter(|(_, rows)| rows.iter().any(|r| r.starts_with(&added)))
+        .filter(|(_, rows)| rows.iter().any(|(_, r)| r.starts_with(&added)))
         .map(|(k, _)| k)
         .collect();
     assert!(!touched.is_empty(), "the added source holds objects");
+    let all = before.len();
     let left: BTreeMap<String, _> = before
-        .clone()
         .into_iter()
         .filter(|(k, _)| !touched.contains(k))
         .collect();
-    assert!(left.len() > before.len() / 2);
+    assert!(left.len() > all / 2);
     let moved = changed(&left, &after);
     assert!(
         moved.is_empty(),
@@ -233,4 +219,17 @@ fn a_release_that_adds_a_source_keeps_the_numbers_and_rows_of_what_it_leaves_alo
     }
     let sources = numbered(&second, "SELECT n, id FROM sources");
     assert!(sources.values().any(|id| id == ADDED));
+
+    // Each source's details stay with it, under its own number.
+    let details = |r: &BuiltRelease| {
+        numbered(
+            r,
+            "SELECT s.n, s.id || ' ' || coalesce(d.bibcode, '') || ' ' || coalesce(d.sky, '') \
+             FROM sources s JOIN source_details d ON d.source = s.n",
+        )
+    };
+    let (a, b) = (details(&first), details(&second));
+    for (n, detail) in &a {
+        assert_eq!(b.get(n), Some(detail), "source {n}");
+    }
 }

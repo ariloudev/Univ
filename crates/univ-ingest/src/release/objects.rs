@@ -26,7 +26,6 @@ use univ_model::value::Quantity;
 
 use super::d1::D1Writer;
 use super::entries::{Measurements, Numbering, entry_number, entry_row, small};
-use super::terms::Chains;
 use crate::crossmatch::ReleaseObject;
 use crate::source::{ScaleDomain, SourceDefinition};
 use crate::tiles::{domain_of, name_of};
@@ -72,7 +71,6 @@ const PER_OBJECT: [&str; 4] = [
 /// The rows of a release's objects, as they are written.
 pub struct ObjectWriter<'a> {
     pub numbering: Numbering,
-    pub chains: Chains,
     pub counts: ObjectCounts,
     cosmology: &'a Cosmology,
     domains: HashMap<&'a SourceId, ScaleDomain>,
@@ -125,14 +123,12 @@ impl<'a> ObjectWriter<'a> {
     /// scale domain `definitions` give its preferred distance's source.
     #[must_use]
     pub fn new(
-        mut numbering: Numbering,
+        numbering: Numbering,
         definitions: &'a [SourceDefinition],
         cosmology: &'a Cosmology,
     ) -> Self {
-        let chains = std::mem::take(&mut numbering.chains);
         Self {
             numbering,
-            chains,
             counts: ObjectCounts::default(),
             cosmology,
             domains: definitions
@@ -327,7 +323,7 @@ impl<'a> ObjectWriter<'a> {
         let native = serde_json::to_value(position.native()).map_err(|e| e.to_string())?;
         let t = template(&steps, &native);
         let text = json(&t.steps)?;
-        let id = self.chains.id(row.release, text, t.params.len());
+        let id = self.numbering.chains.id(row.release, text, t.params.len());
         row.chain = Some(id);
         let mut params = [None; PARAMS];
         for (slot, x) in params.iter_mut().zip(&t.params) {

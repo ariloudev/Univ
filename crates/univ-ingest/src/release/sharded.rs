@@ -20,8 +20,9 @@ use univ_model::release::shards::Database;
 use super::cells::{DomainCell, ObjectCells};
 use super::d1::D1Writer;
 use super::entries::Numbering;
+use super::kept::Kept;
 use super::objects::ObjectWriter;
-use super::packing::{CellLoad, Packing, Previous, pack};
+use super::packing::{CellLoad, Packing, pack};
 use super::terms::Terms;
 use crate::crossmatch::ReleaseObject;
 use crate::source::SourceDefinition;
@@ -70,7 +71,7 @@ impl Sharding<'_> {
         objects: &[ReleaseObject],
         numbering: &Numbering,
         budget: u64,
-        previous: Previous<'_>,
+        previous: &Kept,
         watch: Watch<'_>,
     ) -> Result<Packing, String> {
         let mut writer = D1Writer::measuring(1);

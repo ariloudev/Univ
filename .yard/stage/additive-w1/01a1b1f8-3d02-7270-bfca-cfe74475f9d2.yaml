@@ -94,3 +94,36 @@ blocks:
         title: "A shard may now hold two runs of one domain"
         markdown: "Kept placement can give a shard two separate runs of cells of one scale domain (a new cell packed after another shard's, or cells given up by an over-budget shard). `shard_cells` is keyed by `(release, shard, domain)`, so such a build would stop on its key check rather than write a wrong index. Schema 6 (W2) keys `shard_cells` by its `first` cell as well; W2 carries a test of a shard with two runs."
         tone: warning
+      - key: 01a1b201-bd81-77af-8e31-5b9d420c6a3e
+        at: 2026-11-06T17:57:00Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "A shard may now hold two runs of one domain"
+        markdown: "Kept placement gives a shard separate runs of one scale domain when a new cell lands between its cells and goes to the last shard. `shard_cells` was keyed by `(release, shard, domain)`, so a release adding a source stopped on its key check: W1's own source test hit it. Its key is now `(release, shard, domain, first)`; Univ Server already reads every run as its own row. Local D1 still holds release 10 under the old key: nothing is published onto it until W5's migration rebuilds every table under schema 6, whose number W2 sets."
+        tone: info
+  - key: 01a1b201-bd81-77af-8e31-5b9c3bcbea6a
+    id: w1-review-findings
+    kind: note
+    versions:
+      - key: 01a1b201-bd81-77af-8e31-5b9eab20c61f
+        at: 2026-11-06T17:57:00Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the reviews changed"
+        markdown: |-
+          | Finding | Change |
+          |---|---|
+          | source_details numbered sources by position (code review) | numbered by the kept source index; the fixture test now puts a source back in the middle and checks each source keeps its details |
+          | a new cell inside a shard's old run could push its old cells out (code review) | the numbering keeps the exact cells each shard held; only those stay, new cells go to the last shard |
+          | a missing numbering.yaml renumbered everything silently (altitude) | numbering is part of `State`, refused when missing beside a ledger that lists releases, like the entry ids |
+          | one number twice in a hand-edited file (code review) | refused on read |
+          | empty trailing shards kept forever; an emptied bucket lost its shard (code review) | trailing empty shards dropped; a bucket keeps its shard while empty |
+          | the never-twice numbering written three times, two lookups per term (reuse, simplification, efficiency) | one `Numbers` under terms, sources and chains, one lookup per call |
+          | chains held in two places; `Previous` and closures in packing (simplification, altitude) | chains only in the numbering; `pack` takes `&Kept`, placement in its own module |
+          | version check copied; test copied `build_next` (reuse) | `yaml::version_is`; the test uses `build_next` and `State::read` |
+          | assemble.rs and packing.rs over 500 lines | `place` in `placing.rs`; `cell_index` and `manifest_sources` moved beside what they describe |
+        tone: success

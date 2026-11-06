@@ -30,7 +30,7 @@ mod entries;
 mod files;
 mod grids;
 mod kept;
-pub use kept::{Kept, KeptRun, NUMBERING, NUMBERING_VERSION};
+pub use kept::{Kept, NUMBERING};
 mod meta;
 mod objects;
 mod outline;
@@ -38,6 +38,7 @@ mod packing;
 pub use packing::LOOSE_BUCKETS;
 mod place;
 mod placement;
+mod placing;
 mod pointers;
 mod rescaled;
 mod shapes;
@@ -80,7 +81,7 @@ pub use terms::{Chains, SourceIndex, Terms, variant_name};
 
 use crate::crossmatch::CrossMatched;
 use crate::source::SourceDefinition;
-use crate::state::{State, current_dir, pending};
+use crate::state::{State, pending};
 use crate::tiles::Built;
 use crate::watch::Watch;
 
@@ -214,11 +215,8 @@ pub fn build_watched(
     }
     let dir = release_dir(out, number);
     let building = out.join(RELEASES).join(format!(".building-{number}"));
-    let previous = current_dir(state)
-        .and_then(|dir| Kept::read(&dir))
-        .map_err(|e| fail(e.to_string()))?;
     let written =
-        write_release(inputs, number, &building, &previous, watch).map_err(|problem| {
+        write_release(inputs, number, &building, &current.kept, watch).map_err(|problem| {
             let _ = std::fs::remove_dir_all(&building);
             fail(problem)
         })?;

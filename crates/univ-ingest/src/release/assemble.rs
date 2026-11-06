@@ -7,36 +7,33 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use univ_model::derive::{MODEL_VERSION, Release};
-use univ_model::ids::SourceId;
-use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
 use univ_model::redshift::CmbCorrection;
-use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
-    CellIndex, CellSpaceInfo, Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestSource,
-    NotIndexed, RELEASE_BUDGET_BYTES, RecordedFile, ReleaseManifest, ShardManifest, Versions,
+    Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, RELEASE_BUDGET_BYTES, RecordedFile,
+    ReleaseManifest, ShardManifest, Versions,
 };
 use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseRow};
 use univ_model::release::shards::Database;
 use univ_model::release::{Row, SCHEMA_VERSION, keys};
 
+use super::cells::cell_index;
 use super::check::D1_KEYS;
 use super::check::{Failed, Subject, check_all, d1_derived, d1_size};
 use super::d1::{D1Writer, PartSink};
 use super::entries::Numbering;
 use super::files::DirSink;
-use super::kept::{Kept, NUMBERING_VERSION};
+use super::kept::Kept;
+use super::meta::manifest_sources;
 use super::objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
 use super::outline::Outlined;
-use super::packing::Previous;
 use super::sharded::{Sharding, repeated_id, shard_manifests, write_shard_index};
-use super::terms::{Chains, SourceIndex, Terms};
+use super::terms::SourceIndex;
 use super::{
     CellRows, Inputs, Placing, StructureBounds, TestCatalogues, coverages, domain_rows, grid_files,
     index_rows, object_cells, outlines_on, placements, read_grid, source_detail_rows, source_rows,
     structure_detail_rows, structure_rows,
 };
 use crate::crossmatch::RULES;
-use crate::source::SourceDefinition;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
 use crate::watch::Watch;
 
@@ -113,11 +110,7 @@ fn d1_rows(
         cells: &cells,
     };
     let budget = crossed.basis.config.shard_budget();
-    let shards = Previous {
-        shards: &previous.shards,
-        loose: &previous.loose,
-    };
-    let packing = sharding.plan(&crossed.objects, &numbering, budget, shards, watch)?;
+    let packing = sharding.plan(&crossed.objects, &numbering, budget, previous, watch)?;
     let mut writer = D1Writer::new(sink, packing.count())?;
     let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
     sharding.write(&crossed.objects, &mut objects, &mut writer, &packing, watch)?;
@@ -125,17 +118,17 @@ fn d1_rows(
         numbering:
             Numbering {
                 mut terms,
-                sources: mut index,
+                sources: index,
+                chains,
                 ..
             },
-        chains,
         counts,
         ..
     } = objects;
     let sources = source_rows(
         number,
         inputs.definitions,
-        &mut index,
+        &index,
         &counts.per_source,
         inputs.cache,
     )?;
@@ -147,7 +140,8 @@ fn d1_rows(
     let (issued, replaced) = ledger_rows(&crossed.next.ledger)?;
     writer.add_all(&issued)?;
     writer.add_all(&replaced)?;
-    let (structures, bounds) = write_structures(&mut writer, inputs, number, release, grids)?;
+    let (structures, bounds) =
+        write_structures(&mut writer, inputs, number, release, grids, &index)?;
     writer.add_all(&domain_rows(number, inputs.tiles))?;
     writer.add_all(&grids.rows)?;
     drop(cells);
@@ -155,14 +149,13 @@ fn d1_rows(
     writer.add_all(&cells.structures)?;
     write_shard_index(&mut writer, number, &packing, &mut terms)?;
     writer.add_all(&terms.rows(number))?;
-    let (shard_runs, loose) = packing.kept();
     let kept = Kept {
-        version: NUMBERING_VERSION,
         terms: terms.numbering(),
         sources: index.numbering(),
         chains: chains.numbering(),
-        shards: shard_runs,
-        loose,
+        cells: packing.held(),
+        loose: packing.buckets(),
+        ..Kept::default()
     };
     let row = release_row(inputs, number, counts.objects, structures, grids.rows.len())?;
     let total = writer.estimated_bytes_in(Database::Catalogue)
@@ -214,17 +207,20 @@ fn sizes(estimate: &D1Estimate, shards: &[ShardManifest], budget: u64) -> Vec<Fa
 
 /// Writes the `source_details`, `structures` and `structure_details` rows of release `number`
 /// through `writer`, its structures placed under `release` and the run's dipole, with the
-/// `outline` columns the grids gave; it gives how many structures it wrote and their boxes.
+/// `outline` columns the grids gave and the sources numbered by `index`; it gives how many
+/// structures it wrote and their boxes.
 fn write_structures(
     writer: &mut D1Writer<'_>,
     inputs: &Inputs<'_>,
     number: u32,
     release: &Release,
     grids: &WrittenGrids,
+    index: &SourceIndex,
 ) -> Result<(u64, Vec<StructureBounds>), String> {
     let crossed = inputs.crossed;
     let covered = coverages(&crossed.objects, inputs.definitions);
-    writer.add_all(&source_detail_rows(number, inputs.definitions, &covered)?)?;
+    let details = source_detail_rows(number, inputs.definitions, index, &covered)?;
+    writer.add_all(&details)?;
     let correction = CmbCorrection::new(crossed.dipole);
     let placing = Placing {
         release,
@@ -344,12 +340,7 @@ pub fn write_release(
         .with_peculiar_velocity(crossed.basis.ranking.peculiar_velocity_km_s);
     let mut sources = SourceIndex::new(&previous.sources, inputs.definitions.iter().map(|d| &d.id));
     let grids = write_grids(inputs, number, &mut sink, &release, &mut sources)?;
-    let numbering = Numbering {
-        release: number,
-        terms: Terms::kept(&previous.terms),
-        sources,
-        chains: Chains::kept(&previous.chains),
-    };
+    let numbering = Numbering::kept(number, sources, previous);
     let d1 = d1_rows(
         inputs, &mut sink, &grids, &release, numbering, previous, watch,
     )?;
@@ -463,52 +454,4 @@ fn release_row(
         // which therefore errs high by at most a few bytes.
         d1_estimated_bytes: i64::MAX.unsigned_abs(),
     })
-}
-
-/// The cell index's scheme, as the manifest records it.
-fn cell_index(cells: &CellRows) -> CellIndex {
-    CellIndex {
-        scheme: "uniform grid of cubes anchored at the origin, cell = floor(coordinate / (edge \
-                 * 2^level)); objects at level 0 of their scale domain, structures at the \
-                 finest level their box meets at most structure_span cells a side"
-            .to_owned(),
-        frame: format!("{ICRS_CARTESIAN_NAME}, origin the {BARYCENTRE}"),
-        spaces: SPACES
-            .iter()
-            .map(|s| CellSpaceInfo {
-                name: s.name().to_owned(),
-                unit: s.unit().to_owned(),
-                edge: s.edge(),
-            })
-            .collect(),
-        structure_span: STRUCTURE_SPAN,
-        max_structure_level: MAX_STRUCTURE_LEVEL,
-        not_indexed: cells
-            .not_indexed
-            .iter()
-            .map(|(structure, reason)| NotIndexed {
-                structure: structure.clone(),
-                reason: reason.clone(),
-            })
-            .collect(),
-    }
-}
-
-/// Each of `definitions` as the release manifest lists it, with the entries the release holds
-/// from it among `per_source`.
-fn manifest_sources(
-    definitions: &[SourceDefinition],
-    per_source: &BTreeMap<SourceId, u64>,
-) -> Vec<ManifestSource> {
-    definitions
-        .iter()
-        .map(|d| ManifestSource {
-            id: d.id.to_string(),
-            redistribution: d.redistribution.status.as_str().to_owned(),
-            review: d.redistribution.review.as_str().to_owned(),
-            non_commercial: d.terms.non_commercial.clone(),
-            permission: d.redistribution.permission.clone(),
-            entries: per_source.get(&d.id).copied().unwrap_or(0),
-        })
-        .collect()
 }

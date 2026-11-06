@@ -155,11 +155,16 @@ impl Shards {
                 *range = (range.0.min(code), range.1.max(code));
             }
             for ((release, domain), (first, last)) in ranges {
+                // One run for each shard and domain: it replaces any the fixture gave.
                 catalogue
                     .execute(
-                        "INSERT INTO shard_cells VALUES (?1, ?2, ?3, ?4, ?5) \
-                         ON CONFLICT (release, shard, domain) \
-                         DO UPDATE SET first = excluded.first, last = excluded.last",
+                        "DELETE FROM shard_cells WHERE release = ?1 AND shard = ?2 AND domain = ?3",
+                        rusqlite::params![release, i, domain],
+                    )
+                    .unwrap();
+                catalogue
+                    .execute(
+                        "INSERT INTO shard_cells VALUES (?1, ?2, ?3, ?4, ?5)",
                         rusqlite::params![release, i, domain, first, last],
                     )
                     .unwrap();

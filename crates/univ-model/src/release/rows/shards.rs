@@ -22,9 +22,11 @@ row! {
 row! {
     /// The level-0 cells of one scale domain that one object shard holds: those whose Morton
     /// code ([`crate::release::shards::morton`]) lies from `first` to `last`, both included. A
-    /// shard's cells are consecutive in Morton order, so each shard has at most one row per
-    /// domain, and the rows of one release never overlap.
-    ShardCellRow => "shard_cells", scope: PerRelease, key: ["release", "shard", "domain"],
+    /// shard holds one run for each stretch of consecutive cells of one domain it holds, so it
+    /// may hold several runs of a domain, between which other shards' cells lie; the runs of
+    /// one release never overlap.
+    ShardCellRow => "shard_cells", scope: PerRelease,
+    key: ["release", "shard", "domain", "first"],
     indexes: [], {
         release: u32,
         shard: u32,
