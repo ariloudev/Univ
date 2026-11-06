@@ -125,13 +125,20 @@ export class Catalogue {
     const holding = { settled: this.settled, drawn: this.drawn, pending, points: this.points };
     const next = plan(this.tree, holding, sight, room, this.options.budget);
     for (const tile of next.drop) this.drop(tile);
+    let revived = false;
     for (const tile of next.fetch) {
-      if (this.revive(tile)) continue;
+      if (this.revive(tile)) {
+        revived = true;
+        continue;
+      }
       const domain = this.domains.get(tile.domain);
       if (domain !== undefined) this.fetch(domain, tile);
     }
     if (next.drop.length > 0) this.letGoBeyondAllowance();
     if (this.pending.size === 0) this.letGoKept();
+    // A revived tile ends no fetch, which is what asks for the next round: the plan, which could
+    // not refine it while it was not held, is asked again.
+    if (revived) queueMicrotask(() => this.update(sight));
   }
 
   private fetch(domain: Domain, tile: DomainTile): void {

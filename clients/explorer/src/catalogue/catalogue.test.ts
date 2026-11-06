@@ -84,19 +84,18 @@ async function loaded(http: Http, drawn: string[], budget?: number) {
   return catalogue;
 }
 
-/** `http` with the answers for tiles whose address is held back until released. */
-function gated(http: Http) {
+/** `http`, which records the URLs it is asked for, with the answers for tiles whose address
+ * is held back until released. */
+function gated(http: Http & { urls: string[] }) {
   let held = new Set<string>();
   let open: () => void = () => undefined;
   let gate = Promise.resolve();
-  const counts = new Map<string, number>();
-  const address = (url: string) => /\/tiles\/(\w+)/.exec(url)?.[1];
+  const address = (url: string) => /\/tiles\/(\w+)/.exec(url.split("?")[0] ?? "")?.[1];
   return {
     http: {
       ...http,
       fetch: async (url: string) => {
         const at = address(url);
-        if (at !== undefined) counts.set(at, (counts.get(at) ?? 0) + 1);
         if (at !== undefined && held.has(at)) await gate;
         return http.fetch(url);
       },
@@ -111,7 +110,7 @@ function gated(http: Http) {
       open();
     },
     /** How many times the tile `at` was read. */
-    reads: (at: string) => counts.get(at) ?? 0,
+    reads: (at: string) => http.urls.filter((url) => address(url) === at).length,
   };
 }
 
@@ -211,6 +210,27 @@ describe("the catalogue", () => {
     catalogue.update(looking(false));
     await steady(drawn);
     expect(drawn).toEqual([root.id]);
+    gate.release();
+    await steady(drawn);
+  });
+
+  it("keeps the dropped tiles that fit its allowance drawn, and those beyond it no more", async () => {
+    const gate = gated(server(undefined, undefined, ["simulated"]));
+    const first = await twoSides(gate.http);
+    const keep = Math.max(...first.side(true).map((t) => t.points));
+    const { catalogue, drawn, root, side, looking } = await twoSides(gate.http, keep);
+    catalogue.update(looking(true));
+    await steady(drawn);
+    gate.hold(side(false).map((t) => t.address));
+    catalogue.update(looking(false));
+    await steady(drawn);
+    // Some of the first side stay drawn while the second's tiles are held back, within the
+    // allowance; the rest are drawn no more.
+    const kept = side(true).filter((t) => drawn.includes(t.id));
+    expect(kept.length).toBeGreaterThan(0);
+    expect(kept.length).toBeLessThan(side(true).length);
+    expect(kept.reduce((sum, t) => sum + t.points, 0)).toBeLessThanOrEqual(keep);
+    expect(drawn).toContain(root.id);
     gate.release();
     await steady(drawn);
   });

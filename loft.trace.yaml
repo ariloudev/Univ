@@ -3444,6 +3444,9 @@ links:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "keeps no dropped tile drawn beyond its allowance"
         body: ee4a9d04f63c577c8fd19dd0a4c76d1957b67dd038044623e3af372652f426ce
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "keeps the dropped tiles that fit its allowance drawn, and those beyond it no more"
+        body: ffb8fd890e42be58b7e3caf005f89224b43d1242f44c1e04478a86cfdeafa670
   - node: 01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b
     reviewed: 860bc11fb48cdb57922047668acbdb1261bd4a45b3f2092796b7c8b020492b74
     tests:
