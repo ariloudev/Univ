@@ -3,17 +3,13 @@
 //! prepared file; GAMA DR4's own redshifts, without other surveys' rows, stars or poor
 //! redshifts; and the photometric redshifts of WISE × `SuperCOSMOS`, read from its gzipped CSV
 //! with the catalogue's scatter of 0.033 (1 + z) (normalize-records).
-#![expect(
-    clippy::unwrap_used,
-    clippy::panic,
-    reason = "a failed unwrap or match is the test failing"
-)]
+#![expect(clippy::unwrap_used, reason = "a failed unwrap is the test failing")]
 
 mod common;
 
 use std::path::PathBuf;
 
-use common::definition_of;
+use common::{definition_of, entry};
 use univ_ingest::normalize::{Normalized, normalize};
 use univ_ingest::source::LeftOutReason;
 use univ_model::entry::{CatalogueEntry, RedshiftKind};
@@ -30,13 +26,6 @@ fn fixture(provider: &str, path: &str) -> PathBuf {
 fn normalized(id: &str, file: PathBuf) -> Normalized {
     let correction = CmbCorrection::new(DipoleModel::Planck2018);
     normalize(&definition_of(id), &[file], &correction).unwrap()
-}
-
-fn entry<'a>(n: &'a Normalized, identifier: &str) -> &'a CatalogueEntry {
-    n.entries
-        .iter()
-        .find(|e| &*e.designation.identifier == identifier)
-        .unwrap_or_else(|| panic!("no entry {identifier}"))
 }
 
 /// The entry's redshifts as (kind, measured value).

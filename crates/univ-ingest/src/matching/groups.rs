@@ -71,11 +71,8 @@ impl Groups {
         if !self.sources_disjoint(ra, rb) {
             return Err(Refused::SharedSource);
         }
-        for k in 0..self.links[ra].len() {
-            let far = self.links[ra][k];
-            if self.find(far) == rb {
-                return Err(Refused::Linked);
-            }
+        if self.linked(ra, rb) {
+            return Err(Refused::Linked);
         }
         self.absorb(ra, rb);
         Ok(())

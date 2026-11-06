@@ -373,6 +373,13 @@ impl MatchingRules {
         table
     }
 
+    /// The line-of-sight factor of a difference `delta` against its tolerance `tolerance`:
+    /// 1 when they agree exactly, falling to 0 at the tolerance, by the rule's exponent.
+    #[must_use]
+    pub fn line_of_sight_factor(&self, delta: f64, tolerance: f64) -> f64 {
+        1.0 - (delta / tolerance).powf(self.confidence.exponent)
+    }
+
     /// The confidence of a match at `separation` of tolerance `tolerance`, and the line-of-sight
     /// factor `line_of_sight`: the rule the file states.
     #[must_use]
@@ -414,7 +421,6 @@ impl MatchingRules {
         if separation > theta {
             return None;
         }
-        let p = self.confidence.exponent;
         let (method, difference, factor) = match pair.line_of_sight {
             LineOfSightRule::None => (MatchMethod::Position, None, 1.0),
             LineOfSightRule::Velocity {
@@ -429,7 +435,7 @@ impl MatchingRules {
                     (
                         MatchMethod::PositionAndRedshift,
                         Some(d),
-                        1.0 - (delta / tau).powf(p),
+                        self.line_of_sight_factor(delta, tau),
                     )
                 }
                 _ => (
@@ -452,7 +458,7 @@ impl MatchingRules {
                     (
                         MatchMethod::PositionAndDistance,
                         Some(d),
-                        1.0 - (delta / tau).powf(p),
+                        self.line_of_sight_factor(delta, tau),
                     )
                 }
                 _ => (

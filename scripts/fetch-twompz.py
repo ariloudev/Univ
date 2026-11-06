@@ -3,13 +3,16 @@
 Archive's freeform SQL form, one query at a time, in ranges of the integer key twomassID, and join
 the ranges into twompz.csv.gz, the prepared file that sources/twompz.yaml names.
 
-The form cancels queries that run longer than a few seconds, so the range adapts: halved on a
-cancellation, grown back after a run of successes, aiming at no more than ~5,000 rows a query
-(the owner's limit). Each range is kept in its own file under OUT_DIR/parts, so a rerun continues
-where it stopped. At the end the ranges are joined into OUT_DIR/twompz.csv.gz and its rows checked
-against the count; the SHA-256 it prints is the one the definition gives. A file whose digest
-differs from the definition's is refused by univ-ingest: a new version of the table needs the
-definition's sha256 and rows changed with it.
+The form cancels answers of more than about 500 to 800 rows, so the range adapts: halved on a
+cancellation, and after each answer sized from the density of rows just seen to hold about
+TARGET_ROWS, never more than MAX_KEYS keys (about 5,000 rows, the owner's limit). Each range is
+kept in its own file under OUT_DIR/parts, so a rerun continues where it stopped. At the end the
+ranges are joined into OUT_DIR/twompz.csv.gz and its rows checked against the count, and its
+SHA-256 printed. The gzip header holds no time or name, so the same rows give the same digest.
+A file whose digest differs from the definition's is refused by univ-ingest: a new version of the
+table needs the definition's sha256 and rows changed with it. (The file of 2026-11-05, which the
+definition names, was written with the time in its header: a rerun gives other bytes from the
+same rows, and the definition's sha256 changes with it.)
 
 Usage, from the repository root: python3 -I scripts/fetch-twompz.py [OUT_DIR]
 OUT_DIR defaults to Univ Ingest's download cache for the source, ../downloads/univ-ingest/twompz,
@@ -18,6 +21,7 @@ or $UNIV_INGEST_CACHE/twompz.
 
 import gzip
 import hashlib
+import io
 import os
 import re
 import sys
@@ -75,10 +79,15 @@ def query(sql):
         text = gzip.decompress(get(link.group(1))).decode("latin-1")
     except (urllib.error.URLError, TimeoutError, ConnectionError, OSError, EOFError) as e:
         return "failed", f"file: {e}"
-    rows = [l for l in text.split("\n")[1:] if l.strip()]
-    if len(rows) != int(count.group(1)):
-        return "failed", f"file holds {len(rows)} rows, page says {count.group(1)}"
+    rows = data_lines(text)
+    if rows != int(count.group(1)):
+        return "failed", f"file holds {rows} rows, page says {count.group(1)}"
     return "ok", text
+
+
+def data_lines(text):
+    """The rows of a CSV answer: its lines after the header that are not blank."""
+    return sum(1 for l in text.split("\n")[1:] if l.strip())
 
 
 def scalar(sql):
@@ -102,7 +111,7 @@ def main(directory):
         m = re.fullmatch(r"(\d+)-(\d+)\.csv", name)
         if m:
             done[int(m.group(1))] = int(m.group(2))
-    start, step, streak, failures, rows = lo_key, 500, 0, 0, 0
+    start, step, failures, rows = lo_key, 500, 0, 0
     while start <= hi_key:
         if start in done:
             start = done[start] + 1
@@ -113,7 +122,7 @@ def main(directory):
         kind, out = query(sql)
         time.sleep(PAUSE)
         if kind == "ok":
-            n = len([l for l in out.split("\n")[1:] if l.strip()])
+            n = data_lines(out)
             path = os.path.join(parts, f"{start}-{end}.csv")
             with open(path + ".part", "w") as f:
                 f.write(out)
@@ -125,9 +134,9 @@ def main(directory):
             # TOP 800 was cancelled, 2026-11-05): size the next range from the density just seen.
             density = max(n, 1) / (end - start + 1)
             step = max(MIN_KEYS, min(MAX_KEYS, step * 2, int(TARGET_ROWS / density)))
-            start, streak, failures = end + 1, streak + 1, 0
+            start, failures = end + 1, 0
         elif kind == "cancelled" and step > MIN_KEYS:
-            step, streak = max(MIN_KEYS, step // 2), 0
+            step = max(MIN_KEYS, step // 2)
             log(f"{start}-{end}: cancelled, step now {step}")
         else:
             failures += 1
@@ -145,7 +154,10 @@ def join(out, parts):
     )
     header, total, ids = None, 0, set()
     path = os.path.join(out, "twompz.csv.gz")
-    with gzip.open(path + ".part", "wt") as z:
+    # No time and no name in the gzip header, so that the same rows give the same bytes.
+    with open(path + ".part", "wb") as raw, gzip.GzipFile(
+        filename="", mode="wb", fileobj=raw, mtime=0
+    ) as packed, io.TextIOWrapper(packed, encoding="utf-8", newline="") as z:
         for name in names:
             with open(os.path.join(parts, name)) as f:
                 lines = f.read().split("\n")

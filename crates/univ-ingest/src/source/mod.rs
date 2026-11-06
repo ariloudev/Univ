@@ -6,7 +6,7 @@ mod normalization;
 mod reference;
 mod rules;
 
-pub use access::{Access, Holds, RemoteFile, Slices, TapRun};
+pub use access::{Access, Holds, PreparedFile, RemoteFile, Slices, TapRun};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{

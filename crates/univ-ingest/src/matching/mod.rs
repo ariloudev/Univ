@@ -110,6 +110,9 @@ struct Work<'a> {
     joins: Vec<Edge>,
     /// Candidate links, each with its confidence.
     links: Vec<(Edge, f64)>,
+    /// For each group that took pieces within an extent, by root: the galaxy that took them,
+    /// or, where that galaxy was itself taken in as a piece of a larger group, that group's.
+    hosts: HashMap<usize, usize>,
 }
 
 /// Resolves `entries` into objects under `rules`: cross-identifications, then positions, then
@@ -146,11 +149,19 @@ pub fn match_entries(rules: &MatchingRules, entries: Vec<CatalogueEntry>) -> Mat
         units,
         joins: Vec::new(),
         links: Vec::new(),
+        hosts: HashMap::new(),
     };
     cross_id::apply(&mut work);
     positions::apply(&mut work);
-    let pieces = pieces::apply(&mut work);
-    let fibres = fibres::apply(&mut work);
+    // The entries of every group, which the extent and fibre passes share and keep up to date:
+    // built only when the rules have an extent rule, which both passes need.
+    let (pieces, fibres) = if rules.extents.is_some() {
+        let mut members = pieces::Members::new(&mut work);
+        let pieces = pieces::apply(&mut work, &mut members);
+        (pieces, fibres::apply(&mut work, &mut members))
+    } else {
+        (0, 0)
+    };
     let plan = assemble::plan(&mut work);
     let relations = relations::find(&work);
     let mut matched = assemble::build(rules, entries, plan, relations);
@@ -159,7 +170,21 @@ pub fn match_entries(rules: &MatchingRules, entries: Vec<CatalogueEntry>) -> Mat
     matched
 }
 
+/// A join of `a` and `b` by position under the comparison `c`.
+fn edge(a: usize, b: usize, c: Comparison) -> Edge {
+    Edge {
+        a,
+        b,
+        join: Join::Position(c),
+    }
+}
+
 impl Work<'_> {
+    /// For each source of the run, by number, whether `list` names it.
+    fn in_list(&self, list: &[SourceId]) -> Vec<bool> {
+        self.sources.iter().map(|s| list.contains(s)).collect()
+    }
+
     /// The pair rule of the sources of entries `a` and `b`.
     fn pair(&self, a: usize, b: usize) -> Option<&PairRule> {
         let n = self.sources.len();

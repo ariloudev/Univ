@@ -48,16 +48,8 @@ pub enum Access {
     },
     /// Files under each mirror, each fetched whole and resumable.
     Files { files: Vec<RemoteFile> },
-    /// A gzipped CSV `file` in the source's download directory, made by `script` (a path in this
-    /// repository) from a provider whose interface Univ Ingest cannot page, such as a form that
-    /// cancels long answers. It is never fetched: it is read once its SHA-256 and its `rows`, the
-    /// lines after its header that are neither blank nor `#` comments, match these.
-    Prepared {
-        file: String,
-        script: String,
-        sha256: String,
-        rows: u64,
-    },
+    /// A file prepared by a script of this repository, never fetched.
+    Prepared(PreparedFile),
     /// Files kept in this repository under `path`, such as the researched structures, which are
     /// read from their papers rather than fetched.
     Repository {
@@ -66,6 +58,19 @@ pub enum Access {
         #[serde(default, skip_serializing_if = "Holds::is_structures")]
         holds: Holds,
     },
+}
+
+/// A gzipped CSV `file` in the source's download directory, made by `script` (a path in this
+/// repository) from a provider whose interface Univ Ingest cannot page, such as a form that
+/// cancels long answers. It is read once its SHA-256 and its `rows`, the lines after its header
+/// that are neither blank nor `#` comments, match these.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PreparedFile {
+    pub file: String,
+    pub script: String,
+    pub sha256: String,
+    pub rows: u64,
 }
 
 /// What the files of a source kept in the repository are.
@@ -177,7 +182,7 @@ impl Access {
             Self::Repository { path, .. } if path.trim().is_empty() => {
                 Some(("access.path", "is empty"))
             }
-            Self::Prepared { file, .. }
+            Self::Prepared(PreparedFile { file, .. })
                 if !file.ends_with(".csv.gz")
                     || Path::new(file).file_name() != Some(file.as_ref()) =>
             {
@@ -186,10 +191,10 @@ impl Access {
                     "is not the name of a gzipped CSV file, the one form a prepared file takes",
                 ))
             }
-            Self::Prepared { script, .. } if script.trim().is_empty() => {
+            Self::Prepared(PreparedFile { script, .. }) if script.trim().is_empty() => {
                 Some(("access.script", "is empty"))
             }
-            Self::Prepared { sha256, .. } if !is_sha256(sha256) => {
+            Self::Prepared(PreparedFile { sha256, .. }) if !is_sha256(sha256) => {
                 Some(("access.sha256", "is not 64 hexadecimal digits"))
             }
             _ => None,

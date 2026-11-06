@@ -1005,6 +1005,9 @@ links:
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "a_galaxy_that_took_pieces_takes_its_own_position_whatever_the_order_of_its_entries"
         body: 10585bb033cd2952c73b0e0abb1fd5bdacfd701e9449fe6c32fbcf340929319c
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_smaller_galaxy_that_takes_a_larger_ones_group_hosts_it_and_gives_the_position"
+        body: 97dae0ea4ca2a64f78a155bc835f01001a817ce9533befcc9355ebc20c3cf9e3
   - node: 01a1adfa-315f-708f-8cd8-bf4cdd697c86
     reviewed: 5184cb1296d0ae24912c9b561459893036e006522427549b6142d7e64959288d
     tests:
@@ -1142,10 +1145,10 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/fibres.rs"
         name: "nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy"
-        body: 424b58c22fe1c8b2e3da4196dd2e7fc40aef17060a1ea8a3facfa5915e0082e3
+        body: b1815f9e8e8177234cdf17bddeebd4214fcdb341aa46447d76cb2e6a8554d17c
       - file: "crates/univ-ingest/tests/fibres.rs"
         name: "a_fibre_beyond_an_arcminute_of_any_fibre_joined_stays_apart"
-        body: 46c076b478bb3ec29da6b410c891ba2c982c0cac00d48387475e40e9bbdb83d2
+        body: ef6137f46cb4130e38fffbca0bf6eee7930cd2cdba2fba7366833ca193fc3c51
       - file: "crates/univ-ingest/tests/fibres.rs"
         name: "fibres_beyond_the_nearby_volume_or_its_velocity_tolerance_stay_apart"
         body: 32f1144033dce751451dcaa691686d3fa8db44d9ad291e56ef979244ecc48fb6
@@ -1160,13 +1163,19 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/fibres.rs"
         name: "two_fibres_each_on_a_galaxy_of_its_own_identity_stay_apart"
-        body: e00e61a61dfb00ca440d03ce53c02626a434213faa9ed26ab16447a77a6b3ce0
+        body: e1a307c56b9153644f89996f49f6e2d14d5deb46d82e458c6ce5b2cbdd9b8910
+  - node: 01a1ae91-90f5-716e-b3d3-07b944951329
+    reviewed: a17bbfb85db7a6afceda7f202a2dd077d4b32c5fa75b5b89ac3e8c55f172d85a
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "a_fibre_never_joins_a_galaxy_whose_extent_a_source_publishes_or_a_group_of_a_shared_source"
+        body: 979a0c24341cb50a1c83e476419f3b0f4818fb267404b7f06a08df0438b010b7
   - node: 01a1adfa-315f-708f-8cd8-bf51d418d386
     reviewed: b2918ae69d4dd1a71be616e4db8ab240088ba12648857f0a745b3a7a6c42db00
     tests:
       - file: "crates/univ-ingest/tests/fibres.rs"
         name: "nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy"
-        body: 424b58c22fe1c8b2e3da4196dd2e7fc40aef17060a1ea8a3facfa5915e0082e3
+        body: b1815f9e8e8177234cdf17bddeebd4214fcdb341aa46447d76cb2e6a8554d17c
   - node: 01a1a147-6018-75e1-9409-3f7cf003d8aa
     reviewed: d84c25e841aaaa925be888e8854088c0ade631f97e5f6365408c13377ad04083
     tests:
@@ -1175,7 +1184,7 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 555f2f57ab1e76db381f1ebe2ac9f520dc22bb7b06e87eff75f1cd9129e74abc
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a1a147-6018-75e1-9409-3f7dc2dcf028
     reviewed: 61c386ef5097b43d23d5e94bfa265b030c5dd7f155a070337a5d33777b500670
     tests:
@@ -1184,7 +1193,7 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 555f2f57ab1e76db381f1ebe2ac9f520dc22bb7b06e87eff75f1cd9129e74abc
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a1a147-6018-75e1-9409-3f7eb363692b
     reviewed: 4280d632212de0675748d7bba795251d2e7e0da5f6007e553a2388e94652edbb
     tests:
@@ -1193,7 +1202,7 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 555f2f57ab1e76db381f1ebe2ac9f520dc22bb7b06e87eff75f1cd9129e74abc
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a19f23-636f-72bd-b194-1513f385222f
     reviewed: 66f206a5eefa8b76732be7488e54f99a84eaaaf7358ea6a5f1667028732ec2bc
     tests:

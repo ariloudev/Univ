@@ -257,7 +257,7 @@ pub fn every_table() -> Vec<(SourceDefinition, Normalized)> {
             !matches!(
                 d.access,
                 univ_ingest::source::Access::Files { .. }
-                    | univ_ingest::source::Access::Prepared { .. }
+                    | univ_ingest::source::Access::Prepared(_)
                     | univ_ingest::source::Access::Repository { .. }
             )
         })

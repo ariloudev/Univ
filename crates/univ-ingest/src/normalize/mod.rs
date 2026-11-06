@@ -4,6 +4,8 @@
 
 mod bintable;
 mod csv_file;
+
+pub(crate) use csv_file::is_layout;
 mod plan;
 mod row;
 
@@ -420,7 +422,7 @@ pub fn normalize_until(
     };
     let tables = match &definition.access {
         Access::Files { files } => file_tables(files),
-        Access::Prepared { .. } => Some(FileTables::CsvGz),
+        Access::Prepared(_) => Some(FileTables::CsvGz),
         _ => None,
     };
     if tables == Some(FileTables::CsvGz) {

@@ -257,3 +257,58 @@ async fn a_job_kept_on_disk_with_its_record_is_not_run_again() {
     }
     assert_eq!(server.received_requests().await.unwrap().len(), 0);
 }
+
+#[tokio::test]
+async fn a_start_refused_by_a_job_already_running_goes_on_with_the_job() {
+    // The start's answer was lost and the start made again: the job, already executing, refuses
+    // it. Its phase says it started, so the job is polled and its result kept, not given up.
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/tap/async"))
+        .respond_with(
+            ResponseTemplate::new(303).insert_header("Location", "/tap/async/job-3".to_owned()),
+        )
+        .expect(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
+        .and(path("/tap/async/job-3/phase"))
+        .respond_with(ResponseTemplate::new(400).set_body_string("Phase cannot change"))
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-3"))
+        .respond_with(ok())
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-3/phase"))
+        .respond_with(ok().set_body_string("EXECUTING"))
+        .up_to_n_times(1)
+        .with_priority(2)
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-3/phase"))
+        .respond_with(ok().set_body_string("COMPLETED"))
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/tap/async/job-3/results/result"))
+        .respond_with(ok().set_body_string("source_id\n7\n"))
+        .expect(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("DELETE"))
+        .and(path("/tap/async/job-3"))
+        .respond_with(ResponseTemplate::new(204))
+        .mount(&server)
+        .await;
+    let rig = rig(false);
+    let dir = tempfile::tempdir().unwrap();
+    fetch_job(&rig, &[tap(&server)], &dir).await.unwrap();
+    assert_eq!(
+        std::fs::read_to_string(dir.path().join("chunk-0.csv")).unwrap(),
+        "source_id\n7\n"
+    );
+}

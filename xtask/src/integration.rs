@@ -29,7 +29,7 @@ pub(crate) const WORKER_DIR: &str = "crates/univ-server";
 pub(crate) const TEST_OWNER_SECRET: &str = "integration-owner-secret";
 
 /// The local state Univ Ingest publishes real releases to.
-pub(crate) const REAL_STATE: &str = ".cache/univ-ingest/wrangler";
+pub(crate) const REAL_STATE: &str = univ_model::release::REAL_LOCAL_STATE;
 
 /// How long the Worker may take to build and answer: a cold release build of the wasm.
 const READY_WITHIN: Duration = Duration::from_secs(600);

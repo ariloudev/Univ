@@ -103,21 +103,9 @@ pub async fn acquire<C: Clock>(
         return Ok(Acquired { files: vec![path] });
     }
     let dir = cache.join(source.as_str());
-    if let Access::Prepared {
-        file,
-        script,
-        sha256,
-        rows,
-    } = &definition.access
-    {
-        let prepared = prepared::Prepared {
-            file,
-            script,
-            sha256,
-            rows: *rows,
-        };
-        let files = prepared::acquire_prepared(definition, &dir, &prepared)?;
-        return Ok(Acquired { files });
+    if let Access::Prepared(prepared) = &definition.access {
+        let file = prepared::acquire_prepared(definition, &dir, prepared)?;
+        return Ok(Acquired { files: vec![file] });
     }
     std::fs::create_dir_all(&dir).map_err(|e| disk(source, &e))?;
     let known = Provenance::read(&dir).map_err(|e| disk(source, &e))?;

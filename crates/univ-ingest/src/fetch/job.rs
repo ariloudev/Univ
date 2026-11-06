@@ -36,7 +36,7 @@ impl<C: Clock> Fetcher<C> {
     pub(super) async fn job(&self, base: &str, form: &str) -> Result<Vec<u8>, Attempt> {
         let job = self.submit(base, &without_phase(form)).await?;
         let result = format!("{job}/results/result");
-        let ran = match self.again(|| self.run(&job)).await {
+        let ran = match self.start_job(&job).await {
             Ok(()) => self.until_done(&job).await,
             Err(e) => Err(e),
         };
@@ -71,7 +71,23 @@ impl<C: Clock> Fetcher<C> {
         Ok(job.to_owned())
     }
 
-    /// Starts `job`, created pending.
+    /// Starts `job`, created pending. Sending `PHASE=RUN` is not idempotent: a start whose
+    /// answer was lost may have taken, and the start made again is then refused by a job already
+    /// running. So a start that fails is judged by the job's phase: any phase but `PENDING` means
+    /// the job started.
+    async fn start_job(&self, job: &str) -> Result<(), Attempt> {
+        let Err(refused) = self.again(|| self.run(job)).await else {
+            return Ok(());
+        };
+        let phase = read(&self.jobs, &format!("{job}/phase")).await.ok();
+        let phase = phase.as_deref().map(String::from_utf8_lossy);
+        match phase.as_deref().map(str::trim) {
+            Some(p) if !p.is_empty() && p != "PENDING" => Ok(()),
+            _ => Err(refused),
+        }
+    }
+
+    /// Sends `PHASE=RUN` to `job`.
     async fn run(&self, job: &str) -> Result<(), Attempt> {
         let response = self
             .jobs

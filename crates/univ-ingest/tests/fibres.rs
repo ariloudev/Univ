@@ -1,13 +1,12 @@
 //! Fibres of one survey on one nearby galaxy that no source gives an extent join as one galaxy:
 //! below the extent rule's 1,000 km/s, each within 1 arcmin and 300 km/s of every fibre already
 //! joined (cross-match-catalogues).
-#![expect(clippy::unwrap_used, reason = "a failed unwrap is the test failing")]
 
 mod common;
 mod simulated;
 
-use simulated::{designation, entry, matching_rules, offset, with_cz};
-use univ_ingest::matching::{Matched, match_entries};
+use simulated::{entry, holding, matching_rules, offset, with_cz};
+use univ_ingest::matching::match_entries;
 use univ_model::entry::CatalogueEntry;
 use univ_model::object::{LineOfSight, MatchMethod, Object, Resolution};
 
@@ -18,13 +17,6 @@ const DEC: f64 = 2.0;
 fn fibre(id: &str, east: f64, north: f64, cz: f64) -> CatalogueEntry {
     let (ra, dec) = offset(RA, DEC, east, north);
     with_cz(entry("desi-dr1", id, ra, dec), cz, 5.0)
-}
-
-fn holding<'a>(m: &'a Matched, source: &str, id: &str) -> &'a Object {
-    m.objects
-        .iter()
-        .find(|o| o.entry(&designation(source, id)).is_some())
-        .unwrap()
 }
 
 fn ids(o: &Object) -> Vec<String> {
@@ -48,7 +40,7 @@ fn nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy()
         ],
     );
     assert_eq!(m.objects.len(), 1, "{:#?}", m.objects);
-    assert_eq!(ids(holding(&m, "desi-dr1", "a")), ["a", "b", "c"]);
+    assert_eq!(ids(holding(&m.objects, "desi-dr1", "a")), ["a", "b", "c"]);
     assert_eq!(m.report.fibres_of_one_galaxy, 2);
     // Each joined fibre records the rule, its separation and its velocity difference.
     let joined: Vec<_> = m.objects[0]
@@ -80,8 +72,8 @@ fn a_fibre_beyond_an_arcminute_of_any_fibre_joined_stays_apart() {
             fibre("d", 70.0, 0.0, 400.0),
         ],
     );
-    assert_eq!(ids(holding(&m, "desi-dr1", "a")), ["a", "b"]);
-    assert_eq!(ids(holding(&m, "desi-dr1", "d")), ["d"]);
+    assert_eq!(ids(holding(&m.objects, "desi-dr1", "a")), ["a", "b"]);
+    assert_eq!(ids(holding(&m.objects, "desi-dr1", "d")), ["d"]);
 }
 
 #[test]
@@ -120,8 +112,14 @@ fn two_fibres_each_on_a_galaxy_of_its_own_identity_stay_apart() {
             sdss("s2", 30.0),
         ],
     );
-    assert_eq!(ids(holding(&m, "sdss-dr17-galaxies", "s1")), ["1001", "s1"]);
-    assert_eq!(ids(holding(&m, "sdss-dr17-galaxies", "s2")), ["1002", "s2"]);
+    assert_eq!(
+        ids(holding(&m.objects, "sdss-dr17-galaxies", "s1")),
+        ["1001", "s1"]
+    );
+    assert_eq!(
+        ids(holding(&m.objects, "sdss-dr17-galaxies", "s2")),
+        ["1002", "s2"]
+    );
 }
 
 #[test]
@@ -138,4 +136,27 @@ fn only_the_fibre_surveys_the_rules_list_join() {
         listed.iter().any(|s| s.as_str() == "desi-dr1"),
         "{listed:?}"
     );
+}
+
+#[test]
+fn a_fibre_never_joins_a_galaxy_whose_extent_a_source_publishes_or_a_group_of_a_shared_source() {
+    // Two DESI fibres 40 arcsec apart, each merged with an ALFALFA detection 40 arcsec beyond it
+    // (80 arcsec from the other fibre): two galaxies of one HI survey, which the fibre rule never
+    // makes one.
+    let alfalfa = |id: &str, east: f64| {
+        let (ra, dec) = offset(RA, DEC, east, 0.0);
+        with_cz(entry("alfalfa-a100", id, ra, dec), 400.0, 5.0)
+    };
+    let m = match_entries(
+        &matching_rules(),
+        vec![
+            alfalfa("h1", -40.0),
+            fibre("f1", 0.0, 0.0, 400.0),
+            alfalfa("h2", 80.0),
+            fibre("f2", 40.0, 0.0, 400.0),
+        ],
+    );
+    assert_eq!(ids(holding(&m.objects, "desi-dr1", "f1")), ["f1", "h1"]);
+    assert_eq!(ids(holding(&m.objects, "desi-dr1", "f2")), ["f2", "h2"]);
+    assert_eq!(m.report.fibres_of_one_galaxy, 0);
 }

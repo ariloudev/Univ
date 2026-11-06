@@ -12,7 +12,7 @@ use univ_model::position::separation_degrees;
 use super::extent::ExtentRule;
 use super::index::SkyIndex;
 use super::rules::Comparison;
-use super::{Edge, Join, Work};
+use super::{Work, edge};
 
 /// A galaxy that takes pieces: its entry, the radius of its extent in degrees, its cz.
 struct Galaxy {
@@ -25,7 +25,7 @@ struct Galaxy {
 /// those this pass has joined since, by their new root.
 pub(super) struct Members {
     base: Vec<(usize, usize)>,
-    pub(super) joined: HashMap<usize, Vec<usize>>,
+    joined: HashMap<usize, Vec<usize>>,
 }
 
 impl Members {
@@ -48,10 +48,20 @@ impl Members {
         let to = self.base.partition_point(|&(r, _)| r <= root);
         self.base[from..to].iter().map(|&(_, e)| e).collect()
     }
+
+    /// Records that the groups rooted at `gone` are now one group rooted at `root`, holding
+    /// `entries`.
+    pub(super) fn merge(&mut self, gone: &[usize], root: usize, entries: Vec<usize>) {
+        for g in gone {
+            self.joined.remove(g);
+        }
+        self.joined.insert(root, entries);
+    }
 }
 
-/// What the pass did: the number of groups joined to a galaxy as its pieces.
-pub(super) fn apply(work: &mut Work<'_>) -> u64 {
+/// What the pass did: the number of groups joined to a galaxy as its pieces. `members` holds
+/// the groups' entries, kept up to date as the pass joins them.
+pub(super) fn apply(work: &mut Work<'_>, members: &mut Members) -> u64 {
     let Some(rule) = work.rules.extents.as_ref() else {
         return 0;
     };
@@ -59,10 +69,7 @@ pub(super) fn apply(work: &mut Work<'_>) -> u64 {
     let Some(widest) = galaxies.first().map(|g| g.radius) else {
         return 0;
     };
-    let in_list = |list: &[univ_model::ids::SourceId]| -> Vec<bool> {
-        work.sources.iter().map(|s| list.contains(s)).collect()
-    };
-    let (piece_source, identity) = (in_list(&rule.pieces), in_list(&rule.identities));
+    let (piece_source, identity) = (work.in_list(&rule.pieces), work.in_list(&rule.identities));
     let mut at = Vec::new();
     let mut positions = Vec::new();
     for (e, entry) in work.entries.iter().enumerate() {
@@ -74,7 +81,6 @@ pub(super) fn apply(work: &mut Work<'_>) -> u64 {
         }
     }
     let index = SkyIndex::new(&positions, widest);
-    let mut members = Members::new(work);
     let mut near = Vec::new();
     let mut joined = 0;
     for g in &galaxies {
@@ -120,26 +126,28 @@ pub(super) fn apply(work: &mut Work<'_>) -> u64 {
             work.groups.link(g.entry, *via);
             work.links.push((edge(g.entry, *via, *c), c.confidence));
         }
+        if taken.is_empty() {
+            continue;
+        }
+        // The galaxy hosts its pieces, unless its own group already has a host: then it was
+        // itself taken in as a piece of that group's galaxy, which hosts them all. A piece's
+        // own host, if it took pieces before, is a piece now.
+        let galaxy = work.hosts.remove(&home).unwrap_or(g.entry);
         let mut all = host;
+        let mut gone = vec![home];
         for (root, piece, via, c) in taken {
+            work.hosts.remove(root);
             work.groups.absorb(g.entry, *via);
-            members.joined.remove(root);
+            gone.push(*root);
             all.extend_from_slice(piece);
             work.joins.push(edge(g.entry, *via, *c));
             joined += 1;
         }
-        members.joined.remove(&home);
-        members.joined.insert(work.groups.find(g.entry), all);
+        let root = work.groups.find(g.entry);
+        work.hosts.insert(root, galaxy);
+        members.merge(&gone, root, all);
     }
     joined
-}
-
-fn edge(a: usize, b: usize, c: Comparison) -> Edge {
-    Edge {
-        a,
-        b,
-        join: Join::Position(c),
-    }
 }
 
 /// The galaxies that publish an extent and a cz below the rule's, largest first.
@@ -204,8 +212,7 @@ fn compare(
         delta = Some(delta.map_or(d, |m: f64| m.max(d)));
     }
     let ((via, s), delta) = (nearest?, delta?);
-    let p = work.rules.confidence.exponent;
-    let factor = 1.0 - (delta / rule.tolerance_km_s).powf(p);
+    let factor = work.rules.line_of_sight_factor(delta, rule.tolerance_km_s);
     Some((
         via,
         Comparison {

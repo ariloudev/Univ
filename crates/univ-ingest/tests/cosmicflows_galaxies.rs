@@ -1,13 +1,12 @@
 //! The Cosmicflows-4 galaxies table (the 19th source) on its real recorded answer: M87 and six
 //! more members of the Virgo group dominated by M49 (1PGC 41220), with M31 and Centaurus A, and
 //! three real 2MRS rows of the same Virgo galaxies. The one group entry below is SIMULATED.
-#![expect(clippy::unwrap_used, reason = "a failed unwrap is the test failing")]
 
 mod common;
 mod simulated;
 
 use common::{entry, normalized_file, normalized_fixture};
-use simulated::{designation, matching_rules, ranking_rules, with_cz, with_modulus};
+use simulated::{designation, holding, matching_rules, ranking_rules, with_cz, with_modulus};
 use univ_ingest::crossmatch::place;
 use univ_ingest::matching::{Matched, match_entries};
 use univ_ingest::normalize::Normalized;
@@ -29,13 +28,6 @@ fn twomrs_virgo() -> Normalized {
 
 fn galaxies() -> Normalized {
     normalized_fixture("cosmicflows-4-galaxies")
-}
-
-fn object_of<'a>(objects: &'a [Box<Object>], source: &str, id: &str) -> &'a Object {
-    objects
-        .iter()
-        .find(|o| o.entry(&designation(source, id)).is_some())
-        .unwrap()
 }
 
 #[test]
@@ -97,7 +89,7 @@ fn m87_merges_with_its_2mrs_entry_by_position_and_heliocentric_velocity() {
     // 200 km/s tolerance as published, 30 km/s apart once Vcmb is moved back to the
     // heliocentric frame along M87's direction.
     let objects = matched().objects;
-    let m87 = object_of(&objects, "cosmicflows-4-galaxies", M87);
+    let m87 = holding(&objects, "cosmicflows-4-galaxies", M87);
     let twomrs = m87
         .entries
         .iter()
@@ -114,7 +106,7 @@ fn m87_merges_with_its_2mrs_entry_by_position_and_heliocentric_velocity() {
     // M49 and M84 merge with theirs too.
     for id in ["41220", "40455"] {
         assert_eq!(
-            object_of(&objects, "cosmicflows-4-galaxies", id)
+            holding(&objects, "cosmicflows-4-galaxies", id)
                 .entries
                 .len(),
             2
@@ -125,7 +117,7 @@ fn m87_merges_with_its_2mrs_entry_by_position_and_heliocentric_velocity() {
 #[test]
 fn m87_is_placed_by_its_cosmicflows_4_distance_not_its_redshift() {
     let objects = matched().objects;
-    let p = object_of(&objects, "cosmicflows-4-galaxies", M87)
+    let p = holding(&objects, "cosmicflows-4-galaxies", M87)
         .preferred_distance
         .as_ref()
         .unwrap();
@@ -148,7 +140,7 @@ fn m87_is_placed_by_its_cosmicflows_4_distance_not_its_redshift() {
 #[test]
 fn each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan() {
     let objects = matched().objects;
-    let group = object_of(&objects, "cosmicflows-4", "41220");
+    let group = holding(&objects, "cosmicflows-4", "41220");
     assert_eq!(group.entries.len(), 1, "a group merges with no galaxy");
     let members = group
         .relations
@@ -163,7 +155,7 @@ fn each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan() {
         .map(|r| r.other.clone())
         .collect();
     assert_eq!(dominant, [designation("cosmicflows-4-galaxies", "41220")]);
-    let m87 = object_of(&objects, "cosmicflows-4-galaxies", M87);
+    let m87 = holding(&objects, "cosmicflows-4-galaxies", M87);
     let of = m87
         .relations
         .iter()
@@ -177,7 +169,7 @@ fn each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan() {
     assert!(group.preferred_distance.is_none());
     assert!(m87.entry(&designation("cosmicflows-4", "41220")).is_none());
     // M31 and Centaurus A are their own groups' galaxies, whose group rows are not here.
-    let cen_a = object_of(&objects, "cosmicflows-4-galaxies", "46957");
+    let cen_a = holding(&objects, "cosmicflows-4-galaxies", "46957");
     assert_eq!(cen_a.relations, []);
 }
 

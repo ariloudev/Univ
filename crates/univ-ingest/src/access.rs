@@ -62,7 +62,7 @@ pub fn chunk_requests(definition: &SourceDefinition) -> Vec<ChunkRequest> {
         Access::SkyserverSql { query, chunks, .. } | Access::Tap { query, chunks, .. } => {
             ask_for(&definition.access).map_or_else(Vec::new, |a| split(query, *chunks, a))
         }
-        Access::Files { .. } | Access::Prepared { .. } | Access::Repository { .. } => Vec::new(),
+        Access::Files { .. } | Access::Prepared(_) | Access::Repository { .. } => Vec::new(),
     }
 }
 
@@ -135,7 +135,7 @@ fn ask_for(access: &Access) -> Option<fn(&str) -> Ask> {
         }),
         Access::VizierTsv { .. }
         | Access::Files { .. }
-        | Access::Prepared { .. }
+        | Access::Prepared(_)
         | Access::Repository { .. } => None,
     }
 }
@@ -242,7 +242,7 @@ pub fn check_answer(definition: &SourceDefinition, body: &[u8]) -> Result<u64, S
 pub fn item_count(definition: &SourceDefinition) -> u64 {
     let items = match &definition.access {
         Access::Files { files } => files.len(),
-        Access::Prepared { .. } | Access::Repository { .. } => 0,
+        Access::Prepared(_) | Access::Repository { .. } => 0,
         _ => chunk_requests(definition).len() + usize::from(count_request(definition).is_some()),
     };
     items as u64

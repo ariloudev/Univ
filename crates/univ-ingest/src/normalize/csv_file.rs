@@ -14,6 +14,11 @@ use crate::table::TableReader;
 const PIECE: usize = 64 << 20;
 
 /// Whether a file of a files source is a gzipped CSV table.
+/// Whether `line` is layout rather than a row of a CSV table: blank, or a `#` comment.
+pub(crate) fn is_layout(line: &[u8]) -> bool {
+    line.starts_with(b"#") || line.iter().all(u8::is_ascii_whitespace)
+}
+
 pub(super) fn is_csv_gz(path: &str) -> bool {
     path.ends_with(".csv.gz")
 }
@@ -45,7 +50,7 @@ impl Normalizer<'_> {
                 if lines.read_until(b'\n', line).map_err(unreadable)? == 0 {
                     return Ok(false);
                 }
-                if !(line.starts_with(b"#") || line.iter().all(u8::is_ascii_whitespace)) {
+                if !is_layout(line) {
                     return Ok(true);
                 }
             }
