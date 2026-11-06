@@ -1,0 +1,96 @@
+key: 01a1b1f8-3d02-7270-bfca-cfe74475f9d2
+id: w1
+versions:
+  - key: 01a1b1f8-3d02-7270-bfca-cfec996adf5b
+    at: 2026-11-06T17:46:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W1: Stable numbering and stable shards"
+    goal: "Terms, sources and chains keep their numbers across releases and objects keep their shard, so an unchanged object writes identical rows in the next release."
+    status: active
+blocks:
+  - key: 01a1b1f8-3d02-7270-bfca-cfe8ca41dce1
+    id: w1-numbering
+    kind: task
+    versions:
+      - key: 01a1b1f8-3d02-7270-bfca-cfed46e6ee20
+        at: 2026-11-06T17:46:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Keep term, source and chain numbers"
+        detail: "numbering.yaml beside the id state (release/kept.rs); Terms, SourceIndex and Chains seeded from it, new numbers after the highest ever given; source rows numbered by the index. Done when terms/kept unit tests pass."
+        state: done
+  - key: 01a1b1f8-3d02-7270-bfca-cfe92f020f01
+    id: w1-shards
+    kind: task
+    versions:
+      - key: 01a1b1f8-3d02-7270-bfca-cfeedbc77d2f
+        at: 2026-11-06T17:46:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Keep each cell and bucket in its shard"
+        detail: "pack() places cells and buckets their previous shard held; new ones fill the last shard and new ones; an over-budget shard gives up its last cells. Done when the packing unit tests pass."
+        state: done
+  - key: 01a1b1f8-3d02-7270-bfca-cfea1672d657
+    id: w1-fixture
+    kind: task
+    versions:
+      - key: 01a1b1f8-3d02-7270-bfca-cfefc7fbc717
+        at: 2026-11-06T17:46:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Prove unchanged objects write identical rows"
+        detail: "tests/stable_rows.rs: a structure-only release writes every object, term, source, chain and shard row as the release before; a source-added release keeps the numbers and rows of what it leaves alone. Done when it and the whole univ-ingest suite pass."
+        state: active
+      - key: 01a1b1f8-d8c5-703d-9e1e-45167d90ce47
+        at: 2026-11-06T17:47:18Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Prove unchanged objects write identical rows"
+        detail: "tests/stable_rows.rs: a structure-only release writes every object, term, source, chain and shard row as the release before; a source-added release keeps the numbers and rows of what it leaves alone. Both pass with the whole univ-ingest suite."
+        state: done
+  - key: 01a1b1f8-3d02-7270-bfca-cfeb3dacb632
+    id: w1-review
+    kind: task
+    versions:
+      - key: 01a1b1f8-3d02-7270-bfca-cff053fbe125
+        at: 2026-11-06T17:46:38Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate W1"
+        detail: "/simplify and /code-review in parallel, fixes, cargo xtask check green, merge into product/additive-releases."
+        state: open
+      - key: 01a1b1f8-d8c5-703d-9e1e-4517a13a43e0
+        at: 2026-11-06T17:47:18Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate W1"
+        detail: "/simplify and /code-review in parallel, fixes, cargo xtask check green, merge into product/additive-releases."
+        state: active
+  - key: 01a1b1f8-a6ea-7764-8dbb-cafe336c96d8
+    id: w1-runs-note
+    kind: note
+    versions:
+      - key: 01a1b1f8-a6ea-7764-8dbb-caffea4a3271
+        at: 2026-11-06T17:47:05Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "A shard may now hold two runs of one domain"
+        markdown: "Kept placement can give a shard two separate runs of cells of one scale domain (a new cell packed after another shard's, or cells given up by an over-budget shard). `shard_cells` is keyed by `(release, shard, domain)`, so such a build would stop on its key check rather than write a wrong index. Schema 6 (W2) keys `shard_cells` by its `first` cell as well; W2 carries a test of a shard with two runs."
+        tone: warning

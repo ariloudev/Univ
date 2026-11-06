@@ -125,13 +125,14 @@ impl<'a> ObjectWriter<'a> {
     /// scale domain `definitions` give its preferred distance's source.
     #[must_use]
     pub fn new(
-        numbering: Numbering,
+        mut numbering: Numbering,
         definitions: &'a [SourceDefinition],
         cosmology: &'a Cosmology,
     ) -> Self {
+        let chains = std::mem::take(&mut numbering.chains);
         Self {
             numbering,
-            chains: Chains::default(),
+            chains,
             counts: ObjectCounts::default(),
             cosmology,
             domains: definitions

@@ -3,6 +3,8 @@
 //!
 //! - `ledger.yaml`: the id ledger, every id issued and what became of each id replaced.
 //! - `entry-ids.yaml`: the last release's map from each catalogue entry to its object's id.
+//! - `numbering.yaml`: what the last release numbered and placed, kept by the next
+//!   (`crate::release::Kept`); a build writes it, a cross-match never does.
 //! - `pending/`: the same two files as a cross-match left them for the release it prepared. A
 //!   cross-match builds no release, so it never touches the state itself, and a cross-match run
 //!   again starts from the same state and gives the same ids. The build takes the state the
@@ -32,6 +34,7 @@ use univ_model::ids::{Designation, ObjectId, SourceId};
 use univ_model::ledger::Ledger;
 
 use crate::ids::EntryIds;
+use crate::release::Kept;
 use crate::yaml::{FileError, read_checked, write};
 
 /// The state directory a run uses when none is given.
@@ -109,24 +112,7 @@ impl State {
     /// Fails when a file cannot be read or does not stand, or when the entry ids are kept
     /// without the ledger that issued them.
     pub fn read(dir: &Path) -> Result<Self, FileError> {
-        let current = dir.join(CURRENT);
-        if current.exists() {
-            let named = std::fs::read_to_string(&current)
-                .map_err(|e| FileError::new(&current, "(file)", e.to_string()))?;
-            let named = named.trim();
-            let valid = named
-                .strip_prefix(&format!("{STATES}/"))
-                .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()));
-            if !valid {
-                return Err(FileError::new(
-                    &current,
-                    "(file)",
-                    format!("names {named:?}, not a directory {STATES}/{{n}}"),
-                ));
-            }
-            return Self::read_files(&dir.join(named));
-        }
-        Self::read_files(dir)
+        Self::read_files(&current_dir(dir)?)
     }
 
     /// The state whose two files are in `dir` itself.
@@ -198,13 +184,13 @@ impl State {
 
 impl State {
     /// Makes this the state of the state directory `dir` in one step: writes it whole into
-    /// `states/{n}/`, n the releases its ledger records, then renames `current.part`, naming
-    /// that directory, over `current`.
+    /// `states/{n}/`, n the releases its ledger records, with `kept`, what the release
+    /// numbered and placed, then renames `current.part`, naming that directory, over `current`.
     ///
     /// # Errors
     ///
     /// Fails, leaving the state of `dir` as it was, when a directory or file cannot be written.
-    pub fn install(&self, dir: &Path) -> io::Result<()> {
+    pub fn install(&self, dir: &Path, kept: &Kept) -> io::Result<()> {
         let name = format!("{STATES}/{}", self.ledger.releases().len());
         let target = dir.join(&name);
         let part = dir.join(format!("{name}.part"));
@@ -212,6 +198,7 @@ impl State {
             std::fs::remove_dir_all(&part)?;
         }
         self.write(&part)?;
+        kept.write(&part)?;
         // A directory of this number that `current` does not name was left by a build that
         // stopped before it switched `current`.
         if target.exists() {
@@ -247,6 +234,33 @@ impl State {
         }
         std::fs::rename(part, pending)
     }
+}
+
+/// The directory, within the state directory `dir`, of its current state: the one `current`
+/// names, or `dir` itself for a state written before `current` was.
+///
+/// # Errors
+///
+/// Fails when `current` cannot be read or names no directory `states/{n}`.
+pub fn current_dir(dir: &Path) -> Result<PathBuf, FileError> {
+    let current = dir.join(CURRENT);
+    if !current.exists() {
+        return Ok(dir.to_path_buf());
+    }
+    let named = std::fs::read_to_string(&current)
+        .map_err(|e| FileError::new(&current, "(file)", e.to_string()))?;
+    let named = named.trim();
+    let valid = named
+        .strip_prefix(&format!("{STATES}/"))
+        .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()));
+    if !valid {
+        return Err(FileError::new(
+            &current,
+            "(file)",
+            format!("names {named:?}, not a directory {STATES}/{{n}}"),
+        ));
+    }
+    Ok(dir.join(named))
 }
 
 /// The directory of the state a cross-match prepared, within `dir`.

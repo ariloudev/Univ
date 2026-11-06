@@ -21,7 +21,7 @@ use super::cells::{DomainCell, ObjectCells};
 use super::d1::D1Writer;
 use super::entries::Numbering;
 use super::objects::ObjectWriter;
-use super::packing::{CellLoad, Packing, pack};
+use super::packing::{CellLoad, Packing, Previous, pack};
 use super::terms::Terms;
 use crate::crossmatch::ReleaseObject;
 use crate::source::SourceDefinition;
@@ -70,6 +70,7 @@ impl Sharding<'_> {
         objects: &[ReleaseObject],
         numbering: &Numbering,
         budget: u64,
+        previous: Previous<'_>,
         watch: Watch<'_>,
     ) -> Result<Packing, String> {
         let mut writer = D1Writer::measuring(1);
@@ -101,7 +102,7 @@ impl Sharding<'_> {
                 None => loose.push((o.id.get(), bytes)),
             }
         }
-        pack(&loads, &loose, budget).map_err(|e| e.to_string())
+        pack(&loads, &loose, budget, previous).map_err(|e| e.to_string())
     }
 
     /// Writes every object of `objects` through `writer` to the shard `packing` gives it, with

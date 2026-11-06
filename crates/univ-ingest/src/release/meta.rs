@@ -14,6 +14,7 @@ use univ_model::release::rows::{
 
 use super::objects::{json, snake};
 use super::placement::Placement;
+use super::terms::SourceIndex;
 use crate::provenance::Provenance;
 use crate::source::SourceDefinition;
 use crate::tiles::{Built, name_of, unit_symbol};
@@ -42,7 +43,7 @@ fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<CatalogueUncertainty> {
         .collect()
 }
 
-/// The rows of `definitions` in release `release`, each numbered by its place among them and
+/// The rows of `definitions` in release `release`, each numbered by `index` and
 /// with the entries the release holds from it and the provenance kept in `cache`.
 ///
 /// # Errors
@@ -51,11 +52,13 @@ fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<CatalogueUncertainty> {
 pub fn source_rows(
     release: u32,
     definitions: &[SourceDefinition],
+    index: &mut SourceIndex,
     entries: &BTreeMap<SourceId, u64>,
     cache: &Path,
 ) -> Result<SourceRows, String> {
     let mut rows = SourceRows::default();
-    for (n, d) in (0u32..).zip(definitions) {
+    for d in definitions {
+        let n = index.n(&d.id);
         let id = d.id.to_string();
         rows.sources.push(SourceRow {
             release,

@@ -29,6 +29,8 @@ mod details;
 mod entries;
 mod files;
 mod grids;
+mod kept;
+pub use kept::{Kept, KeptRun, NUMBERING, NUMBERING_VERSION};
 mod meta;
 mod objects;
 mod outline;
@@ -78,7 +80,7 @@ pub use terms::{Chains, SourceIndex, Terms, variant_name};
 
 use crate::crossmatch::CrossMatched;
 use crate::source::SourceDefinition;
-use crate::state::{State, pending};
+use crate::state::{State, current_dir, pending};
 use crate::tiles::Built;
 use crate::watch::Watch;
 
@@ -212,10 +214,14 @@ pub fn build_watched(
     }
     let dir = release_dir(out, number);
     let building = out.join(RELEASES).join(format!(".building-{number}"));
-    let written = write_release(inputs, number, &building, watch).map_err(|problem| {
-        let _ = std::fs::remove_dir_all(&building);
-        fail(problem)
-    })?;
+    let previous = current_dir(state)
+        .and_then(|dir| Kept::read(&dir))
+        .map_err(|e| fail(e.to_string()))?;
+    let written =
+        write_release(inputs, number, &building, &previous, watch).map_err(|problem| {
+            let _ = std::fs::remove_dir_all(&building);
+            fail(problem)
+        })?;
     if let Err(stopped) = watch.check() {
         let _ = std::fs::remove_dir_all(&building);
         return Err(fail(stopped));
@@ -249,7 +255,7 @@ pub fn build_watched(
         let _ = std::fs::remove_dir_all(&building);
         fail(format!("{} cannot be made complete: {e}", dir.display()))
     })?;
-    if let Err(problem) = record(state, &inputs.crossed.next, number) {
+    if let Err(problem) = record(state, &inputs.crossed.next, &written.kept, number) {
         let _ = std::fs::remove_dir_all(&dir);
         return Err(fail(problem));
     }
@@ -282,13 +288,13 @@ pub fn unrecorded(out: &Path, made: usize) -> Vec<PathBuf> {
 
 /// Installs `next`, the state the cross-match made for release `number`, as the state
 /// directory's: the one step that uses the number up.
-fn record(state: &Path, next: &State, number: u32) -> Result<(), String> {
+fn record(state: &Path, next: &State, kept: &Kept, number: u32) -> Result<(), String> {
     let last = next.ledger.releases().last().map(|r| r.name.as_str());
     if last != Some(number.to_string().as_str()) {
         return Err(format!(
             "the cross-match's state is not that of release {number}"
         ));
     }
-    next.install(state)
+    next.install(state, kept)
         .map_err(|e| format!("the state cannot be recorded in {}: {e}", state.display()))
 }

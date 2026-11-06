@@ -1,0 +1,31 @@
+format: yardlog/1
+key: 01a1b1f8-3d02-7270-bfca-cfe695976a84
+branch: "stage/additive-w1"
+base: "develop"
+title: "stage/additive-w1"
+revision: 3
+opened:
+  at: 2026-11-06T17:46:38Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1b1f8-3d02-7270-bfca-cfe74475f9d2
+    id: w1
+acts:
+  - at: 2026-11-06T17:46:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T17:47:05Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T17:47:18Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
