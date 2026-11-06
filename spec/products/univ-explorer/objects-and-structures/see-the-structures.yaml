@@ -14,6 +14,8 @@ requirements:
     criteria:
       - key: 01a1a497-e843-728a-bce8-3ff1ded85aea
         name: "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names."
+      - key: 01a1b16b-4634-7511-aec8-71c45009817c
+        name: "Each kind of structure is drawn in a colour of its own, its outline and markers alike, and the panel of what is drawn shows that colour beside the kind."
       - key: 01a1a497-e843-728a-bce8-3ff2f42a8c13
         name: "Paths are drawn as lines, and member lists as their members' positions."
       - key: 01a1a4bd-9644-750a-a678-3906e3189ded
@@ -51,6 +53,8 @@ requirements:
         name: "Every structure of the release is listed by name and kind."
       - key: 01a1a6b2-b217-764e-93d0-da8be265b690
         name: "The chosen structure's outline, markers and name are drawn in a colour of their own, its markers larger, until another structure is chosen or its panel is closed."
+      - key: 01a1b16b-4634-7511-aec8-71c5715ace5e
+        name: "The chosen structure's outline is drawn in lines thicker than any other structure's, until another structure is chosen or its panel is closed."
       - key: 01a1a497-e843-728a-bce8-3ffa426590e2
         name: "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from."
       - key: 01a1a776-3b75-725b-96e4-807a1f1e8ef1
