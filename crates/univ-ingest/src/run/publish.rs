@@ -210,6 +210,12 @@ pub fn publish_command(
             "files uploaded by an earlier run",
         ));
     }
+    if done.held > 0 {
+        counts.push(Count::new(
+            done.held as u64,
+            "files its parent holds already",
+        ));
+    }
     counts.extend(
         shown
             .tables
@@ -223,8 +229,14 @@ pub fn publish_command(
 fn published_line(done: &Published) -> String {
     format!(
         "Published release {} at {}: latest points to release {} (it pointed to {}); {} files \
-         uploaded and checked by this run, {} by an earlier one",
-        done.number, done.published_at, done.number, done.previous, done.uploaded, done.journaled
+         uploaded and checked by this run, {} by an earlier one, {} held already by its parent",
+        done.number,
+        done.published_at,
+        done.number,
+        done.previous,
+        done.uploaded,
+        done.journaled,
+        done.held
     )
 }
 

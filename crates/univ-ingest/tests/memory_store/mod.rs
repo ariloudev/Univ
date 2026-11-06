@@ -48,6 +48,8 @@ pub struct MemoryStore {
     pub ops: Vec<Op>,
     /// Fails every upload once this many have been made.
     pub fail_after: Option<usize>,
+    /// Fails the first upload this holds of, and every one after it.
+    pub fail_at: Option<fn(&Op) -> bool>,
     /// Gives back R2 objects with their last byte changed.
     pub corrupt_reads: bool,
     pub observer: Option<Observer>,
@@ -63,6 +65,7 @@ impl Default for MemoryStore {
             r2: BTreeMap::new(),
             ops: Vec::new(),
             fail_after: None,
+            fail_at: None,
             corrupt_reads: false,
             observer: None,
             uploads: 0,
@@ -74,6 +77,10 @@ impl MemoryStore {
     fn record(&mut self, op: Op) -> Result<(), String> {
         if op.uploads() {
             if self.fail_after.is_some_and(|k| self.uploads >= k) {
+                return Err(format!("injected failure at {op:?}"));
+            }
+            if self.fail_at.is_some_and(|at| at(&op)) {
+                self.fail_after = Some(self.uploads);
                 return Err(format!("injected failure at {op:?}"));
             }
             self.uploads += 1;
@@ -109,6 +116,7 @@ impl MemoryStore {
     pub fn reset(&mut self) {
         self.ops.clear();
         self.fail_after = None;
+        self.fail_at = None;
         self.corrupt_reads = false;
         self.observer = None;
         self.uploads = 0;

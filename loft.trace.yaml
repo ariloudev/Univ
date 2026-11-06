@@ -1485,12 +1485,18 @@ links:
       - file: "crates/univ-ingest/tests/stable_rows.rs"
         name: "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
         body: b8d8b67d9dc6a65bc9ef3194b5fe1d2741957caba1ed5922f36e05a76277c880
+  - node: 01a1b19f-a71f-7111-b5df-7f3bcb2e200b
+    reviewed: ce6235132cbd8c5489017537b91cc133674852ba81cc1ec7636b25dfc61c5c68
+    tests:
+      - file: "crates/univ-ingest/tests/shared_rows.rs"
+        name: "a_file_two_releases_hold_is_kept_once_under_its_sha256"
+        body: dc5b686da25a1bd173ad2c430c6e2edcc9cccae445ade7a4655663d163ae6b94
   - node: 01a1b19f-a71f-7111-b5df-7f3ca904736d
     reviewed: 0cf80a1b3c9f00a3ddb6340845369311d35fb3ef2712fea36dd7ca7d0cd9f612
     tests:
       - file: "crates/univ-ingest/tests/shared_rows.rs"
         name: "a_file_two_releases_hold_is_kept_once_under_its_sha256"
-        body: 881f968a9d84d90bc990f9ba790d0b5e7bcc7ab8cebf46e3d6869e6898700a65
+        body: dc5b686da25a1bd173ad2c430c6e2edcc9cccae445ade7a4655663d163ae6b94
   - node: 01a19f23-636f-72bd-b194-152c99726521
     reviewed: 87e70caff91e22db3af9bd64231ab9ce0b69a4a2a61ce1d2f50b32707638c3a8
     tests:
@@ -1595,7 +1601,7 @@ links:
         body: 66d177ae2b852d40012d79d87e79835b2682ad1137e650743a7d6bdef3319984
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "a_file_a_release_part_way_through_publishing_holds_is_not_pruned"
-        body: 4c73123f6343cfd7dd847a15ce1fd73ec99f4177607a61ef0d23972ac56c30eb
+        body: 4ff1d4393274493e7bb43c6a467c088798da6f49771714ab1f99818e0d8e13bb
   - node: 01a19f23-636f-72bd-b194-153927026b4b
     reviewed: 45de105f2d87e0207a33a91851d9ebe5d790feb9775179cf420bf241520dbd66
     tests:
@@ -1644,6 +1650,15 @@ links:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "the_release_latest_points_to_is_not_pruned"
         body: ee526aff65345f9c58c566980f7342d142703c5e78d7e2e2afb268451c94cf34
+  - node: 01a1b19f-a71f-7111-b5df-7f3e7a645727
+    reviewed: 8cf9a8d485e349f702a33fbf0d0a362b5dcdc159bf58b0cf34e599baafb582ef
+    tests:
+      - file: "crates/univ-ingest/tests/shared_rows.rs"
+        name: "a_file_two_releases_hold_is_kept_once_under_its_sha256"
+        body: dc5b686da25a1bd173ad2c430c6e2edcc9cccae445ade7a4655663d163ae6b94
+      - file: "crates/univ-ingest/tests/stable_rows.rs"
+        name: "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
+        body: b8d8b67d9dc6a65bc9ef3194b5fe1d2741957caba1ed5922f36e05a76277c880
   - node: 01a1b19f-a71f-7111-b5df-7f3f2c140ce6
     reviewed: b3f89e8dc812574b0c83bdf5677ecff20ec73e8c3f1f4fda17892e5022fb6dbb
     tests:
@@ -1703,7 +1718,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "an_interrupted_publish_leaves_latest_and_continues_from_its_journal"
-        body: e941dcc69fa943f510486180602883508c15c655722d30002fa7a936a09558a2
+        body: 8f3fdfd4fd1cca4a80013185f4e40aa02b357ce6c941645c6fe420ed3aa8ba95
       - file: "crates/univ-ingest/tests/r2_batch.rs"
         name: "an_interrupted_batched_publish_continues_from_its_journal"
         body: 02756aadce36fd8bc812fe3e067a6804ce8f6a256d13172cf4ad34a89490e959
@@ -1721,7 +1736,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload"
-        body: e66a64d803ae9d2a23a882847f9c12a92f783354fbbef671eb2b1596db5f6f78
+        body: 89d54292dfe06c82f60d2d78f04000eedfa64cb2b785cd5a961bf099421e8614
   - node: 01a1b19f-a71f-7111-b5df-7f4109bd7c10
     reviewed: 683196cb7def268218c8cd91b6fc0b96a155b21283c74f381e306fbc5cc03194
     tests:
@@ -1895,7 +1910,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "an_interrupted_publish_leaves_latest_and_continues_from_its_journal"
-        body: e941dcc69fa943f510486180602883508c15c655722d30002fa7a936a09558a2
+        body: 8f3fdfd4fd1cca4a80013185f4e40aa02b357ce6c941645c6fe420ed3aa8ba95
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "a_build_in_which_a_source_failed_names_it_and_uses_no_number"
         body: 538ba1b053f1d81399c4db5360c7d7cafca0b3b7fcfb37295c67ead45eed4477

@@ -1,7 +1,7 @@
 //! What publishing checks beyond the uploads themselves, against an in-memory D1 and R2: each
 //! table's rows reaching D1 as built (a text Wrangler would strip, a row altered on the way),
-//! the CON-3 cap over every release not pruned, and a missing publication time recorded by a
-//! rerun once every unit is journaled.
+//! the refusals before any upload, and a missing publication time recorded by a rerun once
+//! every unit is journaled. The CON-3 cap is in `publish_cap`.
 
 #![expect(
     clippy::unwrap_used,
@@ -13,11 +13,9 @@ mod memory_store;
 mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Op, publishing};
-use release_fixture::{build_next, fixture, read_manifest};
+use release_fixture::{build_next, fixture};
 use univ_ingest::publish::journal::Journal;
 use univ_ingest::publish::{Latest, PublishError};
-use univ_model::release::D1_CAP_BYTES;
-use univ_model::release::shards::Database;
 
 /// What `latest` points to, by D1.
 fn latest(store: &MemoryStore) -> Option<i64> {
@@ -25,25 +23,6 @@ fn latest(store: &MemoryStore) -> Option<i64> {
         .db
         .query_row("SELECT release FROM latest", [], |r| r.get(0))
         .ok()
-}
-
-/// Edits release `dir`'s manifest as if it wrote every row of `table` in `database` again, at
-/// `per_row` bytes each: the cap then counts every row D1 holds of it at that size.
-fn as_if_written_at(dir: &std::path::Path, database: Database, table: &str, per_row: u64) {
-    let mut m = read_manifest(dir);
-    let estimate = match database {
-        Database::Catalogue => &mut m.d1,
-        Database::Shard(i) => &mut m.shards[i as usize].d1,
-    };
-    let t = estimate
-        .tables
-        .iter_mut()
-        .find(|t| t.table == table)
-        .unwrap();
-    t.added = Some(t.rows);
-    t.estimated_bytes = t.rows * per_row;
-    let file = dir.join(univ_model::release::keys::MANIFEST);
-    std::fs::write(file, serde_norway::to_string(&m).unwrap()).unwrap();
 }
 
 #[test]
@@ -119,69 +98,6 @@ fn a_row_altered_on_its_way_to_d1_stops_the_publish_naming_its_table_and_measure
 }
 
 #[test]
-fn a_release_beyond_the_cap_with_those_not_pruned_is_refused_with_both_estimates() {
-    let f = fixture();
-    build_next(&f);
-    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
-    let mut store = MemoryStore::default();
-    publishing(
-        &mut store,
-        1,
-        f.out.path(),
-        f.state.path(),
-        journals.path(),
-        &clock,
-    )
-    .unwrap();
-    let recorded = store.int("SELECT d1_estimated_bytes FROM releases WHERE number = 1");
-    let built = build_next(&f);
-    assert_eq!(
-        u64::try_from(recorded).unwrap(),
-        read_manifest(&univ_ingest::release::release_dir(f.out.path(), 1))
-            .d1
-            .estimated_bytes
-    );
-    // Release 2 as if it wrote its terms again, each so large that release 1's take the cap.
-    let terms = store.int("SELECT COUNT(*) FROM terms").unsigned_abs();
-    let per_row = D1_CAP_BYTES / terms;
-    as_if_written_at(&built.dir, Database::Catalogue, "terms", per_row);
-    store.reset();
-    let refused = publishing(
-        &mut store,
-        2,
-        f.out.path(),
-        f.state.path(),
-        journals.path(),
-        &clock,
-    )
-    .unwrap_err();
-    let this = built.manifest.d1.estimated_bytes;
-    let PublishError::OverCap {
-        number: 2,
-        database: Database::Catalogue,
-        this: refused_this,
-        others,
-        releases: 1,
-    } = refused.clone()
-    else {
-        panic!("{refused}");
-    };
-    assert_eq!(refused_this, this);
-    // Release 1's terms, which release 2 does not keep, and the rest it does not keep.
-    assert!(others >= terms * per_row, "{others}");
-    let message = refused.to_string();
-    assert!(
-        message.contains(&format!(
-            "its rows in the catalogue database are estimated at {this} bytes"
-        )) && message.contains(&format!("1 release(s) not pruned at {others} bytes"))
-            && message.contains("beyond the 10 GB cap of 10000000000 bytes"),
-        "{message}"
-    );
-    assert_eq!(store.uploaded(), Vec::<String>::new());
-    assert_eq!(latest(&store), Some(1));
-}
-
-#[test]
 fn a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled() {
     let f = fixture();
     build_next(&f);
@@ -254,59 +170,6 @@ fn a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled() {
 }
 
 #[test]
-fn a_release_beyond_the_cap_in_one_object_shard_is_refused_naming_the_shard() {
-    let f = fixture();
-    build_next(&f);
-    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
-    let mut store = MemoryStore::default();
-    publishing(
-        &mut store,
-        1,
-        f.out.path(),
-        f.state.path(),
-        journals.path(),
-        &clock,
-    )
-    .unwrap();
-    let built = build_next(&f);
-    // Release 2 as if it wrote shard 1's objects again, so large that release 1's take the cap.
-    let objects = store.shards[&1]
-        .query_row("SELECT COUNT(*) FROM objects", [], |r| r.get::<_, i64>(0))
-        .unwrap()
-        .unsigned_abs();
-    let per_row = D1_CAP_BYTES / objects + 1;
-    as_if_written_at(&built.dir, Database::Shard(1), "objects", per_row);
-    store.reset();
-    let refused = publishing(
-        &mut store,
-        2,
-        f.out.path(),
-        f.state.path(),
-        journals.path(),
-        &clock,
-    )
-    .unwrap_err();
-    let PublishError::OverCap {
-        number: 2,
-        database: Database::Shard(1),
-        this,
-        others,
-        releases: 1,
-    } = refused.clone()
-    else {
-        panic!("{refused}");
-    };
-    assert_eq!(this, built.manifest.shards[1].d1.estimated_bytes);
-    assert!(others >= objects * per_row, "{others}");
-    assert!(
-        refused
-            .to_string()
-            .contains("its rows in object shard 1 are estimated at")
-    );
-    assert_eq!(store.uploaded(), Vec::<String>::new());
-}
-
-#[test]
 fn a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload() {
     let f = fixture();
     let built = build_next(&f);
@@ -342,7 +205,15 @@ fn a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload() {
         "{message}"
     );
     assert_eq!(store.uploaded(), Vec::<String>::new());
-    assert!(store.r2.is_empty() && store.shards.is_empty());
+    // Only the shards it binds were read, and none was written to.
+    assert!(store.r2.is_empty());
+    assert!(store.shards.keys().all(|&i| i < needs - 1));
+    assert!(
+        store
+            .shards
+            .values()
+            .all(|db| memory_store::int(db, "SELECT COUNT(*) FROM sqlite_master") == 0)
+    );
 }
 
 #[test]

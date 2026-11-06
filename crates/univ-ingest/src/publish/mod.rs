@@ -51,6 +51,7 @@ mod progress;
 mod prune;
 mod r2batch;
 mod refuse;
+mod units;
 mod upload;
 mod wrangler;
 

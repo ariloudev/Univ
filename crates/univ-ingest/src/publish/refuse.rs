@@ -2,12 +2,11 @@
 //! or older than `latest`'s; more object shards than Univ Server binds; a database of an older
 //! schema version; or a parent latest does not point to. The CON-3 cap is checked in `cap`.
 
-use univ_model::release::shards::Database;
-use univ_model::release::{D1_CAP_BYTES, ReleaseManifest};
+use univ_model::release::ReleaseManifest;
 
-use super::check::published_status;
+use super::check::{Tables, published_status, schema_version};
 use super::upload::record_published;
-use super::{Latest, PublishError, QueryRow, Store};
+use super::{Latest, PublishError, Store};
 
 /// Refuses a release written as the change from a parent that `latest` does not point to: its
 /// rows would load onto another release's, and its retirements end rows that release holds.
@@ -46,24 +45,15 @@ pub(super) fn unbound(store: &mut dyn Store, manifest: &ReleaseManifest) -> Resu
 pub(super) fn older_schema(
     store: &mut dyn Store,
     manifest: &ReleaseManifest,
+    tables: &Tables,
 ) -> Result<(), Refused> {
     let needs = manifest.versions.d1_schema;
-    let shards = (0..u32::try_from(manifest.shards.len()).unwrap_or(u32::MAX)).map(Database::Shard);
-    for database in std::iter::once(Database::Catalogue).chain(shards) {
-        let has = store
-            .query(
-                database,
-                "SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'schema_version'",
-            )
-            .map_err(Refused::Query)?;
-        if sum_and_count(has.first()).1 == 0 {
+    for (database, held) in tables {
+        if !held.contains("schema_version") {
             continue;
         }
-        let rows = store
-            .query(database, "SELECT MAX(version) AS n FROM schema_version")
-            .map_err(Refused::Query)?;
-        let holds = sum_and_count(rows.first()).1;
-        if holds > 0 && holds < u64::from(needs) {
+        let holds = schema_version(store, *database).map_err(Refused::Query)?;
+        if let Some(holds) = holds.filter(|&v| v > 0 && v < i64::from(needs)) {
             return Err(Refused::Error(PublishError::OlderSchema {
                 number: manifest.release,
                 database: database.to_string(),
@@ -71,44 +61,6 @@ pub(super) fn older_schema(
                 needs,
             }));
         }
-    }
-    Ok(())
-}
-
-/// The sum of `bytes` and the count of `n` that `row` gives.
-fn sum_and_count(row: Option<&QueryRow>) -> (u64, u64) {
-    #[expect(
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss,
-        reason = "a sum of byte counts, whole and positive"
-    )]
-    let bytes = row
-        .and_then(|r| r.get("bytes"))
-        .and_then(serde_json::Value::as_f64)
-        .map_or(0, |b| b as u64);
-    let n = row
-        .and_then(|r| r.get("n"))
-        .and_then(serde_json::Value::as_u64)
-        .unwrap_or(0);
-    (bytes, n)
-}
-
-/// Refuses release `number` when its estimate `this` in `database` and `others`, the summed
-/// estimates there of the other releases not pruned and how many they are, pass the cap.
-pub(super) fn over_cap(
-    number: u32,
-    database: Database,
-    this: u64,
-    (others, releases): (u64, u64),
-) -> Result<(), Refused> {
-    if this + others > D1_CAP_BYTES {
-        return Err(Refused::Error(PublishError::OverCap {
-            number,
-            database,
-            this,
-            others,
-            releases,
-        }));
     }
     Ok(())
 }

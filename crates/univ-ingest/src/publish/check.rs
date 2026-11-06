@@ -1,6 +1,6 @@
 //! What local D1 records of a release and of `latest`, and the rows of a release a table holds.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use univ_model::release::fingerprint::{ROWS, alias, non_null_alias};
 use univ_model::release::manifest::TableEstimate;
 
@@ -12,8 +12,6 @@ use super::{Latest, QueryRow, Store};
 /// What local D1 records of one release, and where `latest` points.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Status {
-    /// Whether D1 holds the schema's list of releases at all.
-    pub schema: bool,
     /// Whether the catalogue holds the index of the object shards (schema version 5).
     pub shard_index: bool,
     /// The release `latest` points to, and when it was moved there.
@@ -79,7 +77,6 @@ pub fn published_status(store: &mut dyn Store, number: u32) -> Result<Status, St
     )?;
     let row = rows.first();
     Ok(Status {
-        schema: true,
         shard_index: tables.contains("release_shards"),
         latest,
         listed: row.is_some(),
@@ -211,6 +208,91 @@ pub fn tables_in(store: &mut dyn Store, database: Database) -> Result<BTreeSet<S
         "SELECT name FROM sqlite_master WHERE type = 'table'",
     )?;
     Ok(rows.iter().filter_map(|r| text(r, "name")).collect())
+}
+
+/// The tables each D1 database holds, by database.
+pub type Tables = BTreeMap<Database, BTreeSet<String>>;
+
+/// The tables each of `databases` holds.
+///
+/// # Errors
+///
+/// Fails when D1 cannot be queried.
+pub fn tables_of(
+    store: &mut dyn Store,
+    databases: impl Iterator<Item = Database>,
+) -> Result<Tables, String> {
+    databases
+        .map(|d| tables_in(store, d).map(|t| (d, t)))
+        .collect()
+}
+
+/// The rows of each of `tables` in `database` that its filter selects, in one query: D1 limits
+/// the terms of a compound `SELECT`, so scalar subqueries, not a `UNION`.
+///
+/// # Errors
+///
+/// Fails when D1 cannot be queried or gives no count.
+pub fn counts_of(
+    store: &mut dyn Store,
+    database: Database,
+    tables: &[(&str, String)],
+) -> Result<Vec<u64>, String> {
+    if tables.is_empty() {
+        return Ok(Vec::new());
+    }
+    let counts: Vec<String> = tables
+        .iter()
+        .enumerate()
+        .map(|(i, (t, filter))| format!("(SELECT COUNT(*) FROM {t} WHERE {filter}) AS n{i}"))
+        .collect();
+    let rows = store.query(database, &format!("SELECT {}", counts.join(", ")))?;
+    let row = rows
+        .first()
+        .ok_or_else(|| format!("{database} gave no count of its rows"))?;
+    (0..tables.len())
+        .map(|i| {
+            integer(row, &format!("n{i}"))
+                .and_then(|n| u64::try_from(n).ok())
+                .ok_or_else(|| format!("{database} gave no count of {}", tables[i].0))
+        })
+        .collect()
+}
+
+/// The SHA-256s in the `sha256` column of the rows `sql` gives of the catalogue.
+///
+/// # Errors
+///
+/// Fails when D1 cannot be queried or a row gives no SHA-256.
+pub fn sha256s(store: &mut dyn Store, sql: &str) -> Result<BTreeSet<String>, String> {
+    store
+        .query(Database::Catalogue, sql)?
+        .iter()
+        .map(|row| {
+            text(row, "sha256").ok_or_else(|| "release_files gives a row with no sha256".to_owned())
+        })
+        .collect()
+}
+
+/// The releases the catalogue lists and has not pruned, other than `number`, in order.
+///
+/// # Errors
+///
+/// Fails when D1 cannot be queried or a row gives no number.
+pub fn kept_releases(store: &mut dyn Store, number: u32) -> Result<Vec<u32>, String> {
+    let sql = format!(
+        "SELECT number FROM releases WHERE pruned_at IS NULL AND number != {number} ORDER BY \
+         number"
+    );
+    store
+        .query(Database::Catalogue, &sql)?
+        .iter()
+        .map(|row| {
+            integer(row, "number")
+                .and_then(|n| u32::try_from(n).ok())
+                .ok_or_else(|| "releases gives a row with no number".to_owned())
+        })
+        .collect()
 }
 
 /// The schema version the D1 database `database` records, if it records one.
