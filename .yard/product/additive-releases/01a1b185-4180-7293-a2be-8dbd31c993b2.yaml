@@ -1,0 +1,63 @@
+key: 01a1b185-4180-7293-a2be-8dbd31c993b2
+id: understand
+versions:
+  - key: 01a1b185-4180-7293-a2be-8dc11ff8d743
+    at: 2026-11-06T15:41:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Map what a release costs today"
+    goal: "Each stage of build and publish is known by what it reads, what it writes and roughly how long it takes on release 10, and what forces a full rebuild is named."
+    status: active
+  - key: 01a1b19e-7686-704f-89b1-b9db2195384b
+    at: 2026-11-06T16:08:34Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Map what a release costs today"
+    goal: "Each stage of build and publish is known by what it reads, what it writes and roughly how long it takes on release 10, and what forces a full rebuild is named."
+    status: done
+blocks:
+  - key: 01a1b188-df1e-74dd-98f1-8204809aa61a
+    id: cost-today
+    kind: note
+    versions:
+      - key: 01a1b188-df1e-74dd-98f1-8209a88ac75f
+        at: 2026-11-06T15:44:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What a release costs today"
+        markdown: |-
+          ```mermaid
+          flowchart LR
+            F[fetch --offline] --> N[normalize]
+            N --> X[cross-match + ids + structures' members]
+            X --> T[tiles]
+            T --> R[release dir: D1 SQL, R2 files, manifest]
+            R --> P[publish: every row and file]
+          ```
+
+          Every stage hands its result to the next in memory; nothing but the downloads and the id state survives a run, and a new build never reads the last release.
+
+          | Step | Release 10 | Note |
+          |---|---|---|
+          | Build, offline | **15 min**, 55 GB peak | normalize 11 s and cross-match 2.5 min on the 21 M-entry rehearsal; most of the rest writes 37 GB of D1 SQL |
+          | Publish | **1 h 35 min** | 1,215 D1 files into 7 shards and the catalogue, 4,680 R2 objects, each checked |
+          | Storage | 37 GB D1 + 0.7 GB tiles + 0.4 GB grids | every row carries `release` in its key; release n+1 copies every row of n |
+
+          **Where a change lands**
+
+          | Change | What really differs |
+          |---|---|
+          | A new structure | `structures`, `structure_details`, `structure_cells` and a few counts in the catalogue: kilobytes. Tiles and the 7 object shards are untouched. |
+          | A new or changed source | its entries and their objects, the cells and tiles they fall in, possibly merges that renumber nothing (ids stay stable) but move objects between shards |
+          | Matching or ranking rules | potentially every object |
+
+          **What the spec holds fixed**: releases are immutable and any unpruned one can be read (ADR-16); two reads pinned to a release agree whatever is published later (AC-128); the manifest lists every file with its SHA-256; CON-3 budgets each release at 4.5 GB per database so the next can be published before the last is pruned.
+
+          **So**: a structure costs a full 15-minute build and a 95-minute publish for kilobytes of change. Publishing, not building, is 86% of the time; the manifest already fingerprints every table of every shard, which is enough to tell what did not change.
+        tone: info

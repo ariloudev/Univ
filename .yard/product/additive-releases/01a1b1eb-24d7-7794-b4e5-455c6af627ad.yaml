@@ -1,0 +1,12 @@
+key: 01a1b1eb-24d7-7794-b4e5-455c6af627ad
+id: plan
+versions:
+  - key: 01a1b1eb-24d7-7794-b4e5-455f472967f9
+    at: 2026-11-06T17:32:20Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Plan the build"
+    goal: "A build plan maps every new or changed criterion to a step and its tests, and the owner has approved it."
+    status: active

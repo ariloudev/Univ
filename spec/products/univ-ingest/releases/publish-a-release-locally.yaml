@@ -15,8 +15,12 @@ requirements:
       form: event_driven
       when: "the owner publishes a complete release"
       system: "Univ Ingest"
-      shall: "upload its files to local R2 and its tables to the catalogue database and object shards of local D1, and only then point latest at it."
+      shall: "upload the files and rows it adds and the retirements it records to local R2 and to the catalogue database and object shards of local D1, and only then point latest at it."
     criteria:
+      - key: 01a1b19f-a71f-7111-b5df-7f3e7a645727
+        name: "No row or file the release shares with the release before it is uploaded again."
+      - key: 01a1b19f-a71f-7111-b5df-7f3f2c140ce6
+        name: "Once uploaded, the rows valid in the release in each database match the counts and fingerprints of the release manifest."
       - key: 01a1a931-2c8a-73a8-91f2-590ede3fd3b1
         name: "Each object shard receives only the rows the release manifest assigns to it."
       - key: 01a19f23-636f-72bd-b194-153fb0e0dd43
@@ -52,3 +56,27 @@ requirements:
     criteria:
       - key: 01a1a931-2c8a-73a8-91f2-5910680f6e67
         name: "The message names the number of object shards the release needs and the number Univ Server binds."
+  - key: 01a1b19f-a71f-7111-b5df-7f4080f434a5
+    statement:
+      form: unwanted
+      if: "the release was built on a release other than the one latest points to"
+      system: "Univ Ingest"
+      shall: "refuse to publish it before uploading anything."
+    criteria:
+      - key: 01a1b19f-a71f-7111-b5df-7f4109bd7c10
+        name: "The message names the release it was built on and the release latest points to."
+  - key: 01a1b19f-a71f-7111-b5df-7f42a7d3e03b
+    statement:
+      form: event_driven
+      when: "the owner publishes onto local D1 and R2 that hold releases of the D1 schema before rows were shared"
+      system: "Univ Ingest"
+      shall: "bring those releases under the shared schema in place before uploading anything."
+    criteria:
+      - key: 01a1b19f-a71f-7111-b5df-7f4375add914
+        name: "Every row of such a release is valid from that release until a later release retires it."
+      - key: 01a1b19f-a71f-7111-b5df-7f44a48bd262
+        name: "Every file of such a release is held once by its SHA-256 and read through the release's map of its paths."
+      - key: 01a1b19f-a71f-7111-b5df-7f45728f89f0
+        name: "No such release is built or uploaded again."
+      - key: 01a1b19f-a71f-7111-b5df-7f4682a162c9
+        name: "Reads pinned to such a release return the same data after the change as before it."

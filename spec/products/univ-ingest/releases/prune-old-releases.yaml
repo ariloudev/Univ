@@ -12,14 +12,16 @@ requirements:
       form: event_driven
       when: "the owner prunes a release"
       system: "Univ Ingest"
-      shall: "delete the release's files and tables and record when it was pruned."
+      shall: "delete the rows and files that no release left unpruned holds, and record when it was pruned."
     criteria:
+      - key: 01a1b19f-a71f-7111-b5df-7f3d6d51b6a3
+        name: "A row or file that a release left unpruned holds is not deleted."
       - key: 01a19f23-636f-72bd-b194-153927026b4b
         name: "The record of object ids merged, split or retired is kept, so every id still resolves."
       - key: 01a19f23-636f-72bd-b194-153a6cd80c2c
         name: "The pruned release stays in the list of releases with its pruning time."
       - key: 01a1a931-2c8a-73a8-91f2-590d7b43ba10
-        name: "The release's rows are deleted from the catalogue database and from every object shard."
+        name: "The rows valid only in pruned releases are deleted from the catalogue database and from every object shard."
       - key: 01a1a25a-c0ef-776c-a6c7-886eb1e11d8f
         name: "The release's local build in the build output is deleted last, once its R2 files and D1 rows are deleted."
       - key: 01a1a25a-c0ef-776c-a6c7-886f2de1845d

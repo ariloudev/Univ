@@ -1,0 +1,130 @@
+format: yardlog/1
+key: 01a1b185-4180-7293-a2be-8dbc2940163b
+branch: "product/additive-releases"
+base: "develop"
+title: "product/additive-releases"
+revision: 10
+opened:
+  at: 2026-11-06T15:41:02Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1b185-4180-7293-a2be-8dbd31c993b2
+    id: understand
+  - key: 01a1b185-4180-7293-a2be-8dbe4f3680f7
+    id: options
+  - key: 01a1b185-4180-7293-a2be-8dbfc251ad6c
+    id: spec
+  - key: 01a1b1eb-24d7-7794-b4e5-455c6af627ad
+    id: plan
+  - key: 01a1b185-4180-7293-a2be-8dc0f4eec214
+    id: build
+submissions:
+  - key: 01a1b188-df1e-74dd-98f1-820e58de8ca8
+    blocks:
+      - 01a1b188-df1e-74dd-98f1-8205473245fd
+      - 01a1b188-df1e-74dd-98f1-82064df8d7db
+      - 01a1b188-df1e-74dd-98f1-820792fdeab5
+      - 01a1b188-df1e-74dd-98f1-82081644881b
+    changes:
+      - what: sent
+        at: 2026-11-06T15:44:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+      - what: answered
+        at: 2026-11-06T16:04:43Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+  - key: 01a1b19b-7438-720e-beaa-1205da31deb3
+    blocks:
+      - 01a1b19b-7438-720e-beaa-11faef1e24ce
+      - 01a1b19b-7438-720e-beaa-11fba3305035
+      - 01a1b19b-7438-720e-beaa-11fc7225413d
+      - 01a1b19b-7438-720e-beaa-11fd8c8a9de2
+    changes:
+      - what: sent
+        at: 2026-11-06T16:05:17Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+      - what: answered
+        at: 2026-11-06T16:08:16Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+  - key: 01a1b1a0-b753-7717-9387-392d8f085f80
+    blocks:
+      - 01a1b1a0-b753-7717-9387-392899c1ddcc
+      - 01a1b1a0-b753-7717-9387-3929be0af973
+    changes:
+      - what: sent
+        at: 2026-11-06T16:11:02Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+      - what: answered
+        at: 2026-11-06T17:32:08Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+acts:
+  - at: 2026-11-06T15:41:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T15:44:59Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T16:04:43Z
+    revision: 3
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-06T16:05:17Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T16:08:16Z
+    revision: 5
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-06T16:08:34Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T16:11:02Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-06T17:31:43Z
+    revision: 8
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-06T17:32:08Z
+    revision: 9
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-06T17:32:20Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"

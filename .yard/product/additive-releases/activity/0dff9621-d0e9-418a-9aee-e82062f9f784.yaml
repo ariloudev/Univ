@@ -1,0 +1,87 @@
+session: 0dff9621-d0e9-418a-9aee-e82062f9f784
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-06T16:10:48Z
+turns:
+  - started: 2026-11-06T15:41:02Z
+    ended: 2026-11-06T15:41:21Z
+  - started: 2026-11-06T15:43:59Z
+subagents:
+  - agent: adeca6dde4cf288d3
+    type: Explore
+    started: 2026-11-06T15:41:17Z
+    ended: 2026-11-06T15:43:59Z
+    stage: 01a1b185-4180-7293-a2be-8dbd31c993b2
+spec:
+  - started: 2026-11-06T16:10:22Z
+loft:
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-06T16:09:44Z
+    ended: 2026-11-06T16:09:45Z
+    failed: false
+    stage: 01a1b185-4180-7293-a2be-8dbfc251ad6c
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-06T16:09:51Z
+    ended: 2026-11-06T16:09:53Z
+    failed: false
+    stage: 01a1b185-4180-7293-a2be-8dbfc251ad6c
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-06T16:09:56Z
+    ended: 2026-11-06T16:09:57Z
+    failed: false
+    stage: 01a1b185-4180-7293-a2be-8dbfc251ad6c
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-06T16:10:23Z
+    ended: 2026-11-06T16:10:24Z
+    failed: false
+    stage: 01a1b185-4180-7293-a2be-8dbfc251ad6c
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-06T16:10:41Z
+    ended: 2026-11-06T16:10:42Z
+    failed: false
+    stage: 01a1b185-4180-7293-a2be-8dbfc251ad6c
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-06T16:10:47Z
+    ended: 2026-11-06T16:10:48Z
+    failed: false
+    stage: 01a1b185-4180-7293-a2be-8dbfc251ad6c
