@@ -1,0 +1,319 @@
+key: 01a1ab1d-6f6e-7690-98b8-06e1748740f6
+id: w5
+versions:
+  - key: 01a1ab1d-6f6e-7690-98b8-06e6760f2481
+    at: 2026-11-05T09:49:55Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 release 10"
+    goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it"
+    status: active
+  - key: 01a1ab94-68b8-723e-ad12-bbf3f7a91f82
+    at: 2026-11-05T11:59:52Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 release 10"
+    goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it"
+    status: active
+  - key: 01a1ad95-6a58-709d-8355-92356ee4a9c4
+    at: 2026-11-05T21:20:12Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 plan, decisions and first fetches"
+    goal: "W5's plan is recorded, the owner's decisions on the pending sources, 2MPZ's access and WISE's scope are taken, and DESI DR1, SDSS DR17 distant, 2dFGRS and ALFALFA α.100 are fetched"
+    status: done
+  - key: 01a1ae95-eafd-756a-8ebe-20b1f45a6861
+    at: 2026-11-06T02:00:23Z
+    revision: 44
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: release 10"
+    goal: "Release 10 is built from every source, checked, published to the real local state and measured"
+    status: done
+blocks:
+  - key: 01a1ab1d-6f6e-7690-98b8-06e204148ae0
+    id: w5-plan
+    kind: plan
+    versions:
+      - key: 01a1ab1d-6f6e-7690-98b8-06e73373b067
+        at: 2026-11-05T09:49:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W5 plan"
+        markdown: |-
+          This is release 10's plan for wave W5. It is recorded under your unattended permission and does not wait for approval.
+
+          1. **Prune releases 6–8 (done) and 9 once 10 is published.** The catalogue held 9.7 GB of them against D1's 10 GB cap. Release 9 stays as `latest` until 10 replaces it.
+          2. **Fetch the new sources in the background.**
+             - SDSS DR17 distant and ALFALFA α.100 are in.
+             - DESI DR1 and 2dFGRS are being fetched again after two fixes: a TAP job is now started through its phase, as Astro Data Lab requires, and 2dFGRS is sliced up to its highest serial number.
+          3. **Add the permission-pending sources: 2MPZ, WISE × SuperCOSMOS and GAMA DR4.** They wait for your answers below.
+          4. **Build release 10 and run `cargo xtask science`.** If memory (128 GB) runs out, stop and ask.
+          5. **Publish locally, then prune release 9.**
+          6. **Measure the benches against their targets.**
+             - `bench lookup` against QA-2: 200 ms at the 95th percentile.
+             - `bench volume` against QA-3: 500 ms.
+             - `bench first-points` against 3 s.
+          7. **Write a release note** with the counts per source and the measured shard sizes.
+          8. **Draft the three permission requests** for you to send.
+
+          Worked out with each wave: `/simplify` and `/code-review`, then `cargo xtask check` and `cargo xtask integration`, trace links accepted, the log closed, and a merge into `product/release-10`.
+  - key: 01a1ab1d-6f6e-7690-98b8-06e332f0793b
+    id: w5-prune
+    kind: task
+    versions:
+      - key: 01a1ab1d-6f6e-7690-98b8-06e8dd34a01a
+        at: 2026-11-05T09:49:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Prune releases 6–8"
+        detail: "424 R2 files and 18.0M, 18.0M and 19.3M rows deleted from the schema-4 catalogue. The releases stay listed with their pruning times, and their ids keep resolving."
+        state: done
+  - key: 01a1ab1d-6f6e-7690-98b8-06e4a3597835
+    id: w5-fetch
+    kind: task
+    versions:
+      - key: 01a1ab1d-6f6e-7690-98b8-06e951e78ba8
+        at: 2026-11-05T09:49:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Fetch DESI DR1, SDSS DR17 distant, 2dFGRS and ALFALFA α.100"
+        detail: "SDSS and ALFALFA are in. DESI and 2dFGRS are being fetched again after the job and slice fixes (079cc67)."
+        state: active
+      - key: 01a1ab71-925b-7675-b76c-2016c7a30b97
+        at: 2026-11-05T11:21:49Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Fetch DESI DR1, SDSS DR17 distant, 2dFGRS and ALFALFA α.100"
+        detail: "All four are in the cache. DESI DR1: 15,825,713 rows in 80 jobs, equal to Data Lab's count. On the first full run three jobs in flight answered 404 together; the resume fetched them with no error. 2dFGRS: 221,414 rows, its definition's count. SDSS DR17 distant and ALFALFA α.100 arrived on the first run."
+        state: done
+  - key: 01a1ab1d-6f6e-7690-98b8-06e5f0991918
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1ab1d-6f6e-7690-98b8-06ea81a8e9ba
+        at: 2026-11-05T09:49:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | Astro Data Lab refuses a TAP job created with `PHASE=RUN` (HTTP 400, "Execution Phase is mandatory") and leaves one created with `phase=RUN` pending. Every DESI chunk failed. | the real fetch | The job is created without its phase and started with `PHASE=RUN` sent to its `/phase`, the UWS route every service takes. The recorded form keeps `PHASE=RUN`, so the cached Gaia chunks are still matched. | fixed |
+          | 2dFGRS fetched 138,586 rows of 221,414. Its SeqNum slices stopped at 270,000, but serial numbers reach 389,712 (counted at China-VO), and the mirror once answered one slice with no rows. | the source's row-total check | Slices up to 390,000. The total check had removed the chunks, so the next run fetches them again. | fixed |
+          | The 2MPZ scratch script overwrote its output directory's name with each answer, and crashed when joining the parts. | the run | Renamed; the 2,968 saved parts joined into 934,175 rows, matching the archive's count. | fixed |
+  - key: 01a1ab1d-b09b-7278-b15d-7b8bba2b10b7
+    id: q-send-date
+    kind: question
+    versions:
+      - key: 01a1ab1d-b09b-7278-b15d-7b8d94ba3deb
+        at: 2026-11-05T09:50:12Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "When will you send the three permission requests (WFAU, M. Bilicki, GAMA), so that 2MPZ, WISE × SuperCOSMOS and GAMA DR4 can record whom they asked and when?"
+        header: "Send date"
+        context: |-
+          This replaces the copy of this question on product/release-10's log, which I'll withdraw at W5's merge.
+
+          - Under the spec, a permission-pending source names whom it asked and on which date.
+          - 2MPZ is downloaded (934,175 rows, matching the archive's count).
+          - The WISE × SuperCOSMOS and GAMA definitions are ready in my scratchpad, outside `sources/`.
+          - **Everything else in W5 proceeds meanwhile.** Release 10 can't be built until this is answered, or until the three are left out.
+          - The drafts of the three requests come with the release note. Say so if you want them sooner.
+        options:
+          - label: "Sending today"
+            detail: "I record 2026-11-05 as the date asked for all three, put them in sources/ now and build release 10 with them. Choose this only if you send them today."
+            recommended: true
+          - label: "I'll give the date"
+            detail: "Answer with the date in your own words once they are sent. The build waits for it."
+          - label: "Leave them out"
+            detail: "Release 10 is built without 2MPZ, WISE × SuperCOSMOS and GAMA. They come in a later release once permission is asked or given."
+      - key: 01a1ab77-a996-70a7-a65f-e0f7f2b5d28f
+        at: 2026-11-05T11:28:28Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "When will you send the permission requests (WFAU, M. Bilicki, GAMA), so that the permission-pending sources can record whom they asked and when?"
+        header: "Send date"
+        context: |-
+          Under the spec, a permission-pending source names whom it asked and on which date. This applies to 2MPZ, GAMA DR4 and, if it goes in, WISE × SuperCOSMOS.
+
+          The three drafts are ready for you to review and send: `permission-requests.md` in my scratchpad. Nothing has been sent.
+
+          This replaces the copy of this question on product/release-10's log, which I'll withdraw at W5's merge.
+        options:
+          - label: "Sending today"
+            detail: "I record 2026-11-05 as the date asked, put the sources in sources/ and build release 10 with them. Choose this only if you send them today."
+            recommended: true
+          - label: "I'll give the date"
+            detail: "Answer with the date in your own words once they are sent. The build waits for it."
+          - label: "Leave them out"
+            detail: "Release 10 is built from what is fetched now: 21.4 million entries. The permission-pending sources come in a later release."
+  - key: 01a1ab1d-b09b-7278-b15d-7b8c28c14a6c
+    id: q-twompz-access
+    kind: question
+    versions:
+      - key: 01a1ab1d-b09b-7278-b15d-7b8ef75122d5
+        at: 2026-11-05T09:50:12Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "How should Univ Ingest read 2MPZ, which the SuperCOSMOS archive serves only through an SQL form that cancels answers of more than about 500 rows?"
+        header: "2MPZ access"
+        context: "The spec asks that a source be described once in the repository so a release can be rebuilt from it. 2MPZ came down through the scratch script you approved: 2,968 sequential key-range queries of about 500 rows each, over several hours, with no parallel queries. No access method of ingest fits it: the archive has no file of 2MPZ and no TAP service."
+        options:
+          - label: "Prepared file"
+            detail: "A new access method, `prepared`. The definition names the script, kept in the repository as `scripts/fetch-twompz.py`, and gives the file's SHA-256 and row count. Ingest reads the file from its cache after checking both, and never fetches it. The download already made is used as it is. Rebuilding from scratch means running the script once. A small change, and the archive is not queried again."
+            recommended: true
+          - label: "SSA SQL in ingest"
+            detail: "A new access method, `ssa_sql`. Ingest pages the archive's SQL form itself, one query at a time, by key ranges sized to its answer limit, with ingest's retries, resumable chunks and row-total check. Everything stays inside ingest, but it is more code. The chunks would differ from the script's, so the archive is queried again: about 3,000 queries over several hours."
+          - label: "Leave 2MPZ out"
+            detail: "Release 10 goes without 2MPZ. WISE × SuperCOSMOS covers the same sky deeper, but with photometric redshifts about twice as uncertain at low redshift."
+      - key: 01a1ab77-a996-70a7-a65f-e0f81db57a1a
+        at: 2026-11-05T11:28:28Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "How should Univ Ingest read 2MPZ, which the SuperCOSMOS archive serves only through an SQL form that cancels answers of more than about 500 rows?"
+        header: "2MPZ access"
+        context: "The spec asks that a source be described once in the repository so a release can be rebuilt from it. 2MPZ came down through the scratch script you approved: 2,968 sequential queries, 934,175 rows, matching the archive's count. No access method of ingest fits it."
+        options:
+          - label: "Prepared file"
+            detail: "A new access method, `prepared`. The definition names the script, kept in the repository as `scripts/fetch-twompz.py`, and gives the file's SHA-256 and row count. Ingest reads the file from its cache after checking both, and never fetches it. The download already made is used, and the archive is not queried again."
+            recommended: true
+          - label: "SSA SQL in ingest"
+            detail: "A new access method, `ssa_sql`. Ingest pages the archive's SQL form itself, one query at a time, with its retries, resumable chunks and row-total check. More code, and about 3,000 fresh queries to the archive over several hours."
+          - label: "Leave 2MPZ out"
+            detail: "Release 10 goes without 2MPZ."
+  - key: 01a1ab77-a996-70a7-a65f-e0f46035479f
+    id: w5-rehearsal
+    kind: note
+    versions:
+      - key: 01a1ab77-a996-70a7-a65f-e0f643276e0b
+        at: 2026-11-05T11:28:28Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build rehearsal: memory"
+        markdown: |-
+          Measured on the sources in the cache: the 21 sources of release 9 plus DESI DR1, SDSS DR17 distant, 2dFGRS and ALFALFA α.100. Run offline, with no release built and no number used.
+
+          | Stage | Took | Peak memory |
+          |---|---|---|
+          | Normalize | 11 s | |
+          | Cross-match | 2.5 min | 62.5 GB resident |
+          | Through tiles | 2.7 min | 67.3 GB resident, 78.8 GB footprint |
+
+          - **Result:** 21,438,345 entries became 19,531,736 objects, with 1,906,609 merges and 78,168 candidate links. 19,455,781 are placed and 75,955 are not.
+          - **Memory per entry:** about 3.7 KB at the peak.
+
+          | Release 10 with | Entries | Projected peak, before the D1 build stage |
+          |---|---|---|
+          | What is fetched | 21.4 M | 79 GB, measured |
+          | + 2MPZ + GAMA DR4 | 22.6 M | ~83 GB |
+          | + WISE × SuperCOSMOS too | 43.0 M | ~158 GB, over the machine's 128 GB |
+        tone: warning
+  - key: 01a1ab77-a996-70a7-a65f-e0f59e9829fd
+    id: q-wise-scope
+    kind: question
+    versions:
+      - key: 01a1ab77-a996-70a7-a65f-e0f918c80487
+        at: 2026-11-05T11:28:28Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "WISE × SuperCOSMOS's 20.4 million galaxies would take release 10's build to about 158 GB on a 128 GB machine. What should release 10 do with it?"
+        header: "WISE × SCOS"
+        context: |-
+          Measured in the rehearsal note above: about 3.7 KB of memory per entry at the peak, before the D1 build stage. The plan named this risk and said to stop and ask before restructuring.
+
+          Without WISE × SuperCOSMOS, release 10 has about 22.6 million entries. That includes 15.8 million DESI redshifts and 2MPZ's whole-sky 934,175, and needs about 83 GB.
+        options:
+          - label: "Leave it out"
+            detail: "Release 10 is built without WISE × SuperCOSMOS. I record the memory finding and the measurements so that a later wave can make ingest leaner and bring it in whole. Release 10 stays well within memory, and no science cut has to be chosen now."
+            recommended: true
+          - label: "Take a bright cut"
+            detail: "Take the brightest part, about 7 million galaxies, by a W1 magnitude limit. I'd read the exact limit off the file and tell you the count before building. Its brighter galaxies have the better photo-z, but the cut is a science choice that release 10's notes must state. It runs near the memory limit, about 105 GB."
+          - label: "Make ingest leaner"
+            detail: "Restructure ingest's in-memory entries and objects first, a wave of its own before release 10 is built. All 43 million go in, but release 10 is delayed by that wave."
+  - key: 01a1ab94-68b8-723e-ad12-bbed5b4c0195
+    id: d-send-date
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1ab94-68b8-723e-ad12-bbf0a1d49940
+        at: 2026-11-05T11:59:52Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "No send date yet, and the permission-pending sources stay in release 10"
+        consequence: "2MPZ, WISE × SuperCOSMOS and GAMA DR4 go in as permission pending, recording whom they will ask and that the request is not yet sent. The spec's criterion that a pending source names the date it asked is relaxed so that the date may be absent until it is sent: a minor spec change, pre-approved."
+        question: 01a1ab1d-b09b-7278-b15d-7b8bba2b10b7
+  - key: 01a1ab94-68b8-723e-ad12-bbee288fcac5
+    id: d-twompz-access
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1ab94-68b8-723e-ad12-bbf1b2812895
+        at: 2026-11-05T11:59:52Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "2MPZ is read as a prepared file"
+        consequence: "A `prepared` access method: the script that fetched the file is kept in the repository and named by the definition, with the file's SHA-256 and row count, which ingest checks before reading the file from its cache. The archive is not queried again."
+        question: 01a1ab1d-b09b-7278-b15d-7b8c28c14a6c
+  - key: 01a1ab94-68b8-723e-ad12-bbef8660585a
+    id: d-wise-scope
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1ab94-68b8-723e-ad12-bbf2d2db57fc
+        at: 2026-11-05T11:59:52Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Make ingest leaner before release 10, so WISE × SuperCOSMOS goes in whole"
+        consequence: "A wave of its own, on `stage/release-10-memory`, profiles where ingest's 3.6 KB per entry goes and brings a plan to cut it for approval. W5 waits for it, then builds release 10 with all 43 million entries. Two measured points (5.6 M entries: 22.1 GB; 21.4 M: 78.8 GB) put the cost almost all per entry, with about 2 GB fixed."
+        question: 01a1ab77-a996-70a7-a65f-e0f59e9829fd
+  - key: 01a1ad95-6a58-709d-8355-921f9a94f928
+    id: w5-resume
+    kind: note
+    versions:
+      - key: 01a1ad95-6a58-709d-8355-92362d9e6496
+        at: 2026-11-05T21:20:12Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Picked up after the memory wave"
+        markdown: |-
+          The memory wave is merged into `product/release-10` (`dd60de3`), and from there into this branch (`432878d`). Release 10's build should peak at about 59 GB, so WISE × SuperCOSMOS goes in whole. Downloads now live in /Users/admin/Locap/Univ/downloads/univ-ingest.
+
+          The work left is split into the stages below, one per step. The permission requests are the owner's to handle, and nothing here asks about them.

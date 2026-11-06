@@ -18,6 +18,7 @@ use univ_model::entry::{
     RedshiftKind,
 };
 use univ_model::ids::Designation;
+use univ_model::object::Object;
 use univ_model::position::{Epoch, Frame, unit_vector};
 use univ_model::redshift::{CmbCorrection, DipoleModel};
 use univ_model::units::Unit;
@@ -43,6 +44,14 @@ pub fn ranking_rules() -> RankingRules {
 
 pub fn designation(src: &str, id: &str) -> Designation {
     Designation::new(source(src), id).unwrap()
+}
+
+/// The object of `objects` that holds the entry `id` of the source `src`.
+pub fn holding<'a>(objects: &'a [Box<Object>], src: &str, id: &str) -> &'a Object {
+    objects
+        .iter()
+        .find(|o| o.entry(&designation(src, id)).is_some())
+        .unwrap_or_else(|| panic!("no object holds {src} {id}"))
 }
 
 /// The position `east` and `north` arcseconds from (`ra`, `dec`), on the tangent plane.

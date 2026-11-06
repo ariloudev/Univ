@@ -4,7 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::api::sources::PermissionRequest;
+use crate::api::sources::Permission;
 
 use super::fingerprint::ColumnTotal;
 use crate::cosmology::Cosmology;
@@ -165,10 +165,10 @@ pub struct ManifestSource {
     /// allow commercial use.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub non_commercial: Option<String>,
-    /// Whom permission was asked of and when (YYYY-MM-DD), while its status is
-    /// `permission_pending`.
+    /// Whom permission is asked of, and when (YYYY-MM-DD) once the request is sent, while its
+    /// status is `permission_pending`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub permission: Option<PermissionRequest>,
+    pub permission: Option<Permission>,
     /// Catalogue entries the release holds from it.
     pub entries: u64,
 }

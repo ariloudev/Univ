@@ -34,11 +34,19 @@ pub(super) fn plan(work: &mut Work<'_>) -> Plan {
     }
     let mut seen = vec![false; n];
     let mut objects = Vec::new();
-    for anchor in 0..n {
-        if seen[anchor] {
+    for first in 0..n {
+        if seen[first] {
             continue;
         }
-        // Breadth first from the anchor, the first entry of its group in order.
+        // Breadth first from the anchor: the host galaxy of a group that took pieces, so that
+        // each piece's resolution leads back to it through its own join; else the first entry
+        // of the group in order. Objects stay in the order of their first entry.
+        let anchor = if work.hosts.is_empty() || adjacent[first].is_empty() {
+            first
+        } else {
+            let root = work.groups.find(first);
+            work.hosts.get(&root).copied().unwrap_or(first)
+        };
         seen[anchor] = true;
         let mut members = vec![(anchor, None)];
         let mut queue = VecDeque::from([anchor]);

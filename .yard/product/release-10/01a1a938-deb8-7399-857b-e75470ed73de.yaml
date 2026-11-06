@@ -50,6 +50,15 @@ blocks:
             detail: "Answer with the date once they are sent. The definitions stay out until then, and go in at the start of W5 at the latest."
           - label: "Leave them out"
             detail: "Release 10 goes without WISE × SuperCOSMOS and GAMA. They come back in a later release."
+    responses:
+      - key: 01a1ad80-8ee8-727a-97a0-06572f89398e
+        at: 2026-11-05T20:57:25Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        words: "Forget this and stop reminding me of it. I will handle this on my own and tell you when it's done."
   - key: 01a1aac9-f0ae-75f0-8f1b-3da136b31909
     id: w3-merged
     kind: note

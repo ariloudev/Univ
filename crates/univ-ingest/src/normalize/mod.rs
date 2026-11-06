@@ -4,6 +4,8 @@
 
 mod bintable;
 mod csv_file;
+
+pub(crate) use csv_file::is_layout;
 mod plan;
 mod row;
 
@@ -125,8 +127,8 @@ fn file_tables(files: &[RemoteFile]) -> Option<FileTables> {
 }
 
 /// Whether normalization gives `definition` entries: a provider's answers, files that are all
-/// FITS tables or all gzipped CSV tables, or the researched star distances, but not grids nor
-/// the researched structures.
+/// FITS tables or all gzipped CSV tables, a prepared file, or the researched star distances, but
+/// not grids nor the researched structures.
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
     match &definition.access {
@@ -420,6 +422,7 @@ pub fn normalize_until(
     };
     let tables = match &definition.access {
         Access::Files { files } => file_tables(files),
+        Access::Prepared(_) => Some(FileTables::CsvGz),
         _ => None,
     };
     if tables == Some(FileTables::CsvGz) {

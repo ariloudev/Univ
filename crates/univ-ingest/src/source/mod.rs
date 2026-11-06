@@ -6,7 +6,7 @@ mod normalization;
 mod reference;
 mod rules;
 
-pub use access::{Access, Holds, RemoteFile, Slices, TapRun};
+pub use access::{Access, Holds, PreparedFile, RemoteFile, Slices, TapRun};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
@@ -16,7 +16,7 @@ pub use normalization::{
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
 };
-pub use univ_model::api::sources::PermissionRequest;
+pub use univ_model::api::sources::Permission;
 use univ_model::time::is_calendar_date;
 
 use std::collections::HashSet;
@@ -151,7 +151,7 @@ pub struct Redistribution {
     /// Whom permission to redistribute was asked of, and when: given exactly when the status
     /// is permission pending.
     #[serde(default)]
-    pub permission: Option<PermissionRequest>,
+    pub permission: Option<Permission>,
 }
 
 impl Redistribution {
@@ -161,8 +161,7 @@ impl Redistribution {
         match &self.permission {
             None if pending => Err((
                 "redistribution.permission".to_owned(),
-                "is missing: a pending status names whom permission was asked of and when"
-                    .to_owned(),
+                "is missing: a pending status names whom permission is asked of".to_owned(),
             )),
             Some(_) if !pending => Err((
                 "redistribution.permission".to_owned(),
@@ -174,18 +173,20 @@ impl Redistribution {
     }
 }
 
-/// Checks a request for permission: someone named, on a calendar date.
-fn check_request(request: &PermissionRequest) -> Result<(), (String, String)> {
+/// Checks a request for permission: someone named, and a calendar date once it is sent.
+fn check_request(request: &Permission) -> Result<(), (String, String)> {
     if request.asked_of.trim().is_empty() {
         return Err((
             "redistribution.permission.asked_of".to_owned(),
             "is empty".to_owned(),
         ));
     }
-    if !is_calendar_date(&request.asked_on) {
+    if let Some(date) = request.asked_on.as_deref()
+        && !is_calendar_date(date)
+    {
         return Err((
             "redistribution.permission.asked_on".to_owned(),
-            format!("{} is not a date as YYYY-MM-DD", request.asked_on),
+            format!("{date} is not a date as YYYY-MM-DD"),
         ));
     }
     Ok(())

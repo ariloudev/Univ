@@ -83,6 +83,9 @@ pub enum MatchMethod {
     /// As a piece of a nearby galaxy: within the extent its source publishes, at a heliocentric
     /// cz agreeing with the galaxy's.
     WithinExtent,
+    /// As a fibre of one survey on one nearby galaxy that no source gives an extent: within the
+    /// rule's angle and heliocentric cz of every fibre of the galaxy already joined.
+    FibresOfOneGalaxy,
 }
 
 /// The difference along the line of sight between two matched entries.
@@ -116,7 +119,8 @@ pub struct MatchRecord {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case", tag = "by")]
 pub enum Resolution {
-    /// The entry the object was resolved around: the first of its entries in the order read.
+    /// The entry the object was resolved around: the first of its entries in the order read,
+    /// or, for a nearby galaxy that took pieces, the galaxy's own entry.
     Anchor,
     /// A published cross-identification: the entry shares the identifier `identifier` of
     /// `scheme`, such as a Gaia `source_id` or a HIP number, with `via`.

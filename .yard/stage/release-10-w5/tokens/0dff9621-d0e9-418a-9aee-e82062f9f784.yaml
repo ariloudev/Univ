@@ -1,0 +1,185 @@
+format: yardtokens/2
+session: 0dff9621-d0e9-418a-9aee-e82062f9f784
+host: claude-code
+firstEnded: 2026-11-05T09:49:59Z
+lastEnded: 2026-11-06T02:00:22Z
+tokens:
+  input: 1266
+  cacheRead: 182441417
+  cacheWrite: 1349624
+  output: 384844
+stages:
+  - stage: 01a1ab1d-6f6e-7690-98b8-06e1748740f6
+    input: 140
+    cacheRead: 24277798
+    cacheWrite: 68729
+    output: 37566
+    agents:
+      - agent: main
+        input: 140
+        cacheRead: 24277798
+        cacheWrite: 68729
+        output: 37566
+  - stage: 01a1ad95-6a58-709d-8355-9220286345db
+    input: 54
+    cacheRead: 13840989
+    cacheWrite: 29977
+    output: 17041
+    agents:
+      - agent: main
+        input: 54
+        cacheRead: 13840989
+        cacheWrite: 29977
+        output: 17041
+  - stage: 01a1ad95-6a58-709d-8355-92216d289553
+    input: 286
+    cacheRead: 39739400
+    cacheWrite: 285222
+    output: 88695
+    agents:
+      - agent: main
+        input: 286
+        cacheRead: 39739400
+        cacheWrite: 285222
+        output: 88695
+  - stage: 01a1ad95-6a58-709d-8355-9222678d049b
+    input: 326
+    cacheRead: 50693616
+    cacheWrite: 163074
+    output: 91391
+    agents:
+      - agent: main
+        input: 326
+        cacheRead: 50693616
+        cacheWrite: 163074
+        output: 91391
+  - stage: 01a1ad95-6a58-709d-8355-9223e802e095
+    input: 120
+    cacheRead: 22409771
+    cacheWrite: 43882
+    output: 27114
+    agents:
+      - agent: main
+        input: 120
+        cacheRead: 22409771
+        cacheWrite: 43882
+        output: 27114
+  - stage: 01a1ad95-6a58-709d-8355-922452353fb6
+    input: 340
+    cacheRead: 31479843
+    cacheWrite: 758740
+    output: 123037
+    agents:
+      - agent: main
+        input: 156
+        cacheRead: 24139005
+        cacheWrite: 231346
+        output: 59696
+      - agent: a33cc368ebb622190
+        type: general-purpose
+        input: 28
+        cacheRead: 985479
+        cacheWrite: 99635
+        output: 10619
+      - agent: a47a145a934d3e785
+        type: general-purpose
+        input: 64
+        cacheRead: 3261457
+        cacheWrite: 144803
+        output: 26929
+      - agent: aa5ad433a137e0e93
+        type: general-purpose
+        input: 40
+        cacheRead: 1314297
+        cacheWrite: 95387
+        output: 8257
+      - agent: ade2804c73316bc61
+        type: general-purpose
+        input: 22
+        cacheRead: 732374
+        cacheWrite: 95358
+        output: 9053
+      - agent: afd90175f43c53a5a
+        type: general-purpose
+        input: 30
+        cacheRead: 1047231
+        cacheWrite: 92211
+        output: 8483
+agents:
+  - agent: main
+    model: claude-opus-5-5
+    input: 1082
+    cacheRead: 175100579
+    cacheWrite: 822230
+    output: 321503
+  - agent: a33cc368ebb622190
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 28
+    cacheRead: 985479
+    cacheWrite: 99635
+    output: 10619
+  - agent: a47a145a934d3e785
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 64
+    cacheRead: 3261457
+    cacheWrite: 144803
+    output: 26929
+  - agent: aa5ad433a137e0e93
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 40
+    cacheRead: 1314297
+    cacheWrite: 95387
+    output: 8257
+  - agent: ade2804c73316bc61
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 22
+    cacheRead: 732374
+    cacheWrite: 95358
+    output: 9053
+  - agent: afd90175f43c53a5a
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 30
+    cacheRead: 1047231
+    cacheWrite: 92211
+    output: 8483
+submissions:
+  - submission: 01a1ab1d-b09b-7278-b15d-7b8ff22731fd
+    input: 78
+    cacheRead: 12649275
+    cacheWrite: 31238
+    output: 15335
+  - submission: 01a1ab77-a996-70a7-a65f-e0facb64e652
+    input: 40
+    cacheRead: 6874478
+    cacheWrite: 17720
+    output: 12157
+  - submission: 01a1ad98-dfd7-70a0-8108-ce596dd2c827
+    input: 2
+    cacheRead: 523571
+    cacheWrite: 1650
+    output: 120
+  - submission: 01a1adae-817a-74cb-b154-48f72a0a1216
+    input: 6
+    cacheRead: 850666
+    cacheWrite: 5563
+    output: 3018
+  - submission: 01a1add3-0be9-7149-926d-89a711924fcd
+    input: 4
+    cacheRead: 674482
+    cacheWrite: 3451
+    output: 1718
+  - submission: 01a1adf8-4dcb-7498-b7d2-e740e5651d16
+    input: 2
+    cacheRead: 370244
+    cacheWrite: 750
+    output: 2883
+  - submission: 01a1adf8-7a7d-7090-970d-047be77e245a
+    input: 4
+    cacheRead: 745286
+    cacheWrite: 5522
+    output: 1786

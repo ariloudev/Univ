@@ -16,9 +16,8 @@ use crate::publish::{
 };
 use crate::release::release_dir;
 
-/// Where Wrangler keeps local D1 and R2 by default: what `wrangler dev` reads from the
-/// repository root.
-pub const DEFAULT_PERSIST: &str = ".wrangler/state";
+/// The local D1 and R2 that releases are published to: the real local state.
+pub const DEFAULT_PERSIST: &str = univ_model::release::REAL_LOCAL_STATE;
 /// The Wrangler configuration naming the local D1 and R2 bindings.
 pub const DEFAULT_CONFIG: &str = "wrangler.toml";
 

@@ -280,6 +280,7 @@ async fn a_file_on_disk_whose_record_differs_from_the_published_digest_is_fetche
         bytes: 100,
         retrieved: "2026-01-01T00:00:00Z".to_owned(),
         rows: None,
+        prepared_by: None,
     };
     Provenance::record(&dir, &source(), &stale).unwrap();
     run(&d, cache.path()).await.unwrap();

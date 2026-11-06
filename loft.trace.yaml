@@ -47,7 +47,7 @@ links:
         body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
       - file: "crates/univ-ingest/tests/source_terms.rs"
         name: "a_pending_source_names_whom_permission_was_asked_of_and_when"
-        body: b23a616bcdb65086e676f2f78e7d1af970f523c4fd633c5ffd89e3fc36c86498
+        body: 6ce343408275a60dc3e35b58cf5bd7a16690813db3a5b7c08ad9303eb0da6e0b
   - node: 01a19f22-2ad9-716e-876f-183ca629c7f8
     reviewed: 2f1322755357d3f990635c6e93b513eda5ef14fad23d0c687e6e7ef0ecd44c70
     tests:
@@ -55,14 +55,17 @@ links:
         name: "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
         body: f698ab504df4df08f7b547afccd6a9e9934edb9d840fe41a8f6bdb2140aa9050
   - node: 01a1a931-2c8a-73a8-91f2-58fcaa8b8bee
-    reviewed: b3222a30a3a507a6f35f603a7cb7b57f3eace86fc50e3408fd0a902a336330db
+    reviewed: 14e62fbf724daf241edef3dca25762ed08d9ae4408d26912e8d29c2d7ca3bf4e
     tests:
       - file: "crates/univ-ingest/tests/source_terms.rs"
         name: "a_pending_source_names_whom_permission_was_asked_of_and_when"
-        body: b23a616bcdb65086e676f2f78e7d1af970f523c4fd633c5ffd89e3fc36c86498
+        body: 6ce343408275a60dc3e35b58cf5bd7a16690813db3a5b7c08ad9303eb0da6e0b
       - file: "crates/univ-ingest/tests/source_terms.rs"
         name: "a_pending_status_without_its_request_is_refused"
         body: 64a93ecefb064a152bde7504ce273050bf83d73754a16e019c1ef4a566895c9c
+      - file: "crates/univ-ingest/tests/source_terms.rs"
+        name: "a_pending_source_not_yet_asked_names_whom_and_no_date"
+        body: cd7fea5185f19180c775746ccb3e65b2379b9be312122aae1b9b53a5cfafdfff
       - file: "crates/univ-ingest/tests/source_terms.rs"
         name: "a_request_names_someone_and_a_calendar_date"
         body: f64766ea4a820757280dbee492e91ff08004e904e934a8dffee299aab488f4b2
@@ -102,12 +105,36 @@ links:
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_has_a_valid_definition"
         body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
+  - node: 01a1a931-2c8a-73a8-91f2-58ff5749b30b
+    reviewed: 16663dbb47276992d7a8713420362d113e316a7a9dadc6c3396142dbabac8758
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "desi_redshifts_are_measured_spectroscopic_and_barycentric"
+        body: 88278b441b9fbe85a19103aecbc4da8fe6173d0d66aad54ba929d4433dce19b9
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "the_rest_of_sdss_takes_distant_galaxies_and_quasars"
+        body: 17ec1f38d53b489780a7c496de06afca2495ef8f40d83ea4fb046fa21f6893df
+      - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
+        name: "twodfgrs_gives_each_redshift_its_catalogues_rms"
+        body: 8b8bee0a826cb607d86844678eda709f460280586fcc4a832fe8e8b0912cb1f2
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "gama_keeps_its_own_redshifts_of_quality_three_or_more_above_the_stars"
+        body: 28aa7d6c3a1a28a7850a4139eb1e7132f101d2649674174f8b8dd641157ca6ce
   - node: 01a1a931-2c8a-73a8-91f2-5900bff82962
     reviewed: 163ab4d74852ed5e35ad3c11f2149684ce11198489786f36e9674e3af7cfa69a
     tests:
       - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
         name: "alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error"
         body: a11473699f41b428f4e4fc548080f3028c42b09e54deae9033978ea4d295275c
+  - node: 01a1a931-2c8a-73a8-91f2-59016fa68370
+    reviewed: 516fd5eca94e6b3c0fcd32cd853ec908784db27f56086ca114dd0f2172fba295
+    tests:
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "twompz_reads_its_prepared_file_with_the_catalogues_photometric_error"
+        body: cd9d3865bbbd4cfbf6983619ff351ab7aafe6ea0e58618de57c54a023ca7081d
+      - file: "crates/univ-ingest/tests/pending_surveys.rs"
+        name: "wise_supercosmos_reads_its_gzipped_csv_with_the_catalogues_scatter"
+        body: 927da569e5249b5c9466323fef6663c4659accbc6d125e6a05e19628722ad681
   - node: 01a1a931-2c8a-73a8-91f2-5902c9bf1383
     reviewed: e5321c7c7791d45e2cf1d3c2e9e407047ccf61ac53b182aee6ae25a85a174f70
     tests:
@@ -203,7 +230,7 @@ links:
         body: f5c83cf46111f98ebe978744d278b8d181583fc3cf5c5d4e7595a6f4f68d9e4c
       - file: "crates/univ-ingest/tests/provenance.rs"
         name: "payloads_are_kept_in_item_order_whatever_order_they_arrive_in"
-        body: f7b6e62a4f8f25edd0912bb85c9f4d1d20b44528ed949fe7af9ed29b403d813a
+        body: 0da9273f71bfde1e5299e7744f54d887a327af74afb79928b03af72e19724b15
   - node: 01a19f22-2ad9-716e-876f-184f18271ab3
     reviewed: 182bebcb0e3e34fa7e3c3f04d73f7dc496e87cea2f1b41885d34bd956e4adb2b
     tests:
@@ -222,6 +249,39 @@ links:
       - file: "crates/univ-ingest/tests/fetch_chunks.rs"
         name: "an_offline_run_makes_no_request_and_fails_on_the_first_missing_chunk"
         body: 8c389bc75cc026ede3e6b9d1645eeba400f36f98238298da498ce219a2e3cd50
+  - node: 01a1ad9c-dc22-72c6-99cb-1a45af5083ab
+    reviewed: 02e6dbdc84a2ad8359b0eea9712788e8233ddd4611b767074dccac494b97515e
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_is_named_as_a_gzipped_csv_file_with_a_sha256"
+        body: ce6c343de8dd29314af08935b56cfa466b510905bee5d80746e9cca3e0ab9417
+  - node: 01a1ad9c-dc22-72c6-99cb-1a46049c41ff
+    reviewed: 274173d93f0b4dabd8f05e91f81d10a1a706c8259c63d2c524e18995106d2edb
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_whose_digest_differs_is_refused"
+        body: 83ca5cb1ff0a25e6e59556b73e1c2ca8f84dd7560ac4fd030fd6f77330ca211c
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_whose_rows_differ_is_refused"
+        body: 22ef2d00b2fc31dae33ee7909436ba94dffff99c203281acd229b4f6c2a1ecb2
+  - node: 01a1ad9c-dc22-72c6-99cb-1a470d130dde
+    reviewed: 20bc71d65cb9c84265783bc21b9f94d6f0cda8a2c6cdec494aba030d6bb07935
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_that_matches_its_definition_is_read_and_recorded_without_a_request"
+        body: 8bcaff783e1dda5c50c603b56ebfe20f0a7b624ef0c066df62bba8cf863cb247
+  - node: 01a1ad9c-f735-761b-8646-f276559d7943
+    reviewed: a24f015c0dfd418834d452b89ab40d9e75a3e73c3ac214033d58a574af859e5f
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_missing_prepared_file_fails_naming_its_script"
+        body: 57d7dfeb2ffeb51e242d161921a64093086e49f702feab2000e3925474b73c16
+  - node: 01a1ad9c-dc22-72c6-99cb-1a4853c15f56
+    reviewed: b28a9ece476778a73bc3443ecd2b72dbe7de15a11a05efdc2f7e6b8c6ad8449b
+    tests:
+      - file: "crates/univ-ingest/tests/prepared.rs"
+        name: "a_prepared_file_that_matches_its_definition_is_read_and_recorded_without_a_request"
+        body: 8bcaff783e1dda5c50c603b56ebfe20f0a7b624ef0c066df62bba8cf863cb247
   - node: 01a19f22-2ad9-716e-876f-185572e41a3f
     reviewed: 2d3cb4992519a620162990040dfc76aad5363aa90b920bfcea16ad0b6dd271d9
     tests:
@@ -939,6 +999,21 @@ links:
       - file: "crates/univ-ingest/tests/ranking.rs"
         name: "gaia_is_preferred_over_hipparcos_and_either_over_a_survey_unless_an_error_says_otherwise"
         body: 8082c54f277f03dc8b1f89178b9499f43117f2c56f87d41239a255af853d1581
+  - node: 01a1adfa-315f-708f-8cd8-bf4bc1cdc275
+    reviewed: af3212bc10502113c6edabd1c59bcd07bfbfe4f3953247aaa83b43d8f05409ae
+    tests:
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_galaxy_that_took_pieces_takes_its_own_position_whatever_the_order_of_its_entries"
+        body: 10585bb033cd2952c73b0e0abb1fd5bdacfd701e9449fe6c32fbcf340929319c
+      - file: "crates/univ-ingest/tests/extents.rs"
+        name: "a_smaller_galaxy_that_takes_a_larger_ones_group_hosts_it_and_gives_the_position"
+        body: 97dae0ea4ca2a64f78a155bc835f01001a817ce9533befcc9355ebc20c3cf9e3
+  - node: 01a1adfa-315f-708f-8cd8-bf4cdd697c86
+    reviewed: 5184cb1296d0ae24912c9b561459893036e006522427549b6142d7e64959288d
+    tests:
+      - file: "crates/univ-ingest/tests/ranking.rs"
+        name: "a_21_cm_beam_position_ranks_after_a_survey_position"
+        body: 972d890097967354b0ef09bce7984ec1a2bb32e2184c5c1cce86f4ba21891ddc
   - node: 01a19f23-636e-7035-8185-aba03617706c
     reviewed: 8c0c0dc0af0b94b7c703e25b0d5e4fa0383eb71bef167f46e9f9b6e5311097ef
     tests:
@@ -1065,6 +1140,42 @@ links:
       - file: "crates/univ-ingest/tests/extents.rs"
         name: "ic_5052_is_one_object_of_its_pieces_within_its_published_extent"
         body: f8504af5ab2575df9ef8ed094dbb6f9d37c7cdbfe03e56281542ee03e59568c8
+  - node: 01a1adfa-315f-708f-8cd8-bf4e61ca16c8
+    reviewed: 650c396500f971b8181e7f19b374c624aa444b8d2235f788c64be8ac2df21870
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy"
+        body: b1815f9e8e8177234cdf17bddeebd4214fcdb341aa46447d76cb2e6a8554d17c
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "a_fibre_beyond_an_arcminute_of_any_fibre_joined_stays_apart"
+        body: ef6137f46cb4130e38fffbca0bf6eee7930cd2cdba2fba7366833ca193fc3c51
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "fibres_beyond_the_nearby_volume_or_its_velocity_tolerance_stay_apart"
+        body: 32f1144033dce751451dcaa691686d3fa8db44d9ad291e56ef979244ecc48fb6
+  - node: 01a1adfa-315f-708f-8cd8-bf4fa228b618
+    reviewed: 520ff683b67403e4389582e142852ef0a70b81349698e5cdc42878b2eb30c89a
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "only_the_fibre_surveys_the_rules_list_join"
+        body: 4eabb05bbbcb31e30b0995a8762c8d519bb1f8aad9631a9eb0e98e33ae38ce5f
+  - node: 01a1adfa-315f-708f-8cd8-bf5086a0f213
+    reviewed: ce65142c89a3752a304d6b3ebd642e18a91d1df1a7eea9363ad7acd425e1ea85
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "two_fibres_each_on_a_galaxy_of_its_own_identity_stay_apart"
+        body: e1a307c56b9153644f89996f49f6e2d14d5deb46d82e458c6ce5b2cbdd9b8910
+  - node: 01a1ae91-90f5-716e-b3d3-07b944951329
+    reviewed: a17bbfb85db7a6afceda7f202a2dd077d4b32c5fa75b5b89ac3e8c55f172d85a
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "a_fibre_never_joins_a_galaxy_whose_extent_a_source_publishes_or_a_group_of_a_shared_source"
+        body: 979a0c24341cb50a1c83e476419f3b0f4818fb267404b7f06a08df0438b010b7
+  - node: 01a1adfa-315f-708f-8cd8-bf51d418d386
+    reviewed: b2918ae69d4dd1a71be616e4db8ab240088ba12648857f0a745b3a7a6c42db00
+    tests:
+      - file: "crates/univ-ingest/tests/fibres.rs"
+        name: "nearby_fibres_of_one_survey_within_an_arcminute_and_300_km_s_are_one_galaxy"
+        body: b1815f9e8e8177234cdf17bddeebd4214fcdb341aa46447d76cb2e6a8554d17c
   - node: 01a1a147-6018-75e1-9409-3f7cf003d8aa
     reviewed: d84c25e841aaaa925be888e8854088c0ade631f97e5f6365408c13377ad04083
     tests:
@@ -1073,7 +1184,7 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 555f2f57ab1e76db381f1ebe2ac9f520dc22bb7b06e87eff75f1cd9129e74abc
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a1a147-6018-75e1-9409-3f7dc2dcf028
     reviewed: 61c386ef5097b43d23d5e94bfa265b030c5dd7f155a070337a5d33777b500670
     tests:
@@ -1082,7 +1193,7 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 555f2f57ab1e76db381f1ebe2ac9f520dc22bb7b06e87eff75f1cd9129e74abc
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a1a147-6018-75e1-9409-3f7eb363692b
     reviewed: 4280d632212de0675748d7bba795251d2e7e0da5f6007e553a2388e94652edbb
     tests:
@@ -1091,7 +1202,7 @@ links:
         body: a3cfa5ba411fc34c877432fdaf762f560f8472671c88e411b77fba211418bf0e
       - file: "crates/univ-ingest/tests/cosmicflows_galaxies.rs"
         name: "each_galaxy_is_related_to_its_group_without_a_merge_or_a_loan"
-        body: 555f2f57ab1e76db381f1ebe2ac9f520dc22bb7b06e87eff75f1cd9129e74abc
+        body: 762718131c5f9ff2c9fd8d23f48d4524a0d03294c69a1d7ce64f4d0c7a50f71c
   - node: 01a19f23-636f-72bd-b194-1513f385222f
     reviewed: 66f206a5eefa8b76732be7488e54f99a84eaaaf7358ea6a5f1667028732ec2bc
     tests:
@@ -1997,7 +2108,7 @@ links:
     tests:
       - file: "crates/univ-api/src/sources/tests.rs"
         name: "the_terms_give_the_redistribution_status_and_any_non_commercial_clause"
-        body: c1e6fd16e2efd62d9721fc23f4ab60800ccb84eefb8aba446d0df6ca598d6867
+        body: 3a6897809877da7357341ba4b0f6ec08c3f6a1a61eb3879a6a4203e9d918a620
   - node: 01a19f1e-d177-716d-b124-3d2711844898
     reviewed: 64fdc53e772b72fefbd149a9604a2fa0a93a8996b9837a9fe412591ec97ba6ad
     tests:

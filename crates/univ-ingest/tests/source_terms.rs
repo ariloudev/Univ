@@ -67,7 +67,18 @@ fn a_pending_source_names_whom_permission_was_asked_of_and_when() {
     );
     let asked = d.redistribution.permission.unwrap();
     assert_eq!(asked.asked_of, "WFAU, mar@roe.ac.uk");
-    assert_eq!(asked.asked_on, "2026-11-05");
+    assert_eq!(asked.asked_on.as_deref(), Some("2026-11-05"));
+}
+
+#[test]
+fn a_pending_source_not_yet_asked_names_whom_and_no_date() {
+    let unsent = PENDING.replace(", asked_on: \"2026-11-05\"", "");
+    assert!(!unsent.contains("asked_on"), "{unsent}");
+    let d = read(&unsent).unwrap();
+    let asked = d.redistribution.permission.unwrap();
+    assert_eq!(asked.asked_of, "WFAU, mar@roe.ac.uk");
+    assert_eq!(asked.asked_on, None);
+    assert!(read(&unsent).unwrap().publishable().is_ok());
 }
 
 #[test]

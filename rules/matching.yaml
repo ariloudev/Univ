@@ -94,10 +94,12 @@ cross_identifications:
     basis: >-
       2MRS (Huchra et al. 2012, ApJS 199, 26) and 2M++ (Lavaux & Hudson 2011, MNRAS 416, 2840)
       both name each galaxy by its 2MASS Extended Source Catalog designation (Jarrett et al.
-      2000, AJ 119, 2498), as the recorded answers show (00424433+4116074 in 2MRS).
+      2000, AJ 119, 2498), as the recorded answers show (00424433+4116074 in 2MRS); so does 2MPZ
+      (Bilicki et al. 2014, ApJS 210, 9) in twomassX, the "2MASS source designation".
     members:
       - { source: twomrs, field: identifier }
       - { source: twompp-catalogue, field: identifier }
+      - { source: twompz, field: identifier }
   - scheme: sdss-specobjid
     basis: >-
       All three sources are queries of the SDSS DR17 SpecObj table (Abdurro'uf et al. 2022, ApJS
@@ -439,6 +441,132 @@ pairs:
     line_of_sight: { compare: velocity, tolerance_km_s: 300 }
     basis: *alfalfa
 
+  # Release 10, permission pending: 2MPZ's photometric redshifts.
+  - sources: [twompz, twomrs]
+    angular_tolerance_arcsec: 2.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: &twompz_xsc >-
+      2MPZ, 2MRS and 2M++ all take positions from the 2MASS XSC, so 2 arcsec as for 2MRS and
+      2M++; most pairs join by their shared 2MASX name first. 2MPZ's photometric redshifts err by
+      0.015 for the whole catalogue (Bilicki et al. 2014): three times that is 0.045, 13,500 km/s
+      in cz, a pipeline choice that rejects only a galaxy far in front of or behind the other.
+  - sources: [twompz, twompp-catalogue]
+    angular_tolerance_arcsec: 2.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz_xsc
+  - sources: [twompz, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: &twompz >-
+      2MPZ positions are the 2MASS XSC's; 5 arcsec is a pipeline choice, as for the fibre surveys
+      against 2MRS. 2MPZ's photometric redshifts err by 0.015 (Bilicki et al. 2014): three times
+      that is 0.045, 13,500 km/s in cz, a pipeline choice that rejects only a spectroscopic galaxy
+      far in front of or behind the photometric one. Within 5 arcsec a merge rests on the
+      position.
+  - sources: [twompz, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, twodfgrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, desi-dr1]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+
+  # Release 10, permission pending: GAMA DR4 and WISE × SuperCOSMOS.
+  - sources: [gama-dr4, desi-dr1]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: &gama >-
+      GAMA's RA and DEC are the spectrum's position (SpecObj v27); 5 arcsec is a pipeline choice,
+      as for the other fibre surveys. GAMA publishes no redshift error; 200 km/s as for 2MRS and
+      2M++.
+  - sources: [gama-dr4, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, twodfgrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, twomrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, twompp-catalogue]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, alfalfa-a100]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+  - sources: [wise-supercosmos, desi-dr1]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: &wisescos >-
+      WISE × SuperCOSMOS positions are WISE's; 5 arcsec is a pipeline choice, as for the fibre
+      surveys. Its photometric redshifts scatter by 0.033 (1 + z) (Bilicki et al. 2016): three
+      times that at the catalogue's median z of about 0.2 is 0.119, 36,000 km/s in cz, a pipeline
+      choice that rejects only a spectroscopic galaxy far in front of or behind the photometric
+      one. Within 5 arcsec a merge rests on the position.
+  - sources: [wise-supercosmos, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, twodfgrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, twomrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, twompp-catalogue]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, gama-dr4]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [twompz, gama-dr4]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, wise-supercosmos]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: >-
+      2MPZ's positions are the 2MASS XSC's and WISE × SuperCOSMOS's are WISE's; 5 arcsec is a
+      pipeline choice. Both redshifts are photometric: 0.015 (Bilicki et al. 2014) and 0.033 (1 +
+      z) (Bilicki et al. 2016) add in quadrature to 0.038 at 2MPZ's median z of 0.07, and three
+      times that is 0.115, 34,500 km/s in cz; 36,000 km/s as for WISE × SuperCOSMOS's other pairs.
+      Within 5 arcsec a merge rests on the position.
+
 # The extent rule (step 3). Point-source tolerances cannot join the pieces of one extended nearby
 # galaxy: release 4 kept IC 5052 (UNGC a26 = 8.13 arcmin, edge-on, b/a = 0.14) as one object of
 # its UNGC and Cosmicflows-4 entries, one of its 2MRS and 2M++ entry 34 arcsec away, and four of
@@ -476,11 +604,27 @@ extents:
         http://vizier.nao.ac.jp/ftp/cats/J/ApJS/199/26/ReadMe, 2026-11-03): "F5.3 [arcsec] Riso Log
         of K=20 mag/sq arcsec elliptical isophote semimajor axis", the 2MASS XSC isophotal radius
         (Jarrett et al. 2000, AJ 119, 2498). The radius is ten to the power Riso, in arcseconds.
-  pieces: [twomrs, twompp-catalogue, sixdfgs-dr3, sdss-dr17-galaxies, cosmicflows-4-galaxies]
+  pieces:
+    - twomrs
+    - twompp-catalogue
+    - sixdfgs-dr3
+    - sdss-dr17-galaxies
+    - cosmicflows-4-galaxies
+    # Release 10.
+    - desi-dr1
+    - sdss-dr17-distant
+    - twodfgrs
+    - gama-dr4
+    - alfalfa-a100
+    - twompz
+    - wise-supercosmos
   pieces_basis: >-
     The galaxy surveys and the Cosmicflows-4 galaxies, whose entries are a detection, a fibre
     target or an adopted centre of a galaxy, so that one large galaxy can stand in them as several
-    entries (IC 5052 and NGC 1507 above). UNGC and McConnachie 2012 list each galaxy once by name
+    entries (IC 5052 and NGC 1507 above). Release 10's surveys are such entries too: its first
+    build left 441 pairs of nearby galaxies 1 arcmin apart at one distance, almost all DESI DR1
+    fibres on DDO 125, NGC 4190, DDO 190 and other nearby galaxies (350 of them between two DESI
+    fibres of one galaxy), with ALFALFA detections and WISE × SuperCOSMOS sources among the rest. UNGC and McConnachie 2012 list each galaxy once by name
     and are never pieces; star sources and galaxy-group sources are never pieces.
   identities: [cosmicflows-4-galaxies, updated-nearby-galaxies, mcconnachie-2012]
   identities_basis: >-
@@ -488,3 +632,14 @@ extents:
     (J/ApJ/944/94 ReadMe, table2, Note 1), UNGC and McConnachie 2012 by name. A companion with an
     identity of its own, such as NGC 5195 (UNGC a26 = 6.92 arcmin, 455 km/s) 4.6 arcmin from M51
     (NGC5194, a26 = 15.85 arcmin, 446 km/s) and within its extent, stays apart.
+  fibres:
+    surveys: [desi-dr1, sdss-dr17-galaxies, sdss-dr17-distant, twodfgrs, gama-dr4, sixdfgs-dr3]
+    radius_arcsec: 60.0
+    basis: >-
+      Pipeline choice. A fibre survey targets the HII regions and knots of a nearby dwarf as
+      separate objects: release 10's second build left 129 such clusters of DESI DR1 fibres, 2 to
+      8 within 1 arcmin of each other at one cz to within a few km/s, on galaxies that no source
+      of the release gives an extent (8 at RA 337.111, Dec +30.295, 599 to 677 km/s). Below the
+      extent rule's 1,000 km/s, two galaxies 1 arcmin apart at one velocity are one galaxy
+      entered twice, as the science check local-group-duplicates holds; 1 arcmin is that check's
+      radius, and 300 km/s the extent rule's tolerance, which takes in a disc's rotation.

@@ -67,6 +67,12 @@ pub mod shards;
 pub mod sql;
 pub mod uncertainty;
 
+/// The real local state, relative to the workspace: the local D1 and R2 that `univ-ingest
+/// publish` puts releases in, and that `cargo xtask serve`, `explore` and the benches run Univ
+/// Server on (`--persist-to` of `wrangler dev`). One constant for both, so that a publish never
+/// lands where nothing reads it, as release 10's once did in Wrangler's own `.wrangler/state`.
+pub const REAL_LOCAL_STATE: &str = ".cache/univ-ingest/wrangler";
+
 pub use cells::{Cell, CellRange, CellSpace};
 pub use fingerprint::{ColumnTotal, Fingerprinter};
 pub use manifest::{D1_CAP_BYTES, RELEASE_BUDGET_BYTES, ReleaseManifest};

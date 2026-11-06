@@ -154,6 +154,8 @@ pub enum PositionClass {
     Gaia,
     Hipparcos,
     Survey,
+    /// The centroid of a 21 cm source seen with a radio telescope's beam of arcminutes.
+    Beam,
 }
 
 /// The entry whose sky position the object takes, and why.
