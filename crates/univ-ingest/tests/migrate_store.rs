@@ -266,6 +266,15 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
         b.int_everywhere("SELECT COUNT(*) FROM schema_version WHERE version = 6"),
         databases
     );
+    // Nothing built or uploaded again: D1 runs only the migration's own files, and R2 is given
+    // only the files it held, under their SHA-256.
+    for op in &b.ops {
+        match op {
+            Op::Execute(file) => assert!(file.contains("migrate-"), "{file}"),
+            Op::Put(key) => assert!(key.starts_with(keys::FILES), "{key}"),
+            _ => {}
+        }
+    }
     for r in [1, 2] {
         assert_eq!(
             reads(&b, &valid_in("", r)),
