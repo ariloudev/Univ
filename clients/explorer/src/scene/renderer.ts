@@ -34,6 +34,9 @@ export interface Points {
   extent: Sphere;
   /** The tile's slice of its domain, its points dividing it evenly in their order. */
   slice: readonly [number, number];
+  /** Which points lie inside the volume the view is culled to, 1 inside; none where it is not
+   * culled. */
+  inside?: Uint8Array | undefined;
 }
 
 /** The diameter of a point, in device pixels. */
@@ -44,6 +47,8 @@ interface Drawn {
   buffers: WebGLBuffer[];
   centre: Vec3;
   count: number;
+  /** Which points lie inside the volume the view is culled to, where it is. */
+  inside?: WebGLBuffer;
 }
 
 /** A tile's points as uploaded, with what drawing them reads. */
@@ -108,6 +113,8 @@ export class Renderer implements Drawer {
   private masks: Masks = NO_MASKS;
   private readonly hiddenKinds: WebGLUniformLocation | null;
   private readonly hiddenSources: WebGLUniformLocation | null;
+  /** The point program's `a_inside`. */
+  private readonly insideAt: number;
   /** The outlines and markers not drawn, by name (choose-what-is-drawn). */
   private hiddenNames: ReadonlySet<string> = new Set();
   private readonly outlines = new Map<string, Outline>();
@@ -139,6 +146,9 @@ export class Renderer implements Drawer {
     gl.vertexAttrib4f(gl.getAttribLocation(this.points.program, "a_colour"), 0, 0, 0, 0);
     // Nor sources: `a_source` beyond every mask's bits, so that nothing turned off hides them.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
+    // And every point lies inside while the view is not culled, markers always.
+    this.insideAt = gl.getAttribLocation(this.points.program, "a_inside");
+    gl.vertexAttrib1f(this.insideAt, 1);
     const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
     gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
     this.markerColour = gl.getUniformLocation(this.points.program, `u_colours[${MARKER_INDEX}]`);
@@ -165,6 +175,27 @@ export class Renderer implements Drawer {
   private release(drawn: Drawn): void {
     this.gl.deleteVertexArray(drawn.vao);
     for (const buffer of drawn.buffers) this.gl.deleteBuffer(buffer);
+    if (drawn.inside !== undefined) this.gl.deleteBuffer(drawn.inside);
+  }
+
+  /** Draws only the points of the tile `id` that `inside` marks, or every one where it is none. */
+  setInside(id: string, inside: Uint8Array | undefined): void {
+    const drawn = this.batches.get(id);
+    if (drawn !== undefined) this.markInside(drawn, inside);
+  }
+
+  private markInside(drawn: Drawn, inside: Uint8Array | undefined): void {
+    const gl = this.gl;
+    gl.bindVertexArray(drawn.vao);
+    if (inside === undefined) gl.disableVertexAttribArray(this.insideAt);
+    else {
+      drawn.inside ??= gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, drawn.inside);
+      gl.bufferData(gl.ARRAY_BUFFER, inside, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(this.insideAt);
+      gl.vertexAttribPointer(this.insideAt, 1, gl.UNSIGNED_BYTE, false, 0, 0);
+    }
+    gl.bindVertexArray(null);
   }
 
   private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours"> & { sources?: Uint16Array }): Drawn {
@@ -183,7 +214,9 @@ export class Renderer implements Drawer {
   /** Adds a tile's points to what is drawn, fading them in from `now`. */
   addPoints(points: Points, now = performance.now()): void {
     this.forget(points.id);
-    this.batches.set(points.id, { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain, slice: points.slice });
+    const batch = { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain, slice: points.slice };
+    if (points.inside !== undefined) this.markInside(batch, points.inside);
+    this.batches.set(points.id, batch);
     this.fades.arrive(points.id, now);
   }
 

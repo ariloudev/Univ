@@ -45,6 +45,29 @@ describe("the structures", () => {
     expect(values).toContain("reconstructed; Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24");
   });
 
+  it("offer the cull to a structure's volume only where it has one, cleared until it is turned on", async () => {
+    const set = vi.fn();
+    const { rerender } = render(<StructurePanel detail={LOCAL_VOID} approximate={false} onClose={() => undefined} />);
+    expect(screen.queryByRole("checkbox", { name: "Only what lies inside" })).toBeNull();
+    rerender(<StructurePanel detail={LOCAL_VOID} approximate={false} inside={{ on: false, approximate: false, set }} onClose={() => undefined} />);
+    const box = screen.getByRole<HTMLInputElement>("checkbox", { name: "Only what lies inside" });
+    expect(box.checked).toBe(false);
+    expect(screen.queryByTestId("structure-inside")).toBeNull();
+    await userEvent.click(box);
+    expect(set).toHaveBeenCalledWith(true);
+  });
+
+  it("say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate", () => {
+    const set = () => undefined;
+    const { rerender } = render(<StructurePanel detail={LOCAL_VOID} approximate={false} inside={{ on: true, approximate: false, set }} onClose={() => undefined} />);
+    expect(screen.getByRole<HTMLInputElement>("checkbox", { name: "Only what lies inside" }).checked).toBe(true);
+    const exact = screen.getByTestId("structure-inside").textContent ?? "";
+    expect(exact).toContain("Points are placed at their preferred distance, so members scattered past its faces are not drawn.");
+    expect(exact).not.toContain("Approximate");
+    rerender(<StructurePanel detail={LOCAL_VOID} approximate={false} inside={{ on: true, approximate: true, set }} onClose={() => undefined} />);
+    expect(screen.getByTestId("structure-inside").textContent).toContain("Approximate: the cull is to a box about the structure, not its published shape.");
+  });
+
   it("name a structure whose shape is a lower limit on its extent \"(at least)\" in the panel", () => {
     const vela = { ...LOCAL_VOID, name: "Vela Supercluster", derivation: { from: [], at_least: "/geometry/SkyRegion/at_least" } };
     const { unmount } = render(<StructurePanel detail={vela} approximate={false} onClose={() => undefined} />);

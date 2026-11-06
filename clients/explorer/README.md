@@ -37,6 +37,7 @@ UNIV_SERVER=http://127.0.0.1:8790 UNIV_KEY=<an API key> pnpm dev
 | Fly to an object | Double-click it (it moves at once if your system asks for reduced motion) |
 | Find an object | Type an id, `source:identifier` (such as `hipparcos-2007:32349`) or a name, and Find |
 | See a structure | Click its name in the view (hovering it says so), or choose it from the list of structures |
+| See only what lies inside a structure | Check **Only what lies inside** in its panel |
 | Come home | Return to Earth |
 
 The view's axes are galactic, equatorial (the ICRS) or supergalactic; the ring is the chosen
@@ -46,7 +47,7 @@ value of their distances: measured, estimated, inferred and reconstructed, all d
 The credits name every source of the drawn points, with its citation and required credit.
 
 The chosen object is kept in the address (`?object=<id>`), so a reload or a shared link shows it
-again.
+again; so is a structure the view is culled to (`?inside=<structure id>`).
 
 ## How it is built
 
@@ -85,6 +86,12 @@ again.
 - **Structures.** Spheres, ellipsoids and boxes are drawn as outlines, paths as lines, members and
   points as markers; sky regions, grids and structures with no placed shape as their bounding
   box, marked approximate.
+- **Culling to a structure.** Spheres, ellipsoids, oriented boxes and sky regions (a HEALPix cell
+  and a distance range) cull exactly; member lists, published extents and bounds cull to a box,
+  which the panel calls approximate. Each tile's points are tested once on the CPU into a mask
+  that the shader, picking and the key all read, and only tiles whose cubes meet the volume's
+  bounding box are fetched, so its inside fills to full density. Points are tested at their
+  preferred distance, with no margin.
 
 ## Check it
 

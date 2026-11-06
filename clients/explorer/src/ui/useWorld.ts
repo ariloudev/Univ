@@ -20,6 +20,7 @@ import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts
 import type { Hidden } from "./hidden.ts";
 import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
+import type { Volume } from "../scene/volume.ts";
 
 /** What is under the pointer, where the pointer is: a structure's name, which a click
  * chooses, or else a point. */
@@ -96,6 +97,16 @@ export function hide(world: World, hidden: Pick<Hidden, "domain" | "source" | "k
   world.controller.invalidate();
 }
 
+/** Culls `world` to `volume`, or no longer where it is none (see-the-structures): only the
+ * points inside it drawn, picked, counted and fetched. */
+export function cull(world: World, volume: Volume | undefined): void {
+  const catalogue = world.catalogue;
+  if (catalogue === undefined) return;
+  catalogue.setCull(volume);
+  for (const p of world.pickable) world.renderer.setInside(p.batch.tile.id, catalogue.inside(p.batch.tile.id));
+  world.controller.invalidate();
+}
+
 /** What a release's catalogue starts from: its domains, and the rotations of its frames. */
 interface Started {
   domains: Domain[];
@@ -115,7 +126,8 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
       const { id, centre } = batch.tile;
       const { extent } = batch;
       const { offsets, kinds, sources } = batch;
-      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice: batch.tile.slice });
+      const inside = world.catalogue?.inside(id);
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice: batch.tile.slice, inside });
       // Picking tests a sphere about the tile's centre: the one holding the points' own.
       const radius = norm(sub(extent.centre, centre)) + extent.radius;
       world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });

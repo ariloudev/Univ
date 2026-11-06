@@ -10,3 +10,194 @@ versions:
     title: "Build the cull"
     goal: "Points outside the chosen structure's volume are not drawn, picked or counted while the cull is on, with the tests traced."
     status: planned
+  - key: 01a1b152-2ef2-7068-b919-f1d3ff12039b
+    at: 2026-11-06T14:45:15Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the cull"
+    goal: "Points outside the chosen structure's volume are not drawn, picked or counted while the cull is on, with the tests traced."
+    status: active
+blocks:
+  - key: 01a1b152-2ef1-71b2-9e7d-327878cb1e25
+    id: t-cell
+    kind: task
+    versions:
+      - key: 01a1b152-2ef2-7068-b919-f1d4520e36d4
+        at: 2026-11-06T14:45:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "HEALPix cell of a direction"
+        detail: "cellOf(order, v) in scene/healpix.ts, nested, as univ-model's healpix::hash. Done when every order-6 cell's centre maps back to it, poles and seams included."
+        state: active
+      - key: 01a1b152-d879-73a0-9d8a-65c856065a2e
+        at: 2026-11-06T14:45:59Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "HEALPix cell of a direction"
+        detail: "cellOf(order, v) in scene/healpix.ts, nested, as univ-model's healpix::hash. Done when every order-6 cell's centre maps back to it, poles and seams included."
+        state: done
+  - key: 01a1b152-2ef1-71b2-9e7d-327952229a9f
+    id: t-volume
+    kind: task
+    versions:
+      - key: 01a1b152-2ef2-7068-b919-f1d56803727a
+        at: 2026-11-06T14:45:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Volumes and the inside test"
+        detail: "scene/volume.ts: volumeOf and insideOf for solids, sky regions and boxes. Done when its tests pass for each shape, frame and unit."
+        state: open
+      - key: 01a1b152-d879-73a0-9d8a-65c95b78df85
+        at: 2026-11-06T14:45:59Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Volumes and the inside test"
+        detail: "scene/volume.ts: volumeOf and insideOf for solids, sky regions and boxes. Done when its tests pass for each shape, frame and unit."
+        state: active
+      - key: 01a1b155-09e2-7076-b1ee-14284f1d8c7f
+        at: 2026-11-06T14:48:22Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Volumes and the inside test"
+        detail: "scene/volume.ts: volumeOf and insideOf for solids, sky regions and boxes. Done when its tests pass for each shape, frame and unit."
+        state: done
+  - key: 01a1b152-2ef1-71b2-9e7d-327a2aa4f5ef
+    id: t-catalogue
+    kind: task
+    versions:
+      - key: 01a1b152-2ef2-7068-b919-f1d682b6ed9a
+        at: 2026-11-06T14:45:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Catalogue culls, counts and plans inside"
+        detail: "setCull: inside masks per batch, histograms of inside points, tiles outside the box neither fetched nor kept, drawnPoints hiding outside points. Done when catalogue tests show each."
+        state: open
+      - key: 01a1b155-09e2-7076-b1ee-14291e54f392
+        at: 2026-11-06T14:48:22Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Catalogue culls, counts and plans inside"
+        detail: "setCull: inside masks per batch, histograms of inside points, tiles outside the box neither fetched nor kept, drawnPoints hiding outside points. Done when catalogue tests show each."
+        state: active
+      - key: 01a1b156-f690-75fa-bc1c-b6cef50cafff
+        at: 2026-11-06T14:50:28Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Catalogue culls, counts and plans inside"
+        detail: "setCull: inside masks per batch, histograms of inside points, tiles outside the box neither fetched nor kept, drawnPoints hiding outside points. Done when catalogue tests show each."
+        state: done
+  - key: 01a1b152-2ef1-71b2-9e7d-327b497d59b1
+    id: t-renderer
+    kind: task
+    versions:
+      - key: 01a1b152-2ef2-7068-b919-f1d71bf48e49
+        at: 2026-11-06T14:45:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Renderer draws only inside points"
+        detail: "a_inside per batch and u_culled. Done when the live check shows the cull with no console errors."
+        state: open
+      - key: 01a1b156-f690-75fa-bc1c-b6cfa217ea29
+        at: 2026-11-06T14:50:28Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Renderer draws only inside points"
+        detail: "a_inside per batch and u_culled. Done when the live check shows the cull with no console errors."
+        state: active
+      - key: 01a1b15d-20a5-70de-bb90-d60e6be8c20c
+        at: 2026-11-06T14:57:12Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Renderer draws only inside points"
+        detail: "a_inside per batch (the array disabled reads 1, so markers and unculled tiles draw). Checked live: Bahcall–Soneira Void fills its outline only; Huge-LQG culls to its member box; no console errors."
+        state: done
+  - key: 01a1b152-2ef1-71b2-9e7d-327ceda6413f
+    id: t-panel
+    kind: task
+    versions:
+      - key: 01a1b152-2ef2-7068-b919-f1d8f9315c5a
+        at: 2026-11-06T14:45:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The checkbox and its lines in the structure panel"
+        detail: "Shown only for a structure with a volume; approximate and preferred-distance lines. Done when the panel tests pass."
+        state: open
+      - key: 01a1b15d-20a5-70de-bb90-d60f248082f7
+        at: 2026-11-06T14:57:12Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The checkbox and its lines in the structure panel"
+        detail: "Shown only for a structure with a volume; approximate and preferred-distance lines while on. Panel tests pass."
+        state: done
+  - key: 01a1b152-2ef1-71b2-9e7d-327d5ec4ba92
+    id: t-scene
+    kind: task
+    versions:
+      - key: 01a1b152-2ef2-7068-b919-f1d98dfc9a59
+        at: 2026-11-06T14:45:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Cull carried, closed and kept in the address"
+        detail: "?inside=<id>; carried to the next structure; off on close. Done when the scene and address tests pass."
+        state: open
+      - key: 01a1b15d-2803-7393-ac09-aca69941d6e4
+        at: 2026-11-06T14:57:14Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Cull carried, closed and kept in the address"
+        detail: "useStructureChoice in ui/inside.ts: ?inside=<id>, carried to the next structure, off on close or on choosing an object. Hook tests pass; closing cleared the address live."
+        state: done
+  - key: 01a1b152-2ef1-71b2-9e7d-327ea777ef45
+    id: t-trace
+    kind: task
+    versions:
+      - key: 01a1b152-2ef2-7068-b919-f1da108eccd7
+        at: 2026-11-06T14:45:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Trace the new criteria"
+        detail: "Every new criterion linked in loft.trace.yaml and accepted. Done when loft reconcile reports all nodes linked."
+        state: open
+      - key: 01a1b15d-2803-7393-ac09-aca7496b3feb
+        at: 2026-11-06T14:57:14Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Trace the new criteria"
+        detail: "14 criteria linked and accepted: 516 of 516 nodes linked."
+        state: done

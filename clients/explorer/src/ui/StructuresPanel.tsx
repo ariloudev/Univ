@@ -41,8 +41,45 @@ export function matchedText(detail: StructureDetail, approximate: boolean): stri
   return `${shape}${from === undefined || from === "" ? "" : `, derived from ${from}`}${drawn}`;
 }
 
-/** The chosen structure's record: kind, domain, how it was placed, and its cited values. */
-export function StructurePanel({ detail, approximate, onClose }: { detail: StructureDetail; approximate: boolean; onClose: () => void }) {
+/** Whether the view is culled to the chosen structure's volume, whether that volume is a box
+ * rather than its published shape, and the way to turn it on or off. */
+export interface Inside {
+  on: boolean;
+  approximate: boolean;
+  set: (on: boolean) => void;
+}
+
+/** The checkbox that culls the view to the structure's volume, and what the cull is when on. */
+function InsideCheckbox({ inside }: { inside: Inside }) {
+  return (
+    <div className="space-y-1">
+      <label className="flex items-center gap-2">
+        <input type="checkbox" checked={inside.on} onChange={(e) => inside.set(e.target.checked)} />
+        Only what lies inside
+      </label>
+      {inside.on ? (
+        <p className="text-xs text-dim" data-testid="structure-inside">
+          {inside.approximate ? "Approximate: the cull is to a box about the structure, not its published shape. " : ""}
+          Points are placed at their preferred distance, so members scattered past its faces are not drawn.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** The chosen structure's record: kind, domain, how it was placed, and its cited values; and,
+ * where it has a volume, the checkbox that culls the view to it. */
+export function StructurePanel({
+  detail,
+  approximate,
+  inside,
+  onClose,
+}: {
+  detail: StructureDetail;
+  approximate: boolean;
+  inside?: Inside | undefined;
+  onClose: () => void;
+}) {
   const papers = new Map((detail.record.papers ?? []).map((p) => [p.id, p.reference]));
   const values = Object.entries(detail.record.values ?? {});
   return (
@@ -64,6 +101,7 @@ export function StructurePanel({ detail, approximate, onClose }: { detail: Struc
           Its bounds are unknown: the lines are its published extents about its position, which need not be its middle.
         </p>
       )}
+      {inside === undefined ? null : <InsideCheckbox inside={inside} />}
       <ul className="space-y-1" data-testid="structure-values">
         {values.map(([name, value]) => (
           <li key={name}>

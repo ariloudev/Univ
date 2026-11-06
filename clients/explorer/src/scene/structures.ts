@@ -25,7 +25,7 @@ export interface StructureDrawing {
 }
 
 /** The rotation from the ICRS to a shape's `frame`, if the explorer can place it. */
-function toFrameOf(frame: string, rotations: Rotations): Mat3 | undefined {
+export function toFrameOf(frame: string, rotations: Rotations): Mat3 | undefined {
   const axes = frame === "icrs" ? "equatorial" : frame;
   return axes === "galactic" || axes === "supergalactic" || axes === "equatorial" ? frameOf(axes, rotations)?.toFrame : undefined;
 }

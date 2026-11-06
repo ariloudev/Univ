@@ -19,6 +19,15 @@ versions:
     title: "Specify the cull"
     goal: "The change to choose-what-is-drawn and see-the-structures is approved and committed."
     status: active
+  - key: 01a1b152-2ef2-7068-b919-f1d14e003a32
+    at: 2026-11-06T14:45:15Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Specify the cull"
+    goal: "The change to choose-what-is-drawn and see-the-structures is approved and committed."
+    status: done
 blocks:
   - key: 01a1b13c-4ae6-712b-a75f-9ec5b248fd4a
     id: spec-cull
@@ -7100,3 +7109,111 @@ blocks:
         title: "Client only: no server query"
         consequence: "Tiles are chosen against the manifest the explorer holds and the inside test runs in the shader; Univ Server and its contract are untouched."
         question: 01a1b13e-f49f-7276-95f4-ac201d3f7267
+  - key: 01a1b141-7c3e-724a-b506-0b75a3d479de
+    id: plan-25-plan-silly-shimmying-lake-01a1b138-2aa1-7534-b824-5cbffce130c6
+    kind: plan
+    versions:
+      - key: 01a1b141-7c3e-724a-b506-0b76cf7811f7
+        at: 2026-11-06T14:27:01Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: cull the view to the chosen structure"
+        markdown: |
+          # Build plan: cull the view to the chosen structure
+
+          ## Context
+          You asked for a way to hide the galaxies outside the chosen structure. The approved spec (`db58de9`, three new Requirements in *See the structures*) settles the rules:
+          - **What's hidden:** every point outside the structure's volume.
+          - **Exact shapes:** spheres, ellipsoids, oriented boxes and sky regions.
+          - **Approximate shapes:** member lists, extents and bounds use the box already drawn for them, and the panel says so.
+          - **Cut and visibility:** the cut is exact at the preferred distance, and points outside are not named, picked or counted.
+          - **The checkbox:** sits in the structure's panel, carries over to the next structure chosen, and turns off when the panel closes.
+          - **Loading:** only tiles that meet the volume's box are fetched and kept.
+          - **Address:** the cull is kept in the page's address.
+
+          Everything is in the explorer, with no server query.
+
+          ## Approach
+          **One inside test, on the CPU, drives everything.** For each tile, the catalogue computes a mask with one byte per point (inside or not). The renderer uploads it as a vertex attribute, and picking and the key read the same mask. So the GPU, picking and the key can never disagree. That was the lesson of the last review, where the CPU and shader computed the needed share from different inputs. It also means the HEALPix test is written once, not in both TS and GLSL.
+
+          ### 1. Volumes: `scene/volume.ts` (new)
+          - `volumeOf(detail, drawing, rotations): Volume | undefined`, where `Volume` is one of:
+            - `{ kind: "solid", toUnit: Mat3, centre, form: "ball" | "cube" }` for spheres, ellipsoids and oriented boxes, mapped into ICRS Mpc with the existing `toMpc` and `toFrameOf`, as `shapeOutline` does in `scene/structures.ts`;
+            - `{ kind: "sky", order, cells: Uint8Array bitmap (12·4^order), near, far }`;
+            - `{ kind: "box", min, max }` for member lists (the members' box), extents (the box they span about the point) and bounds.
+          - Every volume carries `approximate: boolean` and `bounds` (its axis-aligned box in ICRS, which the planner uses). A point, path, ray or range on its own gives `undefined`, so no checkbox.
+          - `insideOf(volume, positions): Uint8Array`.
+          - `scene/healpix.ts` gains `cellOf(order, v)`, nested, ported from `univ-model`'s `healpix::hash`. All 10 sky regions are order 6, ICRS: 49,152 cells.
+
+          ### 2. Catalogue: `catalogue/catalogue.ts` and `catalogue/lod.ts`
+          - `setCull(volume | undefined)`:
+            - stores the volume;
+            - computes an inside mask for every held batch, and for each batch as it arrives;
+            - rebuilds the histograms with `histogramOf`, which now counts only inside points when a mask is given;
+            - fires `onChange`, so the key recounts;
+            - calls a new `onInside(batch, mask | undefined)` event for the renderer;
+            - calls `update`.
+          - **Planning:** `plan` and `planEvery` take an optional box. A tile whose cube (`centre`, `edge`) misses the box is not wanted, so held tiles outside are dropped by the existing drop path. The level-of-detail share and budget are unchanged.
+          - `drawnPoints(batch)` combines the inside mask with the level-of-detail test, so picking follows.
+
+          ### 3. Renderer and shader: `scene/renderer.ts` and `scene/shaders.ts`
+          - `a_inside` (uint8) is added per batch through `setInside(id, mask)`, and `u_culled` is set by `setCulled(on)`. A point with `u_culled && a_inside == 0` is hidden the way `needed` hides one.
+          - Markers and lines are untouched, so the structures stay drawn.
+
+          ### 4. UI: `ui/StructuresPanel.tsx`, `ui/Scene.tsx`, `ui/useWorld.ts` and a new `ui/inside.ts`
+          - **Panel:** the checkbox "Only what lies inside", shown only when `volumeOf` gives a volume. Under it, one line saying that points are placed at their preferred distance, so members scattered past the faces are hidden. When the volume is approximate, the line also says the cull is approximate (a box, not the published shape).
+          - **Address:** `ui/inside.ts` keeps the cull in the address as `?inside=<structure id>`, following the pattern of `levelOfDetail.ts` and `hidden.ts`. Opening such an address chooses the structure, flies to it and culls.
+          - **Scene:**
+            - choosing another structure keeps the cull on for it;
+            - for a structure with no volume, the checkbox is absent and the cull stays on but has nothing to apply, so every point is drawn;
+            - closing the panel turns the cull off, as does choosing an object, which closes the structure panel.
+          - **World wiring:** `useWorld` passes the volume to the catalogue and renderer.
+
+          ## Tasks, each with its check
+          1. `cellOf` in healpix.ts: `centreOf(o, c)` round-trips to `c` for every cell at order 6, and the poles and seams are covered.
+          2. `volume.ts`: inside and outside points for a sphere, an ellipsoid and an oriented box (in a galactic frame and in km/s units), a sky region (inside the cells but outside near/far, and the reverse), and the members, extents and bounds boxes; `undefined` for a point or path; `approximate` set.
+          3. Catalogue cull:
+             - tiles outside the box are not fetched, and held ones are dropped;
+             - the key counts only inside points;
+             - `drawnPoints` hides outside points;
+             - turning the cull off restores the counts.
+          4. Renderer and shader: `a_inside` and `u_culled`, checked live in the browser (no console errors; the Bahcall–Soneira and Local Void cases look right).
+          5. Panel: the checkbox shows or not, and the approximate and preferred-distance lines.
+          6. Scene and address:
+             - the cull carries to the next structure;
+             - closing the panel turns it off;
+             - reloading `?inside=` restores it.
+          7. Trace every new criterion's test in `loft.trace.yaml` and run `loft reconcile --accept`.
+          8. Review and gate: `/simplify` and `/code-review` in parallel, then `cargo xtask check` and `cargo xtask integration` in the main tree, each run once.
+
+          ## Verification
+          - `pnpm check` in `clients/explorer` after each task (typecheck, Vitest with coverage, fallow, build).
+          - **Live check** on your running explorer, in a separate tab:
+            - choose Bahcall–Soneira Void (sky region), Local Void (sphere, near Earth, so stars stay) and Huge-LQG (member box, marked approximate);
+            - check the box, look, reload, close.
+          - `loft check --fail-on warning`, and the trace at 100% linked.
+        planMode: true
+    responses:
+      - key: 01a1b152-061b-744a-9c09-608d525aa470
+        at: 2026-11-06T14:45:05Z
+        revision: 11
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
+  - key: 01a1b152-2ef1-71b2-9e7d-327748e5b09a
+    id: spec-produced
+    kind: note
+    versions:
+      - key: 01a1b152-2ef2-7068-b919-f1d2cb142cf4
+        at: 2026-11-06T14:45:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the spec stage produced"
+        markdown: "Three Requirements on *See the structures*, committed as `db58de9` after one round: the owner first asked whether the server's bounded queries would be used (no: client only, decision recorded). The build plan was approved next."
+        tone: success
