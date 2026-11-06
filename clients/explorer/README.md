@@ -42,7 +42,7 @@ UNIV_SERVER=http://127.0.0.1:8790 UNIV_KEY=<an API key> pnpm dev
 The view's axes are galactic, equatorial (the ICRS) or supergalactic; the ring is the chosen
 frame's equator around Earth. Positions are ICRS Cartesian about the Solar System barycentre,
 which the view marks as Earth (within about 1 AU of it). The key counts the points of each kind of
-value of their distances: measured, estimated, inferred and reconstructed, each in its colour.
+value of their distances: measured, estimated, inferred and reconstructed, all drawn in one colour.
 The credits name every source of the drawn points, with its citation and required credit.
 
 The chosen object is kept in the address (`?object=<id>`), so a reload or a shared link shows it

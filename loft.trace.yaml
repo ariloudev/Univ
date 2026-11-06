@@ -3487,17 +3487,17 @@ links:
         name: "state the tiles that failed their check, and those that could not be read"
         body: eddaaa991540ec699571322f43e215e0db9a8433185691df244d9880fd03da63
   - node: 01a1a497-e843-728a-bce8-400b9b581384
-    reviewed: 1284393bdcb4d4bcc3f01b8681b95b35941e9431cc7a4c5d80027f3a379f83fa
+    reviewed: 4704df3bae54b0df61e7cd72be5e0ff47813c2af2c2eafcf8b406ca1b0132374
     tests:
       - file: "clients/explorer/src/scene/kinds.test.ts"
-        name: "are drawn in four distinct colours, in one order whatever a manifest lists"
-        body: 3dc2440a8a8d49922db1fb8f36e716e8a7cd2f948741776057090fdf25326ba3
+        name: "are drawn in one colour, in one order whatever a manifest lists"
+        body: 340dc9e183c96b138a8e6152bd544705b763166959b433268874aa6fd5ab88a1
   - node: 01a1a497-e843-728a-bce8-400c71ad8ebe
-    reviewed: 28ec7f93a5e7dc872109f9e51747747af7b8f9842acaaaff7069bd08a573fadf
+    reviewed: b740c81d3b1c12f9ab75976ef7cec36aac400a8a5ebd2efd3df12fa53a5d5533
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
-        name: "count the points of each kind of value beside its colour"
-        body: e82a6a2ee5d1dcf1379228e0432725c6b88ec04841bc9bb61ce0d814c3406f98
+        name: "count the points of each kind of value under their one colour"
+        body: a434f0d188bc220f479fa49db1e951676e800cc9da9017b9182bb656766baa8d
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
         body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328

@@ -1,6 +1,7 @@
-// The colour of each kind of value (draw-the-catalogues). Every batch of points indexes the one
-// order of kinds below, whatever order its manifest lists them in. Points add up where they
-// crowd, so each is half opaque: a survey's dense core stays readable rather than white.
+// The kinds of value and the one colour of the points outside the stars domain
+// (draw-the-catalogues). Every batch of points indexes the one order of kinds below, whatever order
+// its manifest lists them in, so the key counts them by kind. Points add up where they crowd, so
+// each is half opaque: a survey's dense core stays readable rather than white.
 
 import type { KindOfValue } from "univ-tile-decoder";
 
@@ -15,12 +16,9 @@ export const KIND_INDEX: Record<KindOfValue, number> = { measured: 0, estimated:
 /** How opaque every point is drawn, of a kind or a star: half. */
 export const POINT_OPACITY = 0.5;
 
-const COLOURS: Record<KindOfValue, Rgba> = {
-  measured: [0.42, 0.72, 1, POINT_OPACITY],
-  estimated: [1, 0.81, 0.42, POINT_OPACITY],
-  inferred: [0.84, 0.55, 1, POINT_OPACITY],
-  reconstructed: [0.42, 1, 0.69, POINT_OPACITY],
-};
+/** The colour of every point outside the stars domain, whatever the kind of value of its
+ * distance. */
+const POINT_COLOUR: Rgba = [0.42, 0.72, 1, POINT_OPACITY];
 
 /** Beyond this distance from the focus, megaparsecs, the points grow fainter as the eye
  * withdraws, so that whole surveys seen from afar add up to their shape rather than to white. */
@@ -32,8 +30,8 @@ const FADE_FLOOR = 0.03;
  * in proportion to the inverse distance, as the points crowd into fewer pixels. */
 export const pointOpacity = (distance: number): number => Math.max(FADE_FLOOR, Math.min(1, FADE_FROM / distance));
 
-/** The colours of `KINDS`, in order, for the renderer. */
-export const KIND_COLOURS: readonly Rgba[] = KINDS.map((kind) => COLOURS[kind]);
+/** The colours of `KINDS`, in order, for the renderer's table: the one colour for each. */
+export const KIND_COLOURS: readonly Rgba[] = KINDS.map(() => POINT_COLOUR);
 
 /** The colour of structures' outlines and markers, after the kinds' in the renderer's table. */
 export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
@@ -57,8 +55,8 @@ export const structureStyle = (colour: Rgba, chosen: boolean): { colour: Rgba; m
 export const css = ([r = 0, g = 0, b = 0]: readonly number[]): string =>
   `rgb(${Math.round(r * 255)} ${Math.round(g * 255)} ${Math.round(b * 255)})`;
 
-/** The colour of `kind` for CSS. */
-export const cssColour = (kind: KindOfValue): string => css(COLOURS[kind]);
+/** The colour of the points outside the stars domain for CSS. */
+export const POINT_CSS = css(POINT_COLOUR);
 
 /** The colour of structures for CSS, as their names are written. */
 export const STRUCTURE_CSS = css(STRUCTURE_COLOUR);

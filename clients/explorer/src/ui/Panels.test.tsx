@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import type { Controller } from "../scene/controller.ts";
+import { POINT_CSS } from "../scene/kinds.ts";
 import { fakeController } from "../test/world.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { Panels, type Tally } from "./Panels.tsx";
@@ -33,13 +34,18 @@ function show(catalogue: Tally, made = controller()) {
 }
 
 describe("the panels", () => {
-  it("count the points of each kind of value beside its colour", () => {
+  it("count the points of each kind of value under their one colour", () => {
     show(tally());
     const key = screen.getByTestId("key").textContent ?? "";
     expect(key).toContain("measured: 1,200 points");
     expect(key).toContain("estimated: 30 points");
     expect(key).toContain("inferred: 4 points");
     expect(key).toContain("reconstructed: 0 points");
+    const swatch = screen.getByRole("heading", { name: /Other points/ }).querySelector("span") as HTMLElement;
+    const probe = document.createElement("span");
+    probe.style.background = POINT_CSS;
+    expect(swatch.style.background).toBe(probe.style.background);
+    expect(swatch.style.background).not.toBe("");
   });
 
   it("show the stars' colours by temperature and count the stars in colour and in grey", () => {
