@@ -55,6 +55,14 @@ export function structureView(structures: Structures, id: string): { centre: Vec
   return { centre: drawing.centre, distance: viewingDistance(norm(drawing.centre), drawing.size) };
 }
 
+/** Flies `world`'s view to the structure `id` of `structures`: whether it is read and placed, and
+ * so flown to. */
+export function flyToStructure(world: World, structures: Structures, id: string): boolean {
+  const view = structureView(structures, id);
+  if (view !== undefined) world.controller.flyTo(view.centre, view.distance);
+  return view !== undefined;
+}
+
 /** `run` on each of `items`, at most `limit` at once, each settled whatever the others do. */
 export async function settled<T, R>(items: readonly T[], limit: number, run: (item: T) => Promise<R>): Promise<PromiseSettledResult<R>[]> {
   const results: PromiseSettledResult<R>[] = new Array(items.length);

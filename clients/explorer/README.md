@@ -91,7 +91,8 @@ again; so is a structure the view is culled to (`?inside=<structure id>`).
   which the panel calls approximate. Each tile's points are tested once on the CPU into a mask
   that the shader, picking and the key all read, and only tiles whose cubes meet the volume's
   bounding box are fetched, so its inside fills to full density. Points are tested at their
-  preferred distance, with no margin.
+  preferred distance, with no margin, and drawn fully opaque, twice as bright, while the cull
+  is on.
 
 ## Check it
 

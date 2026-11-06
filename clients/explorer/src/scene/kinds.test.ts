@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { EVERYTHING, LEVELS } from "../catalogue/lod.ts";
-import { APPROXIMATE_COLOUR, CHOSEN_COLOUR, KINDS, KIND_COLOURS, KIND_INDEX, POINT_CSS, STRUCTURE_COLOUR, css, detailOpacity, pointOpacity, structureStyle } from "./kinds.ts";
+import { APPROXIMATE_COLOUR, CHOSEN_COLOUR, CULLED_OPACITY, POINT_OPACITY, KINDS, KIND_COLOURS, KIND_INDEX, POINT_CSS, STRUCTURE_COLOUR, css, detailOpacity, pointOpacity, structureStyle } from "./kinds.ts";
 
 describe("the kinds of value", () => {
   it("are drawn in one colour, in one order whatever a manifest lists", () => {
@@ -30,6 +30,13 @@ describe("the kinds of value", () => {
     expect(detailOpacity(thinned, 20_000)).toBe(1);
     expect(detailOpacity(thinned, 117_354)).toBeCloseTo(0.5);
     expect(detailOpacity(thinned, 117_354)).toBeGreaterThan(pointOpacity(117_354));
+  });
+
+  it("are drawn fully opaque inside a structure the view is culled to, twice as bright as the brightest without it", () => {
+    expect(POINT_OPACITY * CULLED_OPACITY).toBe(1);
+    for (const distance of [1, 400, 1e6]) {
+      expect(CULLED_OPACITY).toBe(2 * Math.max(detailOpacity(EVERYTHING, distance), pointOpacity(distance), 1));
+    }
   });
 
   it("fade as the eye withdraws for a domain of one level, or with level of detail off", () => {

@@ -9,7 +9,7 @@ import { NO_MASKS, masksOf } from "../scene/masks.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
 import type { Sight } from "../scene/frustum.ts";
 import type { Vec3 } from "../scene/vec.ts";
-import type { Volume } from "../scene/volume.ts";
+import { NOTHING, type Volume } from "../scene/volume.ts";
 import { type Batch, domainsOf } from "./tiles.ts";
 
 /** Univ Server's answer to `path` on the fixture release; `corrupt` (domain/address) altered,
@@ -374,6 +374,43 @@ describe("the catalogue", () => {
         const { drawn, root, eastern } = await culled(true, levelOfDetail);
         expect([...drawn].sort()).toEqual([root.id, ...eastern].sort());
       }
+    });
+
+    it("fetches no tile, a root neither, whose cube misses the box, nor any while culled to nothing", async () => {
+      for (const levelOfDetail of [false, true]) {
+        const http = server(undefined, undefined, ["simulated"]);
+        const domains = await domainsOf(2, { http });
+        const root = domains[0]?.tiles.find((t) => t.parent === undefined);
+        if (root === undefined) throw new Error("no root");
+        const far = root.centre[0] + root.edge * 10;
+        const away: Volume = { kind: "box", approximate: true, bounds: { min: [far, far, far], max: [far + 1, far + 1, far + 1] } };
+        for (const volume of [away, NOTHING]) {
+          const drawn: string[] = [];
+          const events = { onBatch: (b: Batch) => drawn.push(b.tile.id), onDrop: () => undefined, onChange: () => undefined };
+          const catalogue = new Catalogue(2, domains, events, { http, keep: 0 });
+          catalogue.setLevelOfDetail(levelOfDetail);
+          catalogue.setCull(volume);
+          catalogue.update(sight());
+          await steady(drawn);
+          expect(drawn).toEqual([]);
+        }
+      }
+    });
+
+    it("draws none of a tile with no point inside, and counts none", async () => {
+      const { catalogue, drawn, root, east, eastern } = await culled(false);
+      catalogue.setCull(east);
+      await steady(drawn);
+      const western = drawn.filter((id) => id !== root.id && !eastern.includes(id));
+      expect(western).toEqual([]);
+      // Culled to a sliver in its cube's corner, which no point reaches, the root is held but
+      // draws nothing.
+      const corner = root.centre.map((c) => c + root.edge * 0.499) as unknown as Vec3;
+      const sliver: Volume = { kind: "box", approximate: true, bounds: { min: corner, max: corner } };
+      catalogue.setCull(sliver);
+      expect(catalogue.inside(root.id)).toBeDefined();
+      expect(catalogue.share(root.id)).toBe(0);
+      expect(catalogue.kinds.reduce((sum, n) => sum + n, 0)).toBe(0);
     });
 
     it("drops the tiles held whose cubes miss it, and fetches them again once no longer culled", async () => {

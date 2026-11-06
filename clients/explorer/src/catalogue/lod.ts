@@ -241,14 +241,16 @@ export function detailOf(levels: Levels, onsets: readonly number[]): Detail {
 }
 
 /** What the renderer reads of level of detail: the share of each tile's points, its first, it
- * may draw, by the tile's id, and each domain's detail, by its name. */
+ * may draw, by the tile's id, and each domain's detail, by its name; and, where the view is
+ * culled to a structure's volume, which of a tile's points lie inside it (see-the-structures). */
 export interface DrawnDetail {
   share: (id: string) => number;
   detail: (domain: string) => Detail;
+  inside: (id: string) => Uint8Array | undefined;
 }
 
 /** Every point of every tile drawn, before there is a catalogue to say otherwise. */
-export const EVERY_POINT: DrawnDetail = { share: () => 1, detail: () => EVERYTHING };
+export const EVERY_POINT: DrawnDetail = { share: () => 1, detail: () => EVERYTHING, inside: () => undefined };
 
 /** How many of `points` points a share of `share` draws. */
 export const drawnOf = (points: number, share: number): number => Math.round(points * share);
@@ -332,7 +334,8 @@ function insert<T extends Tile>(frontier: Family<T>[], family: Family<T>): void 
  * held family counts as `HELD_PREFERENCE` times its size, so that what a view holds once it has fetched what it wants is what it wants, and a
  * view that does not change settles. */
 function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, budget: number, within: Box | undefined): Family<T>[] {
-  let points = tree.roots.reduce((sum, t) => sum + t.points, 0);
+  const roots = tree.roots.filter((t) => isWithin(t, within));
+  let points = roots.reduce((sum, t) => sum + t.points, 0);
   const frontier: Family<T>[] = [];
   const isHeld = (t: T) => holds(holding, t.id);
   // A held tile counts as in view out to `HELD_VIEW_MARGIN` beyond the view's edge; none
@@ -350,7 +353,7 @@ function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, b
     const size = held ? largest * HELD_PREFERENCE : largest;
     insert(frontier, { parent: tile, tiles, points: tiles.reduce((sum, c) => sum + c.points, 0), size });
   };
-  for (const root of tree.roots) open(root);
+  for (const root of roots) open(root);
   const chosen: Family<T>[] = [];
   for (let next = frontier.pop(); next !== undefined; next = frontier.pop()) {
     if (points + next.points > budget) continue;
@@ -394,7 +397,7 @@ export function plan<T extends Tile>(
   within?: Box,
 ): Plan<T> {
   const open = (t: T) => isOpen(holding, t.id);
-  const roots = tree.roots.filter(open);
+  const roots = tree.roots.filter((t) => open(t) && isWithin(t, within));
   if (roots.length > 0) return { fetch: roots.slice(0, count), drop: [] };
   const families = wanted(tree, holding, sight, budget, within);
   const want = new Set(families.flatMap((f) => f.tiles.map((t) => t.id)));

@@ -9,7 +9,7 @@ import { type ToDraw, drawList } from "./drawList.ts";
 import { Fades } from "./fades.ts";
 import { type Sight, type Sphere, sightOf } from "./frustum.ts";
 import type { Drawer, Lines, Rgba } from "./drawing.ts";
-import { KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpacity, structureStyle } from "./kinds.ts";
+import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpacity, structureStyle } from "./kinds.ts";
 import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
@@ -34,9 +34,6 @@ export interface Points {
   extent: Sphere;
   /** The tile's slice of its domain, its points dividing it evenly in their order. */
   slice: readonly [number, number];
-  /** Which points lie inside the volume the view is culled to, 1 inside; none where it is not
-   * culled. */
-  inside?: Uint8Array | undefined;
 }
 
 /** The diameter of a point, in device pixels. */
@@ -47,8 +44,9 @@ interface Drawn {
   buffers: WebGLBuffer[];
   centre: Vec3;
   count: number;
-  /** Which points lie inside the volume the view is culled to, where it is. */
-  inside?: WebGLBuffer;
+  /** Which points lie inside the volume the view is culled to, where it is: the mask as last
+   * uploaded, and its buffer. */
+  inside?: { mask: Uint8Array; buffer: WebGLBuffer };
 }
 
 /** A tile's points as uploaded, with what drawing them reads. */
@@ -175,27 +173,39 @@ export class Renderer implements Drawer {
   private release(drawn: Drawn): void {
     this.gl.deleteVertexArray(drawn.vao);
     for (const buffer of drawn.buffers) this.gl.deleteBuffer(buffer);
-    if (drawn.inside !== undefined) this.gl.deleteBuffer(drawn.inside);
+    if (drawn.inside !== undefined) this.gl.deleteBuffer(drawn.inside.buffer);
   }
 
-  /** Draws only the points of the tile `id` that `inside` marks, or every one where it is none. */
-  setInside(id: string, inside: Uint8Array | undefined): void {
-    const drawn = this.batches.get(id);
-    if (drawn !== undefined) this.markInside(drawn, inside);
+  /** Draws only the points of `drawn` that `mask` marks, or every one where it is none:
+   * uploaded when the catalogue's mask for it changes, and let go once there is none. */
+  private useInside(drawn: Drawn, mask: Uint8Array | undefined): void {
+    if (drawn.inside?.mask === mask) return;
+    this.letGoInside(drawn);
+    if (mask !== undefined) drawn.inside = { mask, buffer: this.uploadInside(drawn.vao, mask) };
   }
 
-  private markInside(drawn: Drawn, inside: Uint8Array | undefined): void {
+  /** Draws every point of `drawn` again, and lets go of its mask's buffer. */
+  private letGoInside(drawn: Drawn): void {
+    if (drawn.inside === undefined) return;
     const gl = this.gl;
     gl.bindVertexArray(drawn.vao);
-    if (inside === undefined) gl.disableVertexAttribArray(this.insideAt);
-    else {
-      drawn.inside ??= gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, drawn.inside);
-      gl.bufferData(gl.ARRAY_BUFFER, inside, gl.STATIC_DRAW);
-      gl.enableVertexAttribArray(this.insideAt);
-      gl.vertexAttribPointer(this.insideAt, 1, gl.UNSIGNED_BYTE, false, 0, 0);
-    }
+    gl.disableVertexAttribArray(this.insideAt);
     gl.bindVertexArray(null);
+    gl.deleteBuffer(drawn.inside.buffer);
+    delete drawn.inside;
+  }
+
+  /** Uploads `mask` as the `a_inside` of the points `vao` draws: its buffer. */
+  private uploadInside(vao: WebGLVertexArrayObject, mask: Uint8Array): WebGLBuffer {
+    const gl = this.gl;
+    const buffer = gl.createBuffer();
+    gl.bindVertexArray(vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, mask, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(this.insideAt);
+    gl.vertexAttribPointer(this.insideAt, 1, gl.UNSIGNED_BYTE, false, 0, 0);
+    gl.bindVertexArray(null);
+    return buffer;
   }
 
   private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours"> & { sources?: Uint16Array }): Drawn {
@@ -214,9 +224,7 @@ export class Renderer implements Drawer {
   /** Adds a tile's points to what is drawn, fading them in from `now`. */
   addPoints(points: Points, now = performance.now()): void {
     this.forget(points.id);
-    const batch = { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain, slice: points.slice };
-    if (points.inside !== undefined) this.markInside(batch, points.inside);
-    this.batches.set(points.id, batch);
+    this.batches.set(points.id, { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain, slice: points.slice });
     this.fades.arrive(points.id, now);
   }
 
@@ -342,9 +350,11 @@ export class Renderer implements Drawer {
       this.useDetail(domainDetail);
       this.domainOpacity = detailOpacity(domainDetail, distance);
     }
+    const inside = detail.inside(batch.id);
+    this.useInside(batch, inside);
     gl.uniform2f(this.detailAt.slice, batch.slice[0], batch.slice[1]);
     gl.uniform1f(this.detailAt.count, batch.count);
-    gl.uniform1f(this.opacity, this.domainOpacity * fade);
+    gl.uniform1f(this.opacity, (inside === undefined ? this.domainOpacity : CULLED_OPACITY) * fade);
     gl.uniform1ui(this.hiddenSources, this.masks.sources.get(batch.domain) ?? 0);
     this.drawOne(this.points, frame, batch, gl.POINTS, count);
   }

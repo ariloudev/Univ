@@ -17,6 +17,11 @@ export const KIND_INDEX: Record<KindOfValue, number> = { measured: 0, estimated:
 /** How opaque every point is drawn, of a kind or a star: half. */
 export const POINT_OPACITY = 0.5;
 
+/** The opacity, of their own, the points inside a structure the view is culled to are drawn at
+ * (see-the-structures): fully opaque, whatever the eye's distance, as those outside no longer
+ * crowd them. */
+export const CULLED_OPACITY = 1 / POINT_OPACITY;
+
 /** The colour of every point outside the stars domain, whatever the kind of value of its
  * distance. */
 const POINT_COLOUR: Rgba = [0.42, 0.72, 1, POINT_OPACITY];

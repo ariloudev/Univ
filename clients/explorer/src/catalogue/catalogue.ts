@@ -59,17 +59,24 @@ export type Credit = ManifestSource & { domain: string };
 const sourcesOf = (domain: Domain): number => Math.max(0, ...domain.manifest.sources.map((s) => s.index)) + 1;
 
 /** A batch's points counted by kind of value, source and whether coloured, so that what is
- * turned off is counted out by cell rather than point by point. */
+ * turned off is counted out by cell rather than point by point; and, where the view is culled
+ * to a volume, which of them lie inside it, and those counted alone. */
 interface Histogram {
   /** The sources of the batch's domain: one more than the highest index of its manifest. */
   sources: number;
-  /** Cell `(kind × sources + source) × 2 + coloured`. */
+  /** Every point, by cell `(kind × sources + source) × 2 + coloured`. */
+  all: Uint32Array;
+  /** The points counted: every one, or those inside the volume the view is culled to. */
   cells: Uint32Array;
+  /** Which points lie inside the volume the view is culled to, 1 inside; none where it is not. */
+  inside: Uint8Array | undefined;
+  /** Whether the view is culled and no point lies inside. */
+  empty: boolean;
 }
 
 /** `batch`'s points counted by cell, its domain having `sources` sources: only those `inside`
- * marks, where the view is culled. */
-function histogramOf(batch: Batch, sources: number, inside: Uint8Array | undefined): Histogram {
+ * marks, where it marks any. */
+function cellsOf(batch: Batch, sources: number, inside?: Uint8Array): Uint32Array {
   const cells = new Uint32Array(KINDS.length * sources * 2);
   const bands = batch.stars?.bands;
   for (let i = 0; i < batch.kinds.length; i += 1) {
@@ -77,7 +84,7 @@ function histogramOf(batch: Batch, sources: number, inside: Uint8Array | undefin
     const at = ((batch.kinds[i] ?? 0) * sources + (batch.sources[i] ?? 0)) * 2 + ((bands?.[i] ?? 0) > 0 ? 1 : 0);
     cells[at] = (cells[at] ?? 0) + 1;
   }
-  return { sources, cells };
+  return cells;
 }
 
 /** The tiles held for `release`, fetched and dropped as `update` is told what the eye sees. */
@@ -114,14 +121,13 @@ export class Catalogue implements DrawnDetail {
   readonly stars = { coloured: 0, grey: 0 };
   /** The points counted of each domain. */
   private readonly domainPoints = new Map<string, number>();
-  /** Each drawn tile's points by cell, by tile id. */
+  /** Each drawn tile's points by cell, and which lie inside the volume the view is culled to, by
+   * tile id. */
   private readonly histograms = new Map<string, Histogram>();
   /** What is turned off: points it hides are not counted, nor their sources credited. */
   private masks: Masks = NO_MASKS;
-  /** The volume the view is culled to, if it is, and which points of each tile held lie inside
-   * it, by tile id (see-the-structures). */
+  /** The volume the view is culled to, if it is (see-the-structures). */
   private cull: Volume | undefined;
-  private readonly insides = new Map<string, Uint8Array>();
   /** Tiles that failed their SHA-256 or did not decode. */
   failed = 0;
   /** Tiles that could not be read, after `ATTEMPTS` tries. */
@@ -194,6 +200,7 @@ export class Catalogue implements DrawnDetail {
   /** The share of the tile `id`'s points, its first, that may be drawn for the view last seen:
    * every one with level of detail off, or before the view is known. */
   share(id: string): number {
+    if (this.histograms.get(id)?.empty === true) return 0;
     const tile = this.tree.byId.get(id);
     const viewed = tile === undefined ? undefined : this.viewed(tile.domain);
     if (tile === undefined || viewed === undefined || this.sight === undefined) return 1;
@@ -210,7 +217,7 @@ export class Catalogue implements DrawnDetail {
   /** Which points of `batch` are drawn for the view last seen: those whose rank lies below the
    * share of their domain the view needs at their own distance from the eye. */
   drawnPoints(batch: Batch): (index: number) => boolean {
-    const inside = this.insides.get(batch.tile.id);
+    const inside = this.inside(batch.tile.id);
     const drawn = this.drawnByDetail(batch);
     return inside === undefined ? drawn : (i) => inside[i] === 1 && drawn(i);
   }
@@ -246,8 +253,7 @@ export class Catalogue implements DrawnDetail {
     void fetchBatch(domain, tile, this.release, this.options)
       .then((batch) => {
         this.hold(tile, batch);
-        this.markInside(batch);
-        this.histograms.set(tile.id, histogramOf(batch, sourcesOf(domain), this.insides.get(tile.id)));
+        this.measure(batch);
         this.tally(batch, 1);
         this.events.onBatch(batch);
       })
@@ -318,7 +324,6 @@ export class Catalogue implements DrawnDetail {
     this.keptPoints -= batch.tile.points;
     this.tally(batch, -1);
     this.histograms.delete(id);
-    this.insides.delete(id);
     this.events.onDrop(batch);
   }
 
@@ -384,28 +389,31 @@ export class Catalogue implements DrawnDetail {
   /** Which points of the tile `id` lie inside the volume the view is culled to; none where it is
    * not culled, or the tile is not held. */
   inside(id: string): Uint8Array | undefined {
-    return this.insides.get(id);
+    return this.histograms.get(id)?.inside;
   }
 
-  /** Marks which points of `batch` lie inside the volume the view is culled to, if it is. */
-  private markInside(batch: Batch): void {
-    if (this.cull === undefined) this.insides.delete(batch.tile.id);
-    else this.insides.set(batch.tile.id, insideOf(this.cull, batch.tile.centre, batch.offsets));
+  /** Counts `batch`'s points by cell, and marks which lie inside the volume the view is culled
+   * to, if it is, counting those alone: every point is counted once, when it is read. */
+  private measure(batch: Batch): void {
+    const id = batch.tile.id;
+    const domain = this.domains.get(batch.tile.domain);
+    if (domain === undefined) return;
+    const sources = sourcesOf(domain);
+    const all = this.histograms.get(id)?.all ?? cellsOf(batch, sources);
+    const inside = this.cull === undefined ? undefined : insideOf(this.cull, batch.tile.centre, batch.offsets, batch.extent);
+    const cells = inside === undefined ? all : cellsOf(batch, sources, inside);
+    this.histograms.set(id, { sources, all, cells, inside, empty: inside !== undefined && !inside.includes(1) });
   }
 
   /** Culls the view to `volume`, or no longer where it is none (see-the-structures): the points
-   * outside it are counted out, the tiles whose cubes miss its bounding box dropped, and only
-   * tiles that meet it fetched. */
+   * outside it are counted out, the tiles whose cubes miss its bounding box dropped, roots too,
+   * and only tiles that meet it fetched. */
   setCull(volume: Volume | undefined): void {
     if (volume === this.cull) return;
     this.cull = volume;
-    for (const batch of [...this.drawn.values(), ...this.kept.values()]) {
-      this.markInside(batch);
-      const domain = this.domains.get(batch.tile.domain);
-      if (domain !== undefined) this.histograms.set(batch.tile.id, histogramOf(batch, sourcesOf(domain), this.insides.get(batch.tile.id)));
-    }
+    for (const batch of [...this.drawn.values(), ...this.kept.values()]) this.measure(batch);
     if (volume !== undefined) {
-      const missing = [...this.drawn.values()].map((b) => b.tile).filter((t) => t.parent !== undefined && !isWithin(t, volume.bounds));
+      const missing = [...this.drawn.values()].map((b) => b.tile).filter((t) => !isWithin(t, volume.bounds));
       for (const tile of missing) this.drop(tile);
       if (missing.length > 0) this.letGoBeyondAllowance();
     }

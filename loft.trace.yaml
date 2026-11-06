@@ -4305,6 +4305,9 @@ links:
   - node: 01a1b13c-1e10-748d-8008-e7e5419cfeb6
     reviewed: a8d410ba7e524d039a067df7ca234f6f75b15a8bf6160d73caa855e2b23fe47e
     tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "draws a point's extents along their ICRS vectors, whatever frame its point is given in"
+        body: 06697c7f245de8de53b19f19cd14683985d6b1e6d6c5f81821439727b4792c88
       - file: "clients/explorer/src/scene/volume.test.ts"
         name: "is the box bounding a member list's members, approximate"
         body: 515fac31e33566af398941ad8dccefdc1a408ab4e46450986978139d02c5767d
@@ -4325,10 +4328,16 @@ links:
     tests:
       - file: "clients/explorer/src/scene/volume.test.ts"
         name: "marks each of a tile's points inside or not, by its offset from the tile's centre"
-        body: 0475669e2db761ef7b4cd51d07db82f053c4299f49f404126849da4722d562d4
+        body: b7eddc847c87223b4a8d4b7a58eca444cee7bf41d20b80ed582d339da8f779ba
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws, and so lets the pointer name, only the points inside"
         body: c3076ce0e359373172cdfbc97f9a1131ac47479bc13e8c6c3178002dc2c66b47
+  - node: 01a1b166-0bb4-703d-a861-7c307a08ae0b
+    reviewed: a7ad37edaf164eccc42b087ecdec2fe04312c749b7d4b8e402162d2d94901a48
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "are drawn fully opaque inside a structure the view is culled to, twice as bright as the brightest without it"
+        body: d553521c83f3f9e5e44476c577339d44374bec2a5ed7885dae7f1094b46b43c2
   - node: 01a1b13c-1e10-748d-8008-e7e859257b94
     reviewed: 0b794c1cc9e9db9b28e278653c25b002f60c2eda7e53bb0a5ed79cc4cdc3aa9e
     tests:
@@ -4338,6 +4347,9 @@ links:
   - node: 01a1b13c-1e10-748d-8008-e7e934fc10cf
     reviewed: a35c5f0b49cf807da6580558bed132d233fdc807d61e4863f2ed629db423a897
     tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws none of a tile with no point inside, and counts none"
+        body: 2539751fb6668a089acf327eb0d19ec050914411306b3d4bd23261c96b08a304
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws, and so lets the pointer name, only the points inside"
         body: c3076ce0e359373172cdfbc97f9a1131ac47479bc13e8c6c3178002dc2c66b47
@@ -4359,6 +4371,9 @@ links:
   - node: 01a1b13c-1e10-748d-8008-e7ed28949521
     reviewed: a0c9a04ab6ff8a0af77a2c6e9c73ae180f690cadeb8d5ef222483ab043f3512e
     tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "fetches no tile, a root neither, whose cube misses the box, nor any while culled to nothing"
+        body: b182b44022a07b7cca820763498b8339818e000db55069320be438754e39e293
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "fetches only the tiles whose cubes meet the box bounding the volume, with level of detail on or off"
         body: 2a7e13e99544c3a51c1865be241940273932978f25ea777a09064b8dafe6ca73

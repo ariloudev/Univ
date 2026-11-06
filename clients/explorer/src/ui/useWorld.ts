@@ -20,7 +20,8 @@ import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts
 import type { Hidden } from "./hidden.ts";
 import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
-import type { Volume } from "../scene/volume.ts";
+import { NOTHING, type Volume } from "../scene/volume.ts";
+import { insideInAddress } from "./inside.ts";
 
 /** What is under the pointer, where the pointer is: a structure's name, which a click
  * chooses, or else a point. */
@@ -98,12 +99,10 @@ export function hide(world: World, hidden: Pick<Hidden, "domain" | "source" | "k
 }
 
 /** Culls `world` to `volume`, or no longer where it is none (see-the-structures): only the
- * points inside it drawn, picked, counted and fetched. */
+ * points inside it drawn, picked, counted and fetched. The renderer reads each tile's mask from
+ * the catalogue as it draws. */
 export function cull(world: World, volume: Volume | undefined): void {
-  const catalogue = world.catalogue;
-  if (catalogue === undefined) return;
-  catalogue.setCull(volume);
-  for (const p of world.pickable) world.renderer.setInside(p.batch.tile.id, catalogue.inside(p.batch.tile.id));
+  world.catalogue?.setCull(volume);
   world.controller.invalidate();
 }
 
@@ -126,8 +125,7 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
       const { id, centre } = batch.tile;
       const { extent } = batch;
       const { offsets, kinds, sources } = batch;
-      const inside = world.catalogue?.inside(id);
-      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice: batch.tile.slice, inside });
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice: batch.tile.slice });
       // Picking tests a sphere about the tile's centre: the one holding the points' own.
       const radius = norm(sub(extent.centre, centre)) + extent.radius;
       world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });
@@ -142,6 +140,8 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
     onChange: () => controller.invalidate(),
   };
   world.catalogue = new Catalogue(release, domains, events, { signal });
+  // A cull the address asks for holds back every tile until the structure it names is read.
+  if (insideInAddress(location.search) !== undefined) world.catalogue.setCull(NOTHING);
   world.catalogue.update(controller.sight);
   return { domains, rotations };
 }

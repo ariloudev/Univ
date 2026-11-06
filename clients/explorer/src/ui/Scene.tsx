@@ -9,7 +9,7 @@ import { choicesOf } from "./ShowPanel.tsx";
 import { type Selection, SidePanels } from "./SidePanels.tsx";
 import { useHidden } from "./hidden.ts";
 import { useChosen } from "./useChosen.ts";
-import { type Structures, structureView, useStructures } from "./useStructures.ts";
+import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
 import { type StructureChoice, useStructureChoice } from "./inside.ts";
 import type { Inside } from "./StructuresPanel.tsx";
@@ -29,16 +29,20 @@ function useCulledStructure(
   const detail = choice.structure === undefined ? undefined : structures.details.get(choice.structure);
   const volume = useMemo(() => (detail === undefined || rotations === undefined ? undefined : volumeOf(detail, rotations)), [detail, rotations]);
   const { inside, setInside } = choice;
+  // The cull an address asks for waits, culled to nothing, until the structures are read; a
+  // structure with no volume turns it off.
+  const read = rotations !== undefined && (structures.list.length > 0 || structures.problem !== undefined);
   useEffect(() => {
-    if (world !== undefined) cull(world, inside ? volume : undefined);
-  }, [world, domains, inside, volume]);
+    if (world === undefined || (inside && !read)) return;
+    if (inside && volume === undefined) setInside(false);
+    cull(world, inside ? volume : undefined);
+  }, [world, domains, inside, volume, read, setInside]);
+  // Flown to once read, unless another structure, or none, is chosen first.
   const flyOnRead = useRef(choice.structure);
   useEffect(() => {
-    const view = flyOnRead.current === undefined ? undefined : structureView(structures, flyOnRead.current);
-    if (world === undefined || view === undefined) return;
-    flyOnRead.current = undefined;
-    world.controller.flyTo(view.centre, view.distance);
-  }, [world, structures]);
+    if (flyOnRead.current !== choice.structure) flyOnRead.current = undefined;
+    if (world !== undefined && flyOnRead.current !== undefined && flyToStructure(world, structures, flyOnRead.current)) flyOnRead.current = undefined;
+  }, [world, structures, choice.structure]);
   return { detail, inside: volume === undefined ? undefined : { on: inside, approximate: volume.approximate, set: setInside } };
 }
 
@@ -78,8 +82,7 @@ export function Scene({ release, cosmology, levelOfDetail }: { release: number; 
     structureById: (id) => {
       choose(undefined);
       structureChoice.choose(id);
-      const view = structureView(structures, id);
-      if (world !== undefined && view !== undefined) world.controller.flyTo(view.centre, view.distance);
+      if (world !== undefined) flyToStructure(world, structures, id);
     },
     close: () => {
       choose(undefined);

@@ -127,8 +127,10 @@ describe("the volume a structure is culled to", () => {
 
   it("marks each of a tile's points inside or not, by its offset from the tile's centre", () => {
     const v = volume(null, { bounds: { min: [0, 0, 0], max: [1, 1, 1] } });
-    const mask = insideOf(v, [0.5, 0.5, 0.5], new Float32Array([0, 0, 0, 0.6, 0, 0, -0.4, 0.4, 0.4]));
-    expect([...mask]).toEqual([1, 0, 1]);
+    const offsets = new Float32Array([0, 0, 0, 0.6, 0, 0, -0.4, 0.4, 0.4]);
+    expect([...insideOf(v, [0.5, 0.5, 0.5], offsets, { centre: [0.5, 0.5, 0.5], radius: 1 })]).toEqual([1, 0, 1]);
+    // A tile whose points' sphere misses the volume's box has none inside, untested.
+    expect([...insideOf(v, [0.5, 0.5, 0.5], offsets, { centre: [5, 5, 5], radius: 1 })]).toEqual([0, 0, 0]);
   });
 
   it("is met by a tile's cube that reaches its bounding box, and by no other", () => {
