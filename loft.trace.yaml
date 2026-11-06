@@ -3320,7 +3320,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "marks Earth as the Solar System barycentre, and says when it cannot draw"
-        body: 540201203d9e919336a94c7754c572656419fd92d3f69369214769d80ea385c3
+        body: 94620e9d119b36e0c6589c7ec8d72940ec2faa52a3fbbba496056ad56a65fbd5
   - node: 01a1a497-e843-728a-bce8-40026e7286d2
     reviewed: c351be9f44274d24780c20b9925fd09dc4e021d26e7cf3ce0502f2f699a0a1c8
     tests:
@@ -3397,7 +3397,7 @@ links:
         name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
         body: 4c628499d9866e731ea06217509c923c676ee3f914a3323efdd332cd7b220d53
   - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
-    reviewed: 7fbd45cc7ade9bab68f3b5575662f8b135c03c30b90a126fad2508cf9d5fa72b
+    reviewed: a669ebb08831bd0a2a062ec3860089a0c1d7a3e250c11cdd027ebc864c241870
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "holds no more than 6,000,000 points, counting those on their way"
@@ -3453,6 +3453,39 @@ links:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws on a kept tile the view wants again without reading it again"
         body: b93e89567385e23ef9d5e6f1db114eca11980f2ec792b3460fe3c3f35639a25a
+  - node: 01a1b07b-8157-7546-927e-2722e634b9b0
+    reviewed: 973c23c057b8b79645b5e62fc25abf5705ec9ef8fa98cdeddb32248b0de765b8
+    tests:
+      - file: "clients/explorer/src/ui/App.test.tsx"
+        name: "holds a level-of-detail switch in its top bar, on by default, that turns it off and on"
+        body: 46e498f3b666c3712acbc973b616ba8eaf98d0b9a226bc6bcbe436b06a68cea8
+  - node: 01a1b07b-8157-7546-927e-272335750e5f
+    reviewed: 5a51da406e444405ddac395036b21c4c46ad6e2fbf010814eedda68bdfbc0f5d
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "fetches every tile, the coarser levels first, whatever the view and the budget, and drops none"
+        body: 80caf7fe8316ce1ee60dfef99ff49e24f094b1a8f08f57c195c54ad7ea0701b2
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every tile with level of detail off, whatever the view and the budget, and comes back within the budget once it is on"
+        body: 2e8b428ae89f3499c1e18522379d939bd65a2287f25569d9d1421c7e1d8e6b35
+  - node: 01a1b07b-8157-7546-927e-2724ac33dc33
+    reviewed: 4ef267326d10412e4ad89616756fd1b15d6f5bcabc69491a2f723a1cb9bfb287
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "is followed, once turned on again, by dropping what the view does not want until the points held fit the budget"
+        body: 90d5ea88f17640060d178574d4167c1fe71e9591c7b4f0d7c5e517e605ac3180
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every tile with level of detail off, whatever the view and the budget, and comes back within the budget once it is on"
+        body: 2e8b428ae89f3499c1e18522379d939bd65a2287f25569d9d1421c7e1d8e6b35
+  - node: 01a1b07b-8157-7546-927e-2725108d8df2
+    reviewed: 680958061e9619ee39ac4c22b050510ad1b8157055d4fa1532868212ce81d94d
+    tests:
+      - file: "clients/explorer/src/ui/levelOfDetail.test.ts"
+        name: "is kept off in the address, beside what else it holds, and leaves it once on again"
+        body: 75c7f7c0ef7e1b935ee3842a5a473bc034b7885413ef271fa35f1aecc86fefd9
+      - file: "clients/explorer/src/ui/levelOfDetail.test.ts"
+        name: "starts off where the address turns it off, as after a reload"
+        body: 670d683cf11a7c53613fd188ea0749dd01330d4eee32ecdebf1dbf66acbf7de0
   - node: 01a1a689-0b25-768a-9f1e-cc2c484365d4
     reviewed: e82b1fb1e371fca155aeaa6795d4f08bf91215034ad308160bd02a5eac646c7f
     tests:

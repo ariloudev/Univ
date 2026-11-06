@@ -255,6 +255,22 @@ describe("the catalogue", () => {
     await steady(drawn);
   });
 
+  it("draws every tile with level of detail off, whatever the view and the budget, and comes back within the budget once it is on", async () => {
+    const { catalogue, drawn, root, side, looking, budget } = await twoSides(server(undefined, undefined, ["simulated"]), 0);
+    const total = () => catalogue.kinds.reduce((a, b) => a + b, 0);
+    catalogue.update(looking(true));
+    await steady(drawn);
+    catalogue.setLevelOfDetail(false);
+    await steady(drawn);
+    const every = [root, ...side(true), ...side(false)].map((t) => t.id);
+    expect([...drawn].sort()).toEqual(every.sort());
+    expect(total()).toBeGreaterThan(budget);
+    catalogue.setLevelOfDetail(true);
+    await steady(drawn);
+    expect([...drawn].sort()).toEqual([root.id, ...side(true).map((t) => t.id)].sort());
+    expect(total()).toBeLessThanOrEqual(budget);
+  });
+
   it("does not count a tile Univ Server could not serve as failing its check", async () => {
     const drawn: string[] = [];
     const catalogue = await loaded(server(undefined, "stars/r"), drawn);

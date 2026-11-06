@@ -101,7 +101,7 @@ describe("the panels", () => {
 
 describe("the view", () => {
   it("marks Earth as the Solar System barycentre, and says when it cannot draw", async () => {
-    render(<Scene release={7} cosmology="Planck 2018" />);
+    render(<Scene release={7} cosmology="Planck 2018" levelOfDetail />);
     expect(screen.getByTitle("The Solar System barycentre, within about 1 AU of Earth").textContent).toContain("Earth");
     expect((await screen.findByRole("alert")).textContent).toContain("cannot draw with WebGL2");
   });

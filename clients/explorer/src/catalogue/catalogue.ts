@@ -6,7 +6,7 @@ import type { ManifestSource } from "univ-tile-decoder";
 
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
-import { POINT_BUDGET, type Tree, plan, treeOf } from "./lod.ts";
+import { POINT_BUDGET, type Tree, plan, planEvery, treeOf } from "./lod.ts";
 import { KINDS } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
@@ -84,6 +84,8 @@ export class Catalogue {
   private readonly kept = new Map<string, Batch>();
   private keptPoints = 0;
   private sight: Sight | undefined;
+  /** Whether the tiles held follow the view within the budget; off, every tile is fetched. */
+  private levelOfDetail = true;
   /** Points drawn outside the stars domain of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
   /** Stars drawn in the colour of their colour index, and in grey for want of one. */
@@ -123,7 +125,7 @@ export class Catalogue {
     if (room <= 0) return;
     const pending = this.resting.size === 0 ? this.pending : new Set([...this.pending, ...this.resting]);
     const holding = { settled: this.settled, drawn: this.drawn, pending, points: this.points };
-    const next = plan(this.tree, holding, sight, room, this.options.budget);
+    const next = this.levelOfDetail ? plan(this.tree, holding, sight, room, this.options.budget) : planEvery(this.tree, holding, room);
     for (const tile of next.drop) this.drop(tile);
     let revived = false;
     for (const tile of next.fetch) {
@@ -139,6 +141,14 @@ export class Catalogue {
     // A revived tile ends no fetch, which is what asks for the next round: the plan, which could
     // not refine it while it was not held, is asked again.
     if (revived) queueMicrotask(() => this.update(sight));
+  }
+
+  /** Turns level of detail on or off: off, every tile is fetched, the coarser levels first, and
+   * none dropped; on again, the tiles held come back within the budget. */
+  setLevelOfDetail(on: boolean): void {
+    if (on === this.levelOfDetail) return;
+    this.levelOfDetail = on;
+    if (this.sight !== undefined) this.update(this.sight);
   }
 
   private fetch(domain: Domain, tile: DomainTile): void {

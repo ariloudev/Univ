@@ -60,7 +60,10 @@ again.
   shows no hole while new tiles arrive. A held tile's children are kept down to 2 px
   and 1° beyond the view, and a family that holds a tile counts half again its size, so that a
   view moving a little does not drop and fetch the same tiles over and over. Once read, a tile is
-  measured by where its points lie, not by its cube, which can be far larger. Each tile is
+  measured by where its points lie, not by its cube, which can be far larger. The **Level of
+  detail** switch in the top bar turns all this off (`?lod=off` in the address): every tile is
+  fetched, the coarser levels first, whatever the view and the budget, and none is dropped;
+  turned on again, the tiles the view does not want are dropped until the budget holds. Each tile is
   checked against its manifest's SHA-256 and decoded by the reference decoder in
   `../tile-decoder`; a tile that fails is not drawn and is counted.
 - **Culling.** Only the tiles whose points' sphere reaches into the view are drawn.

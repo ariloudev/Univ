@@ -2671,6 +2671,15 @@ blocks:
         title: "Plan every tile with level of detail off, trim to the budget when on"
         detail: "lod.ts and catalogue.ts with their tests."
         state: active
+      - key: 01a1b07e-56bf-77a8-8736-62c4641bedcf
+        at: 2026-11-06T10:53:52Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Plan every tile with level of detail off, trim to the budget when on"
+        detail: "lod.ts: planEvery and Room.trim; catalogue.ts: setLevelOfDetail. Tests in lod.test.ts and catalogue.test.ts."
+        state: done
   - key: 01a1b07b-b527-7609-a67a-e103c4cf608a
     id: lod-ui
     kind: task
@@ -2684,3 +2693,12 @@ blocks:
         title: "The switch in the top bar, kept in the address"
         detail: "App.tsx, Scene/useWorld wiring, a UI test."
         state: open
+      - key: 01a1b07e-56bf-77a8-8736-62c5117df754
+        at: 2026-11-06T10:53:52Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The switch in the top bar, kept in the address"
+        detail: "levelOfDetail.ts (useLevelOfDetail, ?lod=off), the switch in App.tsx's header, Scene passes it to the catalogue. Tests in App.test.tsx and levelOfDetail.test.ts. Explorer check: 215 tests, fallow, build."
+        state: done

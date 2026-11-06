@@ -37,6 +37,7 @@ const refused = () =>
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  history.replaceState(null, "", "/");
 });
 
 describe("opening the explorer", () => {
@@ -56,6 +57,20 @@ describe("opening the explorer", () => {
     await userEvent.selectOptions(picker, "6");
     expect(screen.getByText(/Drawing release 6/)).toBeTruthy();
     expect(screen.getByRole("region", { name: "The view" }).dataset["release"]).toBe("6");
+  });
+
+  it("holds a level-of-detail switch in its top bar, on by default, that turns it off and on", async () => {
+    serve(ok);
+    render(<App />);
+    const toggle = await screen.findByRole("switch", { name: "Level of detail" });
+    expect(toggle.closest("header")).not.toBeNull();
+    expect((toggle as HTMLInputElement).checked).toBe(true);
+    await userEvent.click(toggle);
+    expect((toggle as HTMLInputElement).checked).toBe(false);
+    expect(location.search).toContain("lod=off");
+    await userEvent.click(toggle);
+    expect((toggle as HTMLInputElement).checked).toBe(true);
+    expect(location.search).not.toContain("lod");
   });
 
   it("says where it looked and how to start Univ Server, and tries again when asked", async () => {

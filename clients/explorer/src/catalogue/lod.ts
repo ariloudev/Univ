@@ -213,9 +213,21 @@ function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, b
   return chosen;
 }
 
+/** Whether the tile `id` is neither settled nor on its way. */
+const isOpen = (holding: Holding, id: string): boolean => !holding.settled.has(id) && !holding.pending.has(id);
+
+/** What to fetch with level of detail off: `count` of the tiles not yet held, the coarser levels
+ * first, whatever the view and the budget, and nothing to drop. */
+export function planEvery<T extends Tile>(tree: Tree<T>, holding: Holding, count: number): Plan<T> {
+  const open = tree.tiles.filter((t) => isOpen(holding, t.id));
+  return { fetch: open.sort((a, b) => a.address.length - b.address.length).slice(0, count), drop: [] };
+}
+
 /** What to fetch and drop for `sight`: every root first; then each wanted family whose parent is
  * settled, the most needed first, its tiles not yet held all at once once the budget has room,
- * made by dropping held tiles the view does not want. At most `count` families start at once. */
+ * made by dropping held tiles the view does not want. At most `count` families start at once.
+ * Held points beyond the budget, as level of detail turned on again leaves them, are dropped
+ * the same way until they fit. */
 export function plan<T extends Tile>(
   tree: Tree<T>,
   holding: Holding,
@@ -223,7 +235,7 @@ export function plan<T extends Tile>(
   count: number,
   budget = POINT_BUDGET,
 ): Plan<T> {
-  const open = (t: T) => !holding.settled.has(t.id) && !holding.pending.has(t.id);
+  const open = (t: T) => isOpen(holding, t.id);
   const roots = tree.roots.filter(open);
   if (roots.length > 0) return { fetch: roots.slice(0, count), drop: [] };
   const families = wanted(tree, holding, sight, budget);
@@ -239,6 +251,7 @@ export function plan<T extends Tile>(
     fetch.push(...tiles.sort((a, b) => apparentSize(b, sight.eye) - apparentSize(a, sight.eye)));
     started += 1;
   }
+  room.trim();
   return { fetch, drop: room.drop };
 }
 
@@ -271,12 +284,26 @@ class Room<T extends Tile> {
         this.spare = before.spare;
         return false;
       }
-      this.drop.push(next);
-      this.dropped.add(next.id);
-      this.points -= next.points;
+      this.take(next);
     }
     this.points += points;
     return true;
+  }
+
+  /** Drops what the view does not want until the points held fit the budget, or nothing it
+   * may drop is left. */
+  trim(): void {
+    while (this.points > this.budget) {
+      const next = this.next();
+      if (next === undefined) return;
+      this.take(next);
+    }
+  }
+
+  private take(tile: T): void {
+    this.drop.push(tile);
+    this.dropped.add(tile.id);
+    this.points -= tile.points;
   }
 
   /** The next tile to drop: the least needed leaf of what is held and not wanted. */

@@ -15,6 +15,7 @@ import {
   apparentSize,
   extentOf,
   plan,
+  planEvery,
   spacing,
   treeOf,
 } from "./lod.ts";
@@ -349,5 +350,23 @@ describe("a view that moves a little", () => {
     const after = Array.from({ length: 4 }, () => catalogue.settle(turned(0.3)) + catalogue.settle(turned(0.3 + turn)));
     expect(after).toEqual([0, 0, 0, 0]);
     expect(catalogue.settle(turned(0.3 + (30 * Math.PI) / 180))).toBeGreaterThan(0);
+  });
+});
+
+describe("level of detail turned off", () => {
+  it("fetches every tile, the coarser levels first, whatever the view and the budget, and drops none", () => {
+    // The plan takes no view, and the budget is already spent twice over.
+    expect(planEvery(treeOf(TILES), holding([], POINT_BUDGET * 2), 3)).toEqual({ fetch: [TILES[0], TILES[1], TILES[2]], drop: [] });
+    expect(ids(planEvery(treeOf(TILES), holding(ROOTS, POINT_BUDGET * 2), 10).fetch)).toEqual(["web/r0", "web/r1", "web/r7", "web/r70"]);
+    expect(ids(planEvery(treeOf(TILES), holding(ROOTS, 0, ["web/r1"]), 2).fetch)).toEqual(["web/r0", "web/r7"]);
+    expect(planEvery(treeOf(TILES), holding(ids(TILES)), 10)).toEqual({ fetch: [], drop: [] });
+  });
+
+  it("is followed, once turned on again, by dropping what the view does not want until the points held fit the budget", () => {
+    // Every tile held, 60 points, within a budget of 30: the view at x ≥ 0 wants none of the
+    // root's children within it, so r0 (out of view) goes first, then the smaller r70, then r1.
+    const next = plan(treeOf(TILES), holding(ids(TILES), 60), sight([300, 300, 300]), 6, 30);
+    expect(next.fetch).toEqual([]);
+    expect(ids(next.drop)).toEqual(["web/r0", "web/r70", "web/r1"]);
   });
 });
