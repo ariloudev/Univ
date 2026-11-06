@@ -18,7 +18,7 @@ use crate::state::{State, current_dir};
 pub fn reindex_command(state: &Path, persist_to: &Path) -> Result<String, String> {
     let held = State::read(state).map_err(|e| e.to_string())?;
     let last = u32::try_from(held.ledger.releases().len()).map_err(|e| e.to_string())?;
-    let mut local = LocalD1::open(persist_to)?;
+    let local = LocalD1::open(persist_to)?;
     if local.latest != last {
         return Err(format!(
             "latest points to release {} in the local D1, and the state's last release is \
@@ -27,8 +27,7 @@ pub fn reindex_command(state: &Path, persist_to: &Path) -> Result<String, String
         ));
     }
     let dir = current_dir(state).map_err(|e| e.to_string())?;
-    let at = (local.latest, local.version);
-    let done = reindex(&mut local, at, &dir)?;
+    let done = reindex(&local, local.latest, &dir)?;
     let rows: u64 = done.rows.values().sum();
     Ok(format!(
         "release {last}: {rows} rows of {} tables indexed in {}; numbering of {} terms, {} \

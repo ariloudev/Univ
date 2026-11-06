@@ -329,14 +329,13 @@ fn a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_ch
         publishing(&mut a, n, &out, &state, journals.path(), &clock).unwrap();
     }
     let mut b = as_schema_5(&a, &out, &[1, 2]);
-    let named = std::fs::read_to_string(state.join("current")).unwrap();
-    let dir = state.join(named.trim());
+    let dir = univ_ingest::state::current_dir(&state).unwrap();
     // A store of schema 5 is refused: it holds no map of paths to index.
-    assert!(reindex(&mut Rows(&b), (2, 5), &dir).is_err());
+    assert!(reindex(&Rows(&b), 2, &dir).is_err());
     // Migrated, then the state's numbering and row index of release 2 made again from it.
     let work = tempfile::tempdir().unwrap();
     assert!(migrate(&mut b, work.path(), &mut |_| {}).unwrap());
-    reindex(&mut Rows(&b), (2, 6), &dir).unwrap();
+    reindex(&Rows(&b), 2, &dir).unwrap();
     for n in [1, 2] {
         std::fs::remove_file(univ_ingest::publish::journal::file(journals.path(), n)).unwrap();
     }

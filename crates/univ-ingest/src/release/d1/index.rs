@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 
 use sha2::{Digest, Sha256};
 use univ_model::release::shards::Database;
-use univ_model::release::{ColumnKind, SqlValue, Table};
+use univ_model::release::{SqlValue, Table};
 
 /// The directory, within a state, of the row index.
 pub const ROWS: &str = "rows";
@@ -306,44 +306,26 @@ pub(super) fn places(table: &Table, shared: bool) -> (Vec<usize>, Vec<usize>) {
 }
 
 /// A 128-bit hash of the values of `row` at `places`, each tagged by its type, a text by its
-/// length too: SHA-256's first 16 bytes. Each value is taken as its column's kind in `kinds`
-/// stores it, as SQLite does: an integer in a real column as that real, a whole real in an
-/// integer column as that integer, so that a row read back from D1 hashes as it was written.
+/// length too: SHA-256's first 16 bytes.
 #[must_use]
-pub(super) fn hash_at(kinds: &[ColumnKind], places: &[usize], row: &[SqlValue]) -> u128 {
+pub(super) fn hash_at(places: &[usize], row: &[SqlValue]) -> u128 {
     let mut h = Sha256::new();
     for &i in places {
-        let real = |x: f64, h: &mut Sha256| {
-            h.update([2]);
-            h.update(x.to_bits().to_le_bytes());
-        };
-        match (kinds.get(i), row.get(i)) {
-            #[expect(
-                clippy::cast_precision_loss,
-                reason = "as SQLite stores it in a real column"
-            )]
-            (Some(ColumnKind::Real), Some(SqlValue::Integer(n))) => real(*n as f64, &mut h),
-            #[expect(
-                clippy::cast_possible_truncation,
-                reason = "a whole real within i64, as SQLite stores it in an integer column"
-            )]
-            (Some(ColumnKind::Integer), Some(SqlValue::Real(x)))
-                if x.fract() == 0.0 && x.abs() < 9.2e18 =>
-            {
-                h.update([1]);
-                h.update((*x as i64).to_le_bytes());
-            }
-            (_, Some(SqlValue::Integer(n))) => {
+        match row.get(i) {
+            Some(SqlValue::Integer(n)) => {
                 h.update([1]);
                 h.update(n.to_le_bytes());
             }
-            (_, Some(SqlValue::Real(x))) => real(*x, &mut h),
-            (_, Some(SqlValue::Text(t))) => {
+            Some(SqlValue::Real(x)) => {
+                h.update([2]);
+                h.update(x.to_bits().to_le_bytes());
+            }
+            Some(SqlValue::Text(t)) => {
                 h.update([3]);
                 h.update((t.len() as u64).to_le_bytes());
                 h.update(t.as_bytes());
             }
-            (_, Some(SqlValue::Null) | None) => h.update([0]),
+            Some(SqlValue::Null) | None => h.update([0]),
         }
     }
     let mut b = [0_u8; 16];
@@ -432,26 +414,13 @@ mod tests {
         let mut row = vec![SqlValue::Null; table.columns.len()];
         row[table.position("id").unwrap()] = SqlValue::Integer(7);
         row[table.position("release").unwrap()] = SqlValue::Integer(1);
-        let kinds = table.kinds;
-        let before = (
-            hash_at(kinds, &natural, &row),
-            hash_at(kinds, &content, &row),
-        );
+        let before = (hash_at(&natural, &row), hash_at(&content, &row));
         row[table.position("release").unwrap()] = SqlValue::Integer(2);
-        assert_eq!(
-            (
-                hash_at(kinds, &natural, &row),
-                hash_at(kinds, &content, &row)
-            ),
-            before
-        );
+        assert_eq!((hash_at(&natural, &row), hash_at(&content, &row)), before);
         // SHA-256 of the tag 1 and 7 as 8 bytes: what any build, on any toolchain, gives.
         let digest = Sha256::digest([1, 7, 0, 0, 0, 0, 0, 0, 0]);
         let mut b = [0_u8; 16];
         b.copy_from_slice(&digest[..16]);
-        assert_eq!(hash_at(kinds, &natural, &row), u128::from_le_bytes(b));
-        // A whole real in an integer column hashes as the integer SQLite stores.
-        row[table.position("id").unwrap()] = SqlValue::Real(7.0);
-        assert_eq!(hash_at(kinds, &natural, &row), u128::from_le_bytes(b));
+        assert_eq!(hash_at(&natural, &row), u128::from_le_bytes(b));
     }
 }

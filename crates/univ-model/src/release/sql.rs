@@ -52,9 +52,20 @@ pub enum SqlValue {
     Text(String),
 }
 
+impl SqlValue {
+    /// A real as a REAL column gives it back: -0.0 as 0.0, which SQLite stores as the integer
+    /// 0, so that what is written, estimated, fingerprinted and hashed is what D1 holds. A
+    /// value that is not finite is kept, for the build's check to refuse.
+    #[must_use]
+    pub fn real(x: f64) -> Self {
+        // IEEE 754: -0.0 + 0.0 is +0.0, and every other value is unchanged.
+        Self::Real(x + 0.0)
+    }
+}
+
 impl From<Option<f64>> for SqlValue {
     fn from(value: Option<f64>) -> Self {
-        value.map_or(Self::Null, Self::Real)
+        value.map_or(Self::Null, Self::real)
     }
 }
 
@@ -78,7 +89,7 @@ impl From<&str> for SqlValue {
 
 impl From<f64> for SqlValue {
     fn from(value: f64) -> Self {
-        Self::Real(value)
+        Self::real(value)
     }
 }
 
@@ -376,6 +387,10 @@ mod tests {
         assert_eq!(SqlValue::Real(1e300).literal(), "1e300");
         assert_eq!(SqlValue::Real(2.0).literal(), "2.0");
         assert_eq!(SqlValue::Real(f64::NAN).literal(), "NULL");
+        assert_eq!(SqlValue::from(-0.0), SqlValue::Real(0.0));
+        assert!(matches!(SqlValue::from(-0.0), SqlValue::Real(x) if x.is_sign_positive()));
+        assert!(matches!(SqlValue::from(f64::NAN), SqlValue::Real(x) if x.is_nan()));
+        assert_eq!(SqlValue::from(Some(-1.5)), SqlValue::Real(-1.5));
         assert_eq!(SqlValue::Integer(-7).literal(), "-7");
         assert_eq!(SqlValue::from(None::<f64>).literal(), "NULL");
     }

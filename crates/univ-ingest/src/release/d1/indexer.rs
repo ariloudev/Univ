@@ -53,8 +53,8 @@ impl Indexer {
         }
         .ok_or_else(|| format!("a row of {} has no release", self.table.name))?;
         let row = Indexed {
-            key: hash_at(self.table.kinds, &self.key, values),
-            content: hash_at(self.table.kinds, &self.content, values),
+            key: hash_at(&self.key, values),
+            content: hash_at(&self.content, values),
             release,
         };
         key_text(&self.key, values, &mut self.text);

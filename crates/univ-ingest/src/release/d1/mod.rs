@@ -224,11 +224,11 @@ impl<'s> D1Writer<'s> {
         let Some(sink) = self.sink.as_deref_mut() else {
             return Ok(());
         };
-        let key = hash_at(table.kinds, &state.key, values);
+        let key = hash_at(&state.key, values);
         // A row the release before holds unchanged: kept with the release that added it.
         let mut kept = None;
         if let (Some(number), Some(next)) = (self.comparing, state.next.as_mut()) {
-            let content = hash_at(table.kinds, &state.content_at, values);
+            let content = hash_at(&state.content_at, values);
             kept = state
                 .previous
                 .as_mut()

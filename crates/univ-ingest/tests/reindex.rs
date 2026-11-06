@@ -13,17 +13,12 @@ mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Rows, publishing};
 use release_fixture::{build_next, fixture};
-use univ_ingest::release::local_d1::{D1_FILES, LocalD1};
+use univ_ingest::release::local_d1::LocalD1;
 use univ_ingest::release::reindex::reindex;
 use univ_ingest::release::{Kept, NUMBERING, ROWS};
 use univ_ingest::state::State;
+use univ_model::release::LOCAL_D1_FILES;
 use univ_model::release::{Scope, TABLES};
-
-/// The directory of the state the state directory `state` holds now.
-fn current(state: &std::path::Path) -> std::path::PathBuf {
-    let named = std::fs::read_to_string(state.join("current")).unwrap();
-    state.join(named.trim())
-}
 
 #[test]
 fn a_reindex_from_the_store_gives_the_numbering_the_build_kept_and_an_index_it_writes_nothing_on() {
@@ -39,11 +34,11 @@ fn a_reindex_from_the_store_gives_the_numbering_the_build_kept_and_an_index_it_w
     }
     let built: Kept = State::read(state).unwrap().kept;
     // The state loses its numbering and row index.
-    let dir = current(state);
+    let dir = univ_ingest::state::current_dir(state).unwrap();
     std::fs::remove_file(dir.join(NUMBERING)).unwrap();
     std::fs::remove_dir_all(dir.join(ROWS)).unwrap();
 
-    let reindexed = reindex(&mut Rows(&store), (2, 6), &dir).unwrap();
+    let reindexed = reindex(&Rows(&store), 2, &dir).unwrap();
     assert_eq!(reindexed.kept, built);
     assert!(reindexed.rows["objects"] > 0);
 
@@ -78,7 +73,7 @@ fn the_local_d1_is_read_from_its_files_each_told_by_what_it_holds() {
     // Each database written to a file named as Miniflare names it, by no order of its own, beside
     // a database of no release and a shard bound but never loaded.
     let persist = tempfile::tempdir().unwrap();
-    let files = persist.path().join(D1_FILES);
+    let files = persist.path().join(LOCAL_D1_FILES);
     std::fs::create_dir_all(&files).unwrap();
     let databases = std::iter::once(&store.db).chain(store.shards.values());
     for (i, db) in databases.enumerate() {
@@ -96,11 +91,11 @@ fn the_local_d1_is_read_from_its_files_each_told_by_what_it_holds() {
     let empty = rusqlite::Connection::open(files.join("empty.sqlite")).unwrap();
     empty.execute_batch(univ_model::release::SCHEMA).unwrap();
 
-    let mut local = LocalD1::open(persist.path()).unwrap();
-    assert_eq!((local.latest, local.version), (2, 6));
+    let local = LocalD1::open(persist.path()).unwrap();
+    assert_eq!(local.latest, 2);
     let (a, b) = (tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap());
-    let from_files = reindex(&mut local, (2, 6), a.path()).unwrap();
-    let from_store = reindex(&mut Rows(&store), (2, 6), b.path()).unwrap();
+    let from_files = reindex(&local, 2, a.path()).unwrap();
+    let from_store = reindex(&Rows(&store), 2, b.path()).unwrap();
     assert_eq!(from_files, from_store);
     assert_eq!(from_files.kept, State::read(state).unwrap().kept);
     // The same index, file for file.
