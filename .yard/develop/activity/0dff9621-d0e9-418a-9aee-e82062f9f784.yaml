@@ -1,5 +1,41 @@
 session: 0dff9621-d0e9-418a-9aee-e82062f9f784
 host: claude-code
-lastEnded: 2026-11-05T00:21:03Z
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-06T15:39:02Z
 turns:
   - started: 2026-11-05T00:21:03Z
+loft:
+  - commands:
+      - publish
+    agent: main
+    started: 2026-11-06T15:38:50Z
+    ended: 2026-11-06T15:38:56Z
+    failed: false
+  - commands:
+      - verify
+    agent: main
+    started: 2026-11-06T15:39:00Z
+    ended: 2026-11-06T15:39:02Z
+    failed: false
