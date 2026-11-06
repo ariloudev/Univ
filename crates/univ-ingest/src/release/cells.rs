@@ -12,7 +12,9 @@ use std::collections::HashMap;
 
 use univ_model::cosmology::Cosmology;
 use univ_model::geometry::Aabb;
-use univ_model::release::cells::structure_cells;
+use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
+use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, STRUCTURE_SPAN, structure_cells};
+use univ_model::release::manifest::{CellIndex, CellSpaceInfo, NotIndexed};
 use univ_model::release::rows::StructureCellRow;
 use univ_model::release::{Cell, cells::SPACES};
 
@@ -145,4 +147,33 @@ pub fn index_rows(
         }
     }
     Ok(rows)
+}
+
+/// The cell index's scheme, as the manifest records it.
+pub fn cell_index(cells: &CellRows) -> CellIndex {
+    CellIndex {
+        scheme: "uniform grid of cubes anchored at the origin, cell = floor(coordinate / (edge \
+                 * 2^level)); objects at level 0 of their scale domain, structures at the \
+                 finest level their box meets at most structure_span cells a side"
+            .to_owned(),
+        frame: format!("{ICRS_CARTESIAN_NAME}, origin the {BARYCENTRE}"),
+        spaces: SPACES
+            .iter()
+            .map(|s| CellSpaceInfo {
+                name: s.name().to_owned(),
+                unit: s.unit().to_owned(),
+                edge: s.edge(),
+            })
+            .collect(),
+        structure_span: STRUCTURE_SPAN,
+        max_structure_level: MAX_STRUCTURE_LEVEL,
+        not_indexed: cells
+            .not_indexed
+            .iter()
+            .map(|(structure, reason)| NotIndexed {
+                structure: structure.clone(),
+                reason: reason.clone(),
+            })
+            .collect(),
+    }
 }

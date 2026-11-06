@@ -15,14 +15,30 @@ use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
 
 use super::d1::D1Writer;
 use super::json;
-use super::terms::{SourceIndex, Terms};
+use super::kept::Kept;
+use super::terms::{Chains, SourceIndex, Terms};
 
-/// What numbers the rows of a release: its number, terms and sources.
+/// What numbers the rows of a release: its number, terms, sources and transformation chains.
 #[derive(Clone)]
 pub struct Numbering {
     pub release: u32,
     pub terms: Terms,
     pub sources: SourceIndex,
+    pub chains: Chains,
+}
+
+impl Numbering {
+    /// The numbering of release `release`, its sources indexed by `sources`, keeping the terms
+    /// and chains `previous`, the release before, numbered.
+    #[must_use]
+    pub fn kept(release: u32, sources: SourceIndex, previous: &Kept) -> Self {
+        Self {
+            release,
+            terms: Terms::kept(&previous.terms),
+            sources,
+            chains: Chains::kept(&previous.chains),
+        }
+    }
 }
 
 /// `n` as a column's integer.

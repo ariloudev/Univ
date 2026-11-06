@@ -20,6 +20,7 @@ use univ_model::release::shards::Database;
 use super::cells::{DomainCell, ObjectCells};
 use super::d1::D1Writer;
 use super::entries::Numbering;
+use super::kept::Kept;
 use super::objects::ObjectWriter;
 use super::packing::{CellLoad, Packing, pack};
 use super::terms::Terms;
@@ -70,6 +71,7 @@ impl Sharding<'_> {
         objects: &[ReleaseObject],
         numbering: &Numbering,
         budget: u64,
+        previous: &Kept,
         watch: Watch<'_>,
     ) -> Result<Packing, String> {
         let mut writer = D1Writer::measuring(1);
@@ -101,7 +103,7 @@ impl Sharding<'_> {
                 None => loose.push((o.id.get(), bytes)),
             }
         }
-        pack(&loads, &loose, budget).map_err(|e| e.to_string())
+        pack(&loads, &loose, budget, previous).map_err(|e| e.to_string())
     }
 
     /// Writes every object of `objects` through `writer` to the shard `packing` gives it, with

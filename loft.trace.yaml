@@ -1268,7 +1268,7 @@ links:
         body: 482ceec67f7f57aaece5b93e2a14b844d8816733b8ce4980196de72f78b1789d
       - file: "crates/univ-ingest/tests/state.rs"
         name: "entry_ids_that_leave_out_a_live_id_are_refused_naming_it"
-        body: 1fec0249a720f031c8d6b66a6251d56f37bbe073a4366a0bcd4cef9298a9d073
+        body: 0b1a6c6f99d12fe0d79acf4fd920ac8b2f36b4793039cc0bf0a8c63d0a5ddc1e
   - node: 01a19f23-636f-72bd-b194-151c7fe18cca
     reviewed: 7575e1b16e07823353121f0841226f3006f1828d9546ddeb87afc1a794b3ae79
     tests:
@@ -1291,7 +1291,7 @@ links:
         name: "a_release_records_its_number_build_time_cosmology_versions_and_rules"
         body: bca919360ca985a72b2539638c286d04a9c75022e89c0cfcb6f8ab2fee55a9aa
   - node: 01a19f23-636f-72bd-b194-1521b702e5bb
-    reviewed: 0d43dcf305030992e3cfd37fcc8692703a9d5ef4fe180fd3f6595006156412e6
+    reviewed: 87a12ddc1fe4d6b47eaf2e38c6de4dcc3990f458b0f9f7de0a57b6d64ea66752
     tests:
       - file: "crates/univ-ingest/tests/release.rs"
         name: "the_manifest_lists_every_file_of_the_release_with_its_sha256"
@@ -1379,7 +1379,7 @@ links:
         body: e3e857f43dacf6dc5c7bc61eb356d93f31d366e9a523f8a2c8acd432cb3312bc
       - file: "crates/univ-ingest/src/release/packing.rs"
         name: "objects_not_placed_go_by_their_ids_bucket_after_the_cells"
-        body: 4a76cf8e0ce2689126def32a1de799a84782a99a110e5c797a7a18d4ec5afc41
+        body: 9a0ad0951bc32855eacd74cfad5c44567cbad730aaebaec9e20cc55274ede5c9
   - node: 01a1a931-2c8a-73a8-91f2-59092cd5e331
     reviewed: 750e42c44136c4783edd74a93fad61e2534e9285d050e51a7e15c64ff954fcae
     tests:
@@ -1400,7 +1400,7 @@ links:
         body: 8c4758b181fa273a8adde64044073f0ee6de7242ceb3c616c52f8a56d46ef88d
       - file: "crates/univ-ingest/src/release/packing.rs"
         name: "a_cell_or_bucket_past_the_budget_is_refused_by_name"
-        body: 1809661fbbb34b7275bb47edaaf63a5487ea00550ee7b98f8520ada21ea78322
+        body: bbce8e3f077edb0d1946c5a985c983394b4b34b8eaf80e49c7ff1467e6124c38
   - node: 01a19f23-636f-72bd-b194-15248994b03f
     reviewed: 531442a7f316a2ed5e8fbade5d8190168bc1fd7e6f311bde2266d6665ab61149
     tests:
@@ -1552,7 +1552,7 @@ links:
         name: "with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_it_prunes"
         body: 785d2b039b143e74fa690daf924ebbb3f258a625a5cbb3a0e85f3004cd39746a
   - node: 01a1a931-2c8a-73a8-91f2-590d7b43ba10
-    reviewed: 27aeb1b20f3d830b77b26ed4002e4a8cee56e65bcac56b72fc7c3c8466a36a36
+    reviewed: 2f02e3ac23674c8a65481e5d5a7e1e2ca3c0fce06713b18ee24301a81aff7c5e
     tests:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"

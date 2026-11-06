@@ -1,0 +1,82 @@
+session: 0dff9621-d0e9-418a-9aee-e82062f9f784
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-06T18:00:32Z
+turns:
+  - started: 2026-11-06T17:46:38Z
+    ended: 2026-11-06T17:47:10Z
+  - started: 2026-11-06T17:47:10Z
+    ended: 2026-11-06T17:47:47Z
+  - started: 2026-11-06T17:48:38Z
+    ended: 2026-11-06T17:48:42Z
+  - started: 2026-11-06T17:48:47Z
+    ended: 2026-11-06T17:49:13Z
+  - started: 2026-11-06T17:49:16Z
+    ended: 2026-11-06T17:49:21Z
+  - started: 2026-11-06T17:49:21Z
+    ended: 2026-11-06T17:57:07Z
+  - started: 2026-11-06T17:57:16Z
+    ended: 2026-11-06T17:57:54Z
+  - started: 2026-11-06T17:57:55Z
+    ended: 2026-11-06T17:58:23Z
+  - started: 2026-11-06T17:59:21Z
+    ended: 2026-11-06T17:59:45Z
+  - started: 2026-11-06T18:00:32Z
+subagents:
+  - agent: a04c7ae0c907a0886
+    type: Explore
+    started: 2026-11-06T17:47:44Z
+    ended: 2026-11-06T17:49:16Z
+    stage: 01a1b1f8-3d02-7270-bfca-cfe74475f9d2
+  - agent: ab60a441c37b142f9
+    type: Explore
+    started: 2026-11-06T17:47:44Z
+    ended: 2026-11-06T17:49:19Z
+    stage: 01a1b1f8-3d02-7270-bfca-cfe74475f9d2
+  - agent: a71b735850b7e68a8
+    type: Explore
+    started: 2026-11-06T17:47:44Z
+    ended: 2026-11-06T17:48:38Z
+    stage: 01a1b1f8-3d02-7270-bfca-cfe74475f9d2
+  - agent: a038947b6c83d70cb
+    type: Explore
+    started: 2026-11-06T17:47:44Z
+    ended: 2026-11-06T17:48:47Z
+    stage: 01a1b1f8-3d02-7270-bfca-cfe74475f9d2
+loft:
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-06T17:58:06Z
+    ended: 2026-11-06T17:58:06Z
+    failed: false
+    stage: 01a1b1f8-3d02-7270-bfca-cfe74475f9d2
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-06T17:58:09Z
+    ended: 2026-11-06T17:58:13Z
+    failed: false
+    stage: 01a1b1f8-3d02-7270-bfca-cfe74475f9d2

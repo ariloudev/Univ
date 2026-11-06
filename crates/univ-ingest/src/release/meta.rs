@@ -7,6 +7,7 @@ use univ_model::api::objects::MeasuredQuantity;
 use univ_model::geometry::Aabb;
 use univ_model::ids::SourceId;
 use univ_model::release::keys;
+use univ_model::release::manifest::ManifestSource;
 use univ_model::release::rows::{
     CatalogueUncertainty, NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, SourceTermRow,
     StructureRow,
@@ -14,6 +15,7 @@ use univ_model::release::rows::{
 
 use super::objects::{json, snake};
 use super::placement::Placement;
+use super::terms::SourceIndex;
 use crate::provenance::Provenance;
 use crate::source::SourceDefinition;
 use crate::tiles::{Built, name_of, unit_symbol};
@@ -42,20 +44,23 @@ fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<CatalogueUncertainty> {
         .collect()
 }
 
-/// The rows of `definitions` in release `release`, each numbered by its place among them and
+/// The rows of `definitions` in release `release`, each numbered by `index` and
 /// with the entries the release holds from it and the provenance kept in `cache`.
 ///
 /// # Errors
 ///
-/// Fails when a provenance cannot be read or a value cannot be written as JSON.
+/// Fails when a source has no index, a provenance cannot be read or a value cannot be written
+/// as JSON.
 pub fn source_rows(
     release: u32,
     definitions: &[SourceDefinition],
+    index: &SourceIndex,
     entries: &BTreeMap<SourceId, u64>,
     cache: &Path,
 ) -> Result<SourceRows, String> {
     let mut rows = SourceRows::default();
-    for (n, d) in (0u32..).zip(definitions) {
+    for d in definitions {
+        let n = index.indexed(&d.id)?;
         let id = d.id.to_string();
         rows.sources.push(SourceRow {
             release,
@@ -181,6 +186,25 @@ pub fn domain_rows(release: u32, tiles: &Built) -> Vec<ScaleDomainRow> {
                 nodes: d.nodes.len() as u64,
                 manifest_key: keys::key(release, &keys::tile_manifest(name)),
             }
+        })
+        .collect()
+}
+
+/// Each of `definitions` as the release manifest lists it, with the entries the release holds
+/// from it among `per_source`.
+pub fn manifest_sources(
+    definitions: &[SourceDefinition],
+    per_source: &BTreeMap<SourceId, u64>,
+) -> Vec<ManifestSource> {
+    definitions
+        .iter()
+        .map(|d| ManifestSource {
+            id: d.id.to_string(),
+            redistribution: d.redistribution.status.as_str().to_owned(),
+            review: d.redistribution.review.as_str().to_owned(),
+            non_commercial: d.terms.non_commercial.clone(),
+            permission: d.redistribution.permission.clone(),
+            entries: per_source.get(&d.id).copied().unwrap_or(0),
         })
         .collect()
 }

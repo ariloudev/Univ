@@ -483,7 +483,8 @@ CREATE TABLE IF NOT EXISTS object_shards (
 ) WITHOUT ROWID;
 
 -- The level-0 cells of each scale domain (term) an object shard holds (version 5): those whose
--- Morton code (univ_model::release::shards::morton) lies from first to last. A volume query
+-- Morton code (univ_model::release::shards::morton) lies from first to last, one row for each
+-- run of consecutive cells, so a shard may hold several runs of one domain. A volume query
 -- reads only the shards whose cells its box can meet.
 CREATE TABLE IF NOT EXISTS shard_cells (
   release INTEGER NOT NULL,
@@ -491,7 +492,7 @@ CREATE TABLE IF NOT EXISTS shard_cells (
   domain INTEGER NOT NULL,
   first INTEGER NOT NULL,
   last INTEGER NOT NULL,
-  PRIMARY KEY (release, shard, domain)
+  PRIMARY KEY (release, shard, domain, first)
 ) WITHOUT ROWID;
 
 -- Each object shard of a release (version 5): its objects and the CON-3 estimate of its rows,
