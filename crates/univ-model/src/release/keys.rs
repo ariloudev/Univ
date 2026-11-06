@@ -1,19 +1,20 @@
-//! Where a release's files lie in R2. A release keeps every file under its own prefix,
-//! `releases/{n}/`, and a local build writes the same paths below its release directory, so a
-//! file's key is its path with the prefix. Univ Server reads these keys; they stay stable.
+//! Where a release's files lie, on local disk and in R2 (schema 6). A local build writes each
+//! file at its path below its release directory; R2 keeps each file once, under its SHA-256,
+//! `files/{sha256}`, shared by every release that holds it, and each release maps its paths to
+//! those hashes in D1 (`release_files`). Only the release manifest is kept under the release's
+//! own prefix, `releases/{n}/manifest.yaml`.
 //!
-//! | Key | What it holds |
+//! | Path in the release directory | What it holds |
 //! |---|---|
-//! | `releases/{n}/manifest.yaml` | The release manifest: every other file with its SHA-256 |
-//! | `releases/{n}/rules/{name}.yaml` | The matching, ranking, tile and release rules, verbatim |
-//! | `releases/{n}/tiles/{domain}/manifest.json` | A scale domain's tile manifest |
-//! | `releases/{n}/tiles/{domain}/{address}.bin` | One octree node's tile |
-//! | `releases/{n}/grids/{grid}/header.json` | A volume grid's header |
-//! | `releases/{n}/grids/{grid}/{field}.f32` | A grid field's samples, little-endian `f32` |
+//! | `manifest.yaml` | The release manifest: every other file with its SHA-256 |
+//! | `rules/{name}.yaml` | The matching, ranking, tile and release rules, verbatim |
+//! | `tiles/{domain}/manifest.json` | A scale domain's tile manifest |
+//! | `tiles/{domain}/{address}.bin` | One octree node's tile |
+//! | `grids/{grid}/header.json` | A volume grid's header |
+//! | `grids/{grid}/{field}.f32` | A grid field's samples, little-endian `f32` |
 //!
 //! The release directory also holds `d1/*.sql`, the release's D1 rows, which go to D1 rather
-//! than R2. Publishing release n uploads only below `releases/{n}/`, so the current release's
-//! keys are never written; pruning it deletes that prefix.
+//! than R2. A file once in R2 never changes, since its key is what it holds.
 
 /// The prefix of every key of release `n`, with its closing slash.
 #[must_use]
@@ -25,6 +26,12 @@ pub fn prefix(n: u32) -> String {
 #[must_use]
 pub fn key(n: u32, path: &str) -> String {
     format!("{}{path}", prefix(n))
+}
+
+/// The R2 key of the file whose SHA-256 is `sha256`, in lower-case hex.
+#[must_use]
+pub fn file(sha256: &str) -> String {
+    format!("files/{sha256}")
 }
 
 /// The release manifest's path within the release directory.
@@ -67,7 +74,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn every_key_lies_under_its_release() {
+    fn a_file_lies_under_its_hash_and_a_manifest_under_its_release() {
+        assert_eq!(file("ab01"), "files/ab01");
         assert_eq!(key(7, MANIFEST), "releases/7/manifest.yaml");
         assert_eq!(
             key(7, &tile("nearby_galaxies", "r07")),

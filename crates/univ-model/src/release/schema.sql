@@ -1,8 +1,12 @@
--- The D1 schema of Univ releases, version 5 (univ_model::release::SCHEMA_VERSION).
+-- The D1 schema of Univ releases, version 6 (univ_model::release::SCHEMA_VERSION).
 --
 -- Version 3 adds source_details and structure_details and changes no table of version 2.
 -- Version 4 adds source_terms and changes no table of version 3.
 -- Version 5 adds object_shards, shard_cells and release_shards and changes no table of version 4.
+-- Version 6 shares rows between releases: every table of a release gains `retired` and keys its
+-- rows by their own key followed by `release`; shard_cells is keyed by its first cell as well;
+-- release_files is added, and R2 keeps each file once by its SHA-256. A database of version 5 is
+-- brought to version 6 in place, each table rebuilt with its rows valid from their release.
 --
 -- Object shards (version 5). Every database, the catalogue database and each object shard, is
 -- given this whole schema, and holds only its own rows of each release: an object's rows in
@@ -10,22 +14,29 @@
 -- (univ_model::release::shards::SHARD_TABLES), and every other table's rows, with the index of
 -- the shards (object_shards, shard_cells, release_shards), are in the catalogue database.
 --
--- Each database holds every published release. A table that belongs to one release carries a
--- `release` column that leads its primary key: publishing release n + 1 only inserts rows whose
--- release is n + 1, which no read of release n selects, and `latest` moves in one write once
--- they are all in. Pruning release n deletes its rows from those tables and sets its
--- `releases.pruned_at`; the id ledger and the list of releases are kept.
+-- Each database holds every published release, sharing rows between them (version 6). A row of
+-- a table that belongs to releases is valid from the release in its `release` column until the
+-- release in its `retired` column, if any: release n reads the rows whose release is at most n
+-- and whose retired is NULL or greater than n (univ_model::release::valid_in). Publishing
+-- release n + 1 inserts the rows it adds, with release n + 1, and sets retired to n + 1 on the
+-- rows it no longer holds; no read of release n sees either, and `latest` moves in one write
+-- once they are all in. A row is never changed otherwise. Pruning deletes the rows no release
+-- left unpruned holds and sets the release's `releases.pruned_at`; the id ledger and the list
+-- of releases are kept.
 --
 -- Every statement can run again: tables and indexes are created only when missing, and rows are
 -- written with INSERT OR IGNORE on their primary keys, so a row once written stays as it was
--- (a release's rows never change, and publishing and pruning set their own columns later).
+-- (only a later release's retirement sets its `retired`, and publishing and pruning set their
+-- own columns of `releases`).
 --
 -- Compact by design, every fact kept (since version 2):
 --
 -- - Terms. A column whose comment says "term" holds the id of a row of `terms`: the name
 --   univ-model serializes for that value, such as 'parsec', 'estimated' or 'credible_interval'.
---   Each release numbers its own terms; a reader loads a release's terms once.
--- - Sources. A column named `source` holds the source's `sources.n` in that release.
+--   A term keeps its id from release to release (version 6) and an id is never given to
+--   another term; a reader loads a release's terms once.
+-- - Sources. A column named `source` holds the source's `sources.n`, which a source keeps from
+--   release to release (version 6).
 -- - Entries. An entry is numbered by its place among its object's entries, from 0: `entry`.
 -- - Uncertainties. Four columns `{prefix}form` (term), `minus`, `plus` and `level` hold one
 --   univ-model Uncertainty: none_reported, upper_limit and lower_limit set none of the three;
@@ -80,7 +91,8 @@ CREATE TABLE IF NOT EXISTS terms (
   release INTEGER NOT NULL,
   id INTEGER NOT NULL,
   term TEXT NOT NULL,
-  PRIMARY KEY (release, id)
+  retired INTEGER,
+  PRIMARY KEY (id, release)
 ) WITHOUT ROWID;
 
 -- Each source of the release, n its index, which the `source` columns of the release hold.
@@ -101,9 +113,10 @@ CREATE TABLE IF NOT EXISTS sources (
   access TEXT NOT NULL,
   cuts TEXT NOT NULL,
   fixes TEXT NOT NULL,
-  PRIMARY KEY (release, n)
+  retired INTEGER,
+  PRIMARY KEY (n, release)
 ) WITHOUT ROWID;
-CREATE INDEX IF NOT EXISTS sources_by_id ON sources (release, id);
+CREATE INDEX IF NOT EXISTS sources_by_id ON sources (id, release);
 
 -- Each payload a source's provenance records, and what normalization made of the source.
 CREATE TABLE IF NOT EXISTS payloads (
@@ -115,7 +128,8 @@ CREATE TABLE IF NOT EXISTS payloads (
   bytes INTEGER NOT NULL,
   retrieved TEXT NOT NULL,
   rows INTEGER,
-  PRIMARY KEY (release, source, item)
+  retired INTEGER,
+  PRIMARY KEY (source, item, release)
 ) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS normalizations (
   release INTEGER NOT NULL,
@@ -123,7 +137,8 @@ CREATE TABLE IF NOT EXISTS normalizations (
   published INTEGER NOT NULL,
   left_out TEXT NOT NULL,
   fixes TEXT NOT NULL,
-  PRIMARY KEY (release, source)
+  retired INTEGER,
+  PRIMARY KEY (source, release)
 ) WITHOUT ROWID;
 
 -- Each distinct transformation chain of the release's derived positions, held once. `steps` is
@@ -137,7 +152,8 @@ CREATE TABLE IF NOT EXISTS chains (
   steps TEXT NOT NULL,
   params INTEGER NOT NULL,
   objects INTEGER NOT NULL,
-  PRIMARY KEY (release, id)
+  retired INTEGER,
+  PRIMARY KEY (id, release)
 ) WITHOUT ROWID;
 
 -- An object with its preferred measurements and, when placed, its derived position.
@@ -203,7 +219,8 @@ CREATE TABLE IF NOT EXISTS objects (
   runner_up_velocity REAL,
   links TEXT,
   relations TEXT,
-  PRIMARY KEY (release, id)
+  retired INTEGER,
+  PRIMARY KEY (id, release)
 ) WITHOUT ROWID;
 
 -- Each catalogue entry resolved to an object, with how it was resolved.
@@ -251,7 +268,8 @@ CREATE TABLE IF NOT EXISTS entries (
   group_id TEXT,
   flags TEXT,
   extra TEXT,
-  PRIMARY KEY (release, object_id, entry)
+  retired INTEGER,
+  PRIMARY KEY (object_id, entry, release)
 ) WITHOUT ROWID;
 
 -- Every measurement of every entry, its native value beside its normalized one. quantity
@@ -298,7 +316,8 @@ CREATE TABLE IF NOT EXISTS measurements (
   cmb_plus REAL,
   cmb_level REAL,
   extra TEXT,
-  PRIMARY KEY (release, object_id, entry, quantity, n)
+  retired INTEGER,
+  PRIMARY KEY (object_id, entry, quantity, n, release)
 ) WITHOUT ROWID;
 
 -- Every designation an object carries, an entry's own or one its source gives beside it.
@@ -307,9 +326,10 @@ CREATE TABLE IF NOT EXISTS designations (
   source INTEGER NOT NULL,
   identifier TEXT NOT NULL,
   object_id INTEGER NOT NULL,
-  PRIMARY KEY (release, source, identifier, object_id)
+  retired INTEGER,
+  PRIMARY KEY (source, identifier, object_id, release)
 ) WITHOUT ROWID;
-CREATE INDEX IF NOT EXISTS designations_by_object ON designations (release, object_id);
+CREATE INDEX IF NOT EXISTS designations_by_object ON designations (object_id, release);
 
 -- Common names by their key: lower case with white space removed. The name is part of the
 -- primary key, so two spellings one source gives an object ("M 31", "M31") are both kept.
@@ -319,7 +339,8 @@ CREATE TABLE IF NOT EXISTS names (
   object_id INTEGER NOT NULL,
   source INTEGER NOT NULL,
   name TEXT NOT NULL,
-  PRIMARY KEY (release, key, object_id, source, name)
+  retired INTEGER,
+  PRIMARY KEY (key, object_id, source, name, release)
 ) WITHOUT ROWID;
 
 -- The id ledger, kept across releases and never pruned: the ids each release issued, and
@@ -347,7 +368,8 @@ CREATE TABLE IF NOT EXISTS object_cells (
   iy INTEGER NOT NULL,
   iz INTEGER NOT NULL,
   object_id INTEGER NOT NULL,
-  PRIMARY KEY (release, domain, ix, iy, iz, object_id)
+  retired INTEGER,
+  PRIMARY KEY (domain, ix, iy, iz, object_id, release)
 ) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS structure_cells (
   release INTEGER NOT NULL,
@@ -356,7 +378,8 @@ CREATE TABLE IF NOT EXISTS structure_cells (
   iy INTEGER NOT NULL,
   iz INTEGER NOT NULL,
   structure TEXT NOT NULL,
-  PRIMARY KEY (release, level, ix, iy, iz, structure)
+  retired INTEGER,
+  PRIMARY KEY (level, ix, iy, iz, structure, release)
 ) WITHOUT ROWID;
 
 -- Each researched structure, listed by kind and scale domain. Its centre is ICRS Cartesian
@@ -379,7 +402,8 @@ CREATE TABLE IF NOT EXISTS structures (
   record TEXT NOT NULL,
   members TEXT,
   bounds TEXT,
-  PRIMARY KEY (release, id)
+  retired INTEGER,
+  PRIMARY KEY (id, release)
 ) WITHOUT ROWID;
 
 -- Each scale domain's tiles, whose manifest and tiles are in R2.
@@ -391,7 +415,8 @@ CREATE TABLE IF NOT EXISTS scale_domains (
   points INTEGER NOT NULL,
   nodes INTEGER NOT NULL,
   manifest_key TEXT NOT NULL,
-  PRIMARY KEY (release, name)
+  retired INTEGER,
+  PRIMARY KEY (name, release)
 ) WITHOUT ROWID;
 
 -- Each volume grid, whose header and samples are in R2.
@@ -403,7 +428,8 @@ CREATE TABLE IF NOT EXISTS grids (
   shape TEXT NOT NULL,
   fields TEXT NOT NULL,
   header_key TEXT NOT NULL,
-  PRIMARY KEY (release, id)
+  retired INTEGER,
+  PRIMARY KEY (id, release)
 ) WITHOUT ROWID;
 
 -- Each source's primary reference and coverage (version 3), source its sources.n.
@@ -427,7 +453,8 @@ CREATE TABLE IF NOT EXISTS source_details (
   reference_note TEXT,
   sky TEXT,
   radial TEXT,
-  PRIMARY KEY (release, source)
+  retired INTEGER,
+  PRIMARY KEY (source, release)
 ) WITHOUT ROWID;
 
 -- Each researched structure's placed geometry, outline test and rescaled sizes (version 3), id
@@ -454,7 +481,8 @@ CREATE TABLE IF NOT EXISTS structure_details (
   derivation TEXT,
   outline TEXT,
   rescaled TEXT,
-  PRIMARY KEY (release, id)
+  retired INTEGER,
+  PRIMARY KEY (id, release)
 ) WITHOUT ROWID;
 
 -- The conditions of a source's terms beyond its status (version 4), source its sources.n,
@@ -470,7 +498,8 @@ CREATE TABLE IF NOT EXISTS source_terms (
   non_commercial TEXT,
   permission TEXT,
   catalogue_uncertainties TEXT,
-  PRIMARY KEY (release, source)
+  retired INTEGER,
+  PRIMARY KEY (source, release)
 ) WITHOUT ROWID;
 
 -- The object shard of every object of a release (version 5), in the catalogue database: a read
@@ -479,7 +508,8 @@ CREATE TABLE IF NOT EXISTS object_shards (
   release INTEGER NOT NULL,
   id INTEGER NOT NULL,
   shard INTEGER NOT NULL,
-  PRIMARY KEY (release, id)
+  retired INTEGER,
+  PRIMARY KEY (id, release)
 ) WITHOUT ROWID;
 
 -- The level-0 cells of each scale domain (term) an object shard holds (version 5): those whose
@@ -492,7 +522,8 @@ CREATE TABLE IF NOT EXISTS shard_cells (
   domain INTEGER NOT NULL,
   first INTEGER NOT NULL,
   last INTEGER NOT NULL,
-  PRIMARY KEY (release, shard, domain, first)
+  retired INTEGER,
+  PRIMARY KEY (shard, domain, first, release)
 ) WITHOUT ROWID;
 
 -- Each object shard of a release (version 5): its objects and the CON-3 estimate of its rows,
@@ -502,5 +533,18 @@ CREATE TABLE IF NOT EXISTS release_shards (
   shard INTEGER NOT NULL,
   objects INTEGER NOT NULL,
   estimated_bytes INTEGER NOT NULL,
-  PRIMARY KEY (release, shard)
+  retired INTEGER,
+  PRIMARY KEY (shard, release)
+) WITHOUT ROWID;
+
+-- Each file of a release by its path in the release directory (version 6), such as
+-- tiles/cosmic_web/r07.bin, and the SHA-256 of what it holds there. R2 keeps each file once,
+-- under files/{sha256} (univ_model::release::keys::file), shared by every release that maps a
+-- path to it; pruning deletes a file only once no release left unpruned maps a path to it.
+CREATE TABLE IF NOT EXISTS release_files (
+  release INTEGER NOT NULL,
+  path TEXT NOT NULL,
+  sha256 TEXT NOT NULL,
+  retired INTEGER,
+  PRIMARY KEY (path, release)
 ) WITHOUT ROWID;

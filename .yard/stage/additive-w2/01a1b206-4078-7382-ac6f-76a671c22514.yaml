@@ -1,0 +1,78 @@
+key: 01a1b206-4078-7382-ac6f-76a671c22514
+id: w2
+versions:
+  - key: 01a1b206-4078-7382-ac6f-76ac72ecd1f5
+    at: 2026-11-06T18:01:56Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W2: Schema 6 and Univ Server reads shared rows"
+    goal: "Every read of Univ Server selects the rows valid in its release and reads files by hash, and pinned reads agree over shared and retired rows."
+    status: active
+blocks:
+  - key: 01a1b206-4078-7382-ac6f-76a7b3339960
+    id: w2-schema
+    kind: task
+    versions:
+      - key: 01a1b206-4078-7382-ac6f-76adba5f8a58
+        at: 2026-11-06T18:01:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Schema 6 in univ-model"
+        detail: "Every per-release table gains `retired` (last column), keys lead with the natural key and end with `release`, indexes likewise; `release_files(path, release, sha256, retired)`; R2 files under `files/{sha256}`; SCHEMA_VERSION 6; one visibility condition. Done when univ-model's schema tests pass."
+        state: active
+  - key: 01a1b206-4078-7382-ac6f-76a81e1e3c44
+    id: w2-ingest
+    kind: task
+    versions:
+      - key: 01a1b206-4078-7382-ac6f-76aec74ac8d2
+        at: 2026-11-06T18:01:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Ingest writes schema 6"
+        detail: "Files under their SHA-256 with `release_files` rows; tile manifests, grid headers and samples name content keys; a build retires every earlier row still valid (W3 narrows this to the change); publish accepts content keys; prune keeps any file an unpruned release maps. Done when univ-ingest's tests pass."
+        state: open
+  - key: 01a1b206-4078-7382-ac6f-76a94e2c859a
+    id: w2-server
+    kind: task
+    versions:
+      - key: 01a1b206-4078-7382-ac6f-76afeb3548ca
+        at: 2026-11-06T18:01:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Univ Server reads the rows valid in a release"
+        detail: "Every statement selects through one visibility helper; joins test each side's visibility instead of matching `release`; tiles read by the SHA-256 their manifest gives. Done when univ-api's tests pass."
+        state: open
+  - key: 01a1b206-4078-7382-ac6f-76aad2d09119
+    id: w2-fixtures
+    kind: task
+    versions:
+      - key: 01a1b206-4078-7382-ac6f-76b008a78c57
+        at: 2026-11-06T18:01:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Fixtures that share and retire rows"
+        detail: "testkit rows gain `retired`; testkit_objects.sql regenerated; a release 3 that retires and replaces rows; a test that a read pinned to release 2 is unchanged after release 3 retires its rows (AC-128). Done when it passes."
+        state: open
+  - key: 01a1b206-4078-7382-ac6f-76ab5fcf3d2b
+    id: w2-review
+    kind: task
+    versions:
+      - key: 01a1b206-4078-7382-ac6f-76b14997c2b5
+        at: 2026-11-06T18:01:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review, gate and integration"
+        detail: "/simplify and /code-review, fixes, cargo xtask check and cargo xtask integration green, merge."
+        state: open

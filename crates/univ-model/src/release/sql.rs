@@ -249,7 +249,9 @@ pub enum ColumnKind {
 /// Which rows of a table belong to release n.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Scope {
-    /// Release n's own rows, its `release` column leading the key: pruning deletes them.
+    /// Rows shared by the releases they are valid in: each row is valid from the release in its
+    /// `release` column, which ends its key, until the release in its `retired` column, if any,
+    /// which a later release sets (see [`RETIRED`]).
     PerRelease,
     /// The id ledger, kept across releases and never pruned: release n's view of it is the rows
     /// whose `release` is at most n, which each release carries whole.
@@ -263,11 +265,26 @@ impl Scope {
     #[must_use]
     pub fn filter(self, number: u32) -> String {
         match self {
-            Self::PerRelease => format!("release = {number}"),
+            Self::PerRelease => valid_in("", number),
             Self::Ledger => format!("release <= {number}"),
             Self::Releases => format!("number = {number}"),
         }
     }
+}
+
+/// The column of a table of [`Scope::PerRelease`] that names the release from which its row is
+/// no longer valid, NULL while it is: the schema gives it to every such table, after the
+/// columns its row type writes, and only a later release's retirement sets it.
+pub const RETIRED: &str = "retired";
+
+/// The SQL condition selecting the rows of a table of [`Scope::PerRelease`] valid in release
+/// `number`, its columns qualified by `alias` (such as `o.`, or empty for none): those whose
+/// `release` is at most `number` and that no release up to `number` retired.
+#[must_use]
+pub fn valid_in(alias: &str, number: impl std::fmt::Display) -> String {
+    format!(
+        "{alias}release <= {number} AND ({alias}{RETIRED} IS NULL OR {alias}{RETIRED} > {number})"
+    )
 }
 
 /// A table of the schema: its columns in the order rows give them with the type of each, its
@@ -307,7 +324,10 @@ impl Table {
     /// page whole.
     #[must_use]
     pub fn estimated_bytes(&self, values: &[SqlValue]) -> u64 {
-        let mut bytes = stored_bytes(payload_bytes(values), self.tree());
+        // A row shared between releases also stores its `retired`, NULL when written.
+        let retired = (self.scope == Scope::PerRelease).then_some(&SqlValue::Null);
+        let stored = values.iter().chain(retired);
+        let mut bytes = stored_bytes(payload_bytes(stored), self.tree());
         for index in self.indexes {
             let columns = index.iter().chain(self.key.iter());
             let picked = columns.filter_map(|c| self.position(c).and_then(|i| values.get(i)));
@@ -462,9 +482,10 @@ mod tests {
             SqlValue::Integer(300),
             SqlValue::from("abcd"),
         ];
-        // Record: header 1 + 3 serial types, body 0 + 2 + 4, cell 4: 14. Index on (name,
-        // release, id): header 4, body 4 + 0 + 2, cell 4: 14. 28 / 0.65 = 43.08, rounded up.
-        assert_eq!(T.estimated_bytes(&row), 44);
+        // Record: header 1 + 4 serial types (the last for `retired`, NULL), body 0 + 2 + 4,
+        // cell 4: 15. Index on (name, release, id): header 4, body 4 + 0 + 2, cell 4: 14.
+        // 29 / 0.65 = 44.6, rounded up.
+        assert_eq!(T.estimated_bytes(&row), 45);
     }
 
     #[test]
