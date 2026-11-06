@@ -49,7 +49,7 @@ fn a_release_read_from_the_local_d1_is_judged_as_one_read_from_its_builds() {
         load::load(&db, dir.path(), &serde_norway::from_str(&text).unwrap()).unwrap();
     }
     let persist = tempfile::tempdir().unwrap();
-    let files = persist.path().join("v3/d1/miniflare-D1DatabaseObject");
+    let files = persist.path().join(univ_model::release::LOCAL_D1_FILES);
     std::fs::create_dir_all(&files).unwrap();
     let (catalogue, shard) = (files.join("f0.sqlite"), files.join("0f.sqlite"));
     std::fs::copy(&whole, &catalogue).unwrap();

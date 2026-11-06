@@ -6,7 +6,8 @@
 //! The database is in memory unless `--db` names a file; a file that exists already is taken
 //! as loaded, so that checks can be rerun without loading again. The rows come from the builds
 //! of the release's chain, or with `--store` from the local D1 in Wrangler's state directory
-//! it names, where the release was published; its files come from its build either way.
+//! it names, where the release was published; its files come from its build either way. A
+//! release of the real local D1 is gigabytes: `--db` keeps it on disk rather than in memory.
 
 mod evaluate;
 mod fingerprints;

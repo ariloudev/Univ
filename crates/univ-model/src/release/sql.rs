@@ -283,8 +283,9 @@ impl Scope {
     }
 }
 
-/// The `retired` a shared row is estimated with: a release number SQLite stores in two bytes.
-const RETIRED_AT: SqlValue = SqlValue::Integer(1_000);
+/// The `release` and `retired` a shared row is estimated with: a release number SQLite stores
+/// in two bytes, whatever the release, so a row's estimate does not change with it.
+const A_RELEASE: SqlValue = SqlValue::Integer(1_000);
 
 /// A table of the schema: its columns in the order rows give them with the type of each, its
 /// primary key and its secondary indexes, each by column names, and which of its rows belong to
@@ -323,14 +324,25 @@ impl Table {
     /// page whole.
     #[must_use]
     pub fn estimated_bytes(&self, values: &[SqlValue]) -> u64 {
-        // A row shared between releases also stores its `retired`: NULL when written, a release
-        // number once a later release retires it, counted at two bytes so the estimate errs high.
-        let retired = (self.scope == Scope::PerRelease).then_some(&RETIRED_AT);
-        let stored = values.iter().chain(retired);
+        // A row shared between releases stores its release, which a kept row keeps from the
+        // release that added it, and its `retired`: NULL when written, a release number once a
+        // later release retires it. Both are counted at two bytes, so the estimate errs high and
+        // is the same in every release.
+        let shared = self.scope == Scope::PerRelease;
+        let release = self.position("release").filter(|_| shared);
+        let value = |i: usize| {
+            if Some(i) == release {
+                Some(&A_RELEASE)
+            } else {
+                values.get(i)
+            }
+        };
+        let retired = shared.then_some(&A_RELEASE);
+        let stored = (0..values.len()).filter_map(value).chain(retired);
         let mut bytes = stored_bytes(payload_bytes(stored), self.tree());
         for index in self.indexes {
             let columns = index.iter().chain(self.key.iter());
-            let picked = columns.filter_map(|c| self.position(c).and_then(|i| values.get(i)));
+            let picked = columns.filter_map(|c| self.position(c).and_then(value));
             bytes += stored_bytes(payload_bytes(picked), Tree::Index);
         }
         // Rounded up: the estimate errs high.
@@ -428,9 +440,13 @@ mod tests {
             SqlValue::Integer(300),
             SqlValue::from("abcd"),
         ];
-        // Record: header 1 + 4 serial types (the last for `retired`, two bytes), body 0 + 2 +
-        // 4 + 2, cell 4: 17. Index on (name, release, id): header 4, body 4 + 0 + 2, cell 4:
-        // 14. 31 / 0.65 = 47.7, rounded up.
-        assert_eq!(T.estimated_bytes(&row), 48);
+        // Record: header 1 + 4 serial types, body 2 + 2 + 4 + 2 (`release` and `retired` each
+        // at two bytes, whatever the release), cell 4: 19. Index on (name, release, id): header
+        // 4, body 4 + 2 + 2, cell 4: 16. 35 / 0.65 = 53.8, rounded up.
+        assert_eq!(T.estimated_bytes(&row), 54);
+        // The same row kept into a later release is estimated the same.
+        let mut later = row.clone();
+        later[0] = SqlValue::Integer(200);
+        assert_eq!(T.estimated_bytes(&later), 54);
     }
 }

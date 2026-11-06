@@ -11,10 +11,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use rusqlite::{Connection, OpenFlags, OptionalExtension};
-use univ_model::release::{RETIRED, SCHEMA, Scope, TABLES, valid_in};
-
-/// Where Wrangler keeps the local D1's files, within its state directory `--persist-to`.
-const D1_FILES: &str = "v3/d1/miniflare-D1DatabaseObject";
+use univ_model::release::{LOCAL_D1_FILES, SCHEMA, Scope, SqlValue, TABLES, valid_in};
 
 fn one(db: &Connection, sql: &str) -> Result<Option<i64>, String> {
     db.query_row(sql, [], |r| r.get::<_, Option<i64>>(0))
@@ -32,7 +29,7 @@ fn holds(db: &Connection, schema: &str, name: &str) -> Result<bool, String> {
 
 /// The files of the local D1 in `persist_to` that hold release `n`: the catalogue's first.
 fn files_of(persist_to: &Path, n: u32) -> Result<Vec<PathBuf>, String> {
-    let dir = persist_to.join(D1_FILES);
+    let dir = persist_to.join(LOCAL_D1_FILES);
     let mut files: Vec<PathBuf> = std::fs::read_dir(&dir)
         .map_err(|e| format!("{}: {e}", dir.display()))?
         .filter_map(Result::ok)
@@ -110,16 +107,29 @@ pub fn load(db: &Connection, persist_to: &Path, n: u32) -> Result<usize, String>
     // No transaction: SQLite attaches no database within one, and the scratch database keeps
     // no journal.
     for file in &files {
-        let uri = format!("file:{}?mode=ro", file.display()).replace('\'', "''");
-        db.execute_batch(&format!("ATTACH DATABASE '{uri}' AS store"))
+        let uri = SqlValue::from(format!("file:{}?mode=ro", file.display())).literal();
+        db.execute_batch(&format!("ATTACH DATABASE {uri} AS store"))
             .map_err(|e| format!("{}: {e}", file.display()))?;
         for table in &TABLES {
             if !holds(db, "store", table.name)? {
                 continue;
             }
+            // A shared row is taken as the release's own: its release `n`, `retired` left NULL.
             let columns = table.columns.join(", ");
+            let values = table
+                .columns
+                .iter()
+                .map(|c| {
+                    if table.scope == Scope::PerRelease && *c == "release" {
+                        n.to_string()
+                    } else {
+                        (*c).to_owned()
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
             db.execute_batch(&format!(
-                "INSERT OR IGNORE INTO main.{name} ({columns}) SELECT {columns} FROM \
+                "INSERT OR IGNORE INTO main.{name} ({columns}) SELECT {values} FROM \
                  store.{name} WHERE {filter};",
                 name = table.name,
                 filter = table.scope.filter(n)
@@ -128,13 +138,6 @@ pub fn load(db: &Connection, persist_to: &Path, n: u32) -> Result<usize, String>
         }
         db.execute_batch("DETACH DATABASE store")
             .map_err(|e| format!("{}: {e}", file.display()))?;
-    }
-    for table in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
-        db.execute_batch(&format!(
-            "UPDATE {name} SET release = {n}, {RETIRED} = NULL;",
-            name = table.name
-        ))
-        .map_err(|e| format!("{}: {e}", table.name))?;
     }
     Ok(files.len())
 }

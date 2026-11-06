@@ -26,36 +26,39 @@ fn a_reindex_from_the_store_gives_the_numbering_the_build_kept_and_an_index_it_w
     let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
     let mut store = MemoryStore::default();
     let (out, state) = (f.out.path(), f.state.path());
-    // Release 1 stores its number in no bytes, as SQLite does 0 and 1, so its rows are
-    // estimated a byte smaller than any later release's: the comparison starts at release 2.
-    for n in [1, 2] {
-        build_next(&f);
-        publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
-    }
+    build_next(&f);
+    publishing(&mut store, 1, out, state, journals.path(), &clock).unwrap();
     let built: Kept = State::read(state).unwrap().kept;
     // The state loses its numbering and row index.
     let dir = univ_ingest::state::current_dir(state).unwrap();
     std::fs::remove_file(dir.join(NUMBERING)).unwrap();
     std::fs::remove_dir_all(dir.join(ROWS)).unwrap();
 
-    let reindexed = reindex(&Rows(&store), 2, &dir).unwrap();
+    let reindexed = reindex(&Rows(&store), 1, &dir).unwrap();
     assert_eq!(reindexed.kept, built);
     assert!(reindexed.rows["objects"] > 0);
 
     // The same inputs again: every row of a table releases share is the release before's, but
-    // each scale domain's tile manifest, which names its release: its path's row in
-    // release_files and the domain's row naming it in scale_domains.
+    // for each scale domain's tile manifest, which names its release: the domain's row naming
+    // it in scale_domains, and its path's in release_files, are written again, each once.
     let second = build_next(&f);
+    let domains = Some(reindexed.rows["scale_domains"]);
     let estimates =
         std::iter::once(&second.manifest.d1).chain(second.manifest.shards.iter().map(|s| &s.d1));
-    for estimate in estimates {
+    for (at, estimate) in estimates.enumerate() {
         for t in estimate.tables.iter().filter(|t| {
-            !["scale_domains", "release_files"].contains(&t.table.as_str())
-                && TABLES
-                    .iter()
-                    .any(|s| s.name == t.table && s.scope == Scope::PerRelease)
+            TABLES
+                .iter()
+                .any(|s| s.name == t.table && s.scope == Scope::PerRelease)
         }) {
-            assert_eq!((t.added, t.retired), (Some(0), Some(0)), "{}", t.table);
+            let manifests = ["scale_domains", "release_files"].contains(&t.table.as_str());
+            // The catalogue's, the first.
+            let rewritten = if at == 0 && manifests {
+                domains
+            } else {
+                Some(0)
+            };
+            assert_eq!((t.added, t.retired), (rewritten, rewritten), "{}", t.table);
         }
     }
 }

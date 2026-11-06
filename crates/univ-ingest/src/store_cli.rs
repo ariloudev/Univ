@@ -16,8 +16,9 @@ use univ_ingest::run::{
 };
 use univ_ingest::state::DEFAULT_STATE;
 
+/// Where the local D1 and R2 are, for every command that changes them.
 #[derive(Args)]
-pub struct MigrateArgs {
+pub struct LocalArgs {
     /// Wrangler's local state directory, as `wrangler dev --persist-to` takes it.
     #[arg(long, value_name = "DIR", default_value = DEFAULT_PERSIST)]
     pub persist_to: PathBuf,
@@ -69,13 +70,8 @@ pub struct StoreArgs {
     /// not published.
     #[arg(long, value_name = "DIR", default_value = DEFAULT_STATE)]
     pub state: PathBuf,
-    /// Wrangler's local state directory, as `wrangler dev --persist-to` takes it.
-    #[arg(long, value_name = "DIR", default_value = DEFAULT_PERSIST)]
-    pub persist_to: PathBuf,
-    /// The Wrangler configuration naming the local D1 and R2 bindings; Wrangler is run from
-    /// the `node_modules` beside it.
-    #[arg(long, value_name = "FILE", default_value = DEFAULT_CONFIG)]
-    pub config: PathBuf,
+    #[command(flatten)]
+    pub local: LocalArgs,
 }
 
 impl From<StoreArgs> for StoreRun {
@@ -84,6 +80,19 @@ impl From<StoreArgs> for StoreRun {
             number: args.number,
             out: args.out,
             state: args.state,
+            persist_to: args.local.persist_to,
+            config: args.local.config,
+        }
+    }
+}
+
+impl From<LocalArgs> for StoreRun {
+    /// A run on the local D1 and R2 alone, as a migration is: it reads no release or state.
+    fn from(args: LocalArgs) -> Self {
+        Self {
+            number: 0,
+            out: PathBuf::from(DEFAULT_BUILD),
+            state: PathBuf::from(DEFAULT_STATE),
             persist_to: args.persist_to,
             config: args.config,
         }

@@ -15,9 +15,8 @@ use univ_ingest::lock::StateLock;
 use univ_ingest::normalize::Normalized;
 use univ_ingest::run::{
     BuildOptions, DEFAULT_BUILD, DEFAULT_TILES, FetchOptions, MatchOptions, RunReport,
-    StoreCommand, StoreRun, TileOptions, build_stage, display_for_stderr, drawing, fetch,
-    interrupted, match_stage_until, normalize_stage_until, now, owner_interrupt, select,
-    tiles_stage, until_set,
+    StoreCommand, TileOptions, build_stage, display_for_stderr, drawing, fetch, interrupted,
+    match_stage_until, normalize_stage_until, now, owner_interrupt, select, tiles_stage, until_set,
 };
 use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::DEFAULT_STATE;
@@ -25,7 +24,7 @@ use univ_model::redshift::{CmbCorrection, DipoleModel};
 
 mod store_cli;
 
-use store_cli::{MigrateArgs, ReindexArgs, StoreArgs, on_store, reindex};
+use store_cli::{LocalArgs, ReindexArgs, StoreArgs, on_store, reindex};
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
 const INTERRUPTED: u8 = 130;
@@ -77,7 +76,7 @@ enum Command {
     /// and the old keys deleted last. Nothing is built or uploaded again, and a stopped run is
     /// finished by the next; a store already at schema 6 is left as it is. A publish does the
     /// same first.
-    Migrate(MigrateArgs),
+    Migrate(LocalArgs),
     /// Makes again, from the local D1, the state's row index and numbering of the release latest
     /// points to: what the next build compares its rows with to write only its change. The
     /// state's last release must be the one latest points to, and the local D1 of schema 6.
@@ -332,16 +331,7 @@ async fn main() -> ExitCode {
         Command::Publish(args) => return on_store(args.into(), StoreCommand::Publish).await,
         Command::Prune(args) => return on_store(args.into(), StoreCommand::Prune).await,
         Command::Reindex(args) => return reindex(&args),
-        Command::Migrate(args) => {
-            let run = StoreRun {
-                number: 0,
-                out: PathBuf::from(DEFAULT_BUILD),
-                state: PathBuf::from(DEFAULT_STATE),
-                persist_to: args.persist_to,
-                config: args.config,
-            };
-            return on_store(run, StoreCommand::Migrate).await;
-        }
+        Command::Migrate(args) => return on_store(args.into(), StoreCommand::Migrate).await,
     };
     // A match, tiles or build run holds the state directory's lock until it ends.
     let Ok(_lock) = lock_state(&until) else {
