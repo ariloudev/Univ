@@ -1,7 +1,7 @@
 key: 01a1a497-e843-728a-bce8-3ffe4657fb77
 slug: draw-the-catalogues
 name: "Draw the catalogues"
-body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least. A switch turns level of detail off, so that every tile is fetched whatever the view."
+body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least. Each tile's points are drawn in a share that grows with the detail the view needs, and tiles fade in and out, so that detail comes and goes smoothly. A switch turns level of detail off, so that every tile is fetched whatever the view."
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
   - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
@@ -79,6 +79,24 @@ requirements:
         name: "Turned on again, level of detail drops the tiles the view does not need until the points held fit the budget."
       - key: 01a1b07b-8157-7546-927e-2725108d8df2
         name: "The page's address keeps level of detail turned off, so that a reload or a shared link keeps it off."
+  - key: 01a1b093-647d-7308-9b46-bdc985f6f0e9
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw a share of each held tile's points that grows smoothly with the detail the view needs, and fade each tile in as it arrives and out as it goes."
+    criteria:
+      - key: 01a1b093-647d-7308-9b46-bdca66fcbd08
+        name: "The share of a tile with a parent rises in proportion from none, where the parent's points lie 3 pixels apart on screen or closer, to all, where they lie 6 pixels apart or farther."
+      - key: 01a1b093-81da-759e-8532-70d7aa4d0ff1
+        name: "Every point of a root tile is drawn."
+      - key: 01a1b093-647d-7308-9b46-bdcbf842c1af
+        name: "The share drawn is the first points of the tile in an order shuffled by the tile's id, so that every share is an even sample of its points, the same on every read."
+      - key: 01a1b093-647d-7308-9b46-bdcc1ec02df7
+        name: "A tile fades in over 0.3 seconds once its points arrive, and out over 0.3 seconds before they are drawn no more."
+      - key: 01a1b093-647d-7308-9b46-bdcd4901ec3c
+        name: "With level of detail off, every point of every held tile is drawn."
+      - key: 01a1b093-647d-7308-9b46-bdce5099b2f5
+        name: "Only the points drawn can be pointed at or clicked."
   - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
     statement:
       form: ubiquitous
@@ -107,7 +125,7 @@ requirements:
       - key: 01a1a497-e843-728a-bce8-400b9b581384
         name: "Points outside the stars domain are drawn in one colour, whatever the kind of value of their distance."
       - key: 01a1a497-e843-728a-bce8-400c71ad8ebe
-        name: "The key shows that colour and counts the points drawn of each kind of value: measured, estimated, inferred and reconstructed."
+        name: "The key shows that colour and counts the points of the tiles held of each kind of value: measured, estimated, inferred and reconstructed."
   - key: 01a1a8ac-052e-72b3-a33e-b33e770aeebd
     statement:
       form: ubiquitous

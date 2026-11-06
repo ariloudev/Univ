@@ -10,6 +10,15 @@ versions:
     title: "Level-of-detail switch"
     goal: "A switch in the explorer's top bar turns level of detail off (every tile fetched, coarsest first, none dropped) and on again (back within the budget), kept in the page's address; the temporary NO_LEVEL_OF_DETAIL edit is gone."
     status: active
+  - key: 01a1b093-9edf-7778-9f90-2e947fdcb61c
+    at: 2026-11-06T11:17:06Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Level-of-detail switch"
+    goal: "A switch in the explorer's top bar turns level of detail off (every tile fetched, coarsest first, none dropped) and on again (back within the budget), kept in the page's address; the temporary NO_LEVEL_OF_DETAIL edit is gone."
+    status: done
 blocks:
   - key: 01a1b07b-b527-7609-a67a-e10116831371
     id: spec-lod-switch
