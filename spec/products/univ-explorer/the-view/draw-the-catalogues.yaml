@@ -100,7 +100,9 @@ requirements:
       - key: 01a1b093-647d-7308-9b46-bdcd4901ec3c
         name: "With level of detail off, every point of every held tile is drawn."
       - key: 01a1b0b8-3632-76bc-88e5-8dd265a1a28d
-        name: "With level of detail on, points are drawn as opaque whatever the eye's distance from the focus, since they crowd no more as it withdraws."
+        name: "With level of detail on, a domain's points are drawn fully opaque while, at the eye's distance from the focus, the view still needs more of the domain than its root holds, since thinned they crowd no more as the eye withdraws."
+      - key: 01a1b0c4-82ea-7058-b4c4-959c016ec0f3
+        name: "With level of detail on, a domain's points fade beyond the distance where the view needs no more of it than its root holds, as they crowd again, never fainter than with level of detail off."
       - key: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
         name: "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white."
       - key: 01a1b093-647d-7308-9b46-bdce5099b2f5

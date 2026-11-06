@@ -10,6 +10,15 @@ versions:
     title: "Seamless level of detail"
     goal: "Each point is drawn by its rank in its domain against the share the view needs at its own distance, and tiles are fetched by a level-wide rule that matches it, so no tile's cube shows as an edge."
     status: active
+  - key: 01a1b0c4-bc18-704e-a777-a14f6f20f769
+    at: 2026-11-06T12:10:45Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Seamless level of detail"
+    goal: "Each point is drawn by its rank in its domain against the share the view needs at its own distance, and tiles are fetched by a level-wide rule that matches it, so no tile's cube shows as an edge."
+    status: done
 blocks:
   - key: 01a1b0a9-8e0b-72e7-b122-6a8c782b14f3
     id: seams-found
