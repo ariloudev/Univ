@@ -401,6 +401,12 @@ fn a_release_built_on_a_parent_latest_does_not_point_to_is_refused() {
         ),
         "{error}"
     );
+    // The message names the release it was built on and where latest points.
+    let said = error.to_string();
+    assert!(
+        said.contains("changed from release 1") && said.contains("latest points to no release"),
+        "{said}"
+    );
     assert!(store.r2.is_empty());
     assert!(!store.ops.iter().any(|o| matches!(o, Op::Execute(_))));
 }
