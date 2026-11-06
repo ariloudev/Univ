@@ -35,6 +35,12 @@ requirements:
         name: "A tile's children in view are fetched together or not at all, so that no part of a region is left coarser than the rest."
       - key: 01a1a6a7-c540-7210-8492-7dfdf91c2ccf
         name: "A view that does not change stops fetching and dropping tiles once it holds what it needs."
+      - key: 01a1aea7-5e8b-7623-8601-48fb7856d2e3
+        name: "A tile whose children are held keeps them while its points lie farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched."
+      - key: 01a1aea7-5e8b-7623-8601-48fc4cf3ff3f
+        name: "Where the budget cannot hold every family of tiles the view needs, a family whose tiles are all held counts as half again its size on screen, so that a view moving a little does not trade it for a family of nearly its size."
+      - key: 01a1aea7-5e8b-7623-8601-48fd8492b9c4
+        name: "A view whose budget is full, turned by 0.1 degree and back again and again, drops and fetches no tile after its first turn."
       - key: 01a1a497-e843-728a-bce8-4006f5c2ce8f
         name: "No more than 3,000,000 points are held at once."
   - key: 01a1a689-0b25-768a-9f1e-cc27109fed3c

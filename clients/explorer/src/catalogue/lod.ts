@@ -30,6 +30,16 @@ export const POINT_BUDGET = 3_000_000;
 /** A node is refined while its points lie farther apart on screen than this, pixels. */
 export const REFINE_SPACING = 3;
 
+/** A node whose children are held keeps them while its points lie farther apart on screen than
+ * this, pixels: below the spacing that refines it, so that a view moving a little about the
+ * spacing does not drop the children it has just fetched. */
+export const KEEP_SPACING = 2;
+
+/** How much larger than it is a family whose tiles are all held counts when the budget has room
+ * for only some families: so that a view moving a little, which changes the families' sizes on
+ * screen a little, does not trade a held family for one of nearly its size. */
+export const HELD_PREFERENCE = 1.5;
+
 /** How large `tile` looks from `eye`: its edge over its distance, its cube's nearest reach. */
 export function apparentSize(tile: Tile, eye: Vec3): number {
   const reach = norm(sub(tile.centre, eye)) - radiusOf(tile);
@@ -102,9 +112,10 @@ export function spacing(tile: Tile, sight: Sight, extent = cubeExtent(tile)): nu
   return (((2 * radius) / reach) * sight.focal) / Math.sqrt(Math.max(1, tile.points));
 }
 
-/** Whether the view needs the children of `tile`, whose points lie in `extent`. */
-const refines = (tile: Tile, sight: Sight, extent = cubeExtent(tile)): boolean =>
-  sight.inView(extent.centre, extent.radius) && spacing(tile, sight, extent) > REFINE_SPACING;
+/** Whether the view needs the children of `tile`, whose points lie in `extent`: while they are
+ * `held`, down to the spacing that keeps them, else down to the spacing that refines. */
+const refines = (tile: Tile, sight: Sight, extent = cubeExtent(tile), held = false): boolean =>
+  sight.inView(extent.centre, extent.radius) && spacing(tile, sight, extent) > (held ? KEEP_SPACING : REFINE_SPACING);
 
 /** A release's tiles as a tree: worked out once, read on every change of view. */
 export interface Tree<T extends Tile> {
@@ -168,11 +179,15 @@ function insert<T extends Tile>(frontier: Family<T>[], family: Family<T>): void 
 function wanted<T extends Tile>(tree: Tree<T>, holding: Holding, sight: Sight, budget: number): Family<T>[] {
   let points = tree.roots.reduce((sum, t) => sum + t.points, 0);
   const frontier: Family<T>[] = [];
+  const isHeld = (t: T) => holding.drawn.has(t.id) || holding.pending.has(t.id);
   const open = (tile: T) => {
-    if (!refines(tile, sight, holding.drawn.get(tile.id)?.extent)) return;
-    const tiles = (tree.children.get(tile.id) ?? []).filter((c) => sight.inView(c.centre, radiusOf(c)));
+    const all = tree.children.get(tile.id) ?? [];
+    const held = all.length > 0 && all.some(isHeld);
+    if (!refines(tile, sight, holding.drawn.get(tile.id)?.extent, held)) return;
+    const tiles = all.filter((c) => sight.inView(c.centre, radiusOf(c)));
     if (tiles.length === 0) return;
-    const size = Math.max(...tiles.map((c) => apparentSize(c, sight.eye)));
+    const largest = Math.max(...tiles.map((c) => apparentSize(c, sight.eye)));
+    const size = tiles.every(isHeld) ? largest * HELD_PREFERENCE : largest;
     insert(frontier, { parent: tile, tiles, points: tiles.reduce((sum, c) => sum + c.points, 0), size });
   };
   for (const root of tree.roots) open(root);
