@@ -3433,13 +3433,13 @@ links:
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
         body: 4e8231ab7a8388ec058fb7488245fd0539501bfedf1a312d974b5dd705990df0
   - node: 01a1aeb6-f18d-7787-9cbd-de2cfdcfe714
-    reviewed: 6ef4e7a1ba0369e8a564437a0add0aedd76bafb8defb4eda85d56db3647a3341
+    reviewed: 8e05ddea9a4655f672d96d6af478bcb15cca1c2ae50e128978fd6871eeae5423
     tests:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "keeps the tiles it drops drawn and counted until the tiles fetched in their place are drawn"
         body: aa5c3376b2a334f3561638347209bd19170e55b21d61a12fdd6c2fdcd1591007
   - node: 01a1aeb6-f18d-7787-9cbd-de2dfa8b12aa
-    reviewed: 2e37b79fb2da17524ab0f70dbd4a34424c75afba90d49671d68f76b487f29bee
+    reviewed: c046a7265ffa18169546c43ef8414fef7c7912ca23c56369c38175d597a608ab
     tests:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "keeps no dropped tile drawn beyond its allowance"
@@ -3449,7 +3449,7 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws on a kept tile the view wants again without reading it again"
-        body: 4f8ca857c4458049140b08e7da74aa1f975fdddc19e9972e3cef35fdeb039854
+        body: b93e89567385e23ef9d5e6f1db114eca11980f2ec792b3460fe3c3f35639a25a
   - node: 01a1a689-0b25-768a-9f1e-cc2c484365d4
     reviewed: e82b1fb1e371fca155aeaa6795d4f08bf91215034ad308160bd02a5eac646c7f
     tests:

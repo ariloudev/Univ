@@ -6,7 +6,7 @@ import type { ManifestSource } from "univ-tile-decoder";
 
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
-import { type Tree, plan, treeOf } from "./lod.ts";
+import { POINT_BUDGET, type Tree, plan, treeOf } from "./lod.ts";
 import { KINDS } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
@@ -17,9 +17,10 @@ const PARALLEL = 6;
 const ATTEMPTS = 3;
 /** The wait before a tile whose read failed is asked for again, milliseconds. */
 const RETRY_MS = 2000;
-/** The most points of dropped tiles kept drawn, beyond the budget, until the tiles fetched in
- * their place are drawn: a quarter of the budget. */
-export const KEEP_ALLOWANCE = 1_500_000;
+/** The share of the budget that dropped tiles may hold beyond it while they are kept drawn. */
+const KEEP_SHARE = 0.25;
+/** The most points of dropped tiles kept drawn beyond the default budget: a quarter of it. */
+export const KEEP_ALLOWANCE = POINT_BUDGET * KEEP_SHARE;
 
 export interface CatalogueEvents {
   /** A tile's points, to draw. */
@@ -31,15 +32,8 @@ export interface CatalogueEvents {
 }
 
 /** How the catalogue reads its tiles, the most points it holds (by default `POINT_BUDGET`), and
- * the most points of dropped tiles it keeps drawn (by default `KEEP_ALLOWANCE`). */
+ * the most points of dropped tiles it keeps drawn (by default a quarter of its budget). */
 export type CatalogueOptions = ReadOptions & { budget?: number; keep?: number };
-
-/** A round of the plan that dropped tiles: the tiles it fetched, until each is drawn or given
- * up, and the dropped tiles kept drawn until then. */
-interface Swap {
-  awaiting: Set<string>;
-  kept: string[];
-}
 
 /** A source of the drawn points, with the domain whose manifest credits it. */
 export type Credit = ManifestSource & { domain: string };
@@ -85,11 +79,10 @@ export class Catalogue {
   private readonly attempts = new Map<string, number>();
   /** The points of the tiles drawn and on their way. */
   private points = 0;
-  /** Tiles dropped to make room and kept drawn, outside the budget, until the tiles fetched in
-   * their place are drawn: oldest first. */
+  /** Tiles dropped to make room and kept drawn, outside the budget, until no tile is on its
+   * way: oldest first. */
   private readonly kept = new Map<string, Batch>();
   private keptPoints = 0;
-  private swaps: Swap[] = [];
   private sight: Sight | undefined;
   /** Points drawn outside the stars domain of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
@@ -131,24 +124,22 @@ export class Catalogue {
     const pending = this.resting.size === 0 ? this.pending : new Set([...this.pending, ...this.resting]);
     const holding = { settled: this.settled, drawn: this.drawn, pending, points: this.points };
     const next = plan(this.tree, holding, sight, room, this.options.budget);
-    const swap: Swap = { awaiting: new Set(next.fetch.map((t) => t.id)), kept: [] };
-    for (const tile of next.drop) if (this.drop(tile)) swap.kept.push(tile.id);
-    if (swap.kept.length > 0) this.swaps.push(swap);
+    for (const tile of next.drop) this.drop(tile);
     for (const tile of next.fetch) {
+      if (this.revive(tile)) continue;
       const domain = this.domains.get(tile.domain);
       if (domain !== undefined) this.fetch(domain, tile);
     }
-    this.letGoBeyondAllowance();
+    if (next.drop.length > 0) this.letGoBeyondAllowance();
+    if (this.pending.size === 0) this.letGoKept();
   }
 
   private fetch(domain: Domain, tile: DomainTile): void {
-    if (this.revive(tile)) return;
     this.pending.add(tile.id);
     this.points += tile.points;
     void fetchBatch(domain, tile, this.release, this.options)
       .then((batch) => {
-        this.settled.add(tile.id);
-        this.drawn.set(tile.id, batch);
+        this.hold(tile, batch);
         this.histograms.set(tile.id, histogramOf(batch, sourcesOf(domain)));
         this.tally(batch, 1);
         this.events.onBatch(batch);
@@ -159,24 +150,27 @@ export class Catalogue {
       })
       .finally(() => {
         this.pending.delete(tile.id);
-        if (!this.resting.has(tile.id)) this.arrived(tile.id);
         this.events.onChange();
         if (!this.aborted && this.sight !== undefined) this.update(this.sight);
       });
   }
 
-  /** Takes a drawn tile out of the budget, keeping it drawn, counted and credited until the
-   * tiles fetched in its place are drawn; it is fetched again when the view needs it. Whether it
-   * was drawn. */
-  private drop(tile: DomainTile): boolean {
+  /** Counts a drawn tile in the budget. */
+  private hold(tile: DomainTile, batch: Batch): void {
+    this.settled.add(tile.id);
+    this.drawn.set(tile.id, batch);
+  }
+
+  /** Takes a drawn tile out of the budget, keeping it drawn, counted and credited until no tile
+   * is on its way; it is fetched again when the view needs it. */
+  private drop(tile: DomainTile): void {
     const batch = this.drawn.get(tile.id);
-    if (batch === undefined) return false;
+    if (batch === undefined) return;
     this.drawn.delete(tile.id);
     this.settled.delete(tile.id);
     this.points -= tile.points;
     this.kept.set(tile.id, batch);
     this.keptPoints += tile.points;
-    return true;
   }
 
   /** Draws on a kept tile the view wants again, without reading it again. Whether it was kept. */
@@ -185,27 +179,21 @@ export class Catalogue {
     if (batch === undefined) return false;
     this.kept.delete(tile.id);
     this.keptPoints -= tile.points;
-    this.settled.add(tile.id);
-    this.drawn.set(tile.id, batch);
+    this.hold(tile, batch);
     this.points += tile.points;
-    this.arrived(tile.id);
     return true;
   }
 
-  /** The tile `id` is drawn or given up: the kept tiles of every round that was waiting on it
-   * alone are let go. */
-  private arrived(id: string): void {
-    const done: Swap[] = [];
-    for (const swap of this.swaps) if (swap.awaiting.delete(id) && swap.awaiting.size === 0) done.push(swap);
-    if (done.length === 0) return;
-    this.swaps = this.swaps.filter((swap) => swap.awaiting.size > 0);
-    for (const swap of done) for (const kept of swap.kept) this.letGo(kept);
+  /** Lets go of every kept tile: nothing is on its way that they stand in for. */
+  private letGoKept(): void {
+    if (this.kept.size === 0) return;
+    for (const id of [...this.kept.keys()]) this.letGo(id);
     this.events.onChange();
   }
 
-  /** Lets go of kept tiles, the longest kept first, until their points fit `KEEP_ALLOWANCE`. */
+  /** Lets go of kept tiles, the longest kept first, until their points fit the allowance. */
   private letGoBeyondAllowance(): void {
-    const allowance = this.options.keep ?? KEEP_ALLOWANCE;
+    const allowance = this.options.keep ?? (this.options.budget ?? POINT_BUDGET) * KEEP_SHARE;
     let changed = false;
     for (const id of this.kept.keys()) {
       if (this.keptPoints <= allowance) break;

@@ -117,8 +117,8 @@ function gated(http: Http) {
 
 /** The simulated domain on `http`: a root and eight children, four on each side of it in x;
  * room for the root and the larger side's children, and one more tile where `slack`; `keep`
- * points of dropped tiles kept drawn. */
-async function twoSides(http: Http, keep?: number, slack = false) {
+ * points of dropped tiles kept drawn, by default all. */
+async function twoSides(http: Http, keep = Number.POSITIVE_INFINITY, slack = false) {
   const tiles = (await domainsOf(2, { http }))[0]?.tiles ?? [];
   const root = tiles.find((t) => t.parent === undefined);
   if (root === undefined) throw new Error("no root");
@@ -132,7 +132,7 @@ async function twoSides(http: Http, keep?: number, slack = false) {
     onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
     onChange: () => undefined,
   };
-  const catalogue = new Catalogue(2, await domainsOf(2, { http }), events, keep === undefined ? { http, budget } : { http, budget, keep });
+  const catalogue = new Catalogue(2, await domainsOf(2, { http }), events, { http, budget, keep });
   const looking = (east: boolean) => {
     const away = new Set(side(!east).map((t) => t.id));
     return sight((centre) => tiles.some((t) => away.has(t.id) && t.centre[0] === centre[0] && t.centre[1] === centre[1] && t.centre[2] === centre[2]));
@@ -219,7 +219,7 @@ describe("the catalogue", () => {
     // Room for one more tile: turned back while one tile of the second side is held back, the
     // view drops the second side's drawn tiles and wants the first side's again, still kept.
     const gate = gated(server(undefined, undefined, ["simulated"]));
-    const { catalogue, drawn, root, side, looking } = await twoSides(gate.http, undefined, true);
+    const { catalogue, drawn, root, side, looking } = await twoSides(gate.http, Number.POSITIVE_INFINITY, true);
     catalogue.update(looking(true));
     await steady(drawn);
     const [late] = side(false);

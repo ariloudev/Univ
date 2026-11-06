@@ -59,9 +59,9 @@ requirements:
       - key: 01a1a689-0b25-768a-9f1e-cc2a53831ad9
         name: "A dropped tile is fetched again when the view needs it again."
       - key: 01a1aeb6-f18d-7787-9cbd-de2cfdcfe714
-        name: "A dropped tile stays drawn, its points counted and its sources credited, until every tile fetched in the same round is drawn or given up, so that a moving view shows no region emptier while its new tiles arrive."
+        name: "A dropped tile stays drawn, its points counted and its sources credited, until no tile is on its way, so that a moving view shows no region emptier while its new tiles arrive."
       - key: 01a1aeb6-f18d-7787-9cbd-de2dfa8b12aa
-        name: "The dropped tiles kept drawn hold no more than 1,500,000 points beyond the budget, and those beyond it are drawn no more at once."
+        name: "The dropped tiles kept drawn hold no more than a quarter of the budget, 1,500,000 points, beyond it, and those beyond it are drawn no more at once."
       - key: 01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b
         name: "A dropped tile still drawn that the view wants again is drawn on without being read again."
   - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
