@@ -10,11 +10,17 @@
 //!   and the release's map of its paths, `release_files`, written. A grid's header names its
 //!   samples by their keys, so it is rewritten to name them as a build of schema 6 does, and
 //!   its row in `grids` names the header's new key.
-//! - Once every database is at schema 6, the files' old keys are deleted.
+//!   Each row naming a file by its old key (every column ending `_key`: `grids.header_key`,
+//!   `scale_domains.manifest_key`) names its new key.
+//! - Once every database is at schema 6, the files' old keys are deleted: they are listed in
+//!   the journals' directory first, so a run stopped while it deleted them finishes the next.
+//!
+//! A release a publish of schema 5 left part way, listed but never published, is refused: it
+//! has no manifest in R2 to move its files by, and is pruned first.
 //!
 //! Every step can run again: a table is rebuilt from itself, a file copied again, a row written
 //! or ignored, and a database already at schema 6 left alone; an interrupted migration is
-//! finished by the next publish.
+//! finished by the next run, of `univ-ingest migrate` or a publish.
 
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
@@ -26,21 +32,27 @@ use univ_model::release::shards::Database;
 use univ_model::release::{RETIRED, SCHEMA, SCHEMA_VERSION, Scope, TABLES, Table, keys};
 
 use super::Store;
-use super::check::{Tables, kept_releases, published_status, schema_version, sql_text, tables_of};
+use super::check::{
+    Tables, execute_sql, kept_releases, published_status, r2_manifest, schema_version, sql_text,
+    tables_of,
+};
 use super::progress::{Lines, Progress};
-use crate::release::parse_manifest;
+use super::upload::put_checked;
 use crate::tiles::sha256;
 
 /// The schema version brought under shared rows.
 pub const FROM: i64 = 5;
 
-/// The statement that creates `table` in [`SCHEMA`], named `name`.
+/// The directory within the journals' that holds the files a migration executes.
+const WORK: &str = "migrate";
+
+/// The statement that creates `table` in [`SCHEMA`], named `name`: from its `CREATE TABLE` to
+/// the first `;` ending a line.
 fn create_as(table: &Table, name: &str) -> Result<String, String> {
     let head = format!("CREATE TABLE IF NOT EXISTS {} (", table.name);
     let at = SCHEMA
         .find(&head)
         .ok_or_else(|| format!("the schema creates no table {}", table.name))?;
-    // The statement ends at its first `;`, `)` or `) WITHOUT ROWID` before it.
     let end = SCHEMA[at..]
         .find(";\n")
         .map(|e| at + e + 1)
@@ -49,13 +61,17 @@ fn create_as(table: &Table, name: &str) -> Result<String, String> {
 }
 
 /// The statements that rebuild each table of [`Scope::PerRelease`] of `held` under the keys of
-/// schema 6, then retire the rows of every release but `latest` at the release after it. A run
-/// stopped after it dropped a table, before it renamed the rebuilt one, left the rows only in
-/// the rebuilt one: it takes the table's name back first.
+/// schema 6, the rows of every release but `latest` retired at the release after it as they are
+/// copied. A run stopped after it dropped a table, before it renamed the rebuilt one, left the
+/// rows only in the rebuilt one: it takes the table's name back first.
 fn rebuild(
     held: &std::collections::BTreeSet<String>,
     latest: Option<u32>,
 ) -> Result<String, String> {
+    let retired = latest.map_or_else(
+        || "NULL".to_owned(),
+        |latest| format!("CASE WHEN release <> {latest} THEN release + 1 END"),
+    );
     let mut sql = String::new();
     for table in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
         let name = table.name;
@@ -69,17 +85,11 @@ fn rebuild(
         let columns = table.columns.join(", ");
         let _ = write!(
             sql,
-            "DROP TABLE IF EXISTS {next};\n{};\nINSERT INTO {next} ({columns}) SELECT {columns} \
-             FROM {name};\nDROP TABLE {name};\nALTER TABLE {next} RENAME TO {name};\n",
+            "DROP TABLE IF EXISTS {next};\n{};\nINSERT INTO {next} ({columns}, {RETIRED}) SELECT \
+             {columns}, {retired} FROM {name};\nDROP TABLE {name};\nALTER TABLE {next} RENAME TO \
+             {name};\n",
             create_as(table, &next)?
         );
-        if let Some(latest) = latest {
-            let _ = writeln!(
-                sql,
-                "UPDATE {name} SET {RETIRED} = release + 1 WHERE release <> {latest} AND \
-                 {RETIRED} IS NULL;"
-            );
-        }
     }
     Ok(sql)
 }
@@ -92,7 +102,7 @@ fn rename_samples(
     shas: &BTreeMap<&str, &str>,
 ) -> Result<Vec<u8>, String> {
     let mut json: Value = serde_json::from_slice(header).map_err(|e| e.to_string())?;
-    let prefix = format!("releases/{number}/");
+    let prefix = keys::prefix(number);
     let rename = |key: &mut Value| -> Result<(), String> {
         let Some(old) = key.as_str() else {
             return Ok(());
@@ -125,37 +135,71 @@ fn rename_samples(
     serde_json::to_vec_pretty(&json).map_err(|e| e.to_string())
 }
 
-/// What moving release `number`'s files left to do in D1, and the keys to delete once done.
+/// The file listing the old keys a migration deletes once the catalogue is at schema 6.
+const OLD_KEYS: &str = "old-keys.yaml";
+
+/// The table of the catalogue mapping each old key to its new one while the rows naming them
+/// are rewritten.
+const MOVED_KEYS: &str = "migrate_moved_keys";
+
+/// What moving the releases' files left to do in D1, and the keys to delete once done.
 #[derive(Default)]
 struct Moved {
-    /// `release_files` rows and the grids' new header keys, for the catalogue.
+    /// `release_files` rows and the old keys' new ones, for the catalogue.
     sql: String,
     old_keys: Vec<String>,
-    files: usize,
 }
 
-/// Puts `bytes` in R2 at `key`, through a file in `work`.
-fn put_bytes(store: &mut dyn Store, work: &Path, key: &str, bytes: &[u8]) -> Result<(), String> {
-    let file = work.join("object");
-    std::fs::write(&file, bytes).map_err(|e| format!("{}: {e}", file.display()))?;
-    store.put(key, &file)
+impl Moved {
+    /// The statements that have every column of the catalogue naming a file by key (its name
+    /// ends `_key`) name the file's new key, through [`MOVED_KEYS`].
+    fn rename_keys(&self) -> String {
+        let mut sql = format!(
+            "DROP TABLE IF EXISTS {MOVED_KEYS};\nCREATE TABLE {MOVED_KEYS} (old TEXT PRIMARY \
+             KEY, new TEXT NOT NULL);\n{}",
+            self.sql
+        );
+        for table in &TABLES {
+            for column in table.columns.iter().filter(|c| c.ends_with("_key")) {
+                let name = table.name;
+                let _ = writeln!(
+                    sql,
+                    "UPDATE {name} SET {column} = (SELECT new FROM {MOVED_KEYS} WHERE old = \
+                     {column}) WHERE {column} IN (SELECT old FROM {MOVED_KEYS});"
+                );
+            }
+        }
+        let _ = writeln!(sql, "DROP TABLE {MOVED_KEYS};");
+        sql
+    }
 }
 
-/// Copies each R2 file of release `number` to its SHA-256's key, rewriting grid headers, and
-/// adds to `moved` its map of paths and its old keys. `retired` is the release its rows are
-/// retired at, none for the release `latest` points to.
+/// The run stops here when the owner asked it to: every step before is done, and the next
+/// run takes the rest.
+fn stop_if_asked(progress: &dyn Progress) -> Result<(), String> {
+    if progress.stopping() {
+        Err("stopped by the owner; migrating again finishes it".to_owned())
+    } else {
+        Ok(())
+    }
+}
+
+/// Copies each R2 file of release `number` to its SHA-256's key, checking what R2 gives back,
+/// rewriting grid headers, and adds to `moved` its map of paths and its old keys: its rows
+/// retired at the release after it unless it is `latest`. `work` holds each file on its way.
 fn move_files(
     store: &mut dyn Store,
-    (number, retired): (u32, Option<u32>),
+    (number, latest): (u32, Option<u32>),
     work: &Path,
     moved: &mut Moved,
+    progress: &dyn Progress,
 ) -> Result<(), String> {
-    let key = keys::manifest(number);
-    let bytes = store
-        .get(&key)?
-        .ok_or_else(|| format!("R2 holds no manifest of release {number} at {key}"))?;
-    let manifest = parse_manifest(Path::new(&key), &String::from_utf8_lossy(&bytes), number)
-        .map_err(|e| e.to_string())?;
+    let manifest = r2_manifest(store, number)?.ok_or_else(|| {
+        format!(
+            "R2 holds no manifest of release {number} at {}",
+            keys::manifest(number)
+        )
+    })?;
     let r2: Vec<_> = manifest
         .files
         .iter()
@@ -165,11 +209,17 @@ fn move_files(
         .iter()
         .map(|f| (f.path.as_str(), f.sha256.as_str()))
         .collect();
-    let retired = retired.map_or_else(|| "NULL".to_owned(), |r| r.to_string());
+    let retired = if Some(number) == latest {
+        "NULL".to_owned()
+    } else {
+        (number + 1).to_string()
+    };
+    let file = work.join("object");
     for f in &r2 {
         let Some(old) = f.key.as_deref().filter(|k| !k.starts_with(keys::FILES)) else {
             continue;
         };
+        stop_if_asked(progress)?;
         // The old keys are deleted only once the catalogue is migrated, which ends the run.
         let held = store
             .get(old)?
@@ -181,7 +231,8 @@ fn move_files(
         } else {
             (f.sha256.clone(), held)
         };
-        put_bytes(store, work, &keys::file(&sha), &bytes)?;
+        std::fs::write(&file, &bytes).map_err(|e| format!("{}: {e}", file.display()))?;
+        put_checked(store, &keys::file(&sha), &file, bytes.len() as u64, &sha)?;
         let _ = writeln!(
             moved.sql,
             "INSERT OR IGNORE INTO release_files (release, path, sha256, {RETIRED}) VALUES \
@@ -189,108 +240,137 @@ fn move_files(
             sql_text(&f.path),
             sql_text(&sha)
         );
-        if header {
-            let _ = writeln!(
-                moved.sql,
-                "UPDATE grids SET header_key = {} WHERE release = {number} AND header_key = {};",
-                sql_text(&keys::file(&sha)),
-                sql_text(old)
-            );
-        }
+        let _ = writeln!(
+            moved.sql,
+            "INSERT OR REPLACE INTO {MOVED_KEYS} (old, new) VALUES ({}, {});",
+            sql_text(old),
+            sql_text(&keys::file(&sha))
+        );
         moved.old_keys.push(old.to_owned());
-        moved.files += 1;
     }
+    let _ = std::fs::remove_file(&file);
     Ok(())
 }
 
+/// Whether `database`, whose tables `tables` lists, is of schema [`FROM`].
+fn at_from(store: &mut dyn Store, tables: &Tables, database: Database) -> Result<bool, String> {
+    let held = tables
+        .get(&database)
+        .is_some_and(|t| t.contains("schema_version"));
+    Ok(held && schema_version(store, database)? == Some(FROM))
+}
+
 /// Brings each database of `store` that holds releases of schema [`FROM`] under shared rows,
-/// with R2's files, as the module says; `work` holds the files it executes. Whether it migrated:
-/// nothing is done where the catalogue is not of that version. A run stopped while it deleted
-/// the old keys leaves some, which a prune of their release deletes, as its manifest names them.
+/// with R2's files, as the module says, executing its files from `journals`. Whether it
+/// migrated: nothing is done where the catalogue is not of that version. Once `progress` says
+/// the owner asked it to stop, it stops after the file or database in hand. A run stopped while
+/// it deleted the old keys leaves some, which a prune of their release deletes, as its manifest
+/// names them.
 ///
 /// # Errors
 ///
 /// Fails part way when D1 or R2 refuses a step; the next run finishes it.
-pub fn migrate(
+pub fn migrate_with(
     store: &mut dyn Store,
-    work: &Path,
+    journals: &Path,
     progress: &mut dyn Progress,
 ) -> Result<bool, String> {
-    // The catalogue is migrated last, so a store whose catalogue is past schema 5 is done.
-    let catalogue = tables_of(store, std::iter::once(Database::Catalogue))?;
-    let at_from = |store: &mut dyn Store, tables: &Tables, database| -> Result<bool, String> {
-        let held = tables
-            .get(&database)
-            .is_some_and(|t| t.contains("schema_version"));
-        Ok(held && schema_version(store, database)? == Some(FROM))
-    };
-    if !at_from(store, &catalogue, Database::Catalogue)? {
-        return Ok(false);
+    let work = journals.join(WORK);
+    let listed = work.join(OLD_KEYS);
+    // The catalogue is migrated last, so a store whose catalogue is past schema 5 is done but
+    // for the old keys a run stopped before it deleted them all.
+    let mut tables = tables_of(store, std::iter::once(Database::Catalogue))?;
+    if !at_from(store, &tables, Database::Catalogue)? {
+        return delete_old_keys(store, &listed, progress);
+    }
+    let partial = store.query(
+        Database::Catalogue,
+        "SELECT number FROM releases WHERE pruned_at IS NULL AND published_at IS NULL",
+    )?;
+    if let Some(row) = partial.first() {
+        return Err(format!(
+            "release {} was published only in part under schema {FROM}: prune it, then migrate",
+            row.get("number")
+                .map_or_else(String::new, ToString::to_string)
+        ));
     }
     let bound = store.bound_shards()?;
-    let tables: Tables = tables_of(
-        store,
-        std::iter::once(Database::Catalogue).chain((0..bound).map(Database::Shard)),
-    )?;
+    tables.extend(tables_of(store, (0..bound).map(Database::Shard))?);
+    // The shards first, the catalogue last.
     let mut older = Vec::new();
-    for database in tables.keys().copied() {
-        if at_from(store, &tables, database)? {
-            older.push(database);
+    for (database, _) in tables.iter().filter(|(d, _)| **d != Database::Catalogue) {
+        if at_from(store, &tables, *database)? {
+            older.push(*database);
         }
     }
-    // The shards first, the catalogue last.
-    older.sort_by_key(|d| *d == Database::Catalogue);
-    std::fs::create_dir_all(work).map_err(|e| format!("{}: {e}", work.display()))?;
+    older.push(Database::Catalogue);
+    std::fs::create_dir_all(&work).map_err(|e| format!("{}: {e}", work.display()))?;
     let latest = published_status(store, 0)?.latest.map(|(n, _)| n);
     // The files are moved whichever database is left: a run stopped before it deleted the old
     // keys moves what is left of them, and its catalogue holds their rows already.
     let mut moved = Moved::default();
     for number in kept_releases(store, 0)? {
-        let retired = (Some(number) != latest).then_some(number + 1);
-        move_files(store, (number, retired), work, &mut moved)?;
+        move_files(store, (number, latest), &work, &mut moved, progress)?;
     }
     progress.note(format!(
         "schema {FROM} to {SCHEMA_VERSION}: {} R2 files copied to the keys of their SHA-256",
-        moved.files
+        moved.old_keys.len()
     ));
     for database in &older {
+        stop_if_asked(progress)?;
         let mut sql = rebuild(&tables[database], latest)?;
         sql.push_str(SCHEMA);
         if *database == Database::Catalogue {
-            sql.push_str(&moved.sql);
+            sql.push_str(&moved.rename_keys());
+            let text = serde_norway::to_string(&moved.old_keys).map_err(|e| e.to_string())?;
+            std::fs::write(&listed, text).map_err(|e| format!("{}: {e}", listed.display()))?;
         }
         let _ = write!(
             sql,
             "\nINSERT OR IGNORE INTO schema_version (version) VALUES ({SCHEMA_VERSION});\n"
         );
         let file = work.join(format!("migrate-{}.sql", database.dir()));
-        std::fs::write(&file, sql).map_err(|e| format!("{}: {e}", file.display()))?;
-        store.execute_file(*database, &file)?;
-        let _ = std::fs::remove_file(&file);
+        execute_sql(store, *database, &file, &sql)?;
         progress.note(format!(
             "schema {FROM} to {SCHEMA_VERSION}: {database} rebuilt with its rows shared between releases"
         ));
     }
-    store.delete_keys(&moved.old_keys)?;
-    let _ = std::fs::remove_file(work.join("object"));
+    delete_old_keys(store, &listed, progress)
+}
+
+/// Deletes the old keys `listed` names, if it is there, then the list: whether there was one.
+fn delete_old_keys(
+    store: &mut dyn Store,
+    listed: &Path,
+    progress: &mut dyn Progress,
+) -> Result<bool, String> {
+    let text = match std::fs::read_to_string(listed) {
+        Ok(text) => text,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+        Err(e) => return Err(format!("{}: {e}", listed.display())),
+    };
+    let old: Vec<String> =
+        serde_norway::from_str(&text).map_err(|e| format!("{}: {e}", listed.display()))?;
+    store.delete_keys(&old)?;
+    std::fs::remove_file(listed).map_err(|e| format!("{}: {e}", listed.display()))?;
     progress.note(format!(
         "schema {FROM} to {SCHEMA_VERSION}: {} R2 keys under the releases' prefixes deleted",
-        moved.old_keys.len()
+        old.len()
     ));
     Ok(true)
 }
 
-/// [`migrate`], telling `progress` a line for each step.
+/// [`migrate_with`], telling `progress` a line for each step.
 ///
 /// # Errors
 ///
-/// As [`migrate`].
-pub fn migrate_lines(
+/// As [`migrate_with`].
+pub fn migrate(
     store: &mut dyn Store,
-    work: &Path,
+    journals: &Path,
     progress: &mut dyn FnMut(String),
 ) -> Result<bool, String> {
-    migrate(store, work, &mut Lines(progress))
+    migrate_with(store, journals, &mut Lines(progress))
 }
 
 #[cfg(test)]

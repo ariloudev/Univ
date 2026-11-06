@@ -66,7 +66,7 @@ use crate::tiles::sha256;
 
 pub use check::{Status, published_status, sql_text};
 pub use error::PublishError;
-pub use migrate::{migrate, migrate_lines};
+pub use migrate::{migrate, migrate_with};
 pub use progress::{FileDone, Lines, Progress};
 pub use prune::{PruneError, Pruned, prune, prune_with};
 pub use r2batch::{R2Batch, SCRIPT};

@@ -12,7 +12,7 @@ use super::check::Tables;
 use super::check::{check_rows, schema_version, sql_text};
 use super::held::tables_and_held;
 use super::journal::{Done, Journal};
-use super::migrate::migrate;
+use super::migrate::migrate_with;
 use super::progress::{FileDone, Lines, Progress};
 use super::refuse::{Refused, off_latest, older_schema, refuse_published, unbound};
 use super::units::{Unit, check_kept, estimate_of, unit_files, units};
@@ -86,7 +86,7 @@ fn local(path: &Path, f: &ManifestFile) -> Result<(), String> {
 }
 
 /// Writes `file` to R2 at `key` and reads it back, checking its size and SHA-256.
-fn put_checked(
+pub(super) fn put_checked(
     store: &mut dyn Store,
     key: &str,
     file: &Path,
@@ -267,7 +267,7 @@ pub fn publish_with(
     let (dir, manifest, manifest_bytes) = read_release(options, number)
         .map_err(|problem| PublishError::NotBuilt { number, problem })?;
     // A store of schema 5 is brought under shared rows first, in place.
-    let (tables, held) = migrate(store, &options.journals.join("migrate"), progress)
+    let (tables, held) = migrate_with(store, options.journals, progress)
         .and_then(|_| tables_and_held(store, &manifest))
         .map_err(|problem| PublishError::Interrupted {
             number,

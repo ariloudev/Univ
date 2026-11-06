@@ -48,7 +48,7 @@ pub struct MemoryStore {
     pub ops: Vec<Op>,
     /// Fails every upload once this many have been made.
     pub fail_after: Option<usize>,
-    /// Fails the first upload this holds of, and every one after it.
+    /// Fails the first upload this holds of, and every one after it; and each delete it holds of.
     pub fail_at: Option<fn(&Op) -> bool>,
     /// Gives back R2 objects with their last byte changed.
     pub corrupt_reads: bool,
@@ -84,6 +84,8 @@ impl MemoryStore {
                 return Err(format!("injected failure at {op:?}"));
             }
             self.uploads += 1;
+        } else if matches!(op, Op::Delete(_)) && self.fail_at.is_some_and(|at| at(&op)) {
+            return Err(format!("injected failure at {op:?}"));
         }
         self.ops.push(op);
         Ok(())

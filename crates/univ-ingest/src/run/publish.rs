@@ -11,7 +11,7 @@ use univ_model::release::keys;
 use crate::display::Outcome;
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::publish::{
-    FileDone, Progress, Pruned, Published, Store, StoreOptions, Wrangler, ingest_dir, migrate,
+    FileDone, Progress, Pruned, Published, Store, StoreOptions, Wrangler, ingest_dir, migrate_with,
     prune_with, publish_with,
 };
 use crate::release::release_dir;
@@ -192,16 +192,13 @@ pub fn store_command(
 /// # Errors
 ///
 /// Fails, saying why, when D1 or R2 refuses a step.
-pub fn migrate_command(
+fn migrate_command(
     store: &mut dyn Store,
     journals: &std::path::Path,
     shown: &mut Shown<'_>,
 ) -> Result<Outcome, String> {
-    let migrated = migrate(store, &journals.join("migrate"), shown)?;
-    if !migrated {
-        shown.note("the store is not of schema 5: nothing to migrate".to_owned());
-    }
-    shown.ended(vec![Count::new(u64::from(migrated), "stores migrated")]);
+    let migrated = migrate_with(store, journals, shown)?;
+    shown.ended(Vec::new());
     Ok(Outcome::Migrated(migrated))
 }
 

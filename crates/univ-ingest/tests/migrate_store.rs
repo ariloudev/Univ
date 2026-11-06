@@ -19,7 +19,7 @@ use memory_store::{Clock, MemoryStore, Op, Rows, pruning, publishing};
 use release_fixture::{build_next, fixture, read_manifest};
 use rusqlite::Connection;
 use rusqlite::types::Value;
-use univ_ingest::publish::migrate_lines;
+use univ_ingest::publish::migrate;
 use univ_ingest::release::reindex::reindex;
 use univ_ingest::release::release_dir;
 use univ_model::release::manifest::Target;
@@ -50,6 +50,15 @@ fn holds(db: &Connection, name: &str) -> bool {
 /// `store`, the catalogue's first, without `release` and `retired`, as text, sorted by table:
 /// `release_files` left out, which schema 5 has not ([`file_map`] compares it).
 fn reads(store: &MemoryStore, filter: &str) -> Vec<BTreeMap<&'static str, Vec<String>>> {
+    reads_but(store, filter, |_| false)
+}
+
+/// [`reads`], leaving out the columns `out` names.
+fn reads_but(
+    store: &MemoryStore,
+    filter: &str,
+    out: fn(&str) -> bool,
+) -> Vec<BTreeMap<&'static str, Vec<String>>> {
     std::iter::once(&store.db)
         .chain(store.shards.values())
         .map(|db| {
@@ -63,7 +72,7 @@ fn reads(store: &MemoryStore, filter: &str) -> Vec<BTreeMap<&'static str, Vec<St
                         .columns
                         .iter()
                         .copied()
-                        .filter(|c| *c != "release")
+                        .filter(|c| *c != "release" && !out(c))
                         .collect();
                     let sql = format!(
                         "SELECT {} FROM {} WHERE {filter}",
@@ -97,6 +106,20 @@ fn insert(to: &Connection, table: &str, columns: &[&str], rows: &[Vec<Value>]) {
 /// The store `a`'s `releases`, published under schema 6 from the build output `out`, as
 /// schema 5 held them: each release's rows its own, its files under its prefix.
 fn as_schema_5(a: &MemoryStore, out: &Path, releases: &[u32]) -> MemoryStore {
+    // Each release's files by the key schema 6 gives them, to the key schema 5 gave them.
+    let old_keys: BTreeMap<u32, BTreeMap<String, String>> = releases
+        .iter()
+        .map(|r| {
+            let m = read_manifest(&release_dir(out, *r));
+            let map = m
+                .files
+                .iter()
+                .filter(|f| f.target == Target::R2)
+                .filter_map(|f| Some((f.key.clone()?, keys::key(*r, &f.path))))
+                .collect();
+            (*r, map)
+        })
+        .collect();
     let mut b = MemoryStore::default();
     let mut pairs = vec![(&a.db, None)];
     pairs.extend(a.shards.iter().map(|(i, db)| (db, Some(*i))));
@@ -123,8 +146,18 @@ fn as_schema_5(a: &MemoryStore, out: &Path, releases: &[u32]) -> MemoryStore {
                         &format!("SELECT {columns} FROM {} WHERE {}", t.name, valid_in("", r)),
                     );
                     let at = t.position("release").unwrap();
+                    let named: Vec<usize> = (0..t.columns.len())
+                        .filter(|i| t.columns[*i].ends_with("_key"))
+                        .collect();
                     for row in &mut each {
                         row[at] = Value::Integer(i64::from(*r));
+                        for i in &named {
+                            if let Value::Text(key) = &row[*i]
+                                && let Some(old) = old_keys[r].get(key)
+                            {
+                                row[*i] = Value::Text(old.clone());
+                            }
+                        }
                     }
                     insert(to, t.name, t.columns, &each);
                 }
@@ -135,6 +168,16 @@ fn as_schema_5(a: &MemoryStore, out: &Path, releases: &[u32]) -> MemoryStore {
                     t.columns,
                     &rows(from, &format!("SELECT {columns} FROM {}", t.name)),
                 );
+            }
+        }
+        // When each release was published and pruned, which its row does not carry.
+        if holds(from, "releases") {
+            for r in rows(from, "SELECT number, published_at, pruned_at FROM releases") {
+                to.execute(
+                    "UPDATE releases SET published_at = ?2, pruned_at = ?3 WHERE number = ?1",
+                    rusqlite::params_from_iter(r),
+                )
+                .unwrap();
             }
         }
         if holds(from, "latest") {
@@ -149,7 +192,7 @@ fn as_schema_5(a: &MemoryStore, out: &Path, releases: &[u32]) -> MemoryStore {
     for r in releases {
         let mut m = read_manifest(&release_dir(out, *r));
         for f in m.files.iter_mut().filter(|f| f.target == Target::R2) {
-            let old = format!("releases/{r}/{}", f.path);
+            let old = keys::key(*r, &f.path);
             b.r2.insert(old.clone(), a.r2[f.key.as_ref().unwrap()].clone());
             f.key = Some(old);
         }
@@ -203,16 +246,22 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
 
     let mut b = as_schema_5(&a, &out, &[1, 2]);
     for r in [1, 2] {
+        // But for the keys it names files by, under each release's prefix.
+        let keys = |c: &str| c.ends_with("_key");
         assert_eq!(
-            reads(&b, &format!("release = {r}")),
-            reads(&a, &valid_in("", r)),
+            reads_but(&b, &format!("release = {r}"), keys),
+            reads_but(&a, &valid_in("", r), keys),
             "the store of schema 5 holds release {r} as schema 6 does"
+        );
+        assert_ne!(
+            reads(&b, &format!("release = {r}")),
+            reads(&a, &valid_in("", r))
         );
     }
 
     let work = tempfile::tempdir().unwrap();
     let databases = 1 + i64::try_from(b.shards.len()).unwrap();
-    migrate_lines(&mut b, work.path(), &mut |_| {}).unwrap();
+    migrate(&mut b, work.path(), &mut |_| {}).unwrap();
     assert_eq!(
         b.int_everywhere("SELECT COUNT(*) FROM schema_version WHERE version = 6"),
         databases
@@ -234,7 +283,7 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
 
     // Migrating again changes nothing.
     b.reset();
-    migrate_lines(&mut b, work.path(), &mut |_| {}).unwrap();
+    migrate(&mut b, work.path(), &mut |_| {}).unwrap();
     assert!(
         !b.ops
             .iter()
@@ -286,7 +335,7 @@ fn a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_ch
     assert!(reindex(&mut Rows(&b), (2, 5), &dir).is_err());
     // Migrated, then the state's numbering and row index of release 2 made again from it.
     let work = tempfile::tempdir().unwrap();
-    assert!(migrate_lines(&mut b, work.path(), &mut |_| {}).unwrap());
+    assert!(migrate(&mut b, work.path(), &mut |_| {}).unwrap());
     reindex(&mut Rows(&b), (2, 6), &dir).unwrap();
     for n in [1, 2] {
         std::fs::remove_file(univ_ingest::publish::journal::file(journals.path(), n)).unwrap();
@@ -325,4 +374,56 @@ fn a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_ch
     for t in objects {
         assert_eq!((t.added, t.retired), (Some(0), Some(0)));
     }
+}
+
+#[test]
+fn a_migration_stopped_while_it_deleted_the_old_keys_deletes_the_rest_when_run_again() {
+    let f = fixture();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut a = MemoryStore::default();
+    let (out, state) = (f.out.path().to_owned(), f.state.path().to_owned());
+    for n in [1, 2] {
+        build_next(&f);
+        publishing(&mut a, n, &out, &state, journals.path(), &clock).unwrap();
+    }
+    let old = |s: &MemoryStore| -> usize {
+        s.r2.keys()
+            .filter(|k| k.starts_with("releases/") && !k.ends_with(keys::MANIFEST))
+            .count()
+    };
+    let work = tempfile::tempdir().unwrap();
+
+    // A release a publish of schema 5 left part way is refused, changing nothing.
+    let mut b = as_schema_5(&a, &out, &[1, 2]);
+    b.db.execute(
+        "UPDATE releases SET published_at = NULL WHERE number = 2",
+        [],
+    )
+    .unwrap();
+    let refused = migrate(&mut b, work.path(), &mut |_| {}).unwrap_err();
+    assert!(
+        refused.contains("release 2 was published only in part"),
+        "{refused}"
+    );
+    assert!(
+        !b.ops
+            .iter()
+            .any(|o| matches!(o, Op::Execute(_) | Op::Put(_)))
+    );
+
+    // R2 refuses the deletes once the catalogue is migrated.
+    let mut b = as_schema_5(&a, &out, &[1, 2]);
+    let before = old(&b);
+    assert!(before > 0);
+    b.fail_at = Some(|op| matches!(op, Op::Delete(_)));
+    assert!(migrate(&mut b, work.path(), &mut |_| {}).is_err());
+    assert_eq!(old(&b), before);
+    assert_eq!(
+        b.int("SELECT COUNT(*) FROM schema_version WHERE version = 6"),
+        1
+    );
+    b.fail_at = None;
+    assert!(migrate(&mut b, work.path(), &mut |_| {}).unwrap());
+    assert_eq!(old(&b), 0);
+    assert!(!migrate(&mut b, work.path(), &mut |_| {}).unwrap());
 }
