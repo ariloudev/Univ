@@ -7,10 +7,12 @@ use univ_model::release::manifest::{D1Estimate, MANIFEST_VERSION, ManifestFile, 
 use univ_model::release::shards::Database;
 use univ_model::release::{ReleaseManifest, TABLES, Table, keys};
 
+use super::cap::within_caps;
 use super::check::{check_rows, schema_version, sql_text};
+use super::held;
 use super::journal::{Done, Journal};
 use super::progress::{FileDone, Lines, Progress};
-use super::refuse::{Refused, off_latest, older_schema, refuse_published, unbound, within_caps};
+use super::refuse::{Refused, off_latest, older_schema, refuse_published, unbound};
 use super::{Latest, PublishError, Store, StoreOptions};
 use crate::release::{RELEASES, read_manifest, release_dir};
 use crate::state::State;
@@ -411,18 +413,24 @@ pub fn publish_with(
                 .or_else(|| journal.done.last().map(|d| d.at.clone()))
         })
         .flatten();
-    let (latest, holds) = refuse_published(store, number, done_at).map_err(|e| match e {
+    let latest = refuse_published(store, number, done_at).map_err(|e| match e {
         Refused::Error(e) => e,
         Refused::Query(p) => stopped(Latest(None), 0, p),
     })?;
     off_latest(&manifest, latest)
         .and_then(|()| unbound(store, &manifest))
         .and_then(|()| older_schema(store, &manifest))
-        .and_then(|()| within_caps(store, &manifest, holds))
+        .and_then(|()| within_caps(store, &manifest))
         .map_err(|e| match e {
             Refused::Error(e) => e,
             Refused::Query(p) => stopped(latest, 0, p),
         })?;
+    let r2 = units.iter().filter_map(|u| match u {
+        Unit::R2(f) => Some(*f),
+        _ => None,
+    });
+    held::share(store, (&manifest, r2), &mut journal, options, progress)
+        .map_err(|p| stopped(latest, 0, p))?;
     let journaled = journal.done.len();
     progress.started(total - journaled);
     if journaled > 0 {

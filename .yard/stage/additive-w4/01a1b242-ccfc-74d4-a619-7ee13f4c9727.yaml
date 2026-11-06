@@ -1,0 +1,65 @@
+key: 01a1b242-ccfc-74d4-a619-7ee13f4c9727
+id: w4
+versions:
+  - key: 01a1b242-ccfc-74d4-a619-7ee6f6f69e37
+    at: 2026-11-06T19:08:04Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4: Publish and prune the change"
+    goal: "Publish uploads only files R2 does not hold, the cap counts the rows every kept release holds once, and the integration fixture publishes and prunes a chain of releases that share rows."
+    status: active
+blocks:
+  - key: 01a1b242-ccfc-74d4-a619-7ee2ab14b867
+    id: w4-held
+    kind: task
+    versions:
+      - key: 01a1b242-ccfc-74d4-a619-7ee7b63532c8
+        at: 2026-11-06T19:08:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Publish skips files the parent holds"
+        detail: "held.rs: the SHA-256s release_files maps for the parent (latest, never pruned) are journaled as held, not uploaded; the journal names them, so prune keeps them while the publish is part way. shared_rows asserts publishing release 2 puts none of release 1's files."
+        state: done
+  - key: 01a1b242-ccfc-74d4-a619-7ee3e26759e3
+    id: w4-cap
+    kind: task
+    versions:
+      - key: 01a1b242-ccfc-74d4-a619-7ee833d742c9
+        at: 2026-11-06T19:08:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "CON-3 counts live rows once"
+        detail: "cap.rs: per database, the rows D1 holds already (counted per table) less those the release keeps, at the release's bytes per row, plus the release's estimate. Replaces summing every unpruned release's whole estimate, which counted shared rows once per release. The cap tests drive it through the rows D1 holds."
+        state: done
+  - key: 01a1b242-ccfc-74d4-a619-7ee49b6c4f17
+    id: w4-integration
+    kind: task
+    versions:
+      - key: 01a1b242-ccfc-74d4-a619-7ee965fa5351
+        at: 2026-11-06T19:08:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Integration on releases that share rows"
+        detail: "cargo xtask integration: fixture releases 1 and 2 published, 1 pruned, Univ Server and the explorer read release 2."
+        state: active
+  - key: 01a1b242-ccfc-74d4-a619-7ee51362e319
+    id: w4-review
+    kind: task
+    versions:
+      - key: 01a1b242-ccfc-74d4-a619-7eea4fb11e8e
+        at: 2026-11-06T19:08:04Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify and /code-review, fixes, cargo xtask check."
+        state: open

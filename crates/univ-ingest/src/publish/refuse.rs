@@ -1,12 +1,9 @@
 //! What refuses a publish before anything is uploaded: the release already published, pruned
 //! or older than `latest`'s; more object shards than Univ Server binds; a database of an older
-//! schema version; or, in any database, its rows and those of the releases not pruned estimated
-//! beyond the CON-3 cap.
-
-use std::collections::BTreeMap;
+//! schema version; or a parent latest does not point to. The CON-3 cap is checked in `cap`.
 
 use univ_model::release::shards::Database;
-use univ_model::release::{D1_CAP_BYTES, ReleaseManifest, valid_in};
+use univ_model::release::{D1_CAP_BYTES, ReleaseManifest};
 
 use super::check::published_status;
 use super::upload::record_published;
@@ -96,75 +93,9 @@ fn sum_and_count(row: Option<&QueryRow>) -> (u64, u64) {
     (bytes, n)
 }
 
-/// Checks each database the release `manifest` loads against the cap (CON-3): its estimate
-/// there with those of every other release the catalogue lists that is not pruned. The
-/// catalogue's are the releases' `d1_estimated_bytes` (all of a release's rows, for one built
-/// before object shards), a shard's their `release_shards` rows, all shards in one query;
-/// `holds` says which of those tables the catalogue holds.
-pub(super) fn within_caps(
-    store: &mut dyn Store,
-    manifest: &ReleaseManifest,
-    holds: Holds,
-) -> Result<(), Refused> {
-    let number = manifest.release;
-    let others = format!("pruned_at IS NULL AND number <> {number}");
-    let mut query = |sql: String| {
-        store
-            .query(Database::Catalogue, &sql)
-            .map_err(Refused::Query)
-    };
-    let catalogue = if holds.releases {
-        let rows = query(format!(
-            "SELECT total(d1_estimated_bytes) AS bytes, COUNT(*) AS n FROM releases WHERE {others}"
-        ))?;
-        sum_and_count(rows.first())
-    } else {
-        (0, 0)
-    };
-    let this = manifest.d1.estimated_bytes;
-    over_cap(number, Database::Catalogue, this, catalogue)?;
-    let mut earlier = BTreeMap::new();
-    if holds.shard_index && !manifest.shards.is_empty() {
-        // Each other release's estimate of each shard: the row valid in it, which an earlier
-        // release may have added. Rows shared between releases are counted once for each,
-        // which errs high.
-        let rows = query(format!(
-            "SELECT s.shard AS shard, total(s.estimated_bytes) AS bytes, COUNT(*) AS n \
-             FROM release_shards s JOIN releases r ON r.pruned_at IS NULL AND r.number <> \
-             {number} AND {} GROUP BY s.shard",
-            valid_in("s.", "r.number")
-        ))?;
-        for row in &rows {
-            if let Some(shard) = row.get("shard").and_then(serde_json::Value::as_u64) {
-                earlier.insert(shard, sum_and_count(Some(row)));
-            }
-        }
-    }
-    for shard in &manifest.shards {
-        let others = earlier.get(&u64::from(shard.index)).copied();
-        let database = Database::Shard(shard.index);
-        over_cap(
-            number,
-            database,
-            shard.d1.estimated_bytes,
-            others.unwrap_or((0, 0)),
-        )?;
-    }
-    Ok(())
-}
-
-/// Which of the tables the cap is checked by the catalogue holds.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub(super) struct Holds {
-    /// The list of releases.
-    pub releases: bool,
-    /// The index of the object shards.
-    pub shard_index: bool,
-}
-
 /// Refuses release `number` when its estimate `this` in `database` and `others`, the summed
 /// estimates there of the other releases not pruned and how many they are, pass the cap.
-fn over_cap(
+pub(super) fn over_cap(
     number: u32,
     database: Database,
     this: u64,
@@ -188,8 +119,8 @@ pub(super) enum Refused {
     Query(String),
 }
 
-/// Where `latest` points, and which tables of releases the catalogue holds, once release `number` is found
-/// neither published nor pruned, nor older than the release `latest` points to. A release whose publication time is missing is
+/// Where `latest` points, once release `number` is found neither published nor pruned, nor
+/// older than the release `latest` points to. A release whose publication time is missing is
 /// recorded as published, and refused as such, when `latest` points to it (at the time it moved
 /// there) or when `done_at` gives the time the journal says it was whole, whatever `latest`
 /// points to.
@@ -197,13 +128,9 @@ pub(super) fn refuse_published(
     store: &mut dyn Store,
     number: u32,
     done_at: Option<String>,
-) -> Result<(Latest, Holds), Refused> {
+) -> Result<Latest, Refused> {
     let status = published_status(store, number).map_err(Refused::Query)?;
     let latest = status.latest();
-    let holds = Holds {
-        releases: status.schema,
-        shard_index: status.shard_index,
-    };
     let refused = |e| Err(Refused::Error(e));
     if let Some(published_at) = status.published_at {
         return refused(PublishError::AlreadyPublished {
@@ -232,6 +159,6 @@ pub(super) fn refuse_published(
     }
     match status.latest {
         Some((n, _)) if n > number => refused(PublishError::NotNewer { number, latest: n }),
-        _ => Ok((latest, holds)),
+        _ => Ok(latest),
     }
 }

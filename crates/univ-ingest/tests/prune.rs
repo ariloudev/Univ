@@ -356,18 +356,27 @@ fn a_file_a_release_part_way_through_publishing_holds_is_not_pruned() {
     let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
     let mut store = MemoryStore::default();
     let (out, state) = (f.out.path(), f.state.path());
+    let mut second = None;
     for n in [1, 2] {
-        build_next(&f);
+        second = Some(build_next(&f));
         publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
     }
-    // Release 3 stops once its R2 files are up, before its release_files reach D1.
+    let held: BTreeSet<String> = second
+        .unwrap()
+        .manifest
+        .files
+        .iter()
+        .map(|f| f.sha256.clone())
+        .collect();
+    // Release 3 stops once its R2 files are up, before its release_files reach D1: those
+    // release 2 holds are not uploaded, but journaled as held.
     let third = build_next(&f);
     let schemas = 1 + third.manifest.shards.len();
     let r2 = third
         .manifest
         .files
         .iter()
-        .filter(|f| f.key.is_some())
+        .filter(|f| f.key.is_some() && !held.contains(&f.sha256))
         .count();
     store.uploads = 0;
     store.fail_after = Some(schemas + r2);

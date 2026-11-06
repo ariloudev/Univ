@@ -27,6 +27,25 @@ fn latest(store: &MemoryStore) -> Option<i64> {
         .ok()
 }
 
+/// Edits release `dir`'s manifest as if it wrote every row of `table` in `database` again, at
+/// `per_row` bytes each: the cap then counts every row D1 holds of it at that size.
+fn as_if_written_at(dir: &std::path::Path, database: Database, table: &str, per_row: u64) {
+    let mut m = read_manifest(dir);
+    let estimate = match database {
+        Database::Catalogue => &mut m.d1,
+        Database::Shard(i) => &mut m.shards[i as usize].d1,
+    };
+    let t = estimate
+        .tables
+        .iter_mut()
+        .find(|t| t.table == table)
+        .unwrap();
+    t.added = Some(t.rows);
+    t.estimated_bytes = t.rows * per_row;
+    let file = dir.join(univ_model::release::keys::MANIFEST);
+    std::fs::write(file, serde_norway::to_string(&m).unwrap()).unwrap();
+}
+
 #[test]
 fn a_text_holding_begin_transaction_reaches_d1_as_it_is() {
     let mut f = fixture();
@@ -122,15 +141,10 @@ fn a_release_beyond_the_cap_with_those_not_pruned_is_refused_with_both_estimates
             .d1
             .estimated_bytes
     );
-    // Release 1 as if it took nearly all of the cap.
-    let others = D1_CAP_BYTES - 1000;
-    store
-        .db
-        .execute(
-            &format!("UPDATE releases SET d1_estimated_bytes = {others} WHERE number = 1"),
-            [],
-        )
-        .unwrap();
+    // Release 2 as if it wrote its terms again, each so large that release 1's take the cap.
+    let terms = store.int("SELECT COUNT(*) FROM terms").unsigned_abs();
+    let per_row = D1_CAP_BYTES / terms;
+    as_if_written_at(&built.dir, Database::Catalogue, "terms", per_row);
     store.reset();
     let refused = publishing(
         &mut store,
@@ -142,16 +156,19 @@ fn a_release_beyond_the_cap_with_those_not_pruned_is_refused_with_both_estimates
     )
     .unwrap_err();
     let this = built.manifest.d1.estimated_bytes;
-    assert_eq!(
-        refused,
-        PublishError::OverCap {
-            number: 2,
-            database: Database::Catalogue,
-            this,
-            others,
-            releases: 1
-        }
-    );
+    let PublishError::OverCap {
+        number: 2,
+        database: Database::Catalogue,
+        this: refused_this,
+        others,
+        releases: 1,
+    } = refused.clone()
+    else {
+        panic!("{refused}");
+    };
+    assert_eq!(refused_this, this);
+    // Release 1's terms, which release 2 does not keep, and the rest it does not keep.
+    assert!(others >= terms * per_row, "{others}");
     let message = refused.to_string();
     assert!(
         message.contains(&format!(
@@ -251,19 +268,14 @@ fn a_release_beyond_the_cap_in_one_object_shard_is_refused_naming_the_shard() {
         &clock,
     )
     .unwrap();
-    // Release 1 as if its shard 1 took nearly all of the cap.
-    let others = D1_CAP_BYTES - 10;
-    store
-        .db
-        .execute(
-            &format!(
-                "UPDATE release_shards SET estimated_bytes = {others} WHERE release = 1 AND \
-                 shard = 1"
-            ),
-            [],
-        )
-        .unwrap();
     let built = build_next(&f);
+    // Release 2 as if it wrote shard 1's objects again, so large that release 1's take the cap.
+    let objects = store.shards[&1]
+        .query_row("SELECT COUNT(*) FROM objects", [], |r| r.get::<_, i64>(0))
+        .unwrap()
+        .unsigned_abs();
+    let per_row = D1_CAP_BYTES / objects + 1;
+    as_if_written_at(&built.dir, Database::Shard(1), "objects", per_row);
     store.reset();
     let refused = publishing(
         &mut store,
@@ -274,16 +286,18 @@ fn a_release_beyond_the_cap_in_one_object_shard_is_refused_naming_the_shard() {
         &clock,
     )
     .unwrap_err();
-    assert_eq!(
-        refused,
-        PublishError::OverCap {
-            number: 2,
-            database: Database::Shard(1),
-            this: built.manifest.shards[1].d1.estimated_bytes,
-            others,
-            releases: 1
-        }
-    );
+    let PublishError::OverCap {
+        number: 2,
+        database: Database::Shard(1),
+        this,
+        others,
+        releases: 1,
+    } = refused.clone()
+    else {
+        panic!("{refused}");
+    };
+    assert_eq!(this, built.manifest.shards[1].d1.estimated_bytes);
+    assert!(others >= objects * per_row, "{others}");
     assert!(
         refused
             .to_string()
