@@ -6,7 +6,7 @@ import type { ManifestSource } from "univ-tile-decoder";
 
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
-import { type Tree, plan, treeOf } from "./lod.ts";
+import { POINT_BUDGET, type Tree, plan, treeOf } from "./lod.ts";
 import { KINDS } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
@@ -17,6 +17,10 @@ const PARALLEL = 6;
 const ATTEMPTS = 3;
 /** The wait before a tile whose read failed is asked for again, milliseconds. */
 const RETRY_MS = 2000;
+/** The share of the budget that dropped tiles may hold beyond it while they are kept drawn. */
+const KEEP_SHARE = 0.25;
+/** The most points of dropped tiles kept drawn beyond the default budget: a quarter of it. */
+export const KEEP_ALLOWANCE = POINT_BUDGET * KEEP_SHARE;
 
 export interface CatalogueEvents {
   /** A tile's points, to draw. */
@@ -27,8 +31,9 @@ export interface CatalogueEvents {
   onChange: () => void;
 }
 
-/** How the catalogue reads its tiles, and the most points it holds (by default `POINT_BUDGET`). */
-export type CatalogueOptions = ReadOptions & { budget?: number };
+/** How the catalogue reads its tiles, the most points it holds (by default `POINT_BUDGET`), and
+ * the most points of dropped tiles it keeps drawn (by default a quarter of its budget). */
+export type CatalogueOptions = ReadOptions & { budget?: number; keep?: number };
 
 /** A source of the drawn points, with the domain whose manifest credits it. */
 export type Credit = ManifestSource & { domain: string };
@@ -74,6 +79,10 @@ export class Catalogue {
   private readonly attempts = new Map<string, number>();
   /** The points of the tiles drawn and on their way. */
   private points = 0;
+  /** Tiles dropped to make room and kept drawn, outside the budget, until no tile is on its
+   * way: oldest first. */
+  private readonly kept = new Map<string, Batch>();
+  private keptPoints = 0;
   private sight: Sight | undefined;
   /** Points drawn outside the stars domain of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
@@ -116,11 +125,20 @@ export class Catalogue {
     const holding = { settled: this.settled, drawn: this.drawn, pending, points: this.points };
     const next = plan(this.tree, holding, sight, room, this.options.budget);
     for (const tile of next.drop) this.drop(tile);
+    let revived = false;
     for (const tile of next.fetch) {
+      if (this.revive(tile)) {
+        revived = true;
+        continue;
+      }
       const domain = this.domains.get(tile.domain);
       if (domain !== undefined) this.fetch(domain, tile);
     }
-    if (next.drop.length > 0) this.events.onChange();
+    if (next.drop.length > 0) this.letGoBeyondAllowance();
+    if (this.pending.size === 0) this.letGoKept();
+    // A revived tile ends no fetch, which is what asks for the next round: the plan, which could
+    // not refine it while it was not held, is asked again.
+    if (revived) queueMicrotask(() => this.update(sight));
   }
 
   private fetch(domain: Domain, tile: DomainTile): void {
@@ -128,8 +146,7 @@ export class Catalogue {
     this.points += tile.points;
     void fetchBatch(domain, tile, this.release, this.options)
       .then((batch) => {
-        this.settled.add(tile.id);
-        this.drawn.set(tile.id, batch);
+        this.hold(tile, batch);
         this.histograms.set(tile.id, histogramOf(batch, sourcesOf(domain)));
         this.tally(batch, 1);
         this.events.onBatch(batch);
@@ -145,15 +162,62 @@ export class Catalogue {
       });
   }
 
-  /** Lets go of a drawn tile's points; it is fetched again when the view needs it. */
+  /** Counts a drawn tile in the budget. */
+  private hold(tile: DomainTile, batch: Batch): void {
+    this.settled.add(tile.id);
+    this.drawn.set(tile.id, batch);
+  }
+
+  /** Takes a drawn tile out of the budget, keeping it drawn, counted and credited until no tile
+   * is on its way; it is fetched again when the view needs it. */
   private drop(tile: DomainTile): void {
     const batch = this.drawn.get(tile.id);
     if (batch === undefined) return;
     this.drawn.delete(tile.id);
     this.settled.delete(tile.id);
     this.points -= tile.points;
+    this.kept.set(tile.id, batch);
+    this.keptPoints += tile.points;
+  }
+
+  /** Draws on a kept tile the view wants again, without reading it again. Whether it was kept. */
+  private revive(tile: DomainTile): boolean {
+    const batch = this.kept.get(tile.id);
+    if (batch === undefined) return false;
+    this.kept.delete(tile.id);
+    this.keptPoints -= tile.points;
+    this.hold(tile, batch);
+    this.points += tile.points;
+    return true;
+  }
+
+  /** Lets go of every kept tile: nothing is on its way that they stand in for. */
+  private letGoKept(): void {
+    if (this.kept.size === 0) return;
+    for (const id of [...this.kept.keys()]) this.letGo(id);
+    this.events.onChange();
+  }
+
+  /** Lets go of kept tiles, the longest kept first, until their points fit the allowance. */
+  private letGoBeyondAllowance(): void {
+    const allowance = this.options.keep ?? (this.options.budget ?? POINT_BUDGET) * KEEP_SHARE;
+    let changed = false;
+    for (const id of this.kept.keys()) {
+      if (this.keptPoints <= allowance) break;
+      this.letGo(id);
+      changed = true;
+    }
+    if (changed) this.events.onChange();
+  }
+
+  /** Draws a kept tile no more, and counts its points out. */
+  private letGo(id: string): void {
+    const batch = this.kept.get(id);
+    if (batch === undefined) return;
+    this.kept.delete(id);
+    this.keptPoints -= batch.tile.points;
     this.tally(batch, -1);
-    this.histograms.delete(tile.id);
+    this.histograms.delete(id);
     this.events.onDrop(batch);
   }
 
@@ -207,7 +271,7 @@ export class Catalogue {
     this.stars.coloured = 0;
     this.stars.grey = 0;
     this.domainPoints.clear();
-    for (const batch of this.drawn.values()) this.tally(batch, 1);
+    for (const batch of [...this.drawn.values(), ...this.kept.values()]) this.tally(batch, 1);
     this.events.onChange();
   }
 

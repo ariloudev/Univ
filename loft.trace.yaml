@@ -3389,22 +3389,22 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
-        body: 9101fbdea4208aad8da6b4b7e36f504dec0f92848114cdaa3eda485333e6c071
+        body: 4c628499d9866e731ea06217509c923c676ee3f914a3323efdd332cd7b220d53
   - node: 01a1aead-1e30-7695-bbd5-099c2f301565
     reviewed: dc850f3fb6fe277e64094fde2aa04f623c05d085327d711a29d36c91cbc15fa8
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
-        body: 9101fbdea4208aad8da6b4b7e36f504dec0f92848114cdaa3eda485333e6c071
+        body: 4c628499d9866e731ea06217509c923c676ee3f914a3323efdd332cd7b220d53
   - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
-    reviewed: d56d1e83e4cfbb1a73c3bc5393c25caa8ee7bb5c00b587c47d326bf8fd2283fd
+    reviewed: 7fbd45cc7ade9bab68f3b5575662f8b135c03c30b90a126fad2508cf9d5fa72b
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "holds no more than 3,000,000 points, counting those on their way"
-        body: fe131166d4f30d069df1b7f4cb44a11ad2bf237a3a901b4a5964db76a2b92b97
+        name: "holds no more than 6,000,000 points, counting those on their way"
+        body: 9964014668f6dbfc0258c0db3418218e5a8edf17715c25ad8f4c93ff040bc444
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
-        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+        body: 4e8231ab7a8388ec058fb7488245fd0539501bfedf1a312d974b5dd705990df0
   - node: 01a1a689-0b25-768a-9f1e-cc28566a82e6
     reviewed: 0f0300380b27121d826afc8c0e7dd3d9978b3d798112fc7285c73e261c06f158
     tests:
@@ -3413,7 +3413,7 @@ links:
         body: cbc6dc35af6d259a19ba2449a57ff89fca41dca9bccb14340164f4684c89b391
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
-        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+        body: 4e8231ab7a8388ec058fb7488245fd0539501bfedf1a312d974b5dd705990df0
   - node: 01a1a689-0b25-768a-9f1e-cc29da0f0de4
     reviewed: 1d5455cdbc3aca3bca0e11ef6bc102883720f6feb22b1f928751910e82f77132
     tests:
@@ -3431,7 +3431,28 @@ links:
         body: 91f97e6594163e1f2b626d7a2b378d4f47885fb41a8010dfb04ded0b418f28ad
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "drops the tiles the view leaves to make room for those it turns to, and counts their points out"
-        body: a231f0844a1d71e72f7d9202ed871aad8118a330bb7ad890b84fd50d124b81fa
+        body: 4e8231ab7a8388ec058fb7488245fd0539501bfedf1a312d974b5dd705990df0
+  - node: 01a1aeb6-f18d-7787-9cbd-de2cfdcfe714
+    reviewed: 8e05ddea9a4655f672d96d6af478bcb15cca1c2ae50e128978fd6871eeae5423
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "keeps the tiles it drops drawn and counted until the tiles fetched in their place are drawn"
+        body: aa5c3376b2a334f3561638347209bd19170e55b21d61a12fdd6c2fdcd1591007
+  - node: 01a1aeb6-f18d-7787-9cbd-de2dfa8b12aa
+    reviewed: c046a7265ffa18169546c43ef8414fef7c7912ca23c56369c38175d597a608ab
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "keeps no dropped tile drawn beyond its allowance"
+        body: ee4a9d04f63c577c8fd19dd0a4c76d1957b67dd038044623e3af372652f426ce
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "keeps the dropped tiles that fit its allowance drawn, and those beyond it no more"
+        body: ffb8fd890e42be58b7e3caf005f89224b43d1242f44c1e04478a86cfdeafa670
+  - node: 01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b
+    reviewed: 860bc11fb48cdb57922047668acbdb1261bd4a45b3f2092796b7c8b020492b74
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws on a kept tile the view wants again without reading it again"
+        body: b93e89567385e23ef9d5e6f1db114eca11980f2ec792b3460fe3c3f35639a25a
   - node: 01a1a689-0b25-768a-9f1e-cc2c484365d4
     reviewed: e82b1fb1e371fca155aeaa6795d4f08bf91215034ad308160bd02a5eac646c7f
     tests:
