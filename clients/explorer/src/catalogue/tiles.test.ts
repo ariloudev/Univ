@@ -43,6 +43,20 @@ describe("a tile", () => {
     }
   });
 
+  it("holds its slice of its domain: from what the levels above keep to what its own level adds, or all that is left for a leaf", () => {
+    // The simulated root keeps 8 of the domain's 60 points, two fifteenths; its children are leaves.
+    const simulated = domainOf("simulated");
+    const root = simulated.tiles.find((t) => t.parent === undefined);
+    expect(root?.slice?.[0]).toBe(0);
+    expect(root?.slice?.[1]).toBeCloseTo(2 / 15);
+    for (const child of simulated.tiles.filter((t) => t.parent !== undefined)) {
+      expect(child.slice?.[0]).toBeCloseTo(2 / 15);
+      expect(child.slice?.[1]).toBe(1);
+    }
+    // A domain whose root is its only tile holds all of it.
+    expect(domainOf("cosmic_web").tiles[0]?.slice).toEqual([0, 1]);
+  });
+
   it("orders its points shuffled by its id, the same on every read", async () => {
     const domain = domainOf("cosmic_web");
     const raw = fixtureTiles("cosmic_web")[0];

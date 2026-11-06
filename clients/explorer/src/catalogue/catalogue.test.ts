@@ -126,8 +126,12 @@ async function twoSides(http: Http, keep = Number.POSITIVE_INFINITY, slack = fal
   const largest = Math.max(...tiles.map((t) => t.points));
   const budget = root.points + Math.max(points(side(true)), points(side(false))) + (slack ? largest : 0);
   const drawn: string[] = [];
+  const batches = new Map<string, Batch>();
   const events = {
-    onBatch: (b: Batch) => drawn.push(b.tile.id),
+    onBatch: (b: Batch) => {
+      batches.set(b.tile.id, b);
+      drawn.push(b.tile.id);
+    },
     onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
     onChange: () => undefined,
   };
@@ -136,7 +140,7 @@ async function twoSides(http: Http, keep = Number.POSITIVE_INFINITY, slack = fal
     const away = new Set(side(!east).map((t) => t.id));
     return sight((centre) => tiles.some((t) => away.has(t.id) && t.centre[0] === centre[0] && t.centre[1] === centre[1] && t.centre[2] === centre[2]));
   };
-  return { catalogue, drawn, root, side, looking, budget };
+  return { catalogue, drawn, batches, root, side, looking, budget };
 }
 
 describe("the catalogue", () => {
@@ -271,19 +275,35 @@ describe("the catalogue", () => {
     expect(total()).toBeLessThanOrEqual(budget);
   });
 
-  it("draws every point of a root, a share of its children's by how far apart the root's lie on screen, and every one with level of detail off", async () => {
-    const { catalogue, drawn, root, side, looking } = await twoSides(server(undefined, undefined, ["simulated"]));
+  it("draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off", async () => {
+    const { catalogue, drawn, batches, root, side, looking } = await twoSides(server(undefined, undefined, ["simulated"]));
     catalogue.update(looking(true));
     await steady(drawn);
     const [child] = side(true);
     if (child === undefined) throw new Error("no child");
     expect(catalogue.share(root.id)).toBe(1);
     expect(catalogue.share(child.id)).toBe(1);
+    const childBatch = batches.get(child.id);
+    const rootBatch = batches.get(root.id);
+    if (childBatch === undefined || rootBatch === undefined) throw new Error("not drawn");
+    const every = (b: Batch, drawnPoint: (i: number) => boolean) => Array.from({ length: b.ids.length }, (_, i) => drawnPoint(i));
+    expect(every(childBatch, catalogue.drawnPoints(childBatch))).not.toContain(false);
+    // Seen from so far that the domain needs no more than its root holds, 8 of its 60 points.
     catalogue.update({ ...looking(true), focal: 1e-9 });
     expect(catalogue.share(root.id)).toBe(1);
     expect(catalogue.share(child.id)).toBe(0);
+    expect(every(rootBatch, catalogue.drawnPoints(rootBatch))).not.toContain(false);
+    expect(every(childBatch, catalogue.drawnPoints(childBatch))).not.toContain(true);
+    const detail = catalogue.detail("simulated");
+    expect(detail.levels).toBe(2);
+    expect(detail.cumulative[0]).toBeCloseTo(8 / 60);
+    expect(detail.cumulative[1]).toBe(1);
+    expect(detail.onsets[1]).toBeLessThan(1e-6);
     catalogue.setLevelOfDetail(false);
     expect(catalogue.share(child.id)).toBe(1);
+    expect(every(childBatch, catalogue.drawnPoints(childBatch))).not.toContain(false);
+    expect(catalogue.detail("simulated")).toEqual(expect.objectContaining({ levels: 1 }));
+    expect(catalogue.detail("simulated").cumulative[0]).toBe(1);
     await steady(drawn);
   });
 

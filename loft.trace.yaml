@@ -3343,17 +3343,20 @@ links:
         name: "fetches the children in view of held tiles, the largest on screen first, and none wholly outside it"
         body: c2c33def47f95d820c7ccd7a095f22577417720f74fd96c55fb0efa334acc1fc
   - node: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
-    reviewed: 5ed7dccb7622bfee3d4e5db93c8315efab04352e1bd81219b3316277718534be
+    reviewed: b044070b583849b0de27ca6cc0fded2fe0a2d4bd7a35ce52e9e4541702dab792
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "refines a tile only while its points lie farther apart on screen than 3 pixels"
-        body: 8ba68e794c4bd18cd89a3e9ee31268fe8ffb5da699e52febd4312d6e384d0fac
+        name: "refines a tile only while a typical tile of its level would have its points farther apart on screen than 3 pixels"
+        body: 751a37794630c7eca353be02241468b8bfa78c85d83635af7231c1f8815548cf
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "measures a tile read by where its points lie, not by its cube"
-        body: 1a17468adad6abb34288a32a151705a7e05e22f393fd089b3187fa673aa94776
+        name: "refines regions at one distance alike, however many points their tiles hold"
+        body: f1a40cd740d3aca5249990cc645caaefdaf85ca6d456f557c99caae9ae302016
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "measures a tile read by the distance of its points, not of its cube"
+        body: 8f7bb80d09abc90f4538be56f0c5e816446ba7b27f201a3c600dea5011c6e6a8
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "measures how far apart a tile's points lie by where most of them are, not by the farthest"
-        body: 39947fd6f4fef34defe138ed42b8a43db532f6703b6c56a874b4a2e84e48056a
+        body: 0bc33ced020f748a359e46e3b5e9f01f905ca0af4858647e0a67e9e095eafe3d
   - node: 01a1a6a7-c540-7210-8492-7dfc16d279b8
     reviewed: 9f4cc14d2503bc59adb7e1a124667fb809a1d93c75a2cbdc2559edba4c61454a
     tests:
@@ -3367,11 +3370,11 @@ links:
         name: "settles, within a budget too small for all it wants, and fetches no tile twice"
         body: 77d12239af96d2ee71fd5992224abf18baf76ef75efefe6f399775016a8970d3
   - node: 01a1aea7-5e8b-7623-8601-48fb7856d2e3
-    reviewed: d0ae82b35820ce31556ac95579d8fcad1c72507095e7586b29b5253aa7dcce9e
+    reviewed: 2b42a71575a3d3daa305c4872dbd031bd2c88f655185ab427f32c1bac419ff01
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "keeps a held tile's children while its points lie farther apart on screen than 2 pixels"
-        body: b92e1bfbdd083bbfefb66e76838c940435a00567cc9d209f32452d7ba43e5d3e
+        body: d75d913d72cb82bba3c3ea0929072f71769e1c49d6ba875f2219005bc9250a69
   - node: 01a1aea7-5e8b-7623-8601-48fc4cf3ff3f
     reviewed: 7dc0a74be5dcaad89b92d099edfd7c82864d04934ee4320b5d838d0f33b7b32a
     tests:
@@ -3389,13 +3392,13 @@ links:
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
-        body: 4c628499d9866e731ea06217509c923c676ee3f914a3323efdd332cd7b220d53
+        body: b864009a152e7d5c93be849799d7a1ce934fc561c31d23f28f4f9638ca131de1
   - node: 01a1aead-1e30-7695-bbd5-099c2f301565
     reviewed: dc850f3fb6fe277e64094fde2aa04f623c05d085327d711a29d36c91cbc15fa8
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn"
-        body: 4c628499d9866e731ea06217509c923c676ee3f914a3323efdd332cd7b220d53
+        body: b864009a152e7d5c93be849799d7a1ce934fc561c31d23f28f4f9638ca131de1
   - node: 01a1a497-e843-728a-bce8-4006f5c2ce8f
     reviewed: a669ebb08831bd0a2a062ec3860089a0c1d7a3e250c11cdd027ebc864c241870
     tests:
@@ -3487,29 +3490,47 @@ links:
         name: "starts off where the address turns it off, as after a reload"
         body: 670d683cf11a7c53613fd188ea0749dd01330d4eee32ecdebf1dbf66acbf7de0
   - node: 01a1b093-647d-7308-9b46-bdca66fcbd08
-    reviewed: 66740e36724fdceb03d812c39777bf602a59b9ba4e639ec9999b7ad191582046
+    reviewed: c6f09b384aca690df926a4e2c7eb5b4078951cc841c52bd0ec782cbe508a7d2a
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "rises in proportion from none, where the parent's points lie 3 pixels apart, to all where they lie 6"
-        body: 06e32b60e0f4fa244e534b5424c4130fc76565b12bf0253d799d35ccb7cd8593
+        name: "rises level by level as a typical tile of the level above has its points from 3 to 6 pixels apart"
+        body: 6a48c3892f50d9e60f57f389094705d72a16be5910d6cdfc7d507eabbeb9c52c
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
-        name: "draws every point of a root, a share of its children's by how far apart the root's lie on screen, and every one with level of detail off"
-        body: 0e494e849b143fbd5b14e17013ef1e3ab88e26af60bc764488022f2c99c10ae5
+        name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
+        body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
       - file: "clients/explorer/src/scene/drawList.test.ts"
         name: "is each tile in sight and not turned off, its share of its points and as opaque as its fade"
         body: ae19fa1f30f9bbe477a47ec9a5a37ef9577358f14e3c1f73364e445265c340c2
       - file: "clients/explorer/src/scene/drawList.test.ts"
         name: "leaves out a tile whose share draws no point, or whose fade is nothing"
         body: e5533e9b1f7997d32bb580ab3cf50814791c50ded65c55f01d50a5f74e2825ef
+  - node: 01a1b0a9-6982-71c6-b321-0cfc1d1f8a93
+    reviewed: 84ad6ec6d02a1538d80b70df16ba419c7e60cc4a468bdbc4310a6f72baf9189c
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "ranks a tile's points evenly through its slice, in their order"
+        body: 595f8605efecdf0603b19e9606fca61e01590f8952efbf902c97baf4d43af096
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "holds its slice of its domain: from what the levels above keep to what its own level adds, or all that is left for a leaf"
+        body: 1117cdcf777b89dc7f885a658a9e7161da1482fafa36e97e5911bab4ee0ecb9b
+  - node: 01a1b0a9-6982-71c6-b321-0cfd3507cc88
+    reviewed: 5340b71a72933cc136420c1164a46702781b947122711b2486205138d33bd772
+    tests:
+      - file: "clients/explorer/src/catalogue/lod.test.ts"
+        name: "refines regions at one distance alike, however many points their tiles hold"
+        body: f1a40cd740d3aca5249990cc645caaefdaf85ca6d456f557c99caae9ae302016
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
+        body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
   - node: 01a1b093-81da-759e-8532-70d7aa4d0ff1
     reviewed: 28de97338d549340c430468715db45e4b4417cf8bf086804edfd794eb492a9b4
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
-        name: "is every point of a root"
-        body: b1188dc93944fabd5e6b3087e6d310aac7c299fb8fa3e75d92694302e5948cf8
+        name: "draws every point of a root, and of a tile the first whose rank lies below the share its nearest points need"
+        body: d80013a59f1bb7260d8593791f8d02ca6f9a5b6450c0e5a4d6c8a6c603d10037
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
-        name: "draws every point of a root, a share of its children's by how far apart the root's lie on screen, and every one with level of detail off"
-        body: 0e494e849b143fbd5b14e17013ef1e3ab88e26af60bc764488022f2c99c10ae5
+        name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
+        body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
   - node: 01a1b093-647d-7308-9b46-bdcbf842c1af
     reviewed: a51a9aa2816658a01a4e18771131d9864b6b8fc71b179f36c83dce2013e27047
     tests:
@@ -3541,8 +3562,8 @@ links:
     reviewed: a1ecdc079dd0c923cfb0910a83b2400459b93f055f797b7d929261e708a0813a
     tests:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
-        name: "draws every point of a root, a share of its children's by how far apart the root's lie on screen, and every one with level of detail off"
-        body: 0e494e849b143fbd5b14e17013ef1e3ab88e26af60bc764488022f2c99c10ae5
+        name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
+        body: 70993cc594133ad9d780ad3c92b92421674136d6d98ff1d65c972f150faf171c
   - node: 01a1b093-647d-7308-9b46-bdce5099b2f5
     reviewed: 66009151f7032987facdb56d1a2e55dde96081f117f29c5c6e7798ce83c12778
     tests:
@@ -3550,8 +3571,8 @@ links:
         name: "passes over the points beyond those drawn of a batch's share"
         body: 0bd429616af3a0cf75a1b4b12a4856eb9cf6efb8696f79cb9b0ad17a8cbc4168
       - file: "clients/explorer/src/ui/scenePoint.test.ts"
-        name: "is found under the pointer only where its tile's share draws it"
-        body: cde9a02ed910041dbd4fbb2eb3c5240df5d2533ca6ce52833ad089cc34487fe1
+        name: "is found under the pointer only where it is drawn: within its tile's share, and below the share its distance needs"
+        body: 2b8e80b420ca162db0465f75960a623667d96e9c2e673922375d6d1dd005c435
   - node: 01a1a689-0b25-768a-9f1e-cc2c484365d4
     reviewed: e82b1fb1e371fca155aeaa6795d4f08bf91215034ad308160bd02a5eac646c7f
     tests:
@@ -3953,7 +3974,7 @@ links:
         body: 7ff258700eb7cccdd4b78ebf6cacb49a317eccee6f8253952279257cd9a27408
       - file: "clients/explorer/src/ui/scenePoint.test.ts"
         name: "is found under the pointer, or nothing is"
-        body: 7ed2653a36aea2005a6cbaa718272bf821dc0d031efed97dc69d0e38b28f1055
+        body: 48dde47ae4c82c10a015db4884bca0d51f1c3c2dc0a81d588f0de3e54c112f64
       - file: "clients/explorer/src/scene/pick.test.ts"
         name: "finds the point under the pointer, across batches"
         body: 37f02fcb621ce6620054c55f7a57f43067e7079259e99239af4c80c72c60e157

@@ -86,8 +86,12 @@ export const MPC_PER: Record<ExplorerManifest["unit"], number> = { pc: 1e-6, Mpc
 /** The tiles of `manifest`'s domain `name`, in megaparsecs. */
 export function tilesOf(name: string, manifest: ExplorerManifest): DomainTile[] {
   const toMpc = MPC_PER[manifest.unit];
+  const held = cumulativeOf(manifest);
+  const split = new Set(manifest.nodes.map((node) => node.address.slice(0, -1)));
   return manifest.nodes.map((node) => {
     const { min, max } = node.bounds;
+    const level = node.address.length - 1;
+    const above = level === 0 ? 0 : (held[level - 1] ?? 1);
     return {
       id: `${name}/${node.address}`,
       domain: name,
@@ -96,9 +100,24 @@ export function tilesOf(name: string, manifest: ExplorerManifest): DomainTile[] 
       centre: scale(add(min, max), 0.5 * toMpc),
       edge: (max[0] - min[0]) * toMpc,
       points: node.points,
+      slice: [above, split.has(node.address) ? (held[level] ?? 1) : 1] as const,
       node,
     };
   });
+}
+
+/** The share of a domain's points the levels down to each hold, by level: each split tile of a
+ * level keeps the level's fraction of the points that reach it, the rest going down. */
+function cumulativeOf(manifest: ExplorerManifest): number[] {
+  const fractions = new Map(manifest.levels.map((l) => [l.level, l.fraction]));
+  const depth = Math.max(0, ...manifest.nodes.map((node) => node.address.length));
+  const held: number[] = [];
+  let left = 1;
+  for (let level = 0; level < depth; level += 1) {
+    left *= 1 - Math.min(1, Math.max(0, fractions.get(level) ?? 1));
+    held.push(1 - left);
+  }
+  return held;
 }
 
 /** The scale domains of `release` with their manifests. */

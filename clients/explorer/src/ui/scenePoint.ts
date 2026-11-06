@@ -4,6 +4,7 @@ import { drawnOf } from "../catalogue/lod.ts";
 import type { Batch, Domain } from "../catalogue/tiles.ts";
 import type { StarColourIndex } from "../scene/starColour.ts";
 import { KINDS } from "../scene/kinds.ts";
+import type { Shown } from "../scene/masks.ts";
 import { type Pointer, pick } from "../scene/pick.ts";
 import { type Vec3, norm } from "../scene/vec.ts";
 import type { World } from "./useWorld.ts";
@@ -50,10 +51,21 @@ function colourOf(batch: Batch, index: number, names: readonly StarColourIndex["
   return bands === undefined || hundredths === undefined ? undefined : { index: hundredths / 100, bands };
 }
 
+/** The points that both `shown` and `drawn` leave drawn. */
+function both(shown: Shown | undefined, drawn: ((index: number) => boolean) | undefined): Shown | undefined {
+  if (drawn === undefined || shown === "none") return shown;
+  if (shown === undefined || shown === "all") return drawn;
+  return (i) => shown(i) && drawn(i);
+}
+
 /** The point of `world` under `pointer`, if any, of the points drawn. */
 export function pointUnder(world: World, pointer: Pointer): ScenePoint | undefined {
   const { controller, catalogue } = world;
-  const drawn = world.pickable.map((p) => ({ ...p, count: drawnOf(p.offsets.length / 3, catalogue?.share(p.batch.tile.id) ?? 1) }));
+  const drawn = world.pickable.map((p) => ({
+    ...p,
+    count: drawnOf(p.offsets.length / 3, catalogue?.share(p.batch.tile.id) ?? 1),
+    shown: both(p.shown, catalogue?.drawnPoints(p.batch)),
+  }));
   const picked = pick(drawn, controller.view, controller.toFrame, pointer);
   const entry = picked === undefined ? undefined : world.pickable[picked.batch];
   if (picked === undefined || entry === undefined || catalogue === undefined) return undefined;

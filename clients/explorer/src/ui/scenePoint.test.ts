@@ -27,22 +27,26 @@ function starBatch() {
 describe("a drawn point", () => {
   it("is found under the pointer, or nothing is", () => {
     const { domain, batch } = starBatch();
-    const world = fakeWorld({ catalogue: { domain: () => domain, share: () => 1 } as never });
+    const world = fakeWorld({ catalogue: { domain: () => domain, share: () => 1, drawnPoints: () => () => true } as never });
     world.pickable.push({ centre: batch.tile.centre, radius: 1, offsets: batch.offsets, batch });
     world.controller.flyTo([3e-6, 4e-6, 0], 1e-5);
     expect(pointUnder(world, { width: 800, height: 600, x: 400, y: 300 })?.id).toBe(42);
     expect(pointUnder(world, { width: 800, height: 600, x: 10, y: 10 })).toBeUndefined();
   });
 
-  it("is found under the pointer only where its tile's share draws it", () => {
+  it("is found under the pointer only where it is drawn: within its tile's share, and below the share its distance needs", () => {
     const { domain, batch } = starBatch();
     let share = 0;
-    const world = fakeWorld({ catalogue: { domain: () => domain, share: () => share } as never });
+    let drawn = true;
+    const world = fakeWorld({ catalogue: { domain: () => domain, share: () => share, drawnPoints: () => () => drawn } as never });
     world.pickable.push({ centre: batch.tile.centre, radius: 1, offsets: batch.offsets, batch });
     world.controller.flyTo([3e-6, 4e-6, 0], 1e-5);
-    expect(pointUnder(world, { width: 800, height: 600, x: 400, y: 300 })).toBeUndefined();
+    const centre = { width: 800, height: 600, x: 400, y: 300 };
+    expect(pointUnder(world, centre)).toBeUndefined();
     share = 1;
-    expect(pointUnder(world, { width: 800, height: 600, x: 400, y: 300 })?.id).toBe(42);
+    expect(pointUnder(world, centre)?.id).toBe(42);
+    drawn = false;
+    expect(pointUnder(world, centre)).toBeUndefined();
   });
 
   it("is known by its id, scale domain, place and distance, the source and kind of its distance, and its colour index", () => {

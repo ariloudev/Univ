@@ -2956,6 +2956,16 @@ blocks:
         detail: "Tile slices from the manifest's level fractions, level statistics in the tree, the share function in lod.ts and in the point shader, picking by the same rule."
         state: active
         type: fix
+      - key: 01a1b0b0-87ee-70d2-8161-be12b7700275
+        at: 2026-11-06T11:48:41Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Per-point rank against a distance-based share"
+        detail: "Tile slices from the manifest's level fractions (tiles.ts), level statistics in the tree, neededAt/rankOf/drawnShare in lod.ts and the same in the point shader, Catalogue.detail and drawnPoints, picking by the same rule."
+        state: done
+        type: fix
   - key: 01a1b0a9-8e0b-72e7-b122-6a8f911ec201
     id: level-fetch
     kind: task
@@ -2970,3 +2980,26 @@ blocks:
         detail: "refines() and spacing() in lod.ts by level statistics; lod tests reworked."
         state: open
         type: fix
+      - key: 01a1b0b0-87ee-70d2-8161-be13cb21456e
+        at: 2026-11-06T11:48:41Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Fetch and keep by a typical tile of the level"
+        detail: "spacing() and refines() by level statistics at the tile's nearest points; lod tests reworked, the 0.1° settle test given a 3,000,000 budget the view fills."
+        state: done
+        type: fix
+  - key: 01a1b0b0-87ee-70d2-8161-be117e506f94
+    id: seamless-check
+    kind: note
+    versions:
+      - key: 01a1b0b0-87ee-70d2-8161-be14f83f9ee3
+        at: 2026-11-06T11:48:41Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Seen on release 10"
+        markdown: "Explorer check: 234 tests, fallow, build. Under `cargo xtask explore`, the shader compiles and draws with no console error; at 1.5 Gpc no cube edge shows, only the surveys' footprints and the Milky Way's plane. The picture is markedly sparser than before: a uniform thinning by distance. Its density is one constant (the 3 px of the typical spacing), left for the owner to judge."
+        tone: warning

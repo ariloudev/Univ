@@ -6,6 +6,7 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 
 import type { Rotations } from "../api/schemas.ts";
 import { Catalogue } from "../catalogue/catalogue.ts";
+import { EVERYTHING } from "../catalogue/lod.ts";
 import { type Batch, type Domain, domainsOf } from "../catalogue/tiles.ts";
 import { Controller, type Surroundings } from "../scene/controller.ts";
 import { viewingDistance } from "../scene/controls.ts";
@@ -115,7 +116,8 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
       const { id, centre } = batch.tile;
       const { extent } = batch;
       const { offsets, kinds, sources } = batch;
-      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes });
+      const slice = batch.tile.slice ?? [0, 1];
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice });
       // Picking tests a sphere about the tile's centre: the one holding the points' own.
       const radius = norm(sub(extent.centre, centre)) + extent.radius;
       world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });
@@ -254,6 +256,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
     const around = surroundings(element);
     const state = emptyWorld(new Controller(renderer, around), renderer);
     renderer.setShare((id) => state.catalogue?.share(id) ?? 1);
+    renderer.setDetail((domain) => state.catalogue?.detail(domain) ?? EVERYTHING);
     setWorld(state);
     const abort = new AbortController();
     startCatalogue(release, state, abort.signal)

@@ -6,7 +6,7 @@ import type { ManifestSource } from "univ-tile-decoder";
 
 import type { ReadOptions } from "../api/client.ts";
 import type { Sight } from "../scene/frustum.ts";
-import { POINT_BUDGET, type Tree, plan, planEvery, shareOf, treeOf } from "./lod.ts";
+import { type Detail, EVERYTHING, LEVELS, POINT_BUDGET, type Tree, drawnShare, neededAt, onsetsOf, plan, planEvery, rankOf, treeOf } from "./lod.ts";
 import { KINDS } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
@@ -143,13 +143,45 @@ export class Catalogue {
     if (revived) queueMicrotask(() => this.update(sight));
   }
 
-  /** The share of the tile `id`'s points drawn for the view last seen: every one with level of
-   * detail off, or before the view is known. */
+  /** The share of the tile `id`'s points, its first, that may be drawn for the view last seen:
+   * every one with level of detail off, or before the view is known. */
   share(id: string): number {
-    const parent = this.tree.byId.get(id)?.parent;
-    if (!this.levelOfDetail || this.sight === undefined || parent === undefined) return 1;
-    const read = this.drawn.get(parent) ?? this.kept.get(parent);
-    return shareOf(this.tree.byId.get(parent), this.sight, read?.extent);
+    const tile = this.tree.byId.get(id);
+    const levels = tile === undefined ? undefined : this.tree.levels.get(tile.domain);
+    if (!this.levelOfDetail || this.sight === undefined || tile === undefined || levels === undefined) return 1;
+    const read = this.drawn.get(id) ?? this.kept.get(id);
+    return drawnShare(tile, levels, this.sight, read?.extent);
+  }
+
+  /** What the renderer needs to draw the points of `domain` for the view last seen: for each
+   * level, the distance within which the view starts to need it and the share of the domain the
+   * levels down to it hold, `LEVELS` of each; with level of detail off, all of it everywhere. */
+  detail(domain: string): Detail {
+    const levels = this.tree.levels.get(domain);
+    if (!this.levelOfDetail || this.sight === undefined || levels === undefined) return EVERYTHING;
+    const onsets = new Float32Array(LEVELS);
+    const cumulative = new Float32Array(LEVELS).fill(1);
+    onsets.set(onsetsOf(levels, this.sight.focal).slice(0, LEVELS).map((d) => Math.min(d, 3e38)));
+    cumulative.set(levels.cumulative.slice(0, LEVELS));
+    return { levels: Math.min(LEVELS, levels.cumulative.length), onsets, cumulative };
+  }
+
+  /** Which points of `batch` are drawn for the view last seen: those whose rank lies below the
+   * share of their domain the view needs at their own distance from the eye. */
+  drawnPoints(batch: Batch): (index: number) => boolean {
+    const levels = this.tree.levels.get(batch.tile.domain);
+    const sight = this.sight;
+    if (!this.levelOfDetail || sight === undefined || levels === undefined) return () => true;
+    const onsets = onsetsOf(levels, sight.focal);
+    const { centre } = batch.tile;
+    const { offsets } = batch;
+    const count = offsets.length / 3;
+    return (i) => {
+      const dx = centre[0] + (offsets[i * 3] ?? 0) - sight.eye[0];
+      const dy = centre[1] + (offsets[i * 3 + 1] ?? 0) - sight.eye[1];
+      const dz = centre[2] + (offsets[i * 3 + 2] ?? 0) - sight.eye[2];
+      return rankOf(batch.tile, i, count) < neededAt(levels, onsets, Math.hypot(dx, dy, dz));
+    };
   }
 
   /** Turns level of detail on or off: off, every tile is fetched, the coarser levels first, and
