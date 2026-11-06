@@ -104,6 +104,15 @@ blocks:
         title: "cargo xtask reindex"
         detail: "numbering.yaml and row index of the latest release from local D1 files; test that a release built on them writes nothing for unchanged inputs."
         state: active
+      - key: 01a1b275-0b6f-7660-aaaf-ddb18843dc0d
+        at: 2026-11-06T20:02:57Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "univ-ingest reindex"
+        detail: "Made a univ-ingest command rather than an xtask: it writes the ingest state under its lock. Reads the local D1 files directly (catalogue by latest, shards via object_shards), refuses schema < 6 (no release_files to index: migrate first) and a latest other than the state's last release. Values hash by column kind. Tests: numbering equals the build's, release 3 of the same inputs writes no row of shared tables (but scale_domains/release_files, whose tile manifests name their release), files read equal the store read file for file, and a v5 store migrated + reindexed takes release 3 as its change. `univ-ingest migrate` added as a command of its own for the order migrate → reindex → build → publish."
+        state: done
   - key: 01a1b25b-660e-755d-a6cb-86924ff45c12
     id: w5-science
     kind: task
@@ -117,6 +126,15 @@ blocks:
         title: "Science reads the local store"
         detail: "--store: the rows valid in a release from the local D1 files."
         state: open
+      - key: 01a1b275-0b6f-7660-aaaf-ddb2c98010f4
+        at: 2026-11-06T20:02:57Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "xtask science --store"
+        detail: "Read a release's rows valid in it from the local D1 files."
+        state: active
   - key: 01a1b25b-660e-755d-a6cb-8693c644f9a7
     id: w5-run
     kind: task

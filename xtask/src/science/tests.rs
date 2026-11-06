@@ -1,6 +1,7 @@
 //! The check engine against a small fixture release.
 
 mod fixture;
+mod store;
 
 use std::path::Path;
 
@@ -86,7 +87,7 @@ fn each_kind_of_check_is_judged_against_the_fixture_release() {
         out.lines()
             .next()
             .unwrap()
-            .starts_with("load: 2 D1 files of release 1")
+            .starts_with("load: release 1 from 2 D1 files in")
     );
     assert!(
         out.lines()

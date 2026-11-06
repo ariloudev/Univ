@@ -1,10 +1,12 @@
-//! `cargo xtask science <release-dir> [--db <file>] [--rules <file>]`: loads a built
-//! release's D1 rows into a scratch `SQLite` database and runs every check of
+//! `cargo xtask science <release-dir> [--db <file>] [--rules <file>] [--store <dir>]`: loads
+//! a built release's D1 rows into a scratch `SQLite` database and runs every check of
 //! `rules/science-checks.yaml` against it, printing one line per check and a summary. Exits
 //! non-zero on any FAIL.
 //!
 //! The database is in memory unless `--db` names a file; a file that exists already is taken
-//! as loaded, so that checks can be rerun without loading again.
+//! as loaded, so that checks can be rerun without loading again. The rows come from the builds
+//! of the release's chain, or with `--store` from the local D1 in Wrangler's state directory
+//! it names, where the release was published; its files come from its build either way.
 
 mod evaluate;
 mod fingerprints;
@@ -13,6 +15,7 @@ mod load;
 mod objects;
 mod pairs;
 mod rules;
+mod store;
 #[cfg(test)]
 mod tests;
 
@@ -84,16 +87,25 @@ struct Options {
     release: PathBuf,
     db: Option<PathBuf>,
     rules: PathBuf,
+    store: Option<PathBuf>,
 }
 
 fn options(root: &Path, args: &[String]) -> Result<Options, String> {
     let mut release = None;
     let mut db = None;
+    let mut store = None;
     let mut rules = root.join("rules/science-checks.yaml");
     let mut args = args.iter();
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--db" => db = args.next().map(PathBuf::from),
+            "--store" => {
+                store = Some(
+                    args.next()
+                        .map(PathBuf::from)
+                        .ok_or("--store takes Wrangler's state directory")?,
+                );
+            }
             "--rules" => {
                 rules = args
                     .next()
@@ -107,9 +119,12 @@ fn options(root: &Path, args: &[String]) -> Result<Options, String> {
         }
     }
     Ok(Options {
-        release: release.ok_or("usage: cargo xtask science <release-dir> [--db <file>]")?,
+        release: release.ok_or(
+            "usage: cargo xtask science <release-dir> [--db <file>] [--store <wrangler-dir>]",
+        )?,
         db,
         rules,
+        store,
     })
 }
 
@@ -141,9 +156,16 @@ fn science(root: &Path, args: &[String], out: &mut dyn std::io::Write) -> Result
     let load_line = if loaded {
         "load: skipped, the database was loaded already".to_owned()
     } else {
-        let files = load::load(&db, &options.release, &manifest)?;
+        let what = match &options.store {
+            Some(dir) => format!(
+                "{} databases of the local D1 in {}",
+                store::load(&db, dir, manifest.release)?,
+                dir.display()
+            ),
+            None => format!("{} D1 files", load::load(&db, &options.release, &manifest)?),
+        };
         format!(
-            "load: {files} D1 files of release {} in {:.1} s",
+            "load: release {} from {what} in {:.1} s",
             manifest.release,
             started.elapsed().as_secs_f64()
         )
