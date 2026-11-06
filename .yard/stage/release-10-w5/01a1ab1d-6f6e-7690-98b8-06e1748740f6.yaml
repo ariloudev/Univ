@@ -28,6 +28,15 @@ versions:
     title: "W5 plan, decisions and first fetches"
     goal: "W5's plan is recorded, the owner's decisions on the pending sources, 2MPZ's access and WISE's scope are taken, and DESI DR1, SDSS DR17 distant, 2dFGRS and ALFALFA α.100 are fetched"
     status: done
+  - key: 01a1ae95-eafd-756a-8ebe-20b1f45a6861
+    at: 2026-11-06T02:00:23Z
+    revision: 44
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: release 10"
+    goal: "Release 10 is built from every source, checked, published to the real local state and measured"
+    status: done
 blocks:
   - key: 01a1ab1d-6f6e-7690-98b8-06e204148ae0
     id: w5-plan
