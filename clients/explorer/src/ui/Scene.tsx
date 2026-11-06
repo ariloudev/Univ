@@ -8,8 +8,9 @@ import { useChosen } from "./useChosen.ts";
 import { structureView, useStructures } from "./useStructures.ts";
 import { hide, useWorld } from "./useWorld.ts";
 
-/** The view of `release`: the canvas, its overlay, and the panels around it. */
-export function Scene({ release, cosmology }: { release: number; cosmology: string }) {
+/** The view of `release`: the canvas, its overlay, and the panels around it; its tiles at the
+ * detail the view needs, or every one where `levelOfDetail` is off. */
+export function Scene({ release, cosmology, levelOfDetail }: { release: number; cosmology: string; levelOfDetail: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [structureId, setStructureId] = useState<string>();
   const { world, domains, rotations, overlay, problem } = useWorld(release, canvas, {
@@ -23,6 +24,10 @@ export function Scene({ release, cosmology }: { release: number; cosmology: stri
   useEffect(() => {
     if (world !== undefined) hide(world, { domain, source, kind }, domains);
   }, [world, domains, domain, source, kind]);
+  // `domains` is read once the catalogue is made, so that it starts as the switch stands.
+  useEffect(() => {
+    world?.catalogue?.setLevelOfDetail(levelOfDetail);
+  }, [world, domains, levelOfDetail]);
   const structures = useStructures(release, world, rotations, structureId, hidden.structure);
   const choices = useMemo(() => choicesOf(domains, structures.list), [domains, structures.list]);
   const selection: Selection = {

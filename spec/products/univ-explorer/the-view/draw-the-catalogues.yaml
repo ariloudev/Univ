@@ -1,7 +1,7 @@
 key: 01a1a497-e843-728a-bce8-3ffe4657fb77
 slug: draw-the-catalogues
 name: "Draw the catalogues"
-body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least."
+body: "Drawing the placed objects of every scale domain around Earth, from the tiles of the release, at the detail the view needs. Each domain is an octree of tiles whose inner tiles hold a sample of the points under them, so a region gains detail as the children of its tiles are added. The view decides which tiles are held: those in view, refined until their points lie as close on screen as the view can show, within a budget of points, dropping first the tiles the view needs least. Each point is drawn by its rank against the share of its domain the view needs at its own distance, so that detail thins out smoothly with distance and no tile's edge shows, and tiles fade in and out. A switch turns level of detail off, so that every tile is fetched whatever the view."
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
   - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
@@ -30,13 +30,13 @@ requirements:
       - key: 01a1a497-e843-728a-bce8-400536d8f2b5
         name: "The tiles the view needs are fetched in order of their size on screen, largest first, and a tile wholly outside the view is not fetched."
       - key: 01a1a689-0b25-768a-9f1e-cc267f67e3c1
-        name: "A tile's children are fetched only while its points lie farther apart on screen than 3 pixels, so that a region far away or seen whole is not refined beyond what the screen shows."
+        name: "A tile's children are fetched only while a typical tile of its level, with the mean points of the level's split tiles and the level's edge, would have its points farther apart on screen than 3 pixels at the distance of the tile's nearest points, so that a region far away or seen whole is not refined beyond what the screen shows, and regions at one distance are refined alike."
       - key: 01a1a6a7-c540-7210-8492-7dfc16d279b8
         name: "A tile's children in view are fetched together or not at all, so that no part of a region is left coarser than the rest."
       - key: 01a1a6a7-c540-7210-8492-7dfdf91c2ccf
         name: "A view that does not change stops fetching and dropping tiles once it holds what it needs."
       - key: 01a1aea7-5e8b-7623-8601-48fb7856d2e3
-        name: "A tile whose children are held keeps them while its points lie farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched."
+        name: "A tile whose children are held keeps them while a typical tile of its level would have its points farther apart on screen than 2 pixels, so that a view moving a little about the 3 pixels that refine it does not drop the children it has just fetched."
       - key: 01a1aea7-5e8b-7623-8601-48fc4cf3ff3f
         name: "Where the budget cannot hold every family of tiles the view needs, a family that holds any of its tiles in view counts as half again its size on screen, so that a view moving a little does not trade it for a family of nearly its size."
       - key: 01a1aea7-5e8b-7623-8601-48fd8492b9c4
@@ -44,7 +44,7 @@ requirements:
       - key: 01a1aead-1e30-7695-bbd5-099c2f301565
         name: "A held tile counts as in view until it lies more than 1 degree outside the view, so that a view turning a little does not drop a tile at its edge and fetch it again as it turns back."
       - key: 01a1a497-e843-728a-bce8-4006f5c2ce8f
-        name: "No more than 6,000,000 points are held at once."
+        name: "While level of detail is on, no more than 6,000,000 points are held at once."
   - key: 01a1a689-0b25-768a-9f1e-cc27109fed3c
     statement:
       form: event_driven
@@ -64,6 +64,49 @@ requirements:
         name: "The dropped tiles kept drawn hold no more than a quarter of the budget, 1,500,000 points, beyond it, and those beyond it are drawn no more at once."
       - key: 01a1aeb6-f18d-7787-9cbd-de2e11b3bd4b
         name: "A dropped tile still drawn that the view wants again is drawn on without being read again."
+  - key: 01a1b07b-8157-7546-927e-272151c4d940
+    statement:
+      form: state_driven
+      while: "the person has turned level of detail off"
+      system: "Univ Explorer"
+      shall: "fetch every tile of the release, the coarser levels first, whatever the view, and drop none."
+    criteria:
+      - key: 01a1b07b-8157-7546-927e-2722e634b9b0
+        name: "The top bar holds a switch that turns level of detail on and off, on when the page's address does not turn it off."
+      - key: 01a1b07b-8157-7546-927e-272335750e5f
+        name: "With level of detail off, every tile of every scale domain is fetched, the tiles of each level asked for before those of the level below, and no tile is dropped, whatever the view and the budget."
+      - key: 01a1b07b-8157-7546-927e-2724ac33dc33
+        name: "Turned on again, level of detail drops the tiles the view does not need until the points held fit the budget."
+      - key: 01a1b07b-8157-7546-927e-2725108d8df2
+        name: "The page's address keeps level of detail turned off, so that a reload or a shared link keeps it off."
+  - key: 01a1b093-647d-7308-9b46-bdc985f6f0e9
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw each point of a held tile while its rank lies below the share of its domain the view needs at the point's own distance, and fade each tile in as it arrives and out as it goes."
+    criteria:
+      - key: 01a1b093-647d-7308-9b46-bdca66fcbd08
+        name: "The share of a domain the view needs at a distance rises, level by level below the root, from the share the levels above hold to the share the level adds, in proportion as a typical tile of the level above would have its points from 3 to 6 pixels apart on screen at that distance."
+      - key: 01a1b0a9-6982-71c6-b321-0cfc1d1f8a93
+        name: "A point's rank lies in its tile's slice of its domain, from the share the levels above the tile's hold to the share its level adds, or to all for a leaf, the tile's points dividing the slice evenly in their shuffled order."
+      - key: 01a1b0a9-6982-71c6-b321-0cfd3507cc88
+        name: "Points at one distance are drawn at one share of their domain whichever tiles hold them, so that where the tiles the view needs are held no tile's cube shows as an edge."
+      - key: 01a1b093-81da-759e-8532-70d7aa4d0ff1
+        name: "Every point of a root tile is drawn."
+      - key: 01a1b093-647d-7308-9b46-bdcbf842c1af
+        name: "The share drawn is the first points of the tile in an order shuffled by the tile's id, so that every share is an even sample of its points, the same on every read."
+      - key: 01a1b093-647d-7308-9b46-bdcc1ec02df7
+        name: "A tile fades in over 0.3 seconds once its points arrive, and out over 0.3 seconds before they are drawn no more."
+      - key: 01a1b093-647d-7308-9b46-bdcd4901ec3c
+        name: "With level of detail off, every point of every held tile is drawn."
+      - key: 01a1b0b8-3632-76bc-88e5-8dd265a1a28d
+        name: "With level of detail on, a domain's points are drawn fully opaque while, at the eye's distance from the focus, the view still needs more of the domain than its root holds, since thinned they crowd no more as the eye withdraws."
+      - key: 01a1b0c4-82ea-7058-b4c4-959c016ec0f3
+        name: "With level of detail on, a domain's points fade beyond the distance where the view needs no more of it than its root holds, as they crowd again, never fainter than with level of detail off."
+      - key: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
+        name: "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white."
+      - key: 01a1b093-647d-7308-9b46-bdce5099b2f5
+        name: "Only the points drawn can be pointed at or clicked."
   - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
     statement:
       form: ubiquitous
@@ -87,12 +130,12 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Explorer"
-      shall: "colour each point outside the stars domain by the kind of value of its distance and show the key to the colours."
+      shall: "draw every point outside the stars domain in one colour and count in the key the points drawn of each kind of value of distance."
     criteria:
       - key: 01a1a497-e843-728a-bce8-400b9b581384
-        name: "Points outside the stars domain whose distances are measured, estimated, inferred and reconstructed are drawn in four distinct colours."
+        name: "Points outside the stars domain are drawn in one colour, whatever the kind of value of their distance."
       - key: 01a1a497-e843-728a-bce8-400c71ad8ebe
-        name: "The key names each colour's kind of value and counts the points drawn in it."
+        name: "The key shows that colour and counts the points of the tiles held of each kind of value: measured, estimated, inferred and reconstructed."
   - key: 01a1a8ac-052e-72b3-a33e-b33e770aeebd
     statement:
       form: ubiquitous

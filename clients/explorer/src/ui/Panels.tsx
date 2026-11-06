@@ -2,7 +2,7 @@ import { Swatch } from "./Swatch.tsx";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
-import { KINDS, cssColour } from "../scene/kinds.ts";
+import { KINDS, POINT_CSS } from "../scene/kinds.ts";
 import { GREY_CSS, KEY_TEMPERATURES, STAR_GRADIENT } from "../scene/starColour.ts";
 import { DWARF_SEQUENCE_CITATION } from "../scene/dwarfSequence.ts";
 import type { Controller } from "../scene/controller.ts";
@@ -102,11 +102,13 @@ function Key({ catalogue, release }: { catalogue: Tally; release: number }) {
           {catalogue.stars.grey.toLocaleString("en-GB")} stars in grey, with no colour index.
         </p>
       </div>
-      <h2 className="font-semibold">Other points, by the kind of value of each distance</h2>
+      <h2 className="flex items-center gap-2 font-semibold">
+        <Swatch colour={POINT_CSS} />
+        Other points, by the kind of value of each distance
+      </h2>
       <ul data-testid="key">
         {kinds.map(([kind, count]) => (
-          <li key={kind} className="flex items-center gap-2">
-            <Swatch colour={cssColour(kind)} />
+          <li key={kind}>
             {kind}: {count.toLocaleString("en-GB")} points
           </li>
         ))}

@@ -115,7 +115,7 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
       const { id, centre } = batch.tile;
       const { extent } = batch;
       const { offsets, kinds, sources } = batch;
-      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes });
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice: batch.tile.slice });
       // Picking tests a sphere about the tile's centre: the one holding the points' own.
       const radius = norm(sub(extent.centre, centre)) + extent.radius;
       world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });
@@ -223,6 +223,7 @@ export function drawn(world: World, overlay: Overlay, size: { width: number; hei
 function animate(world: World, overlay: RefObject<Overlay>, size: Surroundings["size"]): () => void {
   let marked = false;
   let frame = requestAnimationFrame(function loop() {
+    if (world.renderer.fading()) world.controller.invalidate();
     if (world.controller.tick()) marked = drawn(world, overlay.current, size(), marked);
     frame = requestAnimationFrame(loop);
   });
@@ -252,6 +253,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
     }
     const around = surroundings(element);
     const state = emptyWorld(new Controller(renderer, around), renderer);
+    renderer.setDetail(() => state.catalogue);
     setWorld(state);
     const abort = new AbortController();
     startCatalogue(release, state, abort.signal)

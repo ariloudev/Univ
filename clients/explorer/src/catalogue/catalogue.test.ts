@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { Http } from "../api/client.ts";
 import { DOMAINS, bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts";
 import { Catalogue, KEEP_ALLOWANCE } from "./catalogue.ts";
+import { EVERYTHING } from "./lod.ts";
 import { NO_MASKS, masksOf } from "../scene/masks.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
 import type { Sight } from "../scene/frustum.ts";
@@ -126,8 +127,12 @@ async function twoSides(http: Http, keep = Number.POSITIVE_INFINITY, slack = fal
   const largest = Math.max(...tiles.map((t) => t.points));
   const budget = root.points + Math.max(points(side(true)), points(side(false))) + (slack ? largest : 0);
   const drawn: string[] = [];
+  const batches = new Map<string, Batch>();
   const events = {
-    onBatch: (b: Batch) => drawn.push(b.tile.id),
+    onBatch: (b: Batch) => {
+      batches.set(b.tile.id, b);
+      drawn.push(b.tile.id);
+    },
     onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
     onChange: () => undefined,
   };
@@ -136,7 +141,7 @@ async function twoSides(http: Http, keep = Number.POSITIVE_INFINITY, slack = fal
     const away = new Set(side(!east).map((t) => t.id));
     return sight((centre) => tiles.some((t) => away.has(t.id) && t.centre[0] === centre[0] && t.centre[1] === centre[1] && t.centre[2] === centre[2]));
   };
-  return { catalogue, drawn, root, side, looking, budget };
+  return { catalogue, drawn, batches, root, side, looking, budget };
 }
 
 describe("the catalogue", () => {
@@ -251,6 +256,78 @@ describe("the catalogue", () => {
     await steady(drawn);
     expect(drawn).toEqual(expect.arrayContaining([root.id, ...side(true).map((t) => t.id)]));
     for (const t of side(true)) expect(gate.reads(t.address)).toBe(1);
+    gate.release();
+    await steady(drawn);
+  });
+
+  it("draws every tile with level of detail off, whatever the view and the budget, and comes back within the budget once it is on", async () => {
+    const { catalogue, drawn, root, side, looking, budget } = await twoSides(server(undefined, undefined, ["simulated"]), 0);
+    const total = () => catalogue.kinds.reduce((a, b) => a + b, 0);
+    catalogue.update(looking(true));
+    await steady(drawn);
+    catalogue.setLevelOfDetail(false);
+    await steady(drawn);
+    const every = [root, ...side(true), ...side(false)].map((t) => t.id);
+    expect([...drawn].sort()).toEqual(every.sort());
+    expect(total()).toBeGreaterThan(budget);
+    catalogue.setLevelOfDetail(true);
+    await steady(drawn);
+    expect([...drawn].sort()).toEqual([root.id, ...side(true).map((t) => t.id)].sort());
+    expect(total()).toBeLessThanOrEqual(budget);
+  });
+
+  it("draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off", async () => {
+    const { catalogue, drawn, batches, root, side, looking } = await twoSides(server(undefined, undefined, ["simulated"]));
+    catalogue.update(looking(true));
+    await steady(drawn);
+    const [child] = side(true);
+    if (child === undefined) throw new Error("no child");
+    expect(catalogue.share(root.id)).toBe(1);
+    expect(catalogue.share(child.id)).toBe(1);
+    const childBatch = batches.get(child.id);
+    const rootBatch = batches.get(root.id);
+    if (childBatch === undefined || rootBatch === undefined) throw new Error("not drawn");
+    const every = (b: Batch, drawnPoint: (i: number) => boolean) => Array.from({ length: b.ids.length }, (_, i) => drawnPoint(i));
+    expect(every(childBatch, catalogue.drawnPoints(childBatch))).not.toContain(false);
+    // Seen from so far that the domain needs no more than its root holds, 8 of its 60 points.
+    catalogue.update({ ...looking(true), focal: 1e-9 });
+    expect(catalogue.share(root.id)).toBe(1);
+    expect(catalogue.share(child.id)).toBeCloseTo(0, 6);
+    expect(every(rootBatch, catalogue.drawnPoints(rootBatch))).not.toContain(false);
+    expect(every(childBatch, catalogue.drawnPoints(childBatch))).not.toContain(true);
+    const detail = catalogue.detail("simulated");
+    expect(detail.cumulative[0]).toBeCloseTo(8 / 60);
+    expect(detail.cumulative[1]).toBe(1);
+    expect(detail.onsets[1]).toBeLessThan(1e-6);
+    catalogue.setLevelOfDetail(false);
+    expect(catalogue.share(child.id)).toBe(1);
+    expect(every(childBatch, catalogue.drawnPoints(childBatch))).not.toContain(false);
+    expect(catalogue.detail("simulated")).toBe(EVERYTHING);
+    await steady(drawn);
+  });
+
+  it("drops what the view does not want once level of detail is on again, though every fetch is still on its way", async () => {
+    // Level of detail off, on a budget of the root alone: the root and r0 and r1 arrive, and the
+    // six other children are held back, so that every fetch is on its way.
+    const gate = gated(server(undefined, undefined, ["simulated"]));
+    gate.hold(["r2", "r3", "r4", "r5", "r6", "r7"]);
+    const domains = await domainsOf(2, { http: gate.http });
+    const root = domains[0]?.tiles.find((t) => t.parent === undefined);
+    if (root === undefined) throw new Error("no root");
+    const drawn: string[] = [];
+    const events = {
+      onBatch: (b: Batch) => drawn.push(b.tile.id),
+      onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1),
+      onChange: () => undefined,
+    };
+    const catalogue = new Catalogue(2, domains, events, { http: gate.http, budget: root.points, keep: 0 });
+    catalogue.setLevelOfDetail(false);
+    catalogue.update(sight());
+    await until(() => drawn.length === 3);
+    await steady(drawn);
+    expect([...drawn].sort()).toEqual(["simulated/r", "simulated/r0", "simulated/r1"]);
+    catalogue.setLevelOfDetail(true);
+    expect(drawn).toEqual(["simulated/r"]);
     gate.release();
     await steady(drawn);
   });

@@ -3,9 +3,8 @@
 
 import type { ReactNode } from "react";
 
-import { KINDS, cssColour } from "../scene/kinds.ts";
+import { KINDS } from "../scene/kinds.ts";
 import { MASK_BITS } from "../scene/masks.ts";
-import { Swatch } from "./Swatch.tsx";
 import type { Group, Hidden, Toggle } from "./hidden.ts";
 import { words } from "./text.ts";
 
@@ -29,15 +28,13 @@ interface BoxProps {
   label: string;
   hidden: Hidden;
   onToggle: Toggle;
-  swatch?: string;
 }
 
-function Box({ group, name, label, hidden, onToggle, swatch }: BoxProps) {
+function Box({ group, name, label, hidden, onToggle }: BoxProps) {
   return (
     <li>
       <label className="flex items-center gap-2">
         <input type="checkbox" checked={!hidden[group].has(name)} onChange={(e) => onToggle(group, name, e.currentTarget.checked)} />
-        {swatch === undefined ? null : <Swatch colour={swatch} />}
         {label}
       </label>
     </li>
@@ -72,7 +69,7 @@ export function ShowPanel({ choices, hidden, onToggle }: ShowPanelProps) {
         </Fieldset>
         <Fieldset legend="Kinds of value">
           {KINDS.map((k) => (
-            <Box key={k} group="kind" name={k} label={k} swatch={cssColour(k)} {...box} />
+            <Box key={k} group="kind" name={k} label={k} {...box} />
           ))}
         </Fieldset>
         <Fieldset legend="Kinds of structure">

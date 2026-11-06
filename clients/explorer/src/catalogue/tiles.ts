@@ -8,7 +8,8 @@ import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
 import { starBytes } from "../scene/starColour.ts";
 import { add, scale } from "../scene/vec.ts";
-import { type Extent, type Tile, extentOf } from "./lod.ts";
+import { type Extent, type Tile, extentOf, levelOfAddress } from "./lod.ts";
+import { shuffled } from "./shuffle.ts";
 
 /** A tile of a domain, with the manifest's node for it. */
 export interface DomainTile extends Tile {
@@ -85,8 +86,12 @@ export const MPC_PER: Record<ExplorerManifest["unit"], number> = { pc: 1e-6, Mpc
 /** The tiles of `manifest`'s domain `name`, in megaparsecs. */
 export function tilesOf(name: string, manifest: ExplorerManifest): DomainTile[] {
   const toMpc = MPC_PER[manifest.unit];
+  const held = cumulativeOf(manifest);
+  const split = new Set(manifest.nodes.map((node) => node.address.slice(0, -1)));
   return manifest.nodes.map((node) => {
     const { min, max } = node.bounds;
+    const level = levelOfAddress(node.address);
+    const above = level === 0 ? 0 : (held[level - 1] ?? 1);
     return {
       id: `${name}/${node.address}`,
       domain: name,
@@ -95,9 +100,25 @@ export function tilesOf(name: string, manifest: ExplorerManifest): DomainTile[] 
       centre: scale(add(min, max), 0.5 * toMpc),
       edge: (max[0] - min[0]) * toMpc,
       points: node.points,
+      slice: [above, split.has(node.address) ? (held[level] ?? 1) : 1] as const,
       node,
     };
   });
+}
+
+/** The share of a domain's points the levels down to each hold, by level: each split tile of a
+ * level keeps the level's fraction of the points that reach it, the rest going down. */
+function cumulativeOf(manifest: ExplorerManifest): number[] {
+  const fractions = new Map(manifest.levels.map((l) => [l.level, l.fraction]));
+  let depth = 0;
+  for (const node of manifest.nodes) depth = Math.max(depth, levelOfAddress(node.address) + 1);
+  const held: number[] = [];
+  let left = 1;
+  for (let level = 0; level < depth; level += 1) {
+    left *= 1 - Math.min(1, Math.max(0, fractions.get(level) ?? 1));
+    held.push(1 - left);
+  }
+  return held;
 }
 
 /** The scale domains of `release` with their manifests. */
@@ -128,7 +149,8 @@ function decoded(domain: Domain, tile: DomainTile, bytes: Uint8Array) {
 /** The points of `bytes`, the tile of `tile` in `domain`, checked against the manifest. */
 export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Array<ArrayBuffer>): Promise<Batch> {
   if ((await sha256(bytes)) !== tile.node.sha256) throw new TileFailed(`${tile.id} does not match its SHA-256`);
-  const points = decoded(domain, tile, bytes);
+  // Shuffled by the tile's id, so that its first points, however many, are an even sample.
+  const points = shuffled(decoded(domain, tile, bytes), tile.id);
   const offsets = new Float32Array(points.length * 3);
   const kinds = new Uint8Array(points.length);
   const sources = new Uint16Array(points.length);
