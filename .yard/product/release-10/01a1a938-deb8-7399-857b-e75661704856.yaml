@@ -19,3 +19,37 @@ versions:
     title: "W5 release 10"
     goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it; merged into product/release-10"
     status: active
+  - key: 01a1b182-fab0-7484-8f28-ec16a072fb62
+    at: 2026-11-06T15:38:33Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 release 10"
+    goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it; merged into product/release-10"
+    status: done
+blocks:
+  - key: 01a1b182-fab0-7484-8f28-ec15d94741a6
+    id: release-10-closed
+    kind: note
+    versions:
+      - key: 01a1b182-fab0-7484-8f28-ec178341986e
+        at: 2026-11-06T15:38:33Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10 finished, and what followed it"
+        markdown: |-
+          W5 merged with its own Yard Log closed: release 10, 35,958,421 cosmic-web points, is published locally and is the explorer's latest.
+
+          After W5, these branches merged into `product/release-10`, each with its Yard Log closed:
+
+          | Branch | What it added |
+          |---|---|
+          | `stage/release-10-budget`, `-lod`, `-memory`, `-r1` | the point budget, level of detail and memory work on the explorer |
+          | `fix/rendering` | one colour for non-star points, the level-of-detail switch, seamless per-point level of detail with tile fades |
+          | `feature/cull-to-structure` | the cull to a structure's volume, brighter points inside it, structure kinds in their own colours, the chosen outline thicker, and the fix of extents turned twice |
+
+          Each ended with `/simplify` and `/code-review`, the full gate and integration. The owner asked to merge `product/release-10` into `develop` and publish the specification on 2026-11-06.
+        tone: success
