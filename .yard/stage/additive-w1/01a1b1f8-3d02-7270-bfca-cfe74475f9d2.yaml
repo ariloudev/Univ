@@ -10,6 +10,15 @@ versions:
     title: "W1: Stable numbering and stable shards"
     goal: "Terms, sources and chains keep their numbers across releases and objects keep their shard, so an unchanged object writes identical rows in the next release."
     status: active
+  - key: 01a1b205-1e22-74a0-ae13-019bedf0d3e0
+    at: 2026-11-06T18:00:42Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W1: Stable numbering and stable shards"
+    goal: "Terms, sources and chains keep their numbers across releases and objects keep their shard, so an unchanged object writes identical rows in the next release."
+    status: done
 blocks:
   - key: 01a1b1f8-3d02-7270-bfca-cfe8ca41dce1
     id: w1-numbering
@@ -81,6 +90,15 @@ blocks:
         title: "Review and gate W1"
         detail: "/simplify and /code-review in parallel, fixes, cargo xtask check green, merge into product/additive-releases."
         state: active
+      - key: 01a1b205-1e22-74a0-ae13-01995a72e5f6
+        at: 2026-11-06T18:00:42Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate W1"
+        detail: "/simplify (4 angles) and /code-review high run in parallel; every finding fixed (see note); cargo xtask check passed, 13 gates."
+        state: done
   - key: 01a1b1f8-a6ea-7764-8dbb-cafe336c96d8
     id: w1-runs-note
     kind: note
@@ -126,4 +144,25 @@ blocks:
           | chains held in two places; `Previous` and closures in packing (simplification, altitude) | chains only in the numbering; `pack` takes `&Kept`, placement in its own module |
           | version check copied; test copied `build_next` (reuse) | `yaml::version_is`; the test uses `build_next` and `State::read` |
           | assemble.rs and packing.rs over 500 lines | `place` in `placing.rs`; `cell_index` and `manifest_sources` moved beside what they describe |
+        tone: success
+  - key: 01a1b205-1e22-74a0-ae13-01985ad67521
+    id: w1-produced
+    kind: note
+    versions:
+      - key: 01a1b205-1e22-74a0-ae13-019ad0c861c8
+        at: 2026-11-06T18:00:42Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What W1 produced"
+        markdown: |-
+          - **numbering.yaml** beside the id state: every term, source and chain number ever given, and the exact level-0 cells and buckets each object shard holds. A state without it, once a release exists, is refused.
+          - **Numbers never given twice**; a release names only what it uses.
+          - **Placement kept**: a cell or bucket stays in the shard that held it; new ones fill the last shard; only a shard whose own cells outgrow the budget gives any up, last first; trailing empty shards go.
+          - **shard_cells keyed by its first cell**, since a shard may now hold several runs of one domain.
+
+          Proved on the fixture: a structure-only release writes every object, term, source, chain and shard row as the release before; a release adding a source in the middle of the list keeps the numbers, rows, shards and source details of everything it leaves alone.
+
+          **For W5**: release 10's state has no numbering.yaml; it must be seeded from the published release before release 11 is built.
         tone: success
