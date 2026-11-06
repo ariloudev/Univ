@@ -136,13 +136,6 @@ fn science(root: &Path, args: &[String], out: &mut dyn std::io::Write) -> Result
     let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
     let manifest: ReleaseManifest =
         serde_norway::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
-    if let Some(parent) = manifest.parent {
-        return Err(format!(
-            "release {} holds only what changed from release {parent}, so its D1 files alone \
-             are not the release: the science checks read a release written whole",
-            manifest.release
-        ));
-    }
     let (db, loaded) = load::open(options.db.as_deref())?;
     let started = Instant::now();
     let load_line = if loaded {

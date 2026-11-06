@@ -102,3 +102,40 @@ blocks:
         title: "Review and gate"
         detail: "/simplify and /code-review in parallel, fixes, cargo xtask check."
         state: active
+      - key: 01a1b23b-15e4-74bd-8f7e-3ad958c10993
+        at: 2026-11-06T18:59:39Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify (reuse, simplification, efficiency, altitude) and /code-review high ran; fixes applied, see the note. Gate next."
+        state: active
+  - key: 01a1b23b-15e4-74bd-8f7e-3ad8dd753036
+    id: w3-findings
+    kind: note
+    versions:
+      - key: 01a1b23b-15e4-74bd-8f7e-3ada8092e538
+        at: 2026-11-06T18:59:39Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the W3 reviews found, and what was done"
+        markdown: |-
+          | Finding | Done |
+          |---|---|
+          | Index hashed with `DefaultHasher`, not stable across toolchains: an upgrade would rewrite and retire every row | SHA-256's first 16 bytes over typed values; a test pins the algorithm |
+          | A table whose rows were all kept writes no file, so publish never checked it | `check_kept` checks every such table against the rows valid in the release before `latest` moves |
+          | Nothing required the parent to be published: out of order, retirements land on the wrong release | `NotOnLatest` refusal (moved up from W4) |
+          | A truncated index read as complete | Each record checked against the file's length; a test cuts one short |
+          | CON-3 shard sums by `release IN`, missing shared rows | Each kept release's valid row, erring high |
+          | `rows.part` left by a failed or stopped build | Removed on every failure path |
+          | `xtask science` refused any release after the first | Loads the parent chain, leaves the rows valid in n as its own |
+          | Prune filter grew with the releases kept | Bounded by the nearest kept release on each side; a middle-release test |
+          | Index 4.9 GB at 100 M rows, a binary search per row, key strings and statements all held | Per-table arrays (~33 B/row) in each table's writer state, an in-order cursor, keys skipped unless retired, retirements streamed through the shared `Statements` and part writer, index appended in 1 MB blocks (no open file per table) |
+          | Duplicate hash, double hashing, kept rows deep-copied, three copies of "key without release" | One `hash_at`, once per row; `Fingerprinter::add_replacing`; `Table::natural_key` |
+
+          **Not changed:** the API fixture keeps release 2 written whole (`release = 2`, never retired): univ-api's testkit has its own releases 1–3, and the rows valid in 2 are what it reads; the old states' YAML stays (only the replaced row index is removed); the held-shard count stays derived from `Kept`.
+
+          **Carried forward:** a state with releases and no row index cannot build until W5 seeds release 10's; R2 files are still all written and uploaded (skipping held ones is W4's publish step).

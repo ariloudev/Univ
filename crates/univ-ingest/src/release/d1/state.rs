@@ -2,25 +2,33 @@
 //! fingerprint and the checks of their keys and numbers.
 
 use std::collections::HashSet;
-use std::hash::Hash;
 
-use univ_model::release::{Fingerprinter, SqlValue, Statements, TABLES, Table};
+use univ_model::release::{Fingerprinter, Scope, SqlValue, Statements, TABLES, Table};
+
+use super::index::{Next, Previous, places};
+use super::parts::Parts;
 
 /// One table's rows as they are written.
 pub(super) struct TableState {
     pub(super) table: Table,
     pub(super) statements: Statements,
-    pub(super) part: String,
-    pub(super) parts: usize,
+    /// The files of its rows, and the next to be put.
+    pub(super) parts: Parts,
     pub(super) rows: u64,
     pub(super) bytes: u64,
     pub(super) fingerprint: Fingerprinter,
-    /// The places of the key's columns among the table's.
+    /// The places of the columns of its key, without `release` for a table whose rows releases
+    /// share: unique among the rows of one release.
     pub(super) key: Vec<usize>,
-    /// The places of the key's columns without `release`, and of every other column but it.
-    pub(super) natural: Vec<usize>,
+    /// The places of every column but `release`, which a row's content is hashed by.
     pub(super) content_at: Vec<usize>,
-    /// The rows written, new or changed, where the rows are compared with the release before.
+    /// The place of `release`, for a table whose rows releases share.
+    pub(super) release_at: Option<usize>,
+    /// The index of the release before's rows, and the next release's, where rows are
+    /// compared.
+    pub(super) previous: Option<Previous>,
+    pub(super) next: Option<Next>,
+    /// The rows written, new or changed.
     pub(super) added: u64,
     /// The rows of the release before retired.
     pub(super) retired: u64,
@@ -34,17 +42,20 @@ pub(super) struct TableState {
 
 impl TableState {
     pub(super) fn new(table: Table) -> Self {
+        let shared = table.scope == Scope::PerRelease;
+        let (key, content_at) = places(&table, shared);
         Self {
             table,
             statements: Statements::new(table),
-            part: String::new(),
-            parts: 0,
+            parts: Parts::default(),
             rows: 0,
             bytes: 0,
             fingerprint: Fingerprinter::new(table),
-            key: table.key.iter().filter_map(|c| table.position(c)).collect(),
-            natural: super::index::places(&table).0,
-            content_at: super::index::places(&table).1,
+            key,
+            content_at,
+            release_at: table.position("release").filter(|_| shared),
+            previous: None,
+            next: None,
             added: 0,
             retired: 0,
             content: table.checked_by_content().then(Vec::new),
@@ -67,21 +78,6 @@ pub(super) fn key_of(table: &Table, row: &[SqlValue]) -> String {
         })
         .collect();
     format!("({})", parts.join(", "))
-}
-
-/// A 128-bit hash of the key values of `row` at `places` ([`crate::hash::hash128`]), each
-/// value hashed with its type: a key is told from another by it, and no text is made of it.
-pub(super) fn key_hash(places: &[usize], row: &[SqlValue]) -> u128 {
-    crate::hash::hash128(|h| {
-        for &i in places {
-            match row.get(i) {
-                Some(SqlValue::Integer(n)) => (1_u8, n).hash(h),
-                Some(SqlValue::Real(x)) => (2_u8, x.to_bits()).hash(h),
-                Some(SqlValue::Text(t)) => (3_u8, t).hash(h),
-                Some(SqlValue::Null) | None => 0_u8.hash(h),
-            }
-        }
-    })
 }
 
 /// The place in `TABLES` of the table named `name`, worked out when compiled for a row type.

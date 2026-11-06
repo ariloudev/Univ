@@ -4,7 +4,7 @@
 //! a statement beyond the one being written, or a copy of a tile or a grid's samples.
 
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use univ_model::derive::{MODEL_VERSION, Release};
 use univ_model::redshift::CmbCorrection;
@@ -19,7 +19,7 @@ use univ_model::release::{Row, SCHEMA_VERSION, keys};
 use super::cells::cell_index;
 use super::check::D1_KEYS;
 use super::check::{Failed, Subject, check_all, d1_derived, d1_size};
-use super::d1::{Before, Comparing, D1Writer, PartSink};
+use super::d1::{Before, D1Writer, PartSink};
 use super::entries::Numbering;
 use super::files::DirSink;
 use super::kept::Kept;
@@ -43,8 +43,6 @@ pub struct Written {
     pub failed: Vec<Failed>,
     /// What the release numbered and placed, for the next release to keep.
     pub kept: Kept,
-    /// The directory of the release's row index, for the next release to compare with.
-    pub index: PathBuf,
 }
 
 /// Writes each rules file of the cross-match's basis as it was read, giving its entry in the
@@ -80,7 +78,6 @@ struct D1Done {
     /// The catalogue database's estimate.
     estimate: D1Estimate,
     kept: Kept,
-    index: Option<PathBuf>,
     shards: Vec<ShardManifest>,
     failed: Vec<Failed>,
     objects: ObjectCounts,
@@ -117,7 +114,7 @@ fn d1_rows(
     let packing = sharding.plan(&crossed.objects, &numbering, budget, previous, watch)?;
     let files = file_rows(number, &sink.files);
     let mut writer = D1Writer::new(sink, packing.count())?;
-    writer.compare_with(Comparing::of(before, number)?);
+    writer.compare_with(before, number)?;
     let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
     sharding.write(&crossed.objects, &mut objects, &mut writer, &packing, watch)?;
     let ObjectWriter {
@@ -193,7 +190,6 @@ fn d1_rows(
     Ok(D1Done {
         estimate,
         kept,
-        index: written.index,
         shards,
         failed,
         objects: counts,
@@ -425,7 +421,6 @@ pub fn write_release(
         manifest,
         failed,
         kept: d1.kept,
-        index: d1.index.ok_or("the release's rows were not compared")?,
     })
 }
 

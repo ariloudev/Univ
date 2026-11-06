@@ -14,7 +14,7 @@ mod release_fixture;
 
 use std::collections::BTreeMap;
 
-use memory_store::{Clock, MemoryStore, publishing};
+use memory_store::{Clock, MemoryStore, pruning, publishing};
 use release_fixture::{build_next, fixture};
 use rusqlite::Connection;
 use univ_model::release::{Scope, TABLES, valid_in};
@@ -189,4 +189,62 @@ fn a_file_two_releases_hold_is_kept_once_under_its_sha256() {
         let files = m.files.iter().filter(|f| f.key.is_some()).count();
         assert_eq!(mapped.unsigned_abs(), files as u64, "release {n}");
     }
+}
+
+#[test]
+fn pruning_a_release_between_two_kept_deletes_only_the_rows_it_alone_held() {
+    const SOURCE: &str = "mcconnachie-2012";
+    let mut f = fixture();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    let (out, state) = (f.out.path().to_owned(), f.state.path().to_owned());
+    let at = f
+        .definitions
+        .iter()
+        .position(|d| d.id.as_str() == SOURCE)
+        .unwrap();
+    let definition = f.definitions.remove(at);
+    let normalized = f
+        .normalized
+        .iter()
+        .position(|n| n.source.as_str() == SOURCE)
+        .map(|i| f.normalized.remove(i))
+        .unwrap();
+    // Release 2 adds a source and release 3 drops it again: rows release 2 alone holds.
+    for n in 1..=3_u32 {
+        if n == 2 {
+            f.definitions.insert(at, definition.clone());
+            f.normalized.push(normalized.clone());
+        }
+        if n == 3 {
+            f.definitions.retain(|d| d.id.as_str() != SOURCE);
+            f.normalized.retain(|x| x.source.as_str() != SOURCE);
+        }
+        build_next(&f);
+        publishing(&mut store, n, &out, &state, journals.path(), &clock).unwrap();
+    }
+    let alone = |store: &MemoryStore| -> i64 {
+        TABLES
+            .iter()
+            .filter(|t| t.scope == Scope::PerRelease)
+            .map(|t| {
+                store.int_everywhere(&format!(
+                    "SELECT COUNT(*) FROM {} WHERE {} AND NOT ({}) AND NOT ({})",
+                    t.name,
+                    valid_in("", 2),
+                    valid_in("", 1),
+                    valid_in("", 3)
+                ))
+            })
+            .sum()
+    };
+    let held = alone(&store);
+    assert!(held > 0, "release 2 alone holds rows of its source");
+    let (first, third) = (everything_valid(&store, 1), everything_valid(&store, 3));
+
+    let pruned = pruning(&mut store, 2, &out, &state, journals.path(), &clock).unwrap();
+    assert_eq!(i64::try_from(pruned.rows).unwrap(), held);
+    assert_eq!(alone(&store), 0);
+    assert_eq!(everything_valid(&store, 1), first);
+    assert_eq!(everything_valid(&store, 3), third);
 }

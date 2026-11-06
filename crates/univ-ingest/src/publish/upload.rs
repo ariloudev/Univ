@@ -10,7 +10,7 @@ use univ_model::release::{ReleaseManifest, TABLES, Table, keys};
 use super::check::{check_rows, schema_version, sql_text};
 use super::journal::{Done, Journal};
 use super::progress::{FileDone, Lines, Progress};
-use super::refuse::{Refused, older_schema, refuse_published, unbound, within_caps};
+use super::refuse::{Refused, off_latest, older_schema, refuse_published, unbound, within_caps};
 use super::{Latest, PublishError, Store, StoreOptions};
 use crate::release::{RELEASES, read_manifest, release_dir};
 use crate::state::State;
@@ -94,6 +94,44 @@ fn units(manifest: &ReleaseManifest) -> Result<Vec<Unit<'_>>, String> {
     units.extend(r2);
     units.extend(tables.into_iter().map(|(db, t, f)| Unit::Table(db, t, f)));
     Ok(units)
+}
+
+/// Checks, against the manifest, the rows valid in the release of each table no unit loads
+/// into a database: those whose rows the release all shares with the release before, which it
+/// writes no file of, and those it holds none of.
+fn check_kept(
+    store: &mut dyn Store,
+    manifest: &ReleaseManifest,
+    units: &[Unit<'_>],
+    progress: &mut dyn Progress,
+) -> Result<(), String> {
+    let loaded = |db: Database, name: &str| {
+        units
+            .iter()
+            .any(|u| matches!(u, Unit::Table(d, t, _) if *d == db && t.name == name))
+    };
+    let shards = (0..manifest.shards.len()).filter_map(|i| u32::try_from(i).ok());
+    let mut checked = 0;
+    for db in std::iter::once(Database::Catalogue).chain(shards.map(Database::Shard)) {
+        let Some(estimate) = estimate_of(manifest, db) else {
+            continue;
+        };
+        for want in estimate.tables.iter().filter(|t| !loaded(db, &t.table)) {
+            let table = TABLES
+                .iter()
+                .find(|t| t.name == want.table)
+                .ok_or_else(|| {
+                    format!("the manifest names {}, no table of the schema", want.table)
+                })?;
+            check_rows(store, db, table, manifest.release, want)?;
+            checked += 1;
+        }
+    }
+    progress.note(format!(
+        "release {}: {checked} tables it writes no file of checked against the manifest",
+        manifest.release
+    ));
+    Ok(())
 }
 
 /// The manifest's estimate of the rows of `database`.
@@ -377,7 +415,8 @@ pub fn publish_with(
         Refused::Error(e) => e,
         Refused::Query(p) => stopped(Latest(None), 0, p),
     })?;
-    unbound(store, &manifest)
+    off_latest(&manifest, latest)
+        .and_then(|()| unbound(store, &manifest))
         .and_then(|()| older_schema(store, &manifest))
         .and_then(|()| within_caps(store, &manifest, holds))
         .map_err(|e| match e {
@@ -409,6 +448,8 @@ pub fn publish_with(
             .write(options.journals)
             .map_err(|e| stopped(latest, journal.done.len(), format!("the journal: {e}")))?;
     }
+    check_kept(store, &manifest, &units, progress)
+        .map_err(|p| stopped(latest, journal.done.len(), p))?;
     let at = (options.now)();
     store
         .query(Database::Catalogue, &move_latest(number, &at))

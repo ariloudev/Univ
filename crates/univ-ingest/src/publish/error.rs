@@ -23,6 +23,12 @@ pub enum PublishError {
     Pruned { number: u32, pruned_at: String },
     /// `latest` points to a newer release.
     NotNewer { number: u32, latest: u32 },
+    /// The release holds only what changed from its parent, which `latest` does not point to.
+    NotOnLatest {
+        number: u32,
+        parent: u32,
+        latest: Option<u32>,
+    },
     /// The release's rows and those of the releases not pruned are estimated beyond the cap in
     /// one database.
     OverCap {
@@ -80,6 +86,17 @@ impl fmt::Display for PublishError {
                 f,
                 "release {number} is not published: latest points to release {latest}, which \
                  is newer"
+            ),
+            Self::NotOnLatest {
+                number,
+                parent,
+                latest,
+            } => write!(
+                f,
+                "release {number} is not published: it holds only what changed from release \
+                 {parent}, and latest points to {}; publish release {parent} first, or build \
+                 release {number} again on the release latest points to",
+                latest.map_or_else(|| "no release".to_owned(), |l| format!("release {l}"))
             ),
             Self::OverCap {
                 number,

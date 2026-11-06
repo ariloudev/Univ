@@ -372,3 +372,85 @@ fn a_database_of_an_older_schema_is_refused_before_anything_is_uploaded() {
     assert!(store.r2.is_empty());
     assert!(!store.ops.iter().any(|o| matches!(o, Op::Execute(_))));
 }
+
+#[test]
+fn a_release_built_on_a_parent_latest_does_not_point_to_is_refused() {
+    let f = fixture();
+    build_next(&f);
+    build_next(&f);
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    // Release 2 holds only its change from release 1, which was never published.
+    let error = publishing(
+        &mut store,
+        2,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap_err();
+    assert!(
+        matches!(
+            &error,
+            PublishError::NotOnLatest {
+                number: 2,
+                parent: 1,
+                latest: None
+            }
+        ),
+        "{error}"
+    );
+    assert!(store.r2.is_empty());
+    assert!(!store.ops.iter().any(|o| matches!(o, Op::Execute(_))));
+}
+
+#[test]
+fn a_table_whose_rows_a_release_all_keeps_is_checked_though_it_writes_no_file_of_it() {
+    let mut f = fixture();
+    let last = f.structures.pop().unwrap();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    build_next(&f);
+    publishing(
+        &mut store,
+        1,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap();
+    // Release 2 only adds a structure: it writes no file of the objects, whose rows it keeps.
+    f.structures.push(last);
+    let second = build_next(&f);
+    assert!(
+        !second
+            .manifest
+            .files
+            .iter()
+            .any(|file| file.path.contains("-objects-"))
+    );
+    // A row release 1 loaded is lost from D1 before release 2 is published.
+    let shard = *store.shards.keys().next().unwrap();
+    store
+        .shards
+        .get(&shard)
+        .unwrap()
+        .execute(
+            "DELETE FROM objects WHERE id = (SELECT MIN(id) FROM objects)",
+            [],
+        )
+        .unwrap();
+    let error = publishing(
+        &mut store,
+        2,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("objects"), "{error}");
+    assert_eq!(latest(&store), Some(1));
+}

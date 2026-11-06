@@ -6,11 +6,28 @@
 use std::collections::BTreeMap;
 
 use univ_model::release::shards::Database;
-use univ_model::release::{D1_CAP_BYTES, ReleaseManifest};
+use univ_model::release::{D1_CAP_BYTES, ReleaseManifest, valid_in};
 
 use super::check::published_status;
 use super::upload::record_published;
 use super::{Latest, PublishError, QueryRow, Store};
+
+/// Refuses a release written as the change from a parent that `latest` does not point to: its
+/// rows would load onto another release's, and its retirements end rows that release holds.
+/// A release `latest` points to already, its publication part way, is not refused.
+pub(super) fn off_latest(manifest: &ReleaseManifest, latest: Latest) -> Result<(), Refused> {
+    let Some(parent) = manifest.parent else {
+        return Ok(());
+    };
+    if latest.0 == Some(parent) || latest.0 == Some(manifest.release) {
+        return Ok(());
+    }
+    Err(Refused::Error(PublishError::NotOnLatest {
+        number: manifest.release,
+        parent,
+        latest: latest.0,
+    }))
+}
 
 /// Refuses a release that needs more object shards than the store's Univ Server binds.
 pub(super) fn unbound(store: &mut dyn Store, manifest: &ReleaseManifest) -> Result<(), Refused> {
@@ -108,9 +125,14 @@ pub(super) fn within_caps(
     over_cap(number, Database::Catalogue, this, catalogue)?;
     let mut earlier = BTreeMap::new();
     if holds.shard_index && !manifest.shards.is_empty() {
+        // Each other release's estimate of each shard: the row valid in it, which an earlier
+        // release may have added. Rows shared between releases are counted once for each,
+        // which errs high.
         let rows = query(format!(
-            "SELECT shard, total(estimated_bytes) AS bytes, COUNT(*) AS n FROM release_shards \
-             WHERE release IN (SELECT number FROM releases WHERE {others}) GROUP BY shard"
+            "SELECT s.shard AS shard, total(s.estimated_bytes) AS bytes, COUNT(*) AS n \
+             FROM release_shards s JOIN releases r ON r.pruned_at IS NULL AND r.number <> \
+             {number} AND {} GROUP BY s.shard",
+            valid_in("s.", "r.number")
         ))?;
         for row in &rows {
             if let Some(shard) = row.get("shard").and_then(serde_json::Value::as_u64) {

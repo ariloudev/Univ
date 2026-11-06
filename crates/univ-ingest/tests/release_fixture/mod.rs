@@ -190,21 +190,32 @@ fn loaded_where(
     keep: impl Fn(&str) -> bool,
 ) -> rusqlite::Connection {
     let db = rusqlite::Connection::open_in_memory().unwrap();
-    let releases = dir.parent().unwrap();
-    for k in 1..m.release {
-        let earlier = releases.join(k.to_string());
-        if earlier.join(keys::MANIFEST).exists() {
-            load_into(&db, &earlier, &read_manifest(&earlier), &keep);
-        }
+    // The builds the release is the change from, by its parent, back to one written whole.
+    let mut chain = vec![(dir.to_path_buf(), m.clone())];
+    while let Some(parent) = chain.last().unwrap().1.parent {
+        let at = dir.parent().unwrap().join(parent.to_string());
+        let earlier = read_manifest(&at);
+        chain.push((at, earlier));
     }
-    load_into(&db, dir, m, &keep);
+    for (at, each) in chain.iter().rev() {
+        load_into(&db, at, each, &keep);
+    }
     for t in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
-        // A table this database does not hold is not there to delete from.
-        let _ = db.execute_batch(&format!(
-            "DELETE FROM {} WHERE NOT ({});",
-            t.name,
-            valid_in("", m.release)
-        ));
+        let held: i64 = db
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
+                [t.name],
+                |r| r.get(0),
+            )
+            .unwrap();
+        if held > 0 {
+            db.execute_batch(&format!(
+                "DELETE FROM {} WHERE NOT ({});",
+                t.name,
+                valid_in("", m.release)
+            ))
+            .unwrap();
+        }
     }
     db
 }

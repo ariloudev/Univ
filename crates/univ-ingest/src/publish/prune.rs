@@ -296,10 +296,15 @@ fn kept_releases(store: &mut dyn Store, number: u32) -> Result<Vec<u32>, String>
 }
 
 /// The SQL condition selecting the rows a prune of release `number` deletes: those valid in it
-/// and in none of the releases `kept`, which share the rest.
+/// and in none of the releases `kept`. A row is valid in an unbroken run of releases, from its
+/// `release` until its `retired`, so it is valid in no kept release when that run lies after
+/// the last kept release before `number` and ends by the first kept release after it.
 fn pruned_rows(number: u32, kept: &[u32]) -> String {
+    let before = kept.iter().filter(|&&k| k < number).max();
+    let after = kept.iter().filter(|&&k| k > number).min();
     std::iter::once(valid_in("", number))
-        .chain(kept.iter().map(|k| format!("NOT ({})", valid_in("", k))))
+        .chain(before.map(|b| format!("release > {b}")))
+        .chain(after.map(|a| format!("retired IS NOT NULL AND retired <= {a}")))
         .collect::<Vec<_>>()
         .join(" AND ")
 }

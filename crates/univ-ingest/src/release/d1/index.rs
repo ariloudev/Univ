@@ -9,13 +9,15 @@
 //! each a run of records: key hash (16 bytes), content hash (16), release (4), key length (4),
 //! all little-endian, then the key. A build writes the next release's into `rows.part/` beside
 //! the state, and installing the state moves it into the release's state directory.
+//!
+//! The hashes are SHA-256's first 16 bytes, of each value tagged by its type: a fixed algorithm,
+//! so that a build compares with an index any earlier toolchain wrote.
 
-use std::collections::HashMap;
-use std::fs::File;
-use std::hash::Hash;
-use std::io::{BufReader, BufWriter, Read, Write};
+use std::fs::{File, OpenOptions};
+use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 
+use sha2::{Digest, Sha256};
 use univ_model::release::shards::Database;
 use univ_model::release::{SqlValue, Table};
 
@@ -23,63 +25,61 @@ use univ_model::release::{SqlValue, Table};
 pub const ROWS: &str = "rows";
 /// The bytes of a record before its key.
 const HEAD: usize = 16 + 16 + 4 + 4;
-
-/// A row of the index as a build looks it up.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Indexed {
-    pub key: u128,
-    pub content: u128,
-    pub release: u32,
-}
-
-/// What became of a row of the index in the build comparing with it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Fate {
-    /// Not made by the build: retired.
-    Gone,
-    /// Made with the same content: kept, not written again.
-    Kept,
-    /// Made with other content: retired, and written again.
-    Changed,
-}
-
-/// One table's index of one database, sorted by key, with each row's fate so far.
-struct Rows {
-    file: PathBuf,
-    indexed: Vec<Indexed>,
-    fates: Vec<Fate>,
-}
-
-/// The row index of the release before, as a build compares its rows with it.
-#[derive(Default)]
-pub struct Previous {
-    tables: HashMap<(Database, &'static str), Rows>,
-}
-
-/// How a build is to treat a row it makes.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Compared {
-    /// New, or changed: written, valid from the new release.
-    Write,
-    /// Unchanged: not written, valid from the release that added it.
-    Keep { release: u32 },
-}
+/// The records of the next index a table holds before they are appended to its file.
+const BUFFERED: usize = 1 << 20;
+/// The buffer an index file is read through.
+const READ_BUFFER: usize = 1 << 20;
 
 /// The file of `table` of `database` in the index directory `dir`.
 fn file_of(dir: &Path, database: Database, table: &str) -> PathBuf {
     dir.join(database.dir()).join(format!("{table}.idx"))
 }
 
-/// Reads the records of `file`, giving each with its key's text to `each`.
-fn read_records(file: &Path, mut each: impl FnMut(Indexed, String)) -> std::io::Result<()> {
-    let mut input = BufReader::new(File::open(file)?);
-    let mut head = [0_u8; HEAD];
-    loop {
-        match input.read_exact(&mut head) {
-            Ok(()) => {}
-            Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => return Ok(()),
-            Err(e) => return Err(e),
+/// A row of the index: its key and content hashes and the release that added it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct Indexed {
+    pub key: u128,
+    pub content: u128,
+    pub release: u32,
+}
+
+/// An index file read record by record, its keys read only when asked for.
+struct Records {
+    input: BufReader<File>,
+    /// The bytes of the file not yet read or skipped.
+    left: u64,
+    key_len: usize,
+    key: Vec<u8>,
+}
+
+impl Records {
+    fn open(file: &Path) -> std::io::Result<Self> {
+        let input = File::open(file)?;
+        let left = input.metadata()?.len();
+        Ok(Self {
+            input: BufReader::with_capacity(READ_BUFFER, input),
+            left,
+            key_len: 0,
+            key: Vec::new(),
+        })
+    }
+
+    /// The next record, its key left unread: [`Records::key`] reads it, else the next call
+    /// skips it.
+    fn next(&mut self) -> std::io::Result<Option<Indexed>> {
+        if self.key_len > 0 {
+            let skip = i64::try_from(self.key_len).map_err(std::io::Error::other)?;
+            self.input.seek_relative(skip)?;
+            self.key_len = 0;
         }
+        // The file ends between records; a record cut short is an error, not its end.
+        if self.left == 0 {
+            return Ok(None);
+        }
+        let mut head = [0_u8; HEAD];
+        self.input
+            .read_exact(&mut head)
+            .map_err(|e| cut_short(&e))?;
         let word = |at: usize| {
             let mut b = [0_u8; 16];
             b.copy_from_slice(&head[at..at + 16]);
@@ -90,218 +90,247 @@ fn read_records(file: &Path, mut each: impl FnMut(Indexed, String)) -> std::io::
             b.copy_from_slice(&head[at..at + 4]);
             u32::from_le_bytes(b)
         };
-        let mut key = vec![0_u8; small(36) as usize];
-        input.read_exact(&mut key)?;
-        let row = Indexed {
+        self.key_len = small(36) as usize;
+        let record = (HEAD + self.key_len) as u64;
+        if record > self.left {
+            return Err(cut_short(&std::io::ErrorKind::UnexpectedEof.into()));
+        }
+        self.left -= record;
+        Ok(Some(Indexed {
             key: word(0),
             content: word(16),
             release: small(32),
-        };
-        each(row, String::from_utf8(key).map_err(std::io::Error::other)?);
+        }))
     }
+
+    /// The key of the record [`Records::next`] gave.
+    fn key(&mut self) -> std::io::Result<&str> {
+        self.key.resize(self.key_len, 0);
+        self.input.read_exact(&mut self.key)?;
+        self.key_len = 0;
+        std::str::from_utf8(&self.key).map_err(std::io::Error::other)
+    }
+}
+
+/// The error of a record the file ends within.
+fn cut_short(e: &std::io::Error) -> std::io::Error {
+    std::io::Error::new(
+        e.kind(),
+        format!("a record cut short, the file truncated: {e}"),
+    )
+}
+
+/// The low 64 bits of a hash.
+#[expect(clippy::cast_possible_truncation, reason = "the low half, by intent")]
+fn low(hash: u128) -> u64 {
+    hash as u64
+}
+
+/// One table's index of the release before in one database: its rows in the order the build
+/// wrote them, and which of them this build keeps.
+pub(super) struct Previous {
+    file: PathBuf,
+    keys: Vec<u128>,
+    /// The low half of each content hash: compared only with the row of the same key.
+    contents: Vec<u64>,
+    releases: Vec<u32>,
+    kept: Vec<bool>,
+    /// The rows' places, ordered by key, for a row not met in order.
+    by_key: Vec<u32>,
+    /// Where the next row in order is expected: a build writes its rows in the order the one
+    /// before did, so nearly every row is found here without a search.
+    cursor: usize,
 }
 
 impl Previous {
-    /// The index in `dir` of the tables `tables` of each database it holds.
-    ///
-    /// # Errors
-    ///
-    /// Fails when a file cannot be read.
-    pub fn read(dir: &Path, tables: &[&'static Table]) -> std::io::Result<Self> {
-        let mut out = Self::default();
-        let mut databases = Vec::new();
-        for entry in std::fs::read_dir(dir)? {
-            let entry = entry?;
-            if let Some(database) = entry.file_name().to_str().and_then(Database::from_dir) {
-                databases.push(database);
-            }
-        }
-        for database in databases {
-            for table in tables {
-                let file = file_of(dir, database, table.name);
-                if !file.exists() {
-                    continue;
-                }
-                let mut indexed = Vec::new();
-                read_records(&file, |row, _| indexed.push(row))?;
-                indexed.sort_unstable_by_key(|r| r.key);
-                let fates = vec![Fate::Gone; indexed.len()];
-                let rows = Rows {
-                    file,
-                    indexed,
-                    fates,
-                };
-                out.tables.insert((database, table.name), rows);
-            }
-        }
-        Ok(out)
-    }
-
-    /// The databases the index holds rows of.
-    #[must_use]
-    pub fn databases(&self) -> Vec<Database> {
-        let mut found: Vec<Database> = self.tables.keys().map(|(d, _)| *d).collect();
-        found.sort_unstable();
-        found.dedup();
-        found
-    }
-
-    /// Compares a row of `table` in `database`, its key and content hashed, with the index.
-    pub fn compare(
-        &mut self,
+    /// The index of `table` in `database` in `dir`, none when it holds no file of it.
+    pub(super) fn read(
+        dir: &Path,
         database: Database,
-        table: &'static str,
-        key: u128,
-        content: u128,
-    ) -> Compared {
-        let Some(rows) = self.tables.get_mut(&(database, table)) else {
-            return Compared::Write;
-        };
-        let Ok(at) = rows.indexed.binary_search_by_key(&key, |r| r.key) else {
-            return Compared::Write;
-        };
-        let row = rows.indexed[at];
-        if row.content == content {
-            rows.fates[at] = Fate::Kept;
-            Compared::Keep {
-                release: row.release,
+        table: &str,
+    ) -> std::io::Result<Option<Self>> {
+        let file = file_of(dir, database, table);
+        if !file.exists() {
+            return Ok(None);
+        }
+        let (mut keys, mut contents, mut releases) = (Vec::new(), Vec::new(), Vec::new());
+        let mut records = Records::open(&file)?;
+        while let Some(row) = records.next()? {
+            keys.push(row.key);
+            contents.push(low(row.content));
+            releases.push(row.release);
+        }
+        let n = u32::try_from(keys.len()).map_err(std::io::Error::other)?;
+        let mut by_key: Vec<u32> = (0..n).collect();
+        by_key.sort_unstable_by_key(|&i| keys[i as usize]);
+        Ok(Some(Self {
+            file,
+            kept: vec![false; keys.len()],
+            keys,
+            contents,
+            releases,
+            by_key,
+            cursor: 0,
+        }))
+    }
+
+    /// The databases `dir` holds an index of.
+    pub(super) fn databases(dir: &Path) -> std::io::Result<Vec<Database>> {
+        let mut found = Vec::new();
+        for entry in std::fs::read_dir(dir)? {
+            if let Some(d) = entry?.file_name().to_str().and_then(Database::from_dir) {
+                found.push(d);
             }
+        }
+        found.sort_unstable();
+        Ok(found)
+    }
+
+    /// Compares a row, its key and content hashed, with the index: the release that added it
+    /// when it is there unchanged, which the build keeps, else none.
+    pub(super) fn compare(&mut self, key: u128, content: u128) -> Option<u32> {
+        let at = if self.keys.get(self.cursor) == Some(&key) {
+            self.cursor
         } else {
-            rows.fates[at] = Fate::Changed;
-            Compared::Write
-        }
-    }
-
-    /// The key, as SQL literals, of each row of `table` in `database` that the build retires:
-    /// those it did not make or made changed.
-    ///
-    /// # Errors
-    ///
-    /// Fails when the index file cannot be read again.
-    pub fn retired(&self, database: Database, table: &'static str) -> std::io::Result<Vec<String>> {
-        let Some(rows) = self.tables.get(&(database, table)) else {
-            return Ok(Vec::new());
+            let found = self
+                .by_key
+                .binary_search_by_key(&key, |&i| self.keys[i as usize])
+                .ok()?;
+            self.by_key[found] as usize
         };
-        let mut out = Vec::new();
-        read_records(&rows.file, |row, key| {
-            let kept = rows
-                .indexed
-                .binary_search_by_key(&row.key, |r| r.key)
-                .is_ok_and(|at| rows.fates[at] == Fate::Kept);
-            if !kept {
-                out.push(key);
-            }
-        })?;
-        Ok(out)
-    }
-}
-
-/// The next release's row index, written as the build makes its rows.
-pub struct Next {
-    dir: PathBuf,
-    files: HashMap<(Database, &'static str), BufWriter<File>>,
-}
-
-impl Next {
-    /// A new index in `dir`, replacing what a stopped build left there.
-    ///
-    /// # Errors
-    ///
-    /// Fails when the directory cannot be made.
-    pub fn new(dir: &Path) -> std::io::Result<Self> {
-        if dir.exists() {
-            std::fs::remove_dir_all(dir)?;
-        }
-        std::fs::create_dir_all(dir)?;
-        Ok(Self {
-            dir: dir.to_owned(),
-            files: HashMap::new(),
+        self.cursor = at + 1;
+        (self.contents[at] == low(content)).then(|| {
+            self.kept[at] = true;
+            self.releases[at]
         })
     }
 
-    /// Records a row of `table` in `database`.
-    ///
-    /// # Errors
-    ///
-    /// Fails when its file cannot be written.
-    pub fn record(
-        &mut self,
-        database: Database,
-        table: &'static str,
-        row: Indexed,
-        key: &str,
-    ) -> std::io::Result<()> {
-        if !self.files.contains_key(&(database, table)) {
-            let file = file_of(&self.dir, database, table);
-            if let Some(parent) = file.parent() {
-                std::fs::create_dir_all(parent)?;
+    /// Gives `each` the key, as SQL literals, of each row the build retires: those it did not
+    /// make or made changed. Gives how many.
+    pub(super) fn retired(
+        &self,
+        mut each: impl FnMut(&str) -> Result<(), String>,
+    ) -> Result<u64, String> {
+        let problem = |e: std::io::Error| format!("{}: {e}", self.file.display());
+        let mut records = Records::open(&self.file).map_err(problem)?;
+        let (mut at, mut retired) = (0, 0);
+        while records.next().map_err(problem)?.is_some() {
+            if !self.kept.get(at).copied().unwrap_or(true) {
+                each(records.key().map_err(problem)?)?;
+                retired += 1;
             }
-            self.files
-                .insert((database, table), BufWriter::new(File::create(file)?));
+            at += 1;
         }
-        let Some(out) = self.files.get_mut(&(database, table)) else {
-            return Err(std::io::Error::other("the index file was not opened"));
-        };
-        out.write_all(&row.key.to_le_bytes())?;
-        out.write_all(&row.content.to_le_bytes())?;
-        out.write_all(&row.release.to_le_bytes())?;
-        let len = u32::try_from(key.len()).map_err(std::io::Error::other)?;
-        out.write_all(&len.to_le_bytes())?;
-        out.write_all(key.as_bytes())
-    }
-
-    /// Writes out every file, giving the directory.
-    ///
-    /// # Errors
-    ///
-    /// Fails when a file cannot be written.
-    pub fn finish(mut self) -> std::io::Result<PathBuf> {
-        for out in self.files.values_mut() {
-            out.flush()?;
-        }
-        Ok(self.dir)
+        Ok(retired)
     }
 }
 
-/// The places among a table's columns of its key without `release`, and of its other columns
-/// without it.
+/// One table's next index in one database, buffered and appended to its file.
+pub(super) struct Next {
+    file: PathBuf,
+    buffer: Vec<u8>,
+}
+
+impl Next {
+    /// The next index of `table` in `database`, in `dir`.
+    pub(super) fn new(dir: &Path, database: Database, table: &str) -> Self {
+        Self {
+            file: file_of(dir, database, table),
+            buffer: Vec::new(),
+        }
+    }
+
+    /// Records a row, its key as SQL literals.
+    pub(super) fn record(&mut self, row: Indexed, key: &str) -> Result<(), String> {
+        self.buffer.extend_from_slice(&row.key.to_le_bytes());
+        self.buffer.extend_from_slice(&row.content.to_le_bytes());
+        self.buffer.extend_from_slice(&row.release.to_le_bytes());
+        let len = u32::try_from(key.len()).map_err(|e| e.to_string())?;
+        self.buffer.extend_from_slice(&len.to_le_bytes());
+        self.buffer.extend_from_slice(key.as_bytes());
+        if self.buffer.len() >= BUFFERED {
+            self.flush()?;
+        }
+        Ok(())
+    }
+
+    /// Appends what is buffered to the file: opened only for it, so that the tables of many
+    /// databases hold no file open.
+    pub(super) fn flush(&mut self) -> Result<(), String> {
+        if self.buffer.is_empty() {
+            return Ok(());
+        }
+        let problem = |e: std::io::Error| format!("{}: {e}", self.file.display());
+        if let Some(parent) = self.file.parent() {
+            std::fs::create_dir_all(parent).map_err(problem)?;
+        }
+        OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.file)
+            .and_then(|mut f| f.write_all(&self.buffer))
+            .map_err(problem)?;
+        self.buffer.clear();
+        Ok(())
+    }
+}
+
+/// Makes `dir` an empty directory for a new index, replacing what a stopped build left there.
+///
+/// # Errors
+///
+/// Fails when the directory cannot be made.
+pub(super) fn fresh(dir: &Path) -> std::io::Result<()> {
+    if dir.exists() {
+        std::fs::remove_dir_all(dir)?;
+    }
+    std::fs::create_dir_all(dir)
+}
+
+/// The places among a table's columns of its key, without `release` for a table whose rows
+/// releases share, and of its other columns but `release`.
 #[must_use]
-pub fn places(table: &Table) -> (Vec<usize>, Vec<usize>) {
-    let natural = table
-        .key
-        .iter()
-        .filter(|c| **c != "release")
-        .filter_map(|c| table.position(c))
-        .collect();
+pub(super) fn places(table: &Table, shared: bool) -> (Vec<usize>, Vec<usize>) {
+    let key = if shared {
+        table
+            .natural_key()
+            .filter_map(|c| table.position(c))
+            .collect()
+    } else {
+        table.key.iter().filter_map(|c| table.position(c)).collect()
+    };
     let content = (0..table.columns.len())
         .filter(|&i| table.columns[i] != "release")
         .collect();
-    (natural, content)
+    (key, content)
 }
 
-/// A 128-bit hash of the values of `row` at `places`, each with its type.
+/// A 128-bit hash of the values of `row` at `places`, each tagged by its type, a text by its
+/// length too: SHA-256's first 16 bytes.
 #[must_use]
-pub fn hash_at(places: &[usize], row: &[SqlValue]) -> u128 {
-    crate::hash::hash128(|h| {
-        for &i in places {
-            match row.get(i) {
-                Some(SqlValue::Integer(n)) => (1_u8, n).hash(h),
-                Some(SqlValue::Real(x)) => (2_u8, x.to_bits()).hash(h),
-                Some(SqlValue::Text(t)) => (3_u8, t).hash(h),
-                Some(SqlValue::Null) | None => 0_u8.hash(h),
+pub(super) fn hash_at(places: &[usize], row: &[SqlValue]) -> u128 {
+    let mut h = Sha256::new();
+    for &i in places {
+        match row.get(i) {
+            Some(SqlValue::Integer(n)) => {
+                h.update([1]);
+                h.update(n.to_le_bytes());
             }
+            Some(SqlValue::Real(x)) => {
+                h.update([2]);
+                h.update(x.to_bits().to_le_bytes());
+            }
+            Some(SqlValue::Text(t)) => {
+                h.update([3]);
+                h.update((t.len() as u64).to_le_bytes());
+                h.update(t.as_bytes());
+            }
+            Some(SqlValue::Null) | None => h.update([0]),
         }
-    })
-}
-
-/// The values of `row` at `places` as an SQL tuple, `(1, 'a')`.
-#[must_use]
-pub fn tuple_at(places: &[usize], row: &[SqlValue]) -> String {
-    let values: Vec<String> = places
-        .iter()
-        .filter_map(|&i| row.get(i).map(SqlValue::literal))
-        .collect();
-    format!("({})", values.join(", "))
+    }
+    let mut b = [0_u8; 16];
+    b.copy_from_slice(&h.finalize()[..16]);
+    u128::from_le_bytes(b)
 }
 
 #[cfg(test)]
@@ -321,41 +350,50 @@ mod tests {
     #[test]
     fn an_index_finds_kept_changed_and_gone_rows_by_their_key() {
         let dir = tempfile::tempdir().unwrap();
-        let mut next = Next::new(dir.path()).unwrap();
         let db = Database::Shard(2);
+        let mut next = Next::new(dir.path(), db, "objects");
         for (key, content) in [(5_u128, 50_u128), (1, 10), (9, 90)] {
             let row = Indexed {
                 key,
                 content,
                 release: 3,
             };
-            next.record(db, "objects", row, &format!("({key})"))
-                .unwrap();
+            next.record(row, &format!("({key})")).unwrap();
         }
-        let dir = next.finish().unwrap();
-        let mut previous = Previous::read(&dir, &[objects()]).unwrap();
-        assert_eq!(previous.databases(), [db]);
-        assert_eq!(
-            previous.compare(db, "objects", 1, 10),
-            Compared::Keep { release: 3 }
+        next.flush().unwrap();
+        assert_eq!(Previous::databases(dir.path()).unwrap(), [db]);
+        assert!(
+            Previous::read(dir.path(), Database::Catalogue, "objects")
+                .unwrap()
+                .is_none()
         );
-        assert_eq!(previous.compare(db, "objects", 5, 51), Compared::Write);
-        assert_eq!(previous.compare(db, "objects", 7, 70), Compared::Write);
-        // 5 changed and 9 gone are retired; 1 is kept.
-        let mut retired = previous.retired(db, "objects").unwrap();
-        retired.sort();
-        assert_eq!(retired, ["(5)", "(9)"]);
-        let none: Vec<String> = Vec::new();
-        assert_eq!(
-            previous.retired(Database::Catalogue, "objects").unwrap(),
-            none
-        );
+        let mut previous = Previous::read(dir.path(), db, "objects").unwrap().unwrap();
+        // 1 met out of order, by its key; 5 changed; 7 new; 9 gone.
+        assert_eq!(previous.compare(1, 10), Some(3));
+        assert_eq!(previous.compare(5, 51), None);
+        assert_eq!(previous.compare(7, 70), None);
+        let mut retired = Vec::new();
+        let n = previous
+            .retired(|k| {
+                retired.push(k.to_owned());
+                Ok(())
+            })
+            .unwrap();
+        assert_eq!((n, retired), (2, vec!["(5)".to_owned(), "(9)".to_owned()]));
+
+        // An index cut short in a record is refused, not read as ending there.
+        let file = file_of(dir.path(), db, "objects");
+        let bytes = std::fs::read(&file).unwrap();
+        std::fs::write(&file, &bytes[..bytes.len() - 3]).unwrap();
+        assert!(Previous::read(dir.path(), db, "objects").is_err());
+        std::fs::write(&file, &bytes[..HEAD + 3 + 10]).unwrap();
+        assert!(Previous::read(dir.path(), db, "objects").is_err());
     }
 
     #[test]
-    fn a_key_and_content_leave_out_the_release() {
+    fn a_key_and_content_leave_out_the_release_and_hash_by_a_fixed_algorithm() {
         let table = objects();
-        let (natural, content) = places(table);
+        let (natural, content) = places(table, true);
         assert_eq!(natural, [table.position("id").unwrap()]);
         assert!(!content.contains(&table.position("release").unwrap()));
         let mut row = vec![SqlValue::Null; table.columns.len()];
@@ -364,6 +402,10 @@ mod tests {
         let before = (hash_at(&natural, &row), hash_at(&content, &row));
         row[table.position("release").unwrap()] = SqlValue::Integer(2);
         assert_eq!((hash_at(&natural, &row), hash_at(&content, &row)), before);
-        assert_eq!(tuple_at(&natural, &row), "(7)");
+        // SHA-256 of the tag 1 and 7 as 8 bytes: what any build, on any toolchain, gives.
+        let digest = Sha256::digest([1, 7, 0, 0, 0, 0, 0, 0, 0]);
+        let mut b = [0_u8; 16];
+        b.copy_from_slice(&digest[..16]);
+        assert_eq!(hash_at(&natural, &row), u128::from_le_bytes(b));
     }
 }

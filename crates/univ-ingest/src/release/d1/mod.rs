@@ -15,23 +15,27 @@
 //! identical, and no NULL stands for a number.
 
 mod compare;
-pub mod index;
+mod index;
+mod parts;
 mod state;
 
-pub use compare::{Before, Comparing};
+pub use compare::Before;
+pub use index::ROWS;
+pub use parts::MAX_FILE_BYTES;
 
 use sha2::{Digest, Sha256};
 use univ_model::release::fingerprint::canonical_row;
 use univ_model::release::manifest::{D1_CAP_BYTES, D1Estimate, TableEstimate};
 use univ_model::release::shards::Database;
-use univ_model::release::{Row, SCHEMA, SCHEMA_VERSION, Scope, SqlValue, TABLES, Table, keys};
+use univ_model::release::{
+    RETIRED, Row, SCHEMA, SCHEMA_VERSION, SqlValue, Statements, TABLES, Table, keys,
+};
 
-use state::{TableState, key_hash, key_of, place_of};
+use index::{Indexed, hash_at};
+use parts::{Kind, Place};
+use state::{TableState, key_of, place_of};
 
 use super::check::{D1_FINITE, D1_KEYS, Failed};
-
-/// The largest D1 file written, unless one statement alone is larger.
-pub const MAX_FILE_BYTES: usize = 32 << 20;
 
 /// Where the writer puts each file it completes: its path in the release directory and bytes.
 pub trait PartSink {
@@ -66,27 +70,6 @@ pub fn content_sha256(rows: &[Vec<SqlValue>]) -> String {
     crate::fetch::hex(&Sha256::digest(&bytes))
 }
 
-/// The path of retirement part `part` (from 1) of the table at `place` (from 0) in `TABLES` in
-/// `database`: loaded with the table's other parts, as publish groups a table's files by name.
-fn retire_path(database: Database, place: usize, table: &str, part: usize) -> String {
-    format!(
-        "{}/{}/{:04}-{table}-r{part:03}.sql",
-        keys::D1_DIR,
-        database.dir(),
-        place + 1
-    )
-}
-
-/// The path of part `part` (from 1) of the table at `place` (from 0) in `TABLES` in `database`.
-fn part_path(database: Database, place: usize, table: &str, part: usize) -> String {
-    format!(
-        "{}/{}/{:04}-{table}-{part:03}.sql",
-        keys::D1_DIR,
-        database.dir(),
-        place + 1
-    )
-}
-
 /// The D1 files of a release, written as its rows come, or, without a sink, only the estimate
 /// of the bytes they would take.
 pub struct D1Writer<'s> {
@@ -97,8 +80,10 @@ pub struct D1Writer<'s> {
     bytes: Vec<u64>,
     /// The shard of the object whose rows are being written.
     shard: Option<u32>,
-    /// The comparison with the release before, where there is one.
-    comparing: Option<Comparing>,
+    /// The release whose rows are compared with the release before's, where they are.
+    comparing: Option<u32>,
+    /// A row's key as SQL literals, for the row index: one buffer for every row.
+    key_text: String,
 }
 
 /// What the writer made of a release's rows once every file is written.
@@ -110,8 +95,6 @@ pub struct D1Written {
     pub shards: Vec<D1Estimate>,
     /// The checks of the rows that failed.
     pub failed: Vec<Failed>,
-    /// The directory of the next release's row index, where the rows were compared.
-    pub index: Option<std::path::PathBuf>,
 }
 
 /// The database at `index` among the writer's: the catalogue, then the shards.
@@ -163,14 +146,8 @@ impl<'s> D1Writer<'s> {
             databases,
             shard: None,
             comparing: None,
+            key_text: String::new(),
         }
-    }
-
-    /// Writes only what the rows that follow change from the release before, as `comparing`
-    /// gives it: each row kept unchanged is not written, and once every row is in, those the
-    /// release no longer holds are retired.
-    pub fn compare_with(&mut self, comparing: Comparing) {
-        self.comparing = Some(comparing);
     }
 
     /// Sends the rows of the shard tables that follow to object shard `shard`, until another
@@ -245,21 +222,45 @@ impl<'s> D1Writer<'s> {
         let Some(sink) = self.sink.as_deref_mut() else {
             return Ok(());
         };
-        let shared = table.scope == Scope::PerRelease;
-        let kept = match self.comparing.as_mut().filter(|_| shared) {
-            Some(c) => c.row(
-                database(db),
-                table,
-                (&state.natural, &state.content_at),
-                values,
-            )?,
-            None => None,
-        };
-        let written = kept.is_none();
-        let values = kept.as_deref().unwrap_or(values);
-        state.fingerprint.add(values);
+        let key = hash_at(&state.key, values);
+        // A row the release before holds unchanged: kept with the release that added it.
+        let mut kept = None;
+        if let (Some(number), Some(next)) = (self.comparing, state.next.as_mut()) {
+            let content = hash_at(&state.content_at, values);
+            kept = state
+                .previous
+                .as_mut()
+                .and_then(|p| p.compare(key, content));
+            self.key_text.clear();
+            self.key_text.push('(');
+            for (n, &i) in state.key.iter().enumerate() {
+                if n > 0 {
+                    self.key_text.push_str(", ");
+                }
+                values[i].write_literal(&mut self.key_text);
+            }
+            self.key_text.push(')');
+            let release = kept.unwrap_or(number);
+            next.record(
+                Indexed {
+                    key,
+                    content,
+                    release,
+                },
+                &self.key_text,
+            )?;
+        }
+        let kept_release = kept.map(|r| SqlValue::Integer(i64::from(r)));
+        match (&kept_release, state.release_at) {
+            (Some(r), Some(at)) => state.fingerprint.add_replacing(values, at, r),
+            _ => state.fingerprint.add(values),
+        }
         if let Some(content) = &mut state.content {
-            content.push(values.to_vec());
+            let mut row = values.to_vec();
+            if let (Some(r), Some(at)) = (kept_release, state.release_at) {
+                row[at] = r;
+            }
+            content.push(row);
         }
         if state.not_finite.is_none()
             && let Some((x, column)) =
@@ -277,25 +278,24 @@ impl<'s> D1Writer<'s> {
                 key_of(table, values)
             ));
         }
-        // A shared row's key is unique without its release, which a kept row carries from the
-        // release before.
-        let key = if shared {
-            index::hash_at(&state.natural, values)
-        } else {
-            key_hash(&state.key, values)
-        };
         if !state.keys.insert(key) {
             state.repeated += 1;
             if state.first_repeated.is_none() {
                 state.first_repeated = Some(key_of(table, values));
             }
         }
-        if !written {
+        if kept.is_some() {
             return Ok(());
         }
         state.added += 1;
         if let Some(statement) = state.statements.push(values) {
-            to_part(sink, database(db), place, state, &statement)?;
+            let to = Place {
+                database: database(db),
+                at: place,
+                table: table.name,
+                kind: Kind::Rows,
+            };
+            state.parts.push(sink, to, &statement)?;
         }
         Ok(())
     }
@@ -362,50 +362,51 @@ impl<'s> D1Writer<'s> {
         let estimate = estimates
             .next()
             .ok_or("the writer has no catalogue database")?;
-        let index = match self.comparing.take() {
-            Some(c) => Some(c.finish()?),
-            None => None,
-        };
         Ok(D1Written {
             estimate,
             shards: estimates.collect(),
             failed,
-            index,
         })
     }
 
-    /// Writes, for each table of each database the release before held rows of, the files that
-    /// retire the rows this release no longer holds, as the table's parts `r001` on.
+    /// Writes, for each table the release before held rows of in each database, the files that
+    /// retire the rows this release no longer holds, as the table's parts `r001` on, read from
+    /// its row index; and writes out the next row index.
     fn retire(&mut self) -> Result<(), String> {
-        let (Some(c), Some(sink)) = (self.comparing.as_ref(), self.sink.as_deref_mut()) else {
+        let (Some(number), Some(sink)) = (self.comparing, self.sink.as_deref_mut()) else {
             return Ok(());
         };
-        for db in c.databases() {
-            let tables = self.databases.get_mut(slot(db)).ok_or_else(|| {
-                format!("{db} holds rows of the release before, which this release has no longer")
-            })?;
+        for (i, tables) in self.databases.iter_mut().enumerate() {
             for (place, state) in tables.iter_mut().enumerate() {
-                let (statements, retired) = c.retirements(db, &state.table)?;
-                state.retired = retired;
-                let mut part = String::new();
-                let mut parts = 0;
-                for statement in statements {
-                    if !part.is_empty() && part.len() + statement.len() > MAX_FILE_BYTES {
-                        parts += 1;
-                        sink.put(
-                            retire_path(db, place, state.table.name, parts),
-                            part.as_bytes(),
-                        )?;
-                        part.clear();
-                    }
-                    part.push_str(&statement);
+                if let Some(next) = state.next.as_mut() {
+                    next.flush()?;
                 }
-                if !part.is_empty() {
-                    sink.put(
-                        retire_path(db, place, state.table.name, parts + 1),
-                        part.as_bytes(),
-                    )?;
+                let Some(previous) = state.previous.take() else {
+                    continue;
+                };
+                let table = state.table;
+                let to = Place {
+                    database: database(i),
+                    at: place,
+                    table: table.name,
+                    kind: Kind::Retired,
+                };
+                let head = format!(
+                    "UPDATE {} SET {RETIRED} = {number} WHERE {RETIRED} IS NULL AND release < \
+                     {number} AND ({}) IN (VALUES ",
+                    table.name,
+                    table.natural_key().collect::<Vec<_>>().join(", ")
+                );
+                let mut statements = Statements::with(head, ");\n");
+                let mut parts = parts::Parts::default();
+                state.retired = previous.retired(|key| match statements.push_tuple(key) {
+                    Some(statement) => parts.push(sink, to, &statement),
+                    None => Ok(()),
+                })?;
+                if let Some(last) = statements.finish() {
+                    parts.push(sink, to, &last)?;
                 }
+                parts.finish(sink, to)?;
             }
         }
         Ok(())
@@ -420,17 +421,16 @@ impl<'s> D1Writer<'s> {
         failed: &mut Vec<Failed>,
     ) -> Result<TableEstimate, String> {
         if let Some(sink) = self.sink.as_deref_mut() {
+            let to = Place {
+                database: db,
+                at: place,
+                table: state.table.name,
+                kind: Kind::Rows,
+            };
             if let Some(last) = state.statements.finish() {
-                to_part(sink, db, place, &mut state, &last)?;
+                state.parts.push(sink, to, &last)?;
             }
-            if !state.part.is_empty() {
-                state.parts += 1;
-                sink.put(
-                    part_path(db, place, state.table.name, state.parts),
-                    state.part.as_bytes(),
-                )?;
-                state.part = String::new();
-            }
+            state.parts.finish(sink, to)?;
         }
         if let Some(cause) = state.not_finite.take() {
             failed.push(Failed {
@@ -452,35 +452,14 @@ impl<'s> D1Writer<'s> {
             rows: state.rows,
             estimated_bytes: state.bytes,
             fingerprint: state.fingerprint.finish(),
-            added: self.comparing.as_ref().map(|_| state.added),
-            retired: self.comparing.as_ref().map(|_| state.retired),
+            added: self.comparing.map(|_| state.added),
+            retired: self.comparing.map(|_| state.retired),
             content_sha256: state.content.map(|mut rows| {
                 state.table.sort_by_key(&mut rows);
                 content_sha256(&rows)
             }),
         })
     }
-}
-
-/// Adds `statement` to the table's current part, putting the part first when it would grow
-/// beyond [`MAX_FILE_BYTES`].
-fn to_part(
-    sink: &mut dyn PartSink,
-    db: Database,
-    place: usize,
-    state: &mut TableState,
-    statement: &str,
-) -> Result<(), String> {
-    if !state.part.is_empty() && state.part.len() + statement.len() > MAX_FILE_BYTES {
-        state.parts += 1;
-        sink.put(
-            part_path(db, place, state.table.name, state.parts),
-            state.part.as_bytes(),
-        )?;
-        state.part.clear();
-    }
-    state.part.push_str(statement);
-    Ok(())
 }
 
 #[cfg(test)]

@@ -235,3 +235,49 @@ fn a_query_check_shows_as_many_rows_as_it_asks() {
     assert!(listed("all") > 1, "{out}");
     assert_eq!(listed("one"), 1, "{out}");
 }
+
+#[test]
+fn a_release_written_as_a_change_is_loaded_whole_through_its_parent() {
+    use univ_model::release::manifest::{ManifestFile, Target};
+    let out = tempfile::tempdir().unwrap();
+    let (first, second) = (out.path().join("1"), out.path().join("2"));
+    build(&first);
+    let text = std::fs::read_to_string(first.join(keys::MANIFEST)).unwrap();
+    let parent: ReleaseManifest = serde_norway::from_str(&text).unwrap();
+    // Release 2 changes only this: it retires the first object.
+    let change = "UPDATE objects SET retired = 2 WHERE retired IS NULL AND release < 2 AND id = \
+                  (SELECT MIN(id) FROM objects);\n";
+    std::fs::create_dir_all(second.join("d1")).unwrap();
+    std::fs::write(second.join("d1/0001-objects-r001.sql"), change).unwrap();
+    let mut manifest = parent.clone();
+    manifest.release = 2;
+    manifest.parent = Some(1);
+    manifest.files = vec![ManifestFile {
+        path: "d1/0001-objects-r001.sql".to_owned(),
+        target: Target::D1,
+        key: None,
+        bytes: change.len() as u64,
+        sha256: String::new(),
+    }];
+    let db = rusqlite::Connection::open_in_memory().unwrap();
+    let files = load::load(&db, &second, &manifest).unwrap();
+    let d1 = |m: &ReleaseManifest| m.files.iter().filter(|f| f.target == Target::D1).count();
+    assert_eq!(files, d1(&parent) + 1);
+    let count = |sql: &str| -> i64 { db.query_row(sql, [], |r| r.get(0)).unwrap() };
+    let before = i64::try_from(parent.counts.objects).unwrap();
+    assert_eq!(count("SELECT COUNT(*) FROM objects"), before - 1);
+    // Read as one release written whole: every row its own, none retired.
+    assert_eq!(
+        count("SELECT COUNT(*) FROM objects WHERE release = 2 AND retired IS NULL"),
+        before - 1
+    );
+
+    // With its parent's build gone, as after a prune, it is refused, naming why.
+    std::fs::remove_file(first.join(keys::MANIFEST)).unwrap();
+    let db = rusqlite::Connection::open_in_memory().unwrap();
+    let refused = load::load(&db, &second, &manifest).unwrap_err();
+    assert!(
+        refused.contains("holds only what changed from release 1"),
+        "{refused}"
+    );
+}
