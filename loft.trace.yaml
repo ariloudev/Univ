@@ -1615,7 +1615,7 @@ links:
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
         body: 17ddae9043d8b239fea06e899eedce982df87803ea92601647d699e261d678af
       - file: "crates/univ-ingest/tests/prune.rs"
-        name: "with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_it_prunes"
+        name: "with_neither_manifest_journal_nor_map_pruning_refuses_and_with_the_map_alone_it_prunes"
         body: 6ad3d700aa402a3b5b828207f670566192a0656b41368f33fe3c7256755b91be
   - node: 01a1a931-2c8a-73a8-91f2-590d7b43ba10
     reviewed: 2f02e3ac23674c8a65481e5d5a7e1e2ca3c0fce06713b18ee24301a81aff7c5e

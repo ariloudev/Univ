@@ -222,12 +222,12 @@ fn a_database_of_an_older_schema_is_refused_before_anything_is_uploaded() {
     build_next(&f);
     let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
     let mut store = MemoryStore::default();
-    // A catalogue of schema 5, whose rows each belong to one release.
+    // A catalogue of schema 4, older than the one a publish migrates (schema 5).
     store
         .db
         .execute_batch(
             "CREATE TABLE schema_version (version INTEGER PRIMARY KEY);
-             INSERT INTO schema_version VALUES (5);",
+             INSERT INTO schema_version VALUES (4);",
         )
         .unwrap();
     let error = publishing(
@@ -243,7 +243,7 @@ fn a_database_of_an_older_schema_is_refused_before_anything_is_uploaded() {
         matches!(
             &error,
             PublishError::OlderSchema {
-                holds: 5,
+                holds: 4,
                 needs: 6,
                 ..
             }

@@ -260,7 +260,7 @@ fn the_release_latest_points_to_is_not_pruned() {
 }
 
 #[test]
-fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_it_prunes() {
+fn with_neither_manifest_journal_nor_map_pruning_refuses_and_with_the_map_alone_it_prunes() {
     let f = fixture();
     let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
     let mut store = MemoryStore::default();
@@ -269,7 +269,7 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
         build_next(&f);
         publishing(&mut store, n, out, state, journals.path(), &clock).unwrap();
     }
-    // Release 1's files that release 2, left unpruned, does not hold, and its manifest.
+    // Release 1's files that release 2, left unpruned, does not hold.
     let r2_of = |n: u32| -> BTreeSet<String> {
         read_manifest(&univ_ingest::release::release_dir(out, n))
             .files
@@ -278,14 +278,20 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
             .collect()
     };
     let held_by_2 = r2_of(2);
-    let mut keys_of_1: BTreeSet<String> = r2_of(1).difference(&held_by_2).cloned().collect();
-    keys_of_1.insert(keys::manifest(1));
+    let keys_of_1: BTreeSet<String> = r2_of(1).difference(&held_by_2).cloned().collect();
     // R2 lost the manifest, and the build output no longer holds the release.
     store.r2.remove(&keys::key(1, keys::MANIFEST));
     std::fs::remove_dir_all(univ_ingest::release::release_dir(out, 1)).unwrap();
     let journal = univ_ingest::publish::journal::file(journals.path(), 1);
-    let kept = std::fs::read(&journal).unwrap();
     std::fs::remove_file(&journal).unwrap();
+    // Nor does D1 map release 1's paths, which release 2 shares in part.
+    store
+        .db
+        .execute_batch(
+            "CREATE TABLE saved AS SELECT * FROM release_files WHERE release = 1;
+             DELETE FROM release_files WHERE release = 1;",
+        )
+        .unwrap();
     store.reset();
 
     let refused = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap_err();
@@ -302,8 +308,11 @@ fn with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_
         1
     );
 
-    // The journal's list of files uploaded names them.
-    std::fs::write(&journal, kept).unwrap();
+    // Its map of paths names them.
+    store
+        .db
+        .execute_batch("INSERT INTO release_files SELECT * FROM saved; DROP TABLE saved;")
+        .unwrap();
     let pruned = pruning(&mut store, 1, out, state, journals.path(), &clock).unwrap();
     assert!(pruned.listed && pruned.rows > 0);
     assert_eq!(pruned.files, keys_of_1.len());

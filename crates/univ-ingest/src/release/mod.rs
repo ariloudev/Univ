@@ -41,6 +41,7 @@ mod place;
 mod placement;
 mod placing;
 mod pointers;
+pub mod reindex;
 mod rescaled;
 mod shapes;
 mod sharded;

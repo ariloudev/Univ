@@ -1,0 +1,132 @@
+key: 01a1b25b-660e-755d-a6cb-868dd87d8330
+id: w5
+versions:
+  - key: 01a1b25b-660e-755d-a6cb-86940183edd2
+    at: 2026-11-06T19:34:56Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: Migrate release 10 and make the first additive release"
+    goal: "The local store and state of release 10 are brought under shared rows in place, pinned reads unchanged, and release 11 is built and published as its change, after the owner approves the real run."
+    status: active
+blocks:
+  - key: 01a1b25b-660e-755d-a6cb-868eb4e62d4f
+    id: w5-found
+    kind: note
+    versions:
+      - key: 01a1b25b-660e-755d-a6cb-86956f8d47d8
+        at: 2026-11-06T19:34:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the real state holds"
+        markdown: |-
+          Read only (SQLite files opened immutable; a `wrangler dev` on the real state was running and left alone):
+
+          | | Found |
+          |---|---|
+          | State | `states/10`: `ledger.yaml`, `entry-ids.yaml`; **no `numbering.yaml`, no row index** |
+          | Builds | `build/releases/5`, `9`, `10` (v5 files) |
+          | Local D1 | schema 5: a catalogue and 6 object shards of 4.8–5.8 M objects each, 2.6–3.1 GB per file, files named by Miniflare's hash |
+          | R2 | keys `releases/{n}/…`; grid headers name their samples `releases/{n}/grids/…` |
+
+          **What W5 must therefore do**
+          1. **Store, run by `publish`:** each v5 database rebuilt table by table under the v6 keys with `retired`, the rows of a listed release that is not the latest retired at the next; R2 files copied to `files/{sha256}`, grid headers rewritten to name their samples by content (as a v6 build writes them) and `grids.header_key` updated; `release_files` written; the old keys deleted last. Re-runnable.
+          2. **Prune** finds a release's files by its `release_files` too: a migrated release's manifest names its old keys.
+          3. **State:** `cargo xtask reindex` writes `numbering.yaml` and the row index of the latest release from the local D1 files directly (100 M rows are too many through Wrangler): terms, sources, chains, the level-0 cells of each shard, the shards of loose buckets, each row's key and content hash.
+          4. **Science** reads a release from the local store, since release 11's parent chain begins with a v5 build.
+          5. **Real run, only on the owner's approval:** stop the dev server, migrate, reindex, bench (QA-2), build and publish release 11, measure.
+  - key: 01a1b25b-660e-755d-a6cb-868fbe9ab608
+    id: w5-store
+    kind: task
+    versions:
+      - key: 01a1b25b-660e-755d-a6cb-8696edc38c20
+        at: 2026-11-06T19:34:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Migrate a v5 store in place, by publish"
+        detail: "Tables rebuilt under v6 keys, rows retired at the next listed release, R2 to files/{sha256}, grid headers rewritten, release_files, old keys deleted last; re-runnable. Test: a v5 store made from v6 fixture releases, migrated, every pinned read equal."
+        state: active
+      - key: 01a1b262-3904-75d1-88f1-b7db7b6da8b9
+        at: 2026-11-06T19:42:24Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Migrate a v5 store in place, by publish"
+        detail: "publish/migrate.rs (303085f): tables rebuilt from themselves under v6 keys, rows of other releases retired at the next, R2 copied to files/{sha256}, grid headers rewritten (unit test), release_files, old keys deleted last. migrate_store: a v5 store made from two v6 fixture releases migrates to the same pinned reads, file maps and R2 keys and bytes; a second run executes, puts and deletes nothing."
+        state: done
+  - key: 01a1b25b-660e-755d-a6cb-8690f43f634a
+    id: w5-prune
+    kind: task
+    versions:
+      - key: 01a1b25b-660e-755d-a6cb-86979de68c0f
+        at: 2026-11-06T19:34:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Prune by release_files"
+        detail: "A release's R2 files also from its map of paths."
+        state: open
+      - key: 01a1b262-3904-75d1-88f1-b7dc2c96f5f5
+        at: 2026-11-06T19:42:24Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Prune by release_files"
+        detail: "A release's files from its map of paths too; migrate_store prunes the migrated release 1 with only its old-key journal gone, and fails without the fix."
+        state: done
+  - key: 01a1b25b-660e-755d-a6cb-86913e3f26a0
+    id: w5-reindex
+    kind: task
+    versions:
+      - key: 01a1b25b-660e-755d-a6cb-86988a0f9fa5
+        at: 2026-11-06T19:34:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "cargo xtask reindex"
+        detail: "numbering.yaml and row index of the latest release from local D1 files; test that a release built on them writes nothing for unchanged inputs."
+        state: open
+      - key: 01a1b262-3904-75d1-88f1-b7dd1f16d131
+        at: 2026-11-06T19:42:24Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "cargo xtask reindex"
+        detail: "numbering.yaml and row index of the latest release from local D1 files; test that a release built on them writes nothing for unchanged inputs."
+        state: active
+  - key: 01a1b25b-660e-755d-a6cb-86924ff45c12
+    id: w5-science
+    kind: task
+    versions:
+      - key: 01a1b25b-660e-755d-a6cb-869996695f26
+        at: 2026-11-06T19:34:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Science reads the local store"
+        detail: "--store: the rows valid in a release from the local D1 files."
+        state: open
+  - key: 01a1b25b-660e-755d-a6cb-8693c644f9a7
+    id: w5-run
+    kind: task
+    versions:
+      - key: 01a1b25b-660e-755d-a6cb-869afd8e6411
+        at: 2026-11-06T19:34:56Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Real run (owner's approval)"
+        detail: "Stop the dev server; publish migrates; reindex; QA-2 bench; build and publish release 11; measure build, publish and storage."
+        state: open

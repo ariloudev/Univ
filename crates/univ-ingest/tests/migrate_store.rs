@@ -15,11 +15,12 @@ mod release_fixture;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
-use memory_store::{Clock, MemoryStore, Op, pruning, publishing};
+use memory_store::{Clock, MemoryStore, Op, Rows, pruning, publishing};
 use release_fixture::{build_next, fixture, read_manifest};
 use rusqlite::Connection;
 use rusqlite::types::Value;
 use univ_ingest::publish::migrate_lines;
+use univ_ingest::release::reindex::reindex;
 use univ_ingest::release::release_dir;
 use univ_model::release::manifest::Target;
 use univ_model::release::{Scope, TABLES, keys, valid_in};
@@ -210,10 +211,11 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
     }
 
     let work = tempfile::tempdir().unwrap();
+    let databases = 1 + i64::try_from(b.shards.len()).unwrap();
     migrate_lines(&mut b, work.path(), &mut |_| {}).unwrap();
     assert_eq!(
         b.int_everywhere("SELECT COUNT(*) FROM schema_version WHERE version = 6"),
-        1 + i64::try_from(b.shards.len()).unwrap()
+        databases
     );
     for r in [1, 2] {
         assert_eq!(
@@ -265,4 +267,62 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
     assert!(pruned.files > 0);
     assert!(only_first.iter().all(|k| !b.r2.contains_key(*k)));
     assert!(second.iter().all(|k| b.r2.contains_key(k)));
+}
+
+#[test]
+fn a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_change() {
+    let f = fixture();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut a = MemoryStore::default();
+    let (out, state) = (f.out.path().to_owned(), f.state.path().to_owned());
+    for n in [1, 2] {
+        build_next(&f);
+        publishing(&mut a, n, &out, &state, journals.path(), &clock).unwrap();
+    }
+    let mut b = as_schema_5(&a, &out, &[1, 2]);
+    let named = std::fs::read_to_string(state.join("current")).unwrap();
+    let dir = state.join(named.trim());
+    // A store of schema 5 is refused: it holds no map of paths to index.
+    assert!(reindex(&mut Rows(&b), (2, 5), &dir).is_err());
+    // Migrated, then the state's numbering and row index of release 2 made again from it.
+    let work = tempfile::tempdir().unwrap();
+    assert!(migrate_lines(&mut b, work.path(), &mut |_| {}).unwrap());
+    reindex(&mut Rows(&b), (2, 6), &dir).unwrap();
+    for n in [1, 2] {
+        std::fs::remove_file(univ_ingest::publish::journal::file(journals.path(), n)).unwrap();
+    }
+    let third = build_next(&f);
+    assert_eq!(third.manifest.parent, Some(2));
+
+    // Publishing it loads only its change.
+    publishing(&mut b, 3, &out, &state, journals.path(), &clock).unwrap();
+    assert_eq!(b.int("SELECT release FROM latest"), 3);
+    // Release 3 reads as release 2 did, but for each scale domain's tile manifest, which names
+    // its release.
+    let but_domains = |mut r: Vec<BTreeMap<&'static str, Vec<String>>>| {
+        for tables in &mut r {
+            tables.remove("scale_domains");
+        }
+        r
+    };
+    assert_eq!(
+        but_domains(reads(&b, &valid_in("", 3))),
+        but_domains(reads(&a, &valid_in("", 2)))
+    );
+    for r in [1, 2] {
+        assert_eq!(
+            reads(&b, &valid_in("", r)),
+            reads(&a, &valid_in("", r)),
+            "release {r}"
+        );
+    }
+    let objects = third
+        .manifest
+        .shards
+        .iter()
+        .flat_map(|s| &s.d1.tables)
+        .filter(|t| t.table == "objects");
+    for t in objects {
+        assert_eq!((t.added, t.retired), (Some(0), Some(0)));
+    }
 }

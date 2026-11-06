@@ -11,8 +11,8 @@ use univ_model::release::keys;
 use crate::display::Outcome;
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::publish::{
-    FileDone, Progress, Pruned, Published, Store, StoreOptions, Wrangler, ingest_dir, prune_with,
-    publish_with,
+    FileDone, Progress, Pruned, Published, Store, StoreOptions, Wrangler, ingest_dir, migrate,
+    prune_with, publish_with,
 };
 use crate::release::release_dir;
 
@@ -41,6 +41,7 @@ pub struct StoreRun {
 pub enum StoreCommand {
     Publish,
     Prune,
+    Migrate,
 }
 
 impl StoreCommand {
@@ -50,6 +51,7 @@ impl StoreCommand {
         match self {
             Self::Publish => Stage::Publish,
             Self::Prune => Stage::Prune,
+            Self::Migrate => Stage::Migrate,
         }
     }
 }
@@ -180,8 +182,27 @@ pub fn store_command(
     let done = match command {
         StoreCommand::Publish => publish_command(&mut store, run.number, &options, &mut shown),
         StoreCommand::Prune => prune_command(&mut store, run.number, &options, &mut shown),
+        StoreCommand::Migrate => migrate_command(&mut store, &journals, &mut shown),
     };
     done.unwrap_or_else(stopped)
+}
+
+/// Brings the store under shared rows, ending its stage with whether there was anything to do.
+///
+/// # Errors
+///
+/// Fails, saying why, when D1 or R2 refuses a step.
+pub fn migrate_command(
+    store: &mut dyn Store,
+    journals: &std::path::Path,
+    shown: &mut Shown<'_>,
+) -> Result<Outcome, String> {
+    let migrated = migrate(store, &journals.join("migrate"), shown)?;
+    if !migrated {
+        shown.note("the store is not of schema 5: nothing to migrate".to_owned());
+    }
+    shown.ended(vec![Count::new(u64::from(migrated), "stores migrated")]);
+    Ok(Outcome::Migrated(migrated))
 }
 
 /// Publishes the release, ending its stage with what it uploaded: the files of each kind, the

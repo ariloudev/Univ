@@ -268,7 +268,7 @@ pub fn publish_with(
         .map_err(|problem| PublishError::NotBuilt { number, problem })?;
     // A store of schema 5 is brought under shared rows first, in place.
     let (tables, held) = migrate(store, &options.journals.join("migrate"), progress)
-        .and_then(|()| tables_and_held(store, &manifest))
+        .and_then(|_| tables_and_held(store, &manifest))
         .map_err(|problem| PublishError::Interrupted {
             number,
             latest: Latest(None),

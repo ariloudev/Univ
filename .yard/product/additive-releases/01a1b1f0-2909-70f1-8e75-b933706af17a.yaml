@@ -10,3 +10,35 @@ versions:
     title: "W2: Schema 6 and Univ Server reads shared rows"
     goal: "Every read of Univ Server selects the rows valid in its release and reads files by hash, and pinned reads agree over shared and retired rows."
     status: planned
+  - key: 01a1b205-4952-7376-821e-56c82e719acc
+    at: 2026-11-06T18:00:53Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W2: Schema 6 and Univ Server reads shared rows"
+    goal: "Every read of Univ Server selects the rows valid in its release and reads files by hash, and pinned reads agree over shared and retired rows."
+    status: active
+  - key: 01a1b21d-b2c6-750e-8641-2184137a81cf
+    at: 2026-11-06T18:27:33Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W2: Schema 6 and Univ Server reads shared rows"
+    goal: "Every read of Univ Server selects the rows valid in its release and reads files by hash, and pinned reads agree over shared and retired rows."
+    status: done
+blocks:
+  - key: 01a1b21d-b2c6-750e-8641-21838923d2a3
+    id: w2-merged
+    kind: note
+    versions:
+      - key: 01a1b21d-b2c6-750e-8641-218565fb60ce
+        at: 2026-11-06T18:27:33Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W2 merged"
+        markdown: "Merged as `ec7a2a1` after `/code-review`, a cleanup review, a green `cargo xtask check` and `cargo xtask integration`. D1 schema 6 shares rows between releases (valid from `release` until `retired`), R2 keeps files once under their SHA-256, and Univ Server reads every table through `valid_in!`. Builds still write every row and retire every earlier one until W3. The local state of release 10 stays schema 5 until W5; publish refuses it meanwhile."
+        tone: success

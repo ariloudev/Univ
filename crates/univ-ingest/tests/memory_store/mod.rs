@@ -315,3 +315,62 @@ pub fn pruning(
     };
     prune(store, number, &options, &mut |_| {})
 }
+
+/// The rows of a [`MemoryStore`]'s databases, as a reindex reads them.
+pub struct Rows<'a>(pub &'a MemoryStore);
+
+impl Rows<'_> {
+    fn db(&self, database: Database) -> Result<&Connection, String> {
+        match database {
+            Database::Catalogue => Ok(&self.0.db),
+            Database::Shard(i) => self.0.shards.get(&i).ok_or(format!("no shard {i}")),
+        }
+    }
+}
+
+impl univ_ingest::release::reindex::RowSource for Rows<'_> {
+    fn databases(&mut self) -> Result<Vec<Database>, String> {
+        Ok(std::iter::once(Database::Catalogue)
+            .chain(self.0.shards.keys().map(|i| Database::Shard(*i)))
+            .collect())
+    }
+
+    fn holds(&mut self, database: Database, name: &str) -> Result<bool, String> {
+        let sql =
+            format!("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '{name}'");
+        Ok(int(self.db(database)?, &sql) > 0)
+    }
+
+    fn rows(
+        &mut self,
+        database: Database,
+        table: &univ_model::release::Table,
+        filter: &str,
+        each: &mut dyn FnMut(&[univ_model::release::SqlValue]) -> Result<(), String>,
+    ) -> Result<(), String> {
+        use rusqlite::types::Value;
+        use univ_model::release::SqlValue;
+        let db = self.db(database)?;
+        let sql = format!(
+            "SELECT {} FROM {} WHERE {filter}",
+            table.columns.join(", "),
+            table.name
+        );
+        let mut q = db.prepare(&sql).map_err(|e| e.to_string())?;
+        let mut rows = q.query([]).map_err(|e| e.to_string())?;
+        let mut values = Vec::with_capacity(table.columns.len());
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            values.clear();
+            for i in 0..table.columns.len() {
+                values.push(match row.get::<_, Value>(i).map_err(|e| e.to_string())? {
+                    Value::Null | Value::Blob(_) => SqlValue::Null,
+                    Value::Integer(n) => SqlValue::Integer(n),
+                    Value::Real(x) => SqlValue::Real(x),
+                    Value::Text(t) => SqlValue::Text(t),
+                });
+            }
+            each(&values)?;
+        }
+        Ok(())
+    }
+}

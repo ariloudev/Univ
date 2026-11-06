@@ -49,18 +49,23 @@ fn create_as(table: &Table, name: &str) -> Result<String, String> {
 }
 
 /// The statements that rebuild each table of [`Scope::PerRelease`] of `held` under the keys of
-/// schema 6, then retire the rows of every release but `latest` at the release after it.
+/// schema 6, then retire the rows of every release but `latest` at the release after it. A run
+/// stopped after it dropped a table, before it renamed the rebuilt one, left the rows only in
+/// the rebuilt one: it takes the table's name back first.
 fn rebuild(
     held: &std::collections::BTreeSet<String>,
     latest: Option<u32>,
 ) -> Result<String, String> {
     let mut sql = String::new();
-    for table in TABLES
-        .iter()
-        .filter(|t| t.scope == Scope::PerRelease && held.contains(t.name))
-    {
+    for table in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
         let name = table.name;
         let next = format!("{name}__v6");
+        if !held.contains(name) {
+            if !held.contains(&next) {
+                continue;
+            }
+            let _ = writeln!(sql, "ALTER TABLE {next} RENAME TO {name};");
+        }
         let columns = table.columns.join(", ");
         let _ = write!(
             sql,
@@ -165,10 +170,10 @@ fn move_files(
         let Some(old) = f.key.as_deref().filter(|k| !k.starts_with(keys::FILES)) else {
             continue;
         };
-        let Some(held) = store.get(old)? else {
-            // Copied by an earlier run, whose rows are written already.
-            continue;
-        };
+        // The old keys are deleted only once the catalogue is migrated, which ends the run.
+        let held = store
+            .get(old)?
+            .ok_or_else(|| format!("R2 holds no {old}, which release {number}'s manifest lists"))?;
         let header = f.path.starts_with("grids/") && f.path.ends_with("/header.json");
         let (sha, bytes) = if header {
             let renamed = rename_samples(&held, number, &shas)?;
@@ -199,29 +204,42 @@ fn move_files(
 }
 
 /// Brings each database of `store` that holds releases of schema [`FROM`] under shared rows,
-/// with R2's files, as the module says; `work` holds the files it executes. Nothing is done
-/// where no database is of that version.
+/// with R2's files, as the module says; `work` holds the files it executes. Whether it migrated:
+/// nothing is done where the catalogue is not of that version. A run stopped while it deleted
+/// the old keys leaves some, which a prune of their release deletes, as its manifest names them.
 ///
 /// # Errors
 ///
-/// Fails part way when D1 or R2 refuses a step; the next publish finishes it.
+/// Fails part way when D1 or R2 refuses a step; the next run finishes it.
 pub fn migrate(
     store: &mut dyn Store,
     work: &Path,
     progress: &mut dyn Progress,
-) -> Result<(), String> {
+) -> Result<bool, String> {
+    // The catalogue is migrated last, so a store whose catalogue is past schema 5 is done.
+    let catalogue = tables_of(store, std::iter::once(Database::Catalogue))?;
+    let at_from = |store: &mut dyn Store, tables: &Tables, database| -> Result<bool, String> {
+        let held = tables
+            .get(&database)
+            .is_some_and(|t| t.contains("schema_version"));
+        Ok(held && schema_version(store, database)? == Some(FROM))
+    };
+    if !at_from(store, &catalogue, Database::Catalogue)? {
+        return Ok(false);
+    }
     let bound = store.bound_shards()?;
-    let databases = std::iter::once(Database::Catalogue).chain((0..bound).map(Database::Shard));
-    let tables: Tables = tables_of(store, databases)?;
+    let tables: Tables = tables_of(
+        store,
+        std::iter::once(Database::Catalogue).chain((0..bound).map(Database::Shard)),
+    )?;
     let mut older = Vec::new();
-    for (database, held) in &tables {
-        if held.contains("schema_version") && schema_version(store, *database)? == Some(FROM) {
-            older.push(*database);
+    for database in tables.keys().copied() {
+        if at_from(store, &tables, database)? {
+            older.push(database);
         }
     }
-    if older.is_empty() {
-        return Ok(());
-    }
+    // The shards first, the catalogue last.
+    older.sort_by_key(|d| *d == Database::Catalogue);
     std::fs::create_dir_all(work).map_err(|e| format!("{}: {e}", work.display()))?;
     let latest = published_status(store, 0)?.latest.map(|(n, _)| n);
     // The files are moved whichever database is left: a run stopped before it deleted the old
@@ -259,7 +277,7 @@ pub fn migrate(
         "schema {FROM} to {SCHEMA_VERSION}: {} R2 keys under the releases' prefixes deleted",
         moved.old_keys.len()
     ));
-    Ok(())
+    Ok(true)
 }
 
 /// [`migrate`], telling `progress` a line for each step.
@@ -271,13 +289,41 @@ pub fn migrate_lines(
     store: &mut dyn Store,
     work: &Path,
     progress: &mut dyn FnMut(String),
-) -> Result<(), String> {
+) -> Result<bool, String> {
     migrate(store, work, &mut Lines(progress))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_table_left_only_under_its_rebuilt_name_takes_its_name_back_and_is_rebuilt_whole() {
+        let db = rusqlite::Connection::open_in_memory().unwrap();
+        let objects = TABLES.iter().find(|t| t.name == "objects").unwrap();
+        db.execute_batch(&create_as(objects, "objects__v6").unwrap())
+            .unwrap();
+        let columns = objects.columns.join(", ");
+        let values = vec!["1"; objects.columns.len()].join(", ");
+        db.execute_batch(&format!(
+            "INSERT INTO objects__v6 ({columns}) VALUES ({values})"
+        ))
+        .unwrap();
+        // A run stopped between dropping `objects` and renaming `objects__v6`.
+        let held = std::collections::BTreeSet::from(["objects__v6".to_owned()]);
+        let sql = rebuild(&held, Some(2)).unwrap();
+        assert!(
+            sql.starts_with("ALTER TABLE objects__v6 RENAME TO objects;\n"),
+            "{sql}"
+        );
+        db.execute_batch(&sql).unwrap();
+        let count = |sql: &str| db.query_row(sql, [], |r| r.get::<_, i64>(0)).unwrap();
+        assert_eq!(count("SELECT COUNT(*) FROM objects WHERE retired = 2"), 1);
+        assert_eq!(
+            count("SELECT COUNT(*) FROM sqlite_master WHERE name = 'objects__v6'"),
+            0
+        );
+    }
 
     #[test]
     fn a_grid_header_is_rewritten_to_name_its_samples_by_their_content() {

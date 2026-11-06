@@ -10,3 +10,12 @@ versions:
     title: "W5: Migrate release 10 and make release 11"
     goal: "Local release 10 is under schema 6 with pinned reads unchanged, and release 11 is built and published as its change alone."
     status: planned
+  - key: 01a1b258-4525-74c6-8f34-56723c3c3ba7
+    at: 2026-11-06T19:31:31Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: Migrate release 10 and make the first additive release"
+    goal: "The local store and state of release 10 are brought under shared rows in place, pinned reads unchanged, and release 11 is built and published as its change, after the owner approves the real run."
+    status: active
