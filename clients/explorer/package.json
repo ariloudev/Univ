@@ -17,6 +17,8 @@
     "first-points": "node scripts/first-points.ts"
   },
   "dependencies": {
+    "@fontsource/barlow-semi-condensed": "5.3.0",
+    "@fontsource/spectral": "5.3.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "univ-tile-decoder": "link:../tile-decoder",

@@ -1,13 +1,27 @@
 @import "tailwindcss";
+@import "@fontsource/spectral/400.css";
+@import "@fontsource/spectral/400-italic.css";
+@import "@fontsource/spectral/500-italic.css";
+@import "@fontsource/barlow-semi-condensed/400.css";
+@import "@fontsource/barlow-semi-condensed/500.css";
+@import "@fontsource/barlow-semi-condensed/600.css";
 
+/* A night atlas: the view stays the dark of space; the bars, rail, drawers and record are a
+ * margin of ink; one neat line frames the view; labels are ivory; amber marks what can be used
+ * and what is in focus, apart from the points' blue. Spectral names objects (upright) and
+ * structures (italic), as atlases name points and areas; Barlow Semi Condensed sets the controls
+ * and the data, with tabular figures. */
 @theme static {
   --color-space: #05070d;
-  --color-panel: #0d1220e6;
-  --color-line: #273049;
-  --color-ink: #e6e9f2;
-  --color-dim: #9aa3b8;
-  --color-accent: #7cc4ff;
-  --color-warn: #ffb86b;
+  --color-panel: #0c1222;
+  --color-line: #1d2740;
+  --color-neat: #5b6b8c;
+  --color-ink: #e6e0cf;
+  --color-dim: #8e96ab;
+  --color-accent: #e8b04b;
+  --color-warn: #f08a6c;
+  --font-sans: "Barlow Semi Condensed", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Spectral", Georgia, serif;
 }
 
 html,
@@ -17,5 +31,11 @@ body,
   margin: 0;
   background: var(--color-space);
   color: var(--color-ink);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
 }

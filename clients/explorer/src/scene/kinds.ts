@@ -11,6 +11,11 @@ import type { Rgba } from "./drawing.ts";
 /** The kinds of value, in the order points index them and the renderer colours them. */
 export const KINDS: readonly KindOfValue[] = ["measured", "estimated", "inferred", "reconstructed"];
 
+/** The mark of each kind of value, in the key and beside each value of an object's record: full
+ * for measured, half for estimated, an open ring for inferred and a dotted one for
+ * reconstructed. */
+export const KIND_MARKS: Record<KindOfValue, string> = { measured: "●", estimated: "◐", inferred: "○", reconstructed: "◌" };
+
 /** Each kind's index in `KINDS`. */
 export const KIND_INDEX: Record<KindOfValue, number> = { measured: 0, estimated: 1, inferred: 2, reconstructed: 3 };
 

@@ -33,7 +33,7 @@ export function StructureNames({ names, overlay, chosen }: { names: readonly Nam
         <span
           key={name.id}
           data-structure={name.id}
-          className={`absolute top-0 left-0 text-xs whitespace-nowrap ${name.id === chosen ? "font-semibold" : ""}`}
+          className={`absolute top-0 left-0 font-serif text-xs whitespace-nowrap italic ${name.id === chosen ? "font-medium" : ""}`}
           style={{ display: "none", color: name.id === chosen ? CHOSEN_CSS : STRUCTURE_CSS }}
         >
           <span className="block -translate-x-1/2 -translate-y-1/2">{name.text}</span>
@@ -49,7 +49,13 @@ export function HoverLabel({ world }: { world: World }) {
   if (hover === undefined) return null;
   return (
     <p role="tooltip" className="pointer-events-none absolute rounded bg-panel px-2 py-1 text-xs" style={{ left: hover.x + 12, top: hover.y + 12 }}>
-      {"name" in hover ? `${hover.name.text}. Click to read the structure.` : pointText(hover.point)}
+      {"name" in hover ? (
+        <>
+          <span className="font-serif italic">{hover.name.text}</span>. Click to read the structure.
+        </>
+      ) : (
+        pointText(hover.point)
+      )}
     </p>
   );
 }

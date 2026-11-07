@@ -58,9 +58,9 @@ function Fieldset({ legend, children }: { legend: string; children: ReactNode })
 export function ShowPanel({ choices, hidden, onToggle }: ShowPanelProps) {
   const box = { hidden, onToggle };
   return (
-    <details className="w-80 rounded-lg border border-line bg-panel p-3 text-sm">
-      <summary className="cursor-pointer">Show</summary>
-      <div data-testid="show" className="max-h-96 overflow-y-auto">
+    <div>
+      <h2 className="font-serif text-base">Show</h2>
+      <div data-testid="show">
         <Fieldset legend="Scale domains">
           {choices.domains.map((d) => (
             <Box key={d} group="domain" name={d} label={words(d)} {...box} />
@@ -82,7 +82,7 @@ export function ShowPanel({ choices, hidden, onToggle }: ShowPanelProps) {
           ))}
         </Fieldset>
       </div>
-    </details>
+    </div>
   );
 }
 

@@ -44,7 +44,6 @@ describe("the Show panel", () => {
     const choices = choicesOf(DOMAINS, STRUCTURES);
     render(<ShowPanel choices={choices} hidden={hiddenInAddress("?hide=kind:estimated")} onToggle={onToggle} />);
     expect((screen.getByLabelText("estimated") as HTMLInputElement).checked).toBe(false);
-    await userEvent.click(screen.getByText("Show"));
     await userEvent.click(screen.getByLabelText("cosmic web"));
     expect(onToggle).toHaveBeenCalledWith("domain", "cosmic_web", false);
     await userEvent.click(screen.getByLabelText("estimated"));

@@ -7,12 +7,12 @@ import { bandsText, headingOf, natureOf, preferredText, valueText, words } from 
 export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObject; onChoose: (id: number) => void; onClose: () => void }) {
   if (chosen.kind === "none") return null;
   return (
-    <section aria-label="The chosen object" className="space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
+    <section aria-label="The chosen object" className="space-y-2 p-3 text-sm">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="font-semibold">
+        <h2 className="font-serif text-lg leading-snug">
           {chosen.kind === "ready" ? (
             <>
-              {headingOf(chosen.record, chosen.as)} <span className="font-normal text-dim">#{chosen.record.id}</span>
+              {headingOf(chosen.record, chosen.as)} <span className="font-sans text-sm text-dim">#{chosen.record.id}</span>
             </>
           ) : (
             "Object"

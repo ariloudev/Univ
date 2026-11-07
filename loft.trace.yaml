@@ -3623,7 +3623,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "marks Earth as the Solar System barycentre, and says when it cannot draw"
-        body: 94620e9d119b36e0c6589c7ec8d72940ec2faa52a3fbbba496056ad56a65fbd5
+        body: 982a6c9bc0e4b0dcba5fe420b75ad62d01bd95db1bf858aba0820d44056d2ae1
   - node: 01a1a497-e843-728a-bce8-40026e7286d2
     reviewed: c351be9f44274d24780c20b9925fd09dc4e021d26e7cf3ce0502f2f699a0a1c8
     tests:
@@ -3983,7 +3983,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "credit each source of the drawn points with its title, citation and credit, naming the release"
-        body: b08c754a3ab477a8c567111f9bb1bb599a9aad9301c0de86562c845b4fe93d17
+        body: 33e21263b0a280b6c2a3725a3851165c7d0ee468edb10198ed05066d1e790350
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every root tile, counts each kind of value, and credits the drawn domains' sources"
         body: 37dfb6fb85390fc1af46c0d4ddd110bc1eac82b31c36652d0a720f10e2906328
@@ -3992,7 +3992,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "credit each source of the drawn points with its title, citation and credit, naming the release"
-        body: b08c754a3ab477a8c567111f9bb1bb599a9aad9301c0de86562c845b4fe93d17
+        body: 33e21263b0a280b6c2a3725a3851165c7d0ee468edb10198ed05066d1e790350
   - node: 01a1a497-e843-728a-bce8-40111a7d5c5f
     reviewed: 9391d08a6b70a3814402f29ccde8c89b15826c77bdab778cac888088ec830424
     tests:
@@ -4051,8 +4051,8 @@ links:
         name: "are given in the parsec unit that suits them, with light-years beside"
         body: 1f18e3118e0c19c27f1ae0287717113feaeb78621c321b20e15de1ea71ef56c4
       - file: "clients/explorer/src/ui/Panels.test.tsx"
-        name: "show the distance from the eye to the focus, and return the focus to Earth"
-        body: 6a74365ecc0602a62208fb85e208ba537c03c1c02f782c8d50ba46ebff748199
+        name: "show the distance from the eye to the focus"
+        body: 6848373d960e9ef56130b044ab6ba2a2a3101c1a9223e2a992b39fec2cdf7e1a
   - node: 01a1a497-e843-728a-bce8-401d23c750eb
     reviewed: c8ec4d70631fc753e86ec1a5edec63856a08fdce1788d89bf3b0e6507ff19623
     tests:
@@ -4076,7 +4076,7 @@ links:
         body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance"
-        body: b461f565a04bbefe0e069acf69de268bd8e42dfaf1f79bf0f7cc34716dd3805f
+        body: 468c0ed69358439d82a5662e14a834d3b4667dac43b229a9ddfa70cae629ae89
   - node: 01a1a8e8-6326-709f-aa5e-4610311af683
     reviewed: 1174f20dd1a7c960a058c69bc1a4f4b5ec2af79cfc50772ad17920a33030d44c
     tests:
@@ -4110,9 +4110,9 @@ links:
       - file: "clients/explorer/src/scene/controller.test.ts"
         name: "returns the focus to Earth"
         body: 10826eedee5f53f7b5a8e019ea8464a446920db573d5abceefa917aa56625b7a
-      - file: "clients/explorer/src/ui/Panels.test.tsx"
-        name: "show the distance from the eye to the focus, and return the focus to Earth"
-        body: 6a74365ecc0602a62208fb85e208ba537c03c1c02f782c8d50ba46ebff748199
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "returns to Earth from the rail"
+        body: b3c97b9ed46abceb0070b3c2347c11d2bd0062ba98df09df4a720d9ab7400df3
   - node: 01a1a497-e843-728a-bce8-4024890baa12
     reviewed: 176059f23b2324e2edd1a211facdfdc8419a2f4892f352fb4f7d7eac40a27db6
     tests:
@@ -4133,25 +4133,25 @@ links:
     tests:
       - file: "clients/explorer/src/ui/App.test.tsx"
         name: "draws the release latest points to, and names it"
-        body: 00c28aed9128eb37dd2befe612cae85ece498d7e1d4048ac8b4eb8e018339bfa
+        body: cc304c57220679c89b50769fcad630f33dcccc926e1739efba044e8fb57c86e3
   - node: 01a1a497-e843-728a-bce8-4029408477ea
     reviewed: ebe52a7289143675bb583e4e8f33162ee928d592f69844969658325699625907
     tests:
       - file: "clients/explorer/src/ui/App.test.tsx"
         name: "draws the release latest points to, and names it"
-        body: 00c28aed9128eb37dd2befe612cae85ece498d7e1d4048ac8b4eb8e018339bfa
+        body: cc304c57220679c89b50769fcad630f33dcccc926e1739efba044e8fb57c86e3
   - node: 01a1a497-e843-728a-bce8-402b1b713ac4
     reviewed: 45317ec8bbfef7a656e3ee23e34087c9e95b7381d535c886e407d02dc8927f19
     tests:
       - file: "clients/explorer/src/ui/App.test.tsx"
         name: "offers every release not pruned, and draws the one chosen"
-        body: 971bfa73a35beb327613979922d942688e195d6089d5c78b33baf7b28a63b757
+        body: ed1a36eebc3ad80c4b6087bb3efb23810e27ffe134717eac2fc2837193739264
   - node: 01a1a497-e843-728a-bce8-402c7430235c
     reviewed: e29778838bf266ca95bc03de1fb940352fa90b080e2db97af5243b97faab188c
     tests:
       - file: "clients/explorer/src/ui/App.test.tsx"
         name: "offers every release not pruned, and draws the one chosen"
-        body: 971bfa73a35beb327613979922d942688e195d6089d5c78b33baf7b28a63b757
+        body: ed1a36eebc3ad80c4b6087bb3efb23810e27ffe134717eac2fc2837193739264
       - file: "clients/explorer/src/api/client.test.ts"
         name: "names the release on every read pinned to one"
         body: 840bd9c07649901adbd787ac6efb551b14127097a6e584bafae307880449466e
@@ -4224,9 +4224,9 @@ links:
       - file: "clients/explorer/src/ui/useStructures.test.ts"
         name: "draws and names no structure of a kind turned off, and draws it again once turned on"
         body: 0fa94d94e75066201515b8528ee30582df297bf095f63a5a9ea163a45d0aed69
-      - file: "clients/explorer/src/ui/SidePanels.test.tsx"
-        name: "hold the checkboxes of what is drawn, and list no structure of a kind turned off"
-        body: 03b7700ef6c670243369c7a22bb674a5fe0ae28850b53c88429588b920bcaab1
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "lists no structure of a kind turned off, and holds the checkboxes of what is drawn"
+        body: 6ed841c574050c1a0c49c2cec391d6935812924ef179ed519ea9dc7dec675e6c
   - node: 01a1a8cc-3d02-7585-85fb-455fd5131e7f
     reviewed: 51a1d42e822a90e1465311acfbb103a1d2ff7ef95ea401205ad27a469141f1a6
     tests:
@@ -4238,7 +4238,7 @@ links:
         body: 16f74791cef77f650b24db0a1ec29717276620a0d683369d39130de07c9545aa
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 790d37d4f55d0bdc0e27154ec762bf581e3c43becee6fdbe0185b7b977ee9857
+        body: 225111d5c5faefdfd10ba1f571ae76959a37c1bd9d134c2de75aacf7ce4676e1
   - node: 01a1a8cc-3d02-7585-85fb-4561d1b0f1de
     reviewed: b9ee14b78d7cda09bc75088b59ba3b163850a2c383f8a1449f5089c72ea34bf5
     tests:
@@ -4250,7 +4250,154 @@ links:
         body: 3dd5b554771e6163f0fce4623b24584dc7e90c2b09cdeb0839b49dc2c6c06b1a
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 790d37d4f55d0bdc0e27154ec762bf581e3c43becee6fdbe0185b7b977ee9857
+        body: 225111d5c5faefdfd10ba1f571ae76959a37c1bd9d134c2de75aacf7ce4676e1
+  - node: 01a1b7d7-c032-73ad-803e-b103f2a0c853
+    reviewed: fb983fbd6b6225e1aabff010b9d7b76a7373c69b7b1de62f02b9332b2211704b
+    tests:
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "cross round longitudes and latitudes where the edge's direction of sight does"
+        body: d4a2ba50d0f49ef69a2112698864db991fd77e7fc597aac9b89f342e540c16ed
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+        body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
+  - node: 01a1b7d7-c032-73ad-803e-b10435170cb6
+    reviewed: 76bde24c8476e854f178ede5c508b6b6078bc9e844fdfda37f35fc25b933af65
+    tests:
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "use the finest step whose labels stay at least 60 pixels apart"
+        body: 22036f39abb7b367d073dd1ebc7eaeebd33a392439ce25d7496fad89c3a5a46f
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "choose the finer of two steps when the coarser one crowds"
+        body: 928231ed936d71267c84052a5215cd09e5679301884f16f6fd1a1d65383095dc
+  - node: 01a1b863-1a09-757d-bbd7-6f0d72803e9a
+    reviewed: 708262b411029c633714375499b8e71635a11606745f33206c796ecf00aa0b84
+    tests:
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "step right ascension by round hours and minutes"
+        body: f03431c1ec31a632b8c72de6eef8965eb6c95a54c8b97f57602b669fca33ed6f
+  - node: 01a1b7d7-c032-73ad-803e-b105558be2c4
+    reviewed: a87d9be3e916183ff634d2053ce8dba13d091322f8bac10a531e9f79271cbb65
+    tests:
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "label right ascension in hours and minutes, and every other coordinate in degrees"
+        body: 751cf79508b6811b14bdecc175138d8e0546567e672f76efa9b6560ff4a97491
+  - node: 01a1b7d7-c032-73ad-803e-b106cab43cde
+    reviewed: 78beff77da0f05ba4456133dd103e0b68c3e1e1db34bb3a786b02b0f81ed21c5
+    tests:
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "name each edge's coordinate in the chosen axes"
+        body: 8dc409229894597c05ae1e70fe80a29327da428948d0edfe81259d67bf3d1cb9
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+        body: de6d5943d12c28517b35f2e813b9cecba013105585e76097b3977e16e708b296
+  - node: 01a1b7d7-c032-73ad-803e-b107f30dda23
+    reviewed: 0302fdc289f1b23d3518d0b9b92f639764cfaf0f51c9ed95845c2e72495b52d9
+    tests:
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "follow the view as it turns and as the axes change, wherever the eye is"
+        body: e773dff8a5c1d4a9ed0070c6eea295772a526d43f69f94d6500c27f49414b7c5
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "moves the ticks and the scale with the view"
+        body: d2a0c49b8de262d179a00c26361ea2cded4c69570b28df406f9850cb69687b7a
+  - node: 01a1b7f5-f51b-71f9-80de-cd23746b3fab
+    reviewed: cf362d8896525c854952aab54adecb78f8ddd57eaef4f77a1eef0b951672dc1b
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+        body: de6d5943d12c28517b35f2e813b9cecba013105585e76097b3977e16e708b296
+  - node: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
+    reviewed: e968dffd82e6b91f09b5ff09629acf52d78dc376b7f9f5b425ab43539565213f
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
+        body: 24c6b2e13a3d600d5211e656b866ee0bdbaffcef9a078a0f45626dea7ac70b13
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+        body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
+  - node: 01a1b7f5-f51b-71f9-80de-cd251f348c42
+    reviewed: 1872ff6a009aea30596b02dc96eb32775aef1c5673945137202b23afe7a86e45
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "opens each drawer from the rail and closes it again with the same button"
+        body: 20f0c1d7d471856eb39b1fd3976b6ec7756d182dd0e8ef4225c8a5009ed33f2e
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "returns to Earth from the rail"
+        body: b3c97b9ed46abceb0070b3c2347c11d2bd0062ba98df09df4a720d9ab7400df3
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+        body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
+  - node: 01a1b7f5-f51b-71f9-80de-cd2646cc3c6c
+    reviewed: 6969c221fd6728eca59ec953cc3d2e89a6d8a513926d16fcbb48e240f59c4bf7
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "puts the drawer in the row beside the view, which narrows, and over the view below 1,024 pixels"
+        body: b8b9b403225421e3225ebf0c8199b7990576692697eee83c47f67c9eedeeaa61
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "opens each drawer from the rail and closes it again with the same button"
+        body: 20f0c1d7d471856eb39b1fd3976b6ec7756d182dd0e8ef4225c8a5009ed33f2e
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+        body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
+  - node: 01a1b7f5-f51b-71f9-80de-cd2773cf8abe
+    reviewed: 460a551e2e3950d8a21a236a9f1acac914fb7f5b7316a4aa709f4943fe0d7a23
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "shows the record in the right margin only while something is chosen"
+        body: 5addf43123a6506062706b2b2daf5f939e22b415de3849fde90c00ecdba6ffa4
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "folds the record to the window's edge when asked, and opens it again for the next thing chosen"
+        body: 85967a4305b2de16def5f23464445a3bb94d85dcec453be6b18efb5e8d1b7414
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+        body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
+  - node: 01a1b7f5-f51b-71f9-80de-cd28fdfc1b1d
+    reviewed: 8eb542efadb0708e52b49505567de02976ebd0d1d77ccd421ded1fcfb4e22d5e
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+        body: de6d5943d12c28517b35f2e813b9cecba013105585e76097b3977e16e708b296
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "holds the key and the credits in its bottom bar once the catalogue is read"
+        body: 1cafa2982cca254faa4f029765cac523300a1038a98f37ef054de5cfa78186f6
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+        body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
+  - node: 01a1b7f5-f51b-71f9-80de-cd296b50d30d
+    reviewed: b42e88ecee93ce18c6eda75ffdf56e086ac5c23ff039512afbef11701454b794
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "puts the drawer in the row beside the view, which narrows, and over the view below 1,024 pixels"
+        body: b8b9b403225421e3225ebf0c8199b7990576692697eee83c47f67c9eedeeaa61
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens a drawer and the record over the view below 1,024 pixels, and closes them again"
+        body: 39065a74196d0cffe42a654275ff3e49a4dc2c47bfc0a3220f077a2735820bcd
+  - node: 01a1b7d7-c032-73ad-803e-b10fa8776879
+    reviewed: 163b967ec532229a528957a4bb55336691657fe22294ff0b7981de48f0ada787
+    tests:
+      - file: "clients/explorer/src/scene/scale.test.ts"
+        name: "is a round length of parsecs, kiloparsecs or megaparsecs between 60 and 160 pixels"
+        body: d9e393ab6b06915051cd30df9d419ee234d6d018a9e19b5fb911875de7042f16
+  - node: 01a1b7d7-c032-73ad-803e-b11043cf39a0
+    reviewed: 7e3eb1179b0df53565d7377ccad44f948264c3073d21f42f788e490b05d5d313
+    tests:
+      - file: "clients/explorer/src/scene/scale.test.ts"
+        name: "is labelled in the unit that suits its length, and changes with the distance"
+        body: 1f05847125434102a78007873fbcd796d05b887eca491f0b9ff53abf5785dc50
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "moves the ticks and the scale with the view"
+        body: d2a0c49b8de262d179a00c26361ea2cded4c69570b28df406f9850cb69687b7a
+  - node: 01a1b7d7-c032-73ad-803e-b1129a75edd3
+    reviewed: 9c22c503712fedea3d495ab75434b2a876d0cabc5455a79ca1ebba15cab2665d
+    tests:
+      - file: "clients/explorer/src/ui/names.test.tsx"
+        name: "names structures in italic type, in the view, in their list and in their panel"
+        body: 7aecca08c56e6e5d37b8ff484707d20b047a01823ab1b7f7f892adeddd95ae00
+  - node: 01a1b7d7-c032-73ad-803e-b11383d20219
+    reviewed: a2a6f68da8bd77881a49afa223c9a38432108b956983417ead29db28136e27c1
+    tests:
+      - file: "clients/explorer/src/ui/names.test.tsx"
+        name: "names a structure in italic in the hover label, and an object in upright type there and in its panel"
+        body: 402da028736f122d812d83cbf2bd66664b7a4f68de1c8571d702c2e52efc8a0e
   - node: 01a1a497-e843-728a-bce8-3fde6b42f63b
     reviewed: 4cbbd3fd831065846d24c5b2148409663688ff7e618e9d70fd32c188542de213
     tests:
@@ -4274,7 +4421,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/SearchBox.test.tsx"
         name: "lists the objects a name belongs to, to choose from, each chosen with the name it was found by"
-        body: 3195d4738b948520e13e9b154efb231500aa6346adca23ccb8ecae950f166e5d
+        body: c176642bfa4908639540054f26f73d551941222f15b9c3e1101d2da2e2408592
       - file: "clients/explorer/src/api/objects.test.ts"
         name: "lists the objects a name belongs to, to choose from"
         body: 659fd1e62aefeb1e05dc9aa4e22d3d5bc6aef188c1b8a377911cf96ac0882758
@@ -4283,7 +4430,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/SearchBox.test.tsx"
         name: "repeats what was searched for when nothing is found"
-        body: 96d313c66db2954ce10e5aedfc7579b311fc51833f8e67e1c85e9fe263fe19d0
+        body: b9ab0b2c74be343c5c7a0828c7ec08e5f59d2bc95a6443de1ba57237024c4954
       - file: "clients/explorer/src/api/objects.test.ts"
         name: "says nothing was found, keeping what was searched for"
         body: 48dda6945fd50b32241cae96d4d4839f5b8b7c9a241ab0a11c2949f90ad8c3cb
@@ -4544,10 +4691,10 @@ links:
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the release's structures and reads one"
-        body: 6ce61adb5ce3e3db07b94eb2ca97a45663c1287ef954e4ecf86e57c9fae0d975
+        body: 81fc61d094fbeaca15b1631db0997adeb63393adecf05d27eac04a01d19694ea
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "are listed by name and kind, each to choose"
-        body: 18250f2dbee4a7acda13e53b2cde3fd88dd345982c1daf909bef710e8332d1cb
+        body: 4478fbed723711539ef4f5494c7ca35e1ee630a4fb5fe9b4e77d33aff48ff6fa
       - file: "clients/explorer/src/ui/useStructures.test.ts"
         name: "is read page after page, each in the release chosen"
         body: 6f76bb02efd1f77815b23c4d998ff841b9562c4e196fc7f1b162c93247e7bb4d

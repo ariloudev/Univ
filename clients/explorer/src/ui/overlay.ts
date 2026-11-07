@@ -33,14 +33,19 @@ export interface Overlay {
 
 type At = { x: number; y: number; depth: number } | undefined;
 
-/** The overlay's small type (Tailwind's `text-xs`), measured where a canvas can measure it. */
+/** The structures' names' type: italic Spectral at Tailwind's `text-xs`, measured where a canvas
+ * can measure it. */
 let measure: ((text: string) => number) | undefined | null;
 
 function measurer(): ((text: string) => number) | null {
   if (measure !== undefined) return measure;
   const context = document.createElement("canvas").getContext("2d");
   if (context === null) return (measure = null);
-  context.font = `12px ${getComputedStyle(document.body).fontFamily || "sans-serif"}`;
+  // A name measured before Spectral has loaded is measured again once it has.
+  void document.fonts?.ready.then(() => {
+    widths.clear();
+  });
+  context.font = `italic 12px ${getComputedStyle(document.documentElement).getPropertyValue("--font-serif").trim() || "serif"}`;
   return (measure = (text) => context.measureText(text).width);
 }
 

@@ -2,7 +2,7 @@
 // the nearer to the eye where two are as near. Batches whose bounding sphere falls clear of
 // the pointer are skipped whole, so that a pick reads only the tiles along its line of sight.
 
-import { type View, eyeAxes, eyeOf, focalPixels } from "./camera.ts";
+import { type View, eyeAxes, eyeOf, focalPixels, pixelRay } from "./camera.ts";
 import type { Shown } from "./masks.ts";
 import { type Mat3, type Vec3, apply, dot, norm, normalize, scale, sub } from "./vec.ts";
 
@@ -51,8 +51,7 @@ export function pick(batches: readonly Pickable[], view: View, toFrame: Mat3, po
 }
 
 /** The pointer's ray from the eye, in the eye's axes. */
-const rayOf = (f: number, pointer: Pointer): Vec3 =>
-  normalize([(pointer.x - pointer.width / 2) / f, -(pointer.y - pointer.height / 2) / f, -1]);
+const rayOf = (f: number, pointer: Pointer): Vec3 => normalize(pixelRay(f, pointer.x, pointer.y, pointer.width, pointer.height));
 
 /** Whether a sphere about `c` (in the eye's axes) of `radius`, widened by the pick's slop at its
  * depth, meets the pointer's `ray`: only then may it hold a point under the pointer. */

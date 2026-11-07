@@ -19,7 +19,9 @@ requirements:
       - key: 01a1b7d7-c032-73ad-803e-b103f2a0c853
         name: "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes."
       - key: 01a1b7d7-c032-73ad-803e-b10435170cb6
-        name: "The ticks of an edge are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart."
+        name: "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart."
+      - key: 01a1b863-1a09-757d-bbd7-6f0d72803e9a
+        name: "The ticks of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart."
       - key: 01a1b7d7-c032-73ad-803e-b105558be2c4
         name: "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees."
       - key: 01a1b7d7-c032-73ad-803e-b106cab43cde

@@ -33,7 +33,7 @@ test("draws the latest release's points around Earth, stars by colour and the re
   await expect(stars).toContainText(/[1-9][\d,]* stars in the colour of the temperature their colour index gives/);
   const key = page.getByTestId("key");
   await expect(key).toContainText(/measured: [\d,]+ points/);
-  await page.getByText(/Credits: the sources of release \d+/).click();
+  await page.getByText("Credits", { exact: true }).click();
   await expect(page.getByTestId("credits").locator("li").first()).toBeVisible();
   await expect(page.getByTitle("The Solar System barycentre, within about 1 AU of Earth")).toBeVisible();
 });
@@ -90,13 +90,15 @@ test("centres the view on a point clicked, keeping the distance", async ({ page 
   const before = (await distance.textContent()) ?? "";
   await page.mouse.click(found.x, found.y);
   await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("names")).toBeVisible();
-  // The ring drawn over the chosen object, centred on it (its box's corner is at the object).
+  // The ring drawn over the chosen object, centred on it (its box's corner is at the object), at
+  // the centre of the view as it now stands, narrowed by the record opened beside it.
   const mark = page.getByTestId("chosen-mark").locator("span");
   // The ring is placed on the frame after the object is read: until then it is not drawn.
   await expect
     .poll(async () => {
       const box = await mark.boundingBox();
-      return box === null ? Number.POSITIVE_INFINITY : Math.hypot(box.x + box.width / 2 - canvas.x, box.y + box.height / 2 - canvas.y);
+      const centre = await centreOf(page.locator("canvas"));
+      return box === null ? Number.POSITIVE_INFINITY : Math.hypot(box.x + box.width / 2 - centre.x, box.y + box.height / 2 - centre.y);
     })
     .toBeLessThan(3);
   await expect(distance).toHaveText(before);
@@ -113,7 +115,7 @@ test("finds an object by designation, and says when nothing is found", async ({ 
 });
 
 test("lists the release's structures and reads one", async ({ page }) => {
-  await page.getByText(/^Structures \(\d+\)/).click();
+  await page.getByRole("button", { name: "Structures" }).click();
   await page.getByTestId("structures").getByRole("button").first().click();
   await expect(page.getByRole("region", { name: "The chosen structure" }).getByTestId("structure-kind")).toBeVisible();
 });
@@ -157,20 +159,75 @@ test("turns a scale domain off, counts none of its points in the key, and keeps 
   await firstPoints(page);
   const stars = page.getByTestId("star-key");
   await expect(stars).toContainText(/[1-9][\d,]* stars in the colour/);
-  await page.getByText("Show", { exact: true }).click();
+  await page.getByRole("button", { name: "Show", exact: true }).click();
   await page.getByLabel("stars", { exact: true }).uncheck();
   await expect(page).toHaveURL(/hide=domain%3Astars/);
   await expect(stars).toContainText(/(^|\D)0 stars in the colour/);
   await page.reload();
-  await page.getByText("Show", { exact: true }).click();
+  await page.getByRole("button", { name: "Show", exact: true }).click();
   await expect(page.getByLabel("stars", { exact: true })).not.toBeChecked();
 });
 
 test("has no serious or critical accessibility violations", async ({ page }) => {
   await firstPoints(page);
-  await page.getByText(/^Structures \(\d+\)/).click();
-  await page.getByText("Show", { exact: true }).click();
+  await page.getByRole("button", { name: "Structures" }).click();
+  await find(page, "canis MAJOR");
+  await page.getByText("Key", { exact: true }).click();
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+});
+
+/** Whether two boxes overlap by more than a pixel. */
+function overlap(a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }): boolean {
+  return a.x + a.width - 1 > b.x && b.x + b.width - 1 > a.x && a.y + a.height - 1 > b.y && b.y + b.height - 1 > a.y;
+}
+
+async function boxOf(locator: Locator) {
+  const box = await locator.boundingBox();
+  if (box === null) throw new Error("not drawn");
+  return box;
+}
+
+test("lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await firstPoints(page);
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  await find(page, "canis MAJOR");
+  const view = await boxOf(page.getByRole("region", { name: "The view" }));
+  const top = await boxOf(page.getByRole("banner"));
+  const bottom = await boxOf(page.getByRole("contentinfo"));
+  expect(top.height).toBeLessThanOrEqual(40);
+  expect(bottom.height).toBeLessThanOrEqual(30);
+  const rail = await boxOf(page.getByRole("navigation", { name: "Panels" }));
+  expect(rail.width).toBeLessThanOrEqual(52);
+  for (const part of [top, bottom, rail, await boxOf(page.getByRole("complementary", { name: "Show" })), await boxOf(page.getByRole("complementary", { name: "The record" }))]) {
+    expect(overlap(part, view)).toBe(false);
+  }
+  // The edges carry their coordinates, and the bottom bar the scale.
+  await expect(page.locator('[data-edge="top"]')).toHaveAttribute("data-coordinate", "galactic longitude");
+  await expect(page.locator('[data-edge="top"] text').first()).toHaveText(/^\d+°$/);
+  await expect(page.getByTestId("scale")).toContainText(/(pc|kpc|Mpc)$/);
+  // The record folds to the window's edge, and the view widens.
+  await page.getByRole("button", { name: "Fold the record" }).click();
+  const widened = await boxOf(page.getByRole("region", { name: "The view" }));
+  expect(widened.width).toBeGreaterThan(view.width + 300);
+});
+
+test("opens a drawer and the record over the view below 1,024 pixels, and closes them again", async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await firstPoints(page);
+  const viewBefore = await boxOf(page.getByRole("region", { name: "The view" }));
+  const structures = page.getByRole("button", { name: "Structures" });
+  await structures.click();
+  const drawer = page.getByRole("complementary", { name: "Structures" });
+  expect(overlap(await boxOf(drawer), viewBefore)).toBe(true);
+  expect((await boxOf(page.getByRole("region", { name: "The view" }))).width).toBe(viewBefore.width);
+  await structures.click();
+  await expect(drawer).toBeHidden();
+  await find(page, "canis MAJOR");
+  const record = page.getByRole("complementary", { name: "The record" });
+  expect(overlap(await boxOf(record), viewBefore)).toBe(true);
+  await page.getByRole("button", { name: "Close the object's panel" }).click();
+  await expect(record).toBeHidden();
 });
