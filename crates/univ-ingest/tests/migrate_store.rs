@@ -23,7 +23,7 @@ use univ_ingest::publish::migrate;
 use univ_ingest::release::reindex::reindex;
 use univ_ingest::release::release_dir;
 use univ_model::release::manifest::Target;
-use univ_model::release::{Scope, TABLES, keys, valid_in};
+use univ_model::release::{SCHEMA_VERSION, Scope, TABLES, keys, valid_in};
 
 /// The schema of version 5, as univ-model wrote it before rows were shared.
 const SCHEMA_5: &str = include_str!("fixtures/schema-5.sql");
@@ -48,9 +48,14 @@ fn holds(db: &Connection, name: &str) -> bool {
 
 /// Every row `filter` selects of every table of [`Scope::PerRelease`] in each database of
 /// `store`, the catalogue's first, without `release` and `retired`, as text, sorted by table:
-/// `release_files` left out, which schema 5 has not ([`file_map`] compares it).
+/// the tables schema 5 has not left out ([`file_map`] compares `release_files`).
 fn reads(store: &MemoryStore, filter: &str) -> Vec<BTreeMap<&'static str, Vec<String>>> {
     reads_but(store, filter, |_| false)
+}
+
+/// Whether schema 5 declares table `name`, which a store of schema 5 can hold.
+fn in_schema_5(name: &str) -> bool {
+    SCHEMA_5.contains(&format!("CREATE TABLE IF NOT EXISTS {name} ("))
 }
 
 /// [`reads`], leaving out the columns `out` names.
@@ -65,7 +70,7 @@ fn reads_but(
             TABLES
                 .iter()
                 .filter(|t| {
-                    t.scope == Scope::PerRelease && t.name != "release_files" && holds(db, t.name)
+                    t.scope == Scope::PerRelease && in_schema_5(t.name) && holds(db, t.name)
                 })
                 .map(|t| {
                     let columns: Vec<&str> = t
@@ -263,7 +268,9 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
     let databases = 1 + i64::try_from(b.shards.len()).unwrap();
     migrate(&mut b, work.path(), &mut |_| {}).unwrap();
     assert_eq!(
-        b.int_everywhere("SELECT COUNT(*) FROM schema_version WHERE version = 6"),
+        b.int_everywhere(&format!(
+            "SELECT COUNT(*) FROM schema_version WHERE version = {SCHEMA_VERSION}"
+        )),
         databases
     );
     // Nothing built or uploaded again: D1 runs only the migration's own files, and R2 is given
@@ -427,7 +434,9 @@ fn a_migration_stopped_while_it_deleted_the_old_keys_deletes_the_rest_when_run_a
     assert!(migrate(&mut b, work.path(), &mut |_| {}).is_err());
     assert_eq!(old(&b), before);
     assert_eq!(
-        b.int("SELECT COUNT(*) FROM schema_version WHERE version = 6"),
+        b.int(&format!(
+            "SELECT COUNT(*) FROM schema_version WHERE version = {SCHEMA_VERSION}"
+        )),
         1
     );
     b.fail_at = None;

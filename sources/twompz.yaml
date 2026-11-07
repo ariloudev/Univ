@@ -71,6 +71,13 @@ redistribution:
 scale_domain: cosmic_web
 mirrors:
   - "http://ssa.roe.ac.uk:8080/ssa/SSASQL"
+designation:
+  form: "2MASX J{identifier}"
+  cite: >-
+    SuperCOSMOS Science Archive schema browser, TWOMPZ, table twompzPhotoz, twomassX ('2MASS source
+    designation {image primary HDU keyword: 2MASX}'); form per the CDS Dictionary of Nomenclature of
+    Celestial Objects (read via vizier.nao.ac.jp/viz-bin/Dic, 2026-11-07), acronym 2MASX: '2MASX
+    JHHMMSSss+DDMMSSs'
 normalization:
   redshifts:
     - column: zPhoto

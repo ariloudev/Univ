@@ -174,7 +174,7 @@ row! {
     /// `M31`, share a key and are both kept.
     NameRow => "names", scope: PerRelease,
     key: ["key", "object_id", "source", "name", "release"],
-    indexes: [], {
+    indexes: [["object_id", "release"]], {
         release: u32,
         key: String,
         object_id: u64,

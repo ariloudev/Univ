@@ -107,14 +107,23 @@ pub async fn shard_of<B: Backend>(
     id: u64,
 ) -> Result<Option<u32>, Problem> {
     let rows = backend
-        .releases(
-            concat!(
-                "SELECT shard FROM object_shards WHERE id = ?2 AND ",
-                valid_in!("", "?1")
-            ),
-            &[json!(release), json!(id)],
-        )
+        .releases(SHARD_OF, &[json!(release), json!(id)])
         .await?;
+    shard_in(rows)
+}
+
+/// The statement that reads the object shard of object `?2` of release `?1`.
+pub const SHARD_OF: &str = concat!(
+    "SELECT shard FROM object_shards WHERE id = ?2 AND ",
+    valid_in!("", "?1")
+);
+
+/// The shard [`SHARD_OF`]'s rows name; none when they are none.
+///
+/// # Errors
+///
+/// An internal-error problem when the row holds no shard.
+pub fn shard_in(rows: Vec<crate::backend::Row>) -> Result<Option<u32>, Problem> {
     first(rows).map(|row| column(&row, "shard")).transpose()
 }
 

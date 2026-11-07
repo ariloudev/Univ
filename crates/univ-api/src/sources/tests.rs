@@ -235,3 +235,26 @@ fn two_reads_pinned_to_one_release_return_identical_data_whatever_was_published_
         "latest moved to release 3, which retired the source"
     );
 }
+
+#[test]
+fn a_source_gives_its_designation_form_and_what_its_flags_mean_with_where_each_is_read() {
+    let hip = read("/v1/sources/hipparcos-2007");
+    assert_eq!(hip["designation"]["form"], "HIP {identifier}");
+    assert!(
+        hip["designation"]["cite"]
+            .as_str()
+            .unwrap()
+            .contains("I/311")
+    );
+    let sn = &hip["flags"]["Sn"];
+    assert!(sn["cite"].as_str().unwrap().contains("I/311"), "{sn}");
+    assert!(
+        sn["values"].as_object().is_some_and(|v| !v.is_empty()),
+        "{sn}"
+    );
+    // Its terms ask nothing to be shared alike.
+    assert!(hip["terms"].get("share_alike").is_none());
+    // A source whose definition gives no form and no flag meanings gives neither.
+    let local = read("/v1/sources/researched-structures");
+    assert!(local.get("designation").is_none() && local.get("flags").is_none());
+}

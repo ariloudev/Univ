@@ -76,6 +76,45 @@ fixes:
       asu-tsv answer from vizieridia.saao.ac.za (2026-11-03) gives "deg" on its units line for both,
       and HIP 1 has RArad = 000.00091185, while VizieR's _RAJ2000 for it is 000.0009007898 deg: the
       difference matches pmRA = -4.55 mas/yr over 8.75 yr only if RArad is in degrees.
+designation:
+  form: "HIP {identifier}"
+  cite: >-
+    ReadMe of I/311 (VizieR), Byte-by-byte Description of file hip2.dat, HIP ('Hipparcos
+    identifier'); form per the CDS Dictionary of Nomenclature of Celestial Objects (read via
+    vizier.nao.ac.jp/viz-bin/Dic, 2026-11-07), acronym HIP: 'HIP NNNNNNA'
+flags:
+  Sn:
+    cite: >-
+      ReadMe of I/311 (VizieR), hip2.dat, Sn ('Solution type new reduction'), Note (1): the number
+      10xd+s, s the type of solution adopted and d its peculiarities, a combination of 1, 2, 4 and
+      8; the values the table holds are composed from those parts
+    values:
+      "1": "Stochastic solution (dispersion given in the var column); single star (d = 0, s = 1)."
+      "3": "VIM solution (additional parameters in file hipvim.dat); single star (d = 0, s = 3)."
+      "5": "5-parameter solution; single star (d = 0, s = 5)."
+      "7": "7-parameter solution (additional parameters in hip7p.dat); single star (d = 0, s = 7)."
+      "9": "9-parameter solution (additional parameters in hip9p.dat); single star (d = 0, s = 9)."
+      "15": "5-parameter solution; double star (d = 1, s = 5)."
+      "17": "7-parameter solution (additional parameters in hip7p.dat); double star (d = 1, s = 7)."
+      "35": >-
+        5-parameter solution; double star; variable in the system with amplitude > 0.2 mag (d = 3 (1
+        + 2), s = 5).
+      "55": >-
+        5-parameter solution; double star; astrometry refers to the photocenter (d = 5 (1 + 4), s =
+        5).
+      "57": >-
+        7-parameter solution (additional parameters in hip7p.dat); double star; astrometry refers to
+        the photocenter (d = 5 (1 + 4), s = 7).
+      "75": >-
+        5-parameter solution; double star; variable in the system with amplitude > 0.2 mag;
+        astrometry refers to the photocenter (d = 7 (1 + 2 + 4), s = 5).
+      "95": >-
+        5-parameter solution; double star; measurements concern the secondary (fainter) in the
+        double system (d = 9 (1 + 8), s = 5).
+      "115": >-
+        5-parameter solution; double star; variable in the system with amplitude > 0.2 mag;
+        measurements concern the secondary (fainter) in the double system (d = 11 (1 + 2 + 8), s =
+        5).
 normalization:
   colours:
     - { bands: [B, V], column: B-V, error: e_B-V }

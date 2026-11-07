@@ -102,14 +102,20 @@ fn every_catalogue_entry_reads_with_its_source_designation_and_resolution() {
             });
             assert!(own || beside, "{d:?}");
         }
-        // The record's designations are the object's `designations` rows, each once, in order.
-        let rows: std::collections::BTreeSet<_> = o.object.designations().collect();
-        assert!(
-            r.designations.iter().eq(rows.into_iter()),
-            "{}: {:?}",
-            o.id.get(),
-            r.designations
-        );
+        // The record's designations are the object's `designations` rows, each once, in the
+        // order of their sources' ranks.
+        let rows: std::collections::BTreeSet<(String, String)> = o
+            .object
+            .designations()
+            .map(|d| (d.source.as_str().to_owned(), d.identifier.to_string()))
+            .collect();
+        let read: std::collections::BTreeSet<(String, String)> = r
+            .designations
+            .iter()
+            .map(|d| (d.source.clone(), d.identifier.clone()))
+            .collect();
+        assert_eq!(read.len(), r.designations.len(), "{}: twice", o.id.get());
+        assert_eq!(read, rows, "{}", o.id.get());
     }
     assert_eq!(
         types, 5,

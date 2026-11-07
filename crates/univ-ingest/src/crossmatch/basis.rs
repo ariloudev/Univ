@@ -7,6 +7,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use crate::designations::DesignationRules;
 use crate::matching::MatchingRules;
 use crate::ranking::RankingRules;
 use crate::release::{CONFIG_FILE, ReleaseConfig};
@@ -15,7 +16,7 @@ use crate::tiles::TileRules;
 use crate::yaml::{FileError, parse_checked};
 
 /// The rules files a release records, by name: each is `rules/{name}.yaml`.
-pub const RULES: [&str; 4] = ["matching", "ranking", "tiles", "release"];
+pub const RULES: [&str; 5] = ["matching", "ranking", "tiles", "designations", "release"];
 
 /// What a cross-match works under.
 #[derive(Clone, Debug, PartialEq)]
@@ -24,6 +25,7 @@ pub struct Basis {
     pub matching: MatchingRules,
     pub ranking: RankingRules,
     pub tiles: TileRules,
+    pub designations: DesignationRules,
     /// Each rules file as read, by its name in [`RULES`]; the release configuration as the
     /// default gives it where the repository has no file.
     pub files: BTreeMap<String, Vec<u8>>,
@@ -66,6 +68,11 @@ impl Basis {
         let matching = parsed(&at("matching"), text("matching"), MatchingRules::check);
         let ranking = parsed(&at("ranking"), text("ranking"), RankingRules::check);
         let tiles = parsed(&at("tiles"), text("tiles"), TileRules::check);
+        let designations = parsed(
+            &at("designations"),
+            text("designations"),
+            DesignationRules::check,
+        );
         let config = match files.get("release") {
             Some(bytes) => parsed(&rules.join(CONFIG_FILE), bytes, ReleaseConfig::check),
             None => Ok(ReleaseConfig::default()),
@@ -76,6 +83,7 @@ impl Basis {
             tiles.map_err(|e| e.to_string())?,
             config.map_err(|e| e.to_string())?,
         );
+        let designations = designations.map_err(|e| e.to_string())?;
         if !files.contains_key("release") {
             let yaml = serde_norway::to_string(&config).map_err(|e| e.to_string())?;
             files.insert("release".to_owned(), yaml.into_bytes());
@@ -89,6 +97,7 @@ impl Basis {
             matching,
             ranking,
             tiles,
+            designations,
             files,
             structures: named,
         })

@@ -133,3 +133,22 @@ fn a_non_commercial_source_quotes_the_clause_that_limits_it() {
     );
     assert_eq!(refused_at(&blank), "terms.non_commercial");
 }
+
+#[test]
+fn a_share_alike_source_quotes_the_clause_that_binds_it() {
+    let clause = "The OpenNGC database is released under CC-BY-SA-4.0 license";
+    let text = PENDING.replace(
+        "  credit: \"This research",
+        &format!("  share_alike: \"{clause}\"\n  credit: \"This research"),
+    );
+    assert_eq!(
+        read(&text).unwrap().terms.share_alike.as_deref(),
+        Some(clause)
+    );
+    assert!(read(PENDING).unwrap().terms.share_alike.is_none());
+    let blank = PENDING.replace(
+        "  credit: \"This research",
+        "  share_alike: \" \"\n  credit: \"This research",
+    );
+    assert_eq!(refused_at(&blank), "terms.share_alike");
+}

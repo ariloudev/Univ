@@ -24,6 +24,8 @@ requirements:
         name: "The response lists the object's designations ordered by the rank the release gives their sources, the highest first, then by source id."
       - key: 01a1b7d8-3f35-70aa-853f-45aba93bf7fc
         name: "The response gives each flag of each catalogue entry with its value as the source publishes it."
+      - key: 01a1b801-536b-749e-9f49-a4e454f41273
+        name: "The response lists each common or proper name the object's sources give it, with the source of each, apart from its designations."
       - key: 01a19f1e-d177-716d-b124-3d100d0beecf
         name: "The response lists every measurement with its native value, unit, uncertainty, kind of value and source."
       - key: 01a19f1e-d177-716d-b124-3d11207d1f43

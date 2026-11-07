@@ -1,4 +1,4 @@
--- The D1 schema of Univ releases, version 6 (univ_model::release::SCHEMA_VERSION).
+-- The D1 schema of Univ releases, version 7 (univ_model::release::SCHEMA_VERSION).
 --
 -- Version 3 adds source_details and structure_details and changes no table of version 2.
 -- Version 4 adds source_terms and changes no table of version 3.
@@ -7,6 +7,7 @@
 -- rows by their own key followed by `release`; shard_cells is keyed by its first cell as well;
 -- release_files is added, and R2 keeps each file once by its SHA-256. A database of version 5 is
 -- brought to version 6 in place, each table rebuilt with its rows valid from their release.
+-- Version 7 adds source_reading and the index names_by_object, and changes no table of version 6.
 --
 -- Object shards (version 5). Every database, the catalogue database and each object shard, is
 -- given this whole schema, and holds only its own rows of each release: an object's rows in
@@ -342,6 +343,8 @@ CREATE TABLE IF NOT EXISTS names (
   retired INTEGER,
   PRIMARY KEY (key, object_id, source, name, release)
 ) WITHOUT ROWID;
+-- An object's names, for its record (version 7).
+CREATE INDEX IF NOT EXISTS names_by_object ON names (object_id, release);
 
 -- The id ledger, kept across releases and never pruned: the ids each release issued, and
 -- what became of every id that left the releases. A read of release n takes the rows whose
@@ -498,6 +501,25 @@ CREATE TABLE IF NOT EXISTS source_terms (
   non_commercial TEXT,
   permission TEXT,
   catalogue_uncertainties TEXT,
+  retired INTEGER,
+  PRIMARY KEY (source, release)
+) WITHOUT ROWID;
+
+-- How a source's own values are read (version 7), source its sources.n, written only for a source
+-- that has one of these: designation_form, the form its catalogue writes a designation in, holding
+-- {identifier} once, and designation_cite, the documentation it is read from; rank, its place in
+-- the designation rules, 1 first, none for a source they do not list; share_alike, the quoted
+-- clause of its terms requiring data adapted from it to be shared under the same licence; and
+-- flags, JSON {column: {"values": {value: meaning}, "cite"}} of what each value of its flag
+-- columns means.
+CREATE TABLE IF NOT EXISTS source_reading (
+  release INTEGER NOT NULL,
+  source INTEGER NOT NULL,
+  designation_form TEXT,
+  designation_cite TEXT,
+  rank INTEGER,
+  share_alike TEXT,
+  flags TEXT,
   retired INTEGER,
   PRIMARY KEY (source, release)
 ) WITHOUT ROWID;

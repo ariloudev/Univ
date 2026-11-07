@@ -94,7 +94,7 @@ requirements:
       shall: "attach to each object the designations and names its catalogue entries carry."
     criteria:
       - key: 01a19f23-636f-72bd-b194-1513f385222f
-        name: "Each designation keeps the source that gave it, and the identifier as that source publishes it."
+        name: "Each designation keeps the source that gave it, and the identifier as that source publishes it, with the prefix the designation rules give one that the source gives beside an entry, such as `HIP 10768` beside a Gaia source id."
       - key: 01a1b7de-8cb0-73dd-ae67-32308547512f
         name: "The release keeps, once for each source, its designation form, the meanings of its flags and the rank the designation rules give it."
       - key: 01a19f23-636f-72bd-b194-15144dcb948e

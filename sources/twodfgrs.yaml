@@ -74,6 +74,24 @@ mirrors:
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+designation:
+  form: "2dFGRS {identifier}"
+  cite: >-
+    ReadMe of VII/250 (VizieR), Byte-by-byte Description of file 2dfgrs.dat, Name ('2dFGRS name
+    (NAME)'); form per the CDS Dictionary of Nomenclature of Celestial Objects (read via
+    vizier.nao.ac.jp/viz-bin/Dic, 2026-11-07), acronym 2dFGRS: '2dFGRS AAWFFFANNN'
+flags:
+  q_z:
+    cite: >-
+      Colless et al. 2001, MNRAS 328, 1039, Section 7.1 (Redshift estimation); ReadMe of VII/250
+      (VizieR), 2dfgrs.dat, q_z ('Redshift quality for best spectrum (reliable redshifts have
+      quality>=3)')
+    values:
+      "1": "No redshift could be estimated."
+      "2": "A possible, but doubtful, redshift estimate."
+      "3": "A 'probable' redshift (notionally 90% confidence)."
+      "4": "A reliable redshift (notionally 99% confidence)."
+      "5": "A reliable redshift and a high-quality spectrum."
 normalization:
   redshifts:
     - column: z

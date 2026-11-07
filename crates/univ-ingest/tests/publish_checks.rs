@@ -16,6 +16,7 @@ use memory_store::{Clock, MemoryStore, Op, publishing};
 use release_fixture::{build_next, fixture};
 use univ_ingest::publish::journal::Journal;
 use univ_ingest::publish::{Latest, PublishError};
+use univ_model::release::SCHEMA_VERSION;
 
 /// What `latest` points to, by D1.
 fn latest(store: &MemoryStore) -> Option<i64> {
@@ -244,7 +245,7 @@ fn a_database_of_an_older_schema_is_refused_before_anything_is_uploaded() {
             &error,
             PublishError::OlderSchema {
                 holds: 4,
-                needs: 6,
+                needs: SCHEMA_VERSION,
                 ..
             }
         ),
@@ -344,4 +345,34 @@ fn a_table_whose_rows_a_release_all_keeps_is_checked_though_it_writes_no_file_of
     .unwrap_err();
     assert!(error.to_string().contains("objects"), "{error}");
     assert_eq!(latest(&store), Some(1));
+}
+
+#[test]
+fn a_database_of_schema_6_takes_a_release_of_schema_7_with_no_migration() {
+    let f = fixture();
+    build_next(&f);
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    // Schema 7 only adds a table to schema 6's, which the release's schema creates.
+    store
+        .db
+        .execute_batch(
+            "CREATE TABLE schema_version (version INTEGER PRIMARY KEY);
+             INSERT INTO schema_version VALUES (6);",
+        )
+        .unwrap();
+    publishing(
+        &mut store,
+        1,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap();
+    assert_eq!(
+        memory_store::int(&store.db, "SELECT MAX(version) FROM schema_version"),
+        i64::from(SCHEMA_VERSION)
+    );
+    assert!(memory_store::int(&store.db, "SELECT COUNT(*) FROM source_reading") > 0);
 }
