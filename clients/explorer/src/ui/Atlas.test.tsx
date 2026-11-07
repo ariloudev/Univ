@@ -1,11 +1,13 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it } from "vitest";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { structureDetail } from "../test/structures.ts";
 import { fakeWorld } from "../test/world.ts";
-import { Atlas, type Selection } from "./Atlas.tsx";
+import { Atlas, AtlasPage, type Selection } from "./Atlas.tsx";
+import type { DrawerName } from "./Rail.tsx";
 import { NOTHING_HIDDEN, hiddenInAddress } from "./hidden.ts";
 import type { ChosenObject } from "./useChosen.ts";
 import type { ShownStructures } from "./useStructures.ts";
@@ -34,22 +36,30 @@ function selectionOf({ structure, chosen = { kind: "none" } }: Shown): Selection
   return { chosen, structure, approximate: false, inside: undefined, object: none, structureById: none, close: none };
 }
 
-function atlas(world: ReturnType<typeof fakeWorld>, shown: Shown) {
+/** The page and the view of `shown`, the page keeping the top bar's place and the drawer, as the
+ * explorer's does. */
+function Page({ world, shown }: { world: ReturnType<typeof fakeWorld>; shown: Shown }) {
+  const [topBar, setTopBar] = useState<HTMLElement | null>(null);
+  const [drawer, setDrawer] = useState<DrawerName>();
   const choices = { domains: ["cosmic_web"], sources: [], structureKinds: [{ kind: "void", count: 1 }] };
   return (
-    <Atlas
-      world={world}
-      release={7}
-      cosmology="Planck 2018"
-      bar={{ start: <p>Drawing release 7</p>, end: <p>Level of detail</p> }}
-      structures={{ ...structures, shown: shown.shown ?? structures.shown }}
-      selection={selectionOf(shown)}
-      show={{ choices, hidden: shown.hidden ?? NOTHING_HIDDEN, onToggle: none }}
-    >
-      <canvas />
-    </Atlas>
+    <AtlasPage start={<p>Drawing release 7</p>} end={<p>Level of detail</p>} slot={setTopBar}>
+      <Atlas
+        world={world}
+        release={7}
+        cosmology="Planck 2018"
+        place={{ topBar, drawer, onDrawer: setDrawer }}
+        structures={{ ...structures, shown: shown.shown ?? structures.shown }}
+        selection={selectionOf(shown)}
+        show={{ choices, hidden: shown.hidden ?? NOTHING_HIDDEN, onToggle: none }}
+      >
+        <canvas />
+      </Atlas>
+    </AtlasPage>
   );
 }
+
+const atlas = (world: ReturnType<typeof fakeWorld>, shown: Shown) => <Page world={world} shown={shown} />;
 
 function show(shown: Shown = {}, world = fakeWorld()) {
   const view = render(atlas(world, shown));
@@ -79,6 +89,10 @@ describe("the explorer laid out as an atlas", () => {
     const drawer = screen.getByRole("complementary", { name: "Structures" });
     expect(within(drawer).getByText("Structures (1)")).toBeTruthy();
     expect(within(drawer).getByText("The structures could not be read: 503 Unavailable")).toBeTruthy();
+    // And the bottom bar says so while the drawer is closed.
+    expect(within(screen.getByRole("contentinfo")).getByText("Structures not read").getAttribute("title")).toBe(
+      "The structures could not be read: 503 Unavailable",
+    );
     // One drawer at a time: another replaces it.
     await userEvent.click(within(rail).getByRole("button", { name: "Show" }));
     expect(screen.queryByRole("complementary", { name: "Structures" })).toBeNull();

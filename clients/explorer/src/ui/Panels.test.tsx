@@ -112,7 +112,7 @@ describe("the bars and the view's drawer", () => {
 
 describe("the view", () => {
   it("marks Earth as the Solar System barycentre, and says when it cannot draw", async () => {
-    render(<Scene release={7} cosmology="Planck 2018" levelOfDetail bar={{ start: null, end: null }} />);
+    render(<Scene release={7} cosmology="Planck 2018" levelOfDetail place={{ topBar: null, drawer: undefined, onDrawer: () => undefined }} />);
     expect(screen.getByTitle("The Solar System barycentre, within about 1 AU of Earth").textContent).toContain("Earth");
     expect((await screen.findByRole("alert")).textContent).toContain("cannot draw with WebGL2");
   });

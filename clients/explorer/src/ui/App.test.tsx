@@ -57,6 +57,11 @@ describe("opening the explorer", () => {
     await userEvent.selectOptions(picker, "6");
     expect(screen.getByText(/Drawing release 6/)).toBeTruthy();
     expect(screen.getByRole("region", { name: "The view" }).dataset["release"]).toBe("6");
+    // The top bar outlives each release's view: the picker is the same, and keeps its focus.
+    expect(screen.getByRole("combobox", { name: "Release" })).toBe(picker);
+    picker.focus();
+    await userEvent.selectOptions(picker, "7");
+    expect(document.activeElement).toBe(picker);
   });
 
   it("holds a level-of-detail switch in its top bar, on by default, that turns it off and on", async () => {

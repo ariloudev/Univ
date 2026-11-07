@@ -10,6 +10,7 @@ export function ScaleBar({ world }: { world: World }) {
   const { height } = controller.size;
   if (height <= 0) return null;
   const bar = scaleBar(unitsPerPixel(controller.view, height));
+  if (bar === undefined) return null;
   const w = bar.pixels;
   return (
     <div data-testid="scale" className="flex shrink-0 items-center gap-2" title="The scale of the view at the distance of its focus">

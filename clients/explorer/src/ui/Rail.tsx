@@ -5,10 +5,12 @@ export type DrawerName = "view" | "show" | "structures";
 
 const ICON = { width: 20, height: 20, viewBox: "0 0 20 20", fill: "none", stroke: "currentColor", strokeWidth: 1.4, "aria-hidden": true } as const;
 
-const DRAWERS: readonly { name: DrawerName; label: string; icon: ReactNode }[] = [
+/** Each drawer: its rail button's label, its own title, and its icon. */
+const DRAWERS: readonly { name: DrawerName; label: string; title: string; icon: ReactNode }[] = [
   {
     name: "view",
     label: "View",
+    title: "The view",
     icon: (
       <svg {...ICON}>
         <circle cx="10" cy="10" r="6.5" />
@@ -19,6 +21,7 @@ const DRAWERS: readonly { name: DrawerName; label: string; icon: ReactNode }[] =
   {
     name: "show",
     label: "Show",
+    title: "Show",
     icon: (
       <svg {...ICON}>
         <path d="M10 3 18 7 10 11 2 7Z" />
@@ -29,6 +32,7 @@ const DRAWERS: readonly { name: DrawerName; label: string; icon: ReactNode }[] =
   {
     name: "structures",
     label: "Structures",
+    title: "Structures",
     icon: (
       <svg {...ICON}>
         <path d="M4 6 9 3 16 5 17 12 12 17 5 15 3 10Z" strokeDasharray="2.2 1.6" />
@@ -37,6 +41,9 @@ const DRAWERS: readonly { name: DrawerName; label: string; icon: ReactNode }[] =
     ),
   },
 ];
+
+/** The title of drawer `name`. */
+export const drawerTitle = (name: DrawerName): string => DRAWERS.find((d) => d.name === name)?.title ?? name;
 
 const BUTTON = "flex w-11 flex-col items-center gap-0.5 rounded py-1.5 text-[10.5px] leading-none hover:text-accent";
 

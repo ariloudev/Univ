@@ -61,6 +61,13 @@ describe("the ticks on the view's edges", () => {
     expect(ticksOf(samples, 1000, false)?.step).toBe(10);
   });
 
+  it("step right ascension by round hours and minutes", () => {
+    const top = at(edgeTicks(view(0, 0), IDENTITY, "equatorial", 1280, 800), "top");
+    const labels = top?.ticks.map((t) => t.label) ?? [];
+    expect(labels.length).toBeGreaterThan(3);
+    for (const label of labels) expect(label).toMatch(/^\d+h( [1-5]0m)?$/);
+  });
+
   it("label right ascension in hours and minutes, and every other coordinate in degrees", () => {
     expect(tickLabel(300, "longitude", "equatorial")).toBe("20h");
     expect(tickLabel(65, "longitude", "equatorial")).toBe("4h 20m");

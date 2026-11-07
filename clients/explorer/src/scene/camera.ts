@@ -59,6 +59,10 @@ export const focalPixels = (height: number): number => height / 2 / Math.tan(FOV
  * on the view is scaled by. */
 export const pixelsAt = (pixels: number, depth: number, height: number): number => (pixels * depth) / focalPixels(height);
 
+/** The ray from the eye through the pixel (`x`, `y`) of a viewport `width` × `height` pixels of
+ * focal length `f` pixels, in the eye's axes, one unit ahead: the way back from `project`. */
+export const pixelRay = (f: number, x: number, y: number, width: number, height: number): Vec3 => [(x - width / 2) / f, -(y - height / 2) / f, -1];
+
 /** Where `point` (ICRS megaparsecs) falls on a viewport `width` × `height` pixels; none behind. */
 export function project(
   view: View,

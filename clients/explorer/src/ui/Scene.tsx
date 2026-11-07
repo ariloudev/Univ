@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import type { Rotations } from "../api/schemas.ts";
 import type { StructureDetail } from "../api/structures.ts";
@@ -6,7 +6,7 @@ import type { Domain } from "../catalogue/tiles.ts";
 
 import { HoverLabel, Marks, StructureNames } from "./SceneOverlay.tsx";
 import { choicesOf } from "./ShowPanel.tsx";
-import { Atlas, type Selection } from "./Atlas.tsx";
+import { Atlas, type AtlasPlace, type Selection } from "./Atlas.tsx";
 import { useHidden } from "./hidden.ts";
 import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
@@ -46,19 +46,19 @@ function useCulledStructure(
   return { detail, inside: volume === undefined ? undefined : { on: inside, approximate: volume.approximate, set: setInside } };
 }
 
-/** The view of `release`: the canvas, its overlay, and the bars, rail and margins about it, `bar`
- * in its top bar; its tiles at the detail the view needs, or every one where `levelOfDetail` is
+/** The view of `release`: the canvas, its overlay, and the rail, margins and bottom bar about it,
+ * with its parts of the top bar, all in `place`; its tiles at the detail the view needs, or every one where `levelOfDetail` is
  * off. */
 export function Scene({
   release,
   cosmology,
   levelOfDetail,
-  bar,
+  place,
 }: {
   release: number;
   cosmology: string;
   levelOfDetail: boolean;
-  bar: { start: ReactNode; end: ReactNode };
+  place: AtlasPlace;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const structureChoice = useStructureChoice();
@@ -105,7 +105,7 @@ export function Scene({
       world={world}
       release={release}
       cosmology={cosmology}
-      bar={bar}
+      place={place}
       structures={structures}
       selection={selection}
       show={{ choices, hidden, onToggle: toggle }}

@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 import type { ReleaseSummary } from "../api/schemas.ts";
+import { AtlasPage } from "./Atlas.tsx";
+import type { DrawerName } from "./Rail.tsx";
 import { ReleasePicker } from "./ReleasePicker.tsx";
 import { Scene } from "./Scene.tsx";
 import { ServerUnreachable, TryAgain } from "./ServerUnreachable.tsx";
@@ -39,6 +41,9 @@ const shortName = (name: string): string => name.replace(/\s*\(.*$/, "");
 function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: number }) {
   const [release, setRelease] = useState(latest);
   const [levelOfDetail, setLevelOfDetail] = useLevelOfDetail();
+  // The top bar's place for the view's parts, and the drawer open, outlive each release's view.
+  const [topBar, setTopBar] = useState<HTMLElement | null>(null);
+  const [drawer, setDrawer] = useState<DrawerName>();
   const shown = releases.find((r) => r.number === release);
   const start = (
     <>
@@ -65,6 +70,14 @@ function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: nu
     </label>
   );
   return (
-    <Scene key={release} release={release} cosmology={shown?.cosmology.name ?? ""} levelOfDetail={levelOfDetail} bar={{ start, end }} />
+    <AtlasPage start={start} end={end} slot={setTopBar}>
+      <Scene
+        key={release}
+        release={release}
+        cosmology={shown?.cosmology.name ?? ""}
+        levelOfDetail={levelOfDetail}
+        place={{ topBar, drawer, onDrawer: setDrawer }}
+      />
+    </AtlasPage>
   );
 }

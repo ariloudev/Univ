@@ -41,6 +41,10 @@ function measurer(): ((text: string) => number) | null {
   if (measure !== undefined) return measure;
   const context = document.createElement("canvas").getContext("2d");
   if (context === null) return (measure = null);
+  // A name measured before Spectral has loaded is measured again once it has.
+  void document.fonts?.ready.then(() => {
+    widths.clear();
+  });
   context.font = `italic 12px ${getComputedStyle(document.documentElement).getPropertyValue("--font-serif").trim() || "serif"}`;
   return (measure = (text) => context.measureText(text).width);
 }

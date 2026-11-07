@@ -1,6 +1,7 @@
 import { type FormEvent, useRef, useState } from "react";
 
 import { type Found, type ObjectRecord, search } from "../api/objects.ts";
+import { FLOATING } from "./floating.ts";
 
 type State = { kind: "idle" } | { kind: "searching" } | { kind: "failed"; message: string } | Exclude<Found, { kind: "object" }>;
 
@@ -44,8 +45,24 @@ export function SearchBox({ release, onFound }: { release: number; onFound: (id:
         </button>
       </form>
       {state.kind === "idle" ? null : (
-        <div className="absolute top-full right-0 z-30 mt-2 w-80 rounded border border-line bg-panel p-3 whitespace-normal shadow-xl">
-          <Outcome state={state} onFound={onFound} />
+        <div className={`${FLOATING} top-full right-0 mt-2 max-h-[60vh] w-80 overflow-y-auto whitespace-normal`}>
+          <button
+            type="button"
+            onClick={() => {
+              setState({ kind: "idle" });
+            }}
+            className="float-right ml-2 text-dim hover:text-ink"
+            aria-label="Close the search's answers"
+          >
+            ×
+          </button>
+          <Outcome
+            state={state}
+            onFound={(id, record, as) => {
+              setState({ kind: "idle" });
+              onFound(id, record, as);
+            }}
+          />
         </div>
       )}
     </div>

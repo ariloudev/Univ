@@ -1,0 +1,21 @@
+format: yardlog/1
+key: 01a1b85d-2f43-76b3-aaf8-6b368900f657
+branch: "stage/atlas-w3"
+base: "develop"
+title: "stage/atlas-w3"
+revision: 1
+opened:
+  at: 2026-11-07T23:34:37Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1b85d-2f43-76b3-aaf8-6b372bcef2c8
+    id: w3
+acts:
+  - at: 2026-11-07T23:34:37Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"

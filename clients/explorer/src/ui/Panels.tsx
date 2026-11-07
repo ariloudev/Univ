@@ -8,6 +8,7 @@ import { KINDS, KIND_MARKS, POINT_CSS } from "../scene/kinds.ts";
 import { GREY_CSS, KEY_TEMPERATURES, STAR_GRADIENT } from "../scene/starColour.ts";
 import { DWARF_SEQUENCE_CITATION } from "../scene/dwarfSequence.ts";
 import type { Controller } from "../scene/controller.ts";
+import { FLOATING } from "./floating.ts";
 import { type Store, useStore } from "./store.ts";
 
 /** What the panels read of the view: its controller, redrawn with each frame drawn. */
@@ -71,12 +72,12 @@ export function ViewDrawer({ controller, frame, cosmology }: ViewProps & { cosmo
 export type Tally = Pick<Catalogue, "kinds" | "stars" | "failed" | "unread" | "credits">;
 
 /** A part of the bottom bar that opens upward over the view. */
-function Popover({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
+function Popover({ label, children, width = "w-96", side = "left-0" }: { label: string; children: ReactNode; width?: string; side?: string }) {
   return (
     <details className="relative shrink-0">
       <summary className="cursor-pointer list-none rounded px-1.5 py-0.5 hover:text-accent [&::-webkit-details-marker]:hidden">{label}</summary>
       <div
-        className={`absolute bottom-full left-0 z-30 mb-2 max-h-[60vh] overflow-y-auto rounded border border-line bg-panel p-3 shadow-xl ${wide === true ? "w-[28rem]" : "w-96"} max-w-[calc(100vw-1.5rem)]`}
+        className={`${FLOATING} bottom-full mb-2 max-h-[60vh] max-w-[calc(100vw-1.5rem)] overflow-y-auto whitespace-normal ${side} ${width}`}
       >
         {children}
       </div>
@@ -108,10 +109,10 @@ export function KeyBar({ catalogue: tally, frame, release }: { catalogue: () => 
         ))}
       </div>
       <Popover label="Key">
-        <Key catalogue={catalogue} kinds={kinds} />
+        <Key catalogue={catalogue} />
       </Popover>
       {missing > 0 ? <span className="shrink-0 text-warn">{missing.toLocaleString("en-GB")} tiles not drawn</span> : null}
-      <Popover label="Credits" wide>
+      <Popover label="Credits" width="w-[28rem]" side="right-0">
         <h2 className="font-semibold">The sources of release {release}'s points</h2>
         <ul className="mt-2 space-y-2" data-testid="credits">
           {catalogue.credits().map((source) => (
@@ -127,7 +128,8 @@ export function KeyBar({ catalogue: tally, frame, release }: { catalogue: () => 
   );
 }
 
-function Key({ catalogue, kinds }: { catalogue: Tally; kinds: readonly (readonly [(typeof KINDS)[number], number])[] }) {
+function Key({ catalogue }: { catalogue: Tally }) {
+  const kinds = KINDS.map((kind, i) => [kind, catalogue.kinds[i] ?? 0] as const);
   return (
     <div className="space-y-2">
       <h2 className="font-semibold">Stars, by colour index</h2>

@@ -1,10 +1,11 @@
 import { type ReactNode, useState } from "react";
+import { createPortal } from "react-dom";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { AtlasFrame } from "./AtlasFrame.tsx";
 import { ObjectPanel } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
-import { type DrawerName, Rail } from "./Rail.tsx";
+import { type DrawerName, Rail, drawerTitle } from "./Rail.tsx";
 import { ScaleBar } from "./ScaleBar.tsx";
 import { SearchBox } from "./SearchBox.tsx";
 import { ShowPanel, type ShowPanelProps } from "./ShowPanel.tsx";
@@ -27,13 +28,21 @@ export interface Selection {
   close: () => void;
 }
 
+/** Where the view's parts of the page go, and the drawer open: kept by the page, so that they
+ * outlive the view of one release. */
+export interface AtlasPlace {
+  /** The top bar's place for the eye's distance, the axes and the search. */
+  topBar: HTMLElement | null;
+  drawer: DrawerName | undefined;
+  onDrawer: (drawer: DrawerName | undefined) => void;
+}
+
 interface AtlasProps {
   /** The view's world, once made. */
   world: World | undefined;
   release: number;
   cosmology: string;
-  /** What the top bar holds before the view's own parts, and after the search. */
-  bar: { start: ReactNode; end: ReactNode };
+  place: AtlasPlace;
   structures: ShownStructures;
   selection: Selection;
   /** What can be turned off, what is, and the way to turn it on or off. */
@@ -42,9 +51,8 @@ interface AtlasProps {
   children: ReactNode;
 }
 
-const DRAWER_LABELS: Record<DrawerName, string> = { view: "The view", show: "Show", structures: "Structures" };
-
-/** What is chosen, as one key: the record folded for one thing chosen opens again for the next. */
+/** What is chosen, as one key: the record is made anew for each thing chosen, so one folded
+ * opens again for the next. */
 function chosenKey(selection: Selection): string | undefined {
   if (selection.structure !== undefined) return `structure:${selection.structure.id}`;
   const { chosen } = selection;
@@ -60,22 +68,37 @@ function chosenKey(selection: Selection): string | undefined {
   }
 }
 
-/** The explorer laid out as an atlas lays out a chart (frame-the-view-as-an-atlas): the top bar;
- * the rail and its drawers on the left; the view inside its neat line; the record on the right
- * while something is chosen; the bottom bar of scale, key and credits. Below 1,024 pixels a
- * drawer and the record open over the view. */
-export function Atlas({ world, release, cosmology, bar, structures, selection, show, children }: AtlasProps) {
-  const [drawer, setDrawer] = useState<DrawerName>();
-  const [foldedFor, setFoldedFor] = useState<string>();
-  const key = chosenKey(selection);
+/** The page laid out as an atlas lays out a chart (frame-the-view-as-an-atlas): the top bar of
+ * `start`, the view's own parts placed into `slot`, and `end`; then `children`, the view's rows.
+ * It outlives the view of one release, so the release's picker keeps its focus. */
+export function AtlasPage({ start, end, slot, children }: { start: ReactNode; end: ReactNode; slot: (element: HTMLElement | null) => void; children: ReactNode }) {
   return (
     <div className="grid h-full grid-cols-[minmax(0,1fr)] grid-rows-[40px_minmax(0,1fr)_30px] overflow-hidden">
-      <TopBar world={world} release={release} bar={bar} selection={selection} />
+      <header className="flex min-w-0 items-center gap-4 border-b border-line bg-panel px-3 text-sm whitespace-nowrap">
+        {start}
+        <div ref={slot} className="flex min-w-0 flex-1 items-center gap-4" />
+        {end}
+      </header>
+      {children}
+    </div>
+  );
+}
+
+/** The view's rows of the page: the rail and its drawers on the left; the view inside its neat
+ * line; the record on the right while something is chosen; the bottom bar of scale, key and
+ * credits; and, in the top bar, the eye's distance, the axes and the search. Below 1,024 pixels a
+ * drawer and the record open over the view. */
+export function Atlas({ world, release, cosmology, place, structures, selection, show, children }: AtlasProps) {
+  const { drawer, onDrawer } = place;
+  const key = chosenKey(selection);
+  return (
+    <>
+      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} />, place.topBar)}
       <div className="relative flex min-h-0">
         <Rail
           open={drawer}
           onToggle={(name) => {
-            setDrawer(drawer === name ? undefined : name);
+            onDrawer(drawer === name ? undefined : name);
           }}
           onEarth={() => {
             world?.controller.returnToEarth();
@@ -89,12 +112,7 @@ export function Atlas({ world, release, cosmology, bar, structures, selection, s
           {world === undefined ? null : <AtlasFrame world={world} />}
         </section>
         {key === undefined ? null : (
-          <Record
-            folded={foldedFor === key}
-            onFold={(fold) => {
-              setFoldedFor(fold ? key : undefined);
-            }}
-          >
+          <Record key={key}>
             <ObjectPanel chosen={selection.chosen} onChoose={(id) => selection.object(id, { fly: true })} onClose={selection.close} />
             {selection.structure === undefined ? null : (
               <StructurePanel detail={selection.structure} approximate={selection.approximate} inside={selection.inside} onClose={selection.close} />
@@ -109,22 +127,25 @@ export function Atlas({ world, release, cosmology, bar, structures, selection, s
             <KeyBar catalogue={() => world.catalogue} frame={world.frame} release={release} />
           </>
         )}
+        {structures.problem === undefined ? null : (
+          <p role="status" className="ml-auto shrink-0 text-warn" title={structures.problem}>
+            Structures not read
+          </p>
+        )}
       </footer>
-    </div>
+    </>
   );
 }
 
-/** The top bar: `bar` about the eye's distance with the axes and the search. */
-function TopBar({ world, release, bar, selection }: Pick<AtlasProps, "world" | "release" | "bar" | "selection">) {
+/** The view's parts of the top bar: the eye's distance with the axes, and the search. */
+function TopBarParts({ world, release, selection }: { world: World; release: number; selection: Selection }) {
   return (
-    <header className="flex min-w-0 items-center gap-4 border-b border-line bg-panel px-3 text-sm whitespace-nowrap">
-      {bar.start}
-      {world === undefined ? null : <Whereabouts controller={world.controller} frame={world.frame} />}
-      <div className="ml-auto flex items-center gap-4">
-        {world === undefined ? null : <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />}
-        {bar.end}
+    <>
+      <Whereabouts controller={world.controller} frame={world.frame} />
+      <div className="ml-auto">
+        <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />
       </div>
-    </header>
+    </>
   );
 }
 
@@ -140,7 +161,7 @@ function Drawer({
   return (
     <aside
       id={`drawer-${name}`}
-      aria-label={DRAWER_LABELS[name]}
+      aria-label={drawerTitle(name)}
       className="w-[300px] shrink-0 overflow-y-auto border-r border-line bg-panel p-3 text-sm max-lg:absolute max-lg:inset-y-0 max-lg:left-[52px] max-lg:z-20 max-lg:shadow-2xl"
     >
       {name === "view" ? <ViewDrawer controller={world.controller} frame={world.frame} cosmology={cosmology} /> : null}
@@ -158,13 +179,14 @@ function Drawer({
 const OVER_THE_VIEW = "max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:z-20";
 
 /** The right margin holding the record of what is chosen, which folds to the window's edge. */
-function Record({ folded, onFold, children }: { folded: boolean; onFold: (fold: boolean) => void; children: ReactNode }) {
+function Record({ children }: { children: ReactNode }) {
+  const [folded, setFolded] = useState(false);
   if (folded)
     return (
       <button
         type="button"
         onClick={() => {
-          onFold(false);
+          setFolded(false);
         }}
         className={`w-7 shrink-0 border-l border-line bg-panel py-3 text-dim hover:text-accent ${OVER_THE_VIEW}`}
       >
@@ -177,7 +199,7 @@ function Record({ folded, onFold, children }: { folded: boolean; onFold: (fold: 
         <button
           type="button"
           onClick={() => {
-            onFold(true);
+            setFolded(true);
           }}
           className="rounded px-1.5 text-dim hover:text-accent"
         >

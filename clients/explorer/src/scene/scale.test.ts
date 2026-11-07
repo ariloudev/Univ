@@ -7,6 +7,7 @@ describe("the scale bar", () => {
     for (let exponent = -10; exponent <= 2; exponent += 0.137) {
       const mpcPerPixel = 10 ** exponent;
       const bar = scaleBar(mpcPerPixel);
+      if (bar === undefined) throw new Error("no bar");
       expect(bar.pixels).toBeGreaterThanOrEqual(SHORTEST - 1e-6);
       expect(bar.pixels).toBeLessThanOrEqual(LONGEST);
       const mantissa = bar.parsecs / 10 ** Math.floor(Math.log10(bar.parsecs) + 1e-9);
@@ -16,10 +17,16 @@ describe("the scale bar", () => {
   });
 
   it("is labelled in the unit that suits its length, and changes with the distance", () => {
-    expect(scaleBar(1 / 1e6).label).toBe("100 pc");
-    expect(scaleBar(10 / 1e6).label).toBe("1 kpc");
-    expect(scaleBar(1).label).toBe("100 Mpc");
-    expect(scaleBar(100).label).toBe("10,000 Mpc");
-    expect(scaleBar(1e-10).label).toBe("0.01 pc");
+    expect(scaleBar(1 / 1e6)?.label).toBe("100 pc");
+    expect(scaleBar(10 / 1e6)?.label).toBe("1 kpc");
+    expect(scaleBar(1)?.label).toBe("100 Mpc");
+    expect(scaleBar(100)?.label).toBe("10,000 Mpc");
+    expect(scaleBar(1e-10)?.label).toBe("0.01 pc");
+  });
+
+  it("is not drawn for a view with no size or a distance that is not a number", () => {
+    expect(scaleBar(Number.NaN)).toBeUndefined();
+    expect(scaleBar(Number.POSITIVE_INFINITY)).toBeUndefined();
+    expect(scaleBar(0)).toBeUndefined();
   });
 });
