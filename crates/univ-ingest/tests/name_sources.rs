@@ -9,11 +9,13 @@
 )]
 
 mod common;
+mod release_fixture;
 mod simulated;
 
 use std::path::{Path, PathBuf};
 
 use common::{definition_of, entry};
+use release_fixture::{build_next, fixture, loaded_in, record};
 use simulated::{designation, entry as at_sky, matching_rules, offset, with_cz};
 use univ_ingest::matching::{Matched, match_entries};
 use univ_ingest::normalize::{Normalized, normalize};
@@ -22,6 +24,7 @@ use univ_model::entry::{CatalogueEntry, Flags};
 use univ_model::ids::Designation;
 use univ_model::object::{Object, Resolution};
 use univ_model::redshift::{CmbCorrection, DipoleModel};
+use univ_model::release::shards::Database;
 
 fn fixtures() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
@@ -215,5 +218,91 @@ fn a_name_that_joins_nothing_is_an_object_of_its_own_with_each_of_its_names() {
             ("openngc", "NGC 1976"),
             ("openngc", "Orion Nebula")
         ]
+    );
+}
+
+#[test]
+fn a_release_names_m31_by_its_openngc_names_and_holds_m42_as_an_object_not_placed() {
+    // The shared fixture, whose 2MRS answer holds M31 as 00424433+4116074, with the OpenNGC rows.
+    let mut f = fixture();
+    let n = openngc();
+    record(f.cache.path(), "openngc", &n.report);
+    f.definitions.push(definition_of("openngc"));
+    f.normalized.push(n);
+    let release = build_next(&f);
+    let db = loaded_in(&release.dir, &release.manifest, Database::Catalogue);
+    let names_of = |name: &str| -> Vec<String> {
+        let mut q = db
+            .prepare(
+                "SELECT b.name FROM names a JOIN names b ON b.object_id = a.object_id \
+                 WHERE a.name = ?1 ORDER BY b.name",
+            )
+            .unwrap();
+        q.query_map([name], |r| r.get(0))
+            .unwrap()
+            .map(Result::unwrap)
+            .collect()
+    };
+    assert_eq!(names_of("NGC 224"), ["Andromeda Galaxy", "M 31", "NGC 224"]);
+    // M31 is the object 2MRS gives, joined by its 2MASX designation.
+    let m31: i64 = db
+        .query_row("SELECT object_id FROM names WHERE name = 'M 31'", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    let shard_of = |id: i64| -> i64 {
+        db.query_row("SELECT shard FROM object_shards WHERE id = ?1", [id], |r| {
+            r.get(0)
+        })
+        .unwrap()
+    };
+    let shard = loaded_in(
+        &release.dir,
+        &release.manifest,
+        Database::Shard(u32::try_from(shard_of(m31)).unwrap()),
+    );
+    // The shard holds the entries; the catalogue numbers their sources.
+    let twomrs: i64 = db
+        .query_row("SELECT n FROM sources WHERE id = 'twomrs'", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    let held: i64 = shard
+        .query_row(
+            "SELECT COUNT(*) FROM entries \
+             WHERE object_id = ?1 AND source = ?2 AND identifier = '00424433+4116074'",
+            [m31, twomrs],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(held, 1);
+    // M42 joins nothing: an object of its own, not placed for having no distance.
+    let m42: i64 = db
+        .query_row("SELECT object_id FROM names WHERE name = 'M 42'", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    let shard = loaded_in(
+        &release.dir,
+        &release.manifest,
+        Database::Shard(u32::try_from(shard_of(m42)).unwrap()),
+    );
+    let (placed, reason): (i64, i64) = shard
+        .query_row(
+            "SELECT placed, not_placed FROM objects WHERE id = ?1",
+            [m42],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    // The reason is coded by the catalogue's terms.
+    let reason: Option<String> = db
+        .query_row("SELECT term FROM terms WHERE id = ?1", [reason], |r| {
+            r.get(0)
+        })
+        .ok();
+    assert_eq!((placed, reason.as_deref()), (0, Some("no_distance")));
+    assert_eq!(
+        names_of("M 42"),
+        ["Great Orion Nebula", "M 42", "NGC 1976", "Orion Nebula"]
     );
 }
