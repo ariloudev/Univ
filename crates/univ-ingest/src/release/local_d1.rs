@@ -2,7 +2,8 @@
 //! Miniflare names each file by a hash of its database's id, so each is told by what it holds.
 //! Every database is given the whole schema, so the catalogue is the one whose `latest` points to
 //! a release, and each object shard is the one `object_shards` names for an object it holds of
-//! that release. A shard that holds nothing of it is left out, as it holds no row to index.
+//! that release. A shard that holds nothing of it is left out, as it holds no row to index, and so
+//! is a database bound but never loaded, whatever schema it was given.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -51,7 +52,8 @@ impl LocalD1 {
     /// # Errors
     ///
     /// Fails when no database or more than one is the catalogue, when it is older than schema
-    /// 6, when two files hold one shard, or when the shards found are not those the release has.
+    /// 6, when a database holds objects of an older schema, when two files hold one shard, or
+    /// when the shards found are not those the release has.
     pub fn open(persist_to: &Path) -> Result<Self, String> {
         let dir = persist_to.join(LOCAL_D1_FILES);
         let mut files: Vec<PathBuf> = std::fs::read_dir(&dir)
@@ -96,6 +98,18 @@ impl LocalD1 {
         let valid = valid_in("", latest);
         let mut databases = BTreeMap::new();
         for (file, shard) in others {
+            // A database bound but never loaded, at whatever schema it was given.
+            if one::<i64>(&shard, "SELECT id FROM objects LIMIT 1")?.is_none() {
+                continue;
+            }
+            let shared = "SELECT COUNT(*) FROM pragma_table_info('objects') WHERE name = 'retired'";
+            if one::<i64>(&shard, shared)? != Some(1) {
+                return Err(format!(
+                    "{} holds objects of a schema older than {SCHEMA_VERSION}: run `univ-ingest \
+                     migrate` first",
+                    shown(&file)
+                ));
+            }
             let sql = format!("SELECT id FROM objects WHERE {valid} LIMIT 1");
             let Some(id) = one::<i64>(&shard, &sql)? else {
                 continue;

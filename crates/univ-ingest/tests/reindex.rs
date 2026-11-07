@@ -94,6 +94,14 @@ fn the_local_d1_is_read_from_its_files_each_told_by_what_it_holds() {
         .unwrap();
     let empty = rusqlite::Connection::open(files.join("empty.sqlite")).unwrap();
     empty.execute_batch(univ_model::release::SCHEMA).unwrap();
+    // One given the release tables before rows were shared, and never loaded since.
+    let older = rusqlite::Connection::open(files.join("older.sqlite")).unwrap();
+    older
+        .execute_batch(
+            "CREATE TABLE latest (id INTEGER PRIMARY KEY, release INTEGER NOT NULL);
+             CREATE TABLE objects (release INTEGER NOT NULL, id INTEGER NOT NULL);",
+        )
+        .unwrap();
 
     let local = LocalD1::open(persist.path()).unwrap();
     assert_eq!(local.latest, 2);
@@ -116,6 +124,17 @@ fn the_local_d1_is_read_from_its_files_each_told_by_what_it_holds() {
         all
     };
     assert_eq!(listed(a.path()), listed(b.path()));
+
+    // Holding objects at that older schema, it is refused rather than read.
+    older
+        .execute("INSERT INTO objects (release, id) VALUES (1, 1)", [])
+        .unwrap();
+    let refused = LocalD1::open(persist.path()).err().unwrap();
+    assert!(
+        refused.contains("older.sqlite holds objects of a schema older"),
+        "{refused}"
+    );
+    older.execute("DELETE FROM objects", []).unwrap();
 
     // `univ-ingest reindex` on a state kept before there was a numbering, as release 10's was:
     // the ledger alone names the release, and the numbering and index come back whole.
