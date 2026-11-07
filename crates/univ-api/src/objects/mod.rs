@@ -131,7 +131,21 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
         request.param("designation"),
     ) {
         (Some(name), None, None) => {
-            let found = by_name(backend, release, &name).await?;
+            let mut found = by_name(backend, release, &name).await?;
+            if found.is_empty() {
+                // A designation in its catalogue's form, such as HIP 32754, resolves as a name.
+                let reading = vocabulary(backend, release).await?.reading().parse(&name);
+                for (source, identifier) in reading {
+                    for (id, shard) in
+                        by_designation(backend, release, &source, &identifier).await?
+                    {
+                        if !found.iter().any(|(f, _)| *f == id) {
+                            found.push((id, vec![name.clone()]));
+                            shards.push(shard);
+                        }
+                    }
+                }
+            }
             (LookedUp::Name { name }, Ambiguity::SharedName, found)
         }
         (None, Some(source), Some(designation)) => {
@@ -243,13 +257,25 @@ async fn record<B: Backend>(
         ));
     };
     let vocabulary = vocabulary(backend, release).await?;
-    let record = read::object(&vocabulary, &object, &entries, &measurements, &designations)
-        .map_err(|error| {
-            Problem::new(
-                ProblemType::InternalError,
-                format!("Object {id} of release {release} did not read: {error}."),
-            )
-        })?;
+    // Its common and proper names, which the catalogue keeps for every object.
+    let names = backend
+        .releases(
+            concat!(
+                "SELECT source, name FROM names WHERE object_id = ?2 AND ",
+                valid_in!("", "?1")
+            ),
+            &params,
+        )
+        .await?;
+    let unread = |error: read::ReadError| {
+        Problem::new(
+            ProblemType::InternalError,
+            format!("Object {id} of release {release} did not read: {error}."),
+        )
+    };
+    let mut record = read::object(&vocabulary, &object, &entries, &measurements, &designations)
+        .map_err(unread)?;
+    record.names = read::names(&vocabulary, &names).map_err(unread)?;
     Ok(Some(pinned(Response::json(&record)?, release)))
 }
 

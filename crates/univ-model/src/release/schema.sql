@@ -7,7 +7,7 @@
 -- rows by their own key followed by `release`; shard_cells is keyed by its first cell as well;
 -- release_files is added, and R2 keeps each file once by its SHA-256. A database of version 5 is
 -- brought to version 6 in place, each table rebuilt with its rows valid from their release.
--- Version 7 adds source_reading and changes no table of version 6.
+-- Version 7 adds source_reading and the index names_by_object, and changes no table of version 6.
 --
 -- Object shards (version 5). Every database, the catalogue database and each object shard, is
 -- given this whole schema, and holds only its own rows of each release: an object's rows in
@@ -343,6 +343,8 @@ CREATE TABLE IF NOT EXISTS names (
   retired INTEGER,
   PRIMARY KEY (key, object_id, source, name, release)
 ) WITHOUT ROWID;
+-- An object's names, for its record (version 7).
+CREATE INDEX IF NOT EXISTS names_by_object ON names (object_id, release);
 
 -- The id ledger, kept across releases and never pruned: the ids each release issued, and
 -- what became of every id that left the releases. A read of release n takes the rows whose

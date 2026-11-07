@@ -78,6 +78,9 @@ fn entry(
         entry: number,
         source: own.source.as_str().to_owned(),
         identifier: String::from(&*own.identifier),
+        designation: v
+            .reading()
+            .designation(own.source.as_str(), &own.identifier),
         name: c.text_opt("name")?.map(str::to_owned),
         resolved_by: resolution(&c, own, &extra, heads)?,
         position: position(&c, &extra)?,

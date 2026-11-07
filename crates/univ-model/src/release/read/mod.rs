@@ -12,6 +12,9 @@ mod entries;
 mod links;
 mod measurements;
 mod placed;
+mod reading;
+
+pub use reading::{IDENTIFIER, Reading, names};
 
 use std::collections::{BTreeMap, HashMap};
 
@@ -37,6 +40,8 @@ pub struct Vocabulary {
     /// Each uncertainty a source states once for its whole catalogue, by the source's id: the
     /// quantity it applies to and where the source states it.
     catalogue_uncertainties: HashMap<String, Vec<(MeasuredQuantity, String)>>,
+    /// Each source's designation form and rank (schema version 7).
+    reading: Reading,
 }
 
 impl Vocabulary {
@@ -64,7 +69,21 @@ impl Vocabulary {
             chains: chains.into_iter().collect(),
             sources,
             catalogue_uncertainties: HashMap::new(),
+            reading: Reading::default(),
         }
+    }
+
+    /// The vocabulary with how its sources are read: each source's designation form and rank.
+    #[must_use]
+    pub fn with_reading(mut self, reading: Reading) -> Self {
+        self.reading = reading;
+        self
+    }
+
+    /// How the release's sources are read.
+    #[must_use]
+    pub fn reading(&self) -> &Reading {
+        &self.reading
     }
 
     /// The vocabulary with the uncertainties its sources state once for their whole
@@ -210,15 +229,15 @@ pub fn object(
     let id = c.int("id")?;
     // The `designations` rows, which add those sources give beside their entries; the entries'
     // own for a release from before that table.
-    let mut designations = if designations.is_empty() {
-        heads.into_values().collect()
+    let own: std::collections::BTreeSet<_> = heads.into_values().collect();
+    let designations = if designations.is_empty() {
+        own.iter().cloned().collect()
     } else {
         entries::designations(v, designations)?
     };
-    designations.sort();
-    designations.dedup();
     Ok(ObjectRecord {
-        designations,
+        designations: v.reading().designations(designations, &own),
+        names: Vec::new(),
         release: v.release(),
         id: u64::try_from(id).map_err(|_| c.error("id", format!("{id} is negative")))?,
         kind: c.typed("kind")?,

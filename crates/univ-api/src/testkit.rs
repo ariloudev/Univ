@@ -406,6 +406,9 @@ INSERT INTO source_details VALUES (2, 0, '2007A&A...474..653V', '10.1051/0004-63
   '{"order":5,"cells":[1,2,3]}',
   '[{"measure":"parallax","min":0.1,"max":772.33,"unit":"milliarcsecond","basis":"parallax as published","entries":117950}]', NULL);
 INSERT INTO source_details VALUES (2, 1, NULL, NULL, 'A compilation: each structure cites its own papers.', NULL, NULL, NULL);
+INSERT INTO source_reading VALUES (2, 0, 'HIP {identifier}',
+  'ReadMe of I/311, Byte-by-byte Description of file hip2.dat: HIP, Hipparcos identifier', 1, NULL,
+  '{"Sn":{"values":{"5":"5-parameter solution"},"cite":"ReadMe of I/311, Note (1)"}}', NULL);
 "#;
 
 /// Release 2's scale domains and three structures: a void published under H0 = 50 and placed

@@ -31,8 +31,9 @@ const FILE: &str = "crates/univ-api/src/testkit_objects.sql";
 const RELEASE: u32 = 2;
 
 /// The tables the file holds, in its order.
-const TABLES: [&str; 8] = [
+const TABLES: [&str; 9] = [
     "sources",
+    "source_reading",
     "terms",
     "chains",
     "objects",
@@ -43,9 +44,9 @@ const TABLES: [&str; 8] = [
 ];
 
 const HEADER: &str = "\
--- Release 2 of Univ Ingest's fixture: its sources and every object with its entries,
--- measurements, designations and names, and the vocabulary they are coded in, as
--- cargo xtask integration publishes them. Checked against what ingest writes by
+-- Release 2 of Univ Ingest's fixture: its sources and how they are read, and every object
+-- with its entries, measurements, designations and names, and the vocabulary they are coded
+-- in, as cargo xtask integration publishes them. Checked against what ingest writes by
 -- univ-ingest's test api_fixture; UPDATE_FIXTURES=1 cargo test -p univ-ingest --test
 -- api_fixture rewrites it.
 ";
