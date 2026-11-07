@@ -48,6 +48,12 @@ export class Controller {
     return this.frame.toFrame;
   }
 
+  /** The canvas's size, CSS pixels. */
+  get size(): { width: number; height: number } {
+    const { width, height } = this.around.size();
+    return { width, height };
+  }
+
   /** What the eye sees on the canvas, in CSS pixels. */
   get sight(): Sight {
     const { width, height } = this.around.size();

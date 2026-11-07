@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { type ReactNode, useEffect, useMemo, useRef } from "react";
 
 import type { Rotations } from "../api/schemas.ts";
 import type { StructureDetail } from "../api/structures.ts";
@@ -6,7 +6,7 @@ import type { Domain } from "../catalogue/tiles.ts";
 
 import { HoverLabel, Marks, StructureNames } from "./SceneOverlay.tsx";
 import { choicesOf } from "./ShowPanel.tsx";
-import { type Selection, SidePanels } from "./SidePanels.tsx";
+import { Atlas, type Selection } from "./Atlas.tsx";
 import { useHidden } from "./hidden.ts";
 import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
@@ -46,9 +46,20 @@ function useCulledStructure(
   return { detail, inside: volume === undefined ? undefined : { on: inside, approximate: volume.approximate, set: setInside } };
 }
 
-/** The view of `release`: the canvas, its overlay, and the panels around it; its tiles at the
- * detail the view needs, or every one where `levelOfDetail` is off. */
-export function Scene({ release, cosmology, levelOfDetail }: { release: number; cosmology: string; levelOfDetail: boolean }) {
+/** The view of `release`: the canvas, its overlay, and the bars, rail and margins about it, `bar`
+ * in its top bar; its tiles at the detail the view needs, or every one where `levelOfDetail` is
+ * off. */
+export function Scene({
+  release,
+  cosmology,
+  levelOfDetail,
+  bar,
+}: {
+  release: number;
+  cosmology: string;
+  levelOfDetail: boolean;
+  bar: { start: ReactNode; end: ReactNode };
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const structureChoice = useStructureChoice();
   const structureId = structureChoice.structure;
@@ -90,31 +101,31 @@ export function Scene({ release, cosmology, levelOfDetail }: { release: number; 
     },
   };
   return (
-    <div className="relative h-full w-full overflow-hidden">
-      <canvas
-        ref={canvas}
-        className="block h-full w-full cursor-grab touch-none active:cursor-grabbing"
-        role="img"
-        aria-label={`The placed objects of release ${release} around Earth. Drag to turn, scroll to zoom, drag with the right button or Shift to move; click a point to read it and centre the view on it, double-click to fly to it.`}
-      />
-      <Marks overlay={overlay} />
-      <StructureNames names={structures.names} overlay={overlay} chosen={structureId} />
-      {world === undefined ? null : <HoverLabel world={world} />}
-      {problem === undefined ? null : (
-        <p role="alert" className="absolute inset-x-0 top-4 mx-auto w-fit rounded bg-panel px-3 py-2 text-warn">
-          {problem}
-        </p>
-      )}
-      {world === undefined ? null : (
-        <SidePanels
-          world={world}
-          release={release}
-          cosmology={cosmology}
-          structures={structures}
-          selection={selection}
-          show={{ choices, hidden, onToggle: toggle }}
+    <Atlas
+      world={world}
+      release={release}
+      cosmology={cosmology}
+      bar={bar}
+      structures={structures}
+      selection={selection}
+      show={{ choices, hidden, onToggle: toggle }}
+    >
+      <div className="absolute inset-0 overflow-hidden">
+        <canvas
+          ref={canvas}
+          className="block h-full w-full cursor-grab touch-none active:cursor-grabbing"
+          role="img"
+          aria-label={`The placed objects of release ${release} around Earth. Drag to turn, scroll to zoom, drag with the right button or Shift to move; click a point to read it and centre the view on it, double-click to fly to it.`}
         />
-      )}
-    </div>
+        <Marks overlay={overlay} />
+        <StructureNames names={structures.names} overlay={overlay} chosen={structureId} />
+        {world === undefined ? null : <HoverLabel world={world} />}
+        {problem === undefined ? null : (
+          <p role="alert" className="absolute inset-x-0 top-12 mx-auto w-fit rounded bg-panel px-3 py-2 text-warn">
+            {problem}
+          </p>
+        )}
+      </div>
+    </Atlas>
   );
 }

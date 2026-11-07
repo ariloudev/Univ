@@ -31,7 +31,7 @@ describe("the structures", () => {
   it("are listed by name and kind, each to choose", async () => {
     const chosen = vi.fn();
     render(<StructureList list={[{ id: "local-void", name: "Local Void", kind: "void", scale_domain: "cosmic_web" }]} onChoose={chosen} />);
-    await userEvent.click(screen.getByText("Structures (1)"));
+    expect(screen.getByRole("heading", { name: "Structures (1)" })).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Local Void (void)" }));
     expect(chosen).toHaveBeenCalledWith("local-void");
   });

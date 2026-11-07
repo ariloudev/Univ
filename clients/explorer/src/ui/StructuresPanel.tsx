@@ -6,18 +6,18 @@ import { valueText, words } from "./text.ts";
 /** Every structure of the release by name and kind, each to choose. */
 export function StructureList({ list, onChoose }: { list: StructureSummary[]; onChoose: (id: string) => void }) {
   return (
-    <details className="rounded-lg border border-line bg-panel p-3 text-sm">
-      <summary className="cursor-pointer">Structures ({list.length})</summary>
-      <ul className="mt-2 max-h-64 overflow-y-auto" data-testid="structures">
+    <div>
+      <h2 className="font-serif text-base">Structures ({list.length})</h2>
+      <ul className="mt-2 space-y-0.5" data-testid="structures">
         {list.map((s) => (
           <li key={s.id}>
             <button type="button" onClick={() => onChoose(s.id)} className="text-left hover:text-accent">
-              {s.name} <span className="text-dim">({words(s.kind)})</span>
+              <span className="font-serif italic">{s.name}</span> <span className="text-dim">({words(s.kind)})</span>
             </button>
           </li>
         ))}
       </ul>
-    </details>
+    </div>
   );
 }
 
@@ -93,9 +93,9 @@ export function StructurePanel({
   const values = Object.entries(detail.record.values ?? {});
   const flow = flowText(detail.kind);
   return (
-    <section aria-label="The chosen structure" className="max-h-[50vh] space-y-2 overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm">
+    <section aria-label="The chosen structure" className="space-y-2 p-3 text-sm">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="font-semibold">{structureName(detail)}</h2>
+        <h2 className="font-serif text-lg leading-snug italic">{structureName(detail)}</h2>
         <button type="button" onClick={onClose} className="text-dim hover:text-ink" aria-label="Close the structure's panel">
           ×
         </button>

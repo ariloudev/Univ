@@ -44,7 +44,7 @@ describe("opening the explorer", () => {
   it("draws the release latest points to, and names it", async () => {
     serve(ok);
     render(<App />);
-    expect(await screen.findByText(/Drawing release 7, Planck 2018/)).toBeTruthy();
+    expect((await screen.findByText(/Drawing release 7/)).textContent).toBe("Drawing release 7, Planck 2018");
     expect(screen.getByRole("region", { name: "The view" }).dataset["release"]).toBe("7");
   });
 

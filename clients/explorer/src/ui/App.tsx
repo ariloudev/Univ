@@ -33,34 +33,38 @@ export function App() {
   }
 }
 
+/** A cosmology's name without the citation in brackets after it, which its title gives. */
+const shortName = (name: string): string => name.replace(/\s*\(.*$/, "");
+
 function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: number }) {
   const [release, setRelease] = useState(latest);
   const [levelOfDetail, setLevelOfDetail] = useLevelOfDetail();
   const shown = releases.find((r) => r.number === release);
+  const start = (
+    <>
+      <h1 className="font-serif text-base max-xl:sr-only">Univ Explorer</h1>
+      <ReleasePicker releases={releases} latest={latest} chosen={release} onChoose={setRelease} />
+      <p role="status" className="text-dim max-lg:sr-only" title={shown?.cosmology.name}>
+        Drawing release {release}
+        {shown === undefined ? "" : <span className="max-xl:sr-only">, {shortName(shown.cosmology.name)}</span>}
+      </p>
+    </>
+  );
+  const end = (
+    <label className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        role="switch"
+        checked={levelOfDetail}
+        onChange={(event) => {
+          setLevelOfDetail(event.currentTarget.checked);
+        }}
+        className="accent-accent"
+      />
+      <span className="max-lg:sr-only">Level of detail</span>
+    </label>
+  );
   return (
-    <div className="flex h-full flex-col">
-      <header className="flex items-center gap-4 border-b border-line bg-panel px-4 py-2">
-        <h1 className="font-semibold">Univ Explorer</h1>
-        <ReleasePicker releases={releases} latest={latest} chosen={release} onChoose={setRelease} />
-        <p role="status" className="text-sm text-dim">
-          Drawing release {release}
-          {shown === undefined ? "" : `, ${shown.cosmology.name}`}
-        </p>
-        <label className="ml-auto flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            role="switch"
-            checked={levelOfDetail}
-            onChange={(event) => {
-              setLevelOfDetail(event.currentTarget.checked);
-            }}
-          />
-          Level of detail
-        </label>
-      </header>
-      <section aria-label="The view" className="relative flex-1" data-release={release}>
-        <Scene key={release} release={release} cosmology={shown?.cosmology.name ?? ""} levelOfDetail={levelOfDetail} />
-      </section>
-    </div>
+    <Scene key={release} release={release} cosmology={shown?.cosmology.name ?? ""} levelOfDetail={levelOfDetail} bar={{ start, end }} />
   );
 }
