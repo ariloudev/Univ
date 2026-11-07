@@ -1755,6 +1755,9 @@ links:
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
         body: 13f79a311ea51086dae43e08702feb9238feb55dc9c29b972e6ad34071171e61
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_bound_shard_given_the_tables_of_schema_5_is_brought_under_shared_rows_whenever_found"
+        body: 7d19297629aded5438b50cfc0042e2f599a8813290ae2a1a45a19bb85f5152a0
   - node: 01a1b19f-a71f-7111-b5df-7f44a48bd262
     reviewed: a4bcf56b4ecf0d5074e41baa26f8a7416babed12f4b5a293193f9bbb64e13e4c
     tests:
@@ -4274,7 +4277,7 @@ links:
     tests:
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
-        body: ac7168252ef85098892ee5ecb4ed1dc61a1873d31e1363010b47e4dc23c9574d
+        body: f6c747ae631f27dc00e680c0ce8c1edd9575b48190839a56cc5615739e0f31aa
       - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
         name: "shows each kind of structure's colour beside its box"
         body: 36027fd57d2e962e3d067e174e71d4baa24e5e7367441320f936101aa6886a1f
