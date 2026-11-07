@@ -20,6 +20,10 @@ requirements:
         name: "Paths are drawn as lines, and member lists as their members' positions."
       - key: 01a1a4bd-9644-750a-a678-3906e3189ded
         name: "A point is drawn as a marker at its place."
+      - key: 01a1b7a9-f2af-7290-9cdf-77a3c5b309a5
+        name: "An attractor or a repeller is drawn as its marker inside a sphere of a fixed size on the view, a symbol rather than its extent, with an arrow along each axis of its shape's frame, pointing in toward the marker for an attractor and out from it for a repeller, the way its reconstructed flow runs."
+      - key: 01a1b7a9-f2af-7290-9cdf-77a431863fe1
+        name: "Attractors and repellers are drawn in colours of one family, apart from each other's and from every other kind's."
       - key: 01a1a4bd-9644-750a-a678-390771cfa729
         name: "A grid is drawn as its bounding box, marked as approximate."
       - key: 01a1a776-3b75-725b-96e4-8079d9d916bf
@@ -37,7 +41,7 @@ requirements:
       shall: "name each drawn structure in the view."
     criteria:
       - key: 01a1a497-e843-728a-bce8-3ff67c685244
-        name: "Each structure's name is drawn at its centre."
+        name: "Each structure's name is drawn at its centre, but an attractor's or a repeller's, which is drawn just below the reach of its symbol's arrows."
       - key: 01a1a75d-dddb-74ed-8d5c-c9c9a3084e80
         name: "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel."
       - key: 01a1a497-e843-728a-bce8-3ff70e744c39
@@ -59,6 +63,8 @@ requirements:
         name: "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from."
       - key: 01a1a776-3b75-725b-96e4-807a1f1e8ef1
         name: "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle."
+      - key: 01a1b7a9-f2af-7290-9cdf-77a50a274427
+        name: "The panel of an attractor or a repeller says that its sphere is a symbol of a fixed size on the view, not its extent, and that its arrows show the way its reconstructed flow runs."
   - key: 01a1b13c-1e10-748d-8008-e7e063283348
     statement:
       form: event_driven

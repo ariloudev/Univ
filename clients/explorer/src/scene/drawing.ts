@@ -11,6 +11,16 @@ export interface Lines {
   centre: Vec3;
   offsets: Float32Array;
   colour: Rgba;
+  /** A symbol drawn at a fixed size on the view about `centre`, such as an attractor's. */
+  symbol?: FixedSymbol | undefined;
+}
+
+/** Segments drawn at a fixed size on the view: `offsets` in units of `pixels` device pixels,
+ * whatever the eye's distance, in lines no wider than `maxWidth` device pixels. */
+export interface FixedSymbol {
+  offsets: Float32Array;
+  pixels: number;
+  maxWidth: number;
 }
 
 /** What the view's controller draws on. */

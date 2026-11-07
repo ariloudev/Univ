@@ -4296,6 +4296,30 @@ links:
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "draws a path as lines, members as markers at their positions, and a point as a marker"
         body: ed240cf866bb9347fb1f2d935ae12417a0f4ecb8b36f97fdaf87c69096c3c506
+  - node: 01a1b7a9-f2af-7290-9cdf-77a3c5b309a5
+    reviewed: 0b236096f308f551107f30bc8aa11ef9df3763587905f0ca556799a14fd03ce2
+    tests:
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "is a sphere of radius one, its unit a fixed size on the view, with arrows in to an attractor and out from a repeller along its frame's axes"
+        body: f6d73c936a4f77d6ef9fe3eb7d362b7da31eb659f2b92c1ce0dcc898a1634a37
+      - file: "clients/explorer/src/scene/structures.test.ts"
+        name: "is drawn for no other kind, nor for a structure with no centre"
+        body: f280a279bab736017cd096327a7e464eac168ddd625b1219d6c50cefa95d29f2
+      - file: "clients/explorer/src/scene/camera.test.ts"
+        name: "spans the same pixels across the view at any depth, in the middle of the view or off it"
+        body: ea3e8a8f6ff3bf45ce746cd4feabe783cc9b240c6f8c1c529e32073449a20d30
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "draws an attractor's or a repeller's symbol about its centre, beside its marker"
+        body: eef5bc7bac09b6d01a7422e69e1a698183a2aab01a2b811611f304055d06b3f1
+  - node: 01a1b7a9-f2af-7290-9cdf-77a431863fe1
+    reviewed: 1087bd6cffea988cbe318aca3e3828e8de8e2cc8a9c3c7900ccf588b8caad2f7
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "draws attractors and repellers in colours of one family, the centres of a flow in and out"
+        body: 2f35d77b9f15b30eba6b52b6b873f5a1272e8e89551643b801b5e22d6b90a01b
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
+        body: f6c747ae631f27dc00e680c0ce8c1edd9575b48190839a56cc5615739e0f31aa
   - node: 01a1a4bd-9644-750a-a678-390771cfa729
     reviewed: 61da897f88768aba57dcad866cc973f6c796402aed204ce1c1dca7f991dc669a
     tests:
@@ -4348,7 +4372,7 @@ links:
         name: "say when a structure is drawn by its bounding box, or not placed at all"
         body: a5304d3fa44dc6fc89260bdff112847abfefdebcdd63521684153b02aaa56b3c
   - node: 01a1a497-e843-728a-bce8-3ff67c685244
-    reviewed: 3f1fbafea052dd7d47b3269446bec7bd56c5d4224cf50d6423b90eb5625c0475
+    reviewed: 05581de2b8f3b38a56efc6edd4edc51bf949ac9bfe3b2ddd96e39c03a3b1bf5e
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "chooses a structure by the name it shows in the view, and still zooms over it"
@@ -4356,6 +4380,12 @@ links:
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "draws each structure's name at its centre"
         body: 3058b5f259b766cd4c67628a18fbcc9b6f06a92524ce9be5458831401b6784db
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "draws an attractor's or a repeller's name below the reach of its symbol's arrows, where the mouse chooses it"
+        body: ec4f1b0ae9869517c3f7ac2eb87c498a04670dfe8489ec9eaa4cd0ecb5559efc
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "names an attractor or a repeller below its symbol, and any other structure on its centre"
+        body: b313eebaf74b5063bbc8ba79489dc4b9c01cba076e15401c34c4afb882c3e208
   - node: 01a1a75d-dddb-74ed-8d5c-c9c9a3084e80
     reviewed: 689d7e03bdb6ef7a12fa0c2df995ce005ffd939d4f8604dd2c3766a278c703a0
     tests:
@@ -4422,6 +4452,12 @@ links:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "say a structure drawn by its extents has unknown bounds, and only then"
         body: b407b42fc3eef6aeeebed30623ea0fd1e4e0508d9b660a27fdf90877760f6521
+  - node: 01a1b7a9-f2af-7290-9cdf-77a50a274427
+    reviewed: e39f6dceb1ab6b5dd197298480ac21a55bcd087c887eb469edd05dcdba858033
+    tests:
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "say an attractor's or a repeller's sphere is a symbol and which way its arrows point, and only for them"
+        body: c32032581d2b3938ebc1d2b961ac189ead130e362a87f130cf5d3b14c2009689
   - node: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
     reviewed: d63fb94e1efce06f6668abab935caaaabd14436f5a20736f89667cc294395495
     tests:

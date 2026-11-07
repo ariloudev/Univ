@@ -6,9 +6,10 @@ import type { Rotations } from "../api/schemas.ts";
 import { type StructureDetail, type StructureSummary, structureOf, structuresOf } from "../api/structures.ts";
 import { viewingDistance } from "../scene/controls.ts";
 import type { Lines, Rgba } from "../scene/drawing.ts";
-import { structureColour } from "../scene/kinds.ts";
+import { FLOW_LINE_WIDTH, FLOW_PIXELS, structureColour } from "../scene/kinds.ts";
+import { FLOW_REACH } from "../scene/outline.ts";
 import { type StructureDrawing, drawingOf } from "../scene/structures.ts";
-import { type Vec3, norm, sub } from "../scene/vec.ts";
+import { ORIGIN, type Vec3, norm, sub } from "../scene/vec.ts";
 import type { NameLabel } from "./overlay.ts";
 import type { World } from "./useWorld.ts";
 
@@ -42,8 +43,10 @@ export function rendered(drawing: StructureDrawing): { lines: Lines | undefined;
   const centre = drawing.centre ?? segments[0] ?? markers[0];
   if (centre === undefined) return { lines: undefined, markers: undefined };
   const colour = structureColour(drawing.kind, drawing.approximate);
+  // The symbol is about the structure's own centre, which it has wherever it has one.
+  const symbol = drawing.symbol === undefined ? undefined : { offsets: offsetsFrom(ORIGIN, drawing.symbol), pixels: FLOW_PIXELS, maxWidth: FLOW_LINE_WIDTH };
   return {
-    lines: segments.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, segments), colour },
+    lines: segments.length === 0 && symbol === undefined ? undefined : { centre, offsets: offsetsFrom(centre, segments), colour, symbol },
     markers: markers.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, markers), colour: structureColour(drawing.kind, false) },
   };
 }
@@ -106,10 +109,15 @@ function drawAll(world: World, structures: Structures): void {
   }
 }
 
+/** How far a flow symbol's arrows reach from its centre, device pixels: its name goes below. */
+export const SYMBOL_REACH = FLOW_REACH * FLOW_PIXELS;
+
 /** The names of the structures drawn of `shown`, to place over the view. */
-const namesOf = (structures: Structures, shown: ReadonlySet<string>): NameLabel[] =>
+export const namesOf = (structures: Structures, shown: ReadonlySet<string>): NameLabel[] =>
   [...structures.drawings.values()].flatMap((d) =>
-    d.centre === undefined || !shown.has(d.id) ? [] : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name }],
+    d.centre === undefined || !shown.has(d.id)
+      ? []
+      : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name, below: d.symbol === undefined ? undefined : SYMBOL_REACH }],
   );
 
 /** The structures of `release`, drawn into `world` once the rotations of its frames are read,

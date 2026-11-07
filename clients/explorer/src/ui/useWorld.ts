@@ -223,7 +223,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
 
 /** What follows a frame drawn: the overlay placed, the frame counted, and the first points
  * marked if these are they; whether the first points are now marked. */
-export function drawn(world: World, overlay: Overlay, size: { width: number; height: number }, marked: boolean): boolean {
+export function drawn(world: World, overlay: Overlay, size: { width: number; height: number; ratio?: number }, marked: boolean): boolean {
   placeOverlay(world, overlay, size);
   world.frame.set(world.frame.get() + 1);
   if (marked || world.pickable.length === 0) return marked;

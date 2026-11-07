@@ -1,4 +1,5 @@
 import type { Geometry, StructureDetail, StructureSummary } from "../api/structures.ts";
+import { FLOWS } from "../scene/kinds.ts";
 import { structureName } from "../scene/structures.ts";
 import { valueText, words } from "./text.ts";
 
@@ -18,6 +19,14 @@ export function StructureList({ list, onChoose }: { list: StructureSummary[]; on
       </ul>
     </details>
   );
+}
+
+/** What the symbol of an attractor or a repeller means; none for any other kind. */
+function flowText(kind: string): string | undefined {
+  const flow = FLOWS[kind];
+  if (flow === undefined) return undefined;
+  const way = flow === "in" ? "in toward it, where its reconstructed flow converges" : "out from it, where its reconstructed flow diverges";
+  return `Its sphere is a symbol of a fixed size on the view, not its extent; its arrows point ${way}.`;
 }
 
 /** A structure's published quantity with its uncertainty, as valueText words an object's. */
@@ -82,6 +91,7 @@ export function StructurePanel({
 }) {
   const papers = new Map((detail.record.papers ?? []).map((p) => [p.id, p.reference]));
   const values = Object.entries(detail.record.values ?? {});
+  const flow = flowText(detail.kind);
   return (
     <section aria-label="The chosen structure" className="max-h-[50vh] space-y-2 overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm">
       <div className="flex items-start justify-between gap-2">
@@ -99,6 +109,11 @@ export function StructurePanel({
       {detail.derivation?.extents === undefined ? null : (
         <p className="text-xs text-dim" data-testid="structure-extents">
           Its bounds are unknown: the lines are its published extents about its position, which need not be its middle.
+        </p>
+      )}
+      {flow === undefined ? null : (
+        <p className="text-xs text-dim" data-testid="structure-flow">
+          {flow}
         </p>
       )}
       {inside === undefined ? null : <InsideCheckbox inside={inside} />}

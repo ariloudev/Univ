@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { EVERYTHING, LEVELS } from "../catalogue/lod.ts";
-import { CHOSEN_COLOUR, CULLED_OPACITY, POINT_OPACITY, KINDS, KIND_COLOURS, KIND_INDEX, POINT_CSS, STRUCTURE_COLOUR, css, detailOpacity, pointOpacity, structureColour, structureCss, structureStyle } from "./kinds.ts";
+import { CHOSEN_COLOUR, FLOWS, CULLED_OPACITY, POINT_OPACITY, KINDS, KIND_COLOURS, KIND_INDEX, POINT_CSS, STRUCTURE_COLOUR, css, detailOpacity, pointOpacity, structureColour, structureCss, structureStyle } from "./kinds.ts";
 
 describe("the kinds of value", () => {
   it("are drawn in one colour, in one order whatever a manifest lists", () => {
@@ -70,6 +70,21 @@ describe("a structure's style", () => {
     // A kind with no colour of its own is drawn in the structures' colour.
     expect(structureColour("something_new", false).slice(0, 3)).toEqual(STRUCTURE_COLOUR.slice(0, 3));
     expect(structureCss("void")).toBe(css(colours[0] ?? []));
+  });
+
+  it("draws attractors and repellers in colours of one family, the centres of a flow in and out", () => {
+    const hue = ([r = 0, g = 0, b = 0]: readonly number[]) => (Math.atan2(Math.sqrt(3) * (g - b), 2 * r - g - b) * 180) / Math.PI;
+    const apart = (a: string, b: string) => {
+      const d = Math.abs(hue(structureColour(a, false)) - hue(structureColour(b, false)));
+      return Math.min(d, 360 - d);
+    };
+    expect(apart("attractor", "repeller")).toBeLessThan(40);
+    // Each still a hue apart from every other kind's.
+    for (const kind of ["void", "supercluster", "supercluster_complex", "basin", "overdensity", "wall", "filament", "quasar_group", "ring", "arc", "shell"]) {
+      expect(apart("attractor", kind)).toBeGreaterThan(15);
+      expect(apart("repeller", kind)).toBeGreaterThan(15);
+    }
+    expect(FLOWS).toEqual({ attractor: "in", repeller: "out" });
   });
 
   it("draws the chosen structure's outline thicker than any other's", () => {
