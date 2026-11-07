@@ -147,7 +147,6 @@ pub(super) struct Plan {
     pub distance_unit: Unit,
 }
 
-/// Finds the columns of a definition in a table's header.
 /// Each column `definition` takes as `field`, by its index in the header, with its name shared
 /// by every entry that carries it.
 fn named_columns(
@@ -166,6 +165,7 @@ fn named_columns(
         .collect()
 }
 
+/// Finds the columns of a definition in a table's header.
 struct Resolver<'a> {
     definition: &'a SourceDefinition,
     header: &'a [&'a str],

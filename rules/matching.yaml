@@ -84,19 +84,22 @@ cross_identifications:
       to Hipparcos-2 best-neighbour table as original_ext_source_id (Marrese et al. 2019,
       A&A 621, A144). The new reduction keeps the HIP numbers of the original catalogue
       (ESA 1997, ESA SP-1200), whose spectral types are attached by them. Each researched star
-      file names its star by the same HIP number.
+      file names its star by the same HIP number, and the IAU Catalog of Star Names gives the HIP
+      number of each named star that has one (iau-star-names, its column hip).
     members:
       - { source: hipparcos-2007, field: identifier }
       - { source: hipparcos-1997, field: identifier }
       - { source: gaia-dr3-hipparcos2, field: name }
       - { source: researched-star-distances, field: identifier }
-      - { source: iau-star-names, field: { cross_identifier: HIP } }
+      - { source: iau-star-names, field: { cross_identifier: hip } }
   - scheme: 2masx
     basis: >-
       2MRS (Huchra et al. 2012, ApJS 199, 26) and 2M++ (Lavaux & Hudson 2011, MNRAS 416, 2840)
       both name each galaxy by its 2MASS Extended Source Catalog designation (Jarrett et al.
       2000, AJ 119, 2498), as the recorded answers show (00424433+4116074 in 2MRS); so does 2MPZ
-      (Bilicki et al. 2014, ApJS 210, 9) in twomassX, the "2MASS source designation".
+      (Bilicki et al. 2014, ApJS 210, 9) in twomassX, the "2MASS source designation". OpenNGC
+      lists each galaxy's "2MASX J..." designation among its Identifiers, "cross reference with
+      other catalogs" (NGC_guide.txt), which its prepared file keeps without "2MASX J".
     members:
       - { source: twomrs, field: identifier }
       - { source: twompp-catalogue, field: identifier }
@@ -115,10 +118,10 @@ cross_identifications:
       The PGC number of HyperLEDA (Makarov et al. 2014, A&A 570, A13). The Cosmicflows-4 galaxies
       table names each galaxy by it (J/ApJ/944/94 ReadMe, table2: "PGC Principal Galaxies Catalog
       ID", Note 1: "The Principal Galaxies Catalog identification of the galaxy in HyperLEDA").
-      No other galaxy source defined so far carries it: UNGC, 2MRS, 2M++, 6dFGS and SDSS name
-      galaxies otherwise, and the 1PGC of the Cosmicflows-4 groups names a group's dominant
-      galaxy, not the group row (galaxy_groups below). A later galaxy source with PGC numbers
-      joins by them, and a group's dominant galaxy is found by its number.
+      OpenNGC lists each galaxy's "PGC ..." designation among its Identifiers (NGC_guide.txt).
+      UNGC, 2MRS, 2M++, 6dFGS and SDSS name galaxies otherwise, and the 1PGC of the Cosmicflows-4
+      groups names a group's dominant galaxy, not the group row (galaxy_groups below), which is
+      found by its number.
     members:
       - { source: cosmicflows-4-galaxies, field: identifier }
       - { source: openngc, field: { cross_identifier: PGC } }
@@ -131,7 +134,9 @@ cross_identifications:
       (Fornax, MESSIER032, NGC0055), as the recorded answers and the served tables show
       (vizier.idia.ac.za, 2026-11-03). Both list the same Local Group galaxies, whose centres
       differ between the two by arcminutes (Fornax 4.7 arcmin apart), so a name the two share is
-      one galaxy. Names compare by their key in the names table, with a catalogue number's
+      one galaxy. OpenNGC names each object by its NGC or IC name (NGC 55) and gives its Messier
+      number (M 32) where it has one (NGC_guide.txt), the same names, so it joins by either.
+      Names compare by their key in the names table, with a catalogue number's
       leading zeros dropped and MESSIER written M; a name only one of them uses (Sag dSph against
       Sagittarius dSph) is left to the pair rule below.
     aliases:
@@ -153,6 +158,7 @@ cross_identifications:
     members:
       - { source: mcconnachie-2012, field: identifier }
       - { source: updated-nearby-galaxies, field: identifier }
+      - { source: openngc, field: identifier }
       - { source: openngc, field: { cross_identifier: M } }
 
 # Designations a source gives beside an entry's own identifier, kept with that source.
@@ -208,8 +214,11 @@ names:
       such as LMC, Andromeda or Canis Major. The UNGC Name column mixes common names with catalogue
       designations (UGC12894, ESO409-015) and is kept as designations only.
   - source: iau-star-names
-    field: identifier
-    basis: "Each entry of the IAU Catalog of Star Names is the star's IAU name, such as Sirius."
+    field: name
+    separator: ","
+    basis: >-
+      Each entry of the IAU Catalog of Star Names carries its star's IAU names, such as Sirius, or
+      Izar and Pulcherrima for the two components of epsilon Bootis that share HIP 72105.
   - source: openngc
     field: name
     separator: ","
@@ -219,8 +228,10 @@ names:
   - source: openngc
     field: identifier
     basis: >-
-      An NGC or IC name, such as NGC 224, is the name the object is commonly called by, as M31 is:
-      the object is found by it, ignoring letter case and white space.
+      The object's name in OpenNGC, "composed by catalog + number" (NGC_guide.txt): an NGC or IC
+      name such as NGC 224, or in the addendum another catalogue's, such as ESO 56-115 or Mel 22.
+      It is a name the object is called by, as M31 is, and it is found by it, ignoring letter case
+      and white space.
   - source: openngc
     field: { cross_identifier: M }
     basis: "A Messier number, such as M 31, is a common name of its object, as for NGC names."
@@ -600,15 +611,24 @@ pairs:
 # 6dFGS fibres 6 to 28 arcsec from its centre, all within 60 km/s of its 584 km/s; and NGC 1507
 # as two objects of two 2MASX designations 53 arcsec apart, 2MRS 04042714-0211210 against 2M++
 # 04042802-0210254.
+  - sources: [iau-star-names, hipparcos-2007]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: none }
+    basis: >-
+      Only IAU names with no HIP number carry a position (iau-star-names, cuts), one the WGSN
+      table does not attribute. 60 arcsec is a pipeline choice: the proper motion of a bright star
+      between Hipparcos's epoch J1991.25 and J2000 is a few arcseconds, and two stars bright
+      enough to be named rarely lie within an arcminute of each other. Mesarthim (gamma Arietis)
+      lies 1 arcsec from HIP 8832.
   - sources: [openngc, twomrs]
     angular_tolerance_arcsec: 10.0
     line_of_sight: { compare: none }
     basis: &openngc >-
-      OpenNGC's positions are "usually taken from NED" (README), the centre of each object as
-      NED's preferred position gives it; the surveys' are 2MASS XSC centroids or fibre targets.
-      10 arcsec is a pipeline choice for the offset between two centres of one bright, extended
-      galaxy. OpenNGC takes no distance or velocity, so the line of sight is not compared. Most
-      galaxies join first by their PGC number or 2MASX designation.
+      OpenNGC's positions are "usually taken from NED" (README); a few are of a knot or a
+      superposed star, as its notes say. 10 arcsec is a pipeline choice for the offset between
+      two catalogues' positions of one bright, extended galaxy. OpenNGC takes no distance or
+      velocity, so the line of sight is not compared. Most galaxies join first by their PGC
+      number or 2MASX designation.
   - sources: [openngc, twompp-catalogue]
     angular_tolerance_arcsec: 10.0
     line_of_sight: { compare: none }

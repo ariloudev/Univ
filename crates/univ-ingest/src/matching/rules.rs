@@ -13,6 +13,7 @@ use univ_model::position::separation_degrees;
 use crate::yaml::{FileError, read_checked};
 
 pub use super::extent::ExtentRule;
+pub use super::fields::EntryField;
 pub use super::sight::{NearbyTolerance, distance};
 
 /// The matching rules, as the release records them.
@@ -75,71 +76,6 @@ pub struct ConfidenceRule {
     pub unchecked_basis: String,
     pub cross_identification_conflict: f64,
     pub conflict_basis: String,
-}
-
-/// The field of an entry an identifier is read from: `identifier`, `name`, `group_id`, or
-/// `{ cross_identifier: PGC }`.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(from = "RawEntryField", into = "RawEntryField")]
-pub enum EntryField {
-    Identifier,
-    Name,
-    GroupId,
-    /// The identifier in another catalogue its source gives in the column of this name.
-    CrossIdentifier(String),
-}
-
-/// An [`EntryField`] as a rules file writes it: a plain field by its name, a cross-identifier
-/// as a map, which YAML reads more plainly than a tagged variant.
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-enum RawEntryField {
-    Plain(PlainField),
-    Cross { cross_identifier: String },
-}
-
-#[derive(Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum PlainField {
-    Identifier,
-    Name,
-    GroupId,
-}
-
-impl From<RawEntryField> for EntryField {
-    fn from(raw: RawEntryField) -> Self {
-        match raw {
-            RawEntryField::Plain(PlainField::Identifier) => Self::Identifier,
-            RawEntryField::Plain(PlainField::Name) => Self::Name,
-            RawEntryField::Plain(PlainField::GroupId) => Self::GroupId,
-            RawEntryField::Cross { cross_identifier } => Self::CrossIdentifier(cross_identifier),
-        }
-    }
-}
-
-impl From<EntryField> for RawEntryField {
-    fn from(field: EntryField) -> Self {
-        match field {
-            EntryField::Identifier => Self::Plain(PlainField::Identifier),
-            EntryField::Name => Self::Plain(PlainField::Name),
-            EntryField::GroupId => Self::Plain(PlainField::GroupId),
-            EntryField::CrossIdentifier(cross_identifier) => Self::Cross { cross_identifier },
-        }
-    }
-}
-
-impl EntryField {
-    /// The field's text in `entry`, trimmed; none when blank or absent.
-    #[must_use]
-    pub fn read<'e>(&self, entry: &'e CatalogueEntry) -> Option<&'e str> {
-        let text = match self {
-            Self::Identifier => Some(&*entry.designation.identifier),
-            Self::Name => entry.name.as_deref(),
-            Self::GroupId => entry.group_id.as_deref(),
-            Self::CrossIdentifier(column) => entry.cross_ids.get(column),
-        }?;
-        Some(text.trim()).filter(|t| !t.is_empty())
-    }
 }
 
 /// A source and the field holding its identifier in a scheme.
@@ -209,19 +145,20 @@ pub struct NameRule {
     /// What separates the names of a field that holds more than one, such as `,` in `OpenNGC`'s
     /// `Great Orion Nebula,Orion Nebula`; none where the field holds one name.
     #[serde(default)]
-    pub separator: Option<String>,
+    pub separator: Option<char>,
     pub basis: String,
 }
 
 impl NameRule {
     /// The names the rule reads from `entry`'s field, each trimmed, none blank.
     pub fn names<'e>(&self, entry: &'e CatalogueEntry) -> impl Iterator<Item = &'e str> {
-        let text = self.field.read(entry).unwrap_or_default();
-        let parts: Vec<&str> = match &self.separator {
-            Some(separator) => text.split(separator.as_str()).collect(),
-            None => vec![text],
-        };
-        parts.into_iter().map(str::trim).filter(|n| !n.is_empty())
+        let separator = self.separator;
+        self.field
+            .read(entry)
+            .unwrap_or_default()
+            .split(move |c| Some(c) == separator)
+            .map(str::trim)
+            .filter(|n| !n.is_empty())
     }
 }
 
@@ -328,7 +265,6 @@ impl MatchingRules {
                 ));
             }
         }
-        let mut members = BTreeSet::new();
         for (i, scheme) in self.cross_identifications.iter().enumerate() {
             if !scheme.aliases.is_empty()
                 && scheme
@@ -354,11 +290,14 @@ impl MatchingRules {
                     return Err(field(&at, "is given without its tolerance_basis"));
                 }
             }
-            for m in &scheme.members {
-                if !members.insert((scheme.scheme.as_str(), m.source.as_str())) {
+            for (j, m) in scheme.members.iter().enumerate() {
+                if scheme.members[..j]
+                    .iter()
+                    .any(|o| o.source == m.source && o.field == m.field)
+                {
                     return Err(field(
                         &format!("cross_identifications[{i}].members"),
-                        &format!("names {} twice", m.source),
+                        &format!("names {} by one field twice", m.source),
                     ));
                 }
             }

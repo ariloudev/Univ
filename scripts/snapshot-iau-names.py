@@ -17,6 +17,7 @@ READ_ON is the date the page was read, YYYY-MM-DD. OUT defaults to names/iau-wgs
 """
 
 import html
+import json
 import re
 import sys
 
@@ -49,8 +50,8 @@ def cells(row):
 
 
 def quoted(text):
-    """`text` as a YAML double-quoted scalar."""
-    return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    """`text` as a YAML double-quoted scalar: a JSON string is one, escapes and all."""
+    return json.dumps(text, ensure_ascii=False)
 
 
 def main():

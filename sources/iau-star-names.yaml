@@ -9,20 +9,32 @@ cuts:
   - >-
     The 652 names of the IAU Catalog of Star Names of the IAU Working Group on Star Names (WGSN), as
     its table at exopla.net, the WGSN's own site, listed them on 2026-11-07, adopted to 2026-10-15.
-    The WGSN publishes the current list only as that table, so names/iau-wgsn.yaml keeps a dated
+    The site gives the current list as that HTML table, so names/iau-wgsn.yaml keeps a dated
     snapshot of it, written by scripts/snapshot-iau-names.py; an update is a new snapshot.
   - >-
-    Each name keeps the star's designation, its HIP number where it has one (579 names) and its
+    Each name keeps its star's designation, its HIP number where it has one (579 names) and its
     date of adoption. The etymology, language and image columns are not taken.
   - >-
-    A name with a HIP number joins the Hipparcos star of that number. RA and Dec, in degrees, are
-    the table's hidden columns, which the page says come from the WGSN's Naked Eye star Catalog
-    (NEC), "compiled from SIMBAD-data": SIMBAD's ICRS positions at J2000.
+    A name with a HIP number joins the Hipparcos star of that number, and takes its position from
+    Hipparcos: the table's hidden RA and DEC columns name no source, and for 17 of the 572 names
+    that have both a HIP number and a position they lie more than an arcminute from the Hipparcos-2
+    position of that number (Mira 271 arcmin, Mizar 192, Alrescha 1,665, read against the
+    Hipparcos-2 download of 2026-11-04), while the HIP number is the star's.
   - >-
-    A name with no HIP number (73) joins no star of another source and stands as an object of its
-    own with its sky position and no distance. The 14 of those the table gives no position, hosts
-    of named exoplanets such as WASP-121 and GJ 1214, are left out as missing their position.
-columns: []
+    Izar and Pulcherrima, the components of epsilon Bootis, are both given HIP 72105, the one
+    entry Hipparcos has for the pair; they are one entry here, carrying both names, as an object
+    holds one entry of each source.
+  - >-
+    A name with no HIP number (73) keeps the table's position, the only one the list gives,
+    unattributed, and joins the Hipparcos star within an arcminute of it if there is one, as
+    Mesarthim (gamma Arietis, HIP 8832) does; otherwise it stands as an object of its own with no
+    distance. The 14 the table gives no position, hosts of named exoplanets such as WASP-121 and
+    GJ 1214, are left out as missing their position.
+columns:
+  - { column: name, field: identifier, unit: dimensionless }
+  - { column: hip, field: cross_identifier, unit: dimensionless }
+  - { column: ra_deg, field: right_ascension, unit: degree }
+  - { column: dec_deg, field: declination, unit: degree }
 frame: icrs
 epoch: 2000.0
 citation: >-
@@ -48,3 +60,21 @@ redistribution:
     again before any public deployment.
 scale_domain: stars
 mirrors: []
+fixes:
+  - defect: >-
+      The list gives Zibbatu (HR 7203) HIP 9353 and Anunitu (HR 671) HIP 3031, stars elsewhere on
+      the sky.
+    change: "Zibbatu takes HIP 93537 and Anunitu HIP 10814."
+    evidence: >-
+      The table's own position of each name lies within 0.1 arcmin of the Hipparcos-2 position of
+      that number (Zibbatu 285.77, -19.25; Anunitu 34.80, +46.47 degrees), and 104 and 26 degrees
+      from the number the list gives (Hipparcos-2 download of 2026-11-04). 9353 is 93537 without
+      its last digit.
+    action:
+      kind: replace_by_key
+      key: name
+      columns: [hip]
+      mark: { flag: hip_corrected, cite: "Position of the name in the WGSN table against Hipparcos-2 (van Leeuwen 2007)" }
+      values:
+        Zibbatu: [93537]
+        Anunitu: [10814]

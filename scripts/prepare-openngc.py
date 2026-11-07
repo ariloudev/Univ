@@ -14,8 +14,13 @@ reasons), and writes each in plain comma-separated columns:
   ra_deg        RA in degrees, from the J2000 sexagesimal RA (hours)
   dec_deg       Dec in degrees, from the J2000 sexagesimal Dec
   M             the Messier number as "M 31", from M "031"; blank where there is none
-  PGC           the PGC number of the PGC designation in Identifiers, as published ("002557")
-  2MASX         the 2MASX designation in Identifiers without "2MASX J" ("00424433+4116074")
+  PGC           the PGC number of the PGC designation in Identifiers, as published ("002557"),
+                written "PGC 002557" or, in a few rows, "PGC002557"
+  2MASX         the 2MASX designation in Identifiers without "2MASX J" ("00424433+4116074"),
+                written "2MASX J..." or, in a few rows, "2MASXJ..."
+  A row whose Identifiers lists more than one distinct PGC number, or 2MASX designation, gets
+  none in that column: which of them names the row's own object is not stated. The counts are
+  printed.
   common_names  the Common names cell, as published, names separated by commas
 
 Nothing else is taken: OpenNGC's sizes, magnitudes, redshifts and velocities, compiled from NED,
@@ -75,9 +80,18 @@ def degrees(text, scale):
     return f"{value:.7f}"
 
 
-def designation(identifiers, prefix):
-    """The designation of `identifiers` that starts with `prefix`, without it; blank if none."""
-    found = [i[len(prefix) :] for i in identifiers.split(",") if i.startswith(prefix)]
+def designation(identifiers, pattern, counts, name):
+    """The one designation of `identifiers` that `pattern` matches, its group; blank where there
+    is none, or more than one distinct (which of them names the row's object is not stated),
+    counted under `name` in `counts`."""
+    found = []
+    for identifier in identifiers.split(","):
+        m = re.fullmatch(pattern, identifier.strip())
+        if m and m.group(1) not in found:
+            found.append(m.group(1))
+    if len(found) > 1:
+        counts[name] = counts.get(name, 0) + 1
+        return ""
     return found[0] if found else ""
 
 
@@ -93,6 +107,7 @@ def main():
     out = io.StringIO()
     writer = csv.writer(out, lineterminator="\n")
     writer.writerow(COLUMNS)
+    ambiguous = {}
     for r in rows:
         messier = str(int(r["M"])) if r["M"] else ""
         writer.writerow(
@@ -102,8 +117,8 @@ def main():
                 degrees(r["RA"], 15.0),
                 degrees(r["Dec"], 1.0),
                 f"M {messier}" if messier else "",
-                designation(r["Identifiers"], "PGC "),
-                designation(r["Identifiers"], "2MASX J"),
+                designation(r["Identifiers"], r"PGC ?(\d+)", ambiguous, "PGC"),
+                designation(r["Identifiers"], r"2MASX ?J(\S+)", ambiguous, "2MASX"),
                 r["Common names"],
             ]
         )
@@ -114,6 +129,8 @@ def main():
             gz.write(out.getvalue().encode("utf-8"))
     digest = hashlib.sha256(open(path, "rb").read()).hexdigest()
     print(f"{len(rows)} rows written to {path}")
+    for column, count in sorted(ambiguous.items()):
+        print(f"{count} rows list more than one {column} designation and get none")
     print(f"sha256: {digest}")
 
 
