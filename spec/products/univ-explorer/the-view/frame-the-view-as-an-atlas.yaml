@@ -3,8 +3,8 @@ slug: frame-the-view-as-an-atlas
 name: "Frame the view as an atlas"
 body: |
   Laying the explorer out as printed celestial atlases lay out a chart: the view inside a
-  neat line whose edges are marked with coordinates, the panels in the margins about it, and a
-  key and a scale along its foot. A direction is the same from every point of space, so the marks
+  neat line whose edges are marked with coordinates, its controls on a rail and in thin bars about
+  it, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks
   on the edges hold wherever the eye is, far from Earth as well as at it.
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
@@ -26,22 +26,26 @@ requirements:
         name: "Each edge names the coordinate its ticks give, such as galactic longitude."
       - key: 01a1b7d7-c032-73ad-803e-b107f30dda23
         name: "The ticks follow the view as it turns, zooms and moves, and as the axes are changed."
+      - key: 01a1b7f5-f51b-71f9-80de-cd23746b3fab
+        name: "The ticks and their labels are drawn just inside the view's edge, taking no width or height from the view."
   - key: 01a1b7d7-c032-73ad-803e-b108ccec8a0c
     statement:
       form: ubiquitous
       system: "Univ Explorer"
-      shall: "keep its panels in the margins about the view, never over it."
+      shall: "give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it."
     criteria:
-      - key: 01a1b7d7-c032-73ad-803e-b1098469cdfc
-        name: "The left margin holds the view's controls, the groups of what is drawn and the list of structures."
-      - key: 01a1b7d7-c032-73ad-803e-b10a29501e13
-        name: "The right margin holds the search and the record of the chosen object or structure."
-      - key: 01a1b7d7-c032-73ad-803e-b10be4240ee2
-        name: "The bottom margin holds the key, the scale and the credits."
-      - key: 01a1b7d7-c032-73ad-803e-b10c2a3715b9
-        name: "No panel covers the view on a window at least 1,024 CSS pixels wide."
-      - key: 01a1b7d7-c032-73ad-803e-b10d8ab271ac
-        name: "On a narrower window, each margin folds into a button that opens it over the view and closes it again."
+      - key: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
+        name: "The top bar holds the release, the eye's distance from the focus with the axes, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+      - key: 01a1b7f5-f51b-71f9-80de-cd251f348c42
+        name: "A rail along the left edge, no wider than 52 CSS pixels, opens the view's controls, the groups of what is drawn and the list of structures, each as a drawer, and holds the button that returns to Earth."
+      - key: 01a1b7f5-f51b-71f9-80de-cd2646cc3c6c
+        name: "An open drawer narrows the view rather than covering it, and its rail button closes it again."
+      - key: 01a1b7f5-f51b-71f9-80de-cd2773cf8abe
+        name: "The record of the chosen object or structure is shown in the right margin only while one is chosen, and folds to the window's edge when asked."
+      - key: 01a1b7f5-f51b-71f9-80de-cd28fdfc1b1d
+        name: "The bottom bar holds the scale, the key and the credits in one line no taller than 30 CSS pixels."
+      - key: 01a1b7f5-f51b-71f9-80de-cd296b50d30d
+        name: "On a window narrower than 1,024 CSS pixels, a drawer and the record open over the view and close again."
   - key: 01a1b7d7-c032-73ad-803e-b10ec3cb74b8
     statement:
       form: ubiquitous

@@ -208,3 +208,28 @@ blocks:
           3. W3: the atlas frame.
           4. W4: the object panel.
           5. W5: release 12, after the owner's approval.
+  - key: 01a1b7f6-2582-77fa-9162-92fed2c0c131
+    id: design-d
+    kind: note
+    versions:
+      - key: 01a1b7f6-2582-77fa-9162-92ffd14c1b2e
+        at: 2026-11-07T21:42:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The owner chose design D, the maximised view"
+        markdown: |-
+          The design options are on the canvas https://claude.ai/artifact/3K31gmVV3VYNc2BvN2Twao: A (night atlas), B (printed atlas), C (gazetteer band) and D (maximised view).
+
+          The owner asked that the view be kept as large as possible, and approved **D** in A's night palette:
+          - a 40 px top bar with release, distance and axes, search, and level of detail;
+          - a 52 px left rail opening drawers that narrow the view rather than cover it;
+          - ticks just inside the view's edge;
+          - the record on the right only while something is chosen, foldable;
+          - a 30 px bottom bar with scale, key and credits.
+
+          The tokens are unchanged: space `#05070D`, margin ink `#0C1222`, neat line `#5B6B8C`, ivory `#E6E0CF`, dim `#8E96AB`, amber `#E8B04B`; Spectral with Barlow Semi Condensed.
+
+          The layout criteria of *Frame the view as an atlas* were reworded to match. The view now takes about 1,050 × 830 of 1,440 × 900.
+        tone: success
