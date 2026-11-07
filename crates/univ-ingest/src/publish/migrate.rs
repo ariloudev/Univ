@@ -61,8 +61,9 @@ fn create_as(table: &Table, name: &str) -> Result<String, String> {
 }
 
 /// The statements that rebuild each table of [`Scope::PerRelease`] of `held` under the keys of
-/// schema 6, the rows of every release but `latest` retired at the release after it as they are
-/// copied. A run stopped after it dropped a table, before it renamed the rebuilt one, left the
+/// schema 6, the rows of each release before `latest` retired at the release after it as they
+/// are copied: those of a release after it, which a publish stopped part way loaded, stay valid
+/// from their release. A run stopped after it dropped a table, before it renamed the rebuilt one, left the
 /// rows only in the rebuilt one: it takes the table's name back first.
 fn rebuild(
     held: &std::collections::BTreeSet<String>,
@@ -70,7 +71,7 @@ fn rebuild(
 ) -> Result<String, String> {
     let retired = latest.map_or_else(
         || "NULL".to_owned(),
-        |latest| format!("CASE WHEN release <> {latest} THEN release + 1 END"),
+        |latest| format!("CASE WHEN release < {latest} THEN release + 1 END"),
     );
     let mut sql = String::new();
     for table in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
@@ -260,9 +261,32 @@ fn at_from(store: &mut dyn Store, tables: &Tables, database: Database) -> Result
     Ok(held && schema_version(store, database)? == Some(FROM))
 }
 
+/// Whether a table of [`Scope::PerRelease`] that `database` holds lacks [`RETIRED`]: a database
+/// given the tables before rows were shared, whatever its `schema_version` says. A database bound
+/// but never loaded has no version at all, and a publish creating the schema over its tables
+/// records schema 6 without changing them.
+fn unshared(store: &mut dyn Store, tables: &Tables, database: Database) -> Result<bool, String> {
+    let Some(table) = TABLES.iter().find(|t| {
+        t.scope == Scope::PerRelease && tables.get(&database).is_some_and(|h| h.contains(t.name))
+    }) else {
+        return Ok(false);
+    };
+    let sql = format!(
+        "SELECT COUNT(*) AS n FROM pragma_table_info('{}') WHERE name = '{RETIRED}'",
+        table.name
+    );
+    let rows = store.query(database, &sql)?;
+    Ok(rows
+        .first()
+        .and_then(|r| r.get("n"))
+        .and_then(serde_json::Value::as_i64)
+        == Some(0))
+}
+
 /// Brings each database of `store` that holds releases of schema [`FROM`] under shared rows,
-/// with R2's files, as the module says, executing its files from `journals`. Whether it
-/// migrated: nothing is done where the catalogue is not of that version. Once `progress` says
+/// with R2's files, as the module says, executing its files from `journals`, and any shard
+/// whose tables lack [`RETIRED`] (see [`unshared`]), whenever it is found. Whether it migrated:
+/// nothing is done where the catalogue is not of that version and no shard is unshared. Once `progress` says
 /// the owner asked it to stop, it stops after the file or database in hand. A run stopped while
 /// it deleted the old keys leaves some, which a prune of their release deletes, as its manifest
 /// names them.
@@ -280,28 +304,44 @@ pub fn migrate_with(
     // The catalogue is migrated last, so a store whose catalogue is past schema 5 is done but
     // for the old keys a run stopped before it deleted them all.
     let mut tables = tables_of(store, std::iter::once(Database::Catalogue))?;
-    if !at_from(store, &tables, Database::Catalogue)? {
-        return delete_old_keys(store, &listed, progress);
-    }
-    let partial = store.query(
-        Database::Catalogue,
-        "SELECT number FROM releases WHERE pruned_at IS NULL AND published_at IS NULL",
-    )?;
-    if let Some(row) = partial.first() {
-        return Err(format!(
-            "release {} was published only in part under schema {FROM}: prune it, then migrate",
-            row.get("number")
-                .map_or_else(String::new, ToString::to_string)
-        ));
+    let catalogue = at_from(store, &tables, Database::Catalogue)?;
+    if catalogue {
+        let partial = store.query(
+            Database::Catalogue,
+            "SELECT number FROM releases WHERE pruned_at IS NULL AND published_at IS NULL",
+        )?;
+        if let Some(row) = partial.first() {
+            return Err(format!(
+                "release {} was published only in part under schema {FROM}: prune it, then \
+                 migrate",
+                row.get("number")
+                    .map_or_else(String::new, ToString::to_string)
+            ));
+        }
     }
     let bound = store.bound_shards()?;
     tables.extend(tables_of(store, (0..bound).map(Database::Shard))?);
     // The shards first, the catalogue last.
     let mut older = Vec::new();
     for (database, _) in tables.iter().filter(|(d, _)| **d != Database::Catalogue) {
-        if at_from(store, &tables, *database)? {
+        if at_from(store, &tables, *database)? || unshared(store, &tables, *database)? {
             older.push(*database);
         }
+    }
+    if !catalogue {
+        let rebuilt = !older.is_empty();
+        let latest = published_status(store, 0)?.latest.map(|(n, _)| n);
+        for database in &older {
+            rebuild_one(
+                store,
+                &work,
+                (*database, &tables[database]),
+                latest,
+                "",
+                progress,
+            )?;
+        }
+        return Ok(delete_old_keys(store, &listed, progress)? || rebuilt);
     }
     older.push(Database::Catalogue);
     std::fs::create_dir_all(&work).map_err(|e| format!("{}: {e}", work.display()))?;
@@ -317,25 +357,49 @@ pub fn migrate_with(
         moved.old_keys.len()
     ));
     for database in &older {
-        stop_if_asked(progress)?;
-        let mut sql = rebuild(&tables[database], latest)?;
-        sql.push_str(SCHEMA);
+        let mut extra = String::new();
         if *database == Database::Catalogue {
-            sql.push_str(&moved.rename_keys());
+            extra = moved.rename_keys();
             let text = serde_norway::to_string(&moved.old_keys).map_err(|e| e.to_string())?;
             std::fs::write(&listed, text).map_err(|e| format!("{}: {e}", listed.display()))?;
         }
-        let _ = write!(
-            sql,
-            "\nINSERT OR IGNORE INTO schema_version (version) VALUES ({SCHEMA_VERSION});\n"
-        );
-        let file = work.join(format!("migrate-{}.sql", database.dir()));
-        execute_sql(store, *database, &file, &sql)?;
-        progress.note(format!(
-            "schema {FROM} to {SCHEMA_VERSION}: {database} rebuilt with its rows shared between releases"
-        ));
+        rebuild_one(
+            store,
+            &work,
+            (*database, &tables[database]),
+            latest,
+            &extra,
+            progress,
+        )?;
     }
     delete_old_keys(store, &listed, progress)
+}
+
+/// Rebuilds `database`, which holds the tables `held`, under shared rows (see [`rebuild`]),
+/// with `extra` statements after the schema, and records schema 6 in it.
+fn rebuild_one(
+    store: &mut dyn Store,
+    work: &Path,
+    (database, held): (Database, &std::collections::BTreeSet<String>),
+    latest: Option<u32>,
+    extra: &str,
+    progress: &mut dyn Progress,
+) -> Result<(), String> {
+    stop_if_asked(progress)?;
+    let mut sql = rebuild(held, latest)?;
+    sql.push_str(SCHEMA);
+    sql.push_str(extra);
+    let _ = write!(
+        sql,
+        "\nINSERT OR IGNORE INTO schema_version (version) VALUES ({SCHEMA_VERSION});\n"
+    );
+    std::fs::create_dir_all(work).map_err(|e| format!("{}: {e}", work.display()))?;
+    let file = work.join(format!("migrate-{}.sql", database.dir()));
+    execute_sql(store, database, &file, &sql)?;
+    progress.note(format!(
+        "schema {FROM} to {SCHEMA_VERSION}: {database} rebuilt with its rows shared between releases"
+    ));
+    Ok(())
 }
 
 /// Deletes the old keys `listed` names, if it is there, then the list: whether there was one.
@@ -374,66 +438,5 @@ pub fn migrate(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn a_table_left_only_under_its_rebuilt_name_takes_its_name_back_and_is_rebuilt_whole() {
-        let db = rusqlite::Connection::open_in_memory().unwrap();
-        let objects = TABLES.iter().find(|t| t.name == "objects").unwrap();
-        db.execute_batch(&create_as(objects, "objects__v6").unwrap())
-            .unwrap();
-        let columns = objects.columns.join(", ");
-        let values = vec!["1"; objects.columns.len()].join(", ");
-        db.execute_batch(&format!(
-            "INSERT INTO objects__v6 ({columns}) VALUES ({values})"
-        ))
-        .unwrap();
-        // A run stopped between dropping `objects` and renaming `objects__v6`.
-        let held = std::collections::BTreeSet::from(["objects__v6".to_owned()]);
-        let sql = rebuild(&held, Some(2)).unwrap();
-        assert!(
-            sql.starts_with("ALTER TABLE objects__v6 RENAME TO objects;\n"),
-            "{sql}"
-        );
-        db.execute_batch(&sql).unwrap();
-        let count = |sql: &str| db.query_row(sql, [], |r| r.get::<_, i64>(0)).unwrap();
-        assert_eq!(count("SELECT COUNT(*) FROM objects WHERE retired = 2"), 1);
-        assert_eq!(
-            count("SELECT COUNT(*) FROM sqlite_master WHERE name = 'objects__v6'"),
-            0
-        );
-    }
-
-    #[test]
-    fn a_grid_header_is_rewritten_to_name_its_samples_by_their_content() {
-        let header = |samples: &str, sigma: &str| {
-            serde_json::to_vec_pretty(&serde_json::json!({
-                "format": "univ-volume-grid",
-                "fields": [{
-                    "samples": samples,
-                    "uncertainty": { "form": "standard_deviation", "samples": sigma },
-                }],
-            }))
-            .unwrap()
-        };
-        let old = header(
-            "releases/4/grids/g/field-0.f32",
-            "releases/4/grids/g/field-0-sigma.f32",
-        );
-        let shas = BTreeMap::from([
-            ("grids/g/field-0.f32", "aa"),
-            ("grids/g/field-0-sigma.f32", "bb"),
-        ]);
-        assert_eq!(
-            rename_samples(&old, 4, &shas).unwrap(),
-            header(&keys::file("aa"), &keys::file("bb"))
-        );
-        // A key the manifest does not list is an error, not a guess.
-        let stray = header(
-            "releases/4/grids/g/field-9.f32",
-            "releases/4/grids/g/field-0-sigma.f32",
-        );
-        assert!(rename_samples(&stray, 4, &shas).is_err());
-    }
-}
+#[path = "migrate_tests.rs"]
+mod tests;

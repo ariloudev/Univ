@@ -435,3 +435,57 @@ fn a_migration_stopped_while_it_deleted_the_old_keys_deletes_the_rest_when_run_a
     assert_eq!(old(&b), 0);
     assert!(!migrate(&mut b, work.path(), &mut |_| {}).unwrap());
 }
+
+#[test]
+fn a_bound_shard_given_the_tables_of_schema_5_is_brought_under_shared_rows_whenever_found() {
+    let f = fixture();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut a = MemoryStore::default();
+    let (out, state) = (f.out.path().to_owned(), f.state.path().to_owned());
+    for n in [1, 2] {
+        build_next(&f);
+        publishing(&mut a, n, &out, &state, journals.path(), &clock).unwrap();
+    }
+    let mut b = as_schema_5(&a, &out, &[1, 2]);
+    // A shard bound and given the tables of schema 5, never loaded: no version, no rows.
+    let never_loaded = || {
+        let db = Connection::open_in_memory().unwrap();
+        db.execute_batch(SCHEMA_5).unwrap();
+        db
+    };
+    let shared = |db: &Connection| {
+        let sql = "SELECT COUNT(*) FROM pragma_table_info('objects') WHERE name = 'retired'";
+        rows(db, sql) == [[Value::Integer(1)]]
+    };
+    let spare = b.bound;
+    b.bound += 2;
+    b.shards.insert(spare, never_loaded());
+    let work = tempfile::tempdir().unwrap();
+    assert!(migrate(&mut b, work.path(), &mut |_| {}).unwrap());
+    assert!(shared(&b.shards[&spare]));
+
+    // One found after the catalogue was migrated, holding a row that a publish of release 3,
+    // stopped part way, loaded over the old tables, with the schema 6 that publish recorded.
+    let late = never_loaded();
+    late.execute("INSERT INTO schema_version (version) VALUES (6)", [])
+        .unwrap();
+    let objects = TABLES.iter().find(|t| t.name == "objects").unwrap();
+    let columns = objects.columns.join(", ");
+    let mut row = rows(
+        &a.shards[&0],
+        &format!("SELECT {columns} FROM objects LIMIT 1"),
+    );
+    row[0][objects.position("release").unwrap()] = Value::Integer(3);
+    insert(&late, "objects", objects.columns, &row);
+    b.shards.insert(spare + 1, late);
+    assert!(migrate(&mut b, work.path(), &mut |_| {}).unwrap());
+    // Valid from release 3, which latest has not reached: not retired.
+    assert_eq!(
+        rows(
+            &b.shards[&(spare + 1)],
+            "SELECT release, retired FROM objects"
+        ),
+        [[Value::Integer(3), Value::Null]]
+    );
+    assert!(!migrate(&mut b, work.path(), &mut |_| {}).unwrap());
+}

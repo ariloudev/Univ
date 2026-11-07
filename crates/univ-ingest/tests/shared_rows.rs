@@ -23,7 +23,20 @@ use univ_model::release::{Scope, TABLES, valid_in};
 /// `release` and `retired`, as text, by table.
 fn valid_rows(db: &Connection, n: u32) -> BTreeMap<&'static str, Vec<String>> {
     let mut out = BTreeMap::new();
-    for table in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
+    // A shard bound but never loaded holds no table.
+    let held = |name: &str| {
+        db.query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
+            [name],
+            |r| r.get::<_, i64>(0),
+        )
+        .unwrap()
+            > 0
+    };
+    for table in TABLES
+        .iter()
+        .filter(|t| t.scope == Scope::PerRelease && held(t.name))
+    {
         let columns: Vec<&str> = table
             .columns
             .iter()
