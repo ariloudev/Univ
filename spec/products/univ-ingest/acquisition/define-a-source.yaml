@@ -42,6 +42,8 @@ requirements:
         name: "A designation form that does not hold `{identifier}` exactly once is refused."
       - key: 01a1b7d8-3f35-70aa-853f-45a5418a1492
         name: "A flag meaning given for a column the definition does not take as a flag is refused."
+      - key: 01a1b838-25fc-71d6-a728-9b6a30cffe28
+        name: "A source definition may take a column as the entry's identifier in another catalogue, such as the PGC number OpenNGC gives an NGC galaxy, which a published cross-identification joins the entry by."
   - key: 01a19f22-2ad9-716e-876f-183a6daa9364
     statement:
       form: ubiquitous
