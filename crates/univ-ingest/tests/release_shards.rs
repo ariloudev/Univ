@@ -224,3 +224,38 @@ fn a_cell_beyond_a_shards_budget_refuses_the_build_naming_it_and_uses_no_number(
     // The next build is release 1 all the same.
     assert_eq!(build_next(&f).number, 1);
 }
+
+#[test]
+fn the_catalogue_keeps_once_for_each_source_its_designation_form_flag_meanings_and_rank() {
+    let s = sharded();
+    let reading = |id: &str| -> (Option<String>, Option<u32>, Option<String>) {
+        s.catalogue
+            .query_row(
+                "SELECT r.designation_form, r.rank, r.flags FROM source_reading r \
+                 JOIN sources s ON s.n = r.source WHERE s.id = ?1",
+                [id],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            )
+            .unwrap()
+    };
+    // As sources/hipparcos-2007.yaml and rules/designations.yaml give them.
+    let (form, rank, flags) = reading("hipparcos-2007");
+    assert_eq!(form.as_deref(), Some("HIP {identifier}"));
+    assert_eq!(rank, Some(1));
+    let flags: serde_json::Value = serde_json::from_str(&flags.unwrap()).unwrap();
+    assert!(flags["Sn"]["values"]["5"].is_string(), "{flags}");
+    assert!(flags["Sn"]["cite"].is_string(), "{flags}");
+    // A source ranked but with no form of its own: its names are already its designations.
+    let (form, rank, _) = reading("mcconnachie-2012");
+    assert_eq!((form, rank.is_some()), (None, true));
+    // Once each.
+    let rows: u64 = s
+        .catalogue
+        .query_row(
+            "SELECT COUNT(*) - COUNT(DISTINCT source) FROM source_reading",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(rows, 0);
+}
