@@ -54,6 +54,11 @@ export function eyeAxes(view: View, toFrame: Mat3): Mat3 {
 /** The focal length in pixels of a viewport `height` pixels tall. */
 export const focalPixels = (height: number): number => height / 2 / Math.tan(FOV / 2);
 
+/** The megaparsecs `pixels` pixels span across the view at `depth` megaparsecs ahead of the eye
+ * along its line of sight, on a viewport `height` pixels tall: what a symbol drawn at a fixed size
+ * on the view is scaled by. */
+export const pixelsAt = (pixels: number, depth: number, height: number): number => (pixels * depth) / focalPixels(height);
+
 /** Where `point` (ICRS megaparsecs) falls on a viewport `width` × `height` pixels; none behind. */
 export function project(
   view: View,
@@ -71,5 +76,5 @@ export function project(
 
 /** The megaparsecs one pixel spans at the focus's depth, on a viewport `height` pixels tall. */
 export function unitsPerPixel(view: View, height: number): number {
-  return (2 * view.distance * Math.tan(FOV / 2)) / height;
+  return pixelsAt(1, view.distance, height);
 }

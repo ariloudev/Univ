@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { fakeWorld } from "../test/world.ts";
 import type { Vec3 } from "../scene/vec.ts";
+import { FLOW_PIXELS } from "../scene/kinds.ts";
+import { FLOW_REACH } from "../scene/outline.ts";
 import { type Overlay, labelSize, nameAt, placeOverlay } from "./overlay.ts";
+import { SYMBOL_REACH } from "./useStructures.ts";
 
 const div = () => document.createElement("div");
 
@@ -38,6 +41,18 @@ describe("the overlay", () => {
     const [x, y] = numbers(marks.names.current?.firstElementChild);
     expect(x).toBeCloseTo(400);
     expect(y).toBeCloseTo(300);
+  });
+
+  it("draws an attractor's or a repeller's name below the reach of its symbol's arrows, where the mouse chooses it", () => {
+    const marks = overlay(["ga"]);
+    const world = fakeWorld({ names: [{ id: "ga", centre: [0, 0, 0], text: "Great Attractor", below: SYMBOL_REACH }] });
+    placeOverlay(world, marks, { width: 800, height: 600, ratio: 2 });
+    const [x, y = 0] = numbers(marks.names.current?.firstElementChild);
+    expect(x).toBeCloseTo(400);
+    // Its box's top clears the arrows' reach, in CSS pixels on a screen of two device pixels to each.
+    expect(y - labelSize("Great Attractor").height / 2 - 300).toBeGreaterThan((FLOW_REACH * FLOW_PIXELS) / 2);
+    expect(nameAt(world, 400, y)?.id).toBe("ga");
+    expect(nameAt(world, 400, 300)).toBeUndefined();
   });
 
   it("lets the mouse choose a structure by the name it shows", () => {

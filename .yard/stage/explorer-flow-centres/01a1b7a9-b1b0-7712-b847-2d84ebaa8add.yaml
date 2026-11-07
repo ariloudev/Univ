@@ -10,6 +10,15 @@ versions:
     title: "Spec: attractors and repellers drawn alike"
     goal: "see-the-structures says attractors and repellers are drawn as one family: a fixed-size sphere symbol about the marker with arrows in or out along the flow, in colours of one family"
     status: active
+  - key: 01a1b7aa-8637-7437-a620-0f1e41cfb658
+    at: 2026-11-07T20:19:28Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Spec: attractors and repellers drawn alike"
+    goal: "see-the-structures says attractors and repellers are drawn as one family: a fixed-size sphere symbol about the marker with arrows in or out along the flow, in colours of one family"
+    status: done
 blocks:
   - key: 01a1b7a9-b1b0-7712-b847-2d86dfabbf01
     id: why

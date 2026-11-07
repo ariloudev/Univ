@@ -7,7 +7,7 @@ import type { StructureDrawing } from "../scene/structures.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { fakeWorld } from "../test/world.ts";
 import { structureDetail } from "../test/structures.ts";
-import { rendered, settled, structureView, useStructures } from "./useStructures.ts";
+import { SYMBOL_REACH, namesOf, rendered, settled, structureView, useStructures } from "./useStructures.ts";
 
 const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing["centre"] = [10, 0, 0]): StructureDrawing => ({
   id: "s",
@@ -17,6 +17,7 @@ const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing[
   outline,
   approximate: false,
   size: 5,
+  symbol: undefined,
 });
 
 /** No kind of structure turned off, the same set on every render. */
@@ -32,6 +33,24 @@ describe("drawing a structure", () => {
     expect([...(lines?.offsets ?? [])]).toEqual([0, 1, 0, 0, 2, 0]);
     expect(lines?.centre).toEqual([10, 0, 0]);
     expect([...(markers?.offsets ?? [])]).toEqual([1, 0, 0]);
+  });
+
+  it("draws an attractor's or a repeller's symbol about its centre, beside its marker", () => {
+    const symbol: [number, number, number][] = [[1, 0, 0], [2, 0, 0]];
+    const { lines, markers } = rendered({ ...drawing({ segments: [], markers: [[10, 0, 0]] }), kind: "attractor", symbol });
+    expect(lines?.centre).toEqual([10, 0, 0]);
+    expect([...(lines?.offsets ?? [])]).toEqual([]);
+    expect([...(lines?.symbol?.offsets ?? [])]).toEqual([1, 0, 0, 2, 0, 0]);
+    expect([...(markers?.offsets ?? [])]).toEqual([0, 0, 0]);
+  });
+
+  it("names an attractor or a repeller below its symbol, and any other structure on its centre", () => {
+    const plain = drawing({ segments: [], markers: [[10, 0, 0]] });
+    const flow = { ...plain, id: "f", kind: "repeller", symbol: [[1, 0, 0] as [number, number, number]] };
+    const structures = { list: [], details: new Map(), drawings: new Map([["s", plain], ["f", flow]]), problem: undefined };
+    const names = namesOf(structures, new Set(["s", "f"]));
+    expect(names.find((n) => n.id === "s")?.below).toBeUndefined();
+    expect(names.find((n) => n.id === "f")?.below).toBe(SYMBOL_REACH);
   });
 
   it("draws nothing of a structure with no outline and no centre", () => {

@@ -41,7 +41,7 @@ requirements:
       shall: "name each drawn structure in the view."
     criteria:
       - key: 01a1a497-e843-728a-bce8-3ff67c685244
-        name: "Each structure's name is drawn at its centre."
+        name: "Each structure's name is drawn at its centre, but an attractor's or a repeller's, which is drawn just below the reach of its symbol's arrows."
       - key: 01a1a75d-dddb-74ed-8d5c-c9c9a3084e80
         name: "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel."
       - key: 01a1a497-e843-728a-bce8-3ff70e744c39

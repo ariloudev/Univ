@@ -7,7 +7,8 @@ import type { Rotations } from "../api/schemas.ts";
 import type { Geometry, StructureDetail } from "../api/structures.ts";
 import { frameOf } from "./frames.ts";
 import { boundary } from "./healpix.ts";
-import { type Outline, boundsEdges, boxEdges, empty, lines, polyline, rings } from "./outline.ts";
+import { FLOWS } from "./kinds.ts";
+import { type Outline, boundsEdges, boxEdges, empty, flowSymbol, lines, polyline, rings } from "./outline.ts";
 import { toMpc } from "./units.ts";
 import { type Mat3, type Vec3, add, cross, dot, norm, normalize, scale, sub, transpose, unapply } from "./vec.ts";
 
@@ -24,6 +25,9 @@ export interface StructureDrawing {
   outline: Outline;
   /** Drawn as its bounding box rather than its shape. */
   approximate: boolean;
+  /** The symbol of an attractor or a repeller, about its centre: segments in radii of a sphere
+   * drawn at a fixed size on the view. None for any other kind, or one with no centre. */
+  symbol: Vec3[] | undefined;
 }
 
 /** The rotation from the ICRS to a shape's `frame`, if the explorer can place it. */
@@ -163,9 +167,8 @@ function extentLines(at: Vec3, axes: readonly [Vec3, Vec3, Vec3], { place, k }: 
 
 /** The shape's outline in ICRS megaparsecs; none where its frame, unit or kind can't be drawn.
  * A point with published extents has a line through it along each. */
-function shapeOutline(detail: StructureDetail, rotations: Rotations): Outline | undefined {
+function shapeOutline(detail: StructureDetail, placing: Placing | undefined): Outline | undefined {
   const shape = detail.shape;
-  const placing = shape === null ? undefined : placingOf(shape, rotations);
   if (shape === null || placing === undefined) return undefined;
   const outline = outlineOf(shape.geometry, placing);
   const extents = detail.derivation?.extents;
@@ -198,12 +201,24 @@ export function structureName(detail: StructureDetail): string {
   return detail.derivation?.at_least === undefined ? detail.name : `${detail.name} (at least)`;
 }
 
+/** The flow symbol of a structure of `kind` if it is an attractor or a repeller, its arrows along
+ * the axes of its shape's frame, `placing`, or of the ICRS where it has no shape the explorer can
+ * place. */
+function symbolOf(kind: string, placing: Placing | undefined): Vec3[] | undefined {
+  const flow = FLOWS[kind];
+  if (flow === undefined) return undefined;
+  const turn: Turn = placing?.turn ?? ((v) => v);
+  return flowSymbol(flow, [turn([1, 0, 0]), turn([0, 1, 0]), turn([0, 0, 1])]);
+}
+
 /** How `detail` is drawn, its shape turned into the ICRS by `rotations`. */
 export function drawingOf(detail: StructureDetail, rotations: Rotations): StructureDrawing {
-  const base = { id: detail.id, name: structureName(detail), kind: detail.kind };
   const where = placed(detail);
+  const placing = detail.shape === null ? undefined : placingOf(detail.shape, rotations);
+  const symbol = where?.centre === undefined ? undefined : symbolOf(detail.kind, placing);
+  const base = { id: detail.id, name: structureName(detail), kind: detail.kind, symbol };
   const size = extentsSize(detail) ?? (where === undefined || detail.bounds === null ? undefined : norm(sub(where.max, where.min)));
-  const outline = shapeOutline(detail, rotations);
+  const outline = shapeOutline(detail, placing);
   if (outline !== undefined) return { ...base, centre: where?.centre, size, outline, approximate: false };
   if (where === undefined || detail.bounds === null) return { ...base, centre: undefined, size: undefined, outline: empty(), approximate: false };
   return { ...base, centre: where.centre, size, outline: lines(boundsEdges(where.min, where.max)), approximate: true };

@@ -88,6 +88,9 @@ uniform mat4 u_projection;
 // Device pixels per clip-space unit across and up the view, and the line's width in them.
 uniform vec2 u_pixels;
 uniform float u_width;
+// How much the offsets are scaled about the centre: 1 for an outline, and for a symbol drawn at
+// a fixed size on the view the megaparsecs its unit spans at the centre's distance.
+uniform float u_scale;
 // Just in front of the eye: an end behind it is moved along its segment to here, so that the
 // segment's direction on the view is defined.
 const float NEAR = 1e-9;
@@ -95,8 +98,8 @@ vec4 inFront(vec4 end, vec4 other) {
   return end.w >= NEAR ? end : mix(end, other, (NEAR - end.w) / (other.w - end.w));
 }
 void main() {
-  vec4 a = u_projection * vec4(u_axes * a_from + u_centre, 1.0);
-  vec4 b = u_projection * vec4(u_axes * a_to + u_centre, 1.0);
+  vec4 a = u_projection * vec4(u_axes * (a_from * u_scale) + u_centre, 1.0);
+  vec4 b = u_projection * vec4(u_axes * (a_to * u_scale) + u_centre, 1.0);
   if (a.w < NEAR && b.w < NEAR) {
     // Wholly behind the eye: outside the clip volume, not drawn.
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);

@@ -56,11 +56,12 @@ export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
 /** Each kind of structure's colour for its outline and markers (see-the-structures), apart from
  * one another, from the points' blue and from the chosen structure's white: violets for what is
  * emptier than its surroundings, oranges and reds for what is denser, greens for walls and
- * filaments, yellows for the quasar and burst structures of the distant universe. */
+ * filaments, yellows for the quasar and burst structures of the distant universe, and magentas
+ * for the centres of a flow, attractors and repellers, one family. */
 const STRUCTURE_KIND_COLOURS: Readonly<Record<string, readonly [number, number, number]>> = {
   void: [0.62, 0.45, 1],
-  repeller: [0.88, 0.4, 0.95],
-  attractor: [1, 0.2, 0.45],
+  repeller: [0.8, 0.35, 1],
+  attractor: [1, 0.25, 0.95],
   supercluster: [1, 0.55, 0.35],
   supercluster_complex: [1, 0.33, 0.3],
   basin: [1, 0.78, 0.3],
@@ -72,6 +73,21 @@ const STRUCTURE_KIND_COLOURS: Readonly<Record<string, readonly [number, number, 
   arc: [0.7, 0.85, 0.15],
   shell: [1, 0.5, 0.78],
 };
+
+/** The way the reconstructed flow runs at each kind of structure that is a centre of a flow
+ * (see-the-structures): in to an attractor, where a peculiar-velocity field converges, and out
+ * from a repeller, where it diverges. Both are the fixed points of one field, a sink and a
+ * source, and are drawn alike, as a sphere with arrows along the flow. */
+export type Flow = "in" | "out";
+export const FLOWS: Readonly<Record<string, Flow>> = { attractor: "in", repeller: "out" };
+
+/** The radius of the sphere an attractor or a repeller is drawn as, device pixels whatever the
+ * eye's distance: a symbol, not its extent. Its arrows reach `FLOW_REACH` radii. */
+export const FLOW_PIXELS = 24;
+
+/** The widest line a flow symbol is drawn in, device pixels: the chosen structure's lines would
+ * fill a sphere so small. */
+export const FLOW_LINE_WIDTH = 2.5;
 
 /** How opaque a structure's outline and markers are drawn, and fainter where it is drawn by its
  * bounding box, marked approximate. */

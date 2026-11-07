@@ -88,6 +88,19 @@ describe("the structures", () => {
     expect(screen.queryByTestId("structure-extents")).toBeNull();
   });
 
+  it("say an attractor's or a repeller's sphere is a symbol and which way its arrows point, and only for them", () => {
+    const { unmount } = render(<StructurePanel detail={{ ...LOCAL_VOID, kind: "attractor" }} approximate={false} onClose={() => undefined} />);
+    expect(screen.getByTestId("structure-flow").textContent).toBe(
+      "Its sphere is a symbol of a fixed size on the view, not its extent; its arrows point in toward it, where its reconstructed flow converges.",
+    );
+    unmount();
+    const again = render(<StructurePanel detail={{ ...LOCAL_VOID, kind: "repeller" }} approximate={false} onClose={() => undefined} />);
+    expect(screen.getByTestId("structure-flow").textContent).toContain("out from it, where its reconstructed flow diverges");
+    again.unmount();
+    render(<StructurePanel detail={LOCAL_VOID} approximate={false} onClose={() => undefined} />);
+    expect(screen.queryByTestId("structure-flow")).toBeNull();
+  });
+
   it("name a primitive shape by its form", () => {
     const sphere = shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "primitive", primitive: { form: "sphere", centre: [0, 0, 0], radius: 1 } } });
     expect(matchedText({ ...LOCAL_VOID, shape: sphere, derivation: null }, false)).toBe("a sphere in icrs");
