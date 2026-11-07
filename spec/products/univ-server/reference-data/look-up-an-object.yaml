@@ -18,6 +18,12 @@ requirements:
     criteria:
       - key: 01a19f1e-d177-716d-b124-3d0f2163e49f
         name: "The response lists every catalogue entry resolved to the object, each with its source and the designation that source gives it."
+      - key: 01a1b7d8-3f35-70aa-853f-45a936e8825f
+        name: "Each designation in the response gives the identifier as its source publishes it, and in its catalogue's form where the source's definition gives one."
+      - key: 01a1b7d8-3f35-70aa-853f-45aa7e2ca87a
+        name: "The response lists the object's designations in the order the release gives them, the preferred designation first."
+      - key: 01a1b7d8-3f35-70aa-853f-45aba93bf7fc
+        name: "The response gives each flag of each catalogue entry with its value as the source publishes it."
       - key: 01a19f1e-d177-716d-b124-3d100d0beecf
         name: "The response lists every measurement with its native value, unit, uncertainty, kind of value and source."
       - key: 01a19f1e-d177-716d-b124-3d11207d1f43
@@ -45,6 +51,8 @@ requirements:
         name: "A common name such as M31 resolves through the names the sources publish for their catalogue entries."
       - key: 01a19f1e-d177-716d-b124-3d192b854029
         name: "Name matching ignores letter case and whitespace."
+      - key: 01a1b7d8-3f35-70aa-853f-45aceeef58a0
+        name: "A designation in its catalogue's form, such as HIP 32754, resolves as a name does."
       - key: 01a19f1e-d177-716d-b124-3d1a9f344b6d
         name: "A name that more than one object carries answers with the list of those objects instead of choosing one."
   - key: 01a19f1e-d177-716d-b124-3d1b89e0362b

@@ -1,0 +1,12 @@
+key: 01a1b7d4-7643-74c0-a873-b027e45ef8ae
+id: w-names
+versions:
+  - key: 01a1b7d4-7643-74c0-a873-b02ea43d7978
+    at: 2026-11-07T21:05:16Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Name sources"
+    goal: "IAU star names and Messier/NGC/IC names are ingested as cited sources and attached to existing objects; lookup by these names works"
+    status: planned

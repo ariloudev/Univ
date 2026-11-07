@@ -1,0 +1,64 @@
+key: 01a1b7d7-c032-73ad-803e-b101c9b9b10c
+slug: frame-the-view-as-an-atlas
+name: "Frame the view as an atlas"
+body: |
+  Laying the explorer out as printed celestial atlases lay out a chart: the view inside a
+  neat line whose edges are marked with coordinates, the panels in the margins about it, and a
+  key and a scale along its foot. A direction is the same from every point of space, so the marks
+  on the edges hold wherever the eye is, far from Earth as well as at it.
+realizes:
+  - 01a1a497-e843-728a-bce8-3fcf940bdac0
+  - 01a1a497-e843-728a-bce8-3fd1631f1368
+requirements:
+  - key: 01a1b7d7-c032-73ad-803e-b10246def191
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "mark the edges of the view with the directions of sight through them, in the axes the view is drawn in."
+    criteria:
+      - key: 01a1b7d7-c032-73ad-803e-b103f2a0c853
+        name: "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes."
+      - key: 01a1b7d7-c032-73ad-803e-b10435170cb6
+        name: "The ticks of an edge are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart."
+      - key: 01a1b7d7-c032-73ad-803e-b105558be2c4
+        name: "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees."
+      - key: 01a1b7d7-c032-73ad-803e-b106cab43cde
+        name: "Each edge names the coordinate its ticks give, such as galactic longitude."
+      - key: 01a1b7d7-c032-73ad-803e-b107f30dda23
+        name: "The ticks follow the view as it turns, zooms and moves, and as the axes are changed."
+  - key: 01a1b7d7-c032-73ad-803e-b108ccec8a0c
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "keep its panels in the margins about the view, never over it."
+    criteria:
+      - key: 01a1b7d7-c032-73ad-803e-b1098469cdfc
+        name: "The left margin holds the view's controls, the groups of what is drawn and the list of structures."
+      - key: 01a1b7d7-c032-73ad-803e-b10a29501e13
+        name: "The right margin holds the search and the record of the chosen object or structure."
+      - key: 01a1b7d7-c032-73ad-803e-b10be4240ee2
+        name: "The bottom margin holds the key, the scale and the credits."
+      - key: 01a1b7d7-c032-73ad-803e-b10c2a3715b9
+        name: "No panel covers the view on a window at least 1,024 CSS pixels wide."
+      - key: 01a1b7d7-c032-73ad-803e-b10d8ab271ac
+        name: "On a narrower window, each margin folds into a button that opens it over the view and closes it again."
+  - key: 01a1b7d7-c032-73ad-803e-b10ec3cb74b8
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw a scale of the view at the distance of its focus."
+    criteria:
+      - key: 01a1b7d7-c032-73ad-803e-b10fa8776879
+        name: "The scale is a bar of a round length, 1, 2 or 5 times a power of ten of parsecs, kiloparsecs or megaparsecs, between 60 and 160 CSS pixels long at the focus's distance."
+      - key: 01a1b7d7-c032-73ad-803e-b11043cf39a0
+        name: "The scale is labelled with its length and its unit, and changes with the eye's distance from the focus."
+  - key: 01a1b7d7-c032-73ad-803e-b11163a65264
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "name structures and objects as atlases name areas and points."
+    criteria:
+      - key: 01a1b7d7-c032-73ad-803e-b1129a75edd3
+        name: "Structures are named in italic type, in the view, in their list and in their panel."
+      - key: 01a1b7d7-c032-73ad-803e-b11383d20219
+        name: "Objects are named in upright type, in the hover label and in their panel."

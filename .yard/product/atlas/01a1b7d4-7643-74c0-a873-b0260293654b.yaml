@@ -1,0 +1,12 @@
+key: 01a1b7d4-7643-74c0-a873-b0260293654b
+id: w-designations
+versions:
+  - key: 01a1b7d4-7643-74c0-a873-b02def560e1b
+    at: 2026-11-07T21:05:16Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Designations and flag meanings served"
+    goal: "Source definitions carry cited designation forms and flag meanings; ingest stores them and Univ Server serves formatted designations"
+    status: planned

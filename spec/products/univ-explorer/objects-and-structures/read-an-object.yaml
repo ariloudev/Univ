@@ -15,6 +15,8 @@ requirements:
     criteria:
       - key: 01a1a497-e843-728a-bce8-3fe5ca42baa2
         name: "The label gives the object's id, its scale domain, its distance from Earth and the source and kind of value of that distance."
+      - key: 01a1b7d7-c032-73ad-803e-b0f94a6148dc
+        name: "Once the pointer has rested on the point for 0.3 seconds, the label gives the object's name or first designation, read from its record, in place of its id."
   - key: 01a1a497-e843-728a-bce8-3fe654d91c29
     statement:
       form: event_driven
@@ -23,11 +25,11 @@ requirements:
       shall: "show the object's record that Univ Server gives."
     criteria:
       - key: 01a1a6b2-b217-764e-93d0-da89ee4e3c67
-        name: "The panel is headed by the object's name: the name it was found by, or else the first name its sources give, or else its first designation, with its id beside it."
+        name: "The panel is headed by the object's name: the name it was found by, or else the first proper name its sources give, or else the first designation of its record, in its catalogue's form, with its id beside it."
       - key: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
         name: "The panel names a galaxy group as such, and names the scale domain of every object."
       - key: 01a1a497-e843-728a-bce8-3fe7201a1670
-        name: "The panel gives the object's names and designations, each with its source."
+        name: "The panel gives the object's names and designations, each designation in its catalogue's form, each with the title of its source, and a designation that more than one source gives once, with all of them."
       - key: 01a1a497-e843-728a-bce8-3fe8c93208cf
         name: "The panel gives the preferred distance with its uncertainty, its kind of value, its source and the rule that preferred it."
       - key: 01a1a497-e843-728a-bce8-3fe962cd751a
@@ -42,6 +44,20 @@ requirements:
         name: "Where no source publishes a spectral type, or only an unknown one, the panel gives the class the colour index suggests, labelled as estimated for a main-sequence star and citing Pecaut & Mamajek 2013."
       - key: 01a1a8ac-052e-72b3-a33e-b33dc8e38c1d
         name: "The panel names the papers of each researched entry of the object."
+      - key: 01a1b7d7-c032-73ad-803e-b0fa7a60e532
+        name: "The panel gives the object's position on the sky as right ascension and declination and as galactic longitude and latitude, with the frame and epoch of each."
+      - key: 01a1b7d7-c032-73ad-803e-b0fb367dbf6d
+        name: "The panel gives each magnitude of the object with its band, its uncertainty, its kind of value and its source."
+      - key: 01a1b7d7-c032-73ad-803e-b0fc825b2931
+        name: "The panel gives the object's proper motion, radial velocity and redshift where its sources publish them, each with its uncertainty, kind of value and source."
+      - key: 01a1b7d7-c032-73ad-803e-b0fdf7abeef3
+        name: "The panel names each group the object is a member of, and each member of a group the object is, each of which can be chosen."
+      - key: 01a1b7d7-c032-73ad-803e-b0fe29efa362
+        name: "The panel names each structure of the release whose volume holds the object's position, each of which can be chosen."
+      - key: 01a1b7d7-c032-73ad-803e-b0ffeb6df712
+        name: "The panel gives each flag of each catalogue entry of the object with the meaning its source gives that value, or the value alone where its source gives none."
+      - key: 01a1b7d7-c032-73ad-803e-b1003b3339be
+        name: "Each value in the panel is marked with the symbol of its kind of value that the key shows."
       - key: 01a1a497-e843-728a-bce8-3febf4df9871
         name: "The chosen object is marked in the view."
       - key: 01a1a497-e843-728a-bce8-3fec1fe0b4b3
