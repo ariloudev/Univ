@@ -280,7 +280,7 @@ impl State {
 /// # Errors
 ///
 /// Fails when `current` cannot be read or names no directory `states/{n}`.
-fn current_dir(dir: &Path) -> Result<PathBuf, FileError> {
+pub fn current_dir(dir: &Path) -> Result<PathBuf, FileError> {
     let current = dir.join(CURRENT);
     if !current.exists() {
         return Ok(dir.to_path_buf());

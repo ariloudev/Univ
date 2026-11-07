@@ -280,7 +280,7 @@ impl Next {
 /// # Errors
 ///
 /// Fails when the directory cannot be made.
-pub(super) fn fresh(dir: &Path) -> std::io::Result<()> {
+pub fn fresh(dir: &Path) -> std::io::Result<()> {
     if dir.exists() {
         std::fs::remove_dir_all(dir)?;
     }
@@ -331,6 +331,21 @@ pub(super) fn hash_at(places: &[usize], row: &[SqlValue]) -> u128 {
     let mut b = [0_u8; 16];
     b.copy_from_slice(&h.finalize()[..16]);
     u128::from_le_bytes(b)
+}
+
+/// Writes the values of `row` at `places` into `out` as an SQL tuple, `(1, 'a')`.
+pub(super) fn key_text(places: &[usize], row: &[SqlValue], out: &mut String) {
+    out.clear();
+    out.push('(');
+    for (n, &i) in places.iter().enumerate() {
+        if n > 0 {
+            out.push_str(", ");
+        }
+        if let Some(v) = row.get(i) {
+            v.write_literal(out);
+        }
+    }
+    out.push(')');
 }
 
 #[cfg(test)]

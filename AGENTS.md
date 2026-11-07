@@ -48,12 +48,18 @@ Run them from this directory.
 - `cargo xtask science <release-dir>` loads a built release's D1 rows into a scratch SQLite
   database and runs the cited checks of `rules/science-checks.yaml`, one line each; it exits
   non-zero on any FAIL. `--db <file>` keeps the database in a file and reuses it on the next run.
+  `--store <wrangler-dir>` reads the release's rows from the local D1 it was published to, rather
+  than from the builds of its chain; a release built as a change needs one or the other.
 - `cargo xtask integration` runs Univ Server's end-to-end tests: it writes the fixture state
   (ingest's fixture releases, the first pruned) into `target/integration/state`, applies the
   univ-layers migrations, starts `wrangler dev` on a free port and runs the ignored tests of
   `crates/univ-server/tests/` against it, then the explorer's Playwright tests (with axe) through
   its dev server on port 5318. It installs Playwright's Chromium where it is missing; without
   pnpm it skips the explorer's tests and says so. Wrangler's log is `target/integration/wrangler.log`.
+- `univ-ingest migrate` brings a local D1 and R2 of schema 5 under shared rows in place (a publish
+  does it first too), and `univ-ingest reindex` makes the state's row index and numbering of the
+  latest release again from the local D1: a store published before rows were shared is migrated,
+  then reindexed, before the next build.
 - `cargo xtask serve` runs Univ Server under `wrangler dev` on the real local state,
   `.cache/univ-ingest/wrangler`, where `univ-ingest publish` puts releases. It first creates any
   table of univ-model's release schema that state lacks (a release built before the schema grew

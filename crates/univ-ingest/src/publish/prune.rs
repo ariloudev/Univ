@@ -26,12 +26,13 @@ use univ_model::release::shards::Database;
 use univ_model::release::{ReleaseManifest, Scope, TABLES, keys, valid_in};
 
 use super::check::{
-    Status, counts_of, kept_releases, published_status, sha256s, sql_text, tables_in,
+    Status, counts_of, execute_sql, kept_releases, published_status, r2_manifest, sha256s,
+    sql_text, tables_in,
 };
 use super::journal::{self, Journal};
 use super::progress::{Lines, Progress};
 use super::{Latest, Store, StoreOptions};
-use crate::release::{parse_manifest, read_manifest, release_dir};
+use crate::release::{read_manifest, release_dir};
 use crate::watch::STOPPED;
 
 /// A release pruned.
@@ -105,12 +106,8 @@ fn manifest_of(
     number: u32,
     out: &Path,
 ) -> Result<Option<ReleaseManifest>, String> {
-    let key = keys::manifest(number);
-    if let Some(bytes) = store.get(&key)? {
-        let text = String::from_utf8_lossy(&bytes);
-        return parse_manifest(Path::new(&key), &text, number)
-            .map(Some)
-            .map_err(|e| e.to_string());
+    if let Some(manifest) = r2_manifest(store, number)? {
+        return Ok(Some(manifest));
     }
     let dir = release_dir(out, number);
     if !dir.join(keys::MANIFEST).exists() {
@@ -126,15 +123,26 @@ fn manifest_of(
 /// named any.
 fn r2_keys(
     store: &mut dyn Store,
-    number: u32,
+    (number, status): (u32, &Status),
     options: &StoreOptions<'_>,
 ) -> Result<(Option<BTreeSet<String>>, bool), String> {
     let manifest = manifest_of(store, number, options.out)?;
     let journal = Journal::read(options.journals, number).map_err(|e| e.to_string())?;
-    if manifest.is_none() && journal.is_none() {
+    // The files its map of paths names: a release brought under shared rows has a manifest
+    // that names their keys under its prefix.
+    let mapped = if status.file_map {
+        let sql = format!(
+            "SELECT DISTINCT sha256 FROM release_files WHERE {}",
+            valid_in("", number)
+        );
+        sha256s(store, &sql)?
+    } else {
+        BTreeSet::new()
+    };
+    if manifest.is_none() && journal.is_none() && mapped.is_empty() {
         return Ok((None, false));
     }
-    let mut found = BTreeSet::new();
+    let mut found: BTreeSet<String> = mapped.iter().map(|s| keys::file(s)).collect();
     if let Some(m) = &manifest {
         let r2 = m.files.iter().filter(|f| f.target == Target::R2);
         found.extend(r2.filter_map(|f| f.key.clone()));
@@ -314,12 +322,8 @@ fn delete_rows(
         .collect();
     statements.extend(then);
     let sql = statements.join("\n") + "\n";
-    std::fs::create_dir_all(journals).map_err(|e| e.to_string())?;
     let file = journals.join(format!("prune-{number}-{}.sql", database.dir()));
-    std::fs::write(&file, sql).map_err(|e| format!("{}: {e}", file.display()))?;
-    let executed = store.execute_file(database, &file);
-    let _ = std::fs::remove_file(&file);
-    executed
+    execute_sql(store, database, &file, &sql)
 }
 
 /// Prunes release `number` from `store`. `progress` is given a line for each step.
@@ -355,7 +359,7 @@ pub fn prune_with(
     if latest.0 == Some(number) {
         return Err(PruneError::Latest { number });
     }
-    let (listing, journaled) = r2_keys(store, number, options).map_err(failed)?;
+    let (listing, journaled) = r2_keys(store, (number, &status), options).map_err(failed)?;
     if !status.listed {
         let Some(keys) = listing.filter(|_| journaled) else {
             return Err(PruneError::NotListed { number });

@@ -75,6 +75,10 @@ pub mod uncertainty;
 /// lands where nothing reads it, as release 10's once did in Wrangler's own `.wrangler/state`.
 pub const REAL_LOCAL_STATE: &str = ".cache/univ-ingest/wrangler";
 
+/// Where Wrangler keeps the local D1's `SQLite` files, within its state directory: one file a
+/// database, each named by a hash of its id, so what each holds tells which it is.
+pub const LOCAL_D1_FILES: &str = "v3/d1/miniflare-D1DatabaseObject";
+
 pub use cells::{Cell, CellRange, CellSpace};
 pub use fingerprint::{ColumnTotal, Fingerprinter};
 pub use manifest::{D1_CAP_BYTES, RELEASE_BUDGET_BYTES, ReleaseManifest};

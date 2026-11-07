@@ -70,7 +70,7 @@ impl ToSql for f64 {
     const KIND: ColumnKind = ColumnKind::Real;
 
     fn to_sql(&self) -> SqlValue {
-        SqlValue::Real(*self)
+        SqlValue::real(*self)
     }
 }
 

@@ -52,9 +52,20 @@ pub enum SqlValue {
     Text(String),
 }
 
+impl SqlValue {
+    /// A real as a REAL column gives it back: -0.0 as 0.0, which SQLite stores as the integer
+    /// 0, so that what is written, estimated, fingerprinted and hashed is what D1 holds. A
+    /// value that is not finite is kept, for the build's check to refuse.
+    #[must_use]
+    pub fn real(x: f64) -> Self {
+        // IEEE 754: -0.0 + 0.0 is +0.0, and every other value is unchanged.
+        Self::Real(x + 0.0)
+    }
+}
+
 impl From<Option<f64>> for SqlValue {
     fn from(value: Option<f64>) -> Self {
-        value.map_or(Self::Null, Self::Real)
+        value.map_or(Self::Null, Self::real)
     }
 }
 
@@ -78,7 +89,7 @@ impl From<&str> for SqlValue {
 
 impl From<f64> for SqlValue {
     fn from(value: f64) -> Self {
-        Self::Real(value)
+        Self::real(value)
     }
 }
 
@@ -272,8 +283,9 @@ impl Scope {
     }
 }
 
-/// The `retired` a shared row is estimated with: a release number SQLite stores in two bytes.
-const RETIRED_AT: SqlValue = SqlValue::Integer(1_000);
+/// The `release` and `retired` a shared row is estimated with: a release number SQLite stores
+/// in two bytes, whatever the release, so a row's estimate does not change with it.
+const A_RELEASE: SqlValue = SqlValue::Integer(1_000);
 
 /// A table of the schema: its columns in the order rows give them with the type of each, its
 /// primary key and its secondary indexes, each by column names, and which of its rows belong to
@@ -312,14 +324,25 @@ impl Table {
     /// page whole.
     #[must_use]
     pub fn estimated_bytes(&self, values: &[SqlValue]) -> u64 {
-        // A row shared between releases also stores its `retired`: NULL when written, a release
-        // number once a later release retires it, counted at two bytes so the estimate errs high.
-        let retired = (self.scope == Scope::PerRelease).then_some(&RETIRED_AT);
-        let stored = values.iter().chain(retired);
+        // A row shared between releases stores its release, which a kept row keeps from the
+        // release that added it, and its `retired`: NULL when written, a release number once a
+        // later release retires it. Both are counted at two bytes, so the estimate errs high and
+        // is the same in every release.
+        let shared = self.scope == Scope::PerRelease;
+        let release = self.position("release").filter(|_| shared);
+        let value = |i: usize| {
+            if Some(i) == release {
+                Some(&A_RELEASE)
+            } else {
+                values.get(i)
+            }
+        };
+        let retired = shared.then_some(&A_RELEASE);
+        let stored = (0..values.len()).filter_map(value).chain(retired);
         let mut bytes = stored_bytes(payload_bytes(stored), self.tree());
         for index in self.indexes {
             let columns = index.iter().chain(self.key.iter());
-            let picked = columns.filter_map(|c| self.position(c).and_then(|i| values.get(i)));
+            let picked = columns.filter_map(|c| self.position(c).and_then(value));
             bytes += stored_bytes(payload_bytes(picked), Tree::Index);
         }
         // Rounded up: the estimate errs high.
@@ -376,6 +399,10 @@ mod tests {
         assert_eq!(SqlValue::Real(1e300).literal(), "1e300");
         assert_eq!(SqlValue::Real(2.0).literal(), "2.0");
         assert_eq!(SqlValue::Real(f64::NAN).literal(), "NULL");
+        assert_eq!(SqlValue::from(-0.0), SqlValue::Real(0.0));
+        assert!(matches!(SqlValue::from(-0.0), SqlValue::Real(x) if x.is_sign_positive()));
+        assert!(matches!(SqlValue::from(f64::NAN), SqlValue::Real(x) if x.is_nan()));
+        assert_eq!(SqlValue::from(Some(-1.5)), SqlValue::Real(-1.5));
         assert_eq!(SqlValue::Integer(-7).literal(), "-7");
         assert_eq!(SqlValue::from(None::<f64>).literal(), "NULL");
     }
@@ -413,9 +440,13 @@ mod tests {
             SqlValue::Integer(300),
             SqlValue::from("abcd"),
         ];
-        // Record: header 1 + 4 serial types (the last for `retired`, two bytes), body 0 + 2 +
-        // 4 + 2, cell 4: 17. Index on (name, release, id): header 4, body 4 + 0 + 2, cell 4:
-        // 14. 31 / 0.65 = 47.7, rounded up.
-        assert_eq!(T.estimated_bytes(&row), 48);
+        // Record: header 1 + 4 serial types, body 2 + 2 + 4 + 2 (`release` and `retired` each
+        // at two bytes, whatever the release), cell 4: 19. Index on (name, release, id): header
+        // 4, body 4 + 2 + 2, cell 4: 16. 35 / 0.65 = 53.8, rounded up.
+        assert_eq!(T.estimated_bytes(&row), 54);
+        // The same row kept into a later release is estimated the same.
+        let mut later = row.clone();
+        later[0] = SqlValue::Integer(200);
+        assert_eq!(T.estimated_bytes(&later), 54);
     }
 }

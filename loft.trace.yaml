@@ -1448,7 +1448,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/stable_rows.rs"
         name: "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
-        body: b8d8b67d9dc6a65bc9ef3194b5fe1d2741957caba1ed5922f36e05a76277c880
+        body: 714f950d84a8a21fadc825af21805d44c4a67ae5b74a44a8d0a793c5fb19a614
       - file: "crates/univ-ingest/tests/shared_rows.rs"
         name: "a_later_release_leaves_every_read_of_an_earlier_one_as_it_was"
         body: 0295ebbaaefab69da4ae420fa1d6b2e142908a09de36b7e44bf6ccea230c696d
@@ -1479,12 +1479,18 @@ links:
       - file: "crates/univ-ingest/src/release/d1/index.rs"
         name: "an_index_finds_kept_changed_and_gone_rows_by_their_key"
         body: 6142bb33c8deffd22f373be1b136d7da8614e26d189cf63872f27cf1d42410c7
+  - node: 01a1b19f-a71f-7111-b5df-7f385b1742dd
+    reviewed: 844e5938fed49b27c29452c23795afb150161727f8a98e0572924521118c06b7
+    tests:
+      - file: "crates/univ-ingest/tests/stable_rows.rs"
+        name: "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
+        body: 714f950d84a8a21fadc825af21805d44c4a67ae5b74a44a8d0a793c5fb19a614
   - node: 01a1b19f-a71f-7111-b5df-7f39d65afd25
     reviewed: 876f7652d6c216c1d18567094d2ee98d3b0446e82e0881bdef0121a66432e23b
     tests:
       - file: "crates/univ-ingest/tests/stable_rows.rs"
         name: "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
-        body: b8d8b67d9dc6a65bc9ef3194b5fe1d2741957caba1ed5922f36e05a76277c880
+        body: 714f950d84a8a21fadc825af21805d44c4a67ae5b74a44a8d0a793c5fb19a614
   - node: 01a1b19f-a71f-7111-b5df-7f3bcb2e200b
     reviewed: ce6235132cbd8c5489017537b91cc133674852ba81cc1ec7636b25dfc61c5c68
     tests:
@@ -1615,8 +1621,8 @@ links:
         name: "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
         body: 17ddae9043d8b239fea06e899eedce982df87803ea92601647d699e261d678af
       - file: "crates/univ-ingest/tests/prune.rs"
-        name: "with_neither_manifest_nor_journal_pruning_refuses_and_with_the_journal_alone_it_prunes"
-        body: 6ad3d700aa402a3b5b828207f670566192a0656b41368f33fe3c7256755b91be
+        name: "with_neither_manifest_journal_nor_map_pruning_refuses_and_with_the_map_alone_it_prunes"
+        body: a8c5380179b30bcc09919b49722db22ea167f414fe71cf36fb8b06fbac6b7716
   - node: 01a1a931-2c8a-73a8-91f2-590d7b43ba10
     reviewed: 2f02e3ac23674c8a65481e5d5a7e1e2ca3c0fce06713b18ee24301a81aff7c5e
     tests:
@@ -1658,7 +1664,7 @@ links:
         body: dc5b686da25a1bd173ad2c430c6e2edcc9cccae445ade7a4655663d163ae6b94
       - file: "crates/univ-ingest/tests/stable_rows.rs"
         name: "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
-        body: b8d8b67d9dc6a65bc9ef3194b5fe1d2741957caba1ed5922f36e05a76277c880
+        body: 714f950d84a8a21fadc825af21805d44c4a67ae5b74a44a8d0a793c5fb19a614
   - node: 01a1b19f-a71f-7111-b5df-7f3f2c140ce6
     reviewed: b3f89e8dc812574b0c83bdf5677ecff20ec73e8c3f1f4fda17892e5022fb6dbb
     tests:
@@ -1743,6 +1749,42 @@ links:
       - file: "crates/univ-ingest/tests/publish_checks.rs"
         name: "a_release_built_on_a_parent_latest_does_not_point_to_is_refused"
         body: b00fc37fe82db955dbd1a2c48206d0b057cc9431bb813b4b129dbe99363ca09a
+  - node: 01a1b19f-a71f-7111-b5df-7f4375add914
+    reviewed: 0ce68849c3d6bfe3e8403c7cbdcca9019ca262a0e16538e2cf28df6eeda41950
+    tests:
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
+        body: 13f79a311ea51086dae43e08702feb9238feb55dc9c29b972e6ad34071171e61
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_bound_shard_given_the_tables_of_schema_5_is_brought_under_shared_rows_whenever_found"
+        body: 7d19297629aded5438b50cfc0042e2f599a8813290ae2a1a45a19bb85f5152a0
+  - node: 01a1b19f-a71f-7111-b5df-7f44a48bd262
+    reviewed: a4bcf56b4ecf0d5074e41baa26f8a7416babed12f4b5a293193f9bbb64e13e4c
+    tests:
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
+        body: 13f79a311ea51086dae43e08702feb9238feb55dc9c29b972e6ad34071171e61
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_migration_stopped_while_it_deleted_the_old_keys_deletes_the_rest_when_run_again"
+        body: 8e8eb90fcb06717f61cb5b7162743bb4c48fb80908c2981808a2e08f2aa8deca
+  - node: 01a1b19f-a71f-7111-b5df-7f45728f89f0
+    reviewed: deb4a612841f158c231c1933cc460d5b6c8590b0c0c59b3542c2a08375d95216
+    tests:
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
+        body: 13f79a311ea51086dae43e08702feb9238feb55dc9c29b972e6ad34071171e61
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_change"
+        body: e22e1819be56787d5faf2653bd1e3806912f45afd77ac28fe99eebd418c0806e
+  - node: 01a1b19f-a71f-7111-b5df-7f4682a162c9
+    reviewed: 65b427cecc41ee9c1e8f56e1eefb5fffd5573e96df64f6c2e1b22c81e8cc7f9b
+    tests:
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
+        body: 13f79a311ea51086dae43e08702feb9238feb55dc9c29b972e6ad34071171e61
+      - file: "crates/univ-ingest/tests/migrate_store.rs"
+        name: "a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_change"
+        body: e22e1819be56787d5faf2653bd1e3806912f45afd77ac28fe99eebd418c0806e
   - node: 01a19f22-b0bc-76da-bac8-977d3868a411
     reviewed: cc37beca30b495d7bc6ca64117e2a846be04474bbe21d4eebfcd6054cd9631a6
     tests:
@@ -4235,7 +4277,7 @@ links:
     tests:
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
-        body: ac7168252ef85098892ee5ecb4ed1dc61a1873d31e1363010b47e4dc23c9574d
+        body: f6c747ae631f27dc00e680c0ce8c1edd9575b48190839a56cc5615739e0f31aa
       - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
         name: "shows each kind of structure's colour beside its box"
         body: 36027fd57d2e962e3d067e174e71d4baa24e5e7367441320f936101aa6886a1f

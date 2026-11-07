@@ -16,11 +16,13 @@
 
 mod compare;
 mod index;
+mod indexer;
 mod parts;
 mod state;
 
 pub use compare::Before;
-pub use index::ROWS;
+pub use index::{ROWS, fresh as fresh_index};
+pub use indexer::Indexer;
 pub use parts::MAX_FILE_BYTES;
 
 use sha2::{Digest, Sha256};
@@ -231,15 +233,7 @@ impl<'s> D1Writer<'s> {
                 .previous
                 .as_mut()
                 .and_then(|p| p.compare(key, content));
-            self.key_text.clear();
-            self.key_text.push('(');
-            for (n, &i) in state.key.iter().enumerate() {
-                if n > 0 {
-                    self.key_text.push_str(", ");
-                }
-                values[i].write_literal(&mut self.key_text);
-            }
-            self.key_text.push(')');
+            index::key_text(&state.key, values, &mut self.key_text);
             let release = kept.unwrap_or(number);
             next.record(
                 Indexed {

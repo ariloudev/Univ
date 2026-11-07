@@ -148,7 +148,17 @@ fn text(store: &MemoryStore) -> String {
     .unwrap();
     for table in TABLES {
         if SHARD_TABLES.contains(&table) {
-            dump(store.shards.values(), table, &mut out);
+            // A shard bound but never loaded holds no table.
+            let loaded = store.shards.values().filter(|db| {
+                db.query_row(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
+                    [table],
+                    |r| r.get::<_, i64>(0),
+                )
+                .unwrap()
+                    > 0
+            });
+            dump(loaded, table, &mut out);
         } else {
             dump(std::iter::once(db), table, &mut out);
         }

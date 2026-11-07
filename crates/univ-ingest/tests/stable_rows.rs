@@ -111,9 +111,6 @@ fn changed<V: PartialEq>(a: &BTreeMap<String, V>, b: &BTreeMap<String, V>) -> Ve
 fn a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did() {
     let mut f = fixture();
     let last = f.structures.pop().unwrap();
-    // Release 1 stores its number in no bytes, as SQLite does 0 and 1, so its rows are
-    // estimated a byte smaller than any later release's: the comparison starts at release 2.
-    build_next(&f);
     let first = build_next(&f);
     let numbering = kept(f.state.path());
     assert!(!numbering.terms.is_empty() && !numbering.cells.is_empty());
@@ -172,6 +169,22 @@ fn a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before
             }
         }
     }
+    // Nor any tile: each is the release before's file, which publishing leaves where it is.
+    let tiles = |dir: &Path| -> BTreeMap<String, String> {
+        read_manifest(dir)
+            .files
+            .iter()
+            .filter(|f| {
+                let bin = Path::new(&f.path)
+                    .extension()
+                    .is_some_and(|x| x.eq_ignore_ascii_case("bin"));
+                f.path.starts_with("tiles/") && bin
+            })
+            .map(|f| (f.path.clone(), f.sha256.clone()))
+            .collect()
+    };
+    assert!(!tiles(&first.dir).is_empty());
+    assert_eq!(tiles(&first.dir), tiles(&second.dir));
     let structures =
         m.d1.tables
             .iter()

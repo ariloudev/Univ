@@ -14,6 +14,8 @@ use super::{Latest, QueryRow, Store};
 pub struct Status {
     /// Whether the catalogue holds the index of the object shards (schema version 5).
     pub shard_index: bool,
+    /// Whether the catalogue maps each release's paths to its files (schema version 6).
+    pub file_map: bool,
     /// The release `latest` points to, and when it was moved there.
     pub latest: Option<(u32, String)>,
     /// Whether D1 lists the release.
@@ -78,6 +80,7 @@ pub fn published_status(store: &mut dyn Store, number: u32) -> Result<Status, St
     let row = rows.first();
     Ok(Status {
         shard_index: tables.contains("release_shards"),
+        file_map: tables.contains("release_files"),
         latest,
         listed: row.is_some(),
         published_at: row.and_then(|r| text(r, "published_at")),
@@ -303,4 +306,46 @@ pub fn kept_releases(store: &mut dyn Store, number: u32) -> Result<Vec<u32>, Str
 pub fn schema_version(store: &mut dyn Store, database: Database) -> Result<Option<i64>, String> {
     let rows = store.query(database, "SELECT MAX(version) AS v FROM schema_version")?;
     Ok(rows.first().and_then(|r| integer(r, "v")))
+}
+
+/// Runs `sql` in `database`, through `file`, which is removed after whether or not it ran.
+///
+/// # Errors
+///
+/// Fails when the file cannot be written or D1 refuses it.
+pub fn execute_sql(
+    store: &mut dyn Store,
+    database: Database,
+    file: &std::path::Path,
+    sql: &str,
+) -> Result<(), String> {
+    if let Some(dir) = file.parent() {
+        std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    }
+    std::fs::write(file, sql).map_err(|e| format!("{}: {e}", file.display()))?;
+    let executed = store.execute_file(database, file);
+    let _ = std::fs::remove_file(file);
+    executed
+}
+
+/// The manifest of release `number` as R2 holds it, if it does.
+///
+/// # Errors
+///
+/// Fails when R2 cannot be read or the manifest does not parse.
+pub fn r2_manifest(
+    store: &mut dyn Store,
+    number: u32,
+) -> Result<Option<univ_model::release::ReleaseManifest>, String> {
+    let key = univ_model::release::keys::manifest(number);
+    let Some(bytes) = store.get(&key)? else {
+        return Ok(None);
+    };
+    crate::release::parse_manifest(
+        std::path::Path::new(&key),
+        &String::from_utf8_lossy(&bytes),
+        number,
+    )
+    .map(Some)
+    .map_err(|e| e.to_string())
 }

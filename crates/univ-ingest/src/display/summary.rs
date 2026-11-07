@@ -16,6 +16,8 @@ pub enum Outcome {
     Published(u64),
     /// The run pruned this release.
     Pruned(u64),
+    /// The run migrated the store, or found it needed nothing.
+    Migrated(bool),
     /// The run stopped at a stage, for a reason.
     Stopped { stage: Stage, reason: String },
 }
@@ -81,8 +83,9 @@ impl Summary {
                 ..
             } => moved("Uploaded"),
             Outcome::Pruned(_)
+            | Outcome::Migrated(_)
             | Outcome::Stopped {
-                stage: Stage::Prune,
+                stage: Stage::Prune | Stage::Migrate,
                 ..
             } => format!("Ran for {elapsed}"),
             _ => moved("Fetched"),
@@ -107,6 +110,8 @@ impl Summary {
             Outcome::Built(n) => format!("Built release {n}"),
             Outcome::Published(n) => format!("Published release {n}"),
             Outcome::Pruned(n) => format!("Pruned release {n}"),
+            Outcome::Migrated(true) => "Migrated the store to shared rows".to_owned(),
+            Outcome::Migrated(false) => "The store needed no migration".to_owned(),
             Outcome::Stopped { stage, reason } => {
                 format!("Stopped at {}: {reason}", stage_name(*stage))
             }

@@ -10,6 +10,7 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
+rusqlite = { version = "0.32.1", features = ["bundled"] }
 thin-vec = "0.2.21"
 univ-model = { path = "../univ-model" }
 serde = { version = "1.0.229", features = ["derive"] }
@@ -42,6 +43,5 @@ mimalloc = { version = "0.1", default-features = false }
 dhat-heap = ["dep:dhat"]
 
 [dev-dependencies]
-rusqlite = { version = "0.32.1", features = ["bundled"] }
 tempfile = "3.27.0"
 wiremock = "0.6.5"

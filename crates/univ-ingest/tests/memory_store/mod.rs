@@ -48,7 +48,7 @@ pub struct MemoryStore {
     pub ops: Vec<Op>,
     /// Fails every upload once this many have been made.
     pub fail_after: Option<usize>,
-    /// Fails the first upload this holds of, and every one after it.
+    /// Fails the first upload this holds of, and every one after it; and each delete it holds of.
     pub fail_at: Option<fn(&Op) -> bool>,
     /// Gives back R2 objects with their last byte changed.
     pub corrupt_reads: bool,
@@ -84,6 +84,8 @@ impl MemoryStore {
                 return Err(format!("injected failure at {op:?}"));
             }
             self.uploads += 1;
+        } else if matches!(op, Op::Delete(_)) && self.fail_at.is_some_and(|at| at(&op)) {
+            return Err(format!("injected failure at {op:?}"));
         }
         self.ops.push(op);
         Ok(())
@@ -314,4 +316,22 @@ pub fn pruning(
         now: &now,
     };
     prune(store, number, &options, &mut |_| {})
+}
+
+/// The rows of a [`MemoryStore`]'s databases, as a reindex reads them.
+pub struct Rows<'a>(pub &'a MemoryStore);
+
+impl univ_ingest::release::reindex::RowSource for Rows<'_> {
+    fn databases(&self) -> Vec<Database> {
+        std::iter::once(Database::Catalogue)
+            .chain(self.0.shards.keys().map(|i| Database::Shard(*i)))
+            .collect()
+    }
+
+    fn db(&self, database: Database) -> Result<&Connection, String> {
+        match database {
+            Database::Catalogue => Ok(&self.0.db),
+            Database::Shard(i) => self.0.shards.get(&i).ok_or(format!("no shard {i}")),
+        }
+    }
 }

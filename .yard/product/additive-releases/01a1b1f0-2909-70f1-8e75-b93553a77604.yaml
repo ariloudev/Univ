@@ -10,3 +10,35 @@ versions:
     title: "W4: Publish and prune the change"
     goal: "Publish uploads only a release's change and checks the rows valid in it; prune deletes only what no kept release holds."
     status: planned
+  - key: 01a1b23d-a6ff-7044-abf1-224d2f4fecfb
+    at: 2026-11-06T19:02:27Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4: Publish and prune the change"
+    goal: "Publish uploads only files R2 does not hold, the cap counts the rows every kept release holds once, and the integration fixture publishes and prunes a chain of releases that share rows."
+    status: active
+  - key: 01a1b258-4525-74c6-8f34-56707855bd7b
+    at: 2026-11-06T19:31:31Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4: Publish and prune the change"
+    goal: "Publish uploads only files R2 does not hold, the cap counts the rows every kept release holds once, and the integration fixture publishes and prunes a chain of releases that share rows."
+    status: done
+blocks:
+  - key: 01a1b258-4525-74c6-8f34-566f659f6fc8
+    id: w4-merged
+    kind: note
+    versions:
+      - key: 01a1b258-4525-74c6-8f34-56712bacc07c
+        at: 2026-11-06T19:31:31Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W4 merged"
+        markdown: "Merged as `e5295b7` after `/simplify`, `/code-review`, a green `cargo xtask check` and `cargo xtask integration` (twice). Publish uploads only the R2 files its parent does not hold, and the cap counts each row D1 holds once, neither the rows a release keeps nor a resumed publish's own rows twice."
+        tone: success

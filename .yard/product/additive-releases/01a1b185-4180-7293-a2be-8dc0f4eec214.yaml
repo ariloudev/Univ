@@ -19,3 +19,26 @@ versions:
     title: "W1: Stable numbering and stable shards"
     goal: "Terms, sources and chains keep their numbers across releases and objects keep their shard, so an unchanged object writes identical rows in the next release."
     status: active
+  - key: 01a1b205-4952-7376-821e-56c6144714bd
+    at: 2026-11-06T18:00:53Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W1: Stable numbering and stable shards"
+    goal: "Terms, sources and chains keep their numbers across releases and objects keep their shard, so an unchanged object writes identical rows in the next release."
+    status: done
+blocks:
+  - key: 01a1b205-4952-7376-821e-56c551013506
+    id: w1-merged
+    kind: note
+    versions:
+      - key: 01a1b205-4952-7376-821e-56c74dcad59e
+        at: 2026-11-06T18:00:53Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W1 merged"
+        markdown: "Merged as `6755763` after `/simplify`, `/code-review` and a green `cargo xtask check`. Releases now keep their term, source and chain numbers and each shard's exact cells in `numbering.yaml` beside the id state; `shard_cells` is keyed by its first cell too. Release 10's state has no numbering yet: W5 seeds it from the published release."
+        tone: success
