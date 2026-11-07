@@ -1,0 +1,194 @@
+key: 01a1b7d1-3a0e-7193-8139-4fe9a9f1c354
+id: asked-toolu-01713k6tlhxt9gupaxmhqm7m
+versions:
+  - key: 01a1b7d1-3a0e-7193-8139-4feed82087c5
+    at: 2026-11-07T21:01:44Z
+    revision: 19
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Asked in the session"
+    status: active
+blocks:
+  - key: 01a1b7d1-3a0e-7193-8139-4feacbe2d312
+    id: ask-toolu-01713k6tlhxt9gupaxmhqm7m-1
+    kind: question
+    versions:
+      - key: 01a1b7d1-3a0e-7193-8139-4fef6544cc3e
+        at: 2026-11-07T21:01:44Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Which visual direction should the Univ Explorer revamp take? (Each keeps the 3D view as the main thing; they differ in identity and where panels live.)"
+        header: "Direction"
+        options:
+          - label: "Star atlas"
+            detail: "Borrowed from printed celestial atlases. The view sits inside a frame whose edges carry live coordinate ticks (l/b or RA/Dec). Panels dock into the frame's margins, so they never cover the view. Structure names are in an italic serif, as atlases name features. The legend is an atlas key along the bottom. Night-ink blue, ivory labels. The live graticule frame is the one bold element."
+            recommended: true
+          - label: "Catalogue data sheet"
+            detail: "The chrome recedes to one thin rail and the view fills the screen. The selected object or structure opens as a typeset catalogue record: designations as a header, then blocks for position, distance, brightness and motion. Uncertainties are set properly (34.68 +0.017/−0.014 pc). Every value carries a mark for its kind (measured, estimated, inferred, reconstructed). The typeset record is the bold element."
+          - label: "Refine the current"
+            detail: "Keep today's floating panels and dark-blue look, and make them consistent. Spacing, type scale and collapsible sections; the legend and help text become one tidy key; search becomes a command bar. The least change and the cheapest."
+        ownWords: true
+    responses:
+      - key: 01a1b7d3-61af-7233-9515-bd49abdc9db7
+        at: 2026-11-07T21:04:06Z
+        revision: 20
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Star atlas"
+  - key: 01a1b7d1-3a0e-7193-8139-4febc91e8234
+    id: ask-toolu-01713k6tlhxt9gupaxmhqm7m-2
+    kind: question
+    versions:
+      - key: 01a1b7d1-3a0e-7193-8139-4ff0d7475437
+        at: 2026-11-07T21:01:44Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Where should the catalogue prefixes in object names come from (\"HIP 32754\", \"Gaia DR3 1000166358456525568\", \"2MASS J12374380-4337163\")?"
+        header: "Designations"
+        options:
+          - label: "Source definitions"
+            detail: "Each source's YAML gains its designation form, cited from the catalogue's documentation. Ingest and the API serve it to every client, and the explorer orders designations by it. Takes an ingest and API change plus release 12; with additive releases that is about 25 min to build and 15 min to publish."
+            recommended: true
+          - label: "Explorer-side table"
+            detail: "A small table in the explorer maps each source to its prefix. Quick, with no new release, but only the explorer knows it and it sits outside the cited source definitions."
+        ownWords: true
+    responses:
+      - key: 01a1b7d3-61b0-70e5-9624-68d927b6fd68
+        at: 2026-11-07T21:04:06Z
+        revision: 20
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Source definitions"
+  - key: 01a1b7d1-3a0e-7193-8139-4fecaab9e857
+    id: ask-toolu-01713k6tlhxt9gupaxmhqm7m-3
+    kind: question
+    versions:
+      - key: 01a1b7d1-3a0e-7193-8139-4ff17e5f1d2b
+        at: 2026-11-07T21:01:44Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Should the release gain proper names, such as Sirius, M31 and NGC 4472, from new name sources?"
+        header: "Names"
+        options:
+          - label: "Later, separately"
+            detail: "Do the panel and the revamp first, with catalogue designations as headings. Plan the name sources (IAU star names, Messier, NGC/IC) as their own ingest wave afterwards, with a licence check for each."
+          - label: "Yes, in this work"
+            detail: "Add the name sources in the same push. It needs a new ingest wave, a licence check for each source, and release 12 before the panel can show the names."
+          - label: "No"
+            detail: "Catalogue designations are enough for now."
+        ownWords: true
+    responses:
+      - key: 01a1b7d3-61b0-70e5-9624-68dadcaa234f
+        at: 2026-11-07T21:04:06Z
+        revision: 20
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Yes, in this work"
+  - key: 01a1b7d1-3a0e-7193-8139-4fed64536978
+    id: ask-toolu-01713k6tlhxt9gupaxmhqm7m-4
+    kind: question
+    versions:
+      - key: 01a1b7d1-3a0e-7193-8139-4ff275bf9b48
+        at: 2026-11-07T21:01:44Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Which groups of information should the object panel show, beyond its names and distances?"
+        header: "Panel data"
+        options:
+          - label: "Sky position"
+            detail: "RA/Dec, plus galactic l/b, with the epoch and frame of each."
+          - label: "Brightness"
+            detail: "Magnitudes in each band, with their uncertainty and source."
+          - label: "Motion and redshift"
+            detail: "Proper motion, radial velocity and redshift. Most galaxies have a redshift rather than a distance."
+          - label: "Membership and flags"
+            detail: "Its group (for example a Cosmicflows-4 group), the structures it lies inside, and each catalogue's quality flags explained."
+        multiple: true
+        ownWords: true
+    responses:
+      - key: 01a1b7d3-61b0-70e5-9624-68db3a75cac6
+        at: 2026-11-07T21:04:06Z
+        revision: 20
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Sky position"
+          - "Brightness"
+          - "Motion and redshift"
+          - "Membership and flags"
+  - key: 01a1b7d3-d7da-727c-b82a-0e5af207a6e7
+    id: d-atlas-direction
+    kind: decision
+    number: 8
+    versions:
+      - key: 01a1b7d3-d7da-727c-b82a-0e5ee475325d
+        at: 2026-11-07T21:04:36Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The explorer is revamped as a star atlas"
+        consequence: "The view sits inside a frame with live coordinate ticks along its edges, and its panels dock into the frame's margins rather than floating over the view. Structure names are set in an italic serif, and the key runs along the bottom margin."
+        question: 01a1b7d1-3a0e-7193-8139-4feacbe2d312
+  - key: 01a1b7d3-d7da-727c-b82a-0e5b7bbd88a4
+    id: d-designation-source
+    kind: decision
+    number: 9
+    versions:
+      - key: 01a1b7d3-d7da-727c-b82a-0e5fc931e344
+        at: 2026-11-07T21:04:36Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Designation forms live in the source definitions"
+        consequence: "Each source's YAML gains its cited designation form, which ingest and the API serve. That changes univ-ingest and univ-server and needs release 12."
+        question: 01a1b7d1-3a0e-7193-8139-4febc91e8234
+  - key: 01a1b7d3-d7da-727c-b82a-0e5c58dfa84b
+    id: d-names-now
+    kind: decision
+    number: 10
+    versions:
+      - key: 01a1b7d3-d7da-727c-b82a-0e60bab828a3
+        at: 2026-11-07T21:04:36Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Proper-name sources join this work"
+        consequence: "IAU star names, Messier and NGC/IC are researched and licence-checked as new sources and matched to existing objects. Release 12 carries them together with the designation forms, and its build waits for the owner's approval."
+        question: 01a1b7d1-3a0e-7193-8139-4fecaab9e857
+  - key: 01a1b7d3-d7da-727c-b82a-0e5ddb468af2
+    id: d-panel-data
+    kind: decision
+    number: 11
+    versions:
+      - key: 01a1b7d3-d7da-727c-b82a-0e612a758a1a
+        at: 2026-11-07T21:04:36Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The object panel shows all four groups"
+        consequence: "The panel gains sky position (equatorial and galactic), brightness, motion and redshift, and membership and flags. Explaining flags means each source definition documents what its flag codes mean."
+        question: 01a1b7d1-3a0e-7193-8139-4fed64536978
