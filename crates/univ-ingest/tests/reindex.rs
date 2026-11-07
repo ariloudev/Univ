@@ -16,6 +16,7 @@ use release_fixture::{build_next, fixture};
 use univ_ingest::release::local_d1::LocalD1;
 use univ_ingest::release::reindex::reindex;
 use univ_ingest::release::{Kept, NUMBERING, ROWS};
+use univ_ingest::run::reindex_command;
 use univ_ingest::state::State;
 use univ_model::release::LOCAL_D1_FILES;
 use univ_model::release::{Scope, TABLES};
@@ -115,4 +116,14 @@ fn the_local_d1_is_read_from_its_files_each_told_by_what_it_holds() {
         all
     };
     assert_eq!(listed(a.path()), listed(b.path()));
+
+    // `univ-ingest reindex` on a state kept before there was a numbering, as release 10's was:
+    // the ledger alone names the release, and the numbering and index come back whole.
+    let built = State::read(state).unwrap().kept;
+    let dir = univ_ingest::state::current_dir(state).unwrap();
+    std::fs::remove_file(dir.join(NUMBERING)).unwrap();
+    std::fs::remove_dir_all(dir.join(ROWS)).unwrap();
+    reindex_command(state, persist.path()).unwrap();
+    assert_eq!(State::read(state).unwrap().kept, built);
+    assert_eq!(listed(&dir), listed(a.path()));
 }
