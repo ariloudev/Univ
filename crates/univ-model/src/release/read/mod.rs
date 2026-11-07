@@ -14,7 +14,7 @@ mod measurements;
 mod placed;
 mod reading;
 
-pub use reading::{IDENTIFIER, Reading, names};
+pub use reading::Reading;
 
 use std::collections::{BTreeMap, HashMap};
 
@@ -190,6 +190,7 @@ pub fn object(
     entries: &[Row],
     measurements: &[Row],
     designations: &[Row],
+    names: &[Row],
 ) -> Result<ObjectRecord, ReadError> {
     let c = Columns::new(v, "objects", object);
     let mut heads = BTreeMap::new();
@@ -237,7 +238,7 @@ pub fn object(
     };
     Ok(ObjectRecord {
         designations: v.reading().designations(designations, &own),
-        names: Vec::new(),
+        names: reading::names(v, names)?,
         release: v.release(),
         id: u64::try_from(id).map_err(|_| c.error("id", format!("{id} is negative")))?,
         kind: c.typed("kind")?,

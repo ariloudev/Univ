@@ -68,18 +68,30 @@ pub struct SourceDetail {
     pub flags: BTreeMap<String, FlagMeanings>,
 }
 
+/// The placeholder a designation form holds once, where the source's identifier goes.
+pub const IDENTIFIER: &str = "{identifier}";
+
+/// `identifier` written in designation form `form`, such as `HIP 32754` in `HIP {identifier}`.
+#[must_use]
+pub fn write_in(form: &str, identifier: &str) -> String {
+    form.replacen(IDENTIFIER, identifier, 1)
+}
+
 /// The form a source's catalogue writes a designation in, holding `{identifier}` once, and the
-/// catalogue documentation it is read from.
+/// catalogue documentation it is read from, as a source definition gives them.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
 pub struct DesignationForm {
     pub form: String,
     pub cite: String,
 }
 
-/// What each value of one flag column means, and the catalogue documentation that says so.
+/// What each value of one flag column means, and the catalogue documentation that says so, as a
+/// source definition gives them.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
 pub struct FlagMeanings {
     /// Each value as the source publishes it, with its meaning.
     pub values: BTreeMap<String, String>,

@@ -8,7 +8,6 @@ mod reference;
 mod rules;
 
 pub use access::{Access, Holds, PreparedFile, RemoteFile, Slices, TapRun};
-pub use reading::{DesignationForm, FlagMeanings, IDENTIFIER};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
@@ -18,7 +17,7 @@ pub use normalization::{
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
 };
-pub use univ_model::api::sources::Permission;
+pub use univ_model::api::sources::{DesignationForm, FlagMeanings, Permission};
 use univ_model::time::is_calendar_date;
 
 use std::collections::{BTreeMap, HashSet};

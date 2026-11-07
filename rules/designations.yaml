@@ -4,10 +4,11 @@
 
 statement: >-
   The designation astronomers name an object by comes first: for a star its Hipparcos number,
-  then its Gaia DR3 source id; for a galaxy the catalogues of named and nearby galaxies, then its
-  PGC number, then the 2MASS designation the redshift surveys of the whole sky share, then each
-  survey's own, whole-sky before deep and older before newer. A source not listed here follows
-  every listed one, and sources of one place follow one another by id.
+  then its Gaia source id; for a galaxy the catalogues of named and nearby galaxies, then its PGC
+  number, then the 2MASS designation the redshift surveys of the whole sky share, then each other
+  survey's own in the order listed. That last order is a choice of display, not a ranking of the
+  surveys. A source not listed here follows every listed one, and sources of one place follow
+  one another by id.
 order:
   - hipparcos-2007
   - hipparcos-1997

@@ -557,7 +557,8 @@
         "type": "object"
       },
       "DesignationForm": {
-        "description": "The form a source's catalogue writes a designation in, holding `{identifier}` once, and the\ncatalogue documentation it is read from.",
+        "additionalProperties": false,
+        "description": "The form a source's catalogue writes a designation in, holding `{identifier}` once, and the\ncatalogue documentation it is read from, as a source definition gives them.",
         "properties": {
           "cite": {
             "type": "string"
@@ -1112,7 +1113,8 @@
         ]
       },
       "FlagMeanings": {
-        "description": "What each value of one flag column means, and the catalogue documentation that says so.",
+        "additionalProperties": false,
+        "description": "What each value of one flag column means, and the catalogue documentation that says so, as a\nsource definition gives them.",
         "properties": {
           "cite": {
             "type": "string"

@@ -27,13 +27,16 @@ fn designation(c: &Columns<'_>, source: &str, identifier: &str) -> Result<Design
         .map_err(|e| c.error("identifier", format!("{identifier:?}: {e}")))
 }
 
+/// The id of the source a row of `c` names by number (`source`).
+pub(super) fn source_of<'v>(v: &'v Vocabulary, c: &Columns<'_>) -> Result<&'v str, ReadError> {
+    let n = c.int("source")?;
+    v.source(n)
+        .ok_or_else(|| c.error("source", format!("{n} is not among the release's sources")))
+}
+
 /// The designation a row of `c` gives: its source by number (`source`) and its `identifier`.
 fn coded(v: &Vocabulary, c: &Columns<'_>) -> Result<Designation, ReadError> {
-    let n = c.int("source")?;
-    let source = v
-        .source(n)
-        .ok_or_else(|| c.error("source", format!("{n} is not among the release's sources")))?;
-    designation(c, source, c.text("identifier")?)
+    designation(c, source_of(v, c)?, c.text("identifier")?)
 }
 
 /// The entry's number, source id and identifier, which other entries' resolutions name.

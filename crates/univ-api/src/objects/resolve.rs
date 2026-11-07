@@ -159,28 +159,55 @@ pub async fn by_name<B: Backend>(
 }
 
 /// The objects of `release` carrying the designation `identifier` of source `source`, by id,
-/// each with the shard it is in: every object shard of the release is read at once, since a
-/// designation says nothing of where its object is.
+/// each with the shard it is in.
 pub async fn by_designation<B: Backend>(
     backend: &B,
     release: u32,
     source: &str,
     identifier: &str,
 ) -> Result<Vec<(u64, u32)>, Problem> {
-    let Some(n) = vocabulary(backend, release).await?.source_n(source) else {
+    by_designations(
+        backend,
+        release,
+        &[(source.to_owned(), identifier.to_owned())],
+    )
+    .await
+}
+
+/// The objects of `release` carrying any of `designations`, each a source and an identifier, by
+/// id, each once with the shard it is in: every object shard of the release is read at once, in
+/// one statement each, since a designation says nothing of where its object is.
+pub async fn by_designations<B: Backend>(
+    backend: &B,
+    release: u32,
+    designations: &[(String, String)],
+) -> Result<Vec<(u64, u32)>, Problem> {
+    let vocabulary = vocabulary(backend, release).await?;
+    let mut params = vec![json!(release)];
+    let mut any = Vec::new();
+    for (source, identifier) in designations {
+        if let Some(n) = vocabulary.source_n(source) {
+            any.push(format!(
+                "(source = ?{} AND identifier = ?{})",
+                params.len() + 1,
+                params.len() + 2
+            ));
+            params.extend([json!(n), json!(identifier)]);
+        }
+    }
+    if any.is_empty() {
         return Ok(Vec::new());
-    };
+    }
     let map = shard_map(backend, release).await?;
-    let params = [json!(release), json!(n), json!(identifier)];
-    let sql = concat!(
-        "SELECT DISTINCT object_id FROM designations \
-         WHERE source = ?2 AND identifier = ?3 AND ",
+    let sql = format!(
+        "SELECT DISTINCT object_id FROM designations WHERE ({}) AND {}",
+        any.join(" OR "),
         valid_in!("", "?1")
     );
     let statements: Vec<(u32, &str, &[serde_json::Value])> = map
         .shards
         .iter()
-        .map(|&shard| (shard, sql, &params[..]))
+        .map(|&shard| (shard, sql.as_str(), &params[..]))
         .collect();
     let mut found = Vec::new();
     for (&shard, rows) in map.shards.iter().zip(backend.shards(&statements).await?) {

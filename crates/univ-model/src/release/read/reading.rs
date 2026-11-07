@@ -2,22 +2,23 @@
 //! a designation in and the rank the designation rules give it, which order and format an
 //! object's designations and names.
 
-use std::cmp::Ordering;
 use std::collections::{BTreeSet, HashMap};
 
 use super::columns::Columns;
+use super::entries::source_of;
 use super::{ReadError, Row, Vocabulary};
 use crate::api::objects::{DesignationRecord, NameRecord};
+use crate::api::sources::{IDENTIFIER, write_in};
 use crate::ids::Designation;
-
-/// The placeholder a designation form holds once, where the identifier goes.
-pub const IDENTIFIER: &str = "{identifier}";
 
 /// Each source's designation form and rank, by the source's id.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Reading {
     forms: HashMap<String, String>,
     ranks: HashMap<String, u32>,
+    /// Each form's text before and after its identifier, with its source: what a lookup's
+    /// text is matched against.
+    parts: Vec<(String, String, String)>,
 }
 
 impl Reading {
@@ -26,6 +27,11 @@ impl Reading {
         let mut reading = Self::default();
         for (source, form, rank) in sources {
             if let Some(form) = form {
+                if let Some((before, after)) = form.split_once(IDENTIFIER) {
+                    reading
+                        .parts
+                        .push((source.clone(), before.to_owned(), after.to_owned()));
+                }
                 reading.forms.insert(source.clone(), form);
             }
             if let Some(rank) = rank {
@@ -38,25 +44,27 @@ impl Reading {
     /// `identifier` of `source` in its catalogue's form, when the source has one.
     #[must_use]
     pub fn designation(&self, source: &str, identifier: &str) -> Option<String> {
-        let form = self.forms.get(source)?;
-        Some(form.replacen(IDENTIFIER, identifier, 1))
+        Some(write_in(self.forms.get(source)?, identifier))
     }
 
     /// The identifier `text` is in the form of each source, as the source and the identifier:
-    /// `HIP 32754` is Hipparcos's `32754`. Letter case is ignored around the identifier.
+    /// `HIP 32754` is Hipparcos's `32754`. Letter case and white space are ignored in the form's
+    /// own text, as a name's are, so `hip32754` reads the same.
     #[must_use]
     pub fn parse(&self, text: &str) -> Vec<(String, String)> {
-        let text = text.trim();
         let mut found: Vec<(String, String)> = self
-            .forms
+            .parts
             .iter()
-            .filter_map(|(source, form)| {
-                let (before, after) = form.split_once(IDENTIFIER)?;
-                let lower = text.to_lowercase();
-                let rest = lower.strip_prefix(&before.to_lowercase())?;
-                let rest = rest.strip_suffix(&after.to_lowercase())?;
-                let start = before.len();
-                let identifier = text.get(start..start + rest.len())?.trim();
+            .filter_map(|(source, before, after)| {
+                let rest = loosely(text.chars(), before.chars())
+                    .map(|n| text.char_indices().nth(n).map_or("", |(at, _)| &text[at..]))?;
+                let cut = loosely(rest.chars().rev(), after.chars().rev())?;
+                let kept = rest.chars().count() - cut;
+                let end = rest
+                    .char_indices()
+                    .nth(kept)
+                    .map_or(rest.len(), |(at, _)| at);
+                let identifier = rest[..end].trim();
                 (!identifier.is_empty()).then(|| (source.clone(), identifier.to_owned()))
             })
             .collect();
@@ -64,10 +72,9 @@ impl Reading {
         found
     }
 
-    /// How two sources are ordered: the ranked first, by rank, then by id.
-    fn order(&self, a: &str, b: &str) -> Ordering {
-        let rank = |s: &str| self.ranks.get(s).copied().unwrap_or(u32::MAX);
-        rank(a).cmp(&rank(b)).then_with(|| a.cmp(b))
+    /// The place of `source` in the order: the ranked first, by rank.
+    fn rank(&self, source: &str) -> u32 {
+        self.ranks.get(source).copied().unwrap_or(u32::MAX)
     }
 
     /// `designations` as records in the order of their sources' ranks, then by source and
@@ -80,7 +87,10 @@ impl Reading {
         designations: Vec<Designation>,
         own: &BTreeSet<Designation>,
     ) -> Vec<DesignationRecord> {
-        let mut records: Vec<DesignationRecord> = designations
+        // Once each, by source and identifier; the sort by rank below keeps that order within
+        // a rank.
+        let unique: BTreeSet<Designation> = designations.into_iter().collect();
+        let mut records: Vec<DesignationRecord> = unique
             .into_iter()
             .map(|d| DesignationRecord {
                 designation: own
@@ -91,43 +101,55 @@ impl Reading {
                 identifier: String::from(&*d.identifier),
             })
             .collect();
-        records.sort_by(|a, b| {
-            self.order(&a.source, &b.source)
-                .then_with(|| a.identifier.cmp(&b.identifier))
-        });
-        records.dedup();
+        records.sort_by_cached_key(|r| self.rank(&r.source));
         records
     }
 }
 
+/// How many characters of `text` the literal `form` takes from its start, letter case and white
+/// space ignored on both sides; none when `text` does not start with it.
+fn loosely(text: impl Iterator<Item = char>, form: impl Iterator<Item = char>) -> Option<usize> {
+    let mut form = form
+        .filter(|c| !c.is_whitespace())
+        .flat_map(char::to_lowercase)
+        .peekable();
+    let mut taken = 0;
+    let mut text = text.peekable();
+    while form.peek().is_some() {
+        let c = text.next()?;
+        taken += 1;
+        if c.is_whitespace() {
+            continue;
+        }
+        for lower in c.to_lowercase() {
+            if form.next() != Some(lower) {
+                return None;
+            }
+        }
+    }
+    // White space between the form's text and the identifier.
+    while text.next_if(|c| c.is_whitespace()).is_some() {
+        taken += 1;
+    }
+    Some(taken)
+}
+
 /// An object's `names` rows, each its source by number (`source`) and its `name`, in the order
 /// of their sources' ranks, then by source and name, once each.
-///
-/// # Errors
-///
-/// Fails when a row lacks a column or names no source of the release.
-pub fn names(v: &Vocabulary, rows: &[Row]) -> Result<Vec<NameRecord>, ReadError> {
-    let mut names = rows
+pub(super) fn names(v: &Vocabulary, rows: &[Row]) -> Result<Vec<NameRecord>, ReadError> {
+    let unique = rows
         .iter()
         .map(|row| {
             let c = Columns::new(v, "names", row);
-            let n = c.int("source")?;
-            let source = v.source(n).ok_or_else(|| {
-                c.error("source", format!("{n} is not among the release's sources"))
-            })?;
-            Ok(NameRecord {
-                name: c.text("name")?.to_owned(),
-                source: source.to_owned(),
-            })
+            Ok((source_of(v, &c)?.to_owned(), c.text("name")?.to_owned()))
         })
-        .collect::<Result<Vec<_>, ReadError>>()?;
+        .collect::<Result<BTreeSet<(String, String)>, ReadError>>()?;
+    let mut names: Vec<NameRecord> = unique
+        .into_iter()
+        .map(|(source, name)| NameRecord { name, source })
+        .collect();
     let reading = v.reading();
-    names.sort_by(|a, b| {
-        reading
-            .order(&a.source, &b.source)
-            .then_with(|| a.name.cmp(&b.name))
-    });
-    names.dedup();
+    names.sort_by_cached_key(|n| reading.rank(&n.source));
     Ok(names)
 }
 
@@ -177,6 +199,13 @@ mod tests {
         let hip = vec![("hipparcos-2007".to_owned(), "32754".to_owned())];
         assert_eq!(r.parse("HIP 32754"), hip);
         assert_eq!(r.parse("  hip 32754 "), hip);
+        assert_eq!(r.parse("HIP32754"), hip);
+        assert_eq!(r.parse("H I P  32754"), hip);
+        // A character whose lower case is longer leaves the cut where it belongs.
+        assert_eq!(
+            r.parse("HIP İ12"),
+            [("hipparcos-2007".to_owned(), "İ12".to_owned())]
+        );
         assert_eq!(
             r.parse("2MASX J00424433+4116074"),
             [("twomrs".to_owned(), "00424433+4116074".to_owned())]

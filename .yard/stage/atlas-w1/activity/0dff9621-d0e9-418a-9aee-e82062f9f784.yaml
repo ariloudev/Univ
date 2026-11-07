@@ -23,18 +23,46 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-07T22:08:30Z
+lastEnded: 2026-11-07T22:11:10Z
 turns:
   - started: 2026-11-07T21:42:16Z
     ended: 2026-11-07T22:02:36Z
   - started: 2026-11-07T22:06:25Z
     ended: 2026-11-07T22:08:30Z
   - started: 2026-11-07T22:08:30Z
+    ended: 2026-11-07T22:09:39Z
+  - started: 2026-11-07T22:10:49Z
+    ended: 2026-11-07T22:10:52Z
+  - started: 2026-11-07T22:10:52Z
+    ended: 2026-11-07T22:10:55Z
+  - started: 2026-11-07T22:10:58Z
+    ended: 2026-11-07T22:11:01Z
+  - started: 2026-11-07T22:11:10Z
 subagents:
   - agent: asource-forms-26bc85412d6362dd
     type: general-purpose
     started: 2026-11-07T21:54:11Z
     ended: 2026-11-07T22:06:24Z
+    stage: 01a1b7f6-53ad-722f-a85a-d2c6b21e1202
+  - agent: afafd6b22ba8fc2d6
+    type: general-purpose
+    started: 2026-11-07T22:09:33Z
+    ended: 2026-11-07T22:10:58Z
+    stage: 01a1b7f6-53ad-722f-a85a-d2c6b21e1202
+  - agent: ab01428eaf6b10a4e
+    type: general-purpose
+    started: 2026-11-07T22:09:33Z
+    ended: 2026-11-07T22:10:49Z
+    stage: 01a1b7f6-53ad-722f-a85a-d2c6b21e1202
+  - agent: a2680af83f2afae34
+    type: general-purpose
+    started: 2026-11-07T22:09:33Z
+    ended: 2026-11-07T22:10:49Z
+    stage: 01a1b7f6-53ad-722f-a85a-d2c6b21e1202
+  - agent: a0b4355c8d12df7f9
+    type: general-purpose
+    started: 2026-11-07T22:09:33Z
+    ended: 2026-11-07T22:11:09Z
     stage: 01a1b7f6-53ad-722f-a85a-d2c6b21e1202
 loft:
   - commands:

@@ -88,5 +88,11 @@ mod tests {
         let r: DesignationRules =
             crate::yaml::parse_checked(&file, &text, DesignationRules::check).unwrap();
         assert_eq!(r.rank(&SourceId::new("hipparcos-2007").unwrap()), Some(1));
+        // Every source it ranks is defined: a mistyped id would leave its source unranked.
+        let sources = file.parent().unwrap().join("../sources");
+        for source in &r.order {
+            let defined = sources.join(format!("{source}.yaml"));
+            assert!(defined.is_file(), "{source} names no source definition");
+        }
     }
 }

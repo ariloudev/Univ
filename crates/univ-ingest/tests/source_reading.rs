@@ -68,7 +68,10 @@ fn refused(text: &str) -> DefinitionError {
 fn a_definition_may_give_its_designation_form_with_its_citation() {
     let d = read(&format!("{PLAIN}{FORM}")).unwrap();
     let form = d.designation.unwrap();
-    assert_eq!(form.format("32754"), "HIP 32754");
+    assert_eq!(
+        univ_model::api::sources::write_in(&form.form, "32754"),
+        "HIP 32754"
+    );
     assert_eq!(form.cite, "ReadMe of I/311, Byte-by-byte description, HIP");
     assert!(read(PLAIN).unwrap().designation.is_none());
 }
@@ -84,7 +87,14 @@ fn a_definition_may_give_the_meaning_of_each_value_of_a_flag_column_with_its_cit
 
 #[test]
 fn a_designation_form_that_does_not_hold_the_identifier_exactly_once_is_refused() {
-    for form in ["HIP", "HIP {identifier} {identifier}", "HIP {id}"] {
+    // A form of the identifier alone would read every name looked up as a designation.
+    for form in [
+        "HIP",
+        "HIP {identifier} {identifier}",
+        "HIP {id}",
+        "{identifier}",
+        " {identifier} ",
+    ] {
         let text = format!("{PLAIN}designation: {{ form: \"{form}\", cite: \"ReadMe\" }}\n");
         let e = refused(&text);
         assert_eq!(e.field, "designation.form", "{form}");

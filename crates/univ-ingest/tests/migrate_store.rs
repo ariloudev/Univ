@@ -48,16 +48,17 @@ fn holds(db: &Connection, name: &str) -> bool {
 
 /// Every row `filter` selects of every table of [`Scope::PerRelease`] in each database of
 /// `store`, the catalogue's first, without `release` and `retired`, as text, sorted by table:
-/// `release_files` left out, which schema 5 has not ([`file_map`] compares it).
+/// the tables schema 5 has not left out ([`file_map`] compares `release_files`).
 fn reads(store: &MemoryStore, filter: &str) -> Vec<BTreeMap<&'static str, Vec<String>>> {
     reads_but(store, filter, |_| false)
 }
 
-/// [`reads`], leaving out the columns `out` names.
-/// The tables a store of schema 5 cannot hold, which a later schema added: `release_files`, and
-/// `source_reading` of schema 7.
-const LATER: [&str; 2] = ["release_files", "source_reading"];
+/// Whether schema 5 declares table `name`, which a store of schema 5 can hold.
+fn in_schema_5(name: &str) -> bool {
+    SCHEMA_5.contains(&format!("CREATE TABLE IF NOT EXISTS {name} ("))
+}
 
+/// [`reads`], leaving out the columns `out` names.
 fn reads_but(
     store: &MemoryStore,
     filter: &str,
@@ -69,7 +70,7 @@ fn reads_but(
             TABLES
                 .iter()
                 .filter(|t| {
-                    t.scope == Scope::PerRelease && !LATER.contains(&t.name) && holds(db, t.name)
+                    t.scope == Scope::PerRelease && in_schema_5(t.name) && holds(db, t.name)
                 })
                 .map(|t| {
                     let columns: Vec<&str> = t

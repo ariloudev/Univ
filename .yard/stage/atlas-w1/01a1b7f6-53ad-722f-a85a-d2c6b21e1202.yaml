@@ -149,3 +149,17 @@ blocks:
         title: "Forms and flag meanings for every source"
         detail: "Each of the 28 sources gets a cited designation form, plus flag meanings where its ReadMe defines them. Done when every definition loads and the science checks pass. The \"HIP \" prefix rule in rules/matching.yaml stays: a form formats only an entry's own identifier, and the HIP number a Gaia–Hipparcos pair gives beside it is another catalogue's designation, kept as its text."
         state: active
+      - key: 01a1b80e-d49b-7118-8aba-2622f198440f
+        at: 2026-11-07T22:09:02Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        assignee:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+          agent: "source-forms"
+          agentType: "general-purpose"
+        title: "Forms and flag meanings for every source"
+        detail: "11 sources carry a cited designation form and 13 carry flag meanings (17 columns). The others have no documented form a prefix can give (6dFGS, WISE×SuperCOSMOS, SDSS, DESI, GAMA, eRASS1, CF4 groups) or are named already (McConnachie, UNGC). The \"HIP \" prefix rule in rules/matching.yaml stays: a form formats only an entry's own identifier. Composite flags (Sn, Bailer-Jones flag, xm_flag) list the values the downloads hold; a new combination reads as having no meaning given."
+        state: done
