@@ -59,7 +59,7 @@ describe("a structure's style", () => {
   });
 
   it("is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's", () => {
-    const kinds = ["void", "repeller", "supercluster", "supercluster_complex", "basin", "overdensity", "wall", "filament", "quasar_group", "ring", "arc", "shell"];
+    const kinds = ["void", "repeller", "attractor", "supercluster", "supercluster_complex", "basin", "overdensity", "wall", "filament", "quasar_group", "ring", "arc", "shell"];
     const colours = kinds.map((kind) => structureColour(kind, false));
     const apart = (a: readonly number[], b: readonly number[]) => Math.hypot((a[0] ?? 0) - (b[0] ?? 0), (a[1] ?? 0) - (b[1] ?? 0), (a[2] ?? 0) - (b[2] ?? 0));
     colours.forEach((a, i) => {

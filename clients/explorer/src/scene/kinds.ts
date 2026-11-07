@@ -60,6 +60,7 @@ export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
 const STRUCTURE_KIND_COLOURS: Readonly<Record<string, readonly [number, number, number]>> = {
   void: [0.62, 0.45, 1],
   repeller: [0.88, 0.4, 0.95],
+  attractor: [1, 0.2, 0.45],
   supercluster: [1, 0.55, 0.35],
   supercluster_complex: [1, 0.33, 0.3],
   basin: [1, 0.78, 0.3],
