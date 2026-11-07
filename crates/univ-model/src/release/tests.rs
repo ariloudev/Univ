@@ -146,6 +146,26 @@ fn version_4_adds_the_source_terms_per_release() {
 }
 
 #[test]
+fn version_7_adds_how_each_source_is_read_per_release() {
+    assert_eq!(SCHEMA_VERSION, 7);
+    let columns = [
+        "release",
+        "source",
+        "designation_form",
+        "designation_cite",
+        "rank",
+        "share_alike",
+        "flags",
+    ];
+    let (declared, key) = declared("source_reading");
+    assert_eq!(declared, columns);
+    assert_eq!(key, shared_key(&columns[..2]));
+    let table = TABLES.iter().find(|t| t.name == "source_reading").unwrap();
+    assert_eq!(table.scope, Scope::PerRelease);
+    assert_eq!(table.columns, columns);
+}
+
+#[test]
 fn every_index_in_the_schema_is_counted_in_the_estimate() {
     let declared = SCHEMA.matches("CREATE INDEX").count();
     let counted: usize = TABLES.iter().map(|t| t.indexes.len()).sum();
@@ -266,7 +286,7 @@ fn a_tables_estimate_over_the_databases_adds_up_its_rows_and_fingerprint() {
 
 #[test]
 fn version_6_shares_rows_and_maps_files_by_hash() {
-    assert_eq!(SCHEMA_VERSION, 6);
+    assert_eq!(super::SHARED_ROWS_SINCE, 6);
     let (columns, key) = declared_all("release_files");
     assert_eq!(columns, ["release", "path", "sha256", RETIRED]);
     assert_eq!(key, ["path", "release"]);

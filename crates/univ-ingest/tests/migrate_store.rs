@@ -23,7 +23,7 @@ use univ_ingest::publish::migrate;
 use univ_ingest::release::reindex::reindex;
 use univ_ingest::release::release_dir;
 use univ_model::release::manifest::Target;
-use univ_model::release::{Scope, TABLES, keys, valid_in};
+use univ_model::release::{SCHEMA_VERSION, Scope, TABLES, keys, valid_in};
 
 /// The schema of version 5, as univ-model wrote it before rows were shared.
 const SCHEMA_5: &str = include_str!("fixtures/schema-5.sql");
@@ -54,6 +54,10 @@ fn reads(store: &MemoryStore, filter: &str) -> Vec<BTreeMap<&'static str, Vec<St
 }
 
 /// [`reads`], leaving out the columns `out` names.
+/// The tables a store of schema 5 cannot hold, which a later schema added: `release_files`, and
+/// `source_reading` of schema 7.
+const LATER: [&str; 2] = ["release_files", "source_reading"];
+
 fn reads_but(
     store: &MemoryStore,
     filter: &str,
@@ -65,7 +69,7 @@ fn reads_but(
             TABLES
                 .iter()
                 .filter(|t| {
-                    t.scope == Scope::PerRelease && t.name != "release_files" && holds(db, t.name)
+                    t.scope == Scope::PerRelease && !LATER.contains(&t.name) && holds(db, t.name)
                 })
                 .map(|t| {
                     let columns: Vec<&str> = t
@@ -263,7 +267,9 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
     let databases = 1 + i64::try_from(b.shards.len()).unwrap();
     migrate(&mut b, work.path(), &mut |_| {}).unwrap();
     assert_eq!(
-        b.int_everywhere("SELECT COUNT(*) FROM schema_version WHERE version = 6"),
+        b.int_everywhere(&format!(
+            "SELECT COUNT(*) FROM schema_version WHERE version = {SCHEMA_VERSION}"
+        )),
         databases
     );
     // Nothing built or uploaded again: D1 runs only the migration's own files, and R2 is given
@@ -427,7 +433,9 @@ fn a_migration_stopped_while_it_deleted_the_old_keys_deletes_the_rest_when_run_a
     assert!(migrate(&mut b, work.path(), &mut |_| {}).is_err());
     assert_eq!(old(&b), before);
     assert_eq!(
-        b.int("SELECT COUNT(*) FROM schema_version WHERE version = 6"),
+        b.int(&format!(
+            "SELECT COUNT(*) FROM schema_version WHERE version = {SCHEMA_VERSION}"
+        )),
         1
     );
     b.fail_at = None;

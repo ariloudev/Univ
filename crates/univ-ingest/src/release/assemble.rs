@@ -134,11 +134,13 @@ fn d1_rows(
         &index,
         &counts.per_source,
         inputs.cache,
+        &inputs.crossed.basis.designations,
     )?;
     writer.add_all(&sources.sources)?;
     writer.add_all(&sources.payloads)?;
     writer.add_all(&sources.normalizations)?;
     writer.add_all(&sources.terms)?;
+    writer.add_all(&sources.reading)?;
     writer.add_all(chains.rows())?;
     let (issued, replaced) = ledger_rows(&crossed.next.ledger)?;
     writer.add_all(&issued)?;

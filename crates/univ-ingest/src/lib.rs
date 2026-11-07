@@ -4,6 +4,7 @@
 pub mod access;
 pub mod acquire;
 pub mod crossmatch;
+pub mod designations;
 pub mod display;
 pub mod events;
 pub mod fetch;

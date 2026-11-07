@@ -136,6 +136,7 @@ fn the_catalogue_holds_the_sources_terms_structures_and_the_shard_of_every_objec
         "structures",
         "scale_domains",
         "releases",
+        "source_reading",
     ] {
         assert!(count(&s.catalogue, table) > 0, "{table}");
         for shard in &s.shards {
@@ -147,7 +148,7 @@ fn the_catalogue_holds_the_sources_terms_structures_and_the_shard_of_every_objec
         let version: i64 = db
             .query_row("SELECT version FROM schema_version", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 6);
+        assert_eq!(version, i64::from(univ_model::release::SCHEMA_VERSION));
     }
     assert_eq!(
         count(&s.catalogue, "object_shards"),

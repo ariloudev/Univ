@@ -2,7 +2,7 @@
 //! or older than `latest`'s; more object shards than Univ Server binds; a database of an older
 //! schema version; or a parent latest does not point to. The CON-3 cap is checked in `cap`.
 
-use univ_model::release::ReleaseManifest;
+use univ_model::release::{ReleaseManifest, SHARED_ROWS_SINCE};
 
 use super::check::{Tables, published_status, schema_version};
 use super::upload::record_published;
@@ -39,9 +39,10 @@ pub(super) fn unbound(store: &mut dyn Store, manifest: &ReleaseManifest) -> Resu
     Ok(())
 }
 
-/// Refuses a release when a database it loads holds releases of an older schema version than
-/// its own: the tables of such a database are not shared between releases, and the release's
-/// rows would not load into them. A database that holds no schema yet takes the release's.
+/// Refuses a release when a database it loads holds releases of a schema older than shared rows
+/// ([`SHARED_ROWS_SINCE`]): the tables of such a database are not shared between releases, and
+/// the release's rows would not load into them. A database that holds no schema yet takes the
+/// release's, and one of a later version takes the tables the release's schema adds.
 pub(super) fn older_schema(
     store: &mut dyn Store,
     manifest: &ReleaseManifest,
@@ -53,7 +54,7 @@ pub(super) fn older_schema(
             continue;
         }
         let holds = schema_version(store, *database).map_err(Refused::Query)?;
-        if let Some(holds) = holds.filter(|&v| v > 0 && v < i64::from(needs)) {
+        if let Some(holds) = holds.filter(|&v| v > 0 && v < i64::from(SHARED_ROWS_SINCE)) {
             return Err(Refused::Error(PublishError::OlderSchema {
                 number: manifest.release,
                 database: database.to_string(),

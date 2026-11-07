@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use rusqlite::{Connection, OpenFlags, OptionalExtension};
 use univ_model::release::shards::Database;
-use univ_model::release::{LOCAL_D1_FILES, SCHEMA_VERSION, valid_in};
+use univ_model::release::{LOCAL_D1_FILES, SHARED_ROWS_SINCE, valid_in};
 
 use super::reindex::{RowSource, holds};
 
@@ -89,9 +89,9 @@ impl LocalD1 {
         let latest = u32::try_from(latest).map_err(|e| err(&path, e))?;
         // Its own queries read `retired`, which schema 6 added.
         let version = one::<i64>(&db, "SELECT MAX(version) FROM schema_version")?.unwrap_or(0);
-        if version < i64::from(SCHEMA_VERSION) {
+        if version < i64::from(SHARED_ROWS_SINCE) {
             return Err(format!(
-                "the local D1 is of schema {version}, older than {SCHEMA_VERSION}: run \
+                "the local D1 is of schema {version}, older than {SHARED_ROWS_SINCE}: run \
                  `univ-ingest migrate` first"
             ));
         }
@@ -105,7 +105,7 @@ impl LocalD1 {
             let shared = "SELECT COUNT(*) FROM pragma_table_info('objects') WHERE name = 'retired'";
             if one::<i64>(&shard, shared)? != Some(1) {
                 return Err(format!(
-                    "{} holds objects of a schema older than {SCHEMA_VERSION}: run `univ-ingest \
+                    "{} holds objects of a schema older than {SHARED_ROWS_SINCE}: run `univ-ingest \
                      migrate` first",
                     shown(&file)
                 ));

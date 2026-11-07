@@ -403,6 +403,29 @@ row! {
     }
 }
 
+row! {
+    /// How a source's own values are read, beside its row in `sources` (schema version 7):
+    /// written only for a source that gives a designation form, flag meanings or a share-alike
+    /// clause, or that the designation rules rank.
+    SourceReadingRow => "source_reading", scope: PerRelease, key: ["source", "release"],
+    indexes: [], {
+        release: u32,
+        /// The source's `sources.n`.
+        source: u32,
+        /// The form its catalogue writes a designation in, holding `{identifier}` once.
+        designation_form: Option<String>,
+        /// The catalogue documentation the form is read from.
+        designation_cite: Option<String>,
+        /// Its place in the designation rules, 1 first; none where they do not list it.
+        rank: Option<u32>,
+        /// The clause of its terms requiring data adapted from it to be shared under the same
+        /// licence, quoted; none when its terms require no such thing.
+        share_alike: Option<String>,
+        /// JSON of what each value of its flag columns means, by column: `{"values", "cite"}`.
+        flags: Option<String>,
+    }
+}
+
 /// An uncertainty a source states once for its whole catalogue rather than for each row, such
 /// as 2dFGRS's rms of 85 km/s or a photometric redshift scatter σz / (1 + z): as a source
 /// definition writes it, given to each value as a symmetric error, estimated, citing `basis`.
@@ -445,7 +468,7 @@ pub struct CatalogueUncertainty {
 }
 
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 25] = [
+pub const TABLES: [Table; 26] = [
     ReleaseRow::TABLE,
     TermRow::TABLE,
     SourceRow::TABLE,
@@ -471,6 +494,7 @@ pub const TABLES: [Table; 25] = [
     ShardCellRow::TABLE,
     ReleaseShardRow::TABLE,
     ReleaseFileRow::TABLE,
+    SourceReadingRow::TABLE,
 ];
 
 row! {

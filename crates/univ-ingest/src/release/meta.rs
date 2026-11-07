@@ -9,13 +9,14 @@ use univ_model::ids::SourceId;
 use univ_model::release::keys;
 use univ_model::release::manifest::ManifestSource;
 use univ_model::release::rows::{
-    CatalogueUncertainty, NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, SourceTermRow,
-    StructureRow,
+    CatalogueUncertainty, NormalizationRow, PayloadRow, ScaleDomainRow, SourceReadingRow,
+    SourceRow, SourceTermRow, StructureRow,
 };
 
 use super::objects::{json, snake};
 use super::placement::Placement;
 use super::terms::SourceIndex;
+use crate::designations::DesignationRules;
 use crate::provenance::Provenance;
 use crate::source::SourceDefinition;
 use crate::tiles::{Built, name_of, sha256, unit_symbol};
@@ -29,6 +30,33 @@ pub struct SourceRows {
     /// One for each source whose terms limit it to non-commercial use, whose permission is
     /// pending, or that states an uncertainty once for its whole catalogue.
     pub terms: Vec<SourceTermRow>,
+    /// One for each source that gives a designation form, flag meanings or a share-alike
+    /// clause, or that the designation rules rank.
+    pub reading: Vec<SourceReadingRow>,
+}
+
+/// How `d` is read, as `source_reading` holds it for its `sources.n` `n`: none when it gives
+/// nothing to read it by and the designation rules do not rank it.
+fn reading_row(
+    release: u32,
+    n: u32,
+    d: &SourceDefinition,
+    designations: &DesignationRules,
+) -> Result<Option<SourceReadingRow>, String> {
+    let rank = designations.rank(&d.id);
+    let form = d.designation.as_ref();
+    if form.is_none() && d.flags.is_empty() && d.terms.share_alike.is_none() && rank.is_none() {
+        return Ok(None);
+    }
+    Ok(Some(SourceReadingRow {
+        release,
+        source: n,
+        designation_form: form.map(|f| f.form.clone()),
+        designation_cite: form.map(|f| f.cite.clone()),
+        rank,
+        share_alike: d.terms.share_alike.clone(),
+        flags: (!d.flags.is_empty()).then(|| json(&d.flags)).transpose()?,
+    }))
 }
 
 /// The uncertainties `d` states once for its whole catalogue, as `source_terms` holds them.
@@ -45,7 +73,8 @@ fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<CatalogueUncertainty> {
 }
 
 /// The rows of `definitions` in release `release`, each numbered by `index` and
-/// with the entries the release holds from it and the provenance kept in `cache`.
+/// with the entries the release holds from it, the provenance kept in `cache` and its place in
+/// `designations`.
 ///
 /// # Errors
 ///
@@ -57,6 +86,7 @@ pub fn source_rows(
     index: &SourceIndex,
     entries: &BTreeMap<SourceId, u64>,
     cache: &Path,
+    designations: &DesignationRules,
 ) -> Result<SourceRows, String> {
     let mut rows = SourceRows::default();
     for d in definitions {
@@ -93,6 +123,8 @@ pub fn source_rows(
                     .transpose()?,
             });
         }
+        rows.reading
+            .extend(reading_row(release, n, d, designations)?);
         let provenance = Provenance::read(&cache.join(d.id.as_str()))
             .map_err(|e| format!("{id}: its provenance cannot be read: {e}"))?;
         for p in &provenance.payloads {

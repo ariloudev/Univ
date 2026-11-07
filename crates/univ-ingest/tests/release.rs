@@ -247,7 +247,7 @@ fn a_release_is_built_under_the_rules_and_structures_its_cross_match_read() {
     let f = fixture();
     // The repository's rules, read by the cross-match from a copy.
     let rules = tempfile::tempdir().unwrap();
-    for name in ["matching", "ranking", "tiles", "release"] {
+    for name in univ_ingest::crossmatch::RULES {
         let file = format!("{name}.yaml");
         std::fs::copy(
             workspace().join("rules").join(&file),
