@@ -94,13 +94,9 @@ requirements:
       shall: "attach to each object the designations and names its catalogue entries carry."
     criteria:
       - key: 01a19f23-636f-72bd-b194-1513f385222f
-        name: "Each designation keeps the source that gave it."
-      - key: 01a1b7d8-3f35-70aa-853f-45a603958644
-        name: "Each designation keeps the identifier as its source publishes it, and the identifier in its catalogue's form where the source's definition gives a form."
-      - key: 01a1b7d8-3f35-70aa-853f-45a7f17a4472
-        name: "An object's designations are ordered by the rank the designation rules give their sources, the highest first, then by source id."
-      - key: 01a1b7d8-3f35-70aa-853f-45a8bb0003b4
-        name: "Each designation in its catalogue's form is attached to the object as a name its source gives, so that the object is found by it."
+        name: "Each designation keeps the source that gave it, and the identifier as that source publishes it."
+      - key: 01a1b7de-8cb0-73dd-ae67-32308547512f
+        name: "The release keeps, once for each source, its designation form, the meanings of its flags and the rank the designation rules give it."
       - key: 01a19f23-636f-72bd-b194-15144dcb948e
         name: "A common name, such as M31 or the Large Magellanic Cloud, is attached with the source that published it."
       - key: 01a1b7dc-04ef-7334-abc7-37e775e83b00

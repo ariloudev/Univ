@@ -21,7 +21,7 @@ requirements:
       - key: 01a1b7d8-3f35-70aa-853f-45a936e8825f
         name: "Each designation in the response gives the identifier as its source publishes it, and in its catalogue's form where the source's definition gives one."
       - key: 01a1b7d8-3f35-70aa-853f-45aa7e2ca87a
-        name: "The response lists the object's designations in the order the release gives them, the preferred designation first."
+        name: "The response lists the object's designations ordered by the rank the release gives their sources, the highest first, then by source id."
       - key: 01a1b7d8-3f35-70aa-853f-45aba93bf7fc
         name: "The response gives each flag of each catalogue entry with its value as the source publishes it."
       - key: 01a19f1e-d177-716d-b124-3d100d0beecf
