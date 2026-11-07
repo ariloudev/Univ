@@ -10,6 +10,15 @@ versions:
     title: "Object panel"
     goal: "The explorer's object panel leads with the best designation or name and shows sky position, brightness, motion and redshift, membership and explained flags"
     status: planned
+  - key: 01a1b870-af8d-72af-8370-734ecb3107a3
+    at: 2026-11-07T23:55:55Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Object panel"
+    goal: "The explorer's object panel leads with the best designation or name and shows sky position, brightness, motion and redshift, membership and explained flags"
+    status: active
 blocks:
   - key: 01a1b7e5-22ce-727d-bcf2-72adf0673824
     id: t4-read
