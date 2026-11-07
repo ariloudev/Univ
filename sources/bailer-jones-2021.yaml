@@ -21,7 +21,7 @@ cuts:
     The distances are model-based estimates (Bayesian posterior quantiles with a Galaxy-model prior),
     not measurements: r_med_* is the median, r_lo_* and r_hi_* the 16th and 84th percentiles, kept as
     an asymmetric interval. Photogeometric distances are absent where the BP-RP colour is missing.
-  - "flag is kept but not used for filtering, as its description asks; its decoding was not retrieved."
+  - "flag is kept but not used for filtering, as its description asks; its values are decoded under flags below, from Table 2."
 columns:
   - { column: source_id, field: identifier, unit: dimensionless }
   - { column: r_med_geo, field: distance, unit: parsec }
@@ -66,6 +66,198 @@ scale_domain: stars
 # under this table name, so only the ESA archive is listed.
 mirrors:
   - "https://gea.esac.esa.int/tap-server/tap"
+designation:
+  form: "Gaia EDR3 {identifier}"
+  cite: >-
+    Bailer-Jones et al. 2021, AJ 161, 147, Table 1 ('The source_id is the same as in EDR3'); the
+    form is the Gaia EDR3 designation, Gaia EDR3 documentation, Datamodel description, gaia_source,
+    designation ('constructed from the prefix Gaia DRx followed by a string of digits corresponding
+    to source_id'; the archive's gaiaedr3.gaia_source.designation reads 'Gaia EDR3 <source_id>',
+    checked 2026-11-07)
+flags:
+  flag:
+    cite: >-
+      Bailer-Jones et al. 2021, AJ 161, 147, Table 2 (the flag is a string of five decimal digits
+      ABBCC) and Section 5.1; each value's meaning is composed from the digits as Table 2 defines
+      them
+    values:
+      "10033": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 33: QG prior models, bluer smoothing spline, redder smoothing spline.
+      "10022": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 22: QG prior models, bluer two-component Gaussian, redder two-component
+        Gaussian.
+      "10023": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 23: QG prior models, bluer two-component Gaussian, redder smoothing
+        spline.
+      "10013": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 13: QG prior models, bluer one-component Gaussian, redder smoothing
+        spline.
+      "10021": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 21: QG prior models, bluer two-component Gaussian, redder one-component
+        Gaussian.
+      "10012": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 12: QG prior models, bluer one-component Gaussian, redder two-component
+        Gaussian.
+      "10011": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 11: QG prior models, bluer one-component Gaussian, redder one-component
+        Gaussian.
+      "10000": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 00: QG prior models, bluer null (no model), redder null (no model).
+      "10032": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 32: QG prior models, bluer smoothing spline, redder two-component
+        Gaussian.
+      "10031": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 31: QG prior models, bluer smoothing spline, redder one-component
+        Gaussian.
+      "10133": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 33: QG prior models, bluer smoothing spline, redder
+        smoothing spline.
+      "10002": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 02: QG prior models, bluer null (no model), redder two-component
+        Gaussian.
+      "10020": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 20: QG prior models, bluer two-component Gaussian, redder null (no
+        model).
+      "10099": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 99: the source lacks G and/or BP-RP.
+      "10001": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 01: QG prior models, bluer null (no model), redder one-component
+        Gaussian.
+      "10010": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 00: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, unimodal
+        hypothesis okay. C = 10: QG prior models, bluer one-component Gaussian, redder null (no
+        model).
+      "10122": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 22: QG prior models, bluer two-component Gaussian, redder
+        two-component Gaussian.
+      "11033": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 10: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, unimodal hypothesis okay. C = 33: QG prior models, bluer smoothing spline, redder
+        smoothing spline.
+      "10123": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 23: QG prior models, bluer two-component Gaussian, redder
+        smoothing spline.
+      "10121": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 21: QG prior models, bluer two-component Gaussian, redder
+        one-component Gaussian.
+      "10113": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 13: QG prior models, bluer one-component Gaussian, redder
+        smoothing spline.
+      "10111": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 11: QG prior models, bluer one-component Gaussian, redder
+        one-component Gaussian.
+      "10112": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 12: QG prior models, bluer one-component Gaussian, redder
+        two-component Gaussian.
+      "10120": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 20: QG prior models, bluer two-component Gaussian, redder
+        null (no model).
+      "10110": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 10: QG prior models, bluer one-component Gaussian, redder
+        null (no model).
+      "10101": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 01: QG prior models, bluer null (no model), redder
+        one-component Gaussian.
+      "11022": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 10: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, unimodal hypothesis okay. C = 22: QG prior models, bluer two-component Gaussian,
+        redder two-component Gaussian.
+      "11013": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 10: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, unimodal hypothesis okay. C = 13: QG prior models, bluer one-component Gaussian,
+        redder smoothing spline.
+      "11133": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 11: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, possible evidence for multimodality. C = 33: QG prior models, bluer smoothing
+        spline, redder smoothing spline.
+      "11023": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 10: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, unimodal hypothesis okay. C = 23: QG prior models, bluer two-component Gaussian,
+        redder smoothing spline.
+      "11012": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 10: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, unimodal hypothesis okay. C = 12: QG prior models, bluer one-component Gaussian,
+        redder two-component Gaussian.
+      "11122": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 11: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, possible evidence for multimodality. C = 22: QG prior models, bluer two-component
+        Gaussian, redder two-component Gaussian.
+      "10102": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 02: QG prior models, bluer null (no model), redder
+        two-component Gaussian.
+      "11011": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 10: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, unimodal hypothesis okay. C = 11: QG prior models, bluer one-component Gaussian,
+        redder one-component Gaussian.
+      "11111": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 11: dip test of
+        the geometric posterior, possible evidence for multimodality; of the photogeometric
+        posterior, possible evidence for multimodality. C = 11: QG prior models, bluer one-component
+        Gaussian, redder one-component Gaussian.
+      "10131": >-
+        A = 1: G at most the magnitude limit used to make the prior (G <= Glim). B = 01: dip test of
+        the geometric posterior, unimodal hypothesis okay; of the photogeometric posterior, possible
+        evidence for multimodality. C = 31: QG prior models, bluer smoothing spline, redder
+        one-component Gaussian.
 normalization:
   distances:
     - value: r_med_geo

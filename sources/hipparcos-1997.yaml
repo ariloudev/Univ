@@ -56,6 +56,25 @@ mirrors:
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+designation:
+  form: "HIP {identifier}"
+  cite: >-
+    ReadMe of I/239 (VizieR), Byte-by-byte Description of file hip_main.dat, HIP ('Identifier (HIP
+    number)'); form per the CDS Dictionary of Nomenclature of Celestial Objects (read via
+    vizier.nao.ac.jp/viz-bin/Dic, 2026-11-07), acronym HIP: 'HIP NNNNNNA'
+flags:
+  r_SpType:
+    cite: >-
+      ReadMe of I/239 (VizieR), hip_main.dat, r_SpType ('Source of spectral type'), Note on r_SpType
+    values:
+      "1": "Michigan catalogue for the HD stars, vol. 1 (Houk+, 1975) <III/31>"
+      "2": "Michigan catalogue for the HD stars, vol. 2 (Houk, 1978) <III/51>"
+      "3": "Michigan Catalogue for the HD stars, vol. 3 (Houk, 1982) <III/80>"
+      "4": "Michigan Catalogue for the HD stars, vol. 4 (Houk+, 1988) <III/133>"
+      "G": "Updated after publication of the HIC <I/196>"
+      "K": "General Catalog of Variable Stars, 4th Ed. (Kholopov+ 1988) <II/214>"
+      "S": "SIMBAD data-base"
+      "X": "Miscellaneous"
 normalization:
   spectral_type:
     column: SpType

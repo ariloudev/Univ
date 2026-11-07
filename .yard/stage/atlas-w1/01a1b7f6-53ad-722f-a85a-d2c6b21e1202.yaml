@@ -24,6 +24,15 @@ blocks:
         title: "Source definitions take designation, flags and share-alike"
         detail: "SourceDefinition parses `designation`, `flags` and the share-alike clause, and refuses a malformed form or a flag meaning on a column not taken as a flag. Done when the parse and refusal tests pass."
         state: active
+      - key: 01a1b800-73c5-76c8-80c7-e3bd91259c24
+        at: 2026-11-07T21:53:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Source definitions take designation, flags and share-alike"
+        detail: "SourceDefinition parses `designation`, `flags` and the share-alike clause, and refuses a malformed form or a flag meaning on a column not taken as a flag. Done when the parse and refusal tests pass."
+        state: done
   - key: 01a1b7f6-53ad-722f-a85a-d2c87de9a996
     id: t1-rank
     kind: task
@@ -37,6 +46,15 @@ blocks:
         title: "Designation ranks"
         detail: "`rules/designations.yaml` ranks the sources for display, and ingest reads it. Done when a rules test passes."
         state: open
+      - key: 01a1b800-73c5-76c8-80c7-e3be412e4c75
+        at: 2026-11-07T21:53:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Designation ranks"
+        detail: "`rules/designations.yaml` ranks the sources for display, and ingest reads it. Done when a rules test passes."
+        state: done
   - key: 01a1b7f6-53ad-722f-a85a-d2c959ad313e
     id: t1-schema
     kind: task
@@ -50,6 +68,15 @@ blocks:
         title: "Schema 7: source_reading"
         detail: "A side table `source_reading`, written from the definitions; publish raises the schema to 7 with no rebuild. Done when the release and publish tests pass."
         state: open
+      - key: 01a1b800-73c5-76c8-80c7-e3bf743053c5
+        at: 2026-11-07T21:53:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Schema 7: source_reading"
+        detail: "A side table `source_reading`, written from the definitions; publish raises the schema to 7 with no rebuild, and a store at 6 is taken as it is. Done when the release and publish tests pass."
+        state: done
   - key: 01a1b7f6-53ad-722f-a85a-d2caa16247a1
     id: t1-api
     kind: task
@@ -63,6 +90,24 @@ blocks:
         title: "Univ Server formats, orders and resolves designations"
         detail: "The record carries formatted designations in rank order with entry flags; \"HIP 32754\" resolves; the source record gives form, flags and share-alike. Done when the univ-api tests and the OpenAPI snapshot pass."
         state: open
+      - key: 01a1b800-73c5-76c8-80c7-e3c0690f8230
+        at: 2026-11-07T21:53:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Univ Server formats, orders and resolves designations"
+        detail: "The record carries formatted designations in rank order with entry flags; \"HIP 32754\" resolves; the source record gives form, flags and share-alike. Done when the univ-api tests and the OpenAPI snapshot pass."
+        state: active
+      - key: 01a1b80e-368b-7377-b0ad-6152eaf96600
+        at: 2026-11-07T22:08:21Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Univ Server formats, orders and resolves designations"
+        detail: "The record carries formatted designations in rank order with entry flags, and names apart; \"HIP 32754\" resolves; the source record gives form, flags and share-alike. Done when the univ-api tests and the OpenAPI snapshot pass. The snapshot only adds: the Designation schema keeps its name and gains an optional `designation`."
+        state: done
   - key: 01a1b7f6-53ad-722f-a85a-d2cb12d55580
     id: t1-data
     kind: task
@@ -76,3 +121,31 @@ blocks:
         title: "Forms and flag meanings for every source"
         detail: "Each of the 28 sources gets a cited designation form, plus flag meanings where its ReadMe defines them; the HIP prefix rule is removed. Done when every definition loads and the science checks pass."
         state: open
+      - key: 01a1b800-73c5-76c8-80c7-e3c15a29a035
+        at: 2026-11-07T21:53:19Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        assignee:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+          agent: "source-forms"
+          agentType: "general-purpose"
+        title: "Forms and flag meanings for every source"
+        detail: "Each of the 28 sources gets a cited designation form, plus flag meanings where its ReadMe defines them; the HIP prefix rule is removed. Done when every definition loads and the science checks pass."
+        state: active
+      - key: 01a1b808-c764-760d-9ed9-1fc15039a9a7
+        at: 2026-11-07T22:02:25Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        assignee:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+          agent: "source-forms"
+          agentType: "general-purpose"
+        title: "Forms and flag meanings for every source"
+        detail: "Each of the 28 sources gets a cited designation form, plus flag meanings where its ReadMe defines them. Done when every definition loads and the science checks pass. The \"HIP \" prefix rule in rules/matching.yaml stays: a form formats only an entry's own identifier, and the HIP number a Gaia–Hipparcos pair gives beside it is another catalogue's designation, kept as its text."
+        state: active

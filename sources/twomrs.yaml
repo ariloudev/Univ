@@ -80,6 +80,14 @@ fixes:
       spread over many r_cz references; the ReadMe describes e_cz only as "? Uncertainty in cz",
       and a measured redshift never has an uncertainty of exactly zero.
     action: { kind: zero_error_is_none_reported, columns: [e_cz] }
+designation:
+  form: "2MASX J{identifier}"
+  cite: >-
+    ReadMe of J/ApJS/199/26 (VizieR), Byte-by-byte Description of file table3.dat, ID ('2MASS ID
+    from XSC (Cat. VII/233) or 2MASS Large Galaxy Atlas (LGA) databases'); form per the CDS
+    Dictionary of Nomenclature of Celestial Objects (read via vizier.nao.ac.jp/viz-bin/Dic,
+    2026-11-07), acronym 2MASX: '2MASX JHHMMSSss+DDMMSSs'. Every one of the 44,599 IDs fetched,
+    those from the LGA included, has that HHMMSSss+DDMMSSs shape (checked 2026-11-07)
 normalization:
   redshifts:
     - column: cz

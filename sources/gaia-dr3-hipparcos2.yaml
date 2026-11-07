@@ -58,3 +58,37 @@ mirrors:
   - "https://gea.esac.esa.int/tap-server/tap"
   - "https://gaia.ari.uni-heidelberg.de/tap"
   - "https://gaia.aip.de/tap"
+designation:
+  form: "Gaia DR3 {identifier}"
+  cite: >-
+    Gaia DR3 documentation, Datamodel description, hipparcos2_best_neighbour, source_id
+    ('corresponds to gaia_source.source_id'); Gaia DR3 documentation, Datamodel description,
+    gaia_source, designation: 'A source designation, unique across all Gaia Data Releases, that is
+    constructed from the prefix Gaia DRx followed by a string of digits corresponding to source_id'
+    (the archive's gaiadr3.gaia_source.designation reads 'Gaia DR3 <source_id>', checked 2026-11-07)
+flags:
+  xm_flag:
+    cite: >-
+      Gaia DR3 documentation, Datamodel description, 20.4.10 hipparcos2_best_neighbour, xm_flag ('a
+      bitmask indicating the details of the cross-match algorithm used for the source'); each
+      documented bit, and the one sum of bits the table holds (72)
+    values:
+      "1": >-
+        The external catalogue object has one or more multiples: at least another object with
+        exactly the same astrometry.
+      "2": >-
+        The external catalogue object has one or more suspected duplicates: at least another object
+        much closer than the catalogue angular resolution.
+      "4": "The external catalogue object is resolved in Gaia."
+      "8": "The Gaia object has a five parameters astrometric solution."
+      "16": "The Gaia object has a two parameters astrometric solution."
+      "32": >-
+        The external catalogue object is matched only after the special treatment for sources with
+        under-estimated position errors.
+      "64": >-
+        The external catalogue object is matched only after the special treatment for Gaia sources
+        with large values of ipd_gof_harmonic_amplitude or ruwe.
+      "72": >-
+        64 + 8: matched only after the special treatment for Gaia sources with large
+        ipd_gof_harmonic_amplitude or ruwe; the Gaia object has a five parameters astrometric
+        solution.

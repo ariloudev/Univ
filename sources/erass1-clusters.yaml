@@ -119,6 +119,24 @@ fixes:
       12,247 rows have BEST_ZERR < 0, every one exactly -1.0 and every one with BEST_Z_TYPE
       lit_z (of 247 lit_z rows); no other negative value occurs.
     action: { kind: sentinel_error_is_none_reported, columns: [BEST_ZERR], value: -1.0 }
+flags:
+  BEST_Z_TYPE:
+    cite: >-
+      Kluge et al. 2024, A&A 688, A210, Section 3.5 (Assigning the best redshift type) and Figure 5
+      caption; the values are the names of the redshift columns of the optical catalogue's data
+      model (eRASS1_clusters_optical.html: SPEC_Z_BOOT, CG_SPEC_Z, LIT_Z)
+    values:
+      "spec_z_boot": >-
+        Spectroscopic: bootstrap estimate of the biweight redshift of the cluster's spectroscopic
+        members, used when it has at least three and the final velocity clipping converged (priority
+        1).
+      "cg_spec_z": "Spectroscopic redshift of the galaxy at the optical centre (priority 2)."
+      "photo_z": >-
+        Photometric: the eROMaPPer cluster redshift z_lambda, within its calibrated redshift range
+        (priority 3).
+      "lit_z": >-
+        Literature cluster redshift, photometric or spectroscopic (the two are not distinguished),
+        adopted otherwise (priority 4).
 normalization:
   redshifts:
     - column: BEST_Z
