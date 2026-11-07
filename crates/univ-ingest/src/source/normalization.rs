@@ -198,8 +198,8 @@ pub struct Coded {
     pub method: Method,
 }
 
-/// Fields a definition maps at most one column to. Quality columns are kept by name, and the
-/// columns of distances and redshifts are named in `normalization`.
+/// Fields a definition maps at most one column to. Quality and cross-identifier columns are kept
+/// by name, and the columns of distances and redshifts are named in `normalization`.
 const SINGLE: [Field; 17] = [
     Field::Identifier,
     Field::Name,

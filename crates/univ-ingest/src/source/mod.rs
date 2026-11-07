@@ -115,6 +115,9 @@ pub enum Field {
     SpectralType,
     GroupId,
     Quality,
+    /// The entry's identifier in another catalogue, kept by the column's name, such as the PGC
+    /// number an NGC galaxy is given: what a published cross-identification joins it by.
+    CrossIdentifier,
     SupergalacticX,
     SupergalacticY,
     SupergalacticZ,

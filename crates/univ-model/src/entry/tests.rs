@@ -48,6 +48,7 @@ fn entry() -> CatalogueEntry {
     )
     .unwrap();
     CatalogueEntry {
+        cross_ids: Flags::default(),
         designation: Designation::new(SourceId::new("twomrs").unwrap(), "00424433+4116074")
             .unwrap(),
         name: None,

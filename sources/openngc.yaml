@@ -1,0 +1,122 @@
+id: openngc
+title: "OpenNGC, the NGC and IC objects with their Messier numbers and common names"
+provider: github
+access:
+  method: prepared
+  # OpenNGC writes its files as semicolon-separated tables with sexagesimal positions, zero-padded
+  # names and other catalogues' designations in one cell. The script reads both files of release
+  # v20260501 (checked against their SHA-256 of 2026-11-07) and writes them as plain columns;
+  # nothing is computed but the decimal degrees of the published sexagesimal positions.
+  file: openngc.csv.gz
+  script: scripts/prepare-openngc.py
+  sha256: "dca8fef27cffd71aeba2ef4219a26541299a4d5a41830118147e86ce477aa445"
+  rows: 14033
+cuts:
+  - >-
+    Every row of NGC.csv (13,969) and addendum.csv (64) of OpenNGC release v20260501
+    (github.com/mattiaverga/OpenNGC, tag v20260501, read 2026-11-07): the NGC and IC objects, and
+    in the addendum "notably objects that are not part of the NGC or IC catalog" (README): M40 and
+    M45 (Mel022), "two Messier objects" with no NGC or IC designation, the duplicate M102, and
+    ESO, PGC and UGC galaxies and clusters.
+  - >-
+    OpenNGC is taken for names: each object's name, Messier number and common names, and the PGC
+    and 2MASX designations its Identifiers cell gives, by which it joins the galaxies of the other
+    sources. Where Identifiers lists more than one distinct PGC number (45 rows) or 2MASX
+    designation (82 rows), none is taken in that column, as which one names the row's object is
+    not stated. Its sizes, magnitudes, proper motions, radial velocities and redshifts, compiled from
+    NED, HyperLEDA and SIMBAD (README, "Notes on object data"), are not taken: they are the
+    measurements of other catalogues, and the galaxies' own come from the survey sources.
+  - >-
+    Names are written without zero padding: catalogue letters, a space, the number without
+    leading zeros, and any suffix as published (NGC0224 as NGC 224, IC0001 as IC 1, ESO056-115 as
+    ESO 56-115, NGC5866B as NGC 5866B, IC0080 NED01 as IC 80 NED01).
+  - >-
+    The 652 rows typed Dup ("Duplicated object", NGC_guide.txt) and the 10 typed NonEx
+    ("Nonexistent object") are left out with those reasons. M102 is such a duplicate, of M101: the
+    addendum types it Dup with M 101 and notes "Identification is controversial, here we take NED
+    assumption", and NGC 5866's notes say "This may be M102". No row carries M102, so it is no
+    object's name here.
+  - >-
+    RA and Dec are "in J2000 Epoch" (NGC_guide.txt), "usually taken from NED" (README), which does
+    not name the frame. They are read as ICRS: the FK5 J2000 frame differs from it by tens of
+    milliarcseconds, far below the sizes of these objects.
+  - >-
+    An object that joins no object of another source by its PGC number, its 2MASX designation, its
+    name or its position, such as most clusters and nebulae (M42, M45), stands as an object of its
+    own with its sky position and no distance: found by name, drawn in no tile.
+columns:
+  - { column: name, field: identifier, unit: dimensionless }
+  - { column: type, field: quality, unit: dimensionless }
+  - { column: ra_deg, field: right_ascension, unit: degree }
+  - { column: dec_deg, field: declination, unit: degree }
+  - { column: M, field: cross_identifier, unit: dimensionless }
+  - { column: PGC, field: cross_identifier, unit: dimensionless }
+  - { column: 2MASX, field: cross_identifier, unit: dimensionless }
+  - { column: common_names, field: name, unit: dimensionless }
+frame: icrs
+epoch: 2000.0
+citation: >-
+  Verga M., OpenNGC, a license friendly NGC/IC objects database, release v20260501,
+  https://github.com/mattiaverga/OpenNGC, doi:10.21938/y.1ejWUD_MQ6b_eDFoVbbw. Built from the
+  NASA/IPAC Extragalactic Database (NED), HyperLEDA, SIMBAD, HEASARC and Harold Corwin's NGC/IC
+  Positions and Notes.
+reference: { doi: "10.21938/y.1ejWUD_MQ6b_eDFoVbbw" }
+terms:
+  url: "https://github.com/mattiaverga/OpenNGC/blob/v20260501/README.md"
+  quote: >-
+    Unlike other similar databases which are released with license limitations, OpenNGC is
+    released under CC-BY-SA-4.0 license, which allows the use for a wider range of cases.
+  credit: >-
+    OpenNGC by Mattia Verga (https://github.com/mattiaverga/OpenNGC), under CC BY-SA 4.0
+    (https://creativecommons.org/licenses/by-sa/4.0/), modified: names without zero padding,
+    positions in decimal degrees, and duplicate and nonexistent objects left out. OpenNGC has made
+    use of NED, HyperLEDA, SIMBAD and HEASARC.
+  share_alike: >-
+    ShareAlike.In addition to the conditions in Section 3(a), if You Share Adapted Material You produce, the following conditions also apply. 1. The Adapter’s License You apply must be a Creative Commons license with the same License Elements, this version or later, or a BY-SA Compatible License. (CC BY-SA 4.0, Section 3(b), LICENSES/CC-BY-SA-4.0.txt of the release)
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CC BY-SA 4.0 permits sharing and adapting with credit and an indication of changes, and
+    requires adapted material to be shared under the same licence. The source's entries and names
+    are kept as a source of the release, credited and marked share-alike; the other sources'
+    values are not adapted from it. Where sui generis database rights apply, a database holding
+    all or a substantial portion of OpenNGC is itself Adapted Material (Section 4(b)), but not its
+    individual contents, so a public release holding it would be offered under share-alike terms
+    as a database. Provisional: judged again before any public deployment.
+scale_domain: nearby_galaxies
+mirrors:
+  - "https://raw.githubusercontent.com/mattiaverga/OpenNGC/v20260501/database_files/"
+flags:
+  type:
+    cite: "OpenNGC NGC_guide.txt (release v20260501), Type: Object type"
+    values:
+      "*": "Star."
+      "**": "Double star."
+      "*Ass": "Association of stars."
+      "OCl": "Open cluster."
+      "GCl": "Globular cluster."
+      "Cl+N": "Star cluster and nebula."
+      "G": "Galaxy."
+      "GPair": "Galaxy pair."
+      "GTrpl": "Galaxy triplet."
+      "GGroup": "Group of galaxies."
+      "PN": "Planetary nebula."
+      "HII": "HII ionized region."
+      "DrkN": "Dark nebula."
+      "EmN": "Emission nebula."
+      "Neb": "Nebula."
+      "RfN": "Reflection nebula."
+      "SNR": "Supernova remnant."
+      "Nova": "Nova star."
+      "NonEx": "Nonexistent object."
+      "Dup": "Duplicated object: the NGC or IC column names the object it duplicates."
+      "Other": "Other classification: see the object's notes."
+normalization:
+  rules:
+    - when: { column: type, is: [Dup] }
+      leave_out: duplicate_object
+      basis: 'NGC_guide.txt: Dup is a "Duplicated object (see NGC or IC columns to find the master object)".'
+    - when: { column: type, is: [NonEx] }
+      leave_out: nonexistent_object
+      basis: 'NGC_guide.txt: NonEx is a "Nonexistent object".'

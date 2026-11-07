@@ -258,3 +258,34 @@ fn a_source_gives_its_designation_form_and_what_its_flags_mean_with_where_each_i
     let local = read("/v1/sources/researched-structures");
     assert!(local.get("designation").is_none() && local.get("flags").is_none());
 }
+
+#[test]
+fn a_share_alike_source_quotes_the_clause_and_one_without_says_nothing_of_it() {
+    // OpenNGC, under CC BY-SA 4.0, as release 12 holds it.
+    let db = db();
+    db.exec(
+        r#"
+INSERT INTO sources VALUES (2, 2, 'openngc', 'OpenNGC', 'github', 'nearby_galaxies',
+  'Verga M., OpenNGC, release v20260501.', 'https://github.com/mattiaverga/OpenNGC',
+  'OpenNGC is released under CC-BY-SA-4.0 license.', 'OpenNGC by Mattia Verga, under CC BY-SA 4.0.',
+  'permitted_with_credit', 'provisional', 13371, '{"method":"prepared"}', '[]', '[]', NULL);
+INSERT INTO source_reading VALUES (2, 2, NULL, NULL, 3,
+  'ShareAlike.In addition to the conditions in Section 3(a), if You Share Adapted Material You produce, the following conditions also apply.',
+  NULL, NULL);
+"#,
+    );
+    let response = get(&db, "/v1/sources/openngc");
+    assert_eq!(response.status, 200);
+    let openngc = body(&response);
+    assert!(
+        openngc["terms"]["share_alike"]
+            .as_str()
+            .is_some_and(|c| c.starts_with("ShareAlike.")),
+        "{openngc}"
+    );
+    assert!(
+        read("/v1/sources/hipparcos-2007")["terms"]
+            .get("share_alike")
+            .is_none()
+    );
+}

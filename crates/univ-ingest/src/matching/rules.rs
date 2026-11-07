@@ -13,6 +13,7 @@ use univ_model::position::separation_degrees;
 use crate::yaml::{FileError, read_checked};
 
 pub use super::extent::ExtentRule;
+pub use super::fields::EntryField;
 pub use super::sight::{NearbyTolerance, distance};
 
 /// The matching rules, as the release records them.
@@ -75,28 +76,6 @@ pub struct ConfidenceRule {
     pub unchecked_basis: String,
     pub cross_identification_conflict: f64,
     pub conflict_basis: String,
-}
-
-/// The field of an entry an identifier is read from.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum EntryField {
-    Identifier,
-    Name,
-    GroupId,
-}
-
-impl EntryField {
-    /// The field's text in `entry`, trimmed; none when blank or absent.
-    #[must_use]
-    pub fn read(self, entry: &CatalogueEntry) -> Option<&str> {
-        let text = match self {
-            Self::Identifier => Some(&*entry.designation.identifier),
-            Self::Name => entry.name.as_deref(),
-            Self::GroupId => entry.group_id.as_deref(),
-        }?;
-        Some(text.trim()).filter(|t| !t.is_empty())
-    }
 }
 
 /// A source and the field holding its identifier in a scheme.
@@ -163,7 +142,24 @@ pub struct ExtraDesignation {
 pub struct NameRule {
     pub source: SourceId,
     pub field: EntryField,
+    /// What separates the names of a field that holds more than one, such as `,` in `OpenNGC`'s
+    /// `Great Orion Nebula,Orion Nebula`; none where the field holds one name.
+    #[serde(default)]
+    pub separator: Option<char>,
     pub basis: String,
+}
+
+impl NameRule {
+    /// The names the rule reads from `entry`'s field, each trimmed, none blank.
+    pub fn names<'e>(&self, entry: &'e CatalogueEntry) -> impl Iterator<Item = &'e str> {
+        let separator = self.separator;
+        self.field
+            .read(entry)
+            .unwrap_or_default()
+            .split(move |c| Some(c) == separator)
+            .map(str::trim)
+            .filter(|n| !n.is_empty())
+    }
 }
 
 /// What a pair of sources compares along the line of sight.
@@ -269,7 +265,6 @@ impl MatchingRules {
                 ));
             }
         }
-        let mut members = BTreeSet::new();
         for (i, scheme) in self.cross_identifications.iter().enumerate() {
             if !scheme.aliases.is_empty()
                 && scheme
@@ -295,11 +290,14 @@ impl MatchingRules {
                     return Err(field(&at, "is given without its tolerance_basis"));
                 }
             }
-            for m in &scheme.members {
-                if !members.insert((scheme.scheme.as_str(), m.source.as_str())) {
+            for (j, m) in scheme.members.iter().enumerate() {
+                if scheme.members[..j]
+                    .iter()
+                    .any(|o| o.source == m.source && o.field == m.field)
+                {
                     return Err(field(
                         &format!("cross_identifications[{i}].members"),
-                        &format!("names {} twice", m.source),
+                        &format!("names {} by one field twice", m.source),
                     ));
                 }
             }

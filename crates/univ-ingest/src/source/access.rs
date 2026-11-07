@@ -82,6 +82,8 @@ pub enum Holds {
     Structures,
     /// Researched star distances, one star file each.
     StarDistances,
+    /// A snapshot of a list of star names, one file.
+    StarNames,
 }
 
 impl Access {

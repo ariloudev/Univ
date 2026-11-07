@@ -63,6 +63,15 @@ links:
       - file: "crates/univ-ingest/tests/source_reading.rs"
         name: "a_flag_meaning_for_a_column_not_taken_as_a_flag_is_refused"
         body: 7c2a9317905bafdd4e1010ead8c2b895665f2bb1e8861598aeefa4b8869f4db8
+  - node: 01a1b838-25fc-71d6-a728-9b6a30cffe28
+    reviewed: dfe3a0d13299353bd94fcb54b46f149d28eb96e3686332462966762d97d530de
+    tests:
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "openngc_rows_marked_duplicate_or_nonexistent_are_left_out_each_with_its_reason"
+        body: 5dae15739fa015fffd0a892a238a2c96cae1c88d1758e7242f0fb17d24283394
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "every_cross_identifier_the_matching_rules_read_is_a_column_its_source_defines"
+        body: 5583231aa05b88a60a486107cc1f90205a72fff52e435a1d61a7f4ad24601ac1
   - node: 01a19f22-2ad9-716e-876f-183b90085a10
     reviewed: efb0a233681b67fffa0f799f74ed95880cfa5fb49dad984c3010d77b994ab867
     tests:
@@ -1244,13 +1253,67 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/release_shards.rs"
         name: "the_catalogue_keeps_once_for_each_source_its_designation_form_flag_meanings_and_rank"
-        body: 4bed66116a9e3fb6495e9d2d17b3730fc11a51330c9aae2d9a076e16803cf5c2
+        body: c769743be5c667eedf99c79a68f141e7483e56027b065239b3e28cebbaba0a41
   - node: 01a19f23-636f-72bd-b194-15144dcb948e
     reviewed: 75d95472819b7b0b695520cfb33e4f210e085f5a6dbb0b04bcbbf336cd45532f
     tests:
       - file: "crates/univ-ingest/tests/matching.rs"
         name: "designations_and_common_names_keep_their_sources"
         body: d48e58b91c78ab53f4ddec1b1444a62d86e40751f2427adc2e629b4d261efeca
+  - node: 01a1b7dc-04ef-7334-abc7-37e775e83b00
+    reviewed: e653fb49f10368edaa934402d72a2115a7799ebd33f395e3bddd7ebcde2c418d
+    tests:
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "an_iau_name_joins_the_star_its_hip_number_names_and_attaches_as_its_name"
+        body: 2e8cb4a5f77b9a194636e377975a3d23c02d69a7ba5fe6be5376aff40050eaa7
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "a_release_names_m31_by_its_openngc_names_and_holds_m42_as_an_object_not_placed"
+        body: 015d750523feb1e5a13bcf9a8ac030ca49ced8be0683e4de1b41e21e88cf1771
+  - node: 01a1b838-25fc-71d6-a728-9b6bb7ad3b8e
+    reviewed: 388f16f070a0b5e32cb97b73e34ca0c6ac65cc6ba1b3acd902d1b367da01cd66
+    tests:
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "a_name_that_joins_nothing_is_an_object_of_its_own_with_each_of_its_names"
+        body: d76f7158e4e5a3332c95715f0381c19efeca38c754e139e76d8e6c3be2573003
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "names_sharing_a_hip_number_are_one_entry_and_a_fix_corrects_a_wrong_number"
+        body: 4c0c9a7e4d7a9bd7f28d2ebac5192ebb9f1e30d7a7c99156b01d03b955efdf33
+  - node: 01a1b7dc-04ef-7334-abc7-37e83780d376
+    reviewed: 4afea42bebb7bf31ca068230c1c5f5a82b82570d85583d9e1a59d5bf741b508c
+    tests:
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "an_iau_name_joins_the_star_its_hip_number_names_and_attaches_as_its_name"
+        body: 2e8cb4a5f77b9a194636e377975a3d23c02d69a7ba5fe6be5376aff40050eaa7
+  - node: 01a1b849-7cc8-73bf-8d95-19d091322d79
+    reviewed: 48334be1e63e38d6b3c99db05eb60e37581e3508f94d7790af72dae1c4c86edd
+    tests:
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "a_name_without_a_hip_number_joins_the_hipparcos_star_at_its_position"
+        body: b3e29d113884b45365d4d2fe9a1c26cfb01292b5d5a5256a31a415424edac4fa
+  - node: 01a1b7dc-04ef-7334-abc7-37e9e889ce84
+    reviewed: f970f6dfd80eb2e482b59528e5835c09baa6b30b1e9727eea6a372fa30e2b4c6
+    tests:
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "a_galaxy_name_joins_the_object_its_pgc_number_or_2masx_designation_names"
+        body: d611fa57069093470561a135bfd5a58b4ef3140e97e6cb4129099d351a764996
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "a_galaxy_name_with_no_shared_identifier_joins_the_object_its_position_matches"
+        body: 2d87e709a5ab31004e952022b2338869b7ce99e6b2d3d627c79b3e6c234915d4
+  - node: 01a1b7dc-04ef-7334-abc7-37eac8b77d98
+    reviewed: d5d9a0c94358982938819a894ae0dd2956b71c6277b33d63d8b08406a598ce16
+    tests:
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "a_name_that_joins_nothing_is_an_object_of_its_own_with_each_of_its_names"
+        body: d76f7158e4e5a3332c95715f0381c19efeca38c754e139e76d8e6c3be2573003
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "a_release_names_m31_by_its_openngc_names_and_holds_m42_as_an_object_not_placed"
+        body: 015d750523feb1e5a13bcf9a8ac030ca49ced8be0683e4de1b41e21e88cf1771
+  - node: 01a1b7dc-04ef-7334-abc7-37eb1f141005
+    reviewed: aa9e642efced0d74e0280736265b627e3298c87870cb8e9c103f23f6c2d6cfc7
+    tests:
+      - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "openngc_rows_marked_duplicate_or_nonexistent_are_left_out_each_with_its_reason"
+        body: 5dae15739fa015fffd0a892a238a2c96cae1c88d1758e7242f0fb17d24283394
   - node: 01a19f23-636f-72bd-b194-15178440da44
     reviewed: d30b961b6c19837c70435a379c1919ce9154776e6c5131e472332bc73349fdaf
     tests:
@@ -2331,6 +2394,12 @@ links:
       - file: "crates/univ-api/src/sources/tests.rs"
         name: "the_terms_give_the_redistribution_status_and_any_non_commercial_clause"
         body: bb24067dddf27cc7265109a5c22fe5da5685f9c3aa94ab5d6cbaccbce30edda8
+  - node: 01a1b7dc-04ef-7334-abc7-37ec41787dde
+    reviewed: ddac7c3a063752e0adcd76856aa12e380d587b4e3b05838779060a2ec3418717
+    tests:
+      - file: "crates/univ-api/src/sources/tests.rs"
+        name: "a_share_alike_source_quotes_the_clause_and_one_without_says_nothing_of_it"
+        body: 47afd1d6fcb32c4034e6b4e767bb66d070f1d5429f84e57939228ed2159721d5
   - node: 01a19f1e-d177-716d-b124-3d2711844898
     reviewed: 64fdc53e772b72fefbd149a9604a2fa0a93a8996b9837a9fe412591ec97ba6ad
     tests:

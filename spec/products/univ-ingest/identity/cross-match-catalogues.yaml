@@ -101,8 +101,12 @@ requirements:
         name: "A common name, such as M31 or the Large Magellanic Cloud, is attached with the source that published it."
       - key: 01a1b7dc-04ef-7334-abc7-37e775e83b00
         name: "A proper name, such as Sirius or the Andromeda Galaxy, is attached as the name of its catalogue entry, apart from the object's designations."
+      - key: 01a1b838-25fc-71d6-a728-9b6bb7ad3b8e
+        name: "A source field that holds more than one name, as OpenNGC's common names do, attaches each of them."
       - key: 01a1b7dc-04ef-7334-abc7-37e83780d376
         name: "An entry of a star-name source joins the object of the star its HIP number names."
+      - key: 01a1b849-7cc8-73bf-8d95-19d091322d79
+        name: "An entry of a star-name source without a HIP number joins the star whose position matches its own."
       - key: 01a1b7dc-04ef-7334-abc7-37e9e889ce84
         name: "An entry of a galaxy-name source joins the object its PGC number or 2MASX designation names, or else the object its position matches."
       - key: 01a1b7dc-04ef-7334-abc7-37eac8b77d98
