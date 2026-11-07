@@ -19,6 +19,15 @@ versions:
     title: "Designations and flag meanings served"
     goal: "Source definitions carry cited designation forms and flag meanings; ingest stores them and Univ Server serves formatted designations"
     status: active
+  - key: 01a1b821-d8aa-7233-9566-7405ee8d7b94
+    at: 2026-11-07T22:29:48Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Designations and flag meanings served"
+    goal: "Source definitions carry cited designation forms and flag meanings; ingest stores them and Univ Server serves formatted designations"
+    status: done
 blocks:
   - key: 01a1b7e5-22ce-727d-bcf2-72a25c3f6630
     id: t1-defs
@@ -33,6 +42,15 @@ blocks:
         title: "Source definitions take designation, flags and share-alike"
         detail: "SourceDefinition parses `designation`, `flags` and the share-alike clause, and refuses a malformed form or a flag meaning on a column not taken as a flag. Done when the parse and refusal tests pass."
         state: open
+      - key: 01a1b821-d8aa-7233-9566-73ff9ce1f75b
+        at: 2026-11-07T22:29:48Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Source definitions take designation, flags and share-alike"
+        detail: "Done on stage/atlas-w1 (aa36f38)."
+        state: done
   - key: 01a1b7e5-22ce-727d-bcf2-72a3b98b3b3b
     id: t1-rank
     kind: task
@@ -46,6 +64,15 @@ blocks:
         title: "Designation ranks"
         detail: "`rules/designations.yaml` ranks the sources for display, and ingest reads it. Done when a rules test passes."
         state: open
+      - key: 01a1b821-d8aa-7233-9566-74007856d94c
+        at: 2026-11-07T22:29:48Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Designation ranks"
+        detail: "Done on stage/atlas-w1 (aa36f38)."
+        state: done
   - key: 01a1b7e5-22ce-727d-bcf2-72a447d237ca
     id: t1-schema
     kind: task
@@ -59,6 +86,15 @@ blocks:
         title: "Schema 7: source_reading"
         detail: "A side table `source_reading`, written from the definitions; publish raises the schema to 7 with no rebuild. Done when the release and publish tests pass."
         state: open
+      - key: 01a1b821-d8aa-7233-9566-7401c9229e50
+        at: 2026-11-07T22:29:48Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Schema 7: source_reading"
+        detail: "Done on stage/atlas-w1 (aa36f38). A store at schema 6 takes it on the next publish with no migration."
+        state: done
   - key: 01a1b7e5-22ce-727d-bcf2-72a51b7f367b
     id: t1-api
     kind: task
@@ -72,6 +108,15 @@ blocks:
         title: "Univ Server formats, orders and resolves designations"
         detail: "The record carries formatted designations in rank order with entry flags. \"HIP 32754\" resolves. The source record gives the form, flags and share-alike. Done when the univ-api tests and the OpenAPI snapshot pass."
         state: open
+      - key: 01a1b821-d8aa-7233-9566-7402d19245ab
+        at: 2026-11-07T22:29:48Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Univ Server formats, orders and resolves designations"
+        detail: "Done on stage/atlas-w1 (2306ce0, ac47863)."
+        state: done
   - key: 01a1b7e5-22ce-727d-bcf2-72a61d707d4f
     id: t1-data
     kind: task
@@ -85,3 +130,25 @@ blocks:
         title: "Forms and flag meanings for every source"
         detail: "Each of the 28 sources gets a cited designation form, plus flag meanings where its ReadMe defines them. The HIP prefix rule is removed. Done when every definition loads and the science checks pass."
         state: open
+      - key: 01a1b821-d8aa-7233-9566-74039ae55314
+        at: 2026-11-07T22:29:48Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Forms and flag meanings for every source"
+        detail: "Done on stage/atlas-w1 (7b47e4d): 11 sources with a form, 13 with flag meanings. The \"HIP \" prefix rule stays, since a form formats only an entry's own identifier."
+        state: done
+  - key: 01a1b821-d8aa-7233-9566-73fe0bbcc1fd
+    id: w1-merged
+    kind: note
+    versions:
+      - key: 01a1b821-d8aa-7233-9566-74041e3d881c
+        at: 2026-11-07T22:29:48Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W1 merged"
+        markdown: "stage/atlas-w1 merged at c5319cf after the review fixes, the full gate and integration. Its Yard Log has the stage note. AC-73 was reworded (minor) for the prefixed beside designation; the explorer's AC-392 and AC-394 lost their old links until W4."
+        tone: success

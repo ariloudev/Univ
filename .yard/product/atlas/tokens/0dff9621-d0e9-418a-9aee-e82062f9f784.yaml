@@ -2,12 +2,12 @@ format: yardtokens/2
 session: 0dff9621-d0e9-418a-9aee-e82062f9f784
 host: claude-code
 firstEnded: 2026-11-07T21:05:16Z
-lastEnded: 2026-11-07T21:42:06Z
+lastEnded: 2026-11-07T22:29:52Z
 tokens:
-  input: 250
-  cacheRead: 19383878
-  cacheWrite: 324665
-  output: 76398
+  input: 258
+  cacheRead: 20661290
+  cacheWrite: 346462
+  output: 78490
 stages:
   - stage: 01a1b7d4-7643-74c0-a873-b024a8a46f6e
     input: 158
@@ -50,23 +50,34 @@ stages:
         cacheWrite: 76858
         output: 9837
   - stage: 01a1b7d4-7643-74c0-a873-b0260293654b
-    input: 12
-    cacheRead: 2543383
-    cacheWrite: 13171
-    output: 5458
+    input: 16
+    cacheRead: 3171786
+    cacheWrite: 14386
+    output: 6066
     agents:
       - agent: main
-        input: 12
-        cacheRead: 2543383
-        cacheWrite: 13171
-        output: 5458
+        input: 16
+        cacheRead: 3171786
+        cacheWrite: 14386
+        output: 6066
+  - stage: 01a1b7d4-7643-74c0-a873-b027e45ef8ae
+    input: 4
+    cacheRead: 649009
+    cacheWrite: 20582
+    output: 1484
+    agents:
+      - agent: main
+        input: 4
+        cacheRead: 649009
+        cacheWrite: 20582
+        output: 1484
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 84
-    cacheRead: 13178856
-    cacheWrite: 95298
-    output: 37716
+    input: 92
+    cacheRead: 14456268
+    cacheWrite: 117095
+    output: 39808
   - agent: a5e19e89b66b2125f
     type: Explore
     model: claude-opus-5-5

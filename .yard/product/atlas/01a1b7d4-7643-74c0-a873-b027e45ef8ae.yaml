@@ -10,6 +10,15 @@ versions:
     title: "Name sources"
     goal: "IAU star names and Messier/NGC/IC names are ingested as cited sources and attached to existing objects; lookup by these names works"
     status: planned
+  - key: 01a1b821-d8aa-7233-9566-74065be4d3d8
+    at: 2026-11-07T22:29:48Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Name sources"
+    goal: "IAU star names and Messier/NGC/IC names are ingested as cited sources and attached to existing objects; lookup by these names works"
+    status: active
 blocks:
   - key: 01a1b7e5-22ce-727d-bcf2-72a77474c17a
     id: t2-iau
