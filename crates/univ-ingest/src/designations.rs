@@ -81,13 +81,14 @@ mod tests {
     }
 
     #[test]
-    fn the_repository_rules_are_read_and_rank_hipparcos_first() {
+    fn the_repository_rules_are_read_and_rank_a_stars_iau_name_then_its_hip_number_first() {
         let file =
             std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../rules/designations.yaml");
         let text = std::fs::read_to_string(&file).unwrap();
         let r: DesignationRules =
             crate::yaml::parse_checked(&file, &text, DesignationRules::check).unwrap();
-        assert_eq!(r.rank(&SourceId::new("hipparcos-2007").unwrap()), Some(1));
+        assert_eq!(r.rank(&SourceId::new("iau-star-names").unwrap()), Some(1));
+        assert_eq!(r.rank(&SourceId::new("hipparcos-2007").unwrap()), Some(2));
         // Every source it ranks is defined: a mistyped id would leave its source unranked.
         let sources = file.parent().unwrap().join("../sources");
         for source in &r.order {

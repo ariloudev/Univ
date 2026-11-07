@@ -215,7 +215,7 @@ fn attach_names(rules: &MatchingRules, object: &mut Object) {
             }
         }
         for rule in rules.names.iter().filter(|r| &r.source == source) {
-            if let Some(text) = rule.field.read(entry) {
+            for text in rule.names(entry) {
                 let name = CommonName {
                     name: text.to_owned(),
                     source: source.clone(),

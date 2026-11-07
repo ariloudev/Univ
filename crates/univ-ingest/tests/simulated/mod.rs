@@ -87,6 +87,7 @@ pub fn entry(src: &str, id: &str, ra: f64, dec: f64) -> CatalogueEntry {
 /// An entry of `src` named `id` without a position, such as a Bailer-Jones distance.
 pub fn bare(src: &str, id: &str) -> CatalogueEntry {
     CatalogueEntry {
+        cross_ids: univ_model::entry::Flags::default(),
         designation: designation(src, id),
         name: None,
         position: None,

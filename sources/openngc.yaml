@@ -1,0 +1,115 @@
+id: openngc
+title: "OpenNGC, the NGC and IC objects with their Messier numbers and common names"
+provider: github
+access:
+  method: prepared
+  # OpenNGC writes its files as semicolon-separated tables with sexagesimal positions, zero-padded
+  # names and other catalogues' designations in one cell. The script reads both files of release
+  # v20260501 (checked against their SHA-256 of 2026-11-07) and writes them as plain columns;
+  # nothing is computed but the decimal degrees of the published sexagesimal positions.
+  file: openngc.csv.gz
+  script: scripts/prepare-openngc.py
+  sha256: "f44c362748e790936171b8fca49eb5a8b12cca34d88aab3140c806b939a88b14"
+  rows: 14033
+cuts:
+  - >-
+    Every row of NGC.csv (13,969) and addendum.csv (64) of OpenNGC release v20260501
+    (github.com/mattiaverga/OpenNGC, tag v20260501, read 2026-11-07): the NGC and IC objects, and
+    in the addendum the Messier objects and a few others that are in neither catalogue.
+  - >-
+    OpenNGC is taken for names: each object's name, Messier number and common names, and the PGC
+    and 2MASX designations its Identifiers cell gives, by which it joins the galaxies of the other
+    sources. Its sizes, magnitudes, proper motions, radial velocities and redshifts, compiled from
+    NED, HyperLEDA and SIMBAD (README, "Notes on object data"), are not taken: they are the
+    measurements of other catalogues, and the galaxies' own come from the survey sources.
+  - >-
+    Names are written without zero padding (NGC0224 as NGC 224, IC0001 as IC 1), as the NGC and
+    IC write them; a suffix (NGC 5866B) is kept as published.
+  - >-
+    The 652 rows typed Dup ("Duplicated object", NGC_guide.txt) and the 10 typed NonEx
+    ("Nonexistent object") are left out with those reasons. M102 is such a duplicate, of M101:
+    OpenNGC follows Méchain's 1783 letter withdrawing it (addendum, "see Sawyer, JRASC 41, Nos 7&8,
+    1947"), while many catalogues identify M102 with NGC 5866; NGC 5866 therefore carries no
+    Messier number here.
+  - >-
+    RA and Dec are "in J2000 Epoch" (NGC_guide.txt), "usually taken from NED" (README), which does
+    not name the frame. They are read as ICRS: the FK5 J2000 frame differs from it by tens of
+    milliarcseconds, far below the sizes of these objects.
+  - >-
+    An object that joins no object of another source by its PGC number, its 2MASX designation, its
+    name or its position, such as most clusters and nebulae (M42, M45), stands as an object of its
+    own with its sky position and no distance: found by name, drawn in no tile.
+columns:
+  - { column: name, field: identifier, unit: dimensionless }
+  - { column: type, field: quality, unit: dimensionless }
+  - { column: ra_deg, field: right_ascension, unit: degree }
+  - { column: dec_deg, field: declination, unit: degree }
+  - { column: M, field: cross_identifier, unit: dimensionless }
+  - { column: PGC, field: cross_identifier, unit: dimensionless }
+  - { column: 2MASX, field: cross_identifier, unit: dimensionless }
+  - { column: common_names, field: name, unit: dimensionless }
+frame: icrs
+epoch: 2000.0
+citation: >-
+  Verga M., OpenNGC, a license friendly NGC/IC objects database, release v20260501,
+  https://github.com/mattiaverga/OpenNGC, doi:10.21938/y.1ejWUD_MQ6b_eDFoVbbw. Built from the
+  NASA/IPAC Extragalactic Database (NED), HyperLEDA, SIMBAD, HEASARC and Harold Corwin's NGC/IC
+  Positions and Notes.
+reference: { doi: "10.21938/y.1ejWUD_MQ6b_eDFoVbbw" }
+terms:
+  url: "https://github.com/mattiaverga/OpenNGC/blob/v20260501/README.md"
+  quote: >-
+    Unlike other similar databases which are released with license limitations, OpenNGC is
+    released under CC-BY-SA-4.0 license, which allows the use for a wider range of cases.
+  credit: >-
+    OpenNGC by Mattia Verga (https://github.com/mattiaverga/OpenNGC), under CC BY-SA 4.0. OpenNGC
+    has made use of NED, HyperLEDA, SIMBAD and HEASARC.
+  share_alike: >-
+    ShareAlike. In addition to the conditions in Section 3(a), if You Share Adapted Material You
+    produce, the following conditions also apply. 1. The Adapter's License You apply must be a
+    Creative Commons license with the same License Elements, this version or later, or a BY-SA
+    Compatible License. (CC BY-SA 4.0, Section 3(b), LICENSES/CC-BY-SA-4.0.txt of the release)
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CC BY-SA 4.0 permits sharing and adapting with credit, and requires adapted material to be
+    shared under the same licence. The source's entries and names are kept as a separable source
+    of the release, credited and marked share-alike; the other sources' data are not adapted from
+    it. Provisional: judged again before any public deployment.
+scale_domain: nearby_galaxies
+mirrors:
+  - "https://raw.githubusercontent.com/mattiaverga/OpenNGC/v20260501/database_files/"
+flags:
+  type:
+    cite: "OpenNGC NGC_guide.txt (release v20260501), Type: Object type"
+    values:
+      "*": "Star."
+      "**": "Double star."
+      "*Ass": "Association of stars."
+      "OCl": "Open cluster."
+      "GCl": "Globular cluster."
+      "Cl+N": "Star cluster and nebula."
+      "G": "Galaxy."
+      "GPair": "Galaxy pair."
+      "GTrpl": "Galaxy triplet."
+      "GGroup": "Group of galaxies."
+      "PN": "Planetary nebula."
+      "HII": "HII ionized region."
+      "DrkN": "Dark nebula."
+      "EmN": "Emission nebula."
+      "Neb": "Nebula."
+      "RfN": "Reflection nebula."
+      "SNR": "Supernova remnant."
+      "Nova": "Nova star."
+      "NonEx": "Nonexistent object."
+      "Dup": "Duplicated object: the NGC or IC column names the object it duplicates."
+      "Other": "Other classification: see the object's notes."
+normalization:
+  rules:
+    - when: { column: type, is: [Dup] }
+      leave_out: duplicate_object
+      basis: 'NGC_guide.txt: Dup is a "Duplicated object (see NGC or IC columns to find the master object)".'
+    - when: { column: type, is: [NonEx] }
+      leave_out: nonexistent_object
+      basis: 'NGC_guide.txt: NonEx is a "Nonexistent object".'

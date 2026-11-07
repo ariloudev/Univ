@@ -1,0 +1,21 @@
+# Three names of the snapshot names/iau-wgsn.yaml, as it holds them.
+page: "https://exopla.net/star-names/modern-iau-star-names/"
+read_on: 2026-11-07
+positions: >-
+  RA and Dec in degrees, ICRS, from the table's hidden RA and DEC columns, which the page
+  says come from the WGSN's Naked Eye star Catalog (NEC), compiled from SIMBAD data.
+stars:
+  - name: "Butterfly Star"
+    designation: "IRAS 04302+2247"
+    ra_deg: 68.318754
+    dec_deg: 22.889
+    adopted: 2026-06-13
+  - name: "Dilmun"
+    designation: "WASP-121"
+    adopted: 2023-08-01
+  - name: "Sirius"
+    designation: "HR 2491"
+    hip: 32349
+    ra_deg: 101.2871553
+    dec_deg: -16.71611586
+    adopted: 2016-06-30

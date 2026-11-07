@@ -230,6 +230,11 @@ pub struct CatalogueEntry {
     pub supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     /// The source's quality columns, by column name, as published.
     pub flags: Flags,
+    /// The identifiers the source gives the entry in other catalogues, by column name, such as
+    /// the PGC number and 2MASX designation of an NGC galaxy: what published cross-identifications
+    /// join it by. None for most entries.
+    #[serde(default, skip_serializing_if = "Flags::is_empty")]
+    pub cross_ids: Flags,
     /// The papers a researched entry's values come from, the paper of its distance first; none
     /// for an entry of a catalogue, which its source's citation covers.
     #[serde(default, skip_serializing_if = "<[_]>::is_empty")]
@@ -270,6 +275,8 @@ struct RawCatalogueEntry {
     group_id: Option<Box<str>>,
     supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
     flags: Flags,
+    #[serde(default)]
+    cross_ids: Flags,
     // Absent from entries of catalogues.
     #[serde(default)]
     references: Box<[PaperReference]>,
@@ -293,6 +300,7 @@ impl TryFrom<RawCatalogueEntry> for CatalogueEntry {
             group_id: raw.group_id,
             supergalactic_velocity: raw.supergalactic_velocity,
             flags: raw.flags,
+            cross_ids: raw.cross_ids,
             references: raw.references,
         };
         entry.check()?;

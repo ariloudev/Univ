@@ -90,6 +90,7 @@ cross_identifications:
       - { source: hipparcos-1997, field: identifier }
       - { source: gaia-dr3-hipparcos2, field: name }
       - { source: researched-star-distances, field: identifier }
+      - { source: iau-star-names, field: { cross_identifier: HIP } }
   - scheme: 2masx
     basis: >-
       2MRS (Huchra et al. 2012, ApJS 199, 26) and 2M++ (Lavaux & Hudson 2011, MNRAS 416, 2840)
@@ -100,6 +101,7 @@ cross_identifications:
       - { source: twomrs, field: identifier }
       - { source: twompp-catalogue, field: identifier }
       - { source: twompz, field: identifier }
+      - { source: openngc, field: { cross_identifier: 2MASX } }
   - scheme: sdss-specobjid
     basis: >-
       All three sources are queries of the SDSS DR17 SpecObj table (Abdurro'uf et al. 2022, ApJS
@@ -119,6 +121,7 @@ cross_identifications:
       joins by them, and a group's dominant galaxy is found by its number.
     members:
       - { source: cosmicflows-4-galaxies, field: identifier }
+      - { source: openngc, field: { cross_identifier: PGC } }
   - scheme: common-name
     compare: common_name
     basis: >-
@@ -150,6 +153,7 @@ cross_identifications:
     members:
       - { source: mcconnachie-2012, field: identifier }
       - { source: updated-nearby-galaxies, field: identifier }
+      - { source: openngc, field: { cross_identifier: M } }
 
 # Designations a source gives beside an entry's own identifier, kept with that source.
 designations:
@@ -161,6 +165,12 @@ designations:
     field: name
     prefix: ""
     basis: "NAME is the eRASS1 cluster name, 1eRASS J... (Bulbul et al. 2024, A&A 685, A106)."
+  - source: openngc
+    field: { cross_identifier: M }
+    prefix: ""
+    basis: >-
+      M is the object's number in Messier's catalogue (NGC_guide.txt), which the prepared file
+      writes "M 31" for OpenNGC's "031" (scripts/prepare-openngc.py).
 
 # Sources whose rows are galaxy groups, not galaxies: each row is its own object, of kind
 # galaxy_group, never matched by position to a galaxy, and related to the galaxy its source names
@@ -197,6 +207,23 @@ names:
       The Name column of McConnachie 2012 (AJ 144, 4) is each Local Group galaxy's common name,
       such as LMC, Andromeda or Canis Major. The UNGC Name column mixes common names with catalogue
       designations (UGC12894, ESO409-015) and is kept as designations only.
+  - source: iau-star-names
+    field: identifier
+    basis: "Each entry of the IAU Catalog of Star Names is the star's IAU name, such as Sirius."
+  - source: openngc
+    field: name
+    separator: ","
+    basis: >-
+      OpenNGC's "Common names: Common names of the object if any" (NGC_guide.txt), several
+      separated by commas as published ("Great Orion Nebula,Orion Nebula").
+  - source: openngc
+    field: identifier
+    basis: >-
+      An NGC or IC name, such as NGC 224, is the name the object is commonly called by, as M31 is:
+      the object is found by it, ignoring letter case and white space.
+  - source: openngc
+    field: { cross_identifier: M }
+    basis: "A Messier number, such as M 31, is a common name of its object, as for NGC names."
 
 # A researched structure's member, named in its paper, resolves to the matched object carrying
 # that name only when the object's preferred sky position lies within this angle of the
@@ -573,6 +600,38 @@ pairs:
 # 6dFGS fibres 6 to 28 arcsec from its centre, all within 60 km/s of its 584 km/s; and NGC 1507
 # as two objects of two 2MASX designations 53 arcsec apart, 2MRS 04042714-0211210 against 2M++
 # 04042802-0210254.
+  - sources: [openngc, twomrs]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: &openngc >-
+      OpenNGC's positions are "usually taken from NED" (README), the centre of each object as
+      NED's preferred position gives it; the surveys' are 2MASS XSC centroids or fibre targets.
+      10 arcsec is a pipeline choice for the offset between two centres of one bright, extended
+      galaxy. OpenNGC takes no distance or velocity, so the line of sight is not compared. Most
+      galaxies join first by their PGC number or 2MASX designation.
+  - sources: [openngc, twompp-catalogue]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: *openngc
+  - sources: [openngc, sixdfgs-dr3]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: *openngc
+  - sources: [openngc, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: *openngc
+  - sources: [openngc, cosmicflows-4-galaxies]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: *openngc
+  - sources: [openngc, updated-nearby-galaxies]
+    angular_tolerance_arcsec: 30.0
+    line_of_sight: { compare: none }
+    basis: >-
+      As for UNGC and 2MRS: UNGC's centres of nearby dwarfs differ from other catalogues' by tens
+      of arcseconds (Karachentsev et al. 2013). OpenNGC takes no distance or velocity.
+
 extents:
   below_km_s: 1000
   tolerance_km_s: 300

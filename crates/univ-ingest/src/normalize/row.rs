@@ -189,6 +189,11 @@ impl Row<'_, '_> {
         }
         distances.extend(self.added_distances()?);
         let entry = CatalogueEntry {
+            cross_ids: Flags::named(
+                plan.cross_ids
+                    .iter()
+                    .filter_map(|(index, name)| self.text(*index).map(|t| (Arc::clone(name), t))),
+            ),
             designation: Designation::new(self.cx.source.clone(), identifier)
                 .map_err(|_| LeftOutReason::MissingIdentifier)?,
             name: plan

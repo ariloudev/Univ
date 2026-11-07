@@ -241,7 +241,8 @@ fn the_catalogue_keeps_once_for_each_source_its_designation_form_flag_meanings_a
     // As sources/hipparcos-2007.yaml and rules/designations.yaml give them.
     let (form, rank, flags) = reading("hipparcos-2007");
     assert_eq!(form.as_deref(), Some("HIP {identifier}"));
-    assert_eq!(rank, Some(1));
+    // Second, after the IAU names of stars.
+    assert_eq!(rank, Some(2));
     let flags: serde_json::Value = serde_json::from_str(&flags.unwrap()).unwrap();
     assert!(flags["Sn"]["values"]["5"].is_string(), "{flags}");
     assert!(flags["Sn"]["cite"].is_string(), "{flags}");
