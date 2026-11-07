@@ -10,3 +10,56 @@ versions:
     title: "Atlas revamp"
     goal: "The explorer is framed as a star atlas: graticule frame with live ticks, panels docked in its margins, atlas key, italic structure names"
     status: planned
+blocks:
+  - key: 01a1b7e5-22ce-727d-bcf2-72a993478ac5
+    id: t3-tokens
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72bbfc76648b
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Atlas tokens and fonts"
+        detail: "The colour tokens and self-hosted Spectral and Barlow Semi Condensed in `styles.css`. Done when the build passes."
+        state: open
+  - key: 01a1b7e5-22ce-727d-bcf2-72aaf6eaaab3
+    id: t3-graticule
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72bccd4de872
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Graticule ticks on the view's edges"
+        detail: "`scene/graticule.ts` and `AtlasFrame`. Done when the tick tests pass (steps, RA in hours, edge names, following the view)."
+        state: open
+  - key: 01a1b7e5-22ce-727d-bcf2-72ab44aad15b
+    id: t3-margins
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72bd3e359b4c
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Panels in margins, folding below 1,024 px"
+        detail: "SidePanels and Panels recomposed into the left, right and bottom margins. Done when the placement tests and e2e at 1,280 and 800 px pass."
+        state: open
+  - key: 01a1b7e5-22ce-727d-bcf2-72acc0392538
+    id: t3-scale
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72bedc746efb
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Scale bar and italic structure names"
+        detail: "`ScaleBar` with round lengths; structures named in italic and objects in upright type. Done when their tests pass."
+        state: open

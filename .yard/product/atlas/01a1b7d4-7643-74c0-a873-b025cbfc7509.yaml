@@ -19,3 +19,192 @@ versions:
     title: "Build plan"
     goal: "An approved plan of waves, each with the criteria it meets and the tests that verify them"
     status: active
+  - key: 01a1b7e5-22ce-727d-bcf2-72b19f684160
+    at: 2026-11-07T21:23:29Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build plan"
+    goal: "An approved plan of waves, each with the criteria it meets and the tests that verify them"
+    status: done
+blocks:
+  - key: 01a1b7e1-67f9-702f-b9f1-4b85b47ed486
+    id: plan-25-plan-silly-shimmying-lake-01a1b7d4-7643-74c0-a873-b025cbfc7509
+    kind: plan
+    versions:
+      - key: 01a1b7e1-67f9-702f-b9f1-4b863d9b484c
+        at: 2026-11-07T21:19:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: atlas explorer, full object record, designations and names"
+        markdown: |
+          # Build plan: atlas explorer, full object record, designations and names
+
+          ## Context
+          The owner asked for a revamped Univ Explorer and an object panel that names the object and shows everything known about it. Today:
+          - The panel heads HIP 32754 as "32754 #17", because `headingOf` (`clients/explorer/src/ui/text.ts:72`) takes the first entry's bare name.
+          - It lists eight raw ids, and shows none of the record's sky position, magnitudes, motion, redshift, flags or groups.
+          - The release has no proper names: "M31" and "Sirius" are not found.
+
+          The approved spec is committed at 85391f3 and ab806ed. Owner decisions:
+          - star-atlas direction;
+          - designation forms and flag meanings in source definitions;
+          - IAU star names (a snapshot in the repository) and OpenNGC (share-alike);
+          - unmatched names become sky-only objects;
+          - all four groups of panel data.
+
+          The spec moves designation formatting to Univ Server, because release 11 holds 43 M designation rows: storing formatted copies would rewrite them all and overflow the catalogue's 10 GB.
+
+          ## Waves
+          Each wave is a `stage/atlas-wN` branch cut from `product/atlas`, merged `--no-ff` at its end.
+
+          ### W1: Designation forms, flag meanings, ranks and share-alike, served (ingest, model, api)
+          - **Source definitions:**
+            - `SourceDefinition` (`crates/univ-ingest/src/source/mod.rs:33`, deny_unknown_fields) gains:
+              - `designation: {form, cite}`;
+              - `flags: {column: {values: {value: meaning}, cite}}`;
+              - a `share_alike` clause next to the non-commercial one.
+            - Validation refuses a form without exactly one `{identifier}`, and a flag meaning for a column not taken as `quality`.
+          - **Ranks:** a new `rules/designations.yaml` ranks sources for display: HIP, HD, Gaia DR3 for stars; NGC/IC, Messier, PGC, 2MASX for galaxies, and so on.
+          - **Schema 7:**
+            - A new side table, `source_reading(source, release, designation_form, designation_cite, rank, share_alike, flags JSON)`, follows the v3/v4 pattern (`schema.sql:3-9`): it changes no existing table, so there is no rebuild.
+            - Ingest writes it in `source_rows()` (`crates/univ-ingest/src/release/meta.rs:54`), as `source_terms` is written (`:85-96`).
+            - Publish raises `schema_version` to 7 with no rebuild.
+            - Shard and catalogue fingerprints are unchanged.
+          - **Univ Server (`crates/univ-api`):**
+            - `objects::record` formats each designation and orders the designations by rank. `EntryRecord`/`ObjectRecord` gain a `designation` string beside `identifier`, and entries keep `flags`.
+            - `resolve.rs::by_name` also parses the query against each source's form, so "HIP 32754" resolves through `by_designation`.
+            - `sources::get` returns the form, flag meanings and share-alike.
+            - The OpenAPI snapshot (`crates/univ-api/openapi.v1.json`) and testkit are updated.
+          - **Data:** forms for all 28 sources, each cited from its ReadMe. Flag meanings where a ReadMe defines them, such as the Hipparcos Sn and gaia xm_flag bits and the 6dF q_cz. The `rules/matching.yaml` "HIP " prefix rule becomes redundant and is removed.
+          - **Criteria:**
+            - define-a-source: the form, the flags, both refusals and share-alike;
+            - cross-match: the release keeps form, flags and rank;
+            - look-up-an-object: designations raw and formatted, rank order, flags, formatted designations resolving;
+            - read-a-source: form, flags, share-alike.
+          - **Tests:**
+            - source-definition parse and refusal tests;
+            - a `release` test that `source_reading` rows come from the definitions;
+            - univ-api tests over testkit: formatted designations, order, "HIP 32754" lookup, the source record;
+            - the OpenAPI snapshot test.
+
+          ### W2: Name sources (ingest, data)
+          - **`sources/iau-star-names.yaml`:**
+            - `access: repository`, holding `names/iau-wgsn.yaml`: the 652 names read once from https://exopla.net/star-names/modern-iau-star-names/ with the date read. The names are public domain; the etymology text is not taken.
+            - Its entries join by the `hip` scheme. Rows without a HIP keep RA/Dec and become sky-only objects.
+          - **`sources/openngc.yaml`:**
+            - Fetched from the v20260501 release on GitHub, NGC.csv plus addendum.csv. Marked share-alike under CC BY-SA 4.0, crediting Mattia Verga, with the DOI.
+            - Dup and NonEx rows are left out with reasons.
+            - Zero-padded names are written "NGC 224". Messier numbers become extra designations through the `designations` rule, and common names become entry names.
+            - Joins by `pgc`, and by `2masx` with "2MASX J" stripped through a fix. Otherwise the existing positional match applies, and an entry that joins nothing becomes a sky-only object (`ranking/mod.rs:26`, NoDistance).
+            - M102 follows OpenNGC (duplicate of M101), and the NGC 5866 identification is recorded as a dispute in `notes`.
+          - **Criteria:** the cross-match criteria for proper names, HIP joins, PGC/2MASX/position joins, sky-only objects and left-out rows.
+          - **Tests:**
+            - fixture rows recorded from both sources: Sirius HIP 32349, M31 (PGC 2557 / 2MASX), M42 sky-only, a Dup and a NonEx;
+            - a cross-match test that names attach and that lookups by "Sirius", "M31", "Andromeda Galaxy" and "NGC 224" resolve in the api fixture.
+
+          ### W3: Atlas frame (explorer)
+          - **Design tokens:**
+            - Colours: the view stays `space #05070D`; margin ink `#0C1222`; neat line `#5B6B8C`; label ivory `#E6E0CF`; dim `#8E96AB`; amber `#E8B04B` for focus and interactive states, in place of the blue accent that clashes with the blue points.
+            - Type, self-hosted with `@fontsource`: **Spectral** (roman for object names and headings, italic for structures, after the atlas convention) and **Barlow Semi Condensed** for UI and data, with tabular figures. No monospace and no all-caps labels.
+            - The one bold element is the live graticule neat line; everything else stays quiet.
+          - **Layout:**
+            ```
+            ┌ top margin: Univ Explorer, release, level of detail ────────────────────┐
+            │ left margin │ ┬─ l 300° ─── 330° ─── 0° ── neat line ─┬ │ right margin  │
+            │ view, show, │ b                VIEW                     │ search,       │
+            │ structures  │ ┴──────────────────────────────────────── ┴ │ record        │
+            └ bottom margin: key (● ◐ ○ ◌ kinds, star colours), scale bar, credits ───┘
+            ```
+            - Below 1,024 px, each margin folds into a button.
+          - **Code:**
+            - A new `scene/graticule.ts` holds pure functions:
+              - the direction through each edge pixel, from `eyeAxes`/`project` in `camera.ts`;
+              - lon/lat in the chosen axes, from the `frames.ts` matrices plus atan2/asin;
+              - tick crossings and adaptive step choice;
+              - RA in hours.
+            - New `ui/AtlasFrame.tsx` (ticks as SVG over the canvas edge) and `ui/ScaleBar.tsx` (using `unitsPerPixel`).
+            - `SidePanels.tsx` and `Panels.tsx` are recomposed into margins, and `styles.css` gains the tokens.
+            - Structure names are italic in `SceneOverlay`, `StructuresPanel` and the list.
+          - **Criteria:** all four requirements of frame-the-view-as-an-atlas. Existing placement criteria, such as the level-of-detail switch in the top bar and the panel of what is drawn, keep holding.
+          - **Tests:**
+            - Vitest for graticule ticks (steps, RA hours, edge names, following the view);
+            - the scale bar's round lengths;
+            - margin placement and folding below 1,024 px;
+            - Playwright e2e for no overlap at 1,280 px and the drawer at 800 px;
+            - axe still clean.
+
+          ### W4: Object panel (explorer)
+          - **Reading:**
+            - `api/objects.ts` reads `designation`, flags, relations and `sky_position.ra/dec`.
+            - A new `api/sources.ts` reads `/v1/sources` (titles) once per release and `/v1/sources/{id}` on demand (form, flags meanings).
+          - **`ObjectPanel.tsx` rebuilt as a gazetteer entry:**
+            - Heading: found-by name, then a proper name, then the first formatted designation.
+            - Designations merged by text, each with its source titles.
+            - Sections: Position (RA/Dec and l/b with frame and epoch, preferred distance), Brightness, Motion and redshift, Groups and members (choosable), Inside structures (choosable), Catalogues (flags with meanings), Papers.
+            - Every value carries its kind-of-value mark, matching the key.
+          - **Inside structures:** computed with `volumeOf` and `inside` (`scene/volume.ts:164,207`) over the structure details `useStructures` already holds.
+          - **Hover:** after 0.3 s the label reads the record through a small LRU cache in `api/objects.ts`, shared with `useChosen`.
+          - **Criteria:** read-an-object's new and reworded criteria (AC-392, AC-394, the hover criterion and the seven panel criteria).
+          - **Tests:**
+            - `ObjectPanel.test.tsx` with records for a star (HIP 32754) and a galaxy with a group, a sky-only M42 and flags with and without meanings;
+            - a hover test with fake timers;
+            - e2e for choosing a point, the heading and the sections.
+
+          ### W5: Release 12 (real run, after the owner's approval in Yard)
+          1. Stop wrangler and back up `.cache/univ-ingest/wrangler`.
+          2. Fetch OpenNGC.
+          3. Build release 12 as a change on 11, then publish it.
+          4. Check:
+             - "Sirius", "M31", "Andromeda Galaxy", "NGC 4472" and "HIP 32754" resolve;
+             - the panel for each in the explorer, with screenshots;
+             - `bench lookup` (QA-2) and `bench first-points`;
+             - D1 and R2 growth.
+          5. Write up the numbers.
+
+          ## Each wave
+          - Focused checks between tasks.
+          - At the end, `/simplify` and `/code-review` in parallel, then fixes.
+          - Then `cargo xtask check` and `cargo xtask integration`, each once and green.
+          - Trace links accepted, the wave's Yard Log closed, merged into `product/atlas`.
+          - Nothing goes to develop or main, and nothing is pushed, published or deployed without the owner.
+
+          ## Verification
+          - **Unit and integration:** as listed per wave. The fixture state in `xtask integration` runs on schema 7.
+          - **End to end (W5):** on release 12 locally:
+            - lookups by name and by "HIP 32754";
+            - the panel shows heading, sky position, magnitudes, motion, groups, structures and flags for a star, a galaxy and M42;
+            - the atlas ticks match the axes when rotated;
+            - QA-2 p95 under 200 ms, first points p95 under 3 s.
+        planMode: true
+    responses:
+      - key: 01a1b7e4-da28-75a5-be4f-20a1d6a78919
+        at: 2026-11-07T21:23:11Z
+        revision: 6
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
+  - key: 01a1b7e5-22ce-727d-bcf2-72a12b3bad22
+    id: plan-file
+    kind: plan
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72b2dfd0ccf8
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Atlas, object record, designations and names: five waves"
+        markdown: |-
+          Approved in the session through plan mode; the plan is at `/Users/admin/.claude/plans/silly-shimmying-lake.md`.
+
+          1. W1: designation forms, flag meanings, ranks and share-alike, served by Univ Server.
+          2. W2: the name sources, IAU star names and OpenNGC.
+          3. W3: the atlas frame.
+          4. W4: the object panel.
+          5. W5: release 12, after the owner's approval.

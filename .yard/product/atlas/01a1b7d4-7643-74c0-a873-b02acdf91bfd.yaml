@@ -10,3 +10,17 @@ versions:
     title: "Release 12"
     goal: "Release 12, with designations and names, built and published locally after the owner's approval, and seen in the explorer"
     status: planned
+blocks:
+  - key: 01a1b7e5-22ce-727d-bcf2-72b0d4172d7d
+    id: t5-run
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72c254cdd5b2
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build and publish release 12, then measure"
+        detail: "After the owner's approval: back up, fetch OpenNGC, build, publish, check lookups and the panel in the explorer, and run the benches. Done when the write-up is recorded."
+        state: open
