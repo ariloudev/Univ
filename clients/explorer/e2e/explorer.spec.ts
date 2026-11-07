@@ -90,13 +90,15 @@ test("centres the view on a point clicked, keeping the distance", async ({ page 
   const before = (await distance.textContent()) ?? "";
   await page.mouse.click(found.x, found.y);
   await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("names")).toBeVisible();
-  // The ring drawn over the chosen object, centred on it (its box's corner is at the object).
+  // The ring drawn over the chosen object, centred on it (its box's corner is at the object), at
+  // the centre of the view as it now stands, narrowed by the record opened beside it.
   const mark = page.getByTestId("chosen-mark").locator("span");
   // The ring is placed on the frame after the object is read: until then it is not drawn.
   await expect
     .poll(async () => {
       const box = await mark.boundingBox();
-      return box === null ? Number.POSITIVE_INFINITY : Math.hypot(box.x + box.width / 2 - canvas.x, box.y + box.height / 2 - canvas.y);
+      const centre = await centreOf(page.locator("canvas"));
+      return box === null ? Number.POSITIVE_INFINITY : Math.hypot(box.x + box.width / 2 - centre.x, box.y + box.height / 2 - centre.y);
     })
     .toBeLessThan(3);
   await expect(distance).toHaveText(before);

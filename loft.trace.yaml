@@ -4076,7 +4076,7 @@ links:
         body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance"
-        body: b461f565a04bbefe0e069acf69de268bd8e42dfaf1f79bf0f7cc34716dd3805f
+        body: 468c0ed69358439d82a5662e14a834d3b4667dac43b229a9ddfa70cae629ae89
   - node: 01a1a8e8-6326-709f-aa5e-4610311af683
     reviewed: 1174f20dd1a7c960a058c69bc1a4f4b5ec2af79cfc50772ad17920a33030d44c
     tests:
