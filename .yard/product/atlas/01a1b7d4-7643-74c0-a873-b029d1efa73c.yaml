@@ -10,6 +10,15 @@ versions:
     title: "Atlas revamp"
     goal: "The explorer is framed as a star atlas: graticule frame with live ticks, panels docked in its margins, atlas key, italic structure names"
     status: planned
+  - key: 01a1b851-4d1f-7430-8d3b-8d5ebb891079
+    at: 2026-11-07T23:21:38Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Atlas revamp"
+    goal: "The explorer is framed as a star atlas: graticule frame with live ticks, panels docked in its margins, atlas key, italic structure names"
+    status: active
 blocks:
   - key: 01a1b7e5-22ce-727d-bcf2-72a993478ac5
     id: t3-tokens

@@ -19,6 +19,15 @@ versions:
     title: "Name sources"
     goal: "IAU star names and Messier/NGC/IC names are ingested as cited sources and attached to existing objects; lookup by these names works"
     status: active
+  - key: 01a1b851-4d1f-7430-8d3b-8d5d693a76c7
+    at: 2026-11-07T23:21:38Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Name sources"
+    goal: "IAU star names and Messier/NGC/IC names are ingested as cited sources and attached to existing objects; lookup by these names works"
+    status: done
 blocks:
   - key: 01a1b7e5-22ce-727d-bcf2-72a77474c17a
     id: t2-iau
@@ -33,6 +42,15 @@ blocks:
         title: "IAU star names snapshot and source"
         detail: "`names/iau-wgsn.yaml` (652 names, with the date read) and `sources/iau-star-names.yaml`, joined by HIP. Done when the fixture test resolves Sirius."
         state: open
+      - key: 01a1b851-4d1f-7430-8d3b-8d5a15b6d497
+        at: 2026-11-07T23:21:38Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "IAU star names snapshot and source"
+        detail: "Done on stage/atlas-w2. Names with a HIP number take Hipparcos's position. Two wrong HIP numbers are corrected by cited fixes, and the names sharing HIP 72105 are one entry."
+        state: done
   - key: 01a1b7e5-22ce-727d-bcf2-72a81fc103c4
     id: t2-openngc
     kind: task
@@ -46,3 +64,25 @@ blocks:
         title: "OpenNGC source"
         detail: "`sources/openngc.yaml`, share-alike, joining by PGC, 2MASX or position. Messier numbers are designations, common names are names, Dup and NonEx rows are left out, and unmatched rows become sky-only objects. Done when fixture tests resolve M31, \"Andromeda Galaxy\", NGC 224 and M42 (sky-only)."
         state: open
+      - key: 01a1b851-4d1f-7430-8d3b-8d5b74fb2d12
+        at: 2026-11-07T23:21:38Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "OpenNGC source"
+        detail: "Done on stage/atlas-w2. Joins by PGC, 2MASX, NGC or Messier name, or position. A row listing more than one PGC or 2MASX gets none in that column."
+        state: done
+  - key: 01a1b851-4d1f-7430-8d3b-8d593319d205
+    id: w2-merged
+    kind: note
+    versions:
+      - key: 01a1b851-4d1f-7430-8d3b-8d5c9610ddc5
+        at: 2026-11-07T23:21:38Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W2 merged"
+        markdown: "stage/atlas-w2 merged at b2f3f89 after the review fixes, the full gate and integration; its Yard Log has the stage note. One criterion added (minor): a star name without a HIP number joins the star at its position, within 60\". Left open: CC BY-SA §4(b) may make a public release holding OpenNGC share-alike as a database; the source's review stays provisional."
+        tone: success
