@@ -19,8 +19,9 @@ interface ViewProps {
   frame: Store<number>;
 }
 
-/** The top bar's part: the eye's distance from the focus, and the axes. */
-export function Whereabouts({ controller, frame }: ViewProps) {
+/** The top bar's part: the eye's distance from the focus, and the axes with the grid's switch. */
+export function Whereabouts({ controller, frame, grid }: ViewProps & { grid: readonly [boolean, (on: boolean) => void] }) {
+  const [gridOn, setGrid] = grid;
   useStore(frame);
   return (
     <div className="flex shrink-0 items-center gap-3 text-sm">
@@ -43,6 +44,18 @@ export function Whereabouts({ controller, frame }: ViewProps) {
             </option>
           ))}
         </select>
+      </label>
+      <label className="flex items-center gap-1.5">
+        <input
+          type="checkbox"
+          role="switch"
+          checked={gridOn}
+          onChange={(event) => {
+            setGrid(event.currentTarget.checked);
+          }}
+          className="accent-accent"
+        />
+        <span className="text-dim">Grid</span>
       </label>
     </div>
   );

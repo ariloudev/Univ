@@ -40,6 +40,9 @@ export interface EdgeTicks {
   edge: Edge;
   /** The coordinate the ticks give, in words, such as "galactic longitude". */
   name: string;
+  /** The step the ticks are spaced at, degrees, shared by both edges of the coordinate; none
+   * where no step keeps the edge's labels apart. */
+  step: number | undefined;
   ticks: (Crossing & { label: string })[];
 }
 
@@ -144,39 +147,74 @@ function leastGap(ticks: readonly Crossing[]): number {
   return gap;
 }
 
-/** The ticks of the finest of `steps` whose ticks lie at least `MIN_GAP` apart along an edge
- * `length` pixels long; none where no step does. Every step is tried, since the steps do not all
- * divide one another: 10 can fit where 15 does not. */
-export function ticksOf(samples: Samples, length: number, longitude: boolean, steps: readonly number[] = STEPS): { step: number; ticks: Crossing[] } | undefined {
+/** The ticks of each of `steps` whose ticks lie at least `MIN_GAP` apart along an edge `length`
+ * pixels long, by step. */
+function fitting(samples: Samples, length: number, longitude: boolean, steps: readonly number[]): Map<number, Crossing[]> {
   // Ticks closer than the gap cannot number more than this along the edge.
   const cap = Math.floor(length / MIN_GAP) + 1;
-  let best: { step: number; ticks: Crossing[] } | undefined;
+  const fit = new Map<number, Crossing[]>();
   for (const step of steps) {
     const ticks: Crossing[] = [];
-    if (crossings(samples, step, longitude, cap, ticks) && leastGap(ticks) >= MIN_GAP) best = { step, ticks };
+    if (crossings(samples, step, longitude, cap, ticks) && leastGap(ticks) >= MIN_GAP) fit.set(step, ticks);
   }
-  return best;
+  return fit;
 }
 
-/** The ticks of each edge of a viewport `width` × `height` CSS pixels, for `view` in the axes
- * `axes`, which `toFrame` turns the ICRS into. */
-export function edgeTicks(view: View, toFrame: Mat3, axes: Axes, width: number, height: number): EdgeTicks[] {
+/** The finest of `steps` that fits every edge `fits` holds a fitting step for; none where no
+ * edge has one. Every step is tried, since the steps do not all divide one another: 10 can fit
+ * where 15 does not. The coarsest step, a multiple of all the others, fits wherever any does, so
+ * edges that fit some step always share one. */
+function finestShared(fits: readonly Map<number, Crossing[]>[], steps: readonly number[]): number | undefined {
+  const fitted = fits.filter((fit) => fit.size > 0);
+  if (fitted.length === 0) return undefined;
+  return steps.findLast((step) => fitted.every((fit) => fit.has(step)));
+}
+
+/** The ticks of the finest of `steps` whose ticks lie at least `MIN_GAP` apart along an edge
+ * `length` pixels long; none where no step does. */
+export function ticksOf(samples: Samples, length: number, longitude: boolean, steps: readonly number[] = STEPS): { step: number; ticks: Crossing[] } | undefined {
+  const fit = fitting(samples, length, longitude, steps);
+  const step = finestShared([fit], steps);
+  const ticks = step === undefined ? undefined : fit.get(step);
+  return step === undefined || ticks === undefined ? undefined : { step, ticks };
+}
+
+/** The steps the ticks of each coordinate may take: right ascension's in hours and minutes. */
+const stepsOf = (coordinate: Coordinate, axes: Axes): readonly number[] => (coordinate === "longitude" && axes === "equatorial" ? RA_STEPS : STEPS);
+
+/** The longitude and latitude, degrees, in the axes `toFrame` turns the ICRS into, of the
+ * direction of sight through each pixel of a viewport `width` × `height` CSS pixels. */
+export function sight(view: View, toFrame: Mat3, width: number, height: number): (x: number, y: number) => { lon: number; lat: number } {
   const f = focalPixels(height);
   // From the eye's axes to the chosen axes, through the ICRS.
   const toAxes = multiply(toFrame, transpose(eyeAxes(view, toFrame)));
-  return EDGES.map(([edge, coordinate]) => {
+  return (x, y) => lonLat(normalize(apply(toAxes, pixelRay(f, x, y, width, height))));
+}
+
+/** The ticks of each edge of a viewport `width` × `height` CSS pixels, for `view` in the axes
+ * `axes`, which `toFrame` turns the ICRS into: both edges of a coordinate at one step. */
+export function edgeTicks(view: View, toFrame: Mat3, axes: Axes, width: number, height: number): EdgeTicks[] {
+  const sightAt = sight(view, toFrame, width, height);
+  const sampled = EDGES.map(([edge, coordinate]) => {
     const length = across(edge) ? width : height;
     const count = Math.max(1, Math.ceil(length / SAMPLE));
     const samples: [number, number][] = [];
     for (let i = 0; i <= count; i += 1) {
       const p = (i * length) / count;
       const [x, y] = edgePoint(edge, p, 0, width, height);
-      const { lon, lat } = lonLat(normalize(apply(toAxes, pixelRay(f, x, y, width, height))));
+      const { lon, lat } = sightAt(x, y);
       samples.push([p, coordinate === "longitude" ? lon : lat]);
     }
-    const longitude = coordinate === "longitude";
-    const found = ticksOf(samples, length, longitude, longitude && axes === "equatorial" ? RA_STEPS : STEPS);
-    const ticks = (found?.ticks ?? []).map((t) => ({ ...t, label: tickLabel(t.value, coordinate, axes) }));
-    return { edge, name: NAMES[axes][coordinate], ticks };
+    return { edge, coordinate, fit: fitting(samples, length, coordinate === "longitude", stepsOf(coordinate, axes)) };
+  });
+  const shared = new Map<Coordinate, number | undefined>();
+  for (const coordinate of ["longitude", "latitude"] as const) {
+    const fits = sampled.filter((s) => s.coordinate === coordinate).map((s) => s.fit);
+    shared.set(coordinate, finestShared(fits, stepsOf(coordinate, axes)));
+  }
+  return sampled.map(({ edge, coordinate, fit }) => {
+    const step = fit.size === 0 ? undefined : shared.get(coordinate);
+    const ticks = (step === undefined ? [] : (fit.get(step) ?? [])).map((t) => ({ ...t, label: tickLabel(t.value, coordinate, axes) }));
+    return { edge, name: NAMES[axes][coordinate], step, ticks };
   });
 }

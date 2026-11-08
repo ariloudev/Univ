@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { View } from "./camera.ts";
-import { MIN_GAP, edgeTicks, lonLat, tickLabel, ticksOf } from "./graticule.ts";
+import { type Edge, type EdgeTicks, MIN_GAP, edgeTicks, lonLat, tickLabel, ticksOf } from "./graticule.ts";
 import { IDENTITY, type Mat3 } from "./vec.ts";
 
 
@@ -12,6 +12,9 @@ const RAD = Math.PI / 180;
 const view = (lon: number, lat: number, distance = 1): View => ({ focus: [0, 0, 0], distance, yaw: lon * RAD, pitch: lat * RAD });
 
 const at = (ticks: ReturnType<typeof edgeTicks>, edge: string) => ticks.find((t) => t.edge === edge);
+
+/** The ticks of each edge, by edge. */
+const byEdge = (ticks: EdgeTicks[]) => Object.fromEntries(ticks.map((t) => [t.edge, t])) as Record<Edge, EdgeTicks>;
 
 describe("the ticks on the view's edges", () => {
   it("name each edge's coordinate in the chosen axes", () => {
@@ -53,6 +56,30 @@ describe("the ticks on the view's edges", () => {
     const left = at(edgeTicks(view(0, 0), IDENTITY, "galactic", 1280, 800), "left");
     const values = (left?.ticks ?? []).map((t) => t.value).sort((a, b) => a - b);
     expect(values).toEqual([-20, -15, -10, -5, 0, 5, 10, 15, 20]);
+  });
+
+  it("space both edges of a coordinate at one step, the finest that keeps each edge's labels apart", () => {
+    // Looking up toward the pole, the meridians crowd along the top edge and spread along the
+    // bottom: alone, the bottom edge would take a finer step than the top.
+    for (const [lon, lat, axes] of [
+      [0, -45, "galactic"],
+      [40, -40, "equatorial"],
+      [200, 40, "supergalactic"],
+    ] as const) {
+      const { top, bottom, left, right } = byEdge(edgeTicks(view(lon, lat), IDENTITY, axes, 1280, 800));
+      expect(top.step).toBeDefined();
+      expect(bottom.step).toBe(top.step);
+      expect(right.step).toBe(left.step);
+      const step = top.step ?? 1;
+      const values = [...top.ticks, ...bottom.ticks].map((t) => t.value / step);
+      expect(values.map((v) => Math.round(v))).toEqual(values.map((v) => Math.round(v * 1e6) / 1e6));
+    }
+    // Where the edges disagree, the shared step is the coarser edge's: at its own finest step the
+    // bottom edge would hold ticks under twice the gap apart.
+    const { bottom } = byEdge(edgeTicks(view(0, -45), IDENTITY, "galactic", 1280, 800));
+    const along = bottom.ticks.map((t) => t.at).toSorted((a, b) => a - b);
+    const gaps = along.slice(1).map((next, i) => next - (along[i] ?? 0));
+    expect(Math.min(...gaps)).toBeGreaterThan(2 * MIN_GAP);
   });
 
   it("choose the finer of two steps when the coarser one crowds", () => {

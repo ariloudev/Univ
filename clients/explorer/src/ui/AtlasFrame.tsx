@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { type Edge, type EdgeTicks, across, edgePoint, edgeTicks } from "../scene/graticule.ts";
+import { type GridLine, gridLines } from "../scene/grid.ts";
 import { ORIGIN } from "../scene/vec.ts";
 import { useStore } from "./store.ts";
 import type { World } from "./useWorld.ts";
@@ -23,10 +24,27 @@ const LAYOUT: Record<Edge, { anchor: "middle" | "start" | "end"; baseline: "hang
   right: { anchor: "end", baseline: "middle", label: TICK + 3, name: SIDE_NAME, nameBaseline: "hanging", turn: 90 },
 };
 
+/** The grid's lines as one path's data, to a tenth of a pixel. */
+function pathOf(lines: readonly GridLine[]): string {
+  const at = ([x, y]: readonly [number, number]) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+  return lines.flatMap((l) => l.runs.map((run) => `M${run.map(at).join("L")}`)).join("");
+}
+
+/** The grid across the view: hairlines fainter than the neat line, the axes' equator heavier. */
+function Grid({ lines }: { lines: readonly GridLine[] }) {
+  return (
+    <g data-testid="grid" fill="none" stroke="var(--color-dim)">
+      <path data-testid="grid-lines" d={pathOf(lines.filter((l) => !l.equator))} strokeWidth={0.75} strokeOpacity={0.4} />
+      <path data-testid="grid-equator" d={pathOf(lines.filter((l) => l.equator))} strokeWidth={1.25} strokeOpacity={0.7} />
+    </g>
+  );
+}
+
 /** The view's neat line and the coordinates on its edges (frame-the-view-as-an-atlas), drawn just
- * inside it. They are read again with every frame drawn, and worked out only when the view, its
- * axes or its size changed: a frame that only fades tiles in keeps them. */
-export function AtlasFrame({ world }: { world: World }) {
+ * inside it, and the grid across it where `grid` is on. They are read again with every frame
+ * drawn, and worked out only when the view, its axes or its size changed: a frame that only fades
+ * tiles in keeps them. */
+export function AtlasFrame({ world, grid = false }: { world: World; grid?: boolean }) {
   useStore(world.frame);
   const { controller } = world;
   const { toFrame, axes } = controller;
@@ -35,7 +53,8 @@ export function AtlasFrame({ world }: { world: World }) {
   const { width, height } = controller.size;
   return useMemo(() => {
     if (width <= 0 || height <= 0) return null;
-    const edges = edgeTicks({ focus: ORIGIN, distance: 1, yaw, pitch }, toFrame, axes, width, height);
+    const view = { focus: ORIGIN, distance: 1, yaw, pitch };
+    const edges = edgeTicks(view, toFrame, axes, width, height);
     return (
       <svg
         aria-hidden="true"
@@ -43,13 +62,14 @@ export function AtlasFrame({ world }: { world: World }) {
         className="pointer-events-none absolute inset-0 h-full w-full font-sans text-[11px]"
         viewBox={`0 0 ${width} ${height}`}
       >
+        {grid ? <Grid lines={gridLines(view, toFrame, width, height, edges)} /> : null}
         <rect x={NEAT} y={NEAT} width={width - 2 * NEAT} height={height - 2 * NEAT} fill="none" stroke="var(--color-neat)" strokeWidth={1.5} />
         {edges.map((edge) => (
           <EdgeMarks key={edge.edge} edge={edge} width={width} height={height} />
         ))}
       </svg>
     );
-  }, [yaw, pitch, toFrame, axes, width, height]);
+  }, [yaw, pitch, toFrame, axes, width, height, grid]);
 }
 
 /** Text kept legible over the points by a rim of the view's dark. */
