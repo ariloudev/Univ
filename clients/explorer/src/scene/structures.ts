@@ -223,3 +223,8 @@ export function drawingOf(detail: StructureDetail, rotations: Rotations): Struct
   if (where === undefined || detail.bounds === null) return { ...base, centre: undefined, size: undefined, outline: empty(), approximate: false };
   return { ...base, centre: where.centre, size, outline: lines(boundsEdges(where.min, where.max)), approximate: true };
 }
+
+/** Whether the outline, markers and flow symbol named `name` are drawn (see-the-structures):
+ * never where its kind is turned off, and, while the outlines are off, only where it is chosen. */
+export const outlineDrawn = (name: string, { hidden, chosen, outlines }: { hidden: ReadonlySet<string>; chosen: string | undefined; outlines: boolean }): boolean =>
+  !hidden.has(name) && (outlines || name === chosen);

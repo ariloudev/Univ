@@ -52,7 +52,7 @@ function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: nu
       <ReleasePicker releases={releases} latest={latest} chosen={release} onChoose={setRelease} />
       <p role="status" className="text-dim max-lg:sr-only" title={shown?.cosmology.name}>
         Drawing release {release}
-        {shown === undefined ? "" : <span className="max-xl:sr-only">, {shortName(shown.cosmology.name)}</span>}
+        {shown === undefined ? "" : <span className="max-2xl:sr-only">, {shortName(shown.cosmology.name)}</span>}
       </p>
     </>
   );

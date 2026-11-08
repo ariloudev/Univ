@@ -31,13 +31,14 @@ function ringsText(controller: Controller): string {
     : `Rings: every ${shortDistance(rings.step)} from the Solar System barycentre, in the ${controller.axes} equator.`;
 }
 
-/** The top bar's part: the eye's distance from the focus, and the axes with the grid's switch. */
-export function Whereabouts({ controller, frame, grid, rings }: ViewProps & { grid: Switch; rings: Switch }) {
+/** The top bar's part: the eye's distance from the focus, and the axes with the switches of the
+ * grid, the distance rings and the structures' outlines. */
+export function Whereabouts({ controller, frame, grid, rings, outlines }: ViewProps & { grid: Switch; rings: Switch; outlines: Switch }) {
   useStore(frame);
   return (
     <div className="flex shrink-0 items-center gap-3 text-sm">
       <p data-testid="distance" className="whitespace-nowrap">
-        <span className="text-dim max-xl:sr-only">Eye to focus </span>
+        <span className="text-dim max-2xl:sr-only">Eye to focus </span>
         {formatDistance(controller.view.distance)}
       </p>
       <label className="flex items-center gap-1.5">
@@ -58,6 +59,7 @@ export function Whereabouts({ controller, frame, grid, rings }: ViewProps & { gr
       </label>
       <SwitchBox label="Grid" state={grid} textClass="text-dim" />
       <SwitchBox label="Rings" state={rings} textClass="text-dim" />
+      <SwitchBox label="Outlines" state={outlines} textClass="text-dim" />
     </div>
   );
 }

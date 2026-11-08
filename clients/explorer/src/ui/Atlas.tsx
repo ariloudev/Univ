@@ -7,6 +7,7 @@ import { AtlasFrame } from "./AtlasFrame.tsx";
 import type { Switch } from "./addressSwitch.ts";
 import { useGrid } from "./gridSwitch.ts";
 import type { Inside } from "./inside.ts";
+import { useDrawnOutlines } from "./outlinesSwitch.ts";
 import { useDrawnRings } from "./ringsSwitch.ts";
 import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
@@ -103,9 +104,10 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
   const key = chosenKey(selection);
   const grid = useGrid();
   const rings = useDrawnRings(world?.controller);
+  const outlines = useDrawnOutlines(world);
   return (
     <>
-      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} grid={grid} rings={rings} />, place.topBar)}
+      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} switches={{ grid, rings, outlines }} />, place.topBar)}
       <div className="relative flex min-h-0">
         <Rail
           open={drawer}
@@ -154,13 +156,13 @@ function Chosen({ selection, cosmology }: { selection: Selection; cosmology: Cos
   );
 }
 
-/** The view's parts of the top bar: the eye's distance with the axes and the switches of the grid
- * and the distance rings, the search, and, while a structure drawn as a volume is chosen, the cull
- * to it beside the level-of-detail switch that follows. */
-function TopBarParts({ world, release, selection, grid, rings }: { world: World; release: number; selection: Selection; grid: Switch; rings: Switch }) {
+/** The view's parts of the top bar: the eye's distance with the axes and the switches of the grid,
+ * the distance rings and the structures' outlines, the search, and, while a structure drawn as a
+ * volume is chosen, the cull to it beside the level-of-detail switch that follows. */
+function TopBarParts({ world, release, selection, switches }: { world: World; release: number; selection: Selection; switches: Record<"grid" | "rings" | "outlines", Switch> }) {
   return (
     <>
-      <Whereabouts controller={world.controller} frame={world.frame} grid={grid} rings={rings} />
+      <Whereabouts controller={world.controller} frame={world.frame} {...switches} />
       <div className="ml-auto flex items-center gap-4">
         <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />
         {selection.inside === undefined ? null : <InsideBox inside={selection.inside} />}

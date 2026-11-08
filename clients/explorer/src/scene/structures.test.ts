@@ -4,7 +4,7 @@ import type { StructureDetail } from "../api/structures.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { shapeOf, structureDetail } from "../test/structures.ts";
 import { frameOf } from "./frames.ts";
-import { drawingOf } from "./structures.ts";
+import { drawingOf, outlineDrawn } from "./structures.ts";
 import { type Vec3, dot, norm, normalize, sub, unapply } from "./vec.ts";
 
 const ROTATIONS = manifestOf("stars").rotations;
@@ -177,5 +177,21 @@ describe("an attractor's and a repeller's symbol", () => {
   it("is drawn for no other kind, nor for a structure with no centre", () => {
     expect(drawingOf(at("void"), ROTATIONS).symbol).toBeUndefined();
     expect(drawingOf({ ...at("attractor"), centre: null, bounds: null }, ROTATIONS).symbol).toBeUndefined();
+  });
+});
+
+describe("which structures' outlines are drawn", () => {
+  const hidden = new Set(["a-wall"]);
+
+  it("draws every outline while the outlines are on, and only the chosen one's while they are off", () => {
+    expect(outlineDrawn("vela", { hidden, chosen: undefined, outlines: true })).toBe(true);
+    expect(outlineDrawn("vela", { hidden, chosen: undefined, outlines: false })).toBe(false);
+    expect(outlineDrawn("vela", { hidden, chosen: "vela", outlines: false })).toBe(true);
+    expect(outlineDrawn("kbc", { hidden, chosen: "vela", outlines: false })).toBe(false);
+  });
+
+  it("draws none of a kind turned off, chosen or not, whatever the outlines' switch", () => {
+    expect(outlineDrawn("a-wall", { hidden, chosen: "a-wall", outlines: true })).toBe(false);
+    expect(outlineDrawn("a-wall", { hidden, chosen: "a-wall", outlines: false })).toBe(false);
   });
 });

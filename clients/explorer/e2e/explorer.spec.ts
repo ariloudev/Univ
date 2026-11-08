@@ -132,6 +132,30 @@ test("lists the release's structures and reads one, culling the view to it from 
   await expect(panel.getByTestId("structure-inside")).toBeVisible();
 });
 
+test("takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload", async ({ page }) => {
+  await firstPoints(page);
+  const outlines = page.getByRole("banner").getByRole("switch", { name: "Outlines" });
+  await expect(outlines).toBeChecked();
+  await outlines.uncheck();
+  await expect(page).toHaveURL(/outlines=off/);
+  // A name still drawn where the view itself lies under it, as with the outlines on.
+  const found = await page.waitForFunction(() => {
+    const canvas = document.querySelector("canvas");
+    for (const text of document.querySelectorAll("[data-structure] > span")) {
+      const box = text.getBoundingClientRect();
+      if (box.width > 0 && document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) === canvas) {
+        return text.parentElement?.dataset["structure"];
+      }
+    }
+    return undefined;
+  });
+  const at = await centreOf(page.locator(`[data-structure="${(await found.jsonValue()) ?? ""}"] > span`));
+  await page.mouse.click(at.x, at.y);
+  await expect(page.getByRole("region", { name: "The chosen structure" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("banner").getByRole("switch", { name: "Outlines" })).not.toBeChecked();
+});
+
 test("chooses a structure by the name it shows in the view, and still zooms over it", async ({ page }) => {
   await firstPoints(page);
   // A name drawn where the view itself lies under it: on the screen and clear of the panels.

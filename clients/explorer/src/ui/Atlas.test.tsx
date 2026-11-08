@@ -91,6 +91,24 @@ describe("the explorer laid out as an atlas", () => {
     expect(within(bar).getByRole("switch", { name: "Grid" }).closest("label")?.nextElementSibling?.textContent).toBe("Rings");
   });
 
+  it("takes the structures' outlines away from a switch beside the rings', keeping their names, and keeps it off in the address", async () => {
+    const world = fakeWorld();
+    const showOutlines = vi.spyOn(world.renderer, "showOutlines");
+    world.names = [{ id: "kbc-void", centre: [0, 0, 0], text: "KBC void", below: undefined }];
+    show({}, world);
+    const bar = screen.getByRole("banner");
+    expect(within(bar).getByRole("switch", { name: "Rings" }).closest("label")?.nextElementSibling?.textContent).toBe("Outlines");
+    const toggle = within(bar).getByRole("switch", { name: "Outlines" }) as HTMLInputElement;
+    expect(toggle.checked).toBe(true);
+    expect(showOutlines).toHaveBeenLastCalledWith(true);
+    await userEvent.click(toggle);
+    expect(showOutlines).toHaveBeenLastCalledWith(false);
+    expect(location.search).toBe("?outlines=off");
+    expect(world.names.map((n) => n.text)).toEqual(["KBC void"]);
+    await userEvent.click(toggle);
+    expect(location.search).toBe("");
+  });
+
   it("draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address", async () => {
     const { world } = show();
     const toggle = screen.getByRole("switch", { name: "Rings" });

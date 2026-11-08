@@ -19,6 +19,15 @@ versions:
     title: "The Show drawer redesigned"
     goal: "The Show drawer as option B: a summary with one way back, one table of catalogues with a column per domain, kinds of value as the key's marks, structure kinds by family, 'only', All and None"
     status: done
+  - key: 01a1bd21-8c90-748a-88c0-608399129505
+    at: 2026-11-08T21:47:34Z
+    revision: 28
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "The Show drawer redesigned"
+    goal: "The Show drawer as option B: a summary with one way back, one table of catalogues with a column per domain, kinds of value as the key's marks, structure kinds by family, 'only', All and None"
+    status: done
 blocks:
   - key: 01a1bcf9-c1ac-7528-b670-8ac73b193be2
     id: show-choice
