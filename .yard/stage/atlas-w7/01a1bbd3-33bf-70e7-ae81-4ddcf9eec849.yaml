@@ -19,3 +19,1388 @@ versions:
     title: "Review, gate and merge"
     goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
     status: active
+  - key: 01a1bbe7-73e1-7408-ab5b-35f63a1ea899
+    at: 2026-11-08T16:04:30Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
+    status: done
+blocks:
+  - key: 01a1bbe7-73e1-7408-ab5b-35f26a416b22
+    id: review-done
+    kind: note
+    versions:
+      - key: 01a1bbe7-73e1-7408-ab5b-35f417fb23df
+        at: 2026-11-08T16:04:30Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review, gate and integration"
+        markdown: |-
+          | Step | Result |
+          |---|---|
+          | `/simplify` (4 reviewers) | Applied: a drawn set is kept while it reaches 3 × the eye's distance and runs no farther than 4 (a minor spec change, 1f06897), so a flight or a zoom rebuilds it now and then rather than every frame; each ring's directions and labels worked out once per set; off-screen labels left out; `RAD` shared; a generic `clearLabels`; number formats made once; the rings' switch held in `Atlas`. |
+          | `/code-review` | Fixed: rings side by side read alike far out (labels now carry the step's precision); the old rings stayed after an axes change that gave none; the single ring's label and the drawer's sentence came back while the rings were on but none in reach; whole rings drawn as arcs just past the reach; ring labels measured in the wrong type and not kept clear of structure names; a test that didn't change the axes. |
+          | Left as they are | Treating the single equator ring as a one-ring set (a larger rework of the existing ring and its tests); deriving the rings' colour from the CSS token. |
+          | `cargo xtask check` | Passed, 13 gates. |
+          | `cargo xtask integration` | Passed, with 14 Playwright tests, including the rings test and the pick test with the rings on. |
+          | Trace | 602 of 602 nodes linked; the two TR-008 findings predate this work. |
+        tone: success
+  - key: 01a1bbe7-73e1-7408-ab5b-35f3f0a6fe43
+    id: w7-trace
+    kind: loft
+    versions:
+      - key: 01a1bbe7-73e1-7408-ab5b-35f552a91e56
+        at: 2026-11-08T16:04:30Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: trace
+        note: "The rings' nine criteria and the reworded top-bar criterion are linked and accepted."
+        base: "product/atlas"
+        recorded:
+          commit: "d72d31c9f17f43d6adfb2bce3c3565539a43df5f"
+          branch: "stage/atlas-w7"
+          loft: 2.3.0
+          at: 2026-11-08T16:04:30Z
+        report: |
+          {
+            "base": "product/atlas",
+            "commit": "dd48b1fc03c51f9f494754a768d9a4f3506ee6b8",
+            "counts": {
+              "features": 1
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b103f2a0c853",
+                    "label": null,
+                    "name": "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 42
+                          }
+                        ],
+                        "name": "cross round longitudes and latitudes where the edge's direction of sight does"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 197,
+                            "lastLine": 220
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                    "label": null,
+                    "name": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "use the finest step whose labels stay at least 60 pixels apart"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 104
+                          }
+                        ],
+                        "name": "choose the finer of two steps when the coarser one crowds"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 72
+                          }
+                        ],
+                        "name": "space each edge at a multiple of the finer step of its coordinate's two edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "keep the labels of an edge far from the pole where the other edge passes near it"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 91,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "count a round value met exactly at a sample once"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b863-1a09-757d-bbd7-6f0d72803e9a",
+                    "label": null,
+                    "name": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 106,
+                            "lastLine": 111
+                          }
+                        ],
+                        "name": "step right ascension by round hours and minutes"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 72
+                          }
+                        ],
+                        "name": "space each edge at a multiple of the finer step of its coordinate's two edges"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b105558be2c4",
+                    "label": null,
+                    "name": "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 113,
+                            "lastLine": 122
+                          }
+                        ],
+                        "name": "label right ascension in hours and minutes, and every other coordinate in degrees"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b106cab43cde",
+                    "label": null,
+                    "name": "Each edge names the coordinate its ticks give, such as galactic longitude.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 20,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "name each edge's coordinate in the chosen axes"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 181,
+                            "lastLine": 193
+                          }
+                        ],
+                        "name": "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b107f30dda23",
+                    "label": null,
+                    "name": "The ticks follow the view as it turns, zooms and moves, and as the axes are changed.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 124,
+                            "lastLine": 134
+                          }
+                        ],
+                        "name": "follow the view as it turns and as the axes change, wherever the eye is"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 257,
+                            "lastLine": 269
+                          }
+                        ],
+                        "name": "moves the ticks and the scale with the view"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd23746b3fab",
+                    "label": null,
+                    "name": "The ticks and their labels are drawn just inside the view's edge, taking no width or height from the view.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 181,
+                            "lastLine": 193
+                          }
+                        ],
+                        "name": "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fb4ff5b352",
+                    "label": null,
+                    "name": "A switch beside the axes in the top bar turns the grid on and off.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 222,
+                            "lastLine": 250
+                          }
+                        ],
+                        "name": "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fcf6a73520",
+                    "label": null,
+                    "name": "The grid is off when the view opens on an address that does not turn it on.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/gridSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 9,
+                            "lastLine": 13
+                          }
+                        ],
+                        "name": "is off unless the address turns it on"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 204,
+                            "lastLine": 231
+                          }
+                        ],
+                        "name": "draws the grid across the view while its switch is on, and keeps it on in the address"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fd03559559",
+                    "label": null,
+                    "name": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/gridSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 15,
+                            "lastLine": 25
+                          }
+                        ],
+                        "name": "is kept on in the address, beside what else it holds, and leaves it once off again"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/gridSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 31
+                          }
+                        ],
+                        "name": "starts on where the address turns it on, as after a reload"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 233,
+                            "lastLine": 238
+                          }
+                        ],
+                        "name": "opens with the grid on where the address turns it on"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 222,
+                            "lastLine": 250
+                          }
+                        ],
+                        "name": "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fe7cd7893c",
+                    "label": null,
+                    "name": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 45,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "draws a line through every tick on the view's edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "runs every line on past the view's edges, with no gap inside it"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 109,
+                            "lastLine": 112
+                          }
+                        ],
+                        "name": "steps right ascension by the hours of its ticks"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04ff805e7421",
+                    "label": null,
+                    "name": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "stays still while the eye moves or zooms, and turns with the view and the axes"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 240,
+                            "lastLine": 255
+                          }
+                        ],
+                        "name": "turns the grid with the view, and keeps it still while the eye zooms"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 222,
+                            "lastLine": 250
+                          }
+                        ],
+                        "name": "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-0500d68ce364",
+                    "label": null,
+                    "name": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 101
+                          }
+                        ],
+                        "name": "stops a line of longitude at 80 degrees unless it lies at a multiple of 90 degrees"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 45,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "draws a line through every tick on the view's edges"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-0501d8ee5c20",
+                    "label": null,
+                    "name": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 103,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "marks the axes' equator alone"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 204,
+                            "lastLine": 231
+                          }
+                        ],
+                        "name": "draws the grid across the view while its switch is on, and keeps it on in the address"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-0502db0af966",
+                    "label": null,
+                    "name": "The grid takes no pointer events: the points under it are named and chosen as where it is off.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 204,
+                            "lastLine": 231
+                          }
+                        ],
+                        "name": "draws the grid across the view while its switch is on, and keeps it on in the address"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 67,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b",
+                    "label": null,
+                    "name": "A switch beside the grid's switch in the top bar turns the distance rings on and off.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 106
+                          }
+                        ],
+                        "name": "draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 252,
+                            "lastLine": 267
+                          }
+                        ],
+                        "name": "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2",
+                    "label": null,
+                    "name": "The distance rings are off when the view opens on an address that does not turn them on.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/ringsSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 9,
+                            "lastLine": 13
+                          }
+                        ],
+                        "name": "is off unless the address turns the rings on"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 106
+                          }
+                        ],
+                        "name": "draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc69981e4ad",
+                    "label": null,
+                    "name": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/ringsSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 15,
+                            "lastLine": 23
+                          }
+                        ],
+                        "name": "is kept on in the address, beside what else it holds, and leaves it once off again"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/ringsSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 25,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "starts on where the address turns the rings on, as after a reload"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 252,
+                            "lastLine": 267
+                          }
+                        ],
+                        "name": "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc75c539aaa",
+                    "label": null,
+                    "name": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane, and run on no farther than four times it.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 60
+                          }
+                        ],
+                        "name": "are spaced at the scale bar's length, at each multiple within three times the eye's distance of the focus, and none past four"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 62,
+                            "lastLine": 71
+                          }
+                        ],
+                        "name": "keep the set drawn while it still reaches three times the eye's distance and runs no farther than four"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc8d373d024",
+                    "label": null,
+                    "name": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "lie in the axes' equator, each at its distance, with a spoke every 30 degrees"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "are arcs near a focus far from the barycentre, drawn finely and from a centre among them"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc9e9f39082",
+                    "label": null,
+                    "name": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, or, where the rings drawn are arcs short of going round the barycentre, the line from it through their middle, and a label that would overlap one already placed is left out.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "label each ring with its distance where it crosses the spoke of zero longitude"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 128
+                          }
+                        ],
+                        "name": "label rings side by side apart, to the step's last figure, far from the barycentre"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 130,
+                            "lastLine": 137
+                          }
+                        ],
+                        "name": "are whole rings, labelled on the spoke of zero longitude, where arcs would go round"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "are arcs near a focus far from the barycentre, drawn finely and from a centre among them"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 64,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "labels each distance ring where it crosses the spoke of zero longitude, in place of the equator ring's label, none overlapping"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 103
+                          }
+                        ],
+                        "name": "hides the equator ring's label as soon as the rings are on, though none is yet drawn, and keeps the rings' labels clear of the structures' names"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 252,
+                            "lastLine": 267
+                          }
+                        ],
+                        "name": "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdca6d344fc9",
+                    "label": null,
+                    "name": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/rings.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 139,
+                            "lastLine": 148
+                          }
+                        ],
+                        "name": "stay as they are while the view turns, and change as the eye moves, zooms past a step or changes axes"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 138,
+                            "lastLine": 168
+                          }
+                        ],
+                        "name": "draws the distance rings in place of the equator's ring while they are on, and the ring again once off"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdcb2966a530",
+                    "label": null,
+                    "name": "While the distance rings are on, the equator's single ring and its label are not drawn.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/controller.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 138,
+                            "lastLine": 168
+                          }
+                        ],
+                        "name": "draws the distance rings in place of the equator's ring while they are on, and the ring again once off"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 64,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "labels each distance ring where it crosses the spoke of zero longitude, in place of the equator ring's label, none overlapping"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 103
+                          }
+                        ],
+                        "name": "hides the equator ring's label as soon as the rings are on, though none is yet drawn, and keeps the rings' labels clear of the structures' names"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 106
+                          }
+                        ],
+                        "name": "draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdccfc8db018",
+                    "label": null,
+                    "name": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off.",
+                    "requirement": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 64,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "labels each distance ring where it crosses the spoke of zero longitude, in place of the equator ring's label, none overlapping"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 67,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                    "label": null,
+                    "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 197,
+                            "lastLine": 220
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 222,
+                            "lastLine": 250
+                          }
+                        ],
+                        "name": "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 252,
+                            "lastLine": 267
+                          }
+                        ],
+                        "name": "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd251f348c42",
+                    "label": null,
+                    "name": "A rail along the left edge, no wider than 52 CSS pixels, opens the view's controls, the groups of what is drawn and the list of structures, each as a drawer, and holds the button that returns to Earth.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 108,
+                            "lastLine": 130
+                          }
+                        ],
+                        "name": "opens each drawer from the rail and closes it again with the same button"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 151,
+                            "lastLine": 158
+                          }
+                        ],
+                        "name": "returns to Earth from the rail"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 197,
+                            "lastLine": 220
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd2646cc3c6c",
+                    "label": null,
+                    "name": "An open drawer narrows the view rather than covering it, and its rail button closes it again.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 132,
+                            "lastLine": 141
+                          }
+                        ],
+                        "name": "puts the drawer in the row beside the view, which narrows, and over the view below 1,024 pixels"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 108,
+                            "lastLine": 130
+                          }
+                        ],
+                        "name": "opens each drawer from the rail and closes it again with the same button"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 197,
+                            "lastLine": 220
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd2773cf8abe",
+                    "label": null,
+                    "name": "The record of the chosen object or structure is shown in the right margin only while one is chosen, and folds to the window's edge when asked.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 160,
+                            "lastLine": 168
+                          }
+                        ],
+                        "name": "shows the record in the right margin only while something is chosen"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 170,
+                            "lastLine": 179
+                          }
+                        ],
+                        "name": "folds the record to the window's edge when asked, and opens it again for the next thing chosen"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 197,
+                            "lastLine": 220
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd28fdfc1b1d",
+                    "label": null,
+                    "name": "The bottom bar holds the scale, the key and the credits in one line no taller than 30 CSS pixels.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 181,
+                            "lastLine": 193
+                          }
+                        ],
+                        "name": "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 202
+                          }
+                        ],
+                        "name": "holds the key and the credits in its bottom bar once the catalogue is read"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 197,
+                            "lastLine": 220
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd296b50d30d",
+                    "label": null,
+                    "name": "On a window narrower than 1,024 CSS pixels, a drawer and the record open over the view and close again.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 132,
+                            "lastLine": 141
+                          }
+                        ],
+                        "name": "puts the drawer in the row beside the view, which narrows, and over the view below 1,024 pixels"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 269,
+                            "lastLine": 285
+                          }
+                        ],
+                        "name": "opens a drawer and the record over the view below 1,024 pixels, and closes them again"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b10fa8776879",
+                    "label": null,
+                    "name": "The scale is a bar of a round length, 1, 2 or 5 times a power of ten of parsecs, kiloparsecs or megaparsecs, between 60 and 160 CSS pixels long at the focus's distance.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/scale.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 6,
+                            "lastLine": 17
+                          }
+                        ],
+                        "name": "is a round length of parsecs, kiloparsecs or megaparsecs between 60 and 160 pixels"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b11043cf39a0",
+                    "label": null,
+                    "name": "The scale is labelled with its length and its unit, and changes with the eye's distance from the focus.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/scale.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 19,
+                            "lastLine": 25
+                          }
+                        ],
+                        "name": "is labelled in the unit that suits its length, and changes with the distance"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 257,
+                            "lastLine": 269
+                          }
+                        ],
+                        "name": "moves the ticks and the scale with the view"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b1129a75edd3",
+                    "label": null,
+                    "name": "Structures are named in italic type, in the view, in their list and in their panel.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/names.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "names structures in italic type, in the view, in their list and in their panel"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b11383d20219",
+                    "label": null,
+                    "name": "Objects are named in upright type, in the hover label and in their panel.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/names.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 43
+                          }
+                        ],
+                        "name": "names a structure in italic in the hover label, and an object in upright type there and in its panel"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                "label": null,
+                "name": "Frame the view as an atlas",
+                "requirements": [
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "label": null,
+                    "name": "Univ Explorer shall mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "label": null,
+                    "name": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                    "statement": {
+                      "condition": "the person has turned the grid on",
+                      "form": "state_driven",
+                      "shall": "draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "label": null,
+                    "name": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                    "statement": {
+                      "condition": "the person has turned the distance rings on",
+                      "form": "state_driven",
+                      "shall": "draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "label": null,
+                    "name": "Univ Explorer shall give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                    "label": null,
+                    "name": "Univ Explorer shall draw a scale of the view at the distance of its focus.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw a scale of the view at the distance of its focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                    "label": null,
+                    "name": "Univ Explorer shall name structures and objects as atlases name areas and points.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "name structures and objects as atlases name areas and points.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 602,
+              "linked": 602,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
