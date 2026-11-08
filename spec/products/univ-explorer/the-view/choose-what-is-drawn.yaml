@@ -68,7 +68,7 @@ requirements:
       - key: 01a1bcf9-343a-712a-a28c-750c2cd7edc7
         name: "Turning a scale domain on, from off or from mixed, also turns every source under it on."
       - key: 01a1bcf9-343a-712a-a28c-750d6b07ad4a
-        name: "Turning a scale domain off hides its points whatever its sources' switches."
+        name: "Turning a scale domain off also turns every source under it off, in every scale domain the source is in."
   - key: 01a1bcf9-343a-712a-a28c-750e189adb25
     statement:
       form: ubiquitous
@@ -113,7 +113,7 @@ requirements:
       - key: 01a1bcf9-343a-712a-a28c-751a2eefe88f
         name: "All, for the points, turns every scale domain, source and kind of value on."
       - key: 01a1bcf9-343a-712a-a28c-751b082d1288
-        name: "None, for the points, turns every scale domain off."
+        name: "None, for the points, turns every scale domain and every source off."
       - key: 01a1bcf9-343a-712a-a28c-751c56321a25
         name: "All, for the structures, turns every kind of structure on."
       - key: 01a1bcf9-343a-712a-a28c-751ddc8c2d45
