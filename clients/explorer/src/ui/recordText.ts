@@ -8,6 +8,35 @@ import { figures } from "../scene/format.ts";
 import { lonLat } from "../scene/graticule.ts";
 import { type Mat3, apply } from "../scene/vec.ts";
 
+/** A name as it is compared: letter case and white space aside, as Univ Server resolves one. */
+const folded = (text: string): string => text.toLowerCase().replace(/\s+/g, "");
+
+/** The object's proper names, each written once with every source that gives it, and then its
+ * designations as `mergedDesignations` gives them, less those that read as one of its names,
+ * whose sources the name takes: a catalogue whose identifier is a name, such as the IAU's
+ * "Sirius" or OpenNGC's "M 31", gives it once. */
+export function namesAndDesignations(record: ObjectRecord): { names: Listed[]; designations: Listed[] } {
+  const names = new Map<string, Listed>();
+  for (const n of record.names ?? []) {
+    const found = names.get(folded(n.name)) ?? { text: n.name, sources: [] };
+    if (!found.sources.includes(n.source)) found.sources.push(n.source);
+    names.set(folded(n.name), found);
+  }
+  const designations = mergedDesignations(record).filter((d) => {
+    const name = names.get(folded(d.text));
+    if (name === undefined) return true;
+    for (const source of d.sources) if (!name.sources.includes(source)) name.sources.push(source);
+    return false;
+  });
+  return { names: [...names.values()], designations };
+}
+
+/** A name or designation listed once, with every source that gives it. */
+interface Listed {
+  text: string;
+  sources: string[];
+}
+
 /** `text` with its sign: a minus for a negative value and a plus otherwise. */
 const signed = (negative: boolean, text: string): string => `${negative ? "−" : "+"}${text}`;
 
@@ -19,8 +48,8 @@ export const designationText = (d: { designation?: string | null | undefined; id
 /** The object's designations, each written once with every source that gives it, in the
  * record's order. Only a designation in its catalogue's form is merged across sources: a bare
  * identifier is one source's own number, which another catalogue may give another object. */
-export function mergedDesignations(record: ObjectRecord): { text: string; sources: string[] }[] {
-  const merged = new Map<string, { text: string; sources: string[] }>();
+export function mergedDesignations(record: ObjectRecord): Listed[] {
+  const merged = new Map<string, Listed>();
   for (const d of record.designations) {
     const key = d.designation ?? `${d.source}\u0000${d.identifier}`;
     const found = merged.get(key) ?? { text: designationText(d), sources: [] };

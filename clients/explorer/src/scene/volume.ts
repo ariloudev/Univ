@@ -206,6 +206,12 @@ const within = ({ min, max }: Box, x: number, y: number, z: number): boolean =>
 /** Whether the point at `x`, `y`, `z`, in ICRS megaparsecs, lies inside `volume`. */
 export const inside = (volume: Volume, x: number, y: number, z: number): boolean => within(volume.bounds, x, y, z) && testerOf(volume)(x, y, z);
 
+/** Whether the structure whose volume is `volume` holds the point at `place`, ICRS megaparsecs:
+ * only a volume its shape gives exactly holds one. An approximate volume, which the view culls to,
+ * holds none: a bounding box, or a void's published extents laid about its deepest point where
+ * its paper gives no centre, so that where it ends on each side is unknown. */
+export const holds = (volume: Volume, place: Vec3): boolean => !volume.approximate && inside(volume, place[0], place[1], place[2]);
+
 /** Whether the sphere `extent` meets the box `box`. */
 function sphereMeets({ min, max }: Box, { centre, radius }: Sphere): boolean {
   const gap = (i: 0 | 1 | 2) => Math.max(min[i] - centre[i], 0, centre[i] - max[i]);

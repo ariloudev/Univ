@@ -1,0 +1,188 @@
+key: 01a1b901-4c40-7088-bec0-4f36628229bf
+id: w5
+versions:
+  - key: 01a1b901-4c40-7088-bec0-4f39355d508d
+    at: 2026-11-08T02:33:52Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: release 12"
+    goal: "Release 12 is built, checked and published locally, its name lookups and benches measured, and the explorer seen on it"
+    status: active
+blocks:
+  - key: 01a1b901-4c40-7088-bec0-4f37bb87985d
+    id: t5-science-fix
+    kind: task
+    versions:
+      - key: 01a1b901-4c40-7088-bec0-4f3af30384bc
+        at: 2026-11-08T02:33:52Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "science --store reads Miniflare's WAL databases"
+        detail: "The scratch database's exclusive locking passed to the attached local D1 files, which are WAL: disk I/O error. Attached databases take normal locking; the test keeps its databases in WAL mode and failed before the fix (bed7ec6)."
+        state: done
+  - key: 01a1b901-4c40-7088-bec0-4f3843ca2177
+    id: w5-splits
+    kind: note
+    versions:
+      - key: 01a1b901-4c40-7088-bec0-4f3b31b6d444
+        at: 2026-11-08T02:33:52Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 12's 510 replaced ids"
+        markdown: |-
+          - **215 merges**, every one into an object that now carries an OpenNGC or IAU name: duplicates the name sources joined.
+          - **295 splits**, 291 with an OpenNGC entry in a part. The pattern, from IC 1125:
+
+          | | Release 11 | Release 12 |
+          |---|---|---|
+          | A | Cosmicflows-4 PGC 55388 alone | PGC 55388, OpenNGC IC 1125 (by PGC), SDSS (0.08″ from IC 1125) |
+          | B (873699) | SDSS, 2MRS, 6dF, 2MPP, 2MPZ (2MASS 15330561-0137417, within 0.05″) | 2MRS, 6dF, 2MPP, 2MPZ, as new id 36949353 |
+
+          All are one galaxy, given two objects in both releases: an OpenNGC row joined by PGC draws a positional partner out of another group of the same galaxy. OpenNGC gives IC 1125 no 2MASX. No galaxy gains a duplicate it lacked, but one id per split is replaced. Merging groups of one galaxy within an arcsecond is a cross-match rule for the owner, with a spec change and another release.
+        tone: warning
+  - key: 01a1b910-dfd1-77ad-a432-5f9dbf7e746b
+    id: t5-velocity-fix
+    kind: task
+    versions:
+      - key: 01a1b910-dfd1-77ad-a432-5fa107a7f9f3
+        at: 2026-11-08T02:50:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Peculiar-velocity check judges rather than stops on a negative redshift"
+        detail: "SQLite tested the interval before `placed = 1` on a blueshifted row, which comoving_mpc refuses; the interval is now tested within a CASE (b95331d). It passes on release 12."
+        state: done
+  - key: 01a1b910-dfd1-77ad-a432-5f9e3b2e60c5
+    id: w5-science
+    kind: note
+    versions:
+      - key: 01a1b910-dfd1-77ad-a432-5fa29b33c0b6
+        at: 2026-11-08T02:50:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Science on release 12: 30 PASS, 3 FAIL, 3 CONCERN, 2 INFO"
+        markdown: |-
+          Read from the local D1 (`--store`, 159 s to load).
+
+          | Check | Release 10 | Release 12 |
+          |---|---|---|
+          | local-group-duplicates | FAIL, 30 pairs (accepted) | FAIL, 33 pairs |
+          | twompp-sdss-sourced (floor 0.975) | PASS | **FAIL, 0.9727** |
+          | redshift-conflicts | CONCERN, 278 | CONCERN, 288 |
+          | redshift-conflicts-placed-high | CONCERN, 103 | CONCERN, 110 |
+          | coma-ngc4889 | CONCERN | CONCERN, unchanged |
+          | fingerprints | PASS (written whole) | FAIL, a checker gap |
+
+          - **The cross-match regressions** all fit the IC 1125 pattern of note *Release 12's 510 replaced ids*: an OpenNGC row joined by PGC draws a positional partner out of another group of the same galaxy, such as an SDSS entry out of its 2M++ group.
+          - **fingerprints:** both loaders set every row's `release` to the release checked, which the checks rely on, while the manifest fingerprints each row's own release. Row counts and every other column total agree; the `release` totals and four small tables' content SHA-256 differ. It has failed on every release built as a change since release 11.
+        tone: warning
+  - key: 01a1b910-dfd1-77ad-a432-5f9f1b291d95
+    id: q-r12-regression
+    kind: question
+    versions:
+      - key: 01a1b910-dfd1-77ad-a432-5fa391a0b74a
+        at: 2026-11-08T02:50:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Release 12 is published locally with a small cross-match regression from OpenNGC (33 duplicate pairs, not 30; the 2M++/SDSS share 0.9727, under its 0.975 floor). How should I go on?"
+        header: "Release 12"
+        context: "Release 12 is local only: nothing is pushed or deployed, and release 11's D1, R2 and id state are in `.cache/univ-ingest/backup-r11/`. The fix is a cross-match rule (with its criterion): an object joined by a catalogue number takes in the positional group of the same galaxy within an arcsecond, rather than drawing one entry out of it. It needs a full rebuild either way (about 20 minutes, then 9 minutes to publish)."
+        options:
+          - label: "Keep 12, fix in 13"
+            detail: "Finish release 12's lookups, benches and your screenshots now, on real names. Then a follow-up wave specifies and builds the rule as release 13, which joins the split groups back (their ids replaced again, all locally). You see the explorer soonest."
+            recommended: true
+          - label: "Restore 11, rebuild 12"
+            detail: "Restore release 11 from the backup, specify and build the rule first, then build release 12 again before the lookups and screenshots. No id is replaced twice, but the screenshots wait for the rule."
+          - label: "Accept as is"
+            detail: "Keep release 12 and record the two regressions as accepted, as the 30 pairs were; no cross-match change."
+    responses:
+      - key: 01a1b9ec-34c5-724a-b395-59550034ada0
+        at: 2026-11-08T06:50:27Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Keep 12, fix in 13"
+  - key: 01a1b910-dfd1-77ad-a432-5fa0a4e3e6b6
+    id: q-fingerprints
+    kind: question
+    versions:
+      - key: 01a1b910-dfd1-77ad-a432-5fa4e123c7f0
+        at: 2026-11-08T02:50:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Should the fingerprint check be made to verify releases built as a change?"
+        header: "Fingerprints"
+        context: "It cannot today: the loaders give every row the release checked, so the `release` totals and four small tables' content SHA-256 never match the manifest for a change release. Row counts and every other column are verified."
+        options:
+          - label: "Fix it in the follow-up"
+            detail: "The loaders fingerprint each table's rows before giving them the release checked, and the check compares those. One more pass over each table at load."
+            recommended: true
+          - label: "Leave it"
+            detail: "Keep the gap and read its FAIL as expected on a change release."
+    responses:
+      - key: 01a1b9ec-34c5-724a-b395-5956e2df3e89
+        at: 2026-11-08T06:50:27Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Fix it in the follow-up"
+  - key: 01a1b9ec-6a94-7467-aee6-c9cc622b5d15
+    id: d-keep-12
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1b9ec-6a94-7467-aee6-c9cfdefd0209
+        at: 2026-11-08T06:50:41Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Keep release 12; the cross-match rule comes in release 13"
+        consequence: "Release 12's lookups, benches and the owner's screenshots run now. A follow-up wave specifies the rule that an object joined by a catalogue number takes in the positional group of the same galaxy within an arcsecond, and builds it as release 13, joining the split groups back locally."
+        question: 01a1b910-dfd1-77ad-a432-5f9f1b291d95
+  - key: 01a1b9ec-6a94-7467-aee6-c9cdf36b589b
+    id: d-fingerprints
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1b9ec-6a94-7467-aee6-c9d028aa158c
+        at: 2026-11-08T06:50:41Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The fingerprint check is made to verify change releases, in the follow-up"
+        consequence: "The follow-up wave makes the loaders fingerprint each table's rows before they take the release checked, so that `fingerprints` verifies a change release's `release` column and content SHA-256 too."
+        question: 01a1b910-dfd1-77ad-a432-5fa0a4e3e6b6
+  - key: 01a1b9ec-6a94-7467-aee6-c9cef37a388f
+    id: t5-lookups
+    kind: task
+    versions:
+      - key: 01a1b9ec-6a94-7467-aee6-c9d180e2d2ae
+        at: 2026-11-08T06:50:41Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Lookups, screenshots and benches on release 12"
+        detail: "Sirius, M31, Andromeda Galaxy, NGC 4472, HIP 32754; screenshots for the owner; bench lookup and first-points."
+        state: active

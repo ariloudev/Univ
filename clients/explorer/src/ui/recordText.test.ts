@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { manifestOf } from "../test/fixtures.ts";
 import { HIP_32754, HIP_32754_SOURCES } from "../test/records.ts";
-import { decText, flagsOf, galacticOf, galacticText, masText, mergedDesignations, raText, relationText } from "./recordText.ts";
+import { decText, flagsOf, galacticOf, galacticText, masText, mergedDesignations, namesAndDesignations, raText, relationText } from "./recordText.ts";
 
 describe("the record in words", () => {
   it("writes right ascension and declination in sexagesimal, carrying a rounded 60", () => {
@@ -65,5 +65,28 @@ describe("the record in words", () => {
       ],
     };
     expect(mergedDesignations(record).map((d) => d.sources)).toEqual([["cosmicflows-4-galaxies"], ["some-catalogue"]]);
+  });
+
+  it("gives a designation that reads as a proper name once, as the name, with every source of either", () => {
+    const record = {
+      ...HIP_32754,
+      names: [
+        { name: "Sirius", source: "iau-star-names" },
+        { name: "M 31", source: "openngc" },
+      ],
+      designations: [
+        { source: "iau-star-names", identifier: "Sirius" },
+        { source: "openngc", identifier: "M 31", designation: "M 31" },
+        { source: "some-catalogue", identifier: "m31" },
+        { source: "hipparcos-2007", identifier: "32349", designation: "HIP 32349" },
+      ],
+    };
+    expect(namesAndDesignations(record)).toEqual({
+      names: [
+        { text: "Sirius", sources: ["iau-star-names"] },
+        { text: "M 31", sources: ["openngc", "some-catalogue"] },
+      ],
+      designations: [{ text: "HIP 32349", sources: ["hipparcos-2007"] }],
+    });
   });
 });
