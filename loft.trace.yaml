@@ -4196,13 +4196,13 @@ links:
     tests:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers every scale domain, each source of its points, the four kinds of value and each kind of structure, all on"
-        body: f6848017729e7e0841f6360e3d912de4ccc42278611e3b6de72e10d24fda4b3f
+        body: c172cb234d53bd79e52ac294d3939c03abed5c10d737f8ebbdd09a0f8937c890
   - node: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
     reviewed: a305dafb5da2bdd558a29351e46dc2a71f745cf604150f5baad2a228784b2c65
     tests:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers every scale domain, each source of its points, the four kinds of value and each kind of structure, all on"
-        body: f6848017729e7e0841f6360e3d912de4ccc42278611e3b6de72e10d24fda4b3f
+        body: c172cb234d53bd79e52ac294d3939c03abed5c10d737f8ebbdd09a0f8937c890
       - file: "clients/explorer/src/ui/hidden.test.ts"
         name: "are none by default, so everything is drawn"
         body: d9258b0b6c9b5b51b88faff5fd4beb49a89df81d979bb179cd1116dfcb973fc5
@@ -4229,7 +4229,7 @@ links:
         body: 0fa94d94e75066201515b8528ee30582df297bf095f63a5a9ea163a45d0aed69
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "lists no structure of a kind turned off, and holds the switches of what is drawn"
-        body: 8433c6bffbb55114df9a7b653faf151383df90bbc5ace6cf1ff834d95348c5bf
+        body: 164b19b01e01101cf01aff580b2879123ebecf06676ed7727dbeacdfd55b4ffe
   - node: 01a1a8cc-3d02-7585-85fb-455fd5131e7f
     reviewed: 51a1d42e822a90e1465311acfbb103a1d2ff7ef95ea401205ad27a469141f1a6
     tests:
@@ -4367,7 +4367,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
-        body: e95204a2f82cda22e69d0a0944cd1a65f2f42b1defc23d5110a0f44c02a59cae
+        body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
   - node: 01a1bcf9-343a-712a-a28c-7513e662d7d4
     reviewed: 9eab7b797d6f86328b5c7b047c60a25651798e6b610a9cfdc5495be370f83ea7
     tests:
@@ -4379,13 +4379,13 @@ links:
         body: 62c1b9d07ce018d7dac53075333800cc2c66f0906d9bf7739da7b044073d576e
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
-        body: e95204a2f82cda22e69d0a0944cd1a65f2f42b1defc23d5110a0f44c02a59cae
+        body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
   - node: 01a1bcf9-343a-712a-a28c-7514105b3d9c
     reviewed: 04c623de4934d11ea7a6c369aeace26d376855c2ae4179f7c80252e4ee8f0576
     tests:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
-        body: e95204a2f82cda22e69d0a0944cd1a65f2f42b1defc23d5110a0f44c02a59cae
+        body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
   - node: 01a1bcf9-343a-712a-a28c-75169b137491
     reviewed: baad58a0ba8963215ade79cd9a150c98d0232d1d5065a2618b54d3afb09f5072
     tests:
@@ -4424,7 +4424,7 @@ links:
         body: f251c614eaa23e117425828d325ac8a2e150f167e01e1a36db56df8ebdd2d7f2
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "turns every group of the points or the structures on, or off, from their All and None"
-        body: dce0af15e21ecfe7dbf979c72dea43ac7ac9188e848ac83129954351c1ce2eab
+        body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
   - node: 01a1bcf9-343a-712a-a28c-751b082d1288
     reviewed: 216c0dd14d5fcbbf727a12971ecfee7bfa6ba6a93048435e41f53d64cab4224d
     tests:
@@ -4433,7 +4433,7 @@ links:
         body: f251c614eaa23e117425828d325ac8a2e150f167e01e1a36db56df8ebdd2d7f2
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "turns every group of the points or the structures on, or off, from their All and None"
-        body: dce0af15e21ecfe7dbf979c72dea43ac7ac9188e848ac83129954351c1ce2eab
+        body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
   - node: 01a1bcf9-343a-712a-a28c-751c56321a25
     reviewed: 754b004692a2f2dbdb335fe45cdf32e5937a010401bc10337b6a057bb9657e02
     tests:
@@ -4442,7 +4442,7 @@ links:
         body: 9b21dca9bc59e4b1b365003173130305167038c4816cbd93c66c3f716d475f79
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "turns every group of the points or the structures on, or off, from their All and None"
-        body: dce0af15e21ecfe7dbf979c72dea43ac7ac9188e848ac83129954351c1ce2eab
+        body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
   - node: 01a1bcf9-343a-712a-a28c-751ddc8c2d45
     reviewed: e0bc76401dce0260e42e467b61bdb94a61915c6cff283ccad848e0aa71983a12
     tests:
@@ -4451,7 +4451,7 @@ links:
         body: 9b21dca9bc59e4b1b365003173130305167038c4816cbd93c66c3f716d475f79
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "turns every group of the points or the structures on, or off, from their All and None"
-        body: dce0af15e21ecfe7dbf979c72dea43ac7ac9188e848ac83129954351c1ce2eab
+        body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
   - node: 01a1b7d7-c032-73ad-803e-b103f2a0c853
     reviewed: fb983fbd6b6225e1aabff010b9d7b76a7373c69b7b1de62f02b9332b2211704b
     tests:
@@ -5165,7 +5165,7 @@ links:
         body: f6c747ae631f27dc00e680c0ce8c1edd9575b48190839a56cc5615739e0f31aa
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
-        body: e95204a2f82cda22e69d0a0944cd1a65f2f42b1defc23d5110a0f44c02a59cae
+        body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
   - node: 01a1a497-e843-728a-bce8-3ff2f42a8c13
     reviewed: e1cc72ff569ef79da218abd83bb3344b2fc602ac03f482cae2232f1de175d9d3
     tests:

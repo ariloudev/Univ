@@ -55,7 +55,7 @@ export function Part({ title, onAll, onNone, children }: { title: string; onAll:
             All
           </Chooser>
           {" · "}
-          <Chooser onClick={onNone} label={`No ${what}`}>
+          <Chooser onClick={onNone} label={`None of the ${what}`}>
             None
           </Chooser>
         </span>

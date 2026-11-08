@@ -27,7 +27,7 @@ describe("the Show drawer", () => {
   it("offers every scale domain, each source of its points, the four kinds of value and each kind of structure, all on", () => {
     render(<ShowPanel choices={choices} hidden={NOTHING_HIDDEN} onApply={() => undefined} />);
     for (const label of ["Stars", "Nearby galaxies", "Cosmic web", "Hipparcos 2007", "Researched distances", "2MRS"]) expect(box(label).checked).toBe(true);
-    for (const name of ["measured", "estimated", "inferred", "reconstructed", "void, 2 structures", "supercluster, 1 structure"]) expect(pressed(name)).toBe("true");
+    for (const name of ["measured", "estimated", "inferred", "reconstructed", "void 2 structures", "supercluster 1 structure"]) expect(pressed(name)).toBe("true");
   });
 
   it("sums up what is on, and offers to show everything only while a group is off", async () => {
@@ -113,20 +113,20 @@ describe("the Show drawer", () => {
     drawer("?hide=structure:void");
     const swatchOf = (name: string) => screen.getByRole("button", { name }).querySelector("span[aria-hidden]") as HTMLElement;
     // The browser writes the colour back with commas.
-    expect(swatchOf("supercluster, 1 structure").style.background.replaceAll(",", "")).toBe(structureCss("supercluster"));
-    expect(swatchOf("void, 2 structures").hasAttribute("data-hollow")).toBe(true);
-    expect(pressed("void, 2 structures")).toBe("false");
+    expect(swatchOf("supercluster 1 structure").style.background.replaceAll(",", "")).toBe(structureCss("supercluster"));
+    expect(swatchOf("void 2 structures").hasAttribute("data-hollow")).toBe(true);
+    expect(pressed("void 2 structures")).toBe("false");
     expect(screen.getByTestId("show-family-denser").textContent).toContain("Denser");
-    expect(within(screen.getByTestId("show-family-emptier")).getByRole("button", { name: "void, 2 structures" })).toBeTruthy();
+    expect(within(screen.getByTestId("show-family-emptier")).getByRole("button", { name: "void 2 structures" })).toBeTruthy();
   });
 
   it("turns every group of the points or the structures on, or off, from their All and None", async () => {
     const { onApply } = drawer();
-    await userEvent.click(screen.getByRole("button", { name: "No points" }));
+    await userEvent.click(screen.getByRole("button", { name: "None of the points" }));
     expect(onApply).toHaveBeenLastCalledWith(["stars", "nearby_galaxies", "cosmic_web"].map((name) => ({ group: "domain", name, shown: false })));
     await userEvent.click(screen.getByRole("button", { name: "All points" }));
     expect(onApply.mock.lastCall?.[0]).toHaveLength(3 + 6 + 4);
-    await userEvent.click(screen.getByRole("button", { name: "No structures" }));
+    await userEvent.click(screen.getByRole("button", { name: "None of the structures" }));
     expect(onApply).toHaveBeenLastCalledWith([
       { group: "structure", name: "supercluster", shown: false },
       { group: "structure", name: "void", shown: false },

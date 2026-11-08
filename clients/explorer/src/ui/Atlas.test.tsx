@@ -149,7 +149,7 @@ describe("the explorer laid out as an atlas", () => {
     await userEvent.click(screen.getByRole("button", { name: "Structures" }));
     expect(screen.getByText("Structures (0)")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Show" }));
-    expect(screen.getByRole("button", { name: "void, 1 structure" }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByRole("button", { name: "void 1 structure" }).getAttribute("aria-pressed")).toBe("false");
   });
 
   it("returns to Earth from the rail", async () => {

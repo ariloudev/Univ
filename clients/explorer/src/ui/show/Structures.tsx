@@ -20,12 +20,11 @@ export function Structures({ choices, hidden, onApply }: { choices: ShowChoices;
           <div className="mt-0.5 flex flex-wrap gap-1">
             {f.kinds.map(({ kind, count }) => (
               <span key={kind} className="group relative inline-flex">
-                <GroupChip group="structure" name={kind} label={`${words(kind)}, ${counted(count, "structure")}`} hidden={hidden} onApply={onApply}>
+                <GroupChip group="structure" name={kind} label={`${words(kind)} ${counted(count, "structure")}`} hidden={hidden} onApply={onApply}>
                   {(on) => (
                     <>
                       <Swatch colour={structureCss(kind)} hollow={!on} small />
-                      {words(kind)}
-                      <span className="text-dim">{count}</span>
+                      {words(kind)} <span className="text-dim">{count}</span>
                     </>
                   )}
                 </GroupChip>
