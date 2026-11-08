@@ -12,12 +12,13 @@ const ROTATIONS = manifestOf("stars").rotations;
 const TO_SUPERGALACTIC = ROTATIONS.to_supergalactic;
 
 function setup(reduced = false) {
-  const drawn: { lines: Map<string, Lines | undefined>; draws: number } = { lines: new Map(), draws: 0 };
+  const drawn: { lines: Map<string, Lines | undefined>; draws: number; set: string[] } = { lines: new Map(), draws: 0, set: [] };
   const drawer: Drawer = {
     draw: () => {
       drawn.draws += 1;
     },
     setLines: (name, lines) => {
+      drawn.set.push(name);
       drawn.lines.set(name, lines);
     },
   };
@@ -132,6 +133,38 @@ describe("the controller", () => {
     // Float32 offsets: within a millionth of the radius.
     expect(Math.abs(inFrame[2]) / controller.ringRadius).toBeLessThan(1e-6);
     expect(Math.abs(norm(first) / controller.ringRadius - 1)).toBeLessThan(1e-6);
+  });
+
+  it("draws the distance rings in place of the equator's ring while they are on, and the ring again once off", () => {
+    const { controller, drawn } = setup();
+    controller.tick();
+    expect(drawn.lines.get("equator")).toBeDefined();
+    controller.setRings(true);
+    controller.tick();
+    expect(drawn.lines.get("equator")).toBeUndefined();
+    expect(drawn.lines.get("distance-rings")?.offsets.length).toBeGreaterThan(0);
+    expect(controller.rings?.step).toBeGreaterThan(0);
+    // Drawn again only when the rings change: a turn keeps them, a zoom past a step does not.
+    const count = () => drawn.set.filter((name) => name === "distance-rings").length;
+    const before = count();
+    controller.turn(40, 10);
+    controller.tick();
+    expect(count()).toBe(before);
+    controller.zoom(-8);
+    controller.tick();
+    expect(count()).toBe(before + 1);
+    // The axes change them: the old rings go at once, and the new ones are drawn.
+    expect(controller.rings?.axes).toBe("galactic");
+    controller.setAxes("supergalactic");
+    expect(drawn.lines.get("distance-rings")).toBeUndefined();
+    controller.tick();
+    expect(controller.rings?.axes).toBe("supergalactic");
+    expect(drawn.lines.get("distance-rings")?.offsets.length).toBeGreaterThan(0);
+    controller.setRings(false);
+    controller.tick();
+    expect(drawn.lines.get("distance-rings")).toBeUndefined();
+    expect(drawn.lines.get("equator")).toBeDefined();
+    expect(controller.rings).toBeUndefined();
   });
 
   it("changes the axes without moving the focus or any point", () => {

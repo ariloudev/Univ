@@ -4078,8 +4078,8 @@ links:
         name: "chooses what its first click found, though that click has moved the view"
         body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "centres the view on a point clicked, keeping the distance, with the grid drawn over it"
-        body: 1564e7110bb2a0542269150c13606739b5be47ff03650619877cc375d89fd1a7
+        name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
+        body: 4fc582810eb7196583cd79e0a94157d124312d8a6ae53cd6cb9494e09816554c
   - node: 01a1a8e8-6326-709f-aa5e-4610311af683
     reviewed: 1174f20dd1a7c960a058c69bc1a4f4b5ec2af79cfc50772ad17920a33030d44c
     tests:
@@ -4325,7 +4325,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
-        body: 3fb7ff47aeb220273ea57d803279ce6cdad144705eb23a7993d93f840ed0f43c
+        body: c6ad34563ab4cacd2bf5570e7f9a21ba898b90bed0a0a9d8857c03c149012928
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
         body: 3874c58a625a57efa8c89cd86a65167d1bf14eced65ebb036a23abf2f7228884
@@ -4402,20 +4402,131 @@ links:
         name: "draws the grid across the view while its switch is on, and keeps it on in the address"
         body: 3a65636cde9ef0c0cf6469b2bbe9b78692c74f9cb12da7ed9bb5aa259594eaf9
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "centres the view on a point clicked, keeping the distance, with the grid drawn over it"
-        body: 1564e7110bb2a0542269150c13606739b5be47ff03650619877cc375d89fd1a7
-  - node: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
-    reviewed: 99367ffc02b6b341d3b4a2325aeb043376b597d17c3940ae4855ead54b4632b4
+        name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
+        body: 4fc582810eb7196583cd79e0a94157d124312d8a6ae53cd6cb9494e09816554c
+  - node: 01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b
+    reviewed: 3e800388d3729b9777126bb76f570400a1ce3302661a7f44a3a79f3cef0a8b0f
     tests:
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
-        body: 3fb7ff47aeb220273ea57d803279ce6cdad144705eb23a7993d93f840ed0f43c
+        body: c6ad34563ab4cacd2bf5570e7f9a21ba898b90bed0a0a9d8857c03c149012928
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address"
+        body: 5ea64d1d49a1992f47d44e69e4bf78681977bbf3169cf310c2e2ae5f6f0515cd
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
+        body: 3723be5dedff0d4ba12634a4b5cd173c9f219926ddec3d9e0dfdaa7cc5c00549
+  - node: 01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2
+    reviewed: bb58dcca4524074af18fe349d6c2be081f82bb41cca2da019f0079eb1db69574
+    tests:
+      - file: "clients/explorer/src/ui/ringsSwitch.test.ts"
+        name: "is off unless the address turns the rings on"
+        body: b2043ce21f7b90696de60340286d822a6c935e7333e0ddd6c60fc40e31b01dfe
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address"
+        body: 5ea64d1d49a1992f47d44e69e4bf78681977bbf3169cf310c2e2ae5f6f0515cd
+  - node: 01a1bbd3-54fe-7370-9d9f-cdc69981e4ad
+    reviewed: dc4b29f073793de6800bc2ddb56cbf5d360352e4b3f16fc8c5767888158b33d1
+    tests:
+      - file: "clients/explorer/src/ui/ringsSwitch.test.ts"
+        name: "is kept on in the address, beside what else it holds, and leaves it once off again"
+        body: 8e3de8b9bea71d42d159dfce7eeffae0d13111a5e840a750ddcc028b7377a4e2
+      - file: "clients/explorer/src/ui/ringsSwitch.test.ts"
+        name: "starts on where the address turns the rings on, as after a reload"
+        body: 589095ec945fc9ff157f0507459a5eb55a1c712f2fbb563e20349de7975d5cf0
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
+        body: 3723be5dedff0d4ba12634a4b5cd173c9f219926ddec3d9e0dfdaa7cc5c00549
+  - node: 01a1bbd3-54fe-7370-9d9f-cdc75c539aaa
+    reviewed: c47e8ca32c5eb92455bcc986af0fc2bbf049a205de842639bc975a2253615f39
+    tests:
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "are spaced at the scale bar's length, at each multiple within three times the eye's distance of the focus, and none past four"
+        body: 44ec94c8d8ba9d1880842321e1c9b3198cec7d4c991eeabdb5db62f148b46715
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "keep the set drawn while it still reaches three times the eye's distance and runs no farther than four"
+        body: f1b6be4b9816af24325630e940f67c483f52f04972890b40303d473f1a7e38d8
+  - node: 01a1bbd3-54fe-7370-9d9f-cdc8d373d024
+    reviewed: 03ac3a7a33c4c4cb000a094408632e5ba29dae976038b2a54dbbc2130e78e87b
+    tests:
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "lie in the axes' equator, each at its distance, with a spoke every 30 degrees"
+        body: 01778482654a09680b8f397e74fbfaf3aaa54c4de86d640cb5e3bf1fb497f57b
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "are arcs near a focus far from the barycentre, drawn finely and from a centre among them"
+        body: 2d465ee7d90d63e409aac2d12c5b61336708ff166580c187b4f167d2ba27e849
+  - node: 01a1bbd3-54fe-7370-9d9f-cdc9e9f39082
+    reviewed: c3bddda6d93f07fc52ac6da7db159a33a17a098d5c37bcf5e839c7f72d6b2b8a
+    tests:
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "label each ring with its distance where it crosses the spoke of zero longitude"
+        body: 5e0268d5699a02ea2b9c2db8518d0b47f7d2006ef18d80908ab0f7199d72e332
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "label rings side by side apart, to the step's last figure, far from the barycentre"
+        body: ab18fb2487caa430d04059ba95ab7894482bb15720f3e668e7a0a9d6605bbf01
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "are whole rings, labelled on the spoke of zero longitude, where arcs would go round"
+        body: 97ee4d6f4645c419d404033e1fe439ed0390aadcf515b04ea9c636febe8146b3
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "are arcs near a focus far from the barycentre, drawn finely and from a centre among them"
+        body: 2d465ee7d90d63e409aac2d12c5b61336708ff166580c187b4f167d2ba27e849
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "labels each distance ring where it crosses the spoke of zero longitude, in place of the equator ring's label, none overlapping"
+        body: dd5e140113436aff7d7dba4b826229869a2105acfbaf5573af0e11666a7d0bc5
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "hides the equator ring's label as soon as the rings are on, though none is yet drawn, and keeps the rings' labels clear of the structures' names"
+        body: 19bb36c87bbb0904eaf6b0b71b65f729b522db988e596f693acd632c6ab7af07
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
+        body: 3723be5dedff0d4ba12634a4b5cd173c9f219926ddec3d9e0dfdaa7cc5c00549
+  - node: 01a1bbd3-54fe-7370-9d9f-cdca6d344fc9
+    reviewed: 91894d1d0f22232143df9e86e3cacfa237e63bcf0502b33ae854bd0783c6ab4c
+    tests:
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "stay as they are while the view turns, and change as the eye moves, zooms past a step or changes axes"
+        body: f81f5fb603d1cee8bf328e21ef26fb7bd6d10c7a722aae4cf9ea2616f4b60474
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "draws the distance rings in place of the equator's ring while they are on, and the ring again once off"
+        body: 175dd3bca26d2b51e266168b8a98401865c05631c340c5bf646c2b663146f996
+  - node: 01a1bbd3-54fe-7370-9d9f-cdcb2966a530
+    reviewed: eedc7a6eeb403b5d72405a50446a543d4696931adf45c916f952685ab3408413
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "draws the distance rings in place of the equator's ring while they are on, and the ring again once off"
+        body: 175dd3bca26d2b51e266168b8a98401865c05631c340c5bf646c2b663146f996
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "labels each distance ring where it crosses the spoke of zero longitude, in place of the equator ring's label, none overlapping"
+        body: dd5e140113436aff7d7dba4b826229869a2105acfbaf5573af0e11666a7d0bc5
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "hides the equator ring's label as soon as the rings are on, though none is yet drawn, and keeps the rings' labels clear of the structures' names"
+        body: 19bb36c87bbb0904eaf6b0b71b65f729b522db988e596f693acd632c6ab7af07
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address"
+        body: 5ea64d1d49a1992f47d44e69e4bf78681977bbf3169cf310c2e2ae5f6f0515cd
+  - node: 01a1bbd3-54fe-7370-9d9f-cdccfc8db018
+    reviewed: 288bef7a3df65d09a3a90918c87a451557fb693173ab2badd282572591925f19
+    tests:
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "labels each distance ring where it crosses the spoke of zero longitude, in place of the equator ring's label, none overlapping"
+        body: dd5e140113436aff7d7dba4b826229869a2105acfbaf5573af0e11666a7d0bc5
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
+        body: 4fc582810eb7196583cd79e0a94157d124312d8a6ae53cd6cb9494e09816554c
+  - node: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
+    reviewed: 1288628f3fac9b6efeda328f950bd02499d127a56a9ee1c5ddd896d2a69d4c99
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
+        body: c6ad34563ab4cacd2bf5570e7f9a21ba898b90bed0a0a9d8857c03c149012928
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
         body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
         body: 3874c58a625a57efa8c89cd86a65167d1bf14eced65ebb036a23abf2f7228884
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
+        body: 3723be5dedff0d4ba12634a4b5cd173c9f219926ddec3d9e0dfdaa7cc5c00549
   - node: 01a1b7f5-f51b-71f9-80de-cd251f348c42
     reviewed: 1872ff6a009aea30596b02dc96eb32775aef1c5673945137202b23afe7a86e45
     tests:

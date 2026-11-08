@@ -83,6 +83,26 @@ describe("the explorer laid out as an atlas", () => {
     const axes = within(bar).getByRole("combobox").closest("label");
     expect(axes?.nextElementSibling?.textContent).toBe("Grid");
     expect(within(bar).getByRole("switch", { name: "Grid" })).toBeTruthy();
+    // The distance rings' switch beside the grid's.
+    expect(within(bar).getByRole("switch", { name: "Grid" }).closest("label")?.nextElementSibling?.textContent).toBe("Rings");
+  });
+
+  it("draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address", async () => {
+    const { world } = show();
+    const toggle = screen.getByRole("switch", { name: "Rings" });
+    expect((toggle as HTMLInputElement).checked).toBe(false);
+    await userEvent.click(toggle);
+    expect(location.search).toBe("?rings=on");
+    act(() => {
+      world.controller.tick();
+    });
+    expect(world.controller.rings?.step).toBeGreaterThan(0);
+    await userEvent.click(toggle);
+    expect(location.search).toBe("");
+    act(() => {
+      world.controller.tick();
+    });
+    expect(world.controller.rings).toBeUndefined();
   });
 
   it("opens each drawer from the rail and closes it again with the same button", async () => {

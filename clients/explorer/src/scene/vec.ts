@@ -4,6 +4,9 @@
 export type Vec3 = readonly [number, number, number];
 export type Mat3 = readonly [Vec3, Vec3, Vec3];
 
+/** Radians in a degree. */
+export const RAD = Math.PI / 180;
+
 export const ORIGIN: Vec3 = [0, 0, 0];
 export const IDENTITY: Mat3 = [
   [1, 0, 0],

@@ -7,7 +7,7 @@
 import type { View } from "./camera.ts";
 import { eyeAxes, focalPixels, pixelOf } from "./camera.ts";
 import { type Coordinate, type EdgeTicks, directionOf, edgePoint, lonLat, sight, tidy } from "./graticule.ts";
-import { type Mat3, type Vec3, apply, multiply, scale, transpose } from "./vec.ts";
+import { type Mat3, RAD, type Vec3, apply, multiply, scale, transpose } from "./vec.ts";
 
 /** Degrees between the samples taken along each line. */
 const SAMPLE = 1;
@@ -23,8 +23,6 @@ const STOP = 80;
 /** The lines of longitude that run on to the poles lie at multiples of this, degrees: 6 hours of
  * right ascension. */
 const THROUGH = 90;
-
-const RAD = Math.PI / 180;
 
 export interface GridLine {
   coordinate: Coordinate;

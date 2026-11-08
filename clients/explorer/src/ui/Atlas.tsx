@@ -5,6 +5,7 @@ import type { StructureDetail } from "../api/structures.ts";
 import { AtlasFrame } from "./AtlasFrame.tsx";
 import type { Switch } from "./addressSwitch.ts";
 import { useGrid } from "./gridSwitch.ts";
+import { useDrawnRings } from "./ringsSwitch.ts";
 import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
 import { type DrawerName, Rail, drawerTitle } from "./Rail.tsx";
@@ -96,9 +97,10 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
   const { drawer, onDrawer } = place;
   const key = chosenKey(selection);
   const grid = useGrid();
+  const rings = useDrawnRings(world?.controller);
   return (
     <>
-      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} grid={grid} />, place.topBar)}
+      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} grid={grid} rings={rings} />, place.topBar)}
       <div className="relative flex min-h-0">
         <Rail
           open={drawer}
@@ -116,14 +118,7 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
           {children}
           {world === undefined ? null : <AtlasFrame world={world} grid={grid[0]} />}
         </section>
-        {key === undefined ? null : (
-          <Record key={key}>
-            <ObjectPanel chosen={selection.chosen} onChoose={(id) => selection.object(id, { fly: true })} onClose={selection.close} context={selection.context} />
-            {selection.structure === undefined ? null : (
-              <StructurePanel detail={selection.structure} approximate={selection.approximate} inside={selection.inside} onClose={selection.close} />
-            )}
-          </Record>
-        )}
+        {key === undefined ? null : <Chosen key={key} selection={selection} />}
       </div>
       <footer className="flex min-w-0 items-center gap-5 border-t border-line bg-panel px-3 text-sm whitespace-nowrap">
         {world === undefined ? null : (
@@ -142,12 +137,24 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
   );
 }
 
-/** The view's parts of the top bar: the eye's distance with the axes and the grid's switch, and
- * the search. */
-function TopBarParts({ world, release, selection, grid }: { world: World; release: number; selection: Selection; grid: Switch }) {
+/** The record of what `selection` holds chosen, in the right margin. */
+function Chosen({ selection }: { selection: Selection }) {
+  return (
+    <Record>
+      <ObjectPanel chosen={selection.chosen} onChoose={(id) => selection.object(id, { fly: true })} onClose={selection.close} context={selection.context} />
+      {selection.structure === undefined ? null : (
+        <StructurePanel detail={selection.structure} approximate={selection.approximate} inside={selection.inside} onClose={selection.close} />
+      )}
+    </Record>
+  );
+}
+
+/** The view's parts of the top bar: the eye's distance with the axes and the switches of the grid
+ * and the distance rings, and the search. */
+function TopBarParts({ world, release, selection, grid, rings }: { world: World; release: number; selection: Selection; grid: Switch; rings: Switch }) {
   return (
     <>
-      <Whereabouts controller={world.controller} frame={world.frame} grid={grid} />
+      <Whereabouts controller={world.controller} frame={world.frame} grid={grid} rings={rings} />
       <div className="ml-auto">
         <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />
       </div>

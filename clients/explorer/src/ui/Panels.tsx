@@ -5,7 +5,7 @@ import { SwitchBox } from "./SwitchBox.tsx";
 import type { Switch } from "./addressSwitch.ts";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
-import { formatDistance } from "../scene/format.ts";
+import { formatDistance, shortDistance } from "../scene/format.ts";
 import { KINDS, POINT_CSS } from "../scene/kinds.ts";
 import { Mark } from "./Mark.tsx";
 import { GREY_CSS, KEY_TEMPERATURES, STAR_GRADIENT } from "../scene/starColour.ts";
@@ -21,8 +21,17 @@ interface ViewProps {
   frame: Store<number>;
 }
 
+/** What the view's drawer says of the rings drawn in the axes' equator. */
+function ringsText(controller: Controller): string {
+  if (!controller.ringsOn) return `Ring: the ${controller.axes} equator, ${formatDistance(controller.ringRadius)} from Earth.`;
+  const { rings } = controller;
+  return rings === undefined
+    ? `Rings: none within reach of the focus in the ${controller.axes} equator.`
+    : `Rings: every ${shortDistance(rings.step)} from the Solar System barycentre, in the ${controller.axes} equator.`;
+}
+
 /** The top bar's part: the eye's distance from the focus, and the axes with the grid's switch. */
-export function Whereabouts({ controller, frame, grid }: ViewProps & { grid: Switch }) {
+export function Whereabouts({ controller, frame, grid, rings }: ViewProps & { grid: Switch; rings: Switch }) {
   useStore(frame);
   return (
     <div className="flex shrink-0 items-center gap-3 text-sm">
@@ -47,6 +56,7 @@ export function Whereabouts({ controller, frame, grid }: ViewProps & { grid: Swi
         </select>
       </label>
       <SwitchBox label="Grid" state={grid} textClass="text-dim" />
+      <SwitchBox label="Rings" state={rings} textClass="text-dim" />
     </div>
   );
 }
@@ -58,7 +68,7 @@ export function ViewDrawer({ controller, frame, cosmology }: ViewProps & { cosmo
     <div className="space-y-3">
       <h2 className="font-serif text-base">The view</h2>
       <p>
-        Ring: the {controller.axes} equator, {formatDistance(controller.ringRadius)} from Earth.
+        {ringsText(controller)}
       </p>
       <p className="text-dim" data-testid="frame">
         Axes {controller.axes} ({controller.frame.basis}). Origin: the Solar System barycentre, within about 1 AU of Earth.

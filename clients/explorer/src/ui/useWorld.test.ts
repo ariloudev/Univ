@@ -9,6 +9,7 @@ const overlay: Overlay = {
   earth: { current: null },
   ring: { current: null },
   ringLabel: { current: null },
+  ringLabels: { current: null },
   chosen: { current: null },
   names: { current: null },
 };

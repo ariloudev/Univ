@@ -20,8 +20,16 @@ const LY_UNITS: readonly (readonly [number, string])[] = [
 
 /** `value` to `digits` significant figures, without a trailing zero after the point. */
 export function figures(value: number, digits = 3): string {
-  return value.toLocaleString("en-GB", { maximumSignificantDigits: digits });
+  let format = FIGURES.get(digits);
+  if (format === undefined) {
+    format = new Intl.NumberFormat("en-GB", { maximumSignificantDigits: digits });
+    FIGURES.set(digits, format);
+  }
+  return format.format(value);
 }
+
+/** A format for each number of significant figures, made once: making one costs more than using it. */
+const FIGURES = new Map<number, Intl.NumberFormat>();
 
 function inUnits(value: number, units: readonly (readonly [number, string])[]): string {
   const [size, name] = units.find(([unit]) => value >= unit) ?? units[units.length - 1] ?? [1, ""];
