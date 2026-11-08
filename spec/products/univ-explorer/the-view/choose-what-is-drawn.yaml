@@ -1,7 +1,7 @@
 key: 01a1a8cc-3d02-7585-85fb-4558813fc355
 slug: choose-what-is-drawn
 name: "Choose what is drawn"
-body: "Turning groups of what the view draws on and off: the points of each scale domain, of each catalogue and of each kind of value of their distances, and the structures of each kind, so that one survey, one kind of value or one kind of structure can be seen alone. The Show drawer holds them in two parts, the points and the structures, and nests each source under the scale domains whose points it places, since turning a source off acts in every scale domain it is in."
+body: "Turning groups of what the view draws on and off: the points of each scale domain, of each catalogue and of each kind of value of their distances, and the structures of each kind, so that one survey, one kind of value or one kind of structure can be seen alone. The Show drawer holds them in two parts, the points and the structures, and lists each source once, marked under each scale domain whose points it places, since turning a source off acts in every scale domain it is in."
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
   - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
@@ -53,22 +53,20 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Explorer"
-      shall: "nest, in the Show drawer, each source of the drawn points under each scale domain whose points it places."
+      shall: "list, in the Show drawer, each source of the drawn points once, in a table with a column for each scale domain."
     criteria:
       - key: 01a1bcf9-343a-712a-a28c-750761703f4d
-        name: "Each scale domain heads its sources with its switch, its number of points and its number of sources."
-      - key: 01a1bcf9-343a-712a-a28c-7508257504b9
-        name: "Each scale domain's sources fold under its heading and open again from it."
+        name: "Each scale domain heads its column with its switch and its number of points."
       - key: 01a1bcf9-343a-712a-a28c-7509e80a8d25
         name: "Each source is named on one line by its short name, with its title shown while the pointer is over it."
+      - key: 01a1bd07-c9c2-7632-a4e5-d6277e9ea870
+        name: "The sources are grouped by the smallest scale domain whose points they place, from the smallest scale up."
       - key: 01a1bcf9-343a-712a-a28c-750ae9ac17b6
-        name: "A source that places the points of more than one scale domain is marked, under each, as switched in all of them."
-      - key: 01a1bcf9-343a-712a-a28c-750b6922a890
-        name: "A scale domain's switch is shown mixed while the domain is on and at least one but not every one of its sources is off."
+        name: "Each source is marked in the column of each scale domain whose points it places."
       - key: 01a1bcf9-343a-712a-a28c-750c2cd7edc7
-        name: "Turning a scale domain on, from off or from mixed, also turns every source under it on."
-      - key: 01a1bcf9-343a-712a-a28c-750d6b07ad4a
-        name: "Turning a scale domain off also turns every source under it off, in every scale domain the source is in."
+        name: "Turning a scale domain off or on hides or draws its points."
+      - key: 01a1bd07-e8b7-762f-97dc-651bd7d745b2
+        name: "Turning a scale domain off or on leaves every source's switch as it is."
   - key: 01a1bcf9-343a-712a-a28c-750e189adb25
     statement:
       form: ubiquitous
@@ -113,7 +111,7 @@ requirements:
       - key: 01a1bcf9-343a-712a-a28c-751a2eefe88f
         name: "All, for the points, turns every scale domain, source and kind of value on."
       - key: 01a1bcf9-343a-712a-a28c-751b082d1288
-        name: "None, for the points, turns every scale domain and every source off."
+        name: "None, for the points, turns every scale domain off."
       - key: 01a1bcf9-343a-712a-a28c-751c56321a25
         name: "All, for the structures, turns every kind of structure on."
       - key: 01a1bcf9-343a-712a-a28c-751ddc8c2d45
