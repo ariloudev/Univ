@@ -5,7 +5,7 @@
 import { type ObjectRecord, type Relation, nameKey } from "../api/objects.ts";
 import type { SourceDetail } from "../api/sources.ts";
 import { figures } from "../scene/format.ts";
-import { lonLat } from "../scene/graticule.ts";
+import { directionOf, lonLat } from "../scene/graticule.ts";
 import { type Mat3, apply } from "../scene/vec.ts";
 
 /** The object's proper names, each written once with every source that gives it, and then its
@@ -107,9 +107,7 @@ export function decText(deg: number): string {
 /** The galactic longitude and latitude, degrees, of ICRS `ra` and `dec`, through the rotation
  * `toGalactic` the release's manifests give. */
 export function galacticOf(ra: number, dec: number, toGalactic: Mat3): { l: number; b: number } {
-  const r = (ra * Math.PI) / 180;
-  const d = (dec * Math.PI) / 180;
-  const { lon, lat } = lonLat(apply(toGalactic, [Math.cos(d) * Math.cos(r), Math.cos(d) * Math.sin(r), Math.sin(d)]));
+  const { lon, lat } = lonLat(apply(toGalactic, directionOf(ra, dec)));
   return { l: lon, b: lat };
 }
 

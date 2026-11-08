@@ -11,18 +11,21 @@ export interface AddressSwitch {
   byDefault: boolean;
 }
 
-/** The value the address holds for a switch turned from its default. */
-const turned = ({ byDefault }: AddressSwitch): string => (byDefault ? "off" : "on");
+/** The value the address holds for a switch turned from its default `byDefault`. */
+const turned = (byDefault: boolean): string => (byDefault ? "off" : "on");
+
+/** A switch's state and the way to turn it on or off. */
+export type Switch = readonly [boolean, (on: boolean) => void];
 
 /** Whether the address `search` leaves the switch on. */
 export const switchInAddress = (search: string, which: AddressSwitch): boolean =>
-  new URLSearchParams(search).get(which.parameter) === turned(which) ? !which.byDefault : which.byDefault;
+  new URLSearchParams(search).get(which.parameter) === turned(which.byDefault) ? !which.byDefault : which.byDefault;
 
 /** Whether the switch is on, read from the page's address and kept in it while it is turned from
  * its default, and the way to turn it on or off. */
-export function useAddressSwitch(which: AddressSwitch): [boolean, (on: boolean) => void] {
+export function useAddressSwitch(which: AddressSwitch): Switch {
   const [on, setOn] = useState(() => switchInAddress(location.search, which));
   const { parameter, byDefault } = which;
-  useEffect(() => setInAddress({ [parameter]: on === byDefault ? undefined : turned({ parameter, byDefault }) }), [on, parameter, byDefault]);
+  useEffect(() => setInAddress({ [parameter]: on === byDefault ? undefined : turned(byDefault) }), [on, parameter, byDefault]);
   return [on, setOn];
 }

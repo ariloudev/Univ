@@ -9,7 +9,7 @@ import type { Axes } from "./frames.ts";
 import { type Mat3, type Vec3, apply, multiply, normalize, transpose } from "./vec.ts";
 
 export type Edge = "top" | "right" | "bottom" | "left";
-type Coordinate = "longitude" | "latitude";
+export type Coordinate = "longitude" | "latitude";
 
 /** The steps between ticks, degrees, coarsest first: 90, 30, 15, 10, 5, 2 or 1 degrees, or a
  * tenth or a hundredth of one. */
@@ -38,11 +38,15 @@ interface Crossing {
 
 export interface EdgeTicks {
   edge: Edge;
+  coordinate: Coordinate;
   /** The coordinate the ticks give, in words, such as "galactic longitude". */
   name: string;
-  /** The step the ticks are spaced at, degrees, shared by both edges of the coordinate; none
-   * where no step keeps the edge's labels apart. */
+  /** The step the ticks are spaced at, degrees; none where no step keeps the edge's labels
+   * apart. */
   step: number | undefined;
+  /** The step of the grid's lines of the coordinate, degrees: the finer of its two edges', of
+   * which each edge's is a multiple. */
+  lineStep: number | undefined;
   ticks: (Crossing & { label: string })[];
 }
 
@@ -84,11 +88,17 @@ export function lonLat(d: Vec3): { lon: number; lat: number } {
   return { lon: wrap360(lon), lat };
 }
 
+/** The direction of longitude `lon` and latitude `lat`, degrees: the way back from `lonLat`. */
+export function directionOf(lon: number, lat: number): Vec3 {
+  const [l, b] = [(lon * Math.PI) / 180, (lat * Math.PI) / 180];
+  return [Math.cos(b) * Math.cos(l), Math.cos(b) * Math.sin(l), Math.sin(b)];
+}
+
 /** `degrees` within 0 to 360. */
 const wrap360 = (degrees: number): number => ((degrees % 360) + 360) % 360;
 
 /** `value` without the error of the arithmetic that stepped to it. */
-const tidy = (value: number): number => Math.round(value * 1e6) / 1e6;
+export const tidy = (value: number): number => Math.round(value * 1e6) / 1e6;
 
 /** Up to two decimals, made once: a format made for each label would cost more than the rest of
  * the frame's ticks. */
@@ -132,9 +142,13 @@ function crossings(samples: Samples, step: number, longitude: boolean, cap: numb
 /** Adds to `found` each multiple of `step` the coordinate crosses from `v1` by `delta` between the
  * positions `span`, where it crosses it. */
 function between(found: Crossing[], [p1, p2]: readonly [number, number], v1: number, delta: number, step: number, longitude: boolean): void {
-  const [low, high] = delta > 0 ? [v1, v1 + delta] : [v1 + delta, v1];
-  for (let k = Math.floor(low / step) + 1; k * step <= high; k += 1) {
+  // Tidied, so that a multiple met at a sample is the sample's value at both its segments: past
+  // the start of a segment, and up to its end, whichever way the coordinate runs.
+  const [start, end] = [tidy(v1), tidy(v1 + delta)];
+  const [low, high] = delta > 0 ? [start, end] : [end, start];
+  for (let k = Math.floor(low / step); k * step <= high; k += 1) {
     const value = tidy(k * step);
+    if (value === start || value < low || value > high) continue;
     found.push({ at: p1 + ((value - v1) / delta) * (p2 - p1), value: longitude ? tidy(wrap360(value)) : value });
   }
 }
@@ -149,7 +163,7 @@ function leastGap(ticks: readonly Crossing[]): number {
 
 /** The ticks of each of `steps` whose ticks lie at least `MIN_GAP` apart along an edge `length`
  * pixels long, by step. */
-function fitting(samples: Samples, length: number, longitude: boolean, steps: readonly number[]): Map<number, Crossing[]> {
+export function fitting(samples: Samples, length: number, longitude: boolean, steps: readonly number[]): Map<number, Crossing[]> {
   // Ticks closer than the gap cannot number more than this along the edge.
   const cap = Math.floor(length / MIN_GAP) + 1;
   const fit = new Map<number, Crossing[]>();
@@ -160,23 +174,20 @@ function fitting(samples: Samples, length: number, longitude: boolean, steps: re
   return fit;
 }
 
-/** The finest of `steps` that fits every edge `fits` holds a fitting step for; none where no
- * edge has one. Every step is tried, since the steps do not all divide one another: 10 can fit
- * where 15 does not. The coarsest step, a multiple of all the others, fits wherever any does, so
- * edges that fit some step always share one. */
-function finestShared(fits: readonly Map<number, Crossing[]>[], steps: readonly number[]): number | undefined {
-  const fitted = fits.filter((fit) => fit.size > 0);
-  if (fitted.length === 0) return undefined;
-  return steps.findLast((step) => fitted.every((fit) => fit.has(step)));
-}
+/** Whether `step` is a whole multiple of `of`. */
+const isMultiple = (step: number, of: number): boolean => Math.abs(step / of - Math.round(step / of)) < 1e-9;
 
-/** The ticks of the finest of `steps` whose ticks lie at least `MIN_GAP` apart along an edge
- * `length` pixels long; none where no step does. */
-export function ticksOf(samples: Samples, length: number, longitude: boolean, steps: readonly number[] = STEPS): { step: number; ticks: Crossing[] } | undefined {
-  const fit = fitting(samples, length, longitude, steps);
-  const step = finestShared([fit], steps);
-  const ticks = step === undefined ? undefined : fit.get(step);
-  return step === undefined || ticks === undefined ? undefined : { step, ticks };
+/** The steps of the two edges of a coordinate, from the ticks each of `steps` gives them where it
+ * fits (`fitting`): the edge that can take the finer step with a tick takes it, and the grid's
+ * lines too; the other takes the finest that fits it and is a multiple of that, so that each of
+ * its ticks lies on a line. The coarsest step, a multiple of all the others, fits wherever any
+ * does, so an edge crowded near a pole falls back to it alone. None where neither edge has a
+ * tick at any step that fits it. */
+export function stepsFor(fits: readonly Map<number, Crossing[]>[], steps: readonly number[]): { line: number | undefined; edges: (number | undefined)[] } {
+  const ticked = fits.map((fit) => steps.findLast((step) => (fit.get(step)?.length ?? 0) > 0));
+  const line = ticked.reduce<number | undefined>((finest, step) => (step === undefined || (finest !== undefined && finest <= step) ? finest : step), undefined);
+  if (line === undefined) return { line, edges: fits.map(() => undefined) };
+  return { line, edges: fits.map((fit) => steps.findLast((step) => fit.has(step) && isMultiple(step, line))) };
 }
 
 /** The steps the ticks of each coordinate may take: right ascension's in hours and minutes. */
@@ -192,7 +203,8 @@ export function sight(view: View, toFrame: Mat3, width: number, height: number):
 }
 
 /** The ticks of each edge of a viewport `width` × `height` CSS pixels, for `view` in the axes
- * `axes`, which `toFrame` turns the ICRS into: both edges of a coordinate at one step. */
+ * `axes`, which `toFrame` turns the ICRS into: of the two edges of a coordinate, each at a
+ * multiple of the finer one's step (`stepsFor`). */
 export function edgeTicks(view: View, toFrame: Mat3, axes: Axes, width: number, height: number): EdgeTicks[] {
   const sightAt = sight(view, toFrame, width, height);
   const sampled = EDGES.map(([edge, coordinate]) => {
@@ -207,14 +219,19 @@ export function edgeTicks(view: View, toFrame: Mat3, axes: Axes, width: number, 
     }
     return { edge, coordinate, fit: fitting(samples, length, coordinate === "longitude", stepsOf(coordinate, axes)) };
   });
-  const shared = new Map<Coordinate, number | undefined>();
-  for (const coordinate of ["longitude", "latitude"] as const) {
-    const fits = sampled.filter((s) => s.coordinate === coordinate).map((s) => s.fit);
-    shared.set(coordinate, finestShared(fits, stepsOf(coordinate, axes)));
-  }
+  const chosen = (coordinate: Coordinate) => {
+    const edges = sampled.filter((s) => s.coordinate === coordinate);
+    const { line, edges: steps } = stepsFor(
+      edges.map((e) => e.fit),
+      stepsOf(coordinate, axes),
+    );
+    return { line, of: new Map(edges.map((e, i) => [e.edge, steps[i]])) };
+  };
+  const steps = { longitude: chosen("longitude"), latitude: chosen("latitude") };
   return sampled.map(({ edge, coordinate, fit }) => {
-    const step = fit.size === 0 ? undefined : shared.get(coordinate);
+    const { line, of } = steps[coordinate];
+    const step = of.get(edge);
     const ticks = (step === undefined ? [] : (fit.get(step) ?? [])).map((t) => ({ ...t, label: tickLabel(t.value, coordinate, axes) }));
-    return { edge, name: NAMES[axes][coordinate], step, ticks };
+    return { edge, coordinate, name: NAMES[axes][coordinate], step, lineStep: line, ticks };
   });
 }

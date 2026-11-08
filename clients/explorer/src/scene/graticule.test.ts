@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { View } from "./camera.ts";
-import { type Edge, type EdgeTicks, MIN_GAP, edgeTicks, lonLat, tickLabel, ticksOf } from "./graticule.ts";
+import { type Edge, type EdgeTicks, MIN_GAP, edgeTicks, fitting, lonLat, stepsFor, tickLabel } from "./graticule.ts";
 import { IDENTITY, type Mat3 } from "./vec.ts";
 
 
@@ -58,34 +58,49 @@ describe("the ticks on the view's edges", () => {
     expect(values).toEqual([-20, -15, -10, -5, 0, 5, 10, 15, 20]);
   });
 
-  it("space both edges of a coordinate at one step, the finest that keeps each edge's labels apart", () => {
-    // Looking up toward the pole, the meridians crowd along the top edge and spread along the
-    // bottom: alone, the bottom edge would take a finer step than the top.
-    for (const [lon, lat, axes] of [
-      [0, -45, "galactic"],
-      [40, -40, "equatorial"],
-      [200, 40, "supergalactic"],
+  it("space each edge at a multiple of the finer step of its coordinate's two edges", () => {
+    const steps = [90, 30, 15, 10, 5, 2, 1];
+    const fit = (...fitted: [number, number][]) => new Map(fitted.map(([step, ticks]) => [step, Array.from({ length: ticks }, (_, i) => ({ at: i * 100, value: i * step }))]));
+    // 10 fits one edge and 15 the other: the finer sets the lines, the other takes 30.
+    expect(stepsFor([fit([90, 1], [30, 3], [15, 5], [10, 8]), fit([90, 1], [30, 3], [15, 6])], steps)).toEqual({ line: 10, edges: [10, 30] });
+    // An edge that only fits 90 near a pole leaves the other its fine step.
+    expect(stepsFor([fit([90, 2]), fit([90, 1], [30, 3], [10, 8], [5, 16])], steps)).toEqual({ line: 5, edges: [90, 5] });
+    // A fit with no tick sets nothing; an edge with no fit takes none.
+    expect(stepsFor([fit([90, 0], [30, 0]), fit([90, 1], [5, 16])], steps)).toEqual({ line: 5, edges: [30, 5] });
+    expect(stepsFor([new Map(), fit([90, 1], [5, 16])], steps)).toEqual({ line: 5, edges: [undefined, 5] });
+    expect(stepsFor([new Map(), new Map()], steps)).toEqual({ line: undefined, edges: [undefined, undefined] });
+  });
+
+  it("keep the labels of an edge far from the pole where the other edge passes near it", () => {
+    // Views where one edge passes near a pole and crowds: the other keeps its own fine ticks.
+    for (const [lon, lat, width, height] of [
+      [33.3, -60, 1280, 800],
+      [0.3, -64.7, 1280, 800],
+      [0, -45, 1280, 800],
     ] as const) {
-      const { top, bottom, left, right } = byEdge(edgeTicks(view(lon, lat), IDENTITY, axes, 1280, 800));
-      expect(top.step).toBeDefined();
-      expect(bottom.step).toBe(top.step);
+      const { top, bottom, left, right } = byEdge(edgeTicks(view(lon, lat), IDENTITY, "galactic", width, height));
+      expect(bottom.ticks.length, `${lon}, ${lat}`).toBeGreaterThan(8);
+      for (const edge of [top, bottom]) {
+        expect(edge.lineStep).toBe(bottom.step);
+        for (const t of edge.ticks) expect(Math.abs(t.value / (edge.lineStep ?? 1) - Math.round(t.value / (edge.lineStep ?? 1)))).toBeLessThan(1e-6);
+      }
       expect(right.step).toBe(left.step);
-      const step = top.step ?? 1;
-      const values = [...top.ticks, ...bottom.ticks].map((t) => t.value / step);
-      expect(values.map((v) => Math.round(v))).toEqual(values.map((v) => Math.round(v * 1e6) / 1e6));
     }
-    // Where the edges disagree, the shared step is the coarser edge's: at its own finest step the
-    // bottom edge would hold ticks under twice the gap apart.
-    const { bottom } = byEdge(edgeTicks(view(0, -45), IDENTITY, "galactic", 1280, 800));
-    const along = bottom.ticks.map((t) => t.at).toSorted((a, b) => a - b);
-    const gaps = along.slice(1).map((next, i) => next - (along[i] ?? 0));
-    expect(Math.min(...gaps)).toBeGreaterThan(2 * MIN_GAP);
+  });
+
+  it("count a round value met exactly at a sample once", () => {
+    // The bottom edge's middle sample lies exactly on 240 degrees.
+    const { top, bottom } = byEdge(edgeTicks(view(60, -14), IDENTITY, "galactic", 800, 600));
+    expect(bottom.ticks.length).toBeGreaterThan(3);
+    expect(top.ticks.length).toBeGreaterThan(3);
+    expect(bottom.ticks.filter((t) => t.value === 240)).toHaveLength(1);
   });
 
   it("choose the finer of two steps when the coarser one crowds", () => {
     // Samples over 0 to 100 degrees, 10 pixels a degree: 30 degree steps are 300 pixels apart.
     const samples = Array.from({ length: 101 }, (_, i) => [i * 10, i] as const);
-    expect(ticksOf(samples, 1000, false)?.step).toBe(10);
+    const steps = [90, 30, 15, 10, 5, 2, 1];
+    expect(stepsFor([fitting(samples, 1000, false, steps)], steps)).toEqual({ line: 10, edges: [10] });
   });
 
   it("step right ascension by round hours and minutes", () => {

@@ -10,3 +10,529 @@ versions:
     title: "Review, gate and merge"
     goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
     status: planned
+  - key: 01a1bbbd-a3ac-754f-a4b3-cb0be80c44ae
+    at: 2026-11-08T15:18:50Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
+    status: active
+blocks:
+  - key: 01a1bbc7-7ef1-7644-b844-6620685e1bb7
+    id: review-findings
+    kind: note
+    versions:
+      - key: 01a1bbc7-7ef1-7644-b844-6623ec19ad8b
+        at: 2026-11-08T15:29:35Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The review found a fault in the shared step"
+        markdown: |-
+          `/code-review` showed that a step shared by both edges of a coordinate costs far more than my example said:
+
+          - **Labels lost:** near a pole, one edge fits only 90°, so the other edge and the grid fall to 90° too.
+          - **Scale:** across 5,472 views, 16.5% (pitch 52–71°) lost almost every label on the far edge, and the grid drew only 4 meridians.
+
+          The fix keeps every tick on a line without that loss. The edge that can take the finer step keeps it, and the grid's lines use it. The other edge takes the finest step that fits it and is a multiple of the finer one.
+
+          - **Labels lost:** 0 of 9,600 views now lose labels.
+          - **Coarser edges:** 647 of about 38,000 edges take a coarser multiple than they would alone, for example 30° beside 10°.
+
+          **Also fixed, outside the spec:**
+          - an edge whose only fitting step has no tick no longer sets the step;
+          - a round value met exactly at a sample is no longer counted twice;
+          - the `/simplify` cleanups, including a grid that samples only the lines within the view.
+        tone: warning
+  - key: 01a1bbc7-7ef1-7644-b844-66219c860be0
+    id: step-spec-change
+    kind: loft
+    versions:
+      - key: 01a1bbc7-7ef1-7644-b844-6624669c95ac
+        at: 2026-11-08T15:29:35Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: spec-change
+        note: "Three criteria are reworded: the two tick-step criteria and the grid's step criterion."
+        base: "product/atlas"
+        recorded:
+          commit: "ad5df92d66bbad8d88c6cb67ab925aa62a7662c3"
+          branch: "stage/atlas-w6"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-08T15:29:35Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 13,
+              "graph.edges": 0,
+              "graph.nodes": 17,
+              "status.base.added": 9,
+              "status.base.changed": 4,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "words": {
+                    "after": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, with a grid of them across it when asked for, its controls on a rail and in thin bars about\nit, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it.",
+                    "before": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, its controls on a rail and in thin bars about\nit, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                  "words": {
+                    "after": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                    "before": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b863-1a09-757d-bbd7-6f0d72803e9a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                  "words": {
+                    "after": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                    "before": "The ticks of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                  "words": {
+                    "after": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fb4ff5b352",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch beside the axes in the top bar turns the grid on and off.",
+                  "words": {
+                    "after": "A switch beside the axes in the top bar turns the grid on and off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fcf6a73520",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid is off when the view opens on an address that does not turn it on.",
+                  "words": {
+                    "after": "The grid is off when the view opens on an address that does not turn it on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fd03559559",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on.",
+                  "words": {
+                    "after": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fe7cd7893c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.",
+                  "words": {
+                    "after": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04ff805e7421",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms.",
+                  "words": {
+                    "after": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0500d68ce364",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick.",
+                  "words": {
+                    "after": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0501d8ee5c20",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line.",
+                  "words": {
+                    "after": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0502db0af966",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid takes no pointer events: the points under it are named and chosen as where it is off.",
+                  "words": {
+                    "after": "The grid takes no pointer events: the points under it are named and chosen as where it is off."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "words": {
+                    "after": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "before": "The top bar holds the release, the eye's distance from the focus with the axes, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b10246def191",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b863-1a09-757d-bbd7-6f0d72803e9a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fb4ff5b352",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch beside the axes in the top bar turns the grid on and off.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fcf6a73520",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid is off when the view opens on an address that does not turn it on.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fd03559559",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fe7cd7893c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04ff805e7421",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0500d68ce364",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0501d8ee5c20",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0502db0af966",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid takes no pointer events: the points under it are named and chosen as where it is off.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 33,
+                    "name": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04fb4ff5b352",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 40,
+                    "name": "A switch beside the axes in the top bar turns the grid on and off.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04fcf6a73520",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 42,
+                    "name": "The grid is off when the view opens on an address that does not turn it on.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04fd03559559",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 44,
+                    "name": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04fe7cd7893c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 46,
+                    "name": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04ff805e7421",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 48,
+                    "name": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-0500d68ce364",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 50,
+                    "name": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-0501d8ee5c20",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 52,
+                    "name": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-0502db0af966",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 54,
+                    "name": "The grid takes no pointer events: the points under it are named and chosen as where it is off.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 6,
+                    "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Frame the view as an atlas",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 21,
+                    "name": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b863-1a09-757d-bbd7-6f0d72803e9a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 62,
+                    "name": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "commit": "47849fda3e5908b9a5642cf2863c3e4b0ad5ebd5",
+                "removed": [],
+                "revision": "product/atlas"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 6,
+                "publishedAt": "2026-11-06T15:38:55Z",
+                "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/atlas-w6",
+                "modified": [
+                  "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1bbc7-7ef1-7644-b844-6622213bd759
+    id: step-spec-approval
+    kind: approval
+    versions:
+      - key: 01a1bbc7-7ef1-7644-b844-6625266baedc
+        at: 2026-11-08T15:29:35Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Ticks at a multiple of the finer edge's step"
+        markdown: |-
+          This replaces the shared step you approved, because the review showed it strips the labels from about one view in six.
+
+          **The tick criteria now read:**
+          > …the finest step … that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.
+
+          **The grid criterion now reads:**
+          > The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.
+
+          What changes for you:
+          - Near a pole, the crowded edge shows only its 90° ticks (or none), and the far edge keeps its 5° ones.
+          - The grid follows the finer edge, so its lines can be closer than the coarser edge's ticks.
+
+          The code and tests for this are written; I'll commit them once you approve.
+    responses:
+      - key: 01a1bbc7-b141-7409-b1f1-2c7e3daeb9f9
+        at: 2026-11-08T15:29:48Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved

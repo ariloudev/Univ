@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { AtlasFrame } from "./AtlasFrame.tsx";
+import type { Switch } from "./addressSwitch.ts";
 import { useGrid } from "./gridSwitch.ts";
 import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
@@ -143,7 +144,7 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
 
 /** The view's parts of the top bar: the eye's distance with the axes and the grid's switch, and
  * the search. */
-function TopBarParts({ world, release, selection, grid }: { world: World; release: number; selection: Selection; grid: ReturnType<typeof useGrid> }) {
+function TopBarParts({ world, release, selection, grid }: { world: World; release: number; selection: Selection; grid: Switch }) {
   return (
     <>
       <Whereabouts controller={world.controller} frame={world.frame} grid={grid} />

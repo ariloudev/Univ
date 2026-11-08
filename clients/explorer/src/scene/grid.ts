@@ -5,9 +5,9 @@
 // straight on the view; a line of latitude bends.
 
 import type { View } from "./camera.ts";
-import { eyeAxes, focalPixels } from "./camera.ts";
-import { type EdgeTicks, across, edgePoint, sight } from "./graticule.ts";
-import { type Mat3, type Vec3, apply, multiply, transpose } from "./vec.ts";
+import { eyeAxes, focalPixels, pixelOf } from "./camera.ts";
+import { type Coordinate, type EdgeTicks, directionOf, edgePoint, lonLat, sight, tidy } from "./graticule.ts";
+import { type Mat3, type Vec3, apply, multiply, scale, transpose } from "./vec.ts";
 
 /** Degrees between the samples taken along each line. */
 const SAMPLE = 1;
@@ -24,26 +24,18 @@ const STOP = 80;
  * right ascension. */
 const THROUGH = 90;
 
+const RAD = Math.PI / 180;
+
 export interface GridLine {
-  coordinate: "longitude" | "latitude";
+  coordinate: Coordinate;
   /** The longitude or latitude along which it runs, degrees. */
   value: number;
-  /** Whether it is the axes' equator. */
-  equator: boolean;
   /** Its parts in the view, each a run of CSS pixels. */
   runs: [number, number][][];
 }
 
-const RAD = Math.PI / 180;
-
-/** The direction of longitude `lon` and latitude `lat`, degrees, in the axes it is given in. */
-const direction = (lon: number, lat: number): Vec3 => {
-  const c = Math.cos(lat * RAD);
-  return [c * Math.cos(lon * RAD), c * Math.sin(lon * RAD), Math.sin(lat * RAD)];
-};
-
-/** `value` without the error of the arithmetic that stepped to it. */
-const tidy = (value: number): number => Math.round(value * 1e6) / 1e6;
+/** Whether `line` is the axes' equator, drawn heavier than the rest. */
+export const isEquator = (line: GridLine): boolean => line.coordinate === "latitude" && line.value === 0;
 
 /** The multiples of `step` above `from` and below `to`, `from` itself too where `including`. */
 function multiples(step: number, from: number, to: number, including: boolean): number[] {
@@ -55,70 +47,82 @@ function multiples(step: number, from: number, to: number, including: boolean): 
   return values;
 }
 
-/** The values from `from` to `to` every `SAMPLE` degrees, both ends included. */
+/** The values from `from` to `to` every `SAMPLE` degrees at most, both ends included. */
 function samples(from: number, to: number): number[] {
   const count = Math.max(1, Math.ceil((to - from) / SAMPLE));
   return Array.from({ length: count + 1 }, (_, i) => from + ((to - from) * i) / count);
 }
 
-/** How far north and south, degrees, the line of longitude `lon` runs: to `STOP`, to a pole
- * for one at a multiple of `THROUGH`, or a sample past the farthest tick of it on an edge. */
-function reachOf(lon: number, ticked: readonly { lon: number; lat: number }[]): { south: number; north: number } {
-  if (lon % THROUGH === 0) return { south: 90, north: 90 };
-  let south = STOP;
-  let north = STOP;
-  for (const t of ticked) {
-    if (t.lon !== lon) continue;
-    if (t.lat > 0) north = Math.max(north, Math.min(90, t.lat + SAMPLE));
-    else south = Math.max(south, Math.min(90, -t.lat + SAMPLE));
+/** How far north and south, degrees, each line of longitude with a tick on an edge runs: a
+ * sample past its farthest tick, or `STOP` where that is nearer. */
+function reaches(view: View, toFrame: Mat3, width: number, height: number, edges: readonly EdgeTicks[]): Map<number, { south: number; north: number }> {
+  const sightAt = sight(view, toFrame, width, height);
+  const reach = new Map<number, { south: number; north: number }>();
+  for (const edge of edges) {
+    if (edge.coordinate !== "longitude") continue;
+    for (const tick of edge.ticks) {
+      const { lat } = sightAt(...edgePoint(edge.edge, tick.at, 0, width, height));
+      const found = reach.get(tick.value) ?? { south: STOP, north: STOP };
+      const past = Math.min(90, Math.abs(lat) + SAMPLE);
+      if (lat > 0) found.north = Math.max(found.north, past);
+      else found.south = Math.max(found.south, past);
+      reach.set(tick.value, found);
+    }
   }
-  return { south, north };
+  return reach;
 }
 
 /** The grid's lines in a viewport `width` × `height` CSS pixels, for `view` in the axes `toFrame`
- * turns the ICRS into, at the steps of the edges' ticks `edges`. */
+ * turns the ICRS into, at the steps of the edges' ticks `edges`. Only the lines that come within
+ * the view are sampled, and of a line of latitude only its span there. */
 export function gridLines(view: View, toFrame: Mat3, width: number, height: number, edges: readonly EdgeTicks[]): GridLine[] {
   const f = focalPixels(height);
   // From the chosen axes to the eye's: right, up and backward.
   const toEye = multiply(eyeAxes(view, toFrame), transpose(toFrame));
-  // A direction is kept within this cosine of the line of sight: past the view's corners.
-  const corner = Math.atan(Math.hypot(width / 2, height / 2) / f) / RAD;
-  const least = Math.cos(Math.min(89, corner + MARGIN) * RAD);
-  const trace = (points: readonly (readonly [number, number])[]): [number, number][][] => {
+  // The line of sight, and the angle about it, degrees, within which directions are kept: past
+  // the view's corners.
+  const centre = lonLat(scale(toEye[2], -1));
+  const cone = Math.min(89, Math.atan(Math.hypot(width / 2, height / 2) / f) / RAD + MARGIN);
+  const least = Math.cos(cone * RAD);
+  const lines: GridLine[] = [];
+  const add = (coordinate: Coordinate, value: number, points: readonly (readonly [number, number])[]) => {
     const runs: [number, number][][] = [];
     let run: [number, number][] = [];
     for (const [lon, lat] of points) {
-      const [x, y, z] = apply(toEye, direction(lon, lat));
-      const depth = -z;
-      if (depth >= least) run.push([width / 2 + (x * f) / depth, height / 2 - (y * f) / depth]);
+      const local: Vec3 = apply(toEye, directionOf(lon, lat));
+      if (-local[2] >= least) run.push(pixelOf(f, local, width, height));
       else if (run.length > 0) {
         runs.push(run);
         run = [];
       }
     }
-    if (run.length > 0) runs.push(run);
-    return runs.filter((r) => r.length > 1);
+    runs.push(run);
+    const drawn = runs.filter((r) => r.length > 1);
+    if (drawn.length > 0) lines.push({ coordinate, value, runs: drawn });
   };
-  const stepOf = (longitude: boolean) => edges.find((e) => across(e.edge) === longitude && e.step !== undefined)?.step;
-  const sightAt = sight(view, toFrame, width, height);
-  // Where each tick of longitude lies on the sky: a line of it runs on to its tick.
-  const ticked = edges
-    .filter((e) => across(e.edge))
-    .flatMap((e) => e.ticks.map((t) => ({ lon: t.value, lat: sightAt(...edgePoint(e.edge, t.at, 0, width, height)).lat })));
-  const lines: GridLine[] = [];
-  const lonStep = stepOf(true);
+  const stepOf = (coordinate: Coordinate) => edges.find((e) => e.coordinate === coordinate)?.lineStep;
+  const [cosC, sinC] = [Math.cos(centre.lat * RAD), Math.sin(centre.lat * RAD)];
+  const lonStep = stepOf("longitude");
   if (lonStep !== undefined) {
+    const reach = reaches(view, toFrame, width, height, edges);
     for (const lon of multiples(lonStep, 0, 360, true)) {
-      const { south, north } = reachOf(lon, ticked);
-      const runs = trace(samples(-south, north).map((lat) => [lon, lat] as const));
-      if (runs.length > 0) lines.push({ coordinate: "longitude", value: lon, equator: false, runs });
+      // The angle from the line of sight to the half circle of this longitude: across to it
+      // where it faces the line of sight, else to the nearer pole.
+      const dLon = (lon - centre.lon) * RAD;
+      const away = Math.cos(dLon) >= 0 ? Math.asin(cosC * Math.abs(Math.sin(dLon))) / RAD : 90 - Math.abs(centre.lat);
+      if (away > cone) continue;
+      const { south, north } = lon % THROUGH === 0 ? { south: 90, north: 90 } : (reach.get(lon) ?? { south: STOP, north: STOP });
+      add("longitude", lon, samples(-south, north).map((lat) => [lon, lat] as const));
     }
   }
-  const latStep = stepOf(false);
+  const latStep = stepOf("latitude");
   if (latStep !== undefined) {
     for (const lat of multiples(latStep, -90, 90, false)) {
-      const runs = trace(samples(0, 360).map((lon) => [lon, lat] as const));
-      if (runs.length > 0) lines.push({ coordinate: "latitude", value: lat, equator: lat === 0, runs });
+      if (Math.abs(lat - centre.lat) > cone) continue;
+      // The longitudes either side of the line of sight's within the cone, or all round.
+      const span = (least - Math.sin(lat * RAD) * sinC) / (Math.cos(lat * RAD) * cosC);
+      const half = span <= -1 ? 180 : Math.acos(Math.min(1, span)) / RAD;
+      add("latitude", lat, samples(centre.lon - half, centre.lon + half).map((lon) => [lon, lat] as const));
     }
   }
   return lines;

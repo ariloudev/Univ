@@ -10,6 +10,15 @@ versions:
     title: "Specify the sky graticule"
     goal: "frame-the-view-as-an-atlas specifies a grid of the axes' round longitudes and latitudes, switched beside the axes and kept in the address, sharing the ticks' steps"
     status: active
+  - key: 01a1bbb6-433c-707e-9fa2-d39abd31f03c
+    at: 2026-11-08T15:10:46Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Specify the sky graticule"
+    goal: "frame-the-view-as-an-atlas specifies a grid of the axes' round longitudes and latitudes, switched beside the axes and kept in the address, sharing the ticks' steps"
+    status: done
 blocks:
   - key: 01a1bbb4-922c-74eb-a449-393f819ec421
     id: grid-spec-change
@@ -2974,3 +2983,15 @@ blocks:
           email: "ariloudev@local"
         channel: page
         verdict: approved
+  - key: 01a1bbb6-433c-707e-9fa2-d395b10795fb
+    id: spec-done
+    kind: note
+    versions:
+      - key: 01a1bbb6-433c-707e-9fa2-d39b2184083a
+        at: 2026-11-08T15:10:46Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        markdown: "The spec is approved and committed alone (7f0d61f): one new requirement with eight criteria, and three criteria reworded."
+        tone: success

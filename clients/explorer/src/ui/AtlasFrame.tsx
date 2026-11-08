@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { type Edge, type EdgeTicks, across, edgePoint, edgeTicks } from "../scene/graticule.ts";
-import { type GridLine, gridLines } from "../scene/grid.ts";
+import { type GridLine, gridLines, isEquator } from "../scene/grid.ts";
 import { ORIGIN } from "../scene/vec.ts";
 import { useStore } from "./store.ts";
 import type { World } from "./useWorld.ts";
@@ -34,8 +34,8 @@ function pathOf(lines: readonly GridLine[]): string {
 function Grid({ lines }: { lines: readonly GridLine[] }) {
   return (
     <g data-testid="grid" fill="none" stroke="var(--color-dim)">
-      <path data-testid="grid-lines" d={pathOf(lines.filter((l) => !l.equator))} strokeWidth={0.75} strokeOpacity={0.4} />
-      <path data-testid="grid-equator" d={pathOf(lines.filter((l) => l.equator))} strokeWidth={1.25} strokeOpacity={0.7} />
+      <path data-testid="grid-lines" d={pathOf(lines.filter((l) => !isEquator(l)))} strokeWidth={0.75} strokeOpacity={0.4} />
+      <path data-testid="grid-equator" d={pathOf(lines.filter(isEquator))} strokeWidth={1.25} strokeOpacity={0.7} />
     </g>
   );
 }

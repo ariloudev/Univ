@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { View } from "./camera.ts";
 import type { Axes } from "./frames.ts";
-import { across, edgePoint, edgeTicks } from "./graticule.ts";
-import { type GridLine, gridLines } from "./grid.ts";
+import { edgePoint, edgeTicks } from "./graticule.ts";
+import { type GridLine, gridLines, isEquator } from "./grid.ts";
 import { IDENTITY, type Mat3 } from "./vec.ts";
 
 const RAD = Math.PI / 180;
@@ -57,10 +57,9 @@ describe("the grid across the view", () => {
       const lines = gridLines(v, toFrame, width, height, edges);
       let ticks = 0;
       for (const edge of edges) {
-        const coordinate = across(edge.edge) ? "longitude" : "latitude";
         for (const tick of edge.ticks) {
-          const line = lines.find((l) => l.coordinate === coordinate && l.value === tick.value);
-          expect(line, `${coordinate} ${tick.value} on the ${edge.edge} edge`).toBeDefined();
+          const line = lines.find((l) => l.coordinate === edge.coordinate && l.value === tick.value);
+          expect(line, `${edge.coordinate} ${tick.value} on the ${edge.edge} edge`).toBeDefined();
           if (line !== undefined) expect(distanceTo(line, edgePoint(edge.edge, tick.at, 0, width, height))).toBeLessThan(1);
           ticks += 1;
         }
@@ -103,8 +102,8 @@ describe("the grid across the view", () => {
 
   it("marks the axes' equator alone", () => {
     const lines = grid(view(0, 0));
-    expect(lines.filter((l) => l.equator).map((l) => [l.coordinate, l.value])).toEqual([["latitude", 0]]);
-    expect(grid(view(0, 60)).some((l) => l.equator)).toBe(false);
+    expect(lines.filter(isEquator).map((l) => [l.coordinate, l.value])).toEqual([["latitude", 0]]);
+    expect(grid(view(0, 60)).some(isEquator)).toBe(false);
   });
 
   it("steps right ascension by the hours of its ticks", () => {

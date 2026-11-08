@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 
 import { Swatch } from "./Swatch.tsx";
+import { SwitchBox } from "./SwitchBox.tsx";
+import type { Switch } from "./addressSwitch.ts";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
@@ -20,8 +22,7 @@ interface ViewProps {
 }
 
 /** The top bar's part: the eye's distance from the focus, and the axes with the grid's switch. */
-export function Whereabouts({ controller, frame, grid }: ViewProps & { grid: readonly [boolean, (on: boolean) => void] }) {
-  const [gridOn, setGrid] = grid;
+export function Whereabouts({ controller, frame, grid }: ViewProps & { grid: Switch }) {
   useStore(frame);
   return (
     <div className="flex shrink-0 items-center gap-3 text-sm">
@@ -45,18 +46,7 @@ export function Whereabouts({ controller, frame, grid }: ViewProps & { grid: rea
           ))}
         </select>
       </label>
-      <label className="flex items-center gap-1.5">
-        <input
-          type="checkbox"
-          role="switch"
-          checked={gridOn}
-          onChange={(event) => {
-            setGrid(event.currentTarget.checked);
-          }}
-          className="accent-accent"
-        />
-        <span className="text-dim">Grid</span>
-      </label>
+      <SwitchBox label="Grid" state={grid} textClass="text-dim" />
     </div>
   );
 }
