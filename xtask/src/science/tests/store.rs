@@ -55,8 +55,10 @@ fn a_release_read_from_the_local_d1_is_judged_as_one_read_from_its_builds() {
     std::fs::copy(&whole, &catalogue).unwrap();
     std::fs::copy(&whole, &shard).unwrap();
     let db = Connection::open(&catalogue).unwrap();
+    // Miniflare keeps each database in WAL mode.
     db.execute_batch(
-        "INSERT INTO latest (one, release, moved_at) VALUES (1, 1, 't');
+        "PRAGMA journal_mode = WAL;
+         INSERT INTO latest (one, release, moved_at) VALUES (1, 1, 't');
          INSERT INTO object_shards (release, id, shard) SELECT 1, id, 0 FROM objects;
          INSERT INTO release_shards (release, shard, objects, estimated_bytes)
            SELECT 1, 0, COUNT(*), 0 FROM objects;",
@@ -68,6 +70,7 @@ fn a_release_read_from_the_local_d1_is_judged_as_one_read_from_its_builds() {
     drop(db);
     // The shard holds the rows of its tables alone.
     let db = Connection::open(&shard).unwrap();
+    db.execute_batch("PRAGMA journal_mode = WAL").unwrap();
     for table in TABLES.iter().filter(|t| !SHARD_TABLES.contains(&t.name)) {
         db.execute(&format!("DELETE FROM {}", table.name), [])
             .unwrap();

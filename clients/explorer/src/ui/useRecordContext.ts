@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { type ObjectRecord, search } from "../api/objects.ts";
 import type { Rotations } from "../api/schemas.ts";
-import { inside, volumeOf } from "../scene/volume.ts";
+import { holds, volumeOf } from "../scene/volume.ts";
 import type { Vec3 } from "../scene/vec.ts";
 import type { RecordContext } from "./ObjectPanel.tsx";
 import type { ChooseOptions } from "./useChosen.ts";
@@ -28,7 +28,7 @@ export function useRecordContext(
           }),
     [structures.details, rotations],
   );
-  const holding = useCallback((place: Vec3) => volumes.filter((v) => inside(v.volume, ...place)).map(({ id, name }) => ({ id, name })), [volumes]);
+  const holding = useCallback((place: Vec3) => volumes.filter((v) => holds(v.volume, place)).map(({ id, name }) => ({ id, name })), [volumes]);
   return {
     release,
     toGalactic: rotations?.to_galactic,

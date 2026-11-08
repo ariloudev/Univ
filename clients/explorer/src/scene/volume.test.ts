@@ -6,7 +6,7 @@ import { shapeOf, structureDetail } from "../test/structures.ts";
 import { frameOf } from "./frames.ts";
 import { cellOf, centreOf } from "./healpix.ts";
 import { type Vec3, scale, unapply } from "./vec.ts";
-import { type Volume, inside, insideOf, meets, volumeOf } from "./volume.ts";
+import { type Volume, holds, inside, insideOf, meets, volumeOf } from "./volume.ts";
 
 const ROTATIONS = manifestOf("stars").rotations;
 
@@ -123,6 +123,23 @@ describe("the volume a structure is culled to", () => {
     const range = shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "range", direction: [1, 0, 0], near: 1, far: 5 } });
     for (const shape of [point, path, ray, range]) expect(volumeOf(detail(shape), ROTATIONS)).toBeUndefined();
     expect(volumeOf(detail(null, { bounds: null }), ROTATIONS)).toBeUndefined();
+  });
+
+  it("holds a point only where the structure's shape gives the volume exactly, not an approximate one", () => {
+    const sphere = volume(shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "primitive", primitive: { form: "sphere", centre: [0, 0, 0], radius: 2 } } }));
+    expect(holds(sphere, [1, 0, 0])).toBe(true);
+    expect(holds(sphere, [3, 0, 0])).toBe(false);
+    // A void published as a point with its bounds is culled to the box, which holds nothing.
+    const box = volume(null, { bounds: { min: [0, 0, 0], max: [1, 1, 1] } });
+    expect(inside(box, 0.5, 0.5, 0.5)).toBe(true);
+    expect(holds(box, [0.5, 0.5, 0.5])).toBe(false);
+    // Nor are a void's extents laid about its deepest point, where its paper gives no centre.
+    const laid = volume(shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "point", at: [0, 0, 0] } }), {
+      derivation: { extents: { frame: "icrs", axes: [[2, 0, 0], [0, 2, 0], [0, 0, 2]] } },
+    } as Partial<StructureDetail>);
+    expect(laid.approximate).toBe(true);
+    expect(inside(laid, 0.5, 0, 0)).toBe(true);
+    expect(holds(laid, [0.5, 0, 0])).toBe(false);
   });
 
   it("marks each of a tile's points inside or not, by its offset from the tile's centre", () => {

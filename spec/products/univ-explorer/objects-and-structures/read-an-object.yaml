@@ -29,7 +29,7 @@ requirements:
       - key: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
         name: "The panel names a galaxy group as such, and names the scale domain of every object."
       - key: 01a1a497-e843-728a-bce8-3fe7201a1670
-        name: "The panel gives the object's names and designations, each designation in its catalogue's form, each with the title of its source, and a designation that more than one source gives once, with all of them."
+        name: "The panel gives the object's names and designations, each designation in its catalogue's form, each with the title of its source, and a name or designation that more than one source gives, or a designation that reads as one of the names, once, with all of them."
       - key: 01a1a497-e843-728a-bce8-3fe8c93208cf
         name: "The panel gives the preferred distance with its uncertainty, its kind of value, its source and the rule that preferred it."
       - key: 01a1a497-e843-728a-bce8-3fe962cd751a
@@ -53,7 +53,7 @@ requirements:
       - key: 01a1b7d7-c032-73ad-803e-b0fdf7abeef3
         name: "The panel names each group the object is a member of, and each member of a group the object is, each of which can be chosen."
       - key: 01a1b7d7-c032-73ad-803e-b0fe29efa362
-        name: "The panel names each structure of the release whose volume holds the object's position, each of which can be chosen."
+        name: "The panel names each structure of the release whose published shape holds the object's position exactly, each of which can be chosen."
       - key: 01a1b7d7-c032-73ad-803e-b0ffeb6df712
         name: "The panel gives each flag of each catalogue entry of the object with the meaning its source gives that value, or the value alone where its source gives none."
       - key: 01a1b7d7-c032-73ad-803e-b1003b3339be

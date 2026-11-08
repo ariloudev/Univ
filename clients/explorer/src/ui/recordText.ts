@@ -2,11 +2,42 @@
 // form, merged where sources share one; the sky position in sexagesimal ICRS and in galactic
 // longitude and latitude; the object's groups; and each flag with the meaning its source gives.
 
-import type { ObjectRecord, Relation } from "../api/objects.ts";
+import { type ObjectRecord, type Relation, nameKey } from "../api/objects.ts";
 import type { SourceDetail } from "../api/sources.ts";
 import { figures } from "../scene/format.ts";
 import { lonLat } from "../scene/graticule.ts";
 import { type Mat3, apply } from "../scene/vec.ts";
+
+/** The object's proper names, each written once with every source that gives it, and then its
+ * designations as `mergedDesignations` gives them, less those that read as one of its names,
+ * whose sources the name takes: a catalogue whose identifier is a name, such as the IAU's
+ * "Sirius" or OpenNGC's "M 31", gives it once. A bare identifier folds into a name only where a
+ * source of the name gives it too: another catalogue's own number is not a name it gives. */
+export function namesAndDesignations(record: ObjectRecord): { names: Listed[]; designations: Listed[] } {
+  const names = new Map<string, Listed>();
+  for (const n of record.names ?? []) listIn(names, nameKey(n.name), n.name, [n.source]);
+  const designations: Listed[] = [];
+  for (const d of mergedDesignations(record)) {
+    const key = nameKey(d.text);
+    const name = names.get(key);
+    if (name !== undefined && (d.formed || d.sources.some((s) => name.sources.includes(s)))) listIn(names, key, d.text, d.sources);
+    else designations.push({ text: d.text, sources: d.sources });
+  }
+  return { names: [...names.values()], designations };
+}
+
+/** A name or designation listed once, with every source that gives it. */
+interface Listed {
+  text: string;
+  sources: string[];
+}
+
+/** Adds `sources` to what `listed` holds under `key`, written `text` where it holds nothing yet. */
+function listIn(listed: Map<string, Listed>, key: string, text: string, sources: readonly string[]): void {
+  const found = listed.get(key) ?? { text, sources: [] };
+  for (const source of sources) if (!found.sources.includes(source)) found.sources.push(source);
+  listed.set(key, found);
+}
 
 /** `text` with its sign: a minus for a negative value and a plus otherwise. */
 const signed = (negative: boolean, text: string): string => `${negative ? "−" : "+"}${text}`;
@@ -19,11 +50,12 @@ export const designationText = (d: { designation?: string | null | undefined; id
 /** The object's designations, each written once with every source that gives it, in the
  * record's order. Only a designation in its catalogue's form is merged across sources: a bare
  * identifier is one source's own number, which another catalogue may give another object. */
-export function mergedDesignations(record: ObjectRecord): { text: string; sources: string[] }[] {
-  const merged = new Map<string, { text: string; sources: string[] }>();
+function mergedDesignations(record: ObjectRecord): (Listed & { formed: boolean })[] {
+  const merged = new Map<string, Listed & { formed: boolean }>();
   for (const d of record.designations) {
+    const formed = d.designation !== null && d.designation !== undefined;
     const key = d.designation ?? `${d.source}\u0000${d.identifier}`;
-    const found = merged.get(key) ?? { text: designationText(d), sources: [] };
+    const found = merged.get(key) ?? { text: designationText(d), sources: [], formed };
     if (!found.sources.includes(d.source)) found.sources.push(d.source);
     merged.set(key, found);
   }

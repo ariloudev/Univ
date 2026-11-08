@@ -4480,8 +4480,11 @@ links:
         name: "names a galaxy group as such, and the scale domain of every object, not \"body\""
         body: 5314d46ab79d66492161d895a945bad596c2c3bc163cb9308957ae0b55866310
   - node: 01a1a497-e843-728a-bce8-3fe7201a1670
-    reviewed: 123d1046969fd74240cb4d9ea151cbc56ff4207af2c8f30c4f9b6e0efcbfb578
+    reviewed: ca74ec294dbe6afda230bdbce4bb8a429762d21dbd26da95b0f7dd791f44d21b
     tests:
+      - file: "clients/explorer/src/ui/recordText.test.ts"
+        name: "gives a designation that reads as a proper name once, as the name, where it is in its catalogue's form or a source of the name gives it"
+        body: 9fe1381b4f9e5d21810f9a19f2b34ee77bb4f6019786dbc358cccc43c4eb3b2f
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives each designation in its catalogue's form once, with the titles of every source that gives it"
         body: dfa3190ac0c51f33533849e463ba6cde31324ff5b09ce4e66684be422c26a187
@@ -4490,7 +4493,7 @@ links:
         body: 4e6a1a5dd5ac428aacbdb2fcbc3a26dc84d522c81db364bea48905a7fd6bd613
       - file: "clients/explorer/src/ui/recordText.test.ts"
         name: "merges designations by their text, keeping each source"
-        body: 6386a2d8f32a88258bba3dd470315214eafecf4c3d671decae10ce8479f39b3a
+        body: 90fcfa68f240463392761314e3b681d2605ea4123c32c72d7ddce2ff877649e9
   - node: 01a1a497-e843-728a-bce8-3fe8c93208cf
     reviewed: 7e219d474557c0e3d47ae541ae9bf570a405ba2759f7df8620c362dbdea790c6
     tests:
@@ -4591,8 +4594,11 @@ links:
         name: "words how the object stands to a group"
         body: 9d7066464b4aed4c007db90bd9c34ba3d443e3e2d2d9973a4f1799e4c6f3289a
   - node: 01a1b7d7-c032-73ad-803e-b0fe29efa362
-    reviewed: 7edef1380c872fe32de373a65d1ac6895cb9ad2fbff04a6a7e487043cd7c94b8
+    reviewed: ae40e18033235b5ae8db45832550f25cf4fd7277c1bcbed8f0fff6737b8c3dd1
     tests:
+      - file: "clients/explorer/src/scene/volume.test.ts"
+        name: "holds a point only where the structure's shape gives the volume exactly, not an approximate one"
+        body: 7fd858d6f22be85b9463675b8685708c9236e873dba449f6794d333d3b0c278e
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "names each structure whose volume holds the object, to choose"
         body: 42e1324148d09259554ad434836bc966b22b5b5d3ce9c731ee52b11036ed0f97

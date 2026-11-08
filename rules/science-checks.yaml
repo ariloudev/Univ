@@ -742,16 +742,21 @@ checks:
     severity: fail
     select:
       kind: query
+      # The interval is tested within a CASE: SQLite may test it before the conditions beside
+      # it, on a row whose redshift lies outside 0 to 10, such as a blueshift placed by no
+      # redshift, which comoving_mpc refuses; such a row placed by its redshift is a finding.
       sql: >-
         SELECT o.id, m.cmb, o.distance_mpc, o.distance_minus, o.distance_plus FROM objects o
         JOIN measurements m ON m.release = o.release AND m.object_id = o.id
         AND m.entry = o.preferred_entry AND m.quantity = o.preferred_quantity AND m.n = o.preferred_n
         WHERE o.release = :release AND o.placed = 1 AND o.preferred_quantity = term('redshift')
-        AND (m.cmb IS NULL OR o.distance_minus IS NULL OR o.distance_plus IS NULL
-          OR o.distance_minus < 0.999 * (comoving_mpc(m.cmb)
-            - comoving_mpc(max(0.0, m.cmb - (1.0 + m.cmb) * 300.0 / 299792.458)))
-          OR o.distance_plus < 0.999 * (comoving_mpc(min(10.0, m.cmb + (1.0 + m.cmb) * 300.0 / 299792.458))
-            - comoving_mpc(m.cmb)))
+        AND CASE WHEN m.cmb IS NULL OR m.cmb NOT BETWEEN 0 AND 10 OR o.distance_minus IS NULL OR o.distance_plus IS NULL
+          THEN 1
+          ELSE o.distance_minus < 0.999 * (comoving_mpc(m.cmb)
+              - comoving_mpc(max(0.0, m.cmb - (1.0 + m.cmb) * 300.0 / 299792.458)))
+            OR o.distance_plus < 0.999 * (comoving_mpc(min(10.0, m.cmb + (1.0 + m.cmb) * 300.0 / 299792.458))
+              - comoving_mpc(m.cmb))
+          END
     expect: { equals: 0 }
     cite:
       - paper: "univ-server specification, choose-the-preferred-measurement; rules/ranking.yaml"

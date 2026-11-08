@@ -133,7 +133,7 @@ function lookupOf(query: string): { by: "id" | "designation" | "name"; path: str
 export const lookupPath = (query: string): string => lookupOf(query).path;
 
 /** A name as the name lookup compares it: letter case and white space ignored. */
-const nameKey = (text: string) => text.toLowerCase().replace(/\s+/g, "");
+export const nameKey = (text: string) => text.toLowerCase().replace(/\s+/g, "");
 
 /** The name or designation of `record` that reads as `text`, letter case and white space aside,
  * as `record` spells it; none where it has none. */

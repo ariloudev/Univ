@@ -11,7 +11,7 @@ import {
   galacticOf,
   galacticText,
   masText,
-  mergedDesignations,
+  namesAndDesignations,
   raText,
   relationText,
   relationsByOther,
@@ -111,13 +111,14 @@ export function RecordBody({ record, context }: { record: ObjectRecord; context:
  * gives it. */
 function Names({ record, sources }: PartProps) {
   const title = titleIn(sources);
+  const { names, designations } = namesAndDesignations(record);
   const items = [
-    ...(record.names ?? []).map((n) => (
-      <li key={`n:${n.source}:${n.name}`}>
-        <span className="font-serif">{n.name}</span> <span className="text-dim">({title(n.source)})</span>
+    ...names.map((n) => (
+      <li key={`n:${n.text}`}>
+        <span className="font-serif">{n.text}</span> <span className="text-dim">({n.sources.map(title).join("; ")})</span>
       </li>
     )),
-    ...mergedDesignations(record).map((d) => (
+    ...designations.map((d) => (
       <li key={`d:${d.text}:${d.sources.join()}`}>
         {d.text} <span className="text-dim">({d.sources.map(title).join("; ")})</span>
       </li>
