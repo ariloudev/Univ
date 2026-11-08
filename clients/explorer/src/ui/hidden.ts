@@ -12,10 +12,17 @@ export type Group = "domain" | "source" | "kind" | "structure";
 /** What is turned off, by group. */
 export type Hidden = Readonly<Record<Group, ReadonlySet<string>>>;
 
-/** Turns `name` of `group` on where `shown`, else off. */
-export type Toggle = (group: Group, name: string, shown: boolean) => void;
+/** One group turned on where `shown`, else off. */
+export interface Change {
+  group: Group;
+  name: string;
+  shown: boolean;
+}
 
-const GROUPS: readonly Group[] = ["domain", "source", "kind", "structure"];
+/** Makes `changes`, in order, at once. */
+export type Apply = (changes: readonly Change[]) => void;
+
+export const GROUPS: readonly Group[] = ["domain", "source", "kind", "structure"];
 
 const isGroup = (name: string): name is Group => (GROUPS as readonly string[]).includes(name);
 
@@ -40,20 +47,25 @@ export function hideParameter(hidden: Hidden): string | undefined {
   return entries.length === 0 ? undefined : entries.join(",");
 }
 
-/** `hidden` with `name` of `group` turned off, or on again where `shown`; the other groups' sets
- * kept as they are, so that what depends on them alone is not done again. */
-export function toggled(hidden: Hidden, group: Group, name: string, shown: boolean): Hidden {
-  const next = new Set(hidden[group]);
-  if (shown) next.delete(name);
-  else next.add(name);
-  return { ...hidden, [group]: next };
+/** `hidden` with each of `changes` made in order; the sets of the groups no change turns on or
+ * off kept as they are, so that what depends on them alone is not done again. */
+export function applied(hidden: Hidden, changes: readonly Change[]): Hidden {
+  const next: Record<Group, ReadonlySet<string>> = { ...hidden };
+  for (const group of GROUPS) {
+    const own = changes.filter((c) => c.group === group && c.shown === hidden[group].has(c.name));
+    if (own.length === 0) continue;
+    const set = new Set(hidden[group]);
+    for (const c of changes) if (c.group === group) c.shown ? set.delete(c.name) : set.add(c.name);
+    next[group] = set;
+  }
+  return next;
 }
 
-/** The groups turned off, read from the page's address and kept in it, and the way to turn one
- * on or off. */
-export function useHidden(): [Hidden, Toggle] {
+/** The groups turned off, read from the page's address and kept in it, and the way to turn
+ * groups on or off. */
+export function useHidden(): [Hidden, Apply] {
   const [hidden, setHidden] = useState<Hidden>(() => hiddenInAddress(location.search));
   useEffect(() => setInAddress({ hide: hideParameter(hidden) }), [hidden]);
-  const toggle = useCallback<Toggle>((group, name, shown) => setHidden((h) => toggled(h, group, name, shown)), []);
-  return [hidden, toggle];
+  const apply = useCallback<Apply>((changes) => setHidden((h) => applied(h, changes)), []);
+  return [hidden, apply];
 }

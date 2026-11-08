@@ -166,3 +166,12 @@ blocks:
         title: "End-to-end tests follow the new panel"
         detail: "Tests that read the record's full lists open it first; the structure test uses the top bar checkbox. Done when integration passes."
         state: active
+      - key: 01a1bcec-e44b-721c-b0ac-6ebf3a3d9c22
+        at: 2026-11-08T20:50:03Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "End-to-end tests follow the new panel"
+        detail: "The tests that read the record open its full record first; the structure test checks the Bootes Void's cull from the top bar. Integration: 14 Playwright tests and the Worker's tests pass."
+        state: done

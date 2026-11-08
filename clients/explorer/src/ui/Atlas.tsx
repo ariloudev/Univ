@@ -13,7 +13,7 @@ import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
 import { type DrawerName, Rail, drawerTitle } from "./Rail.tsx";
 import { ScaleBar } from "./ScaleBar.tsx";
 import { SearchBox } from "./SearchBox.tsx";
-import { ShowPanel, type ShowPanelProps } from "./ShowPanel.tsx";
+import { ShowPanel, type ShowPanelProps } from "./show/ShowPanel.tsx";
 import { StructureRecordPanel } from "./record/StructureRecordPanel.tsx";
 import { StructureList } from "./StructuresPanel.tsx";
 import { SwitchBox } from "./SwitchBox.tsx";

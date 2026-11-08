@@ -19,6 +19,15 @@ versions:
     title: "Review, gate and merge"
     goal: "The wave's review findings fixed, the gate and integration green, every criterion traced, and the wave merged into product/atlas"
     status: active
+  - key: 01a1bcf9-c1ac-7528-b670-8acad54ae815
+    at: 2026-11-08T21:04:07Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "The wave's review findings fixed, the gate and integration green, every criterion traced, and the wave merged into product/atlas once the owner says so"
+    status: planned
 blocks:
   - key: 01a1bce7-d8ca-74db-9336-ee2ff8f7cb8f
     id: review-fixes
@@ -8374,3 +8383,19 @@ blocks:
               "schema": "loft-reconcile/3"
             }
           }
+  - key: 01a1bcec-e44b-721c-b0ac-6ebeeee54927
+    id: gate-green
+    kind: note
+    versions:
+      - key: 01a1bcec-e44b-721c-b0ac-6ec0f9a6c80f
+        at: 2026-11-08T20:50:03Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Merge-ready, waiting for the owner"
+        markdown: |-
+          `cargo xtask check` passed (13 gates, `loft verify` skipped off `develop`) and `cargo xtask integration` passed (14 end-to-end tests). All 616 criteria in scope are traced. Commits: 40715a6 build, e6412f4 review fixes, 1c93938 trace and wording.
+
+          The owner asked that the wave not be merged yet, as more tasks may join it. Yard Log stays open.
+        tone: success

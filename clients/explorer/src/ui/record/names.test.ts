@@ -10,6 +10,18 @@ describe("the record's short names", () => {
     expect(sourceShort("a-new-survey")).toBe("a-new-survey");
   });
 
+  it("give each source of release 12 its own short name", () => {
+    const ids = [
+      "gaia-dr3-bright", "bailer-jones-2021", "gcns", "hipparcos-2007", "researched-star-distances",
+      "cosmicflows-4", "cosmicflows-4-galaxies", "updated-nearby-galaxies", "mcconnachie-2012", "sdss-dr17-galaxies",
+      "twompp-catalogue", "desi-dr1", "twodfgrs", "sixdfgs-dr3", "openngc", "twomrs", "alfalfa-a100",
+      "boss-dr17-great-wall", "erass1-clusters", "gama-dr4", "sdss-dr17-distant", "twompz", "wise-supercosmos",
+    ];
+    const shorts = ids.map((id) => sourceShort(id));
+    expect(new Set(shorts).size).toBe(ids.length);
+    expect(sourceShort("sdss-dr17-distant")).toBe("SDSS DR17, z > 0.35");
+  });
+
   it("name a paper by its first author and year, and keep the rest of its reference", () => {
     expect(paperShort("Kraan-Korteweg, Cluver, Bilicki, Jarrett, Colless, Elagali, Böhringer & Chon 2017, MNRAS Letters 466, L29")).toEqual({
       short: "Kraan-Korteweg et al. 2017",

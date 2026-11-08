@@ -172,12 +172,29 @@ test("turns a scale domain off, counts none of its points in the key, and keeps 
   const stars = page.getByTestId("star-key");
   await expect(stars).toContainText(/[1-9][\d,]* stars in the colour/);
   await page.getByRole("button", { name: "Show", exact: true }).click();
-  await page.getByLabel("stars", { exact: true }).uncheck();
+  await page.getByLabel("Stars", { exact: true }).uncheck();
   await expect(page).toHaveURL(/hide=domain%3Astars/);
+  await expect(page.getByTestId("show-summary")).toContainText("Points: 2 of 3 domains");
   await expect(stars).toContainText(/(^|\D)0 stars in the colour/);
   await page.reload();
   await page.getByRole("button", { name: "Show", exact: true }).click();
-  await expect(page.getByLabel("stars", { exact: true })).not.toBeChecked();
+  await expect(page.getByLabel("Stars", { exact: true })).not.toBeChecked();
+});
+
+test("shows only one catalogue from its line, every other one off, and everything again from the summary", async ({ page }) => {
+  await firstPoints(page);
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  const drawer = page.getByRole("complementary", { name: "Show" });
+  const hipparcos = drawer.getByLabel("Hipparcos 2007", { exact: true });
+  await hipparcos.hover();
+  await drawer.getByRole("button", { name: "Only Hipparcos 2007" }).click();
+  await expect(hipparcos).toBeChecked();
+  await expect(drawer.getByLabel("Researched distances", { exact: true })).not.toBeChecked();
+  await expect(page).toHaveURL(/source%3Aresearched-star-distances/);
+  await expect(page).not.toHaveURL(/source%3Ahipparcos-2007/);
+  await expect(drawer.getByTestId("show-summary")).toContainText(/1 of \d+ catalogues/);
+  await drawer.getByRole("button", { name: "Show everything" }).click();
+  await expect(page).not.toHaveURL(/hide=/);
 });
 
 test("has no serious or critical accessibility violations", async ({ page }) => {
@@ -185,6 +202,7 @@ test("has no serious or critical accessibility violations", async ({ page }) => 
   await page.getByRole("button", { name: "Structures" }).click();
   await find(page, "canis MAJOR");
   await page.getByText("Key", { exact: true }).click();
+  await page.getByRole("button", { name: "Show", exact: true }).click();
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);

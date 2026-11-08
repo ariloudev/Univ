@@ -79,6 +79,16 @@ const STRUCTURE_KIND_COLOURS: Readonly<Record<string, readonly [number, number, 
   shell: [1, 0.5, 0.78],
 };
 
+/** The families the Show drawer groups the kinds of structure in (choose-what-is-drawn), each
+ * kind in the family its colour belongs to; a kind of none of them is shown under "other". */
+export const STRUCTURE_FAMILIES: readonly { family: string; kinds: readonly string[] }[] = [
+  { family: "denser", kinds: ["supercluster", "supercluster_complex", "overdensity", "shell"] },
+  { family: "emptier", kinds: ["void"] },
+  { family: "walls and threads", kinds: ["wall", "filament"] },
+  { family: "distant arcs and groups", kinds: ["quasar_group", "ring", "arc"] },
+  { family: "flows", kinds: ["attractor", "repeller", "basin"] },
+];
+
 /** The way the reconstructed flow runs at each kind of structure that is a centre of a flow
  * (see-the-structures): in to an attractor, where a peculiar-velocity field converges, and out
  * from a repeller, where it diverges. Both are the fixed points of one field, a sink and a

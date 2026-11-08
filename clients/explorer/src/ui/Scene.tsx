@@ -5,7 +5,7 @@ import type { StructureDetail } from "../api/structures.ts";
 import type { Domain } from "../catalogue/tiles.ts";
 
 import { HoverLabel, Marks, StructureNames } from "./SceneOverlay.tsx";
-import { choicesOf } from "./ShowPanel.tsx";
+import { choicesOf } from "./show/choices.ts";
 import { Atlas, type AtlasPlace, type Selection } from "./Atlas.tsx";
 import { useHidden } from "./hidden.ts";
 import { useChosen } from "./useChosen.ts";
@@ -68,7 +68,7 @@ export function Scene({
     structure: (id) => selection.structureById(id),
   });
   const { chosen, choose } = useChosen(release, world);
-  const [hidden, toggle] = useHidden();
+  const [hidden, apply] = useHidden();
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
   const { domain, source, kind } = hidden;
   useEffect(() => {
@@ -113,7 +113,7 @@ export function Scene({
       place={place}
       structures={structures}
       selection={selection}
-      show={{ choices, hidden, onToggle: toggle }}
+      show={{ choices, hidden, onApply: apply }}
     >
       <div className="absolute inset-0 overflow-hidden">
         <canvas

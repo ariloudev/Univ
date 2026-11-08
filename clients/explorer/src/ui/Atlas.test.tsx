@@ -44,7 +44,7 @@ function selectionOf({ structure, chosen = { kind: "none" }, inside }: Shown): S
 function Page({ world, shown }: { world: ReturnType<typeof fakeWorld>; shown: Shown }) {
   const [topBar, setTopBar] = useState<HTMLElement | null>(null);
   const [drawer, setDrawer] = useState<DrawerName>();
-  const choices = { domains: ["cosmic_web"], sources: [], structureKinds: [{ kind: "void", count: 1 }] };
+  const choices = { domains: [{ name: "cosmic_web", points: 0, sources: [] }], sources: [], families: [{ family: "emptier", kinds: [{ kind: "void", count: 1 }] }] };
   return (
     <AtlasPage start={<p>Drawing release 7</p>} end={<p>Level of detail</p>} slot={setTopBar}>
       <Atlas
@@ -54,7 +54,7 @@ function Page({ world, shown }: { world: ReturnType<typeof fakeWorld>; shown: Sh
         place={{ topBar, drawer, onDrawer: setDrawer }}
         structures={{ ...structures, shown: shown.shown ?? structures.shown }}
         selection={selectionOf(shown)}
-        show={{ choices, hidden: shown.hidden ?? NOTHING_HIDDEN, onToggle: none }}
+        show={{ choices, hidden: shown.hidden ?? NOTHING_HIDDEN, onApply: none }}
       >
         <canvas />
       </Atlas>
@@ -143,12 +143,12 @@ describe("the explorer laid out as an atlas", () => {
     expect(drawer.className).toContain("max-lg:absolute");
   });
 
-  it("lists no structure of a kind turned off, and holds the checkboxes of what is drawn", async () => {
+  it("lists no structure of a kind turned off, and holds the switches of what is drawn", async () => {
     show({ hidden: hiddenInAddress("?hide=structure:void"), shown: [] });
     await userEvent.click(screen.getByRole("button", { name: "Structures" }));
     expect(screen.getByText("Structures (0)")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Show" }));
-    expect((screen.getByLabelText("void (1)") as HTMLInputElement).checked).toBe(false);
+    expect(screen.getByRole("button", { name: "void, 1 structure" }).getAttribute("aria-pressed")).toBe("false");
   });
 
   it("returns to Earth from the rail", async () => {
