@@ -130,6 +130,7 @@ describe("the chosen structure's record panel", () => {
     panel(R12_HUGE_LQG);
     const strip = screen.getByRole("img", { name: "73 members from 3813.0 Mpc to 4232.6 Mpc; mean z at 4017.3 Mpc" });
     expect(strip.querySelectorAll("line[stroke-opacity]")).toHaveLength(73);
+    expect(screen.getByTestId("record-drawn").textContent).toContain("Drawn as a member list in icrs.");
   });
 
   it("says a disputed structure is disputed, above its values, naming each paper that disputes it", () => {

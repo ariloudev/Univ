@@ -334,8 +334,8 @@ export function flowText(kind: string): string | undefined {
   return `Its sphere is a symbol of a fixed size on the view, not its extent; its arrows point ${way}.`;
 }
 
-/** A geometry's kind in words: a primitive by its form. */
-const shapeKind = (geometry: Geometry): string => words(geometry.kind === "primitive" ? geometry.primitive.form : geometry.kind);
+/** A geometry's kind in words: a primitive by its form, members as a list of them. */
+const shapeKind = (geometry: Geometry): string => (geometry.kind === "primitive" ? words(geometry.primitive.form) : geometry.kind === "members" ? "member list" : words(geometry.kind));
 
 /** How a structure's shape was placed, in words, with the parts of its record it was derived from
  * where `from` asks for them. */

@@ -19,6 +19,15 @@ versions:
     title: "One base panel, object and structure panels on it"
     goal: "A base record panel with the shared header, sentence, sections, rows, charts and fold, and the object and structure panels built on it"
     status: active
+  - key: 01a1bce7-d8ca-74db-9336-ee32be9d7618
+    at: 2026-11-08T20:44:33Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "One base panel, object and structure panels on it"
+    goal: "A base record panel with the shared header, sentence, sections, rows, charts and fold, and the object and structure panels built on it"
+    status: done
 blocks:
   - key: 01a1bcc2-145c-728f-9935-50417bcb974e
     id: t-base
