@@ -53,7 +53,7 @@ requirements:
       - key: 01a1b7d7-c032-73ad-803e-b0fdf7abeef3
         name: "The panel names each group the object is a member of, and each member of a group the object is, each of which can be chosen."
       - key: 01a1b7d7-c032-73ad-803e-b0fe29efa362
-        name: "The panel names each structure of the release whose volume, as its shape gives it exactly, holds the object's position, each of which can be chosen; a structure drawn by its bounding box, or by extents laid about a point, is not named."
+        name: "The panel names each structure of the release whose published shape holds the object's position exactly, each of which can be chosen."
       - key: 01a1b7d7-c032-73ad-803e-b0ffeb6df712
         name: "The panel gives each flag of each catalogue entry of the object with the meaning its source gives that value, or the value alone where its source gives none."
       - key: 01a1b7d7-c032-73ad-803e-b1003b3339be

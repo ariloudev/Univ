@@ -4594,7 +4594,7 @@ links:
         name: "words how the object stands to a group"
         body: 9d7066464b4aed4c007db90bd9c34ba3d443e3e2d2d9973a4f1799e4c6f3289a
   - node: 01a1b7d7-c032-73ad-803e-b0fe29efa362
-    reviewed: 34b95de115bf0f81c1a9bd59152cd76fd5ce454c0080bcc165957856900726bc
+    reviewed: ae40e18033235b5ae8db45832550f25cf4fd7277c1bcbed8f0fff6737b8c3dd1
     tests:
       - file: "clients/explorer/src/scene/volume.test.ts"
         name: "holds a point only where the structure's shape gives the volume exactly, not an approximate one"
