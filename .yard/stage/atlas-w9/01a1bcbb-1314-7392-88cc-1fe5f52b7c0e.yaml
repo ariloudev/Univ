@@ -28,6 +28,15 @@ versions:
     title: "Review, gate and merge"
     goal: "The wave's review findings fixed, the gate and integration green, every criterion traced, and the wave merged into product/atlas once the owner says so"
     status: planned
+  - key: 01a1bd19-b2dd-74b6-a53d-0c3f062c6934
+    at: 2026-11-08T21:39:00Z
+    revision: 27
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "The wave's review findings fixed, the gate and integration green, every criterion traced, and the wave merged into product/atlas once the owner says so"
+    status: active
 blocks:
   - key: 01a1bce7-d8ca-74db-9336-ee2ff8f7cb8f
     id: review-fixes
