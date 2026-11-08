@@ -2,7 +2,7 @@
 // the claims that dispute it, how it was placed, each value with its paper and the words its paper
 // prints it in, and every paper in full.
 
-import type { StructureDetail } from "../../api/structures.ts";
+import type { StructureRecord } from "../../api/structures.ts";
 import { valueText, words } from "../text.ts";
 import { Note, Section } from "./parts.tsx";
 import { matchedText } from "./structureText.ts";
@@ -16,7 +16,7 @@ function quantityText(quantity: { value: unknown; unit?: string | undefined; unc
   return valueText({ value, unit: unit ?? "", ...(uncertainty === undefined ? {} : { uncertainty }) });
 }
 
-export function FullStructureRecord({ detail, approximate }: { detail: StructureDetail; approximate: boolean }) {
+export function FullStructureRecord({ s: detail, approximate }: { s: StructureRecord; approximate: boolean }) {
   const papers = new Map((detail.record.papers ?? []).map((p) => [p.id, p.reference]));
   const disputes = detail.record.disputes ?? [];
   return (

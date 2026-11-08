@@ -1,7 +1,9 @@
 import { type ReactNode, useState } from "react";
 
 import { type Found, type ObjectRecord, distancesOf } from "../api/objects.ts";
+import { minusSign } from "../scene/format.ts";
 import { Mark } from "./Mark.tsx";
+import { Chooser } from "./record/parts.tsx";
 import type { RecordContext } from "./ObjectPanel.tsx";
 import {
   decText,
@@ -9,6 +11,7 @@ import {
   flagsOf,
   formedAs,
   skyOf,
+  epochText,
   galacticText,
   masText,
   namesAndDesignations,
@@ -24,7 +27,7 @@ import { type Sources, useSources } from "./useSources.ts";
 const SHOWN = 6;
 
 /** What each part reads: the record, its context, and the release's sources. */
-export interface PartProps {
+interface PartProps {
   record: ObjectRecord;
   context: RecordContext;
   sources: Sources;
@@ -45,7 +48,7 @@ function Part({ title, testid, children }: { title: string; testid: string; chil
 
 /** `items` as a list, those past `SHOWN` folded under a line that counts them and made only once
  * it is opened. */
-function Folded({ items }: { items: ReactNode[] }) {
+export function Folded({ items }: { items: ReactNode[] }) {
   const [open, setOpen] = useState(false);
   if (items.length <= SHOWN) return <ul className="space-y-0.5">{items}</ul>;
   return (
@@ -75,14 +78,6 @@ function ValueLine({ kind, children, note }: { kind: string | undefined; childre
   );
 }
 
-/** A name in the record that chooses what it names. */
-function Choose({ onClick, italic, children }: { onClick: () => void; italic?: boolean; children: ReactNode }) {
-  return (
-    <button type="button" onClick={onClick} className={`text-accent hover:underline ${italic === true ? "font-serif italic" : ""}`}>
-      {children}
-    </button>
-  );
-}
 
 /** The whole record of a ready object, as its panel's link opens it: every name, value, catalogue
  * entry with its flags, and paper. Its groups and the structures it lies inside the panel shows
@@ -131,8 +126,6 @@ function Names({ record, sources }: PartProps) {
   );
 }
 
-/** The epoch of a position, as a Julian year. */
-const epochText = (epoch: number | null | undefined): string => (epoch === null || epoch === undefined ? "epoch not given" : `epoch J${epoch}`);
 
 /** Where the object is on the sky: right ascension and declination, and galactic longitude and
  * latitude, each with its frame and epoch, and the entry the position is taken from. */
@@ -212,7 +205,7 @@ function Values({ record, sources }: PartProps) {
   const magnitudes = record.measurements.filter((m) => m.quantity === "magnitude");
   const motion = record.measurements.filter((m) => Object.hasOwn(MOTION, m.quantity));
   const line = (m: (typeof magnitudes)[number], label: string) => {
-    const z = m.quantity === "redshift" && m.normalized?.unit === "dimensionless" ? `, z = ${m.normalized.value.toPrecision(4)}` : "";
+    const z = m.quantity === "redshift" && m.normalized?.unit === "dimensionless" ? `, z = ${minusSign(m.normalized.value.toPrecision(4))}` : "";
     return (
       <ValueLine key={`${m.entry}:${m.quantity}:${m.n}`} kind={m.kind_of_value} note={`${m.kind_of_value}, ${title(m.source)}`}>
         {label} {valueText(m.native)}
@@ -272,94 +265,6 @@ function Star({ record, sources }: PartProps) {
   );
 }
 
-/** What looking up a related object answered, where it chose none: the objects it leads to, or
- * why it led to none. */
-type Answer = { key: string } & ({ kind: "choices"; ids: number[] } | { kind: "none" } | { kind: "failed"; message: string });
-
-/** The groups the object belongs to, or the members of the group it is, each to choose: one that
- * leads to several objects offers them, and one that leads to none says so. */
-/** How a part is set: its heading, test id and lines. */
-type PartBox = (props: { title: string; testid: string; children: ReactNode }) => ReactNode;
-
-/** The groups the object belongs to or the members of a group, each to choose: under `title`, set
- * by `box`, each source named by `name`. */
-export function Groups({
-  record,
-  context,
-  sources,
-  title: heading = "Groups",
-  box: Box = Part,
-  name,
-}: PartProps & { title?: string; box?: PartBox; name?: (source: string) => string }) {
-  const [answer, setAnswer] = useState<Answer>();
-  const related = relationsByOther(record);
-  if (related.length === 0) return null;
-  const title = name ?? titleIn(sources);
-  const choose = (source: string, identifier: string) => {
-    const key = `${source}:${identifier}`;
-    context
-      .find(source, identifier)
-      .then((found: Found) => {
-        if (found.kind === "object") context.onChooseObject(found.record.id, found.record);
-        else setAnswer(found.kind === "choices" ? { key, kind: "choices", ids: found.objects.map((o) => o.id) } : { key, kind: "none" });
-      })
-      .catch((error: unknown) => {
-        setAnswer({ key, kind: "failed", message: error instanceof Error ? error.message : String(error) });
-      });
-  };
-  const items = related.map(({ other, kinds }) => {
-    const key = `${other.source}:${other.identifier}`;
-    return (
-      <li key={key}>
-        {relationText(kinds)}{" "}
-        <Choose
-          onClick={() => {
-            choose(other.source, other.identifier);
-          }}
-        >
-          {formedAs(other.identifier, sources.details.get(other.source))}
-        </Choose>{" "}
-        <span className="text-dim">({title(other.source)})</span>
-        {answer?.key === key ? <AnswerLine answer={answer} onChoose={(id) => context.onChooseObject(id)} /> : null}
-      </li>
-    );
-  });
-  return (
-    <Box title={heading} testid="groups">
-      <Folded items={items} />
-    </Box>
-  );
-}
-
-function AnswerLine({ answer, onChoose }: { answer: Answer; onChoose: (id: number) => void }) {
-  switch (answer.kind) {
-    case "choices":
-      return (
-        <p className="text-xs">
-          It names {answer.ids.length} objects:{" "}
-          {answer.ids.map((id) => (
-            <span key={id} className="mr-2">
-              <Choose
-                onClick={() => {
-                  onChoose(id);
-                }}
-              >
-                #{id}
-              </Choose>
-            </span>
-          ))}
-        </p>
-      );
-    case "none":
-      return <p className="text-xs text-warn">No object of this release carries it.</p>;
-    case "failed":
-      return (
-        <p role="alert" className="text-xs text-warn">
-          It could not be read: {answer.message}
-        </p>
-      );
-  }
-}
 
 /** Each catalogue entry of the object, with its flags and what their values mean. */
 function Catalogues({ record, sources }: PartProps) {

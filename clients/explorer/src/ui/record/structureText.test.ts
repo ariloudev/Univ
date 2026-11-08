@@ -1,26 +1,48 @@
 import { describe, expect, it } from "vitest";
 
-import { readStructure } from "../../api/structures.ts";
+import { readPanelRecord, readStructure } from "../../api/structures.ts";
 import vela from "../../test/records/st-vela-supercluster.json";
 
 import { R12_GREAT_ATTRACTOR, R12_HUGE_LQG, R12_KBC_VOID, R12_LANIAKEA, R12_LOCAL_VOID, R12_SLOAN_GREAT_WALL, R12_VELA } from "../../test/records/index.ts";
-import { depthBand, disputedBy, measureLines, memberStrip, sizeView, skyView, structureLede, structureSubtitle } from "./structureText.ts";
+import { depthBand, disputedBy, measureLines, memberStrip, roleOf, sizeView, skyView, structureLede, structureParts, structureSubtitle } from "./structureText.ts";
 
 const PLANCK_2018 = { name: "Planck 2018 (Planck Collaboration 2020)", hubble_constant: 67.66, omega_matter: 0.3111 };
 
+const lede = (s: typeof R12_VELA) => structureLede(s, structureParts(s, PLANCK_2018));
+
 describe("the structure panel's sentence", () => {
   it("says what kind of structure it is, how far away, and how long its longest length", () => {
-    expect(structureLede(R12_VELA, PLANCK_2018)).toBe("A supercluster 234–348 Mpc away, spanning at least 124 Mpc.");
-    expect(structureLede(R12_KBC_VOID, PLANCK_2018)).toBe("A void about us, out to 310 Mpc.");
-    expect(structureLede(R12_HUGE_LQG, PLANCK_2018)).toBe("A large quasar group of 73 members 3.81–4.23 Gpc away, spanning 1.28 Gpc.");
-    expect(structureLede(R12_GREAT_ATTRACTOR, PLANCK_2018)).toBe("An attractor about 64.1 Mpc away.");
-    expect(structureLede(R12_LANIAKEA, PLANCK_2018)).toBe("A basin of attraction about 72.2 Mpc away, spanning 178 Mpc.");
-    expect(structureLede(R12_SLOAN_GREAT_WALL, PLANCK_2018)).toBe("A wall 226–388 Mpc away, spanning 471 Mpc.");
+    expect(lede(R12_VELA)).toBe("A supercluster 234–348 Mpc away, spanning at least 124 Mpc.");
+    expect(lede(R12_KBC_VOID)).toBe("A void about us, out to 310 Mpc.");
+    expect(lede(R12_HUGE_LQG)).toBe("A large quasar group of 73 members 3.81–4.23 Gpc away, spanning 1.28 Gpc.");
+    expect(lede(R12_GREAT_ATTRACTOR)).toBe("An attractor about 64.1 Mpc away.");
+    expect(lede(R12_LANIAKEA)).toBe("A basin of attraction about 72.2 Mpc away, spanning 178 Mpc.");
+    expect(lede(R12_SLOAN_GREAT_WALL)).toBe("A wall 226–388 Mpc away, spanning 471 Mpc.");
   });
 
   it("names its other names, kind and domain beneath its name, and its status where it is not plainly observed", () => {
     expect(structureSubtitle(R12_HUGE_LQG)).toBe("U1.27 · Huge Large Quasar Group · quasar group · cosmic web domain · statistical claim");
     expect(structureSubtitle(R12_VELA)).toBe("VSCL · supercluster · cosmic web domain");
+  });
+});
+
+describe("the role of each value of a structure's record", () => {
+  const value = (unit: string) => ({ kind: "measured", quantity: { value: 1, unit } });
+
+  it("takes lengths, depths and other measures apart, an infall velocity being no depth", () => {
+    expect(roleOf("wall_1_velocity", value("kilometre_per_second"))).toBe("depth");
+    expect(roleOf("infall_velocity_at_local_group", value("kilometre_per_second"))).toBe("measure");
+    expect(roleOf("diameter_in_velocity", value("kilometre_per_second"))).toBe("length");
+    expect(roleOf("Radius_if_empty", value("megaparsec"))).toBe("length");
+    expect(roleOf("radius_to_centre_at_our_position", value("megaparsec"))).toBe("measure");
+    expect(roleOf("median_distance", value("megaparsec"))).toBe("depth");
+    expect(roleOf("edge_redshift", value("dimensionless"))).toBe("depth");
+    expect(roleOf("luminosity_density_ratio_beyond", value("dimensionless"))).toBe("measure");
+  });
+
+  it("leaves a radius out of the span its sentence gives, whatever its case", () => {
+    const voidOnly = { ...R12_KBC_VOID, record: { ...R12_KBC_VOID.record, values: { radius_if_empty: { kind: "inferred", quantity: { value: 16, unit: "megaparsec" } } } } };
+    expect(lede(voidOnly)).toBe("A void about us, out to 310 Mpc.");
   });
 });
 
@@ -35,8 +57,11 @@ describe("the structure panel's depth", () => {
       ["wall 2", 319.5],
     ]);
     expect(band?.used).toEqual(["wall_1_velocity", "wall_2_velocity"]);
-    expect(band?.note).toBe("Published as cz 16,000 to 24,000 km/s, drawn at the comoving distance of z = cz/c under Planck 2018.");
-    expect(depthBand(R12_VELA, undefined)).toBeUndefined();
+    expect(band?.note).toBe(
+      "Published as cz 16,000 to 24,000 km/s; placed by comoving distance of the redshift z = cz / c, taken as published and not moved, under the release cosmology, for each bound.",
+    );
+    // The bounds are where Univ Server placed them; without the release cosmology, the walls are not.
+    expect(depthBand(R12_VELA, undefined)?.marks).toEqual([]);
   });
 
   it("rescales a published distance or radius to the release cosmology, and marks a redshift within it", () => {
@@ -44,7 +69,9 @@ describe("the structure panel's depth", () => {
     // 215 and 370 Mpc at H₀ = 71: 215 × 71 / 67.66 = 225.6, 370 × 71 / 67.66 = 388.3.
     expect([wall?.from.toFixed(1), wall?.to.toFixed(1)]).toEqual(["225.6", "388.3"]);
     expect(wall?.marks.map((m) => m.label)).toEqual(["median", "z"]);
-    expect(wall?.note).toBe("Published as 215–370 Mpc at H₀ = 71, drawn at Planck 2018's H₀ = 67.66.");
+    expect(wall?.note).toBe(
+      "Published as 215–370 Mpc; placed by the length as published, rescaled from H0 = 71 km/s/Mpc to the release's by the ratio of Hubble constants, for each bound.",
+    );
     const kbc = depthBand(R12_KBC_VOID, PLANCK_2018);
     expect([kbc?.from, kbc?.to.toFixed(1)]).toEqual([0, "310.4"]);
     expect(kbc?.marks.map((m) => m.label)).toEqual(["edge z"]);
@@ -64,7 +91,7 @@ describe("the structure panel's sky, size and measures", () => {
   it("gives a sky region's ranges in its frame, right ascension in hours, and a published position", () => {
     expect(skyView(R12_VELA)?.lines.map((l) => `${l.label} ${l.value}`)).toEqual(["l 255° to 285°", "b −10° to +10°"]);
     expect(skyView(R12_SLOAN_GREAT_WALL)?.lines.map((l) => `${l.label} ${l.value}`)).toEqual(["RA 8h 42m to 13h 42m", "Dec −2° to +2°"]);
-    expect(skyView(R12_GREAT_ATTRACTOR)?.lines.map((l) => `${l.label} ${l.value}`)).toEqual(["l, b 307°, +9°", "Velocity 4,350 km/s"]);
+    expect(skyView(R12_GREAT_ATTRACTOR)?.lines.map((l) => `${l.label} ${l.value}`)).toEqual(["l, b 307°, +9°", "Velocity 4,350 ± 350 km/s"]);
     expect(skyView(R12_LANIAKEA)?.lines.map((l) => `${l.label} ${l.value}`)).toEqual(["SGX, SGY, SGZ −4,700, 1,300, −500 km/s"]);
     expect(skyView(R12_KBC_VOID)).toBeUndefined();
   });
@@ -90,7 +117,7 @@ describe("the structure panel's sky, size and measures", () => {
     ]);
     expect(measureLines(R12_GREAT_ATTRACTOR, []).find((l) => l.label === "Infall velocity at local group")).toEqual({
       label: "Infall velocity at local group",
-      value: "570 km/s",
+      value: "570 ± 60 km/s",
       source: "Lynden-Bell et al. 1988",
       kind: "reconstructed",
     });
@@ -113,11 +140,11 @@ describe("a structure's record of a shape the panel does not know", () => {
     expect(skyView(detail)?.lines.map((l) => `${l.label} ${l.value}`)).toEqual(["l, b 255°, +285°", "Across 285° × 285°"]);
   });
 
-  it("is still read, and drawn, where a part only the panel reads takes another shape", () => {
-    const detail = raw({ position: { form: "spherical", frame: "galactic", lon: null, lat: 3 }, geometry: { SkyRegion: { lon: "?" } }, disputes: [{}] });
-    expect(detail.shape?.geometry.kind).toBe("sky_region");
-    expect(detail.record.geometry).toBeUndefined();
-    expect(detail.record.disputes).toBeUndefined();
-    expect(skyView(readStructure({ ...vela, record: { ...vela.record, geometry: null, position: { form: "spherical", frame: "galactic", lon: null, lat: null } } }))?.lines).toEqual([]);
+  it("is still drawn where its record takes a shape the panel does not know, and the panel says what it could not read", () => {
+    const detail = readStructure(vela);
+    const odd = { ...detail, record: { ...detail.record, disputes: [{}] } };
+    expect(readPanelRecord(odd)).toEqual({ problem: "record.disputes.0.cite: Invalid input: expected object, received undefined" });
+    expect(skyView(raw({ geometry: null, position: { form: "spherical", frame: "galactic", lon: null, lat: null } }))?.lines).toEqual([]);
   });
+
 });

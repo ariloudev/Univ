@@ -171,7 +171,7 @@ function TopBarParts({ world, release, selection, grid, rings }: { world: World;
 
 /** The checkbox that culls the view to the chosen structure's volume: its words shown from 1,536
  * pixels, where the top bar has room for them beside the rest. */
-const InsideBox = ({ inside }: { inside: Inside }) => <SwitchBox label="Only what lies inside" state={[inside.on, inside.set]} textClass="max-2xl:sr-only" checkbox />;
+const InsideBox = ({ inside }: { inside: Inside }) => <SwitchBox label="Only what lies inside" state={[inside.on, inside.set]} textClass="max-2xl:sr-only" role="checkbox" />;
 
 /** The drawer `name` the rail opened, beside the view, or over it below 1,024 pixels. */
 function Drawer({

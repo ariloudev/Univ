@@ -42,9 +42,6 @@ const Cited = z.looseObject({
   kind: z.string().optional(),
   quantity: z.looseObject({ value: z.unknown(), unit: z.string().optional(), uncertainty: z.unknown().optional() }).optional(),
   cite: Cite.nullable().optional(),
-  /** The value as its paper printed it, where that differs from the value given. */
-  as_published: z.string().nullable().optional(),
-  note: z.string().nullable().optional(),
 });
 export type Cited = z.infer<typeof Cited>;
 
@@ -85,11 +82,9 @@ const RecordPosition = z.looseObject({
 /** A value whose paper assumed another Hubble constant, and that value in the release cosmology. */
 const Rescaled = z.looseObject({
   value: z.string(),
-  native: z.looseObject({ value: z.number(), unit: z.string(), hubble_constant: z.number() }),
+  native: z.looseObject({ value: z.number(), hubble_constant: z.number() }),
   rescaled: z.looseObject({ value: z.number() }),
 });
-
-const Member = z.looseObject({ member: z.string().optional(), distance_mpc: z.number(), redshift: z.number().optional() });
 
 const StructureDetail = z.looseObject({
   id: z.string(),
@@ -108,27 +103,50 @@ const StructureDetail = z.looseObject({
       /** Its published extents about its point, where its papers give no bounds: each axis of
        * their frame as a whole-extent vector in the ICRS, in the shape's unit. */
       extents: z.looseObject({ frame: z.string(), axes: z.tuple([Triple, Triple, Triple]) }).optional(),
+      /** How its distance was placed, in Univ Server's words: from what, and by what method. */
+      distance: z.looseObject({ from: z.string(), method: z.string() }).optional(),
     })
     .nullable()
     .optional(),
-  // What only the record panel reads is let go where it takes a shape the explorer does not know,
-  // so that a structure is drawn whatever its record holds.
-  record: z.looseObject({
-    alternative_names: z.array(z.string()).nullable().optional().catch(undefined),
-    notes: z.string().nullable().optional().catch(undefined),
-    disputes: z.array(z.looseObject({ cite: Cite, claim: z.string().optional() })).nullable().optional().catch(undefined),
-    geometry: RecordGeometry.nullable().optional().catch(undefined),
-    position: RecordPosition.nullable().optional().catch(undefined),
-    papers: z.array(Paper).optional(),
-    values: z.record(z.string(), Cited).optional(),
-  }),
-  rescaled: z.array(Rescaled).nullable().optional().catch(undefined),
-  members: z.looseObject({ placed_from_file: z.array(Member).optional() }).nullable().optional().catch(undefined),
+  /** Its record as researched, which only its panel reads: see `readPanelRecord`. */
+  record: z.looseObject({}),
 });
 export type StructureDetail = z.infer<typeof StructureDetail>;
 
-/** A structure's record as Univ Server gives it, read and checked. */
-export const readStructure = (raw: unknown): StructureDetail => StructureDetail.parse(raw);
+/** What a structure's panel reads besides what the view draws: its record as researched, its
+ * values rescaled to the release cosmology, and its members' distances. */
+const PanelRecord = z.looseObject({
+  record: z.looseObject({
+    alternative_names: z.array(z.string()).nullable().optional(),
+    notes: z.string().nullable().optional(),
+    disputes: z.array(z.looseObject({ cite: Cite, claim: z.string().optional() })).nullable().optional(),
+    geometry: RecordGeometry.nullable().optional(),
+    position: RecordPosition.nullable().optional(),
+    papers: z.array(Paper).optional(),
+    values: z.record(z.string(), Cited).optional(),
+  }),
+  rescaled: z.array(Rescaled).nullable().optional(),
+  members: z.looseObject({ placed_from_file: z.array(z.looseObject({ distance_mpc: z.number() })).optional() }).nullable().optional(),
+});
+
+/** A structure as its panel reads it. */
+export type StructureRecord = StructureDetail & z.infer<typeof PanelRecord>;
+
+/** The structure `detail` as its panel reads it, or what in its record could not be read. The view
+ * draws a structure whatever its record holds; its panel says when it cannot read it. */
+export function readPanelRecord(detail: StructureDetail): { structure: StructureRecord } | { problem: string } {
+  const read = PanelRecord.safeParse(detail);
+  if (read.success) return { structure: { ...detail, ...read.data } };
+  const issue = read.error.issues[0];
+  return { problem: issue === undefined ? "its record is not as expected" : `${issue.path.join(".")}: ${issue.message}` };
+}
+
+/** A structure as Univ Server gives it, read and checked as its panel reads it. */
+export function readStructure(raw: unknown): StructureRecord {
+  const read = readPanelRecord(StructureDetail.parse(raw));
+  if ("problem" in read) throw new Error(read.problem);
+  return read.structure;
+}
 
 /** Every structure of `release`, page after page. */
 export async function structuresOf(release: number, options: ReadOptions = {}): Promise<StructureSummary[]> {

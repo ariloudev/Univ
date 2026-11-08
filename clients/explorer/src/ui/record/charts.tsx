@@ -3,9 +3,11 @@
 // colour on the scale stars are drawn in. Each is a 320-pixel SVG whose accessible name carries
 // its values; its text is in the ink or dim, never in a data colour.
 
-import { KEY_TEMPERATURES, STAR_GRADIENT, temperatureOf } from "../../scene/starColour.ts";
+import { figures, whole } from "../../scene/format.ts";
+import { KEY_TEMPERATURES, STAR_GRADIENT, type StarColourIndex, temperatureOf } from "../../scene/starColour.ts";
+import { bandsText } from "../text.ts";
 import { Mark } from "../Mark.tsx";
-import { linear, niceDomain } from "./chartGeometry.ts";
+import { labelRows, linear, niceDomain } from "./chartGeometry.ts";
 
 const W = 320;
 const LINE = "var(--color-line)";
@@ -15,8 +17,8 @@ const ACCENT = "var(--color-accent)";
 const NEAT = "var(--color-neat)";
 const PANEL = "var(--color-panel)";
 
-/** A tick's number, with a true minus sign. */
-const number = (v: number): string => v.toLocaleString("en-GB", { maximumFractionDigits: 3 }).replace("-", "−");
+/** A tick's number: whole where it is large, to three figures where it is small. */
+const number = (v: number): string => (Math.abs(v) >= 1000 ? whole(v) : figures(v, 3));
 
 /** An axis along `y`, ticks at `ticks` placed by `x`, gridlines up to `top`, the unit after the
  * last tick. */
@@ -54,27 +56,26 @@ export interface DotRow {
   text: string;
 }
 
-/** Measurements of one quantity as dots on one axis, each with its uncertainty, the preferred in
- * the accent and the rest grey. */
+const ROW = 30;
+
+/** Measurements of one quantity as dots on one axis, each with its uncertainty and its label above
+ * it, the preferred in the accent and the rest grey. */
 export function DotPlot({ rows, unit }: { rows: readonly DotRow[]; unit: string }) {
-  // The labels' column is as wide as its longest label, at about 5.2 pixels a character of the
-  // condensed body face, between 80 and 176 pixels.
-  const labelWidth = Math.min(176, Math.max(80, Math.max(...rows.map((r) => r.label.length)) * 5.2 + 12));
   const { domain, ticks } = niceDomain(
     rows.flatMap((r) => [r.low ?? r.value, r.high ?? r.value]),
-    3,
+    4,
   );
-  const x = linear(domain, [labelWidth, W - 12]);
-  const height = rows.length * 22 + 30;
+  const x = linear(domain, [6, W - 12]);
+  const height = rows.length * ROW + 26;
   return (
     <svg role="img" aria-label={rows.map((r) => `${r.label}: ${r.text}`).join("; ")} width={W} height={height} viewBox={`0 0 ${W} ${height}`} data-testid="dot-plot">
-      <Axis ticks={ticks} x={x} y={height - 24} top={4} unit={unit} />
+      <Axis ticks={ticks} x={x} y={height - 22} top={0} unit={unit} />
       {rows.map((r, i) => {
-        const y = 16 + i * 22;
+        const y = 21 + i * ROW;
         const colour = r.preferred === true ? ACCENT : DIM;
         return (
           <g key={`${r.label}:${i}`}>
-            <text x={0} y={y + 4} fontSize="12.5" fill={r.preferred === true ? INK : DIM}>
+            <text x={0} y={y - 9} fontSize="12" fill={r.preferred === true ? INK : DIM}>
               {r.label}
             </text>
             {r.low === undefined || r.high === undefined ? null : <line x1={x(r.low)} y1={y} x2={x(r.high)} y2={y} stroke={colour} strokeWidth={2} strokeLinecap="round" />}
@@ -92,24 +93,38 @@ export interface AxisMark {
   label: string;
 }
 
+/** The height labels above an axis take: two rows of them. */
+const LABELS = 28;
+
+/** Named marks' labels above an axis, a label that would meet another set on a second row. */
+function MarkLabels({ marks, x }: { marks: readonly AxisMark[]; x: (v: number) => number }) {
+  const rows = labelRows(marks.map((m) => x(m.value)));
+  return (
+    <>
+      {marks.map((m, i) => (
+        <text key={m.label} x={x(m.value)} y={11 + (rows[i] ?? 0) * 13} fontSize="12" fill={INK} textAnchor="middle">
+          {m.label}
+        </text>
+      ))}
+    </>
+  );
+}
+
 /** Many values as thin ticks on one axis, each named mark in the accent above them. */
 export function TickStrip({ values, marks = [], unit, label }: { values: readonly number[]; marks?: readonly AxisMark[]; unit: string; label: string }) {
   const { domain, ticks } = niceDomain([...values, ...marks.map((m) => m.value)], 4);
   const x = linear(domain, [4, W - 8]);
+  const top = LABELS;
   return (
-    <svg role="img" aria-label={label} width={W} height={70} viewBox={`0 0 ${W} 70`} data-testid="tick-strip">
-      <Axis ticks={ticks} x={x} y={50} top={22} unit={unit} />
+    <svg role="img" aria-label={label} width={W} height={top + 48} viewBox={`0 0 ${W} ${top + 48}`} data-testid="tick-strip">
+      <Axis ticks={ticks} x={x} y={top + 28} top={top} unit={unit} />
       {values.map((v, i) => (
-        <line key={i} x1={x(v)} y1={28} x2={x(v)} y2={44} stroke={NEAT} strokeWidth={1.5} strokeOpacity={0.7} />
+        <line key={i} x1={x(v)} y1={top + 6} x2={x(v)} y2={top + 22} stroke={NEAT} strokeWidth={1.5} strokeOpacity={0.7} />
       ))}
       {marks.map((m) => (
-        <g key={m.label}>
-          <line x1={x(m.value)} y1={22} x2={x(m.value)} y2={48} stroke={ACCENT} strokeWidth={2} strokeLinecap="round" />
-          <text x={x(m.value)} y={14} fontSize="12" fill={INK} textAnchor="middle">
-            {m.label}
-          </text>
-        </g>
+        <line key={m.label} x1={x(m.value)} y1={top} x2={x(m.value)} y2={top + 26} stroke={ACCENT} strokeWidth={2} strokeLinecap="round" />
       ))}
+      <MarkLabels marks={marks} x={x} />
     </svg>
   );
 }
@@ -118,21 +133,18 @@ export function TickStrip({ values, marks = [], unit, label }: { values: readonl
 export function DepthBand({ from, to, marks = [], unit, label }: { from: number; to: number; marks?: readonly AxisMark[]; unit: string; label: string }) {
   const { domain, ticks } = niceDomain([from, to], 4);
   const x = linear(domain, [6, W - 8]);
+  const top = LABELS;
   return (
-    <svg role="img" aria-label={label} width={W} height={74} viewBox={`0 0 ${W} 74`} data-testid="depth-band">
-      <Axis ticks={ticks} x={x} y={52} top={18} unit={unit} />
-      <rect x={x(from)} y={26} width={Math.max(2, x(to) - x(from))} height={16} rx={4} fill={ACCENT} fillOpacity={0.12} />
+    <svg role="img" aria-label={label} width={W} height={top + 48} viewBox={`0 0 ${W} ${top + 48}`} data-testid="depth-band">
+      <Axis ticks={ticks} x={x} y={top + 28} top={top - 6} unit={unit} />
+      <rect x={x(from)} y={top + 2} width={Math.max(2, x(to) - x(from))} height={16} rx={4} fill={ACCENT} fillOpacity={0.12} />
       {[from, to].map((v) => (
-        <line key={v} x1={x(v)} y1={26} x2={x(v)} y2={42} stroke={ACCENT} strokeWidth={2} strokeLinecap="round" />
+        <line key={v} x1={x(v)} y1={top + 2} x2={x(v)} y2={top + 18} stroke={ACCENT} strokeWidth={2} strokeLinecap="round" />
       ))}
       {marks.map((m) => (
-        <g key={m.label}>
-          <Dot cx={x(m.value)} cy={34} colour={ACCENT} />
-          <text x={x(m.value)} y={12} fontSize="12" fill={INK} textAnchor="middle">
-            {m.label}
-          </text>
-        </g>
+        <Dot key={m.label} cx={x(m.value)} cy={top + 10} colour={ACCENT} />
       ))}
+      <MarkLabels marks={marks} x={x} />
     </svg>
   );
 }
@@ -204,21 +216,30 @@ export function keyPosition(teff: number): number {
   return (above - 1 + Math.log(teff / lo) / Math.log(hi / lo)) / last;
 }
 
-/** A star's BP−RP colour index on the gradient the view draws stars in, with the temperature and
- * class it gives along the dwarf sequence. */
-export function ColourScale({ index }: { index: number }) {
-  const { teff, type } = temperatureOf(index, "BP-RP");
-  const at = `${(keyPosition(teff) * 100).toFixed(1)}%`;
+/** The gradient the view draws stars in, with its temperatures beneath, and a mark at `at` (0 to
+ * 1) where one is given: the key's scale and a star's place on it alike. */
+export function StarScale({ at, height = "h-3" }: { at?: number | undefined; height?: string }) {
   return (
-    <div role="img" aria-label={`BP−RP ${index}: about ${Math.round(teff).toLocaleString("en-GB")} K, ${type} on the dwarf sequence`} className="space-y-1" data-testid="colour-scale">
-      <div className="relative h-2 rounded" style={{ background: STAR_GRADIENT }}>
-        <span className="absolute -top-1 h-4 w-0.5 rounded bg-ink ring-2 ring-panel" style={{ left: at }} />
+    <>
+      <div className={`relative ${height} rounded`} style={{ background: STAR_GRADIENT }}>
+        {at === undefined ? null : <span className="absolute -top-1 h-[calc(100%+8px)] w-0.5 rounded bg-ink ring-2 ring-panel" style={{ left: `${(at * 100).toFixed(1)}%` }} />}
       </div>
       <div className="flex justify-between text-xs text-dim">
         {KEY_TEMPERATURES.map((t) => (
           <span key={t}>{t.toLocaleString("en-GB")} K</span>
         ))}
       </div>
+    </>
+  );
+}
+
+/** A star's colour index, the one the view draws it by, on the gradient stars are drawn in, with
+ * the temperature and class it gives along the dwarf sequence. */
+export function ColourScale({ colour }: { colour: StarColourIndex }) {
+  const { teff, type } = temperatureOf(colour.index, colour.bands);
+  return (
+    <div role="img" aria-label={`${bandsText(colour.bands)} ${figures(colour.index, 4)}: about ${whole(teff)} K, ${type} on the dwarf sequence`} className="space-y-1" data-testid="colour-scale">
+      <StarScale at={keyPosition(teff)} height="h-2" />
     </div>
   );
 }

@@ -33,3 +33,20 @@ export const linear =
   ([d0, d1]: readonly [number, number], [r0, r1]: readonly [number, number]) =>
   (v: number): number =>
     r0 + ((v - d0) / (d1 - d0 || 1)) * (r1 - r0);
+
+/** Which of two rows each label goes on, given each label's place along the axis, in pixels, and
+ * the room one needs: a label on the first row unless it would meet the last one there, then on
+ * the second. */
+export function labelRows(places: readonly number[], room = 44): number[] {
+  const order = places.map((x, i) => ({ x, i })).sort((a, b) => a.x - b.x);
+  const rows: number[] = Array.from({ length: places.length }, () => 0);
+  let lastOnFirst = Number.NEGATIVE_INFINITY;
+  for (const { x, i } of order) {
+    if (x - lastOnFirst >= room) {
+      lastOnFirst = x;
+    } else {
+      rows[i] = 1;
+    }
+  }
+  return rows;
+}

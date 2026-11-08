@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { linear, niceDomain } from "./chartGeometry.ts";
+import { labelRows, linear, niceDomain } from "./chartGeometry.ts";
 
 describe("the charts' geometry", () => {
   it("rounds a domain out to round ticks about the values", () => {
@@ -21,5 +21,12 @@ describe("the charts' geometry", () => {
     expect(x(200)).toBe(0);
     expect(x(300)).toBe(50);
     expect(x(400)).toBe(100);
+  });
+
+  it("sets a label that would meet another on a second row", () => {
+    // The Sloan Great Wall's median and redshift lie a few pixels apart; Vela's walls far apart.
+    expect(labelRows([200, 207])).toEqual([0, 1]);
+    expect(labelRows([90, 230])).toEqual([0, 0]);
+    expect(labelRows([207, 200, 300])).toEqual([1, 0, 0]);
   });
 });

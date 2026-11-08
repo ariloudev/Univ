@@ -2,13 +2,15 @@
 // sentence of what it is, its distances on one axis, its brightness and colour, its motion or
 // velocity, and how many catalogues hold it. The panel draws these; nothing here is drawn.
 
-import type { Measurement, ObjectRecord } from "../../api/objects.ts";
+import { type Measurement, type ObjectRecord, sameKey } from "../../api/objects.ts";
 import { C_KM_S } from "../../scene/cosmology.ts";
-import { PC_UNITS, figures, lightYears, shortDistance } from "../../scene/format.ts";
+import { figures, lightYears, pcUnit, shortDistance } from "../../scene/format.ts";
+import type { StarColourIndex } from "../../scene/starColour.ts";
 import { toMpc } from "../../scene/units.ts";
-import type { DotRow } from "./charts.tsx";
-import { colourIndices, publishedTypes } from "../starText.ts";
+import { colourIndices, drawnColourIndex, publishedTypes } from "../starText.ts";
 import { bandsText, words } from "../text.ts";
+import type { DotRow } from "./charts.tsx";
+import { counted, sentence, shortWithUncertainty, spread, withArticle } from "./wording.ts";
 
 /** A source's id named as the panel names it. */
 export type Namer = (id: string) => string;
@@ -46,9 +48,6 @@ function nounOf(record: ObjectRecord): string {
   return NOUNS[record.entries[0]?.source ?? ""] ?? "object";
 }
 
-/** `noun` with its article: "an" before a vowel sound, a letter such as F included. */
-const withArticle = (noun: string): string => `${/^([aeiou]|[AEFHILMNORSX]-)/i.test(noun) ? "an" : "a"} ${noun}`;
-
 /** How far away the preferred distance puts the object, and by what where it is a redshift. */
 function distancePart(record: ObjectRecord): string {
   const preferred = record.preferred;
@@ -62,15 +61,7 @@ function distancePart(record: ObjectRecord): string {
 export function objectLede(record: ObjectRecord): string {
   const brightest = (record.relations ?? []).some((r) => r.kind === "dominant_member_of") ? ", the brightest of its group" : "";
   const domain = record.position === null ? "" : `, in the ${words(record.position.scale_domain)} domain`;
-  const text = `${withArticle(nounOf(record))}${distancePart(record)}${brightest}${domain}.`;
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-/** A published uncertainty as how far below and above its value it runs, where it says. */
-function spread(u: Measurement["native"]["uncertainty"]): [number, number] | undefined {
-  if (u?.form === "symmetric") return [u.sigma ?? 0, u.sigma ?? 0];
-  if (u?.minus !== undefined && u.plus !== undefined) return [u.minus, u.plus];
-  return undefined;
+  return sentence(`${withArticle(nounOf(record))}${distancePart(record)}${brightest}${domain}.`);
 }
 
 /** A distance or parallax measurement as a distance in megaparsecs with its range; a parallax at
@@ -91,15 +82,9 @@ function distanceMpc(m: Measurement): { value: number; low?: number; high?: numb
   return ns === undefined ? { value: n.value } : { value: n.value, low: n.value - ns[0], high: n.value + ns[1] };
 }
 
-/** The parsec unit that suits `mpc`: its size in parsecs and its name. */
-export function unitFor(mpc: number): { size: number; name: string } {
-  const [size, name] = PC_UNITS.find(([u]) => mpc * 1e6 >= u) ?? PC_UNITS[PC_UNITS.length - 1] ?? [1, "pc"];
-  return { size, name };
-}
-
 const isPreferred = (record: ObjectRecord, m: Measurement): boolean => {
   const key = record.preferred?.measurement;
-  return key !== undefined && key.entry === m.entry && key.quantity === m.quantity && key.n === m.n;
+  return key !== undefined && sameKey(m, key);
 };
 
 /** The object's distance: the preferred one large, every distance and parallax on one axis in
@@ -124,17 +109,22 @@ const spreadIn = (mpc: number, unit: { size: number }) => figures((mpc * 1e6) / 
 export function distanceView(record: ObjectRecord, name: Namer): DistanceView | undefined {
   const preferred = record.preferred;
   if (preferred === null) return undefined;
-  const unit = unitFor(preferred.distance_mpc);
+  const unit = pcUnit(preferred.distance_mpc);
   const chosen = record.measurements.find((m) => isPreferred(record, m));
   const measured = record.measurements.filter((m) => m.quantity === "distance" || m.quantity === "parallax");
-  const rows = measured.flatMap((m) => dotRow(record, m, unit, (id) => labelOf(measured, m, name(id))));
+  const several = countBy(measured, (m) => `${m.source}:${m.quantity}`);
+  const rows = measured.flatMap((m) => dotRow(record, m, unit, (id) => labelOf(m, name(id), (several.get(`${m.source}:${m.quantity}`) ?? 0) > 1)));
   const range = chosen === undefined ? undefined : distanceMpc(chosen);
   const redshift = chosen?.quantity === "redshift" ? redshiftOf(chosen) : undefined;
+  // Where the measurement gives no range in distance, as a redshift does not, the uncertainty
+  // Univ Server gives the preferred distance as a fraction of it.
+  const total = preferred.uncertainty.total;
+  const fallback = total === null || total === undefined ? undefined : spreadIn(total * preferred.distance_mpc, unit);
   return {
     figure: inUnit(preferred.distance_mpc, unit),
     unit: unit.name,
-    minus: range?.low === undefined ? undefined : spreadIn(preferred.distance_mpc - range.low, unit),
-    plus: range?.high === undefined ? undefined : spreadIn(range.high - preferred.distance_mpc, unit),
+    minus: range?.low === undefined ? fallback : spreadIn(preferred.distance_mpc - range.low, unit),
+    plus: range?.high === undefined ? fallback : spreadIn(range.high - preferred.distance_mpc, unit),
     aside: redshift === undefined ? lightYears(preferred.distance_mpc) : `from z = ${redshift}`,
     kind: chosen?.kind_of_value,
     rows: rows.length > 1 ? rows : [],
@@ -143,10 +133,16 @@ export function distanceView(record: ObjectRecord, name: Namer): DistanceView | 
   };
 }
 
+/** How many of `items` share each key. */
+function countBy<T>(items: readonly T[], key: (item: T) => string): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const item of items) counts.set(key(item), (counts.get(key(item)) ?? 0) + 1);
+  return counts;
+}
+
 /** A distance's source, with its kind where the source gives more than one distance. */
-function labelOf(measured: readonly Measurement[], m: Measurement, source: string): string {
+function labelOf(m: Measurement, source: string, several: boolean): string {
   const kind = m.distance?.kind;
-  const several = measured.filter((o) => o.source === m.source && o.quantity === m.quantity).length > 1;
   return several && kind !== undefined ? `${source}, ${words(kind)}` : source;
 }
 
@@ -166,23 +162,21 @@ function dotRow(record: ObjectRecord, m: Measurement, unit: { size: number; name
   ];
 }
 
-/** A number's text with a true minus sign. */
-const minus = (text: string): string => text.replace(/^-/, "−");
+/** A value to four figures with its uncertainty, in short, as its source published it. */
+const shortValue = (value: Measurement["native"]): string => shortWithUncertainty(figures(value.value, 4), value.uncertainty);
 
-/** A value to four figures with its symmetric uncertainty where it has one. */
-function shortValue(value: Measurement["native"]): string {
-  const s = spread(value.uncertainty);
-  const v = minus(figures(value.value, 4));
-  if (s === undefined) return v;
-  return s[0] === s[1] ? `${v} ± ${figures(s[0], 2)}` : `${v} +${figures(s[1], 2)} −${figures(s[0], 2)}`;
+const isCz = (m: Measurement): boolean => m.native.unit === "kilometre_per_second";
+
+/** A redshift measurement as z with its uncertainty, from z or from cz. */
+function redshiftOf(m: Measurement): string {
+  const k = isCz(m) ? 1 / C_KM_S : 1;
+  return shortWithUncertainty(figures(m.native.value * k, 4), m.native.uncertainty, k);
 }
 
-/** A redshift measurement as z, from z or from cz. */
-function redshiftOf(m: Measurement): string {
-  const z = m.native.unit === "kilometre_per_second" ? m.native.value / C_KM_S : m.native.value;
-  const s = spread(m.native.uncertainty);
-  const sigma = s === undefined || m.native.unit === "kilometre_per_second" ? "" : ` ± ${figures(s[0], 2)}`;
-  return `${minus(figures(z, 4))}${sigma}`;
+/** A redshift or velocity measurement as cz with its uncertainty, km/s. */
+function czText(m: Measurement): string {
+  const k = isCz(m) ? 1 : C_KM_S;
+  return `${shortWithUncertainty(figures(m.native.value * k, 4), m.native.uncertainty, k)} km/s`;
 }
 
 /** A line of the panel as data: what it is, the value, its source's short name, its kind. */
@@ -214,16 +208,28 @@ export function brightnessLines(record: ObjectRecord, name: Namer): LineData[] {
   return [...firstOf(magnitudes), ...firstOf(colours), ...types];
 }
 
-/** The object's BP−RP colour index, where one source gives one. */
-export const bpRpOf = (record: ObjectRecord): number | undefined => colourIndices(record).find((m) => m.band === "BP-RP")?.native.value;
+/** The colour index the view draws the star by, where it has one. */
+export const drawnColourOf = (record: ObjectRecord): StarColourIndex | undefined => drawnColourIndex(colourIndices(record));
+
+/** The first source's two components of proper motion, where a source gives both. */
+function properMotionOf(record: ObjectRecord): { ra: Measurement; dec: Measurement } | undefined {
+  for (const ra of record.measurements.filter((m) => m.quantity === "proper_motion_ra")) {
+    const dec = record.measurements.find((m) => m.entry === ra.entry && m.quantity === "proper_motion_dec");
+    if (dec !== undefined) return { ra, dec };
+  }
+  return undefined;
+}
+
+/** Whether a source gives the object's proper motion: a star's, which the panel shows as motion. */
+export const hasProperMotion = (record: ObjectRecord): boolean => properMotionOf(record) !== undefined;
 
 /** The proper motion as a total and its position angle, from the first source that gives both
  * components, and the first radial velocity. */
 export function motionLines(record: ObjectRecord, name: Namer): LineData[] {
   const lines: LineData[] = [];
-  const ra = record.measurements.find((m) => m.quantity === "proper_motion_ra" && record.measurements.some((d) => d.entry === m.entry && d.quantity === "proper_motion_dec"));
-  const dec = ra === undefined ? undefined : record.measurements.find((m) => m.entry === ra.entry && m.quantity === "proper_motion_dec");
-  if (ra !== undefined && dec !== undefined) {
+  const proper = properMotionOf(record);
+  if (proper !== undefined) {
+    const { ra, dec } = proper;
     const total = Math.hypot(ra.native.value, dec.native.value);
     const angle = ((Math.atan2(ra.native.value, dec.native.value) * 180) / Math.PI + 360) % 360;
     lines.push({ label: "Proper", value: `${figures(total, 4)} mas/yr to PA ${Math.round(angle)}°`, source: name(ra.source), kind: ra.kind_of_value });
@@ -234,19 +240,20 @@ export function motionLines(record: ObjectRecord, name: Namer): LineData[] {
 }
 
 /** A redshift or velocity measurement as cz, km/s. */
-const czOf = (m: Measurement): number => (m.native.unit === "kilometre_per_second" ? m.native.value : m.native.value * C_KM_S);
+const czOf = (m: Measurement): number => (isCz(m) ? m.native.value : m.native.value * C_KM_S);
 
 /** What a redshift's line is labelled by: its frame, or that it is photometric. */
 function frameLabel(m: Measurement): string {
   if (m.quantity === "velocity") return "Velocity";
   if (m.redshift?.kind === "photometric") return "Photometric z";
   const frame = m.redshift?.published_frame;
-  return frame === "cmb" ? "CMB frame" : frame === undefined ? "Redshift" : frame.charAt(0).toUpperCase() + frame.slice(1);
+  return frame === "cmb" ? "CMB frame" : frame === undefined ? "Redshift" : sentence(frame);
 }
 
-/** A redshift or velocity measurement in words: cz in km/s, or z where it was published as z. */
+/** A redshift or velocity measurement in words: as z where it is photometric or far, else as cz in
+ * km/s, its uncertainty converted with it. */
 const velocityText = (m: Measurement): string =>
-  m.redshift?.kind === "photometric" || (m.native.unit !== "kilometre_per_second" && Math.abs(m.native.value) > 0.05) ? `z = ${redshiftOf(m)}` : `${shortValue({ ...m.native, value: czOf(m) })} km/s`;
+  m.redshift?.kind === "photometric" || (!isCz(m) && Math.abs(m.native.value) > 0.05) ? `z = ${redshiftOf(m)}` : czText(m);
 
 /** How many redshifts one source gives before they are drawn as ticks rather than lines. */
 const STRIP = 3;
@@ -262,8 +269,10 @@ export function velocityView(record: ObjectRecord, name: Namer): VelocityView {
   const redshifts = new Set(record.measurements.filter((m) => m.quantity === "redshift").map((m) => m.entry));
   // A source's velocity repeats the redshift of its entry where it gives one.
   const all = record.measurements.filter((m) => m.quantity === "redshift" || (m.quantity === "velocity" && !redshifts.has(m.entry)));
-  const counts = new Map<string, number>();
-  for (const m of all.filter((m) => m.quantity === "redshift")) counts.set(m.source, (counts.get(m.source) ?? 0) + 1);
+  const counts = countBy(
+    all.filter((m) => m.quantity === "redshift"),
+    (m) => m.source,
+  );
   const many = [...counts].find(([, n]) => n > STRIP)?.[0];
   const rest = all.filter((m) => m.source !== many);
   const lines = rest.map((m) => ({ label: frameLabel(m), value: velocityText(m), source: name(m.source), kind: m.kind_of_value }));
@@ -276,11 +285,9 @@ export function velocityView(record: ObjectRecord, name: Namer): VelocityView {
 
 /** How many catalogue entries hold the object, in how many catalogues, and how many in each. */
 export function cataloguesText(record: ObjectRecord, name: Namer): { title: string; detail: string } {
-  const counts = new Map<string, number>();
-  for (const e of record.entries) counts.set(e.source, (counts.get(e.source) ?? 0) + 1);
+  const counts = countBy(record.entries, (e) => e.source);
   const n = record.entries.length;
-  const plural = (k: number, word: string) => `${k.toLocaleString("en-GB")} ${word}${k === 1 ? "" : "s"}`;
-  const title = n === counts.size ? `In ${plural(n, "catalogue")}` : `In ${plural(n, "entry")} of ${plural(counts.size, "catalogue")}`.replace("entrys", "entries");
+  const title = n === counts.size ? `In ${counted(n, "catalogue")}` : `In ${counted(n, "entry", "entries")} of ${counted(counts.size, "catalogue")}`;
   const detail = [...counts]
     .sort((a, b) => b[1] - a[1])
     .map(([source, k]) => (k === 1 ? name(source) : `${name(source)} ${k.toLocaleString("en-GB")}`))

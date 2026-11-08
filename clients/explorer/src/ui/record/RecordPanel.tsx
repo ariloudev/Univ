@@ -17,9 +17,9 @@ export interface RecordPanelProps {
   /** The close button's accessible name. */
   closeLabel: string;
   onClose: () => void;
-  /** The link that opens the whole record, and the record it opens. */
-  fullLabel: string;
-  full: () => ReactNode;
+  /** The link that opens the whole record, and the record it opens, where there is one. */
+  fullLabel?: string;
+  full?: () => ReactNode;
   children: ReactNode;
 }
 
@@ -42,7 +42,7 @@ export function RecordPanel({ label, title, italic = false, subtitle, lede, clos
         </p>
       )}
       {children}
-      <Full label={fullLabel} full={full} />
+      {fullLabel === undefined || full === undefined ? null : <Full label={fullLabel} full={full} />}
     </section>
   );
 }

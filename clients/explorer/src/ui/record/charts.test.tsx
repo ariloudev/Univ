@@ -36,7 +36,10 @@ describe("the record's charts", () => {
     expect(keyPosition(KEY_TEMPERATURES.at(-1) ?? 0)).toBe(1);
     expect(keyPosition(1e6)).toBe(1);
     expect(keyPosition(100)).toBe(0);
-    render(<ColourScale index={0.251} />);
+    render(<ColourScale colour={{ index: 0.251, bands: "BP-RP" }} />);
     expect(screen.getByRole("img", { name: /^BP−RP 0.251: about [\d,]+ K, [A-F]\d/ }).dataset["testid"]).toBe("colour-scale");
+    // A star drawn by B−V is placed by it.
+    render(<ColourScale colour={{ index: 1.277, bands: "B-V" }} />);
+    expect(screen.getByRole("img", { name: /^B−V 1.277: about [\d,]+ K, K\d/ })).toBeTruthy();
   });
 });

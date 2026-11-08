@@ -5,16 +5,18 @@
 
 import { useMemo } from "react";
 
-import { type ObjectRecord, placeOf } from "../../api/objects.ts";
+import { type ObjectRecord, nameKey, placeOf } from "../../api/objects.ts";
+import { whole } from "../../scene/format.ts";
 import type { RecordContext } from "../ObjectPanel.tsx";
-import { Groups, RecordBody } from "../RecordSections.tsx";
-import { decText, masText, namesAndDesignations, raText, skyOf } from "../recordText.ts";
+import { RecordBody } from "../RecordSections.tsx";
+import { decText, designationText, epochText, galacticText, masText, namesAndDesignations, raText, skyOf } from "../recordText.ts";
 import { headingOf } from "../text.ts";
-import { type Sources, useSources } from "../useSources.ts";
+import { useSources } from "../useSources.ts";
 import { Mark } from "../Mark.tsx";
 import { ColourScale, DotPlot, TickStrip } from "./charts.tsx";
+import { Groups } from "./Groups.tsx";
 import { sourceShort } from "./names.ts";
-import { type LineData, type Namer, bpRpOf, brightnessLines, cataloguesText, distanceView, motionLines, objectLede, velocityView } from "./objectRecordText.ts";
+import { type Namer, brightnessLines, cataloguesText, distanceView, drawnColourOf, hasProperMotion, motionLines, objectLede, velocityView } from "./objectRecordText.ts";
 import { Chooser, Lead, Note, Raised, Rows, Section } from "./parts.tsx";
 import { RecordPanel } from "./RecordPanel.tsx";
 
@@ -26,11 +28,10 @@ interface Props {
   onClose: () => void;
 }
 
-/** What each part reads: the record, its context, the sources, and the namer of sources. */
+/** What each part reads: the record, its context, and the namer of sources. */
 interface PartProps {
   record: ObjectRecord;
   context: RecordContext;
-  sources: Sources;
   name: Namer;
 }
 
@@ -39,7 +40,7 @@ export function ObjectRecordPanel({ record, as, context, onClose }: Props) {
   const read = useSources(context.release, context.sources === undefined ? record : undefined);
   const sources = context.sources ?? read;
   const name: Namer = (id) => sourceShort(id, sources.titles.get(id));
-  const props: PartProps = { record, context, sources, name };
+  const props: PartProps = { record, context, name };
   const heading = headingOf(record, as);
   return (
     <RecordPanel
@@ -50,33 +51,34 @@ export function ObjectRecordPanel({ record, as, context, onClose }: Props) {
       closeLabel="Close the object's panel"
       onClose={onClose}
       fullLabel="Show every name, value and flag, with the papers"
-      full={() => <RecordBody record={record} context={context} />}
+      full={() => <RecordBody record={record} context={{ ...context, sources }} />}
     >
       <Distance {...props} />
       <Position {...props} />
       <Brightness {...props} />
       <Motion {...props} />
-      {(record.relations ?? []).length === 0 ? null : <Groups record={record} context={context} sources={sources} title={record.kind === "galaxy_group" ? "Members" : "Groups"} box={Section} name={name} />}
+      <Groups record={record} context={context} sources={sources} title={record.kind === "galaxy_group" ? "Members" : "Groups"} name={name} />
       <LiesInside {...props} />
       <Catalogues {...props} />
     </RecordPanel>
   );
 }
 
-/** Its other names, up to two, beside its kind where it is a group and its id. */
+/** Its proper names and its designations other than its heading, up to two, then its kind where
+ * it is a group, and its id. A designation is left out where it gives a number already shown, as
+ * Gaia EDR3's repeats Gaia DR3's, or a crossmatch gives the Hipparcos number of the heading. */
 function subtitleOf(record: ObjectRecord, heading: string): string {
-  const { names, designations } = namesAndDesignations(record);
-  // A designation that repeats a number already shown, as Gaia EDR3 repeats Gaia DR3's, is left out.
-  const shown = new Set([lastWord(heading)]);
-  const others = [...names, ...designations].map((n) => n.text).filter((t) => t !== heading && !shown.has(lastWord(t)) && Boolean(shown.add(lastWord(t))));
+  const shown = new Set([nameKey(heading)]);
+  for (const d of record.designations) if (designationText(d) === heading) shown.add(nameKey(d.identifier));
+  const others = namesAndDesignations(record).names.map((n) => n.text).filter((t) => t !== heading);
+  for (const d of record.designations) {
+    const keys = [nameKey(d.identifier), nameKey(designationText(d))];
+    if (keys.some((k) => shown.has(k))) continue;
+    for (const k of keys) shown.add(k);
+    others.push(d.designation ?? `${d.identifier} (${d.source})`);
+  }
   return [...others.slice(0, 2), ...(record.kind === "galaxy_group" ? ["galaxy group"] : []), `object ${record.id}`].join(" · ");
 }
-
-/** What a name repeats another by: a designation's number, its last run of two digits or more,
- * or a name whole. */
-const lastWord = (text: string): string => text.match(/\d{2,}/g)?.at(-1) ?? text;
-
-const toLines = (lines: readonly LineData[]) => lines.map((l) => ({ label: l.label, value: l.value, source: l.source, kind: l.kind }));
 
 /** The preferred distance large, every distance on one axis, and what preferred it. */
 function Distance({ record, name }: PartProps) {
@@ -114,30 +116,32 @@ function Position({ record, context, name }: PartProps) {
   const sky = skyOf(record, context.toGalactic);
   if (sky === undefined) return null;
   const { galactic, from } = sky;
+  // A catalogue's position is measured, and the galactic is the same position in another frame.
   const lines = [
     { label: "RA, Dec", value: `${raText(sky.ra)}, ${decText(sky.dec)}`, kind: "measured" },
-    ...(galactic === undefined ? [] : [{ label: "l, b", value: `${galactic.l.toFixed(3)}°, ${galactic.b < 0 ? "−" : "+"}${Math.abs(galactic.b).toFixed(3)}°`, kind: "measured" }]),
+    ...(galactic === undefined ? [] : [{ label: "Galactic", value: galacticText(galactic, 3), kind: "measured" }]),
   ];
   return (
     <Section title="Position" testid="record-position">
       <Rows lines={lines} />
       <Note>
-        {sky.frame.toUpperCase()}, epoch {sky.epoch === null || sky.epoch === undefined ? "not given" : `J${sky.epoch}`}, {masText(sky.uncertainty_mas)}
+        {sky.frame.toUpperCase()}, {epochText(sky.epoch)}, {masText(sky.uncertainty_mas)}
         {from === undefined ? "" : `, ${name(from.source)}`}.
       </Note>
     </Section>
   );
 }
 
-/** Its magnitudes, colour indices and types, and a BP−RP on the colour scale stars are drawn in. */
+/** Its magnitudes, colour indices and types, and the colour index it is drawn by on the colour
+ * scale stars are drawn in. */
 function Brightness({ record, name }: PartProps) {
   const lines = brightnessLines(record, name);
-  const bpRp = bpRpOf(record);
+  const colour = drawnColourOf(record);
   if (lines.length === 0) return null;
   return (
     <Section title="Brightness and colour" testid="record-brightness">
-      <Rows lines={toLines(lines)} />
-      {bpRp === undefined ? null : <ColourScale index={bpRp} />}
+      <Rows lines={lines} />
+      {colour === undefined ? null : <ColourScale colour={colour} />}
     </Section>
   );
 }
@@ -145,25 +149,24 @@ function Brightness({ record, name }: PartProps) {
 /** A star's proper motion and radial velocity; any other object's velocities, many from one
  * source drawn as ticks. */
 function Motion({ record, name }: PartProps) {
-  const motion = motionLines(record, name);
-  if (motion.some((l) => l.label === "Proper"))
+  if (hasProperMotion(record))
     return (
       <Section title="Motion" testid="record-motion">
-        <Rows lines={toLines(motion)} />
+        <Rows lines={motionLines(record, name)} />
       </Section>
     );
   const { lines, strip } = velocityView(record, name);
   if (lines.length === 0 && strip === undefined) return null;
   return (
     <Section title="Velocity" testid="record-motion">
-      <Rows lines={toLines(lines)} />
+      <Rows lines={lines} />
       {strip === undefined ? null : (
         <>
           <TickStrip
             values={strip.values}
-            marks={strip.mark === undefined ? [] : [{ value: strip.mark, label: Math.round(strip.mark).toLocaleString("en-GB").replace("-", "−") }]}
+            marks={strip.mark === undefined ? [] : [{ value: strip.mark, label: whole(strip.mark) }]}
             unit="km/s"
-            label={`${strip.values.length} redshifts from ${strip.source} as cz, from ${Math.round(Math.min(...strip.values)).toLocaleString("en-GB")} to ${Math.round(Math.max(...strip.values)).toLocaleString("en-GB")} km/s`}
+            label={`${strip.values.length} redshifts from ${strip.source} as cz, from ${whole(Math.min(...strip.values))} to ${whole(Math.max(...strip.values))} km/s`}
           />
           <Note>
             {strip.values.length.toLocaleString("en-GB")} {strip.source} redshifts as cz <Mark kind="measured" />

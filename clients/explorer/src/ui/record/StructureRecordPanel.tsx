@@ -3,25 +3,28 @@
 // lengths and other measures, how it is drawn, its papers named once, and the record's notes,
 // quotes and every value under one link.
 
+import { type ReactNode, useMemo } from "react";
+
 import type { Cosmology } from "../../api/schemas.ts";
-import type { StructureDetail } from "../../api/structures.ts";
+import { type StructureDetail, type StructureRecord, readPanelRecord } from "../../api/structures.ts";
 import { structureName } from "../../scene/structures.ts";
 import type { Inside } from "../inside.ts";
-import { DepthBand, LengthBars, TickStrip } from "./charts.tsx";
+import { type AxisMark, DepthBand, LengthBars, TickStrip } from "./charts.tsx";
 import { FullStructureRecord } from "./FullStructureRecord.tsx";
 import { Disputed, Note, Rows, Section } from "./parts.tsx";
 import { RecordPanel } from "./RecordPanel.tsx";
 import {
-  depthBand,
+  type DepthView,
+  type MemberView,
+  type SizeGroup,
   disputedBy,
   flowText,
   matchedText,
   measureLines,
-  memberStrip,
   papersOf,
-  sizeView,
   skyView,
   structureLede,
+  structureParts,
   structureSubtitle,
 } from "./structureText.ts";
 
@@ -36,38 +39,60 @@ interface Props {
   onClose: () => void;
 }
 
-/** What each part reads. */
-interface PartProps {
-  detail: StructureDetail;
-  cosmology: Cosmology | undefined;
+/** The structure's record: its heading, sentence and parts, and every note, quote and value under
+ * one link; or, where its record cannot be read, what could not be. */
+export function StructureRecordPanel({ detail, approximate, inside, cosmology, onClose }: Props) {
+  const read = useMemo(() => readPanelRecord(detail), [detail]);
+  const shared = {
+    label: "The chosen structure",
+    title: structureName(detail),
+    italic: true,
+    closeLabel: "Close the structure's panel",
+    onClose,
+  };
+  const cull = inside?.on === true ? <CullNote approximate={inside.approximate} /> : null;
+  if ("problem" in read)
+    return (
+      <RecordPanel {...shared} subtitle={<span data-testid="structure-kind">{structureSubtitle({ ...detail, record: {} })}</span>}>
+        <Note testid="structure-unread">Its record could not be read in full ({read.problem}), so only how it is drawn is shown.</Note>
+        {cull}
+        <Drawn detail={detail} approximate={approximate} />
+      </RecordPanel>
+    );
+  return <ReadStructure s={read.structure} approximate={approximate} cull={cull} cosmology={cosmology} shared={shared} />;
 }
 
-/** The structure's record: its heading, sentence and parts, and every note, quote and value under
- * one link. */
-export function StructureRecordPanel({ detail, approximate, inside, cosmology, onClose }: Props) {
-  const band = depthBand(detail, cosmology);
-  const members = memberStrip(detail, cosmology);
-  const disputed = disputedBy(detail);
+function ReadStructure({
+  s,
+  approximate,
+  cull,
+  cosmology,
+  shared,
+}: {
+  s: StructureRecord;
+  approximate: boolean;
+  cull: ReactNode;
+  cosmology: Cosmology | undefined;
+  shared: { label: string; title: string; italic: boolean; closeLabel: string; onClose: () => void };
+}) {
+  const parts = useMemo(() => structureParts(s, cosmology), [s, cosmology]);
+  const disputed = disputedBy(s);
   return (
     <RecordPanel
-      label="The chosen structure"
-      title={structureName(detail)}
-      italic
-      subtitle={<span data-testid="structure-kind">{structureSubtitle(detail)}</span>}
-      lede={structureLede(detail, cosmology)}
-      closeLabel="Close the structure's panel"
-      onClose={onClose}
+      {...shared}
+      subtitle={<span data-testid="structure-kind">{structureSubtitle(s)}</span>}
+      lede={structureLede(s, parts)}
       fullLabel="Show the record's notes, quotes and every value"
-      full={() => <FullStructureRecord detail={detail} approximate={approximate} />}
+      full={() => <FullStructureRecord s={s} approximate={approximate} />}
     >
       {disputed.length === 0 ? null : <Disputed by={disputed} />}
-      {inside?.on === true ? <CullNote approximate={inside.approximate} /> : null}
-      <Depth band={band} members={members} />
-      <Sky detail={detail} cosmology={cosmology} />
-      <Size detail={detail} cosmology={cosmology} />
-      <Measures detail={detail} used={[...(band?.used ?? []), ...(members?.used ?? [])]} />
-      <Drawn detail={detail} approximate={approximate} />
-      <Papers detail={detail} cosmology={cosmology} />
+      {cull}
+      <Depth band={parts.band} members={parts.members} />
+      <Sky s={s} />
+      <Size groups={parts.size} />
+      <Measures s={s} used={[...(parts.band?.used ?? []), ...(parts.members?.used ?? [])]} />
+      <Drawn detail={s} approximate={approximate} />
+      <Papers s={s} />
     </RecordPanel>
   );
 }
@@ -82,40 +107,31 @@ function CullNote({ approximate }: { approximate: boolean }) {
   );
 }
 
-const PC = (mpc: number) => `${mpc.toFixed(1)} Mpc`;
+const mpcText = (mpc: number) => `${mpc.toFixed(1)} Mpc`;
+
+/** A depth chart's accessible name: its ends and each mark. */
+const depthLabel = (start: string, view: DepthView, marks: readonly AxisMark[]) =>
+  `${start} from ${mpcText(view.from)} to ${mpcText(view.to)}${marks.map((m) => `; ${m.label} at ${mpcText(m.value)}`).join("")}`;
 
 /** Its depth as a band between its bounds, or its members as ticks. */
-function Depth({ band, members }: { band: ReturnType<typeof depthBand>; members: ReturnType<typeof memberStrip> }) {
-  if (band !== undefined)
-    return (
-      <Section title="Depth" testid="record-depth">
-        <DepthBand
-          from={band.from}
-          to={band.to}
-          marks={band.marks}
-          unit="Mpc"
-          label={`From ${PC(band.from)} to ${PC(band.to)}${band.marks.map((m) => `; ${m.label} at ${PC(m.value)}`).join("")}`}
-        />
-        <Note>{band.note}</Note>
-      </Section>
-    );
-  if (members === undefined) return null;
+function Depth({ band, members }: { band: DepthView | undefined; members: MemberView | undefined }) {
+  const view = band ?? members;
+  if (view === undefined) return null;
   return (
-    <Section title="Members" testid="record-depth">
-      <TickStrip
-        values={members.values}
-        marks={members.marks}
-        unit="Mpc"
-        label={`${members.values.length} members from ${PC(members.from)} to ${PC(members.to)}${members.marks.map((m) => `; ${m.label} at ${PC(m.value)}`).join("")}`}
-      />
-      <Note>{members.note}</Note>
+    <Section title={band === undefined ? "Members" : "Depth"} testid="record-depth">
+      {members === undefined || band !== undefined ? (
+        <DepthBand from={view.from} to={view.to} marks={view.marks} unit="Mpc" label={depthLabel("Depth", view, view.marks)} />
+      ) : (
+        <TickStrip values={members.values} marks={members.marks} unit="Mpc" label={depthLabel(`${members.values.length} members`, members, members.marks)} />
+      )}
+      <Note>{view.note}</Note>
     </Section>
   );
 }
 
 /** Where it is on the sky, in its frame. */
-function Sky({ detail }: PartProps) {
-  const sky = skyView(detail);
+function Sky({ s }: { s: StructureRecord }) {
+  const sky = skyView(s);
   if (sky === undefined || sky.lines.length === 0) return null;
   return (
     <Section title="On the sky" testid="record-sky">
@@ -126,8 +142,7 @@ function Sky({ detail }: PartProps) {
 }
 
 /** Its lengths as bars, one axis for each unit, each with what it was published as. */
-function Size({ detail, cosmology }: PartProps) {
-  const groups = sizeView(detail, cosmology);
+function Size({ groups }: { groups: readonly SizeGroup[] }) {
   if (groups.length === 0) return null;
   return (
     <Section title="Size" testid="record-size">
@@ -142,8 +157,8 @@ function Size({ detail, cosmology }: PartProps) {
 }
 
 /** Its other values, each on its line. */
-function Measures({ detail, used }: { detail: StructureDetail; used: readonly string[] }) {
-  const lines = measureLines(detail, used);
+function Measures({ s, used }: { s: StructureRecord; used: readonly string[] }) {
+  const lines = measureLines(s, used);
   if (lines.length === 0) return null;
   return (
     <Section title="Measures" testid="record-measures">
@@ -167,8 +182,8 @@ function Drawn({ detail, approximate }: { detail: StructureDetail; approximate: 
 }
 
 /** Its papers, once each, by first author and year. */
-function Papers({ detail }: PartProps) {
-  const papers = [...papersOf(detail)];
+function Papers({ s }: { s: StructureRecord }) {
+  const papers = [...papersOf(s)];
   if (papers.length === 0) return null;
   return (
     <Section title="From" testid="record-papers">

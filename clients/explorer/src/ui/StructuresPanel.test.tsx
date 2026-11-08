@@ -46,7 +46,7 @@ describe("the structures", () => {
     fireEvent.click(screen.getByText("Show the record's notes, quotes and every value"));
     expect(screen.getByTestId("structure-matched").textContent).toBe("Placed by a point in icrs, derived from geometry Point.");
     const values = screen.getByTestId("structure-values").textContent ?? "";
-    expect(values).toContain("density at deepest minimum: -1.89 dimensionless, no uncertainty reported");
+    expect(values).toContain("density at deepest minimum: −1.89 dimensionless, no uncertainty reported");
     expect(values).toContain("reconstructed; Tully, Pomarède, Graziani, Courtois, Hoffman & Shaya 2019, ApJ 880, 24");
   });
 
@@ -116,7 +116,7 @@ describe("the chosen structure's record panel", () => {
   it("leads with one sentence of what it is, and draws its depth as a band with its walls marked", () => {
     panel(R12_VELA);
     expect(screen.getByTestId("lede").textContent).toBe("A supercluster 234–348 Mpc away, spanning at least 124 Mpc.");
-    expect(screen.getByRole("img", { name: "From 233.5 Mpc to 348.0 Mpc; wall 1 at 262.3 Mpc; wall 2 at 319.5 Mpc" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Depth from 233.5 Mpc to 348.0 Mpc; wall 1 at 262.3 Mpc; wall 2 at 319.5 Mpc" })).toBeTruthy();
   });
 
   it("draws its lengths as bars on one axis for each unit, a lower limit open, with what they were published as", () => {
@@ -146,5 +146,16 @@ describe("the chosen structure's record panel", () => {
     fireEvent.click(screen.getByText("Show the record's notes, quotes and every value"));
     expect(screen.getByTestId("structure-notes").textContent).toContain("The region drawn is the one the paper measures the overdensity in");
     expect(screen.getByTestId("structure-values").textContent).toContain("The main wall extends over at least 120 h70 Mpc.");
+  });
+});
+
+describe("a structure whose record the panel cannot read", () => {
+  it("is still named and its drawing explained, and the panel says what it could not read", () => {
+    render(<StructureRecordPanel detail={{ ...LOCAL_VOID, record: { disputes: [{}] } }} approximate={false} onClose={() => undefined} />);
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Local Void");
+    expect(screen.getByTestId("structure-unread").textContent).toBe(
+      "Its record could not be read in full (record.disputes.0.cite: Invalid input: expected object, received undefined), so only how it is drawn is shown.",
+    );
+    expect(screen.getByTestId("record-drawn").textContent).toContain("Drawn as a point in icrs.");
   });
 });

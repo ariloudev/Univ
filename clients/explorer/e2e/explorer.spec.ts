@@ -311,7 +311,7 @@ test("reads an object's record as a gazetteer entry: on the sky, its catalogues,
   await find(page, "canis MAJOR");
   const panel = page.getByRole("region", { name: "The chosen object" });
   await expect(panel.getByTestId("record-position")).toContainText(/\d{2}h \d{2}m [\d.]+s, [+−]\d{2}° \d{2}′ [\d.]+″/);
-  await expect(panel.getByTestId("record-position")).toContainText(/l, b[\d.]+°, [+−][\d.]+°/);
+  await expect(panel.getByTestId("record-position")).toContainText(/Galacticl [\d.]+°, b [+−][\d.]+°/);
   await expect(panel.getByTestId("catalogues-summary")).toBeVisible();
   await expect(panel.getByTestId("record-distance").locator("[data-kind]").first()).toBeVisible();
   await panel.getByText("Show every name, value and flag, with the papers").click();

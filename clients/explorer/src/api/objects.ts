@@ -208,7 +208,8 @@ export function placeOf(record: ObjectRecord): [number, number, number] | undefi
   return [position.x * k, position.y * k, position.z * k];
 }
 
-const sameKey = (m: Measurement, key: z.infer<typeof MeasurementKey>) =>
+/** Whether `m` is the measurement `key` names. */
+export const sameKey = (m: Measurement, key: z.infer<typeof MeasurementKey>) =>
   m.entry === key.entry && m.quantity === key.quantity && m.n === key.n;
 
 /** The measurement the preferred distance was taken from, and every other distance. */

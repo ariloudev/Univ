@@ -196,11 +196,11 @@ describe("the chosen object's record, as a gazetteer entry", () => {
   it("gives the proper motion, radial velocity and redshift with uncertainty, kind of value and source", () => {
     ready(HIP_32754);
     const motion = screen.getByTestId("motion").textContent ?? "";
-    expect(motion).toContain("Proper motion μα* -15.5 milliarcsecond per year, no uncertainty reported (measured, Gaia DR3, bright stars)");
-    expect(motion).toContain("Proper motion μδ -221.1 milliarcsecond per year");
+    expect(motion).toContain("Proper motion μα* −15.5 milliarcsecond per year, no uncertainty reported (measured, Gaia DR3, bright stars)");
+    expect(motion).toContain("Proper motion μδ −221.1 milliarcsecond per year");
     expect(motion).toContain("Radial velocity 27.25 ± 0.1954 kilometre per second (measured, Gaia DR3, bright stars)");
     ready(ANDROMEDA_GROUPED);
-    expect(screen.getAllByTestId("motion")[1]?.textContent).toContain("Redshift -585 kilometre per second, no uncertainty reported, z = -0.001951");
+    expect(screen.getAllByTestId("motion")[1]?.textContent).toContain("Redshift −585 kilometre per second, no uncertainty reported, z = −0.001951");
   });
 
   it("names the group the object belongs to, in its catalogue's form, to choose", async () => {
@@ -277,7 +277,9 @@ describe("the chosen object's record panel", () => {
     panel(R12_HIP_32754);
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("HIP 32754");
     expect(screen.getByTestId("lede").textContent).toBe("A K-type star 34.7 pc away, in the stars domain.");
-    expect(screen.getByRole("region", { name: "The chosen object" }).textContent).toContain("Gaia DR3 1000166358456525568 · object 17");
+    // Gaia EDR3's number repeats Gaia DR3's, and the crossmatch's HIP 32754 the heading: neither is
+    // given again.
+    expect(screen.getByRole("region", { name: "The chosen object" }).querySelector("p")?.textContent).toBe("Gaia DR3 1000166358456525568 · object 17");
   });
 
   it("gives each value on a line of label, value with its source's short name, and its kind's mark", () => {
@@ -303,7 +305,7 @@ describe("the chosen object's record panel", () => {
 
   it("draws the many redshifts one source gives as ticks, marked with another source's velocity", () => {
     panel(R12_M31);
-    expect(screen.getByRole("img", { name: /^12 redshifts from DESI DR1 as cz, from -?[\d,]+ to -?[\d,]+ km\/s$/ })).toBeTruthy();
+    expect(screen.getByRole("img", { name: /^12 redshifts from DESI DR1 as cz, from −?[\d,]+ to −?[\d,]+ km\/s$/ })).toBeTruthy();
     expect(screen.getByTestId("record-motion").textContent).toContain("CMB frame−585 km/s Cosmicflows-4");
   });
 

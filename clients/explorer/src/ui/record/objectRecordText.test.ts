@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { R12_DRACO, R12_ERASS, R12_GROUP, R12_HIP_32754, R12_M31, R12_NGC, R12_SDSS } from "../../test/records/index.ts";
+import { figures } from "../../scene/format.ts";
 import { sourceShort } from "./names.ts";
-import { bpRpOf, brightnessLines, cataloguesText, distanceView, motionLines, objectLede, velocityView } from "./objectRecordText.ts";
+import { brightnessLines, cataloguesText, distanceView, drawnColourOf, hasProperMotion, motionLines, objectLede, velocityView } from "./objectRecordText.ts";
 
 const name = (id: string) => sourceShort(id);
 
@@ -25,6 +26,10 @@ describe("the object panel's distance", () => {
     expect(view).toMatchObject({ figure: "746.8", unit: "kpc", minus: "15", plus: "16", aside: "2.44 million ly", kind: "measured" });
     expect(view?.rule).toMatch(/^Preferred: Cosmicflows-4, by the rule “measured redshifts first/);
     expect(distanceView(R12_ERASS, name)).toMatchObject({ figure: "1.584", unit: "Gpc", aside: "from z = 0.3948 ± 0.014", kind: "estimated" });
+    // A redshift gives no range in distance: the lead takes the uncertainty Univ Server gives the
+    // preferred distance, a fraction of it.
+    const total = R12_ERASS.preferred?.uncertainty.total ?? 0;
+    expect(distanceView(R12_ERASS, name)?.plus).toBe(figures(total * 1.584, 2));
   });
 
   it("puts every distance and parallax on one axis, a parallax at its inverse and labelled so, the preferred marked", () => {
@@ -57,16 +62,28 @@ describe("the object panel's brightness, colour and motion", () => {
       "Type K Gaia DR3 estimated",
     ]);
     expect(brightnessLines(R12_NGC, name).map((l) => l.label)).toEqual(["Ks", "Kc"]);
-    expect(bpRpOf(R12_HIP_32754)).toBeCloseTo(1.5287, 4);
-    expect(bpRpOf(R12_NGC)).toBeUndefined();
+    // The index the view draws the star by: Gaia's published BP−RP before Hipparcos's B−V.
+    expect(drawnColourOf(R12_HIP_32754)).toEqual({ index: expect.closeTo(1.5287, 4), bands: "BP-RP", source: "gaia-dr3-bright" });
+    expect(drawnColourOf(R12_NGC)).toBeUndefined();
   });
 
   it("gives a star's proper motion as its total and position angle, from one source's two components", () => {
+    expect(hasProperMotion(R12_HIP_32754)).toBe(true);
+    expect(hasProperMotion(R12_M31)).toBe(false);
     // Gaia DR3: μα* −15.50, μδ −221.08 mas/yr: 221.6 mas/yr, PA 180° + atan(15.50/221.08) = 184°.
     expect(motionLines(R12_HIP_32754, name)).toEqual([
       { label: "Proper", value: "221.6 mas/yr to PA 184°", source: "Gaia DR3", kind: "measured" },
       { label: "Radial", value: "27.25 ± 0.2 km/s", source: "Gaia DR3", kind: "measured" },
     ]);
+  });
+
+  it("gives a small redshift published as z as cz, its uncertainty converted with it", () => {
+    const desi = R12_DRACO.measurements.find((m) => m.source === "desi-dr1" && m.quantity === "redshift");
+    if (desi === undefined) throw new Error("no DESI redshift");
+    const one = { ...desi, native: { value: -0.00124, unit: "dimensionless", uncertainty: { form: "symmetric", sigma: 4.9e-6 } } };
+    const line = velocityView({ ...R12_NGC, measurements: [one] }, name).lines[0];
+    // cz = −0.00124 c = −371.7 km/s, and σ = 4.9e-6 c = 1.5 km/s.
+    expect(line?.value).toBe("−371.7 ± 1.5 km/s");
   });
 
   it("gives a galaxy's velocity by frame, once for each source, and many redshifts of one source as a strip", () => {
