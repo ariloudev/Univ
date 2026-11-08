@@ -70,6 +70,8 @@ requirements:
         name: "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane, and run on no farther than four times it."
       - key: 01a1bbd3-54fe-7370-9d9f-cdc8d373d024
         name: "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude."
+      - key: 01a1bc8f-ef0a-7540-a283-8bf654031f2c
+        name: "A ring fades where the next ring lies fewer than 6 CSS pixels from it on the view and is not drawn where it lies fewer than 2, and a ring's label is left out where the ring has faded, so that rings far toward the horizon do not crowd into a band."
       - key: 01a1bbd3-54fe-7370-9d9f-cdc9e9f39082
         name: "Each ring is labelled with its distance where it crosses the spoke of zero longitude, or, where the rings drawn are arcs short of going round the barycentre, the line from it through their middle, and a label that would overlap one already placed is left out."
       - key: 01a1bbd3-54fe-7370-9d9f-cdca6d344fc9

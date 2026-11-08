@@ -1,0 +1,12 @@
+key: 01a1bc90-1384-725f-a2dc-b479ffa9acb1
+id: build
+versions:
+  - key: 01a1bc90-1384-725f-a2dc-b47ed089f68f
+    at: 2026-11-08T19:08:41Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Smooth lines and faded rings"
+    goal: "Every line is drawn with smooth edges, crowded rings fade toward the horizon and their labels go, and large ring distances read in the next unit"
+    status: planned

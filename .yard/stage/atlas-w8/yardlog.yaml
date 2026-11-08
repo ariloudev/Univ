@@ -1,0 +1,25 @@
+format: yardlog/1
+key: 01a1bc90-1384-725f-a2dc-b477f75b31fc
+branch: "stage/atlas-w8"
+base: "develop"
+title: "stage/atlas-w8"
+revision: 1
+opened:
+  at: 2026-11-08T19:08:41Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1bc90-1384-725f-a2dc-b4787ce41dab
+    id: spec
+  - key: 01a1bc90-1384-725f-a2dc-b479ffa9acb1
+    id: build
+  - key: 01a1bc90-1384-725f-a2dc-b47a46be5438
+    id: close
+acts:
+  - at: 2026-11-08T19:08:41Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"

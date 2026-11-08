@@ -1,0 +1,12 @@
+key: 01a1bc90-1384-725f-a2dc-b47a46be5438
+id: close
+versions:
+  - key: 01a1bc90-1384-725f-a2dc-b47f93418ce2
+    at: 2026-11-08T19:08:41Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
+    status: planned
