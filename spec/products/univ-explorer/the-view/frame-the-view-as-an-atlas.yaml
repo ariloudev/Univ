@@ -48,7 +48,7 @@ requirements:
       - key: 01a1bbb4-503d-7416-9488-04ff805e7421
         name: "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms."
       - key: 01a1bbb4-503d-7416-9488-0500d68ce364
-        name: "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south."
+        name: "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick."
       - key: 01a1bbb4-503d-7416-9488-0501d8ee5c20
         name: "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line."
       - key: 01a1bbb4-503d-7416-9488-0502db0af966
