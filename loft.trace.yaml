@@ -4414,8 +4414,8 @@ links:
         name: "draws the distance rings in place of the equator's ring while their switch is on, and keeps them on in the address"
         body: 5ea64d1d49a1992f47d44e69e4bf78681977bbf3169cf310c2e2ae5f6f0515cd
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
-        body: 3723be5dedff0d4ba12634a4b5cd173c9f219926ddec3d9e0dfdaa7cc5c00549
+        name: "draws the distance rings from their switch beside the grid's, labelled, low over the plane without a WebGL error, and keeps them across a reload"
+        body: 3ffc96f6d43fa429f5258a8a817df565c04d03f1d98e74c8171a4259f7177d12
   - node: 01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2
     reviewed: bb58dcca4524074af18fe349d6c2be081f82bb41cca2da019f0079eb1db69574
     tests:
@@ -4435,8 +4435,8 @@ links:
         name: "starts on where the address turns the rings on, as after a reload"
         body: 589095ec945fc9ff157f0507459a5eb55a1c712f2fbb563e20349de7975d5cf0
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
-        body: 3723be5dedff0d4ba12634a4b5cd173c9f219926ddec3d9e0dfdaa7cc5c00549
+        name: "draws the distance rings from their switch beside the grid's, labelled, low over the plane without a WebGL error, and keeps them across a reload"
+        body: 3ffc96f6d43fa429f5258a8a817df565c04d03f1d98e74c8171a4259f7177d12
   - node: 01a1bbd3-54fe-7370-9d9f-cdc75c539aaa
     reviewed: c47e8ca32c5eb92455bcc986af0fc2bbf049a205de842639bc975a2253615f39
     tests:
@@ -4455,15 +4455,36 @@ links:
       - file: "clients/explorer/src/scene/rings.test.ts"
         name: "are arcs near a focus far from the barycentre, drawn finely and from a centre among them"
         body: 2d465ee7d90d63e409aac2d12c5b61336708ff166580c187b4f167d2ba27e849
+  - node: 01a1bc8f-ef0a-7540-a283-8bf654031f2c
+    reviewed: 1d5e8183a5cac142a4ea4be6f83a1c74142b45cb5e1da93f92c2c459228b2160
+    tests:
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "carry at each ring's end the vector out to the next ring, by which they fade as they crowd, and none on the spokes"
+        body: b6e0b229d01aa591059703c545eeb99bb55d7dda99015a6eec9191f951ad584d
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "lie as far apart on the view as their step from above, and closer toward the horizon"
+        body: 346993fe05a4e6b98e45ddc031fbf7f8ebb88502413293b1e164b82b2776e0cb
+      - file: "clients/explorer/src/scene/ribbon.test.ts"
+        name: "gives each corner the neighbour of the end it is at, where the ends have any"
+        body: 928b7598f05cde9888774118aaa4fa2e6a94d6e8f521e639a5d86dbb2fa1f5f0
+      - file: "clients/explorer/src/ui/overlay.test.ts"
+        name: "leaves out the labels of the rings that fade where they crowd toward the horizon, and keeps the near ones"
+        body: 49d190f06cf93cc972ed23841833ebe3c92881b91b18a54ce9281d3bba7e10ce
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the distance rings from their switch beside the grid's, labelled, low over the plane without a WebGL error, and keeps them across a reload"
+        body: 3ffc96f6d43fa429f5258a8a817df565c04d03f1d98e74c8171a4259f7177d12
   - node: 01a1bbd3-54fe-7370-9d9f-cdc9e9f39082
     reviewed: c3bddda6d93f07fc52ac6da7db159a33a17a098d5c37bcf5e839c7f72d6b2b8a
     tests:
+      - file: "clients/explorer/src/scene/rings.test.ts"
+        name: "write each distance in the largest unit it reaches one of, to the step's last figure"
+        body: 8b4a64b13b6e1abd8660de48753647ff80f93d54f6a32051f3cc08492b172f56
       - file: "clients/explorer/src/scene/rings.test.ts"
         name: "label each ring with its distance where it crosses the spoke of zero longitude"
         body: 5e0268d5699a02ea2b9c2db8518d0b47f7d2006ef18d80908ab0f7199d72e332
       - file: "clients/explorer/src/scene/rings.test.ts"
         name: "label rings side by side apart, to the step's last figure, far from the barycentre"
-        body: ab18fb2487caa430d04059ba95ab7894482bb15720f3e668e7a0a9d6605bbf01
+        body: 517ed0e81e7661f26665567437cdc2dc6eaf12db481e224445145a6a79f3082d
       - file: "clients/explorer/src/scene/rings.test.ts"
         name: "are whole rings, labelled on the spoke of zero longitude, where arcs would go round"
         body: 97ee4d6f4645c419d404033e1fe439ed0390aadcf515b04ea9c636febe8146b3
@@ -4477,8 +4498,8 @@ links:
         name: "hides the equator ring's label as soon as the rings are on, though none is yet drawn, and keeps the rings' labels clear of the structures' names"
         body: 19bb36c87bbb0904eaf6b0b71b65f729b522db988e596f693acd632c6ab7af07
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
-        body: 3723be5dedff0d4ba12634a4b5cd173c9f219926ddec3d9e0dfdaa7cc5c00549
+        name: "draws the distance rings from their switch beside the grid's, labelled, low over the plane without a WebGL error, and keeps them across a reload"
+        body: 3ffc96f6d43fa429f5258a8a817df565c04d03f1d98e74c8171a4259f7177d12
   - node: 01a1bbd3-54fe-7370-9d9f-cdca6d344fc9
     reviewed: 91894d1d0f22232143df9e86e3cacfa237e63bcf0502b33ae854bd0783c6ab4c
     tests:
@@ -4487,13 +4508,13 @@ links:
         body: f81f5fb603d1cee8bf328e21ef26fb7bd6d10c7a722aae4cf9ea2616f4b60474
       - file: "clients/explorer/src/scene/controller.test.ts"
         name: "draws the distance rings in place of the equator's ring while they are on, and the ring again once off"
-        body: 175dd3bca26d2b51e266168b8a98401865c05631c340c5bf646c2b663146f996
+        body: 20688c0a305fefb439b422d508486db1dc94f15944f274653846032dc71e9e44
   - node: 01a1bbd3-54fe-7370-9d9f-cdcb2966a530
     reviewed: eedc7a6eeb403b5d72405a50446a543d4696931adf45c916f952685ab3408413
     tests:
       - file: "clients/explorer/src/scene/controller.test.ts"
         name: "draws the distance rings in place of the equator's ring while they are on, and the ring again once off"
-        body: 175dd3bca26d2b51e266168b8a98401865c05631c340c5bf646c2b663146f996
+        body: 20688c0a305fefb439b422d508486db1dc94f15944f274653846032dc71e9e44
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "labels each distance ring where it crosses the spoke of zero longitude, in place of the equator ring's label, none overlapping"
         body: dd5e140113436aff7d7dba4b826229869a2105acfbaf5573af0e11666a7d0bc5
@@ -4525,8 +4546,8 @@ links:
         name: "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
         body: 3874c58a625a57efa8c89cd86a65167d1bf14eced65ebb036a23abf2f7228884
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload"
-        body: 3723be5dedff0d4ba12634a4b5cd173c9f219926ddec3d9e0dfdaa7cc5c00549
+        name: "draws the distance rings from their switch beside the grid's, labelled, low over the plane without a WebGL error, and keeps them across a reload"
+        body: 3ffc96f6d43fa429f5258a8a817df565c04d03f1d98e74c8171a4259f7177d12
   - node: 01a1b7f5-f51b-71f9-80de-cd251f348c42
     reviewed: 1872ff6a009aea30596b02dc96eb32775aef1c5673945137202b23afe7a86e45
     tests:
@@ -5033,7 +5054,7 @@ links:
         body: ef7f0befbcb7192c8917d32b4ddbd4fa2060379a3417a609476415c6b21ab0df
       - file: "clients/explorer/src/scene/ribbon.test.ts"
         name: "draws each segment as two triangles covering both its sides, from end to end"
-        body: b1eac9b99f854bc464d1bee14bb8815f3e9d26a212cd40cacef270a85edf1d32
+        body: 89b06fd54563a0f3b4325011fbbc0567c2ba15653c9dda22bd1a1c2aa48cd534
   - node: 01a1a497-e843-728a-bce8-3ffa426590e2
     reviewed: f0b8b7ee41de7be2ce86c64da40f91c05bc36dcc41c0bcfc3c8cb094a930a4c5
     tests:

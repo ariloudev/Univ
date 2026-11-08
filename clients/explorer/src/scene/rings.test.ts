@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { type View, unitsPerPixel } from "./camera.ts";
-import { ringLabels, ringLines, ringSet } from "./rings.ts";
+import { type View, focalPixels, project, unitsPerPixel } from "./camera.ts";
+import { FADE, type Lines } from "./drawing.ts";
+import { type RingSet, ringLabels, ringLines, ringSet, ringSpacing } from "./rings.ts";
 import { scaleBar } from "./scale.ts";
 import { IDENTITY, type Mat3, type Vec3, add, apply } from "./vec.ts";
 
@@ -31,7 +32,7 @@ function must<T>(value: T | undefined): T {
 const rings = (v: View, toFrame: Mat3 = IDENTITY) => must(ringSet(v, toFrame, "galactic", 800));
 
 /** The vertices of `lines`, in the axes `toFrame` turns the ICRS into. */
-function vertices(lines: ReturnType<typeof ringLines>, toFrame: Mat3): Vec3[] {
+function vertices(lines: Lines, toFrame: Mat3): Vec3[] {
   const out: Vec3[] = [];
   for (let i = 0; i < lines.offsets.length; i += 3) {
     const p = add(lines.centre, [lines.offsets[i] ?? 0, lines.offsets[i + 1] ?? 0, lines.offsets[i + 2] ?? 0]);
@@ -124,7 +125,7 @@ describe("the distance rings", () => {
     const set = rings(view([1000, 0, 0], 50));
     const texts = ringLabels(IDENTITY, set).map((l) => l.text);
     expect(new Set(texts).size).toBe(texts.length);
-    for (const text of texts) expect(text).toMatch(/^[\d,]+(\.\d+)? (pc|kpc|Mpc)$/);
+    for (const text of texts) expect(text).toMatch(/^[\d,]+(\.\d+)? (pc|kpc|Mpc|Gpc)$/);
   });
 
   it("are whole rings, labelled on the spoke of zero longitude, where arcs would go round", () => {
@@ -134,6 +135,47 @@ describe("the distance rings", () => {
     const [label] = ringLabels(IDENTITY, set);
     expect(label?.at[1]).toBeCloseTo(0, 9);
     expect(ringLines(IDENTITY, set).offsets.length / 6).toBe((set.last - set.first + 1) * 192 + 12);
+  });
+
+  it("write each distance in the largest unit it reaches one of, to the step's last figure", () => {
+    const set: RingSet = { axes: "galactic", step: 0.2, first: 4, last: 6, sector: undefined, key: "" };
+    expect(ringLabels(IDENTITY, set).map((l) => l.text)).toEqual(["800 kpc", "1.0 Mpc", "1.2 Mpc"]);
+    expect(ringLabels(IDENTITY, { ...set, first: 71, last: 71 })[0]?.text).toBe("14.2 Mpc");
+    expect(ringLabels(IDENTITY, { ...set, step: 5, first: 199, last: 202 }).map((l) => l.text)).toEqual(["995 Mpc", "1.000 Gpc", "1.005 Gpc", "1.010 Gpc"]);
+  });
+
+  it("lie as far apart on the view as their step from above, and closer toward the horizon", () => {
+    const at = (v: View) => (p: Vec3) => project(v, IDENTITY, p, 800, 800);
+    // From straight above, 100 Mpc off: a step of 10 Mpc is a tenth of the focal length.
+    const above: View = { focus: [0, 0, 0], distance: 100, yaw: 0, pitch: 89.99 * RAD };
+    expect(ringSpacing(at(above), [50, 0, 0], 10)).toBeCloseTo((focalPixels(800) * 10) / 100, 0);
+    // Seen 5 degrees above the plane, the far rings crowd and the near ones do not.
+    const grazing = view([0, 0, 0], 10, 0);
+    grazing.pitch = 5 * RAD;
+    const near = ringSpacing(at(grazing), [-5, 0, 0], 0.5);
+    const far = ringSpacing(at(grazing), [-25, 0, 0], 0.5);
+    expect(far).toBeLessThan(near / 5);
+    // Behind the eye nothing is seen: no crowding to fade for.
+    expect(ringSpacing(at(grazing), [20, 0, 0], 0.5)).toBe(Infinity);
+  });
+
+  it("carry at each ring's end the vector out to the next ring, by which they fade as they crowd, and none on the spokes", () => {
+    const set = rings(view([0, 0, 0], 100));
+    const lines = ringLines(IDENTITY, set);
+    const ends = vertices(lines, IDENTITY);
+    const next = (i: number): Vec3 => [lines.neighbours?.[i * 3] ?? NaN, lines.neighbours?.[i * 3 + 1] ?? NaN, lines.neighbours?.[i * 3 + 2] ?? NaN];
+    const ringEnds = (set.last - set.first + 1) * 192 * 2;
+    expect(lines.neighbours).toHaveLength(lines.offsets.length);
+    for (let i = 0; i < ringEnds; i += 97) {
+      const [x = 0, y = 0] = ends[i] ?? [];
+      const [nx, ny, nz] = next(i);
+      // Out from the barycentre, in the plane, a step long.
+      expect(Math.hypot(nx, ny) / set.step).toBeCloseTo(1, 6);
+      expect(nz).toBe(0);
+      expect((nx * y - ny * x) / (set.step * Math.hypot(x, y))).toBeCloseTo(0, 6);
+    }
+    for (let i = ringEnds; i < ends.length; i += 1) expect(next(i)).toEqual([0, 0, 0]);
+    expect(FADE).toEqual({ gone: 2, full: 6 });
   });
 
   it("stay as they are while the view turns, and change as the eye moves, zooms past a step or changes axes", () => {

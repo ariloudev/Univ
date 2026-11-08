@@ -180,7 +180,7 @@ export class Controller {
     const { width, height, ratio } = this.around.size();
     if (this.ringsSwitched) this.drawRings(height);
     else this.drawRing();
-    this.drawer.draw(this.view, this.toFrame, Math.round(width * ratio), Math.round(height * ratio));
+    this.drawer.draw(this.view, this.toFrame, Math.round(width * ratio), Math.round(height * ratio), ratio);
     return true;
   }
 

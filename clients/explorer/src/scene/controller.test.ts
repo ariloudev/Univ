@@ -144,6 +144,8 @@ describe("the controller", () => {
     expect(drawn.lines.get("equator")).toBeUndefined();
     expect(drawn.lines.get("distance-rings")?.offsets.length).toBeGreaterThan(0);
     expect(controller.rings?.step).toBeGreaterThan(0);
+    // Each end carries its neighbour, by which the rings fade as they crowd.
+    expect(drawn.lines.get("distance-rings")?.neighbours).toHaveLength(drawn.lines.get("distance-rings")?.offsets.length ?? -1);
     // Drawn again only when the rings change: a turn keeps them, a zoom past a step does not.
     const count = () => drawn.set.filter((name) => name === "distance-rings").length;
     const before = count();

@@ -76,7 +76,9 @@ void main() {
 }`;
 
 // Outlines as ribbons (ribbon.ts): each corner of a segment's two triangles placed at its end of
-// the segment, then moved across the segment on the view by half the line's width.
+// the segment, then moved across the segment on the view by half the line's width and a pixel
+// more, the pixel in which the fragment shader fades its edge so that a thin line neither breaks
+// into dashes nor crawls as the view moves.
 export const LINE_VERTEX = `#version 300 es
 in vec3 a_from;
 in vec3 a_to;
@@ -91,11 +93,37 @@ uniform float u_width;
 // How much the offsets are scaled about the centre: 1 for an outline, and for a symbol drawn at
 // a fixed size on the view the megaparsecs its unit spans at the centre's distance.
 uniform float u_scale;
+// For lines of a family that fade where they crowd, such as the distance rings: 1, else 0; the
+// vector from each end to the same place on the next line of the family; and the device pixels
+// between neighbours on the view at which a line is gone and at which it is whole.
+uniform float u_fades;
+in vec3 a_neighbour;
+uniform vec2 u_fadeRange;
+// How far the fragment lies across the line from its middle, device pixels, and how faded.
+// Times the corner's w, with w itself, so that the fragment shader can undo the perspective
+// correction WebGL gives every varying: the distance across is measured on the view, and must be
+// interpolated straight across it (GLSL ES 3.00 has no noperspective).
+out float v_acrossW;
+out float v_w;
+out float v_fade;
 // Just in front of the eye: an end behind it is moved along its segment to here, so that the
 // segment's direction on the view is defined.
 const float NEAR = 1e-9;
 vec4 inFront(vec4 end, vec4 other) {
   return end.w >= NEAR ? end : mix(end, other, (NEAR - end.w) / (other.w - end.w));
+}
+// How whole a line is at its end placed at the clip-space point end: by how far apart on the
+// view its neighbours half a step either side of it lie. Projection is linear, so the half step
+// is projected alone.
+float fadeAt(vec4 end) {
+  // A line without neighbours, such as a spoke among the rings, never fades.
+  if (u_fades < 0.5 || dot(a_neighbour, a_neighbour) == 0.0) return 1.0;
+  vec4 halfStep = u_projection * vec4(u_axes * (0.5 * u_scale * a_neighbour), 0.0);
+  vec4 inner = end - halfStep;
+  vec4 outer = end + halfStep;
+  if (inner.w < NEAR || outer.w < NEAR) return 1.0;
+  float apart = length((outer.xy / outer.w - inner.xy / inner.w) * u_pixels);
+  return smoothstep(u_fadeRange.x, u_fadeRange.y, apart);
 }
 void main() {
   vec4 a = u_projection * vec4(u_axes * (a_from * u_scale) + u_centre, 1.0);
@@ -105,19 +133,32 @@ void main() {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     return;
   }
+  v_fade = fadeAt(a_corner.x < 0.5 ? a : b);
   vec4 from = inFront(a, b);
   vec4 to = inFront(b, a);
   vec2 along = (to.xy / to.w - from.xy / from.w) * u_pixels;
   vec2 dir = length(along) > 0.0 ? normalize(along) : vec2(1.0, 0.0);
-  vec2 across = vec2(-dir.y, dir.x) * a_corner.y * 0.5 * u_width / u_pixels;
+  float halfWidth = 0.5 * u_width + 1.0;
+  float side = a_corner.y * halfWidth;
+  vec2 across = vec2(-dir.y, dir.x) * side / u_pixels;
   vec4 at = a_corner.x < 0.5 ? from : to;
   gl_Position = vec4(at.xy + across * at.w, at.zw);
+  v_acrossW = side * at.w;
+  v_w = at.w;
 }`;
 
 export const LINE_FRAGMENT = `#version 300 es
 precision mediump float;
 uniform vec4 u_colour;
+uniform highp float u_width;
+in float v_acrossW;
+in float v_w;
+in float v_fade;
 out vec4 colour;
 void main() {
-  colour = u_colour;
+  // The share of the pixel the line covers: whole within it, falling off across its edge's pixel,
+  // and a line thinner than a pixel drawn a pixel wide, as faint as it is thin.
+  float across = v_acrossW / v_w;
+  float cover = clamp(0.5 * max(u_width, 1.0) + 0.5 - abs(across), 0.0, 1.0) * min(u_width, 1.0);
+  colour = vec4(u_colour.rgb, u_colour.a * cover * v_fade);
 }`;

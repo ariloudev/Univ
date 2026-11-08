@@ -8,7 +8,7 @@ import { type View, pixelsAt } from "./camera.ts";
 import { type ToDraw, drawList } from "./drawList.ts";
 import { Fades } from "./fades.ts";
 import { type Sight, type Sphere, sightOf } from "./frustum.ts";
-import type { Drawer, FixedSymbol, Lines, Rgba } from "./drawing.ts";
+import { type Drawer, FADE, type FixedSymbol, type Lines, type Rgba } from "./drawing.ts";
 import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpacity, structureStyle } from "./kinds.ts";
 import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
@@ -55,6 +55,8 @@ type Batch = Drawn & { id: string; extent: Points["extent"]; domain: string; sli
 
 interface Outline extends Drawn {
   colour: Rgba;
+  /** 1 where its lines fade as they crowd on the view, else 0. */
+  fades: number;
   /** Its symbol, drawn at a fixed size on the view about its centre, where it has one. */
   symbol: (Drawn & Omit<FixedSymbol, "offsets">) | undefined;
 }
@@ -100,6 +102,9 @@ function compile(gl: WebGL2RenderingContext, vertex: string, fragment: string): 
   return { program, axes: at("u_axes"), centre: at("u_centre"), projection: at("u_projection") };
 }
 
+/** 1 where `lines` fade as they crowd on the view, else 0. */
+const fadesOf = (lines: Lines): number => (lines.neighbours === undefined ? 0 : 1);
+
 export class Renderer implements Drawer {
   private readonly gl: WebGL2RenderingContext;
   private readonly points: Program;
@@ -108,6 +113,7 @@ export class Renderer implements Drawer {
   private readonly lineWidth: WebGLUniformLocation | null;
   private readonly linePixels: WebGLUniformLocation | null;
   private readonly lineScale: WebGLUniformLocation | null;
+  private readonly lineFade: Record<"on" | "range", WebGLUniformLocation | null>;
   /** Each tile's points, by its id, with the sphere they lie in. */
   private readonly batches = new Map<string, Batch>();
   /** The domain whose detail the point program holds, while a frame is drawn, and how opaque its
@@ -147,6 +153,8 @@ export class Renderer implements Drawer {
     this.lineWidth = gl.getUniformLocation(this.lines.program, "u_width");
     this.linePixels = gl.getUniformLocation(this.lines.program, "u_pixels");
     this.lineScale = gl.getUniformLocation(this.lines.program, "u_scale");
+    const line = (name: string) => gl.getUniformLocation(this.lines.program, name);
+    this.lineFade = { on: line("u_fades"), range: line("u_fadeRange") };
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
@@ -300,9 +308,10 @@ export class Renderer implements Drawer {
     this.markers.set(name, { ...this.upload({ ...markers, kinds }), colour: markers.colour });
   }
 
-  /** The segments `offsets` about `centre` as a ribbon to draw. */
-  private uploadLines(centre: Vec3, offsets: Float32Array): Drawn {
-    const ribbon = ribbonOf(offsets);
+  /** The segments `offsets` about `centre`, with their ends' `neighbours` where they fade, as a
+   * ribbon to draw. */
+  private uploadLines(centre: Vec3, offsets: Float32Array, neighbours?: Float32Array): Drawn {
+    const ribbon = ribbonOf(offsets, neighbours);
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
@@ -310,6 +319,8 @@ export class Renderer implements Drawer {
       this.buffer(this.lines.program, "a_to", ribbon.to, 3),
       this.buffer(this.lines.program, "a_corner", ribbon.corners, 2),
     ];
+    // Lines that do not fade leave a_neighbour unread: u_fades is 0 for them.
+    if (ribbon.neighbours !== undefined) buffers.push(this.buffer(this.lines.program, "a_neighbour", ribbon.neighbours, 3));
     this.gl.bindVertexArray(null);
     return { vao, buffers, centre, count: ribbon.count };
   }
@@ -328,11 +339,11 @@ export class Renderer implements Drawer {
     if (lines === undefined) return;
     const { symbol: fixed } = lines;
     const symbol = fixed === undefined ? undefined : { ...this.uploadLines(lines.centre, fixed.offsets), pixels: fixed.pixels, maxWidth: fixed.maxWidth };
-    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets), colour: lines.colour, symbol });
+    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets, lines.neighbours), colour: lines.colour, fades: fadesOf(lines), symbol });
   }
 
-  /** Draws the view on a canvas `width` × `height` device pixels. */
-  draw(view: View, toFrame: Mat3, width: number, height: number): void {
+  /** Draws the view on a canvas `width` × `height` device pixels, `ratio` of them to a CSS pixel. */
+  draw(view: View, toFrame: Mat3, width: number, height: number, ratio: number): void {
     const gl = this.gl;
     gl.viewport(0, 0, width, height);
     gl.clearColor(0.02, 0.027, 0.05, 1);
@@ -341,17 +352,20 @@ export class Renderer implements Drawer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     const sight = sightOf(view, toFrame, width, height);
     const frame = { axes: sight.axes, eye: sight.eye, projection: projection(view, width / height) };
-    this.drawOutlines(frame, width, height);
+    this.drawOutlines(frame, width, height, ratio);
     this.drawPoints(frame, sight, view.distance);
     this.drawMarkers(frame);
   }
 
-  private drawOutlines(frame: Frame, width: number, height: number): void {
+  private drawOutlines(frame: Frame, width: number, height: number, ratio: number): void {
     this.use(this.lines, frame);
     this.gl.uniform2f(this.linePixels, width / 2, height / 2);
     this.gl.uniform1f(this.lineScale, 1);
+    // The fade's bounds are CSS pixels, so many device pixels each.
+    this.gl.uniform2f(this.lineFade.range, FADE.gone * ratio, FADE.full * ratio);
     for (const [name, outline] of this.outlines) {
       if (this.hiddenNames.has(name)) continue;
+      this.gl.uniform1f(this.lineFade.on, outline.fades);
       const style = structureStyle(outline.colour, name === this.chosen);
       this.gl.uniform4f(this.lineColour, ...style.colour);
       this.gl.uniform1f(this.lineWidth, style.lineWidth);

@@ -4,7 +4,8 @@
 /** Light-years in a parsec (IAU 2015: 1 pc = 648000/π au; 1 ly = 63241.077 au). */
 const LY_PER_PC = 3.261_563_777;
 
-const PC_UNITS: readonly (readonly [number, string])[] = [
+/** The parsec units a distance is written in, parsecs in each, largest first. */
+export const PC_UNITS: readonly (readonly [number, string])[] = [
   [1e9, "Gpc"],
   [1e6, "Mpc"],
   [1e3, "kpc"],

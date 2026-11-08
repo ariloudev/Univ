@@ -8,7 +8,8 @@ import type { RefObject } from "react";
 import { project } from "../scene/camera.ts";
 import { shortDistance } from "../scene/format.ts";
 import { ringAnchor } from "../scene/frames.ts";
-import type { RingLabel } from "../scene/rings.ts";
+import { FADE } from "../scene/drawing.ts";
+import { type RingLabel, ringSpacing } from "../scene/rings.ts";
 import { type LabelBox, clearLabels, contains } from "../scene/labels.ts";
 import { ORIGIN, type Vec3 } from "../scene/vec.ts";
 import type { World } from "./useWorld.ts";
@@ -125,13 +126,14 @@ export function nameAt(world: World, x: number, y: number): NameLabel | undefine
 
 /** Places the labels `labels` in `container`, each to the right of its place, those on the view
  * only, the nearest first and each clear of those placed before it; hides those left over. */
-function placeRingLabels(container: HTMLElement | null, labels: readonly RingLabel[], at: (p: Vec3) => At, size: { width: number; height: number }, names: readonly LabelBox[]): void {
+function placeRingLabels(container: HTMLElement | null, labels: readonly RingLabel[], step: number, at: (p: Vec3) => At, size: { width: number; height: number }, names: readonly LabelBox[]): void {
   if (container === null) return;
   const boxes: (LabelBox & { text: string })[] = [];
   labels.forEach((label, i) => {
     const on = at(label.at);
     const box = labelSize(label.text, "ring");
-    if (on !== undefined && on.x >= -box.width && on.x <= size.width && on.y >= 0 && on.y <= size.height) {
+    // A ring that has begun to fade where it crowds its neighbours is not labelled.
+    if (on !== undefined && on.x >= -box.width && on.x <= size.width && on.y >= 0 && on.y <= size.height && ringSpacing(at, label.at, step) >= FADE.full) {
       boxes.push({ id: String(i), x: on.x + box.width / 2, y: on.y, depth: on.depth, ...box, text: label.text });
     }
   });
@@ -155,7 +157,7 @@ export function placeOverlay(world: World, overlay: Overlay, size: { width: numb
   place(overlay.ring.current, controller.ringsOn ? undefined : at(ringAnchor(controller.toFrame, controller.ringRadius)));
   place(overlay.chosen.current, world.chosen === undefined ? undefined : at(world.chosen));
   world.namesShown = placeNames(overlay.names.current, world.names, at, size.ratio ?? 1);
-  placeRingLabels(overlay.ringLabels.current, controller.ringLabels, at, size, world.namesShown);
+  placeRingLabels(overlay.ringLabels.current, controller.ringLabels, controller.rings?.step ?? 0, at, size, world.namesShown);
   const label = overlay.ringLabel.current;
   const text = shortDistance(controller.ringRadius);
   if (label !== null && label.textContent !== text) label.textContent = text;

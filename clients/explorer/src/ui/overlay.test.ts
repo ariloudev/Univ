@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { fakeWorld } from "../test/world.ts";
+import { project } from "../scene/camera.ts";
+import { FADE } from "../scene/drawing.ts";
+import { ringSpacing } from "../scene/rings.ts";
 import type { Vec3 } from "../scene/vec.ts";
 import { FLOW_PIXELS } from "../scene/kinds.ts";
 import { FLOW_REACH } from "../scene/outline.ts";
@@ -100,6 +103,24 @@ describe("the overlay", () => {
     const shown = shownIn(marks.ringLabels.current);
     expect(shown.length).toBeGreaterThan(0);
     expect(shown.every((element) => clearOf(element, name))).toBe(true);
+  });
+
+  it("leaves out the labels of the rings that fade where they crowd toward the horizon, and keeps the near ones", () => {
+    const marks = overlay([]);
+    const world = fakeWorld();
+    // Low over the plane, looking out along the spoke of zero longitude.
+    world.controller.turn(-450, 0);
+    world.controller.setRings(true);
+    world.controller.tick();
+    placeOverlay(world, marks, { width: 800, height: 600 });
+    const { controller } = world;
+    const at = (p: Vec3) => project(controller.view, controller.toFrame, p, 800, 600);
+    const step = controller.rings?.step ?? NaN;
+    const faded = new Set(controller.ringLabels.filter((l) => at(l.at) !== undefined && ringSpacing(at, l.at, step) < FADE.full).map((l) => l.text));
+    expect(faded.size).toBeGreaterThan(0);
+    const shown = shownIn(marks.ringLabels.current).map((e) => e.textContent ?? "");
+    expect(shown.length).toBeGreaterThan(2);
+    expect(shown.filter((text) => faded.has(text))).toEqual([]);
   });
 
   it("draws each structure's name at its centre", () => {
