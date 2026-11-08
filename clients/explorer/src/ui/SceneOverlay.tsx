@@ -7,7 +7,8 @@ import { useStore } from "./store.ts";
 import { headingOf, pointText } from "./text.ts";
 import type { World } from "./useWorld.ts";
 
-/** Earth, the ring's label and the chosen object's mark, kept over their places. */
+/** Earth, the ring's label or the distance rings' labels, and the chosen object's mark, kept
+ * over their places. None takes the pointer. */
 export function Marks({ overlay }: { overlay: Overlay }) {
   return (
     <>
@@ -20,6 +21,7 @@ export function Marks({ overlay }: { overlay: Overlay }) {
       <div ref={overlay.ring} className="pointer-events-none absolute top-0 left-0 text-xs text-dim">
         <span ref={overlay.ringLabel} className="ml-1 whitespace-nowrap" />
       </div>
+      <div ref={overlay.ringLabels} className="pointer-events-none absolute inset-0 text-xs text-dim" data-testid="ring-labels" />
       <div ref={overlay.chosen} className="pointer-events-none absolute top-0 left-0" data-testid="chosen-mark" style={{ display: "none" }}>
         <span className="block h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-warn" />
       </div>

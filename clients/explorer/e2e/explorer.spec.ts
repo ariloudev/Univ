@@ -64,13 +64,15 @@ test("finds an object by name, reads it, and keeps it in the address across a re
   await expect(page.getByRole("region", { name: "The chosen object" }).getByRole("heading").first()).toHaveText(heading ?? "");
 });
 
-test("centres the view on a point clicked, keeping the distance, with the grid drawn over it", async ({ page }) => {
+test("centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it", async ({ page }) => {
   // The view moves at once, so that where things are drawn can be read without waiting.
   await page.emulateMedia({ reducedMotion: "reduce" });
   await firstPoints(page);
   // The grid takes no pointer events: the points under it are named and chosen as without it.
   await page.getByRole("switch", { name: "Grid" }).check();
   await expect(page.getByTestId("grid")).toBeVisible();
+  await page.getByRole("switch", { name: "Rings" }).check();
+  await expect(page.getByTestId("ring-labels").locator("span:visible").first()).toBeVisible();
   const canvas = await centreOf(page.locator("canvas"));
   const tooltip = page.getByRole("tooltip");
   // Out from the centre until the pointer is over a point (its label begins with its id), not
@@ -245,6 +247,23 @@ test("draws the grid across the view from its switch beside the axes, and keeps 
   await page.reload();
   await expect(page.getByRole("switch", { name: "Grid" })).toBeChecked();
   await expect(page.getByTestId("grid-lines")).toHaveAttribute("d", /^M/);
+});
+
+test("draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await firstPoints(page);
+  const toggle = page.getByRole("banner").getByRole("switch", { name: "Rings" });
+  await expect(toggle).not.toBeChecked();
+  await expect(page.getByTestId("ring-labels").locator("span:visible")).toHaveCount(0);
+  await toggle.check();
+  await expect(page).toHaveURL(/rings=on/);
+  const labels = page.getByTestId("ring-labels").locator("span:visible");
+  await expect(labels.first()).toHaveText(/^[\d.,]+ (pc|kpc|Mpc|Gpc)$/);
+  // The top bar keeps to one line with both switches in it.
+  expect((await boxOf(page.getByRole("banner"))).height).toBeLessThanOrEqual(40);
+  await page.reload();
+  await expect(page.getByRole("switch", { name: "Rings" })).toBeChecked();
+  await expect(page.getByTestId("ring-labels").locator("span:visible").first()).toBeVisible();
 });
 
 test("opens a drawer and the record over the view below 1,024 pixels, and closes them again", async ({ page }) => {

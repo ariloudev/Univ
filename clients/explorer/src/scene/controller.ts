@@ -7,6 +7,7 @@ import { type Sight, sightOf } from "./frustum.ts";
 import { FLIGHT_MS, between, pan, turn, viewingDistance, zoom } from "./controls.ts";
 import type { Drawer } from "./drawing.ts";
 import { type Axes, EQUATORIAL, type Frame, equatorRing, frameOf, ringRadius } from "./frames.ts";
+import { type RingSet, ringLines, ringSet } from "./rings.ts";
 import { type Mat3, ORIGIN, type Vec3, norm } from "./vec.ts";
 
 export interface Surroundings {
@@ -35,6 +36,9 @@ export class Controller {
   private flight: Flight | undefined;
   private dirty = true;
   private ring = 0;
+  /** Whether the distance rings are drawn in place of the equator's ring, and the set drawn. */
+  private ringsOn = false;
+  private drawnRings: RingSet | undefined;
   private readonly listeners = new Set<() => void>();
   private readonly drawer: Drawer;
   private readonly around: Surroundings;
@@ -94,6 +98,17 @@ export class Controller {
     this.axes = axes;
     this.frame = frame;
     this.ring = 0;
+    this.drawnRings = undefined;
+    this.changed(this.view);
+  }
+
+  /** Draws the distance rings in place of the equator's ring, or the ring again. */
+  setRings(on: boolean): void {
+    if (on === this.ringsOn) return;
+    this.ringsOn = on;
+    this.ring = 0;
+    this.drawnRings = undefined;
+    this.drawer.setLines(on ? "equator" : "distance-rings", undefined);
     this.changed(this.view);
   }
 
@@ -154,14 +169,32 @@ export class Controller {
     }
     if (!this.dirty) return false;
     this.dirty = false;
-    const radius = ringRadius(this.view.distance);
-    if (radius !== this.ring) {
-      this.ring = radius;
-      this.drawer.setLines("equator", equatorRing(this.toFrame, radius));
-    }
     const { width, height, ratio } = this.around.size();
+    if (this.ringsOn) this.drawRings(height);
+    else this.drawRing();
     this.drawer.draw(this.view, this.toFrame, Math.round(width * ratio), Math.round(height * ratio));
     return true;
+  }
+
+  /** The equator's ring, at the power of ten nearest the eye's distance. */
+  private drawRing(): void {
+    const radius = ringRadius(this.view.distance);
+    if (radius === this.ring) return;
+    this.ring = radius;
+    this.drawer.setLines("equator", equatorRing(this.toFrame, radius));
+  }
+
+  /** The distance rings for a canvas `height` CSS pixels tall, drawn again only when they change. */
+  private drawRings(height: number): void {
+    const set = ringSet(this.view, this.toFrame, this.axes, height);
+    if (set?.key === this.drawnRings?.key) return;
+    this.drawnRings = set;
+    this.drawer.setLines("distance-rings", set === undefined ? undefined : ringLines(this.toFrame, set));
+  }
+
+  /** The distance rings drawn, while they are on. */
+  get rings(): RingSet | undefined {
+    return this.ringsOn ? this.drawnRings : undefined;
   }
 
   /** Asks for a drawing on the next frame, as when new points arrive. */

@@ -1,4 +1,5 @@
-// Keeps the overlay's elements over the places they mark: Earth, the ring's label, the chosen
+// Keeps the overlay's elements over the places they mark: Earth, the ring's label or the
+// distance rings' labels, the chosen
 // object, and the structures' names, which are kept from overlapping. Nothing is measured from
 // the page, so that placing them each frame lays nothing out.
 
@@ -7,6 +8,7 @@ import type { RefObject } from "react";
 import { project } from "../scene/camera.ts";
 import { shortDistance } from "../scene/format.ts";
 import { ringAnchor } from "../scene/frames.ts";
+import { ringLabels } from "../scene/rings.ts";
 import { type LabelBox, clearLabels, contains } from "../scene/labels.ts";
 import { ORIGIN, type Vec3 } from "../scene/vec.ts";
 import type { World } from "./useWorld.ts";
@@ -26,6 +28,8 @@ export interface Overlay {
   earth: RefObject<HTMLDivElement | null>;
   ring: RefObject<HTMLDivElement | null>;
   ringLabel: RefObject<HTMLSpanElement | null>;
+  /** Holds the distance rings' labels, one element each, made as they are needed. */
+  ringLabels: RefObject<HTMLDivElement | null>;
   chosen: RefObject<HTMLDivElement | null>;
   /** Holds one element for each structure's name, its id in `data-structure`. */
   names: RefObject<HTMLDivElement | null>;
@@ -107,12 +111,35 @@ export function nameAt(world: World, x: number, y: number): NameLabel | undefine
   return box === undefined ? undefined : world.names.find((name) => name.id === box.id);
 }
 
+/** Places the labels `labels` in `container`, each to the right of its place, the nearest first
+ * and each clear of those placed before it; hides those left over. */
+function placeRingLabels(container: HTMLElement | null, labels: readonly { text: string; at: Vec3 }[], at: (p: Vec3) => At): void {
+  if (container === null) return;
+  const boxes: (LabelBox & { text: string })[] = [];
+  labels.forEach((label, i) => {
+    const on = at(label.at);
+    const size = labelSize(label.text);
+    if (on !== undefined) boxes.push({ id: String(i), x: on.x + size.width / 2, y: on.y, depth: on.depth, ...size, text: label.text });
+  });
+  const shown = clearLabels(boxes) as (LabelBox & { text: string })[];
+  while (container.children.length < shown.length) container.append(Object.assign(document.createElement("span"), { className: "absolute top-0 left-0 whitespace-nowrap" }));
+  [...container.children].forEach((element, i) => {
+    if (!(element instanceof HTMLElement)) return;
+    const box = shown[i];
+    place(element, box === undefined ? undefined : { x: box.x - box.width / 2, y: box.y - box.height / 2, depth: box.depth });
+    if (box !== undefined && element.textContent !== box.text) element.textContent = box.text;
+  });
+}
+
 /** Places every overlay element for the view `world` shows on a viewport of `size`. */
 export function placeOverlay(world: World, overlay: Overlay, size: { width: number; height: number; ratio?: number }): void {
   const { controller } = world;
   const at = (p: Vec3): At => project(controller.view, controller.toFrame, p, size.width, size.height);
   place(overlay.earth.current, at(ORIGIN));
-  place(overlay.ring.current, at(ringAnchor(controller.toFrame, controller.ringRadius)));
+  const { rings } = controller;
+  // The distance rings take the place of the equator's ring and its label.
+  place(overlay.ring.current, rings === undefined ? at(ringAnchor(controller.toFrame, controller.ringRadius)) : undefined);
+  placeRingLabels(overlay.ringLabels.current, rings === undefined ? [] : ringLabels(controller.toFrame, rings), at);
   place(overlay.chosen.current, world.chosen === undefined ? undefined : at(world.chosen));
   world.namesShown = placeNames(overlay.names.current, world.names, at, size.ratio ?? 1);
   const label = overlay.ringLabel.current;

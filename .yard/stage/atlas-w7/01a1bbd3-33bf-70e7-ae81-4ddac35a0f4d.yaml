@@ -10,6 +10,15 @@ versions:
     title: "Specify the distance rings"
     goal: "frame-the-view-as-an-atlas specifies rings of equal distance and spokes in the axes' equator, spaced at the scale bar's length, switched beside the grid and kept in the address"
     status: active
+  - key: 01a1bbd4-b7cd-710d-86e4-2510e79ef1b4
+    at: 2026-11-08T15:44:02Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Specify the distance rings"
+    goal: "frame-the-view-as-an-atlas specifies rings of equal distance and spokes in the axes' equator, spaced at the scale bar's length, switched beside the grid and kept in the address"
+    status: done
 blocks:
   - key: 01a1bbd3-9899-7112-9cdf-193c7d6ee481
     id: rings-spec-change

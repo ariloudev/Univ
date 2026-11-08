@@ -16,11 +16,30 @@ function overlay(names: string[]): Overlay {
     element.dataset["structure"] = id;
     container.append(element);
   }
-  return { earth: { current: div() }, ring: { current: div() }, ringLabel: { current: document.createElement("span") }, chosen: { current: div() }, names: { current: container } };
+  return {
+    earth: { current: div() },
+    ring: { current: div() },
+    ringLabel: { current: document.createElement("span") },
+    ringLabels: { current: div() },
+    chosen: { current: div() },
+    names: { current: container },
+  };
 }
 
 const numbers = (element: Element | null | undefined) =>
   ((element as HTMLElement | null | undefined)?.style.transform.match(/-?[\d.]+/g) ?? []).map(Number);
+
+/** The elements of `container` shown. */
+const shownIn = (container: HTMLElement | null) => [...(container?.children ?? [])].filter((e) => (e as HTMLElement).style.display !== "none");
+
+/** Whether the labels `elements`, each placed by its top left corner, overlap none of the others. */
+function apart(elements: readonly Element[]): boolean {
+  const boxes = elements.map((e) => {
+    const [x = 0, y = 0] = numbers(e);
+    return { x, y, width: labelSize(e.textContent ?? "").width };
+  });
+  return boxes.every((a, i) => boxes.slice(i + 1).every((b) => Math.abs(a.x - b.x) >= Math.min(a.width, b.width) - 1e-6 || Math.abs(a.y - b.y) >= 16 - 1e-6));
+}
 
 describe("the overlay", () => {
   it("keeps Earth at the centre while it is the focus, and marks the chosen object where it is", () => {
@@ -33,6 +52,30 @@ describe("the overlay", () => {
     expect(marks.ringLabel.current?.textContent).toBe("1 Gpc");
     placeOverlay(fakeWorld(), marks, { width: 800, height: 600 });
     expect(marks.chosen.current?.style.display).toBe("none");
+  });
+
+  it("labels each distance ring where it crosses the spoke of zero longitude, in place of the equator ring's label, none overlapping", () => {
+    const marks = overlay([]);
+    const world = fakeWorld();
+    const ringsOn = (on: boolean) => {
+      world.controller.setRings(on);
+      world.controller.tick();
+      placeOverlay(world, marks, { width: 800, height: 600 });
+    };
+    // Turned so that the equator ring's label at zero longitude is in sight.
+    world.controller.turn(-300, 0);
+    ringsOn(false);
+    expect(marks.ring.current?.style.display).toBe("");
+    ringsOn(true);
+    expect(marks.ring.current?.style.display).toBe("none");
+    const shown = shownIn(marks.ringLabels.current);
+    expect(shown.length).toBeGreaterThan(2);
+    expect(shown[0]?.textContent).toMatch(/^[\d.,]+ (pc|kpc|Mpc|Gpc)$/);
+    expect(apart(shown)).toBe(true);
+    // Off again: the ring's label is back and the rings' labels are gone.
+    ringsOn(false);
+    expect(marks.ring.current?.style.display).toBe("");
+    expect(shownIn(marks.ringLabels.current)).toHaveLength(0);
   });
 
   it("draws each structure's name at its centre", () => {

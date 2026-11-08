@@ -37,7 +37,7 @@ export function ringRadius(distance: number): number {
 }
 
 /** The ICRS point at `angle` radians round the frame's equator, `radius` from Earth. */
-function onEquator(toFrame: Mat3, radius: number, angle: number): Vec3 {
+export function onEquator(toFrame: Mat3, radius: number, angle: number): Vec3 {
   return unapply(toFrame, [radius * Math.cos(angle), radius * Math.sin(angle), 0]);
 }
 

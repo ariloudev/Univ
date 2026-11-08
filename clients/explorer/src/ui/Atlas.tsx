@@ -5,6 +5,7 @@ import type { StructureDetail } from "../api/structures.ts";
 import { AtlasFrame } from "./AtlasFrame.tsx";
 import type { Switch } from "./addressSwitch.ts";
 import { useGrid } from "./gridSwitch.ts";
+import { useDrawnRings } from "./ringsSwitch.ts";
 import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
 import { type DrawerName, Rail, drawerTitle } from "./Rail.tsx";
@@ -142,12 +143,13 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
   );
 }
 
-/** The view's parts of the top bar: the eye's distance with the axes and the grid's switch, and
- * the search. */
+/** The view's parts of the top bar: the eye's distance with the axes and the switches of the grid
+ * and the distance rings, which the view draws while it is on, and the search. */
 function TopBarParts({ world, release, selection, grid }: { world: World; release: number; selection: Selection; grid: Switch }) {
+  const rings = useDrawnRings(world.controller);
   return (
     <>
-      <Whereabouts controller={world.controller} frame={world.frame} grid={grid} />
+      <Whereabouts controller={world.controller} frame={world.frame} grid={grid} rings={rings} />
       <div className="ml-auto">
         <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />
       </div>

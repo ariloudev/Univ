@@ -249,7 +249,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
   const [world, setWorld] = useState<World>();
   const [rotations, setRotations] = useState<Rotations>();
   const [domains, setDomains] = useState<readonly Domain[]>([]);
-  const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), chosen: useRef(null), names: useRef(null) };
+  const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), ringLabels: useRef(null), chosen: useRef(null), names: useRef(null) };
   const overlayRef = useRef(overlay);
   const chooseRef = useRef(onChoose);
   chooseRef.current = onChoose;
