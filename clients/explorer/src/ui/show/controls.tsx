@@ -16,7 +16,7 @@ export function GroupChip({ group, name, label, hidden, onApply, children }: { g
       aria-pressed={on}
       aria-label={label}
       onClick={() => onApply([{ group, name, shown: !on }])}
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-px text-xs ${on ? "border-edge bg-raised" : "border-dashed border-edge text-dim"}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-px text-xs ${on ? "border-edge bg-raised" : "border-dashed border-neat/60 text-dim"}`}
     >
       {children(on)}
     </button>
@@ -27,15 +27,16 @@ export function GroupChip({ group, name, label, hidden, onApply, children }: { g
  * showing it moves nothing. */
 const ONLY_PLACES = { over: "absolute inset-y-0 right-0 bg-panel pl-1.5", beside: "absolute left-full z-10 ml-0.5 rounded bg-panel px-1" };
 
-/** The link that turns on only the group of its line: unseen until the pointer is over the line
- * or it has the focus, and always reachable by the keyboard. */
+/** The link that turns on only the group of its line: unseen, and passing the pointer through to
+ * what it lies over, until the pointer is over the line or the line has the focus (a tap on its
+ * switch gives it the focus on a screen with no pointer); always reachable by the keyboard. */
 export function Only({ what, onOnly, place }: { what: string; onOnly: () => void; place: keyof typeof ONLY_PLACES }) {
   return (
     <button
       type="button"
       aria-label={`Only ${what}`}
       onClick={onOnly}
-      className={`text-xs text-accent opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100 ${ONLY_PLACES[place]}`}
+      className={`pointer-events-none text-xs text-accent opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 focus:pointer-events-auto focus:opacity-100 ${ONLY_PLACES[place]}`}
     >
       only
     </button>

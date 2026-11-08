@@ -6,6 +6,7 @@ import { structureCss } from "../../scene/kinds.ts";
 import { DOMAINS, manifestOf } from "../../test/fixtures.ts";
 import { NOTHING_HIDDEN, hiddenInAddress } from "../hidden.ts";
 import { choicesOf } from "./choices.ts";
+import { pointsText } from "./Points.tsx";
 import { ShowPanel } from "./ShowPanel.tsx";
 
 const choices = choicesOf(
@@ -48,6 +49,10 @@ describe("the Show drawer", () => {
     const heads = within(screen.getByTestId("show-sources")).getAllByRole("columnheader");
     expect(heads.map((h) => h.textContent)).toEqual(["Catalogue", "Stars2", "Nearby9", "Web6"]);
     expect(heads[1]?.getAttribute("title")).toBe("Stars: 2 points");
+  });
+
+  it("writes a domain's points short, in millions from what would round to a thousand thousands", () => {
+    expect([999, 12_944, 780_457, 999_400, 999_600, 35_958_408].map(pointsText)).toEqual(["999", "12.9k", "780k", "999k", "1M", "36M"]);
   });
 
   it("lists each source once on one line by its short name, its title on hover, grouped by its smallest domain and marked in each domain it is in", () => {

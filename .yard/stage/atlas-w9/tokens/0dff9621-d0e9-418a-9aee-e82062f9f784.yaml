@@ -2,12 +2,12 @@ format: yardtokens/2
 session: 0dff9621-d0e9-418a-9aee-e82062f9f784
 host: claude-code
 firstEnded: 2026-11-08T19:55:42Z
-lastEnded: 2026-11-08T21:26:29Z
+lastEnded: 2026-11-08T21:29:26Z
 tokens:
-  input: 1076
-  cacheRead: 136478395
-  cacheWrite: 2098007
-  output: 493552
+  input: 1126
+  cacheRead: 140833996
+  cacheWrite: 2211735
+  output: 514399
 stages:
   - stage: 01a1bcbb-1314-7392-88cc-1fe32cfee5ea
     input: 12
@@ -73,16 +73,16 @@ stages:
         cacheWrite: 223652
         output: 39954
   - stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
-    input: 302
-    cacheRead: 27162016
-    cacheWrite: 632906
-    output: 140014
+    input: 352
+    cacheRead: 31517617
+    cacheWrite: 746634
+    output: 160861
     agents:
       - agent: main
-        input: 174
-        cacheRead: 22416353
-        cacheWrite: 164426
-        output: 91634
+        input: 194
+        cacheRead: 25660088
+        cacheWrite: 180668
+        output: 100928
       - agent: a17f624bf7513c3cf
         type: general-purpose
         input: 40
@@ -95,6 +95,12 @@ stages:
         cacheRead: 1624473
         cacheWrite: 102871
         output: 9329
+      - agent: a39c226564e5fde6f
+        type: general-purpose
+        input: 30
+        cacheRead: 1111866
+        cacheWrite: 97486
+        output: 11553
       - agent: a918b2820e1ddefdd
         type: general-purpose
         input: 10
@@ -116,10 +122,10 @@ stages:
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 734
-    cacheRead: 121338777
-    cacheWrite: 934615
-    output: 361576
+    input: 754
+    cacheRead: 124582512
+    cacheWrite: 950857
+    output: 370870
   - agent: a042084dd1e93530e
     type: general-purpose
     model: claude-opus-5-5
@@ -155,6 +161,13 @@ agents:
     cacheRead: 1006014
     cacheWrite: 119296
     output: 12559
+  - agent: a39c226564e5fde6f
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 30
+    cacheRead: 1111866
+    cacheWrite: 97486
+    output: 11553
   - agent: a66afa4f4519a2aa2
     type: general-purpose
     model: claude-opus-5-5

@@ -40,8 +40,9 @@ export function Points({ choices, hidden, onApply }: Props) {
   );
 }
 
-/** A domain's number of points, short: in thousands from a thousand, in millions from a million. */
-const pointsText = (n: number): string => (n < 1e3 ? String(n) : n < 1e6 ? `${figures(n / 1e3)}k` : `${figures(n / 1e6)}M`);
+/** A domain's number of points, short: in thousands from a thousand, in millions from what
+ * would round to a thousand thousands. */
+export const pointsText = (n: number): string => (n < 1e3 ? String(n) : n < 999_500 ? `${figures(n / 1e3)}k` : `${figures(n / 1e6)}M`);
 
 /** A domain's name in its narrow column's head; its full name labels the column's switch. */
 const COLUMN_NAMES: Readonly<Record<string, string>> = { stars: "Stars", nearby_galaxies: "Nearby", cosmic_web: "Web" };
@@ -50,7 +51,11 @@ const columnName = (name: string) => COLUMN_NAMES[name] ?? sentence(words(name))
 /** The sources in one table, a column for each domain headed by its switch and its points. */
 function Sources({ choices, hidden, onApply }: Props) {
   const groups = new Map<string | undefined, ShowSource[]>();
-  for (const s of choices.sources) groups.set(s.domains[0], [...(groups.get(s.domains[0]) ?? []), s]);
+  for (const s of choices.sources) {
+    const group = groups.get(s.domains[0]);
+    if (group === undefined) groups.set(s.domains[0], [s]);
+    else group.push(s);
+  }
   return (
     <table className="w-full table-fixed border-collapse" data-testid="show-sources">
       <colgroup>

@@ -4192,22 +4192,22 @@ links:
         name: "takes Retry-After as seconds, zero included, or as a date, and the window otherwise"
         body: 768ac26ce29ceb3b685ad257aae80ab47868725463553c0dbeeb45ba2277b5d6
   - node: 01a1a8cc-3d02-7585-85fb-455a3c55e223
-    reviewed: 651043b0559b020ad34b1b42ca4607e462f3153b731744f210ecb9a3c02c8584
+    reviewed: 0d737e117717266b2b460cb0a5d169c9ac0571264cffa8d076943d3dde79985b
     tests:
-      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
-        name: "offers every domain, every source once by its title, the four kinds and each kind of structure with its count"
-        body: 20259281dca2ca65a8ca33bdd340ce945bcac1eec32224b61c21ce515113aa8f
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers every scale domain, each source of its points, the four kinds of value and each kind of structure, all on"
+        body: f6848017729e7e0841f6360e3d912de4ccc42278611e3b6de72e10d24fda4b3f
   - node: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
-    reviewed: b071004bd59d15698d699c866972d0e78d80c999cd25be7768fed6e3d4ee10f2
+    reviewed: a305dafb5da2bdd558a29351e46dc2a71f745cf604150f5baad2a228784b2c65
     tests:
-      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
-        name: "offers every domain, every source once by its title, the four kinds and each kind of structure with its count"
-        body: 20259281dca2ca65a8ca33bdd340ce945bcac1eec32224b61c21ce515113aa8f
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers every scale domain, each source of its points, the four kinds of value and each kind of structure, all on"
+        body: f6848017729e7e0841f6360e3d912de4ccc42278611e3b6de72e10d24fda4b3f
       - file: "clients/explorer/src/ui/hidden.test.ts"
         name: "are none by default, so everything is drawn"
         body: d9258b0b6c9b5b51b88faff5fd4beb49a89df81d979bb179cd1116dfcb973fc5
   - node: 01a1a8cc-3d02-7585-85fb-455d411f618e
-    reviewed: 53babcdf157e4664c27920e9a64bd7cdbc1bd474beb685572ba67fcd88d97772
+    reviewed: fbae5362e75b7f989e50eeee7efacaf6969a43db565dd97c5d0fd7a2cbf79a3e
     tests:
       - file: "clients/explorer/src/scene/masks.test.ts"
         name: "tell which points are drawn: by domain, source and kind"
@@ -4222,14 +4222,14 @@ links:
         name: "set a kind's bit at its index among the kinds"
         body: d02a93b255b2c6e5e758b32170611b917b732eae6510359fefa23a6d16bbff53
   - node: 01a1a8cc-3d02-7585-85fb-455ef6890107
-    reviewed: 9208c4a1b24049ba045412534ba0dda611a46c79c1e69fc6bba569fa2b2ce02e
+    reviewed: ff270dd4f6447073ec040e061259f1eaf790691965d9492450a6ed2a673d1138
     tests:
       - file: "clients/explorer/src/ui/useStructures.test.ts"
         name: "draws and names no structure of a kind turned off, and draws it again once turned on"
         body: 0fa94d94e75066201515b8528ee30582df297bf095f63a5a9ea163a45d0aed69
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
-        name: "lists no structure of a kind turned off, and holds the checkboxes of what is drawn"
-        body: 6ed841c574050c1a0c49c2cec391d6935812924ef179ed519ea9dc7dec675e6c
+        name: "lists no structure of a kind turned off, and holds the switches of what is drawn"
+        body: 8433c6bffbb55114df9a7b653faf151383df90bbc5ace6cf1ff834d95348c5bf
   - node: 01a1a8cc-3d02-7585-85fb-455fd5131e7f
     reviewed: 51a1d42e822a90e1465311acfbb103a1d2ff7ef95ea401205ad27a469141f1a6
     tests:
@@ -4241,19 +4241,217 @@ links:
         body: 16f74791cef77f650b24db0a1ec29717276620a0d683369d39130de07c9545aa
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 225111d5c5faefdfd10ba1f571ae76959a37c1bd9d134c2de75aacf7ce4676e1
+        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
   - node: 01a1a8cc-3d02-7585-85fb-4561d1b0f1de
     reviewed: b9ee14b78d7cda09bc75088b59ba3b163850a2c383f8a1449f5089c72ea34bf5
     tests:
       - file: "clients/explorer/src/ui/hidden.test.ts"
         name: "go through the address and back, each group by its name"
-        body: ae9cc8c4b0ad3c43e245dc8ccef8644bc6ffb18cf450f3d5446befe8abd93e34
+        body: 425b6bbe1158c50019027c8d9413909ec0d59dea365bcb187a94d149d2a8db5e
       - file: "clients/explorer/src/ui/hidden.test.ts"
         name: "are kept in the address with its other parameters"
-        body: 3dd5b554771e6163f0fce4623b24584dc7e90c2b09cdeb0839b49dc2c6c06b1a
+        body: 611c7e569dd2070f841d5a2287d1e45a36ab4c56ef0f82f3bd962d84af0bca68
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 225111d5c5faefdfd10ba1f571ae76959a37c1bd9d134c2de75aacf7ce4676e1
+        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
+  - node: 01a1bcf9-343a-712a-a28c-7503bb8fdbb5
+    reviewed: 8ae59225422c44a47018aaa3dfdebdb7846d7284052dafc3b3f603ab9c48f092
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "sums up what is on, and offers to show everything only while a group is off"
+        body: c8cdd3b21257f4b3c6073bc7dda6e8dcb59aad054e2f427a9880089ae4b40d70
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers"
+        body: 4fa21c607bd552de2fdf2f1cb5cfd22ac89ea90834d558126718839b64da9012
+  - node: 01a1bcf9-343a-712a-a28c-75049b84e0eb
+    reviewed: 105c1bca89abcde5f6d38331efba9fd8b8a1bfd9a2097fb52e747d66610ffca0
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "sums up what is on, and offers to show everything only while a group is off"
+        body: c8cdd3b21257f4b3c6073bc7dda6e8dcb59aad054e2f427a9880089ae4b40d70
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers"
+        body: 4fa21c607bd552de2fdf2f1cb5cfd22ac89ea90834d558126718839b64da9012
+  - node: 01a1bcf9-343a-712a-a28c-7505bbe87412
+    reviewed: 8705f66b5a2ca7ffa949646e94e17121efadb01af8eb91d73cee1b173dc7f75d
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "sums up what is on, and offers to show everything only while a group is off"
+        body: c8cdd3b21257f4b3c6073bc7dda6e8dcb59aad054e2f427a9880089ae4b40d70
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every group that is off on at once"
+        body: 41dbc76fe62ac70f0c422a0f179f05d75aec30f301f81b0c32fbc905a70dbcd4
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "shows only one catalogue from its line, every other one off, and everything again from the summary"
+        body: 4e8bcd43272b27a65de7f73f328a86f5e1cf1679b98550b2787d520a5eadc969
+  - node: 01a1bcf9-343a-712a-a28c-750761703f4d
+    reviewed: 54c11f0bfe16bacc18779d136c479b6b824073882b7b9e3587957a00ce898b73
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "writes a domain's points short, in millions from what would round to a thousand thousands"
+        body: 5980bd1578fee5c4458578f9da9cbdbf08c0a719cd096b7bb4558025489ff2fe
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "heads a column for each scale domain with its switch and its number of points"
+        body: 2ce6bb911c995f8d302ab9296a3842cd17aea9bc277b726fe650e3f5e5a07853
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "gives each scale domain its column with its number of points, from the smallest scale up whatever the order they come in"
+        body: a4abb56bd6dbd2602f66ae002f9a508bbfde5ef8984db66a5a60ed940337ae9e
+  - node: 01a1bcf9-343a-712a-a28c-7509e80a8d25
+    reviewed: 01c489c567c1bf9413e4528ceaa5c97d987a40b327da6532b69be3cc49d75977
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "lists each source once on one line by its short name, its title on hover, grouped by its smallest domain and marked in each domain it is in"
+        body: 8f63cf691a39efef53674df92840b7d74f01b45757b93b055f0655fd90d245de
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "lists each source once by its short name and title, with every domain whose points it places, grouped by the smallest"
+        body: fe5191d3b494a14eab9aa556c9a54c2afd02ecbc48bc30a1930a2996638de1d1
+      - file: "clients/explorer/src/ui/record/names.test.ts"
+        name: "give each source of release 12 its own short name"
+        body: 97481ffbdb725dafcd8089b5b6f9368e770da46d9be0f342cdb4badead89ff16
+  - node: 01a1bd07-c9c2-7632-a4e5-d6277e9ea870
+    reviewed: eeb18aad6dbb5edbf969f2663f543f98010b80acbab6b4ba3b3f99c0f2155803
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "lists each source once on one line by its short name, its title on hover, grouped by its smallest domain and marked in each domain it is in"
+        body: 8f63cf691a39efef53674df92840b7d74f01b45757b93b055f0655fd90d245de
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "lists each source once by its short name and title, with every domain whose points it places, grouped by the smallest"
+        body: fe5191d3b494a14eab9aa556c9a54c2afd02ecbc48bc30a1930a2996638de1d1
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "gives each scale domain its column with its number of points, from the smallest scale up whatever the order they come in"
+        body: a4abb56bd6dbd2602f66ae002f9a508bbfde5ef8984db66a5a60ed940337ae9e
+  - node: 01a1bcf9-343a-712a-a28c-750ae9ac17b6
+    reviewed: 368e31bd2d4efd93b08112342890b8bfe4b695d8812cab3c20501cc76a4b0a14
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "lists each source once on one line by its short name, its title on hover, grouped by its smallest domain and marked in each domain it is in"
+        body: 8f63cf691a39efef53674df92840b7d74f01b45757b93b055f0655fd90d245de
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "lists each source once by its short name and title, with every domain whose points it places, grouped by the smallest"
+        body: fe5191d3b494a14eab9aa556c9a54c2afd02ecbc48bc30a1930a2996638de1d1
+  - node: 01a1bcf9-343a-712a-a28c-750c2cd7edc7
+    reviewed: 1bfc0f8820cfaa7f46cc0704f4415cffc009edf8886948560946415db4aabfcd
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns a scale domain off or on alone, leaving every source's switch as it is"
+        body: b049fdf616dba4be1fcf153e50e003aa805652b0800af084e7d7a58690a619d0
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn a scale domain off or on alone, leaving every source's switch as it is"
+        body: 58d8b29d9611f125988b75f7af23978662647738766f3960aae1578adc66ebfb
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
+        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
+  - node: 01a1bd07-e8b7-762f-97dc-651bd7d745b2
+    reviewed: d6ffc4f2f2983da968fc0cb4243701e69e3980bea7a1a7aad80ea0391a4110c5
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns a scale domain off or on alone, leaving every source's switch as it is"
+        body: b049fdf616dba4be1fcf153e50e003aa805652b0800af084e7d7a58690a619d0
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn a scale domain off or on alone, leaving every source's switch as it is"
+        body: 58d8b29d9611f125988b75f7af23978662647738766f3960aae1578adc66ebfb
+  - node: 01a1bcf9-343a-712a-a28c-750fb1df213e
+    reviewed: 99310359c662a4f85e26a99f88e1bc022ae2dff1086ffa0390ef1d4e74bebfd6
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "marks each kind of value as the key does, hollow and not pressed while off"
+        body: d662d0460621c5619c8ff6f2f2cfeed3708388538c7527c71ff6f1220adfc867
+  - node: 01a1bcf9-343a-712a-a28c-751026f05121
+    reviewed: ecfb4472bbca412651cf11a6bce85d79f75465877684988631716fd29c6ce239
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "marks each kind of value as the key does, hollow and not pressed while off"
+        body: d662d0460621c5619c8ff6f2f2cfeed3708388538c7527c71ff6f1220adfc867
+  - node: 01a1bcf9-343a-712a-a28c-751205a93cd4
+    reviewed: b39f2c804d2ebd634d3a9848f62672ae0a321dbb43bb4f854ad72623a5630b7c
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
+        body: e95204a2f82cda22e69d0a0944cd1a65f2f42b1defc23d5110a0f44c02a59cae
+  - node: 01a1bcf9-343a-712a-a28c-7513e662d7d4
+    reviewed: 9eab7b797d6f86328b5c7b047c60a25651798e6b610a9cfdc5495be370f83ea7
+    tests:
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "groups the kinds of structure by family, with their counts, any other kind under other"
+        body: ae524dbfdc7901708b537c9a56d9dee41d2bc7c4dd2a880823525c7f65d2e6b5
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "keeps each kind of structure's family with its colour, every kind with a colour in one family"
+        body: 62c1b9d07ce018d7dac53075333800cc2c66f0906d9bf7739da7b044073d576e
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
+        body: e95204a2f82cda22e69d0a0944cd1a65f2f42b1defc23d5110a0f44c02a59cae
+  - node: 01a1bcf9-343a-712a-a28c-7514105b3d9c
+    reviewed: 04c623de4934d11ea7a6c369aeace26d376855c2ae4179f7c80252e4ee8f0576
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
+        body: e95204a2f82cda22e69d0a0944cd1a65f2f42b1defc23d5110a0f44c02a59cae
+  - node: 01a1bcf9-343a-712a-a28c-75169b137491
+    reviewed: baad58a0ba8963215ade79cd9a150c98d0232d1d5065a2618b54d3afb09f5072
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn only a source on, with each scale domain whose points it places, and every other source off"
+        body: 3cdc4941ef79915a5b7632c766215ac3959e5f85de020d7b7c5402e40a1ab001
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers only one source or kind of structure on its line, reachable by the keyboard"
+        body: 760b46b6febfde2dc777e08274cff65e3a5b9d1a7be1bb3018cedfd1eec27655
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "shows only one catalogue from its line, every other one off, and everything again from the summary"
+        body: 4e8bcd43272b27a65de7f73f328a86f5e1cf1679b98550b2787d520a5eadc969
+  - node: 01a1bcf9-343a-712a-a28c-75170d5cc323
+    reviewed: 0898ca25fa62d2426dae659b1f5c6ccad3e8eb742f43660e6f233ceca3807b8c
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn only a kind of structure on, and every other kind off"
+        body: 6a0d993fbedaacdfaf8e53e4b251f98dc15425105a36540580cd57a60dbe41e3
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers only one source or kind of structure on its line, reachable by the keyboard"
+        body: 760b46b6febfde2dc777e08274cff65e3a5b9d1a7be1bb3018cedfd1eec27655
+  - node: 01a1bcf9-343a-712a-a28c-7518d12d9fa0
+    reviewed: 95049d4a4b197a67df301cb8ab6c958fb2f476ecddb9d1338854fd7aac034b7b
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers only one source or kind of structure on its line, reachable by the keyboard"
+        body: 760b46b6febfde2dc777e08274cff65e3a5b9d1a7be1bb3018cedfd1eec27655
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "shows only one catalogue from its line, every other one off, and everything again from the summary"
+        body: 4e8bcd43272b27a65de7f73f328a86f5e1cf1679b98550b2787d520a5eadc969
+  - node: 01a1bcf9-343a-712a-a28c-751a2eefe88f
+    reviewed: 216e30158e111b5cd7e8f8e2463654b6e8dc61393783d741ed221f9b2562055e
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every group of the points on, or every scale domain off"
+        body: f251c614eaa23e117425828d325ac8a2e150f167e01e1a36db56df8ebdd2d7f2
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns every group of the points or the structures on, or off, from their All and None"
+        body: dce0af15e21ecfe7dbf979c72dea43ac7ac9188e848ac83129954351c1ce2eab
+  - node: 01a1bcf9-343a-712a-a28c-751b082d1288
+    reviewed: 216c0dd14d5fcbbf727a12971ecfee7bfa6ba6a93048435e41f53d64cab4224d
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every group of the points on, or every scale domain off"
+        body: f251c614eaa23e117425828d325ac8a2e150f167e01e1a36db56df8ebdd2d7f2
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns every group of the points or the structures on, or off, from their All and None"
+        body: dce0af15e21ecfe7dbf979c72dea43ac7ac9188e848ac83129954351c1ce2eab
+  - node: 01a1bcf9-343a-712a-a28c-751c56321a25
+    reviewed: 754b004692a2f2dbdb335fe45cdf32e5937a010401bc10337b6a057bb9657e02
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every kind of structure on, or off"
+        body: 9b21dca9bc59e4b1b365003173130305167038c4816cbd93c66c3f716d475f79
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns every group of the points or the structures on, or off, from their All and None"
+        body: dce0af15e21ecfe7dbf979c72dea43ac7ac9188e848ac83129954351c1ce2eab
+  - node: 01a1bcf9-343a-712a-a28c-751ddc8c2d45
+    reviewed: e0bc76401dce0260e42e467b61bdb94a61915c6cff283ccad848e0aa71983a12
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every kind of structure on, or off"
+        body: 9b21dca9bc59e4b1b365003173130305167038c4816cbd93c66c3f716d475f79
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns every group of the points or the structures on, or off, from their All and None"
+        body: dce0af15e21ecfe7dbf979c72dea43ac7ac9188e848ac83129954351c1ce2eab
   - node: 01a1b7d7-c032-73ad-803e-b103f2a0c853
     reviewed: fb983fbd6b6225e1aabff010b9d7b76a7373c69b7b1de62f02b9332b2211704b
     tests:
@@ -4965,9 +5163,9 @@ links:
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
         body: f6c747ae631f27dc00e680c0ce8c1edd9575b48190839a56cc5615739e0f31aa
-      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
-        name: "shows each kind of structure's colour beside its box"
-        body: 36027fd57d2e962e3d067e174e71d4baa24e5e7367441320f936101aa6886a1f
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
+        body: e95204a2f82cda22e69d0a0944cd1a65f2f42b1defc23d5110a0f44c02a59cae
   - node: 01a1a497-e843-728a-bce8-3ff2f42a8c13
     reviewed: e1cc72ff569ef79da218abd83bb3344b2fc602ac03f482cae2232f1de175d9d3
     tests:
