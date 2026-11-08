@@ -25,10 +25,12 @@ pub fn open(file: Option<&Path>) -> Result<(Connection, bool), String> {
         None => Connection::open_in_memory(),
     }
     .map_err(|e| format!("cannot open the scratch database: {e}"))?;
-    // A scratch database: nothing to recover on a crash, so no journal and no syncs.
+    // A scratch database: nothing to recover on a crash, so no journal and no syncs. It alone is
+    // locked exclusively: a database attached takes normal locking, as SQLite reads no WAL
+    // database read-only under exclusive locking, and Miniflare keeps each in WAL mode.
     db.execute_batch(
         "PRAGMA journal_mode = OFF; PRAGMA synchronous = OFF; PRAGMA temp_store = MEMORY; \
-         PRAGMA cache_size = -1048576; PRAGMA locking_mode = EXCLUSIVE;",
+         PRAGMA cache_size = -1048576; PRAGMA main.locking_mode = EXCLUSIVE;",
     )
     .map_err(|e| format!("cannot set up the scratch database: {e}"))?;
     Ok((db, loaded))

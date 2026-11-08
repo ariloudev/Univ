@@ -18,7 +18,8 @@ export interface Box {
 }
 
 interface Common {
-  /** Culled by a box that is not the structure's published shape. */
+  /** Not the structure's published shape exactly: culled by a box, its bounds or its extents
+   * laid about a point, and holding no point (`holds`). */
   approximate: boolean;
   /** The box that bounds the volume, which the tiles fetched must meet. */
   bounds: Box;

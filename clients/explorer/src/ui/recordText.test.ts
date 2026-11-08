@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { manifestOf } from "../test/fixtures.ts";
 import { HIP_32754, HIP_32754_SOURCES } from "../test/records.ts";
-import { decText, flagsOf, galacticOf, galacticText, masText, mergedDesignations, namesAndDesignations, raText, relationText } from "./recordText.ts";
+import { decText, flagsOf, galacticOf, galacticText, masText, namesAndDesignations, raText, relationText } from "./recordText.ts";
 
 describe("the record in words", () => {
   it("writes right ascension and declination in sexagesimal, carrying a rounded 60", () => {
@@ -25,7 +25,7 @@ describe("the record in words", () => {
   });
 
   it("merges designations by their text, keeping each source", () => {
-    expect(mergedDesignations(HIP_32754).map((d) => [d.text, d.sources.length])).toEqual([
+    expect(namesAndDesignations(HIP_32754).designations.map((d) => [d.text, d.sources.length])).toEqual([
       ["HIP 32754", 2],
       ["Gaia DR3 1000166358456525568", 2],
       ["Gaia EDR3 1000166358456525568", 1],
@@ -64,10 +64,10 @@ describe("the record in words", () => {
         { source: "some-catalogue", identifier: "2557" },
       ],
     };
-    expect(mergedDesignations(record).map((d) => d.sources)).toEqual([["cosmicflows-4-galaxies"], ["some-catalogue"]]);
+    expect(namesAndDesignations(record).designations.map((d) => d.sources)).toEqual([["cosmicflows-4-galaxies"], ["some-catalogue"]]);
   });
 
-  it("gives a designation that reads as a proper name once, as the name, with every source of either", () => {
+  it("gives a designation that reads as a proper name once, as the name, where it is in its catalogue's form or a source of the name gives it", () => {
     const record = {
       ...HIP_32754,
       names: [
@@ -84,9 +84,13 @@ describe("the record in words", () => {
     expect(namesAndDesignations(record)).toEqual({
       names: [
         { text: "Sirius", sources: ["iau-star-names"] },
-        { text: "M 31", sources: ["openngc", "some-catalogue"] },
+        { text: "M 31", sources: ["openngc"] },
       ],
-      designations: [{ text: "HIP 32349", sources: ["hipparcos-2007"] }],
+      // Another catalogue's bare "m31" is its own number, not a name it gives.
+      designations: [
+        { text: "m31", sources: ["some-catalogue"] },
+        { text: "HIP 32349", sources: ["hipparcos-2007"] },
+      ],
     });
   });
 });

@@ -104,11 +104,6 @@ pub fn load(db: &Connection, persist_to: &Path, n: u32) -> Result<usize, String>
     let files = files_of(persist_to, n)?;
     db.execute_batch(SCHEMA)
         .map_err(|e| format!("cannot create the schema: {e}"))?;
-    // A database attached takes the connection's locking mode, and SQLite reads no WAL
-    // database read-only under exclusive locking: Miniflare keeps each in WAL mode. The
-    // scratch database alone stays exclusive.
-    db.execute_batch("PRAGMA locking_mode = NORMAL; PRAGMA main.locking_mode = EXCLUSIVE;")
-        .map_err(|e| format!("cannot set the locking mode: {e}"))?;
     // No transaction: SQLite attaches no database within one, and the scratch database keeps
     // no journal.
     for file in &files {

@@ -4483,8 +4483,8 @@ links:
     reviewed: ca74ec294dbe6afda230bdbce4bb8a429762d21dbd26da95b0f7dd791f44d21b
     tests:
       - file: "clients/explorer/src/ui/recordText.test.ts"
-        name: "gives a designation that reads as a proper name once, as the name, with every source of either"
-        body: 384327b9418ce3034aeb24a5c2098fe92c51156c03fc5e3ace110434fd740cb7
+        name: "gives a designation that reads as a proper name once, as the name, where it is in its catalogue's form or a source of the name gives it"
+        body: 9fe1381b4f9e5d21810f9a19f2b34ee77bb4f6019786dbc358cccc43c4eb3b2f
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives each designation in its catalogue's form once, with the titles of every source that gives it"
         body: dfa3190ac0c51f33533849e463ba6cde31324ff5b09ce4e66684be422c26a187
@@ -4493,7 +4493,7 @@ links:
         body: 4e6a1a5dd5ac428aacbdb2fcbc3a26dc84d522c81db364bea48905a7fd6bd613
       - file: "clients/explorer/src/ui/recordText.test.ts"
         name: "merges designations by their text, keeping each source"
-        body: 6386a2d8f32a88258bba3dd470315214eafecf4c3d671decae10ce8479f39b3a
+        body: 90fcfa68f240463392761314e3b681d2605ea4123c32c72d7ddce2ff877649e9
   - node: 01a1a497-e843-728a-bce8-3fe8c93208cf
     reviewed: 7e219d474557c0e3d47ae541ae9bf570a405ba2759f7df8620c362dbdea790c6
     tests:
