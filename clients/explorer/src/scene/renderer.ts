@@ -13,6 +13,7 @@ import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpa
 import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
 import { ribbonOf } from "./ribbon.ts";
+import { FADE } from "./rings.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
 
@@ -55,6 +56,8 @@ type Batch = Drawn & { id: string; extent: Points["extent"]; domain: string; sli
 
 interface Outline extends Drawn {
   colour: Rgba;
+  /** The megaparsecs between rings that fade as they crowd, or 0. */
+  fade: number;
   /** Its symbol, drawn at a fixed size on the view about its centre, where it has one. */
   symbol: (Drawn & Omit<FixedSymbol, "offsets">) | undefined;
 }
@@ -100,6 +103,12 @@ function compile(gl: WebGL2RenderingContext, vertex: string, fragment: string): 
   return { program, axes: at("u_axes"), centre: at("u_centre"), projection: at("u_projection") };
 }
 
+/** The megaparsecs between the rings `lines` holds where they fade as they crowd, or 0. */
+const fadeOf = (lines: Lines): number => lines.fade ?? 0;
+
+/** Device pixels a CSS pixel on a canvas `width` device pixels wide and `cssWidth` CSS pixels. */
+const cssRatio = (width: number, cssWidth: number): number => (cssWidth > 0 ? width / cssWidth : 1);
+
 export class Renderer implements Drawer {
   private readonly gl: WebGL2RenderingContext;
   private readonly points: Program;
@@ -108,6 +117,8 @@ export class Renderer implements Drawer {
   private readonly lineWidth: WebGLUniformLocation | null;
   private readonly linePixels: WebGLUniformLocation | null;
   private readonly lineScale: WebGLUniformLocation | null;
+  private readonly lineFade: Record<"step" | "origin" | "range", WebGLUniformLocation | null>;
+  private readonly canvas: HTMLCanvasElement;
   /** Each tile's points, by its id, with the sphere they lie in. */
   private readonly batches = new Map<string, Batch>();
   /** The domain whose detail the point program holds, while a frame is drawn, and how opaque its
@@ -141,12 +152,15 @@ export class Renderer implements Drawer {
     const gl = canvas.getContext("webgl2", { antialias: false, alpha: false });
     if (gl === null) throw new NoWebGL("WebGL2 is not available");
     this.gl = gl;
+    this.canvas = canvas;
     this.points = compile(gl, POINT_VERTEX, POINT_FRAGMENT);
     this.lines = compile(gl, LINE_VERTEX, LINE_FRAGMENT);
     this.lineColour = gl.getUniformLocation(this.lines.program, "u_colour");
     this.lineWidth = gl.getUniformLocation(this.lines.program, "u_width");
     this.linePixels = gl.getUniformLocation(this.lines.program, "u_pixels");
     this.lineScale = gl.getUniformLocation(this.lines.program, "u_scale");
+    const line = (name: string) => gl.getUniformLocation(this.lines.program, name);
+    this.lineFade = { step: line("u_fadeStep"), origin: line("u_origin"), range: line("u_fadeRange") };
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
@@ -328,7 +342,7 @@ export class Renderer implements Drawer {
     if (lines === undefined) return;
     const { symbol: fixed } = lines;
     const symbol = fixed === undefined ? undefined : { ...this.uploadLines(lines.centre, fixed.offsets), pixels: fixed.pixels, maxWidth: fixed.maxWidth };
-    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets), colour: lines.colour, symbol });
+    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets), colour: lines.colour, fade: fadeOf(lines), symbol });
   }
 
   /** Draws the view on a canvas `width` × `height` device pixels. */
@@ -350,8 +364,13 @@ export class Renderer implements Drawer {
     this.use(this.lines, frame);
     this.gl.uniform2f(this.linePixels, width / 2, height / 2);
     this.gl.uniform1f(this.lineScale, 1);
+    // The fade's bounds are CSS pixels, so many device pixels each.
+    const ratio = cssRatio(width, this.canvas.clientWidth);
+    this.gl.uniform2f(this.lineFade.range, FADE.gone * ratio, FADE.full * ratio);
     for (const [name, outline] of this.outlines) {
       if (this.hiddenNames.has(name)) continue;
+      this.gl.uniform1f(this.lineFade.step, outline.fade);
+      this.gl.uniform3f(this.lineFade.origin, ...outline.centre);
       const style = structureStyle(outline.colour, name === this.chosen);
       this.gl.uniform4f(this.lineColour, ...style.colour);
       this.gl.uniform1f(this.lineWidth, style.lineWidth);

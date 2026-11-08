@@ -11,6 +11,9 @@ export interface Lines {
   centre: Vec3;
   offsets: Float32Array;
   colour: Rgba;
+  /** Where the lines are rings that fade as they crowd on the view, the distance rings, the
+   * megaparsecs between neighbours. */
+  fade?: number | undefined;
   /** A symbol drawn at a fixed size on the view about `centre`, such as an attractor's. */
   symbol?: FixedSymbol | undefined;
 }

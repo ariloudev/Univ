@@ -8,7 +8,7 @@ import type { RefObject } from "react";
 import { project } from "../scene/camera.ts";
 import { shortDistance } from "../scene/format.ts";
 import { ringAnchor } from "../scene/frames.ts";
-import type { RingLabel } from "../scene/rings.ts";
+import { type RingLabel, ringFade, ringSpacing } from "../scene/rings.ts";
 import { type LabelBox, clearLabels, contains } from "../scene/labels.ts";
 import { ORIGIN, type Vec3 } from "../scene/vec.ts";
 import type { World } from "./useWorld.ts";
@@ -131,7 +131,9 @@ function placeRingLabels(container: HTMLElement | null, labels: readonly RingLab
   labels.forEach((label, i) => {
     const on = at(label.at);
     const box = labelSize(label.text, "ring");
-    if (on !== undefined && on.x >= -box.width && on.x <= size.width && on.y >= 0 && on.y <= size.height) {
+    // A ring that has begun to fade where it crowds its neighbours is not labelled.
+    const whole = () => ringFade(ringSpacing(at, label.at, label.step)) >= 1;
+    if (on !== undefined && on.x >= -box.width && on.x <= size.width && on.y >= 0 && on.y <= size.height && whole()) {
       boxes.push({ id: String(i), x: on.x + box.width / 2, y: on.y, depth: on.depth, ...box, text: label.text });
     }
   });

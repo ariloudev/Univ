@@ -76,7 +76,9 @@ void main() {
 }`;
 
 // Outlines as ribbons (ribbon.ts): each corner of a segment's two triangles placed at its end of
-// the segment, then moved across the segment on the view by half the line's width.
+// the segment, then moved across the segment on the view by half the line's width and a pixel
+// more, the pixel in which the fragment shader fades its edge so that a thin line neither breaks
+// into dashes nor crawls as the view moves.
 export const LINE_VERTEX = `#version 300 es
 in vec3 a_from;
 in vec3 a_to;
@@ -91,15 +93,38 @@ uniform float u_width;
 // How much the offsets are scaled about the centre: 1 for an outline, and for a symbol drawn at
 // a fixed size on the view the megaparsecs its unit spans at the centre's distance.
 uniform float u_scale;
+// For lines that fade where they crowd, the distance rings: the megaparsecs between neighbours
+// (none, 0, for any other line), the ICRS point the offsets are from, and the device pixels
+// between neighbours on the view at which a line is gone and at which it is whole.
+uniform float u_fadeStep;
+uniform vec3 u_origin;
+uniform vec2 u_fadeRange;
+// How far the fragment lies across the line from its middle, device pixels, and how faded.
+out float v_across;
+out float v_fade;
 // Just in front of the eye: an end behind it is moved along its segment to here, so that the
 // segment's direction on the view is defined.
 const float NEAR = 1e-9;
 vec4 inFront(vec4 end, vec4 other) {
   return end.w >= NEAR ? end : mix(end, other, (NEAR - end.w) / (other.w - end.w));
 }
+// How whole a ring is at the offset, at the place from the eye: by how far apart on the view it and its
+// neighbours lie there, half a step either side of it out from the barycentre.
+float fadeAt(vec3 offset, vec3 place) {
+  if (u_fadeStep <= 0.0) return 1.0;
+  vec3 outward = u_axes * normalize(offset + u_origin) * (0.5 * u_fadeStep);
+  vec4 inner = u_projection * vec4(place - outward, 1.0);
+  vec4 outer = u_projection * vec4(place + outward, 1.0);
+  if (inner.w < NEAR || outer.w < NEAR) return 1.0;
+  float apart = length((outer.xy / outer.w - inner.xy / inner.w) * u_pixels);
+  return smoothstep(u_fadeRange.x, u_fadeRange.y, apart);
+}
 void main() {
-  vec4 a = u_projection * vec4(u_axes * (a_from * u_scale) + u_centre, 1.0);
-  vec4 b = u_projection * vec4(u_axes * (a_to * u_scale) + u_centre, 1.0);
+  vec3 fromPlace = u_axes * (a_from * u_scale) + u_centre;
+  vec3 toPlace = u_axes * (a_to * u_scale) + u_centre;
+  vec4 a = u_projection * vec4(fromPlace, 1.0);
+  vec4 b = u_projection * vec4(toPlace, 1.0);
+  v_fade = a_corner.x < 0.5 ? fadeAt(a_from * u_scale, fromPlace) : fadeAt(a_to * u_scale, toPlace);
   if (a.w < NEAR && b.w < NEAR) {
     // Wholly behind the eye: outside the clip volume, not drawn.
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -109,7 +134,9 @@ void main() {
   vec4 to = inFront(b, a);
   vec2 along = (to.xy / to.w - from.xy / from.w) * u_pixels;
   vec2 dir = length(along) > 0.0 ? normalize(along) : vec2(1.0, 0.0);
-  vec2 across = vec2(-dir.y, dir.x) * a_corner.y * 0.5 * u_width / u_pixels;
+  float halfWidth = 0.5 * u_width + 1.0;
+  v_across = a_corner.y * halfWidth;
+  vec2 across = vec2(-dir.y, dir.x) * v_across / u_pixels;
   vec4 at = a_corner.x < 0.5 ? from : to;
   gl_Position = vec4(at.xy + across * at.w, at.zw);
 }`;
@@ -117,7 +144,13 @@ void main() {
 export const LINE_FRAGMENT = `#version 300 es
 precision mediump float;
 uniform vec4 u_colour;
+uniform highp float u_width;
+in float v_across;
+in float v_fade;
 out vec4 colour;
 void main() {
-  colour = u_colour;
+  // The share of the pixel the line covers: whole within it, falling off across its edge's pixel,
+  // and a line thinner than a pixel as faint as it is thin.
+  float cover = clamp(0.5 * u_width + 0.5 - abs(v_across), 0.0, 1.0) * min(u_width, 1.0);
+  colour = vec4(u_colour.rgb, u_colour.a * cover * v_fade);
 }`;

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { type View, unitsPerPixel } from "./camera.ts";
-import { ringLabels, ringLines, ringSet } from "./rings.ts";
+import { type View, focalPixels, project, unitsPerPixel } from "./camera.ts";
+import type { Lines } from "./drawing.ts";
+import { FADE, type RingSet, ringFade, ringLabels, ringLines, ringSet, ringSpacing } from "./rings.ts";
 import { scaleBar } from "./scale.ts";
 import { IDENTITY, type Mat3, type Vec3, add, apply } from "./vec.ts";
 
@@ -31,7 +32,7 @@ function must<T>(value: T | undefined): T {
 const rings = (v: View, toFrame: Mat3 = IDENTITY) => must(ringSet(v, toFrame, "galactic", 800));
 
 /** The vertices of `lines`, in the axes `toFrame` turns the ICRS into. */
-function vertices(lines: ReturnType<typeof ringLines>, toFrame: Mat3): Vec3[] {
+function vertices(lines: Lines, toFrame: Mat3): Vec3[] {
   const out: Vec3[] = [];
   for (let i = 0; i < lines.offsets.length; i += 3) {
     const p = add(lines.centre, [lines.offsets[i] ?? 0, lines.offsets[i + 1] ?? 0, lines.offsets[i + 2] ?? 0]);
@@ -76,14 +77,15 @@ describe("the distance rings", () => {
       if (set === undefined) throw new Error("no rings");
       const lines = ringLines(toFrame, set);
       const radii = new Set<number>();
-      for (const [x, y, z] of vertices(lines, toFrame)) {
+      for (const [x, y, z] of [...vertices(lines.rings, toFrame), ...vertices(lines.spokes, toFrame)]) {
         expect(Math.abs(z)).toBeLessThan(1e-4);
         radii.add(Math.round((Math.hypot(x, y) / set.step) * 1e3) / 1e3);
       }
       const rings = set.last - set.first + 1;
       for (let k = set.first; k <= set.last; k += 1) expect(radii.has(k)).toBe(true);
       // 192 segments a ring, 12 spokes.
-      expect(lines.offsets.length / 6).toBe(rings * 192 + 12);
+      expect(lines.rings.offsets.length / 6).toBe(rings * 192);
+      expect(lines.spokes.offsets.length / 6).toBe(12);
     }
   });
 
@@ -92,7 +94,7 @@ describe("the distance rings", () => {
     const set = ringSet(view([5000, 3000, 0], 2), toFrame, "galactic", 800);
     if (set === undefined) throw new Error("no rings");
     expect(set.sector).toBeDefined();
-    const lines = ringLines(toFrame, set);
+    const lines = ringLines(toFrame, set).rings;
     // Offsets small beside the distance from the barycentre, so float32 keeps them.
     for (const o of lines.offsets) expect(Math.abs(o)).toBeLessThan(50);
     // Each arc's segments stay on its circle: a chord's middle within a millionth of the step.
@@ -133,7 +135,47 @@ describe("the distance rings", () => {
     expect(set.sector).toBeUndefined();
     const [label] = ringLabels(IDENTITY, set);
     expect(label?.at[1]).toBeCloseTo(0, 9);
-    expect(ringLines(IDENTITY, set).offsets.length / 6).toBe((set.last - set.first + 1) * 192 + 12);
+    expect(ringLines(IDENTITY, set).rings.offsets.length / 6).toBe((set.last - set.first + 1) * 192);
+  });
+
+  it("write each distance in the largest unit it reaches one of, to the step's last figure", () => {
+    const set: RingSet = { axes: "galactic", step: 0.2, first: 4, last: 6, sector: undefined, key: "" };
+    expect(ringLabels(IDENTITY, set).map((l) => l.text)).toEqual(["800 kpc", "1.0 Mpc", "1.2 Mpc"]);
+    expect(ringLabels(IDENTITY, { ...set, first: 71, last: 71 })[0]?.text).toBe("14.2 Mpc");
+    expect(ringLabels(IDENTITY, { ...set, step: 5, first: 201, last: 202 }).map((l) => l.text)).toEqual(["1,005 Mpc", "1,010 Mpc"]);
+  });
+
+  it("fade between 2 and 6 CSS pixels apart on the view, gone below and whole above", () => {
+    expect(FADE).toEqual({ gone: 2, full: 6 });
+    expect(ringFade(1)).toBe(0);
+    expect(ringFade(2)).toBe(0);
+    expect(ringFade(4)).toBeCloseTo(0.5, 9);
+    expect(ringFade(6)).toBe(1);
+    expect(ringFade(20)).toBe(1);
+    expect(ringFade(3)).toBeLessThan(ringFade(5));
+  });
+
+  it("lie as far apart on the view as their step from above, and closer toward the horizon", () => {
+    const at = (v: View) => (p: Vec3) => project(v, IDENTITY, p, 800, 800);
+    // From straight above, 100 Mpc off: a step of 10 Mpc is a tenth of the focal length.
+    const above: View = { focus: [0, 0, 0], distance: 100, yaw: 0, pitch: 89.99 * RAD };
+    expect(ringSpacing(at(above), [50, 0, 0], 10)).toBeCloseTo((focalPixels(800) * 10) / 100, 0);
+    // Seen 5 degrees above the plane, the far rings crowd and the near ones do not.
+    const grazing = view([0, 0, 0], 10, 0);
+    grazing.pitch = 5 * RAD;
+    const near = ringSpacing(at(grazing), [-5, 0, 0], 0.5);
+    const far = ringSpacing(at(grazing), [-25, 0, 0], 0.5);
+    expect(far).toBeLessThan(near / 5);
+    // Behind the eye nothing is seen: no crowding to fade for.
+    expect(ringSpacing(at(grazing), [20, 0, 0], 0.5)).toBe(Infinity);
+  });
+
+  it("fade the rings as they crowd, and not the spokes", () => {
+    const set = rings(view([0, 0, 0], 100));
+    const { rings: drawn, spokes } = ringLines(IDENTITY, set);
+    expect(drawn.fade).toBe(set.step);
+    expect(spokes.fade).toBeUndefined();
+    for (const label of ringLabels(IDENTITY, set)) expect(label.step).toBe(set.step);
   });
 
   it("stay as they are while the view turns, and change as the eye moves, zooms past a step or changes axes", () => {

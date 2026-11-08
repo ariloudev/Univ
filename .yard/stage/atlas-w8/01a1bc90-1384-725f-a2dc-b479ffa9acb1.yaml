@@ -10,3 +10,79 @@ versions:
     title: "Smooth lines and faded rings"
     goal: "Every line is drawn with smooth edges, crowded rings fade toward the horizon and their labels go, and large ring distances read in the next unit"
     status: planned
+  - key: 01a1bc91-79c0-736a-b797-5b342c9eff7d
+    at: 2026-11-08T19:10:12Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Smooth lines and faded rings"
+    goal: "Every line is drawn with smooth edges, crowded rings fade toward the horizon and their labels go, and large ring distances read in the next unit"
+    status: active
+blocks:
+  - key: 01a1bc91-79c0-736a-b797-5b300efbfd9d
+    id: t-smooth
+    kind: task
+    versions:
+      - key: 01a1bc91-79c0-736a-b797-5b35b29ff0cc
+        at: 2026-11-08T19:10:12Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Smooth line edges"
+        detail: "Ribbons widened a pixel each side and their edges faded in the fragment shader; done when every drawing test and e2e pass with the new shaders."
+        state: active
+      - key: 01a1bc98-6775-7598-a4d8-8f245ac2d15f
+        at: 2026-11-08T19:17:46Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Smooth line edges"
+        detail: "Ribbons widened a pixel each side and their edges faded in the fragment shader; every drawing test passes and the rings, outlines and flows draw unbroken on release 12."
+        state: done
+  - key: 01a1bc91-79c0-736a-b797-5b3127ae3716
+    id: t-fade
+    kind: task
+    versions:
+      - key: 01a1bc91-79c0-736a-b797-5b36948ffc6e
+        at: 2026-11-08T19:10:12Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Fade crowded rings and their labels"
+        detail: "Rings and spokes as two Lines, the rings faded in the shader by their spacing on the view, labels of faded rings left out; done when rings, controller and overlay tests pass."
+        state: open
+      - key: 01a1bc98-6d94-778d-ba4b-e0913e4eea4e
+        at: 2026-11-08T19:17:48Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Fade crowded rings and their labels"
+        detail: "Rings and spokes drawn as two Lines; the line shader fades the rings by their spacing on the view, 2 to 6 CSS pixels; labels of faded rings left out. Rings, controller and overlay tests pass."
+        state: done
+  - key: 01a1bc91-79c0-736a-b797-5b32c5d87963
+    id: t-units
+    kind: task
+    versions:
+      - key: 01a1bc91-79c0-736a-b797-5b37634a6da5
+        at: 2026-11-08T19:10:12Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Ring distances in the next unit"
+        detail: "Each label in the largest unit it reaches 1 of; done when rings.test shows 800 kpc then 1.0 Mpc."
+        state: open
+      - key: 01a1bc98-7209-7273-8ca6-e096361257f6
+        at: 2026-11-08T19:17:49Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Ring distances in the next unit"
+        detail: "Each label in the largest unit it reaches one of: 800 kpc, 1.0 Mpc, 14.2 Mpc; rings.test passes."
+        state: done

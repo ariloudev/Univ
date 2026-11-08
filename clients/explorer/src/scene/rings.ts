@@ -24,6 +24,27 @@ const SPOKES = 30;
 const RING_SEGMENTS = 192;
 const ARC_SEGMENTS = 96;
 
+/** How far apart on the view, CSS pixels, neighbouring rings are where a ring is gone and where
+ * it is whole: between them it fades. */
+export const FADE = { gone: 2, full: 6 } as const;
+
+/** How whole a ring is whose neighbours lie `apart` CSS pixels from it on the view, 0 to 1: the
+ * renderer's line shader fades the rings by the same rule. */
+export function ringFade(apart: number): number {
+  const t = Math.min(1, Math.max(0, (apart - FADE.gone) / (FADE.full - FADE.gone)));
+  return t * t * (3 - 2 * t);
+}
+
+/** How far apart on the view, CSS pixels, rings `step` megaparsecs apart lie at `point`, a point
+ * of one in the ICRS, by where `at` places half a step either side of it out from the
+ * barycentre; unbounded where either is out of sight. */
+export function ringSpacing(at: (p: Vec3) => { x: number; y: number } | undefined, point: Vec3, step: number): number {
+  const h = step / (2 * Math.hypot(...point));
+  const inner = at(scale(point, 1 - h));
+  const outer = at(scale(point, 1 + h));
+  return inner === undefined || outer === undefined ? Infinity : Math.hypot(outer.x - inner.x, outer.y - inner.y);
+}
+
 /** The rings' colour: the dim ink, faint. */
 const COLOUR = [0.557, 0.588, 0.671, 0.35] as const;
 
@@ -39,10 +60,12 @@ export interface RingSet {
   key: string;
 }
 
-/** A ring's label: its distance, and the ICRS point it is placed at. */
+/** A ring's label: its distance, the ICRS point it is placed at, and the megaparsecs to the
+ * rings beside it. */
 export interface RingLabel {
   text: string;
   at: Vec3;
+  step: number;
 }
 
 /** The multiples of `step` whose rings pass within `reach` of `rho`, the focus's distance in the
@@ -99,31 +122,39 @@ function spokes(set: RingSet): number[] {
   return all.filter((lon) => Math.abs(((lon - sector.lon + 540) % 360) - 180) <= sector.half);
 }
 
-/** The rings and spokes of `set` as ICRS lines, offset from a centre in the middle of them; each
- * direction worked out once. */
-export function ringLines(toFrame: Mat3, set: RingSet): Lines {
+/** Segments as offsets from `centre`, each a direction and the radius of its two ends. */
+function segments(centre: Vec3, count: number, each: (put: (direction: Vec3, radius: number) => void) => void): Float32Array {
+  const offsets = new Float32Array(count * 6);
+  let n = 0;
+  each((direction, radius) => {
+    for (let c = 0; c < 3; c += 1) offsets[n + c] = (direction[c] ?? 0) * radius - (centre[c] ?? 0);
+    n += 3;
+  });
+  return offsets;
+}
+
+/** The rings and the spokes of `set` as ICRS lines, offset from a centre in the middle of them;
+ * each direction worked out once. The rings fade as they crowd on the view; the spokes do not. */
+export function ringLines(toFrame: Mat3, set: RingSet): { rings: Lines; spokes: Lines } {
   const middle = set.sector === undefined ? 0 : ((set.first + set.last) / 2) * set.step;
   const centre = scale(along(toFrame, set.sector?.lon ?? 0), middle);
   const round = sweep(set).map((lon) => along(toFrame, lon));
   const radial = spokes(set).map((lon) => along(toFrame, lon));
-  const rings = set.last - set.first + 1;
-  const offsets = new Float32Array((rings * (round.length - 1) + radial.length) * 6);
-  let n = 0;
-  const put = (direction: Vec3, radius: number) => {
-    for (let c = 0; c < 3; c += 1) offsets[n + c] = (direction[c] ?? 0) * radius - (centre[c] ?? 0);
-    n += 3;
-  };
-  for (let k = set.first; k <= set.last; k += 1) {
-    for (let i = 1; i < round.length; i += 1) {
-      put(round[i - 1] ?? centre, k * set.step);
-      put(round[i] ?? centre, k * set.step);
+  const rings = segments(centre, (set.last - set.first + 1) * (round.length - 1), (put) => {
+    for (let k = set.first; k <= set.last; k += 1) {
+      for (let i = 1; i < round.length; i += 1) {
+        put(round[i - 1] ?? centre, k * set.step);
+        put(round[i] ?? centre, k * set.step);
+      }
     }
-  }
-  for (const direction of radial) {
-    put(direction, set.first * set.step);
-    put(direction, set.last * set.step);
-  }
-  return { centre, offsets, colour: COLOUR };
+  });
+  const spokeLines = segments(centre, radial.length, (put) => {
+    for (const direction of radial) {
+      put(direction, set.first * set.step);
+      put(direction, set.last * set.step);
+    }
+  });
+  return { rings: { centre, offsets: rings, colour: COLOUR, fade: set.step }, spokes: { centre, offsets: spokeLines, colour: COLOUR } };
 }
 
 /** Each ring's label: its distance, at its crossing with the spoke of zero longitude, or, for
@@ -132,7 +163,7 @@ export function ringLabels(toFrame: Mat3, set: RingSet): RingLabel[] {
   const direction = along(toFrame, set.sector?.lon ?? 0);
   const labels: RingLabel[] = [];
   const text = distanceOf(set.step);
-  for (let k = set.first; k <= set.last; k += 1) labels.push({ text: text(k), at: scale(direction, k * set.step) });
+  for (let k = set.first; k <= set.last; k += 1) labels.push({ text: text(k), at: scale(direction, k * set.step), step: set.step });
   return labels;
 }
 
@@ -144,11 +175,17 @@ const UNITS: readonly (readonly [number, string])[] = [
   [1e-6, "pc"],
 ];
 
-/** The distance of the `k`th ring `step` megaparsecs apart, in the step's unit and to its last
- * figure, so that rings side by side never read alike: 1,005 Mpc beside 1,010 Mpc. */
+/** The distance of the `k`th ring `step` megaparsecs apart, in the largest unit of which it is
+ * at least one, to the step's last figure in that unit, so that rings side by side never read
+ * alike: 1,005 Mpc beside 1,010 Mpc, and 800 kpc before 1.0 Mpc. */
 function distanceOf(step: number): (k: number) => string {
-  const [size, unit] = UNITS.find(([u]) => step >= u * (1 - 1e-9)) ?? [1e-6, "pc"];
-  const places = Math.max(0, -Math.floor(Math.log10(step / size) + 1e-9));
-  const format = new Intl.NumberFormat("en-GB", { minimumFractionDigits: places, maximumFractionDigits: places });
-  return (k) => `${format.format((k * step) / size)} ${unit}`;
+  const formats = UNITS.map(([size, unit]) => {
+    const places = Math.max(0, -Math.floor(Math.log10(step / size) + 1e-9));
+    return { size, unit, format: new Intl.NumberFormat("en-GB", { minimumFractionDigits: places, maximumFractionDigits: places }) };
+  });
+  return (k) => {
+    const distance = k * step;
+    const { size, unit, format } = formats.find((f) => distance >= f.size * (1 - 1e-9)) ?? formats[formats.length - 1] ?? { size: 1, unit: "Mpc", format: new Intl.NumberFormat("en-GB") };
+    return `${format.format(distance / size)} ${unit}`;
+  };
 }

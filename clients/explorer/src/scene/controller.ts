@@ -100,7 +100,7 @@ export class Controller {
     this.frame = frame;
     this.ring = 0;
     // The rings in the old axes go, though the new ones may be none.
-    if (this.drawnRings !== undefined) this.drawer.setLines("distance-rings", undefined);
+    if (this.drawnRings !== undefined) this.showRings(undefined);
     this.drawnRings = undefined;
     this.changed(this.view);
   }
@@ -116,7 +116,8 @@ export class Controller {
     this.ringsSwitched = on;
     this.ring = 0;
     this.drawnRings = undefined;
-    this.drawer.setLines(on ? "equator" : "distance-rings", undefined);
+    if (on) this.drawer.setLines("equator", undefined);
+    else this.showRings(undefined);
     this.changed(this.view);
   }
 
@@ -198,7 +199,14 @@ export class Controller {
     if (set === this.drawnRings) return;
     this.drawnRings = set;
     this.drawnLabels = set === undefined ? [] : ringLabels(this.toFrame, set);
-    this.drawer.setLines("distance-rings", set === undefined ? undefined : ringLines(this.toFrame, set));
+    this.showRings(set);
+  }
+
+  /** Draws the rings and spokes of `set`, or none. */
+  private showRings(set: RingSet | undefined): void {
+    const lines = set === undefined ? undefined : ringLines(this.toFrame, set);
+    this.drawer.setLines("distance-rings", lines?.rings);
+    this.drawer.setLines("distance-spokes", lines?.spokes);
   }
 
   /** The distance rings drawn, while they are on. */

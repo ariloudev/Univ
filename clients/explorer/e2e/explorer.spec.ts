@@ -249,7 +249,12 @@ test("draws the grid across the view from its switch beside the axes, and keeps 
   await expect(page.getByTestId("grid-lines")).toHaveAttribute("d", /^M/);
 });
 
-test("draws the distance rings from their switch beside the grid's, labelled, and keeps them across a reload", async ({ page }) => {
+test("draws the distance rings from their switch beside the grid's, labelled, low over the plane too, and keeps them across a reload", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1280, height: 800 });
   await firstPoints(page);
   const toggle = page.getByRole("banner").getByRole("switch", { name: "Rings" });
@@ -261,6 +266,15 @@ test("draws the distance rings from their switch beside the grid's, labelled, an
   await expect(labels.first()).toHaveText(/^[\d.,]+ (pc|kpc|Mpc|Gpc)$/);
   // The top bar keeps to one line with both switches in it.
   expect((await boxOf(page.getByRole("banner"))).height).toBeLessThanOrEqual(40);
+  // Low over the plane the far rings fade and lose their labels, the near ones keep theirs, and
+  // the line shader that fades them draws without a WebGL error.
+  const view = await boxOf(page.getByRole("region", { name: "The view" }));
+  await page.mouse.move(view.x + view.width / 2, view.y + view.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(view.x + view.width / 2, view.y + view.height / 2 - 150, { steps: 6 });
+  await page.mouse.up();
+  await expect(labels.first()).toBeVisible();
+  expect(errors).toEqual([]);
   await page.reload();
   await expect(page.getByRole("switch", { name: "Rings" })).toBeChecked();
   await expect(page.getByTestId("ring-labels").locator("span:visible").first()).toBeVisible();

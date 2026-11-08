@@ -23,6 +23,9 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-08T19:08:41Z
+lastEnded: 2026-11-08T19:10:07Z
 turns:
   - started: 2026-11-08T19:08:41Z
+plan:
+  - started: 2026-11-08T19:09:31Z
+    ended: 2026-11-08T19:10:07Z
