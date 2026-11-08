@@ -7,7 +7,7 @@ import { type Sight, sightOf } from "./frustum.ts";
 import { FLIGHT_MS, between, pan, turn, viewingDistance, zoom } from "./controls.ts";
 import type { Drawer } from "./drawing.ts";
 import { type Axes, EQUATORIAL, type Frame, equatorRing, frameOf, ringRadius } from "./frames.ts";
-import { type RingSet, ringLines, ringSet } from "./rings.ts";
+import { type RingLabel, type RingSet, ringLabels, ringLines, ringSet } from "./rings.ts";
 import { type Mat3, ORIGIN, type Vec3, norm } from "./vec.ts";
 
 export interface Surroundings {
@@ -37,8 +37,9 @@ export class Controller {
   private dirty = true;
   private ring = 0;
   /** Whether the distance rings are drawn in place of the equator's ring, and the set drawn. */
-  private ringsOn = false;
+  private ringsSwitched = false;
   private drawnRings: RingSet | undefined;
+  private drawnLabels: readonly RingLabel[] = [];
   private readonly listeners = new Set<() => void>();
   private readonly drawer: Drawer;
   private readonly around: Surroundings;
@@ -98,14 +99,21 @@ export class Controller {
     this.axes = axes;
     this.frame = frame;
     this.ring = 0;
+    // The rings in the old axes go, though the new ones may be none.
+    if (this.drawnRings !== undefined) this.drawer.setLines("distance-rings", undefined);
     this.drawnRings = undefined;
     this.changed(this.view);
   }
 
+  /** Whether the distance rings are on: drawn where any is in reach, and the equator's ring not. */
+  get ringsOn(): boolean {
+    return this.ringsSwitched;
+  }
+
   /** Draws the distance rings in place of the equator's ring, or the ring again. */
   setRings(on: boolean): void {
-    if (on === this.ringsOn) return;
-    this.ringsOn = on;
+    if (on === this.ringsSwitched) return;
+    this.ringsSwitched = on;
     this.ring = 0;
     this.drawnRings = undefined;
     this.drawer.setLines(on ? "equator" : "distance-rings", undefined);
@@ -170,7 +178,7 @@ export class Controller {
     if (!this.dirty) return false;
     this.dirty = false;
     const { width, height, ratio } = this.around.size();
-    if (this.ringsOn) this.drawRings(height);
+    if (this.ringsSwitched) this.drawRings(height);
     else this.drawRing();
     this.drawer.draw(this.view, this.toFrame, Math.round(width * ratio), Math.round(height * ratio));
     return true;
@@ -186,15 +194,21 @@ export class Controller {
 
   /** The distance rings for a canvas `height` CSS pixels tall, drawn again only when they change. */
   private drawRings(height: number): void {
-    const set = ringSet(this.view, this.toFrame, this.axes, height);
-    if (set?.key === this.drawnRings?.key) return;
+    const set = ringSet(this.view, this.toFrame, this.axes, height, this.drawnRings);
+    if (set === this.drawnRings) return;
     this.drawnRings = set;
+    this.drawnLabels = set === undefined ? [] : ringLabels(this.toFrame, set);
     this.drawer.setLines("distance-rings", set === undefined ? undefined : ringLines(this.toFrame, set));
   }
 
   /** The distance rings drawn, while they are on. */
   get rings(): RingSet | undefined {
-    return this.ringsOn ? this.drawnRings : undefined;
+    return this.drawnRings;
+  }
+
+  /** The labels of the distance rings drawn; none while they are off. */
+  get ringLabels(): readonly RingLabel[] {
+    return this.drawnRings === undefined ? [] : this.drawnLabels;
   }
 
   /** Asks for a drawing on the next frame, as when new points arrive. */

@@ -7,12 +7,15 @@
 import { type View, unitsPerPixel } from "./camera.ts";
 import type { Lines } from "./drawing.ts";
 import { type Axes, onEquator } from "./frames.ts";
-import { shortDistance } from "./format.ts";
 import { scaleBar } from "./scale.ts";
-import { type Mat3, type Vec3, apply, sub } from "./vec.ts";
+import { type Mat3, RAD, type Vec3, apply, scale } from "./vec.ts";
 
-/** How far from the focus, in the plane, rings are drawn: this many times the eye's distance. */
+/** How far from the focus, in the plane, rings must reach, may run on to, and are drawn to when
+ * drawn again: these many times the eye's distance. A set drawn is kept while it reaches the one
+ * and runs no farther than the other, so that a moving view draws it again only now and then. */
 const REACH = 3;
+const RUN_ON = 4;
+const DRAWN = 3.5;
 
 /** Degrees between the spokes. */
 const SPOKES = 30;
@@ -23,8 +26,6 @@ const ARC_SEGMENTS = 96;
 
 /** The rings' colour: the dim ink, faint. */
 const COLOUR = [0.557, 0.588, 0.671, 0.35] as const;
-
-const RAD = Math.PI / 180;
 
 /** The rings to draw: their step, megaparsecs; the first and last multiples of it; and, where
  * they are arcs, the longitude, degrees, their middle lies at and how far either side of it they
@@ -38,34 +39,53 @@ export interface RingSet {
   key: string;
 }
 
+/** A ring's label: its distance, and the ICRS point it is placed at. */
+export interface RingLabel {
+  text: string;
+  at: Vec3;
+}
+
+/** The multiples of `step` whose rings pass within `reach` of `rho`, the focus's distance in the
+ * plane: the first and the last. */
+const within = (rho: number, reach: number, step: number): [number, number] => [Math.max(1, Math.ceil((rho - reach) / step - 1e-9)), Math.floor((rho + reach) / step + 1e-9)];
+
+/** The arcs' middle and half-width for a focus at longitude `lon`, degrees, `rho` from the
+ * barycentre in the plane, rings running on `reach` from it; none where rings go round. The
+ * width is rounded up to a power of two degrees and the middle to half of it, so that small moves
+ * keep them. */
+function sectorOf(rho: number, reach: number, lon: number): RingSet["sector"] {
+  if (rho <= reach) return undefined;
+  const half = 2 ** Math.ceil(Math.log2(Math.asin(reach / rho) / RAD));
+  // Arcs that would go round are whole rings.
+  if (1.5 * half >= 180) return undefined;
+  return { lon: Math.round(lon / (half / 2)) * (half / 2), half: 1.5 * half };
+}
+
 /** The rings for `view`, in the axes `axes` that `toFrame` turns the ICRS into, on a viewport
- * `height` CSS pixels tall; none where no ring comes within reach. The arcs' width is rounded up
- * to a power of two degrees and their middle to half of it, so that small moves keep the set. */
-export function ringSet(view: View, toFrame: Mat3, axes: Axes, height: number): RingSet | undefined {
+ * `height` CSS pixels tall; none where no ring comes within reach. `kept`, the set drawn, is kept
+ * while it still serves. */
+export function ringSet(view: View, toFrame: Mat3, axes: Axes, height: number, kept?: RingSet): RingSet | undefined {
   const bar = scaleBar(unitsPerPixel(view, height));
   if (bar === undefined) return undefined;
   const step = bar.parsecs / 1e6;
   const [x, y] = apply(toFrame, view.focus);
   const rho = Math.hypot(x, y);
-  const reach = REACH * view.distance;
-  const first = Math.max(1, Math.ceil((rho - reach) / step - 1e-9));
-  const last = Math.floor((rho + reach) / step + 1e-9);
-  if (last < first) return undefined;
-  let sector: RingSet["sector"];
-  if (rho > reach) {
-    const half = 2 ** Math.ceil(Math.log2(Math.asin(reach / rho) / RAD));
-    const lon = Math.round(Math.atan2(y, x) / RAD / (half / 2)) * (half / 2);
-    sector = { lon, half: Math.min(180, 1.5 * half) };
-  }
-  const key = `${axes}:${step}:${first}:${last}:${sector === undefined ? "round" : `${sector.lon}±${sector.half}`}`;
-  return { axes, step, first, last, sector, key };
+  const d = view.distance;
+  const [needFirst, needLast] = within(rho, REACH * d, step);
+  if (needLast < needFirst) return undefined;
+  const sector = sectorOf(rho, RUN_ON * d, Math.atan2(y, x) / RAD);
+  const where = `${axes}:${step}:${sector === undefined ? "round" : `${sector.lon}±${sector.half}`}`;
+  const [mayFirst, mayLast] = within(rho, RUN_ON * d, step);
+  if (kept !== undefined && kept.key.startsWith(`${where}:`) && kept.first <= needFirst && kept.last >= needLast && kept.first >= mayFirst && kept.last <= mayLast) return kept;
+  const [first, last] = within(rho, DRAWN * d, step);
+  return { axes, step, first, last, sector, key: `${where}:${first}:${last}` };
 }
 
-/** The ICRS point `radius` megaparsecs from the barycentre at longitude `lon` degrees in the
- * equator of the axes `toFrame` turns the ICRS into. */
-const onPlane = (toFrame: Mat3, radius: number, lon: number): Vec3 => onEquator(toFrame, radius, lon * RAD);
+/** The ICRS direction at longitude `lon` degrees in the equator of the axes `toFrame` turns the
+ * ICRS into. */
+const along = (toFrame: Mat3, lon: number): Vec3 => onEquator(toFrame, 1, lon * RAD);
 
-/** The longitudes, degrees, a ring of `set` runs over, `segments` apart, both ends included. */
+/** The longitudes, degrees, a ring of `set` runs over, both ends included. */
 function sweep(set: RingSet): number[] {
   const [from, to, segments] = set.sector === undefined ? [0, 360, RING_SEGMENTS] : [set.sector.lon - set.sector.half, set.sector.lon + set.sector.half, ARC_SEGMENTS];
   return Array.from({ length: segments + 1 }, (_, i) => from + ((to - from) * i) / segments);
@@ -79,28 +99,56 @@ function spokes(set: RingSet): number[] {
   return all.filter((lon) => Math.abs(((lon - sector.lon + 540) % 360) - 180) <= sector.half);
 }
 
-/** The rings and spokes of `set` as ICRS lines, offset from a centre in the middle of them. */
+/** The rings and spokes of `set` as ICRS lines, offset from a centre in the middle of them; each
+ * direction worked out once. */
 export function ringLines(toFrame: Mat3, set: RingSet): Lines {
   const middle = set.sector === undefined ? 0 : ((set.first + set.last) / 2) * set.step;
-  const centre = onPlane(toFrame, middle, set.sector?.lon ?? 0);
-  const segments: Vec3[] = [];
-  const longitudes = sweep(set);
+  const centre = scale(along(toFrame, set.sector?.lon ?? 0), middle);
+  const round = sweep(set).map((lon) => along(toFrame, lon));
+  const radial = spokes(set).map((lon) => along(toFrame, lon));
+  const rings = set.last - set.first + 1;
+  const offsets = new Float32Array((rings * (round.length - 1) + radial.length) * 6);
+  let n = 0;
+  const put = (direction: Vec3, radius: number) => {
+    for (let c = 0; c < 3; c += 1) offsets[n + c] = (direction[c] ?? 0) * radius - (centre[c] ?? 0);
+    n += 3;
+  };
   for (let k = set.first; k <= set.last; k += 1) {
-    for (let i = 1; i < longitudes.length; i += 1) {
-      segments.push(onPlane(toFrame, k * set.step, longitudes[i - 1] ?? 0), onPlane(toFrame, k * set.step, longitudes[i] ?? 0));
+    for (let i = 1; i < round.length; i += 1) {
+      put(round[i - 1] ?? centre, k * set.step);
+      put(round[i] ?? centre, k * set.step);
     }
   }
-  for (const lon of spokes(set)) segments.push(onPlane(toFrame, set.first * set.step, lon), onPlane(toFrame, set.last * set.step, lon));
-  const offsets = new Float32Array(segments.length * 3);
-  segments.forEach((p, i) => offsets.set(sub(p, centre), i * 3));
+  for (const direction of radial) {
+    put(direction, set.first * set.step);
+    put(direction, set.last * set.step);
+  }
   return { centre, offsets, colour: COLOUR };
 }
 
 /** Each ring's label: its distance, at its crossing with the spoke of zero longitude, or, for
  * arcs, with the line through their middle. */
-export function ringLabels(toFrame: Mat3, set: RingSet): { text: string; at: Vec3 }[] {
-  const lon = set.sector?.lon ?? 0;
-  const labels: { text: string; at: Vec3 }[] = [];
-  for (let k = set.first; k <= set.last; k += 1) labels.push({ text: shortDistance(k * set.step), at: onPlane(toFrame, k * set.step, lon) });
+export function ringLabels(toFrame: Mat3, set: RingSet): RingLabel[] {
+  const direction = along(toFrame, set.sector?.lon ?? 0);
+  const labels: RingLabel[] = [];
+  const text = distanceOf(set.step);
+  for (let k = set.first; k <= set.last; k += 1) labels.push({ text: text(k), at: scale(direction, k * set.step) });
   return labels;
+}
+
+/** The units a ring's distance is written in, as the scale bar's are: parsecs, kiloparsecs or
+ * megaparsecs. */
+const UNITS: readonly (readonly [number, string])[] = [
+  [1, "Mpc"],
+  [1e-3, "kpc"],
+  [1e-6, "pc"],
+];
+
+/** The distance of the `k`th ring `step` megaparsecs apart, in the step's unit and to its last
+ * figure, so that rings side by side never read alike: 1,005 Mpc beside 1,010 Mpc. */
+function distanceOf(step: number): (k: number) => string {
+  const [size, unit] = UNITS.find(([u]) => step >= u * (1 - 1e-9)) ?? [1e-6, "pc"];
+  const places = Math.max(0, -Math.floor(Math.log10(step / size) + 1e-9));
+  const format = new Intl.NumberFormat("en-GB", { minimumFractionDigits: places, maximumFractionDigits: places });
+  return (k) => `${format.format((k * step) / size)} ${unit}`;
 }

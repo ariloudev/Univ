@@ -36,9 +36,16 @@ const shownIn = (container: HTMLElement | null) => [...(container?.children ?? [
 function apart(elements: readonly Element[]): boolean {
   const boxes = elements.map((e) => {
     const [x = 0, y = 0] = numbers(e);
-    return { x, y, width: labelSize(e.textContent ?? "").width };
+    return { x, y, width: labelSize(e.textContent ?? "", "ring").width };
   });
   return boxes.every((a, i) => boxes.slice(i + 1).every((b) => Math.abs(a.x - b.x) >= Math.min(a.width, b.width) - 1e-6 || Math.abs(a.y - b.y) >= 16 - 1e-6));
+}
+
+/** Whether the ring label `element`, placed by its top left corner, clears the name's box `name`. */
+function clearOf(element: Element, name: { x: number; y: number; width: number; height: number }): boolean {
+  const [x = 0, y = 0] = numbers(element);
+  const width = labelSize(element.textContent ?? "", "ring").width;
+  return x + width <= name.x - name.width / 2 || x >= name.x + name.width / 2 || y + 16 <= name.y - name.height / 2 || y >= name.y + name.height / 2;
 }
 
 describe("the overlay", () => {
@@ -76,6 +83,23 @@ describe("the overlay", () => {
     ringsOn(false);
     expect(marks.ring.current?.style.display).toBe("");
     expect(shownIn(marks.ringLabels.current)).toHaveLength(0);
+  });
+
+  it("hides the equator ring's label as soon as the rings are on, though none is yet drawn, and keeps the rings' labels clear of the structures' names", () => {
+    const marks = overlay(["kbc"]);
+    const world = fakeWorld({ names: [{ id: "kbc", centre: [0, 0, 0], text: "KBC void" }] });
+    world.controller.turn(-300, 0);
+    world.controller.setRings(true);
+    placeOverlay(world, marks, { width: 800, height: 600 });
+    expect(world.controller.rings).toBeUndefined();
+    expect(marks.ring.current?.style.display).toBe("none");
+    world.controller.tick();
+    placeOverlay(world, marks, { width: 800, height: 600 });
+    const [name] = world.namesShown;
+    if (name === undefined) throw new Error("no name shown");
+    const shown = shownIn(marks.ringLabels.current);
+    expect(shown.length).toBeGreaterThan(0);
+    expect(shown.every((element) => clearOf(element, name))).toBe(true);
   });
 
   it("draws each structure's name at its centre", () => {

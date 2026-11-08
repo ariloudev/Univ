@@ -41,20 +41,33 @@ function vertices(lines: ReturnType<typeof ringLines>, toFrame: Mat3): Vec3[] {
 }
 
 describe("the distance rings", () => {
-  it("are spaced at the scale bar's length, at each multiple within three times the eye's distance of the focus", () => {
+  it("are spaced at the scale bar's length, at each multiple within three times the eye's distance of the focus, and none past four", () => {
     const v = view([0, 0, 0], 100);
     const set = rings(v);
     expect(set.step).toBeCloseTo(must(scaleBar(unitsPerPixel(v, 800))).parsecs / 1e6, 12);
     expect(set.first).toBe(1);
     expect((set.last + 1) * set.step).toBeGreaterThan(300);
-    expect(set.last * set.step).toBeLessThanOrEqual(300 + 1e-9);
-    // A focus 1,000 Mpc out in the plane, seen from 100: rings from 700 to 1,300.
+    expect(set.last * set.step).toBeLessThanOrEqual(400 + 1e-9);
+    // A focus 1,000 Mpc out in the plane, seen from 100: rings from 700 to 1,300 at least, and
+    // within 600 to 1,400.
     const far = rings(view([1000, 0, 0], 100));
-    expect((far.first - 1) * far.step).toBeLessThan(700);
-    expect(far.first * far.step).toBeGreaterThanOrEqual(700 - 1e-9);
-    expect(far.last * far.step).toBeLessThanOrEqual(1300 + 1e-9);
+    expect(far.first * far.step).toBeLessThanOrEqual(700 + 1e-9);
+    expect(far.first * far.step).toBeGreaterThanOrEqual(600 - 1e-9);
+    expect((far.last + 1) * far.step).toBeGreaterThan(1300);
+    expect(far.last * far.step).toBeLessThanOrEqual(1400 + 1e-9);
     // Measured in the plane: a focus straight above the barycentre is as near as Earth.
     expect(rings(view([0, 0, 500], 100)).first).toBe(1);
+  });
+
+  it("keep the set drawn while it still reaches three times the eye's distance and runs no farther than four", () => {
+    const at = view([1000, 0, 0], 100);
+    const set = rings(at);
+    // A small zoom out, within the same step: the set drawn still serves.
+    const out = { ...at, distance: 104 };
+    expect(ringSet(out, IDENTITY, "galactic", 800, set)).toBe(set);
+    // Far enough that it no longer reaches: a new set.
+    const moved = { ...at, focus: [1200, 0, 0] as const };
+    expect(ringSet(moved, IDENTITY, "galactic", 800, set)).not.toBe(set);
   });
 
   it("lie in the axes' equator, each at its distance, with a spoke every 30 degrees", () => {
@@ -104,6 +117,23 @@ describe("the distance rings", () => {
     expect(labels[0]?.at[1]).toBeCloseTo(0, 9);
     expect(labels[0]?.at[0]).toBeCloseTo(set.step, 9);
     expect(labels[0]?.text).toMatch(/^[\d.,]+ (pc|kpc|Mpc|Gpc)$/);
+  });
+
+  it("label rings side by side apart, to the step's last figure, far from the barycentre", () => {
+    // About 1,000 Mpc out, seen from 50: rings every 5 Mpc read 1,005 and 1,010 Mpc, not both 1.01 Gpc.
+    const set = rings(view([1000, 0, 0], 50));
+    const texts = ringLabels(IDENTITY, set).map((l) => l.text);
+    expect(new Set(texts).size).toBe(texts.length);
+    for (const text of texts) expect(text).toMatch(/^[\d,]+(\.\d+)? (pc|kpc|Mpc)$/);
+  });
+
+  it("are whole rings, labelled on the spoke of zero longitude, where arcs would go round", () => {
+    // Just past four times the eye's distance: arcs half 128 degrees wide would go round.
+    const set = rings(view([0, 410, 0], 100));
+    expect(set.sector).toBeUndefined();
+    const [label] = ringLabels(IDENTITY, set);
+    expect(label?.at[1]).toBeCloseTo(0, 9);
+    expect(ringLines(IDENTITY, set).offsets.length / 6).toBe((set.last - set.first + 1) * 192 + 12);
   });
 
   it("stay as they are while the view turns, and change as the eye moves, zooms past a step or changes axes", () => {

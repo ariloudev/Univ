@@ -21,6 +21,15 @@ interface ViewProps {
   frame: Store<number>;
 }
 
+/** What the view's drawer says of the rings drawn in the axes' equator. */
+function ringsText(controller: Controller): string {
+  if (!controller.ringsOn) return `Ring: the ${controller.axes} equator, ${formatDistance(controller.ringRadius)} from Earth.`;
+  const { rings } = controller;
+  return rings === undefined
+    ? `Rings: none within reach of the focus in the ${controller.axes} equator.`
+    : `Rings: every ${shortDistance(rings.step)} from the Solar System barycentre, in the ${controller.axes} equator.`;
+}
+
 /** The top bar's part: the eye's distance from the focus, and the axes with the grid's switch. */
 export function Whereabouts({ controller, frame, grid, rings }: ViewProps & { grid: Switch; rings: Switch }) {
   useStore(frame);
@@ -59,9 +68,7 @@ export function ViewDrawer({ controller, frame, cosmology }: ViewProps & { cosmo
     <div className="space-y-3">
       <h2 className="font-serif text-base">The view</h2>
       <p>
-        {controller.rings === undefined
-          ? `Ring: the ${controller.axes} equator, ${formatDistance(controller.ringRadius)} from Earth.`
-          : `Rings: every ${shortDistance(controller.rings.step)} from the Solar System barycentre, in the ${controller.axes} equator.`}
+        {ringsText(controller)}
       </p>
       <p className="text-dim" data-testid="frame">
         Axes {controller.axes} ({controller.frame.basis}). Origin: the Solar System barycentre, within about 1 AU of Earth.

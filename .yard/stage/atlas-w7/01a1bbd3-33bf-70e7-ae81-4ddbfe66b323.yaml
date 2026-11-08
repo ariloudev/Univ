@@ -19,6 +19,15 @@ versions:
     title: "Build the distance rings"
     goal: "The view draws the rings, spokes and labels in space, in place of the lone equator ring, verified by unit, component and end-to-end tests"
     status: active
+  - key: 01a1bbdc-52a8-7018-b3e0-d43b408a31c5
+    at: 2026-11-08T15:52:20Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the distance rings"
+    goal: "The view draws the rings, spokes and labels in space, in place of the lone equator ring, verified by unit, component and end-to-end tests"
+    status: done
 blocks:
   - key: 01a1bbd3-9899-7112-9cdf-193ef571ba96
     id: rings-plan
@@ -70,6 +79,15 @@ blocks:
         title: "Rings as data"
         detail: "scene/rings.ts ringSet, ringLines, ringLabels; done when rings.test.ts passes."
         state: active
+      - key: 01a1bbdc-52a8-7018-b3e0-d436af41b6a3
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Rings as data"
+        detail: "scene/rings.ts ringSet, ringLines, ringLabels; rings.test.ts passes, including arcs near a distant focus."
+        state: done
   - key: 01a1bbd4-b7cd-710d-86e4-250d8aaaa685
     id: t-draw
     kind: task
@@ -83,6 +101,15 @@ blocks:
         title: "The controller draws the rings in place of the equator ring"
         detail: "Controller.setRings; done when the controller tests pass."
         state: open
+      - key: 01a1bbdc-52a8-7018-b3e0-d437c9bd2283
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The controller draws the rings in place of the equator ring"
+        detail: "Controller.setRings; the controller test checks the swap, the rebuilds only on a change, and the axes."
+        state: done
   - key: 01a1bbd4-b7cd-710d-86e4-250e921deb31
     id: t-labels
     kind: task
@@ -96,6 +123,15 @@ blocks:
         title: "Ring labels in the overlay"
         detail: "placeOverlay places and thins the labels; done when the overlay tests pass."
         state: open
+      - key: 01a1bbdc-52a8-7018-b3e0-d43879e57ff5
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Ring labels in the overlay"
+        detail: "placeRingLabels thins them with clearLabels; the overlay test checks the swap with the ring's label and that no two overlap."
+        state: done
   - key: 01a1bbd4-b7cd-710d-86e4-250fff4b9556
     id: t-switch
     kind: task
@@ -109,6 +145,15 @@ blocks:
         title: "The rings' switch, kept in the address"
         detail: "ringsSwitch.ts, Rings beside Grid, Atlas wiring, drawer text; done when the hook, Atlas and e2e tests pass."
         state: open
+      - key: 01a1bbdc-52a8-7018-b3e0-d4392433b0c1
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The rings' switch, kept in the address"
+        detail: "ringsSwitch.ts with useDrawnRings, Rings beside Grid, the drawer's sentence; the hook and Atlas tests pass, and the e2e test runs at integration."
+        state: done
   - key: 01a1bbd6-7f67-7567-bdf3-140a1bf123a6
     id: plan-25-plan-silly-shimmying-lake-01a1bbd3-33bf-70e7-ae81-4ddbfe66b323
     kind: plan
@@ -668,3 +713,21 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1bbdc-52a8-7018-b3e0-d435feb32690
+    id: build-done
+    kind: note
+    versions:
+      - key: 01a1bbdc-52a8-7018-b3e0-d43a13930800
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        markdown: |-
+          Built and committed. The explorer's `pnpm check` passes. Seen on release 12:
+
+          - **Around Earth:** rings every 50 Mpc, labelled along 0°.
+          - **Zoomed in:** rings every 20 Mpc, and the step follows the scale bar.
+          - **Seen at a shallow angle:** the rings beyond the focus crowd into a band near the horizon, as any plane of rings does. A reach of 1.5 instead of 3 thins it without removing it. It stays at the approved 3.
+          - **At NGC 4472:** no rings are in view. Virgo lies about 15 Mpc above the galactic plane, and the rings stay in the plane.
+        tone: success

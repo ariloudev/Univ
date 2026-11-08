@@ -153,10 +153,13 @@ describe("the controller", () => {
     controller.zoom(-8);
     controller.tick();
     expect(count()).toBe(before + 1);
-    // The axes change them too.
-    controller.setAxes("equatorial");
+    // The axes change them: the old rings go at once, and the new ones are drawn.
+    expect(controller.rings?.axes).toBe("galactic");
+    controller.setAxes("supergalactic");
+    expect(drawn.lines.get("distance-rings")).toBeUndefined();
     controller.tick();
-    expect(controller.rings?.axes).toBe("equatorial");
+    expect(controller.rings?.axes).toBe("supergalactic");
+    expect(drawn.lines.get("distance-rings")?.offsets.length).toBeGreaterThan(0);
     controller.setRings(false);
     controller.tick();
     expect(drawn.lines.get("distance-rings")).toBeUndefined();

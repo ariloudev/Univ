@@ -10,3 +10,12 @@ versions:
     title: "Review, gate and merge"
     goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
     status: planned
+  - key: 01a1bbdc-52a8-7018-b3e0-d43c7cdedc71
+    at: 2026-11-08T15:52:20Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
+    status: active

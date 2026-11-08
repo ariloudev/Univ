@@ -8,7 +8,7 @@ import type { RefObject } from "react";
 import { project } from "../scene/camera.ts";
 import { shortDistance } from "../scene/format.ts";
 import { ringAnchor } from "../scene/frames.ts";
-import { ringLabels } from "../scene/rings.ts";
+import type { RingLabel } from "../scene/rings.ts";
 import { type LabelBox, clearLabels, contains } from "../scene/labels.ts";
 import { ORIGIN, type Vec3 } from "../scene/vec.ts";
 import type { World } from "./useWorld.ts";
@@ -37,31 +37,43 @@ export interface Overlay {
 
 type At = { x: number; y: number; depth: number } | undefined;
 
-/** The structures' names' type: italic Spectral at Tailwind's `text-xs`, measured where a canvas
- * can measure it. */
-let measure: ((text: string) => number) | undefined | null;
+/** The labels' types, at Tailwind's `text-xs`: the structures' names in italic Spectral, the
+ * rings' distances in the page's sans. */
+type LabelType = "name" | "ring";
+const FONTS: Record<LabelType, [style: string, variable: string, fallback: string]> = { name: ["italic ", "--font-serif", "serif"], ring: ["", "--font-sans", "sans-serif"] };
 
-function measurer(): ((text: string) => number) | null {
-  if (measure !== undefined) return measure;
+/** Each type's measure, where a canvas can measure it. */
+const measures = new Map<LabelType, ((text: string) => number) | null>();
+
+function measurer(type: LabelType): ((text: string) => number) | null {
+  const made = measures.get(type);
+  if (made !== undefined) return made;
   const context = document.createElement("canvas").getContext("2d");
-  if (context === null) return (measure = null);
-  // A name measured before Spectral has loaded is measured again once it has.
+  if (context === null) {
+    measures.set(type, null);
+    return null;
+  }
+  // A label measured before its font has loaded is measured again once it has.
   void document.fonts?.ready.then(() => {
     widths.clear();
   });
-  context.font = `italic 12px ${getComputedStyle(document.documentElement).getPropertyValue("--font-serif").trim() || "serif"}`;
-  return (measure = (text) => context.measureText(text).width);
+  const [style, variable, fallback] = FONTS[type];
+  context.font = `${style}12px ${getComputedStyle(document.documentElement).getPropertyValue(variable).trim() || fallback}`;
+  const measure = (text: string) => context.measureText(text).width;
+  measures.set(type, measure);
+  return measure;
 }
 
 const widths = new Map<string, number>();
 
-/** A name's box: its text measured once, or, where nothing can measure it, about 6.6 px a
- * character; 16 px a line. */
-export function labelSize(text: string): { width: number; height: number } {
-  let width = widths.get(text);
+/** A label's box: its text measured once in its type, or, where nothing can measure it, about
+ * 6.6 px a character; 16 px a line. */
+export function labelSize(text: string, type: LabelType = "name"): { width: number; height: number } {
+  const key = `${type}\u0000${text}`;
+  let width = widths.get(key);
   if (width === undefined) {
-    width = (measurer()?.(text) ?? text.length * 6.6) + 4;
-    widths.set(text, width);
+    width = (measurer(type)?.(text) ?? text.length * 6.6) + 4;
+    widths.set(key, width);
   }
   return { width, height: 16 };
 }
@@ -111,17 +123,20 @@ export function nameAt(world: World, x: number, y: number): NameLabel | undefine
   return box === undefined ? undefined : world.names.find((name) => name.id === box.id);
 }
 
-/** Places the labels `labels` in `container`, each to the right of its place, the nearest first
- * and each clear of those placed before it; hides those left over. */
-function placeRingLabels(container: HTMLElement | null, labels: readonly { text: string; at: Vec3 }[], at: (p: Vec3) => At): void {
+/** Places the labels `labels` in `container`, each to the right of its place, those on the view
+ * only, the nearest first and each clear of those placed before it; hides those left over. */
+function placeRingLabels(container: HTMLElement | null, labels: readonly RingLabel[], at: (p: Vec3) => At, size: { width: number; height: number }, names: readonly LabelBox[]): void {
   if (container === null) return;
   const boxes: (LabelBox & { text: string })[] = [];
   labels.forEach((label, i) => {
     const on = at(label.at);
-    const size = labelSize(label.text);
-    if (on !== undefined) boxes.push({ id: String(i), x: on.x + size.width / 2, y: on.y, depth: on.depth, ...size, text: label.text });
+    const box = labelSize(label.text, "ring");
+    if (on !== undefined && on.x >= -box.width && on.x <= size.width && on.y >= 0 && on.y <= size.height) {
+      boxes.push({ id: String(i), x: on.x + box.width / 2, y: on.y, depth: on.depth, ...box, text: label.text });
+    }
   });
-  const shown = clearLabels(boxes) as (LabelBox & { text: string })[];
+  // Clear of the structures' names too, which are placed first.
+  const shown = clearLabels(boxes, names);
   while (container.children.length < shown.length) container.append(Object.assign(document.createElement("span"), { className: "absolute top-0 left-0 whitespace-nowrap" }));
   [...container.children].forEach((element, i) => {
     if (!(element instanceof HTMLElement)) return;
@@ -136,12 +151,11 @@ export function placeOverlay(world: World, overlay: Overlay, size: { width: numb
   const { controller } = world;
   const at = (p: Vec3): At => project(controller.view, controller.toFrame, p, size.width, size.height);
   place(overlay.earth.current, at(ORIGIN));
-  const { rings } = controller;
   // The distance rings take the place of the equator's ring and its label.
-  place(overlay.ring.current, rings === undefined ? at(ringAnchor(controller.toFrame, controller.ringRadius)) : undefined);
-  placeRingLabels(overlay.ringLabels.current, rings === undefined ? [] : ringLabels(controller.toFrame, rings), at);
+  place(overlay.ring.current, controller.ringsOn ? undefined : at(ringAnchor(controller.toFrame, controller.ringRadius)));
   place(overlay.chosen.current, world.chosen === undefined ? undefined : at(world.chosen));
   world.namesShown = placeNames(overlay.names.current, world.names, at, size.ratio ?? 1);
+  placeRingLabels(overlay.ringLabels.current, controller.ringLabels, at, size, world.namesShown);
   const label = overlay.ringLabel.current;
   const text = shortDistance(controller.ringRadius);
   if (label !== null && label.textContent !== text) label.textContent = text;
