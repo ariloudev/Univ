@@ -71,7 +71,7 @@ requirements:
       - key: 01a1bbd3-54fe-7370-9d9f-cdc8d373d024
         name: "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude."
       - key: 01a1bbd3-54fe-7370-9d9f-cdc9e9f39082
-        name: "Each ring is labelled with its distance where it crosses the spoke of zero longitude, and a label that would overlap one already placed is left out."
+        name: "Each ring is labelled with its distance where it crosses the spoke of zero longitude, or, where the rings drawn are arcs short of going round the barycentre, the line from it through their middle, and a label that would overlap one already placed is left out."
       - key: 01a1bbd3-54fe-7370-9d9f-cdca6d344fc9
         name: "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length."
       - key: 01a1bbd3-54fe-7370-9d9f-cdcb2966a530
