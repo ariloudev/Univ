@@ -150,14 +150,23 @@ export function ringLabels(toFrame: Mat3, set: RingSet): RingLabel[] {
   return labels;
 }
 
+/** A format to `places` decimals, made once: making one costs more than using it. */
+function withPlaces(places: number): Intl.NumberFormat {
+  let format = PLACES.get(places);
+  if (format === undefined) {
+    format = new Intl.NumberFormat("en-GB", { minimumFractionDigits: places, maximumFractionDigits: places });
+    PLACES.set(places, format);
+  }
+  return format;
+}
+
+const PLACES = new Map<number, Intl.NumberFormat>();
+
 /** The distance of the `k`th ring `step` megaparsecs apart, in the largest parsec unit of which
  * it is at least one, to the step's last figure in that unit, so that rings side by side never
  * read alike: 800 kpc before 1.0 Mpc, 1.005 Gpc beside 1.010 Gpc. */
 function distanceOf(step: number): (k: number) => string {
-  const inUnit = ([size, unit]: readonly [number, string]) => {
-    const places = Math.max(0, -Math.floor(Math.log10((step * 1e6) / size) + 1e-9));
-    return { size, unit, format: new Intl.NumberFormat("en-GB", { minimumFractionDigits: places, maximumFractionDigits: places }) };
-  };
+  const inUnit = ([size, unit]: readonly [number, string]) => ({ size, unit, format: withPlaces(Math.max(0, -Math.floor(Math.log10((step * 1e6) / size) + 1e-9))) });
   const formats = PC_UNITS.map(inUnit);
   const parsecs = inUnit([1, "pc"]);
   return (k) => {

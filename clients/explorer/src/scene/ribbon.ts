@@ -2,8 +2,9 @@
 // since WebGL draws lines one pixel wide wherever it is asked for more (see-the-structures:
 // the chosen structure's outline is thicker).
 
-/** A segment's six corners, two triangles: which end each is at, 0 or 1, and on which side. */
-const CORNERS = [0, -1, 0, 1, 1, 1, 1, 1, 0, 1, 1, -1];
+/** A segment's six corners, two triangles split along the diagonal from its first end's minus
+ * side to its second end's plus side: which end each is at, 0 or 1, and on which side. */
+const CORNERS = [0, -1, 0, 1, 1, 1, 0, -1, 1, 1, 1, -1];
 
 /** The ribbon of the segments `offsets` holds, end to end in pairs: for each of their six
  * corners, the segment's ends and the corner's place on it. */

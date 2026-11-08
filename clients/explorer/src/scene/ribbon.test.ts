@@ -18,6 +18,13 @@ describe("a ribbon of segments", () => {
     for (const t of triangles) expect(new Set([t[0], t[2], t[4]])).toEqual(new Set([0, 1]));
     const all = new Set([0, 2, 4, 6, 8, 10].map((i) => `${corners[i]},${corners[i + 1]}`));
     expect(all).toEqual(new Set(["0,-1", "0,1", "1,-1", "1,1"]));
+    // They share a diagonal, two corners at different ends and on different sides, so that
+    // together they cover the quad once: sharing a side would leave half of it bare.
+    const [first, second] = triangles.map((t) => [0, 2, 4].map((i) => `${t[i]},${t[i + 1]}`));
+    const shared = (first ?? []).filter((c) => (second ?? []).includes(c)).map((c) => c.split(","));
+    expect(shared).toHaveLength(2);
+    expect(shared[0]?.[0]).not.toBe(shared[1]?.[0]);
+    expect(shared[0]?.[1]).not.toBe(shared[1]?.[1]);
   });
 
   it("gives each corner the neighbour of the end it is at, where the ends have any", () => {

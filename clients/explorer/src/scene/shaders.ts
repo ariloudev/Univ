@@ -100,7 +100,11 @@ uniform float u_fades;
 in vec3 a_neighbour;
 uniform vec2 u_fadeRange;
 // How far the fragment lies across the line from its middle, device pixels, and how faded.
-out float v_across;
+// Times the corner's w, with w itself, so that the fragment shader can undo the perspective
+// correction WebGL gives every varying: the distance across is measured on the view, and must be
+// interpolated straight across it (GLSL ES 3.00 has no noperspective).
+out float v_acrossW;
+out float v_w;
 out float v_fade;
 // Just in front of the eye: an end behind it is moved along its segment to here, so that the
 // segment's direction on the view is defined.
@@ -135,22 +139,26 @@ void main() {
   vec2 along = (to.xy / to.w - from.xy / from.w) * u_pixels;
   vec2 dir = length(along) > 0.0 ? normalize(along) : vec2(1.0, 0.0);
   float halfWidth = 0.5 * u_width + 1.0;
-  v_across = a_corner.y * halfWidth;
-  vec2 across = vec2(-dir.y, dir.x) * v_across / u_pixels;
+  float side = a_corner.y * halfWidth;
+  vec2 across = vec2(-dir.y, dir.x) * side / u_pixels;
   vec4 at = a_corner.x < 0.5 ? from : to;
   gl_Position = vec4(at.xy + across * at.w, at.zw);
+  v_acrossW = side * at.w;
+  v_w = at.w;
 }`;
 
 export const LINE_FRAGMENT = `#version 300 es
 precision mediump float;
 uniform vec4 u_colour;
 uniform highp float u_width;
-in float v_across;
+in float v_acrossW;
+in float v_w;
 in float v_fade;
 out vec4 colour;
 void main() {
   // The share of the pixel the line covers: whole within it, falling off across its edge's pixel,
-  // and a line thinner than a pixel as faint as it is thin.
-  float cover = clamp(0.5 * u_width + 0.5 - abs(v_across), 0.0, 1.0) * min(u_width, 1.0);
+  // and a line thinner than a pixel drawn a pixel wide, as faint as it is thin.
+  float across = v_acrossW / v_w;
+  float cover = clamp(0.5 * max(u_width, 1.0) + 0.5 - abs(across), 0.0, 1.0) * min(u_width, 1.0);
   colour = vec4(u_colour.rgb, u_colour.a * cover * v_fade);
 }`;
