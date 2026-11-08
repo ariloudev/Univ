@@ -19,9 +19,9 @@ requirements:
       - key: 01a1b7d7-c032-73ad-803e-b103f2a0c853
         name: "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes."
       - key: 01a1b7d7-c032-73ad-803e-b10435170cb6
-        name: "The ticks of a coordinate other than right ascension are spaced, on both its edges, at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart on each."
+        name: "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes."
       - key: 01a1b863-1a09-757d-bbd7-6f0d72803e9a
-        name: "The ticks of right ascension are spaced, on both its edges, at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart on each."
+        name: "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes."
       - key: 01a1b7d7-c032-73ad-803e-b105558be2c4
         name: "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees."
       - key: 01a1b7d7-c032-73ad-803e-b106cab43cde
@@ -44,7 +44,7 @@ requirements:
       - key: 01a1bbb4-503d-7416-9488-04fd03559559
         name: "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on."
       - key: 01a1bbb4-503d-7416-9488-04fe7cd7893c
-        name: "The grid draws a line along each multiple of the steps the edges' ticks are spaced at, so that every tick lies on one of its lines."
+        name: "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines."
       - key: 01a1bbb4-503d-7416-9488-04ff805e7421
         name: "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms."
       - key: 01a1bbb4-503d-7416-9488-0500d68ce364
