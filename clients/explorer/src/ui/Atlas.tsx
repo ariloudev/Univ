@@ -7,7 +7,6 @@ import { AtlasFrame } from "./AtlasFrame.tsx";
 import type { Switch } from "./addressSwitch.ts";
 import { useGrid } from "./gridSwitch.ts";
 import type { Inside } from "./inside.ts";
-import { useDrawnOutlines } from "./outlinesSwitch.ts";
 import { useDrawnRings } from "./ringsSwitch.ts";
 import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
@@ -58,6 +57,8 @@ interface AtlasProps {
   selection: Selection;
   /** What can be turned off, what is, and the way to turn it on or off. */
   show: ShowPanelProps;
+  /** The structures' outlines' switch, which the structures drawn follow. */
+  outlines: Switch;
   /** The view: its canvas and what is drawn over it. */
   children: ReactNode;
 }
@@ -99,12 +100,11 @@ export function AtlasPage({ start, end, slot, children }: { start: ReactNode; en
  * line; the record on the right while something is chosen; the bottom bar of scale, key and
  * credits; and, in the top bar, the eye's distance, the axes and the search. Below 1,024 pixels a
  * drawer and the record open over the view. */
-export function Atlas({ world, release, cosmology, place, structures, selection, show, children }: AtlasProps) {
+export function Atlas({ world, release, cosmology, place, structures, selection, show, outlines, children }: AtlasProps) {
   const { drawer, onDrawer } = place;
   const key = chosenKey(selection);
   const grid = useGrid();
   const rings = useDrawnRings(world?.controller);
-  const outlines = useDrawnOutlines(world);
   return (
     <>
       {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} switches={{ grid, rings, outlines }} />, place.topBar)}

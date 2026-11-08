@@ -7,7 +7,7 @@ import type { StructureDrawing } from "../scene/structures.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { fakeWorld } from "../test/world.ts";
 import { structureDetail } from "../test/structures.ts";
-import { SYMBOL_REACH, namesOf, rendered, settled, structureView, useStructures } from "./useStructures.ts";
+import { SYMBOL_REACH, hiddenOutlines, namesOf, rendered, settled, structureView, useStructures } from "./useStructures.ts";
 
 const drawing = (outline: StructureDrawing["outline"], centre: StructureDrawing["centre"] = [10, 0, 0]): StructureDrawing => ({
   id: "s",
@@ -157,5 +157,49 @@ describe("the chosen structure", () => {
     hook.rerender({ hidden: none });
     expect(world.names.map((n) => n.id)).toEqual(["kbc-void"]);
     expect(hideNames).toHaveBeenLastCalledWith(new Set());
+  });
+
+  it("draws no outline but the chosen one's while the outlines are off, naming every structure all the same", async () => {
+    const details = { "kbc-void": structureDetail({ id: "kbc-void", name: "KBC void" }), "vela": structureDetail({ id: "vela", name: "Vela" }) };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) =>
+        Promise.resolve(
+          Response.json(
+            url.startsWith("/v1/structures?")
+              ? {
+                  release: 7,
+                  structures: [
+                    { id: "kbc-void", name: "KBC void", kind: "void", scale_domain: "cosmic_web" },
+                    { id: "vela", name: "Vela", kind: "supercluster", scale_domain: "cosmic_web" },
+                  ],
+                  next: null,
+                }
+              : details[url.includes("vela") ? "vela" : "kbc-void"],
+          ),
+        ),
+      ),
+    );
+    const hideNames = vi.fn();
+    const world = fakeWorld({ renderer: { setLines: vi.fn(), setMarkers: vi.fn(), choose: vi.fn(), hideNames } as unknown as Renderer });
+    const none: ReadonlySet<string> = new Set();
+    const hook = renderHook(({ chosen, outlines }: { chosen: string | undefined; outlines: boolean }) => useStructures(7, world, manifestOf("stars").rotations, chosen, none, outlines), {
+      initialProps: { chosen: undefined as string | undefined, outlines: true },
+    });
+    await waitFor(() => expect(hook.result.current.names.map((n) => n.id).sort()).toEqual(["kbc-void", "vela"]));
+    expect(hideNames).toHaveBeenLastCalledWith(new Set());
+    hook.rerender({ chosen: undefined, outlines: false });
+    expect(hideNames).toHaveBeenLastCalledWith(new Set(["structure:kbc-void", "structure:vela"]));
+    expect(world.names.map((n) => n.id).sort()).toEqual(["kbc-void", "vela"]);
+    hook.rerender({ chosen: "vela", outlines: false });
+    expect(hideNames).toHaveBeenLastCalledWith(new Set(["structure:kbc-void"]));
+    hook.rerender({ chosen: "vela", outlines: true });
+    expect(hideNames).toHaveBeenLastCalledWith(new Set());
+  });
+
+  it("hides only structures' outlines, by their own names, whatever else the renderer draws", () => {
+    // The equator and the distance rings are drawn under names of their own, never a structure's.
+    expect(hiddenOutlines(["kbc-void", "vela", "wall"], new Set(["kbc-void", "vela"]), "vela", false)).toEqual(new Set(["structure:kbc-void", "structure:wall"]));
+    expect(hiddenOutlines(["kbc-void", "wall"], new Set(["kbc-void"]), "wall", true)).toEqual(new Set(["structure:wall"]));
   });
 });

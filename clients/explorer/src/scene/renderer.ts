@@ -14,7 +14,6 @@ import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
 import { ribbonOf } from "./ribbon.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
-import { outlineDrawn } from "./structures.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
 
 /** The browser cannot draw with WebGL2. */
@@ -138,8 +137,6 @@ export class Renderer implements Drawer {
   private readonly markers = new Map<string, Drawn & { colour: Rgba }>();
   /** The name of the outline and markers drawn as chosen, if any. */
   private chosen: string | undefined;
-  /** Whether the structures' outlines are drawn, or only the chosen one's (see-the-structures). */
-  private outlinesOn = true;
   private readonly pointSize: WebGLUniformLocation | null;
   /** The markers' slot of the table of colours, set for each structure's markers as drawn. */
   private readonly markerColour: WebGLUniformLocation | null;
@@ -295,16 +292,6 @@ export class Renderer implements Drawer {
     this.hiddenNames = names;
   }
 
-  /** Draws every structure's outline and markers, or, where `on` is false, only the chosen one's. */
-  showOutlines(on: boolean): void {
-    this.outlinesOn = on;
-  }
-
-  /** Whether the outline and markers named `name` are drawn this frame. */
-  private drawn(name: string): boolean {
-    return outlineDrawn(name, { hidden: this.hiddenNames, chosen: this.chosen, outlines: this.outlinesOn });
-  }
-
   /** Draws the outline and markers named `name` as chosen, and none other; none for undefined. */
   choose(name: string | undefined): void {
     this.chosen = name;
@@ -377,7 +364,7 @@ export class Renderer implements Drawer {
     // The fade's bounds are CSS pixels, so many device pixels each.
     this.gl.uniform2f(this.lineFade.range, FADE.gone * ratio, FADE.full * ratio);
     for (const [name, outline] of this.outlines) {
-      if (!this.drawn(name)) continue;
+      if (this.hiddenNames.has(name)) continue;
       this.gl.uniform1f(this.lineFade.on, outline.fades);
       const style = structureStyle(outline.colour, name === this.chosen);
       this.gl.uniform4f(this.lineColour, ...style.colour);
@@ -442,7 +429,7 @@ export class Renderer implements Drawer {
     this.useDetail(EVERYTHING);
     gl.uniform2f(this.detailAt.slice, 0, 0);
     for (const [name, marker] of this.markers) {
-      if (!this.drawn(name)) continue;
+      if (this.hiddenNames.has(name)) continue;
       const style = structureStyle(marker.colour, name === this.chosen);
       gl.uniform1f(this.pointSize, style.markerSize);
       gl.uniform4f(this.markerColour, ...style.colour);

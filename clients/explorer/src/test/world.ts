@@ -14,6 +14,6 @@ export function fakeController(): Controller {
 
 /** A world holding nothing, its renderer drawing nowhere, `overrides` set. */
 export function fakeWorld(overrides: Partial<World> = {}): World {
-  const renderer = { setLines: () => undefined, setMarkers: () => undefined, choose: () => undefined, setHidden: () => undefined, hideNames: () => undefined, showOutlines: () => undefined } as unknown as Renderer;
+  const renderer = { setLines: () => undefined, setMarkers: () => undefined, choose: () => undefined, setHidden: () => undefined, hideNames: () => undefined } as unknown as Renderer;
   return { ...emptyWorld(fakeController(), renderer), ...overrides };
 }

@@ -8,6 +8,7 @@ import { HoverLabel, Marks, StructureNames } from "./SceneOverlay.tsx";
 import { choicesOf } from "./show/choices.ts";
 import { Atlas, type AtlasPlace, type Selection } from "./Atlas.tsx";
 import { useHidden } from "./hidden.ts";
+import { useOutlines } from "./outlinesSwitch.ts";
 import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
@@ -78,7 +79,8 @@ export function Scene({
   useEffect(() => {
     world?.catalogue?.setLevelOfDetail(levelOfDetail);
   }, [world, domains, levelOfDetail]);
-  const structures = useStructures(release, world, rotations, structureId, hidden.structure);
+  const outlines = useOutlines();
+  const structures = useStructures(release, world, rotations, structureId, hidden.structure, outlines[0]);
   const { detail, inside } = useCulledStructure(world, domains, rotations, structures, structureChoice);
   const choices = useMemo(() => choicesOf(domains, structures.list), [domains, structures.list]);
   const context = useRecordContext(release, rotations, structures, {
@@ -114,6 +116,7 @@ export function Scene({
       structures={structures}
       selection={selection}
       show={{ choices, hidden, onApply: apply }}
+      outlines={outlines}
     >
       <div className="absolute inset-0 overflow-hidden">
         <canvas

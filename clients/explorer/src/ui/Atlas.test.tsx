@@ -9,6 +9,7 @@ import { fakeWorld } from "../test/world.ts";
 import { Atlas, AtlasPage, type Selection } from "./Atlas.tsx";
 import type { DrawerName } from "./Rail.tsx";
 import { NOTHING_HIDDEN, hiddenInAddress } from "./hidden.ts";
+import { useOutlines } from "./outlinesSwitch.ts";
 import { choicesOf } from "./show/choices.ts";
 import type { ChosenObject } from "./useChosen.ts";
 import type { ShownStructures } from "./useStructures.ts";
@@ -46,6 +47,7 @@ function Page({ world, shown }: { world: ReturnType<typeof fakeWorld>; shown: Sh
   const [topBar, setTopBar] = useState<HTMLElement | null>(null);
   const [drawer, setDrawer] = useState<DrawerName>();
   const choices = choicesOf([], [{ kind: "void" }]);
+  const outlines = useOutlines();
   return (
     <AtlasPage start={<p>Drawing release 7</p>} end={<p>Level of detail</p>} slot={setTopBar}>
       <Atlas
@@ -56,6 +58,7 @@ function Page({ world, shown }: { world: ReturnType<typeof fakeWorld>; shown: Sh
         structures={{ ...structures, shown: shown.shown ?? structures.shown }}
         selection={selectionOf(shown)}
         show={{ choices, hidden: shown.hidden ?? NOTHING_HIDDEN, onApply: none }}
+        outlines={outlines}
       >
         <canvas />
       </Atlas>
@@ -91,20 +94,15 @@ describe("the explorer laid out as an atlas", () => {
     expect(within(bar).getByRole("switch", { name: "Grid" }).closest("label")?.nextElementSibling?.textContent).toBe("Rings");
   });
 
-  it("takes the structures' outlines away from a switch beside the rings', keeping their names, and keeps it off in the address", async () => {
-    const world = fakeWorld();
-    const showOutlines = vi.spyOn(world.renderer, "showOutlines");
-    world.names = [{ id: "kbc-void", centre: [0, 0, 0], text: "KBC void", below: undefined }];
-    show({}, world);
+  it("offers the structures' outlines' switch beside the rings', on, and keeps it off in the address", async () => {
+    show();
     const bar = screen.getByRole("banner");
     expect(within(bar).getByRole("switch", { name: "Rings" }).closest("label")?.nextElementSibling?.textContent).toBe("Outlines");
     const toggle = within(bar).getByRole("switch", { name: "Outlines" }) as HTMLInputElement;
     expect(toggle.checked).toBe(true);
-    expect(showOutlines).toHaveBeenLastCalledWith(true);
     await userEvent.click(toggle);
-    expect(showOutlines).toHaveBeenLastCalledWith(false);
+    expect(toggle.checked).toBe(false);
     expect(location.search).toBe("?outlines=off");
-    expect(world.names.map((n) => n.text)).toEqual(["KBC void"]);
     await userEvent.click(toggle);
     expect(location.search).toBe("");
   });

@@ -4732,8 +4732,11 @@ links:
         name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
         body: e575956c940e0889007a30c71cfba152da3944e56cbdd70f3de4f11bb5e2cc57
   - node: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
-    reviewed: d6f4247d3fabbb1ae40ec87119188b1abbb838b0aaa6b7cad18c155a103d398a
+    reviewed: f5e9428163f38d2682e6453b05420681f7f758a5b74a53bc71d46565379a3def
     tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers the structures' outlines' switch beside the rings', on, and keeps it off in the address"
+        body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
         body: c6ad34563ab4cacd2bf5570e7f9a21ba898b90bed0a0a9d8857c03c149012928
@@ -5289,6 +5292,66 @@ links:
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "hides a structure's name that would overlap a nearer one"
         body: e8922b92aad908d2334513eaa572736a5a6fa0b85791b1a592bb8d3b5984cf3a
+  - node: 01a1bd21-49d6-7489-b3d6-aa09864c3462
+    reviewed: 8a123c0b63e90d7eab69d1b599c1934e6ecd76e505a09878d097b8396e74dc98
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers the structures' outlines' switch beside the rings', on, and keeps it off in the address"
+        body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
+        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+  - node: 01a1bd21-49d6-7489-b3d6-aa0ada007939
+    reviewed: 8826ab30bae9fbabe176c5b59368a24c932e0028f9c5f779fc66ddbb1ca392e8
+    tests:
+      - file: "clients/explorer/src/ui/outlinesSwitch.test.ts"
+        name: "is on unless the address turns the outlines off"
+        body: 259a386dac3b964507a3ac4c53a463662d9edf7168ec303eecf8e9f5955c429c
+      - file: "clients/explorer/src/ui/outlinesSwitch.test.ts"
+        name: "is kept off in the address, beside what else it holds, and leaves it once on again"
+        body: 3e716e20d456f5796c6bfe925a5d0eaa9eab7344f657cc992128fc1a12998d5d
+  - node: 01a1bd21-49d6-7489-b3d6-aa0b73233bed
+    reviewed: e0d819e66f48d34d706ad3edda5b0036c9d9c0d7df7dde20989345d4a8ba4b8a
+    tests:
+      - file: "clients/explorer/src/ui/outlinesSwitch.test.ts"
+        name: "is kept off in the address, beside what else it holds, and leaves it once on again"
+        body: 3e716e20d456f5796c6bfe925a5d0eaa9eab7344f657cc992128fc1a12998d5d
+      - file: "clients/explorer/src/ui/outlinesSwitch.test.ts"
+        name: "starts off where the address turns the outlines off, as after a reload"
+        body: f721eb4250512c60b9db3d8ccabf3a5e3d68a5d0876942739e3759fecb0f19fa
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
+        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+  - node: 01a1bd21-49d6-7489-b3d6-aa0cc77cd12b
+    reviewed: b0ad613c3200faf6dfec379490e008c471c226d7f1044503e7d31f4c57945db6
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "draws no outline but the chosen one's while the outlines are off, naming every structure all the same"
+        body: ad088446d2dad7933e513e22a3715624d997a7bc385a7f1d91136262ac1f5520
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "hides only structures' outlines, by their own names, whatever else the renderer draws"
+        body: b4f9b9e3f1d44f02df07724db1714c312c60b125bb938a66b178468ef7e9dad5
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers the structures' outlines' switch beside the rings', on, and keeps it off in the address"
+        body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
+  - node: 01a1bd21-49d6-7489-b3d6-aa0d05b88cc6
+    reviewed: 2efb0c1cdc6878f8314651f8aba340f6adbaa8de93db57fd3885f77c448b1ed5
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "draws no outline but the chosen one's while the outlines are off, naming every structure all the same"
+        body: ad088446d2dad7933e513e22a3715624d997a7bc385a7f1d91136262ac1f5520
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers the structures' outlines' switch beside the rings', on, and keeps it off in the address"
+        body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
+        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+  - node: 01a1bd21-49d6-7489-b3d6-aa0eae4110b0
+    reviewed: 00770c00d7a6e6d08759e3e06fd8eb0fd8c8c27dee51d13d8e4e4ea2c11547da
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
+        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
   - node: 01a1a497-e843-728a-bce8-3ff996141e6c
     reviewed: 8bbf3b8f19a86fd4634f08d612679436835df6f69b55574a5a50cead55b4e775
     tests:
