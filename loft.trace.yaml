@@ -4078,8 +4078,8 @@ links:
         name: "chooses what its first click found, though that click has moved the view"
         body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "centres the view on a point clicked, keeping the distance"
-        body: 468c0ed69358439d82a5662e14a834d3b4667dac43b229a9ddfa70cae629ae89
+        name: "centres the view on a point clicked, keeping the distance, with the grid drawn over it"
+        body: 1564e7110bb2a0542269150c13606739b5be47ff03650619877cc375d89fd1a7
   - node: 01a1a8e8-6326-709f-aa5e-4610311af683
     reviewed: 1174f20dd1a7c960a058c69bc1a4f4b5ec2af79cfc50772ad17920a33030d44c
     tests:
@@ -4264,20 +4264,32 @@ links:
         name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
         body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
   - node: 01a1b7d7-c032-73ad-803e-b10435170cb6
-    reviewed: 76bde24c8476e854f178ede5c508b6b6078bc9e844fdfda37f35fc25b933af65
+    reviewed: 1fbb980d8d3a412f93d87f7e9b5de407d6f76438346c2436d557ea9f09a48f6c
     tests:
       - file: "clients/explorer/src/scene/graticule.test.ts"
         name: "use the finest step whose labels stay at least 60 pixels apart"
         body: 22036f39abb7b367d073dd1ebc7eaeebd33a392439ce25d7496fad89c3a5a46f
       - file: "clients/explorer/src/scene/graticule.test.ts"
         name: "choose the finer of two steps when the coarser one crowds"
-        body: 928231ed936d71267c84052a5215cd09e5679301884f16f6fd1a1d65383095dc
+        body: 3be98ac1df0bfd03c5aad1ddd52eedd19eb522be70c6030a47ce0248275db003
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "space each edge at a multiple of the finer step of its coordinate's two edges"
+        body: 7c33b3776e12f72224f43e8209bf7e9276ee9408ad88ab5950b527c65b2726f4
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "keep the labels of an edge far from the pole where the other edge passes near it"
+        body: 85905a0212378c3eebf952a6e5562911fd23cdd0240e1d8f1adb0a0b87993a91
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "count a round value met exactly at a sample once"
+        body: c56cad504ea08ecfdc01ed3d578d7b0e607f664571025cadf04798b17109900b
   - node: 01a1b863-1a09-757d-bbd7-6f0d72803e9a
-    reviewed: 708262b411029c633714375499b8e71635a11606745f33206c796ecf00aa0b84
+    reviewed: e314713f0e1b6e1382b9637fb989f2a7baec0ebe32a471b2dd2c6b3d75623143
     tests:
       - file: "clients/explorer/src/scene/graticule.test.ts"
         name: "step right ascension by round hours and minutes"
         body: f03431c1ec31a632b8c72de6eef8965eb6c95a54c8b97f57602b669fca33ed6f
+      - file: "clients/explorer/src/scene/graticule.test.ts"
+        name: "space each edge at a multiple of the finer step of its coordinate's two edges"
+        body: 7c33b3776e12f72224f43e8209bf7e9276ee9408ad88ab5950b527c65b2726f4
   - node: 01a1b7d7-c032-73ad-803e-b105558be2c4
     reviewed: a87d9be3e916183ff634d2053ce8dba13d091322f8bac10a531e9f79271cbb65
     tests:
@@ -4308,15 +4320,102 @@ links:
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
         body: de6d5943d12c28517b35f2e813b9cecba013105585e76097b3977e16e708b296
-  - node: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
-    reviewed: e968dffd82e6b91f09b5ff09629acf52d78dc376b7f9f5b425ab43539565213f
+  - node: 01a1bbb4-503d-7416-9488-04fb4ff5b352
+    reviewed: eb518ef8802cc7f0d3f180dc4c4f360dfa23268fbd90cf61f14f4fcac09f4f72
     tests:
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
-        body: 24c6b2e13a3d600d5211e656b866ee0bdbaffcef9a078a0f45626dea7ac70b13
+        body: 3fb7ff47aeb220273ea57d803279ce6cdad144705eb23a7993d93f840ed0f43c
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+        body: 3874c58a625a57efa8c89cd86a65167d1bf14eced65ebb036a23abf2f7228884
+  - node: 01a1bbb4-503d-7416-9488-04fcf6a73520
+    reviewed: e442f84ead8e9af5cf6c7dfda3dd2d58271ff11bab7a53f3dae1876ae27eda23
+    tests:
+      - file: "clients/explorer/src/ui/gridSwitch.test.ts"
+        name: "is off unless the address turns it on"
+        body: 501532f832e8ce4bea871a280b9145996cb1ea4fddba0b3fcbf807b5e784ce67
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "draws the grid across the view while its switch is on, and keeps it on in the address"
+        body: 3a65636cde9ef0c0cf6469b2bbe9b78692c74f9cb12da7ed9bb5aa259594eaf9
+  - node: 01a1bbb4-503d-7416-9488-04fd03559559
+    reviewed: 7d0b1ee4493026ffaba70f5dbeccd9016de0bf5a62b50c4d1fcc513afc0e2cd6
+    tests:
+      - file: "clients/explorer/src/ui/gridSwitch.test.ts"
+        name: "is kept on in the address, beside what else it holds, and leaves it once off again"
+        body: b8c04d5365a9aa046970bd28f22b7c4db7e2ad156f60194957a139e2b548244e
+      - file: "clients/explorer/src/ui/gridSwitch.test.ts"
+        name: "starts on where the address turns it on, as after a reload"
+        body: 328e9507f940f24c0130f9203fd8d27b5eb9460c0899bf15450f16b4744bc78b
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "opens with the grid on where the address turns it on"
+        body: 8f41f32a275f83ad43dc7d7c57123ace42f7ebf3f3a95f2608ad7daf627cb4c2
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+        body: 3874c58a625a57efa8c89cd86a65167d1bf14eced65ebb036a23abf2f7228884
+  - node: 01a1bbb4-503d-7416-9488-04fe7cd7893c
+    reviewed: f745807b544556aced03a96c804cf381dc32bb1067147364527e9b0586ddfcd8
+    tests:
+      - file: "clients/explorer/src/scene/grid.test.ts"
+        name: "draws a line through every tick on the view's edges"
+        body: 8293ffa678aeb13dbda0463eb52cd3e5ea8eb54abe837579f424f934b44020a5
+      - file: "clients/explorer/src/scene/grid.test.ts"
+        name: "runs every line on past the view's edges, with no gap inside it"
+        body: e53ef90b83be5a7f243fd347852796dda45275826a790891c5b66c1a7f4679c7
+      - file: "clients/explorer/src/scene/grid.test.ts"
+        name: "steps right ascension by the hours of its ticks"
+        body: 51a44ff58fc0f5883d100edef98913a8d5b81b91cecfdb24374ab1890c32c386
+  - node: 01a1bbb4-503d-7416-9488-04ff805e7421
+    reviewed: 3cb3c4c0854ed557015ab008c811fd46279365164138a1bcc375c213c58dff87
+    tests:
+      - file: "clients/explorer/src/scene/grid.test.ts"
+        name: "stays still while the eye moves or zooms, and turns with the view and the axes"
+        body: 67c195c0a15845868309828d2cc4a46612bad2b24a3afe0a6d3c1c6ad1ac9f25
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "turns the grid with the view, and keeps it still while the eye zooms"
+        body: 1d2027985749b717354f88abdbe5c74e74b212d17eff4e450ee0ef0276b34d57
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+        body: 3874c58a625a57efa8c89cd86a65167d1bf14eced65ebb036a23abf2f7228884
+  - node: 01a1bbb4-503d-7416-9488-0500d68ce364
+    reviewed: 29378272f7e71d3aca1f84e335f9d3a735106af22dec1f244e86933ca47dd1a3
+    tests:
+      - file: "clients/explorer/src/scene/grid.test.ts"
+        name: "stops a line of longitude at 80 degrees unless it lies at a multiple of 90 degrees"
+        body: d903d0a8a5d86ea72c668fc24f92acf122c52af3b2de22c2be8e1ae7d4dbcaad
+      - file: "clients/explorer/src/scene/grid.test.ts"
+        name: "draws a line through every tick on the view's edges"
+        body: 8293ffa678aeb13dbda0463eb52cd3e5ea8eb54abe837579f424f934b44020a5
+  - node: 01a1bbb4-503d-7416-9488-0501d8ee5c20
+    reviewed: d0eddfa34d8fc60b392b37c9ccbcd55ce4b9c7f2997043445d25afc1c785aa04
+    tests:
+      - file: "clients/explorer/src/scene/grid.test.ts"
+        name: "marks the axes' equator alone"
+        body: 8d8c5e44267427b663c8e6e4e462237f86216196dd07f83d939b7cc0426e36eb
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "draws the grid across the view while its switch is on, and keeps it on in the address"
+        body: 3a65636cde9ef0c0cf6469b2bbe9b78692c74f9cb12da7ed9bb5aa259594eaf9
+  - node: 01a1bbb4-503d-7416-9488-0502db0af966
+    reviewed: b1862823637988a66d007634d983258dbfcf1b168d248da3e627566b9d0008f2
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "draws the grid across the view while its switch is on, and keeps it on in the address"
+        body: 3a65636cde9ef0c0cf6469b2bbe9b78692c74f9cb12da7ed9bb5aa259594eaf9
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "centres the view on a point clicked, keeping the distance, with the grid drawn over it"
+        body: 1564e7110bb2a0542269150c13606739b5be47ff03650619877cc375d89fd1a7
+  - node: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
+    reviewed: 99367ffc02b6b341d3b4a2325aeb043376b597d17c3940ae4855ead54b4632b4
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
+        body: 3fb7ff47aeb220273ea57d803279ce6cdad144705eb23a7993d93f840ed0f43c
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
         body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+        body: 3874c58a625a57efa8c89cd86a65167d1bf14eced65ebb036a23abf2f7228884
   - node: 01a1b7f5-f51b-71f9-80de-cd251f348c42
     reviewed: 1872ff6a009aea30596b02dc96eb32775aef1c5673945137202b23afe7a86e45
     tests:

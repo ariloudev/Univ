@@ -74,8 +74,15 @@ export function project(
   const local = apply(eyeAxes(view, toFrame), sub(point, eyeOf(view, toFrame)));
   const depth = -local[2];
   if (depth <= 0) return undefined;
-  const f = focalPixels(height);
-  return { x: width / 2 + (local[0] * f) / depth, y: height / 2 - (local[1] * f) / depth, depth };
+  const [x, y] = pixelOf(focalPixels(height), local, width, height);
+  return { x, y, depth };
+}
+
+/** The pixel of a viewport `width` × `height` pixels of focal length `f` pixels where `local`,
+ * in the eye's axes and ahead of it, falls: the way on from `pixelRay`. */
+export function pixelOf(f: number, local: Vec3, width: number, height: number): [number, number] {
+  const depth = -local[2];
+  return [width / 2 + (local[0] * f) / depth, height / 2 - (local[1] * f) / depth];
 }
 
 /** The megaparsecs one pixel spans at the focus's depth, on a viewport `height` pixels tall. */

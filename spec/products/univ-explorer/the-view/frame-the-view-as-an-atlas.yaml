@@ -3,7 +3,7 @@ slug: frame-the-view-as-an-atlas
 name: "Frame the view as an atlas"
 body: |
   Laying the explorer out as printed celestial atlases lay out a chart: the view inside a
-  neat line whose edges are marked with coordinates, its controls on a rail and in thin bars about
+  neat line whose edges are marked with coordinates, with a grid of them across it when asked for, its controls on a rail and in thin bars about
   it, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks
   on the edges hold wherever the eye is, far from Earth as well as at it.
 realizes:
@@ -19,9 +19,9 @@ requirements:
       - key: 01a1b7d7-c032-73ad-803e-b103f2a0c853
         name: "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes."
       - key: 01a1b7d7-c032-73ad-803e-b10435170cb6
-        name: "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart."
+        name: "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes."
       - key: 01a1b863-1a09-757d-bbd7-6f0d72803e9a
-        name: "The ticks of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart."
+        name: "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes."
       - key: 01a1b7d7-c032-73ad-803e-b105558be2c4
         name: "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees."
       - key: 01a1b7d7-c032-73ad-803e-b106cab43cde
@@ -30,6 +30,29 @@ requirements:
         name: "The ticks follow the view as it turns, zooms and moves, and as the axes are changed."
       - key: 01a1b7f5-f51b-71f9-80de-cd23746b3fab
         name: "The ticks and their labels are drawn just inside the view's edge, taking no width or height from the view."
+  - key: 01a1bbb4-503d-7416-9488-04fa6b93a838
+    statement:
+      form: state_driven
+      while: "the person has turned the grid on"
+      system: "Univ Explorer"
+      shall: "draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in."
+    criteria:
+      - key: 01a1bbb4-503d-7416-9488-04fb4ff5b352
+        name: "A switch beside the axes in the top bar turns the grid on and off."
+      - key: 01a1bbb4-503d-7416-9488-04fcf6a73520
+        name: "The grid is off when the view opens on an address that does not turn it on."
+      - key: 01a1bbb4-503d-7416-9488-04fd03559559
+        name: "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on."
+      - key: 01a1bbb4-503d-7416-9488-04fe7cd7893c
+        name: "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines."
+      - key: 01a1bbb4-503d-7416-9488-04ff805e7421
+        name: "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms."
+      - key: 01a1bbb4-503d-7416-9488-0500d68ce364
+        name: "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick."
+      - key: 01a1bbb4-503d-7416-9488-0501d8ee5c20
+        name: "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line."
+      - key: 01a1bbb4-503d-7416-9488-0502db0af966
+        name: "The grid takes no pointer events: the points under it are named and chosen as where it is off."
   - key: 01a1b7d7-c032-73ad-803e-b108ccec8a0c
     statement:
       form: ubiquitous
@@ -37,7 +60,7 @@ requirements:
       shall: "give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it."
     criteria:
       - key: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
-        name: "The top bar holds the release, the eye's distance from the focus with the axes, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+        name: "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
       - key: 01a1b7f5-f51b-71f9-80de-cd251f348c42
         name: "A rail along the left edge, no wider than 52 CSS pixels, opens the view's controls, the groups of what is drawn and the list of structures, each as a drawer, and holds the button that returns to Earth."
       - key: 01a1b7f5-f51b-71f9-80de-cd2646cc3c6c

@@ -64,10 +64,13 @@ test("finds an object by name, reads it, and keeps it in the address across a re
   await expect(page.getByRole("region", { name: "The chosen object" }).getByRole("heading").first()).toHaveText(heading ?? "");
 });
 
-test("centres the view on a point clicked, keeping the distance", async ({ page }) => {
+test("centres the view on a point clicked, keeping the distance, with the grid drawn over it", async ({ page }) => {
   // The view moves at once, so that where things are drawn can be read without waiting.
   await page.emulateMedia({ reducedMotion: "reduce" });
   await firstPoints(page);
+  // The grid takes no pointer events: the points under it are named and chosen as without it.
+  await page.getByRole("switch", { name: "Grid" }).check();
+  await expect(page.getByTestId("grid")).toBeVisible();
   const canvas = await centreOf(page.locator("canvas"));
   const tooltip = page.getByRole("tooltip");
   // Out from the centre until the pointer is over a point (its label begins with its id), not
@@ -212,6 +215,36 @@ test("lays the view out as an atlas: bars, rail, drawer and record beside it at 
   await page.getByRole("button", { name: "Fold the record" }).click();
   const widened = await boxOf(page.getByRole("region", { name: "The view" }));
   expect(widened.width).toBeGreaterThan(view.width + 300);
+});
+
+test("draws the grid across the view from its switch beside the axes, and keeps it across a reload", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await firstPoints(page);
+  const toggle = page.getByRole("banner").getByRole("switch", { name: "Grid" });
+  await expect(toggle).not.toBeChecked();
+  await expect(page.getByTestId("grid")).toHaveCount(0);
+  await toggle.check();
+  await expect(page).toHaveURL(/grid=on/);
+  const lines = page.getByTestId("grid-lines");
+  await expect(lines).toHaveAttribute("d", /^M/);
+  // The top bar keeps to one line with the switch in it.
+  expect((await boxOf(page.getByRole("banner"))).height).toBeLessThanOrEqual(40);
+  // A turn of the view turns the grid; a zoom leaves it still.
+  const before = await lines.getAttribute("d");
+  const distance = page.getByTestId("distance");
+  const far = await distance.textContent();
+  const view = await centreOf(page.locator("canvas"));
+  await page.mouse.move(view.x, view.y);
+  for (let i = 0; i < 5; i += 1) await page.mouse.wheel(0, -100);
+  await expect(distance).not.toHaveText(far ?? "");
+  expect(await lines.getAttribute("d")).toBe(before);
+  await page.mouse.down();
+  await page.mouse.move(view.x + 120, view.y + 40, { steps: 6 });
+  await page.mouse.up();
+  await expect.poll(() => lines.getAttribute("d")).not.toBe(before);
+  await page.reload();
+  await expect(page.getByRole("switch", { name: "Grid" })).toBeChecked();
+  await expect(page.getByTestId("grid-lines")).toHaveAttribute("d", /^M/);
 });
 
 test("opens a drawer and the record over the view below 1,024 pixels, and closes them again", async ({ page }) => {

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 
 import { Swatch } from "./Swatch.tsx";
+import { SwitchBox } from "./SwitchBox.tsx";
+import type { Switch } from "./addressSwitch.ts";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
@@ -19,8 +21,8 @@ interface ViewProps {
   frame: Store<number>;
 }
 
-/** The top bar's part: the eye's distance from the focus, and the axes. */
-export function Whereabouts({ controller, frame }: ViewProps) {
+/** The top bar's part: the eye's distance from the focus, and the axes with the grid's switch. */
+export function Whereabouts({ controller, frame, grid }: ViewProps & { grid: Switch }) {
   useStore(frame);
   return (
     <div className="flex shrink-0 items-center gap-3 text-sm">
@@ -44,6 +46,7 @@ export function Whereabouts({ controller, frame }: ViewProps) {
           ))}
         </select>
       </label>
+      <SwitchBox label="Grid" state={grid} textClass="text-dim" />
     </div>
   );
 }

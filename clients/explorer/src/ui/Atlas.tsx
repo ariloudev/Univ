@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { AtlasFrame } from "./AtlasFrame.tsx";
+import type { Switch } from "./addressSwitch.ts";
+import { useGrid } from "./gridSwitch.ts";
 import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
 import { type DrawerName, Rail, drawerTitle } from "./Rail.tsx";
@@ -93,9 +95,10 @@ export function AtlasPage({ start, end, slot, children }: { start: ReactNode; en
 export function Atlas({ world, release, cosmology, place, structures, selection, show, children }: AtlasProps) {
   const { drawer, onDrawer } = place;
   const key = chosenKey(selection);
+  const grid = useGrid();
   return (
     <>
-      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} />, place.topBar)}
+      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} grid={grid} />, place.topBar)}
       <div className="relative flex min-h-0">
         <Rail
           open={drawer}
@@ -111,7 +114,7 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
         )}
         <section aria-label="The view" data-release={release} className="relative min-w-0 flex-1">
           {children}
-          {world === undefined ? null : <AtlasFrame world={world} />}
+          {world === undefined ? null : <AtlasFrame world={world} grid={grid[0]} />}
         </section>
         {key === undefined ? null : (
           <Record key={key}>
@@ -139,11 +142,12 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
   );
 }
 
-/** The view's parts of the top bar: the eye's distance with the axes, and the search. */
-function TopBarParts({ world, release, selection }: { world: World; release: number; selection: Selection }) {
+/** The view's parts of the top bar: the eye's distance with the axes and the grid's switch, and
+ * the search. */
+function TopBarParts({ world, release, selection, grid }: { world: World; release: number; selection: Selection; grid: Switch }) {
   return (
     <>
-      <Whereabouts controller={world.controller} frame={world.frame} />
+      <Whereabouts controller={world.controller} frame={world.frame} grid={grid} />
       <div className="ml-auto">
         <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />
       </div>

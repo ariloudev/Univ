@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { structureDetail } from "../test/structures.ts";
@@ -68,6 +68,8 @@ function show(shown: Shown = {}, world = fakeWorld()) {
 
 const STAR: ChosenObject = { kind: "loading", id: 17 };
 
+afterEach(() => history.replaceState(null, "", "/"));
+
 describe("the explorer laid out as an atlas", () => {
   it("holds the release, the eye's distance with the axes, the search and the switch in its top bar", () => {
     show();
@@ -77,6 +79,10 @@ describe("the explorer laid out as an atlas", () => {
     expect(within(bar).getByRole("combobox")).toBeTruthy();
     expect(within(bar).getByRole("search")).toBeTruthy();
     expect(within(bar).getByText("Level of detail")).toBeTruthy();
+    // The grid's switch sits beside the axes.
+    const axes = within(bar).getByRole("combobox").closest("label");
+    expect(axes?.nextElementSibling?.textContent).toBe("Grid");
+    expect(within(bar).getByRole("switch", { name: "Grid" })).toBeTruthy();
   });
 
   it("opens each drawer from the rail and closes it again with the same button", async () => {
@@ -173,6 +179,59 @@ describe("the explorer laid out as an atlas", () => {
     expect(within(bottom).getByText("Key")).toBeTruthy();
     expect(within(bottom).getByText("Credits")).toBeTruthy();
     expect(within(bottom).getByTestId("key").textContent).toContain("measured: 5 points");
+  });
+
+  it("draws the grid across the view while its switch is on, and keeps it on in the address", async () => {
+    show();
+    const grid = () => screen.queryByTestId("grid");
+    const toggle = screen.getByRole("switch", { name: "Grid" });
+    expect((toggle as HTMLInputElement).checked).toBe(false);
+    expect(grid()).toBeNull();
+    await userEvent.click(toggle);
+    expect(location.search).toBe("?grid=on");
+    const lines = screen.getByTestId("grid-lines");
+    const equator = screen.getByTestId("grid-equator");
+    expect(lines.getAttribute("d")).toMatch(/^M[\d.-]+ [\d.-]+L/);
+    // Inside the frame, taking no pointer events, under the neat line and the ticks.
+    const frame = screen.getByTestId("atlas-frame");
+    expect(frame.contains(grid())).toBe(true);
+    expect(frame.getAttribute("class")).toContain("pointer-events-none");
+    expect(frame.firstElementChild).toBe(grid());
+    // Thinner and fainter than the neat line, the equator heavier than the rest.
+    const neat = frame.querySelector("rect");
+    const width = (e: Element | null) => Number(e?.getAttribute("stroke-width"));
+    const opacity = (e: Element | null) => Number(e?.getAttribute("stroke-opacity") ?? 1);
+    expect(width(lines)).toBeLessThan(width(equator));
+    expect(width(equator)).toBeLessThan(width(neat));
+    expect(opacity(lines)).toBeLessThan(opacity(equator));
+    expect(opacity(equator)).toBeLessThan(opacity(neat));
+    await userEvent.click(toggle);
+    expect(grid()).toBeNull();
+    expect(location.search).toBe("");
+  });
+
+  it("opens with the grid on where the address turns it on", () => {
+    history.replaceState(null, "", "/?grid=on");
+    show();
+    expect((screen.getByRole("switch", { name: "Grid" }) as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByTestId("grid")).toBeTruthy();
+  });
+
+  it("turns the grid with the view, and keeps it still while the eye zooms", () => {
+    history.replaceState(null, "", "/?grid=on");
+    const { world } = show();
+    const lines = () => screen.getByTestId("grid-lines").getAttribute("d");
+    const before = lines();
+    act(() => {
+      world.controller.zoom(-6);
+      world.frame.set(1);
+    });
+    expect(lines()).toBe(before);
+    act(() => {
+      world.controller.turn(200, 80);
+      world.frame.set(2);
+    });
+    expect(lines()).not.toBe(before);
   });
 
   it("moves the ticks and the scale with the view", () => {

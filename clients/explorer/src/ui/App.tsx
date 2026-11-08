@@ -7,6 +7,7 @@ import { ReleasePicker } from "./ReleasePicker.tsx";
 import { Scene } from "./Scene.tsx";
 import { ServerUnreachable, TryAgain } from "./ServerUnreachable.tsx";
 import { useLevelOfDetail } from "./levelOfDetail.ts";
+import { SwitchBox } from "./SwitchBox.tsx";
 import { useReleases } from "./useReleases.ts";
 
 /** Univ Explorer: the releases of Univ Server, and the view of the one chosen. */
@@ -40,7 +41,7 @@ const shortName = (name: string): string => name.replace(/\s*\(.*$/, "");
 
 function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: number }) {
   const [release, setRelease] = useState(latest);
-  const [levelOfDetail, setLevelOfDetail] = useLevelOfDetail();
+  const levelOfDetail = useLevelOfDetail();
   // The top bar's place for the view's parts, and the drawer open, outlive each release's view.
   const [topBar, setTopBar] = useState<HTMLElement | null>(null);
   const [drawer, setDrawer] = useState<DrawerName>();
@@ -55,27 +56,14 @@ function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: nu
       </p>
     </>
   );
-  const end = (
-    <label className="flex items-center gap-2">
-      <input
-        type="checkbox"
-        role="switch"
-        checked={levelOfDetail}
-        onChange={(event) => {
-          setLevelOfDetail(event.currentTarget.checked);
-        }}
-        className="accent-accent"
-      />
-      <span className="max-lg:sr-only">Level of detail</span>
-    </label>
-  );
+  const end = <SwitchBox label="Level of detail" state={levelOfDetail} textClass="max-lg:sr-only" />;
   return (
     <AtlasPage start={start} end={end} slot={setTopBar}>
       <Scene
         key={release}
         release={release}
         cosmology={shown?.cosmology.name ?? ""}
-        levelOfDetail={levelOfDetail}
+        levelOfDetail={levelOfDetail[0]}
         place={{ topBar, drawer, onDrawer: setDrawer }}
       />
     </AtlasPage>

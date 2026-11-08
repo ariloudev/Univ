@@ -1,0 +1,120 @@
+format: yardlog/1
+key: 01a1bbb4-1fad-70ea-8ef8-6f14e247c176
+branch: "stage/atlas-w6"
+base: "develop"
+title: "stage/atlas-w6"
+revision: 12
+opened:
+  at: 2026-11-08T15:08:26Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1bbb4-1fad-70ea-8ef8-6f1519394378
+    id: spec
+  - key: 01a1bbb4-1fad-70ea-8ef8-6f16fb5d4a1b
+    id: build
+  - key: 01a1bbb4-1fad-70ea-8ef8-6f17d9d4cdb6
+    id: close
+submissions:
+  - key: 01a1bbb4-cae4-755d-a377-e47f6b4d95cb
+    blocks:
+      - 01a1bbb4-cae4-755d-a377-e47b0d2126ff
+      - 01a1bbb4-cae4-755d-a377-e47ceb1adf57
+    changes:
+      - what: sent
+        at: 2026-11-08T15:09:10Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+      - what: answered
+        at: 2026-11-08T15:10:34Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+  - key: 01a1bbc7-7ef1-7644-b844-662602f6e355
+    blocks:
+      - 01a1bbc7-7ef1-7644-b844-6622213bd759
+    changes:
+      - what: sent
+        at: 2026-11-08T15:29:35Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+      - what: answered
+        at: 2026-11-08T15:29:48Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+closed:
+  at: 2026-11-08T15:39:44Z
+  revision: 12
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+acts:
+  - at: 2026-11-08T15:08:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T15:08:55Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T15:09:10Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T15:10:32Z
+    revision: 4
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-08T15:10:34Z
+    revision: 5
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-08T15:10:46Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T15:14:32Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T15:18:50Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T15:29:35Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T15:29:48Z
+    revision: 10
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
+  - at: 2026-11-08T15:39:43Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T15:39:44Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"

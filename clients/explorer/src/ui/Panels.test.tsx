@@ -32,7 +32,7 @@ function show(catalogue: Tally, made = controller()) {
   const frame = createStore(0);
   render(
     <>
-      <Whereabouts controller={made} frame={frame} />
+      <Whereabouts controller={made} frame={frame} grid={[false, () => undefined]} />
       <ViewDrawer controller={made} frame={frame} cosmology="Planck 2018" />
       <KeyBar catalogue={() => catalogue} frame={frame} release={7} />
     </>,

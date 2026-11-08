@@ -1,21 +1,13 @@
 // Whether level of detail is on (draw-the-catalogues): on unless the page's address turns it off,
 // and kept there while it is off.
 
-import { useEffect, useState } from "react";
+import { type AddressSwitch, type Switch, switchInAddress, useAddressSwitch } from "./addressSwitch.ts";
 
-import { setInAddress } from "./address.ts";
-
-/** The address parameter that turns level of detail off, and its value. */
-const PARAMETER = "lod";
-const OFF = "off";
+const LEVEL_OF_DETAIL: AddressSwitch = { parameter: "lod", byDefault: true };
 
 /** Whether the address `search` leaves level of detail on. */
-export const levelOfDetailInAddress = (search: string): boolean => new URLSearchParams(search).get(PARAMETER) !== OFF;
+export const levelOfDetailInAddress = (search: string): boolean => switchInAddress(search, LEVEL_OF_DETAIL);
 
 /** Whether level of detail is on, read from the page's address and kept in it, and the way to
  * turn it on or off. */
-export function useLevelOfDetail(): [boolean, (on: boolean) => void] {
-  const [on, setOn] = useState(() => levelOfDetailInAddress(location.search));
-  useEffect(() => setInAddress({ [PARAMETER]: on ? undefined : OFF }), [on]);
-  return [on, setOn];
-}
+export const useLevelOfDetail = (): Switch => useAddressSwitch(LEVEL_OF_DETAIL);
